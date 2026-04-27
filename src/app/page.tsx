@@ -1,0 +1,175 @@
+import { Star, Users, Coffee, Clock, MapPin, Phone, MessageCircle } from 'lucide-react'
+
+export default function HomePage() {
+  return (
+    <div className="min-h-screen bg-[#FAFAF7] text-right" dir="rtl">
+      {/* Header */}
+      <header className="bg-[#FAFAF7] sticky top-0 z-40 border-b border-gray-100">
+        <div className="max-w-md mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-[#1F5F3F]">مضمونة</h1>
+            <div className="text-xs text-gray-500">MADMONA</div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-md mx-auto pb-20 px-4">
+        {/* Welcome Section */}
+        <section className="py-6">
+          <p className="text-sm text-gray-600 mb-2">أهلاً بك في</p>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            مساحة العمل المشترك مضمونة
+          </h2>
+          
+          {/* Free Trial Banner */}
+          <div className="bg-gradient-to-r from-[#B8860B]/10 to-[#C2410C]/10 rounded-xl p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[#B8860B] text-white flex items-center justify-center flex-shrink-0">
+                <Star className="w-4 h-4 fill-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-800 mb-1">يومك الأول مجاناً</h3>
+                <p className="text-xs text-gray-700">جرب مضمونة اليوم بدون تكلفة</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Featured Service - Indoor */}
+        <section className="mb-6">
+          <div className="bg-[#1F5F3F] text-white rounded-xl p-6 hover:bg-[#1F5F3F]/90 transition-colors">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <span className="text-xs text-white/80 font-medium tracking-wide">الأكثر شعبية</span>
+                <h3 className="text-xl font-semibold mt-1 mb-2">المساحة المشتركة الداخلية</h3>
+                <p className="text-sm text-white/90">مكيف · واي فاي عالي السرعة · كافيه</p>
+              </div>
+              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                <Coffee className="w-6 h-6" />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-white/15 rounded-lg p-3">
+                <p className="text-xs text-white/80">ساعة</p>
+                <p className="font-semibold">٥٠ ج.م</p>
+              </div>
+              <div className="bg-white/15 rounded-lg p-3">
+                <p className="text-xs text-white/80">يوم</p>
+                <p className="font-semibold">١٢٠ ج.م</p>
+              </div>
+              <div className="bg-white/15 rounded-lg p-3">
+                <p className="text-xs text-white/80">شهر</p>
+                <p className="font-semibold">٢٠٠٠ ج.م</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Other Services Grid */}
+        <section className="mb-6">
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-white rounded-xl border border-gray-100 hover:border-[#1F5F3F]/30 transition-colors p-4">
+              <div className="w-9 h-9 rounded-lg bg-[#1F5F3F]/10 flex items-center justify-center mb-3">
+                <Users className="w-5 h-5 text-[#1F5F3F]" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">غرفة الاجتماعات</h3>
+              <p className="text-xs text-gray-600">من ٣٠٠ ج.م/ساعة</p>
+              <p className="text-xs text-gray-500 mt-1">حتى ٨ أشخاص</p>
+            </div>
+            
+            <div className="bg-white rounded-xl border border-gray-100 hover:border-[#1F5F3F]/30 transition-colors p-4">
+              <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center mb-3">
+                <Coffee className="w-5 h-5 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">الجنينة</h3>
+              <p className="text-xs text-gray-600">٦٥ ج.م/يوم</p>
+              <p className="text-xs text-gray-500 mt-1">في الهواء الطلق</p>
+            </div>
+          </div>
+
+          {/* Private Office - Wide Card */}
+          <div className="bg-white rounded-xl border border-gray-100 hover:border-[#1F5F3F]/30 transition-colors p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#B8860B]/10 flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5 text-[#B8860B]" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 mb-1">المكتب الخاص</h3>
+                <p className="text-xs text-gray-600">من ١٢٠٠٠ ج.م/شهر</p>
+                <p className="text-xs text-gray-500">خصوصية تامة للفرق</p>
+              </div>
+              <div className="text-right text-xs text-gray-500">
+                حتى ٨ أشخاص
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Contact Section */}
+        <section className="mb-8">
+          <h3 className="font-semibold text-gray-900 mb-3">تواصل معنا</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <a 
+              href="https://wa.me/201002229982"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center p-4 bg-[#25D366]/10 rounded-xl hover:bg-[#25D366]/20 transition-colors"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center mb-2">
+                <MessageCircle className="w-5 h-5 text-white" />
+              </div>
+              <p className="font-medium text-gray-900 text-sm">واتساب</p>
+              <p className="text-xs text-gray-600 mt-1">رد فوري</p>
+            </a>
+
+            <a 
+              href="tel:01002229982"
+              className="flex flex-col items-center p-4 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+            >
+              <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center mb-2">
+                <Phone className="w-5 h-5 text-white" />
+              </div>
+              <p className="font-medium text-gray-900 text-sm">اتصل بنا</p>
+              <p className="text-xs text-gray-600 mt-1 dir-ltr">01002229982</p>
+            </a>
+          </div>
+        </section>
+
+        {/* Location & Hours */}
+        <section className="mb-8">
+          <div className="bg-white rounded-xl border border-gray-100 p-4">
+            <h3 className="font-semibold text-gray-900 mb-3">معلومات مهمة</h3>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <MapPin className="w-4 h-4 text-gray-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">٧ شارع سليمان، مدينة نصر</p>
+                  <p className="text-xs text-gray-600 mt-1">متفرع من عبد الحميد بدوي</p>
+                  <p className="text-xs text-gray-600">بجوار Modern School</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Clock className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <p className="text-sm text-gray-900">٢٤/٧ · Smart Lock للأعضاء</p>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Phone className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <p className="text-sm text-gray-900 dir-ltr">01002229982</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="text-center text-xs text-gray-500 py-4 border-t border-gray-100">
+          <p className="font-medium text-[#1F5F3F] mb-1">مضمونة</p>
+          <p>Your space, guaranteed</p>
+          <p className="mt-2 text-[#B8860B]">جاهز للنشر على madmonacairo.com 🚀</p>
+        </div>
+      </main>
+    </div>
+  )
+}
