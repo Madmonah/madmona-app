@@ -245,11 +245,17 @@ function BookingContent() {
             />
           </div>
 
-          {/* WhatsApp CTA — plain anchor, native browser navigation.
-              Works on every browser (mobile + desktop) without popup blocker
-              issues. Fires the lead-save POST in the background via onClick. */}
+          {/* WhatsApp CTA — plain anchor with target=_blank.
+              Opening WhatsApp in a new tab is the most compatible approach
+              across all browsers (especially Chrome on Android, which can
+              silently block same-tab redirects to wa.me under certain
+              site-permission states). The new tab triggers the WhatsApp
+              intent reliably; the user's form data is preserved on the
+              original tab. Fires the lead-save POST in the background. */}
           <a
             href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={handleWhatsAppClick}
             className="flex items-center justify-center gap-3 w-full bg-[#25D366] text-white py-4 px-6 rounded-xl font-semibold hover:bg-[#25D366]/90 transition-colors shadow-sm no-underline"
           >
