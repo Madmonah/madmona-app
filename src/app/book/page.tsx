@@ -1,8 +1,17 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useState, type FormEvent } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { ArrowRight, MessageCircle, Phone, MapPin, CheckCircle } from 'lucide-react'
+import {
+  ArrowRight,
+  MessageCircle,
+  Phone,
+  MapPin,
+  CheckCircle,
+  User,
+  Calendar,
+  FileText,
+} from 'lucide-react'
 
 type SpaceId = 'indoor-coworking' | 'outdoor-garden' | 'private-office' | 'meeting-room'
 
@@ -22,8 +31,6 @@ const PRICING_TYPE_NAMES: Record<string, string> = {
   'hourly-8': 'بالساعة (٨ أشخاص)',
 }
 
-// Falls back to the raw string when no mapping is found
-// (e.g. when pricing type comes straight from DB names like 'بالساعة')
 function resolvePricingLabel(type: string | undefined): string {
   if (!type) return ''
   return PRICING_TYPE_NAMES[type] || type
@@ -34,10 +41,46 @@ interface BookingData {
   pricingType: string
 }
 
+// Format the WhatsApp message — includes whatever data the user filled in,
+// gracefully omitting fields they skipped.
+function buildWhatsAppMessage(opts: {
+  spaceName: string
+  pricingName: string
+  customerName: string
+  customerPhone: string
+  preferredDate: string
+  notes: string
+}): string {
+  const lines: string[] = ['أهلاً يا مضمونة 👋', '', 'حابب أحجز:']
+  lines.push(`• ${opts.spaceName}`)
+  if (opts.pricingName) lines.push(`• ${opts.pricingName}`)
+
+  const hasCustomerInfo =
+    opts.customerName.trim() || opts.customerPhone.trim() || opts.preferredDate || opts.notes.trim()
+
+  if (hasCustomerInfo) {
+    lines.push('', 'بياناتي:')
+    if (opts.customerName.trim()) lines.push(`• الاسم: ${opts.customerName.trim()}`)
+    if (opts.customerPhone.trim()) lines.push(`• الموبايل: ${opts.customerPhone.trim()}`)
+    if (opts.preferredDate) lines.push(`• التاريخ المفضل: ${opts.preferredDate}`)
+    if (opts.notes.trim()) lines.push(`• ملاحظات: ${opts.notes.trim()}`)
+  }
+
+  lines.push('', 'ممكن نتواصل لتأكيد التفاصيل؟')
+  return lines.join('\n')
+}
+
 function BookingContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
+  // Form state
+  const [customerName, setCustomerName] = useState('')
+  const [customerPhone, setCustomerPhone] = useState('')
+  const [preferredDate, setPreferredDate] = useState('')
+  const [notes, setNotes] = useState('')
+
+  // Parse booking context from URL
   let bookingData: BookingData | null = null
   try {
     const spaceParam = searchParams.get('space')
@@ -47,17 +90,29 @@ function BookingContent() {
         bookingData = parsed as BookingData
       }
     }
-  } catch (e) {
+  } catch {
     // Invalid query — fall through to default
   }
 
   const spaceName = bookingData ? SPACE_NAMES[bookingData.spaceId] || 'مساحة عمل' : 'مساحة عمل'
   const pricingName = bookingData ? resolvePricingLabel(bookingData.pricingType) : ''
 
-  const whatsappMessage = encodeURIComponent(
-    `أهلاً يا مضمونة 👋\n\nحابب أحجز:\n• ${spaceName}${pricingName ? `\n• ${pricingName}` : ''}\n\nممكن نتواصل لتأكيد التفاصيل والموعد؟`
-  )
-  const whatsappUrl = `https://wa.me/201002229982?text=${whatsappMessage}`
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const message = buildWhatsAppMessage({
+      spaceName,
+      pricingName,
+      customerName,
+      customerPhone,
+      preferredDate,
+      notes,
+    })
+    const whatsappUrl = `https://wa.me/201002229982?text=${encodeURIComponent(message)}`
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+  }
+
+  // Today's date in YYYY-MM-DD format for the date input min
+  const todayIso = new Date().toISOString().split('T')[0]
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
@@ -68,6 +123,7 @@ function BookingContent() {
             onClick={() => router.back()}
             className="p-2 hover:bg-gray-50 rounded-full transition-colors"
             aria-label="رجوع"
+            type="button"
           >
             <ArrowRight className="w-5 h-5 text-gray-700" />
           </button>
@@ -76,7 +132,7 @@ function BookingContent() {
         </div>
       </header>
 
-      <main className="max-w-md mx-auto px-4 py-6 pb-20">
+      <main className="max-w-md mx-auto px-4 py-6 pb-8">
         {/* Booking Summary */}
         <section className="bg-white rounded-xl border border-gray-100 p-6 mb-6">
           <div className="flex items-center gap-2 mb-3">
@@ -85,34 +141,101 @@ function BookingContent() {
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-1">{spaceName}</h2>
           {pricingName && (
-            <p className="text-sm text-[#B8860B] font-medium mb-3">{pricingName}</p>
+            <p className="text-sm text-[#B8860B] font-medium">{pricingName}</p>
           )}
-          <p className="text-sm text-gray-600 leading-relaxed">
-            عشان نأكدلك حجزك، تواصل معانا مباشرة على واتساب أو اتصل بنا.
-            هنرجعلك في خلال دقايق ونأكدلك التوقيت والتفاصيل.
-          </p>
         </section>
 
-        {/* CTA Buttons */}
-        <section className="space-y-3 mb-8">
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+        {/* Booking Form */}
+        <form onSubmit={handleSubmit} className="space-y-5 mb-6">
+          <div>
+            <label className="text-sm font-medium text-gray-900 mb-2 block">
+              <span className="flex items-center gap-2">
+                <User className="w-4 h-4 text-gray-500" />
+                الاسم
+              </span>
+            </label>
+            <input
+              type="text"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              placeholder="اسمك بالكامل"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F] transition-colors text-right"
+              autoComplete="name"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-900 mb-2 block">
+              <span className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-gray-500" />
+                رقم الموبايل
+              </span>
+            </label>
+            <input
+              type="tel"
+              value={customerPhone}
+              onChange={(e) => setCustomerPhone(e.target.value.replace(/[^\d+]/g, '').slice(0, 14))}
+              placeholder="01xxxxxxxxx"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F] transition-colors text-right"
+              dir="ltr"
+              style={{ textAlign: 'right' }}
+              autoComplete="tel"
+              inputMode="tel"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-900 mb-2 block">
+              <span className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-gray-500" />
+                التاريخ المفضل
+                <span className="text-xs text-gray-400 font-normal">(اختياري)</span>
+              </span>
+            </label>
+            <input
+              type="date"
+              value={preferredDate}
+              onChange={(e) => setPreferredDate(e.target.value)}
+              min={todayIso}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F] transition-colors text-right"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-900 mb-2 block">
+              <span className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-gray-500" />
+                ملاحظات
+                <span className="text-xs text-gray-400 font-normal">(اختياري)</span>
+              </span>
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="أي تفاصيل إضافية تحب نعرفها"
+              rows={3}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F] transition-colors text-right resize-none"
+            />
+          </div>
+
+          {/* Submit — opens WhatsApp with prefilled message */}
+          <button
+            type="submit"
             className="flex items-center justify-center gap-3 w-full bg-[#25D366] text-white py-4 px-6 rounded-xl font-semibold hover:bg-[#25D366]/90 transition-colors shadow-sm"
           >
             <MessageCircle className="w-5 h-5" />
             <span>تأكيد الحجز عبر واتساب</span>
-          </a>
+          </button>
+        </form>
 
-          <a
-            href="tel:01002229982"
-            className="flex items-center justify-center gap-3 w-full bg-[#1F5F3F] text-white py-4 px-6 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 transition-colors shadow-sm"
-          >
-            <Phone className="w-5 h-5" />
-            <span>اتصل بنا — 01002229982</span>
-          </a>
-        </section>
+        {/* Alternate contact */}
+        <a
+          href="tel:01002229982"
+          className="flex items-center justify-center gap-3 w-full bg-[#1F5F3F] text-white py-4 px-6 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 transition-colors shadow-sm mb-6"
+        >
+          <Phone className="w-5 h-5" />
+          <span>أو اتصل بنا — 01002229982</span>
+        </a>
 
         {/* Location reminder */}
         <section className="bg-white rounded-xl border border-gray-100 p-4 mb-4">
@@ -120,17 +243,12 @@ function BookingContent() {
             <MapPin className="w-4 h-4 text-gray-600 mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-sm font-medium text-gray-900">٧ شارع سليمان، مصر الجديدة</p>
-              <p className="text-xs text-gray-600 mt-1">متفرع من عبد الحميد بدوي · بجوار Modern School</p>
+              <p className="text-xs text-gray-600 mt-1">
+                متفرع من عبد الحميد بدوي · بجوار Modern School
+              </p>
             </div>
           </div>
         </section>
-
-        {/* Coming soon notice */}
-        <div className="p-4 bg-[#B8860B]/10 border border-[#B8860B]/20 rounded-xl">
-          <p className="text-xs text-gray-700 leading-relaxed text-center">
-            🚧 نظام الحجز الأوتوماتيكي قريباً — حالياً بنأكد الحجوزات شخصياً عشان نضمن جودة الخدمة لكل عميل
-          </p>
-        </div>
       </main>
     </div>
   )
