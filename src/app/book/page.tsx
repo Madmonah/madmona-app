@@ -236,8 +236,19 @@ function BookingContent() {
               type="date"
               value={preferredDate}
               onChange={(e) => setPreferredDate(e.target.value)}
+              onClick={(e) => {
+                // Mobile browsers (Chrome on Android in particular) often
+                // don't open the native date picker on tap unless we call
+                // showPicker() inside a user-initiated event. Wrapped in
+                // try/catch because showPicker() throws if called outside
+                // a user gesture or in unsupported browsers.
+                const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void }
+                if (typeof el.showPicker === 'function') {
+                  try { el.showPicker() } catch { /* fallback to native */ }
+                }
+              }}
               min={todayIso}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F] transition-colors text-right"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F] transition-colors"
             />
           </div>
 

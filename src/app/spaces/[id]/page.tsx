@@ -2,6 +2,7 @@ import { ArrowRight, Clock, Users, Wifi, Coffee, Car, Shield, CheckCircle } from
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import type { Metadata } from 'next'
 import { supabase } from '@/lib/supabase'
 import { listSpaceImages } from '@/lib/space-images'
 import { formatPrice } from '@/lib/utils'
@@ -133,6 +134,52 @@ async function fetchSpace(slug: string) {
 
 interface PageProps {
   params: { id: string }
+}
+
+// Per-space metadata so each space gets its own SEO-friendly title and
+// description. When the URL is shared on WhatsApp / Facebook / Twitter,
+// the preview reflects the specific space rather than the generic site.
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const SPACE_META: Record<string, { title: string; description: string }> = {
+    'indoor-coworking': {
+      title: 'المساحة المشتركة الداخلية',
+      description:
+        'مساحة مشتركة مكيفة بإضاءة طبيعية ووواي فاي عالي السرعة. مثالية للفريلانسر والـ remote workers في مصر الجديدة.',
+    },
+    'outdoor-garden': {
+      title: 'الجاردن - مساحة عمل خارجية',
+      description:
+        'مساحة عمل في الهوا الطلق وسط النباتات. هواء نقي، واي فاي قوي، وكافيه أوتدور في مصر الجديدة.',
+    },
+    'private-office': {
+      title: 'الأوفيس الخاص',
+      description:
+        'مكتب مغلق بخصوصية كاملة لحد ٨ أشخاص. تكييف منفصل، خزانة، ومساحة استقبال. مثالي للستارت اب والفرق الصغيرة.',
+    },
+    'meeting-room': {
+      title: 'غرفة اجتماعات',
+      description:
+        'غرفة اجتماعات بعزل صوتي كامل لحد ٨ أشخاص. حجز بالساعة في مصر الجديدة. ٣٠٠ ج.م/ساعة.',
+    },
+  }
+
+  const meta = SPACE_META[params.id]
+  if (!meta) {
+    return { title: 'مساحة عمل' }
+  }
+
+  return {
+    title: meta.title,
+    description: meta.description,
+    openGraph: {
+      title: `${meta.title} | مضمونة`,
+      description: meta.description,
+      url: `https://madmonacairo.com/spaces/${params.id}`,
+      siteName: 'مضمونة',
+      locale: 'ar_EG',
+      type: 'website',
+    },
+  }
 }
 
 export default async function SpaceDetailPage({ params }: PageProps) {
