@@ -1,9 +1,9 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 
 // Server-side admin client (for API routes and server components only)
 // IMPORTANT: Never expose this to the client - uses service role key
-export const supabase = createClient<Database>(
+export const supabase: SupabaseClient<Database> = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
   {
@@ -15,8 +15,8 @@ export const supabase = createClient<Database>(
 )
 
 // Client-side client (for components - uses anon key + RLS)
-// Returns a typed client so all .from('table') calls have proper TypeScript types
-export const createSupabaseClient = () =>
+// Explicit return type ensures Database generic is preserved across module boundaries
+export const createSupabaseClient = (): SupabaseClient<Database> =>
   createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
