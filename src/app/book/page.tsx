@@ -97,14 +97,30 @@ function BookingContent() {
   const spaceName = bookingData ? SPACE_NAMES[bookingData.spaceId] || 'مساحة عمل' : 'مساحة عمل'
   const pricingName = bookingData ? resolvePricingLabel(bookingData.pricingType) : ''
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    // Best-effort: save the lead to our database first.
-    // We don't block the WhatsApp redirect on this — if the API fails,
-    // the customer still gets to WhatsApp and Mohamed gets the message.
+    // Build the WhatsApp URL FIRST, before any async work.
+    // Mobile browsers (especially iOS Safari) block window.open / location
+    // changes that happen after `await` because they consider the user
+    // click "finished" by the time the async work resolves. We work around
+    // that by firing the API call as fire-and-forget with `keepalive: true`
+    // (which lets the request complete even after navigation), then doing
+    // a synchronous same-tab navigation to WhatsApp inside the click event.
+    const message = buildWhatsAppMessage({
+      spaceName,
+      pricingName,
+      customerName,
+      customerPhone,
+      preferredDate,
+      notes,
+    })
+    const whatsappUrl = `https://wa.me/201002229982?text=${encodeURIComponent(message)}`
+
+    // Save the lead to DB in the background — `keepalive: true` lets the
+    // request survive the page navigation that follows immediately.
     try {
-      await fetch('/api/booking-leads', {
+      fetch('/api/booking-leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -115,21 +131,17 @@ function BookingContent() {
           preferredDate: preferredDate || null,
           notes,
         }),
+        keepalive: true,
+      }).catch(() => {
+        // Silent — never block the WhatsApp handoff on a DB failure
       })
     } catch {
-      // Silent failure — don't block the user
+      // Silent — same as above
     }
 
-    const message = buildWhatsAppMessage({
-      spaceName,
-      pricingName,
-      customerName,
-      customerPhone,
-      preferredDate,
-      notes,
-    })
-    const whatsappUrl = `https://wa.me/201002229982?text=${encodeURIComponent(message)}`
-    window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+    // Same-tab navigation works inside a sync click handler on every browser
+    // (including iOS Safari) without triggering popup blockers.
+    window.location.href = whatsappUrl
   }
 
   // Today's date in YYYY-MM-DD format for the date input min
