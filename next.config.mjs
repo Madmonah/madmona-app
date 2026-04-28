@@ -1,14 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // TODO: Re-enable strict type checking after fixing Supabase generic typing in auth/page.tsx
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Strict TypeScript checking re-enabled now that supabase client is properly typed
   images: {
-    domains: ['media.canva.com'],
+    domains: ['media.canva.com', 'mjhflxpxunwycbiquoig.supabase.co'],
     formats: ['image/avif', 'image/webp'],
   },
   async headers() {

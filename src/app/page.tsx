@@ -145,7 +145,7 @@ export default function HomePage() {
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-gray-600 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">٧ شارع سليمان، مدينة نصر</p>
+                  <p className="text-sm font-medium text-gray-900">٧ شارع سليمان، مصر الجديدة</p>
                   <p className="text-xs text-gray-600 mt-1">متفرع من عبد الحميد بدوي</p>
                   <p className="text-xs text-gray-600">بجوار Modern School</p>
                 </div>
