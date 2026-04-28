@@ -1,16 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // TODO: Re-enable strict TS after refactoring auth/page.tsx
-  // The Database<Generic> doesn't survive helper-function returns
-  // even with singleton pattern. Need to either:
-  //  (a) inline createClient<Database>() at the call site, or
-  //  (b) use 'as any' cast on the .from('users').insert(...) call
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Strict TypeScript checking enabled.
+  // Supabase generic-type loss is now isolated to @ts-ignore directives
+  // inside lib/supabase.ts helper functions, not the build config.
   images: {
     domains: ['media.canva.com', 'mjhflxpxunwycbiquoig.supabase.co'],
     formats: ['image/avif', 'image/webp'],

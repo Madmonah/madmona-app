@@ -1,171 +1,191 @@
-'use client'
-
-import { useParams, useRouter } from 'next/navigation'
-import { useState } from 'react'
 import { ArrowRight, Clock, Users, Wifi, Coffee, Car, Shield, CheckCircle } from 'lucide-react'
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
 import { formatPrice } from '@/lib/utils'
+import type { Database } from '@/types/supabase'
+import SpaceBookingButton from './SpaceBookingButton'
 
-// Mock data for spaces - in real app, fetch from Supabase
-const spacesData = {
+// ============================================================
+// Slug → space_type mapping (URL slugs are stable, DB UUIDs are not)
+// ============================================================
+const SLUG_TO_TYPE: Record<string, Database['public']['Tables']['spaces']['Row']['space_type']> = {
+  'indoor-coworking': 'indoor',
+  'outdoor-garden': 'outdoor',
+  'private-office': 'private_office',
+  'meeting-room': 'meeting_room',
+}
+
+// ============================================================
+// Static UI metadata that lives in code (not in the DB schema):
+// icons, hero emojis, descriptions, features.
+// Pricing comes from the DB.
+// ============================================================
+const SPACE_UI: Record<string, {
+  emoji: string
+  amenities: { icon: any; name: string }[]
+  features: string[]
+}> = {
   'indoor-coworking': {
-    id: 'indoor-coworking',
-    name: 'كوركينغ داخلي',
-    description: 'مساحة عمل مشتركة مريحة ومجهزة بكل ما تحتاجه للإنتاجية',
-    hero: '/images/indoor-hero.jpg',
+    emoji: '💻',
     amenities: [
       { icon: Wifi, name: 'واي فاي عالي السرعة' },
-      { icon: Coffee, name: 'قهوة ومشروبات مجانية' },
+      { icon: Coffee, name: 'قهوة ومشروبات' },
       { icon: Car, name: 'مواقف سيارات' },
-      { icon: Shield, name: 'أمان ٢٤/٧' }
-    ],
-    pricing: [
-      { type: 'hourly', price: 50, period: 'الساعة', highlight: false },
-      { type: 'daily', price: 120, period: 'اليوم', highlight: true },
-      { type: 'package', price: 900, period: '١٠ أيام', highlight: false },
-      { type: 'monthly', price: 2000, period: 'الشهر', highlight: false }
+      { icon: Shield, name: 'أمان ٢٤/٧' },
     ],
     features: [
       'مكاتب مريحة ومقاعد مريحة',
-      'إضاءة طبيعية ممتازة', 
+      'إضاءة طبيعية ممتازة',
       'مساحة هادئة للتركيز',
-      'طابعات ومعدات مكتبية'
-    ]
+      'طابعات ومعدات مكتبية',
+    ],
   },
   'outdoor-garden': {
-    id: 'outdoor-garden',
-    name: 'حديقة خارجية',
-    description: 'اشتغل في الهواء الطلق وسط الخضرة والهدوء',
-    hero: '/images/outdoor-hero.jpg',
+    emoji: '🌿',
     amenities: [
       { icon: Wifi, name: 'واي فاي قوي في الحديقة' },
       { icon: Coffee, name: 'كافيه أوتدور' },
       { icon: Car, name: 'مواقف مجانية' },
-      { icon: Shield, name: 'حراسة مستمرة' }
-    ],
-    pricing: [
-      { type: 'daily', price: 65, period: 'اليوم', highlight: true }
+      { icon: Shield, name: 'حراسة مستمرة' },
     ],
     features: [
       'جلسات مريحة وسط النباتات',
       'هواء نقي ومنظر طبيعي',
       'مساحة مفتوحة للإبداع',
-      'إضاءة ليلية مميزة'
-    ]
+      'إضاءة ليلية مميزة',
+    ],
   },
   'private-office': {
-    id: 'private-office',
-    name: 'مكتب خاص',
-    description: 'مكتبك الخاص بخصوصية تامة ومرونة كاملة',
-    hero: '/images/private-hero.jpg',
+    emoji: '🏢',
     amenities: [
       { icon: Wifi, name: 'إنترنت مخصص عالي السرعة' },
-      { icon: Users, name: 'مساحة تسع ٤ أشخاص' },
+      { icon: Users, name: 'مساحة تسع ٨ أشخاص' },
       { icon: Car, name: 'موقف مخصص' },
-      { icon: Shield, name: 'دخول ٢٤/٧ بالكارت' }
-    ],
-    pricing: [
-      { type: 'monthly', price: 12000, period: 'الشهر', highlight: true }
+      { icon: Shield, name: 'دخول ٢٤/٧ بالكارت' },
     ],
     features: [
       'مكتب مغلق بخصوصية كاملة',
       'تكييف منفصل قابل للتحكم',
       'خزانة مغلقة للأوراق المهمة',
-      'مساحة استقبال صغيرة'
-    ]
+      'مساحة استقبال صغيرة',
+    ],
   },
   'meeting-room': {
-    id: 'meeting-room',
-    name: 'قاعة اجتماعات',
-    description: 'قاعة مجهزة للاجتماعات والعروض التقديمية',
-    hero: '/images/meeting-hero.jpg', 
+    emoji: '👥',
     amenities: [
       { icon: Users, name: 'تسع حتى ٨ أشخاص' },
       { icon: Wifi, name: 'واي فاي مخصص' },
       { icon: Shield, name: 'عزل صوتي كامل' },
-      { icon: Clock, name: 'حجز بالساعة' }
-    ],
-    pricing: [
-      { type: 'hourly-4', price: 300, period: 'الساعة (٤ أشخاص)', highlight: false },
-      { type: 'hourly-8', price: 500, period: 'الساعة (٨ أشخاص)', highlight: true }
+      { icon: Clock, name: 'حجز بالساعة' },
     ],
     features: [
       'طاولة اجتماعات مريحة',
       'إضاءة طبيعية مع ستائر',
       'مساحة عرض للعروض التقديمية',
-      'خصوصية وهدوء كامل'
-    ]
+      'خصوصية وهدوء كامل',
+    ],
+  },
+}
+
+interface PricingItem {
+  type: string
+  price: number
+  period: string
+  highlight: boolean
+}
+
+// Server-side data fetch — keeps Supabase out of the client bundle
+async function fetchSpace(slug: string) {
+  const spaceType = SLUG_TO_TYPE[slug]
+  if (!spaceType) return null
+
+  // @ts-ignore - Database generic preserved at runtime; types lost in inference
+  const { data: spaceRow } = await supabase
+    .from('spaces')
+    .select('*')
+    .eq('space_type', spaceType)
+    .maybeSingle()
+
+  if (!spaceRow) return null
+
+  // @ts-ignore - Database generic preserved at runtime; types lost in inference
+  const { data: plans } = await supabase
+    .from('pricing_plans')
+    .select('*')
+    .eq('space_id', (spaceRow as any).id)
+    .order('price_egp', { ascending: true })
+
+  return {
+    id: slug,
+    name: (spaceRow as any).name as string,
+    description: (spaceRow as any).description as string | null,
+    pricing: ((plans ?? []) as any[]).map((p, i, arr) => ({
+      type: p.name as string, // use the human-readable name as the type identifier
+      price: Number(p.price_egp),
+      period: p.name as string,
+      highlight: i === Math.floor(arr.length / 2), // middle plan highlighted as default
+    })) as PricingItem[],
   }
 }
 
-export default function SpaceDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const [selectedPricing, setSelectedPricing] = useState<string>('')
-  
-  const spaceId = params.id as string
-  const space = spacesData[spaceId as keyof typeof spacesData]
+interface PageProps {
+  params: { id: string }
+}
 
-  // If space not found, redirect to home
+export default async function SpaceDetailPage({ params }: PageProps) {
+  const space = await fetchSpace(params.id)
+
   if (!space) {
-    router.push('/')
-    return null
+    notFound()
   }
 
-  const handleBookNow = () => {
-    if (!selectedPricing) {
-      // Auto-select highlighted pricing if none selected
-      const highlighted = space.pricing.find(p => p.highlight)
-      if (highlighted) {
-        setSelectedPricing(highlighted.type)
-      }
-    }
-    
-    // Navigate to booking flow with space and pricing info
-    const bookingData = {
-      spaceId: space.id,
-      pricingType: selectedPricing || space.pricing.find(p => p.highlight)?.type || space.pricing[0].type
-    }
-    
-    router.push(`/book?space=${encodeURIComponent(JSON.stringify(bookingData))}`)
-  }
+  const ui = SPACE_UI[params.id]
+  if (!ui) notFound()
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       {/* Header */}
-      <div className="bg-white border-b border-green-100">
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
-          <button 
-            onClick={() => router.back()}
+          <Link
+            href="/"
             className="p-2 rounded-full hover:bg-gray-50 transition-colors"
+            aria-label="رجوع"
           >
             <ArrowRight className="w-5 h-5 text-gray-600" />
-          </button>
+          </Link>
           <h1 className="text-lg font-semibold text-gray-900">{space.name}</h1>
-          <div className="w-9" /> {/* Spacer */}
+          <div className="w-9" />
         </div>
       </div>
 
-      {/* Hero Image */}
-      <div className="relative h-64 bg-gradient-to-br from-primary/20 to-accent/10">
+      {/* Hero */}
+      <div className="relative h-64 bg-gradient-to-br from-[#1F5F3F]/20 to-[#B8860B]/10">
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-3 mx-auto">
-              <span className="text-2xl">{space.id === 'indoor-coworking' ? '💻' : space.id === 'outdoor-garden' ? '🌿' : space.id === 'private-office' ? '🏢' : '👥'}</span>
+          <div className="text-center px-8">
+            <div className="w-20 h-20 bg-[#1F5F3F]/10 rounded-full flex items-center justify-center mb-3 mx-auto">
+              <span className="text-2xl">{ui.emoji}</span>
             </div>
-            <h2 className="text-xl font-bold text-primary mb-1">{space.name}</h2>
-            <p className="text-sm text-gray-600 px-8">{space.description}</p>
+            <h2 className="text-xl font-bold text-[#1F5F3F] mb-1">{space.name}</h2>
+            {space.description && (
+              <p className="text-sm text-gray-600">{space.description}</p>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-4 pb-20">
+      <div className="max-w-md mx-auto px-4 pb-24">
         {/* Amenities */}
         <section className="py-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4">المميزات</h3>
           <div className="grid grid-cols-2 gap-3">
-            {space.amenities.map((amenity, index) => (
-              <div key={index} className="flex items-center space-x-3 space-x-reverse p-3 bg-white rounded-xl border border-gray-100">
-                <amenity.icon className="w-5 h-5 text-primary flex-shrink-0" />
+            {ui.amenities.map((amenity, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100"
+              >
+                <amenity.icon className="w-5 h-5 text-[#1F5F3F] flex-shrink-0" />
                 <span className="text-sm font-medium text-gray-700">{amenity.name}</span>
               </div>
             ))}
@@ -176,78 +196,37 @@ export default function SpaceDetailPage() {
         <section className="py-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4">تفاصيل المساحة</h3>
           <div className="space-y-2">
-            {space.features.map((feature, index) => (
-              <div key={index} className="flex items-center space-x-2 space-x-reverse">
-                <CheckCircle className="w-4 h-4 text-accent flex-shrink-0" />
+            {ui.features.map((feature, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-[#B8860B] flex-shrink-0" />
                 <span className="text-sm text-gray-600">{feature}</span>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Pricing */}
+        {/* Pricing — fetched from DB */}
         <section className="py-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4">أسعار الاشتراك</h3>
-          <div className="space-y-3">
-            {space.pricing.map((pricing, index) => (
-              <button
-                key={pricing.type}
-                onClick={() => setSelectedPricing(pricing.type)}
-                className={`w-full p-4 rounded-xl border-2 transition-all ${
-                  selectedPricing === pricing.type || (selectedPricing === '' && pricing.highlight)
-                    ? 'border-primary bg-primary/5' 
-                    : 'border-gray-100 bg-white hover:border-primary/30'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="text-right">
-                    <div className="flex items-center space-x-2 space-x-reverse mb-1">
-                      <span className="text-lg font-bold text-primary">
-                        {formatPrice(pricing.price)}
-                      </span>
-                      {pricing.highlight && (
-                        <span className="px-2 py-0.5 bg-accent text-white text-xs rounded-full font-medium">
-                          الأشهر
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-sm text-gray-600">{pricing.period}</span>
-                  </div>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    selectedPricing === pricing.type || (selectedPricing === '' && pricing.highlight)
-                      ? 'border-primary bg-primary' 
-                      : 'border-gray-300'
-                  }`}>
-                    {(selectedPricing === pricing.type || (selectedPricing === '' && pricing.highlight)) && (
-                      <div className="w-2 h-2 bg-white rounded-full" />
-                    )}
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
+          <SpaceBookingButton
+            spaceId={space.id}
+            pricing={space.pricing}
+          />
         </section>
 
         {/* Free Trial Banner */}
-        <div className="my-6 p-4 bg-gradient-to-l from-accent/10 to-primary/5 rounded-xl border border-accent/20">
-          <div className="flex items-center justify-center space-x-2 space-x-reverse">
+        <div className="my-6 p-4 bg-gradient-to-l from-[#B8860B]/10 to-[#1F5F3F]/5 rounded-xl border border-[#B8860B]/20">
+          <div className="flex items-center justify-center gap-2">
             <span className="text-lg">🎉</span>
             <span className="text-sm font-bold text-gray-800">يومك الأول مجاناً!</span>
           </div>
         </div>
       </div>
-
-      {/* Fixed Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4">
-        <div className="max-w-md mx-auto">
-          <button
-            onClick={handleBookNow}
-            className="w-full bg-primary text-white py-4 rounded-xl font-bold text-lg hover:bg-primary/90 transition-colors shadow-lg"
-          >
-            احجز الآن
-          </button>
-        </div>
-      </div>
     </div>
   )
+}
+
+// Pre-render all known space pages at build time
+export function generateStaticParams() {
+  return Object.keys(SLUG_TO_TYPE).map((id) => ({ id }))
 }

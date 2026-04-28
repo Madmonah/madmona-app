@@ -22,6 +22,13 @@ const PRICING_TYPE_NAMES: Record<string, string> = {
   'hourly-8': 'بالساعة (٨ أشخاص)',
 }
 
+// Falls back to the raw string when no mapping is found
+// (e.g. when pricing type comes straight from DB names like 'بالساعة')
+function resolvePricingLabel(type: string | undefined): string {
+  if (!type) return ''
+  return PRICING_TYPE_NAMES[type] || type
+}
+
 interface BookingData {
   spaceId: SpaceId
   pricingType: string
@@ -45,7 +52,7 @@ function BookingContent() {
   }
 
   const spaceName = bookingData ? SPACE_NAMES[bookingData.spaceId] || 'مساحة عمل' : 'مساحة عمل'
-  const pricingName = bookingData ? PRICING_TYPE_NAMES[bookingData.pricingType] || '' : ''
+  const pricingName = bookingData ? resolvePricingLabel(bookingData.pricingType) : ''
 
   const whatsappMessage = encodeURIComponent(
     `أهلاً يا مضمونة 👋\n\nحابب أحجز:\n• ${spaceName}${pricingName ? `\n• ${pricingName}` : ''}\n\nممكن نتواصل لتأكيد التفاصيل والموعد؟`
