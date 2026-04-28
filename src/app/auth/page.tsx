@@ -3,8 +3,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseClient } from '@/lib/supabase'
-import { Metadata } from 'next'
+import type { Database } from '@/types/supabase'
 import { ArrowRight, MessageSquare, Clock, Shield, Zap } from 'lucide-react'
+
+type UserInsert = Database['public']['Tables']['users']['Insert']
 
 enum AuthStep {
   PHONE = 'phone',
@@ -114,12 +116,13 @@ export default function AuthPage() {
           .single()
 
         if (!existingUser) {
-          // Create new user record
-          await supabase.from('users').insert({
+          // Create new user record (typed insert)
+          const newUser: UserInsert = {
             id: data.user.id,
             phone_number: fullPhone,
-            is_first_time: true
-          })
+            is_first_time: true,
+          }
+          await supabase.from('users').insert(newUser)
           setStep(AuthStep.WELCOME)
         } else {
           // Existing user, redirect to home
