@@ -97,8 +97,29 @@ function BookingContent() {
   const spaceName = bookingData ? SPACE_NAMES[bookingData.spaceId] || 'مساحة عمل' : 'مساحة عمل'
   const pricingName = bookingData ? resolvePricingLabel(bookingData.pricingType) : ''
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    // Best-effort: save the lead to our database first.
+    // We don't block the WhatsApp redirect on this — if the API fails,
+    // the customer still gets to WhatsApp and Mohamed gets the message.
+    try {
+      await fetch('/api/booking-leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName,
+          customerPhone,
+          spaceSlug: bookingData?.spaceId ?? 'unknown',
+          pricingLabel: pricingName,
+          preferredDate: preferredDate || null,
+          notes,
+        }),
+      })
+    } catch {
+      // Silent failure — don't block the user
+    }
+
     const message = buildWhatsAppMessage({
       spaceName,
       pricingName,
