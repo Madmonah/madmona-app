@@ -1,7 +1,9 @@
 import { ArrowRight, Clock, Users, Wifi, Coffee, Car, Shield, CheckCircle } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
+import { listSpaceImages } from '@/lib/space-images'
 import { formatPrice } from '@/lib/utils'
 import type { Database } from '@/types/supabase'
 import SpaceBookingButton from './SpaceBookingButton'
@@ -143,6 +145,10 @@ export default async function SpaceDetailPage({ params }: PageProps) {
   const ui = SPACE_UI[params.id]
   if (!ui) notFound()
 
+  // Fetch real photos from Supabase Storage (empty array = no photos uploaded yet)
+  const photoUrls = await listSpaceImages(params.id)
+  const heroImage = photoUrls[0]
+
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       {/* Header */}
@@ -160,20 +166,40 @@ export default async function SpaceDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Hero */}
-      <div className="relative h-64 bg-gradient-to-br from-[#1F5F3F]/20 to-[#B8860B]/10">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center px-8">
-            <div className="w-20 h-20 bg-[#1F5F3F]/10 rounded-full flex items-center justify-center mb-3 mx-auto">
-              <span className="text-2xl">{ui.emoji}</span>
-            </div>
-            <h2 className="text-xl font-bold text-[#1F5F3F] mb-1">{space.name}</h2>
+      {/* Hero — real photo if available, otherwise emoji placeholder */}
+      {heroImage ? (
+        <div className="relative h-64 bg-gray-100">
+          <Image
+            src={heroImage}
+            alt={space.name}
+            fill
+            sizes="(max-width: 768px) 100vw, 480px"
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+          <div className="absolute bottom-4 right-4 left-4 text-white text-right">
+            <h2 className="text-xl font-bold drop-shadow">{space.name}</h2>
             {space.description && (
-              <p className="text-sm text-gray-600">{space.description}</p>
+              <p className="text-sm opacity-90 drop-shadow mt-1">{space.description}</p>
             )}
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="relative h-64 bg-gradient-to-br from-[#1F5F3F]/20 to-[#B8860B]/10">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center px-8">
+              <div className="w-20 h-20 bg-[#1F5F3F]/10 rounded-full flex items-center justify-center mb-3 mx-auto">
+                <span className="text-2xl">{ui.emoji}</span>
+              </div>
+              <h2 className="text-xl font-bold text-[#1F5F3F] mb-1">{space.name}</h2>
+              {space.description && (
+                <p className="text-sm text-gray-600">{space.description}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-md mx-auto px-4 pb-24">
         {/* Amenities */}
