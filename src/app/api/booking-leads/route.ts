@@ -80,7 +80,10 @@ export async function POST(request: Request) {
   const notesClean =
     typeof notes === 'string' && notes.length <= 2000 ? notes.trim() || null : null
 
-  // Insert via admin client (bypasses RLS, runs server-side only)
+  // Insert via admin client (bypasses RLS, runs server-side only).
+  // @ts-expect-error - Supabase JS v2.45+ resolves Insert generic to `never`
+  // when the Database schema lacks the new `__InternalSupabase` marker. This is
+  // an isolated workaround for that single line, not a global TS bypass.
   const { data, error } = await supabase
     .from('booking_leads')
     .insert({
@@ -104,5 +107,5 @@ export async function POST(request: Request) {
     )
   }
 
-  return NextResponse.json({ success: true, leadId: data?.id ?? null })
+  return NextResponse.json({ success: true, leadId: (data as { id: string } | null)?.id ?? null })
 }
