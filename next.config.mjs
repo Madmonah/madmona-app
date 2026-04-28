@@ -1,15 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // TODO: Re-enable strict TS checking after refactoring auth/page.tsx
-  // to use Database['public']['Tables']['users']['Insert'] type assertions
-  // directly at the call sites. The createClient<Database>() generics don't
-  // survive being returned from a helper function.
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Strict TS checking enabled — Supabase client now uses singleton pattern
+  // which preserves the Database generic types correctly across module boundaries
   images: {
     domains: ['media.canva.com', 'mjhflxpxunwycbiquoig.supabase.co'],
     formats: ['image/avif', 'image/webp'],

@@ -1,9 +1,25 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 
-// Server-side admin client (for API routes and server components only)
-// IMPORTANT: Never expose this to the client - uses service role key
-export const supabase: SupabaseClient<Database> = createClient<Database>(
+// Module-level singleton — TypeScript preserves the full generic types
+// when the client is declared at module level (vs. returned from a function).
+// This is the key to making `from('users').insert({...})` type-check correctly.
+
+// Browser/anon client (subject to RLS — safe to use in client components)
+export const supabaseBrowser = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  }
+)
+
+// Admin client (bypasses RLS — server-side only, never expose to client)
+export const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
   {
@@ -14,29 +30,18 @@ export const supabase: SupabaseClient<Database> = createClient<Database>(
   }
 )
 
-// Client-side client (for components - uses anon key + RLS)
-// Explicit return type ensures Database generic is preserved across module boundaries
-export const createSupabaseClient = (): SupabaseClient<Database> =>
-  createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
-    }
-  )
+// Backward-compatible factory — returns the singleton.
+// Existing code that calls createSupabaseClient() keeps working,
+// but now gets full type safety because the singleton's types are preserved.
+export const createSupabaseClient = () => supabaseBrowser
 
-// Helper function to get session (client-side)
+// Helper: get current session
 export async function getSession() {
-  const supabaseClient = createSupabaseClient()
-  const { data: { session } } = await supabaseClient.auth.getSession()
+  const { data: { session } } = await supabaseBrowser.auth.getSession()
   return session
 }
 
-// Helper function to get user profile (uses admin client - server-side only)
+// Helper: get user profile (admin client — server-side only)
 export async function getUserProfile(userId: string) {
   const { data, error } = await supabase
     .from('users')
