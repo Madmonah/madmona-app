@@ -80,6 +80,10 @@ function BookingContent() {
   const [customerPhone, setCustomerPhone] = useState('')
   const [preferredDate, setPreferredDate] = useState('')
   const [notes, setNotes] = useState('')
+  // Loading flag flipped on form submit so the user sees "جاري التأكيد..."
+  // briefly before the navigation to wa.me happens. We never reset it because
+  // the page is about to navigate away anyway.
+  const [submitting, setSubmitting] = useState(false)
 
   // Parse booking context from URL
   let bookingData: BookingData | null = null
@@ -117,6 +121,7 @@ function BookingContent() {
   // navigation interceptors, or async timing issues. The browser performs
   // the navigation to wa.me itself, with no JavaScript involvement.
   const handleSubmit = () => {
+    setSubmitting(true)
     try {
       fetch('/api/booking-leads', {
         method: 'POST',
@@ -272,10 +277,20 @@ function BookingContent() {
           {/* Submit button — natively submits the form to wa.me */}
           <button
             type="submit"
-            className="flex items-center justify-center gap-3 w-full bg-[#25D366] text-white py-4 px-6 rounded-xl font-semibold hover:bg-[#25D366]/90 transition-colors shadow-sm"
+            disabled={submitting}
+            className="flex items-center justify-center gap-3 w-full bg-[#25D366] text-white py-4 px-6 rounded-xl font-semibold hover:bg-[#25D366]/90 active:bg-[#25D366]/80 disabled:opacity-70 disabled:cursor-wait transition-all shadow-sm"
           >
-            <MessageCircle className="w-5 h-5" />
-            <span>تأكيد الحجز عبر واتساب</span>
+            {submitting ? (
+              <>
+                <span className="inline-block w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                <span>جاري التأكيد...</span>
+              </>
+            ) : (
+              <>
+                <MessageCircle className="w-5 h-5" />
+                <span>تأكيد الحجز عبر واتساب</span>
+              </>
+            )}
           </button>
         </form>
 

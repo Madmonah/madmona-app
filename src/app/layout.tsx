@@ -1,9 +1,20 @@
 import type { Metadata, Viewport } from 'next'
+import { Tajawal } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 
 const SITE_URL = 'https://madmonacairo.com'
+
+// Tajawal — modern, clean Arabic typeface that pairs well with the
+// Aesop/Byredo minimal-luxury aesthetic. Loaded with the latin subset too
+// since the wordmark uses both scripts.
+const tajawal = Tajawal({
+  subsets: ['arabic', 'latin'],
+  weight: ['300', '400', '500', '700'],
+  display: 'swap',
+  variable: '--font-tajawal',
+})
 
 export const metadata: Metadata = {
   title: {
@@ -55,9 +66,10 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+  appleWebApp: {
+    capable: true,
+    title: 'مضمونة',
+    statusBarStyle: 'default',
   },
   category: 'business',
 }
@@ -99,7 +111,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="ar" dir="rtl" className={tajawal.variable}>
       <head>
         {/* Structured data for search engines */}
         <script
@@ -107,7 +119,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }}
         />
       </head>
-      <body className="font-sans bg-[#FAFAF7] text-gray-900 antialiased">
+      <body className={`${tajawal.className} bg-[#FAFAF7] text-gray-900 antialiased`}>
         {children}
         <Analytics />
         <SpeedInsights />

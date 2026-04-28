@@ -80,6 +80,30 @@ export async function POST(request: Request) {
   const notesClean =
     typeof notes === 'string' && notes.length <= 2000 ? notes.trim() || null : null
 
+  // Anti-spam: reject if the same phone number submitted within the last
+  // 60 seconds. Cheap protection against double-clicks, replay attacks,
+  // and basic bots. Persistent across serverless instances since it queries
+  // the database directly.
+  try {
+    const sixtySecondsAgo = new Date(Date.now() - 60 * 1000).toISOString()
+    const { data: recent } = await supabase
+      .from('booking_leads')
+      .select('id')
+      .eq('customer_phone', normalizedPhone)
+      .gte('created_at', sixtySecondsAgo)
+      .limit(1)
+
+    if (recent && recent.length > 0) {
+      return NextResponse.json(
+        { error: 'طلبك اتسجل بالفعل دلوقتي، هنتواصل معاك قريباً' },
+        { status: 429 }
+      )
+    }
+  } catch {
+    // If the duplicate check fails for any reason, don't block the user —
+    // a duplicate row is far less harmful than a failed booking.
+  }
+
   // Insert via admin client (bypasses RLS, runs server-side only).
   // @ts-expect-error - Supabase JS v2.45+ resolves Insert generic to `never`
   // when the Database schema lacks the new `__InternalSupabase` marker. This is
