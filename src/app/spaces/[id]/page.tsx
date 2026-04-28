@@ -100,7 +100,6 @@ async function fetchSpace(slug: string) {
   const spaceType = SLUG_TO_TYPE[slug]
   if (!spaceType) return null
 
-  // @ts-ignore - Database generic preserved at runtime; types lost in inference
   const { data: spaceRow } = await supabase
     .from('spaces')
     .select('*')
@@ -109,22 +108,23 @@ async function fetchSpace(slug: string) {
 
   if (!spaceRow) return null
 
-  // @ts-ignore - Database generic preserved at runtime; types lost in inference
   const { data: plans } = await supabase
     .from('pricing_plans')
     .select('*')
-    .eq('space_id', (spaceRow as any).id)
+    .eq('space_id', spaceRow.id)
     .order('price_egp', { ascending: true })
+
+  const planList = plans ?? []
 
   return {
     id: slug,
-    name: (spaceRow as any).name as string,
-    description: (spaceRow as any).description as string | null,
-    pricing: ((plans ?? []) as any[]).map((p, i, arr) => ({
-      type: p.name as string, // use the human-readable name as the type identifier
+    name: spaceRow.name,
+    description: spaceRow.description,
+    pricing: planList.map((p, i) => ({
+      type: p.name, // use the human-readable name as the type identifier
       price: Number(p.price_egp),
-      period: p.name as string,
-      highlight: i === Math.floor(arr.length / 2), // middle plan highlighted as default
+      period: p.name,
+      highlight: i === Math.floor(planList.length / 2), // middle plan highlighted as default
     })) as PricingItem[],
   }
 }

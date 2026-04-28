@@ -179,6 +179,47 @@ export interface Database {
           updated_at?: string
         }
       }
+      booking_leads: {
+        Row: {
+          id: string
+          customer_name: string
+          customer_phone: string
+          space_slug: string
+          pricing_label: string | null
+          preferred_date: string | null
+          notes: string | null
+          status: string
+          source: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          customer_name: string
+          customer_phone: string
+          space_slug: string
+          pricing_label?: string | null
+          preferred_date?: string | null
+          notes?: string | null
+          status?: string
+          source?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          customer_name?: string
+          customer_phone?: string
+          space_slug?: string
+          pricing_label?: string | null
+          preferred_date?: string | null
+          notes?: string | null
+          status?: string
+          source?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -214,6 +255,10 @@ export type PricingPlanUpdate = Database['public']['Tables']['pricing_plans']['U
 export type Booking = Database['public']['Tables']['bookings']['Row']
 export type BookingInsert = Database['public']['Tables']['bookings']['Insert']
 export type BookingUpdate = Database['public']['Tables']['bookings']['Update']
+
+export type BookingLead = Database['public']['Tables']['booking_leads']['Row']
+export type BookingLeadInsert = Database['public']['Tables']['booking_leads']['Insert']
+export type BookingLeadUpdate = Database['public']['Tables']['booking_leads']['Update']
 
 // Enhanced types with relationships
 export type BookingWithDetails = Booking & {

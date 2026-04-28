@@ -81,7 +81,6 @@ export async function POST(request: Request) {
     typeof notes === 'string' && notes.length <= 2000 ? notes.trim() || null : null
 
   // Insert via admin client (bypasses RLS, runs server-side only)
-  // @ts-ignore - Database generic preserved at runtime; types lost in inference
   const { data, error } = await supabase
     .from('booking_leads')
     .insert({
@@ -105,5 +104,5 @@ export async function POST(request: Request) {
     )
   }
 
-  return NextResponse.json({ success: true, leadId: (data as any)?.id ?? null })
+  return NextResponse.json({ success: true, leadId: data?.id ?? null })
 }
