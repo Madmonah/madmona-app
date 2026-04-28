@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, type FormEvent } from 'react'
+import { Suspense, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import {
   ArrowRight,
@@ -51,7 +51,7 @@ function buildWhatsAppMessage(opts: {
   preferredDate: string
   notes: string
 }): string {
-  const lines: string[] = ['أهلاً يا مضمونة 👋', '', 'حابب أحجز:']
+  const lines: string[] = ['أهلاً يا مضمونة', '', 'حابب أحجز:']
   lines.push(`• ${opts.spaceName}`)
   if (opts.pricingName) lines.push(`• ${opts.pricingName}`)
 
@@ -97,28 +97,25 @@ function BookingContent() {
   const spaceName = bookingData ? SPACE_NAMES[bookingData.spaceId] || 'مساحة عمل' : 'مساحة عمل'
   const pricingName = bookingData ? resolvePricingLabel(bookingData.pricingType) : ''
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  // Build the WhatsApp URL on every render so the link always reflects current
+  // form state. The actual navigation is handled by the browser via the <a href>
+  // element below — no JS-driven navigation, no popup blockers, no form submit
+  // edge cases. Fires the lead-save POST as a fire-and-forget side-effect on
+  // click; navigation continues regardless of whether that succeeds.
+  const message = buildWhatsAppMessage({
+    spaceName,
+    pricingName,
+    customerName,
+    customerPhone,
+    preferredDate,
+    notes,
+  })
+  const whatsappUrl = `https://wa.me/201002229982?text=${encodeURIComponent(message)}`
 
-    // Build the WhatsApp URL FIRST, before any async work.
-    // Mobile browsers (especially iOS Safari) block window.open / location
-    // changes that happen after `await` because they consider the user
-    // click "finished" by the time the async work resolves. We work around
-    // that by firing the API call as fire-and-forget with `keepalive: true`
-    // (which lets the request complete even after navigation), then doing
-    // a synchronous same-tab navigation to WhatsApp inside the click event.
-    const message = buildWhatsAppMessage({
-      spaceName,
-      pricingName,
-      customerName,
-      customerPhone,
-      preferredDate,
-      notes,
-    })
-    const whatsappUrl = `https://wa.me/201002229982?text=${encodeURIComponent(message)}`
-
-    // Save the lead to DB in the background — `keepalive: true` lets the
-    // request survive the page navigation that follows immediately.
+  const handleWhatsAppClick = () => {
+    // Fire-and-forget: keepalive lets the request complete after navigation.
+    // We do NOT preventDefault — the browser handles the <a href> navigation
+    // natively, which is the most reliable way to trigger WhatsApp on mobile.
     try {
       fetch('/api/booking-leads', {
         method: 'POST',
@@ -133,15 +130,11 @@ function BookingContent() {
         }),
         keepalive: true,
       }).catch(() => {
-        // Silent — never block the WhatsApp handoff on a DB failure
+        // Silent — don't block the WhatsApp handoff on a DB error
       })
     } catch {
       // Silent — same as above
     }
-
-    // Same-tab navigation works inside a sync click handler on every browser
-    // (including iOS Safari) without triggering popup blockers.
-    window.location.href = whatsappUrl
   }
 
   // Today's date in YYYY-MM-DD format for the date input min
@@ -178,8 +171,9 @@ function BookingContent() {
           )}
         </section>
 
-        {/* Booking Form */}
-        <form onSubmit={handleSubmit} className="space-y-5 mb-6">
+        {/* Booking Fields — note: NOT wrapped in a <form> because we don't want
+            HTML5 form-submit semantics. The CTA is a plain <a href> link. */}
+        <div className="space-y-5 mb-6">
           <div>
             <label className="text-sm font-medium text-gray-900 mb-2 block">
               <span className="flex items-center gap-2">
@@ -251,20 +245,23 @@ function BookingContent() {
             />
           </div>
 
-          {/* Submit — opens WhatsApp with prefilled message */}
-          <button
-            type="submit"
-            className="flex items-center justify-center gap-3 w-full bg-[#25D366] text-white py-4 px-6 rounded-xl font-semibold hover:bg-[#25D366]/90 transition-colors shadow-sm"
+          {/* WhatsApp CTA — plain anchor, native browser navigation.
+              Works on every browser (mobile + desktop) without popup blocker
+              issues. Fires the lead-save POST in the background via onClick. */}
+          <a
+            href={whatsappUrl}
+            onClick={handleWhatsAppClick}
+            className="flex items-center justify-center gap-3 w-full bg-[#25D366] text-white py-4 px-6 rounded-xl font-semibold hover:bg-[#25D366]/90 transition-colors shadow-sm no-underline"
           >
             <MessageCircle className="w-5 h-5" />
             <span>تأكيد الحجز عبر واتساب</span>
-          </button>
-        </form>
+          </a>
+        </div>
 
         {/* Alternate contact */}
         <a
           href="tel:01002229982"
-          className="flex items-center justify-center gap-3 w-full bg-[#1F5F3F] text-white py-4 px-6 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 transition-colors shadow-sm mb-6"
+          className="flex items-center justify-center gap-3 w-full bg-[#1F5F3F] text-white py-4 px-6 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 transition-colors shadow-sm mb-6 no-underline"
         >
           <Phone className="w-5 h-5" />
           <span>أو اتصل بنا — 01002229982</span>
