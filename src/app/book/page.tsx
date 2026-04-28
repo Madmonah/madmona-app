@@ -41,8 +41,7 @@ interface BookingData {
   pricingType: string
 }
 
-// Format the WhatsApp message — includes whatever data the user filled in,
-// gracefully omitting fields they skipped.
+// Format the WhatsApp message — gracefully omits empty fields.
 function buildWhatsAppMessage(opts: {
   spaceName: string
   pricingName: string
@@ -69,6 +68,8 @@ function buildWhatsAppMessage(opts: {
   lines.push('', 'ممكن نتواصل لتأكيد التفاصيل؟')
   return lines.join('\n')
 }
+
+const WHATSAPP_PHONE = '201002229982'
 
 function BookingContent() {
   const searchParams = useSearchParams()
@@ -97,11 +98,8 @@ function BookingContent() {
   const spaceName = bookingData ? SPACE_NAMES[bookingData.spaceId] || 'مساحة عمل' : 'مساحة عمل'
   const pricingName = bookingData ? resolvePricingLabel(bookingData.pricingType) : ''
 
-  // Build the WhatsApp URL on every render so the link always reflects current
-  // form state. The actual navigation is handled by the browser via the <a href>
-  // element below — no JS-driven navigation, no popup blockers, no form submit
-  // edge cases. Fires the lead-save POST as a fire-and-forget side-effect on
-  // click; navigation continues regardless of whether that succeeds.
+  // Build the message text — also exposed as a hidden input on the form,
+  // and as the fallback wa.me URL for the manual link below.
   const message = buildWhatsAppMessage({
     spaceName,
     pricingName,
@@ -110,12 +108,15 @@ function BookingContent() {
     preferredDate,
     notes,
   })
-  const whatsappUrl = `https://wa.me/201002229982?text=${encodeURIComponent(message)}`
+  const fallbackUrl = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(message)}`
 
-  const handleWhatsAppClick = () => {
-    // Fire-and-forget: keepalive lets the request complete after navigation.
-    // We do NOT preventDefault — the browser handles the <a href> navigation
-    // natively, which is the most reliable way to trigger WhatsApp on mobile.
+  // The form's onSubmit fires the lead-save POST in the background. We do NOT
+  // call e.preventDefault — letting the form submit naturally is the whole
+  // point, because that's the most universally supported navigation mechanism
+  // (HTML form action) and can't be blocked by popup blockers, JS errors,
+  // navigation interceptors, or async timing issues. The browser performs
+  // the navigation to wa.me itself, with no JavaScript involvement.
+  const handleSubmit = () => {
     try {
       fetch('/api/booking-leads', {
         method: 'POST',
@@ -130,10 +131,10 @@ function BookingContent() {
         }),
         keepalive: true,
       }).catch(() => {
-        // Silent — don't block the WhatsApp handoff on a DB error
+        // Silent — never block the form submit
       })
     } catch {
-      // Silent — same as above
+      // Silent
     }
   }
 
@@ -171,9 +172,21 @@ function BookingContent() {
           )}
         </section>
 
-        {/* Booking Fields — note: NOT wrapped in a <form> because we don't want
-            HTML5 form-submit semantics. The CTA is a plain <a href> link. */}
-        <div className="space-y-5 mb-6">
+        {/* Native HTML form: submitting it navigates the browser to
+            https://wa.me/{phone}?text={message}. This is the most reliable
+            way to trigger navigation across every browser and every popup-
+            blocker setting — no JS-driven navigation, no <a target=_blank>,
+            no window.open. The hidden `text` input becomes the ?text= query
+            param on submission. The lead-save POST is fired in onSubmit. */}
+        <form
+          action={`https://wa.me/${WHATSAPP_PHONE}`}
+          method="get"
+          onSubmit={handleSubmit}
+          className="space-y-5 mb-6"
+        >
+          {/* Hidden field — becomes ?text= on the wa.me URL */}
+          <input type="hidden" name="text" value={message} />
+
           <div>
             <label className="text-sm font-medium text-gray-900 mb-2 block">
               <span className="flex items-center gap-2">
@@ -245,24 +258,25 @@ function BookingContent() {
             />
           </div>
 
-          {/* WhatsApp CTA — plain anchor with target=_blank.
-              Opening WhatsApp in a new tab is the most compatible approach
-              across all browsers (especially Chrome on Android, which can
-              silently block same-tab redirects to wa.me under certain
-              site-permission states). The new tab triggers the WhatsApp
-              intent reliably; the user's form data is preserved on the
-              original tab. Fires the lead-save POST in the background. */}
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={handleWhatsAppClick}
-            className="flex items-center justify-center gap-3 w-full bg-[#25D366] text-white py-4 px-6 rounded-xl font-semibold hover:bg-[#25D366]/90 transition-colors shadow-sm no-underline"
+          {/* Submit button — natively submits the form to wa.me */}
+          <button
+            type="submit"
+            className="flex items-center justify-center gap-3 w-full bg-[#25D366] text-white py-4 px-6 rounded-xl font-semibold hover:bg-[#25D366]/90 transition-colors shadow-sm"
           >
             <MessageCircle className="w-5 h-5" />
             <span>تأكيد الحجز عبر واتساب</span>
-          </a>
-        </div>
+          </button>
+        </form>
+
+        {/* Fallback link (in case form submission is blocked by an extension
+            or unusual browser config). Pure <a href> with the same wa.me URL.
+            User can long-press to copy the link if all else fails. */}
+        <a
+          href={fallbackUrl}
+          className="block text-center text-xs text-gray-500 hover:text-[#1F5F3F] mb-6 underline"
+        >
+          مش بيفتح؟ اضغط هنا
+        </a>
 
         {/* Alternate contact */}
         <a
