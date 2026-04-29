@@ -27,7 +27,20 @@ export async function GET(request: Request) {
     console.error('[admin/units] fetch error:', error)
     return NextResponse.json({ error: 'Failed' }, { status: 500 })
   }
-  return NextResponse.json({ units: data ?? [] })
+
+  // Flatten supplier_name onto each row so the client doesn't need to dig into
+  // the nested join object. Cheaper to do once on the server than in every
+  // render of the admin units list.
+  type UnitRow = {
+    supplier?: { business_name?: string } | null
+    [key: string]: unknown
+  }
+  const flattened = ((data ?? []) as UnitRow[]).map((row) => ({
+    ...row,
+    supplier_name: row.supplier?.business_name ?? null,
+  }))
+
+  return NextResponse.json({ units: flattened })
 }
 
 // POST /api/admin/units — admin can create units on behalf of any supplier

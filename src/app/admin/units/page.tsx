@@ -15,6 +15,8 @@ import {
   Power,
   PowerOff,
   Edit,
+  Plus,
+  Image as ImageIcon,
 } from 'lucide-react'
 
 // ============================================================
@@ -180,6 +182,13 @@ export default function AdminUnitsPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Link
+              href="/admin/units/new"
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90 no-underline"
+            >
+              <Plus className="w-4 h-4" />
+              وحدة جديدة
+            </Link>
             <button
               onClick={() => tryFetch(password)}
               disabled={loading}
@@ -230,6 +239,7 @@ export default function AdminUnitsPage() {
             {filtered.map((u) => {
               const meta = CATEGORY_META[u.category_slug] || CATEGORY_META.workstation
               const Icon = meta.icon
+              const firstPhoto = u.photo_urls && u.photo_urls.length > 0 ? u.photo_urls[0] : null
               return (
                 <div
                   key={u.id}
@@ -238,9 +248,18 @@ export default function AdminUnitsPage() {
                   }`}
                 >
                   <div className="flex items-start gap-3 mb-3">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#1F5F3F]/10 flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-[#1F5F3F]" />
-                    </div>
+                    {firstPhoto ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={firstPhoto}
+                        alt={u.name_ar}
+                        className="flex-shrink-0 w-12 h-12 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-[#1F5F3F]/10 flex items-center justify-center">
+                        <Icon className="w-5 h-5 text-[#1F5F3F]" />
+                      </div>
+                    )}
                     <div className="flex-1">
                       <h3 className="font-bold text-gray-900">{u.name_ar}</h3>
                       <p className="text-xs text-gray-500 mt-0.5">{meta.label}</p>
@@ -273,7 +292,15 @@ export default function AdminUnitsPage() {
                   </div>
 
                   <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                    <span className="text-xs text-gray-500">السعة: {u.capacity} {u.capacity > 1 ? 'أشخاص' : 'شخص'}</span>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <span>السعة: {u.capacity} {u.capacity > 1 ? 'أشخاص' : 'شخص'}</span>
+                      {u.photo_urls && u.photo_urls.length > 0 && (
+                        <span className="flex items-center gap-1 text-[#1F5F3F]">
+                          <ImageIcon className="w-3 h-3" />
+                          {u.photo_urls.length}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => toggleActive(u.id, u.is_active)}
@@ -297,12 +324,11 @@ export default function AdminUnitsPage() {
                         )}
                       </button>
                       <Link
-                        href={`/units/${u.id}`}
-                        target="_blank"
-                        className="px-3 py-1.5 bg-[#1F5F3F]/10 text-[#1F5F3F] rounded-lg text-xs font-medium hover:bg-[#1F5F3F]/20 flex items-center gap-1"
+                        href={`/admin/units/${u.id}/edit`}
+                        className="px-3 py-1.5 bg-[#1F5F3F] text-white rounded-lg text-xs font-medium hover:bg-[#1F5F3F]/90 flex items-center gap-1"
                       >
                         <Edit className="w-3 h-3" />
-                        عرض
+                        تعديل
                       </Link>
                     </div>
                   </div>
