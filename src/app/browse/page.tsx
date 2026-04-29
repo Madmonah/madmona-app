@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
@@ -76,7 +76,7 @@ function formatStartingPrice(unit: Unit): string {
   return `من ${best.price.toLocaleString('ar-EG')} ${best.suffix}`
 }
 
-export default function BrowsePage() {
+function BrowsePageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [units, setUnits] = useState<Unit[]>([])
@@ -258,5 +258,15 @@ export default function BrowsePage() {
         )}
       </main>
     </div>
+  )
+}
+
+// Wrap in Suspense — Next.js requires this for any client component
+// that calls useSearchParams() so it can statically pre-render the page.
+export default function BrowsePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FAFAF7]" />}>
+      <BrowsePageInner />
+    </Suspense>
   )
 }
