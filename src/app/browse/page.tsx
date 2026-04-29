@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   ArrowRight,
   MapPin,
@@ -78,10 +78,21 @@ function formatStartingPrice(unit: Unit): string {
 
 export default function BrowsePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [units, setUnits] = useState<Unit[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Hydrate selected category from URL on first load.
+  // This lets the home page deep-link via /browse?category=workstation.
+  useEffect(() => {
+    const cat = searchParams.get('category')
+    if (cat && STATIC_CATEGORIES.some((c) => c.slug === cat)) {
+      setSelectedCategory(cat)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     setLoading(true)
