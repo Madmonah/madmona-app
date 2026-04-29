@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Star, Users, Coffee, Clock, MapPin, Phone, MessageCircle, ArrowLeft, Calendar } from 'lucide-react'
+import { Star, Users, Coffee, Clock, MapPin, Phone, MessageCircle, ArrowLeft, Calendar, Search, Building2 } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -137,6 +137,45 @@ export default function HomePage() {
               <h3 className="font-semibold text-gray-900 mb-1">المكتب الخاص</h3>
               <p className="text-xs text-gray-600">من ١٢٠٠٠ ج.م/شهر</p>
               <p className="text-xs text-gray-500 mt-1">حتى ٨ أشخاص</p>
+            </Link>
+          </div>
+        </section>
+
+        {/*
+          Marketplace section — explore all spaces (Madmona + future suppliers)
+          and the supplier signup CTA. Shown after Madmona's own spaces because
+          most visitors are coming for Madmona, but those who want a different
+          venue (or to list their own) can find it here.
+        */}
+        <section className="mb-8">
+          <h3 className="text-sm font-medium text-gray-500 mb-3">المنصة</h3>
+          <div className="grid grid-cols-1 gap-3">
+            <Link
+              href="/browse"
+              className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 hover:border-[#1F5F3F]/30 transition-all no-underline active:scale-[0.99]"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#1F5F3F]/10 flex items-center justify-center flex-shrink-0">
+                <Search className="w-5 h-5 text-[#1F5F3F]" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-gray-900 text-sm">استكشف كل المساحات</p>
+                <p className="text-xs text-gray-600 mt-0.5">مساحات عمل في كل أنحاء القاهرة</p>
+              </div>
+              <ArrowLeft className="w-4 h-4 text-gray-400" />
+            </Link>
+
+            <Link
+              href="/supplier/signup"
+              className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 hover:border-[#B8860B]/40 transition-all no-underline active:scale-[0.99]"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#B8860B]/10 flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-5 h-5 text-[#B8860B]" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-gray-900 text-sm">عندك مساحة عمل؟ انضم لينا</p>
+                <p className="text-xs text-gray-600 mt-0.5">سجّل واعرض مساحتك على آلاف العملاء</p>
+              </div>
+              <ArrowLeft className="w-4 h-4 text-gray-400" />
             </Link>
           </div>
         </section>
