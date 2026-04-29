@@ -84,7 +84,7 @@ export default function HomePage() {
 
           {/* Indoor Coworking */}
           <Link
-            href="/spaces/indoor-coworking"
+            href="/reserve/indoor-coworking"
             className="block bg-white rounded-xl border border-gray-100 hover:border-[#1F5F3F]/30 hover:shadow-sm transition-all p-4 mb-3 no-underline active:scale-[0.99]"
           >
             <div className="flex items-start justify-between mb-3">
@@ -115,7 +115,7 @@ export default function HomePage() {
           <div className="grid grid-cols-2 gap-3 mb-3">
             {/* Outdoor Garden */}
             <Link
-              href="/spaces/outdoor-garden"
+              href="/reserve/outdoor-garden"
               className="block bg-white rounded-xl border border-gray-100 hover:border-[#1F5F3F]/30 transition-all p-4 no-underline active:scale-[0.99]"
             >
               <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center mb-3">
@@ -128,7 +128,7 @@ export default function HomePage() {
 
             {/* Private Office */}
             <Link
-              href="/spaces/private-office"
+              href="/reserve/private-office"
               className="block bg-white rounded-xl border border-gray-100 hover:border-[#1F5F3F]/30 transition-all p-4 no-underline active:scale-[0.99]"
             >
               <div className="w-9 h-9 rounded-lg bg-[#B8860B]/10 flex items-center justify-center mb-3">

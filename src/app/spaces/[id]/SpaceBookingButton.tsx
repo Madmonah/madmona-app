@@ -21,26 +21,10 @@ export default function SpaceBookingButton({ spaceId, pricing }: Props) {
   const [selectedType, setSelectedType] = useState<string>('')
 
   const handleBookNow = () => {
-    // Meeting Room uses the real-booking flow with availability calendar +
-    // payment (cash on arrival or InstaPay). Other spaces still use the
-    // lightweight WhatsApp lead-capture form on /book.
-    if (spaceId === 'meeting-room') {
-      router.push('/reserve/meeting-room')
-      return
-    }
-
-    const finalType =
-      selectedType ||
-      pricing.find((p) => p.highlight)?.type ||
-      pricing[0]?.type ||
-      ''
-
-    const bookingData = {
-      spaceId,
-      pricingType: finalType,
-    }
-
-    router.push(`/book?space=${encodeURIComponent(JSON.stringify(bookingData))}`)
+    // All four spaces now use the real-booking flow (calendar + payment).
+    // No more WhatsApp lead-capture intermediary.
+    const route = `/reserve/${spaceId}`
+    router.push(route)
   }
 
   if (pricing.length === 0) {
