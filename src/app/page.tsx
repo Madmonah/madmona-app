@@ -1,4 +1,5 @@
-import { Star, Users, Coffee, Clock, MapPin, Phone, MessageCircle } from 'lucide-react'
+import Link from 'next/link'
+import { Star, Users, Coffee, Clock, MapPin, Phone, MessageCircle, ArrowLeft, Calendar } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -21,7 +22,7 @@ export default function HomePage() {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             مساحة العمل المشترك مضمونة
           </h2>
-          
+
           {/* Free Trial Banner */}
           <div className="bg-gradient-to-r from-[#B8860B]/10 to-[#C2410C]/10 rounded-xl p-4 mb-6">
             <div className="flex items-center gap-3">
@@ -36,74 +37,107 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Featured Service - Indoor */}
+        {/*
+          Primary CTA — book a meeting room online.
+          This is the only space with full online booking (calendar + payment),
+          so we surface it as the hero action above all other cards.
+        */}
         <section className="mb-6">
-          <div className="bg-[#1F5F3F] text-white rounded-xl p-6 hover:bg-[#1F5F3F]/90 transition-colors">
+          <Link
+            href="/reserve/meeting-room"
+            className="block bg-[#1F5F3F] text-white rounded-2xl p-6 hover:bg-[#1F5F3F]/95 transition-colors active:scale-[0.99] no-underline"
+          >
             <div className="flex items-start justify-between mb-4">
-              <div>
-                <span className="text-xs text-white/80 font-medium tracking-wide">الأكثر شعبية</span>
-                <h3 className="text-xl font-semibold mt-1 mb-2">المساحة المشتركة الداخلية</h3>
-                <p className="text-sm text-white/90">مكيف · واي فاي عالي السرعة · كافيه</p>
-              </div>
-              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-                <Coffee className="w-6 h-6" />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-white/15 rounded-lg p-3">
-                <p className="text-xs text-white/80">ساعة</p>
-                <p className="font-semibold">٥٠ ج.م</p>
-              </div>
-              <div className="bg-white/15 rounded-lg p-3">
-                <p className="text-xs text-white/80">يوم</p>
-                <p className="font-semibold">١٢٠ ج.م</p>
-              </div>
-              <div className="bg-white/15 rounded-lg p-3">
-                <p className="text-xs text-white/80">شهر</p>
-                <p className="font-semibold">٢٠٠٠ ج.م</p>
+              <div className="flex-1">
+                <span className="inline-flex items-center gap-1.5 text-xs bg-[#B8860B] text-white px-2.5 py-1 rounded-full font-medium tracking-wide mb-3">
+                  <Calendar className="w-3 h-3" />
+                  جديد
+                </span>
+                <h3 className="text-xl font-semibold mb-2">احجز غرفة الاجتماعات أونلاين</h3>
+                <p className="text-sm text-white/85 leading-relaxed">
+                  اختار وقتك، ادفع كاش أو InstaPay، تأكيد فوري على واتساب.
+                </p>
               </div>
             </div>
-          </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="bg-white/15 rounded-lg p-3">
+                <p className="text-xs text-white/75">حتى ٤ أشخاص</p>
+                <p className="font-semibold mt-0.5">٣٠٠ ج.م/ساعة</p>
+              </div>
+              <div className="bg-white/15 rounded-lg p-3">
+                <p className="text-xs text-white/75">حتى ٨ أشخاص</p>
+                <p className="font-semibold mt-0.5">٥٠٠ ج.م/ساعة</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between bg-white text-[#1F5F3F] rounded-xl py-3 px-4 font-semibold">
+              <span>ابدأ الحجز دلوقتي</span>
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+          </Link>
         </section>
 
-        {/* Other Services Grid */}
+        {/* Other Spaces — these still use the WhatsApp lead-capture flow */}
         <section className="mb-6">
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-white rounded-xl border border-gray-100 hover:border-[#1F5F3F]/30 transition-colors p-4">
-              <div className="w-9 h-9 rounded-lg bg-[#1F5F3F]/10 flex items-center justify-center mb-3">
-                <Users className="w-5 h-5 text-[#1F5F3F]" />
+          <h3 className="text-sm font-medium text-gray-500 mb-3">باقي المساحات</h3>
+
+          {/* Indoor Coworking */}
+          <Link
+            href="/spaces/indoor-coworking"
+            className="block bg-white rounded-xl border border-gray-100 hover:border-[#1F5F3F]/30 hover:shadow-sm transition-all p-4 mb-3 no-underline active:scale-[0.99]"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 mb-1">المساحة المشتركة الداخلية</h3>
+                <p className="text-xs text-gray-600">مكيف · واي فاي عالي السرعة · كافيه</p>
               </div>
-              <h3 className="font-semibold text-gray-900 mb-1">غرفة الاجتماعات</h3>
-              <p className="text-xs text-gray-600">من ٣٠٠ ج.م/ساعة</p>
-              <p className="text-xs text-gray-500 mt-1">حتى ٨ أشخاص</p>
+              <div className="w-10 h-10 rounded-xl bg-[#1F5F3F]/10 flex items-center justify-center flex-shrink-0">
+                <Coffee className="w-5 h-5 text-[#1F5F3F]" />
+              </div>
             </div>
-            
-            <div className="bg-white rounded-xl border border-gray-100 hover:border-[#1F5F3F]/30 transition-colors p-4">
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-gray-50 rounded-lg p-2">
+                <p className="text-[10px] text-gray-500">ساعة</p>
+                <p className="text-sm font-semibold text-gray-900 mt-0.5">٥٠ ج.م</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-2">
+                <p className="text-[10px] text-gray-500">يوم</p>
+                <p className="text-sm font-semibold text-gray-900 mt-0.5">١٢٠ ج.م</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-2">
+                <p className="text-[10px] text-gray-500">شهر</p>
+                <p className="text-sm font-semibold text-gray-900 mt-0.5">٢٠٠٠ ج.م</p>
+              </div>
+            </div>
+          </Link>
+
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            {/* Outdoor Garden */}
+            <Link
+              href="/spaces/outdoor-garden"
+              className="block bg-white rounded-xl border border-gray-100 hover:border-[#1F5F3F]/30 transition-all p-4 no-underline active:scale-[0.99]"
+            >
               <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center mb-3">
-                <Coffee className="w-5 h-5 text-green-600" />
+                <Coffee className="w-5 h-5 text-green-700" />
               </div>
               <h3 className="font-semibold text-gray-900 mb-1">الجنينة</h3>
               <p className="text-xs text-gray-600">٦٥ ج.م/يوم</p>
               <p className="text-xs text-gray-500 mt-1">في الهواء الطلق</p>
-            </div>
-          </div>
+            </Link>
 
-          {/* Private Office - Wide Card */}
-          <div className="bg-white rounded-xl border border-gray-100 hover:border-[#1F5F3F]/30 transition-colors p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#B8860B]/10 flex items-center justify-center flex-shrink-0">
+            {/* Private Office */}
+            <Link
+              href="/spaces/private-office"
+              className="block bg-white rounded-xl border border-gray-100 hover:border-[#1F5F3F]/30 transition-all p-4 no-underline active:scale-[0.99]"
+            >
+              <div className="w-9 h-9 rounded-lg bg-[#B8860B]/10 flex items-center justify-center mb-3">
                 <Users className="w-5 h-5 text-[#B8860B]" />
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 mb-1">المكتب الخاص</h3>
-                <p className="text-xs text-gray-600">من ١٢٠٠٠ ج.م/شهر</p>
-                <p className="text-xs text-gray-500">خصوصية تامة للفرق</p>
-              </div>
-              <div className="text-right text-xs text-gray-500">
-                حتى ٨ أشخاص
-              </div>
-            </div>
+              <h3 className="font-semibold text-gray-900 mb-1">المكتب الخاص</h3>
+              <p className="text-xs text-gray-600">من ١٢٠٠٠ ج.م/شهر</p>
+              <p className="text-xs text-gray-500 mt-1">حتى ٨ أشخاص</p>
+            </Link>
           </div>
         </section>
 
@@ -111,11 +145,11 @@ export default function HomePage() {
         <section className="mb-8">
           <h3 className="font-semibold text-gray-900 mb-3">تواصل معنا</h3>
           <div className="grid grid-cols-2 gap-3">
-            <a 
+            <a
               href="https://wa.me/201002229982"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center p-4 bg-[#25D366]/10 rounded-xl hover:bg-[#25D366]/20 transition-colors"
+              className="flex flex-col items-center p-4 bg-[#25D366]/10 rounded-xl hover:bg-[#25D366]/20 transition-colors no-underline"
             >
               <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center mb-2">
                 <MessageCircle className="w-5 h-5 text-white" />
@@ -124,15 +158,15 @@ export default function HomePage() {
               <p className="text-xs text-gray-600 mt-1">رد فوري</p>
             </a>
 
-            <a 
+            <a
               href="tel:01002229982"
-              className="flex flex-col items-center p-4 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+              className="flex flex-col items-center p-4 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors no-underline"
             >
               <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center mb-2">
                 <Phone className="w-5 h-5 text-white" />
               </div>
               <p className="font-medium text-gray-900 text-sm">اتصل بنا</p>
-              <p className="text-xs text-gray-600 mt-1 dir-ltr">01002229982</p>
+              <p className="text-xs text-gray-600 mt-1" dir="ltr">01002229982</p>
             </a>
           </div>
         </section>
@@ -150,15 +184,15 @@ export default function HomePage() {
                   <p className="text-xs text-gray-600">بجوار Modern School</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Clock className="w-4 h-4 text-gray-600 flex-shrink-0" />
                 <p className="text-sm text-gray-900">٢٤/٧ · Smart Lock للأعضاء</p>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <p className="text-sm text-gray-900 dir-ltr">01002229982</p>
+                <p className="text-sm text-gray-900" dir="ltr">01002229982</p>
               </div>
             </div>
           </div>
@@ -167,7 +201,6 @@ export default function HomePage() {
         <div className="text-center text-xs text-gray-500 py-4 border-t border-gray-100">
           <p className="font-medium text-[#1F5F3F] mb-1">مضمونة</p>
           <p>Your space, guaranteed</p>
-          <p className="mt-2 text-[#B8860B]">جاهز للنشر على madmonacairo.com 🚀</p>
         </div>
       </main>
     </div>
