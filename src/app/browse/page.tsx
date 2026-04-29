@@ -17,6 +17,8 @@ import {
 } from 'lucide-react'
 
 // Marketplace browse page — anyone can come here, filter, and book.
+// Wrapped in <Suspense> at the bottom because useSearchParams() requires it
+// for static pre-rendering in Next.js 14/15.
 
 interface Supplier {
   id: string
