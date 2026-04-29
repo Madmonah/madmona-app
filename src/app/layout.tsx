@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: '%s | مضمونة',
   },
   description:
-    'مضمونة - مساحة عمل بوتيك في مصر الجديدة. مساحات داخلية وحديقة، مكاتب خاصة، وغرف اجتماعات. مساحتك اللي بتخصك.',
+    'مضمونة - مساحة عمل بوتيك في مصر الجديدة، القاهرة. مساحات عمل مشتركة، مكاتب خاصة، وغرف اجتماعات. مساحتك اللي بتخصك.',
   keywords: [
     'مضمونة',
     'madmona',
@@ -39,6 +39,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'Madmona' }],
   creator: 'Madmona',
   publisher: 'Madmona',
+  manifest: '/manifest.json',
   metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: SITE_URL,
@@ -95,11 +96,25 @@ const businessJsonLd = {
   telephone: '+201002229982',
   address: {
     '@type': 'PostalAddress',
-    streetAddress: '٧ شارع سليمان، متفرع من عبد الحميد بدوي',
+    streetAddress: '٧ شارع سليمان عظمي',
     addressLocality: 'مصر الجديدة',
     addressRegion: 'القاهرة',
+    postalCode: '4473103',
     addressCountry: 'EG',
   },
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: 30.1246693,
+    longitude: 31.36446,
+  },
+  openingHoursSpecification: [
+    {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+      opens: '09:00',
+      closes: '23:00',
+    },
+  ],
   priceRange: 'EGP',
   image: `${SITE_URL}/og-image.png`,
   sameAs: ['https://www.instagram.com/madmona.space'],

@@ -115,7 +115,7 @@ export async function PATCH(request: Request) {
   if (typeof id !== 'string') return NextResponse.json({ error: 'id required' }, { status: 400 })
 
   const allowedFields = [
-    'name_ar', 'description_ar', 'photo_urls', 'capacity',
+    'category_slug', 'name_ar', 'description_ar', 'photo_urls', 'capacity',
     'price_hourly', 'price_daily', 'price_package_10', 'price_monthly',
     'operating_start_hour', 'operating_end_hour', 'is_active',
   ]

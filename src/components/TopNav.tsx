@@ -43,9 +43,14 @@ export default function TopNav() {
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 no-underline flex-shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-[#1F5F3F] flex items-center justify-center text-white font-bold">
-              م
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/icon-192.png"
+              alt="مضمونة"
+              className="w-9 h-9 rounded-lg"
+              width={36}
+              height={36}
+            />
             <div className="hidden sm:block">
               <p className="font-bold text-[#1F5F3F] text-base leading-none">مضمونة</p>
               <p className="text-[10px] text-gray-500 tracking-wider mt-0.5">MADMONA</p>
@@ -142,9 +147,14 @@ export default function TopNav() {
           <div className="absolute top-0 right-0 bottom-0 w-72 bg-white shadow-xl flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#1F5F3F] flex items-center justify-center text-white font-bold">
-                  م
-                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/icon-192.png"
+                  alt="مضمونة"
+                  className="w-8 h-8 rounded-lg"
+                  width={32}
+                  height={32}
+                />
                 <p className="font-bold text-[#1F5F3F]">مضمونة</p>
               </div>
               <button

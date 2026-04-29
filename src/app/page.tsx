@@ -286,8 +286,8 @@ export default function HomePage() {
             </div>
             <div className="flex-1">
               <p className="font-bold text-gray-900">الموقع</p>
-              <p className="text-xs text-gray-500 mt-0.5">٧ شارع سليمان، مصر الجديدة</p>
-              <p className="text-xs text-gray-500">بجوار Modern School</p>
+              <p className="text-xs text-gray-500 mt-0.5">٧ شارع سليمان عظمي، مصر الجديدة</p>
+              <p className="text-xs text-gray-500">القاهرة · يومياً ٩ ص → ١١ م</p>
             </div>
           </div>
         </section>

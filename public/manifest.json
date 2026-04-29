@@ -1,7 +1,7 @@
 {
   "name": "مضمونة - احجز مساحتك",
   "short_name": "مضمونة",
-  "description": "احجز مساحة العمل بتاعتك في مضمونة - coworking space في قلب مدينة نصر",
+  "description": "احجز مساحة العمل بتاعتك في مضمونة - coworking space في مصر الجديدة، القاهرة",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "/",
@@ -14,16 +14,24 @@
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/icon-192.png",
+      "src": "/icon-maskable-192.png",
       "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
@@ -31,28 +39,18 @@
   "categories": ["business", "productivity", "utilities"],
   "shortcuts": [
     {
-      "name": "حجز جديد",
-      "short_name": "حجز",
-      "description": "احجز مساحة جديدة",
-      "url": "/?action=book",
-      "icons": [
-        {
-          "src": "/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
+      "name": "استكشف المساحات",
+      "short_name": "استكشف",
+      "description": "استكشف كل المساحات المتاحة",
+      "url": "/browse",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "حجوزاتي",
-      "short_name": "حجوزاتي", 
-      "description": "شوف حجوزاتك",
-      "url": "/bookings",
-      "icons": [
-        {
-          "src": "/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
+      "name": "احجز غرفة اجتماعات",
+      "short_name": "اجتماعات",
+      "description": "احجز غرفة اجتماعات فوراً",
+      "url": "/reserve/meeting-room",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ],
   "related_applications": [],
