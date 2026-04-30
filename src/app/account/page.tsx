@@ -5,16 +5,15 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
-  ArrowRight, Calendar, Building2, Settings, ShoppingBag,
+  ArrowRight, Calendar, Building2, ShoppingBag,
   LogOut, Loader2, Lock, User, Phone, Crown, ChevronLeft,
-  CheckCircle, Clock, AlertCircle, FolderTree,
+  CheckCircle, Clock, AlertCircle, FolderTree, Edit2, Check, X,
 } from 'lucide-react'
 
 // ============================================================================
 // /account
 // 
-// Customer/supplier/admin account hub. Single landing page after login that
-// adapts to the user's role and surfaces all relevant actions in one place.
+// Customer/supplier/admin account hub.
 // ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'ready'
@@ -40,6 +39,12 @@ export default function AccountPage() {
   const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [bookingsCount, setBookingsCount] = useState(0)
   const [signingOut, setSigningOut] = useState(false)
+
+  // Inline name editing
+  const [editingName, setEditingName] = useState(false)
+  const [newName, setNewName] = useState('')
+  const [savingName, setSavingName] = useState(false)
+  const [nameError, setNameError] = useState<string | null>(null)
 
   useEffect(() => {
     const init = async () => {
@@ -85,6 +90,40 @@ export default function AccountPage() {
     await supabaseBrowser.auth.signOut()
     router.push('/')
     router.refresh()
+  }
+
+  const startEditingName = () => {
+    setNewName(profile?.full_name || '')
+    setNameError(null)
+    setEditingName(true)
+  }
+
+  const saveName = async () => {
+    if (!profile) return
+    const trimmed = newName.trim()
+    if (!trimmed) {
+      setNameError('الاسم مينفعش يبقى فاضي')
+      return
+    }
+    if (trimmed.length > 100) {
+      setNameError('الاسم طويل جداً')
+      return
+    }
+    setSavingName(true)
+    setNameError(null)
+    // @ts-expect-error
+    const { error } = await supabaseBrowser
+      .from('profiles')
+      .update({ full_name: trimmed })
+      .eq('id', profile.id)
+
+    setSavingName(false)
+    if (error) {
+      setNameError('فشل الحفظ: ' + error.message)
+      return
+    }
+    setProfile({ ...profile, full_name: trimmed })
+    setEditingName(false)
   }
 
   if (stage === 'loading') {
@@ -137,27 +176,69 @@ export default function AccountPage() {
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
         {/* Profile card */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-start gap-3 mb-2">
             <div className="w-14 h-14 bg-[#1F5F3F]/10 rounded-full flex items-center justify-center flex-shrink-0">
               <User className="w-7 h-7 text-[#1F5F3F]" />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="font-bold text-gray-900 truncate">
-                {profile?.full_name || 'مستخدم'}
-              </h2>
-              <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5" dir="ltr">
-                <Phone className="w-3 h-3" />
-                {profile?.phone}
-              </p>
+              {editingName ? (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    maxLength={100}
+                    autoFocus
+                    className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                    placeholder="الاسم بالكامل"
+                  />
+                  {nameError && <p className="text-xs text-red-600">{nameError}</p>}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={saveName}
+                      disabled={savingName}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-[#1F5F3F] text-white rounded-lg text-xs font-semibold disabled:opacity-50"
+                    >
+                      {savingName ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                      حفظ
+                    </button>
+                    <button
+                      onClick={() => { setEditingName(false); setNameError(null) }}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium"
+                    >
+                      <X className="w-3 h-3" />
+                      إلغاء
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <h2 className="font-bold text-gray-900 truncate">
+                      {profile?.full_name || 'مستخدم'}
+                    </h2>
+                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5" dir="ltr">
+                      <Phone className="w-3 h-3" />
+                      {profile?.phone}
+                    </p>
+                  </div>
+                  <button
+                    onClick={startEditingName}
+                    className="p-1.5 text-gray-400 hover:text-[#1F5F3F] hover:bg-gray-50 rounded-lg flex-shrink-0"
+                    title="تعديل الاسم"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
-            {isAdmin && (
-              <span className="bg-[#B8860B]/10 text-[#B8860B] text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+            {isAdmin && !editingName && (
+              <span className="bg-[#B8860B]/10 text-[#B8860B] text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 flex-shrink-0">
                 <Crown className="w-3 h-3" /> أدمن
               </span>
             )}
           </div>
 
-          {/* Supplier status badges */}
           {supplier && (
             <div className={`mt-3 p-3 rounded-xl border text-sm ${
               isApprovedSupplier ? 'bg-green-50 border-green-200 text-green-900' :
