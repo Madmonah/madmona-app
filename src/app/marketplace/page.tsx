@@ -23,16 +23,16 @@ interface Category {
 
 interface Listing {
   id: string
-  title_ar: string
+  title: string
   slug: string
   city: string | null
   district: string | null
-  starting_price: number | string
   rating: number | null
   reviews_count: number
   status: string
   category: { name_ar: string; icon: string | null; slug: string } | null
-  primary_photo: { photo_url: string }[] | null
+  photos: { url: string; is_primary: boolean }[] | null
+  pricing: { price: number | string; is_active: boolean }[] | null
 }
 
 function MarketplaceBrowseContent() {
@@ -45,7 +45,6 @@ function MarketplaceBrowseContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(initialCategorySlug)
 
-  // Load root categories (for the chip filter)
   useEffect(() => {
     const load = async () => {
       // @ts-expect-error
@@ -60,12 +59,10 @@ function MarketplaceBrowseContent() {
     load()
   }, [])
 
-  // Load listings whenever filter changes
   useEffect(() => {
     const load = async () => {
       setLoading(true)
 
-      // Resolve category filter (slug → array of ids including sub-categories)
       let categoryIds: string[] | null = null
       if (selectedCategorySlug) {
         // @ts-expect-error
@@ -77,10 +74,8 @@ function MarketplaceBrowseContent() {
 
         if (rootCat) {
           if (rootCat.parent_id) {
-            // It's a sub-category — just use its id
             categoryIds = [rootCat.id]
           } else {
-            // It's a root — include all its sub-categories too
             // @ts-expect-error
             const { data: subs } = await supabaseBrowser
               .from('categories')
@@ -91,14 +86,14 @@ function MarketplaceBrowseContent() {
         }
       }
 
-      // Build listings query
       // @ts-expect-error
       let query = supabaseBrowser
         .from('listings')
         .select(`
-          id, title_ar, slug, city, district, starting_price, rating, reviews_count, status,
+          id, title, slug, city, district, rating, reviews_count, status,
           category:categories(name_ar, icon, slug),
-          primary_photo:listing_photos(photo_url, is_primary)
+          photos:listing_photos(url, is_primary),
+          pricing:pricing_rules(price, is_active)
         `)
         .eq('status', 'published')
         .order('created_at', { ascending: false })
@@ -108,22 +103,11 @@ function MarketplaceBrowseContent() {
         query = query.in('category_id', categoryIds)
       }
       if (searchQuery.trim()) {
-        query = query.ilike('title_ar', `%${searchQuery.trim()}%`)
+        query = query.ilike('title', `%${searchQuery.trim()}%`)
       }
 
       const { data } = await query
-
-      // Pick primary photo (or first photo) for each listing
-      const processed = (data || []).map((l: any) => {
-        const photos = l.primary_photo || []
-        const primary = photos.find((p: any) => p.is_primary) || photos[0]
-        return {
-          ...l,
-          primary_photo: primary ? [primary] : null,
-        }
-      })
-
-      setListings(processed as Listing[])
+      setListings((data || []) as Listing[])
       setLoading(false)
     }
     load()
@@ -133,7 +117,6 @@ function MarketplaceBrowseContent() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3 mb-3">
@@ -143,7 +126,6 @@ function MarketplaceBrowseContent() {
             <h1 className="text-lg font-bold text-gray-900">Madmona Marketplace</h1>
           </div>
 
-          {/* Search */}
           <div className="relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -155,7 +137,6 @@ function MarketplaceBrowseContent() {
             />
           </div>
 
-          {/* Category chips */}
           <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
             <button
               onClick={() => setSelectedCategorySlug(null)}
@@ -204,7 +185,15 @@ function MarketplaceBrowseContent() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {listings.map(listing => {
-              const photoUrl = listing.primary_photo?.[0]?.photo_url
+              const photos = listing.photos || []
+              const primary = photos.find(p => p.is_primary) || photos[0]
+              const photoUrl = primary?.url
+              const activePrices = (listing.pricing || [])
+                .filter(p => p.is_active)
+                .map(p => Number(p.price))
+                .filter(p => p > 0)
+              const startingPrice = activePrices.length > 0 ? Math.min(...activePrices) : null
+
               return (
                 <Link
                   key={listing.id}
@@ -227,7 +216,7 @@ function MarketplaceBrowseContent() {
                         <span>{listing.category.icon}</span> {listing.category.name_ar}
                       </p>
                     )}
-                    <h3 className="font-bold text-gray-900 mb-1 line-clamp-2">{listing.title_ar}</h3>
+                    <h3 className="font-bold text-gray-900 mb-1 line-clamp-2">{listing.title}</h3>
                     {(listing.district || listing.city) && (
                       <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">
                         <MapPin className="w-3 h-3" />
@@ -236,10 +225,16 @@ function MarketplaceBrowseContent() {
                     )}
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-xs text-gray-500">يبدأ من</span>
-                        <p className="font-bold text-[#1F5F3F]">
-                          {Number(listing.starting_price).toLocaleString('ar-EG')} <span className="text-xs font-normal">ج.م</span>
-                        </p>
+                        {startingPrice !== null ? (
+                          <>
+                            <span className="text-xs text-gray-500">يبدأ من</span>
+                            <p className="font-bold text-[#1F5F3F]">
+                              {startingPrice.toLocaleString('ar-EG')} <span className="text-xs font-normal">ج.م</span>
+                            </p>
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-400">السعر عند الطلب</span>
+                        )}
                       </div>
                       {listing.rating && Number(listing.rating) > 0 && (
                         <div className="flex items-center gap-1 text-xs">
@@ -260,7 +255,6 @@ function MarketplaceBrowseContent() {
   )
 }
 
-// Force dynamic rendering (this page uses live data + searchParams)
 export const dynamic = 'force-dynamic'
 
 export default function MarketplaceBrowsePage() {

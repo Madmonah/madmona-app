@@ -2,20 +2,18 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
-import ListingForm, { type ListingFormData } from '@/components/marketplace/ListingForm'
+import ListingForm from '@/components/marketplace/ListingForm'
 import { ArrowRight, Loader2, AlertCircle } from 'lucide-react'
 
 // ============================================================================
 // /supplier/marketplace/[id]/edit
-// Edit an existing listing. Requires owner.
 // ============================================================================
 
 type Stage = 'loading' | 'unauthorized' | 'not-found' | 'ready'
 
 export default function EditListingPage() {
-  const router = useRouter()
   const params = useParams()
   const listingId = params?.id as string
 
@@ -33,7 +31,6 @@ export default function EditListingPage() {
       }
       setUserId(session.user.id)
 
-      // Fetch supplier
       // @ts-expect-error
       const { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
@@ -47,7 +44,7 @@ export default function EditListingPage() {
       }
       setSupplierId(sup.id)
 
-      // Fetch listing with photos, attribute values, pricing
+      // Fetch listing
       // @ts-expect-error
       const { data: listing, error: listingErr } = await supabaseBrowser
         .from('listings')
@@ -61,7 +58,7 @@ export default function EditListingPage() {
         return
       }
 
-      // Fetch photos
+      // Photos
       // @ts-expect-error
       const { data: photos } = await supabaseBrowser
         .from('listing_photos')
@@ -69,15 +66,15 @@ export default function EditListingPage() {
         .eq('listing_id', listingId)
         .order('display_order', { ascending: true })
 
-      // Fetch pricing
+      // Pricing
       // @ts-expect-error
       const { data: pricing } = await supabaseBrowser
         .from('pricing_rules')
         .select('*')
         .eq('listing_id', listingId)
-        .order('period_type', { ascending: true })
+        .order('display_order', { ascending: true })
 
-      // Fetch attribute values
+      // Attribute values
       // @ts-expect-error
       const { data: values } = await supabaseBrowser
         .from('listing_values')
@@ -86,28 +83,27 @@ export default function EditListingPage() {
 
       setInitialData({
         category_id: listing.category_id,
-        title_ar: listing.title_ar,
-        title_en: listing.title_en || '',
-        description_ar: listing.description_ar || '',
-        description_en: listing.description_en || '',
+        title: listing.title,
+        description: listing.description || '',
         city: listing.city || '',
         district: listing.district || '',
-        address_ar: listing.address_ar || '',
-        min_capacity: listing.min_capacity,
-        max_capacity: listing.max_capacity,
+        address: listing.address || '',
+        min_booking_hours: listing.min_booking_hours,
+        max_booking_hours: listing.max_booking_hours,
         status: listing.status,
         existingPhotos: (photos || []).map((p: any) => ({
           id: p.id,
-          url: p.photo_url,
-          caption_ar: p.caption_ar || '',
+          url: p.url,
+          caption: p.caption || '',
           is_primary: p.is_primary,
           display_order: p.display_order,
+          storage_path: p.storage_path,
         })),
         existingPricing: (pricing || []).map((p: any) => ({
           id: p.id,
           period_type: p.period_type,
           price: String(p.price),
-          min_quantity: p.min_quantity || 1,
+          min_periods: p.min_periods,
           is_active: p.is_active,
         })),
         existingAttributes: (values || []).map((v: any) => ({
@@ -157,7 +153,7 @@ export default function EditListingPage() {
           </Link>
           <div>
             <h1 className="text-lg font-bold text-gray-900">تعديل listing</h1>
-            <p className="text-xs text-gray-500">{initialData?.title_ar}</p>
+            <p className="text-xs text-gray-500">{initialData?.title}</p>
           </div>
         </div>
       </header>

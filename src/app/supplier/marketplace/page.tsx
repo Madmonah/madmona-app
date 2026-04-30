@@ -26,17 +26,17 @@ interface SupplierState {
 
 interface ListingSummary {
   id: string
-  title_ar: string
+  title: string
   slug: string
   city: string | null
   district: string | null
-  starting_price: number | string
   status: string
   bookings_count: number
-  view_count: number
+  views_count: number
   created_at: string
   category: { name_ar: string; icon: string | null } | null
-  photos: { photo_url: string; is_primary: boolean }[] | null
+  photos: { url: string; is_primary: boolean }[] | null
+  pricing: { price: number | string; period_type: string; is_active: boolean }[] | null
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -45,7 +45,6 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   published: { label: 'منشور', color: 'bg-green-100 text-green-800' },
   paused: { label: 'موقوف', color: 'bg-orange-100 text-orange-800' },
   rejected: { label: 'مرفوض', color: 'bg-red-100 text-red-800' },
-  archived: { label: 'مؤرشف', color: 'bg-gray-100 text-gray-500' },
 }
 
 function SupplierMarketplaceContent() {
@@ -100,10 +99,11 @@ function SupplierMarketplaceContent() {
     const { data } = await supabaseBrowser
       .from('listings')
       .select(`
-        id, title_ar, slug, city, district, starting_price, status,
-        bookings_count, view_count, created_at,
+        id, title, slug, city, district, status,
+        bookings_count, views_count, created_at,
         category:categories(name_ar, icon),
-        photos:listing_photos(photo_url, is_primary)
+        photos:listing_photos(url, is_primary),
+        pricing:pricing_rules(price, period_type, is_active)
       `)
       .eq('supplier_id', supId)
       .order('created_at', { ascending: false })
@@ -115,17 +115,19 @@ function SupplierMarketplaceContent() {
   const togglePublished = async (listing: ListingSummary) => {
     const newStatus = listing.status === 'published' ? 'paused' : 'published'
     setActioningId(listing.id)
+    const update: any = { status: newStatus }
+    if (newStatus === 'published') update.published_at = new Date().toISOString()
     // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('listings')
-      .update({ status: newStatus })
+      .update(update)
       .eq('id', listing.id)
     if (!error && supplier) await loadListings(supplier.id)
     setActioningId(null)
   }
 
   const deleteListing = async (listing: ListingSummary) => {
-    if (!confirm(`متأكد إنك عاوز تمسح "${listing.title_ar}"؟ مينفعش تتراجع.`)) return
+    if (!confirm(`متأكد إنك عاوز تمسح "${listing.title}"؟ مينفعش تتراجع.`)) return
     setActioningId(listing.id)
     // @ts-expect-error
     const { error } = await supabaseBrowser
@@ -152,7 +154,6 @@ function SupplierMarketplaceContent() {
         <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center">
           <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
           <h1 className="text-xl font-bold mb-2">سجّل دخول الأول</h1>
-          <p className="text-sm text-gray-500 mb-6">عشان توصل لـmarketplace dashboard، لازم تسجل دخول.</p>
           <Link
             href={`/auth/login?redirect=${encodeURIComponent('/supplier/marketplace')}`}
             className="block w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90"
@@ -226,14 +227,13 @@ function SupplierMarketplaceContent() {
                 {supplier.kyc_rejection_reason}
               </p>
             )}
-            <p className="text-sm text-gray-600">للتواصل مع الإدارة:</p>
             <a
               href="https://wa.me/201002229982"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-[#1F5F3F] hover:underline"
             >
-              واتساب +20 100 222 9982
+              للتواصل: واتساب +20 100 222 9982
             </a>
           </div>
         </div>
@@ -241,8 +241,7 @@ function SupplierMarketplaceContent() {
     )
   }
 
-  // ============== Approved supplier view ==============
-
+  // Approved supplier view
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
@@ -301,7 +300,14 @@ function SupplierMarketplaceContent() {
               const status = STATUS_LABELS[listing.status] || STATUS_LABELS.draft
               const photos = listing.photos || []
               const primary = photos.find(p => p.is_primary) || photos[0]
-              const photoUrl = primary?.photo_url
+              const photoUrl = primary?.url
+
+              // Compute starting price from active pricing rules
+              const activePrices = (listing.pricing || [])
+                .filter(p => p.is_active)
+                .map(p => Number(p.price))
+                .filter(p => p > 0)
+              const startingPrice = activePrices.length > 0 ? Math.min(...activePrices) : null
 
               return (
                 <div key={listing.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden flex flex-col sm:flex-row">
@@ -329,7 +335,7 @@ function SupplierMarketplaceContent() {
                             {status.label}
                           </span>
                         </div>
-                        <h3 className="font-bold text-gray-900 mt-1 truncate">{listing.title_ar}</h3>
+                        <h3 className="font-bold text-gray-900 mt-1 truncate">{listing.title}</h3>
                         {(listing.district || listing.city) && (
                           <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                             <MapPin className="w-3 h-3" />
@@ -341,8 +347,14 @@ function SupplierMarketplaceContent() {
 
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
                       <div className="text-sm text-gray-700">
-                        <span className="font-bold">{Number(listing.starting_price).toLocaleString('ar-EG')}</span>
-                        <span className="text-xs text-gray-500"> ج.م</span>
+                        {startingPrice !== null ? (
+                          <>
+                            <span className="font-bold">{startingPrice.toLocaleString('ar-EG')}</span>
+                            <span className="text-xs text-gray-500"> ج.م</span>
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-400">بدون سعر</span>
+                        )}
                       </div>
 
                       <div className="flex gap-1">

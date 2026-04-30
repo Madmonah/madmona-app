@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
-  ArrowRight, MapPin, Star, Users, Clock, Phone, MessageCircle,
-  Loader2, Image as ImageIcon, Building2, Tag, ChevronRight, ChevronLeft,
-  CheckCircle, AlertCircle,
+  ArrowRight, MapPin, Star, Users, MessageCircle,
+  Loader2, Image as ImageIcon, Building2, Tag,
+  ChevronRight, ChevronLeft, CheckCircle, AlertCircle,
 } from 'lucide-react'
 
 // ============================================================================
@@ -19,20 +19,17 @@ interface ListingDetail {
   id: string
   supplier_id: string
   category_id: string
-  title_ar: string
-  title_en: string | null
+  title: string
   slug: string
-  description_ar: string | null
+  description: string | null
   city: string | null
   district: string | null
-  address_ar: string | null
-  starting_price: number | string
-  currency: string
-  min_capacity: number | null
-  max_capacity: number | null
+  address: string | null
+  min_booking_hours: number | null
+  max_booking_hours: number | null
   rating: number | null
   reviews_count: number
-  view_count: number
+  views_count: number
   status: string
   category: { name_ar: string; icon: string | null } | null
   supplier: {
@@ -44,8 +41,8 @@ interface ListingDetail {
 
 interface Photo {
   id: string
-  photo_url: string
-  caption_ar: string | null
+  url: string
+  caption: string | null
   is_primary: boolean
   display_order: number
 }
@@ -58,6 +55,7 @@ interface AttributeWithValue {
     field_type: string
     unit: string | null
     options: any
+    display_order: number
   }
   value: any
 }
@@ -66,16 +64,16 @@ interface PricingRule {
   id: string
   period_type: string
   price: number | string
-  min_quantity: number
+  min_periods: number | null
   is_active: boolean
 }
 
 const PERIOD_LABELS: Record<string, string> = {
-  hour: 'الساعة',
-  day: 'اليوم',
-  week: 'الأسبوع',
-  month: 'الشهر',
-  one_time: 'مرة واحدة',
+  hourly: 'الساعة',
+  daily: 'اليوم',
+  weekly: 'الأسبوع',
+  monthly: 'الشهر',
+  per_event: 'مرة واحدة',
 }
 
 export default function ListingDetailPage() {
@@ -115,7 +113,6 @@ export default function ListingDetailPage() {
 
       setListing(l as ListingDetail)
 
-      // Photos
       // @ts-expect-error
       const { data: ph } = await supabaseBrowser
         .from('listing_photos')
@@ -124,7 +121,6 @@ export default function ListingDetailPage() {
         .order('display_order', { ascending: true })
       setPhotos(ph || [])
 
-      // Attribute values
       // @ts-expect-error
       const { data: vals } = await supabaseBrowser
         .from('listing_values')
@@ -134,13 +130,11 @@ export default function ListingDetailPage() {
         `)
         .eq('listing_id', l.id)
 
-      // Sort by display_order
-      const sorted = (vals || []).sort((a: any, b: any) => 
+      const sorted = (vals || []).sort((a: any, b: any) =>
         (a.attribute?.display_order || 0) - (b.attribute?.display_order || 0)
       )
       setAttributes(sorted as AttributeWithValue[])
 
-      // Pricing
       // @ts-expect-error
       const { data: pr } = await supabaseBrowser
         .from('pricing_rules')
@@ -150,7 +144,7 @@ export default function ListingDetailPage() {
         .order('price', { ascending: true })
       setPricing(pr || [])
 
-      // Increment view count (fire and forget)
+      // Fire-and-forget view increment
       // @ts-expect-error
       supabaseBrowser.rpc('increment_view_count', { listing_id: l.id }).catch(() => {})
 
@@ -158,8 +152,6 @@ export default function ListingDetailPage() {
     }
     load()
   }, [slug])
-
-  // ============== Renders ==============
 
   if (loading) {
     return (
@@ -175,11 +167,7 @@ export default function ListingDetailPage() {
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-3" />
           <h1 className="font-bold mb-2">الـlisting ده مش موجود</h1>
-          <p className="text-sm text-gray-500 mb-6">يا إما اتمسح يا إما الرابط غلط</p>
-          <Link
-            href="/marketplace"
-            className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold"
-          >
+          <Link href="/marketplace" className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold mt-4">
             تصفح الـmarketplace
           </Link>
         </div>
@@ -187,7 +175,6 @@ export default function ListingDetailPage() {
     )
   }
 
-  // Sort photos: primary first
   const sortedPhotos = [...photos].sort((a, b) => {
     if (a.is_primary) return -1
     if (b.is_primary) return 1
@@ -197,12 +184,12 @@ export default function ListingDetailPage() {
   const currentPhoto = sortedPhotos[photoIndex]
   const phone = listing.supplier?.profile?.phone || ''
   const phoneClean = phone.replace(/\D/g, '')
+  const startingPrice = pricing.length > 0 ? Number(pricing[0].price) : null
 
   const whatsappMessage = encodeURIComponent(
-    `مرحباً، أنا مهتم بـ "${listing.title_ar}" على Madmona Marketplace.\nاللينك: https://madmonacairo.com/marketplace/${listing.slug}`
+    `مرحباً، أنا مهتم بـ "${listing.title}" على Madmona Marketplace.\nاللينك: https://madmonacairo.com/marketplace/${listing.slug}`
   )
 
-  // Format attribute values for display
   const formatAttrValue = (av: AttributeWithValue): string => {
     const v = av.value
     const attr = av.attribute
@@ -226,27 +213,25 @@ export default function ListingDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/marketplace" className="p-1 hover:bg-gray-50 rounded-full">
             <ArrowRight className="w-5 h-5 text-gray-700" />
           </Link>
-          <h1 className="text-sm font-semibold text-gray-700 truncate flex-1 text-center">{listing.title_ar}</h1>
+          <h1 className="text-sm font-semibold text-gray-700 truncate flex-1 text-center">{listing.title}</h1>
           <div className="w-7" />
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto pb-32">
-        {/* Photo gallery */}
         <div className="bg-white">
           <div className="aspect-[16/10] bg-gray-100 relative">
             {currentPhoto ? (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={currentPhoto.photo_url}
-                  alt={currentPhoto.caption_ar || listing.title_ar}
+                  src={currentPhoto.url}
+                  alt={currentPhoto.caption || listing.title}
                   className="w-full h-full object-cover"
                 />
                 {sortedPhotos.length > 1 && (
@@ -275,7 +260,6 @@ export default function ListingDetailPage() {
               </div>
             )}
           </div>
-          {/* Thumbnails */}
           {sortedPhotos.length > 1 && (
             <div className="flex gap-2 p-3 overflow-x-auto">
               {sortedPhotos.map((p, i) => (
@@ -287,14 +271,13 @@ export default function ListingDetailPage() {
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.photo_url} alt="" className="w-full h-full object-cover" />
+                  <img src={p.url} alt="" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Title section */}
         <div className="bg-white p-4 sm:p-6 border-t border-gray-100">
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
@@ -303,10 +286,7 @@ export default function ListingDetailPage() {
                   <span>{listing.category.icon}</span> {listing.category.name_ar}
                 </p>
               )}
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{listing.title_ar}</h1>
-              {listing.title_en && (
-                <p className="text-sm text-gray-500" dir="ltr">{listing.title_en}</p>
-              )}
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{listing.title}</h1>
             </div>
           </div>
 
@@ -324,24 +304,22 @@ export default function ListingDetailPage() {
                 <span className="text-gray-500">({listing.reviews_count} تقييم)</span>
               </span>
             )}
-            {listing.max_capacity && (
+            {listing.min_booking_hours && (
               <span className="flex items-center gap-1">
                 <Users className="w-4 h-4 text-gray-400" />
-                حتى {listing.max_capacity}
+                حد أدنى {listing.min_booking_hours} ساعة
               </span>
             )}
           </div>
         </div>
 
-        {/* Description */}
-        {listing.description_ar && (
+        {listing.description && (
           <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-2">الوصف</h2>
-            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{listing.description_ar}</p>
+            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{listing.description}</p>
           </div>
         )}
 
-        {/* Attributes */}
         {attributes.length > 0 && (
           <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -360,7 +338,6 @@ export default function ListingDetailPage() {
           </div>
         )}
 
-        {/* Pricing */}
         {pricing.length > 0 && (
           <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-3">الأسعار</h2>
@@ -377,17 +354,15 @@ export default function ListingDetailPage() {
           </div>
         )}
 
-        {/* Location */}
-        {listing.address_ar && (
+        {listing.address && (
           <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#1F5F3F]" /> الموقع
             </h2>
-            <p className="text-sm text-gray-700">{listing.address_ar}</p>
+            <p className="text-sm text-gray-700">{listing.address}</p>
           </div>
         )}
 
-        {/* Supplier info */}
         {listing.supplier && (
           <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-3">المورد</h2>
@@ -406,14 +381,19 @@ export default function ListingDetailPage() {
         )}
       </main>
 
-      {/* Sticky bottom CTA */}
       <div className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 z-50">
         <div className="max-w-4xl mx-auto p-4 flex items-center gap-3">
           <div className="flex-1">
-            <p className="text-xs text-gray-500">يبدأ من</p>
-            <p className="text-lg font-bold text-[#1F5F3F]">
-              {Number(listing.starting_price).toLocaleString('ar-EG')} <span className="text-sm font-normal">ج.م</span>
-            </p>
+            {startingPrice !== null ? (
+              <>
+                <p className="text-xs text-gray-500">يبدأ من</p>
+                <p className="text-lg font-bold text-[#1F5F3F]">
+                  {startingPrice.toLocaleString('ar-EG')} <span className="text-sm font-normal">ج.م</span>
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-gray-500">للسعر، تواصل معانا</p>
+            )}
           </div>
           {phoneClean ? (
             <a

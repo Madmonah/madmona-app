@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
@@ -14,6 +14,7 @@ import {
 // ============================================================================
 
 type FieldType = 'text' | 'number' | 'boolean' | 'select' | 'multi_select' | 'date' | 'file'
+type PeriodType = 'hourly' | 'daily' | 'weekly' | 'monthly' | 'per_event'
 
 interface Category {
   id: string
@@ -41,50 +42,43 @@ interface Attribute {
 
 interface PricingRule {
   id?: string
-  period_type: 'hour' | 'day' | 'week' | 'month' | 'one_time'
+  period_type: PeriodType
   price: string
-  min_quantity: number
+  min_periods: number | null
   is_active: boolean
 }
 
 interface Photo {
   id?: string
   url: string
-  caption_ar: string
+  caption: string
   is_primary: boolean
   display_order: number
-  // For new uploads, we keep the file too
+  storage_path?: string | null
+  // For new uploads
   file?: File
   uploading?: boolean
 }
 
 export interface ListingFormData {
-  // Basic
   category_id: string | null
-  title_ar: string
-  title_en: string
-  description_ar: string
-  description_en: string
+  title: string
+  description: string
   city: string
   district: string
-  address_ar: string
-  // Capacity
-  min_capacity: number | null
-  max_capacity: number | null
-  // Status
+  address: string
+  min_booking_hours: number | null
+  max_booking_hours: number | null
   status: 'draft' | 'published'
-  // Dynamic
   attributeValues: Record<string, any>
-  // Photos
   photos: Photo[]
-  // Pricing
   pricing: PricingRule[]
 }
 
 interface ListingFormProps {
   supplierId: string
   userId: string
-  existingId?: string  // if editing
+  existingId?: string
   initialData?: Partial<ListingFormData> & {
     existingPhotos?: Photo[]
     existingPricing?: PricingRule[]
@@ -92,12 +86,12 @@ interface ListingFormProps {
   }
 }
 
-const PERIOD_LABELS: Record<PricingRule['period_type'], string> = {
-  hour: 'بالساعة',
-  day: 'باليوم',
-  week: 'بالأسبوع',
-  month: 'بالشهر',
-  one_time: 'مرة واحدة',
+const PERIOD_LABELS: Record<PeriodType, string> = {
+  hourly: 'بالساعة',
+  daily: 'باليوم',
+  weekly: 'بالأسبوع',
+  monthly: 'بالشهر',
+  per_event: 'مرة واحدة',
 }
 
 // ============================================================================
@@ -112,31 +106,26 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Categories tree
   const [categories, setCategories] = useState<Category[]>([])
   const [loadingCategories, setLoadingCategories] = useState(true)
 
-  // Form state
   const [form, setForm] = useState<ListingFormData>({
     category_id: initialData?.category_id || null,
-    title_ar: initialData?.title_ar || '',
-    title_en: initialData?.title_en || '',
-    description_ar: initialData?.description_ar || '',
-    description_en: initialData?.description_en || '',
+    title: initialData?.title || '',
+    description: initialData?.description || '',
     city: initialData?.city || 'القاهرة',
     district: initialData?.district || '',
-    address_ar: initialData?.address_ar || '',
-    min_capacity: initialData?.min_capacity ?? null,
-    max_capacity: initialData?.max_capacity ?? null,
+    address: initialData?.address || '',
+    min_booking_hours: initialData?.min_booking_hours ?? null,
+    max_booking_hours: initialData?.max_booking_hours ?? null,
     status: initialData?.status || 'draft',
     attributeValues: {},
     photos: initialData?.existingPhotos || [],
     pricing: initialData?.existingPricing && initialData.existingPricing.length > 0
       ? initialData.existingPricing
-      : [{ period_type: 'day', price: '', min_quantity: 1, is_active: true }],
+      : [{ period_type: 'daily', price: '', min_periods: null, is_active: true }],
   })
 
-  // Attributes for the selected category
   const [attributes, setAttributes] = useState<Attribute[]>([])
   const [loadingAttrs, setLoadingAttrs] = useState(false)
 
@@ -186,14 +175,12 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.category_id])
 
-  // ----- Step navigation -----
   const TOTAL_STEPS = 5
 
   const canGoNext = () => {
     if (step === 1) return !!form.category_id
-    if (step === 2) return form.title_ar.trim().length > 0 && form.district.trim().length > 0
+    if (step === 2) return form.title.trim().length > 0 && form.district.trim().length > 0
     if (step === 3) {
-      // Check required attributes
       for (const attr of attributes) {
         if (attr.is_required) {
           const val = form.attributeValues[attr.field_key]
@@ -210,7 +197,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     return true
   }
 
-  // ----- Photo upload -----
   const handlePhotoUpload = async (files: FileList | null) => {
     if (!files) return
     const newPhotos: Photo[] = []
@@ -223,7 +209,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       }
       newPhotos.push({
         url: URL.createObjectURL(file),
-        caption_ar: '',
+        caption: '',
         is_primary: form.photos.length === 0 && newPhotos.length === 0,
         display_order: form.photos.length + newPhotos.length,
         file,
@@ -236,7 +222,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
   const removePhoto = (idx: number) => {
     setForm(f => {
       const newPhotos = f.photos.filter((_, i) => i !== idx)
-      // If we removed the primary, make the first one primary
       if (newPhotos.length > 0 && !newPhotos.some(p => p.is_primary)) {
         newPhotos[0].is_primary = true
       }
@@ -251,11 +236,10 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     }))
   }
 
-  // ----- Pricing -----
   const addPricingRule = () => {
     setForm(f => ({
       ...f,
-      pricing: [...f.pricing, { period_type: 'day', price: '', min_quantity: 1, is_active: true }],
+      pricing: [...f.pricing, { period_type: 'daily', price: '', min_periods: null, is_active: true }],
     }))
   }
   const removePricingRule = (idx: number) => {
@@ -268,42 +252,30 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     }))
   }
 
-  // ----- Submit -----
   const handleSubmit = async (saveAsDraft = false) => {
     setError(null)
     setSubmitting(true)
 
     try {
       const status = saveAsDraft ? 'draft' : 'published'
-
-      // 1. Generate slug from title_ar (transliterated) or use existing
-      const slug = `${form.title_ar.trim().slice(0, 50).replace(/\s+/g, '-')}-${Date.now()}`
-        .replace(/[^a-z0-9\u0600-\u06FF-]/gi, '')
-        .toLowerCase()
-
-      // 2. Calculate starting_price from active pricing rules (lowest price)
-      const activePrices = form.pricing
-        .filter(p => p.is_active && parseFloat(p.price) > 0)
-        .map(p => parseFloat(p.price))
-      const startingPrice = activePrices.length > 0 ? Math.min(...activePrices) : 0
+      const slug = isEditing
+        ? undefined
+        : `listing-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
 
       const listingPayload: any = {
         supplier_id: supplierId,
         category_id: form.category_id,
-        title_ar: form.title_ar.trim(),
-        slug: existingId ? undefined : slug,
-        description_ar: form.description_ar.trim() || null,
+        title: form.title.trim(),
+        description: form.description.trim() || null,
         city: form.city.trim() || null,
         district: form.district.trim() || null,
-        address_ar: form.address_ar.trim() || null,
-        starting_price: startingPrice,
-        currency: 'EGP',
+        address: form.address.trim() || null,
         status,
       }
-      if (form.title_en) listingPayload.title_en = form.title_en.trim()
-      if (form.description_en) listingPayload.description_en = form.description_en.trim()
-      if (form.min_capacity !== null) listingPayload.min_capacity = form.min_capacity
-      if (form.max_capacity !== null) listingPayload.max_capacity = form.max_capacity
+      if (slug) listingPayload.slug = slug
+      if (form.min_booking_hours !== null) listingPayload.min_booking_hours = form.min_booking_hours
+      if (form.max_booking_hours !== null) listingPayload.max_booking_hours = form.max_booking_hours
+      if (status === 'published') listingPayload.published_at = new Date().toISOString()
 
       let listingId = existingId
 
@@ -330,9 +302,9 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       for (let i = 0; i < form.photos.length; i++) {
         const photo = form.photos[i]
         let photoUrl = photo.url
+        let storagePath: string | null = photo.storage_path || null
 
         if (photo.file) {
-          // Upload to storage
           const ext = photo.file.name.split('.').pop() || 'jpg'
           const path = `${userId}/${listingId}/${Date.now()}-${i}.${ext}`
           const { error: uploadErr } = await supabaseBrowser.storage
@@ -346,18 +318,20 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
             .from('listing-photos')
             .getPublicUrl(path)
           photoUrl = publicUrl
+          storagePath = path
         }
 
         photosToInsert.push({
           listing_id: listingId,
-          photo_url: photoUrl,
-          caption_ar: photo.caption_ar || null,
+          url: photoUrl,
+          storage_path: storagePath,
+          caption: photo.caption || null,
           is_primary: photo.is_primary,
           display_order: i,
         })
       }
 
-      // 4. Replace photos: delete existing + insert new
+      // 4. Replace photos
       if (isEditing) {
         // @ts-expect-error
         await supabaseBrowser.from('listing_photos').delete().eq('listing_id', listingId)
@@ -368,7 +342,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         if (photosErr) throw photosErr
       }
 
-      // 5. Save attribute values (listing_values)
+      // 5. Save attribute values (composite PK on listing_id+attribute_id)
       if (isEditing) {
         // @ts-expect-error
         await supabaseBrowser.from('listing_values').delete().eq('listing_id', listingId)
@@ -380,7 +354,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
           valuesToInsert.push({
             listing_id: listingId,
             attribute_id: attr.id,
-            value: typeof v === 'object' ? v : v,
+            value: v,
           })
         }
       }
@@ -397,20 +371,27 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       }
       const pricingToInsert = form.pricing
         .filter(p => p.is_active && parseFloat(p.price) > 0)
-        .map(p => ({
-          listing_id: listingId,
-          period_type: p.period_type,
-          price: parseFloat(p.price),
-          min_quantity: p.min_quantity,
-          is_active: true,
-        }))
+        .map((p, idx) => {
+          const row: any = {
+            listing_id: listingId,
+            period_type: p.period_type,
+            period_count: 1,
+            price: parseFloat(p.price),
+            currency: 'EGP',
+            is_active: true,
+            display_order: idx,
+          }
+          if (p.min_periods !== null && p.min_periods !== undefined) {
+            row.min_periods = p.min_periods
+          }
+          return row
+        })
       if (pricingToInsert.length > 0) {
         // @ts-expect-error
         const { error: pricingErr } = await supabaseBrowser.from('pricing_rules').insert(pricingToInsert)
         if (pricingErr) throw pricingErr
       }
 
-      // Done! Redirect to dashboard
       router.push('/supplier/marketplace?success=1')
     } catch (e: any) {
       console.error('Submit error:', e)
@@ -423,7 +404,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
   // Render
   // ============================================================================
 
-  // Build category tree
   const rootCats = categories.filter(c => !c.parent_id)
   const subCats = (parentId: string) => categories.filter(c => c.parent_id === parentId)
   const selectedCat = categories.find(c => c.id === form.category_id)
@@ -433,7 +413,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
 
   return (
     <div className="max-w-2xl mx-auto" dir="rtl">
-      {/* Step indicator */}
       <div className="flex items-center justify-between mb-6 px-2">
         {[1, 2, 3, 4, 5].map((s) => (
           <div key={s} className="flex items-center flex-1">
@@ -474,7 +453,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
               <div className="text-center py-12"><Loader2 className="w-6 h-6 text-gray-400 animate-spin mx-auto" /></div>
             ) : (
               <div className="space-y-3">
-                {/* Root categories */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {rootCats.map(rc => {
                     const isSelected = selectedRoot?.id === rc.id
@@ -496,7 +474,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                   })}
                 </div>
 
-                {/* Sub-categories of selected root */}
                 {selectedRoot && subCats(selectedRoot.id).length > 0 && (
                   <div>
                     <p className="text-xs font-semibold text-gray-500 mt-4 mb-2">اختار النوع تحديداً:</p>
@@ -537,11 +514,11 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">العنوان بالعربي *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">العنوان *</label>
                 <input
                   type="text"
-                  value={form.title_ar}
-                  onChange={e => setForm(f => ({ ...f, title_ar: e.target.value }))}
+                  value={form.title}
+                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                   maxLength={300}
                   required
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
@@ -549,22 +526,10 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Title (English)</label>
-                <input
-                  type="text"
-                  value={form.title_en}
-                  onChange={e => setForm(f => ({ ...f, title_en: e.target.value }))}
-                  maxLength={300}
-                  dir="ltr"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
-                  placeholder="(اختياري)"
-                />
-              </div>
-              <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">الوصف</label>
                 <textarea
-                  value={form.description_ar}
-                  onChange={e => setForm(f => ({ ...f, description_ar: e.target.value }))}
+                  value={form.description}
+                  onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   rows={4}
                   maxLength={2000}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
@@ -600,8 +565,8 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                 <label className="block text-xs font-medium text-gray-700 mb-1">العنوان التفصيلي</label>
                 <input
                   type="text"
-                  value={form.address_ar}
-                  onChange={e => setForm(f => ({ ...f, address_ar: e.target.value }))}
+                  value={form.address}
+                  onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
                   placeholder="(اختياري)"
                 />
@@ -609,22 +574,22 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">سعة دنيا</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">أقل عدد ساعات حجز</label>
                   <input
                     type="number"
-                    value={form.min_capacity ?? ''}
-                    onChange={e => setForm(f => ({ ...f, min_capacity: e.target.value ? parseInt(e.target.value) : null }))}
+                    value={form.min_booking_hours ?? ''}
+                    onChange={e => setForm(f => ({ ...f, min_booking_hours: e.target.value ? parseInt(e.target.value) : null }))}
                     min={1}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
                     placeholder="(اختياري)"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">سعة قصوى</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">أقصى عدد ساعات حجز</label>
                   <input
                     type="number"
-                    value={form.max_capacity ?? ''}
-                    onChange={e => setForm(f => ({ ...f, max_capacity: e.target.value ? parseInt(e.target.value) : null }))}
+                    value={form.max_booking_hours ?? ''}
+                    onChange={e => setForm(f => ({ ...f, max_booking_hours: e.target.value ? parseInt(e.target.value) : null }))}
                     min={1}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
                     placeholder="(اختياري)"
@@ -739,7 +704,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-[#1F5F3F]" /> الأسعار
             </h2>
-            <p className="text-sm text-gray-500 mb-4">حدد السعر بفترات مختلفة (الأقل سعراً هيظهر للعميل في الـlistings)</p>
+            <p className="text-sm text-gray-500 mb-4">حدد السعر بفترات مختلفة (الأقل سعراً هيظهر للعميل)</p>
 
             <div className="space-y-3">
               {form.pricing.map((rule, idx) => (
@@ -747,7 +712,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                   <div className="grid grid-cols-2 gap-2">
                     <select
                       value={rule.period_type}
-                      onChange={e => updatePricingRule(idx, { period_type: e.target.value as any })}
+                      onChange={e => updatePricingRule(idx, { period_type: e.target.value as PeriodType })}
                       className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
                     >
                       {Object.entries(PERIOD_LABELS).map(([k, v]) => (
