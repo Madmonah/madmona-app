@@ -1,0 +1,6 @@
+🛒 dashboard مورد: /supplier/marketplace
+➕ listing جديد: /supplier/marketplace/new
+🌐 browse عام: /marketplace
+⚙️ إدارة الفئات: /admin/categories
+👥 مراجعة طلبات الموردين: /admin/marketplace-suppliers
+

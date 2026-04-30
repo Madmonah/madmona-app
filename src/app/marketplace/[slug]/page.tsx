@@ -5,14 +5,14 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
-  ArrowRight, MapPin, Star, Users, MessageCircle,
-  Loader2, Image as ImageIcon, Building2, Tag, CalendarPlus,
+  ArrowRight, MapPin, Star, Users, MessageCircle, Calendar,
+  Loader2, Image as ImageIcon, Building2, Tag,
   ChevronRight, ChevronLeft, CheckCircle, AlertCircle,
 } from 'lucide-react'
 
 // ============================================================================
 // /marketplace/[slug]
-// Public listing detail page with Booking + WhatsApp CTA.
+// Public listing detail page with booking CTA + WhatsApp fallback.
 // ============================================================================
 
 interface ListingDetail {
@@ -68,6 +68,14 @@ interface PricingRule {
   is_active: boolean
 }
 
+interface Review {
+  id: string
+  rating: number
+  comment: string | null
+  created_at: string
+  customer: { full_name: string | null } | null
+}
+
 const PERIOD_LABELS: Record<string, string> = {
   hourly: 'الساعة',
   daily: 'اليوم',
@@ -84,6 +92,7 @@ export default function ListingDetailPage() {
   const [photos, setPhotos] = useState<Photo[]>([])
   const [attributes, setAttributes] = useState<AttributeWithValue[]>([])
   const [pricing, setPricing] = useState<PricingRule[]>([])
+  const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
   const [photoIndex, setPhotoIndex] = useState(0)
   const [notFound, setNotFound] = useState(false)
@@ -144,6 +153,21 @@ export default function ListingDetailPage() {
         .order('price', { ascending: true })
       setPricing(pr || [])
 
+      // Reviews
+      // @ts-expect-error
+      const { data: rev } = await supabaseBrowser
+        .from('reviews')
+        .select(`
+          id, rating, comment, created_at,
+          customer:profiles!reviews_customer_id_fkey(full_name)
+        `)
+        .eq('listing_id', l.id)
+        .eq('is_published', true)
+        .order('created_at', { ascending: false })
+        .limit(20)
+      setReviews((rev || []) as Review[])
+
+      // Increment views (fire and forget)
       // @ts-expect-error
       supabaseBrowser.rpc('increment_view_count', { listing_id: l.id }).catch(() => {})
 
@@ -184,7 +208,7 @@ export default function ListingDetailPage() {
   const phone = listing.supplier?.profile?.phone || ''
   const phoneClean = phone.replace(/\D/g, '')
   const startingPrice = pricing.length > 0 ? Number(pricing[0].price) : null
-  const canBook = pricing.length > 0
+  const canBook = pricing.length > 0  // Need at least one pricing rule
 
   const whatsappMessage = encodeURIComponent(
     `مرحباً، أنا مهتم بـ "${listing.title}" على Madmona Marketplace.\nاللينك: https://madmonacairo.com/marketplace/${listing.slug}`
@@ -224,6 +248,7 @@ export default function ListingDetailPage() {
       </header>
 
       <main className="max-w-4xl mx-auto pb-32">
+        {/* Photo gallery */}
         <div className="bg-white">
           <div className="aspect-[16/10] bg-gray-100 relative">
             {currentPhoto ? (
@@ -379,11 +404,45 @@ export default function ListingDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Reviews */}
+        {reviews.length > 0 && (
+          <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
+            <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <Star className="w-4 h-4 fill-[#B8860B] text-[#B8860B]" /> التقييمات ({reviews.length})
+            </h2>
+            <div className="space-y-3">
+              {reviews.map(r => (
+                <div key={r.id} className="border-b border-gray-100 pb-3 last:border-b-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      {r.customer?.full_name || 'عميل'}
+                    </p>
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map(s => (
+                        <Star
+                          key={s}
+                          className={`w-3.5 h-3.5 ${s <= r.rating ? 'fill-[#B8860B] text-[#B8860B]' : 'text-gray-200'}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  {r.comment && (
+                    <p className="text-sm text-gray-700 mt-1">{r.comment}</p>
+                  )}
+                  <p className="text-xs text-gray-400 mt-1">
+                    {new Date(r.created_at).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Sticky bottom CTA */}
       <div className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 z-50">
-        <div className="max-w-4xl mx-auto p-4 flex items-center gap-3">
+        <div className="max-w-4xl mx-auto p-4 flex items-center gap-2">
           <div className="flex-1">
             {startingPrice !== null ? (
               <>
@@ -393,43 +452,33 @@ export default function ListingDetailPage() {
                 </p>
               </>
             ) : (
-              <p className="text-sm text-gray-500">للسعر، تواصل معانا</p>
+              <p className="text-sm text-gray-500">السعر عند الطلب</p>
             )}
           </div>
-          {canBook ? (
-            <>
-              {phoneClean && (
-                <a
-                  href={`https://wa.me/${phoneClean}?text=${whatsappMessage}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center w-11 h-11 bg-[#25D366] text-white rounded-xl hover:bg-[#1da851] flex-shrink-0"
-                  title="تواصل عبر واتساب"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                </a>
-              )}
-              <Link
-                href={`/marketplace/${listing.slug}/book`}
-                className="flex items-center gap-2 bg-[#1F5F3F] text-white px-5 py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 flex-shrink-0"
-              >
-                <CalendarPlus className="w-5 h-5" />
-                احجز الآن
-              </Link>
-            </>
-          ) : phoneClean ? (
+
+          {phoneClean && (
             <a
               href={`https://wa.me/${phoneClean}?text=${whatsappMessage}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-[#25D366] text-white px-5 py-3 rounded-xl font-semibold hover:bg-[#1da851] flex-shrink-0"
+              className="flex items-center justify-center w-12 h-12 bg-[#25D366] text-white rounded-xl hover:bg-[#1da851] flex-shrink-0"
+              title="واتساب"
             >
               <MessageCircle className="w-5 h-5" />
-              تواصل عبر واتساب
             </a>
+          )}
+
+          {canBook ? (
+            <Link
+              href={`/marketplace/${listing.slug}/book`}
+              className="flex items-center gap-2 bg-[#1F5F3F] text-white px-5 py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 flex-shrink-0"
+            >
+              <Calendar className="w-5 h-5" />
+              احجز دلوقتي
+            </Link>
           ) : (
             <a
-              href="https://wa.me/201002229982"
+              href={phoneClean ? `https://wa.me/${phoneClean}?text=${whatsappMessage}` : 'https://wa.me/201002229982'}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-[#1F5F3F] text-white px-5 py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 flex-shrink-0"

@@ -7,7 +7,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   Plus, Building2, Edit2, Trash2, Eye, EyeOff, AlertCircle,
   Loader2, ArrowRight, CheckCircle, Clock, Lock, MapPin,
-  Image as ImageIcon, ExternalLink, Inbox,
+  Image as ImageIcon, ExternalLink, Calendar,
 } from 'lucide-react'
 
 // ============================================================================
@@ -55,6 +55,7 @@ function SupplierMarketplaceContent() {
   const [stage, setStage] = useState<Stage>('loading')
   const [supplier, setSupplier] = useState<SupplierState | null>(null)
   const [listings, setListings] = useState<ListingSummary[]>([])
+  const [bookingsCount, setBookingsCount] = useState(0)
   const [pendingBookingsCount, setPendingBookingsCount] = useState(0)
   const [loadingListings, setLoadingListings] = useState(false)
   const [actioningId, setActioningId] = useState<string | null>(null)
@@ -88,7 +89,7 @@ function SupplierMarketplaceContent() {
       } else {
         setStage('ready')
         loadListings(sup.id)
-        loadPendingBookings(sup.id)
+        loadBookingsCounts(sup.id)
       }
     }
     init()
@@ -114,14 +115,17 @@ function SupplierMarketplaceContent() {
     setLoadingListings(false)
   }
 
-  const loadPendingBookings = async (supId: string) => {
+  const loadBookingsCounts = async (supId: string) => {
     // @ts-expect-error
-    const { count } = await supabaseBrowser
+    const { data } = await supabaseBrowser
       .from('marketplace_bookings')
-      .select('id', { count: 'exact', head: true })
+      .select('status')
       .eq('supplier_id', supId)
-      .eq('status', 'pending_payment')
-    setPendingBookingsCount(count || 0)
+
+    if (data) {
+      setBookingsCount(data.length)
+      setPendingBookingsCount(data.filter((b: any) => b.status === 'pending_payment').length)
+    }
   }
 
   const togglePublished = async (listing: ListingSummary) => {
@@ -187,12 +191,9 @@ function SupplierMarketplaceContent() {
         <div className="w-full max-w-md bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center">
           <Building2 className="w-12 h-12 text-[#1F5F3F] mx-auto mb-4" />
           <h1 className="text-xl font-bold mb-2">سجّل كمورد على Madmona</h1>
-          <p className="text-sm text-gray-600 mb-6">
-            عشان تقدر تضيف listings وتستقبل حجوزات، لازم تسجّل نفسك كمورد الأول.
-          </p>
           <Link
             href="/supplier/register"
-            className="block w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90"
+            className="block w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold mt-4"
           >
             ابدأ التسجيل
           </Link>
@@ -211,12 +212,9 @@ function SupplierMarketplaceContent() {
             <p className="text-sm text-gray-600 mb-2">
               <strong>{supplier.business_name}</strong>
             </p>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm text-gray-600">
               لما الإدارة توافق على حسابك، هتقدر تبدأ تضيف listings.
             </p>
-            <Link href="/" className="text-sm text-[#1F5F3F] hover:underline">
-              ارجع للرئيسية
-            </Link>
           </div>
         </div>
       </div>
@@ -254,30 +252,39 @@ function SupplierMarketplaceContent() {
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="p-1 hover:bg-gray-50 rounded-full">
-              <ArrowRight className="w-4 h-4 text-gray-600" />
-            </Link>
-            <div>
-              <h1 className="text-lg font-bold text-gray-900">{supplier?.business_name}</h1>
-              <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                <CheckCircle className="w-3 h-3 text-green-600" /> مورد موثّق
-              </p>
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <Link href="/" className="p-1 hover:bg-gray-50 rounded-full">
+                <ArrowRight className="w-4 h-4 text-gray-600" />
+              </Link>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900">{supplier?.business_name}</h1>
+                <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3 text-green-600" /> مورد موثّق
+                </p>
+              </div>
             </div>
           </div>
-          <Link
-            href="/supplier/bookings"
-            className="relative flex items-center gap-1 px-3 py-1.5 bg-[#1F5F3F]/10 text-[#1F5F3F] rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/20"
-          >
-            <Inbox className="w-4 h-4" />
-            <span className="hidden sm:inline">الحجوزات</span>
-            {pendingBookingsCount > 0 && (
-              <span className="absolute -top-1 -left-1 bg-[#C2410C] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                {pendingBookingsCount}
-              </span>
-            )}
-          </Link>
+
+          {/* Tab nav */}
+          <div className="flex gap-2">
+            <span className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-[#1F5F3F] text-white">
+              Listings ({listings.length})
+            </span>
+            <Link
+              href="/supplier/marketplace/bookings"
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center gap-1"
+            >
+              <Calendar className="w-3 h-3" />
+              الحجوزات ({bookingsCount})
+              {pendingBookingsCount > 0 && (
+                <span className="bg-yellow-400 text-gray-900 rounded-full px-1.5 ml-1 text-[10px] font-bold">
+                  {pendingBookingsCount}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
       </header>
 
