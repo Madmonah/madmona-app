@@ -2,16 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { Menu, X, Search, ChevronDown, Building2, User, LogIn, UserPlus } from 'lucide-react'
+import { Menu, X, Search, ChevronDown, Building2, User, LogIn, UserPlus, Compass } from 'lucide-react'
 
 // ============================================================
 // TopNav — sticky navbar shared by public pages.
-// Provides:
-//   - Madmona logo + brand identity
-//   - Browse link (marketplace exploration)
-//   - Supplier menu (signup / login)
-//   - Customer account button (currently placeholder)
-//   - Mobile-first design with collapsible menu
+// Links:
+//   - / Madmona logo
+//   - /browse — Madmona's own spaces (iteration3)
+//   - /marketplace — Multi-supplier Marketplace (NEW)
+//   - /account — Customer account hub
+//   - /supplier/register or /auth/login → /supplier/marketplace
 // ============================================================
 
 export default function TopNav() {
@@ -19,7 +19,6 @@ export default function TopNav() {
   const [supplierMenuOpen, setSupplierMenuOpen] = useState(false)
   const supplierMenuRef = useRef<HTMLDivElement>(null)
 
-  // Close supplier dropdown when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (supplierMenuRef.current && !supplierMenuRef.current.contains(e.target as Node)) {
@@ -30,7 +29,6 @@ export default function TopNav() {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  // Close mobile drawer on navigation
   useEffect(() => {
     const handler = () => setMobileOpen(false)
     window.addEventListener('popstate', handler)
@@ -41,7 +39,6 @@ export default function TopNav() {
     <>
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-          {/* Logo — uses the actual Canva logo asset, not a dynamic text icon */}
           <Link href="/" className="flex items-center gap-2 no-underline flex-shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -64,14 +61,21 @@ export default function TopNav() {
               className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#1F5F3F] hover:bg-gray-50 rounded-lg no-underline"
             >
               <Search className="w-4 h-4" />
-              استكشف المساحات
+              استكشف مضمونة
+            </Link>
+            <Link
+              href="/marketplace"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#1F5F3F] hover:bg-gray-50 rounded-lg no-underline"
+            >
+              <Compass className="w-4 h-4" />
+              Marketplace
             </Link>
           </nav>
 
           {/* Auth actions (desktop) */}
           <div className="hidden md:flex items-center gap-2">
             <Link
-              href="/login"
+              href="/account"
               className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#1F5F3F] hover:bg-gray-50 rounded-lg no-underline"
             >
               <User className="w-4 h-4" />
@@ -96,25 +100,25 @@ export default function TopNav() {
               {supplierMenuOpen && (
                 <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl border border-gray-100 shadow-lg overflow-hidden">
                   <Link
-                    href="/supplier/signup"
+                    href="/supplier/register"
                     onClick={() => setSupplierMenuOpen(false)}
                     className="flex items-start gap-3 p-4 hover:bg-[#FAFAF7] no-underline"
                   >
                     <UserPlus className="w-4 h-4 text-[#B8860B] flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">سجل مساحتك</p>
+                      <p className="text-sm font-semibold text-gray-900">سجّل عرضك</p>
                       <p className="text-xs text-gray-500 mt-0.5">انضم للمنصة</p>
                     </div>
                   </Link>
                   <div className="h-px bg-gray-100" />
                   <Link
-                    href="/supplier/login"
+                    href="/auth/login?redirect=/supplier/marketplace"
                     onClick={() => setSupplierMenuOpen(false)}
                     className="flex items-start gap-3 p-4 hover:bg-[#FAFAF7] no-underline"
                   >
                     <LogIn className="w-4 h-4 text-[#1F5F3F] flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">تسجيل الدخول</p>
+                      <p className="text-sm font-semibold text-gray-900">لوحة المورد</p>
                       <p className="text-xs text-gray-500 mt-0.5">عندك حساب بالفعل</p>
                     </div>
                   </Link>
@@ -138,12 +142,10 @@ export default function TopNav() {
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden" dir="rtl">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/40"
             onClick={() => setMobileOpen(false)}
           />
-          {/* Drawer */}
           <div className="absolute top-0 right-0 bottom-0 w-72 bg-white shadow-xl flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
@@ -174,11 +176,20 @@ export default function TopNav() {
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#FAFAF7] no-underline"
               >
                 <Search className="w-5 h-5 text-[#1F5F3F]" />
-                <span className="font-medium text-gray-900">استكشف المساحات</span>
+                <span className="font-medium text-gray-900">استكشف مضمونة</span>
               </Link>
 
               <Link
-                href="/login"
+                href="/marketplace"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#FAFAF7] no-underline"
+              >
+                <Compass className="w-5 h-5 text-[#1F5F3F]" />
+                <span className="font-medium text-gray-900">Marketplace</span>
+              </Link>
+
+              <Link
+                href="/account"
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#FAFAF7] no-underline"
               >
@@ -191,24 +202,24 @@ export default function TopNav() {
                   للموردين
                 </p>
                 <Link
-                  href="/supplier/signup"
+                  href="/supplier/register"
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#FAFAF7] no-underline"
                 >
                   <UserPlus className="w-5 h-5 text-[#B8860B]" />
                   <div>
-                    <p className="font-medium text-gray-900">سجل مساحتك</p>
+                    <p className="font-medium text-gray-900">سجّل عرضك</p>
                     <p className="text-xs text-gray-500">انضم للمنصة</p>
                   </div>
                 </Link>
                 <Link
-                  href="/supplier/login"
+                  href="/auth/login?redirect=/supplier/marketplace"
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#FAFAF7] no-underline"
                 >
                   <LogIn className="w-5 h-5 text-[#1F5F3F]" />
                   <div>
-                    <p className="font-medium text-gray-900">تسجيل الدخول</p>
+                    <p className="font-medium text-gray-900">لوحة المورد</p>
                     <p className="text-xs text-gray-500">عندك حساب بالفعل</p>
                   </div>
                 </Link>

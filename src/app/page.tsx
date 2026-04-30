@@ -15,19 +15,23 @@ import {
   ShieldCheck,
   Sparkles,
   Camera,
+  Compass,
+  Car,
+  Home as HomeIcon,
 } from 'lucide-react'
 import TopNav from '@/components/TopNav'
 import InstallPWA from '@/components/InstallPWA'
 
 // ============================================================
-// Home page — restructured for clarity:
+// Home page — restructured:
 //   1. TopNav (logo + browse + supplier auth + customer login)
-//   2. Hero — single CTA "احجز مساحتك"
+//   2. Hero — احجز مساحتك (Madmona spaces)
 //   3. Categories quick browse (5 chips)
 //   4. Madmona's spaces (featured)
-//   5. Why us (trust signals)
-//   6. Supplier CTA (join as supplier)
-//   7. Contact + location
+//   5. Marketplace promo (NEW — multi-supplier listings)
+//   6. Why us (trust signals)
+//   7. Supplier CTA (join as supplier)
+//   8. Contact + location
 // ============================================================
 
 export default function HomePage() {
@@ -212,6 +216,63 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ========== MARKETPLACE PROMO (NEW) ========== */}
+        <section className="mb-12">
+          <div className="flex items-end justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Madmona Marketplace</h2>
+              <p className="text-sm text-gray-500 mt-0.5">مساحات وخدمات من موردين معتمدين</p>
+            </div>
+            <Link
+              href="/marketplace"
+              className="text-sm text-[#1F5F3F] font-semibold hover:underline no-underline flex items-center gap-1"
+            >
+              <span>تصفّح الكل</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <Link
+            href="/marketplace"
+            className="block bg-white rounded-2xl border border-gray-100 p-5 md:p-6 hover:border-[#1F5F3F]/30 no-underline transition-all"
+          >
+            <div className="flex items-start gap-4 mb-5">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1F5F3F] to-[#1F5F3F]/80 flex items-center justify-center flex-shrink-0">
+                <Compass className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-gray-900 mb-1">اكتشف منصة Marketplace</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  احجز عقارات، مركبات، معدات، ومساحات تنظيم فعاليات من موردين معتمدين على مضمونة.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+              <div className="flex flex-col items-center gap-1 p-3 bg-[#FAFAF7] rounded-lg">
+                <span className="text-lg">🏢</span>
+                <span className="text-xs font-medium text-gray-700">مساحات عمل</span>
+              </div>
+              <div className="flex flex-col items-center gap-1 p-3 bg-[#FAFAF7] rounded-lg">
+                <span className="text-lg">🏠</span>
+                <span className="text-xs font-medium text-gray-700">عقارات</span>
+              </div>
+              <div className="flex flex-col items-center gap-1 p-3 bg-[#FAFAF7] rounded-lg">
+                <span className="text-lg">🚗</span>
+                <span className="text-xs font-medium text-gray-700">مركبات</span>
+              </div>
+              <div className="flex flex-col items-center gap-1 p-3 bg-[#FAFAF7] rounded-lg">
+                <span className="text-lg">🚜</span>
+                <span className="text-xs font-medium text-gray-700">معدات</span>
+              </div>
+              <div className="flex flex-col items-center gap-1 p-3 bg-[#FAFAF7] rounded-lg">
+                <span className="text-lg">🎉</span>
+                <span className="text-xs font-medium text-gray-700">فعاليات</span>
+              </div>
+            </div>
+          </Link>
+        </section>
+
         {/* ========== WHY US ========== */}
         <section className="mb-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -245,21 +306,21 @@ export default function HomePage() {
                 <span className="text-xs font-medium">للموردين</span>
               </div>
               <h2 className="text-2xl md:text-3xl font-bold mb-3">
-                عندك مساحة عمل؟ انضم لينا
+                عندك مساحة أو خدمة؟ انضم لينا
               </h2>
               <p className="text-sm md:text-base text-white/85 leading-relaxed mb-5">
-                سجّل مساحتك على مضمونة، اعرضها على آلاف العملاء، واستقبل حجوزات. احنا نتولى التسويق والدفع.
+                سجّل عرضك على مضمونة Marketplace، اعرضه على آلاف العملاء، واستقبل حجوزات بدون عمولة جانبية.
               </p>
               <div className="flex flex-col sm:flex-row gap-2">
                 <Link
-                  href="/supplier/signup"
+                  href="/supplier/register"
                   className="flex items-center justify-center gap-2 bg-white text-[#1F5F3F] px-5 py-3 rounded-xl font-semibold hover:bg-gray-50 no-underline"
                 >
                   سجّل دلوقتي
                   <ArrowLeft className="w-4 h-4" />
                 </Link>
                 <Link
-                  href="/supplier/login"
+                  href="/auth/login?redirect=/supplier/marketplace"
                   className="flex items-center justify-center gap-2 border border-white/30 text-white px-5 py-3 rounded-xl font-semibold hover:bg-white/10 no-underline"
                 >
                   عندي حساب
