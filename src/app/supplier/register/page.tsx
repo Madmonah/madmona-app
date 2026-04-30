@@ -150,10 +150,16 @@ export default function SupplierRegisterPage() {
             عشان تتقدم لتبقى مورد على Madmona، لازم تسجل دخول بحسابك أولاً.
           </p>
           <Link
-            href={`/login?redirect=${encodeURIComponent('/supplier/register')}`}
+            href={`/auth/login?redirect=${encodeURIComponent('/supplier/register')}`}
             className="inline-block w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90"
           >
             تسجيل دخول
+          </Link>
+          <Link
+            href={`/auth/signup?redirect=${encodeURIComponent('/supplier/register')}`}
+            className="inline-block mt-2 text-sm text-gray-600 hover:text-[#1F5F3F]"
+          >
+            مفيش حساب؟ اعمل حساب جديد
           </Link>
         </div>
       </div>
@@ -206,7 +212,7 @@ export default function SupplierRegisterPage() {
 
             {existing.kyc_status === 'approved' && (
               <Link
-                href="/supplier/dashboard"
+                href="/supplier/marketplace"
                 className="block w-full mt-6 bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold text-center hover:bg-[#1F5F3F]/90"
               >
                 روح للوحة التحكم

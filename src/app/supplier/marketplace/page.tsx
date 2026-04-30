@@ -154,10 +154,16 @@ function SupplierMarketplaceContent() {
           <h1 className="text-xl font-bold mb-2">سجّل دخول الأول</h1>
           <p className="text-sm text-gray-500 mb-6">عشان توصل لـmarketplace dashboard، لازم تسجل دخول.</p>
           <Link
-            href={`/login?redirect=${encodeURIComponent('/supplier/marketplace')}`}
+            href={`/auth/login?redirect=${encodeURIComponent('/supplier/marketplace')}`}
             className="block w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90"
           >
             تسجيل دخول
+          </Link>
+          <Link
+            href={`/auth/signup?redirect=${encodeURIComponent('/supplier/marketplace')}`}
+            className="block w-full mt-2 text-sm text-gray-600 hover:text-[#1F5F3F]"
+          >
+            مفيش حساب؟ اعمل حساب جديد
           </Link>
         </div>
       </div>
@@ -389,7 +395,6 @@ function SupplierMarketplaceContent() {
   )
 }
 
-// Force dynamic rendering (page depends on session + searchParams)
 export const dynamic = 'force-dynamic'
 
 export default function SupplierMarketplacePage() {

@@ -66,7 +66,7 @@ export default function NewListingPage() {
           <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
           <Link
-            href={`/login?redirect=${encodeURIComponent('/supplier/marketplace/new')}`}
+            href={`/auth/login?redirect=${encodeURIComponent('/supplier/marketplace/new')}`}
             className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold"
           >
             تسجيل دخول
