@@ -2,17 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, MapPin, Star, Users, MessageCircle, Calendar,
   Loader2, Image as ImageIcon, Building2, Tag,
-  ChevronRight, ChevronLeft, CheckCircle, AlertCircle, User,
+  ChevronRight, ChevronLeft, CheckCircle, AlertCircle, User, Heart, Share2,
 } from 'lucide-react'
 
 // ============================================================================
 // /marketplace/[slug]
-// Public listing detail page with booking CTA + WhatsApp fallback.
+// Public listing detail page with booking, favorites, and share.
 // ============================================================================
 
 interface ListingDetail {
@@ -86,6 +86,7 @@ const PERIOD_LABELS: Record<string, string> = {
 
 export default function ListingDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const slug = params?.slug as string
 
   const [listing, setListing] = useState<ListingDetail | null>(null)
@@ -97,6 +98,10 @@ export default function ListingDetailPage() {
   const [photoIndex, setPhotoIndex] = useState(0)
   const [notFound, setNotFound] = useState(false)
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [isFavorite, setIsFavorite] = useState(false)
+  const [togglingFav, setTogglingFav] = useState(false)
+  const [shareSuccess, setShareSuccess] = useState(false)
 
   useEffect(() => {
     let resolvedListingId: string | null = null
@@ -105,6 +110,7 @@ export default function ListingDetailPage() {
       try {
         const { data: { session } } = await supabaseBrowser.auth.getSession()
         setIsAuthed(!!session?.user)
+        if (session?.user) setUserId(session.user.id)
 
         // @ts-expect-error
         const { data: l, error } = await supabaseBrowser
@@ -130,7 +136,7 @@ export default function ListingDetailPage() {
         resolvedListingId = l.id
         setListing(l as ListingDetail)
 
-        const [photosResult, valsResult, prResult, revResult] = await Promise.all([
+        const fetches: any[] = [
           // @ts-expect-error
           supabaseBrowser
             .from('listing_photos')
@@ -163,22 +169,40 @@ export default function ListingDetailPage() {
             .eq('is_published', true)
             .order('created_at', { ascending: false })
             .limit(20),
-        ])
+        ]
 
-        setPhotos(photosResult.data || [])
-        const sorted = (valsResult.data || []).sort((a: any, b: any) =>
+        // Add favorite check if authed
+        if (session?.user) {
+          fetches.push(
+            // @ts-expect-error
+            supabaseBrowser
+              .from('favorites')
+              .select('listing_id')
+              .eq('customer_id', session.user.id)
+              .eq('listing_id', l.id)
+              .maybeSingle()
+          )
+        }
+
+        const results = await Promise.all(fetches)
+
+        setPhotos(results[0].data || [])
+        const sorted = (results[1].data || []).sort((a: any, b: any) =>
           (a.attribute?.display_order || 0) - (b.attribute?.display_order || 0)
         )
         setAttributes(sorted as AttributeWithValue[])
-        setPricing(prResult.data || [])
-        setReviews((revResult.data || []) as Review[])
+        setPricing(results[2].data || [])
+        setReviews((results[3].data || []) as Review[])
+
+        if (results[4]) {
+          setIsFavorite(!!results[4].data)
+        }
       } catch (e) {
         console.error('[listing/detail] load error:', e)
       } finally {
         setLoading(false)
       }
 
-      // Fire-and-forget view increment with the actual listing UUID
       if (resolvedListingId) {
         const lid = resolvedListingId
         setTimeout(() => {
@@ -192,6 +216,58 @@ export default function ListingDetailPage() {
     }
     load()
   }, [slug])
+
+  const toggleFavorite = async () => {
+    if (!userId || !listing) {
+      router.push(`/auth/login?redirect=${encodeURIComponent(`/marketplace/${slug}`)}`)
+      return
+    }
+    setTogglingFav(true)
+    if (isFavorite) {
+      // @ts-expect-error
+      const { error } = await supabaseBrowser
+        .from('favorites')
+        .delete()
+        .eq('customer_id', userId)
+        .eq('listing_id', listing.id)
+      if (!error) setIsFavorite(false)
+    } else {
+      // @ts-expect-error
+      const { error } = await supabaseBrowser
+        .from('favorites')
+        .insert({ customer_id: userId, listing_id: listing.id })
+      if (!error) setIsFavorite(true)
+    }
+    setTogglingFav(false)
+  }
+
+  const handleShare = async () => {
+    if (!listing) return
+    const url = `https://madmonacairo.com/marketplace/${listing.slug}`
+    const text = `شوف "${listing.title}" على Madmona Marketplace`
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ title: listing.title, text, url })
+        return
+      } catch {
+        // User cancelled or unsupported, fall through
+      }
+    }
+
+    // Fallback: copy to clipboard
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(`${text}\n${url}`)
+        setShareSuccess(true)
+        setTimeout(() => setShareSuccess(false), 2000)
+        return
+      } catch {}
+    }
+
+    // Last resort: open WhatsApp share
+    window.open(`https://wa.me/?text=${encodeURIComponent(`${text}\n${url}`)}`, '_blank')
+  }
 
   if (loading) {
     return (
@@ -255,22 +331,46 @@ export default function ListingDetailPage() {
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-2">
           <Link href="/marketplace" className="p-1 hover:bg-gray-50 rounded-full flex-shrink-0">
             <ArrowRight className="w-5 h-5 text-gray-700" />
           </Link>
-          <h1 className="text-sm font-semibold text-gray-700 truncate flex-1 text-center">{listing.title}</h1>
-          {isAuthed ? (
-            <Link
-              href="/account"
-              className="p-1 text-gray-600 hover:bg-gray-50 rounded-full flex-shrink-0"
-              title="حسابي"
+          <h1 className="text-sm font-semibold text-gray-700 truncate flex-1">{listing.title}</h1>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <button
+              onClick={handleShare}
+              className="p-1.5 text-gray-600 hover:bg-gray-50 rounded-full relative"
+              title="مشاركة"
             >
-              <User className="w-5 h-5" />
-            </Link>
-          ) : (
-            <div className="w-7" />
-          )}
+              <Share2 className="w-4 h-4" />
+              {shareSuccess && (
+                <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-1 bg-gray-900 text-white text-[10px] rounded whitespace-nowrap">
+                  تم النسخ
+                </span>
+              )}
+            </button>
+            <button
+              onClick={toggleFavorite}
+              disabled={togglingFav}
+              className="p-1.5 hover:bg-gray-50 rounded-full disabled:opacity-50"
+              title={isFavorite ? 'إزالة من المفضلة' : 'حفظ في المفضلة'}
+            >
+              {togglingFav ? (
+                <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+              ) : (
+                <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+              )}
+            </button>
+            {isAuthed && (
+              <Link
+                href="/account"
+                className="p-1.5 text-gray-600 hover:bg-gray-50 rounded-full"
+                title="حسابي"
+              >
+                <User className="w-4 h-4" />
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 

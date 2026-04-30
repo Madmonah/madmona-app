@@ -7,14 +7,8 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Calendar, Building2, ShoppingBag,
   LogOut, Loader2, Lock, User, Phone, Crown, ChevronLeft,
-  CheckCircle, Clock, AlertCircle, FolderTree, Edit2, Check, X,
+  CheckCircle, Clock, AlertCircle, FolderTree, Edit2, Check, X, Heart,
 } from 'lucide-react'
-
-// ============================================================================
-// /account
-// 
-// Customer/supplier/admin account hub.
-// ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'ready'
 
@@ -38,6 +32,7 @@ export default function AccountPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [bookingsCount, setBookingsCount] = useState(0)
+  const [favoritesCount, setFavoritesCount] = useState(0)
   const [signingOut, setSigningOut] = useState(false)
 
   // Inline name editing
@@ -73,12 +68,20 @@ export default function AccountPage() {
       setSupplier(sup as Supplier | null)
 
       // @ts-expect-error
-      const { count } = await supabaseBrowser
+      const { count: bCount } = await supabaseBrowser
         .from('marketplace_bookings')
         .select('id', { count: 'exact', head: true })
         .eq('customer_id', session.user.id)
 
-      setBookingsCount(count || 0)
+      setBookingsCount(bCount || 0)
+
+      // @ts-expect-error
+      const { count: fCount } = await supabaseBrowser
+        .from('favorites')
+        .select('listing_id', { count: 'exact', head: true })
+        .eq('customer_id', session.user.id)
+
+      setFavoritesCount(fCount || 0)
       setStage('ready')
     }
     init()
@@ -267,7 +270,7 @@ export default function AccountPage() {
           </div>
           <Link
             href="/account/bookings"
-            className="flex items-center gap-3 p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+            className="flex items-center gap-3 p-4 hover:bg-gray-50 border-b border-gray-100"
           >
             <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
               <Calendar className="w-5 h-5 text-blue-600" />
@@ -276,6 +279,21 @@ export default function AccountPage() {
               <p className="font-medium text-gray-900">حجوزاتي</p>
               <p className="text-xs text-gray-500">
                 {bookingsCount > 0 ? `${bookingsCount} حجز` : 'لسه ما حجزتش حاجة'}
+              </p>
+            </div>
+            <ChevronLeft className="w-4 h-4 text-gray-400" />
+          </Link>
+          <Link
+            href="/account/favorites"
+            className="flex items-center gap-3 p-4 hover:bg-gray-50 border-b border-gray-100"
+          >
+            <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Heart className="w-5 h-5 text-red-500" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-gray-900">المفضلة</p>
+              <p className="text-xs text-gray-500">
+                {favoritesCount > 0 ? `${favoritesCount} listing` : 'مفيش حاجة محفوظة'}
               </p>
             </div>
             <ChevronLeft className="w-4 h-4 text-gray-400" />
@@ -310,7 +328,7 @@ export default function AccountPage() {
               </div>
               <div className="flex-1">
                 <p className="font-medium text-gray-900">لوحة المورد</p>
-                <p className="text-xs text-gray-500">listings + الحجوزات</p>
+                <p className="text-xs text-gray-500">listings + الحجوزات + الإيراد</p>
               </div>
               <ChevronLeft className="w-4 h-4 text-gray-400" />
             </Link>

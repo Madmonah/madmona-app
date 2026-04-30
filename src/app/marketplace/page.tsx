@@ -1,17 +1,12 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState, type MouseEvent } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
-  Search, MapPin, Star, ImageIcon, Loader2, ArrowRight, User, LogIn,
+  Search, MapPin, Star, ImageIcon, Loader2, ArrowRight, User, LogIn, Heart,
 } from 'lucide-react'
-
-// ============================================================================
-// /marketplace
-// Public marketplace — browse all published listings.
-// ============================================================================
 
 interface Category {
   id: string
@@ -36,6 +31,7 @@ interface Listing {
 }
 
 function MarketplaceBrowseContent() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const initialCategorySlug = searchParams.get('category')
 
@@ -45,11 +41,24 @@ function MarketplaceBrowseContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(initialCategorySlug)
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const [togglingFav, setTogglingFav] = useState<string | null>(null)
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
       setIsAuthed(!!session?.user)
+      if (session?.user) {
+        setUserId(session.user.id)
+        // Load favorites
+        // @ts-expect-error
+        const { data: favs } = await supabaseBrowser
+          .from('favorites')
+          .select('listing_id')
+          .eq('customer_id', session.user.id)
+        setFavorites(new Set((favs || []).map((f: any) => f.listing_id)))
+      }
     }
     checkAuth()
 
@@ -119,6 +128,42 @@ function MarketplaceBrowseContent() {
     }
     load()
   }, [selectedCategorySlug, searchQuery])
+
+  const toggleFavorite = async (e: MouseEvent, listingId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!userId) {
+      router.push(`/auth/login?redirect=${encodeURIComponent('/marketplace')}`)
+      return
+    }
+
+    setTogglingFav(listingId)
+    const isFav = favorites.has(listingId)
+
+    if (isFav) {
+      // @ts-expect-error
+      const { error } = await supabaseBrowser
+        .from('favorites')
+        .delete()
+        .eq('customer_id', userId)
+        .eq('listing_id', listingId)
+      if (!error) {
+        const newFavs = new Set(favorites)
+        newFavs.delete(listingId)
+        setFavorites(newFavs)
+      }
+    } else {
+      // @ts-expect-error
+      const { error } = await supabaseBrowser
+        .from('favorites')
+        .insert({ customer_id: userId, listing_id: listingId })
+      if (!error) {
+        setFavorites(new Set([...favorites, listingId]))
+      }
+    }
+    setTogglingFav(null)
+  }
 
   const selectedCategoryName = rootCategories.find(c => c.slug === selectedCategorySlug)?.name_ar
 
@@ -219,6 +264,7 @@ function MarketplaceBrowseContent() {
                 .map(p => Number(p.price))
                 .filter(p => p > 0)
               const startingPrice = activePrices.length > 0 ? Math.min(...activePrices) : null
+              const isFav = favorites.has(listing.id)
 
               return (
                 <Link
@@ -226,7 +272,7 @@ function MarketplaceBrowseContent() {
                   href={`/marketplace/${listing.slug}`}
                   className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
                 >
-                  <div className="aspect-[4/3] bg-gray-100">
+                  <div className="aspect-[4/3] bg-gray-100 relative">
                     {photoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={photoUrl} alt="" className="w-full h-full object-cover" />
@@ -235,6 +281,18 @@ function MarketplaceBrowseContent() {
                         <ImageIcon className="w-10 h-10 text-gray-300" />
                       </div>
                     )}
+                    <button
+                      onClick={(e) => toggleFavorite(e, listing.id)}
+                      disabled={togglingFav === listing.id}
+                      className="absolute top-2 left-2 w-9 h-9 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white shadow-sm disabled:opacity-50"
+                      title={isFav ? 'إزالة من المفضلة' : 'حفظ في المفضلة'}
+                    >
+                      {togglingFav === listing.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                      ) : (
+                        <Heart className={`w-4 h-4 ${isFav ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+                      )}
+                    </button>
                   </div>
                   <div className="p-4">
                     {listing.category && (

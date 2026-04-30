@@ -7,7 +7,8 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   Plus, Building2, Edit2, Trash2, Eye, EyeOff, AlertCircle,
   Loader2, ArrowRight, CheckCircle, Clock, Lock, MapPin,
-  Image as ImageIcon, ExternalLink, Calendar, User,
+  Image as ImageIcon, ExternalLink, Calendar, User, TrendingUp,
+  DollarSign, Bell,
 } from 'lucide-react'
 
 type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'pending' | 'rejected' | 'ready'
@@ -34,6 +35,13 @@ interface ListingSummary {
   pricing: { price: number | string; period_type: string; is_active: boolean }[] | null
 }
 
+interface Stats {
+  totalRevenue: number
+  monthBookings: number
+  pending: number
+  totalBookings: number
+}
+
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   draft: { label: 'مسودة', color: 'bg-gray-100 text-gray-700' },
   pending_review: { label: 'قيد المراجعة', color: 'bg-yellow-100 text-yellow-800' },
@@ -50,8 +58,7 @@ function SupplierMarketplaceContent() {
   const [stage, setStage] = useState<Stage>('loading')
   const [supplier, setSupplier] = useState<SupplierState | null>(null)
   const [listings, setListings] = useState<ListingSummary[]>([])
-  const [bookingsCount, setBookingsCount] = useState(0)
-  const [pendingBookingsCount, setPendingBookingsCount] = useState(0)
+  const [stats, setStats] = useState<Stats>({ totalRevenue: 0, monthBookings: 0, pending: 0, totalBookings: 0 })
   const [loadingListings, setLoadingListings] = useState(false)
   const [actioningId, setActioningId] = useState<string | null>(null)
 
@@ -84,7 +91,7 @@ function SupplierMarketplaceContent() {
       } else {
         setStage('ready')
         loadListings(sup.id)
-        loadBookingsCounts(sup.id)
+        loadStats(sup.id)
       }
     }
     init()
@@ -110,17 +117,28 @@ function SupplierMarketplaceContent() {
     setLoadingListings(false)
   }
 
-  const loadBookingsCounts = async (supId: string) => {
+  const loadStats = async (supId: string) => {
     // @ts-expect-error
     const { data } = await supabaseBrowser
       .from('marketplace_bookings')
-      .select('status')
+      .select('status, supplier_payout, created_at')
       .eq('supplier_id', supId)
 
-    if (data) {
-      setBookingsCount(data.length)
-      setPendingBookingsCount(data.filter((b: any) => b.status === 'pending_payment').length)
-    }
+    if (!data) return
+
+    const monthAgo = new Date()
+    monthAgo.setMonth(monthAgo.getMonth() - 1)
+
+    const totalRevenue = data
+      .filter((b: any) => ['confirmed', 'active', 'completed'].includes(b.status))
+      .reduce((sum: number, b: any) => sum + Number(b.supplier_payout || 0), 0)
+
+    setStats({
+      totalRevenue,
+      monthBookings: data.filter((b: any) => new Date(b.created_at) > monthAgo).length,
+      pending: data.filter((b: any) => b.status === 'pending_payment').length,
+      totalBookings: data.length,
+    })
   }
 
   const togglePublished = async (listing: ListingSummary) => {
@@ -169,12 +187,6 @@ function SupplierMarketplaceContent() {
           >
             تسجيل دخول
           </Link>
-          <Link
-            href={`/auth/signup?redirect=${encodeURIComponent('/supplier/marketplace')}`}
-            className="block w-full mt-2 text-sm text-gray-600 hover:text-[#1F5F3F]"
-          >
-            مفيش حساب؟ اعمل حساب جديد
-          </Link>
         </div>
       </div>
     )
@@ -213,9 +225,6 @@ function SupplierMarketplaceContent() {
             <p className="text-sm text-gray-600 mb-2">
               <strong>{supplier.business_name}</strong>
             </p>
-            <p className="text-sm text-gray-600">
-              لما الإدارة توافق على حسابك، هتقدر تبدأ تضيف listings.
-            </p>
             <Link href="/account" className="inline-block mt-4 text-sm text-[#1F5F3F] hover:underline">
               ارجع للحساب
             </Link>
@@ -239,12 +248,8 @@ function SupplierMarketplaceContent() {
                 {supplier.kyc_rejection_reason}
               </p>
             )}
-            <a
-              href="https://wa.me/201002229982"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-[#1F5F3F] hover:underline"
-            >
+            <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer"
+              className="text-sm text-[#1F5F3F] hover:underline">
               للتواصل: واتساب +20 100 222 9982
             </a>
           </div>
@@ -269,17 +274,11 @@ function SupplierMarketplaceContent() {
                 </p>
               </div>
             </div>
-
-            <Link
-              href="/account"
-              className="p-2 text-gray-600 hover:bg-gray-50 rounded-full"
-              title="حسابي"
-            >
+            <Link href="/account" className="p-2 text-gray-600 hover:bg-gray-50 rounded-full" title="حسابي">
               <User className="w-5 h-5" />
             </Link>
           </div>
 
-          {/* Tab nav */}
           <div className="flex gap-2">
             <span className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-[#1F5F3F] text-white">
               Listings ({listings.length})
@@ -289,10 +288,10 @@ function SupplierMarketplaceContent() {
               className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center gap-1"
             >
               <Calendar className="w-3 h-3" />
-              الحجوزات ({bookingsCount})
-              {pendingBookingsCount > 0 && (
+              الحجوزات ({stats.totalBookings})
+              {stats.pending > 0 && (
                 <span className="bg-yellow-400 text-gray-900 rounded-full px-1.5 ml-1 text-[10px] font-bold">
-                  {pendingBookingsCount}
+                  {stats.pending}
                 </span>
               )}
             </Link>
@@ -307,6 +306,44 @@ function SupplierMarketplaceContent() {
             <span>تم حفظ الـlisting بنجاح!</span>
           </div>
         )}
+
+        {/* Stats summary */}
+        <div className="grid grid-cols-3 gap-2 mb-6">
+          <div className="bg-white rounded-xl border border-gray-100 p-3">
+            <div className="flex items-center gap-1.5 mb-1 text-gray-500">
+              <DollarSign className="w-3.5 h-3.5" />
+              <p className="text-[10px] font-medium uppercase tracking-wider">صافي الإيراد</p>
+            </div>
+            <p className="text-base sm:text-lg font-bold text-[#1F5F3F]">
+              {stats.totalRevenue.toLocaleString('ar-EG')}
+              <span className="text-xs font-normal text-gray-500 mr-1">ج.م</span>
+            </p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-100 p-3">
+            <div className="flex items-center gap-1.5 mb-1 text-gray-500">
+              <TrendingUp className="w-3.5 h-3.5" />
+              <p className="text-[10px] font-medium uppercase tracking-wider">حجوزات الشهر</p>
+            </div>
+            <p className="text-base sm:text-lg font-bold text-gray-900">{stats.monthBookings}</p>
+          </div>
+          <div className={`rounded-xl border p-3 ${
+            stats.pending > 0
+              ? 'bg-yellow-50 border-yellow-200'
+              : 'bg-white border-gray-100'
+          }`}>
+            <div className={`flex items-center gap-1.5 mb-1 ${
+              stats.pending > 0 ? 'text-yellow-700' : 'text-gray-500'
+            }`}>
+              <Bell className="w-3.5 h-3.5" />
+              <p className="text-[10px] font-medium uppercase tracking-wider">بانتظار الدفع</p>
+            </div>
+            <p className={`text-base sm:text-lg font-bold ${
+              stats.pending > 0 ? 'text-yellow-900' : 'text-gray-900'
+            }`}>
+              {stats.pending}
+            </p>
+          </div>
+        </div>
 
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-bold text-gray-900">
@@ -375,12 +412,18 @@ function SupplierMarketplaceContent() {
                           </span>
                         </div>
                         <h3 className="font-bold text-gray-900 mt-1 truncate">{listing.title}</h3>
-                        {(listing.district || listing.city) && (
-                          <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {[listing.district, listing.city].filter(Boolean).join(', ')}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                          {(listing.district || listing.city) && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              {[listing.district, listing.city].filter(Boolean).join(', ')}
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1">
+                            <Eye className="w-3 h-3" />
+                            {listing.views_count}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
