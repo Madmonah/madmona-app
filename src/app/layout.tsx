@@ -4,6 +4,9 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 
+// Madmona root layout — sets up Arabic typography (Tajawal), brand metadata,
+// PWA manifest link, JSON-LD LocalBusiness data for SEO, and analytics.
+
 const SITE_URL = 'https://madmonacairo.com'
 
 // Tajawal — modern, clean Arabic typeface that pairs well with the
