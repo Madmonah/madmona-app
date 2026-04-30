@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
@@ -48,7 +48,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   archived: { label: 'مؤرشف', color: 'bg-gray-100 text-gray-500' },
 }
 
-export default function SupplierMarketplacePage() {
+function SupplierMarketplaceContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const justCreated = searchParams.get('success') === '1'
@@ -293,14 +293,12 @@ export default function SupplierMarketplacePage() {
           <div className="space-y-3">
             {listings.map(listing => {
               const status = STATUS_LABELS[listing.status] || STATUS_LABELS.draft
-              // Pick primary photo, or first photo
               const photos = listing.photos || []
               const primary = photos.find(p => p.is_primary) || photos[0]
               const photoUrl = primary?.photo_url
 
               return (
                 <div key={listing.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden flex flex-col sm:flex-row">
-                  {/* Photo */}
                   <div className="sm:w-40 sm:h-32 bg-gray-100 flex-shrink-0">
                     {photoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -312,7 +310,6 @@ export default function SupplierMarketplacePage() {
                     )}
                   </div>
 
-                  {/* Content */}
                   <div className="flex-1 p-4">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1 min-w-0">
@@ -389,5 +386,20 @@ export default function SupplierMarketplacePage() {
         )}
       </main>
     </div>
+  )
+}
+
+// Force dynamic rendering (page depends on session + searchParams)
+export const dynamic = 'force-dynamic'
+
+export default function SupplierMarketplacePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
+        <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+      </div>
+    }>
+      <SupplierMarketplaceContent />
+    </Suspense>
   )
 }

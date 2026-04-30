@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
@@ -35,7 +35,7 @@ interface Listing {
   primary_photo: { photo_url: string }[] | null
 }
 
-export default function MarketplaceBrowsePage() {
+function MarketplaceBrowseContent() {
   const searchParams = useSearchParams()
   const initialCategorySlug = searchParams.get('category')
 
@@ -257,5 +257,20 @@ export default function MarketplaceBrowsePage() {
         )}
       </main>
     </div>
+  )
+}
+
+// Force dynamic rendering (this page uses live data + searchParams)
+export const dynamic = 'force-dynamic'
+
+export default function MarketplaceBrowsePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
+        <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+      </div>
+    }>
+      <MarketplaceBrowseContent />
+    </Suspense>
   )
 }
