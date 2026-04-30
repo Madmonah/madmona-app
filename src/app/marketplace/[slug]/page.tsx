@@ -99,79 +99,89 @@ export default function ListingDetailPage() {
 
   useEffect(() => {
     const load = async () => {
-      // @ts-expect-error
-      const { data: l, error } = await supabaseBrowser
-        .from('listings')
-        .select(`
-          *,
-          category:categories(name_ar, icon),
-          supplier:marketplace_suppliers(
-            id, business_name,
-            profile:profiles!marketplace_suppliers_profile_id_fkey(phone, full_name)
-          )
-        `)
-        .eq('slug', slug)
-        .eq('status', 'published')
-        .maybeSingle()
+      try {
+        // @ts-expect-error
+        const { data: l, error } = await supabaseBrowser
+          .from('listings')
+          .select(`
+            *,
+            category:categories(name_ar, icon),
+            supplier:marketplace_suppliers(
+              id, business_name,
+              profile:profiles!marketplace_suppliers_profile_id_fkey(phone, full_name)
+            )
+          `)
+          .eq('slug', slug)
+          .eq('status', 'published')
+          .maybeSingle()
 
-      if (error || !l) {
-        setNotFound(true)
+        if (error || !l) {
+          setNotFound(true)
+          setLoading(false)
+          return
+        }
+
+        setListing(l as ListingDetail)
+
+        // Run remaining fetches in parallel
+        const [photosResult, valsResult, prResult, revResult] = await Promise.all([
+          // @ts-expect-error
+          supabaseBrowser
+            .from('listing_photos')
+            .select('*')
+            .eq('listing_id', l.id)
+            .order('display_order', { ascending: true }),
+          // @ts-expect-error
+          supabaseBrowser
+            .from('listing_values')
+            .select(`
+              value,
+              attribute:attributes(id, name_ar, field_key, field_type, unit, options, display_order)
+            `)
+            .eq('listing_id', l.id),
+          // @ts-expect-error
+          supabaseBrowser
+            .from('pricing_rules')
+            .select('*')
+            .eq('listing_id', l.id)
+            .eq('is_active', true)
+            .order('price', { ascending: true }),
+          // @ts-expect-error
+          supabaseBrowser
+            .from('reviews')
+            .select(`
+              id, rating, comment, created_at,
+              customer:profiles!reviews_customer_id_fkey(full_name)
+            `)
+            .eq('listing_id', l.id)
+            .eq('is_published', true)
+            .order('created_at', { ascending: false })
+            .limit(20),
+        ])
+
+        setPhotos(photosResult.data || [])
+        const sorted = (valsResult.data || []).sort((a: any, b: any) =>
+          (a.attribute?.display_order || 0) - (b.attribute?.display_order || 0)
+        )
+        setAttributes(sorted as AttributeWithValue[])
+        setPricing(prResult.data || [])
+        setReviews((revResult.data || []) as Review[])
+      } catch (e) {
+        console.error('[listing/detail] load error:', e)
+      } finally {
         setLoading(false)
-        return
       }
 
-      setListing(l as ListingDetail)
-
-      // @ts-expect-error
-      const { data: ph } = await supabaseBrowser
-        .from('listing_photos')
-        .select('*')
-        .eq('listing_id', l.id)
-        .order('display_order', { ascending: true })
-      setPhotos(ph || [])
-
-      // @ts-expect-error
-      const { data: vals } = await supabaseBrowser
-        .from('listing_values')
-        .select(`
-          value,
-          attribute:attributes(id, name_ar, field_key, field_type, unit, options, display_order)
-        `)
-        .eq('listing_id', l.id)
-
-      const sorted = (vals || []).sort((a: any, b: any) =>
-        (a.attribute?.display_order || 0) - (b.attribute?.display_order || 0)
-      )
-      setAttributes(sorted as AttributeWithValue[])
-
-      // @ts-expect-error
-      const { data: pr } = await supabaseBrowser
-        .from('pricing_rules')
-        .select('*')
-        .eq('listing_id', l.id)
-        .eq('is_active', true)
-        .order('price', { ascending: true })
-      setPricing(pr || [])
-
-      // Reviews
-      // @ts-expect-error
-      const { data: rev } = await supabaseBrowser
-        .from('reviews')
-        .select(`
-          id, rating, comment, created_at,
-          customer:profiles!reviews_customer_id_fkey(full_name)
-        `)
-        .eq('listing_id', l.id)
-        .eq('is_published', true)
-        .order('created_at', { ascending: false })
-        .limit(20)
-      setReviews((rev || []) as Review[])
-
-      // Increment views (fire and forget)
-      // @ts-expect-error
-      supabaseBrowser.rpc('increment_view_count', { listing_id: l.id }).catch(() => {})
-
-      setLoading(false)
+      // Fire-and-forget view increment AFTER setLoading. Supabase query builders
+      // expose .then() but not .catch(), so use the two-arg .then() form.
+      // Wrapped in setTimeout so any error here can never block the UI.
+      setTimeout(() => {
+        try {
+          // @ts-expect-error
+          supabaseBrowser.rpc('increment_view_count', { listing_id: slug })
+            .then(() => {}, () => {})
+        } catch {}
+      }, 200)
     }
     load()
   }, [slug])
@@ -208,7 +218,7 @@ export default function ListingDetailPage() {
   const phone = listing.supplier?.profile?.phone || ''
   const phoneClean = phone.replace(/\D/g, '')
   const startingPrice = pricing.length > 0 ? Number(pricing[0].price) : null
-  const canBook = pricing.length > 0  // Need at least one pricing rule
+  const canBook = pricing.length > 0
 
   const whatsappMessage = encodeURIComponent(
     `مرحباً، أنا مهتم بـ "${listing.title}" على Madmona Marketplace.\nاللينك: https://madmonacairo.com/marketplace/${listing.slug}`
@@ -248,7 +258,6 @@ export default function ListingDetailPage() {
       </header>
 
       <main className="max-w-4xl mx-auto pb-32">
-        {/* Photo gallery */}
         <div className="bg-white">
           <div className="aspect-[16/10] bg-gray-100 relative">
             {currentPhoto ? (
@@ -405,7 +414,6 @@ export default function ListingDetailPage() {
           </div>
         )}
 
-        {/* Reviews */}
         {reviews.length > 0 && (
           <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -440,7 +448,6 @@ export default function ListingDetailPage() {
         )}
       </main>
 
-      {/* Sticky bottom CTA */}
       <div className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 z-50">
         <div className="max-w-4xl mx-auto p-4 flex items-center gap-2">
           <div className="flex-1">
