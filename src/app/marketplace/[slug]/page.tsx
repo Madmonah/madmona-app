@@ -6,13 +6,13 @@ import { useParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, MapPin, Star, Users, MessageCircle,
-  Loader2, Image as ImageIcon, Building2, Tag,
+  Loader2, Image as ImageIcon, Building2, Tag, CalendarPlus,
   ChevronRight, ChevronLeft, CheckCircle, AlertCircle,
 } from 'lucide-react'
 
 // ============================================================================
 // /marketplace/[slug]
-// Public listing detail page with WhatsApp booking CTA.
+// Public listing detail page with Booking + WhatsApp CTA.
 // ============================================================================
 
 interface ListingDetail {
@@ -144,7 +144,6 @@ export default function ListingDetailPage() {
         .order('price', { ascending: true })
       setPricing(pr || [])
 
-      // Fire-and-forget view increment
       // @ts-expect-error
       supabaseBrowser.rpc('increment_view_count', { listing_id: l.id }).catch(() => {})
 
@@ -185,6 +184,7 @@ export default function ListingDetailPage() {
   const phone = listing.supplier?.profile?.phone || ''
   const phoneClean = phone.replace(/\D/g, '')
   const startingPrice = pricing.length > 0 ? Number(pricing[0].price) : null
+  const canBook = pricing.length > 0
 
   const whatsappMessage = encodeURIComponent(
     `مرحباً، أنا مهتم بـ "${listing.title}" على Madmona Marketplace.\nاللينك: https://madmonacairo.com/marketplace/${listing.slug}`
@@ -381,6 +381,7 @@ export default function ListingDetailPage() {
         )}
       </main>
 
+      {/* Sticky bottom CTA */}
       <div className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 z-50">
         <div className="max-w-4xl mx-auto p-4 flex items-center gap-3">
           <div className="flex-1">
@@ -395,7 +396,28 @@ export default function ListingDetailPage() {
               <p className="text-sm text-gray-500">للسعر، تواصل معانا</p>
             )}
           </div>
-          {phoneClean ? (
+          {canBook ? (
+            <>
+              {phoneClean && (
+                <a
+                  href={`https://wa.me/${phoneClean}?text=${whatsappMessage}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-11 h-11 bg-[#25D366] text-white rounded-xl hover:bg-[#1da851] flex-shrink-0"
+                  title="تواصل عبر واتساب"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                </a>
+              )}
+              <Link
+                href={`/marketplace/${listing.slug}/book`}
+                className="flex items-center gap-2 bg-[#1F5F3F] text-white px-5 py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 flex-shrink-0"
+              >
+                <CalendarPlus className="w-5 h-5" />
+                احجز الآن
+              </Link>
+            </>
+          ) : phoneClean ? (
             <a
               href={`https://wa.me/${phoneClean}?text=${whatsappMessage}`}
               target="_blank"
@@ -403,7 +425,7 @@ export default function ListingDetailPage() {
               className="flex items-center gap-2 bg-[#25D366] text-white px-5 py-3 rounded-xl font-semibold hover:bg-[#1da851] flex-shrink-0"
             >
               <MessageCircle className="w-5 h-5" />
-              احجز عبر واتساب
+              تواصل عبر واتساب
             </a>
           ) : (
             <a
@@ -413,7 +435,7 @@ export default function ListingDetailPage() {
               className="flex items-center gap-2 bg-[#1F5F3F] text-white px-5 py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 flex-shrink-0"
             >
               <MessageCircle className="w-5 h-5" />
-              تواصل معانا
+              تواصل
             </a>
           )}
         </div>

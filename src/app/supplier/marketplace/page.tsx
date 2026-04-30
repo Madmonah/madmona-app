@@ -7,7 +7,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   Plus, Building2, Edit2, Trash2, Eye, EyeOff, AlertCircle,
   Loader2, ArrowRight, CheckCircle, Clock, Lock, MapPin,
-  Image as ImageIcon, ExternalLink,
+  Image as ImageIcon, ExternalLink, Inbox,
 } from 'lucide-react'
 
 // ============================================================================
@@ -55,6 +55,7 @@ function SupplierMarketplaceContent() {
   const [stage, setStage] = useState<Stage>('loading')
   const [supplier, setSupplier] = useState<SupplierState | null>(null)
   const [listings, setListings] = useState<ListingSummary[]>([])
+  const [pendingBookingsCount, setPendingBookingsCount] = useState(0)
   const [loadingListings, setLoadingListings] = useState(false)
   const [actioningId, setActioningId] = useState<string | null>(null)
 
@@ -87,6 +88,7 @@ function SupplierMarketplaceContent() {
       } else {
         setStage('ready')
         loadListings(sup.id)
+        loadPendingBookings(sup.id)
       }
     }
     init()
@@ -110,6 +112,16 @@ function SupplierMarketplaceContent() {
 
     setListings((data || []) as ListingSummary[])
     setLoadingListings(false)
+  }
+
+  const loadPendingBookings = async (supId: string) => {
+    // @ts-expect-error
+    const { count } = await supabaseBrowser
+      .from('marketplace_bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('supplier_id', supId)
+      .eq('status', 'pending_payment')
+    setPendingBookingsCount(count || 0)
   }
 
   const togglePublished = async (listing: ListingSummary) => {
@@ -137,8 +149,6 @@ function SupplierMarketplaceContent() {
     if (!error && supplier) await loadListings(supplier.id)
     setActioningId(null)
   }
-
-  // ----- Stage rendering -----
 
   if (stage === 'loading') {
     return (
@@ -241,7 +251,6 @@ function SupplierMarketplaceContent() {
     )
   }
 
-  // Approved supplier view
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
@@ -257,6 +266,18 @@ function SupplierMarketplaceContent() {
               </p>
             </div>
           </div>
+          <Link
+            href="/supplier/bookings"
+            className="relative flex items-center gap-1 px-3 py-1.5 bg-[#1F5F3F]/10 text-[#1F5F3F] rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/20"
+          >
+            <Inbox className="w-4 h-4" />
+            <span className="hidden sm:inline">الحجوزات</span>
+            {pendingBookingsCount > 0 && (
+              <span className="absolute -top-1 -left-1 bg-[#C2410C] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                {pendingBookingsCount}
+              </span>
+            )}
+          </Link>
         </div>
       </header>
 
@@ -302,7 +323,6 @@ function SupplierMarketplaceContent() {
               const primary = photos.find(p => p.is_primary) || photos[0]
               const photoUrl = primary?.url
 
-              // Compute starting price from active pricing rules
               const activePrices = (listing.pricing || [])
                 .filter(p => p.is_active)
                 .map(p => Number(p.price))
