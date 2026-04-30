@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
-  Search, MapPin, Star, ImageIcon, Loader2, ArrowRight,
+  Search, MapPin, Star, ImageIcon, Loader2, ArrowRight, User, LogIn,
 } from 'lucide-react'
 
 // ============================================================================
@@ -44,8 +44,15 @@ function MarketplaceBrowseContent() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(initialCategorySlug)
+  const [isAuthed, setIsAuthed] = useState<boolean | null>(null)
 
   useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      setIsAuthed(!!session?.user)
+    }
+    checkAuth()
+
     const load = async () => {
       // @ts-expect-error
       const { data } = await supabaseBrowser
@@ -119,11 +126,30 @@ function MarketplaceBrowseContent() {
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3 mb-3">
-            <Link href="/" className="p-1 hover:bg-gray-50 rounded-full">
-              <ArrowRight className="w-4 h-4 text-gray-600" />
-            </Link>
-            <h1 className="text-lg font-bold text-gray-900">Madmona Marketplace</h1>
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <Link href="/" className="p-1 hover:bg-gray-50 rounded-full flex-shrink-0">
+                <ArrowRight className="w-4 h-4 text-gray-600" />
+              </Link>
+              <h1 className="text-lg font-bold text-gray-900 truncate">Madmona Marketplace</h1>
+            </div>
+
+            {isAuthed === true ? (
+              <Link
+                href="/account"
+                className="p-2 text-gray-600 hover:bg-gray-50 rounded-full flex-shrink-0"
+                title="حسابي"
+              >
+                <User className="w-5 h-5" />
+              </Link>
+            ) : isAuthed === false ? (
+              <Link
+                href="/auth/login?redirect=/marketplace"
+                className="flex items-center gap-1 px-3 py-1.5 bg-[#1F5F3F] text-white rounded-full text-xs font-medium flex-shrink-0"
+              >
+                <LogIn className="w-3 h-3" /> دخول
+              </Link>
+            ) : null}
           </div>
 
           <div className="relative">
@@ -170,7 +196,7 @@ function MarketplaceBrowseContent() {
           <p className="text-sm text-gray-500 mb-4">
             {listings.length} نتيجة
             {selectedCategoryName && <span> في <strong>{selectedCategoryName}</strong></span>}
-            {searchQuery && <span> لـ "<strong>{searchQuery}</strong>"</span>}
+            {searchQuery && <span> لـ &quot;<strong>{searchQuery}</strong>&quot;</span>}
           </p>
         )}
 

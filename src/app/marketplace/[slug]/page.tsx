@@ -7,7 +7,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, MapPin, Star, Users, MessageCircle, Calendar,
   Loader2, Image as ImageIcon, Building2, Tag,
-  ChevronRight, ChevronLeft, CheckCircle, AlertCircle,
+  ChevronRight, ChevronLeft, CheckCircle, AlertCircle, User,
 } from 'lucide-react'
 
 // ============================================================================
@@ -96,10 +96,16 @@ export default function ListingDetailPage() {
   const [loading, setLoading] = useState(true)
   const [photoIndex, setPhotoIndex] = useState(0)
   const [notFound, setNotFound] = useState(false)
+  const [isAuthed, setIsAuthed] = useState<boolean | null>(null)
 
   useEffect(() => {
+    let resolvedListingId: string | null = null
+
     const load = async () => {
       try {
+        const { data: { session } } = await supabaseBrowser.auth.getSession()
+        setIsAuthed(!!session?.user)
+
         // @ts-expect-error
         const { data: l, error } = await supabaseBrowser
           .from('listings')
@@ -121,9 +127,9 @@ export default function ListingDetailPage() {
           return
         }
 
+        resolvedListingId = l.id
         setListing(l as ListingDetail)
 
-        // Run remaining fetches in parallel
         const [photosResult, valsResult, prResult, revResult] = await Promise.all([
           // @ts-expect-error
           supabaseBrowser
@@ -172,16 +178,17 @@ export default function ListingDetailPage() {
         setLoading(false)
       }
 
-      // Fire-and-forget view increment AFTER setLoading. Supabase query builders
-      // expose .then() but not .catch(), so use the two-arg .then() form.
-      // Wrapped in setTimeout so any error here can never block the UI.
-      setTimeout(() => {
-        try {
-          // @ts-expect-error
-          supabaseBrowser.rpc('increment_view_count', { listing_id: slug })
-            .then(() => {}, () => {})
-        } catch {}
-      }, 200)
+      // Fire-and-forget view increment with the actual listing UUID
+      if (resolvedListingId) {
+        const lid = resolvedListingId
+        setTimeout(() => {
+          try {
+            // @ts-expect-error
+            supabaseBrowser.rpc('increment_view_count', { listing_id: lid })
+              .then(() => {}, () => {})
+          } catch {}
+        }, 200)
+      }
     }
     load()
   }, [slug])
@@ -248,12 +255,22 @@ export default function ListingDetailPage() {
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/marketplace" className="p-1 hover:bg-gray-50 rounded-full">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+          <Link href="/marketplace" className="p-1 hover:bg-gray-50 rounded-full flex-shrink-0">
             <ArrowRight className="w-5 h-5 text-gray-700" />
           </Link>
           <h1 className="text-sm font-semibold text-gray-700 truncate flex-1 text-center">{listing.title}</h1>
-          <div className="w-7" />
+          {isAuthed ? (
+            <Link
+              href="/account"
+              className="p-1 text-gray-600 hover:bg-gray-50 rounded-full flex-shrink-0"
+              title="حسابي"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+          ) : (
+            <div className="w-7" />
+          )}
         </div>
       </header>
 

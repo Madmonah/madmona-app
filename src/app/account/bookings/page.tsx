@@ -103,7 +103,7 @@ export default function CustomerBookingsPage() {
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Link href="/" className="p-1 hover:bg-gray-50 rounded-full">
+          <Link href="/account" className="p-1 hover:bg-gray-50 rounded-full">
             <ArrowRight className="w-5 h-5 text-gray-700" />
           </Link>
           <div>
