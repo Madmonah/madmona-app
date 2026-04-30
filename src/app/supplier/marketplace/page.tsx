@@ -7,13 +7,8 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   Plus, Building2, Edit2, Trash2, Eye, EyeOff, AlertCircle,
   Loader2, ArrowRight, CheckCircle, Clock, Lock, MapPin,
-  Image as ImageIcon, ExternalLink, Calendar,
+  Image as ImageIcon, ExternalLink, Calendar, User,
 } from 'lucide-react'
-
-// ============================================================================
-// /supplier/marketplace
-// Marketplace dashboard for approved suppliers.
-// ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'pending' | 'rejected' | 'ready'
 
@@ -197,6 +192,12 @@ function SupplierMarketplaceContent() {
           >
             ابدأ التسجيل
           </Link>
+          <Link
+            href="/account"
+            className="block text-sm text-gray-600 hover:text-[#1F5F3F] mt-3"
+          >
+            العودة للحساب
+          </Link>
         </div>
       </div>
     )
@@ -215,6 +216,9 @@ function SupplierMarketplaceContent() {
             <p className="text-sm text-gray-600">
               لما الإدارة توافق على حسابك، هتقدر تبدأ تضيف listings.
             </p>
+            <Link href="/account" className="inline-block mt-4 text-sm text-[#1F5F3F] hover:underline">
+              ارجع للحساب
+            </Link>
           </div>
         </div>
       </div>
@@ -255,7 +259,7 @@ function SupplierMarketplaceContent() {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <Link href="/" className="p-1 hover:bg-gray-50 rounded-full">
+              <Link href="/account" className="p-1 hover:bg-gray-50 rounded-full">
                 <ArrowRight className="w-4 h-4 text-gray-600" />
               </Link>
               <div>
@@ -265,6 +269,14 @@ function SupplierMarketplaceContent() {
                 </p>
               </div>
             </div>
+
+            <Link
+              href="/account"
+              className="p-2 text-gray-600 hover:bg-gray-50 rounded-full"
+              title="حسابي"
+            >
+              <User className="w-5 h-5" />
+            </Link>
           </div>
 
           {/* Tab nav */}

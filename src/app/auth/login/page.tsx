@@ -9,17 +9,10 @@ import {
   ArrowRight, Phone, Lock, AlertCircle, Loader2, LogIn,
 } from 'lucide-react'
 
-// ============================================================================
-// /auth/login
-// 
-// Phone + password sign-in for Supabase Auth.
-// Supports ?redirect=/path to send the user back where they came from.
-// ============================================================================
-
 function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirect') || '/supplier/marketplace'
+  const redirectTo = searchParams.get('redirect') || '/account'
 
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
@@ -61,7 +54,6 @@ function LoginContent() {
       return
     }
 
-    // Success — go to redirect URL
     router.push(redirectTo)
     router.refresh()
   }
@@ -149,7 +141,7 @@ function LoginContent() {
             <div className="mt-6 pt-6 border-t border-gray-100 text-center">
               <p className="text-sm text-gray-600 mb-2">لسه ما عندكش حساب؟</p>
               <Link
-                href={`/auth/signup${redirectTo !== '/supplier/marketplace' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
+                href={`/auth/signup${redirectTo !== '/account' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
                 className="inline-block text-[#1F5F3F] font-semibold hover:underline no-underline"
               >
                 اعمل حساب جديد

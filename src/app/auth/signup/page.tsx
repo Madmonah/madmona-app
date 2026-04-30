@@ -9,18 +9,10 @@ import {
   ArrowRight, Phone, Lock, User, AlertCircle, Loader2, UserPlus, CheckCircle,
 } from 'lucide-react'
 
-// ============================================================================
-// /auth/signup
-// 
-// Phone + password signup. Uses synthesized email under the hood for Supabase
-// Auth, stores the real phone via raw_user_meta_data which the trigger
-// `handle_new_user` reads to create a profiles row.
-// ============================================================================
-
 function SignupContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirect') || '/supplier/marketplace'
+  const redirectTo = searchParams.get('redirect') || '/account'
 
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
@@ -78,25 +70,18 @@ function SignupContent() {
       return
     }
 
-    // If the user is automatically signed in (no email confirmation required),
-    // redirect to the target page. Otherwise show a "check email" message —
-    // but with synthetic emails we want them auto-confirmed. If session is null,
-    // try to sign in directly.
     if (data.session) {
       router.push(redirectTo)
       router.refresh()
       return
     }
 
-    // No session = email confirmation required. With synthetic emails this
-    // won't deliver. Try to immediately sign them in.
     const { error: signInErr } = await supabaseBrowser.auth.signInWithPassword({
       email,
       password,
     })
 
     if (signInErr) {
-      // Fallback: tell them an admin needs to verify
       setSuccess(true)
       setSubmitting(false)
       return
@@ -246,7 +231,7 @@ function SignupContent() {
             <div className="mt-6 pt-6 border-t border-gray-100 text-center">
               <p className="text-sm text-gray-600 mb-2">عندك حساب بالفعل؟</p>
               <Link
-                href={`/auth/login${redirectTo !== '/supplier/marketplace' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
+                href={`/auth/login${redirectTo !== '/account' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
                 className="inline-block text-[#1F5F3F] font-semibold hover:underline no-underline"
               >
                 سجّل دخولك
