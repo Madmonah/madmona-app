@@ -1,10 +1,14 @@
 import { ImageResponse } from 'next/og'
 
-// Apple touch icon — shown when users add the site to their iPhone home
-// screen. 180x180 with the same brand styling as the favicon but bigger.
+// Apple touch icon (180x180) — shown when users tap "Add to Home Screen" on
+// iOS. iOS doesn't support maskable icons, so we go with the same compact
+// composition as the maskable: white inner square on a green outer with the
+// real Madmona logo, sized to feel premium next to other native app icons.
 export const runtime = 'edge'
 export const size = { width: 180, height: 180 }
 export const contentType = 'image/png'
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://madmonacairo.com'
 
 export default function AppleIcon() {
   return new ImageResponse(
@@ -14,25 +18,19 @@ export default function AppleIcon() {
           width: '100%',
           height: '100%',
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#1F5F3F',
-          color: '#FFFFFF',
-          fontWeight: 700,
+          backgroundColor: '#FAFAF7',
         }}
       >
-        <div style={{ fontSize: 110, lineHeight: 1, marginTop: -8 }}>م</div>
-        <div
-          style={{
-            fontSize: 14,
-            color: '#B8860B',
-            letterSpacing: '0.3em',
-            marginTop: 4,
-          }}
-        >
-          MADMONA
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`${SITE_URL}/madmona-logo.png`}
+          alt="Madmona"
+          width={150}
+          height={150}
+          style={{ objectFit: 'contain' }}
+        />
       </div>
     ),
     { ...size }

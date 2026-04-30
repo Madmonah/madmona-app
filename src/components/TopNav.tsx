@@ -41,19 +41,19 @@ export default function TopNav() {
     <>
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-          {/* Logo */}
+          {/* Logo — uses the actual Canva logo asset, not a dynamic text icon */}
           <Link href="/" className="flex items-center gap-2 no-underline flex-shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/icon-192.png"
+              src="/madmona-logo.png"
               alt="مضمونة"
-              className="w-9 h-9 rounded-lg"
-              width={36}
-              height={36}
+              className="w-10 h-10 object-contain"
+              width={40}
+              height={40}
             />
             <div className="hidden sm:block">
               <p className="font-bold text-[#1F5F3F] text-base leading-none">مضمونة</p>
-              <p className="text-[10px] text-gray-500 tracking-wider mt-0.5">MADMONA</p>
+              <p className="text-[10px] text-gray-500 tracking-[0.2em] mt-0.5">MADMONA</p>
             </div>
           </Link>
 
@@ -149,11 +149,11 @@ export default function TopNav() {
               <div className="flex items-center gap-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/icon-192.png"
+                  src="/madmona-logo.png"
                   alt="مضمونة"
-                  className="w-8 h-8 rounded-lg"
-                  width={32}
-                  height={32}
+                  className="w-9 h-9 object-contain"
+                  width={36}
+                  height={36}
                 />
                 <p className="font-bold text-[#1F5F3F]">مضمونة</p>
               </div>

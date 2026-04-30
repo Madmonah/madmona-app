@@ -1,31 +1,21 @@
 {
-  "name": "مضمونة - Madmona Coworking & Lounge",
+  "name": "مضمونة - احجز مساحتك",
   "short_name": "مضمونة",
-  "description": "بوتيك كوورك سبيس ولاونج في مصر الجديدة. مساحتك اللي بتخصك. Your space, guaranteed.",
+  "description": "مساحات عمل في مصر الجديدة، القاهرة. احجز مكتبك أو غرفة اجتماعاتك في ثواني.",
+  "lang": "ar",
+  "dir": "rtl",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#FFFFFF",
+  "background_color": "#FAFAF7",
   "theme_color": "#1F5F3F",
-  "lang": "ar-EG",
-  "dir": "rtl",
+  "orientation": "portrait",
   "scope": "/",
-  "categories": ["business", "productivity", "lifestyle"],
   "icons": [
     {
-      "src": "/favicon-16x16.png",
-      "sizes": "16x16",
-      "type": "image/png"
-    },
-    {
-      "src": "/favicon-32x32.png",
-      "sizes": "32x32",
-      "type": "image/png"
-    },
-    {
-      "src": "/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png"
+      "src": "/madmona-logo.png",
+      "sizes": "200x200",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-192.png",
@@ -40,16 +30,33 @@
       "purpose": "any"
     },
     {
-      "src": "/icon-192-maskable.png",
+      "src": "/icon-maskable-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icon-512-maskable.png",
+      "src": "/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "استكشف المساحات",
+      "short_name": "استكشف",
+      "description": "استكشف كل المساحات المتاحة",
+      "url": "/browse"
+    },
+    {
+      "name": "احجز غرفة اجتماعات",
+      "short_name": "اجتماعات",
+      "description": "احجز غرفة اجتماعات فوراً",
+      "url": "/reserve/meeting-room"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 }

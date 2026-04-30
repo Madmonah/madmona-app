@@ -17,6 +17,7 @@ import {
   Camera,
 } from 'lucide-react'
 import TopNav from '@/components/TopNav'
+import InstallPWA from '@/components/InstallPWA'
 
 // ============================================================
 // Home page — restructured for clarity:
@@ -35,6 +36,11 @@ export default function HomePage() {
       <TopNav />
 
       <main className="max-w-6xl mx-auto px-4 pb-12">
+        {/* PWA Install banner — only shows on supported devices and hides after install */}
+        <div className="pt-4">
+          <InstallPWA />
+        </div>
+
         {/* ========== HERO ========== */}
         <section className="py-10 md:py-16">
           <div className="max-w-2xl">

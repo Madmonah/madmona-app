@@ -1,10 +1,13 @@
 import { ImageResponse } from 'next/og'
 
-// Auto-generated favicon — a green square with a white "م" (Arabic letter
-// meem, the first letter of مضمونة). Simple and recognizable at 32x32.
+// Favicon (32x32) — small icon shown in the browser tab. Uses the real
+// Madmona logo on cream so the brand reads consistently across the site,
+// installed PWA, and browser tabs.
 export const runtime = 'edge'
 export const size = { width: 32, height: 32 }
 export const contentType = 'image/png'
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://madmonacairo.com'
 
 export default function Icon() {
   return new ImageResponse(
@@ -16,14 +19,18 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#1F5F3F',
-          color: '#FFFFFF',
-          fontSize: 24,
-          fontWeight: 700,
+          backgroundColor: '#FAFAF7',
           borderRadius: 6,
         }}
       >
-        م
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`${SITE_URL}/madmona-logo.png`}
+          alt="Madmona"
+          width={28}
+          height={28}
+          style={{ objectFit: 'contain' }}
+        />
       </div>
     ),
     { ...size }

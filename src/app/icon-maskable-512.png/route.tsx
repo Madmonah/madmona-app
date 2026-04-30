@@ -4,6 +4,8 @@ import { ImageResponse } from 'next/og'
 export const runtime = 'edge'
 export const contentType = 'image/png'
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://madmonacairo.com'
+
 export async function GET() {
   return new ImageResponse(
     (
@@ -22,34 +24,20 @@ export async function GET() {
             width: '70%',
             height: '70%',
             display: 'flex',
-            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: '#FFFFFF',
             borderRadius: 64,
           }}
         >
-          <div
-            style={{
-              fontSize: 240,
-              fontWeight: 700,
-              color: '#1F5F3F',
-              lineHeight: 1,
-            }}
-          >
-            م
-          </div>
-          <div
-            style={{
-              fontSize: 24,
-              fontWeight: 600,
-              color: '#1F5F3F',
-              letterSpacing: '0.3em',
-              marginTop: 10,
-            }}
-          >
-            MADMONA
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`${SITE_URL}/madmona-logo.png`}
+            alt="Madmona"
+            width={290}
+            height={290}
+            style={{ objectFit: 'contain' }}
+          />
         </div>
       </div>
     ),

@@ -1,8 +1,10 @@
 import { ImageResponse } from 'next/og'
 
-// PWA icon at 512x512 — Madmona logo on white background. High-res for splash screens.
+// PWA icon at 512x512 — uses the real Madmona logo for high-res splash screens.
 export const runtime = 'edge'
 export const contentType = 'image/png'
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://madmonacairo.com'
 
 export async function GET() {
   return new ImageResponse(
@@ -12,34 +14,19 @@ export async function GET() {
           width: '100%',
           height: '100%',
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#FFFFFF',
+          backgroundColor: '#FAFAF7',
         }}
       >
-        <div
-          style={{
-            fontSize: 350,
-            fontWeight: 700,
-            color: '#1F5F3F',
-            lineHeight: 1,
-            marginTop: -25,
-          }}
-        >
-          م
-        </div>
-        <div
-          style={{
-            fontSize: 38,
-            fontWeight: 600,
-            color: '#1F5F3F',
-            letterSpacing: '0.3em',
-            marginTop: 16,
-          }}
-        >
-          MADMONA
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`${SITE_URL}/madmona-logo.png`}
+          alt="Madmona"
+          width={420}
+          height={420}
+          style={{ objectFit: 'contain' }}
+        />
       </div>
     ),
     { width: 512, height: 512 }

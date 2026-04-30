@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Tajawal } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 import './globals.css'
 
 // Madmona root layout — sets up Arabic typography (Tajawal), brand metadata,
@@ -139,6 +140,7 @@ export default function RootLayout({
       </head>
       <body className={`${tajawal.className} bg-[#FAFAF7] text-gray-900 antialiased`}>
         {children}
+        <ServiceWorkerRegister />
         <Analytics />
         <SpeedInsights />
       </body>
