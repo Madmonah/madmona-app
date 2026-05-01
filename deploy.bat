@@ -1,20 +1,28 @@
 @echo off
 cd /d "%~dp0"
 echo ================================================================
-echo   InstaPay Integration + Address Fix
+echo   Admin Dashboard Hub + Browse + Team Permissions
 echo ================================================================
 echo.
-echo   * InstaPay payment block on /bookings/[id] page
-echo   * Account: 5220001000009207 (بنك مصر)
-echo   * Copy account number button
-echo   * WhatsApp confirmation button (sends ref code + amount)
-echo   * 4-step payment instructions
-echo   * Address corrected to "سليمان عَزْمي" everywhere
-echo   * Coordinates 30.1134075, 31.3655983 in DB
+echo   ADMIN DASHBOARD UPGRADED — all admin links in one place:
+echo.
+echo   Section 1: Marketplace Management
+echo     - Suppliers / Bookings / Categories / Payouts
+echo.
+echo   Section 2: Madmona Coworking
+echo     - Space Bookings / Leads / Units / Old Suppliers
+echo.
+echo   Section 3: Team & Permissions
+echo     - Team management / Supplier panel / New listing / Reviews
+echo.
+echo   ALSO INCLUDED:
+echo   * /browse: Madmona-branded, pulls from listings table
+echo   * Supplier team: /supplier/team with 10 granular permissions
+echo   * DB: supplier_staff table + RLS + helper function
 echo.
 pause
 git add .
-git commit -m "feat: InstaPay payment flow + correct Madmona address"
+git commit -m "feat: admin dashboard hub + team permissions + browse rebuild"
 git push
 echo.
 if %ERRORLEVEL% EQU 0 (
