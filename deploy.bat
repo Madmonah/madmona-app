@@ -1,19 +1,23 @@
 @echo off
 cd /d "%~dp0"
 echo ==============================================
-echo   Polish Pass 2 — closing the loop
+echo   PREMIUM REDESIGN — Visual Overhaul
 echo ==============================================
 echo.
-echo   * Supplier reviews page with response writing
-echo   * Map embed on listing detail (Google Maps)
-echo   * Supplier responses shown on listing reviews
-echo   * Reviews pill in supplier dashboard
-echo   * About page (/about) for trust + ads readiness
-echo   * Footer with About link
+echo   * Cairo + Inter fonts (Google Fonts)
+echo   * Custom animations (slide-up, scale-in, shimmer)
+echo   * Glassmorphism + premium shadows
+echo   * Gradient mesh backgrounds
+echo   * Home page redesigned with massive hero
+echo   * Marketplace browse with glass header
+echo   * Featured Listings cinematic
+echo   * TopNav with scroll-aware blur
+echo   * Premium typography (font-black, gradient text)
+echo   * Skeleton loaders instead of spinners
 echo.
 pause
 git add .
-git commit -m "feat: supplier review responses + maps + about page + footer links"
+git commit -m "feat: premium visual overhaul — fonts, animations, glassmorphism, cinematic cards"
 git push
 echo.
 if %ERRORLEVEL% EQU 0 (

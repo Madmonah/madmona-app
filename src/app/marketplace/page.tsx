@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   Search, MapPin, Star, ImageIcon, Loader2, ArrowRight, User, LogIn, Heart,
-  ChevronDown, X,
+  ChevronDown, X, SlidersHorizontal, Sparkles,
 } from 'lucide-react'
 
 interface Category {
@@ -128,7 +128,6 @@ function MarketplaceBrowseContent() {
         .eq('status', 'published')
         .limit(60)
 
-      // Server-side ordering for non-price sorts
       if (sortBy === 'rating') {
         query = query.order('rating', { ascending: false, nullsFirst: false })
       } else {
@@ -185,7 +184,6 @@ function MarketplaceBrowseContent() {
     setTogglingFav(null)
   }
 
-  // Helper: calculate min price for a listing
   const getMinPrice = (listing: Listing): number => {
     const activePrices = (listing.pricing || [])
       .filter(p => p.is_active)
@@ -194,7 +192,6 @@ function MarketplaceBrowseContent() {
     return activePrices.length > 0 ? Math.min(...activePrices) : Infinity
   }
 
-  // Apply client-side filters & sort
   const cities = Array.from(
     new Set(
       listings
@@ -212,7 +209,6 @@ function MarketplaceBrowseContent() {
   } else if (sortBy === 'price_desc') {
     filteredListings = filteredListings.sort((a, b) => getMinPrice(b) - getMinPrice(a))
   }
-  // For 'newest' and 'rating', server-side ordering is preserved
 
   const selectedCategoryName = rootCategories.find(c => c.slug === selectedCategorySlug)?.name_ar
   const hasFilters = selectedCategorySlug || searchQuery || cityFilter || sortBy !== 'newest'
@@ -225,96 +221,101 @@ function MarketplaceBrowseContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+    <div className="min-h-screen gradient-mesh" dir="rtl">
+      {/* Floating gradient blobs */}
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#1F5F3F]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
+      <div className="fixed top-40 left-20 w-[300px] h-[300px] bg-[#B8860B]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
+
+      {/* Premium sticky header */}
+      <header className="sticky top-0 z-40 glass border-b border-white/40">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-3 min-w-0">
-              <Link href="/" className="p-1 hover:bg-gray-50 rounded-full flex-shrink-0">
-                <ArrowRight className="w-4 h-4 text-gray-600" />
+              <Link
+                href="/"
+                className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all flex-shrink-0"
+              >
+                <ArrowRight className="w-4 h-4 text-gray-700" />
               </Link>
-              <h1 className="text-lg font-bold text-gray-900 truncate">Madmona Marketplace</h1>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold text-[#B8860B] uppercase tracking-widest">Madmona</p>
+                <h1 className="text-lg md:text-xl font-black text-gray-900 truncate">Marketplace</h1>
+              </div>
             </div>
 
             {isAuthed === true ? (
               <Link
                 href="/account"
-                className="p-2 text-gray-600 hover:bg-gray-50 rounded-full flex-shrink-0"
+                className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all flex-shrink-0"
                 title="حسابي"
               >
-                <User className="w-5 h-5" />
+                <User className="w-4 h-4 text-gray-700" />
               </Link>
             ) : isAuthed === false ? (
               <Link
                 href="/auth/login?redirect=/marketplace"
-                className="flex items-center gap-1 px-3 py-1.5 bg-[#1F5F3F] text-white rounded-full text-xs font-medium flex-shrink-0"
+                className="inline-flex items-center gap-1 px-4 py-2 bg-[#1F5F3F] text-white rounded-full text-xs font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all flex-shrink-0"
               >
-                <LogIn className="w-3 h-3" /> دخول
+                <LogIn className="w-3.5 h-3.5" />
+                دخول
               </Link>
             ) : null}
           </div>
 
+          {/* Premium search */}
           <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="ابحث في الـlistings..."
-              className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F5F3F]"
+              placeholder="ابحث عن مساحة، عقار، عربية، معدات..."
+              className="w-full pr-12 pl-4 py-3.5 bg-white/80 backdrop-blur border border-gray-100 rounded-2xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all shadow-soft"
             />
           </div>
 
           {/* Category pills */}
-          <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
-            <button
+          <div className="flex gap-2 mt-4 overflow-x-auto pb-1 -mx-4 px-4">
+            <CategoryPill
+              active={!selectedCategorySlug}
               onClick={() => setSelectedCategorySlug(null)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                !selectedCategorySlug
-                  ? 'bg-[#1F5F3F] text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              الكل
-            </button>
+              label="الكل"
+              icon="✨"
+            />
             {rootCategories.map(cat => (
-              <button
+              <CategoryPill
                 key={cat.id}
+                active={selectedCategorySlug === cat.slug}
                 onClick={() => setSelectedCategorySlug(cat.slug)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1 ${
-                  selectedCategorySlug === cat.slug
-                    ? 'bg-[#1F5F3F] text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <span>{cat.icon}</span> {cat.name_ar}
-              </button>
+                label={cat.name_ar}
+                icon={cat.icon || ''}
+              />
             ))}
           </div>
 
-          {/* Sort + City filter dropdowns */}
-          <div className="flex gap-2 mt-2">
-            {/* Sort */}
+          {/* Sort + City filter */}
+          <div className="flex gap-2 mt-3 flex-wrap">
             <div className="relative">
               <button
                 onClick={() => { setSortMenuOpen(o => !o); setCityMenuOpen(false) }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition-all shadow-soft hover:shadow-card ${
                   sortBy !== 'newest'
-                    ? 'bg-[#1F5F3F]/10 border-[#1F5F3F]/30 text-[#1F5F3F]'
-                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                    ? 'bg-[#1F5F3F] border-[#1F5F3F] text-white'
+                    : 'bg-white border-gray-100 text-gray-700 hover:border-gray-200'
                 }`}
               >
-                <span>الترتيب: {SORT_LABELS[sortBy]}</span>
+                <SlidersHorizontal className="w-3 h-3" />
+                <span>{SORT_LABELS[sortBy]}</span>
                 <ChevronDown className={`w-3 h-3 transition-transform ${sortMenuOpen ? 'rotate-180' : ''}`} />
               </button>
               {sortMenuOpen && (
-                <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-xl border border-gray-100 shadow-lg z-50 overflow-hidden">
+                <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-2xl shadow-luxe border border-gray-100 z-50 overflow-hidden animate-scale-in">
                   {(Object.keys(SORT_LABELS) as SortOption[]).map(option => (
                     <button
                       key={option}
                       onClick={() => { setSortBy(option); setSortMenuOpen(false) }}
-                      className={`w-full text-right px-3 py-2 text-xs hover:bg-gray-50 ${
-                        sortBy === option ? 'bg-[#1F5F3F]/5 text-[#1F5F3F] font-semibold' : 'text-gray-700'
+                      className={`w-full text-right px-4 py-2.5 text-xs hover:bg-[#1F5F3F]/5 font-medium transition-colors ${
+                        sortBy === option ? 'bg-[#1F5F3F]/10 text-[#1F5F3F]' : 'text-gray-700'
                       }`}
                     >
                       {SORT_LABELS[option]}
@@ -324,15 +325,14 @@ function MarketplaceBrowseContent() {
               )}
             </div>
 
-            {/* City filter — only show if there are cities */}
             {cities.length > 0 && (
               <div className="relative">
                 <button
                   onClick={() => { setCityMenuOpen(o => !o); setSortMenuOpen(false) }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition-all shadow-soft hover:shadow-card ${
                     cityFilter
-                      ? 'bg-[#1F5F3F]/10 border-[#1F5F3F]/30 text-[#1F5F3F]'
-                      : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                      ? 'bg-[#1F5F3F] border-[#1F5F3F] text-white'
+                      : 'bg-white border-gray-100 text-gray-700 hover:border-gray-200'
                   }`}
                 >
                   <MapPin className="w-3 h-3" />
@@ -340,11 +340,11 @@ function MarketplaceBrowseContent() {
                   <ChevronDown className={`w-3 h-3 transition-transform ${cityMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {cityMenuOpen && (
-                  <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-xl border border-gray-100 shadow-lg z-50 overflow-hidden max-h-64 overflow-y-auto">
+                  <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-2xl shadow-luxe border border-gray-100 z-50 overflow-hidden max-h-72 overflow-y-auto animate-scale-in">
                     <button
                       onClick={() => { setCityFilter(null); setCityMenuOpen(false) }}
-                      className={`w-full text-right px-3 py-2 text-xs hover:bg-gray-50 ${
-                        !cityFilter ? 'bg-[#1F5F3F]/5 text-[#1F5F3F] font-semibold' : 'text-gray-700'
+                      className={`w-full text-right px-4 py-2.5 text-xs hover:bg-[#1F5F3F]/5 font-medium transition-colors ${
+                        !cityFilter ? 'bg-[#1F5F3F]/10 text-[#1F5F3F]' : 'text-gray-700'
                       }`}
                     >
                       كل المدن
@@ -353,8 +353,8 @@ function MarketplaceBrowseContent() {
                       <button
                         key={city}
                         onClick={() => { setCityFilter(city); setCityMenuOpen(false) }}
-                        className={`w-full text-right px-3 py-2 text-xs hover:bg-gray-50 ${
-                          cityFilter === city ? 'bg-[#1F5F3F]/5 text-[#1F5F3F] font-semibold' : 'text-gray-700'
+                        className={`w-full text-right px-4 py-2.5 text-xs hover:bg-[#1F5F3F]/5 font-medium transition-colors ${
+                          cityFilter === city ? 'bg-[#1F5F3F]/10 text-[#1F5F3F]' : 'text-gray-700'
                         }`}
                       >
                         {city}
@@ -368,44 +368,72 @@ function MarketplaceBrowseContent() {
             {hasFilters && (
               <button
                 onClick={clearAllFilters}
-                className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-red-600"
+                className="flex items-center gap-1 px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-50 rounded-full transition-colors"
               >
-                <X className="w-3 h-3" /> مسح الفلاتر
+                <X className="w-3 h-3" />
+                مسح الفلاتر
               </button>
             )}
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
+      <main className="max-w-6xl mx-auto px-4 py-8 relative">
+        {/* Results header */}
         {!loading && (
-          <p className="text-sm text-gray-500 mb-4">
-            {filteredListings.length} نتيجة
-            {selectedCategoryName && <span> في <strong>{selectedCategoryName}</strong></span>}
-            {cityFilter && <span> · <strong>{cityFilter}</strong></span>}
-            {searchQuery && <span> لـ &quot;<strong>{searchQuery}</strong>&quot;</span>}
-          </p>
+          <div className="mb-6 flex items-end justify-between flex-wrap gap-2">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black text-gray-900">
+                <span className="tabular">{filteredListings.length}</span>{' '}
+                <span className="font-semibold text-gray-500">
+                  {selectedCategoryName ? `في ${selectedCategoryName}` : 'نتيجة'}
+                </span>
+              </h2>
+              {(searchQuery || cityFilter) && (
+                <p className="text-sm text-gray-500 mt-1">
+                  {searchQuery && <span>لـ &quot;<strong className="text-gray-700">{searchQuery}</strong>&quot;</span>}
+                  {searchQuery && cityFilter && <span> · </span>}
+                  {cityFilter && <span>في <strong className="text-gray-700">{cityFilter}</strong></span>}
+                </p>
+              )}
+            </div>
+          </div>
         )}
 
         {loading ? (
-          <div className="text-center py-12"><Loader2 className="w-6 h-6 text-gray-400 animate-spin mx-auto" /></div>
+          // Loading skeleton
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-soft">
+                <div className="aspect-[4/3] animate-shimmer" />
+                <div className="p-5 space-y-3">
+                  <div className="h-3 w-16 animate-shimmer rounded-full" />
+                  <div className="h-5 w-3/4 animate-shimmer rounded-full" />
+                  <div className="h-3 w-1/2 animate-shimmer rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : filteredListings.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-            <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <h3 className="text-base font-semibold text-gray-700 mb-1">مفيش نتائج</h3>
-            <p className="text-sm text-gray-500">جرّب بحث مختلف أو فلتر تاني</p>
+          <div className="bg-white rounded-3xl shadow-soft p-12 md:p-20 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center">
+              <Search className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-black text-gray-900 mb-2">مفيش نتائج</h3>
+            <p className="text-sm text-gray-500 mb-6">جرّب بحث مختلف أو فلتر تاني</p>
             {hasFilters && (
               <button
                 onClick={clearAllFilters}
-                className="inline-flex items-center gap-1 mt-4 px-4 py-2 bg-[#1F5F3F] text-white rounded-lg text-xs font-semibold"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#1F5F3F] text-white rounded-2xl text-sm font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
               >
+                <Sparkles className="w-4 h-4" />
                 مسح كل الفلاتر
               </button>
             )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredListings.map(listing => {
+            {filteredListings.map((listing, i) => {
               const photos = listing.photos || []
               const primary = photos.find(p => p.is_primary) || photos[0]
               const photoUrl = primary?.url
@@ -417,21 +445,31 @@ function MarketplaceBrowseContent() {
                 <Link
                   key={listing.id}
                   href={`/marketplace/${listing.slug}`}
-                  className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+                  className="group block bg-white rounded-3xl overflow-hidden shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-500 no-underline animate-slide-up"
+                  style={{ animationDelay: `${Math.min(i * 50, 300)}ms` }}
                 >
-                  <div className="aspect-[4/3] bg-gray-100 relative">
+                  <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
                     {photoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={photoUrl}
+                          alt={listing.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      </>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <ImageIcon className="w-10 h-10 text-gray-300" />
+                        <ImageIcon className="w-12 h-12 text-gray-300" />
                       </div>
                     )}
+
+                    {/* Heart toggle */}
                     <button
                       onClick={(e) => toggleFavorite(e, listing.id)}
                       disabled={togglingFav === listing.id}
-                      className="absolute top-2 left-2 w-9 h-9 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white shadow-sm disabled:opacity-50"
+                      className="absolute top-3 left-3 w-9 h-9 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white shadow-card disabled:opacity-50 hover:scale-105 transition-all"
                       title={isFav ? 'إزالة من المفضلة' : 'حفظ في المفضلة'}
                     >
                       {togglingFav === listing.id ? (
@@ -440,40 +478,55 @@ function MarketplaceBrowseContent() {
                         <Heart className={`w-4 h-4 ${isFav ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
                       )}
                     </button>
-                  </div>
-                  <div className="p-4">
+
+                    {/* Category chip overlay */}
                     {listing.category && (
-                      <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                        <span>{listing.category.icon}</span> {listing.category.name_ar}
-                      </p>
+                      <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold text-gray-800">
+                        <span>{listing.category.icon}</span>
+                        <span>{listing.category.name_ar}</span>
+                      </div>
                     )}
-                    <h3 className="font-bold text-gray-900 mb-1 line-clamp-2">{listing.title}</h3>
+
+                    {/* Rating */}
+                    {listing.rating && Number(listing.rating) > 0 && (
+                      <div className="absolute bottom-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 bg-black/60 backdrop-blur rounded-full text-[10px] font-bold text-white">
+                        <Star className="w-3 h-3 fill-[#B8860B] text-[#B8860B]" />
+                        <span>{Number(listing.rating).toFixed(1)}</span>
+                        <span className="opacity-60">({listing.reviews_count})</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-5">
+                    <h3 className="font-black text-base md:text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#1F5F3F] transition-colors">
+                      {listing.title}
+                    </h3>
+
                     {(listing.district || listing.city) && (
-                      <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">
+                      <p className="text-xs text-gray-500 flex items-center gap-1 mb-3">
                         <MapPin className="w-3 h-3" />
-                        {[listing.district, listing.city].filter(Boolean).join(', ')}
+                        {[listing.district, listing.city].filter(Boolean).join('، ')}
                       </p>
                     )}
-                    <div className="flex items-center justify-between">
+
+                    <div className="flex items-end justify-between pt-3 border-t border-gray-100">
                       <div>
                         {startingPrice !== null ? (
                           <>
-                            <span className="text-xs text-gray-500">يبدأ من</span>
-                            <p className="font-bold text-[#1F5F3F]">
-                              {startingPrice.toLocaleString('ar-EG')} <span className="text-xs font-normal">ج.م</span>
+                            <p className="text-[10px] text-gray-500 font-medium">يبدأ من</p>
+                            <p className="text-xl font-black text-[#1F5F3F] leading-none mt-0.5 tabular">
+                              {startingPrice.toLocaleString('ar-EG')}
+                              <span className="text-xs font-medium text-gray-500 mr-1">ج.م</span>
                             </p>
                           </>
                         ) : (
-                          <span className="text-xs text-gray-400">السعر عند الطلب</span>
+                          <p className="text-xs text-gray-400 font-medium">السعر عند الطلب</p>
                         )}
                       </div>
-                      {listing.rating && Number(listing.rating) > 0 && (
-                        <div className="flex items-center gap-1 text-xs">
-                          <Star className="w-3 h-3 fill-[#B8860B] text-[#B8860B]" />
-                          <span className="font-semibold text-gray-900">{Number(listing.rating).toFixed(1)}</span>
-                          <span className="text-gray-500">({listing.reviews_count})</span>
-                        </div>
-                      )}
+                      <div className="inline-flex items-center gap-1 text-[#1F5F3F] font-bold text-xs group-hover:gap-2 transition-all">
+                        <span>تفاصيل</span>
+                        <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+                      </div>
                     </div>
                   </div>
                 </Link>
@@ -483,6 +536,29 @@ function MarketplaceBrowseContent() {
         )}
       </main>
     </div>
+  )
+}
+
+function CategoryPill({
+  active, onClick, label, icon,
+}: {
+  active: boolean
+  onClick: () => void
+  label: string
+  icon: string
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 shadow-soft ${
+        active
+          ? 'bg-[#1F5F3F] text-white shadow-elevated'
+          : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-card border border-gray-100'
+      }`}
+    >
+      <span>{icon}</span>
+      {label}
+    </button>
   )
 }
 

@@ -3,12 +3,11 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
-import { ArrowLeft, MapPin, Star, ImageIcon, Loader2 } from 'lucide-react'
+import { ArrowLeft, MapPin, Star, ImageIcon } from 'lucide-react'
 
 // ============================================================
-// FeaturedListings — promo strip on home page.
-// Loads top 3 published marketplace listings sorted by rating + views.
-// Empty state hides the section entirely (won't show empty placeholders).
+// FeaturedListings — premium cinematic strip on home page.
+// Loads top 3 published marketplace listings with hover lift + image zoom.
 // ============================================================
 
 interface Listing {
@@ -49,37 +48,51 @@ export default function FeaturedListings() {
     load()
   }, [])
 
-  // Hide section entirely if empty (no listings yet)
+  // Loading skeleton
   if (loading) {
     return (
-      <section className="mb-12">
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-5 h-5 text-gray-300 animate-spin" />
+      <section>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-soft">
+              <div className="aspect-[4/3] animate-shimmer" />
+              <div className="p-5 space-y-3">
+                <div className="h-3 w-16 animate-shimmer rounded-full" />
+                <div className="h-5 w-3/4 animate-shimmer rounded-full" />
+                <div className="h-3 w-1/2 animate-shimmer rounded-full" />
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     )
   }
 
+  // Hide section entirely if empty
   if (listings.length === 0) return null
 
   return (
-    <section className="mb-12">
-      <div className="flex items-end justify-between mb-4">
+    <section>
+      <div className="flex items-end justify-between mb-8">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">معروض حالياً</h2>
-          <p className="text-xs text-gray-500 mt-0.5">أحدث ما تم نشره على الـMarketplace</p>
+          <p className="text-xs font-bold text-[#B8860B] uppercase tracking-widest mb-2">معروض حالياً</p>
+          <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight">
+            أحدث ما على
+            <br />
+            <span className="gradient-text-green">المنصة</span>
+          </h2>
         </div>
         <Link
           href="/marketplace"
-          className="text-sm text-[#1F5F3F] font-semibold hover:underline no-underline flex items-center gap-1"
+          className="hidden sm:inline-flex items-center gap-1.5 text-sm text-[#1F5F3F] font-bold hover:gap-2.5 transition-all no-underline"
         >
-          <span>الكل</span>
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>تصفّح الكل</span>
+          <ArrowLeft className="w-4 h-4" />
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-        {listings.map(listing => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {listings.map((listing, i) => {
           const photos = listing.photos || []
           const primary = photos.find(p => p.is_primary) || photos[0]
           const photoUrl = primary?.url
@@ -93,56 +106,88 @@ export default function FeaturedListings() {
             <Link
               key={listing.id}
               href={`/marketplace/${listing.slug}`}
-              className="block bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow no-underline"
+              className="group block bg-white rounded-3xl overflow-hidden shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-500 no-underline animate-slide-up"
+              style={{ animationDelay: `${i * 100}ms` }}
             >
-              <div className="aspect-[4/3] bg-gray-100">
+              <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
                 {photoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photoUrl}
+                      alt={listing.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <ImageIcon className="w-10 h-10 text-gray-300" />
+                    <ImageIcon className="w-12 h-12 text-gray-300" />
+                  </div>
+                )}
+
+                {/* Category chip overlay */}
+                {listing.category && (
+                  <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold text-gray-800">
+                    <span>{listing.category.icon}</span>
+                    <span>{listing.category.name_ar}</span>
+                  </div>
+                )}
+
+                {/* Rating overlay */}
+                {listing.rating && Number(listing.rating) > 0 && (
+                  <div className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold text-gray-800">
+                    <Star className="w-3 h-3 fill-[#B8860B] text-[#B8860B]" />
+                    <span>{Number(listing.rating).toFixed(1)}</span>
                   </div>
                 )}
               </div>
-              <div className="p-4">
-                {listing.category && (
-                  <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                    <span>{listing.category.icon}</span> {listing.category.name_ar}
-                  </p>
-                )}
-                <h3 className="font-bold text-gray-900 mb-1 line-clamp-2 text-sm">{listing.title}</h3>
+
+              <div className="p-5">
+                <h3 className="font-black text-base md:text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#1F5F3F] transition-colors">
+                  {listing.title}
+                </h3>
+
                 {(listing.district || listing.city) && (
-                  <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">
+                  <p className="text-xs text-gray-500 flex items-center gap-1 mb-3">
                     <MapPin className="w-3 h-3" />
-                    {[listing.district, listing.city].filter(Boolean).join(', ')}
+                    {[listing.district, listing.city].filter(Boolean).join('، ')}
                   </p>
                 )}
-                <div className="flex items-center justify-between">
+
+                <div className="flex items-end justify-between pt-3 border-t border-gray-100">
                   <div>
                     {startingPrice !== null ? (
                       <>
-                        <span className="text-[10px] text-gray-500">يبدأ من</span>
-                        <p className="font-bold text-[#1F5F3F] text-sm">
-                          {startingPrice.toLocaleString('ar-EG')} <span className="text-xs font-normal">ج.م</span>
+                        <p className="text-[10px] text-gray-500 font-medium">يبدأ من</p>
+                        <p className="text-xl font-black text-[#1F5F3F] leading-none mt-0.5 tabular">
+                          {startingPrice.toLocaleString('ar-EG')}
+                          <span className="text-xs font-medium text-gray-500 mr-1">ج.م</span>
                         </p>
                       </>
                     ) : (
-                      <span className="text-xs text-gray-400">السعر عند الطلب</span>
+                      <p className="text-xs text-gray-400 font-medium">السعر عند الطلب</p>
                     )}
                   </div>
-                  {listing.rating && Number(listing.rating) > 0 && (
-                    <div className="flex items-center gap-1 text-xs">
-                      <Star className="w-3 h-3 fill-[#B8860B] text-[#B8860B]" />
-                      <span className="font-semibold text-gray-900">{Number(listing.rating).toFixed(1)}</span>
-                    </div>
-                  )}
+                  <div className="inline-flex items-center gap-1 text-[#1F5F3F] font-bold text-xs group-hover:gap-2 transition-all">
+                    <span>اعرف أكتر</span>
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                  </div>
                 </div>
               </div>
             </Link>
           )
         })}
       </div>
+
+      {/* Mobile see all link */}
+      <Link
+        href="/marketplace"
+        className="sm:hidden mt-6 flex items-center justify-center gap-2 px-5 py-3 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-[#1F5F3F] no-underline"
+      >
+        <span>تصفّح الكل</span>
+        <ArrowLeft className="w-4 h-4" />
+      </Link>
     </section>
   )
 }
