@@ -10,7 +10,7 @@ import {
   Plus, Building2, Edit2, Trash2, Eye, EyeOff, AlertCircle,
   Loader2, ArrowRight, CheckCircle, Clock, Lock, MapPin,
   Image as ImageIcon, ExternalLink, Calendar, User, TrendingUp,
-  DollarSign, Bell, Copy,
+  DollarSign, Bell, Copy, Star,
 } from 'lucide-react'
 
 type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'pending' | 'rejected' | 'ready'
@@ -42,6 +42,8 @@ interface Stats {
   monthBookings: number
   pending: number
   totalBookings: number
+  totalReviews: number
+  unansweredReviews: number
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -60,13 +62,19 @@ function SupplierMarketplaceContent() {
   const [stage, setStage] = useState<Stage>('loading')
   const [supplier, setSupplier] = useState<SupplierState | null>(null)
   const [listings, setListings] = useState<ListingSummary[]>([])
-  const [stats, setStats] = useState<Stats>({ totalRevenue: 0, monthBookings: 0, pending: 0, totalBookings: 0 })
+  const [stats, setStats] = useState<Stats>({
+    totalRevenue: 0,
+    monthBookings: 0,
+    pending: 0,
+    totalBookings: 0,
+    totalReviews: 0,
+    unansweredReviews: 0,
+  })
   const [loadingListings, setLoadingListings] = useState(false)
   const [actioningId, setActioningId] = useState<string | null>(null)
 
   const [toastVisible, setToastVisible] = useState(false)
   const [newBookingId, setNewBookingId] = useState<string | null>(null)
-
   const [pulseStats, setPulseStats] = useState(false)
   const supplierIdRef = useRef<string | null>(null)
 
@@ -164,26 +172,43 @@ function SupplierMarketplaceContent() {
   }
 
   const loadStats = async (supId: string) => {
+    // Bookings stats
     // @ts-expect-error
-    const { data } = await supabaseBrowser
+    const { data: bookings } = await supabaseBrowser
       .from('marketplace_bookings')
       .select('status, supplier_payout, created_at')
       .eq('supplier_id', supId)
 
-    if (!data) return
-
     const monthAgo = new Date()
     monthAgo.setMonth(monthAgo.getMonth() - 1)
 
-    const totalRevenue = data
-      .filter((b: { status: string }) => ['confirmed', 'active', 'completed'].includes(b.status))
-      .reduce((sum: number, b: { supplier_payout: number | string }) => sum + Number(b.supplier_payout || 0), 0)
+    const bookingsArr = (bookings || []) as Array<{
+      status: string
+      supplier_payout: number | string
+      created_at: string
+    }>
+
+    const totalRevenue = bookingsArr
+      .filter(b => ['confirmed', 'active', 'completed'].includes(b.status))
+      .reduce((sum, b) => sum + Number(b.supplier_payout || 0), 0)
+
+    // Reviews stats
+    // @ts-expect-error
+    const { data: reviews } = await supabaseBrowser
+      .from('reviews')
+      .select('id, supplier_response')
+      .eq('supplier_id', supId)
+      .eq('is_published', true)
+
+    const reviewsArr = (reviews || []) as Array<{ supplier_response: string | null }>
 
     setStats({
       totalRevenue,
-      monthBookings: data.filter((b: { created_at: string }) => new Date(b.created_at) > monthAgo).length,
-      pending: data.filter((b: { status: string }) => b.status === 'pending_payment').length,
-      totalBookings: data.length,
+      monthBookings: bookingsArr.filter(b => new Date(b.created_at) > monthAgo).length,
+      pending: bookingsArr.filter(b => b.status === 'pending_payment').length,
+      totalBookings: bookingsArr.length,
+      totalReviews: reviewsArr.length,
+      unansweredReviews: reviewsArr.filter(r => !r.supplier_response).length,
     })
   }
 
@@ -213,17 +238,11 @@ function SupplierMarketplaceContent() {
     setActioningId(null)
   }
 
-  // ============================================================================
-  // Listing duplication
-  // Copies listing + photos + pricing rules + attribute values to a new draft.
-  // Then redirects to the edit page for the new copy.
-  // ============================================================================
   const duplicateListing = async (listing: ListingSummary) => {
     if (!confirm(`نسخ "${listing.title}"؟ النسخة هتطلع كمسودة وتقدر تعدلها.`)) return
     setActioningId(listing.id)
 
     try {
-      // 1. Fetch full listing data
       // @ts-expect-error
       const { data: full } = await supabaseBrowser
         .from('listings')
@@ -233,11 +252,9 @@ function SupplierMarketplaceContent() {
 
       if (!full) throw new Error('Listing not found')
 
-      // 2. Create new listing as draft
       const timestamp = Date.now().toString(36)
       const newSlug = `${full.slug}-copy-${timestamp}`
 
-      // Pick fields to copy (exclude id, slug, created_at, updated_at, counters)
       const newListingPayload = {
         supplier_id: full.supplier_id,
         category_id: full.category_id,
@@ -270,7 +287,6 @@ function SupplierMarketplaceContent() {
       if (insertError || !newListing) throw insertError || new Error('Insert failed')
       const newId = newListing.id
 
-      // 3. Copy photos
       // @ts-expect-error
       const { data: photos } = await supabaseBrowser
         .from('listing_photos')
@@ -284,7 +300,6 @@ function SupplierMarketplaceContent() {
           .insert(photos.map((p: Record<string, unknown>) => ({ ...p, listing_id: newId })))
       }
 
-      // 4. Copy pricing rules
       // @ts-expect-error
       const { data: pricing } = await supabaseBrowser
         .from('pricing_rules')
@@ -298,7 +313,6 @@ function SupplierMarketplaceContent() {
           .insert(pricing.map((p: Record<string, unknown>) => ({ ...p, listing_id: newId })))
       }
 
-      // 5. Copy listing values (attributes)
       // @ts-expect-error
       const { data: values } = await supabaseBrowser
         .from('listing_values')
@@ -312,7 +326,6 @@ function SupplierMarketplaceContent() {
           .insert(values.map((v: Record<string, unknown>) => ({ ...v, listing_id: newId })))
       }
 
-      // 6. Redirect to edit page for the new copy
       router.push(`/supplier/marketplace/${newId}/edit`)
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'حصل خطأ غير معروف'
@@ -439,7 +452,7 @@ function SupplierMarketplaceContent() {
             </Link>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1">
             <span className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-[#1F5F3F] text-white">
               Listings ({listings.length})
             </span>
@@ -454,6 +467,18 @@ function SupplierMarketplaceContent() {
               {stats.pending > 0 && (
                 <span className="bg-yellow-400 text-gray-900 rounded-full px-1.5 ml-1 text-[10px] font-bold">
                   {stats.pending}
+                </span>
+              )}
+            </Link>
+            <Link
+              href="/supplier/marketplace/reviews"
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center gap-1"
+            >
+              <Star className="w-3 h-3" />
+              التقييمات ({stats.totalReviews})
+              {stats.unansweredReviews > 0 && (
+                <span className="bg-yellow-400 text-gray-900 rounded-full px-1.5 ml-1 text-[10px] font-bold">
+                  {stats.unansweredReviews}
                 </span>
               )}
             </Link>

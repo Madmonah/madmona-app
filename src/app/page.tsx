@@ -24,6 +24,7 @@ import FeaturedListings from '@/components/FeaturedListings'
 //   5. Trust signals (compact one row)
 //   6. Supplier CTA (compact)
 //   7. Contact
+//   8. Footer (with About link)
 // ============================================================
 
 export default function HomePage() {
@@ -54,7 +55,6 @@ export default function HomePage() {
 
         {/* ========== TWO BIG CARDS ========== */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-12">
-          {/* Madmona spaces */}
           <Link
             href="/browse"
             className="group block bg-[#1F5F3F] text-white rounded-2xl p-6 md:p-8 hover:bg-[#1F5F3F]/95 no-underline active:scale-[0.99] transition-all relative overflow-hidden"
@@ -76,7 +76,6 @@ export default function HomePage() {
             </div>
           </Link>
 
-          {/* Marketplace */}
           <Link
             href="/marketplace"
             className="group block bg-white border border-gray-100 rounded-2xl p-6 md:p-8 hover:border-[#1F5F3F]/30 hover:shadow-sm no-underline active:scale-[0.99] transition-all"
@@ -100,7 +99,7 @@ export default function HomePage() {
         {/* ========== FEATURED LISTINGS (live data) ========== */}
         <FeaturedListings />
 
-        {/* ========== TRUST SIGNALS — compact one row ========== */}
+        {/* ========== TRUST SIGNALS ========== */}
         <section className="grid grid-cols-3 gap-2 md:gap-3 mb-12">
           <TrustChip
             icon={<ShieldCheck className="w-4 h-4" />}
@@ -119,7 +118,7 @@ export default function HomePage() {
           />
         </section>
 
-        {/* ========== SUPPLIER CTA — compact ========== */}
+        {/* ========== SUPPLIER CTA ========== */}
         <section className="mb-10">
           <div className="bg-gradient-to-l from-[#1F5F3F] to-[#1F5F3F]/90 text-white rounded-2xl p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex-1">
@@ -177,18 +176,32 @@ export default function HomePage() {
         </section>
 
         {/* ========== FOOTER ========== */}
-        <footer className="text-center text-xs text-gray-500 py-6 border-t border-gray-100">
+        <footer className="text-center py-6 border-t border-gray-100">
           <p className="font-bold text-[#1F5F3F] text-sm mb-1">مضمونة</p>
-          <p>Your space, guaranteed · مساحتك اللي بتخصك</p>
+          <p className="text-xs text-gray-500 mb-3">Your space, guaranteed · مساحتك اللي بتخصك</p>
+          <div className="flex justify-center items-center gap-3 text-xs">
+            <Link href="/about" className="text-gray-500 hover:text-[#1F5F3F] no-underline">
+              عن مضمونة
+            </Link>
+            <span className="text-gray-300">·</span>
+            <Link href="/marketplace" className="text-gray-500 hover:text-[#1F5F3F] no-underline">
+              Marketplace
+            </Link>
+            <span className="text-gray-300">·</span>
+            <a
+              href="https://wa.me/201002229982"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-500 hover:text-[#1F5F3F] no-underline"
+            >
+              واتساب
+            </a>
+          </div>
         </footer>
       </main>
     </div>
   )
 }
-
-// ============================================================
-// Helper components
-// ============================================================
 
 function TrustChip({
   icon,

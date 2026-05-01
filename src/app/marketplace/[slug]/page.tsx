@@ -8,11 +8,12 @@ import {
   ArrowRight, MapPin, Star, Users, MessageCircle, Calendar,
   Loader2, Image as ImageIcon, Building2, Tag,
   ChevronRight, ChevronLeft, CheckCircle, AlertCircle, User, Heart, Share2,
+  ExternalLink,
 } from 'lucide-react'
 
 // ============================================================================
 // /marketplace/[slug]
-// Public listing detail page with booking, favorites, and share.
+// Public listing detail page with booking, favorites, share, map, and reviews.
 // ============================================================================
 
 interface ListingDetail {
@@ -25,6 +26,8 @@ interface ListingDetail {
   city: string | null
   district: string | null
   address: string | null
+  latitude: number | null
+  longitude: number | null
   min_booking_hours: number | null
   max_booking_hours: number | null
   rating: number | null
@@ -54,10 +57,10 @@ interface AttributeWithValue {
     field_key: string
     field_type: string
     unit: string | null
-    options: any
+    options: { key: string; label_ar: string }[] | null
     display_order: number
   }
-  value: any
+  value: unknown
 }
 
 interface PricingRule {
@@ -72,6 +75,8 @@ interface Review {
   id: string
   rating: number
   comment: string | null
+  supplier_response: string | null
+  supplier_responded_at: string | null
   created_at: string
   customer: { full_name: string | null } | null
 }
@@ -136,7 +141,7 @@ export default function ListingDetailPage() {
         resolvedListingId = l.id
         setListing(l as ListingDetail)
 
-        const fetches: any[] = [
+        const fetches: Promise<{ data: unknown }>[] = [
           // @ts-expect-error
           supabaseBrowser
             .from('listing_photos')
@@ -162,7 +167,7 @@ export default function ListingDetailPage() {
           supabaseBrowser
             .from('reviews')
             .select(`
-              id, rating, comment, created_at,
+              id, rating, comment, supplier_response, supplier_responded_at, created_at,
               customer:profiles!reviews_customer_id_fkey(full_name)
             `)
             .eq('listing_id', l.id)
@@ -171,7 +176,6 @@ export default function ListingDetailPage() {
             .limit(20),
         ]
 
-        // Add favorite check if authed
         if (session?.user) {
           fetches.push(
             // @ts-expect-error
@@ -184,14 +188,15 @@ export default function ListingDetailPage() {
           )
         }
 
-        const results = await Promise.all(fetches)
+        const results = await Promise.all(fetches) as { data: unknown }[]
 
-        setPhotos(results[0].data || [])
-        const sorted = (results[1].data || []).sort((a: any, b: any) =>
+        setPhotos((results[0].data || []) as Photo[])
+        const attrsData = (results[1].data || []) as AttributeWithValue[]
+        const sorted = attrsData.sort((a, b) =>
           (a.attribute?.display_order || 0) - (b.attribute?.display_order || 0)
         )
-        setAttributes(sorted as AttributeWithValue[])
-        setPricing(results[2].data || [])
+        setAttributes(sorted)
+        setPricing((results[2].data || []) as PricingRule[])
         setReviews((results[3].data || []) as Review[])
 
         if (results[4]) {
@@ -250,12 +255,9 @@ export default function ListingDetailPage() {
       try {
         await navigator.share({ title: listing.title, text, url })
         return
-      } catch {
-        // User cancelled or unsupported, fall through
-      }
+      } catch {}
     }
 
-    // Fallback: copy to clipboard
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       try {
         await navigator.clipboard.writeText(`${text}\n${url}`)
@@ -265,7 +267,6 @@ export default function ListingDetailPage() {
       } catch {}
     }
 
-    // Last resort: open WhatsApp share
     window.open(`https://wa.me/?text=${encodeURIComponent(`${text}\n${url}`)}`, '_blank')
   }
 
@@ -302,6 +303,7 @@ export default function ListingDetailPage() {
   const phoneClean = phone.replace(/\D/g, '')
   const startingPrice = pricing.length > 0 ? Number(pricing[0].price) : null
   const canBook = pricing.length > 0
+  const hasMap = listing.latitude !== null && listing.longitude !== null
 
   const whatsappMessage = encodeURIComponent(
     `مرحباً، أنا مهتم بـ "${listing.title}" على Madmona Marketplace.\nاللينك: https://madmonacairo.com/marketplace/${listing.slug}`
@@ -313,13 +315,13 @@ export default function ListingDetailPage() {
     if (v === null || v === undefined) return '-'
     if (attr.field_type === 'boolean') return v ? '✓ نعم' : '✗ لا'
     if (attr.field_type === 'select') {
-      const opt = (attr.options || []).find((o: any) => o.key === v)
+      const opt = (attr.options || []).find(o => o.key === v)
       return opt?.label_ar || String(v)
     }
     if (attr.field_type === 'multi_select' && Array.isArray(v)) {
       return v.map(key => {
-        const opt = (attr.options || []).find((o: any) => o.key === key)
-        return opt?.label_ar || key
+        const opt = (attr.options || []).find(o => o.key === key)
+        return opt?.label_ar || String(key)
       }).join('، ')
     }
     if (attr.field_type === 'number' && attr.unit) {
@@ -375,6 +377,7 @@ export default function ListingDetailPage() {
       </header>
 
       <main className="max-w-4xl mx-auto pb-32">
+        {/* Photos */}
         <div className="bg-white">
           <div className="aspect-[16/10] bg-gray-100 relative">
             {currentPhoto ? (
@@ -429,6 +432,7 @@ export default function ListingDetailPage() {
           )}
         </div>
 
+        {/* Title & overview */}
         <div className="bg-white p-4 sm:p-6 border-t border-gray-100">
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
@@ -464,6 +468,7 @@ export default function ListingDetailPage() {
           </div>
         </div>
 
+        {/* Description */}
         {listing.description && (
           <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-2">الوصف</h2>
@@ -471,6 +476,7 @@ export default function ListingDetailPage() {
           </div>
         )}
 
+        {/* Attributes */}
         {attributes.length > 0 && (
           <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -489,6 +495,7 @@ export default function ListingDetailPage() {
           </div>
         )}
 
+        {/* Pricing */}
         {pricing.length > 0 && (
           <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-3">الأسعار</h2>
@@ -505,15 +512,43 @@ export default function ListingDetailPage() {
           </div>
         )}
 
-        {listing.address && (
+        {/* Location with map */}
+        {(listing.address || hasMap) && (
           <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
-            <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+            <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#1F5F3F]" /> الموقع
             </h2>
-            <p className="text-sm text-gray-700">{listing.address}</p>
+            {listing.address && (
+              <p className="text-sm text-gray-700 mb-3">{listing.address}</p>
+            )}
+            {hasMap && (
+              <>
+                <div className="rounded-xl overflow-hidden border border-gray-100 bg-gray-100">
+                  <iframe
+                    src={`https://maps.google.com/maps?q=${listing.latitude},${listing.longitude}&z=16&output=embed`}
+                    width="100%"
+                    height="280"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title={`موقع ${listing.title}`}
+                  />
+                </div>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${listing.latitude},${listing.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm text-[#1F5F3F] font-semibold hover:underline"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  افتح الاتجاهات في Google Maps
+                </a>
+              </>
+            )}
           </div>
         )}
 
+        {/* Supplier card */}
         {listing.supplier && (
           <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-3">المورد</h2>
@@ -531,14 +566,15 @@ export default function ListingDetailPage() {
           </div>
         )}
 
+        {/* Reviews with supplier responses */}
         {reviews.length > 0 && (
           <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
               <Star className="w-4 h-4 fill-[#B8860B] text-[#B8860B]" /> التقييمات ({reviews.length})
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {reviews.map(r => (
-                <div key={r.id} className="border-b border-gray-100 pb-3 last:border-b-0">
+                <div key={r.id} className="border-b border-gray-100 pb-4 last:border-b-0">
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-sm font-medium text-gray-900">
                       {r.customer?.full_name || 'عميل'}
@@ -553,11 +589,31 @@ export default function ListingDetailPage() {
                     </div>
                   </div>
                   {r.comment && (
-                    <p className="text-sm text-gray-700 mt-1">{r.comment}</p>
+                    <p className="text-sm text-gray-700 mt-1 leading-relaxed">{r.comment}</p>
                   )}
                   <p className="text-xs text-gray-400 mt-1">
                     {new Date(r.created_at).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </p>
+
+                  {/* Supplier response */}
+                  {r.supplier_response && (
+                    <div className="mt-3 mr-4 sm:mr-8 bg-[#1F5F3F]/5 border border-[#1F5F3F]/20 rounded-xl p-3">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <Building2 className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                        <span className="text-xs font-semibold text-[#1F5F3F]">
+                          رد {listing.supplier?.business_name || 'المورد'}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-700 leading-relaxed">{r.supplier_response}</p>
+                      {r.supplier_responded_at && (
+                        <p className="text-[10px] text-gray-400 mt-1.5">
+                          {new Date(r.supplier_responded_at).toLocaleDateString('ar-EG', {
+                            day: 'numeric', month: 'short', year: 'numeric',
+                          })}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -565,6 +621,7 @@ export default function ListingDetailPage() {
         )}
       </main>
 
+      {/* Sticky bottom CTA */}
       <div className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 z-50">
         <div className="max-w-4xl mx-auto p-4 flex items-center gap-2">
           <div className="flex-1">
