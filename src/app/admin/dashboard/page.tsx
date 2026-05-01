@@ -6,16 +6,15 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Loader2, Lock, Crown, Building2, Calendar,
   TrendingUp, DollarSign, Users, Package, Eye, Star,
-  AlertCircle, FolderTree, ChevronLeft, UserCog, Wallet, MessageSquare,
-  Settings, ShieldCheck, Layers, ClipboardList,
+  AlertCircle, FolderTree, ChevronLeft, UserCog, Wallet,
+  Settings, Layers,
 } from 'lucide-react'
 
 // ============================================================================
 // /admin/dashboard
 // 
-// Comprehensive analytics + admin tools hub for admin (Mohamed).
-// Top: Quick metrics. Middle: Admin tools (all management links).
-// Bottom: Recent activity.
+// Unified admin hub — Madmona is now a single Marketplace.
+// All listings live in /marketplace, including Madmona's own.
 // ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'forbidden' | 'ready'
@@ -78,10 +77,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
-      if (!session?.user) {
-        setStage('unauthenticated')
-        return
-      }
+      if (!session?.user) { setStage('unauthenticated'); return }
 
       // @ts-expect-error
       const { data: prof } = await supabaseBrowser
@@ -90,10 +86,7 @@ export default function AdminDashboardPage() {
         .eq('id', session.user.id)
         .maybeSingle()
 
-      if (prof?.role !== 'admin') {
-        setStage('forbidden')
-        return
-      }
+      if (prof?.role !== 'admin') { setStage('forbidden'); return }
 
       await loadAllStats()
       setStage('ready')
@@ -253,7 +246,7 @@ export default function AdminDashboardPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-8 pb-12">
-        {/* ========== HEADLINE METRICS ========== */}
+        {/* HEADLINE METRICS */}
         <section>
           <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">
             الأرقام الكبرى
@@ -290,7 +283,7 @@ export default function AdminDashboardPage() {
           </div>
         </section>
 
-        {/* ========== ADMIN TOOLS — ALL MANAGEMENT LINKS ========== */}
+        {/* ADMIN TOOLS — UNIFIED */}
         <section>
           <div className="flex items-end justify-between mb-3">
             <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest">
@@ -306,7 +299,7 @@ export default function AdminDashboardPage() {
             )}
           </div>
 
-          {/* Marketplace management */}
+          {/* Marketplace */}
           <div className="mb-4">
             <p className="text-[10px] font-bold text-[#1F5F3F] uppercase tracking-widest mb-2 px-1">
               Marketplace
@@ -337,74 +330,30 @@ export default function AdminDashboardPage() {
               <ToolCard
                 href="/admin/payouts"
                 icon={<Wallet className="w-5 h-5" />}
-                title="المدفوعات للموردين"
+                title="المدفوعات"
                 subtitle="حساب وإصدار التحويلات"
                 accent="bg-green-100 text-green-700"
               />
             </div>
           </div>
 
-          {/* Coworking + leads */}
+          {/* Madmona content (our listings) */}
           <div className="mb-4">
             <p className="text-[10px] font-bold text-[#B8860B] uppercase tracking-widest mb-2 px-1">
-              Madmona Coworking
+              المحتوى (إعلاناتنا)
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard
-                href="/admin/bookings"
-                icon={<ClipboardList className="w-5 h-5" />}
-                title="حجوزات المساحات"
-                subtitle="حجوزات النظام القديم"
-                accent="bg-[#B8860B]/10 text-[#B8860B]"
-              />
-              <ToolCard
-                href="/admin/leads"
-                icon={<MessageSquare className="w-5 h-5" />}
-                title="الـLeads"
-                subtitle="استفسارات العملاء"
-                accent="bg-pink-100 text-pink-700"
-              />
-              <ToolCard
-                href="/admin/units"
-                icon={<Layers className="w-5 h-5" />}
-                title="الوحدات (قديم)"
-                subtitle="Spaces في iteration3"
-                accent="bg-gray-100 text-gray-700"
-              />
-              <ToolCard
-                href="/admin/suppliers"
-                icon={<UserCog className="w-5 h-5" />}
-                title="موردين iteration3"
-                subtitle="النظام القديم"
-                accent="bg-gray-100 text-gray-700"
-              />
-            </div>
-          </div>
-
-          {/* Team & permissions (Madmona supplier-side) */}
-          <div>
-            <p className="text-[10px] font-bold text-orange-700 uppercase tracking-widest mb-2 px-1">
-              فريق العمل والصلاحيات
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard
-                href="/supplier/team"
-                icon={<UserCog className="w-5 h-5" />}
-                title="فريق مضمونة"
-                subtitle="إضافة موظفين بصلاحيات"
-                accent="bg-orange-100 text-orange-700"
-              />
               <ToolCard
                 href="/supplier/marketplace"
                 icon={<Settings className="w-5 h-5" />}
                 title="لوحة المورد (مضمونة)"
-                subtitle="listings + bookings"
+                subtitle="إدارة الإعلانات والحجوزات"
                 accent="bg-[#1F5F3F]/10 text-[#1F5F3F]"
               />
               <ToolCard
                 href="/supplier/marketplace/new"
                 icon={<Package className="w-5 h-5" />}
-                title="إضافة Listing جديد"
+                title="إضافة إعلان جديد"
                 subtitle="مساحة، معدة، عربية..."
                 accent="bg-blue-100 text-blue-700"
               />
@@ -412,14 +361,44 @@ export default function AdminDashboardPage() {
                 href="/supplier/marketplace/reviews"
                 icon={<Star className="w-5 h-5" />}
                 title="التقييمات"
-                subtitle={stats.totalReviews > 0 ? `${stats.totalReviews} تقييم · ${stats.averageRating.toFixed(1)} ⭐` : 'لا تقييمات بعد'}
+                subtitle={stats.totalReviews > 0 ? `${stats.totalReviews} تقييم · ${stats.averageRating.toFixed(1)} ⭐` : 'مفيش تقييمات'}
                 accent="bg-yellow-100 text-yellow-700"
+              />
+              <ToolCard
+                href="/browse"
+                icon={<Eye className="w-5 h-5" />}
+                title="عرض الـMarketplace"
+                subtitle="شوف الموقع كما يراه العميل"
+                accent="bg-pink-100 text-pink-700"
+              />
+            </div>
+          </div>
+
+          {/* Team & permissions */}
+          <div>
+            <p className="text-[10px] font-bold text-orange-700 uppercase tracking-widest mb-2 px-1">
+              فريق العمل
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <ToolCard
+                href="/supplier/team"
+                icon={<UserCog className="w-5 h-5" />}
+                title="إدارة الفريق"
+                subtitle="موظفين بصلاحيات"
+                accent="bg-orange-100 text-orange-700"
+              />
+              <ToolCard
+                href="/account"
+                icon={<Layers className="w-5 h-5" />}
+                title="حسابي"
+                subtitle="الإعدادات الشخصية"
+                accent="bg-gray-100 text-gray-700"
               />
             </div>
           </div>
         </section>
 
-        {/* ========== BOOKINGS BREAKDOWN ========== */}
+        {/* BOOKINGS BREAKDOWN */}
         <section>
           <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">
             توزيع الحجوزات
@@ -438,9 +417,8 @@ export default function AdminDashboardPage() {
           </div>
         </section>
 
-        {/* ========== TOP LISTINGS + RECENT BOOKINGS ========== */}
+        {/* TOP + RECENT */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Top listings */}
           {topListings.length > 0 && (
             <div>
               <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">
@@ -475,7 +453,6 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* Recent bookings */}
           {recentBookings.length > 0 && (
             <div>
               <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">

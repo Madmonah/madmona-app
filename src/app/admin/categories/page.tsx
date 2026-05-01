@@ -4,8 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import {
   Lock, RefreshCw, LogOut, ArrowRight, Plus, Edit2, Trash2,
-  ChevronDown, ChevronLeft, Save, X, Tag, Settings, AlertCircle,
-  CheckCircle, Circle,
+  ChevronDown, ChevronLeft, Save, X, Tag, AlertCircle, FolderPlus,
 } from 'lucide-react'
 
 // ============================================================================
@@ -65,8 +64,8 @@ export default function AdminCategoriesPage() {
   const [showCatForm, setShowCatForm] = useState<{ parentId: string | null; editId?: string } | null>(null)
   const [showAttrForm, setShowAttrForm] = useState<{ categoryId: string; editId?: string } | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
+  const [successMsg, setSuccessMsg] = useState('')
 
-  // ----- Auth -----
   useEffect(() => {
     const stored = sessionStorage.getItem('madmona_admin_pw')
     if (stored) {
@@ -110,7 +109,6 @@ export default function AdminCategoriesPage() {
     setCategories([])
   }
 
-  // ----- Load attributes for a category when expanded -----
   const loadAttributes = async (categoryId: string) => {
     if (attrsByCategory[categoryId]) return
     try {
@@ -138,7 +136,11 @@ export default function AdminCategoriesPage() {
     })
   }
 
-  // ----- Category CRUD -----
+  const showSuccess = (msg: string) => {
+    setSuccessMsg(msg)
+    setTimeout(() => setSuccessMsg(''), 3000)
+  }
+
   const saveCategory = async (form: Partial<Category>, editId?: string) => {
     setErrorMsg('')
     const url = editId ? `/api/admin/categories/${editId}` : '/api/admin/categories'
@@ -150,10 +152,20 @@ export default function AdminCategoriesPage() {
     })
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
-      setErrorMsg(data.error || 'حصل خطأ')
+      setErrorMsg(data.error || 'حصل خطأ في الحفظ')
       return false
     }
     setShowCatForm(null)
+    showSuccess(editId ? 'تم تعديل الفئة' : 'تم إضافة الفئة')
+
+    // Auto-expand parent if we just added a child
+    if (form.parent_id) {
+      setExpanded(prev => {
+        const next = new Set(prev)
+        next.add(form.parent_id!)
+        return next
+      })
+    }
     await tryFetch(password, true)
     return true
   }
@@ -170,10 +182,10 @@ export default function AdminCategoriesPage() {
       setErrorMsg(data.error || 'مينفعش تتمسح')
       return
     }
+    showSuccess('تم حذف الفئة')
     await tryFetch(password, true)
   }
 
-  // ----- Attribute CRUD -----
   const saveAttribute = async (form: Partial<Attribute>, categoryId: string, editId?: string) => {
     setErrorMsg('')
     const url = editId
@@ -191,7 +203,7 @@ export default function AdminCategoriesPage() {
       return false
     }
     setShowAttrForm(null)
-    // Refresh attributes for this category
+    showSuccess(editId ? 'تم تعديل الخاصية' : 'تم إضافة الخاصية')
     setAttrsByCategory(prev => {
       const next = { ...prev }
       delete next[categoryId]
@@ -208,6 +220,7 @@ export default function AdminCategoriesPage() {
       headers: { 'X-Admin-Password': password },
     })
     if (!res.ok) return
+    showSuccess('تم حذف الخاصية')
     setAttrsByCategory(prev => {
       const next = { ...prev }
       delete next[categoryId]
@@ -216,15 +229,14 @@ export default function AdminCategoriesPage() {
     await loadAttributes(categoryId)
   }
 
-  // ----- Login screen -----
   if (!authed) {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
-        <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-          <div className="flex items-center justify-center w-12 h-12 bg-[#1F5F3F]/10 rounded-full mb-4 mx-auto">
+      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
+        <div className="w-full max-w-sm bg-white rounded-3xl shadow-luxe p-8">
+          <div className="flex items-center justify-center w-12 h-12 bg-[#1F5F3F]/10 rounded-2xl mb-4 mx-auto">
             <Lock className="w-5 h-5 text-[#1F5F3F]" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 text-center mb-1">إدارة الفئات والخصائص</h1>
+          <h1 className="text-xl font-black text-gray-900 text-center mb-1">إدارة الفئات والخصائص</h1>
           <p className="text-sm text-gray-500 text-center mb-6">إدخال كلمة السر للوصول</p>
           <form onSubmit={handleLogin} className="space-y-4">
             <input
@@ -239,7 +251,7 @@ export default function AdminCategoriesPage() {
             <button
               type="submit"
               disabled={loading || !password}
-              className="w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50"
+              className="w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-bold hover:bg-[#1F5F3F]/90 disabled:opacity-50"
             >
               {loading ? 'جاري التحقق...' : 'دخول'}
             </button>
@@ -249,23 +261,21 @@ export default function AdminCategoriesPage() {
     )
   }
 
-  // ----- Build hierarchy -----
   const roots = categories.filter(c => !c.parent_id).sort((a, b) => a.display_order - b.display_order)
   const childrenOf = (parentId: string) =>
     categories.filter(c => c.parent_id === parentId).sort((a, b) => a.display_order - b.display_order)
 
-  // ----- Render -----
   return (
-    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+    <div className="min-h-screen gradient-mesh" dir="rtl">
+      <header className="bg-white/90 backdrop-blur border-b border-gray-100 sticky top-0 z-40 shadow-soft">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/admin/dashboard" className="p-1 hover:bg-gray-50 rounded-full">
+            <Link href="/admin/dashboard" className="w-9 h-9 hover:bg-gray-50 rounded-full flex items-center justify-center">
               <ArrowRight className="w-4 h-4 text-gray-600" />
             </Link>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">الفئات والخصائص</h1>
-              <p className="text-xs text-gray-500 mt-0.5">{categories.length} فئة</p>
+              <h1 className="text-lg font-black text-gray-900">الفئات والخصائص</h1>
+              <p className="text-xs text-gray-500 mt-0.5">{categories.length} فئة · {roots.length} رئيسية</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -284,38 +294,60 @@ export default function AdminCategoriesPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6">
+      <main className="max-w-4xl mx-auto px-4 py-6 pb-12">
+        {/* Toast messages */}
+        {successMsg && (
+          <div className="mb-4 flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-900 animate-scale-in">
+            <span className="w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center text-xs">✓</span>
+            <span className="font-semibold">{successMsg}</span>
+          </div>
+        )}
         {errorMsg && (
           <div className="mb-4 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-900">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-            <span>{errorMsg}</span>
-            <button onClick={() => setErrorMsg('')} className="mr-auto"><X className="w-4 h-4" /></button>
+            <span className="flex-1">{errorMsg}</span>
+            <button onClick={() => setErrorMsg('')}><X className="w-4 h-4" /></button>
           </div>
         )}
+
+        {/* Help card */}
+        <div className="mb-4 p-4 bg-gradient-to-l from-[#1F5F3F]/5 to-transparent border border-[#1F5F3F]/10 rounded-2xl text-xs text-gray-700 leading-relaxed">
+          💡 <strong className="text-[#1F5F3F]">إزاي تستعمل الصفحة:</strong>
+          <br />• اضغط <strong>السهم</strong> لفتح أي فئة وشوف فئاتها الفرعية والخصائص.
+          <br />• <strong>زرار &quot;+ ضيف فئة فرعية&quot;</strong> داخل الفئة المفتوحة بيضيف فئة فرعية تحتها.
+          <br />• كل فئة فرعية ممكن يكون عندها خصائصها (specs زي السعة، الحمولة، إلخ).
+        </div>
 
         {/* Add root category button */}
         <div className="mb-4">
           <button
             onClick={() => setShowCatForm({ parentId: null })}
-            className="flex items-center gap-2 px-4 py-2 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90"
+            className="flex items-center gap-2 px-5 py-3 bg-[#1F5F3F] text-white rounded-2xl text-sm font-bold hover:bg-[#1F5F3F]/90 shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
           >
             <Plus className="w-4 h-4" />
-            ضيف فئة رئيسية
+            ضيف فئة رئيسية جديدة
           </button>
         </div>
 
         {showCatForm && showCatForm.parentId === null && !showCatForm.editId && (
-          <CategoryForm
-            parentId={null}
-            initial={null}
-            onCancel={() => setShowCatForm(null)}
-            onSave={(form) => saveCategory(form)}
-          />
+          <div className="mb-4 p-4 bg-white rounded-2xl border-2 border-[#1F5F3F]/20 shadow-card">
+            <h3 className="text-sm font-black text-gray-900 mb-3 flex items-center gap-2">
+              <FolderPlus className="w-4 h-4 text-[#1F5F3F]" /> فئة رئيسية جديدة
+            </h3>
+            <CategoryForm
+              parentId={null}
+              initial={null}
+              onCancel={() => setShowCatForm(null)}
+              onSave={(form) => saveCategory(form)}
+            />
+          </div>
         )}
 
         {/* Categories tree */}
         {roots.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">مفيش فئات لسه</div>
+          <div className="text-center py-12 text-gray-500 bg-white rounded-2xl shadow-soft">
+            مفيش فئات لسه
+          </div>
         ) : (
           <div className="space-y-3">
             {roots.map(root => (
@@ -332,7 +364,7 @@ export default function AdminCategoriesPage() {
                 onAddAttribute={() => setShowAttrForm({ categoryId: root.id })}
                 onEditAttribute={(attrId) => setShowAttrForm({ categoryId: root.id, editId: attrId })}
                 onDeleteAttribute={(attrId) => deleteAttribute(attrId, root.id)}
-                renderChildren={(child) => (
+                renderChild={(child) => (
                   <CategoryNode
                     key={child.id}
                     category={child}
@@ -371,7 +403,7 @@ export default function AdminCategoriesPage() {
 }
 
 // ============================================================================
-// Category node component (renders one category + nested children + attributes)
+// Category node component
 // ============================================================================
 
 interface CategoryNodeProps {
@@ -387,7 +419,7 @@ interface CategoryNodeProps {
   onAddAttribute: () => void
   onEditAttribute: (id: string) => void
   onDeleteAttribute: (id: string) => void
-  renderChildren?: (child: Category) => React.ReactNode
+  renderChild?: (child: Category) => React.ReactNode
   showCatForm: { parentId: string | null; editId?: string } | null
   showAttrForm: { categoryId: string; editId?: string } | null
   onCatFormSave: (form: Partial<Category>, editId?: string) => Promise<boolean>
@@ -398,7 +430,7 @@ interface CategoryNodeProps {
 
 function CategoryNode(props: CategoryNodeProps) {
   const { category, children, attrs, isExpanded, isChild, onToggle, onAddChild, onEdit, onDelete,
-    onAddAttribute, onEditAttribute, onDeleteAttribute, renderChildren,
+    onAddAttribute, onEditAttribute, onDeleteAttribute, renderChild,
     showCatForm, showAttrForm, onCatFormSave, onCatFormCancel, onAttrFormSave, onAttrFormCancel } = props
 
   const isEditing = showCatForm?.editId === category.id
@@ -406,32 +438,32 @@ function CategoryNode(props: CategoryNodeProps) {
   const isAddingAttrHere = showAttrForm?.categoryId === category.id && !showAttrForm.editId
 
   return (
-    <div className={`bg-white rounded-xl border border-gray-100 ${isChild ? 'ml-6 mt-2' : ''}`}>
+    <div className={`bg-white rounded-2xl shadow-soft hover:shadow-card transition-all ${isChild ? 'mr-6 mt-2 border border-gray-100' : ''}`}>
       {/* Header row */}
       <div className="flex items-center gap-2 p-3">
-        <button onClick={onToggle} className="p-1 hover:bg-gray-50 rounded">
+        <button onClick={onToggle} className="p-1.5 hover:bg-gray-50 rounded-lg flex-shrink-0">
           {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
         <span className="text-2xl">{category.icon || '📁'}</span>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-bold text-gray-900 truncate">{category.name_ar}</h3>
+            {children.length > 0 && (
+              <span className="text-[10px] px-2 py-0.5 bg-[#1F5F3F]/10 text-[#1F5F3F] rounded-full font-bold">
+                {children.length} فرعية
+              </span>
+            )}
             {category.name_en && (
               <span className="text-xs text-gray-400 truncate">{category.name_en}</span>
             )}
           </div>
           <p className="text-xs text-gray-500 truncate" dir="ltr">{category.slug}</p>
         </div>
-        <div className="flex gap-1">
-          {!isChild && (
-            <button onClick={onAddChild} className="p-1.5 hover:bg-gray-50 rounded text-gray-600" title="ضيف فئة فرعية">
-              <Plus className="w-3.5 h-3.5" />
-            </button>
-          )}
-          <button onClick={onEdit} className="p-1.5 hover:bg-gray-50 rounded text-gray-600" title="تعديل">
+        <div className="flex gap-1 flex-shrink-0">
+          <button onClick={onEdit} className="p-1.5 hover:bg-gray-50 rounded-lg text-gray-600" title="تعديل">
             <Edit2 className="w-3.5 h-3.5" />
           </button>
-          <button onClick={onDelete} className="p-1.5 hover:bg-red-50 rounded text-red-600" title="حذف">
+          <button onClick={onDelete} className="p-1.5 hover:bg-red-50 rounded-lg text-red-600" title="حذف">
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -439,7 +471,10 @@ function CategoryNode(props: CategoryNodeProps) {
 
       {/* Edit form (inline replaces the row) */}
       {isEditing && (
-        <div className="border-t border-gray-100 p-4 bg-gray-50">
+        <div className="border-t border-gray-100 p-4 bg-gradient-to-l from-[#1F5F3F]/5 to-transparent">
+          <h4 className="text-xs font-bold text-[#1F5F3F] mb-3 flex items-center gap-1.5">
+            <Edit2 className="w-3.5 h-3.5" /> تعديل الفئة
+          </h4>
           <CategoryForm
             parentId={category.parent_id}
             initial={category}
@@ -449,20 +484,40 @@ function CategoryNode(props: CategoryNodeProps) {
         </div>
       )}
 
-      {/* Expanded section: children + attributes */}
+      {/* Expanded section: children + add subcategory + attributes */}
       {isExpanded && (
-        <div className="border-t border-gray-100 p-3 bg-gray-50/50">
+        <div className="border-t border-gray-100 p-4 bg-gray-50/40 space-y-4">
           {/* Sub-categories */}
           {children.length > 0 && (
-            <div className="mb-3">
-              <h4 className="text-xs font-semibold text-gray-500 mb-2 px-1">الفئات الفرعية</h4>
-              {children.map(child => renderChildren?.(child))}
+            <div>
+              <h4 className="text-xs font-black text-gray-700 mb-2 px-1 flex items-center gap-1.5">
+                <FolderPlus className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                الفئات الفرعية ({children.length})
+              </h4>
+              <div className="space-y-2">
+                {children.map(child => renderChild?.(child))}
+              </div>
             </div>
+          )}
+
+          {/* BIG, OBVIOUS "Add Subcategory" button */}
+          {!isAddingChildHere && (
+            <button
+              onClick={onAddChild}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-white border-2 border-dashed border-[#1F5F3F]/30 hover:border-[#1F5F3F]/60 hover:bg-[#1F5F3F]/5 rounded-2xl text-sm font-bold text-[#1F5F3F] transition-all"
+            >
+              <FolderPlus className="w-4 h-4" />
+              + ضيف فئة فرعية تحت &quot;{category.name_ar}&quot;
+            </button>
           )}
 
           {/* Inline form for adding child here */}
           {isAddingChildHere && (
-            <div className="mb-3 p-3 bg-white rounded-lg border border-gray-200">
+            <div className="p-4 bg-white rounded-2xl border-2 border-[#1F5F3F]/20 shadow-card">
+              <h4 className="text-sm font-black text-[#1F5F3F] mb-3 flex items-center gap-1.5">
+                <FolderPlus className="w-4 h-4" />
+                فئة فرعية جديدة تحت &quot;{category.name_ar}&quot;
+              </h4>
               <CategoryForm
                 parentId={category.id}
                 initial={null}
@@ -472,16 +527,16 @@ function CategoryNode(props: CategoryNodeProps) {
             </div>
           )}
 
-          {/* Attributes */}
-          <div>
+          {/* Attributes section */}
+          <div className="pt-3 border-t border-gray-200">
             <div className="flex items-center justify-between mb-2 px-1">
-              <h4 className="text-xs font-semibold text-gray-500 flex items-center gap-1">
-                <Tag className="w-3 h-3" />
-                الخصائص ({attrs?.length ?? '...'})
+              <h4 className="text-xs font-black text-gray-700 flex items-center gap-1.5">
+                <Tag className="w-3.5 h-3.5 text-[#B8860B]" />
+                الخصائص (Specs) {attrs ? `(${attrs.length})` : ''}
               </h4>
               <button
                 onClick={onAddAttribute}
-                className="text-xs text-[#1F5F3F] font-medium hover:underline flex items-center gap-1"
+                className="text-xs text-[#B8860B] font-bold hover:underline flex items-center gap-1"
               >
                 <Plus className="w-3 h-3" />
                 ضيف خاصية
@@ -489,7 +544,8 @@ function CategoryNode(props: CategoryNodeProps) {
             </div>
 
             {isAddingAttrHere && (
-              <div className="mb-2 p-3 bg-white rounded-lg border border-gray-200">
+              <div className="mb-2 p-4 bg-white rounded-2xl border-2 border-[#B8860B]/20 shadow-card">
+                <h4 className="text-sm font-black text-[#B8860B] mb-3">خاصية جديدة</h4>
                 <AttributeForm
                   initial={null}
                   onCancel={onAttrFormCancel}
@@ -501,14 +557,15 @@ function CategoryNode(props: CategoryNodeProps) {
             {attrs === undefined ? (
               <p className="text-xs text-gray-400 px-1">جاري التحميل...</p>
             ) : attrs.length === 0 && !isAddingAttrHere ? (
-              <p className="text-xs text-gray-400 px-1">مفيش خصائص للفئة دي</p>
+              <p className="text-xs text-gray-400 px-1 italic">مفيش خصائص للفئة دي. الخصائص اختيارية.</p>
             ) : (
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {attrs.map(attr => {
                   const isEditingAttr = showAttrForm?.editId === attr.id
                   if (isEditingAttr) {
                     return (
-                      <div key={attr.id} className="p-3 bg-white rounded-lg border border-gray-200">
+                      <div key={attr.id} className="p-4 bg-white rounded-2xl border-2 border-[#B8860B]/20 shadow-card">
+                        <h4 className="text-sm font-black text-[#B8860B] mb-3">تعديل خاصية</h4>
                         <AttributeForm
                           initial={attr}
                           onCancel={onAttrFormCancel}
@@ -518,26 +575,26 @@ function CategoryNode(props: CategoryNodeProps) {
                     )
                   }
                   return (
-                    <div key={attr.id} className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100">
+                    <div key={attr.id} className="flex items-center gap-2 p-2.5 bg-white rounded-xl border border-gray-100">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium text-gray-900">{attr.name_ar}</span>
-                          <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
+                          <span className="text-sm font-bold text-gray-900">{attr.name_ar}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 bg-[#B8860B]/10 text-[#B8860B] rounded font-bold">
                             {FIELD_TYPE_LABELS[attr.field_type]}
                           </span>
                           {attr.is_required && (
-                            <span className="text-xs text-red-600">*</span>
+                            <span className="text-[10px] text-red-600 font-bold">إلزامي</span>
                           )}
                           {attr.unit && (
                             <span className="text-xs text-gray-400">({attr.unit})</span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500" dir="ltr">{attr.field_key}</p>
+                        <p className="text-[10px] text-gray-500" dir="ltr">{attr.field_key}</p>
                       </div>
-                      <button onClick={() => onEditAttribute(attr.id)} className="p-1 hover:bg-gray-50 rounded text-gray-600">
+                      <button onClick={() => onEditAttribute(attr.id)} className="p-1.5 hover:bg-gray-50 rounded-lg text-gray-600">
                         <Edit2 className="w-3 h-3" />
                       </button>
-                      <button onClick={() => onDeleteAttribute(attr.id)} className="p-1 hover:bg-red-50 rounded text-red-600">
+                      <button onClick={() => onDeleteAttribute(attr.id)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-600">
                         <Trash2 className="w-3 h-3" />
                       </button>
                     </div>
@@ -574,12 +631,23 @@ function CategoryForm({
   const [displayOrder, setDisplayOrder] = useState(initial?.display_order ?? 0)
   const [submitting, setSubmitting] = useState(false)
 
-  // Auto-generate slug from English name (only when creating new)
   useEffect(() => {
     if (!initial && nameEn && !slug) {
       setSlug(nameEn.toLowerCase().trim().replace(/[^a-z0-9-]+/g, '-').replace(/^-|-$/g, ''))
     }
   }, [nameEn, initial, slug])
+
+  // Auto-generate slug from Arabic name if no English (for sub-categories)
+  useEffect(() => {
+    if (!initial && nameAr && !nameEn && !slug) {
+      // Use a transliteration-friendly fallback
+      const fallback = nameAr
+        .replace(/[^\u0600-\u06FFa-zA-Z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .substring(0, 50)
+      if (fallback) setSlug(`cat-${Date.now().toString(36).slice(-6)}`)
+    }
+  }, [nameAr, nameEn, initial, slug])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -600,58 +668,59 @@ function CategoryForm({
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">الاسم بالعربي *</label>
+          <label className="block text-xs font-bold text-gray-700 mb-1">الاسم بالعربي *</label>
           <input
             type="text"
             value={nameAr}
             onChange={(e) => setNameAr(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
-            placeholder="مثلاً: يخوت"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+            placeholder="مثلاً: مكتب فردي"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Name (English)</label>
+          <label className="block text-xs font-bold text-gray-700 mb-1">Name (English)</label>
           <input
             type="text"
             value={nameEn}
             onChange={(e) => setNameEn(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
-            placeholder="Yachts"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+            placeholder="Hot desk"
             dir="ltr"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Slug *</label>
+          <label className="block text-xs font-bold text-gray-700 mb-1">Slug *</label>
           <input
             type="text"
             value={slug}
             onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
             required
             pattern="[a-z0-9-]+"
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
-            placeholder="yachts"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+            placeholder="hot-desk"
             dir="ltr"
           />
+          <p className="text-[10px] text-gray-400 mt-1">URL-friendly، حروف إنجليزية صغيرة و-</p>
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">الأيقونة (Emoji)</label>
+          <label className="block text-xs font-bold text-gray-700 mb-1">الأيقونة (Emoji)</label>
           <input
             type="text"
             value={icon}
             onChange={(e) => setIcon(e.target.value)}
             maxLength={4}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
-            placeholder="⛵"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+            placeholder="🪑"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">الترتيب</label>
+          <label className="block text-xs font-bold text-gray-700 mb-1">الترتيب</label>
           <input
             type="number"
             value={displayOrder}
             onChange={(e) => setDisplayOrder(Number(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
           />
         </div>
       </div>
@@ -659,12 +728,16 @@ function CategoryForm({
         <button
           type="submit"
           disabled={submitting || !nameAr || !slug}
-          className="flex items-center gap-1 px-4 py-2 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50"
+          className="flex items-center gap-1.5 px-5 py-2.5 bg-[#1F5F3F] text-white rounded-xl text-sm font-bold hover:bg-[#1F5F3F]/90 disabled:opacity-50 shadow-soft hover:shadow-card transition-all"
         >
           <Save className="w-4 h-4" />
           {submitting ? 'جاري الحفظ...' : 'حفظ'}
         </button>
-        <button type="button" onClick={onCancel} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-200"
+        >
           إلغاء
         </button>
       </div>
@@ -697,7 +770,6 @@ function AttributeForm({
   )
   const [submitting, setSubmitting] = useState(false)
 
-  // Auto-suggest field_key from English name
   useEffect(() => {
     if (!initial && nameEn && !fieldKey) {
       setFieldKey(nameEn.toLowerCase().trim().replace(/[^a-z0-9_]+/g, '_').replace(/^_|_$/g, ''))
@@ -715,7 +787,7 @@ function AttributeForm({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSubmitting(true)
-    const form: any = {
+    const form: Partial<Attribute> = {
       name_ar: nameAr,
       field_key: fieldKey,
       field_type: fieldType,
@@ -733,29 +805,29 @@ function AttributeForm({
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">اسم الخاصية بالعربي *</label>
+          <label className="block text-xs font-bold text-gray-700 mb-1">اسم الخاصية بالعربي *</label>
           <input
             type="text"
             value={nameAr}
             onChange={(e) => setNameAr(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
             placeholder="مثلاً: عدد المقاعد"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Name (English)</label>
+          <label className="block text-xs font-bold text-gray-700 mb-1">Name (English)</label>
           <input
             type="text"
             value={nameEn}
             onChange={(e) => setNameEn(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
             placeholder="Seats"
             dir="ltr"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Field key *</label>
+          <label className="block text-xs font-bold text-gray-700 mb-1">Field key *</label>
           <input
             type="text"
             value={fieldKey}
@@ -763,18 +835,18 @@ function AttributeForm({
             required
             disabled={!!initial}
             pattern="[a-z0-9_]+"
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 disabled:bg-gray-50"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 disabled:bg-gray-50"
             placeholder="seats"
             dir="ltr"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">نوع الحقل *</label>
+          <label className="block text-xs font-bold text-gray-700 mb-1">نوع الحقل *</label>
           <select
             value={fieldType}
             onChange={(e) => setFieldType(e.target.value as FieldType)}
             disabled={!!initial}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 disabled:bg-gray-50"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 disabled:bg-gray-50"
           >
             {Object.entries(FIELD_TYPE_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
@@ -782,22 +854,22 @@ function AttributeForm({
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">وحدة القياس</label>
+          <label className="block text-xs font-bold text-gray-700 mb-1">وحدة القياس</label>
           <input
             type="text"
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
             placeholder="م² / كجم / HP"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">الترتيب</label>
+          <label className="block text-xs font-bold text-gray-700 mb-1">الترتيب</label>
           <input
             type="number"
             value={displayOrder}
             onChange={(e) => setDisplayOrder(Number(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
           />
         </div>
       </div>
@@ -807,15 +879,14 @@ function AttributeForm({
           type="checkbox"
           checked={isRequired}
           onChange={(e) => setIsRequired(e.target.checked)}
-          className="rounded"
+          className="w-4 h-4 accent-[#1F5F3F]"
         />
-        <span className="text-sm text-gray-700">إلزامي</span>
+        <span className="text-sm font-medium text-gray-700">إلزامي (لازم المورد يدخله)</span>
       </label>
 
-      {/* Options for select/multi_select */}
       {needsOptions && (
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-2">الاختيارات</label>
+          <label className="block text-xs font-bold text-gray-700 mb-2">الاختيارات</label>
           <div className="space-y-2">
             {options.map((opt, i) => (
               <div key={i} className="flex gap-2">
@@ -824,7 +895,7 @@ function AttributeForm({
                   value={opt.key}
                   onChange={(e) => updateOption(i, 'key', e.target.value)}
                   placeholder="key (English)"
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   dir="ltr"
                 />
                 <input
@@ -832,12 +903,12 @@ function AttributeForm({
                   value={opt.label_ar}
                   onChange={(e) => updateOption(i, 'label_ar', e.target.value)}
                   placeholder="الاسم بالعربي"
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm"
                 />
                 <button
                   type="button"
                   onClick={() => removeOption(i)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-xl"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -846,7 +917,7 @@ function AttributeForm({
             <button
               type="button"
               onClick={addOption}
-              className="text-xs text-[#1F5F3F] font-medium hover:underline flex items-center gap-1"
+              className="text-xs text-[#1F5F3F] font-bold hover:underline flex items-center gap-1"
             >
               <Plus className="w-3 h-3" /> ضيف اختيار
             </button>
@@ -858,12 +929,16 @@ function AttributeForm({
         <button
           type="submit"
           disabled={submitting || !nameAr || !fieldKey}
-          className="flex items-center gap-1 px-4 py-2 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50"
+          className="flex items-center gap-1.5 px-5 py-2.5 bg-[#B8860B] text-white rounded-xl text-sm font-bold hover:bg-[#B8860B]/90 disabled:opacity-50 shadow-soft hover:shadow-card transition-all"
         >
           <Save className="w-4 h-4" />
           {submitting ? 'جاري الحفظ...' : 'حفظ'}
         </button>
-        <button type="button" onClick={onCancel} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-200"
+        >
           إلغاء
         </button>
       </div>

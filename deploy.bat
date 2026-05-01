@@ -1,28 +1,34 @@
 @echo off
 cd /d "%~dp0"
 echo ================================================================
-echo   Admin Dashboard Hub + Browse + Team Permissions
+echo   System Unification — Marketplace is the only system now
 echo ================================================================
 echo.
-echo   ADMIN DASHBOARD UPGRADED — all admin links in one place:
+echo   * Categories admin UX fixed:
+echo     - Big "+ subcategory" button when category expanded
+echo     - Help card explaining how to use
+echo     - Auto-expand parent after adding child
+echo     - Toast success messages
 echo.
-echo   Section 1: Marketplace Management
-echo     - Suppliers / Bookings / Categories / Payouts
+echo   * SYSTEM UNIFICATION (no more old/new split):
+echo     - /book → redirects to /marketplace
+echo     - /login → redirects to /auth/login
+echo     - /my-bookings → redirects to /account/bookings
+echo     - /reserve/* → redirects to /marketplace?category=...
+echo     - /spaces/* → redirects to /marketplace
+echo     - /units/* → redirects to /marketplace
+echo     - /admin/bookings → /admin/marketplace-bookings
+echo     - /admin/units → /admin/dashboard
+echo     - /admin/suppliers → /admin/marketplace-suppliers
 echo.
-echo   Section 2: Madmona Coworking
-echo     - Space Bookings / Leads / Units / Old Suppliers
-echo.
-echo   Section 3: Team & Permissions
-echo     - Team management / Supplier panel / New listing / Reviews
-echo.
-echo   ALSO INCLUDED:
-echo   * /browse: Madmona-branded, pulls from listings table
-echo   * Supplier team: /supplier/team with 10 granular permissions
-echo   * DB: supplier_staff table + RLS + helper function
+echo   * Admin dashboard cleaned up:
+echo     - Removed old "Coworking" section entirely
+echo     - 3 sections: Marketplace / Content / Team
+echo     - Madmona's listings = our "ads" (إعلاناتنا)
 echo.
 pause
 git add .
-git commit -m "feat: admin dashboard hub + team permissions + browse rebuild"
+git commit -m "feat: unify old + new systems → marketplace only + categories UX fix"
 git push
 echo.
 if %ERRORLEVEL% EQU 0 (
