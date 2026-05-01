@@ -1,37 +1,29 @@
 import Link from 'next/link'
 import {
   Star,
-  Users,
-  Coffee,
   Clock,
   MapPin,
-  Phone,
   MessageCircle,
   ArrowLeft,
-  Calendar,
   Search,
   Building2,
-  Monitor,
   ShieldCheck,
   Sparkles,
-  Camera,
   Compass,
-  Car,
-  Home as HomeIcon,
 } from 'lucide-react'
 import TopNav from '@/components/TopNav'
 import InstallPWA from '@/components/InstallPWA'
+import FeaturedListings from '@/components/FeaturedListings'
 
 // ============================================================
-// Home page — restructured:
-//   1. TopNav (logo + browse + supplier auth + customer login)
-//   2. Hero — احجز مساحتك (Madmona spaces)
-//   3. Categories quick browse (5 chips)
-//   4. Madmona's spaces (featured)
-//   5. Marketplace promo (NEW — multi-supplier listings)
-//   6. Why us (trust signals)
-//   7. Supplier CTA (join as supplier)
-//   8. Contact + location
+// Home page — minimalist, Aesop-style:
+//   1. TopNav
+//   2. Hero — single statement
+//   3. Two split cards (Madmona spaces / Marketplace)
+//   4. Featured marketplace listings strip (live data)
+//   5. Trust signals (compact one row)
+//   6. Supplier CTA (compact)
+//   7. Contact
 // ============================================================
 
 export default function HomePage() {
@@ -40,321 +32,146 @@ export default function HomePage() {
       <TopNav />
 
       <main className="max-w-6xl mx-auto px-4 pb-12">
-        {/* PWA Install banner — only shows on supported devices and hides after install */}
         <div className="pt-4">
           <InstallPWA />
         </div>
 
         {/* ========== HERO ========== */}
-        <section className="py-10 md:py-16">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#B8860B]/10 rounded-full mb-4">
-              <Star className="w-3 h-3 text-[#B8860B] fill-[#B8860B]" />
-              <span className="text-xs font-medium text-[#B8860B]">يومك الأول مجاناً</span>
-            </div>
-            <h1 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
-              مساحتك اللي بتخصك،
-              <br />
-              <span className="text-[#1F5F3F]">في القاهرة</span>
-            </h1>
-            <p className="text-base md:text-lg text-gray-600 leading-relaxed mb-8 max-w-xl">
-              مكاتب فردية، غرف اجتماعات، ومساحات عمل في كل أنحاء المدينة. احجز فوراً، ادفع كاش أو InstaPay.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/browse"
-                className="flex items-center justify-center gap-2 bg-[#1F5F3F] text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 no-underline"
-              >
-                <Search className="w-4 h-4" />
-                استكشف المساحات
-              </Link>
-              <Link
-                href="/reserve/meeting-room"
-                className="flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-900 px-6 py-3.5 rounded-xl font-semibold hover:border-[#1F5F3F]/40 no-underline"
-              >
-                <Calendar className="w-4 h-4" />
-                احجز غرفة اجتماعات
-              </Link>
-            </div>
+        <section className="py-12 md:py-20 text-center max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#B8860B]/10 rounded-full mb-5">
+            <Star className="w-3 h-3 text-[#B8860B] fill-[#B8860B]" />
+            <span className="text-xs font-medium text-[#B8860B]">يومك الأول مجاناً</span>
           </div>
+          <h1 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
+            مساحتك اللي بتخصك،
+            <br />
+            <span className="text-[#1F5F3F]">في القاهرة</span>
+          </h1>
+          <p className="text-base md:text-lg text-gray-600 leading-relaxed">
+            مساحات عمل، عقارات، مركبات، ومعدات — كلها في مكان واحد.
+          </p>
         </section>
 
-        {/* ========== CATEGORIES ========== */}
-        <section className="mb-12">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">تصفح حسب النوع</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <CategoryCard
-              href="/browse?category=workstation"
-              icon={<Monitor className="w-5 h-5" />}
-              label="مكاتب فردية"
-              accent="bg-[#1F5F3F]/10 text-[#1F5F3F]"
-            />
-            <CategoryCard
-              href="/browse?category=meeting_room"
-              icon={<Users className="w-5 h-5" />}
-              label="غرف اجتماعات"
-              accent="bg-[#B8860B]/10 text-[#B8860B]"
-            />
-            <CategoryCard
-              href="/browse?category=office"
-              icon={<Building2 className="w-5 h-5" />}
-              label="مكاتب خاصة"
-              accent="bg-[#C2410C]/10 text-[#C2410C]"
-            />
-            <CategoryCard
-              href="/browse?category=amenity"
-              icon={<Coffee className="w-5 h-5" />}
-              label="وسائل راحة"
-              accent="bg-blue-100 text-blue-700"
-            />
-            <CategoryCard
-              href="/browse?category=equipment"
-              icon={<Camera className="w-5 h-5" />}
-              label="معدات"
-              accent="bg-purple-100 text-purple-700"
-            />
-          </div>
-        </section>
-
-        {/* ========== MADMONA'S SPACES ========== */}
-        <section className="mb-12">
-          <div className="flex items-end justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">مساحات مضمونة</h2>
-              <p className="text-sm text-gray-500 mt-0.5">في مصر الجديدة</p>
-            </div>
-            <Link
-              href="/browse"
-              className="text-sm text-[#1F5F3F] font-semibold hover:underline no-underline flex items-center gap-1"
-            >
-              <span>الكل</span>
-              <ArrowLeft className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* Meeting Room — primary */}
-            <Link
-              href="/reserve/meeting-room"
-              className="md:col-span-2 block bg-[#1F5F3F] text-white rounded-2xl p-6 hover:bg-[#1F5F3F]/95 no-underline active:scale-[0.99] transition-all"
-            >
-              <div className="flex items-center gap-1.5 text-xs bg-[#B8860B] text-white px-2.5 py-1 rounded-full font-medium tracking-wide mb-3 w-fit">
-                <Calendar className="w-3 h-3" />
-                الأكثر طلباً
+        {/* ========== TWO BIG CARDS ========== */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-12">
+          {/* Madmona spaces */}
+          <Link
+            href="/browse"
+            className="group block bg-[#1F5F3F] text-white rounded-2xl p-6 md:p-8 hover:bg-[#1F5F3F]/95 no-underline active:scale-[0.99] transition-all relative overflow-hidden"
+          >
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-1.5 text-[10px] bg-white/15 backdrop-blur px-2.5 py-1 rounded-full font-medium tracking-wide mb-4">
+                مصر الجديدة
               </div>
-              <h3 className="text-xl font-bold mb-2">غرفة الاجتماعات</h3>
-              <p className="text-sm text-white/85 leading-relaxed mb-4">
-                اختار وقتك، احجز فوري، تأكيد على واتساب. ٤ أو ٨ أشخاص.
+              <h2 className="text-2xl md:text-3xl font-bold mb-2 leading-tight">
+                مساحات مضمونة
+              </h2>
+              <p className="text-sm md:text-base text-white/85 leading-relaxed mb-6">
+                مكاتب فردية، غرف اجتماعات، وجاردن. احجز فوراً.
               </p>
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="bg-white/15 rounded-lg p-3">
-                  <p className="text-xs text-white/75">حتى ٤ أشخاص</p>
-                  <p className="font-semibold mt-0.5">٣٠٠ ج/ساعة</p>
-                </div>
-                <div className="bg-white/15 rounded-lg p-3">
-                  <p className="text-xs text-white/75">حتى ٨ أشخاص</p>
-                  <p className="font-semibold mt-0.5">٥٠٠ ج/ساعة</p>
-                </div>
+              <div className="flex items-center justify-between bg-white text-[#1F5F3F] rounded-xl py-3 px-4 font-semibold text-sm group-hover:bg-gray-50">
+                <span>استكشف المساحات</span>
+                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
               </div>
-              <div className="flex items-center justify-between bg-white text-[#1F5F3F] rounded-xl py-2.5 px-4 font-semibold text-sm">
-                <span>ابدأ الحجز</span>
-                <ArrowLeft className="w-4 h-4" />
-              </div>
-            </Link>
-
-            {/* Indoor */}
-            <Link
-              href="/reserve/indoor-coworking"
-              className="block bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#1F5F3F]/30 no-underline transition-all"
-            >
-              <div className="w-10 h-10 rounded-xl bg-[#1F5F3F]/10 flex items-center justify-center mb-3">
-                <Coffee className="w-5 h-5 text-[#1F5F3F]" />
-              </div>
-              <h3 className="font-bold text-gray-900 mb-1">المساحة الداخلية</h3>
-              <p className="text-xs text-gray-500 mb-3">مكيف · واي فاي · كافيه</p>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">من</span>
-                <span className="font-bold text-[#1F5F3F]">٥٠ ج/ساعة</span>
-              </div>
-            </Link>
-
-            {/* Garden */}
-            <Link
-              href="/reserve/outdoor-garden"
-              className="block bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#1F5F3F]/30 no-underline transition-all"
-            >
-              <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center mb-3">
-                <Sparkles className="w-5 h-5 text-green-700" />
-              </div>
-              <h3 className="font-bold text-gray-900 mb-1">الجاردن</h3>
-              <p className="text-xs text-gray-500 mb-3">في الهواء الطلق</p>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">يوم كامل</span>
-                <span className="font-bold text-[#1F5F3F]">٦٥ ج</span>
-              </div>
-            </Link>
-
-            {/* Private Office */}
-            <Link
-              href="/reserve/private-office"
-              className="md:col-span-2 block bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#1F5F3F]/30 no-underline transition-all"
-            >
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-[#B8860B]/10 flex items-center justify-center flex-shrink-0">
-                  <Building2 className="w-5 h-5 text-[#B8860B]" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 mb-1">المكتب الخاص</h3>
-                  <p className="text-xs text-gray-500">حتى ٨ أشخاص · تكييف منفصل · خزانة</p>
-                </div>
-                <div className="text-left flex-shrink-0">
-                  <p className="text-xs text-gray-500">شهرياً</p>
-                  <p className="font-bold text-[#1F5F3F]">١٢,٠٠٠ ج</p>
-                </div>
-              </div>
-            </Link>
-          </div>
-        </section>
-
-        {/* ========== MARKETPLACE PROMO (NEW) ========== */}
-        <section className="mb-12">
-          <div className="flex items-end justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Madmona Marketplace</h2>
-              <p className="text-sm text-gray-500 mt-0.5">مساحات وخدمات من موردين معتمدين</p>
             </div>
-            <Link
-              href="/marketplace"
-              className="text-sm text-[#1F5F3F] font-semibold hover:underline no-underline flex items-center gap-1"
-            >
-              <span>تصفّح الكل</span>
-              <ArrowLeft className="w-3.5 h-3.5" />
-            </Link>
-          </div>
+          </Link>
 
+          {/* Marketplace */}
           <Link
             href="/marketplace"
-            className="block bg-white rounded-2xl border border-gray-100 p-5 md:p-6 hover:border-[#1F5F3F]/30 no-underline transition-all"
+            className="group block bg-white border border-gray-100 rounded-2xl p-6 md:p-8 hover:border-[#1F5F3F]/30 hover:shadow-sm no-underline active:scale-[0.99] transition-all"
           >
-            <div className="flex items-start gap-4 mb-5">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1F5F3F] to-[#1F5F3F]/80 flex items-center justify-center flex-shrink-0">
-                <Compass className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-900 mb-1">اكتشف منصة Marketplace</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  احجز عقارات، مركبات، معدات، ومساحات تنظيم فعاليات من موردين معتمدين على مضمونة.
-                </p>
-              </div>
+            <div className="inline-flex items-center gap-1.5 text-[10px] bg-[#B8860B]/10 text-[#B8860B] px-2.5 py-1 rounded-full font-medium tracking-wide mb-4">
+              جديد · موردين معتمدين
             </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-              <div className="flex flex-col items-center gap-1 p-3 bg-[#FAFAF7] rounded-lg">
-                <span className="text-lg">🏢</span>
-                <span className="text-xs font-medium text-gray-700">مساحات عمل</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 p-3 bg-[#FAFAF7] rounded-lg">
-                <span className="text-lg">🏠</span>
-                <span className="text-xs font-medium text-gray-700">عقارات</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 p-3 bg-[#FAFAF7] rounded-lg">
-                <span className="text-lg">🚗</span>
-                <span className="text-xs font-medium text-gray-700">مركبات</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 p-3 bg-[#FAFAF7] rounded-lg">
-                <span className="text-lg">🚜</span>
-                <span className="text-xs font-medium text-gray-700">معدات</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 p-3 bg-[#FAFAF7] rounded-lg">
-                <span className="text-lg">🎉</span>
-                <span className="text-xs font-medium text-gray-700">فعاليات</span>
-              </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 leading-tight">
+              <span className="text-[#1F5F3F]">Madmona</span> Marketplace
+            </h2>
+            <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-6">
+              عقارات، مركبات، معدات، ومساحات تنظيم فعاليات.
+            </p>
+            <div className="flex items-center justify-between bg-[#1F5F3F] text-white rounded-xl py-3 px-4 font-semibold text-sm group-hover:bg-[#1F5F3F]/90">
+              <span>اكتشف الـMarketplace</span>
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             </div>
           </Link>
         </section>
 
-        {/* ========== WHY US ========== */}
-        <section className="mb-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <FeatureCard
-              icon={<ShieldCheck className="w-5 h-5" />}
-              title="حجز مضمون"
-              description="ما حدش يقدر يحجز نفس المكان قبلك. التأكيد فوري."
-              accent="bg-[#1F5F3F]/10 text-[#1F5F3F]"
-            />
-            <FeatureCard
-              icon={<Clock className="w-5 h-5" />}
-              title="مفيش انتظار"
-              description="احجز أونلاين، ادفع كاش أو InstaPay، خلاص."
-              accent="bg-[#B8860B]/10 text-[#B8860B]"
-            />
-            <FeatureCard
-              icon={<Sparkles className="w-5 h-5" />}
-              title="تجربتك أولاً"
-              description="يومك الأول مجاناً. جرّب قبل ما تلتزم."
-              accent="bg-[#C2410C]/10 text-[#C2410C]"
-            />
-          </div>
+        {/* ========== FEATURED LISTINGS (live data) ========== */}
+        <FeaturedListings />
+
+        {/* ========== TRUST SIGNALS — compact one row ========== */}
+        <section className="grid grid-cols-3 gap-2 md:gap-3 mb-12">
+          <TrustChip
+            icon={<ShieldCheck className="w-4 h-4" />}
+            title="حجز مضمون"
+            accent="text-[#1F5F3F]"
+          />
+          <TrustChip
+            icon={<Clock className="w-4 h-4" />}
+            title="مفيش انتظار"
+            accent="text-[#B8860B]"
+          />
+          <TrustChip
+            icon={<Sparkles className="w-4 h-4" />}
+            title="تجربتك أولاً"
+            accent="text-[#C2410C]"
+          />
         </section>
 
-        {/* ========== SUPPLIER CTA ========== */}
-        <section className="mb-12">
-          <div className="bg-gradient-to-l from-[#1F5F3F] to-[#1F5F3F]/90 text-white rounded-2xl p-6 md:p-8 overflow-hidden relative">
-            <div className="relative z-10 max-w-xl">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/15 rounded-full mb-3">
+        {/* ========== SUPPLIER CTA — compact ========== */}
+        <section className="mb-10">
+          <div className="bg-gradient-to-l from-[#1F5F3F] to-[#1F5F3F]/90 text-white rounded-2xl p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/15 rounded-full mb-2">
                 <Building2 className="w-3 h-3" />
-                <span className="text-xs font-medium">للموردين</span>
+                <span className="text-[10px] font-medium">للموردين</span>
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold mb-3">
-                عندك مساحة أو خدمة؟ انضم لينا
-              </h2>
-              <p className="text-sm md:text-base text-white/85 leading-relaxed mb-5">
-                سجّل عرضك على مضمونة Marketplace، اعرضه على آلاف العملاء، واستقبل حجوزات بدون عمولة جانبية.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Link
-                  href="/supplier/register"
-                  className="flex items-center justify-center gap-2 bg-white text-[#1F5F3F] px-5 py-3 rounded-xl font-semibold hover:bg-gray-50 no-underline"
-                >
-                  سجّل دلوقتي
-                  <ArrowLeft className="w-4 h-4" />
-                </Link>
-                <Link
-                  href="/auth/login?redirect=/supplier/marketplace"
-                  className="flex items-center justify-center gap-2 border border-white/30 text-white px-5 py-3 rounded-xl font-semibold hover:bg-white/10 no-underline"
-                >
-                  عندي حساب
-                </Link>
-              </div>
+              <h3 className="text-lg md:text-xl font-bold mb-1">عندك مساحة أو خدمة؟</h3>
+              <p className="text-xs md:text-sm text-white/85">سجّل عرضك واستقبل حجوزات على Madmona Marketplace.</p>
+            </div>
+            <div className="flex gap-2 w-full md:w-auto">
+              <Link
+                href="/supplier/register"
+                className="flex-1 md:flex-none flex items-center justify-center gap-1.5 bg-white text-[#1F5F3F] px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-50 no-underline whitespace-nowrap"
+              >
+                سجّل دلوقتي
+                <ArrowLeft className="w-3.5 h-3.5" />
+              </Link>
+              <Link
+                href="/auth/login?redirect=/supplier/marketplace"
+                className="flex-1 md:flex-none flex items-center justify-center border border-white/30 text-white px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-white/10 no-underline whitespace-nowrap"
+              >
+                دخول
+              </Link>
             </div>
           </div>
         </section>
 
-        {/* ========== CONTACT + LOCATION ========== */}
+        {/* ========== CONTACT ========== */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
           <a
             href="https://wa.me/201002229982"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 p-5 bg-white border border-gray-100 rounded-2xl hover:border-[#25D366]/40 no-underline"
+            className="flex items-center gap-3 p-4 bg-white border border-gray-100 rounded-2xl hover:border-[#25D366]/40 no-underline"
           >
-            <div className="w-12 h-12 rounded-xl bg-[#25D366] flex items-center justify-center flex-shrink-0">
-              <MessageCircle className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-[#25D366] flex items-center justify-center flex-shrink-0">
+              <MessageCircle className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
-              <p className="font-bold text-gray-900">واتساب</p>
+              <p className="font-bold text-gray-900 text-sm">واتساب</p>
               <p className="text-xs text-gray-500 mt-0.5">رد فوري — ٢٤/٧</p>
             </div>
           </a>
 
-          <div className="flex items-start gap-3 p-5 bg-white border border-gray-100 rounded-2xl">
-            <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <MapPin className="w-6 h-6 text-gray-700" />
+          <div className="flex items-start gap-3 p-4 bg-white border border-gray-100 rounded-2xl">
+            <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+              <MapPin className="w-5 h-5 text-gray-700" />
             </div>
             <div className="flex-1">
-              <p className="font-bold text-gray-900">الموقع</p>
-              <p className="text-xs text-gray-500 mt-0.5">٧ شارع سليمان عظمي، مصر الجديدة</p>
-              <p className="text-xs text-gray-500">القاهرة · يومياً ٩ ص → ١١ م</p>
+              <p className="font-bold text-gray-900 text-sm">٧ سليمان عظمي، مصر الجديدة</p>
+              <p className="text-xs text-gray-500 mt-0.5">يومياً ٩ ص → ١١ م</p>
             </div>
           </div>
         </section>
@@ -373,48 +190,19 @@ export default function HomePage() {
 // Helper components
 // ============================================================
 
-function CategoryCard({
-  href,
-  icon,
-  label,
-  accent,
-}: {
-  href: string
-  icon: React.ReactNode
-  label: string
-  accent: string
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm no-underline transition-all text-center"
-    >
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${accent}`}>
-        {icon}
-      </div>
-      <p className="text-xs font-medium text-gray-900">{label}</p>
-    </Link>
-  )
-}
-
-function FeatureCard({
+function TrustChip({
   icon,
   title,
-  description,
   accent,
 }: {
   icon: React.ReactNode
   title: string
-  description: string
   accent: string
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${accent}`}>
-        {icon}
-      </div>
-      <h3 className="font-bold text-gray-900 mb-1">{title}</h3>
-      <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
+    <div className="flex flex-col md:flex-row items-center md:items-center gap-2 p-3 md:p-4 bg-white rounded-xl border border-gray-100 text-center md:text-right">
+      <div className={`flex-shrink-0 ${accent}`}>{icon}</div>
+      <p className="text-xs md:text-sm font-medium text-gray-900">{title}</p>
     </div>
   )
 }
