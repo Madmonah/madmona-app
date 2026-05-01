@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
 import {
-  ArrowRight, Phone, Lock, User, AlertCircle, Loader2, UserPlus, CheckCircle,
+  ArrowRight, Phone, Lock, User, AlertCircle, Loader2, UserPlus, CheckCircle, Sparkles,
 } from 'lucide-react'
 
 function SignupContent() {
@@ -93,18 +93,20 @@ function SignupContent() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
-        <div className="w-full max-w-md bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center">
-          <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
-          <h1 className="text-xl font-bold mb-2">تم إنشاء الحساب</h1>
-          <p className="text-sm text-gray-600 mb-6">
+      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-luxe p-10 text-center animate-scale-in">
+          <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-green-600" />
+          </div>
+          <h1 className="text-2xl font-black mb-2">تم إنشاء الحساب</h1>
+          <p className="text-sm text-gray-600 mb-6 leading-relaxed">
             حسابك قيد التفعيل. تواصل معانا على الواتساب لتفعيل الحساب وتقدر تسجل دخول.
           </p>
           <a
             href="https://wa.me/201002229982?text=مرحباً، عملت حساب جديد ومحتاج تفعيله."
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block bg-[#25D366] text-white px-6 py-3 rounded-xl font-semibold no-underline"
+            className="inline-flex items-center gap-2 bg-[#25D366] text-white px-6 py-3.5 rounded-2xl font-bold shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline"
           >
             تواصل واتساب
           </a>
@@ -114,29 +116,37 @@ function SignupContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7] flex flex-col" dir="rtl">
-      <header className="border-b border-gray-100 bg-white">
+    <div className="min-h-screen gradient-mesh flex flex-col relative overflow-hidden" dir="rtl">
+      {/* Decorative blobs */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1F5F3F]/5 rounded-full blur-3xl animate-float pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#B8860B]/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
+
+      <header className="relative z-10">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
-          <Link href="/" className="p-1 hover:bg-gray-50 rounded-full">
-            <ArrowRight className="w-4 h-4 text-gray-600" />
+          <Link href="/" className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all">
+            <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
-          <h1 className="text-lg font-bold text-gray-900">إنشاء حساب</h1>
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-            <div className="flex items-center justify-center w-12 h-12 bg-[#1F5F3F]/10 rounded-full mb-4 mx-auto">
-              <UserPlus className="w-5 h-5 text-[#1F5F3F]" />
+      <main className="flex-1 flex items-center justify-center p-4 relative z-10">
+        <div className="w-full max-w-md animate-slide-up">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/80 backdrop-blur rounded-full mb-4 shadow-soft">
+              <Sparkles className="w-3 h-3 text-[#B8860B]" />
+              <span className="text-xs font-bold text-gray-700">انضم لمضمونة</span>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 text-center mb-1">إنشاء حساب جديد</h2>
-            <p className="text-sm text-gray-500 text-center mb-6">انضم لـMadmona Marketplace</p>
+            <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight tracking-tight">
+              ابدأ <span className="gradient-text-green">رحلتك</span>
+            </h1>
+            <p className="text-sm text-gray-500 mt-2">أنشئ حسابك وابدأ تحجز فوراً</p>
+          </div>
 
+          <div className="bg-white rounded-3xl shadow-luxe p-7 md:p-9">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                  <User className="w-4 h-4 text-gray-400" />
+                <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+                  <User className="w-3.5 h-3.5 text-[#1F5F3F]" />
                   الاسم بالكامل
                 </label>
                 <input
@@ -144,14 +154,14 @@ function SignupContent() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="محمد أحمد"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-gray-400" />
+                <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+                  <Phone className="w-3.5 h-3.5 text-[#1F5F3F]" />
                   رقم التليفون
                 </label>
                 <input
@@ -159,7 +169,7 @@ function SignupContent() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="01002229982"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   autoComplete="tel"
@@ -168,8 +178,8 @@ function SignupContent() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-gray-400" />
+                <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+                  <Lock className="w-3.5 h-3.5 text-[#1F5F3F]" />
                   كلمة السر
                 </label>
                 <input
@@ -177,7 +187,7 @@ function SignupContent() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="6 حروف على الأقل"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   autoComplete="new-password"
@@ -187,8 +197,8 @@ function SignupContent() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-gray-400" />
+                <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+                  <Lock className="w-3.5 h-3.5 text-[#1F5F3F]" />
                   أكّد كلمة السر
                 </label>
                 <input
@@ -196,7 +206,7 @@ function SignupContent() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   autoComplete="new-password"
@@ -206,7 +216,7 @@ function SignupContent() {
               </div>
 
               {error && (
-                <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-800">
+                <div className="flex items-start gap-2 p-3.5 bg-red-50 border border-red-200 rounded-2xl text-sm text-red-800 animate-scale-in">
                   <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                   <span>{error}</span>
                 </div>
@@ -215,7 +225,7 @@ function SignupContent() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full bg-[#1F5F3F] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-elevated transition-all flex items-center justify-center gap-2"
               >
                 {submitting ? (
                   <>
@@ -223,21 +233,36 @@ function SignupContent() {
                     <span>جاري الإنشاء...</span>
                   </>
                 ) : (
-                  'إنشاء الحساب'
+                  <>
+                    <UserPlus className="w-4 h-4" />
+                    إنشاء الحساب
+                  </>
                 )}
               </button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-gray-100 text-center">
+            <div className="mt-7 pt-6 border-t border-gray-100 text-center">
               <p className="text-sm text-gray-600 mb-2">عندك حساب بالفعل؟</p>
               <Link
                 href={`/auth/login${redirectTo !== '/account' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
-                className="inline-block text-[#1F5F3F] font-semibold hover:underline no-underline"
+                className="inline-flex items-center gap-1 text-[#1F5F3F] font-bold hover:gap-2 transition-all no-underline"
               >
                 سجّل دخولك
+                <ArrowRight className="w-3.5 h-3.5 rotate-180" />
               </Link>
             </div>
           </div>
+
+          <p className="text-center text-xs text-gray-500 mt-6">
+            بالتسجيل، أنت توافق على{' '}
+            <Link href="/terms" className="text-[#1F5F3F] font-semibold hover:underline">
+              الشروط والأحكام
+            </Link>
+            {' '}و{' '}
+            <Link href="/privacy" className="text-[#1F5F3F] font-semibold hover:underline">
+              سياسة الخصوصية
+            </Link>
+          </p>
         </div>
       </main>
     </div>
@@ -249,8 +274,8 @@ export const dynamic = 'force-dynamic'
 export default function SignupPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+      <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
+        <Loader2 className="w-6 h-6 text-[#1F5F3F] animate-spin" />
       </div>
     }>
       <SignupContent />

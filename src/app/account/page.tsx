@@ -8,8 +8,9 @@ import {
   ArrowRight, Calendar, Building2, ShoppingBag,
   LogOut, Loader2, Lock, User, Phone, Crown, ChevronLeft,
   CheckCircle, Clock, AlertCircle, FolderTree, Edit2, Check, X, Heart,
-  BarChart3,
+  BarChart3, Sparkles,
 } from 'lucide-react'
+import BottomNav from '@/components/BottomNav'
 
 type Stage = 'loading' | 'unauthenticated' | 'ready'
 
@@ -131,27 +132,30 @@ export default function AccountPage() {
 
   if (stage === 'loading') {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+      <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
+        <Loader2 className="w-6 h-6 text-[#1F5F3F] animate-spin" />
       </div>
     )
   }
 
   if (stage === 'unauthenticated') {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
-        <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
-          <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
+      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-3xl shadow-luxe p-10 text-center max-w-sm animate-scale-in">
+          <div className="w-16 h-16 bg-[#1F5F3F]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-[#1F5F3F]" />
+          </div>
+          <h1 className="font-black text-2xl mb-2">سجّل دخول الأول</h1>
+          <p className="text-sm text-gray-500 mb-5">ادخل عشان تشوف حسابك</p>
           <Link
             href="/auth/login?redirect=/account"
-            className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold mb-2"
+            className="block bg-[#1F5F3F] text-white py-3.5 rounded-2xl font-bold shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all mb-3"
           >
             تسجيل دخول
           </Link>
           <Link
             href="/auth/signup?redirect=/account"
-            className="block text-sm text-gray-600 hover:text-[#1F5F3F]"
+            className="block text-sm text-[#1F5F3F] font-bold hover:underline"
           >
             مفيش حساب؟ اعمل حساب جديد
           </Link>
@@ -166,243 +170,218 @@ export default function AccountPage() {
   const isRejectedSupplier = supplier && ['rejected', 'suspended'].includes(supplier.kyc_status)
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+    <div className="min-h-screen gradient-mesh pb-24 md:pb-12" dir="rtl">
+      {/* Decorative blob */}
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#1F5F3F]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
+
+      <header className="sticky top-0 z-40 glass border-b border-white/40">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Link href="/" className="p-1 hover:bg-gray-50 rounded-full">
-            <ArrowRight className="w-5 h-5 text-gray-700" />
+          <Link
+            href="/"
+            className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all"
+          >
+            <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
-          <h1 className="text-lg font-bold text-gray-900">حسابي</h1>
+          <h1 className="text-lg font-black text-gray-900">حسابي</h1>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <div className="flex items-start gap-3 mb-2">
-            <div className="w-14 h-14 bg-[#1F5F3F]/10 rounded-full flex items-center justify-center flex-shrink-0">
-              <User className="w-7 h-7 text-[#1F5F3F]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              {editingName ? (
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    maxLength={100}
-                    autoFocus
-                    className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
-                    placeholder="الاسم بالكامل"
-                  />
-                  {nameError && <p className="text-xs text-red-600">{nameError}</p>}
-                  <div className="flex gap-2">
+      <main className="max-w-2xl mx-auto px-4 py-6 space-y-4 relative">
+        {/* Profile card with premium styling */}
+        <div className="bg-white rounded-3xl shadow-card p-6 relative overflow-hidden animate-slide-up">
+          {/* Decorative gradient */}
+          <div className="absolute top-0 left-0 w-32 h-32 bg-[#1F5F3F]/5 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute bottom-0 right-0 w-24 h-24 bg-[#B8860B]/5 rounded-full blur-2xl pointer-events-none" />
+
+          <div className="relative">
+            <div className="flex items-start gap-4 mb-2">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#1F5F3F] to-[#2d7a52] flex items-center justify-center flex-shrink-0 shadow-elevated">
+                <User className="w-8 h-8 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                {editingName ? (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      maxLength={100}
+                      autoFocus
+                      className="w-full px-3 py-2 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
+                      placeholder="الاسم بالكامل"
+                    />
+                    {nameError && <p className="text-xs text-red-600">{nameError}</p>}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={saveName}
+                        disabled={savingName}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-[#1F5F3F] text-white rounded-lg text-xs font-bold disabled:opacity-50"
+                      >
+                        {savingName ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                        حفظ
+                      </button>
+                      <button
+                        onClick={() => { setEditingName(false); setNameError(null) }}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium"
+                      >
+                        <X className="w-3 h-3" />
+                        إلغاء
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h2 className="font-black text-xl text-gray-900 truncate">
+                        {profile?.full_name || 'مستخدم'}
+                      </h2>
+                      <p className="text-xs text-gray-500 flex items-center gap-1 mt-1" dir="ltr">
+                        <Phone className="w-3 h-3" />
+                        {profile?.phone}
+                      </p>
+                    </div>
                     <button
-                      onClick={saveName}
-                      disabled={savingName}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-[#1F5F3F] text-white rounded-lg text-xs font-semibold disabled:opacity-50"
+                      onClick={startEditingName}
+                      className="p-1.5 text-gray-400 hover:text-[#1F5F3F] hover:bg-gray-50 rounded-lg flex-shrink-0 transition-colors"
+                      title="تعديل الاسم"
                     >
-                      {savingName ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                      حفظ
-                    </button>
-                    <button
-                      onClick={() => { setEditingName(false); setNameError(null) }}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium"
-                    >
-                      <X className="w-3 h-3" />
-                      إلغاء
+                      <Edit2 className="w-4 h-4" />
                     </button>
                   </div>
-                </div>
-              ) : (
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <h2 className="font-bold text-gray-900 truncate">
-                      {profile?.full_name || 'مستخدم'}
-                    </h2>
-                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5" dir="ltr">
-                      <Phone className="w-3 h-3" />
-                      {profile?.phone}
-                    </p>
-                  </div>
-                  <button
-                    onClick={startEditingName}
-                    className="p-1.5 text-gray-400 hover:text-[#1F5F3F] hover:bg-gray-50 rounded-lg flex-shrink-0"
-                    title="تعديل الاسم"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                </div>
+                )}
+              </div>
+              {isAdmin && !editingName && (
+                <span className="bg-gradient-to-r from-[#B8860B] to-[#d4a017] text-white text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 flex-shrink-0 shadow-soft">
+                  <Crown className="w-3 h-3" /> أدمن
+                </span>
               )}
             </div>
-            {isAdmin && !editingName && (
-              <span className="bg-[#B8860B]/10 text-[#B8860B] text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 flex-shrink-0">
-                <Crown className="w-3 h-3" /> أدمن
-              </span>
+
+            {supplier && (
+              <div className={`mt-4 p-3 rounded-2xl text-sm border ${
+                isApprovedSupplier ? 'bg-green-50/80 border-green-200 text-green-900' :
+                isPendingSupplier ? 'bg-yellow-50/80 border-yellow-200 text-yellow-900' :
+                'bg-red-50/80 border-red-200 text-red-900'
+              }`}>
+                <div className="flex items-center gap-2">
+                  {isApprovedSupplier ? <CheckCircle className="w-4 h-4" /> :
+                   isPendingSupplier ? <Clock className="w-4 h-4" /> :
+                   <AlertCircle className="w-4 h-4" />}
+                  <span className="font-bold">{supplier.business_name}</span>
+                  <span className="text-xs opacity-75 mr-auto">
+                    {isApprovedSupplier ? 'مورد موثّق' :
+                     isPendingSupplier ? 'قيد المراجعة' :
+                     'موقوف'}
+                  </span>
+                </div>
+              </div>
             )}
           </div>
-
-          {supplier && (
-            <div className={`mt-3 p-3 rounded-xl border text-sm ${
-              isApprovedSupplier ? 'bg-green-50 border-green-200 text-green-900' :
-              isPendingSupplier ? 'bg-yellow-50 border-yellow-200 text-yellow-900' :
-              'bg-red-50 border-red-200 text-red-900'
-            }`}>
-              <div className="flex items-center gap-2">
-                {isApprovedSupplier ? <CheckCircle className="w-4 h-4" /> :
-                 isPendingSupplier ? <Clock className="w-4 h-4" /> :
-                 <AlertCircle className="w-4 h-4" />}
-                <span className="font-semibold">{supplier.business_name}</span>
-                <span className="text-xs opacity-75 mr-auto">
-                  {isApprovedSupplier ? 'مورد موثّق' :
-                   isPendingSupplier ? 'قيد المراجعة' :
-                   'موقوف'}
-                </span>
-              </div>
-            </div>
-          )}
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-          <div className="px-5 py-3 border-b border-gray-100">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">العميل</h3>
+        {/* Customer section */}
+        <div className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-100">
+          <div className="px-6 py-3 border-b border-gray-100">
+            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">العميل</p>
           </div>
-          <Link
+          <SectionLink
             href="/account/bookings"
-            className="flex items-center gap-3 p-4 hover:bg-gray-50 border-b border-gray-100"
-          >
-            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Calendar className="w-5 h-5 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-gray-900">حجوزاتي</p>
-              <p className="text-xs text-gray-500">
-                {bookingsCount > 0 ? `${bookingsCount} حجز` : 'لسه ما حجزتش حاجة'}
-              </p>
-            </div>
-            <ChevronLeft className="w-4 h-4 text-gray-400" />
-          </Link>
-          <Link
+            icon={<Calendar className="w-5 h-5" />}
+            iconBg="bg-blue-50 text-blue-600"
+            title="حجوزاتي"
+            subtitle={bookingsCount > 0 ? `${bookingsCount} حجز` : 'لسه ما حجزتش حاجة'}
+          />
+          <div className="h-px bg-gray-100 mx-6" />
+          <SectionLink
             href="/account/favorites"
-            className="flex items-center gap-3 p-4 hover:bg-gray-50 border-b border-gray-100"
-          >
-            <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Heart className="w-5 h-5 text-red-500" />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-gray-900">المفضلة</p>
-              <p className="text-xs text-gray-500">
-                {favoritesCount > 0 ? `${favoritesCount} listing` : 'مفيش حاجة محفوظة'}
-              </p>
-            </div>
-            <ChevronLeft className="w-4 h-4 text-gray-400" />
-          </Link>
-          <Link
+            icon={<Heart className="w-5 h-5" />}
+            iconBg="bg-red-50 text-red-500"
+            title="المفضلة"
+            subtitle={favoritesCount > 0 ? `${favoritesCount} listing` : 'مفيش حاجة محفوظة'}
+          />
+          <div className="h-px bg-gray-100 mx-6" />
+          <SectionLink
             href="/marketplace"
-            className="flex items-center gap-3 p-4 hover:bg-gray-50"
-          >
-            <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center flex-shrink-0">
-              <ShoppingBag className="w-5 h-5 text-purple-600" />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-gray-900">تصفح الـMarketplace</p>
-              <p className="text-xs text-gray-500">دور على listings تحجزها</p>
-            </div>
-            <ChevronLeft className="w-4 h-4 text-gray-400" />
-          </Link>
+            icon={<ShoppingBag className="w-5 h-5" />}
+            iconBg="bg-purple-50 text-purple-600"
+            title="تصفّح الـMarketplace"
+            subtitle="دور على listings تحجزها"
+          />
         </div>
 
+        {/* Supplier section */}
         {(isApprovedSupplier || isPendingSupplier || isRejectedSupplier) && (
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-            <div className="px-5 py-3 border-b border-gray-100">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">المورد</h3>
+          <div className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-200">
+            <div className="px-6 py-3 border-b border-gray-100">
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">المورد</p>
             </div>
-            <Link
+            <SectionLink
               href="/supplier/marketplace"
-              className="flex items-center gap-3 p-4 hover:bg-gray-50"
-            >
-              <div className="w-10 h-10 bg-[#1F5F3F]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Building2 className="w-5 h-5 text-[#1F5F3F]" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">لوحة المورد</p>
-                <p className="text-xs text-gray-500">listings + الحجوزات + الإيراد</p>
-              </div>
-              <ChevronLeft className="w-4 h-4 text-gray-400" />
-            </Link>
+              icon={<Building2 className="w-5 h-5" />}
+              iconBg="bg-[#1F5F3F]/10 text-[#1F5F3F]"
+              title="لوحة المورد"
+              subtitle="listings + الحجوزات + الإيراد"
+            />
           </div>
         )}
 
         {!supplier && (
           <Link
             href="/supplier/register"
-            className="block bg-white rounded-2xl border border-gray-100 p-4 hover:bg-gray-50"
+            className="block bg-gradient-to-l from-[#1F5F3F] to-[#2d7a52] text-white rounded-3xl p-5 hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline animate-slide-up delay-200 relative overflow-hidden"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#1F5F3F]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Building2 className="w-5 h-5 text-[#1F5F3F]" />
+            <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="relative flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-6 h-6" />
               </div>
               <div className="flex-1">
-                <p className="font-medium text-gray-900">سجّل كمورد</p>
-                <p className="text-xs text-gray-500">عندك مساحة أو خدمة تأجير؟ اعرضها</p>
+                <p className="font-black text-base">سجّل كمورد</p>
+                <p className="text-xs text-white/80 mt-0.5">عندك مساحة أو خدمة تأجير؟ اعرضها</p>
               </div>
-              <ChevronLeft className="w-4 h-4 text-gray-400" />
+              <ChevronLeft className="w-4 h-4 text-white/80" />
             </div>
           </Link>
         )}
 
+        {/* Admin section */}
         {isAdmin && (
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-            <div className="px-5 py-3 border-b border-gray-100">
-              <h3 className="text-xs font-semibold text-[#B8860B] uppercase tracking-wider flex items-center gap-1">
+          <div className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-300">
+            <div className="px-6 py-3 border-b border-gray-100">
+              <p className="text-[10px] font-black text-[#B8860B] uppercase tracking-widest flex items-center gap-1">
                 <Crown className="w-3 h-3" /> الإدارة
-              </h3>
+              </p>
             </div>
-            <Link
+            <SectionLink
               href="/admin/dashboard"
-              className="flex items-center gap-3 p-4 hover:bg-gray-50 border-b border-gray-100"
-            >
-              <div className="w-10 h-10 bg-[#B8860B]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <BarChart3 className="w-5 h-5 text-[#B8860B]" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">لوحة الإحصائيات</p>
-                <p className="text-xs text-gray-500">الحجوزات + الإيراد + الموردين + Top listings</p>
-              </div>
-              <ChevronLeft className="w-4 h-4 text-gray-400" />
-            </Link>
-            <Link
+              icon={<BarChart3 className="w-5 h-5" />}
+              iconBg="bg-[#B8860B]/10 text-[#B8860B]"
+              title="لوحة الإحصائيات"
+              subtitle="الحجوزات + الإيراد + Top listings"
+            />
+            <div className="h-px bg-gray-100 mx-6" />
+            <SectionLink
               href="/admin/marketplace-suppliers"
-              className="flex items-center gap-3 p-4 hover:bg-gray-50 border-b border-gray-100"
-            >
-              <div className="w-10 h-10 bg-[#B8860B]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Building2 className="w-5 h-5 text-[#B8860B]" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">طلبات الموردين</p>
-                <p className="text-xs text-gray-500">موافقة/رفض الموردين الجدد</p>
-              </div>
-              <ChevronLeft className="w-4 h-4 text-gray-400" />
-            </Link>
-            <Link
+              icon={<Building2 className="w-5 h-5" />}
+              iconBg="bg-[#B8860B]/10 text-[#B8860B]"
+              title="طلبات الموردين"
+              subtitle="موافقة/رفض الموردين الجدد"
+            />
+            <div className="h-px bg-gray-100 mx-6" />
+            <SectionLink
               href="/admin/categories"
-              className="flex items-center gap-3 p-4 hover:bg-gray-50"
-            >
-              <div className="w-10 h-10 bg-[#B8860B]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <FolderTree className="w-5 h-5 text-[#B8860B]" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">إدارة الفئات</p>
-                <p className="text-xs text-gray-500">الفئات + الخصائص الديناميكية</p>
-              </div>
-              <ChevronLeft className="w-4 h-4 text-gray-400" />
-            </Link>
+              icon={<FolderTree className="w-5 h-5" />}
+              iconBg="bg-[#B8860B]/10 text-[#B8860B]"
+              title="إدارة الفئات"
+              subtitle="الفئات + الخصائص الديناميكية"
+            />
           </div>
         )}
 
         <button
           onClick={handleSignOut}
           disabled={signingOut}
-          className="w-full bg-white border border-red-200 text-red-600 rounded-2xl p-4 hover:bg-red-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-medium"
+          className="w-full bg-white border border-red-200 text-red-600 rounded-3xl p-4 hover:bg-red-50 transition-all disabled:opacity-50 flex items-center justify-center gap-2 font-bold animate-slide-up delay-400"
         >
           {signingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
           {signingOut ? 'جاري الخروج...' : 'تسجيل خروج'}
@@ -412,6 +391,34 @@ export default function AccountPage() {
           Madmona Marketplace v1.0
         </p>
       </main>
+
+      <BottomNav />
     </div>
+  )
+}
+
+function SectionLink({
+  href, icon, iconBg, title, subtitle,
+}: {
+  href: string
+  icon: React.ReactNode
+  iconBg: string
+  title: string
+  subtitle: string
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-4 p-5 hover:bg-gray-50/60 transition-colors group no-underline"
+    >
+      <div className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-bold text-gray-900">{title}</p>
+        <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>
+      </div>
+      <ChevronLeft className="w-4 h-4 text-gray-400 group-hover:text-[#1F5F3F] group-hover:-translate-x-1 transition-all" />
+    </Link>
   )
 }

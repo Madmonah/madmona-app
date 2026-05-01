@@ -8,6 +8,7 @@ import {
   Search, MapPin, Star, ImageIcon, Loader2, ArrowRight, User, LogIn, Heart,
   ChevronDown, X, SlidersHorizontal, Sparkles,
 } from 'lucide-react'
+import BottomNav from '@/components/BottomNav'
 
 interface Category {
   id: string
@@ -221,12 +222,10 @@ function MarketplaceBrowseContent() {
   }
 
   return (
-    <div className="min-h-screen gradient-mesh" dir="rtl">
-      {/* Floating gradient blobs */}
+    <div className="min-h-screen gradient-mesh pb-20 md:pb-0" dir="rtl">
       <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#1F5F3F]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
       <div className="fixed top-40 left-20 w-[300px] h-[300px] bg-[#B8860B]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
 
-      {/* Premium sticky header */}
       <header className="sticky top-0 z-40 glass border-b border-white/40">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-3 mb-4">
@@ -262,7 +261,6 @@ function MarketplaceBrowseContent() {
             ) : null}
           </div>
 
-          {/* Premium search */}
           <div className="relative">
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -274,7 +272,6 @@ function MarketplaceBrowseContent() {
             />
           </div>
 
-          {/* Category pills */}
           <div className="flex gap-2 mt-4 overflow-x-auto pb-1 -mx-4 px-4">
             <CategoryPill
               active={!selectedCategorySlug}
@@ -293,7 +290,6 @@ function MarketplaceBrowseContent() {
             ))}
           </div>
 
-          {/* Sort + City filter */}
           <div className="flex gap-2 mt-3 flex-wrap">
             <div className="relative">
               <button
@@ -379,7 +375,6 @@ function MarketplaceBrowseContent() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8 relative">
-        {/* Results header */}
         {!loading && (
           <div className="mb-6 flex items-end justify-between flex-wrap gap-2">
             <div>
@@ -401,7 +396,6 @@ function MarketplaceBrowseContent() {
         )}
 
         {loading ? (
-          // Loading skeleton
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map(i => (
               <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-soft">
@@ -465,7 +459,6 @@ function MarketplaceBrowseContent() {
                       </div>
                     )}
 
-                    {/* Heart toggle */}
                     <button
                       onClick={(e) => toggleFavorite(e, listing.id)}
                       disabled={togglingFav === listing.id}
@@ -479,7 +472,6 @@ function MarketplaceBrowseContent() {
                       )}
                     </button>
 
-                    {/* Category chip overlay */}
                     {listing.category && (
                       <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold text-gray-800">
                         <span>{listing.category.icon}</span>
@@ -487,7 +479,6 @@ function MarketplaceBrowseContent() {
                       </div>
                     )}
 
-                    {/* Rating */}
                     {listing.rating && Number(listing.rating) > 0 && (
                       <div className="absolute bottom-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 bg-black/60 backdrop-blur rounded-full text-[10px] font-bold text-white">
                         <Star className="w-3 h-3 fill-[#B8860B] text-[#B8860B]" />
@@ -535,6 +526,8 @@ function MarketplaceBrowseContent() {
           </div>
         )}
       </main>
+
+      <BottomNav />
     </div>
   )
 }

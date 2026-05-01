@@ -5,15 +5,15 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
-  ArrowRight, MapPin, Star, Users, MessageCircle, Calendar,
+  ArrowRight, MapPin, Star, MessageCircle, Calendar,
   Loader2, Image as ImageIcon, Building2, Tag,
   ChevronRight, ChevronLeft, CheckCircle, AlertCircle, User, Heart, Share2,
-  ExternalLink,
+  ExternalLink, Clock, Sparkles,
 } from 'lucide-react'
 
 // ============================================================================
 // /marketplace/[slug]
-// Public listing detail page with booking, favorites, share, map, and reviews.
+// Premium cinematic listing detail page
 // ============================================================================
 
 interface ListingDetail {
@@ -107,6 +107,7 @@ export default function ListingDetailPage() {
   const [isFavorite, setIsFavorite] = useState(false)
   const [togglingFav, setTogglingFav] = useState(false)
   const [shareSuccess, setShareSuccess] = useState(false)
+  const [activeTab, setActiveTab] = useState<'details' | 'location' | 'reviews'>('details')
 
   useEffect(() => {
     let resolvedListingId: string | null = null
@@ -272,20 +273,26 @@ export default function ListingDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+      <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
+        <Loader2 className="w-8 h-8 text-[#1F5F3F] animate-spin" />
       </div>
     )
   }
 
   if (notFound || !listing) {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
-        <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-          <h1 className="font-bold mb-2">الـlisting ده مش موجود</h1>
-          <Link href="/marketplace" className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold mt-4">
-            تصفح الـmarketplace
+      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-3xl shadow-card p-10 text-center max-w-sm">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center">
+            <AlertCircle className="w-8 h-8 text-gray-400" />
+          </div>
+          <h1 className="font-black text-xl mb-2">الـlisting ده مش موجود</h1>
+          <p className="text-sm text-gray-500 mb-5">يمكن يكون اتمسح أو غير منشور</p>
+          <Link
+            href="/marketplace"
+            className="inline-flex items-center gap-2 bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
+          >
+            تصفح الـMarketplace
           </Link>
         </div>
       </div>
@@ -331,78 +338,85 @@ export default function ListingDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-2">
-          <Link href="/marketplace" className="p-1 hover:bg-gray-50 rounded-full flex-shrink-0">
-            <ArrowRight className="w-5 h-5 text-gray-700" />
+    <div className="min-h-screen gradient-mesh" dir="rtl">
+      {/* Premium glass header */}
+      <header className="sticky top-0 z-40 glass border-b border-white/40">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-2">
+          <Link
+            href="/marketplace"
+            className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all flex-shrink-0"
+          >
+            <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
-          <h1 className="text-sm font-semibold text-gray-700 truncate flex-1">{listing.title}</h1>
-          <div className="flex items-center gap-1 flex-shrink-0">
+          <h1 className="text-sm font-bold text-gray-700 truncate flex-1 hidden sm:block">{listing.title}</h1>
+          <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={handleShare}
-              className="p-1.5 text-gray-600 hover:bg-gray-50 rounded-full relative"
+              className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all relative"
               title="مشاركة"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-4 h-4 text-gray-700" />
               {shareSuccess && (
-                <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-1 bg-gray-900 text-white text-[10px] rounded whitespace-nowrap">
-                  تم النسخ
+                <span className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-gray-900 text-white text-[10px] font-bold rounded-full whitespace-nowrap shadow-card animate-scale-in">
+                  تم النسخ ✓
                 </span>
               )}
             </button>
             <button
               onClick={toggleFavorite}
               disabled={togglingFav}
-              className="p-1.5 hover:bg-gray-50 rounded-full disabled:opacity-50"
+              className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all disabled:opacity-50"
               title={isFavorite ? 'إزالة من المفضلة' : 'حفظ في المفضلة'}
             >
               {togglingFav ? (
                 <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
               ) : (
-                <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+                <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-700'}`} />
               )}
             </button>
             {isAuthed && (
               <Link
                 href="/account"
-                className="p-1.5 text-gray-600 hover:bg-gray-50 rounded-full"
+                className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all"
                 title="حسابي"
               >
-                <User className="w-4 h-4" />
+                <User className="w-4 h-4 text-gray-700" />
               </Link>
             )}
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto pb-32">
-        {/* Photos */}
-        <div className="bg-white">
-          <div className="aspect-[16/10] bg-gray-100 relative">
+      <main className="max-w-6xl mx-auto pb-32 md:pb-12 relative">
+        {/* Cinematic photo hero */}
+        <div className="relative bg-white">
+          <div className="aspect-[16/9] md:aspect-[16/7] bg-gray-100 relative overflow-hidden md:rounded-b-3xl">
             {currentPhoto ? (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={currentPhoto.url}
                   alt={currentPhoto.caption || listing.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover animate-fade-in"
+                  key={currentPhoto.id}
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+
                 {sortedPhotos.length > 1 && (
                   <>
                     <button
                       onClick={() => setPhotoIndex(i => (i === 0 ? sortedPhotos.length - 1 : i - 1))}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/95 backdrop-blur rounded-full flex items-center justify-center hover:bg-white shadow-card hover:scale-105 transition-all"
                     >
                       <ChevronRight className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => setPhotoIndex(i => (i === sortedPhotos.length - 1 ? 0 : i + 1))}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/95 backdrop-blur rounded-full flex items-center justify-center hover:bg-white shadow-card hover:scale-105 transition-all"
                     >
                       <ChevronLeft className="w-5 h-5" />
                     </button>
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-full tabular">
                       {photoIndex + 1} / {sortedPhotos.length}
                     </div>
                   </>
@@ -410,18 +424,22 @@ export default function ListingDetailPage() {
               </>
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <ImageIcon className="w-12 h-12 text-gray-300" />
+                <ImageIcon className="w-16 h-16 text-gray-300" />
               </div>
             )}
           </div>
+
+          {/* Thumbnails */}
           {sortedPhotos.length > 1 && (
-            <div className="flex gap-2 p-3 overflow-x-auto">
+            <div className="flex gap-2 px-4 py-3 overflow-x-auto bg-white">
               {sortedPhotos.map((p, i) => (
                 <button
                   key={p.id}
                   onClick={() => setPhotoIndex(i)}
-                  className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 ${
-                    i === photoIndex ? 'border-[#1F5F3F]' : 'border-transparent'
+                  className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden transition-all ${
+                    i === photoIndex
+                      ? 'ring-2 ring-[#1F5F3F] ring-offset-2 scale-105'
+                      : 'opacity-60 hover:opacity-100'
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -432,208 +450,309 @@ export default function ListingDetailPage() {
           )}
         </div>
 
-        {/* Title & overview */}
-        <div className="bg-white p-4 sm:p-6 border-t border-gray-100">
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex-1">
+        {/* Content grid: main + sidebar (desktop) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-4 py-6 md:py-10">
+          {/* Main column */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Title section */}
+            <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up">
               {listing.category && (
-                <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                  <span>{listing.category.icon}</span> {listing.category.name_ar}
-                </p>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#1F5F3F]/10 rounded-full mb-4">
+                  <span className="text-sm">{listing.category.icon}</span>
+                  <span className="text-xs font-bold text-[#1F5F3F]">{listing.category.name_ar}</span>
+                </div>
               )}
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{listing.title}</h1>
-            </div>
-          </div>
+              <h1 className="text-2xl md:text-4xl font-black text-gray-900 leading-tight mb-4 tracking-tight">
+                {listing.title}
+              </h1>
 
-          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 mt-3">
-            {(listing.district || listing.city) && (
-              <span className="flex items-center gap-1">
-                <MapPin className="w-4 h-4 text-gray-400" />
-                {[listing.district, listing.city].filter(Boolean).join(', ')}
-              </span>
-            )}
-            {listing.rating && Number(listing.rating) > 0 && (
-              <span className="flex items-center gap-1">
-                <Star className="w-4 h-4 fill-[#B8860B] text-[#B8860B]" />
-                <strong>{Number(listing.rating).toFixed(1)}</strong>
-                <span className="text-gray-500">({listing.reviews_count} تقييم)</span>
-              </span>
-            )}
-            {listing.min_booking_hours && (
-              <span className="flex items-center gap-1">
-                <Users className="w-4 h-4 text-gray-400" />
-                حد أدنى {listing.min_booking_hours} ساعة
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Description */}
-        {listing.description && (
-          <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
-            <h2 className="text-base font-bold text-gray-900 mb-2">الوصف</h2>
-            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{listing.description}</p>
-          </div>
-        )}
-
-        {/* Attributes */}
-        {attributes.length > 0 && (
-          <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
-            <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Tag className="w-4 h-4 text-[#1F5F3F]" /> التفاصيل
-            </h2>
-            <div className="grid grid-cols-2 gap-3">
-              {attributes.map(av => (
-                <div key={av.attribute.id} className="flex flex-col">
-                  <span className="text-xs text-gray-500">{av.attribute.name_ar}</span>
-                  <span className="text-sm font-medium text-gray-900 mt-0.5">
-                    {formatAttrValue(av)}
+              <div className="flex flex-wrap items-center gap-4 text-sm">
+                {(listing.district || listing.city) && (
+                  <span className="flex items-center gap-1.5 text-gray-600 font-medium">
+                    <MapPin className="w-4 h-4 text-[#1F5F3F]" />
+                    {[listing.district, listing.city].filter(Boolean).join('، ')}
                   </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Pricing */}
-        {pricing.length > 0 && (
-          <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
-            <h2 className="text-base font-bold text-gray-900 mb-3">الأسعار</h2>
-            <div className="space-y-2">
-              {pricing.map(rule => (
-                <div key={rule.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm text-gray-700">{PERIOD_LABELS[rule.period_type] || rule.period_type}</span>
-                  <span className="text-sm font-bold text-[#1F5F3F]">
-                    {Number(rule.price).toLocaleString('ar-EG')} ج.م
+                )}
+                {listing.rating && Number(listing.rating) > 0 && (
+                  <span className="flex items-center gap-1.5 text-gray-600 font-medium">
+                    <Star className="w-4 h-4 fill-[#B8860B] text-[#B8860B]" />
+                    <strong className="text-gray-900">{Number(listing.rating).toFixed(1)}</strong>
+                    <span className="text-gray-500">({listing.reviews_count})</span>
                   </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+                )}
+                {listing.min_booking_hours && (
+                  <span className="flex items-center gap-1.5 text-gray-600 font-medium">
+                    <Clock className="w-4 h-4 text-[#1F5F3F]" />
+                    حد أدنى {listing.min_booking_hours} ساعة
+                  </span>
+                )}
+              </div>
+            </section>
 
-        {/* Location with map */}
-        {(listing.address || hasMap) && (
-          <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
-            <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#1F5F3F]" /> الموقع
-            </h2>
-            {listing.address && (
-              <p className="text-sm text-gray-700 mb-3">{listing.address}</p>
-            )}
-            {hasMap && (
-              <>
-                <div className="rounded-xl overflow-hidden border border-gray-100 bg-gray-100">
-                  <iframe
-                    src={`https://maps.google.com/maps?q=${listing.latitude},${listing.longitude}&z=16&output=embed`}
-                    width="100%"
-                    height="280"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title={`موقع ${listing.title}`}
+            {/* Tabs */}
+            <section className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-100">
+              <div className="flex border-b border-gray-100 px-2 pt-2">
+                <TabButton
+                  active={activeTab === 'details'}
+                  onClick={() => setActiveTab('details')}
+                  label="التفاصيل"
+                />
+                {(listing.address || hasMap) && (
+                  <TabButton
+                    active={activeTab === 'location'}
+                    onClick={() => setActiveTab('location')}
+                    label="الموقع"
                   />
-                </div>
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${listing.latitude},${listing.longitude}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-1.5 text-sm text-[#1F5F3F] font-semibold hover:underline"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  افتح الاتجاهات في Google Maps
-                </a>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Supplier card */}
-        {listing.supplier && (
-          <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
-            <h2 className="text-base font-bold text-gray-900 mb-3">المورد</h2>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#1F5F3F]/10 rounded-full flex items-center justify-center flex-shrink-0">
-                <Building2 className="w-5 h-5 text-[#1F5F3F]" />
+                )}
+                <TabButton
+                  active={activeTab === 'reviews'}
+                  onClick={() => setActiveTab('reviews')}
+                  label={`التقييمات${reviews.length > 0 ? ` (${reviews.length})` : ''}`}
+                />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 truncate">{listing.supplier.business_name}</p>
-                <p className="text-xs text-green-600 flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3" /> مورد موثّق على Madmona
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* Reviews with supplier responses */}
-        {reviews.length > 0 && (
-          <div className="bg-white p-4 sm:p-6 mt-2 border-t border-gray-100">
-            <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Star className="w-4 h-4 fill-[#B8860B] text-[#B8860B]" /> التقييمات ({reviews.length})
-            </h2>
-            <div className="space-y-4">
-              {reviews.map(r => (
-                <div key={r.id} className="border-b border-gray-100 pb-4 last:border-b-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-medium text-gray-900">
-                      {r.customer?.full_name || 'عميل'}
+              <div className="p-6 md:p-8 animate-fade-in" key={activeTab}>
+                {activeTab === 'details' && (
+                  <div className="space-y-6">
+                    {listing.description && (
+                      <div>
+                        <h3 className="text-sm font-black text-gray-900 mb-3 flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-[#B8860B]" />
+                          الوصف
+                        </h3>
+                        <p className="text-sm md:text-base text-gray-700 leading-relaxed whitespace-pre-wrap">
+                          {listing.description}
+                        </p>
+                      </div>
+                    )}
+
+                    {attributes.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-black text-gray-900 mb-3 flex items-center gap-2">
+                          <Tag className="w-4 h-4 text-[#1F5F3F]" />
+                          المواصفات
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {attributes.map(av => (
+                            <div key={av.attribute.id} className="flex items-center justify-between p-3 bg-[#FAFAF7] rounded-xl">
+                              <span className="text-xs font-medium text-gray-500">{av.attribute.name_ar}</span>
+                              <span className="text-sm font-bold text-gray-900">
+                                {formatAttrValue(av)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {pricing.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-black text-gray-900 mb-3">الأسعار</h3>
+                        <div className="space-y-2">
+                          {pricing.map(rule => (
+                            <div
+                              key={rule.id}
+                              className="flex items-center justify-between p-4 bg-gradient-to-l from-[#1F5F3F]/5 to-transparent rounded-xl border border-[#1F5F3F]/10"
+                            >
+                              <span className="text-sm font-bold text-gray-700">
+                                {PERIOD_LABELS[rule.period_type] || rule.period_type}
+                              </span>
+                              <span className="text-lg font-black text-[#1F5F3F] tabular">
+                                {Number(rule.price).toLocaleString('ar-EG')}
+                                <span className="text-xs font-normal text-gray-500 mr-1">ج.م</span>
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'location' && (
+                  <div>
+                    {listing.address && (
+                      <p className="text-sm md:text-base text-gray-700 mb-4 flex items-start gap-2">
+                        <MapPin className="w-5 h-5 text-[#1F5F3F] flex-shrink-0 mt-0.5" />
+                        <span>{listing.address}</span>
+                      </p>
+                    )}
+                    {hasMap && (
+                      <>
+                        <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-soft">
+                          <iframe
+                            src={`https://maps.google.com/maps?q=${listing.latitude},${listing.longitude}&z=16&output=embed`}
+                            width="100%"
+                            height="320"
+                            style={{ border: 0 }}
+                            loading="lazy"
+                            referrerPolicy="no-referrer-when-downgrade"
+                            title={`موقع ${listing.title}`}
+                          />
+                        </div>
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${listing.latitude},${listing.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-[#1F5F3F] text-white rounded-xl font-bold text-sm hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          افتح الاتجاهات في Google Maps
+                        </a>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'reviews' && (
+                  <>
+                    {reviews.length === 0 ? (
+                      <div className="text-center py-8">
+                        <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-2xl flex items-center justify-center">
+                          <Star className="w-6 h-6 text-gray-400" />
+                        </div>
+                        <p className="text-sm text-gray-500">مفيش تقييمات لسه. كن أول واحد يقيّم!</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-5">
+                        {reviews.map(r => (
+                          <div key={r.id} className="border-b border-gray-100 pb-5 last:border-b-0 last:pb-0">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <div className="w-9 h-9 bg-[#1F5F3F]/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                  <User className="w-4 h-4 text-[#1F5F3F]" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-bold text-gray-900">
+                                    {r.customer?.full_name || 'عميل'}
+                                  </p>
+                                  <p className="text-[10px] text-gray-400">
+                                    {new Date(r.created_at).toLocaleDateString('ar-EG', {
+                                      day: 'numeric', month: 'short', year: 'numeric',
+                                    })}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-0.5">
+                                {[1, 2, 3, 4, 5].map(s => (
+                                  <Star
+                                    key={s}
+                                    className={`w-3.5 h-3.5 ${s <= r.rating ? 'fill-[#B8860B] text-[#B8860B]' : 'text-gray-200'}`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                            {r.comment && (
+                              <p className="text-sm text-gray-700 leading-relaxed pr-11">{r.comment}</p>
+                            )}
+
+                            {r.supplier_response && (
+                              <div className="mt-3 mr-11 bg-gradient-to-l from-[#1F5F3F]/5 to-transparent border border-[#1F5F3F]/10 rounded-2xl p-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Building2 className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                                  <span className="text-xs font-bold text-[#1F5F3F]">
+                                    رد {listing.supplier?.business_name || 'المورد'}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-700 leading-relaxed">{r.supplier_response}</p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </section>
+          </div>
+
+          {/* Sticky sidebar (desktop only) */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-24 space-y-4 animate-slide-up delay-200">
+              {/* Booking widget */}
+              <div className="bg-white rounded-3xl shadow-card p-6">
+                {startingPrice !== null ? (
+                  <>
+                    <p className="text-xs font-bold text-[#B8860B] uppercase tracking-widest mb-1">يبدأ من</p>
+                    <p className="text-3xl font-black text-[#1F5F3F] tabular mb-1">
+                      {startingPrice.toLocaleString('ar-EG')}
+                      <span className="text-base font-medium text-gray-500 mr-1">ج.م</span>
                     </p>
-                    <div className="flex items-center gap-0.5">
-                      {[1, 2, 3, 4, 5].map(s => (
-                        <Star
-                          key={s}
-                          className={`w-3.5 h-3.5 ${s <= r.rating ? 'fill-[#B8860B] text-[#B8860B]' : 'text-gray-200'}`}
-                        />
-                      ))}
+                    <p className="text-xs text-gray-500 mb-5">
+                      السعر النهائي يحتسب حسب المدة
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-base font-bold text-gray-900 mb-5">السعر عند الطلب</p>
+                )}
+
+                <div className="space-y-2">
+                  {canBook && (
+                    <Link
+                      href={`/marketplace/${listing.slug}/book`}
+                      className="flex items-center justify-center gap-2 bg-[#1F5F3F] text-white py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline w-full"
+                    >
+                      <Calendar className="w-4 h-4" />
+                      احجز دلوقتي
+                    </Link>
+                  )}
+
+                  {phoneClean && (
+                    <a
+                      href={`https://wa.me/${phoneClean}?text=${whatsappMessage}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 bg-[#25D366] text-white py-3.5 rounded-2xl font-bold text-sm shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all no-underline w-full"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      تواصل واتساب
+                    </a>
+                  )}
+                </div>
+
+                <div className="mt-5 pt-5 border-t border-gray-100 flex items-center gap-2 text-xs text-gray-500">
+                  <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                  <span>حجز مضمون · بدون رسوم خفية</span>
+                </div>
+              </div>
+
+              {/* Supplier card */}
+              {listing.supplier && (
+                <div className="bg-white rounded-3xl shadow-soft p-6">
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">المورد</p>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1F5F3F] to-[#2d7a52] flex items-center justify-center flex-shrink-0">
+                      <Building2 className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 truncate">{listing.supplier.business_name}</p>
+                      <p className="text-xs text-green-600 flex items-center gap-1">
+                        <CheckCircle className="w-3 h-3" /> مورد موثّق
+                      </p>
                     </div>
                   </div>
-                  {r.comment && (
-                    <p className="text-sm text-gray-700 mt-1 leading-relaxed">{r.comment}</p>
-                  )}
-                  <p className="text-xs text-gray-400 mt-1">
-                    {new Date(r.created_at).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </p>
-
-                  {/* Supplier response */}
-                  {r.supplier_response && (
-                    <div className="mt-3 mr-4 sm:mr-8 bg-[#1F5F3F]/5 border border-[#1F5F3F]/20 rounded-xl p-3">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <Building2 className="w-3.5 h-3.5 text-[#1F5F3F]" />
-                        <span className="text-xs font-semibold text-[#1F5F3F]">
-                          رد {listing.supplier?.business_name || 'المورد'}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-700 leading-relaxed">{r.supplier_response}</p>
-                      {r.supplier_responded_at && (
-                        <p className="text-[10px] text-gray-400 mt-1.5">
-                          {new Date(r.supplier_responded_at).toLocaleDateString('ar-EG', {
-                            day: 'numeric', month: 'short', year: 'numeric',
-                          })}
-                        </p>
-                      )}
-                    </div>
-                  )}
                 </div>
-              ))}
+              )}
             </div>
-          </div>
-        )}
+          </aside>
+        </div>
       </main>
 
-      {/* Sticky bottom CTA */}
-      <div className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 z-50">
-        <div className="max-w-4xl mx-auto p-4 flex items-center gap-2">
+      {/* Sticky bottom CTA (mobile only) */}
+      <div className="fixed bottom-0 inset-x-0 glass border-t border-white/40 z-50 lg:hidden shadow-luxe">
+        <div className="max-w-6xl mx-auto p-3 flex items-center gap-2">
           <div className="flex-1">
             {startingPrice !== null ? (
               <>
-                <p className="text-xs text-gray-500">يبدأ من</p>
-                <p className="text-lg font-bold text-[#1F5F3F]">
-                  {startingPrice.toLocaleString('ar-EG')} <span className="text-sm font-normal">ج.م</span>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">يبدأ من</p>
+                <p className="text-xl font-black text-[#1F5F3F] tabular leading-tight">
+                  {startingPrice.toLocaleString('ar-EG')}
+                  <span className="text-xs font-medium text-gray-500 mr-1">ج.م</span>
                 </p>
               </>
             ) : (
-              <p className="text-sm text-gray-500">السعر عند الطلب</p>
+              <p className="text-sm font-bold text-gray-900">السعر عند الطلب</p>
             )}
           </div>
 
@@ -642,7 +761,7 @@ export default function ListingDetailPage() {
               href={`https://wa.me/${phoneClean}?text=${whatsappMessage}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center w-12 h-12 bg-[#25D366] text-white rounded-xl hover:bg-[#1da851] flex-shrink-0"
+              className="flex items-center justify-center w-12 h-12 bg-[#25D366] text-white rounded-2xl shadow-card hover:scale-105 transition-all flex-shrink-0"
               title="واتساب"
             >
               <MessageCircle className="w-5 h-5" />
@@ -652,24 +771,40 @@ export default function ListingDetailPage() {
           {canBook ? (
             <Link
               href={`/marketplace/${listing.slug}/book`}
-              className="flex items-center gap-2 bg-[#1F5F3F] text-white px-5 py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 flex-shrink-0"
+              className="flex items-center gap-1.5 bg-[#1F5F3F] text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all flex-shrink-0"
             >
-              <Calendar className="w-5 h-5" />
-              احجز دلوقتي
+              <Calendar className="w-4 h-4" />
+              احجز
             </Link>
           ) : (
             <a
               href={phoneClean ? `https://wa.me/${phoneClean}?text=${whatsappMessage}` : 'https://wa.me/201002229982'}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-[#1F5F3F] text-white px-5 py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 flex-shrink-0"
+              className="flex items-center gap-1.5 bg-[#1F5F3F] text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-elevated flex-shrink-0"
             >
-              <MessageCircle className="w-5 h-5" />
+              <MessageCircle className="w-4 h-4" />
               تواصل
             </a>
           )}
         </div>
       </div>
     </div>
+  )
+}
+
+function TabButton({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`relative px-4 py-3 text-sm font-bold transition-colors ${
+        active ? 'text-[#1F5F3F]' : 'text-gray-500 hover:text-gray-700'
+      }`}
+    >
+      {label}
+      {active && (
+        <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#1F5F3F] rounded-full" />
+      )}
+    </button>
   )
 }

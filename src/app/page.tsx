@@ -12,6 +12,7 @@ import {
   Star,
 } from 'lucide-react'
 import TopNav from '@/components/TopNav'
+import BottomNav from '@/components/BottomNav'
 import InstallPWA from '@/components/InstallPWA'
 import FeaturedListings from '@/components/FeaturedListings'
 
@@ -21,7 +22,7 @@ import FeaturedListings from '@/components/FeaturedListings'
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen gradient-mesh text-right overflow-x-hidden" dir="rtl">
+    <div className="min-h-screen gradient-mesh text-right overflow-x-hidden pb-20 md:pb-0" dir="rtl">
       <TopNav />
 
       <main className="relative">
@@ -132,7 +133,6 @@ export default function HomePage() {
               className="group relative block rounded-3xl p-8 md:p-10 hover:-translate-y-1 transition-all duration-500 no-underline overflow-hidden text-white animate-slide-up delay-200"
               style={{ background: 'linear-gradient(135deg, #1F5F3F 0%, #2d7a52 50%, #1F5F3F 100%)' }}
             >
-              {/* Decorative geometric */}
               <div className="absolute -top-12 -left-12 w-48 h-48 border border-white/10 rounded-full" />
               <div className="absolute -bottom-20 -right-20 w-72 h-72 border border-white/10 rounded-full" />
               <div className="absolute top-1/2 left-1/3 w-3 h-3 bg-[#B8860B] rounded-full animate-pulse-soft" />
@@ -167,12 +167,11 @@ export default function HomePage() {
             </Link>
           </section>
 
-          {/* ========== FEATURED LISTINGS ========== */}
           <section className="mb-20 md:mb-28">
             <FeaturedListings />
           </section>
 
-          {/* ========== HOW IT WORKS — premium 3-step ========== */}
+          {/* ========== HOW IT WORKS ========== */}
           <section className="mb-20 md:mb-28">
             <div className="text-center mb-12">
               <p className="text-xs font-bold text-[#B8860B] uppercase tracking-widest mb-2">إزاي بيشتغل</p>
@@ -211,10 +210,9 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* ========== PREMIUM SUPPLIER CTA ========== */}
+          {/* ========== SUPPLIER CTA ========== */}
           <section className="mb-20 md:mb-28 relative">
             <div className="relative bg-gray-900 text-white rounded-3xl p-8 md:p-14 overflow-hidden shadow-luxe">
-              {/* Decorative elements */}
               <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1F5F3F]/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
               <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#B8860B]/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
@@ -287,13 +285,21 @@ export default function HomePage() {
           <footer className="text-center py-10 border-t border-gray-200">
             <p className="font-black text-2xl gradient-text-green mb-2">مضمونة</p>
             <p className="text-xs text-gray-500 mb-4 tracking-wide">Your space, guaranteed · مساحتك اللي بتخصك</p>
-            <div className="flex justify-center items-center gap-4 text-xs">
+            <div className="flex justify-center items-center gap-3 text-xs flex-wrap">
               <Link href="/about" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
                 عن مضمونة
               </Link>
               <span className="text-gray-300">·</span>
               <Link href="/marketplace" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
                 Marketplace
+              </Link>
+              <span className="text-gray-300">·</span>
+              <Link href="/privacy" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
+                الخصوصية
+              </Link>
+              <span className="text-gray-300">·</span>
+              <Link href="/terms" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
+                الشروط
               </Link>
               <span className="text-gray-300">·</span>
               <a
@@ -305,17 +311,15 @@ export default function HomePage() {
                 واتساب
               </a>
             </div>
-            <p className="text-[10px] text-gray-400 mt-6">© 2025 Madmona. جميع الحقوق محفوظة.</p>
+            <p className="text-[10px] text-gray-400 mt-6">© 2026 Madmona. جميع الحقوق محفوظة.</p>
           </footer>
         </div>
       </main>
+
+      <BottomNav />
     </div>
   )
 }
-
-// ============================================================
-// Sub-components
-// ============================================================
 
 function TrustBadge({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
@@ -345,12 +349,7 @@ function SpaceMini({ label, sublabel }: { label: string; sublabel: string }) {
 }
 
 function Step({
-  num,
-  title,
-  description,
-  icon,
-  accent,
-  iconAccent,
+  num, title, description, icon, accent, iconAccent,
 }: {
   num: string
   title: string
