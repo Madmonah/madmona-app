@@ -9,12 +9,6 @@
       "destination": "/api/:path*"
     }
   ],
-  "crons": [
-    {
-      "path": "/api/push/process-queue",
-      "schedule": "* * * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",

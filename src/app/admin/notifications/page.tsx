@@ -13,15 +13,8 @@ import {
 // /admin/notifications
 //
 // Send custom push notifications to specific users or groups.
-// Admin can:
-//   - Send to a single user (search by name/phone)
-//   - Send to all customers
-//   - Send to all suppliers
-//   - Send to all admins
-//   - Send to selected users (multi-pick)
-//
-// Notifications are queued in notification_queue and dispatched by
-// the existing /api/push/process-queue cron.
+// Notifications are queued in notification_queue and dispatched IMMEDIATELY
+// by calling /api/push/process-queue right after insert.
 // ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'forbidden' | 'ready'
@@ -199,8 +192,7 @@ export default function AdminNotificationsPage() {
     setSending(true)
 
     try {
-      // Insert one row per recipient into notification_queue
-      // Each queued row will be picked up by /api/push/process-queue
+      // Step 1: Insert one row per recipient into notification_queue
       const rows = recipients.map(rid => ({
         recipient_id: rid,
         type: 'admin_broadcast',
@@ -217,17 +209,49 @@ export default function AdminNotificationsPage() {
 
       if (error) {
         setResult({ ok: false, message: 'فشل الإرسال: ' + error.message })
-      } else {
-        const subscribedCount = subscribedRecipientsCount()
+        setSending(false)
+        return
+      }
+
+      // Step 2: Trigger immediate processing via /api/push/process-queue
+      // Pass user JWT so endpoint can verify admin role.
+      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      const accessToken = session?.access_token || ''
+
+      let processResult: { sent?: number; processed?: number; error?: string } = {}
+      try {
+        const res = await fetch('/api/push/process-queue', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        })
+        processResult = await res.json()
+      } catch (e) {
+        // Network error — notifications are still queued
+        processResult = { error: 'network' }
+      }
+
+      const subscribedCount = subscribedRecipientsCount()
+
+      if (processResult.error) {
         setResult({
           ok: true,
-          message: `تم إضافة ${recipients.length} إشعار للقائمة. ${subscribedCount} منهم مفعّلة عندهم الإشعارات وهيوصلهم خلال دقيقة.`,
+          message: `تم إضافة ${recipients.length} إشعار للقائمة. ${subscribedCount} منهم مفعّلة عندهم. (لاحظة: حصلت مشكلة في الإرسال الفوري - الإشعارات هتتبعت في أول call.)`,
         })
-        setTitle('')
-        setBody('')
-        setUrl('/')
-        setSelectedUserIds(new Set())
+      } else {
+        const sent = processResult.sent || 0
+        setResult({
+          ok: true,
+          message: `✅ تم إرسال ${sent} إشعار فوراً من أصل ${recipients.length}. (${subscribedCount} مفعّلين الإشعارات)`,
+        })
       }
+
+      setTitle('')
+      setBody('')
+      setUrl('/')
+      setSelectedUserIds(new Set())
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'unknown'
       setResult({ ok: false, message: 'حصل خطأ: ' + msg })
@@ -403,7 +427,6 @@ export default function AdminNotificationsPage() {
                         key={user.id}
                         onClick={() => {
                           if (isSingleMode) {
-                            // Single mode: replace selection
                             setSelectedUserIds(new Set([user.id]))
                           } else {
                             toggleUserSelection(user.id)
@@ -578,7 +601,7 @@ export default function AdminNotificationsPage() {
           <div>
             <p className="font-bold mb-0.5">ملاحظة:</p>
             <p className="leading-relaxed">
-              الإشعارات بتوصل للناس اللي مفعّلين الـPush من حسابهم بس. اللي ما فعّلش الإشعارات على الموبايل/المتصفح، الإشعار هيتسجل في القائمة لكن مش هيوصله. النظام بيشتغل كل دقيقة.
+              الإشعارات بتوصل للناس اللي مفعّلين الـPush من حسابهم بس. لما تضغط "ابعت الإشعار" بيتبعت فوراً.
             </p>
           </div>
         </div>

@@ -6,12 +6,10 @@ import { sendPushToMany, isPushConfigured, type PushPayload } from '@/lib/web-pu
 //
 // Process unsent notifications from notification_queue table.
 // Designed to be called via:
-//   1. Vercel Cron Job (every minute)
+//   1. External cron (cron-job.org, GitHub Actions, etc.) with CRON_SECRET header
 //   2. Supabase Database Webhook on INSERT
-//   3. Manual trigger
-//
-// Auth: requires CRON_SECRET header (Bearer token) — protects against abuse.
-//       Vercel cron auto-attaches this; manual callers must provide it.
+//   3. Admin user from /admin/notifications page (auth via Bearer JWT)
+//   4. Manual trigger
 
 const CRON_SECRET = process.env.CRON_SECRET
 
@@ -19,16 +17,49 @@ export async function POST(req: NextRequest) {
   return handle(req)
 }
 
-// Allow GET for Vercel cron (which uses GET)
+// Allow GET for external cron services
 export async function GET(req: NextRequest) {
   return handle(req)
 }
 
 async function handle(req: NextRequest) {
-  // Verify auth
+  // Verify auth: either CRON_SECRET header OR authenticated admin user (Bearer JWT)
   const auth = req.headers.get('authorization') || ''
   const provided = auth.replace(/^Bearer\s+/i, '').trim()
-  if (CRON_SECRET && provided !== CRON_SECRET) {
+
+  let authorized = false
+
+  // Method 1: CRON_SECRET match
+  if (CRON_SECRET && provided === CRON_SECRET) {
+    authorized = true
+  }
+
+  // Method 2: User JWT — verify and check admin role
+  if (!authorized && provided && provided !== CRON_SECRET) {
+    try {
+      const userClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        { global: { headers: { Authorization: `Bearer ${provided}` } } }
+      )
+      const { data: { user } } = await userClient.auth.getUser()
+      if (user) {
+        // @ts-expect-error
+        const { data: prof } = await userClient
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle()
+        if (prof?.role === 'admin') {
+          authorized = true
+        }
+      }
+    } catch (e) {
+      // Silent fail
+    }
+  }
+
+  if (!authorized) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
@@ -124,7 +155,6 @@ async function handle(req: NextRequest) {
 
   // Increment failed_count for failed items
   if (failedIds.length > 0) {
-    // Postgres doesn't support increment directly via PostgREST, so update one by one
     for (const fid of failedIds) {
       // @ts-expect-error
       const { data: row } = await adminClient
