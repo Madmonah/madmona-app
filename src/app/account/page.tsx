@@ -11,6 +11,7 @@ import {
   BarChart3, Sparkles,
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
+import PushNotificationCard from '@/components/PushNotificationCard'
 
 type Stage = 'loading' | 'unauthenticated' | 'ready'
 
@@ -171,7 +172,6 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-screen gradient-mesh pb-24 md:pb-12" dir="rtl">
-      {/* Decorative blob */}
       <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#1F5F3F]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
 
       <header className="sticky top-0 z-40 glass border-b border-white/40">
@@ -187,9 +187,8 @@ export default function AccountPage() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-4 relative">
-        {/* Profile card with premium styling */}
+        {/* Profile card */}
         <div className="bg-white rounded-3xl shadow-card p-6 relative overflow-hidden animate-slide-up">
-          {/* Decorative gradient */}
           <div className="absolute top-0 left-0 w-32 h-32 bg-[#1F5F3F]/5 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute bottom-0 right-0 w-24 h-24 bg-[#B8860B]/5 rounded-full blur-2xl pointer-events-none" />
 
@@ -307,6 +306,11 @@ export default function AccountPage() {
             title="تصفّح الـMarketplace"
             subtitle="دور على listings تحجزها"
           />
+        </div>
+
+        {/* Push notifications card */}
+        <div className="animate-slide-up delay-150">
+          <PushNotificationCard />
         </div>
 
         {/* Supplier section */}

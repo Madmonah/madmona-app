@@ -9,6 +9,12 @@
       "destination": "/api/:path*"
     }
   ],
+  "crons": [
+    {
+      "path": "/api/push/process-queue",
+      "schedule": "* * * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -25,6 +31,13 @@
           "key": "Referrer-Policy",
           "value": "origin-when-cross-origin"
         }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
+        { "key": "Service-Worker-Allowed", "value": "/" }
       ]
     }
   ]

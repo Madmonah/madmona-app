@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate-vapid": "node -e \"const wp=require('web-push'); const k=wp.generateVAPIDKeys(); console.log('NEXT_PUBLIC_VAPID_PUBLIC_KEY=' + k.publicKey); console.log('VAPID_PRIVATE_KEY=' + k.privateKey)\""
   },
   "dependencies": {
     "next": "14.2.34",
@@ -21,13 +22,16 @@
     "date-fns": "^3.6.0",
     "react-hot-toast": "^2.4.1",
     "qrcode": "^1.5.4",
-    "@types/qrcode": "^1.5.5"
+    "@types/qrcode": "^1.5.5",
+    "web-push": "^3.6.7",
+    "resend": "^4.0.0"
   },
   "devDependencies": {
     "typescript": "^5.4.5",
     "@types/node": "^20.12.12",
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
+    "@types/web-push": "^3.6.4",
     "tailwindcss": "^3.4.3",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
