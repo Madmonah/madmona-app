@@ -5,15 +5,16 @@ import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   Star, Loader2, ArrowRight, Lock, AlertCircle, MessageSquare,
-  Edit2, Check, X, Building2, User, ImageIcon,
+  Edit2, Check, X, Building2, User, ImageIcon, Users,
 } from 'lucide-react'
 
 // ============================================================================
 // /supplier/marketplace/reviews
-// Supplier reviews management — browse customer reviews and write responses.
+// Allows owner + staff with can_respond_reviews. Staff without permission
+// to respond can still view (if can_view) but the response button is hidden.
 // ============================================================================
 
-type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'ready'
+type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'no-permission' | 'ready'
 
 interface Review {
   id: string
@@ -39,6 +40,9 @@ export default function SupplierReviewsPage() {
   const [responseText, setResponseText] = useState('')
   const [saving, setSaving] = useState(false)
   const [filter, setFilter] = useState<'all' | 'unanswered' | 'answered'>('all')
+  const [canRespond, setCanRespond] = useState(true)
+  const [isStaff, setIsStaff] = useState(false)
+  const [roleLabel, setRoleLabel] = useState<string | null>(null)
 
   useEffect(() => {
     const init = async () => {
@@ -48,12 +52,35 @@ export default function SupplierReviewsPage() {
         return
       }
 
+      // Owner check
       // @ts-expect-error
-      const { data: sup } = await supabaseBrowser
+      let { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id, business_name')
         .eq('profile_id', session.user.id)
         .maybeSingle()
+
+      // Staff fallback
+      if (!sup) {
+        // @ts-expect-error
+        const { data: staff } = await supabaseBrowser
+          .from('supplier_staff')
+          .select(`
+            role_label, can_respond_reviews,
+            supplier:marketplace_suppliers(id, business_name)
+          `)
+          .eq('profile_id', session.user.id)
+          .eq('is_active', true)
+          .eq('can_view', true)
+          .maybeSingle()
+
+        if (staff && staff.supplier) {
+          sup = staff.supplier as typeof sup
+          setIsStaff(true)
+          setRoleLabel(staff.role_label)
+          setCanRespond(!!staff.can_respond_reviews)
+        }
+      }
 
       if (!sup) {
         setStage('no-supplier')
@@ -80,6 +107,10 @@ export default function SupplierReviewsPage() {
   }, [])
 
   const startEditing = (review: Review) => {
+    if (!canRespond) {
+      alert('مفيش صلاحية للرد على التقييمات')
+      return
+    }
     setEditingId(review.id)
     setResponseText(review.supplier_response || '')
   }
@@ -115,7 +146,6 @@ export default function SupplierReviewsPage() {
       return
     }
 
-    // Update local state
     setReviews(prev => prev.map(r =>
       r.id === reviewId
         ? { ...r, supplier_response: trimmed, supplier_responded_at: new Date().toISOString() }
@@ -201,6 +231,14 @@ export default function SupplierReviewsPage() {
             </div>
           </div>
 
+          {isStaff && (
+            <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-900 flex items-center gap-2">
+              <Users className="w-3.5 h-3.5" />
+              <span>إنت بتشوف بصفتك &ldquo;{roleLabel || 'موظف'}&rdquo;
+                {!canRespond && ' — مفيش صلاحية للرد'}</span>
+            </div>
+          )}
+
           <div className="flex gap-2">
             <button
               onClick={() => setFilter('all')}
@@ -271,7 +309,6 @@ export default function SupplierReviewsPage() {
 
               return (
                 <div key={review.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-                  {/* Listing context */}
                   {review.listing && (
                     <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 border-b border-gray-100">
                       <div className="w-8 h-8 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden">
@@ -295,7 +332,6 @@ export default function SupplierReviewsPage() {
                   )}
 
                   <div className="p-4">
-                    {/* Customer review */}
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
@@ -328,7 +364,6 @@ export default function SupplierReviewsPage() {
                       </p>
                     )}
 
-                    {/* Supplier response */}
                     {isEditing ? (
                       <div className="bg-[#1F5F3F]/5 border border-[#1F5F3F]/20 rounded-xl p-3 mt-3">
                         <div className="flex items-center gap-2 mb-2">
@@ -373,13 +408,15 @@ export default function SupplierReviewsPage() {
                             <Building2 className="w-3.5 h-3.5 text-[#1F5F3F]" />
                             <span className="text-xs font-semibold text-[#1F5F3F]">رد {supplierName}</span>
                           </div>
-                          <button
-                            onClick={() => startEditing(review)}
-                            className="text-[10px] text-gray-500 hover:text-[#1F5F3F] flex items-center gap-1"
-                          >
-                            <Edit2 className="w-3 h-3" />
-                            تعديل
-                          </button>
+                          {canRespond && (
+                            <button
+                              onClick={() => startEditing(review)}
+                              className="text-[10px] text-gray-500 hover:text-[#1F5F3F] flex items-center gap-1"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                              تعديل
+                            </button>
+                          )}
                         </div>
                         <p className="text-sm text-gray-700 leading-relaxed">{review.supplier_response}</p>
                         {review.supplier_responded_at && (
@@ -390,7 +427,7 @@ export default function SupplierReviewsPage() {
                           </p>
                         )}
                       </div>
-                    ) : (
+                    ) : canRespond ? (
                       <button
                         onClick={() => startEditing(review)}
                         className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[#1F5F3F] hover:bg-[#1F5F3F]/5 px-3 py-2 rounded-lg border border-[#1F5F3F]/20 hover:border-[#1F5F3F]/40"
@@ -398,7 +435,7 @@ export default function SupplierReviewsPage() {
                         <MessageSquare className="w-3.5 h-3.5" />
                         اكتب رد
                       </button>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               )

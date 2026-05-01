@@ -2,23 +2,23 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ListingForm from '@/components/marketplace/ListingForm'
-import { ArrowRight, Loader2, AlertCircle, Lock } from 'lucide-react'
+import { ArrowRight, Loader2, AlertCircle, Lock, Users } from 'lucide-react'
 
 // ============================================================================
 // /supplier/marketplace/new
-// Create a new listing. Requires authenticated + approved supplier.
+// Create a new listing. Allows owners + staff with can_manage_listings.
 // ============================================================================
 
-type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'not-approved' | 'ready'
+type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'not-approved' | 'no-permission' | 'ready'
 
 export default function NewListingPage() {
-  const router = useRouter()
   const [stage, setStage] = useState<Stage>('loading')
   const [supplierId, setSupplierId] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
+  const [isStaff, setIsStaff] = useState(false)
+  const [roleLabel, setRoleLabel] = useState<string | null>(null)
 
   useEffect(() => {
     const init = async () => {
@@ -29,12 +29,38 @@ export default function NewListingPage() {
       }
       setUserId(session.user.id)
 
+      // First check ownership
       // @ts-expect-error
-      const { data: sup } = await supabaseBrowser
+      let { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id, kyc_status')
         .eq('profile_id', session.user.id)
         .maybeSingle()
+
+      // If not owner, check staff
+      if (!sup) {
+        // @ts-expect-error
+        const { data: staff } = await supabaseBrowser
+          .from('supplier_staff')
+          .select(`
+            role_label, can_manage_listings,
+            supplier:marketplace_suppliers(id, kyc_status)
+          `)
+          .eq('profile_id', session.user.id)
+          .eq('is_active', true)
+          .eq('can_view', true)
+          .maybeSingle()
+
+        if (staff && staff.supplier) {
+          if (!staff.can_manage_listings) {
+            setStage('no-permission')
+            return
+          }
+          sup = staff.supplier as typeof sup
+          setIsStaff(true)
+          setRoleLabel(staff.role_label)
+        }
+      }
 
       if (!sup) {
         setStage('no-supplier')
@@ -70,6 +96,26 @@ export default function NewListingPage() {
             className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold"
           >
             تسجيل دخول
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (stage === 'no-permission') {
+    return (
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-2xl border p-8 text-center max-w-md">
+          <Lock className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
+          <h1 className="font-bold mb-2">مفيش صلاحية لإضافة listings</h1>
+          <p className="text-sm text-gray-600 mb-6">
+            صلاحية &ldquo;إدارة الـlistings&rdquo; مش مفعّلة في حسابك. كلّم مدير الفريق لو محتاج تتفعّلك.
+          </p>
+          <Link
+            href="/supplier/marketplace"
+            className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold"
+          >
+            ارجع للوحة
           </Link>
         </div>
       </div>
@@ -115,6 +161,12 @@ export default function NewListingPage() {
       </header>
 
       <main className="px-4 py-6">
+        {isStaff && (
+          <div className="max-w-2xl mx-auto mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-start gap-2">
+            <Users className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span>إنت بتنشر بصفتك &ldquo;{roleLabel || 'موظف'}&rdquo; — الـlisting هيتسجل باسم الـsupplier.</span>
+          </div>
+        )}
         {supplierId && userId && (
           <ListingForm supplierId={supplierId} userId={userId} />
         )}

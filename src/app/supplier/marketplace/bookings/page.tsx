@@ -7,16 +7,15 @@ import { playNotificationSound, showBrowserNotification, requestNotificationPerm
 import BookingToast from '@/components/marketplace/BookingToast'
 import {
   Clock, Loader2, ArrowRight, Lock, AlertCircle, ChevronLeft,
-  Image as ImageIcon, Package, User,
+  Image as ImageIcon, Package, User, Users,
 } from 'lucide-react'
 
 // ============================================================================
 // /supplier/marketplace/bookings
-// Supplier bookings with real-time updates.
-// New bookings auto-appear at top with highlight + sound.
+// Allows owner + staff with can_manage_bookings.
 // ============================================================================
 
-type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'ready'
+type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'no-permission' | 'ready'
 type StatusFilter = 'all' | 'pending_payment' | 'confirmed' | 'completed' | 'cancelled'
 
 interface BookingSummary {
@@ -64,8 +63,9 @@ export default function SupplierBookingsPage() {
   const [supplierName, setSupplierName] = useState('')
   const [supplierId, setSupplierId] = useState<string | null>(null)
   const [highlightedIds, setHighlightedIds] = useState<Set<string>>(new Set())
+  const [isStaff, setIsStaff] = useState(false)
+  const [roleLabel, setRoleLabel] = useState<string | null>(null)
 
-  // Toast state for new bookings
   const [toastVisible, setToastVisible] = useState(false)
   const [newBookingId, setNewBookingId] = useState<string | null>(null)
 
@@ -79,12 +79,38 @@ export default function SupplierBookingsPage() {
         return
       }
 
+      // Check ownership
       // @ts-expect-error
-      const { data: sup } = await supabaseBrowser
+      let { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id, business_name')
         .eq('profile_id', session.user.id)
         .maybeSingle()
+
+      // If not owner, check staff with can_manage_bookings
+      if (!sup) {
+        // @ts-expect-error
+        const { data: staff } = await supabaseBrowser
+          .from('supplier_staff')
+          .select(`
+            role_label, can_manage_bookings,
+            supplier:marketplace_suppliers(id, business_name)
+          `)
+          .eq('profile_id', session.user.id)
+          .eq('is_active', true)
+          .eq('can_view', true)
+          .maybeSingle()
+
+        if (staff && staff.supplier) {
+          if (!staff.can_manage_bookings) {
+            setStage('no-permission')
+            return
+          }
+          sup = staff.supplier as typeof sup
+          setIsStaff(true)
+          setRoleLabel(staff.role_label)
+        }
+      }
 
       if (!sup) {
         setStage('no-supplier')
@@ -97,7 +123,6 @@ export default function SupplierBookingsPage() {
       await loadBookings(sup.id)
       setStage('ready')
 
-      // Request browser notification permission
       requestNotificationPermission().catch(() => {})
     }
     init()
@@ -133,7 +158,6 @@ export default function SupplierBookingsPage() {
           filter: `supplier_id=eq.${supplierId}`,
         },
         async (payload: { new: { id: string } }) => {
-          // Sound + browser notification
           playNotificationSound()
           showBrowserNotification(
             'حجز جديد على Madmona! 🔔',
@@ -143,12 +167,10 @@ export default function SupplierBookingsPage() {
           setNewBookingId(payload.new.id)
           setToastVisible(true)
 
-          // Reload to get fresh data with joins
           if (supplierIdRef.current) {
             await loadBookings(supplierIdRef.current)
           }
 
-          // Highlight the new booking for 4 seconds
           setHighlightedIds(prev => new Set(prev).add(payload.new.id))
           setTimeout(() => {
             setHighlightedIds(prev => {
@@ -168,7 +190,6 @@ export default function SupplierBookingsPage() {
           filter: `supplier_id=eq.${supplierId}`,
         },
         async () => {
-          // Status changes, refresh list silently
           if (supplierIdRef.current) {
             await loadBookings(supplierIdRef.current)
           }
@@ -202,6 +223,26 @@ export default function SupplierBookingsPage() {
             className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold"
           >
             تسجيل دخول
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (stage === 'no-permission') {
+    return (
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-2xl border p-8 text-center max-w-md">
+          <Lock className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
+          <h1 className="font-bold mb-2">مفيش صلاحية للحجوزات</h1>
+          <p className="text-sm text-gray-600 mb-6">
+            صلاحية &ldquo;إدارة الحجوزات&rdquo; مش مفعّلة. كلّم مدير الفريق.
+          </p>
+          <Link
+            href="/supplier/marketplace"
+            className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold"
+          >
+            ارجع للوحة
           </Link>
         </div>
       </div>
@@ -247,6 +288,13 @@ export default function SupplierBookingsPage() {
               </p>
             </div>
           </div>
+
+          {isStaff && (
+            <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-900 flex items-center gap-2">
+              <Users className="w-3.5 h-3.5" />
+              <span>إنت بتشوف بصفتك &ldquo;{roleLabel || 'موظف'}&rdquo;</span>
+            </div>
+          )}
 
           <div className="flex gap-2 overflow-x-auto pb-1">
             {FILTER_TABS.map(tab => {

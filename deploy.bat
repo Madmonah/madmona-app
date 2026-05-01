@@ -1,59 +1,39 @@
 @echo off
 cd /d "%~dp0"
 echo ================================================================
-echo   Tier 3: PWA Push + Resend Emails + Image Optimization
+echo   Tier 4: Staff Permissions Wired Across All Supplier Pages
+echo            + Email Triggers on Booking Events
 echo ================================================================
 echo.
-echo   PWA PUSH NOTIFICATIONS (the complex one):
-echo   * DB: push_subscriptions + notification_queue tables
-echo   * DB triggers: auto-queue notifications on booking events
-echo   * Service worker v2: push event handler + click handler
-echo   * web-push library integration (lib/web-push.ts)
-echo   * API routes:
-echo     - POST /api/push/subscribe (save subscription)
-echo     - POST /api/push/unsubscribe (remove)
-echo     - GET/POST /api/push/process-queue (Vercel cron)
-echo   * Client subscription helper (lib/push-subscription.ts)
-echo   * UI: PushNotificationCard in /account page
-echo   * Vercel cron: every minute processes notification queue
+echo   STAFF PERMISSIONS APPLIED:
+echo   * /supplier/marketplace        — owner + staff (already done)
+echo   * /supplier/marketplace/new    — needs can_manage_listings
+echo   * /supplier/marketplace/[id]/edit — needs can_manage_listings
+echo   * /supplier/marketplace/bookings — needs can_manage_bookings
+echo   * /supplier/marketplace/reviews — view always; respond needs perm
+echo   * /bookings/[id]               — staff with can_manage_bookings
+echo                                     can confirm/cancel
 echo.
-echo   RESEND EMAILS:
-echo   * lib/email.ts with templates:
-echo     - bookingConfirmationEmail
-echo     - newBookingForSupplierEmail
-echo     - welcomeEmail
-echo   * Madmona-branded RTL Arabic email layout
-echo   * Graceful degradation if RESEND_API_KEY missing
+echo   Each page shows a blue banner when the user is staff (not owner)
+echo   indicating their role. Restricted buttons are hidden gracefully.
 echo.
-echo   IMAGE OPTIMIZATION:
-echo   * next.config.mjs: remotePatterns for Supabase + Canva
-echo   * AVIF + WebP formats
-echo   * SmartImage component with fallback for unknown hosts
-echo.
-echo   DEPS ADDED:
-echo   * web-push@3.6.7 + @types/web-push
-echo   * resend@4.0.0
-echo.
-echo   IMPORTANT - MOHAMED MUST DO BEFORE PUSHES WORK:
-echo   1. After this deploy, run: npm install
-echo   2. Generate VAPID keys: npm run generate-vapid
-echo   3. Add to .env.local AND Vercel:
-echo      NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
-echo      VAPID_PRIVATE_KEY=...
-echo      VAPID_EMAIL=mailto:hello@madmonacairo.com
-echo      CRON_SECRET=any-random-string-here
-echo   4. (Optional) For emails, sign up at resend.com:
-echo      RESEND_API_KEY=re_...
-echo      EMAIL_FROM=Madmona ^<hello@madmonacairo.com^>
+echo   EMAIL TRIGGERS (Resend):
+echo   * New API endpoint: POST /api/bookings/notify
+echo   * Body: ^{ booking_id, event: 'created' ^| 'confirmed' ^}
+echo   * Auth: user JWT or CRON_SECRET
+echo   * Booking creation page fires email to supplier
+echo   * Booking detail page fires email to customer on confirm
+echo   * All emails graceful: no-op if RESEND_API_KEY missing
+echo   * Reads emails from auth.users via service role
+echo   * Skips synthesized madmonacairo.com phone-emails
 echo.
 pause
 git add .
-git commit -m "feat: PWA push notifications + Resend emails + image optimization"
+git commit -m "feat: wire staff permissions across supplier pages + email triggers"
 git push
 echo.
 if %ERRORLEVEL% EQU 0 (
   echo   DONE. Wait 1-2 min for Vercel.
-  echo   Don't forget to add VAPID keys after deploy!
 ) else (
   echo   PUSH FAILED.
 )

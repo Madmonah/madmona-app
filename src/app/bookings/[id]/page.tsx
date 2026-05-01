@@ -13,13 +13,12 @@ import {
 // ============================================================================
 // /bookings/[id]
 // Booking detail with InstaPay payment instructions for pending bookings.
+// On confirm: fires email notification to customer (fire-and-forget).
 // ============================================================================
 
-// ============ MADMONA INSTAPAY DETAILS ============
 const INSTAPAY_ACCOUNT = '5220001000009207'
 const INSTAPAY_BANK = 'بنك مصر'
 const MADMONA_WHATSAPP = '201002229982'
-// ===================================================
 
 interface Booking {
   id: string
@@ -110,7 +109,7 @@ function BookingDetailContent() {
       setBooking(data as Booking)
       setIsOwnerCustomer(data.customer_id === session.user.id)
 
-      // Check if current user is the supplier
+      // Check ownership OR staff with can_manage_bookings
       // @ts-expect-error
       const { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
@@ -118,12 +117,46 @@ function BookingDetailContent() {
         .eq('profile_id', session.user.id)
         .eq('id', data.supplier_id)
         .maybeSingle()
-      if (sup) setIsOwnerSupplier(true)
+
+      if (sup) {
+        setIsOwnerSupplier(true)
+      } else {
+        // Check staff
+        // @ts-expect-error
+        const { data: staff } = await supabaseBrowser
+          .from('supplier_staff')
+          .select('can_manage_bookings, supplier_id')
+          .eq('profile_id', session.user.id)
+          .eq('supplier_id', data.supplier_id)
+          .eq('is_active', true)
+          .eq('can_manage_bookings', true)
+          .maybeSingle()
+
+        if (staff) setIsOwnerSupplier(true)
+      }
 
       setLoading(false)
     }
     load()
   }, [bookingId])
+
+  // Fire-and-forget email notification
+  const fireEmailNotification = async (event: 'confirmed') => {
+    try {
+      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      if (!session?.access_token || !booking) return
+      void fetch('/api/bookings/notify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ booking_id: booking.id, event }),
+      }).catch(() => {/* swallow */})
+    } catch {
+      // ignore
+    }
+  }
 
   const updateBookingStatus = async (newStatus: string, reason?: string) => {
     if (!booking) return
@@ -146,6 +179,11 @@ function BookingDetailContent() {
     if (updateErr) {
       alert('فشل تحديث الحجز: ' + updateErr.message)
     } else {
+      // Fire email if confirmed
+      if (newStatus === 'confirmed') {
+        fireEmailNotification('confirmed')
+      }
+
       // Reload
       // @ts-expect-error
       const { data: refreshed } = await supabaseBrowser
@@ -171,7 +209,6 @@ function BookingDetailContent() {
       setCopiedAccount(true)
       setTimeout(() => setCopiedAccount(false), 2000)
     } catch {
-      // fallback
       const ta = document.createElement('textarea')
       ta.value = INSTAPAY_ACCOUNT
       document.body.appendChild(ta)
@@ -225,7 +262,6 @@ function BookingDetailContent() {
     })
   }
 
-  // Build WhatsApp message with payment confirmation context
   const refCode = booking.reference_code || booking.id.slice(0, 8)
   const totalFmt = Number(booking.total_amount).toLocaleString('ar-EG')
   const paymentConfirmationMessage = encodeURIComponent(
@@ -269,7 +305,6 @@ function BookingDetailContent() {
           </div>
         )}
 
-        {/* Status badge */}
         <div className={`flex items-center gap-2 p-3 rounded-xl border mb-4 ${status.color}`}>
           <StatusIcon className="w-5 h-5 flex-shrink-0" />
           <span className="font-bold flex-1">{status.label}</span>
@@ -280,7 +315,6 @@ function BookingDetailContent() {
           )}
         </div>
 
-        {/* ========== INSTAPAY PAYMENT BLOCK (for pending customer bookings) ========== */}
         {showPaymentBlock && (
           <div className="bg-gradient-to-br from-[#1F5F3F] to-[#2d7a52] text-white rounded-2xl shadow-elevated overflow-hidden mb-4">
             <div className="p-5">
@@ -290,7 +324,6 @@ function BookingDetailContent() {
               </div>
               <p className="text-xs text-white/80 mb-4">حوّل المبلغ من تطبيق البنك بتاعك على رقم الحساب التالي:</p>
 
-              {/* Amount */}
               <div className="bg-white/10 backdrop-blur rounded-xl p-3 mb-3 border border-white/15">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">المبلغ المستحق</p>
                 <p className="text-3xl font-black tabular leading-none">
@@ -299,7 +332,6 @@ function BookingDetailContent() {
                 </p>
               </div>
 
-              {/* Account number */}
               <div className="bg-white/10 backdrop-blur rounded-xl p-3 mb-3 border border-white/15">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">رقم الحساب — {INSTAPAY_BANK}</p>
                 <div className="flex items-center justify-between gap-2">
@@ -314,7 +346,6 @@ function BookingDetailContent() {
                 </div>
               </div>
 
-              {/* Reference code reminder */}
               {booking.reference_code && (
                 <div className="bg-[#B8860B]/20 border border-[#B8860B]/40 backdrop-blur rounded-xl p-3 mb-4">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#FFD675] mb-0.5">مهم</p>
@@ -324,7 +355,6 @@ function BookingDetailContent() {
                 </div>
               )}
 
-              {/* Steps */}
               <div className="space-y-2 mb-4">
                 <p className="text-xs font-bold text-white/90 mb-2">الخطوات:</p>
                 <PaymentStep num="1" text="افتح تطبيق البنك أو InstaPay" />
@@ -333,7 +363,6 @@ function BookingDetailContent() {
                 <PaymentStep num="4" text="ابعت الـscreenshot على واتساب لتأكيد الحجز" />
               </div>
 
-              {/* WhatsApp confirmation button */}
               <a
                 href={`https://wa.me/${MADMONA_WHATSAPP}?text=${paymentConfirmationMessage}`}
                 target="_blank"
@@ -351,7 +380,6 @@ function BookingDetailContent() {
           </div>
         )}
 
-        {/* Listing summary */}
         {booking.listing && (
           <Link
             href={`/marketplace/${booking.listing.slug}`}
@@ -384,7 +412,6 @@ function BookingDetailContent() {
           </Link>
         )}
 
-        {/* Schedule */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
           <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
             <Calendar className="w-4 h-4 text-[#1F5F3F]" /> الموعد
@@ -401,7 +428,6 @@ function BookingDetailContent() {
           </div>
         </div>
 
-        {/* Pricing */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
           <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
             <CreditCard className="w-4 h-4 text-[#1F5F3F]" /> السعر
@@ -418,7 +444,6 @@ function BookingDetailContent() {
           </div>
         </div>
 
-        {/* Customer notes */}
         {booking.customer_notes && (
           <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
             <h3 className="text-base font-bold text-gray-900 mb-2">ملاحظات العميل</h3>
@@ -426,7 +451,6 @@ function BookingDetailContent() {
           </div>
         )}
 
-        {/* Cancellation reason */}
         {booking.cancellation_reason && (
           <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
             <h3 className="text-sm font-bold text-red-900 mb-1 flex items-center gap-2">
@@ -436,7 +460,6 @@ function BookingDetailContent() {
           </div>
         )}
 
-        {/* Supplier actions */}
         {isOwnerSupplier && booking.status === 'pending_payment' && (
           <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
             <h3 className="text-base font-bold text-gray-900 mb-1">إجراءات المورد</h3>
@@ -490,7 +513,6 @@ function BookingDetailContent() {
           </button>
         )}
 
-        {/* Contact supplier via WhatsApp (for confirmed bookings) */}
         {phoneClean && isOwnerCustomer && booking.status === 'confirmed' && (
           <a
             href={`https://wa.me/${phoneClean}?text=${encodeURIComponent(`مرحباً، عندي استفسار بخصوص الحجز رقم ${refCode}`)}`}

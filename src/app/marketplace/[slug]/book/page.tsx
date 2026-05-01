@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
-  ArrowRight, Calendar, Clock, Loader2, AlertCircle, CheckCircle,
+  ArrowRight, Calendar, Loader2, AlertCircle, CheckCircle,
   Lock, MapPin, Image as ImageIcon, Building2,
 } from 'lucide-react'
 
@@ -16,6 +16,7 @@ import {
 // Customer picks: pricing rule + date/time range
 // Calculates: duration, base, commission, total
 // Submits: marketplace_bookings row with pending_payment status
+// Fires: /api/bookings/notify (fire-and-forget) for email notification
 // ============================================================================
 
 interface ListingForBooking {
@@ -53,12 +54,11 @@ const PERIOD_LABELS: Record<string, string> = {
   per_event: 'مرة واحدة',
 }
 
-// Duration in milliseconds for one period
 const PERIOD_MS: Record<string, number> = {
   hourly: 60 * 60 * 1000,
   daily: 24 * 60 * 60 * 1000,
   weekly: 7 * 24 * 60 * 60 * 1000,
-  monthly: 30 * 24 * 60 * 60 * 1000, // approximate
+  monthly: 30 * 24 * 60 * 60 * 1000,
   per_event: 0,
 }
 
@@ -75,7 +75,7 @@ export default function BookingPage() {
   const [userId, setUserId] = useState<string | null>(null)
 
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null)
-  const [startAt, setStartAt] = useState('') // ISO local string for input[type=datetime-local]
+  const [startAt, setStartAt] = useState('')
   const [endAt, setEndAt] = useState('')
   const [customerNotes, setCustomerNotes] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -129,7 +129,6 @@ export default function BookingPage() {
 
   const selectedRule = pricingRules.find(r => r.id === selectedRuleId) || null
 
-  // Calculate duration in periods, base, commission, total
   const calcPricing = () => {
     if (!selectedRule || !startAt || !endAt) {
       return { periods: 0, baseAmount: 0, commission: 0, total: 0, supplierPayout: 0, valid: false, error: '' }
@@ -156,13 +155,31 @@ export default function BookingPage() {
     const baseAmount = price * periods
     const commissionRate = Number(listing?.supplier?.commission_rate || 10)
     const commission = Math.round((baseAmount * commissionRate / 100) * 100) / 100
-    const total = baseAmount // no tax for now
+    const total = baseAmount
     const supplierPayout = Math.round((baseAmount - commission) * 100) / 100
 
     return { periods, baseAmount, commission, total, supplierPayout, valid: true, error: '' }
   }
 
   const pricing = calcPricing()
+
+  // Fire-and-forget email notification (non-blocking)
+  const fireEmailNotification = async (bookingId: string, event: 'created' | 'confirmed') => {
+    try {
+      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      if (!session?.access_token) return
+      void fetch('/api/bookings/notify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ booking_id: bookingId, event }),
+      }).catch(() => {/* swallow — not critical */})
+    } catch {
+      // ignore
+    }
+  }
 
   const handleSubmit = async () => {
     if (!listing?.supplier || !selectedRule || !pricing.valid || !userId) return
@@ -173,7 +190,6 @@ export default function BookingPage() {
       const startIso = new Date(startAt).toISOString()
       const endIso = new Date(endAt).toISOString()
 
-      // Check for booking conflicts
       // @ts-expect-error
       const { data: conflictData, error: conflictErr } = await supabaseBrowser
         .rpc('check_booking_conflict', {
@@ -183,7 +199,6 @@ export default function BookingPage() {
         })
 
       if (conflictErr) {
-        // If RPC doesn't exist or signature differs, continue without check
         console.warn('Conflict check failed, continuing:', conflictErr.message)
       } else if (conflictData === true) {
         setError('الفترة دي محجوزة بالفعل. اختار وقت تاني.')
@@ -193,7 +208,7 @@ export default function BookingPage() {
 
       const commissionRate = Number(listing.supplier.commission_rate || 10)
 
-      const insertData: any = {
+      const insertData: Record<string, unknown> = {
         customer_id: userId,
         listing_id: listing.id,
         supplier_id: listing.supplier.id,
@@ -220,10 +235,14 @@ export default function BookingPage() {
 
       if (insertErr) throw insertErr
 
+      // Fire email to supplier (non-blocking)
+      fireEmailNotification(newBooking.id, 'created')
+
       router.push(`/bookings/${newBooking.id}?created=1`)
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('Booking error:', e)
-      setError(e.message || 'حصل خطأ، حاول تاني')
+      const msg = e instanceof Error ? e.message : 'حصل خطأ، حاول تاني'
+      setError(msg)
       setStage('ready')
     }
   }
@@ -459,7 +478,7 @@ export default function BookingPage() {
         </button>
 
         <p className="text-xs text-center text-gray-500 mt-3">
-          الحجز هيتأكد بعد ما المورد يوافق. هتقدر تتابع حالة الحجز من "حجوزاتي".
+          الحجز هيتأكد بعد ما المورد يوافق. هتقدر تتابع حالة الحجز من &ldquo;حجوزاتي&rdquo;.
         </p>
       </main>
     </div>
