@@ -3,16 +3,15 @@ import { Tajawal } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
+import GoogleAnalytics from '@/components/analytics/GoogleAnalytics'
+import MetaPixel from '@/components/analytics/MetaPixel'
 import './globals.css'
 
-// Madmona root layout — sets up Arabic typography (Tajawal), brand metadata,
-// PWA manifest link, JSON-LD LocalBusiness data for SEO, and analytics.
+// Madmona root layout — Arabic typography (Tajawal), brand metadata,
+// JSON-LD (LocalBusiness + Organization + WebSite), and analytics.
 
 const SITE_URL = 'https://madmonacairo.com'
 
-// Tajawal — modern, clean Arabic typeface that pairs well with the
-// Aesop/Byredo minimal-luxury aesthetic. Loaded with the latin subset too
-// since the wordmark uses both scripts.
 const tajawal = Tajawal({
   subsets: ['arabic', 'latin'],
   weight: ['300', '400', '500', '700'],
@@ -22,23 +21,16 @@ const tajawal = Tajawal({
 
 export const metadata: Metadata = {
   title: {
-    default: 'مضمونة | مساحة عمل مشتركة في مصر الجديدة',
+    default: 'مضمونة | منصة حجز شاملة - مساحات، عقارات، معدات',
     template: '%s | مضمونة',
   },
   description:
-    'مضمونة - مساحة عمل بوتيك في مصر الجديدة، القاهرة. مساحات عمل مشتركة، مكاتب خاصة، وغرف اجتماعات. مساحتك اللي بتخصك.',
+    'مضمونة - منصة حجز مصرية لكل ما يمكن تأجيره. مساحات عمل، عقارات، مركبات، معدات تصوير، فعاليات. من موردين معتمدين، بضمان كامل.',
   keywords: [
-    'مضمونة',
-    'madmona',
-    'coworking',
-    'مساحة عمل',
-    'مساحة عمل مشتركة',
-    'مصر الجديدة',
-    'القاهرة',
-    'فريلانسر',
-    'remote work',
-    'meeting room',
-    'مكتب خاص',
+    'مضمونة', 'madmona', 'مساحة عمل', 'coworking', 'مصر الجديدة', 'القاهرة',
+    'تأجير', 'rental', 'marketplace', 'فريلانسر', 'remote work',
+    'meeting room', 'مكتب خاص', 'تأجير معدات', 'تأجير سيارات',
+    'تأجير شقق', 'تأجير عقارات', 'منصة حجز', 'booking platform',
   ],
   authors: [{ name: 'Madmona' }],
   creator: 'Madmona',
@@ -49,8 +41,8 @@ export const metadata: Metadata = {
     canonical: SITE_URL,
   },
   openGraph: {
-    title: 'مضمونة | مساحة عمل بوتيك في مصر الجديدة',
-    description: 'مساحتك اللي بتخصك — Coworking · Meeting Rooms · Private Office',
+    title: 'مضمونة | منصة حجز شاملة',
+    description: 'مساحات، عقارات، مركبات، ومعدات — في مكان واحد بضمان كامل.',
     url: SITE_URL,
     siteName: 'مضمونة',
     locale: 'ar_EG',
@@ -59,7 +51,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'مضمونة - Your Space, Guaranteed',
-    description: 'مساحة عمل بوتيك في مصر الجديدة. مساحتك اللي بتخصك.',
+    description: 'منصة حجز مصرية لكل ما يمكن تأجيره.',
   },
   robots: {
     index: true,
@@ -79,7 +71,6 @@ export const metadata: Metadata = {
   category: 'business',
 }
 
-// Next.js 14 wants themeColor and viewport in a separate export
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -87,30 +78,29 @@ export const viewport: Viewport = {
   themeColor: '#1F5F3F',
 }
 
-// JSON-LD structured data for LocalBusiness — helps Google understand
-// the business and may surface us in local search results.
+// LocalBusiness — for Google Business presence (Madmona physical coworking space)
 const businessJsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'LocalBusiness',
+  '@type': ['LocalBusiness', 'CoworkingSpace'],
   '@id': `${SITE_URL}/#business`,
   name: 'مضمونة',
   alternateName: 'Madmona',
-  description: 'مساحة عمل بوتيك في مصر الجديدة',
+  description: 'مساحة عمل بوتيك في مصر الجديدة + منصة حجز لكل ما يمكن تأجيره',
   url: SITE_URL,
   telephone: '+201002229982',
   address: {
     '@type': 'PostalAddress',
-    streetAddress: '٧ شارع سليمان عظمي',
-    addressLocality: 'مصر الجديدة',
+    streetAddress: '٧ شارع سليمان عَزْمي',
+    addressLocality: 'النزهة، مصر الجديدة',
     addressRegion: 'القاهرة',
-    postalCode: '4473103',
     addressCountry: 'EG',
   },
   geo: {
     '@type': 'GeoCoordinates',
-    latitude: 30.1246693,
-    longitude: 31.36446,
+    latitude: 30.1134075,
+    longitude: 31.3655983,
   },
+  hasMap: 'https://share.google/QbWskGlQ49AUTJrTc',
   openingHoursSpecification: [
     {
       '@type': 'OpeningHoursSpecification',
@@ -124,6 +114,42 @@ const businessJsonLd = {
   sameAs: ['https://www.instagram.com/madmona.space'],
 }
 
+// Organization — corporate identity for the marketplace
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': `${SITE_URL}/#organization`,
+  name: 'Madmona',
+  alternateName: 'مضمونة',
+  url: SITE_URL,
+  logo: `${SITE_URL}/madmona-logo.png`,
+  contactPoint: {
+    '@type': 'ContactPoint',
+    telephone: '+201002229982',
+    contactType: 'customer service',
+    areaServed: 'EG',
+    availableLanguage: ['Arabic', 'English'],
+  },
+  sameAs: ['https://www.instagram.com/madmona.space'],
+}
+
+// WebSite — enables sitelinks search box in Google results
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${SITE_URL}/#website`,
+  url: SITE_URL,
+  name: 'Madmona',
+  description: 'منصة حجز مصرية لكل ما يمكن تأجيره',
+  inLanguage: 'ar-EG',
+  publisher: { '@id': `${SITE_URL}/#organization` },
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: `${SITE_URL}/marketplace?q={search_term_string}`,
+    'query-input': 'required name=search_term_string',
+  },
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -132,10 +158,17 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" className={tajawal.variable}>
       <head>
-        {/* Structured data for search engines */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
       </head>
       <body className={`${tajawal.className} bg-[#FAFAF7] text-gray-900 antialiased`}>
@@ -143,6 +176,8 @@ export default function RootLayout({
         <ServiceWorkerRegister />
         <Analytics />
         <SpeedInsights />
+        <GoogleAnalytics />
+        <MetaPixel />
       </body>
     </html>
   )

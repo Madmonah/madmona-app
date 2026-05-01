@@ -9,8 +9,8 @@ import BookingToast from '@/components/marketplace/BookingToast'
 import {
   Plus, Building2, Edit2, Trash2, Eye, EyeOff, AlertCircle,
   Loader2, ArrowRight, CheckCircle, Clock, Lock, MapPin,
-  Image as ImageIcon, ExternalLink, Calendar, User, TrendingUp,
-  DollarSign, Bell, Copy, Star,
+  Image as ImageIcon, ExternalLink, Calendar, TrendingUp,
+  DollarSign, Bell, Copy, Crown, Users,
 } from 'lucide-react'
 
 type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'pending' | 'rejected' | 'ready'
@@ -20,6 +20,31 @@ interface SupplierState {
   business_name: string
   kyc_status: 'pending' | 'approved' | 'rejected' | 'suspended'
   kyc_rejection_reason: string | null
+}
+
+// Permissions for the current user (full set if owner, subset if staff)
+interface AccessState {
+  isOwner: boolean
+  isStaff: boolean
+  roleLabel: string | null
+  canManageListings: boolean
+  canPublishListings: boolean
+  canDeleteListings: boolean
+  canManageBookings: boolean
+  canViewAnalytics: boolean
+  canManageTeam: boolean
+}
+
+const FULL_ACCESS: AccessState = {
+  isOwner: true,
+  isStaff: false,
+  roleLabel: null,
+  canManageListings: true,
+  canPublishListings: true,
+  canDeleteListings: true,
+  canManageBookings: true,
+  canViewAnalytics: true,
+  canManageTeam: true,
 }
 
 interface ListingSummary {
@@ -61,6 +86,7 @@ function SupplierMarketplaceContent() {
 
   const [stage, setStage] = useState<Stage>('loading')
   const [supplier, setSupplier] = useState<SupplierState | null>(null)
+  const [access, setAccess] = useState<AccessState>(FULL_ACCESS)
   const [listings, setListings] = useState<ListingSummary[]>([])
   const [stats, setStats] = useState<Stats>({
     totalRevenue: 0,
@@ -86,12 +112,50 @@ function SupplierMarketplaceContent() {
         return
       }
 
+      const userId = session.user.id
+
+      // First, try as owner
       // @ts-expect-error new schema
-      const { data: sup } = await supabaseBrowser
+      let { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id, business_name, kyc_status, kyc_rejection_reason')
-        .eq('profile_id', session.user.id)
+        .eq('profile_id', userId)
         .maybeSingle()
+
+      let isOwner = !!sup
+      let staffPerms: AccessState | null = null
+
+      // If not owner, check if active staff
+      if (!sup) {
+        // @ts-expect-error
+        const { data: staff } = await supabaseBrowser
+          .from('supplier_staff')
+          .select(`
+            role_label,
+            can_manage_listings, can_publish_listings, can_delete_listings,
+            can_manage_bookings, can_view_analytics, can_manage_team,
+            supplier:marketplace_suppliers(id, business_name, kyc_status, kyc_rejection_reason)
+          `)
+          .eq('profile_id', userId)
+          .eq('is_active', true)
+          .eq('can_view', true)
+          .maybeSingle()
+
+        if (staff && staff.supplier) {
+          sup = staff.supplier as typeof sup
+          staffPerms = {
+            isOwner: false,
+            isStaff: true,
+            roleLabel: staff.role_label,
+            canManageListings: !!staff.can_manage_listings,
+            canPublishListings: !!staff.can_publish_listings,
+            canDeleteListings: !!staff.can_delete_listings,
+            canManageBookings: !!staff.can_manage_bookings,
+            canViewAnalytics: !!staff.can_view_analytics,
+            canManageTeam: !!staff.can_manage_team,
+          }
+        }
+      }
 
       if (!sup) {
         setStage('no-supplier')
@@ -99,6 +163,7 @@ function SupplierMarketplaceContent() {
       }
 
       setSupplier(sup as SupplierState)
+      setAccess(staffPerms || FULL_ACCESS)
       supplierIdRef.current = sup.id
 
       if (sup.kyc_status === 'pending') {
@@ -108,7 +173,9 @@ function SupplierMarketplaceContent() {
       } else {
         setStage('ready')
         loadListings(sup.id)
-        loadStats(sup.id)
+        if (isOwner || staffPerms?.canViewAnalytics) {
+          loadStats(sup.id)
+        }
         requestNotificationPermission().catch(() => {})
       }
     }
@@ -140,7 +207,7 @@ function SupplierMarketplaceContent() {
             'في حجز جديد بانتظار مراجعتك',
             `/supplier/marketplace/bookings/${payload.new.id}`
           )
-          if (supplierIdRef.current) {
+          if (supplierIdRef.current && (access.isOwner || access.canViewAnalytics)) {
             loadStats(supplierIdRef.current)
           }
         }
@@ -150,7 +217,7 @@ function SupplierMarketplaceContent() {
     return () => {
       supabaseBrowser.removeChannel(channel)
     }
-  }, [stage, supplier?.id])
+  }, [stage, supplier?.id, access.isOwner, access.canViewAnalytics])
 
   const loadListings = async (supId: string) => {
     setLoadingListings(true)
@@ -158,8 +225,7 @@ function SupplierMarketplaceContent() {
     const { data } = await supabaseBrowser
       .from('listings')
       .select(`
-        id, title, slug, city, district, status,
-        bookings_count, views_count, created_at,
+        id, title, slug, city, district, status, bookings_count, views_count, created_at,
         category:categories(name_ar, icon),
         photos:listing_photos(url, is_primary),
         pricing:pricing_rules(price, period_type, is_active)
@@ -172,187 +238,162 @@ function SupplierMarketplaceContent() {
   }
 
   const loadStats = async (supId: string) => {
-    // Bookings stats
-    // @ts-expect-error
-    const { data: bookings } = await supabaseBrowser
-      .from('marketplace_bookings')
-      .select('status, supplier_payout, created_at')
-      .eq('supplier_id', supId)
-
     const monthAgo = new Date()
     monthAgo.setMonth(monthAgo.getMonth() - 1)
 
-    const bookingsArr = (bookings || []) as Array<{
-      status: string
-      supplier_payout: number | string
-      created_at: string
-    }>
-
-    const totalRevenue = bookingsArr
-      .filter(b => ['confirmed', 'active', 'completed'].includes(b.status))
-      .reduce((sum, b) => sum + Number(b.supplier_payout || 0), 0)
-
-    // Reviews stats
     // @ts-expect-error
-    const { data: reviews } = await supabaseBrowser
+    const { data: bookings } = await supabaseBrowser
+      .from('marketplace_bookings')
+      .select('status, total_amount, supplier_payout, created_at')
+      .eq('supplier_id', supId)
+
+    const arr = (bookings || []) as Array<{ status: string; total_amount: number; supplier_payout: number; created_at: string }>
+    const completed = arr.filter(b => ['confirmed', 'active', 'completed'].includes(b.status))
+    const totalRevenue = completed.reduce((s, b) => s + Number(b.supplier_payout || 0), 0)
+    const monthBookings = arr.filter(b => new Date(b.created_at) > monthAgo).length
+    const pending = arr.filter(b => b.status === 'pending_payment').length
+
+    // @ts-expect-error
+    const { data: rev } = await supabaseBrowser
       .from('reviews')
       .select('id, supplier_response')
       .eq('supplier_id', supId)
       .eq('is_published', true)
 
-    const reviewsArr = (reviews || []) as Array<{ supplier_response: string | null }>
+    const revArr = (rev || []) as Array<{ supplier_response: string | null }>
 
     setStats({
       totalRevenue,
-      monthBookings: bookingsArr.filter(b => new Date(b.created_at) > monthAgo).length,
-      pending: bookingsArr.filter(b => b.status === 'pending_payment').length,
-      totalBookings: bookingsArr.length,
-      totalReviews: reviewsArr.length,
-      unansweredReviews: reviewsArr.filter(r => !r.supplier_response).length,
+      monthBookings,
+      pending,
+      totalBookings: arr.length,
+      totalReviews: revArr.length,
+      unansweredReviews: revArr.filter(r => !r.supplier_response).length,
     })
   }
 
   const togglePublished = async (listing: ListingSummary) => {
-    const newStatus = listing.status === 'published' ? 'paused' : 'published'
+    if (!access.canPublishListings) {
+      alert('مفيش صلاحية لنشر/إيقاف الـlistings.')
+      return
+    }
     setActioningId(listing.id)
-    const update: { status: string; published_at?: string } = { status: newStatus }
-    if (newStatus === 'published') update.published_at = new Date().toISOString()
+    const newStatus = listing.status === 'published' ? 'paused' : 'published'
     // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('listings')
-      .update(update)
+      .update({ status: newStatus })
       .eq('id', listing.id)
-    if (!error && supplier) await loadListings(supplier.id)
     setActioningId(null)
+    if (error) {
+      alert('فشل: ' + error.message)
+    } else if (supplierIdRef.current) {
+      loadListings(supplierIdRef.current)
+    }
   }
 
   const deleteListing = async (listing: ListingSummary) => {
-    if (!confirm(`متأكد إنك عاوز تمسح "${listing.title}"؟ مينفعش تتراجع.`)) return
+    if (!access.canDeleteListings) {
+      alert('مفيش صلاحية لحذف الـlistings.')
+      return
+    }
+    if (!confirm(`متأكد من حذف "${listing.title}"؟ ده مش هيتراجع.`)) return
     setActioningId(listing.id)
     // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('listings')
       .delete()
       .eq('id', listing.id)
-    if (!error && supplier) await loadListings(supplier.id)
     setActioningId(null)
-  }
-
-  const duplicateListing = async (listing: ListingSummary) => {
-    if (!confirm(`نسخ "${listing.title}"؟ النسخة هتطلع كمسودة وتقدر تعدلها.`)) return
-    setActioningId(listing.id)
-
-    try {
-      // @ts-expect-error
-      const { data: full } = await supabaseBrowser
-        .from('listings')
-        .select('*')
-        .eq('id', listing.id)
-        .single()
-
-      if (!full) throw new Error('Listing not found')
-
-      const timestamp = Date.now().toString(36)
-      const newSlug = `${full.slug}-copy-${timestamp}`
-
-      const newListingPayload = {
-        supplier_id: full.supplier_id,
-        category_id: full.category_id,
-        title: `${full.title} (نسخة)`,
-        slug: newSlug,
-        description: full.description,
-        status: 'draft',
-        country: full.country,
-        city: full.city,
-        district: full.district,
-        address: full.address,
-        latitude: full.latitude,
-        longitude: full.longitude,
-        min_booking_hours: full.min_booking_hours,
-        max_booking_hours: full.max_booking_hours,
-        advance_booking_days: full.advance_booking_days,
-        cancellation_hours: full.cancellation_hours,
-        auto_accept_bookings: full.auto_accept_bookings,
-        requires_security_deposit: full.requires_security_deposit,
-        security_deposit_amount: full.security_deposit_amount,
-      }
-
-      // @ts-expect-error
-      const { data: newListing, error: insertError } = await supabaseBrowser
-        .from('listings')
-        .insert(newListingPayload)
-        .select('id')
-        .single()
-
-      if (insertError || !newListing) throw insertError || new Error('Insert failed')
-      const newId = newListing.id
-
-      // @ts-expect-error
-      const { data: photos } = await supabaseBrowser
-        .from('listing_photos')
-        .select('url, storage_path, caption, display_order, is_primary')
-        .eq('listing_id', listing.id)
-
-      if (photos && photos.length > 0) {
-        // @ts-expect-error
-        await supabaseBrowser
-          .from('listing_photos')
-          .insert(photos.map((p: Record<string, unknown>) => ({ ...p, listing_id: newId })))
-      }
-
-      // @ts-expect-error
-      const { data: pricing } = await supabaseBrowser
-        .from('pricing_rules')
-        .select('period_type, period_count, price, currency, min_periods, max_periods, label_ar, label_en, is_active, display_order')
-        .eq('listing_id', listing.id)
-
-      if (pricing && pricing.length > 0) {
-        // @ts-expect-error
-        await supabaseBrowser
-          .from('pricing_rules')
-          .insert(pricing.map((p: Record<string, unknown>) => ({ ...p, listing_id: newId })))
-      }
-
-      // @ts-expect-error
-      const { data: values } = await supabaseBrowser
-        .from('listing_values')
-        .select('attribute_id, value')
-        .eq('listing_id', listing.id)
-
-      if (values && values.length > 0) {
-        // @ts-expect-error
-        await supabaseBrowser
-          .from('listing_values')
-          .insert(values.map((v: Record<string, unknown>) => ({ ...v, listing_id: newId })))
-      }
-
-      router.push(`/supplier/marketplace/${newId}/edit`)
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : 'حصل خطأ غير معروف'
-      alert(`فشل النسخ: ${msg}`)
-      setActioningId(null)
+    if (error) {
+      alert('فشل: ' + error.message)
+    } else if (supplierIdRef.current) {
+      loadListings(supplierIdRef.current)
     }
   }
 
+  const duplicateListing = async (listing: ListingSummary) => {
+    if (!access.canManageListings) {
+      alert('مفيش صلاحية لإنشاء listings جديدة.')
+      return
+    }
+    setActioningId(listing.id)
+    // @ts-expect-error
+    const { data: orig } = await supabaseBrowser
+      .from('listings')
+      .select('*')
+      .eq('id', listing.id)
+      .single()
+
+    if (!orig) {
+      setActioningId(null)
+      return
+    }
+
+    type ListingRow = {
+      id: string
+      slug: string
+      title: string
+      status: string
+      bookings_count: number
+      views_count: number
+      created_at: string
+      updated_at: string
+      [key: string]: unknown
+    }
+    const o = orig as ListingRow
+
+    // Create new listing as draft
+    const newListing: Record<string, unknown> = {
+      ...o,
+      title: o.title + ' (نسخة)',
+      slug: `${o.slug}-copy-${Date.now().toString(36).slice(-4)}`,
+      status: 'draft',
+      bookings_count: 0,
+      views_count: 0,
+    }
+    delete newListing.id
+    delete newListing.created_at
+    delete newListing.updated_at
+
+    // @ts-expect-error
+    const { data: dup, error } = await supabaseBrowser
+      .from('listings')
+      .insert(newListing)
+      .select('id')
+      .single()
+
+    setActioningId(null)
+    if (error || !dup) {
+      alert('فشل النسخ: ' + (error?.message || 'unknown'))
+      return
+    }
+    router.push(`/supplier/marketplace/${dup.id}/edit`)
+  }
+
+  // ===========================================================================
+  // RENDER
+  // ===========================================================================
+
   if (stage === 'loading') {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+      <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
+        <Loader2 className="w-6 h-6 text-[#1F5F3F] animate-spin" />
       </div>
     )
   }
 
   if (stage === 'unauthenticated') {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
-        <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center">
+      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
           <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
-          <h1 className="text-xl font-bold mb-2">سجّل دخول الأول</h1>
+          <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
           <Link
-            href={`/auth/login?redirect=${encodeURIComponent('/supplier/marketplace')}`}
-            className="block w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90"
+            href="/auth/login?redirect=/supplier/marketplace"
+            className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold"
           >
-            تسجيل دخول
+            دخول
           </Link>
         </div>
       </div>
@@ -361,41 +402,33 @@ function SupplierMarketplaceContent() {
 
   if (stage === 'no-supplier') {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
-        <div className="w-full max-w-md bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center">
-          <Building2 className="w-12 h-12 text-[#1F5F3F] mx-auto mb-4" />
-          <h1 className="text-xl font-bold mb-2">سجّل كمورد على Madmona</h1>
+      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
+          <Building2 className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
+          <h1 className="font-bold mb-2">مش مورد على Madmona</h1>
+          <p className="text-sm text-gray-500 mb-4">
+            عشان تنشر listings لازم تسجّل كمورد، أو يدعوك مدير فريق.
+          </p>
           <Link
             href="/supplier/register"
-            className="block w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold mt-4"
+            className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold"
           >
-            ابدأ التسجيل
-          </Link>
-          <Link
-            href="/account"
-            className="block text-sm text-gray-600 hover:text-[#1F5F3F] mt-3"
-          >
-            العودة للحساب
+            سجّل دلوقتي
           </Link>
         </div>
       </div>
     )
   }
 
-  if (stage === 'pending' && supplier) {
+  if (stage === 'pending') {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] p-4" dir="rtl">
-        <div className="max-w-md mx-auto pt-12">
-          <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center">
-            <Clock className="w-12 h-12 text-yellow-600 mx-auto mb-4" />
-            <h1 className="text-xl font-bold mb-2">طلبك قيد المراجعة</h1>
-            <p className="text-sm text-gray-600 mb-2">
-              <strong>{supplier.business_name}</strong>
-            </p>
-            <Link href="/account" className="inline-block mt-4 text-sm text-[#1F5F3F] hover:underline">
-              ارجع للحساب
-            </Link>
-          </div>
+      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
+          <Clock className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
+          <h1 className="font-bold mb-2">قيد المراجعة</h1>
+          <p className="text-sm text-gray-500">
+            حسابك تحت المراجعة من فريق Madmona. هتوصلك رسالة على واتساب لما يتم الموافقة.
+          </p>
         </div>
       </div>
     )
@@ -403,23 +436,18 @@ function SupplierMarketplaceContent() {
 
   if (stage === 'rejected' && supplier) {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] p-4" dir="rtl">
-        <div className="max-w-md mx-auto pt-12">
-          <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center">
-            <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-            <h1 className="text-xl font-bold mb-2">
-              {supplier.kyc_status === 'rejected' ? 'الطلب مرفوض' : 'الحساب موقوف'}
-            </h1>
-            {supplier.kyc_rejection_reason && (
-              <p className="text-sm text-gray-700 bg-red-50 rounded-lg p-3 mb-4">
-                {supplier.kyc_rejection_reason}
-              </p>
-            )}
-            <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer"
-              className="text-sm text-[#1F5F3F] hover:underline">
-              للتواصل: واتساب +20 100 222 9982
-            </a>
-          </div>
+      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
+          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
+          <h1 className="font-bold mb-2">الحساب محظور</h1>
+          {supplier.kyc_rejection_reason && (
+            <p className="text-sm text-gray-600 mb-4 bg-red-50 p-3 rounded-xl">
+              {supplier.kyc_rejection_reason}
+            </p>
+          )}
+          <a href="https://wa.me/201002229982" className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold">
+            تواصل مع Madmona
+          </a>
         </div>
       </div>
     )
@@ -427,120 +455,122 @@ function SupplierMarketplaceContent() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <BookingToast
-        visible={toastVisible}
-        bookingId={newBookingId}
-        onDismiss={() => { setToastVisible(false); setNewBookingId(null) }}
-      />
-
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <Link href="/account" className="p-1 hover:bg-gray-50 rounded-full">
-                <ArrowRight className="w-4 h-4 text-gray-600" />
-              </Link>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">{supplier?.business_name}</h1>
-                <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3 text-green-600" /> مورد موثّق
-                </p>
-              </div>
+        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link href="/account" className="p-1 hover:bg-gray-50 rounded-full">
+              <ArrowRight className="w-5 h-5 text-gray-700" />
+            </Link>
+            <div>
+              <h1 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                {supplier?.business_name}
+                {access.isOwner ? (
+                  <Crown className="w-4 h-4 text-[#B8860B]" aria-label="مالك" />
+                ) : (
+                  <span className="text-[10px] font-bold px-2 py-0.5 bg-[#1F5F3F]/10 text-[#1F5F3F] rounded-full">
+                    {access.roleLabel || 'موظف'}
+                  </span>
+                )}
+              </h1>
+              <p className="text-xs text-gray-500">لوحة المورد</p>
             </div>
-            <Link href="/account" className="p-2 text-gray-600 hover:bg-gray-50 rounded-full" title="حسابي">
-              <User className="w-5 h-5" />
-            </Link>
           </div>
-
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            <span className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-[#1F5F3F] text-white">
-              Listings ({listings.length})
-            </span>
-            <Link
-              href="/supplier/marketplace/bookings"
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center gap-1 ${
-                pulseStats ? 'ring-2 ring-yellow-400 animate-pulse' : ''
-              }`}
-            >
-              <Calendar className="w-3 h-3" />
-              الحجوزات ({stats.totalBookings})
-              {stats.pending > 0 && (
-                <span className="bg-yellow-400 text-gray-900 rounded-full px-1.5 ml-1 text-[10px] font-bold">
-                  {stats.pending}
-                </span>
-              )}
-            </Link>
-            <Link
-              href="/supplier/marketplace/reviews"
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center gap-1"
-            >
-              <Star className="w-3 h-3" />
-              التقييمات ({stats.totalReviews})
-              {stats.unansweredReviews > 0 && (
-                <span className="bg-yellow-400 text-gray-900 rounded-full px-1.5 ml-1 text-[10px] font-bold">
-                  {stats.unansweredReviews}
-                </span>
-              )}
-            </Link>
+          <div className="flex items-center gap-2">
+            {access.canManageBookings && (
+              <Link href="/supplier/marketplace/bookings" className="text-xs font-bold text-[#1F5F3F] hover:underline px-2">
+                الحجوزات
+              </Link>
+            )}
+            {access.isOwner && access.canManageTeam && (
+              <Link
+                href="/supplier/team"
+                className="text-xs font-bold text-orange-700 hover:bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1"
+              >
+                <Users className="w-3.5 h-3.5" />
+                الفريق
+              </Link>
+            )}
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6">
+      <BookingToast
+        visible={toastVisible}
+        bookingId={newBookingId}
+        onClose={() => setToastVisible(false)}
+      />
+
+      <main className="max-w-5xl mx-auto px-4 py-6 pb-12">
         {justCreated && (
-          <div className="mb-4 flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-900">
-            <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-            <span>تم حفظ الـlisting بنجاح!</span>
+          <div className="mb-4 flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-900">
+            <CheckCircle className="w-4 h-4 flex-shrink-0" />
+            <span>تم إنشاء الـlisting بنجاح!</span>
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-2 mb-6">
-          <div className="bg-white rounded-xl border border-gray-100 p-3">
-            <div className="flex items-center gap-1.5 mb-1 text-gray-500">
-              <DollarSign className="w-3.5 h-3.5" />
-              <p className="text-[10px] font-medium uppercase tracking-wider">صافي الإيراد</p>
+        {/* Staff banner if not owner */}
+        {access.isStaff && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-start gap-2">
+            <Users className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold">إنت في الفريق كـ&ldquo;{access.roleLabel || 'موظف'}&rdquo;</p>
+              <p className="text-blue-700 mt-0.5">صلاحياتك بتتحدد من مالك الـsupplier.</p>
             </div>
-            <p className="text-base sm:text-lg font-bold text-[#1F5F3F]">
-              {stats.totalRevenue.toLocaleString('ar-EG')}
-              <span className="text-xs font-normal text-gray-500 mr-1">ج.م</span>
-            </p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-100 p-3">
-            <div className="flex items-center gap-1.5 mb-1 text-gray-500">
-              <TrendingUp className="w-3.5 h-3.5" />
-              <p className="text-[10px] font-medium uppercase tracking-wider">حجوزات الشهر</p>
+        )}
+
+        {/* Stats */}
+        {(access.isOwner || access.canViewAnalytics) && (
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="bg-white rounded-xl border border-gray-100 p-3">
+              <div className="flex items-center gap-1.5 mb-1 text-[#1F5F3F]">
+                <DollarSign className="w-3.5 h-3.5" />
+                <p className="text-[10px] font-medium uppercase tracking-wider">إيرادات صافية</p>
+              </div>
+              <p className="text-base sm:text-lg font-bold text-gray-900">
+                {stats.totalRevenue.toLocaleString('ar-EG')}
+                <span className="text-xs font-normal text-gray-500 mr-1">ج.م</span>
+              </p>
             </div>
-            <p className="text-base sm:text-lg font-bold text-gray-900">{stats.monthBookings}</p>
-          </div>
-          <div className={`rounded-xl border p-3 transition-all ${
-            stats.pending > 0
-              ? 'bg-yellow-50 border-yellow-200'
-              : 'bg-white border-gray-100'
-          } ${pulseStats ? 'ring-2 ring-yellow-400' : ''}`}>
-            <div className={`flex items-center gap-1.5 mb-1 ${
-              stats.pending > 0 ? 'text-yellow-700' : 'text-gray-500'
-            }`}>
-              <Bell className="w-3.5 h-3.5" />
-              <p className="text-[10px] font-medium uppercase tracking-wider">بانتظار الدفع</p>
+            <div className="bg-white rounded-xl border border-gray-100 p-3">
+              <div className="flex items-center gap-1.5 mb-1 text-gray-500">
+                <TrendingUp className="w-3.5 h-3.5" />
+                <p className="text-[10px] font-medium uppercase tracking-wider">حجوزات الشهر</p>
+              </div>
+              <p className="text-base sm:text-lg font-bold text-gray-900">{stats.monthBookings}</p>
             </div>
-            <p className={`text-base sm:text-lg font-bold ${
-              stats.pending > 0 ? 'text-yellow-900' : 'text-gray-900'
-            }`}>
-              {stats.pending}
-            </p>
+            <div className={`rounded-xl border p-3 transition-all ${
+              stats.pending > 0
+                ? 'bg-yellow-50 border-yellow-200'
+                : 'bg-white border-gray-100'
+            } ${pulseStats ? 'ring-2 ring-yellow-400' : ''}`}>
+              <div className={`flex items-center gap-1.5 mb-1 ${
+                stats.pending > 0 ? 'text-yellow-700' : 'text-gray-500'
+              }`}>
+                <Bell className="w-3.5 h-3.5" />
+                <p className="text-[10px] font-medium uppercase tracking-wider">بانتظار الدفع</p>
+              </div>
+              <p className={`text-base sm:text-lg font-bold ${
+                stats.pending > 0 ? 'text-yellow-900' : 'text-gray-900'
+              }`}>
+                {stats.pending}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-bold text-gray-900">
-            Listings بتاعتك ({listings.length})
+            Listings ({listings.length})
           </h2>
-          <Link
-            href="/supplier/marketplace/new"
-            className="flex items-center gap-1 px-4 py-2 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90"
-          >
-            <Plus className="w-4 h-4" /> ضيف listing جديد
-          </Link>
+          {access.canManageListings && (
+            <Link
+              href="/supplier/marketplace/new"
+              className="flex items-center gap-1 px-4 py-2 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90"
+            >
+              <Plus className="w-4 h-4" /> ضيف listing جديد
+            </Link>
+          )}
         </div>
 
         {loadingListings ? (
@@ -550,12 +580,14 @@ function SupplierMarketplaceContent() {
             <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <h3 className="text-base font-semibold text-gray-700 mb-1">مفيش listings لسه</h3>
             <p className="text-sm text-gray-500 mb-6">ابدأ بإضافة أول listing عشان تستقبل حجوزات</p>
-            <Link
-              href="/supplier/marketplace/new"
-              className="inline-flex items-center gap-1 px-5 py-2.5 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90"
-            >
-              <Plus className="w-4 h-4" /> ضيف أول listing
-            </Link>
+            {access.canManageListings && (
+              <Link
+                href="/supplier/marketplace/new"
+                className="inline-flex items-center gap-1 px-5 py-2.5 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90"
+              >
+                <Plus className="w-4 h-4" /> ضيف أول listing
+              </Link>
+            )}
           </div>
         ) : (
           <div className="space-y-3">
@@ -609,6 +641,10 @@ function SupplierMarketplaceContent() {
                             <Eye className="w-3 h-3" />
                             {listing.views_count}
                           </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {listing.bookings_count}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -636,44 +672,52 @@ function SupplierMarketplaceContent() {
                             <ExternalLink className="w-3.5 h-3.5" />
                           </Link>
                         )}
-                        <button
-                          onClick={() => togglePublished(listing)}
-                          disabled={actioningId === listing.id}
-                          className="p-1.5 text-gray-600 hover:bg-gray-50 rounded disabled:opacity-50"
-                          title={listing.status === 'published' ? 'إيقاف النشر' : 'نشر'}
-                        >
-                          {listing.status === 'published'
-                            ? <EyeOff className="w-3.5 h-3.5" />
-                            : <Eye className="w-3.5 h-3.5" />
-                          }
-                        </button>
-                        <button
-                          onClick={() => duplicateListing(listing)}
-                          disabled={actioningId === listing.id}
-                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50"
-                          title="نسخ كمسودة جديدة"
-                        >
-                          {actioningId === listing.id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5" />
-                          )}
-                        </button>
-                        <Link
-                          href={`/supplier/marketplace/${listing.id}/edit`}
-                          className="p-1.5 text-[#1F5F3F] hover:bg-[#1F5F3F]/10 rounded"
-                          title="تعديل"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </Link>
-                        <button
-                          onClick={() => deleteListing(listing)}
-                          disabled={actioningId === listing.id}
-                          className="p-1.5 text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
-                          title="حذف"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        {access.canPublishListings && (
+                          <button
+                            onClick={() => togglePublished(listing)}
+                            disabled={actioningId === listing.id}
+                            className="p-1.5 text-gray-600 hover:bg-gray-50 rounded disabled:opacity-50"
+                            title={listing.status === 'published' ? 'إيقاف النشر' : 'نشر'}
+                          >
+                            {listing.status === 'published'
+                              ? <EyeOff className="w-3.5 h-3.5" />
+                              : <Eye className="w-3.5 h-3.5" />
+                            }
+                          </button>
+                        )}
+                        {access.canManageListings && (
+                          <button
+                            onClick={() => duplicateListing(listing)}
+                            disabled={actioningId === listing.id}
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50"
+                            title="نسخ كمسودة جديدة"
+                          >
+                            {actioningId === listing.id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        )}
+                        {access.canManageListings && (
+                          <Link
+                            href={`/supplier/marketplace/${listing.id}/edit`}
+                            className="p-1.5 text-[#1F5F3F] hover:bg-[#1F5F3F]/10 rounded"
+                            title="تعديل"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Link>
+                        )}
+                        {access.canDeleteListings && (
+                          <button
+                            onClick={() => deleteListing(listing)}
+                            disabled={actioningId === listing.id}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
+                            title="حذف"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
