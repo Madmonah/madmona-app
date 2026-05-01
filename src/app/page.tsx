@@ -18,7 +18,11 @@ import FeaturedListings from '@/components/FeaturedListings'
 
 // ============================================================
 // Home page — premium, cinematic, professional
+// Address: 7 Soliman Azmy St, El Nozha, Heliopolis, Cairo
+// Plus Code: 4974+XX El Nozha
 // ============================================================
+
+const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
 
 export default function HomePage() {
   return (
@@ -270,15 +274,21 @@ export default function HomePage() {
               <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#25D366] group-hover:-translate-x-1 transition-all" />
             </a>
 
-            <div className="flex items-center gap-4 p-5 bg-white rounded-2xl shadow-soft border border-gray-100">
-              <div className="w-12 h-12 rounded-2xl bg-gray-900 flex items-center justify-center flex-shrink-0">
+            <a
+              href={MADMONA_MAPS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-4 p-5 bg-white rounded-2xl shadow-soft hover:shadow-card transition-all duration-300 hover:-translate-y-0.5 no-underline border border-gray-100"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-gray-900 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                 <MapPin className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
-                <p className="font-bold text-gray-900">٧ سليمان عظمي</p>
-                <p className="text-xs text-gray-500 mt-0.5">مصر الجديدة، القاهرة · ٩ ص → ١١ م</p>
+                <p className="font-bold text-gray-900">٧ شارع سليمان عَزْمي</p>
+                <p className="text-xs text-gray-500 mt-0.5">النزهة، مصر الجديدة · ٩ ص → ١١ م</p>
               </div>
-            </div>
+              <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#1F5F3F] group-hover:-translate-x-1 transition-all" />
+            </a>
           </section>
 
           {/* ========== FOOTER ========== */}

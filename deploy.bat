@@ -1,20 +1,20 @@
 @echo off
 cd /d "%~dp0"
 echo ================================================================
-echo   FINAL POLISH BATCH — listing detail + auth + privacy/terms
+echo   InstaPay Integration + Address Fix
 echo ================================================================
 echo.
-echo   * Listing detail PREMIUM redesign (cinematic + sticky widget)
-echo   * Mobile bottom navigation (4 tabs: home/marketplace/fav/account)
-echo   * Login + Signup pages premium redesign
-echo   * Account hub premium redesign
-echo   * Privacy Policy page (/privacy)
-echo   * Terms of Service page (/terms)
-echo   * Footer updated with privacy/terms links
+echo   * InstaPay payment block on /bookings/[id] page
+echo   * Account: 5220001000009207 (بنك مصر)
+echo   * Copy account number button
+echo   * WhatsApp confirmation button (sends ref code + amount)
+echo   * 4-step payment instructions
+echo   * Address corrected to "سليمان عَزْمي" everywhere
+echo   * Coordinates 30.1134075, 31.3655983 in DB
 echo.
 pause
 git add .
-git commit -m "feat: premium listing detail + auth pages + privacy/terms + mobile bottom nav"
+git commit -m "feat: InstaPay payment flow + correct Madmona address"
 git push
 echo.
 if %ERRORLEVEL% EQU 0 (

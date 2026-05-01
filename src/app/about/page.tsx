@@ -2,9 +2,12 @@ import Link from 'next/link'
 import { Metadata } from 'next'
 import {
   ArrowLeft, MessageCircle, MapPin, Clock, ShieldCheck,
-  Users, Building2, Compass, Sparkles,
+  Users, Building2, Compass, Sparkles, ExternalLink,
 } from 'lucide-react'
 import TopNav from '@/components/TopNav'
+
+const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
+const MADMONA_PLUS_CODE = '4974+XX'
 
 export const metadata: Metadata = {
   title: 'عن مضمونة | Madmona',
@@ -46,7 +49,7 @@ export default function AboutPage() {
           <h2 className="text-xl font-bold text-gray-900 mb-4">القصة</h2>
           <div className="space-y-3 text-gray-700 leading-relaxed text-sm md:text-base">
             <p>
-              في 2025، فتحنا أول فرع لمضمونة في 7 شارع سليمان عظمي بمصر الجديدة — مساحة هادية مصممة بعناية للفريلانسرز وأصحاب الأعمال والطلاب.
+              في 2025، فتحنا أول فرع لمضمونة في ٧ شارع سليمان عَزْمي بالنزهة، مصر الجديدة — مساحة هادية مصممة بعناية للفريلانسرز وأصحاب الأعمال والطلاب.
             </p>
             <p>
               لاحظنا إن العملاء بيسألونا عن أماكن تانية يحجزوا فيها — استوديوهات، شقق، عربيات، معدات تصوير. فقلنا ليه ما نبنيش منصة تجمعهم كلهم في مكان واحد، بنفس مستوى الضمان والثقة اللي بنقدمه؟
@@ -64,7 +67,7 @@ export default function AboutPage() {
             <FeatureCard
               icon={<Building2 className="w-5 h-5" />}
               title="مساحات مضمونة"
-              description="مكاتب فردية، غرف اجتماعات، وجاردن في مصر الجديدة. احجز فوراً."
+              description="مكاتب فردية، غرف اجتماعات، وجاردن في النزهة، مصر الجديدة. احجز فوراً."
               accent="bg-[#1F5F3F]/10 text-[#1F5F3F]"
               href="/browse"
               cta="استكشف المساحات"
@@ -120,16 +123,25 @@ export default function AboutPage() {
                 <p className="text-xs text-gray-500" dir="ltr">+20 100 222 9982</p>
               </div>
             </a>
-            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+            <a
+              href={MADMONA_MAPS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 no-underline transition-colors"
+            >
               <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
                 <MapPin className="w-5 h-5 text-gray-700" />
               </div>
               <div className="flex-1">
-                <p className="font-bold text-gray-900 text-sm">العنوان</p>
-                <p className="text-xs text-gray-600 mt-0.5">٧ شارع سليمان عظمي، مصر الجديدة، القاهرة</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="font-bold text-gray-900 text-sm">العنوان</p>
+                  <ExternalLink className="w-3 h-3 text-gray-400" />
+                </div>
+                <p className="text-xs text-gray-700 mt-1">٧ شارع سليمان عَزْمي، النزهة، مصر الجديدة، القاهرة</p>
+                <p className="text-[10px] text-gray-500 mt-0.5" dir="ltr">Plus Code: {MADMONA_PLUS_CODE} El Nozha</p>
                 <p className="text-xs text-gray-500 mt-0.5">يومياً ٩ ص → ١١ م</p>
               </div>
-            </div>
+            </a>
           </div>
         </section>
 

@@ -6,16 +6,20 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Calendar, Clock, Loader2, AlertCircle, CheckCircle,
-  Lock, MapPin, Image as ImageIcon, Building2, MessageCircle, Hash,
-  CreditCard, X, AlertTriangle,
+  MapPin, Image as ImageIcon, Building2, MessageCircle, Hash,
+  CreditCard, X, AlertTriangle, Copy, Check,
 } from 'lucide-react'
 
 // ============================================================================
 // /bookings/[id]
-// 
-// Booking detail page — shows status, listing summary, schedule, pricing.
-// Customer can view; supplier sees actions to confirm/cancel.
+// Booking detail with InstaPay payment instructions for pending bookings.
 // ============================================================================
+
+// ============ MADMONA INSTAPAY DETAILS ============
+const INSTAPAY_ACCOUNT = '5220001000009207'
+const INSTAPAY_BANK = 'بنك مصر'
+const MADMONA_WHATSAPP = '201002229982'
+// ===================================================
 
 interface Booking {
   id: string
@@ -49,9 +53,9 @@ interface Booking {
   } | null
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string; icon: any }> = {
-  pending_payment: { label: 'في انتظار التأكيد', color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock },
-  confirmed: { label: 'مؤكد', color: 'bg-green-100 text-green-800 border-green-200', icon: CheckCircle },
+const STATUS_LABELS: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
+  pending_payment: { label: 'في انتظار الدفع', color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock },
+  confirmed: { label: 'مؤكد ✓', color: 'bg-green-100 text-green-800 border-green-200', icon: CheckCircle },
   active: { label: 'نشط', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: CheckCircle },
   completed: { label: 'تم الإكمال', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: CheckCircle },
   cancelled: { label: 'ملغي', color: 'bg-red-100 text-red-800 border-red-200', icon: X },
@@ -71,6 +75,7 @@ function BookingDetailContent() {
   const [actioning, setActioning] = useState(false)
   const [isOwnerSupplier, setIsOwnerSupplier] = useState(false)
   const [isOwnerCustomer, setIsOwnerCustomer] = useState(false)
+  const [copiedAccount, setCopiedAccount] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -124,7 +129,7 @@ function BookingDetailContent() {
     if (!booking) return
     setActioning(true)
 
-    const update: any = { status: newStatus }
+    const update: Record<string, unknown> = { status: newStatus }
     if (newStatus === 'confirmed') update.confirmed_at = new Date().toISOString()
     if (newStatus === 'cancelled') {
       update.cancelled_at = new Date().toISOString()
@@ -158,6 +163,24 @@ function BookingDetailContent() {
       if (refreshed) setBooking(refreshed as Booking)
     }
     setActioning(false)
+  }
+
+  const copyAccountNumber = async () => {
+    try {
+      await navigator.clipboard.writeText(INSTAPAY_ACCOUNT)
+      setCopiedAccount(true)
+      setTimeout(() => setCopiedAccount(false), 2000)
+    } catch {
+      // fallback
+      const ta = document.createElement('textarea')
+      ta.value = INSTAPAY_ACCOUNT
+      document.body.appendChild(ta)
+      ta.select()
+      try { document.execCommand('copy') } catch {}
+      document.body.removeChild(ta)
+      setCopiedAccount(true)
+      setTimeout(() => setCopiedAccount(false), 2000)
+    }
   }
 
   if (loading) {
@@ -202,11 +225,28 @@ function BookingDetailContent() {
     })
   }
 
+  // Build WhatsApp message with payment confirmation context
+  const refCode = booking.reference_code || booking.id.slice(0, 8)
+  const totalFmt = Number(booking.total_amount).toLocaleString('ar-EG')
+  const paymentConfirmationMessage = encodeURIComponent(
+`السلام عليكم، أنا حوّلت مبلغ الحجز عبر InstaPay.
+
+رقم الحجز: ${refCode}
+المبلغ: ${totalFmt} ج.م
+الـlisting: ${booking.listing?.title || ''}
+
+ده screenshot من التحويل:`
+  )
+  const showPaymentBlock = isOwnerCustomer && booking.status === 'pending_payment'
+
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href={isOwnerSupplier ? '/supplier/bookings' : '/my-bookings'} className="p-1 hover:bg-gray-50 rounded-full">
+          <Link
+            href={isOwnerSupplier ? '/supplier/marketplace/bookings' : '/account/bookings'}
+            className="p-1 hover:bg-gray-50 rounded-full"
+          >
             <ArrowRight className="w-5 h-5 text-gray-700" />
           </Link>
           <h1 className="text-base font-bold text-gray-900">تفاصيل الحجز</h1>
@@ -216,9 +256,16 @@ function BookingDetailContent() {
 
       <main className="max-w-2xl mx-auto p-4 pb-12">
         {justCreated && (
-          <div className="mb-4 flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-900">
-            <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-            <span>تم إنشاء الحجز! المورد هيراجعه ويأكّده قريباً.</span>
+          <div className="mb-4 flex items-start gap-2 p-4 bg-green-50 border-2 border-green-200 rounded-xl text-sm text-green-900 animate-scale-in">
+            <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-green-600" />
+            <div className="flex-1">
+              <p className="font-bold mb-1">تم استلام طلب الحجز بنجاح! ✓</p>
+              <p className="text-xs leading-relaxed">
+                {showPaymentBlock
+                  ? 'الخطوة التالية: حوّل المبلغ عبر InstaPay وابعتلنا screenshot على واتساب لتأكيد الحجز.'
+                  : 'هتوصلك تأكيد قريباً.'}
+              </p>
+            </div>
           </div>
         )}
 
@@ -227,15 +274,89 @@ function BookingDetailContent() {
           <StatusIcon className="w-5 h-5 flex-shrink-0" />
           <span className="font-bold flex-1">{status.label}</span>
           {booking.reference_code && (
-            <span className="text-xs flex items-center gap-1 opacity-80">
+            <span className="text-xs flex items-center gap-1 opacity-80 tabular">
               <Hash className="w-3 h-3" /> {booking.reference_code}
             </span>
           )}
         </div>
 
+        {/* ========== INSTAPAY PAYMENT BLOCK (for pending customer bookings) ========== */}
+        {showPaymentBlock && (
+          <div className="bg-gradient-to-br from-[#1F5F3F] to-[#2d7a52] text-white rounded-2xl shadow-elevated overflow-hidden mb-4">
+            <div className="p-5">
+              <div className="flex items-center gap-2 mb-1">
+                <CreditCard className="w-5 h-5" />
+                <h3 className="text-base font-black">ادفع عبر InstaPay</h3>
+              </div>
+              <p className="text-xs text-white/80 mb-4">حوّل المبلغ من تطبيق البنك بتاعك على رقم الحساب التالي:</p>
+
+              {/* Amount */}
+              <div className="bg-white/10 backdrop-blur rounded-xl p-3 mb-3 border border-white/15">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">المبلغ المستحق</p>
+                <p className="text-3xl font-black tabular leading-none">
+                  {totalFmt}
+                  <span className="text-sm font-medium text-white/80 mr-1">ج.م</span>
+                </p>
+              </div>
+
+              {/* Account number */}
+              <div className="bg-white/10 backdrop-blur rounded-xl p-3 mb-3 border border-white/15">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">رقم الحساب — {INSTAPAY_BANK}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-base font-black tabular tracking-wider" dir="ltr">{INSTAPAY_ACCOUNT}</p>
+                  <button
+                    onClick={copyAccountNumber}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-white text-[#1F5F3F] rounded-lg text-xs font-bold hover:bg-gray-50 flex-shrink-0"
+                  >
+                    {copiedAccount ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                    {copiedAccount ? 'تم النسخ' : 'انسخ'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Reference code reminder */}
+              {booking.reference_code && (
+                <div className="bg-[#B8860B]/20 border border-[#B8860B]/40 backdrop-blur rounded-xl p-3 mb-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#FFD675] mb-0.5">مهم</p>
+                  <p className="text-xs leading-relaxed">
+                    اكتب رقم الحجز <strong className="font-black tabular">{booking.reference_code}</strong> في خانة &ldquo;ملاحظات&rdquo; أو &ldquo;الغرض من التحويل&rdquo; عشان نحدّد الحجز بسرعة.
+                  </p>
+                </div>
+              )}
+
+              {/* Steps */}
+              <div className="space-y-2 mb-4">
+                <p className="text-xs font-bold text-white/90 mb-2">الخطوات:</p>
+                <PaymentStep num="1" text="افتح تطبيق البنك أو InstaPay" />
+                <PaymentStep num="2" text={`حوّل ${totalFmt} ج.م على الحساب اللي فوق`} />
+                <PaymentStep num="3" text="خد screenshot من إيصال التحويل" />
+                <PaymentStep num="4" text="ابعت الـscreenshot على واتساب لتأكيد الحجز" />
+              </div>
+
+              {/* WhatsApp confirmation button */}
+              <a
+                href={`https://wa.me/${MADMONA_WHATSAPP}?text=${paymentConfirmationMessage}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3.5 rounded-xl font-black hover:bg-[#1da851] no-underline transition-all hover:-translate-y-0.5"
+              >
+                <MessageCircle className="w-5 h-5" />
+                ابعت إيصال الدفع على واتساب
+              </a>
+
+              <p className="text-[10px] text-white/60 text-center mt-3 leading-relaxed">
+                الحجز يتأكد بعد ما نستلم إيصال الدفع. الفترة دي محجوزة مؤقتاً لحد ما يجي حد آخر يأكد. ⏱️
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Listing summary */}
         {booking.listing && (
-          <Link href={`/marketplace/${booking.listing.slug}`} className="block bg-white rounded-2xl border border-gray-100 overflow-hidden mb-4 flex hover:shadow-sm transition-shadow">
+          <Link
+            href={`/marketplace/${booking.listing.slug}`}
+            className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-4 flex hover:shadow-sm transition-shadow no-underline"
+          >
             <div className="w-24 h-24 bg-gray-100 flex-shrink-0">
               {photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -315,10 +436,11 @@ function BookingDetailContent() {
           </div>
         )}
 
-        {/* Actions */}
+        {/* Supplier actions */}
         {isOwnerSupplier && booking.status === 'pending_payment' && (
           <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-            <h3 className="text-base font-bold text-gray-900 mb-3">إجراءات</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-1">إجراءات المورد</h3>
+            <p className="text-xs text-gray-500 mb-3">أكّد الحجز بعد ما تستلم تأكيد الدفع على واتساب.</p>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => updateBookingStatus('confirmed')}
@@ -368,18 +490,29 @@ function BookingDetailContent() {
           </button>
         )}
 
-        {/* Contact supplier via WhatsApp */}
-        {phoneClean && isOwnerCustomer && (
+        {/* Contact supplier via WhatsApp (for confirmed bookings) */}
+        {phoneClean && isOwnerCustomer && booking.status === 'confirmed' && (
           <a
-            href={`https://wa.me/${phoneClean}?text=${encodeURIComponent(`مرحباً، عندي استفسار بخصوص الحجز رقم ${booking.reference_code || booking.id.slice(0, 8)}`)}`}
+            href={`https://wa.me/${phoneClean}?text=${encodeURIComponent(`مرحباً، عندي استفسار بخصوص الحجز رقم ${refCode}`)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full bg-[#25D366] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1da851] text-center"
+            className="block w-full bg-[#25D366] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1da851] text-center no-underline"
           >
-            <MessageCircle className="w-4 h-4 inline-block ml-1" /> تواصل مع المورد عبر واتساب
+            <MessageCircle className="w-4 h-4 inline-block ml-1" /> تواصل مع المورد
           </a>
         )}
       </main>
+    </div>
+  )
+}
+
+function PaymentStep({ num, text }: { num: string; text: string }) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <div className="w-5 h-5 rounded-full bg-white text-[#1F5F3F] flex items-center justify-center flex-shrink-0 text-[10px] font-black tabular">
+        {num}
+      </div>
+      <p className="text-xs text-white/95 leading-relaxed">{text}</p>
     </div>
   )
 }
