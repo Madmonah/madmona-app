@@ -1,35 +1,35 @@
 @echo off
 cd /d "%~dp0"
 echo ================================================================
-echo   Tier 4: Staff Permissions Wired Across All Supplier Pages
-echo            + Email Triggers on Booking Events
+echo   Tier 5: Admin Broadcast Notifications System
 echo ================================================================
 echo.
-echo   STAFF PERMISSIONS APPLIED:
-echo   * /supplier/marketplace        — owner + staff (already done)
-echo   * /supplier/marketplace/new    — needs can_manage_listings
-echo   * /supplier/marketplace/[id]/edit — needs can_manage_listings
-echo   * /supplier/marketplace/bookings — needs can_manage_bookings
-echo   * /supplier/marketplace/reviews — view always; respond needs perm
-echo   * /bookings/[id]               — staff with can_manage_bookings
-echo                                     can confirm/cancel
+echo   NEW: /admin/notifications page
+echo   * Send custom push notifications to:
+echo     - Single user (search by name/phone)
+echo     - Group of selected users (multi-pick)
+echo     - All customers
+echo     - All suppliers
+echo     - All users
+echo   * 4 quick templates (offers, reminders, updates, thanks)
+echo   * Live preview of the notification
+echo   * Shows who has push enabled vs not
+echo   * Custom URL for click destination
 echo.
-echo   Each page shows a blue banner when the user is staff (not owner)
-echo   indicating their role. Restricted buttons are hidden gracefully.
+echo   DB: 5 new RLS policies on notification_queue + push_subscriptions
+echo   * Admins can insert/view notification queue
+echo   * Users can view their own queue items
+echo   * Service role bypass for cron processing
+echo   * Admins can see all subscriptions for stats
 echo.
-echo   EMAIL TRIGGERS (Resend):
-echo   * New API endpoint: POST /api/bookings/notify
-echo   * Body: ^{ booking_id, event: 'created' ^| 'confirmed' ^}
-echo   * Auth: user JWT or CRON_SECRET
-echo   * Booking creation page fires email to supplier
-echo   * Booking detail page fires email to customer on confirm
-echo   * All emails graceful: no-op if RESEND_API_KEY missing
-echo   * Reads emails from auth.users via service role
-echo   * Skips synthesized madmonacairo.com phone-emails
+echo   ADMIN DASHBOARD:
+echo   * New "التواصل والإشعارات" section
+echo   * Shows total push subscribers count
+echo   * Direct link to /admin/notifications
 echo.
 pause
 git add .
-git commit -m "feat: wire staff permissions across supplier pages + email triggers"
+git commit -m "feat: admin broadcast notifications page + RLS policies"
 git push
 echo.
 if %ERRORLEVEL% EQU 0 (

@@ -7,7 +7,7 @@ import {
   ArrowRight, Loader2, Lock, Crown, Building2, Calendar,
   TrendingUp, DollarSign, Users, Package, Eye, Star,
   AlertCircle, FolderTree, ChevronLeft, UserCog, Wallet,
-  Settings, Layers,
+  Settings, Layers, Bell,
 } from 'lucide-react'
 
 // ============================================================================
@@ -37,6 +37,7 @@ interface Stats {
   totalCustomers: number
   totalReviews: number
   averageRating: number
+  pushSubscribers: number
 }
 
 interface RecentBooking {
@@ -143,6 +144,11 @@ export default function AdminDashboardPage() {
       ? reviewsArr.reduce((sum, r) => sum + r.rating, 0) / reviewsArr.length
       : 0
 
+    // Push subscribers count
+    // @ts-expect-error
+    const { count: pushCount } = await supabaseBrowser
+      .from('push_subscriptions').select('id', { count: 'exact', head: true })
+
     setStats({
       totalBookings: bookingsArr.length,
       monthBookings: bookingsArr.filter(b => new Date(b.created_at) > monthAgo).length,
@@ -161,6 +167,7 @@ export default function AdminDashboardPage() {
       totalCustomers: customersCount || 0,
       totalReviews: reviewsArr.length,
       averageRating: avgRating,
+      pushSubscribers: pushCount || 0,
     })
 
     // @ts-expect-error
@@ -277,7 +284,7 @@ export default function AdminDashboardPage() {
               icon={<Users className="w-4 h-4" />}
               label="عملاء مسجلين"
               value={stats.totalCustomers.toString()}
-              subtitle={`${stats.approvedSuppliers} مورد · ${stats.pendingSuppliers} معلّق`}
+              subtitle={`${stats.approvedSuppliers} مورد · ${stats.pendingSuppliers} معلّق · ${stats.pushSubscribers} 🔔`}
               accent="bg-purple-100 text-purple-700"
             />
           </div>
@@ -333,6 +340,22 @@ export default function AdminDashboardPage() {
                 title="المدفوعات"
                 subtitle="حساب وإصدار التحويلات"
                 accent="bg-green-100 text-green-700"
+              />
+            </div>
+          </div>
+
+          {/* Communications — NEW */}
+          <div className="mb-4">
+            <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest mb-2 px-1">
+              التواصل والإشعارات
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <ToolCard
+                href="/admin/notifications"
+                icon={<Bell className="w-5 h-5" />}
+                title="إرسال إشعارات"
+                subtitle={`${stats.pushSubscribers} مفعّل الإشعارات`}
+                accent="bg-blue-100 text-blue-700"
               />
             </div>
           </div>
