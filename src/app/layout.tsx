@@ -3,6 +3,7 @@ import { Tajawal } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
+import NotificationPrompt from '@/components/NotificationPrompt'
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics'
 import MetaPixel from '@/components/analytics/MetaPixel'
 import './globals.css'
@@ -174,6 +175,7 @@ export default function RootLayout({
       <body className={`${tajawal.className} bg-[#FAFAF7] text-gray-900 antialiased`}>
         {children}
         <ServiceWorkerRegister />
+        <NotificationPrompt />
         <Analytics />
         <SpeedInsights />
         <GoogleAnalytics />
