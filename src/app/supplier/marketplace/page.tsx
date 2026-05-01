@@ -1,9 +1,11 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { playNotificationSound, showBrowserNotification, requestNotificationPermission } from '@/lib/notification-sound'
+import BookingToast from '@/components/marketplace/BookingToast'
 import {
   Plus, Building2, Edit2, Trash2, Eye, EyeOff, AlertCircle,
   Loader2, ArrowRight, CheckCircle, Clock, Lock, MapPin,
@@ -51,7 +53,6 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 }
 
 function SupplierMarketplaceContent() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const justCreated = searchParams.get('success') === '1'
 
@@ -61,6 +62,14 @@ function SupplierMarketplaceContent() {
   const [stats, setStats] = useState<Stats>({ totalRevenue: 0, monthBookings: 0, pending: 0, totalBookings: 0 })
   const [loadingListings, setLoadingListings] = useState(false)
   const [actioningId, setActioningId] = useState<string | null>(null)
+
+  // Toast for new bookings
+  const [toastVisible, setToastVisible] = useState(false)
+  const [newBookingId, setNewBookingId] = useState<string | null>(null)
+
+  // Stat pulse on update
+  const [pulseStats, setPulseStats] = useState(false)
+  const supplierIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     const init = async () => {
@@ -83,6 +92,7 @@ function SupplierMarketplaceContent() {
       }
 
       setSupplier(sup as SupplierState)
+      supplierIdRef.current = sup.id
 
       if (sup.kyc_status === 'pending') {
         setStage('pending')
@@ -92,11 +102,56 @@ function SupplierMarketplaceContent() {
         setStage('ready')
         loadListings(sup.id)
         loadStats(sup.id)
+
+        // Request notification permission once
+        requestNotificationPermission().catch(() => {})
       }
     }
     init()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Realtime subscription for new bookings
+  useEffect(() => {
+    if (stage !== 'ready' || !supplier?.id) return
+
+    const channel = supabaseBrowser
+      .channel(`supplier-bookings-${supplier.id}`)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .on('postgres_changes' as any,
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'marketplace_bookings',
+          filter: `supplier_id=eq.${supplier.id}`,
+        },
+        (payload: { new: { id: string } }) => {
+          // New booking arrived!
+          playNotificationSound()
+          setNewBookingId(payload.new.id)
+          setToastVisible(true)
+          setPulseStats(true)
+          setTimeout(() => setPulseStats(false), 2000)
+
+          // Browser notification (works when tab is backgrounded)
+          showBrowserNotification(
+            'حجز جديد على Madmona! 🔔',
+            'في حجز جديد بانتظار مراجعتك',
+            `/supplier/marketplace/bookings/${payload.new.id}`
+          )
+
+          // Refresh stats and listings counts
+          if (supplierIdRef.current) {
+            loadStats(supplierIdRef.current)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabaseBrowser.removeChannel(channel)
+    }
+  }, [stage, supplier?.id])
 
   const loadListings = async (supId: string) => {
     setLoadingListings(true)
@@ -130,13 +185,13 @@ function SupplierMarketplaceContent() {
     monthAgo.setMonth(monthAgo.getMonth() - 1)
 
     const totalRevenue = data
-      .filter((b: any) => ['confirmed', 'active', 'completed'].includes(b.status))
-      .reduce((sum: number, b: any) => sum + Number(b.supplier_payout || 0), 0)
+      .filter((b: { status: string }) => ['confirmed', 'active', 'completed'].includes(b.status))
+      .reduce((sum: number, b: { supplier_payout: number | string }) => sum + Number(b.supplier_payout || 0), 0)
 
     setStats({
       totalRevenue,
-      monthBookings: data.filter((b: any) => new Date(b.created_at) > monthAgo).length,
-      pending: data.filter((b: any) => b.status === 'pending_payment').length,
+      monthBookings: data.filter((b: { created_at: string }) => new Date(b.created_at) > monthAgo).length,
+      pending: data.filter((b: { status: string }) => b.status === 'pending_payment').length,
       totalBookings: data.length,
     })
   }
@@ -144,7 +199,7 @@ function SupplierMarketplaceContent() {
   const togglePublished = async (listing: ListingSummary) => {
     const newStatus = listing.status === 'published' ? 'paused' : 'published'
     setActioningId(listing.id)
-    const update: any = { status: newStatus }
+    const update: { status: string; published_at?: string } = { status: newStatus }
     if (newStatus === 'published') update.published_at = new Date().toISOString()
     // @ts-expect-error
     const { error } = await supabaseBrowser
@@ -260,6 +315,12 @@ function SupplierMarketplaceContent() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+      <BookingToast
+        visible={toastVisible}
+        bookingId={newBookingId}
+        onDismiss={() => { setToastVisible(false); setNewBookingId(null) }}
+      />
+
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
@@ -285,7 +346,9 @@ function SupplierMarketplaceContent() {
             </span>
             <Link
               href="/supplier/marketplace/bookings"
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center gap-1"
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center gap-1 ${
+                pulseStats ? 'ring-2 ring-yellow-400 animate-pulse' : ''
+              }`}
             >
               <Calendar className="w-3 h-3" />
               الحجوزات ({stats.totalBookings})
@@ -307,7 +370,6 @@ function SupplierMarketplaceContent() {
           </div>
         )}
 
-        {/* Stats summary */}
         <div className="grid grid-cols-3 gap-2 mb-6">
           <div className="bg-white rounded-xl border border-gray-100 p-3">
             <div className="flex items-center gap-1.5 mb-1 text-gray-500">
@@ -326,11 +388,11 @@ function SupplierMarketplaceContent() {
             </div>
             <p className="text-base sm:text-lg font-bold text-gray-900">{stats.monthBookings}</p>
           </div>
-          <div className={`rounded-xl border p-3 ${
+          <div className={`rounded-xl border p-3 transition-all ${
             stats.pending > 0
               ? 'bg-yellow-50 border-yellow-200'
               : 'bg-white border-gray-100'
-          }`}>
+          } ${pulseStats ? 'ring-2 ring-yellow-400' : ''}`}>
             <div className={`flex items-center gap-1.5 mb-1 ${
               stats.pending > 0 ? 'text-yellow-700' : 'text-gray-500'
             }`}>

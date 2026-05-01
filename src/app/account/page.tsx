@@ -8,6 +8,7 @@ import {
   ArrowRight, Calendar, Building2, ShoppingBag,
   LogOut, Loader2, Lock, User, Phone, Crown, ChevronLeft,
   CheckCircle, Clock, AlertCircle, FolderTree, Edit2, Check, X, Heart,
+  BarChart3,
 } from 'lucide-react'
 
 type Stage = 'loading' | 'unauthenticated' | 'ready'
@@ -35,7 +36,6 @@ export default function AccountPage() {
   const [favoritesCount, setFavoritesCount] = useState(0)
   const [signingOut, setSigningOut] = useState(false)
 
-  // Inline name editing
   const [editingName, setEditingName] = useState(false)
   const [newName, setNewName] = useState('')
   const [savingName, setSavingName] = useState(false)
@@ -177,7 +177,6 @@ export default function AccountPage() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-        {/* Profile card */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-start gap-3 mb-2">
             <div className="w-14 h-14 bg-[#1F5F3F]/10 rounded-full flex items-center justify-center flex-shrink-0">
@@ -263,7 +262,6 @@ export default function AccountPage() {
           )}
         </div>
 
-        {/* Customer actions */}
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">العميل</h3>
@@ -313,7 +311,6 @@ export default function AccountPage() {
           </Link>
         </div>
 
-        {/* Supplier actions */}
         {(isApprovedSupplier || isPendingSupplier || isRejectedSupplier) && (
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100">
@@ -353,7 +350,6 @@ export default function AccountPage() {
           </Link>
         )}
 
-        {/* Admin actions */}
         {isAdmin && (
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100">
@@ -361,6 +357,19 @@ export default function AccountPage() {
                 <Crown className="w-3 h-3" /> الإدارة
               </h3>
             </div>
+            <Link
+              href="/admin/dashboard"
+              className="flex items-center gap-3 p-4 hover:bg-gray-50 border-b border-gray-100"
+            >
+              <div className="w-10 h-10 bg-[#B8860B]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <BarChart3 className="w-5 h-5 text-[#B8860B]" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-gray-900">لوحة الإحصائيات</p>
+                <p className="text-xs text-gray-500">الحجوزات + الإيراد + الموردين + Top listings</p>
+              </div>
+              <ChevronLeft className="w-4 h-4 text-gray-400" />
+            </Link>
             <Link
               href="/admin/marketplace-suppliers"
               className="flex items-center gap-3 p-4 hover:bg-gray-50 border-b border-gray-100"
@@ -390,17 +399,12 @@ export default function AccountPage() {
           </div>
         )}
 
-        {/* Sign out */}
         <button
           onClick={handleSignOut}
           disabled={signingOut}
           className="w-full bg-white border border-red-200 text-red-600 rounded-2xl p-4 hover:bg-red-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-medium"
         >
-          {signingOut ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <LogOut className="w-4 h-4" />
-          )}
+          {signingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
           {signingOut ? 'جاري الخروج...' : 'تسجيل خروج'}
         </button>
 
