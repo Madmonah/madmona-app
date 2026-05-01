@@ -1,17 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { playNotificationSound, showBrowserNotification, requestNotificationPermission } from '@/lib/notification-sound'
+import BookingToast from '@/components/marketplace/BookingToast'
 import {
-  Calendar, Clock, MapPin, Loader2, ArrowRight, Lock,
-  AlertCircle, ChevronLeft, Image as ImageIcon, Package,
-  User, Filter,
+  Clock, Loader2, ArrowRight, Lock, AlertCircle, ChevronLeft,
+  Image as ImageIcon, Package, User,
 } from 'lucide-react'
 
 // ============================================================================
 // /supplier/marketplace/bookings
-// Supplier bookings management — see all incoming bookings.
+// Supplier bookings with real-time updates.
+// New bookings auto-appear at top with highlight + sound.
 // ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'ready'
@@ -60,6 +62,14 @@ export default function SupplierBookingsPage() {
   const [bookings, setBookings] = useState<BookingSummary[]>([])
   const [filter, setFilter] = useState<StatusFilter>('all')
   const [supplierName, setSupplierName] = useState('')
+  const [supplierId, setSupplierId] = useState<string | null>(null)
+  const [highlightedIds, setHighlightedIds] = useState<Set<string>>(new Set())
+
+  // Toast state for new bookings
+  const [toastVisible, setToastVisible] = useState(false)
+  const [newBookingId, setNewBookingId] = useState<string | null>(null)
+
+  const supplierIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     const init = async () => {
@@ -81,23 +91,95 @@ export default function SupplierBookingsPage() {
         return
       }
       setSupplierName(sup.business_name)
+      setSupplierId(sup.id)
+      supplierIdRef.current = sup.id
 
-      // @ts-expect-error
-      const { data } = await supabaseBrowser
-        .from('marketplace_bookings')
-        .select(`
-          id, reference_code, start_at, end_at, total_amount, status, customer_notes, created_at,
-          listing:listings(id, title, photos:listing_photos(url, is_primary)),
-          customer:profiles!marketplace_bookings_customer_id_fkey(id, phone, full_name)
-        `)
-        .eq('supplier_id', sup.id)
-        .order('created_at', { ascending: false })
-
-      setBookings((data || []) as BookingSummary[])
+      await loadBookings(sup.id)
       setStage('ready')
+
+      // Request browser notification permission
+      requestNotificationPermission().catch(() => {})
     }
     init()
   }, [])
+
+  const loadBookings = async (supId: string) => {
+    // @ts-expect-error
+    const { data } = await supabaseBrowser
+      .from('marketplace_bookings')
+      .select(`
+        id, reference_code, start_at, end_at, total_amount, status, customer_notes, created_at,
+        listing:listings(id, title, photos:listing_photos(url, is_primary)),
+        customer:profiles!marketplace_bookings_customer_id_fkey(id, phone, full_name)
+      `)
+      .eq('supplier_id', supId)
+      .order('created_at', { ascending: false })
+
+    setBookings((data || []) as BookingSummary[])
+  }
+
+  // Realtime subscription
+  useEffect(() => {
+    if (stage !== 'ready' || !supplierId) return
+
+    const channel = supabaseBrowser
+      .channel(`supplier-bookings-list-${supplierId}`)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .on('postgres_changes' as any,
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'marketplace_bookings',
+          filter: `supplier_id=eq.${supplierId}`,
+        },
+        async (payload: { new: { id: string } }) => {
+          // Sound + browser notification
+          playNotificationSound()
+          showBrowserNotification(
+            'حجز جديد على Madmona! 🔔',
+            'في حجز جديد بانتظار مراجعتك',
+            `/supplier/marketplace/bookings/${payload.new.id}`
+          )
+          setNewBookingId(payload.new.id)
+          setToastVisible(true)
+
+          // Reload to get fresh data with joins
+          if (supplierIdRef.current) {
+            await loadBookings(supplierIdRef.current)
+          }
+
+          // Highlight the new booking for 4 seconds
+          setHighlightedIds(prev => new Set(prev).add(payload.new.id))
+          setTimeout(() => {
+            setHighlightedIds(prev => {
+              const next = new Set(prev)
+              next.delete(payload.new.id)
+              return next
+            })
+          }, 4000)
+        }
+      )
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .on('postgres_changes' as any,
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'marketplace_bookings',
+          filter: `supplier_id=eq.${supplierId}`,
+        },
+        async () => {
+          // Status changes, refresh list silently
+          if (supplierIdRef.current) {
+            await loadBookings(supplierIdRef.current)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabaseBrowser.removeChannel(channel)
+    }
+  }, [stage, supplierId])
 
   const filtered = filter === 'all' ? bookings : bookings.filter(b => b.status === filter)
 
@@ -142,6 +224,12 @@ export default function SupplierBookingsPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+      <BookingToast
+        visible={toastVisible}
+        bookingId={newBookingId}
+        onDismiss={() => { setToastVisible(false); setNewBookingId(null) }}
+      />
+
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3 mb-3">
@@ -150,11 +238,16 @@ export default function SupplierBookingsPage() {
             </Link>
             <div>
               <h1 className="text-lg font-bold text-gray-900">حجوزات {supplierName}</h1>
-              <p className="text-xs text-gray-500">{bookings.length} حجز</p>
+              <p className="text-xs text-gray-500 flex items-center gap-1.5">
+                {bookings.length} حجز
+                <span className="inline-flex items-center gap-1 text-[#1F5F3F]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1F5F3F] animate-pulse" />
+                  متّصل لايف
+                </span>
+              </p>
             </div>
           </div>
 
-          {/* Filter tabs */}
           <div className="flex gap-2 overflow-x-auto pb-1">
             {FILTER_TABS.map(tab => {
               const count = tab.key === 'all' ? bookings.length : bookings.filter(b => b.status === tab.key).length
@@ -183,7 +276,7 @@ export default function SupplierBookingsPage() {
             <h3 className="text-base font-semibold text-gray-700 mb-1">
               {filter === 'all' ? 'مفيش حجوزات لسه' : 'مفيش حجوزات في الفئة دي'}
             </h3>
-            <p className="text-sm text-gray-500">لما يحجزلك حد، هتلاقيه هنا.</p>
+            <p className="text-sm text-gray-500">لما يحجزلك حد، هتلاقيه هنا فوراً.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -194,12 +287,17 @@ export default function SupplierBookingsPage() {
               const photoUrl = primary?.url
               const start = new Date(booking.start_at)
               const end = new Date(booking.end_at)
+              const isHighlighted = highlightedIds.has(booking.id)
 
               return (
                 <Link
                   key={booking.id}
                   href={`/supplier/marketplace/bookings/${booking.id}`}
-                  className="block bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-sm transition-shadow"
+                  className={`block bg-white rounded-xl border overflow-hidden hover:shadow-sm transition-all ${
+                    isHighlighted
+                      ? 'border-[#1F5F3F] ring-2 ring-[#1F5F3F]/30 animate-pulse'
+                      : 'border-gray-100'
+                  }`}
                 >
                   <div className="flex flex-col sm:flex-row">
                     <div className="sm:w-32 sm:h-28 bg-gray-100 flex-shrink-0">

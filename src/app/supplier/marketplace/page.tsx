@@ -10,7 +10,7 @@ import {
   Plus, Building2, Edit2, Trash2, Eye, EyeOff, AlertCircle,
   Loader2, ArrowRight, CheckCircle, Clock, Lock, MapPin,
   Image as ImageIcon, ExternalLink, Calendar, User, TrendingUp,
-  DollarSign, Bell,
+  DollarSign, Bell, Copy,
 } from 'lucide-react'
 
 type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'pending' | 'rejected' | 'ready'
@@ -53,6 +53,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 }
 
 function SupplierMarketplaceContent() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const justCreated = searchParams.get('success') === '1'
 
@@ -63,11 +64,9 @@ function SupplierMarketplaceContent() {
   const [loadingListings, setLoadingListings] = useState(false)
   const [actioningId, setActioningId] = useState<string | null>(null)
 
-  // Toast for new bookings
   const [toastVisible, setToastVisible] = useState(false)
   const [newBookingId, setNewBookingId] = useState<string | null>(null)
 
-  // Stat pulse on update
   const [pulseStats, setPulseStats] = useState(false)
   const supplierIdRef = useRef<string | null>(null)
 
@@ -102,8 +101,6 @@ function SupplierMarketplaceContent() {
         setStage('ready')
         loadListings(sup.id)
         loadStats(sup.id)
-
-        // Request notification permission once
         requestNotificationPermission().catch(() => {})
       }
     }
@@ -111,7 +108,6 @@ function SupplierMarketplaceContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Realtime subscription for new bookings
   useEffect(() => {
     if (stage !== 'ready' || !supplier?.id) return
 
@@ -126,21 +122,16 @@ function SupplierMarketplaceContent() {
           filter: `supplier_id=eq.${supplier.id}`,
         },
         (payload: { new: { id: string } }) => {
-          // New booking arrived!
           playNotificationSound()
           setNewBookingId(payload.new.id)
           setToastVisible(true)
           setPulseStats(true)
           setTimeout(() => setPulseStats(false), 2000)
-
-          // Browser notification (works when tab is backgrounded)
           showBrowserNotification(
             'حجز جديد على Madmona! 🔔',
             'في حجز جديد بانتظار مراجعتك',
             `/supplier/marketplace/bookings/${payload.new.id}`
           )
-
-          // Refresh stats and listings counts
           if (supplierIdRef.current) {
             loadStats(supplierIdRef.current)
           }
@@ -220,6 +211,114 @@ function SupplierMarketplaceContent() {
       .eq('id', listing.id)
     if (!error && supplier) await loadListings(supplier.id)
     setActioningId(null)
+  }
+
+  // ============================================================================
+  // Listing duplication
+  // Copies listing + photos + pricing rules + attribute values to a new draft.
+  // Then redirects to the edit page for the new copy.
+  // ============================================================================
+  const duplicateListing = async (listing: ListingSummary) => {
+    if (!confirm(`نسخ "${listing.title}"؟ النسخة هتطلع كمسودة وتقدر تعدلها.`)) return
+    setActioningId(listing.id)
+
+    try {
+      // 1. Fetch full listing data
+      // @ts-expect-error
+      const { data: full } = await supabaseBrowser
+        .from('listings')
+        .select('*')
+        .eq('id', listing.id)
+        .single()
+
+      if (!full) throw new Error('Listing not found')
+
+      // 2. Create new listing as draft
+      const timestamp = Date.now().toString(36)
+      const newSlug = `${full.slug}-copy-${timestamp}`
+
+      // Pick fields to copy (exclude id, slug, created_at, updated_at, counters)
+      const newListingPayload = {
+        supplier_id: full.supplier_id,
+        category_id: full.category_id,
+        title: `${full.title} (نسخة)`,
+        slug: newSlug,
+        description: full.description,
+        status: 'draft',
+        country: full.country,
+        city: full.city,
+        district: full.district,
+        address: full.address,
+        latitude: full.latitude,
+        longitude: full.longitude,
+        min_booking_hours: full.min_booking_hours,
+        max_booking_hours: full.max_booking_hours,
+        advance_booking_days: full.advance_booking_days,
+        cancellation_hours: full.cancellation_hours,
+        auto_accept_bookings: full.auto_accept_bookings,
+        requires_security_deposit: full.requires_security_deposit,
+        security_deposit_amount: full.security_deposit_amount,
+      }
+
+      // @ts-expect-error
+      const { data: newListing, error: insertError } = await supabaseBrowser
+        .from('listings')
+        .insert(newListingPayload)
+        .select('id')
+        .single()
+
+      if (insertError || !newListing) throw insertError || new Error('Insert failed')
+      const newId = newListing.id
+
+      // 3. Copy photos
+      // @ts-expect-error
+      const { data: photos } = await supabaseBrowser
+        .from('listing_photos')
+        .select('url, storage_path, caption, display_order, is_primary')
+        .eq('listing_id', listing.id)
+
+      if (photos && photos.length > 0) {
+        // @ts-expect-error
+        await supabaseBrowser
+          .from('listing_photos')
+          .insert(photos.map((p: Record<string, unknown>) => ({ ...p, listing_id: newId })))
+      }
+
+      // 4. Copy pricing rules
+      // @ts-expect-error
+      const { data: pricing } = await supabaseBrowser
+        .from('pricing_rules')
+        .select('period_type, period_count, price, currency, min_periods, max_periods, label_ar, label_en, is_active, display_order')
+        .eq('listing_id', listing.id)
+
+      if (pricing && pricing.length > 0) {
+        // @ts-expect-error
+        await supabaseBrowser
+          .from('pricing_rules')
+          .insert(pricing.map((p: Record<string, unknown>) => ({ ...p, listing_id: newId })))
+      }
+
+      // 5. Copy listing values (attributes)
+      // @ts-expect-error
+      const { data: values } = await supabaseBrowser
+        .from('listing_values')
+        .select('attribute_id, value')
+        .eq('listing_id', listing.id)
+
+      if (values && values.length > 0) {
+        // @ts-expect-error
+        await supabaseBrowser
+          .from('listing_values')
+          .insert(values.map((v: Record<string, unknown>) => ({ ...v, listing_id: newId })))
+      }
+
+      // 6. Redirect to edit page for the new copy
+      router.push(`/supplier/marketplace/${newId}/edit`)
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'حصل خطأ غير معروف'
+      alert(`فشل النسخ: ${msg}`)
+      setActioningId(null)
+    }
   }
 
   if (stage === 'loading') {
@@ -522,6 +621,18 @@ function SupplierMarketplaceContent() {
                             ? <EyeOff className="w-3.5 h-3.5" />
                             : <Eye className="w-3.5 h-3.5" />
                           }
+                        </button>
+                        <button
+                          onClick={() => duplicateListing(listing)}
+                          disabled={actioningId === listing.id}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50"
+                          title="نسخ كمسودة جديدة"
+                        >
+                          {actioningId === listing.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
                         </button>
                         <Link
                           href={`/supplier/marketplace/${listing.id}/edit`}

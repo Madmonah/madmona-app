@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   Search, MapPin, Star, ImageIcon, Loader2, ArrowRight, User, LogIn, Heart,
+  ChevronDown, X,
 } from 'lucide-react'
 
 interface Category {
@@ -25,9 +26,19 @@ interface Listing {
   rating: number | null
   reviews_count: number
   status: string
+  created_at: string
   category: { name_ar: string; icon: string | null; slug: string } | null
   photos: { url: string; is_primary: boolean }[] | null
   pricing: { price: number | string; is_active: boolean }[] | null
+}
+
+type SortOption = 'newest' | 'price_asc' | 'price_desc' | 'rating'
+
+const SORT_LABELS: Record<SortOption, string> = {
+  newest: 'الأحدث',
+  price_asc: 'السعر: من الأقل',
+  price_desc: 'السعر: من الأعلى',
+  rating: 'الأعلى تقييماً',
 }
 
 function MarketplaceBrowseContent() {
@@ -40,6 +51,10 @@ function MarketplaceBrowseContent() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(initialCategorySlug)
+  const [sortBy, setSortBy] = useState<SortOption>('newest')
+  const [cityFilter, setCityFilter] = useState<string | null>(null)
+  const [sortMenuOpen, setSortMenuOpen] = useState(false)
+  const [cityMenuOpen, setCityMenuOpen] = useState(false)
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
@@ -51,13 +66,12 @@ function MarketplaceBrowseContent() {
       setIsAuthed(!!session?.user)
       if (session?.user) {
         setUserId(session.user.id)
-        // Load favorites
         // @ts-expect-error
         const { data: favs } = await supabaseBrowser
           .from('favorites')
           .select('listing_id')
           .eq('customer_id', session.user.id)
-        setFavorites(new Set((favs || []).map((f: any) => f.listing_id)))
+        setFavorites(new Set((favs || []).map((f: { listing_id: string }) => f.listing_id)))
       }
     }
     checkAuth()
@@ -97,7 +111,7 @@ function MarketplaceBrowseContent() {
               .from('categories')
               .select('id')
               .eq('parent_id', rootCat.id)
-            categoryIds = [rootCat.id, ...((subs || []).map((s: any) => s.id))]
+            categoryIds = [rootCat.id, ...((subs || []).map((s: { id: string }) => s.id))]
           }
         }
       }
@@ -106,14 +120,20 @@ function MarketplaceBrowseContent() {
       let query = supabaseBrowser
         .from('listings')
         .select(`
-          id, title, slug, city, district, rating, reviews_count, status,
+          id, title, slug, city, district, rating, reviews_count, status, created_at,
           category:categories(name_ar, icon, slug),
           photos:listing_photos(url, is_primary),
           pricing:pricing_rules(price, is_active)
         `)
         .eq('status', 'published')
-        .order('created_at', { ascending: false })
         .limit(60)
+
+      // Server-side ordering for non-price sorts
+      if (sortBy === 'rating') {
+        query = query.order('rating', { ascending: false, nullsFirst: false })
+      } else {
+        query = query.order('created_at', { ascending: false })
+      }
 
       if (categoryIds && categoryIds.length > 0) {
         query = query.in('category_id', categoryIds)
@@ -127,7 +147,7 @@ function MarketplaceBrowseContent() {
       setLoading(false)
     }
     load()
-  }, [selectedCategorySlug, searchQuery])
+  }, [selectedCategorySlug, searchQuery, sortBy])
 
   const toggleFavorite = async (e: MouseEvent, listingId: string) => {
     e.preventDefault()
@@ -165,7 +185,44 @@ function MarketplaceBrowseContent() {
     setTogglingFav(null)
   }
 
+  // Helper: calculate min price for a listing
+  const getMinPrice = (listing: Listing): number => {
+    const activePrices = (listing.pricing || [])
+      .filter(p => p.is_active)
+      .map(p => Number(p.price))
+      .filter(p => p > 0)
+    return activePrices.length > 0 ? Math.min(...activePrices) : Infinity
+  }
+
+  // Apply client-side filters & sort
+  const cities = Array.from(
+    new Set(
+      listings
+        .map(l => l.city)
+        .filter((c): c is string => Boolean(c?.trim()))
+    )
+  ).sort()
+
+  let filteredListings = cityFilter
+    ? listings.filter(l => l.city === cityFilter)
+    : [...listings]
+
+  if (sortBy === 'price_asc') {
+    filteredListings = filteredListings.sort((a, b) => getMinPrice(a) - getMinPrice(b))
+  } else if (sortBy === 'price_desc') {
+    filteredListings = filteredListings.sort((a, b) => getMinPrice(b) - getMinPrice(a))
+  }
+  // For 'newest' and 'rating', server-side ordering is preserved
+
   const selectedCategoryName = rootCategories.find(c => c.slug === selectedCategorySlug)?.name_ar
+  const hasFilters = selectedCategorySlug || searchQuery || cityFilter || sortBy !== 'newest'
+
+  const clearAllFilters = () => {
+    setSelectedCategorySlug(null)
+    setSearchQuery('')
+    setCityFilter(null)
+    setSortBy('newest')
+  }
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
@@ -208,6 +265,7 @@ function MarketplaceBrowseContent() {
             />
           </div>
 
+          {/* Category pills */}
           <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
             <button
               onClick={() => setSelectedCategorySlug(null)}
@@ -233,37 +291,126 @@ function MarketplaceBrowseContent() {
               </button>
             ))}
           </div>
+
+          {/* Sort + City filter dropdowns */}
+          <div className="flex gap-2 mt-2">
+            {/* Sort */}
+            <div className="relative">
+              <button
+                onClick={() => { setSortMenuOpen(o => !o); setCityMenuOpen(false) }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  sortBy !== 'newest'
+                    ? 'bg-[#1F5F3F]/10 border-[#1F5F3F]/30 text-[#1F5F3F]'
+                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <span>الترتيب: {SORT_LABELS[sortBy]}</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${sortMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {sortMenuOpen && (
+                <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-xl border border-gray-100 shadow-lg z-50 overflow-hidden">
+                  {(Object.keys(SORT_LABELS) as SortOption[]).map(option => (
+                    <button
+                      key={option}
+                      onClick={() => { setSortBy(option); setSortMenuOpen(false) }}
+                      className={`w-full text-right px-3 py-2 text-xs hover:bg-gray-50 ${
+                        sortBy === option ? 'bg-[#1F5F3F]/5 text-[#1F5F3F] font-semibold' : 'text-gray-700'
+                      }`}
+                    >
+                      {SORT_LABELS[option]}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* City filter — only show if there are cities */}
+            {cities.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => { setCityMenuOpen(o => !o); setSortMenuOpen(false) }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                    cityFilter
+                      ? 'bg-[#1F5F3F]/10 border-[#1F5F3F]/30 text-[#1F5F3F]'
+                      : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <MapPin className="w-3 h-3" />
+                  <span>{cityFilter || 'كل المدن'}</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${cityMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {cityMenuOpen && (
+                  <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-xl border border-gray-100 shadow-lg z-50 overflow-hidden max-h-64 overflow-y-auto">
+                    <button
+                      onClick={() => { setCityFilter(null); setCityMenuOpen(false) }}
+                      className={`w-full text-right px-3 py-2 text-xs hover:bg-gray-50 ${
+                        !cityFilter ? 'bg-[#1F5F3F]/5 text-[#1F5F3F] font-semibold' : 'text-gray-700'
+                      }`}
+                    >
+                      كل المدن
+                    </button>
+                    {cities.map(city => (
+                      <button
+                        key={city}
+                        onClick={() => { setCityFilter(city); setCityMenuOpen(false) }}
+                        className={`w-full text-right px-3 py-2 text-xs hover:bg-gray-50 ${
+                          cityFilter === city ? 'bg-[#1F5F3F]/5 text-[#1F5F3F] font-semibold' : 'text-gray-700'
+                        }`}
+                      >
+                        {city}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {hasFilters && (
+              <button
+                onClick={clearAllFilters}
+                className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-red-600"
+              >
+                <X className="w-3 h-3" /> مسح الفلاتر
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6">
         {!loading && (
           <p className="text-sm text-gray-500 mb-4">
-            {listings.length} نتيجة
+            {filteredListings.length} نتيجة
             {selectedCategoryName && <span> في <strong>{selectedCategoryName}</strong></span>}
+            {cityFilter && <span> · <strong>{cityFilter}</strong></span>}
             {searchQuery && <span> لـ &quot;<strong>{searchQuery}</strong>&quot;</span>}
           </p>
         )}
 
         {loading ? (
           <div className="text-center py-12"><Loader2 className="w-6 h-6 text-gray-400 animate-spin mx-auto" /></div>
-        ) : listings.length === 0 ? (
+        ) : filteredListings.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
             <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <h3 className="text-base font-semibold text-gray-700 mb-1">مفيش نتائج</h3>
-            <p className="text-sm text-gray-500">جرّب بحث مختلف أو فئة تانية</p>
+            <p className="text-sm text-gray-500">جرّب بحث مختلف أو فلتر تاني</p>
+            {hasFilters && (
+              <button
+                onClick={clearAllFilters}
+                className="inline-flex items-center gap-1 mt-4 px-4 py-2 bg-[#1F5F3F] text-white rounded-lg text-xs font-semibold"
+              >
+                مسح كل الفلاتر
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {listings.map(listing => {
+            {filteredListings.map(listing => {
               const photos = listing.photos || []
               const primary = photos.find(p => p.is_primary) || photos[0]
               const photoUrl = primary?.url
-              const activePrices = (listing.pricing || [])
-                .filter(p => p.is_active)
-                .map(p => Number(p.price))
-                .filter(p => p > 0)
-              const startingPrice = activePrices.length > 0 ? Math.min(...activePrices) : null
+              const minPrice = getMinPrice(listing)
+              const startingPrice = minPrice !== Infinity ? minPrice : null
               const isFav = favorites.has(listing.id)
 
               return (
