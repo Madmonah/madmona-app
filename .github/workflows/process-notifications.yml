@@ -1,0 +1,44 @@
+# GitHub Actions workflow: Process notification queue every minute
+#
+# This replaces the Vercel cron (which is limited to once/day on Hobby plan).
+# It calls /api/push/process-queue with the CRON_SECRET to dispatch any
+# queued notifications (e.g. from booking triggers).
+#
+# Setup:
+#   1. Go to GitHub repo → Settings → Secrets and variables → Actions
+#   2. Add a new secret named `CRON_SECRET` with the same value as your
+#      Vercel CRON_SECRET env var.
+#
+# Cost: Free. Uses ~43 minutes/month of GitHub Actions quota
+#       (free tier = 2,000 minutes/month).
+
+name: Process Notification Queue
+
+on:
+  schedule:
+    # Runs every minute (GitHub Actions minimum: 5 minutes; we use 5 for safety)
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  process-queue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Call process-queue endpoint
+        run: |
+          response=$(curl -sS -w "\n%{http_code}" -X POST \
+            "https://madmonacairo.com/api/push/process-queue" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+          
+          body=$(echo "$response" | head -n -1)
+          status=$(echo "$response" | tail -n 1)
+          
+          echo "Status: $status"
+          echo "Body: $body"
+          
+          if [ "$status" != "200" ]; then
+            echo "::error::Process queue failed with status $status"
+            exit 1
+          fi
