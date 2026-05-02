@@ -6,11 +6,11 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Loader2, Lock, AlertCircle, Image as ImageIcon,
   Upload, Save, CheckCircle, X, ShieldAlert, Sparkles, Link as LinkIcon,
-  RefreshCw,
+  RefreshCw, Layers, FolderTree,
 } from 'lucide-react'
 
 // ============================================================================
-// /admin/site-settings — Edit dynamic site content (hero image, etc.)
+// /admin/site-settings — Edit dynamic site content (hero + categories images)
 // ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'forbidden' | 'ready'
@@ -23,27 +23,86 @@ interface SettingField {
   recommendedSize: string
 }
 
-const FIELDS: SettingField[] = [
+interface FieldGroup {
+  title: string
+  subtitle: string
+  icon: React.ReactNode
+  iconColor: string
+  fields: SettingField[]
+}
+
+const FIELD_GROUPS: FieldGroup[] = [
   {
-    key: 'hero_image_url',
-    label: 'صورة الـHero الرئيسية',
-    description: 'الصورة الكبيرة في أعلى الصفحة الرئيسية',
-    aspectRatio: '3/4',
-    recommendedSize: '١٢٠٠ × ١٦٠٠ بكسل',
+    title: 'الصور الكبيرة (Hero & Cards)',
+    subtitle: 'الصور الرئيسية في أعلى الصفحة والكروت الكبيرة',
+    icon: <Sparkles className="w-4 h-4" />,
+    iconColor: 'bg-[#B8860B]/10 text-[#B8860B]',
+    fields: [
+      {
+        key: 'hero_image_url',
+        label: 'صورة الـHero الرئيسية',
+        description: 'الصورة الكبيرة في أعلى الصفحة الرئيسية',
+        aspectRatio: '3/4',
+        recommendedSize: '١٢٠٠ × ١٦٠٠ بكسل',
+      },
+      {
+        key: 'marketplace_image_url',
+        label: 'صورة كارت الـMarketplace',
+        description: 'الصورة في كارت "Madmona Marketplace" بالصفحة الرئيسية',
+        aspectRatio: '3/4',
+        recommendedSize: '٩٠٠ × ١٢٠٠ بكسل',
+      },
+      {
+        key: 'spaces_image_url',
+        label: 'صورة كارت "خدمات مضمونة"',
+        description: 'الصورة في كارت "خدمات مضمونة" بالصفحة الرئيسية',
+        aspectRatio: '3/4',
+        recommendedSize: '٩٠٠ × ١٢٠٠ بكسل',
+      },
+    ],
   },
   {
-    key: 'marketplace_image_url',
-    label: 'صورة كارت الـMarketplace',
-    description: 'الصورة في كارت "Madmona Marketplace" بالصفحة الرئيسية',
-    aspectRatio: '3/4',
-    recommendedSize: '٩٠٠ × ١٢٠٠ بكسل',
-  },
-  {
-    key: 'spaces_image_url',
-    label: 'صورة كارت "خدمات مضمونة"',
-    description: 'الصورة في كارت "خدمات مضمونة" بالصفحة الرئيسية',
-    aspectRatio: '3/4',
-    recommendedSize: '٩٠٠ × ١٢٠٠ بكسل',
+    title: 'صور الأقسام (Categories)',
+    subtitle: 'الصور اللي بتظهر فوق كل قسم في الصفحة الرئيسية',
+    icon: <FolderTree className="w-4 h-4" />,
+    iconColor: 'bg-[#1F5F3F]/10 text-[#1F5F3F]',
+    fields: [
+      {
+        key: 'category_spaces_image_url',
+        label: 'صورة قسم "مساحات عمل"',
+        description: 'الكارت الكبير على اليمين في الـCategories',
+        aspectRatio: '1/1',
+        recommendedSize: '٨٠٠ × ٨٠٠ بكسل',
+      },
+      {
+        key: 'category_properties_image_url',
+        label: 'صورة قسم "عقارات"',
+        description: 'كارت العقارات في الـCategories',
+        aspectRatio: '1/1',
+        recommendedSize: '٦٠٠ × ٦٠٠ بكسل',
+      },
+      {
+        key: 'category_vehicles_image_url',
+        label: 'صورة قسم "مركبات"',
+        description: 'كارت المركبات في الـCategories',
+        aspectRatio: '1/1',
+        recommendedSize: '٦٠٠ × ٦٠٠ بكسل',
+      },
+      {
+        key: 'category_equipment_image_url',
+        label: 'صورة قسم "معدات"',
+        description: 'كارت المعدات في الـCategories',
+        aspectRatio: '1/1',
+        recommendedSize: '٦٠٠ × ٦٠٠ بكسل',
+      },
+      {
+        key: 'category_events_image_url',
+        label: 'صورة قسم "فعاليات"',
+        description: 'كارت الفعاليات في الـCategories',
+        aspectRatio: '1/1',
+        recommendedSize: '٦٠٠ × ٦٠٠ بكسل',
+      },
+    ],
   },
 ]
 
@@ -125,7 +184,6 @@ export default function SiteSettingsPage() {
     setSettings(prev => ({ ...prev, [key]: value }))
   }
 
-  // ===========================================================================
   if (stage === 'loading') {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
@@ -180,14 +238,22 @@ export default function SiteSettingsPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6 space-y-4">
+      <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Hero info */}
         <div className="bg-gradient-to-l from-[#1F5F3F] to-[#2d7a52] text-white rounded-3xl p-6 shadow-luxe">
           <h2 className="text-xl font-black mb-2">صور الصفحة الرئيسية</h2>
           <p className="text-sm text-white/85 leading-relaxed">
-            من هنا تقدر تغيّر الصور اللي بتظهر في صفحة madmonacairo.com بدون ما تحتاج تعدّل في الكود.
-            ارفع صورة جديدة أو الصق رابط من Unsplash/أي مصدر خارجي.
+            من هنا تقدر تغيّر كل الصور اللي بتظهر في صفحة madmonacairo.com بدون ما تحتاج تعدّل في الكود.
+            ارفع صورة جديدة من الكمبيوتر أو الصق رابط من Canva/Unsplash/أي مصدر خارجي.
           </p>
+          <div className="mt-3 flex items-center gap-3 flex-wrap text-xs">
+            <span className="bg-white/15 backdrop-blur px-2.5 py-1 rounded-full">
+              {FIELD_GROUPS.reduce((sum, g) => sum + g.fields.length, 0)} صورة قابلة للتعديل
+            </span>
+            <span className="bg-white/15 backdrop-blur px-2.5 py-1 rounded-full">
+              تحديث فوري
+            </span>
+          </div>
         </div>
 
         {/* Message */}
@@ -202,17 +268,35 @@ export default function SiteSettingsPage() {
           </div>
         )}
 
-        {/* Fields */}
-        {FIELDS.map(field => (
-          <ImageSettingField
-            key={field.key}
-            field={field}
-            value={settings[field.key] || ''}
-            originalValue={originalSettings[field.key] || ''}
-            onChange={(v) => updateValue(field.key, v)}
-            onSave={() => handleSave(field.key)}
-            saving={saving === field.key}
-          />
+        {/* Field Groups */}
+        {FIELD_GROUPS.map((group, gIdx) => (
+          <div key={gIdx} className="space-y-3">
+            {/* Group header */}
+            <div className="flex items-center gap-3 px-1 pt-2">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${group.iconColor}`}>
+                {group.icon}
+              </div>
+              <div>
+                <h2 className="font-black text-gray-900 text-base">{group.title}</h2>
+                <p className="text-xs text-gray-500">{group.subtitle}</p>
+              </div>
+            </div>
+
+            {/* Fields in this group */}
+            <div className="space-y-3">
+              {group.fields.map(field => (
+                <ImageSettingField
+                  key={field.key}
+                  field={field}
+                  value={settings[field.key] || ''}
+                  originalValue={originalSettings[field.key] || ''}
+                  onChange={(v) => updateValue(field.key, v)}
+                  onSave={() => handleSave(field.key)}
+                  saving={saving === field.key}
+                />
+              ))}
+            </div>
+          </div>
         ))}
 
         {/* Tips */}
@@ -223,10 +307,12 @@ export default function SiteSettingsPage() {
           </p>
           <ul className="space-y-1.5 text-xs pr-4">
             <li>• استخدم صور عالية الجودة (1200px+ عرض)</li>
-            <li>• الصور الـvertical (طولية) أحسن من الـhorizontal</li>
+            <li>• الصور الـvertical (طولية) أحسن للـHero</li>
+            <li>• الصور الـsquare أحسن للأقسام (Categories)</li>
             <li>• لو هتستخدم Unsplash، أضف <code className="bg-yellow-100 px-1 rounded">?w=1600&amp;q=85&amp;auto=format&amp;fit=crop</code> في آخر الرابط</li>
             <li>• اتأكد إن الـURL يبدأ بـ <code className="bg-yellow-100 px-1 rounded">https://</code></li>
-            <li>• الـfile upload بيرفع على Supabase Storage تلقائياً</li>
+            <li>• الـfile upload بيرفع على Supabase Storage تلقائياً (حد أقصى 10MB)</li>
+            <li>• لتصدير من Canva: Download → PNG/JPG ثم ارفعها هنا</li>
           </ul>
         </div>
       </main>
@@ -279,7 +365,6 @@ function ImageSettingField({
         return
       }
 
-      // Get public URL
       const { data: urlData } = supabaseBrowser
         .storage
         .from('site-assets')
@@ -304,7 +389,6 @@ function ImageSettingField({
         </p>
       </div>
 
-      {/* Preview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div className="md:col-span-1">
           <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">معاينة</p>
@@ -331,7 +415,6 @@ function ImageSettingField({
         </div>
 
         <div className="md:col-span-2 space-y-3">
-          {/* URL input */}
           <div>
             <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5 flex items-center gap-1">
               <LinkIcon className="w-3 h-3" />
@@ -348,7 +431,6 @@ function ImageSettingField({
             />
           </div>
 
-          {/* Upload button */}
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">
               أو ارفع صورة من الكمبيوتر
@@ -386,7 +468,6 @@ function ImageSettingField({
             )}
           </div>
 
-          {/* Save button */}
           <div className="flex gap-2 pt-2">
             <button
               type="button"

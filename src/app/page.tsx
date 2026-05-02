@@ -20,8 +20,11 @@ import FeaturedListings from '@/components/FeaturedListings'
 // ============================================================
 // Home page — Premium Editorial Redesign
 // "خدمات مضمونة" branding throughout
-// Hero/Marketplace/Spaces images are now dynamic — admin can edit
-// them from /admin/site-settings.
+// ALL images are now dynamic — admin can edit them from /admin/site-settings:
+//   - Hero image (top of page)
+//   - Marketplace card image
+//   - Spaces card image
+//   - 5 category section images (spaces, properties, vehicles, equipment, events)
 // ============================================================
 
 const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
@@ -30,13 +33,11 @@ const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
 const DEFAULT_HERO_IMAGE = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=85&auto=format&fit=crop'
 const DEFAULT_MARKETPLACE_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=85&auto=format&fit=crop'
 const DEFAULT_SPACES_IMAGE = 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&q=85&auto=format&fit=crop'
-
-// Category showcase images (still hardcoded — admin can request to make these dynamic later)
-const PROPERTIES_IMG = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80&auto=format&fit=crop'
-const VEHICLES_IMG = 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80&auto=format&fit=crop'
-const EQUIPMENT_IMG = 'https://images.unsplash.com/photo-1533422902779-aff35862e462?w=600&q=80&auto=format&fit=crop'
-const EVENTS_IMG = 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=600&q=80&auto=format&fit=crop'
-const SPACES_CATEGORY_IMG = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&auto=format&fit=crop'
+const DEFAULT_CATEGORY_SPACES_IMG = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&auto=format&fit=crop'
+const DEFAULT_CATEGORY_PROPERTIES_IMG = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80&auto=format&fit=crop'
+const DEFAULT_CATEGORY_VEHICLES_IMG = 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80&auto=format&fit=crop'
+const DEFAULT_CATEGORY_EQUIPMENT_IMG = 'https://images.unsplash.com/photo-1533422902779-aff35862e462?w=600&q=80&auto=format&fit=crop'
+const DEFAULT_CATEGORY_EVENTS_IMG = 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=600&q=80&auto=format&fit=crop'
 
 // Force this page to be dynamic so admin's image changes show up immediately
 export const revalidate = 60 // Re-fetch from DB every 60 seconds
@@ -66,9 +67,17 @@ async function getSiteSettings(): Promise<Record<string, string>> {
 export default async function HomePage() {
   const settings = await getSiteSettings()
 
+  // Hero & big cards
   const HERO_IMAGE = settings.hero_image_url || DEFAULT_HERO_IMAGE
   const MARKETPLACE_IMAGE = settings.marketplace_image_url || DEFAULT_MARKETPLACE_IMAGE
   const SPACES_IMAGE = settings.spaces_image_url || DEFAULT_SPACES_IMAGE
+
+  // Category cards — all dynamic from DB
+  const SPACES_CATEGORY_IMG = settings.category_spaces_image_url || DEFAULT_CATEGORY_SPACES_IMG
+  const PROPERTIES_IMG = settings.category_properties_image_url || DEFAULT_CATEGORY_PROPERTIES_IMG
+  const VEHICLES_IMG = settings.category_vehicles_image_url || DEFAULT_CATEGORY_VEHICLES_IMG
+  const EQUIPMENT_IMG = settings.category_equipment_image_url || DEFAULT_CATEGORY_EQUIPMENT_IMG
+  const EVENTS_IMG = settings.category_events_image_url || DEFAULT_CATEGORY_EVENTS_IMG
 
   return (
     <div className="min-h-screen bg-[#FAFAF7] text-right overflow-x-hidden pb-20 md:pb-0" dir="rtl">
@@ -170,7 +179,7 @@ export default async function HomePage() {
         </section>
 
         {/* ============================================================ */}
-        {/* CATEGORIES SHOWCASE */}
+        {/* CATEGORIES SHOWCASE — all images dynamic from DB */}
         {/* ============================================================ */}
         <section className="py-16 md:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4">
