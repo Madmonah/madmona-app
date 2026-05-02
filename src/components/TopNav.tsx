@@ -43,7 +43,7 @@ export default function TopNav() {
           ? 'glass border-b border-white/40 shadow-soft'
           : 'bg-transparent'
       }`}>
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 no-underline flex-shrink-0 group">
             <div className="w-11 h-11 bg-white shadow-soft group-hover:shadow-card group-hover:-translate-y-0.5 rounded-2xl flex items-center justify-center transition-all overflow-hidden">
@@ -69,7 +69,7 @@ export default function TopNav() {
               className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-gray-700 hover:text-[#1F5F3F] hover:bg-white/60 rounded-xl no-underline transition-all"
             >
               <Search className="w-4 h-4" />
-              مساحات مضمونة
+              خدمات مضمونة
             </Link>
             <Link
               href="/marketplace"
@@ -214,7 +214,7 @@ export default function TopNav() {
                   <Search className="w-5 h-5 text-[#1F5F3F]" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-gray-900">مساحات مضمونة</p>
+                  <p className="font-bold text-gray-900">خدمات مضمونة</p>
                   <p className="text-xs text-gray-500 mt-0.5">في مصر الجديدة</p>
                 </div>
               </Link>
