@@ -313,6 +313,14 @@ export default function AdminDashboardPage() {
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <ToolCard
+                href="/admin/listings"
+                icon={<Package className="w-5 h-5" />}
+                title="إدارة الخدمات"
+                subtitle={`${stats.publishedListings} منشور · ${stats.draftListings} مسودة`}
+                accent="bg-emerald-100 text-emerald-700"
+                badge={stats.draftListings > 0 ? stats.draftListings : undefined}
+              />
+              <ToolCard
                 href="/admin/marketplace-suppliers"
                 icon={<Building2 className="w-5 h-5" />}
                 title="الموردين"
@@ -334,6 +342,8 @@ export default function AdminDashboardPage() {
                 subtitle="Categories + Attributes"
                 accent="bg-purple-100 text-purple-700"
               />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
               <ToolCard
                 href="/admin/payouts"
                 icon={<Wallet className="w-5 h-5" />}
@@ -344,7 +354,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Communications — NEW */}
+          {/* Communications */}
           <div className="mb-4">
             <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest mb-2 px-1">
               التواصل والإشعارات
