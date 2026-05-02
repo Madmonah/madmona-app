@@ -1,17 +1,18 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Sparkles, TrendingUp, ExternalLink, Newspaper } from 'lucide-react'
+import { Sparkles, TrendingUp, ExternalLink, Newspaper, MapPin } from 'lucide-react'
 
 // ============================================================================
 // EconomicNewsHero
 //
 // Live rotating economic news ticker for the homepage hero.
-// - Fetches news from /api/economic-news (8 Arabic/Egyptian sources via RSS)
-// - Rotates every 10 seconds
+// - Fetches news from /api/economic-news (8+ Egyptian/Arabic RSS sources)
+// - Egypt-focused: Egyptian sources prioritized (interleave 3:1 with regional)
+// - Rotates every 8 seconds (faster updates)
+// - Auto-refetches news every 3 minutes (always fresh)
 // - Smooth fade transition between items
-// - Falls back to static fallback image if API fails or returns empty
-// - Each news item is clickable → opens source article in new tab
+// - Falls back to static admin image if API fails
 // ============================================================================
 
 interface NewsItem {
@@ -20,13 +21,15 @@ interface NewsItem {
   image: string
   source: string
   pubDate: string
+  isEgyptian?: boolean
 }
 
 interface Props {
   fallbackImage: string
 }
 
-const ROTATION_MS = 10000
+const ROTATION_MS = 8000              // 8 seconds per news item
+const REFETCH_MS = 3 * 60 * 1000      // refetch news every 3 minutes
 
 export default function EconomicNewsHero({ fallbackImage }: Props) {
   const [items, setItems] = useState<NewsItem[]>([])
@@ -34,26 +37,37 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
   const [imgLoaded, setImgLoaded] = useState(false)
   const [error, setError] = useState(false)
 
-  // Fetch news on mount
+  // Fetch news on mount + every 3 minutes
   useEffect(() => {
     let cancelled = false
 
-    fetch('/api/economic-news')
-      .then(r => r.json())
-      .then(data => {
+    const load = async () => {
+      try {
+        const res = await fetch('/api/economic-news')
+        const data = await res.json()
         if (cancelled) return
         if (data.ok && Array.isArray(data.items) && data.items.length > 0) {
           setItems(data.items)
-        } else {
+          setError(false)
+        } else if (items.length === 0) {
           setError(true)
         }
-      })
-      .catch(() => !cancelled && setError(true))
+      } catch {
+        if (!cancelled && items.length === 0) setError(true)
+      }
+    }
 
-    return () => { cancelled = true }
+    load()
+    const refetchTimer = setInterval(load, REFETCH_MS)
+
+    return () => {
+      cancelled = true
+      clearInterval(refetchTimer)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Rotate every 10 seconds
+  // Rotate every 8 seconds
   useEffect(() => {
     if (items.length <= 1) return
     const timer = setInterval(() => {
@@ -66,21 +80,14 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
   const current = items[currentIndex]
   const hasNews = !error && current
 
-  // ===========================================================================
-  // No news yet (loading or failed) → show fallback image
+  // Loading or error → fallback
   if (!hasNews) {
     return (
       <div className="relative aspect-[4/5] md:aspect-[3/4] rounded-3xl overflow-hidden shadow-luxe">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={fallbackImage}
-          alt="Madmona"
-          className="absolute inset-0 w-full h-full object-cover"
-          loading="eager"
-        />
+        <img src={fallbackImage} alt="Madmona" className="absolute inset-0 w-full h-full object-cover" loading="eager" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-        {/* Loading badge if no error */}
         {!error && items.length === 0 && (
           <div className="absolute top-4 right-4 flex items-center gap-2 bg-white/90 backdrop-blur text-gray-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-card">
             <span className="w-2 h-2 rounded-full bg-[#1F5F3F] animate-pulse" />
@@ -88,7 +95,6 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
           </div>
         )}
 
-        {/* Static badge */}
         <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md rounded-2xl px-4 py-3 shadow-card max-w-[220px]">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-3.5 h-3.5 text-[#B8860B]" />
@@ -102,8 +108,6 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
     )
   }
 
-  // ===========================================================================
-  // News loaded → show rotating ticker
   return (
     <a
       href={current.link}
@@ -111,7 +115,6 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
       rel="noopener noreferrer"
       className="relative aspect-[4/5] md:aspect-[3/4] rounded-3xl overflow-hidden shadow-luxe block group no-underline"
     >
-      {/* News image (key changes on rotation → forces re-render with fade) */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         key={current.image}
@@ -125,7 +128,6 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
         onError={() => setImgLoaded(true)}
       />
 
-      {/* Gradient overlay for readability */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
 
       {/* LIVE badge — top right */}
@@ -139,26 +141,36 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
         <span>أخبار اقتصادية</span>
       </div>
 
-      {/* News count badge — top left */}
+      {/* News count + Egypt flag */}
       <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-black/50 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full z-10">
+        {current.isEgyptian && <span className="text-sm leading-none">🇪🇬</span>}
         <Newspaper className="w-3 h-3" />
         {currentIndex + 1} / {items.length}
       </div>
 
-      {/* News content — bottom */}
       <div className="absolute inset-x-0 bottom-0 p-5 md:p-6 z-10">
-        {/* Source badge */}
-        <div className="inline-flex items-center gap-1.5 bg-[#B8860B] text-white text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full mb-3 shadow-card">
-          <TrendingUp className="w-3 h-3" />
+        {/* Source badge with Egypt indicator */}
+        <div className={`inline-flex items-center gap-1.5 text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full mb-3 shadow-card ${
+          current.isEgyptian
+            ? 'bg-gradient-to-l from-[#B8860B] to-[#D4A12A] text-white'
+            : 'bg-[#1F5F3F] text-white'
+        }`}>
+          {current.isEgyptian ? (
+            <>
+              <MapPin className="w-3 h-3" />
+              <span>مصر</span>
+              <span className="opacity-70 mx-0.5">·</span>
+            </>
+          ) : (
+            <TrendingUp className="w-3 h-3" />
+          )}
           {current.source}
         </div>
 
-        {/* Title */}
         <h3 className="text-base md:text-lg font-black text-white leading-snug line-clamp-3 mb-3 drop-shadow-lg" dir="rtl">
           {current.title}
         </h3>
 
-        {/* Progress dots + external link */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex gap-1 flex-1 max-w-[180px]">
             {items.slice(0, Math.min(8, items.length)).map((_, i) => (

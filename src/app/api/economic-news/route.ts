@@ -3,14 +3,12 @@ import { NextResponse } from 'next/server'
 // ============================================================================
 // GET /api/economic-news
 //
-// Fetches latest Arabic/Egyptian economic news from multiple RSS sources,
-// extracts title + image + link, and returns top 12 items sorted by date.
-//
-// Cached for 10 minutes (in-memory + Next.js fetch cache) to avoid hammering
-// upstream sources.
+// Fetches latest Egyptian/Arabic economic news from RSS sources.
+// EGYPTIAN sources are weighted higher and shown first.
+// Cached for 3 minutes (faster updates than before).
 // ============================================================================
 
-export const revalidate = 600 // 10 minutes
+export const revalidate = 180 // 3 minutes
 
 interface NewsItem {
   title: string
@@ -18,28 +16,34 @@ interface NewsItem {
   image: string
   source: string
   pubDate: string
+  isEgyptian: boolean
 }
 
 interface NewsSource {
   name: string
   url: string
+  egyptian: boolean
 }
 
-// Reliable Arabic economic news RSS feeds
+// Egyptian sources first (priority), then regional/Arabic
 const SOURCES: NewsSource[] = [
-  { name: 'المال', url: 'https://almalnews.com/feed/' },
-  { name: 'البورصة', url: 'https://alborsaanews.com/feed' },
-  { name: 'مباشر', url: 'https://www.mubasher.info/rss/news' },
-  { name: 'CNN العربية', url: 'https://arabic.cnn.com/business/rss' },
-  { name: 'BBC عربي', url: 'http://feeds.bbci.co.uk/arabic/business/rss.xml' },
-  { name: 'Sky News عربية', url: 'https://www.skynewsarabia.com/business/rss' },
-  { name: 'Reuters Arabic', url: 'https://ara.reuters.com/rssfeed/businessNews' },
-  { name: 'الجزيرة', url: 'https://www.aljazeera.net/aljazeerarss/economy.xml' },
+  // 🇪🇬 EGYPTIAN — primary focus
+  { name: 'المال', url: 'https://almalnews.com/feed/', egyptian: true },
+  { name: 'البورصة', url: 'https://alborsaanews.com/feed', egyptian: true },
+  { name: 'مباشر مصر', url: 'https://www.mubasher.info/rss/news', egyptian: true },
+  { name: 'الشروق', url: 'https://www.shorouknews.com/RSS/Feeds/Economy.xml', egyptian: true },
+  { name: 'الوطن', url: 'https://www.elwatannews.com/rss/category/29.rss', egyptian: true },
+  { name: 'اليوم السابع', url: 'https://www.youm7.com/rss/SectionRss?SectionID=297', egyptian: true },
+  { name: 'الأهرام', url: 'https://gate.ahram.org.eg/rss/PortalEconomyRss.aspx', egyptian: true },
+  { name: 'المصري اليوم', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=1', egyptian: true },
+  // 🌍 Arabic regional
+  { name: 'CNN العربية', url: 'https://arabic.cnn.com/business/rss', egyptian: false },
+  { name: 'BBC عربي', url: 'http://feeds.bbci.co.uk/arabic/business/rss.xml', egyptian: false },
+  { name: 'Sky News عربية', url: 'https://www.skynewsarabia.com/business/rss', egyptian: false },
 ]
 
-// In-memory cache (resets on cold start, but Vercel keeps warm for ~5min)
 let cache: { data: NewsItem[]; timestamp: number } | null = null
-const CACHE_TTL = 10 * 60 * 1000
+const CACHE_TTL = 3 * 60 * 1000 // 3 minutes
 
 // ----------------------------------------------------------------------------
 // Helpers
@@ -64,7 +68,6 @@ function decodeEntities(s: string): string {
 }
 
 function extractTag(xml: string, tag: string): string {
-  // Match both <tag>...</tag> and <tag attr="...">...</tag>
   const regex = new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</${tag}>`, 'i')
   const m = xml.match(regex)
   if (!m) return ''
@@ -72,25 +75,20 @@ function extractTag(xml: string, tag: string): string {
 }
 
 function extractImage(itemXml: string): string | null {
-  // 1) <media:content url="..."/>
   let m = itemXml.match(/<media:content[^>]*url=["']([^"']+\.(?:jpg|jpeg|png|webp)[^"']*)["']/i)
   if (m) return m[1]
 
-  // 2) <media:thumbnail url="..."/>
   m = itemXml.match(/<media:thumbnail[^>]*url=["']([^"']+)["']/i)
   if (m) return m[1]
 
-  // 3) <enclosure url="..." type="image/..."/>
   m = itemXml.match(/<enclosure[^>]*url=["']([^"']+)["'][^>]*type=["']image\//i)
   if (m) return m[1]
   m = itemXml.match(/<enclosure[^>]*type=["']image\/[^"']+["'][^>]*url=["']([^"']+)["']/i)
   if (m) return m[1]
 
-  // 4) <image><url>...</url></image>
   m = itemXml.match(/<image>[\s\S]*?<url>([^<]+)<\/url>/i)
   if (m) return m[1]
 
-  // 5) First <img src="..."> in description or content:encoded
   const descMatch = itemXml.match(/<(?:description|content:encoded)(?:\s[^>]*)?>([\s\S]*?)<\/(?:description|content:encoded)>/i)
   if (descMatch) {
     const inner = decodeCData(descMatch[1])
@@ -102,11 +100,9 @@ function extractImage(itemXml: string): string | null {
 }
 
 function extractLink(itemXml: string): string {
-  // Try <link>https://...</link>
   let m = itemXml.match(/<link>([^<]+)<\/link>/i)
   if (m && m[1].startsWith('http')) return m[1].trim()
 
-  // Try Atom-style <link href="..."/>
   m = itemXml.match(/<link[^>]*href=["']([^"']+)["']/i)
   if (m) return m[1]
 
@@ -120,8 +116,8 @@ async function fetchSource(source: NewsSource): Promise<NewsItem[]> {
         'User-Agent': 'Mozilla/5.0 (compatible; MadmonaBot/1.0)',
         'Accept': 'application/rss+xml, application/xml, text/xml, */*',
       },
-      next: { revalidate: 600 },
-      signal: AbortSignal.timeout(8000), // 8s timeout per source
+      next: { revalidate: 180 },
+      signal: AbortSignal.timeout(7000),
     })
 
     if (!res.ok) return []
@@ -129,11 +125,13 @@ async function fetchSource(source: NewsSource): Promise<NewsItem[]> {
     const xml = await res.text()
     const items: NewsItem[] = []
 
-    // Match all <item>...</item> (RSS) or <entry>...</entry> (Atom)
     const itemRegex = /<(?:item|entry)(?:\s[^>]*)?>([\s\S]*?)<\/(?:item|entry)>/gi
     let match: RegExpExecArray | null
 
-    while ((match = itemRegex.exec(xml)) !== null && items.length < 5) {
+    // Take more items from Egyptian sources, fewer from regional
+    const maxItems = source.egyptian ? 6 : 3
+
+    while ((match = itemRegex.exec(xml)) !== null && items.length < maxItems) {
       const itemXml = match[1]
 
       const title = extractTag(itemXml, 'title')
@@ -152,13 +150,14 @@ async function fetchSource(source: NewsSource): Promise<NewsItem[]> {
           image,
           source: source.name,
           pubDate,
+          isEgyptian: source.egyptian,
         })
       }
     }
 
     return items
   } catch (e) {
-    console.error(`[economic-news] Failed to fetch ${source.name}:`, e instanceof Error ? e.message : e)
+    console.error(`[economic-news] Failed: ${source.name}:`, e instanceof Error ? e.message : e)
     return []
   }
 }
@@ -168,7 +167,6 @@ async function fetchSource(source: NewsSource): Promise<NewsItem[]> {
 // ----------------------------------------------------------------------------
 
 export async function GET() {
-  // Use in-memory cache first
   if (cache && Date.now() - cache.timestamp < CACHE_TTL) {
     return NextResponse.json({
       ok: true,
@@ -178,7 +176,6 @@ export async function GET() {
     })
   }
 
-  // Fetch all sources in parallel (failures ignored individually)
   const results = await Promise.all(SOURCES.map(fetchSource))
   const allItems = results.flat()
 
@@ -190,22 +187,42 @@ export async function GET() {
     })
   }
 
-  // Sort by date descending and take top 12
-  const sorted = allItems
-    .sort((a, b) => {
-      const dateA = new Date(a.pubDate).getTime() || 0
-      const dateB = new Date(b.pubDate).getTime() || 0
-      return dateB - dateA
-    })
-    .slice(0, 12)
+  // Sort: Egyptian first, then by date desc
+  // We interleave: take 1 Egyptian, mix with newer from any source
+  const egyptian = allItems
+    .filter(i => i.isEgyptian)
+    .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
 
-  // Update cache
-  cache = { data: sorted, timestamp: Date.now() }
+  const regional = allItems
+    .filter(i => !i.isEgyptian)
+    .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
+
+  // Take top 12 Egyptian + top 4 regional, interleave
+  const merged: NewsItem[] = []
+  const egTop = egyptian.slice(0, 12)
+  const regTop = regional.slice(0, 4)
+
+  // Pattern: 3 Egyptian, 1 regional, repeat
+  let egIdx = 0
+  let regIdx = 0
+  while (egIdx < egTop.length || regIdx < regTop.length) {
+    for (let i = 0; i < 3 && egIdx < egTop.length; i++) {
+      merged.push(egTop[egIdx++])
+    }
+    if (regIdx < regTop.length) {
+      merged.push(regTop[regIdx++])
+    }
+  }
+
+  const final = merged.slice(0, 16)
+
+  cache = { data: final, timestamp: Date.now() }
 
   return NextResponse.json({
     ok: true,
-    items: sorted,
+    items: final,
     cached: false,
-    count: sorted.length,
+    count: final.length,
+    egyptian_count: egTop.length,
   })
 }

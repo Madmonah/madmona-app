@@ -17,18 +17,15 @@ import BottomNav from '@/components/BottomNav'
 import InstallPWA from '@/components/InstallPWA'
 import FeaturedListings from '@/components/FeaturedListings'
 import EconomicNewsHero from '@/components/EconomicNewsHero'
+import FinancialTicker from '@/components/FinancialTicker'
 
 // ============================================================
 // Home page — Premium Editorial Redesign
 // "خدمات مضمونة" branding throughout
 //
-// Hero: LIVE economic news ticker (rotates every 10s) with fallback to
-//       admin-controlled hero image if news API fails.
-//
-// All other images dynamic from /admin/site-settings:
-//   - Marketplace card image
-//   - Spaces card image
-//   - 5 category section images
+// Hero: LIVE economic news ticker (rotates every 8s, Egypt-first sources)
+// Below TopNav: Live financial ticker (currency + gold prices)
+// All other images dynamic from /admin/site-settings.
 // ============================================================
 
 const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
@@ -42,7 +39,7 @@ const DEFAULT_CATEGORY_VEHICLES_IMG = 'https://images.unsplash.com/photo-1503376
 const DEFAULT_CATEGORY_EQUIPMENT_IMG = 'https://images.unsplash.com/photo-1533422902779-aff35862e462?w=600&q=80&auto=format&fit=crop'
 const DEFAULT_CATEGORY_EVENTS_IMG = 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=600&q=80&auto=format&fit=crop'
 
-export const revalidate = 60
+export const revalidate = 30
 
 async function getSiteSettings(): Promise<Record<string, string>> {
   try {
@@ -83,17 +80,17 @@ export default async function HomePage() {
     <div className="min-h-screen bg-[#FAFAF7] text-right overflow-x-hidden pb-20 md:pb-0" dir="rtl">
       <TopNav />
 
+      {/* LIVE Financial Ticker — sticky strip below TopNav */}
+      <FinancialTicker />
+
       <main className="relative">
-        {/* ============================================================ */}
-        {/* HERO — Editorial split layout with LIVE news ticker */}
-        {/* ============================================================ */}
+        {/* HERO */}
         <section className="relative pt-6 md:pt-8 pb-12 md:pb-20">
           <div className="max-w-7xl mx-auto px-4">
             <div className="pt-2">
               <InstallPWA />
             </div>
 
-            {/* Editorial label */}
             <div className="flex items-center gap-3 mb-8 mt-6 md:mt-12">
               <div className="h-px w-12 bg-[#1F5F3F]" />
               <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F5F3F]">
@@ -103,15 +100,10 @@ export default async function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center">
-              {/* Headline + CTA */}
               <div className="md:col-span-7 order-2 md:order-1">
                 <h1 className="font-black text-gray-900 leading-[0.92] tracking-tight mb-6">
-                  <span className="block text-5xl md:text-7xl lg:text-8xl">
-                    خدمتك،
-                  </span>
-                  <span className="block text-5xl md:text-7xl lg:text-8xl gradient-text-green">
-                    وقتك،
-                  </span>
+                  <span className="block text-5xl md:text-7xl lg:text-8xl">خدمتك،</span>
+                  <span className="block text-5xl md:text-7xl lg:text-8xl gradient-text-green">وقتك،</span>
                   <span className="block text-5xl md:text-7xl lg:text-8xl">
                     <span className="italic font-light">مضمونة</span>
                   </span>
@@ -123,18 +115,12 @@ export default async function HomePage() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href="/marketplace"
-                    className="group inline-flex items-center justify-center gap-2 bg-[#1F5F3F] text-white px-8 py-4 rounded-full font-bold text-base shadow-elevated hover:shadow-luxe transition-all duration-300 hover:-translate-y-0.5 no-underline"
-                  >
+                  <Link href="/marketplace" className="group inline-flex items-center justify-center gap-2 bg-[#1F5F3F] text-white px-8 py-4 rounded-full font-bold text-base shadow-elevated hover:shadow-luxe transition-all duration-300 hover:-translate-y-0.5 no-underline">
                     <Compass className="w-5 h-5" />
                     <span>اكتشف الخدمات</span>
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                   </Link>
-                  <Link
-                    href="/browse"
-                    className="group inline-flex items-center justify-center gap-2 text-gray-900 px-8 py-4 rounded-full font-bold text-base hover:bg-gray-100 transition-all duration-300 no-underline border-b-2 border-gray-900 rounded-b-none rounded-t-full"
-                  >
+                  <Link href="/browse" className="group inline-flex items-center justify-center gap-2 text-gray-900 px-8 py-4 rounded-full font-bold text-base hover:bg-gray-100 transition-all duration-300 no-underline border-b-2 border-gray-900 rounded-b-none rounded-t-full">
                     <span>خدمات مضمونة</span>
                   </Link>
                 </div>
@@ -146,101 +132,52 @@ export default async function HomePage() {
                 </div>
               </div>
 
-              {/* Hero — LIVE Economic News Ticker (rotates every 10s) */}
               <div className="md:col-span-5 order-1 md:order-2 relative">
                 <EconomicNewsHero fallbackImage={HERO_IMAGE} />
-
-                {/* Decorative gold accent */}
                 <div className="absolute -top-3 -left-3 w-20 h-20 border-2 border-[#B8860B]/40 rounded-3xl -z-0 hidden md:block" />
               </div>
             </div>
           </div>
         </section>
 
-        {/* ============================================================ */}
-        {/* CATEGORIES SHOWCASE */}
-        {/* ============================================================ */}
+        {/* CATEGORIES */}
         <section className="py-16 md:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-end justify-between mb-10 md:mb-14 flex-wrap gap-4">
               <div>
-                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">
-                  COLLECTIONS
-                </p>
+                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">COLLECTIONS</p>
                 <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
                   كل اللي
                   <br />
                   <span className="italic font-light gradient-text-green">يتأجر</span>
                 </h2>
               </div>
-              <Link
-                href="/marketplace"
-                className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-gray-900 hover:text-[#1F5F3F] transition-colors no-underline"
-              >
+              <Link href="/marketplace" className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-gray-900 hover:text-[#1F5F3F] transition-colors no-underline">
                 <span>شوف الكل</span>
                 <ArrowLeft className="w-4 h-4" />
               </Link>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-12 gap-3 md:gap-4">
-              <CategoryCard
-                href="/marketplace?category=spaces"
-                image={SPACES_CATEGORY_IMG}
-                label="مساحات عمل"
-                sublabel="WORKSPACES"
-                count="١٢ خيار"
-                className="md:col-span-6 md:row-span-2 aspect-square md:aspect-auto"
-                size="large"
-              />
-              <CategoryCard
-                href="/marketplace?category=properties"
-                image={PROPERTIES_IMG}
-                label="عقارات"
-                sublabel="PROPERTIES"
-                className="md:col-span-3 aspect-square"
-              />
-              <CategoryCard
-                href="/marketplace?category=vehicles"
-                image={VEHICLES_IMG}
-                label="مركبات"
-                sublabel="VEHICLES"
-                className="md:col-span-3 aspect-square"
-              />
-              <CategoryCard
-                href="/marketplace?category=equipment"
-                image={EQUIPMENT_IMG}
-                label="معدات"
-                sublabel="EQUIPMENT"
-                className="md:col-span-3 aspect-square"
-              />
-              <CategoryCard
-                href="/marketplace?category=events"
-                image={EVENTS_IMG}
-                label="فعاليات"
-                sublabel="EVENTS"
-                className="md:col-span-3 aspect-square"
-              />
+              <CategoryCard href="/marketplace?category=spaces" image={SPACES_CATEGORY_IMG} label="مساحات عمل" sublabel="WORKSPACES" count="١٢ خيار" className="md:col-span-6 md:row-span-2 aspect-square md:aspect-auto" size="large" />
+              <CategoryCard href="/marketplace?category=properties" image={PROPERTIES_IMG} label="عقارات" sublabel="PROPERTIES" className="md:col-span-3 aspect-square" />
+              <CategoryCard href="/marketplace?category=vehicles" image={VEHICLES_IMG} label="مركبات" sublabel="VEHICLES" className="md:col-span-3 aspect-square" />
+              <CategoryCard href="/marketplace?category=equipment" image={EQUIPMENT_IMG} label="معدات" sublabel="EQUIPMENT" className="md:col-span-3 aspect-square" />
+              <CategoryCard href="/marketplace?category=events" image={EVENTS_IMG} label="فعاليات" sublabel="EVENTS" className="md:col-span-3 aspect-square" />
             </div>
 
-            <Link
-              href="/marketplace"
-              className="md:hidden mt-6 inline-flex items-center gap-2 text-sm font-bold text-gray-900 no-underline"
-            >
+            <Link href="/marketplace" className="md:hidden mt-6 inline-flex items-center gap-2 text-sm font-bold text-gray-900 no-underline">
               <span>شوف الكل</span>
               <ArrowLeft className="w-4 h-4" />
             </Link>
           </div>
         </section>
 
-        {/* ============================================================ */}
-        {/* FEATURED LISTINGS */}
-        {/* ============================================================ */}
+        {/* FEATURED */}
         <section className="py-16 md:py-24">
           <div className="max-w-7xl mx-auto px-4">
             <div className="mb-10 md:mb-14">
-              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">
-                FEATURED
-              </p>
+              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">FEATURED</p>
               <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
                 المختار
                 <br />
@@ -251,25 +188,14 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ============================================================ */}
-        {/* TWO BIG SHOWCASE CARDS */}
-        {/* ============================================================ */}
+        {/* BIG SHOWCASE */}
         <section className="py-16 md:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              <Link
-                href="/marketplace"
-                className="group relative block rounded-3xl overflow-hidden no-underline aspect-[4/5] md:aspect-[3/4]"
-              >
+              <Link href="/marketplace" className="group relative block rounded-3xl overflow-hidden no-underline aspect-[4/5] md:aspect-[3/4]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={MARKETPLACE_IMAGE}
-                  alt="Madmona Marketplace"
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
+                <img src={MARKETPLACE_IMAGE} alt="Madmona Marketplace" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-
                 <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-between">
                   <div>
                     <div className="inline-flex items-center gap-1.5 text-[10px] bg-[#B8860B] text-white px-3 py-1 rounded-full font-bold tracking-widest uppercase">
@@ -277,7 +203,6 @@ export default async function HomePage() {
                       الجديد
                     </div>
                   </div>
-
                   <div>
                     <h3 className="text-3xl md:text-5xl font-black text-white mb-3 leading-[0.95]">
                       Madmona
@@ -295,19 +220,10 @@ export default async function HomePage() {
                 </div>
               </Link>
 
-              <Link
-                href="/browse"
-                className="group relative block rounded-3xl overflow-hidden no-underline aspect-[4/5] md:aspect-[3/4]"
-              >
+              <Link href="/browse" className="group relative block rounded-3xl overflow-hidden no-underline aspect-[4/5] md:aspect-[3/4]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={SPACES_IMAGE}
-                  alt="خدمات مضمونة"
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
+                <img src={SPACES_IMAGE} alt="خدمات مضمونة" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1F5F3F]/95 via-[#1F5F3F]/50 to-[#1F5F3F]/20" />
-
                 <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-between">
                   <div>
                     <div className="inline-flex items-center gap-1.5 text-[10px] bg-[#B8860B] text-white px-3 py-1 rounded-full font-bold tracking-widest uppercase">
@@ -315,7 +231,6 @@ export default async function HomePage() {
                       الأصلي
                     </div>
                   </div>
-
                   <div>
                     <h3 className="text-3xl md:text-5xl font-black text-white mb-3 leading-[0.95]">
                       خدمات
@@ -325,13 +240,11 @@ export default async function HomePage() {
                     <p className="text-sm md:text-base text-white/90 leading-relaxed mb-6 max-w-md">
                       مكاتب فردية، غرف اجتماعات، وجاردن في قلب مصر الجديدة. يومك الأول مجاناً.
                     </p>
-
                     <div className="grid grid-cols-3 gap-2 mb-6">
                       <ServiceMini label="مكاتب" sublabel="من ٥٠ ج/ساعة" />
                       <ServiceMini label="اجتماعات" sublabel="من ٣٠٠ ج" />
                       <ServiceMini label="جاردن" sublabel="٦٥ ج/يوم" />
                     </div>
-
                     <div className="inline-flex items-center gap-2 bg-white text-[#1F5F3F] px-5 py-2.5 rounded-full font-bold text-sm group-hover:gap-3 transition-all">
                       <span>احجز دلوقتي</span>
                       <ArrowLeft className="w-4 h-4" />
@@ -343,15 +256,11 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ============================================================ */}
         {/* HOW IT WORKS */}
-        {/* ============================================================ */}
         <section className="py-16 md:py-24">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-14">
-              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">
-                THE PROCESS
-              </p>
+              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">THE PROCESS</p>
               <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
                 ٣ خطوات،
                 <br />
@@ -360,34 +269,14 @@ export default async function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-              <Step
-                num="01"
-                title="استكشف"
-                description="اتصفّح الـMarketplace أو ابحث في فئة معينة. شوف الأسعار والصور قبل أي قرار."
-                icon={<Compass className="w-6 h-6" />}
-                iconAccent="text-[#1F5F3F] bg-[#1F5F3F]/10"
-              />
-              <Step
-                num="02"
-                title="احجز"
-                description="اختار الوقت اللي يناسبك واحجز فوراً. تأكيد على واتساب من المورد مباشرة."
-                icon={<Zap className="w-6 h-6" />}
-                iconAccent="text-[#B8860B] bg-[#B8860B]/10"
-              />
-              <Step
-                num="03"
-                title="استمتع"
-                description="ادفع كاش أو InstaPay. مفيش هيدن فيز. ومتأمن إنك مش هتلاقي مفاجآت."
-                icon={<ShieldCheck className="w-6 h-6" />}
-                iconAccent="text-[#C2410C] bg-[#C2410C]/10"
-              />
+              <Step num="01" title="استكشف" description="اتصفّح الـMarketplace أو ابحث في فئة معينة. شوف الأسعار والصور قبل أي قرار." icon={<Compass className="w-6 h-6" />} iconAccent="text-[#1F5F3F] bg-[#1F5F3F]/10" />
+              <Step num="02" title="احجز" description="اختار الوقت اللي يناسبك واحجز فوراً. تأكيد على واتساب من المورد مباشرة." icon={<Zap className="w-6 h-6" />} iconAccent="text-[#B8860B] bg-[#B8860B]/10" />
+              <Step num="03" title="استمتع" description="ادفع كاش أو InstaPay. مفيش هيدن فيز. ومتأمن إنك مش هتلاقي مفاجآت." icon={<ShieldCheck className="w-6 h-6" />} iconAccent="text-[#C2410C] bg-[#C2410C]/10" />
             </div>
           </div>
         </section>
 
-        {/* ============================================================ */}
         {/* SUPPLIER CTA */}
-        {/* ============================================================ */}
         <section className="py-12 md:py-20">
           <div className="max-w-7xl mx-auto px-4">
             <div className="relative bg-gray-900 text-white rounded-3xl p-8 md:p-16 overflow-hidden shadow-luxe">
@@ -395,33 +284,22 @@ export default async function HomePage() {
               <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#B8860B]/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
               <div className="relative z-10 max-w-2xl">
-                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-4">
-                  FOR SUPPLIERS
-                </p>
-
+                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-4">FOR SUPPLIERS</p>
                 <h2 className="text-3xl md:text-6xl font-black mb-5 leading-[0.92]">
                   عندك خدمة؟
                   <br />
                   <span className="italic font-light gradient-text-gold">خلّيها تكسبلك</span>
                 </h2>
-
                 <p className="text-sm md:text-lg text-white/80 leading-relaxed mb-8 max-w-xl">
                   انضم لـMadmona Marketplace، اعرض خدمتك على آلاف العملاء، واستقبل حجوزات.
                   لوحة كاملة، إشعارات لايف، وعمولة شفافة.
                 </p>
-
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href="/supplier/register"
-                    className="group inline-flex items-center justify-center gap-2 bg-white text-gray-900 px-7 py-3.5 rounded-full font-bold text-sm hover:bg-gray-100 transition-all duration-300 hover:-translate-y-0.5 no-underline"
-                  >
+                  <Link href="/supplier/register" className="group inline-flex items-center justify-center gap-2 bg-white text-gray-900 px-7 py-3.5 rounded-full font-bold text-sm hover:bg-gray-100 transition-all duration-300 hover:-translate-y-0.5 no-underline">
                     <span>سجّل دلوقتي</span>
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                   </Link>
-                  <Link
-                    href="/auth/login?redirect=/supplier/marketplace"
-                    className="inline-flex items-center justify-center gap-2 border border-white/30 backdrop-blur text-white px-7 py-3.5 rounded-full font-bold text-sm hover:bg-white/10 transition-all no-underline"
-                  >
+                  <Link href="/auth/login?redirect=/supplier/marketplace" className="inline-flex items-center justify-center gap-2 border border-white/30 backdrop-blur text-white px-7 py-3.5 rounded-full font-bold text-sm hover:bg-white/10 transition-all no-underline">
                     عندي حساب
                   </Link>
                 </div>
@@ -430,26 +308,17 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ============================================================ */}
         {/* CONTACT */}
-        {/* ============================================================ */}
         <section className="py-12 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4">
-            <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3 text-center">
-              GET IN TOUCH
-            </p>
+            <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3 text-center">GET IN TOUCH</p>
             <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-[0.95] text-center mb-10">
               تواصل
               <span className="italic font-light gradient-text-green"> معانا</span>
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl mx-auto">
-              <a
-                href="https://wa.me/201002229982"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center gap-4 p-5 bg-[#FAFAF7] rounded-2xl hover:bg-white hover:shadow-card transition-all duration-300 no-underline border border-gray-100"
-              >
+              <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 p-5 bg-[#FAFAF7] rounded-2xl hover:bg-white hover:shadow-card transition-all duration-300 no-underline border border-gray-100">
                 <div className="w-12 h-12 rounded-2xl bg-[#25D366] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                   <MessageCircle className="w-6 h-6 text-white" />
                 </div>
@@ -460,12 +329,7 @@ export default async function HomePage() {
                 <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#25D366] group-hover:-translate-x-1 transition-all" />
               </a>
 
-              <a
-                href={MADMONA_MAPS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center gap-4 p-5 bg-[#FAFAF7] rounded-2xl hover:bg-white hover:shadow-card transition-all duration-300 no-underline border border-gray-100"
-              >
+              <a href={MADMONA_MAPS_URL} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 p-5 bg-[#FAFAF7] rounded-2xl hover:bg-white hover:shadow-card transition-all duration-300 no-underline border border-gray-100">
                 <div className="w-12 h-12 rounded-2xl bg-gray-900 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                   <MapPin className="w-6 h-6 text-white" />
                 </div>
@@ -479,37 +343,20 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ============================================================ */}
         {/* FOOTER */}
-        {/* ============================================================ */}
         <footer className="text-center py-12 md:py-16 border-t border-gray-200 bg-white">
           <p className="font-black text-3xl gradient-text-green mb-2">مضمونة</p>
           <p className="text-xs text-gray-500 mb-6 tracking-[0.2em] uppercase">Your service, guaranteed</p>
           <div className="flex justify-center items-center gap-3 text-xs flex-wrap mb-6 px-4">
-            <Link href="/about" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
-              عن مضمونة
-            </Link>
+            <Link href="/about" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">عن مضمونة</Link>
             <span className="text-gray-300">·</span>
-            <Link href="/marketplace" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
-              Marketplace
-            </Link>
+            <Link href="/marketplace" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">Marketplace</Link>
             <span className="text-gray-300">·</span>
-            <Link href="/privacy" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
-              الخصوصية
-            </Link>
+            <Link href="/privacy" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">الخصوصية</Link>
             <span className="text-gray-300">·</span>
-            <Link href="/terms" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
-              الشروط
-            </Link>
+            <Link href="/terms" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">الشروط</Link>
             <span className="text-gray-300">·</span>
-            <a
-              href="https://wa.me/201002229982"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors"
-            >
-              واتساب
-            </a>
+            <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">واتساب</a>
           </div>
           <p className="text-[10px] text-gray-400">© 2026 Madmona. جميع الحقوق محفوظة.</p>
         </footer>
@@ -529,43 +376,17 @@ function TrustBadge({ icon, label }: { icon: React.ReactNode; label: string }) {
   )
 }
 
-function CategoryCard({
-  href, image, label, sublabel, count, className = '', size = 'small',
-}: {
-  href: string
-  image: string
-  label: string
-  sublabel: string
-  count?: string
-  className?: string
-  size?: 'small' | 'large'
-}) {
+function CategoryCard({ href, image, label, sublabel, count, className = '', size = 'small' }: { href: string; image: string; label: string; sublabel: string; count?: string; className?: string; size?: 'small' | 'large' }) {
   return (
-    <Link
-      href={href}
-      className={`group relative block rounded-2xl overflow-hidden no-underline ${className}`}
-    >
+    <Link href={href} className={`group relative block rounded-2xl overflow-hidden no-underline ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={image}
-        alt={label}
-        className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-        loading="lazy"
-      />
+      <img src={image} alt={label} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
       <div className={`absolute inset-0 flex flex-col justify-end ${size === 'large' ? 'p-6 md:p-8' : 'p-4 md:p-5'}`}>
-        <p className={`text-white/70 font-bold tracking-[0.2em] uppercase mb-1 ${size === 'large' ? 'text-[10px] md:text-xs' : 'text-[9px] md:text-[10px]'}`}>
-          {sublabel}
-        </p>
-        <h3 className={`font-black text-white leading-tight ${size === 'large' ? 'text-2xl md:text-4xl' : 'text-lg md:text-2xl'}`}>
-          {label}
-        </h3>
-        {count && (
-          <p className="text-white/80 text-xs mt-2 font-medium">{count}</p>
-        )}
+        <p className={`text-white/70 font-bold tracking-[0.2em] uppercase mb-1 ${size === 'large' ? 'text-[10px] md:text-xs' : 'text-[9px] md:text-[10px]'}`}>{sublabel}</p>
+        <h3 className={`font-black text-white leading-tight ${size === 'large' ? 'text-2xl md:text-4xl' : 'text-lg md:text-2xl'}`}>{label}</h3>
+        {count && <p className="text-white/80 text-xs mt-2 font-medium">{count}</p>}
       </div>
-
       <div className="absolute top-4 left-4 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
         <ArrowLeft className="w-4 h-4 text-white" />
       </div>
@@ -582,24 +403,12 @@ function ServiceMini({ label, sublabel }: { label: string; sublabel: string }) {
   )
 }
 
-function Step({
-  num, title, description, icon, iconAccent,
-}: {
-  num: string
-  title: string
-  description: string
-  icon: React.ReactNode
-  iconAccent: string
-}) {
+function Step({ num, title, description, icon, iconAccent }: { num: string; title: string; description: string; icon: React.ReactNode; iconAccent: string }) {
   return (
     <div className="relative bg-white rounded-3xl p-6 md:p-8 shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-500 overflow-hidden">
-      <div className="absolute top-4 left-6 text-7xl md:text-8xl font-black text-gray-100 leading-none -z-0 select-none">
-        {num}
-      </div>
+      <div className="absolute top-4 left-6 text-7xl md:text-8xl font-black text-gray-100 leading-none -z-0 select-none">{num}</div>
       <div className="relative z-10">
-        <div className={`w-12 h-12 rounded-2xl ${iconAccent} flex items-center justify-center mb-4`}>
-          {icon}
-        </div>
+        <div className={`w-12 h-12 rounded-2xl ${iconAccent} flex items-center justify-center mb-4`}>{icon}</div>
         <h3 className="text-xl md:text-2xl font-black text-gray-900 mb-2">{title}</h3>
         <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
       </div>
