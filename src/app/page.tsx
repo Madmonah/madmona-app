@@ -18,14 +18,24 @@ import InstallPWA from '@/components/InstallPWA'
 import FeaturedListings from '@/components/FeaturedListings'
 import EconomicNewsHero from '@/components/EconomicNewsHero'
 import FinancialTicker from '@/components/FinancialTicker'
+import LaunchBanner from '@/components/LaunchBanner'
 
 // ============================================================
 // Home page — Premium Editorial Redesign
 // "خدمات مضمونة" branding throughout
 //
-// Hero: LIVE economic news ticker (rotates every 8s, Egypt-first sources)
-// Below TopNav: Live financial ticker (currency + gold prices)
-// All other images dynamic from /admin/site-settings.
+// Layout (top to bottom):
+//   1. TopNav (sticky)
+//   2. FinancialTicker (live currency + gold)
+//   3. LaunchBanner (LAUNCH WEEK 15% off — dismissible)
+//   4. Hero with live news ticker
+//   5. Categories
+//   6. Featured listings
+//   7. Showcase cards
+//   8. How it works
+//   9. Supplier CTA
+//   10. Contact
+//   11. Footer
 // ============================================================
 
 const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
@@ -82,6 +92,9 @@ export default async function HomePage() {
 
       {/* LIVE Financial Ticker — sticky strip below TopNav */}
       <FinancialTicker />
+
+      {/* LAUNCH WEEK promotional banner — dismissible */}
+      <LaunchBanner />
 
       <main className="relative">
         {/* HERO */}
@@ -159,7 +172,7 @@ export default async function HomePage() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-12 gap-3 md:gap-4">
-              <CategoryCard href="/marketplace?category=spaces" image={SPACES_CATEGORY_IMG} label="مساحات عمل" sublabel="WORKSPACES" count="١٢ خيار" className="md:col-span-6 md:row-span-2 aspect-square md:aspect-auto" size="large" />
+              <CategoryCard href="/marketplace?category=spaces" image={SPACES_CATEGORY_IMG} label="مساحات عمل" sublabel="WORKSPACES" count="٤ خيارات" className="md:col-span-6 md:row-span-2 aspect-square md:aspect-auto" size="large" />
               <CategoryCard href="/marketplace?category=properties" image={PROPERTIES_IMG} label="عقارات" sublabel="PROPERTIES" className="md:col-span-3 aspect-square" />
               <CategoryCard href="/marketplace?category=vehicles" image={VEHICLES_IMG} label="مركبات" sublabel="VEHICLES" className="md:col-span-3 aspect-square" />
               <CategoryCard href="/marketplace?category=equipment" image={EQUIPMENT_IMG} label="معدات" sublabel="EQUIPMENT" className="md:col-span-3 aspect-square" />
@@ -242,8 +255,8 @@ export default async function HomePage() {
                     </p>
                     <div className="grid grid-cols-3 gap-2 mb-6">
                       <ServiceMini label="مكاتب" sublabel="من ٥٠ ج/ساعة" />
-                      <ServiceMini label="اجتماعات" sublabel="من ٣٠٠ ج" />
-                      <ServiceMini label="جاردن" sublabel="٦٥ ج/يوم" />
+                      <ServiceMini label="اجتماعات" sublabel="من ٢٠٠ ج" />
+                      <ServiceMini label="جاردن" sublabel="١٥٠٠ ج/مناسبة" />
                     </div>
                     <div className="inline-flex items-center gap-2 bg-white text-[#1F5F3F] px-5 py-2.5 rounded-full font-bold text-sm group-hover:gap-3 transition-all">
                       <span>احجز دلوقتي</span>
