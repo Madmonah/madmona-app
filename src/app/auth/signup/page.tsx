@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
 import {
-  ArrowRight, Phone, Lock, User, AlertCircle, Loader2, UserPlus, CheckCircle, Sparkles,
+  ArrowRight, Phone, Lock, User, Mail, AlertCircle, Loader2, UserPlus, CheckCircle, Sparkles, KeyRound,
 } from 'lucide-react'
 
 function SignupContent() {
@@ -16,6 +16,7 @@ function SignupContent() {
 
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
@@ -36,6 +37,11 @@ function SignupContent() {
       setError('رقم التليفون مش صحيح. اكتبه بالشكل ده: 01002229982')
       return
     }
+    const trimmedEmail = email.trim().toLowerCase()
+    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setError('اكتب إيميل صحيح (محتاجينه عشان لو نسيت كلمة السر)')
+      return
+    }
     if (password.length < 6) {
       setError('كلمة السر قصيرة جداً (6 حروف على الأقل)')
       return
@@ -46,15 +52,16 @@ function SignupContent() {
     }
 
     setSubmitting(true)
-    const email = phoneToEmail(normalized)
+    const authEmail = phoneToEmail(normalized)
 
     const { data, error: signUpErr } = await supabaseBrowser.auth.signUp({
-      email,
+      email: authEmail,
       password,
       options: {
         data: {
           phone: normalized,
           full_name: fullName.trim(),
+          recovery_email: trimmedEmail,
         },
       },
     })
@@ -62,12 +69,25 @@ function SignupContent() {
     if (signUpErr) {
       console.error('[auth/signup] sign up error:', signUpErr)
       if (signUpErr.message.includes('already registered') || signUpErr.message.includes('User already')) {
-        setError('فيه حساب موجود بالرقم ده. لو نسيت كلمة السر تواصل معانا.')
+        setError('فيه حساب موجود بالرقم ده. سجّل دخول أو اعمل reset لكلمة السر.')
       } else {
         setError(signUpErr.message || 'حصل خطأ، جرّب تاني')
       }
       setSubmitting(false)
       return
+    }
+
+    // Save recovery email on the profile (best-effort — the row should exist via DB trigger)
+    if (data?.user?.id) {
+      try {
+        // @ts-expect-error
+        await supabaseBrowser
+          .from('profiles')
+          .update({ email: trimmedEmail })
+          .eq('id', data.user.id)
+      } catch (e) {
+        console.warn('[auth/signup] could not update profile email:', e)
+      }
     }
 
     if (data.session) {
@@ -77,7 +97,7 @@ function SignupContent() {
     }
 
     const { error: signInErr } = await supabaseBrowser.auth.signInWithPassword({
-      email,
+      email: authEmail,
       password,
     })
 
@@ -85,6 +105,19 @@ function SignupContent() {
       setSuccess(true)
       setSubmitting(false)
       return
+    }
+
+    // After successful auto-login, ensure email is saved
+    if (data?.user?.id) {
+      try {
+        // @ts-expect-error
+        await supabaseBrowser
+          .from('profiles')
+          .update({ email: trimmedEmail })
+          .eq('id', data.user.id)
+      } catch (e) {
+        // silent
+      }
     }
 
     router.push(redirectTo)
@@ -175,6 +208,31 @@ function SignupContent() {
                   autoComplete="tel"
                   required
                 />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+                  <Mail className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                  الإيميل
+                  <span className="text-[10px] font-normal text-gray-400 normal-case tracking-normal mr-auto flex items-center gap-1">
+                    <KeyRound className="w-2.5 h-2.5" />
+                    لاسترجاع كلمة السر
+                  </span>
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
+                  dir="ltr"
+                  style={{ textAlign: 'right' }}
+                  autoComplete="email"
+                  required
+                />
+                <p className="text-[11px] text-gray-500 mt-1.5 leading-relaxed">
+                  💡 محتاجينه عشان نقدر نساعدك تستعيد كلمة السر لو نسيتها
+                </p>
               </div>
 
               <div>

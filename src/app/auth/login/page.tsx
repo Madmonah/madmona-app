@@ -7,7 +7,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
 import { saveAccount } from '@/lib/saved-accounts'
 import {
-  ArrowRight, Phone, Lock, AlertCircle, Loader2, LogIn, Sparkles,
+  ArrowRight, Phone, Lock, AlertCircle, Loader2, LogIn, Sparkles, KeyRound,
 } from 'lucide-react'
 
 function LoginContent() {
@@ -143,10 +143,19 @@ function LoginContent() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Lock className="w-3.5 h-3.5 text-[#1F5F3F]" />
-                  كلمة السر
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-gray-700 flex items-center gap-1.5 uppercase tracking-wider">
+                    <Lock className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                    كلمة السر
+                  </label>
+                  <Link
+                    href="/auth/forgot-password"
+                    className="text-[11px] font-bold text-[#1F5F3F] hover:underline flex items-center gap-1"
+                  >
+                    <KeyRound className="w-3 h-3" />
+                    نسيتها؟
+                  </Link>
+                </div>
                 <input
                   type="password"
                   value={password}
