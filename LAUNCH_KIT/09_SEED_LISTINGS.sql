@@ -7,6 +7,8 @@
 --
 -- Run AFTER 01_CATEGORIES_TO_ADD.sql in Supabase SQL Editor:
 -- https://supabase.com/dashboard/project/mjhflxpxunwycbiquoig/sql/new
+--
+-- v2: Fixed listing #10 column count bug (added min_booking_hours)
 -- ============================================================================
 
 -- Madmona supplier_id (constant throughout)
@@ -240,8 +242,8 @@ VALUES
 -- 📸 EQUIPMENT (2 listings)
 -- ============================================================================
 
--- 10. Sony A7IV Kit
-INSERT INTO listings (id, supplier_id, category_id, title, description, city, district, address, status, slug, published_at)
+-- 10. Sony A7IV Kit  ← FIXED: added min_booking_hours to columns
+INSERT INTO listings (id, supplier_id, category_id, title, description, city, district, address, status, slug, published_at, min_booking_hours)
 VALUES (
   'a0000010-0000-0000-0000-000000000010'::uuid,
   '7310f6ef-e474-4ef8-8b8a-388b5e1f5694',

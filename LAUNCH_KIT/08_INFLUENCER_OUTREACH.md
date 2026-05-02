@@ -2,61 +2,36 @@
 
 ## 🎯 الاستراتيجية
 
-**مش الـbig influencers** (مكلفين جداً ومفعش conversion 
-ضعيف). بدلاً من ذلك:
+استخدم **micro-influencers** (10K-100K متابع) متخصصين في category معينة + **engagement عالي** (>3%).
 
-✅ **Micro-influencers**: 10K-100K متابع
-✅ **متخصصين** في category معينة (تصوير، عقارات، إلخ)
-✅ **Engagement عالي** (>3% engagement rate)
-✅ **مصريين فعلاً**
-
----
-
-## 💰 الـbudget المقترح للـinfluencers
-
-**3,000-5,000 ج.م شهرياً** (من إجمالي الـ40,000 ج budget)
+## 💰 Budget: 5,000 ج/شهر
 
 التوزيع:
-- 5 micro-influencers × 500-1000 ج لكل = 2500-5000 ج
-- أو: 2 mid-tier × 2000 ج = 4000 ج
+- 5 micro-influencers × 500-1000 ج لكل
+- أو: 2 mid-tier × 2,000 ج
 
 ---
 
-## 📋 قائمة Categories اللي محتاج عليها influencers
+## 🎁 العرض اللي تقدمه للـinfluencer
 
-### 1. Photography Influencers (لـEquipment Category)
-**استهدف**: مصورين Egyptian موثقين على Instagram/YouTube
-**ابحث في Instagram عن**: 
-- #egyptianphotographer
-- #photographyegypt
-- #cairophotographer
+### للـmicro (10K-30K):
+**Barter Deal**:
+1. تجربة مجانية لخدمة من المنصة (شقة، كاميرا، DJ)
+2. كومسيون 15% على كل حجز يجي من خلالهم (referral code)
+3. Featured spotlight على Madmona social
 
-**Sample profiles** (search by yourself):
-- مصورين فلاش مصريين
-- يوتيوبرز Egyptian تكنولوجيا
+### للـmid-tier (30K-100K):
+**Paid + Performance**:
+1. مبلغ ثابت: 1500-3000 ج
+2. كومسيون 10% على الـreferrals
+3. تجربة مجانية للمحتوى
 
-### 2. Real Estate Influencers (لـProperties)
-**استهدف**: real estate accounts، travel bloggers مصريين
-**ابحث**: 
-- #ساحل_شمالي
-- #بيوت_مصر
-- #الساحل_2026
-
-### 3. Wedding/Events Influencers (لـEvents)
-**استهدف**: wedding planners، bridal accounts مصرية
-**ابحث**:
-- #afra7_misr
-- #wedding_egypt
-- #فرح_مصري
-
-### 4. Lifestyle/General (لـAll Categories)
-**استهدف**: lifestyle influencers بـegyptian audience
-**ابحث**:
-- مدونين مصريين 30-50K متابع
+### للـmacro (100K+):
+**اعمل skip — مكلف ومش worth it للـlaunch.**
 
 ---
 
-## 📧 Email/DM Templates
+## 📧 Templates
 
 ### Template 1: First Contact (Cold)
 
@@ -73,11 +48,15 @@
 الـ[photography/wedding/real estate] في مصر.
 
 عندي اقتراح ممكن يهمك:
-1. تجربة مجانية للمنصة (ولو لـ100 يوم)
+1. تجربة مجانية لخدمة من اختيارك على المنصة
 2. أنت تعمل review honest على page بتاعك
-3. كومسيون 15% على كل sign-up جديد بيجي من خلالك
+3. كومسيون 15% على كل حجز جديد بيجي من خلالك (referral code)
 
-عرض شفاف — مش بنطلب صفقة مدفوعة، بنطلب رأيك الحقيقي.
+عرض شفاف — مش بنطلب صفقة مدفوعة للأقل تير، بنطلب رأيك الحقيقي.
+
+🎁 المنصة فيها عرض حالي ممكن يكون موضوع جذاب لمحتواك:
+- ٠٪ عمولة للموردين الجداد لأول 30 يوم
+- كاش باك 50 ج للعملاء الجداد
 
 لو مهتم، خليني أعرف وأبعتلك التفاصيل.
 
@@ -86,7 +65,7 @@
 +201002229982
 ```
 
-### Template 2: للـbig influencers (paid offer)
+### Template 2: Mid-tier Paid Offer
 
 ```
 [اسمه]،
@@ -97,14 +76,19 @@
 بحب أعرض عليك paid partnership لمنصتنا الجديدة.
 
 العرض:
-✓ مبلغ مدفوع: __ ج (نتفق عليه)
+✓ مبلغ مدفوع: 2,000 ج
 ✓ Story مجمعة (3-5 stories) عن المنصة
 ✓ Reel/Post واحد (60 ثانية)
 ✓ Bio link لمدة أسبوع
+✓ كومسيون 10% على الـreferrals بعد الفترة
 
 المنصة:
 "خدمات مضمونة" - أول منصة مصرية لكل ما يتأجر بضمان كامل.
 6 categories: مساحات، عقارات، مركبات، معدات، مناسبات، خدمات.
+
+🎁 موضوع جذاب لمحتواك:
+- العرض الـ٠٪ عمولة للموردين (نجاح story لأي حد عنده شقة/عربية)
+- الكاش باك للعملاء (نجاح story لأي حد بيدور على خدمة)
 
 محتوى ممكن أوفر:
 - صور high-res
@@ -129,11 +113,11 @@
 أحياناً، وأنا عندي منصة جديدة تأجير.
 
 العرض:
-1. سجلني خدمتك على المنصة (أنا بساعدك في ذلك)
+1. سجلني خدمتك على المنصة — ٠٪ عمولة لأول 30 يوم
 2. أنا بعمل featured spotlight على Madmona social
 3. أنت بتعمل share على account بتاعك
 
-النتيجة: زيادة exposure للاتنين.
+النتيجة: زيادة exposure للاتنين + مكسب مالي ليك بدون عمولة لشهر.
 
 اهتمامك؟
 
@@ -143,8 +127,6 @@
 ---
 
 ## 🎬 Sample Influencer Brief
-
-لما influencer يوافق، ابعتله الـbrief ده:
 
 ```
 Hi [Name],
@@ -158,12 +140,15 @@ DELIVERABLES:
 - 1 Reel (60 ثانية)
 - 1 Post (regular feed)
 
-KEY MESSAGES (مش لازم كلهم بنفس الـtone، اختار اللي يناسبك):
+KEY MESSAGES:
 1. "خدمات مضمونة - أول منصة مصرية لكل ما يتأجر"
 2. "كل المنصة موثقة بضمان كامل"
 3. "حجز فوري وشفافية في الأسعار"
 4. URL: madmonacairo.com
-5. Code: [INFLUENCER_CODE] للخصم 10%
+5. **العرض الحالي**: 
+   - للموردين: ٠٪ عمولة لأول 30 يوم
+   - للعملاء: كاش باك 50 ج على أول حجز
+6. **كود ريفيرال خاص بك**: [INFLUENCER_NAME_50]
 
 DO's:
 - استخدم لغتك الطبيعية
@@ -173,13 +158,13 @@ DO's:
 DON'T's:
 - ما تستخدمش "منصة" بشكل مكرر
 - ما تكتبش ad واضح من الأول
-- ما تستخدمش buzz words ("revolutionizing", "groundbreaking")
+- ما تستخدمش buzz words
 
 ASSETS PROVIDED:
 - Logo (link)
-- Brand colors guide (link)
+- Brand colors guide
 - 5 screenshots من المنصة
-- 3 testimonials لو محتاج
+- 3 testimonials
 
 PAYMENT:
 - 50% upfront
@@ -197,43 +182,47 @@ DEADLINE FOR PUBLISH: [Date]
 
 ## 📊 Tracking System
 
-استخدم Google Sheet بسيط:
+استخدم Google Sheet:
 
-| الـInfluencer | المنصة | Followers | الـRate | الـStatus | الـSign-ups | الـBookings | الـROI |
+| الـInfluencer | المنصة | Followers | الـRate | الـStatus | Sign-ups | Bookings | الـROI |
 |---|---|---|---|---|---|---|---|
 | [Name] | IG | 15K | 1500 ج | Posted | 23 | 4 | جيد |
-| ... | ... | ... | ... | ... | ... | ... | ... |
 
 **تتبع لكل واحد**:
-- Custom code للـdiscount
+- كود ريفيرال خاص (مثلاً: ALI50, NOOR50)
 - UTM-tagged link
-- Sign-ups attributed to هذا الـcode
-- Bookings made
-- ROI calculation
+- Sign-ups attributed to هذا الكود
+- Bookings made من خلاله
+- ROI
 
 ---
 
-## 🎯 Top Targets في مصر (ابحث عنهم)
+## 🎯 Categories اللي محتاج عليها influencers
 
 ### Photography:
-- مصورين اشتراكاتهم 30-50K
-- يوتيوبرز camera reviews
+- مصورين Egyptian موثقين
+- Hashtags: #egyptianphotographer #photographyegypt
+- العرض الجذاب ليهم: تأجير معدات بـ٠٪ عمولة
 
 ### Real Estate:
-- "Real estate Egypt" accounts
-- Travel/Sahel content creators
+- Real estate accounts، travel bloggers
+- Hashtags: #ساحل_شمالي #بيوت_مصر #الساحل_2026
+- العرض الجذاب: شقق بضمان
 
 ### Wedding/Events:
-- Wedding planners معروفين على instagram
-- Bridal photographers
+- Wedding planners، bridal accounts
+- Hashtags: #afra7_misr #wedding_egypt
+- العرض الجذاب: DJs ومصورين بكاش باك
 
-### General Lifestyle:
-- مصريين 50-100K متابع
-- Engagement rate >3%
+### Lifestyle/General:
+- مصريين 30-50K متابع
+- Engagement >3%
+- العرض الجذاب: المنصة كمفهوم جديد
 
 ### B2B/Business:
 - شخصيات على LinkedIn مصرية
 - Business podcasters
+- العرض الجذاب: ٠٪ عمولة للموردين الجداد
 
 ---
 

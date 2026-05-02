@@ -2,37 +2,62 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { Sparkles, X, ArrowLeft, Gift } from 'lucide-react'
+import { Sparkles, X, ArrowLeft } from 'lucide-react'
 
 // ============================================================================
-// LaunchBanner — promotional banner for launch week
+// LaunchBanner — DOUBLE OFFER promotional banner
+//
+// Customer offer: 50 EGP cashback on first booking
+// Supplier offer: 0% commission for first 30 days
 //
 // - Appears below the TopNav + FinancialTicker
 // - Animates with subtle pulse to grab attention
 // - Dismissible (saves to localStorage)
 // - Links to /launch page
-// - Auto-hides after launch week (May 15, 2026)
+// - Auto-rotates between two messages every 4 seconds
+// - Auto-hides after launch period
 // ============================================================================
 
-const LAUNCH_END = new Date('2026-05-15T23:59:59') // adjust as needed
-const STORAGE_KEY = 'madmona_launch_banner_dismissed_v1'
+const LAUNCH_END = new Date('2026-06-15T23:59:59')
+const STORAGE_KEY = 'madmona_launch_banner_dismissed_v2'
+const ROTATION_MS = 4500
+
+const MESSAGES = [
+  {
+    badge: 'للعملاء',
+    text: 'كاش باك ٥٠ ج على أول حجز',
+    sublabel: 'ساري لأول ١٠٠ عميل',
+    color: 'from-[#1F5F3F] via-[#2d7a52] to-[#1F5F3F]',
+    cta: 'احجز دلوقتي',
+  },
+  {
+    badge: 'للموردين',
+    text: '٠٪ عمولة لأول ٣٠ يوم',
+    sublabel: 'سجّل خدمتك مجاناً',
+    color: 'from-[#B8860B] via-[#D4A12A] to-[#B8860B]',
+    cta: 'سجّل عرضك',
+  },
+]
 
 export default function LaunchBanner() {
   const [visible, setVisible] = useState(false)
+  const [index, setIndex] = useState(0)
 
   useEffect(() => {
-    // Don't show if dismissed
-    if (typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEY)) {
-      return
-    }
-    // Don't show after launch period
-    if (Date.now() > LAUNCH_END.getTime()) {
-      return
-    }
-    // Slight delay so it doesn't flash on load
+    if (typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEY)) return
+    if (Date.now() > LAUNCH_END.getTime()) return
     const t = setTimeout(() => setVisible(true), 800)
     return () => clearTimeout(t)
   }, [])
+
+  // Auto-rotate between offers
+  useEffect(() => {
+    if (!visible) return
+    const t = setInterval(() => {
+      setIndex(i => (i + 1) % MESSAGES.length)
+    }, ROTATION_MS)
+    return () => clearInterval(t)
+  }, [visible])
 
   const handleDismiss = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -45,10 +70,12 @@ export default function LaunchBanner() {
 
   if (!visible) return null
 
+  const current = MESSAGES[index]
+
   return (
     <Link
       href="/launch"
-      className="block bg-gradient-to-l from-[#B8860B] via-[#D4A12A] to-[#B8860B] text-white py-2.5 px-4 no-underline group hover:brightness-110 transition-all relative overflow-hidden"
+      className={`block bg-gradient-to-l ${current.color} text-white py-2.5 px-4 no-underline group hover:brightness-110 transition-all relative overflow-hidden`}
       dir="rtl"
     >
       {/* Animated shine effect */}
@@ -63,22 +90,20 @@ export default function LaunchBanner() {
 
           <Sparkles className="w-4 h-4 flex-shrink-0 hidden md:block" />
 
-          <p className="text-xs md:text-sm font-bold leading-tight truncate">
-            <span className="inline-block bg-white/20 backdrop-blur px-2 py-0.5 rounded text-[10px] md:text-xs ml-2">
-              LAUNCH WEEK
+          <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
+            <span className="inline-block bg-white/25 backdrop-blur px-2 py-0.5 rounded text-[10px] md:text-xs font-black flex-shrink-0">
+              {current.badge}
             </span>
-            <span className="hidden sm:inline">🎁 خصم </span>
-            <span className="font-black">15%</span> أول حجز ·
-            <span className="hidden sm:inline"> كود </span>
-            <span className="font-black bg-white/30 px-1.5 py-0.5 rounded text-[11px] md:text-xs mx-1">
-              LAUNCH15
-            </span>
-          </p>
+            <p className="text-xs md:text-sm font-bold leading-tight truncate transition-all duration-500" key={index}>
+              <span className="font-black">{current.text}</span>
+              <span className="hidden sm:inline opacity-80 mr-2">· {current.sublabel}</span>
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className="hidden md:inline-flex items-center gap-1 text-xs font-bold group-hover:gap-2 transition-all">
-            سجّل دلوقتي
+            {current.cta}
             <ArrowLeft className="w-3.5 h-3.5" />
           </span>
           <button
@@ -90,6 +115,18 @@ export default function LaunchBanner() {
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
+      </div>
+
+      {/* Dot indicators showing the 2 offers */}
+      <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-1">
+        {MESSAGES.map((_, i) => (
+          <span
+            key={i}
+            className={`h-0.5 rounded-full transition-all duration-500 ${
+              i === index ? 'w-4 bg-white' : 'w-1.5 bg-white/40'
+            }`}
+          />
+        ))}
       </div>
 
       <style jsx>{`

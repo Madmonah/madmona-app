@@ -6,12 +6,16 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   Sparkles, ArrowLeft, CheckCircle, Loader2, Building2, Camera,
   Home, Car, Music, Wrench, Mail, Phone, Users, Zap, Gift,
+  TrendingUp, Calendar,
 } from 'lucide-react'
 import TopNav from '@/components/TopNav'
 
 // ============================================================================
-// /launch — Special launch landing page
-// Captures emails + early signups, shows social proof
+// /launch — Launch landing page
+//
+// DOUBLE OFFER strategy:
+//   • Customers: 50 EGP cashback on first booking (min 500 EGP)
+//   • Suppliers: 0% commission for first 30 days
 // ============================================================================
 
 const CATEGORIES = [
@@ -33,7 +37,6 @@ export default function LaunchPage() {
   const [error, setError] = useState<string | null>(null)
   const [signupCount, setSignupCount] = useState<number | null>(null)
 
-  // Show live signup count for social proof
   useEffect(() => {
     (async () => {
       try {
@@ -42,11 +45,10 @@ export default function LaunchPage() {
           .from('profiles')
           .select('id', { count: 'exact', head: true })
         if (typeof count === 'number') {
-          // Display number padded for impact (min 100)
           setSignupCount(Math.max(count, 100))
         }
       } catch {
-        setSignupCount(127) // fallback social proof number
+        setSignupCount(127)
       }
     })()
   }, [])
@@ -63,7 +65,6 @@ export default function LaunchPage() {
     setSubmitting(true)
 
     try {
-      // Save as a "lead" in DB
       // @ts-expect-error
       const { error: dbErr } = await supabaseBrowser
         .from('leads')
@@ -99,9 +100,13 @@ export default function LaunchPage() {
             تم تسجيلك بنجاح! 🎉
           </h1>
           <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-            هنتواصل معاك على واتساب في خلال 24 ساعة بكود الـlaunch الخاص بيك
+            هنتواصل معاك على واتساب في خلال 24 ساعة.
             <br />
-            <span className="font-bold text-[#B8860B]">مع خصم 15% على أول حجز/listing 🎁</span>
+            {type === 'customer' ? (
+              <span className="font-bold text-[#1F5F3F]">عرضك جاهز: كاش باك ٥٠ ج على أول حجز 💚</span>
+            ) : (
+              <span className="font-bold text-[#B8860B]">عرضك جاهز: ٠٪ عمولة لأول ٣٠ يوم 🎁</span>
+            )}
           </p>
 
           <div className="bg-white rounded-3xl shadow-luxe p-6 mb-6">
@@ -130,6 +135,64 @@ export default function LaunchPage() {
     )
   }
 
+  // Customer benefits
+  const customerBenefits = [
+    {
+      icon: <Gift className="w-5 h-5" />,
+      color: 'bg-[#1F5F3F]/10 text-[#1F5F3F]',
+      title: 'كاش باك ٥٠ ج',
+      desc: 'على أول حجز فوق ٥٠٠ ج · لأول ١٠٠ عميل بس',
+    },
+    {
+      icon: <Zap className="w-5 h-5" />,
+      color: 'bg-blue-100 text-blue-700',
+      title: 'Early Access',
+      desc: 'ادخل قبل الجمهور العام واختار أحسن الـlistings',
+    },
+    {
+      icon: <Phone className="w-5 h-5" />,
+      color: 'bg-green-100 text-green-700',
+      title: 'دعم شخصي',
+      desc: 'مكالمة 15 دقيقة مع فريقنا تساعدك تستفيد بأقصى حد',
+    },
+    {
+      icon: <Mail className="w-5 h-5" />,
+      color: 'bg-purple-100 text-purple-700',
+      title: 'نشرة الـinsiders',
+      desc: 'أحدث listings وعروض قبل ما تتنشر للعامة',
+    },
+  ]
+
+  // Supplier benefits — STRONG offer
+  const supplierBenefits = [
+    {
+      icon: <TrendingUp className="w-5 h-5" />,
+      color: 'bg-[#B8860B]/10 text-[#B8860B]',
+      title: '٠٪ عمولة لأول ٣٠ يوم',
+      desc: 'كل اللي تكسبه في الشهر الأول — يخصك إنت 100%',
+    },
+    {
+      icon: <Calendar className="w-5 h-5" />,
+      color: 'bg-blue-100 text-blue-700',
+      title: 'تسجيل مجاني',
+      desc: 'مفيش رسوم انضمام · نشر لـlistings غير محدود',
+    },
+    {
+      icon: <Sparkles className="w-5 h-5" />,
+      color: 'bg-purple-100 text-purple-700',
+      title: 'Featured في الـmarketplace',
+      desc: 'أول 7 أيام listingك في الصدارة مجاناً',
+    },
+    {
+      icon: <Phone className="w-5 h-5" />,
+      color: 'bg-green-100 text-green-700',
+      title: 'Onboarding شخصي',
+      desc: 'فريقنا بيساعدك تعمل أول listing وتجيب أول حجز',
+    },
+  ]
+
+  const benefits = type === 'customer' ? customerBenefits : supplierBenefits
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1F5F3F]/5 via-white to-[#B8860B]/5" dir="rtl">
       <TopNav />
@@ -151,9 +214,21 @@ export default function LaunchPage() {
           <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto mb-6">
             أول منصة مصرية بتجمع كل اللي يتأجر في مكان واحد —
             <span className="text-gray-900 font-bold"> بضمان كامل</span>
-            <br />
-            وعروض حصرية للأسبوع الأول 🎁
           </p>
+
+          {/* Double Offer Highlight */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto mb-8">
+            <div className="bg-gradient-to-br from-[#1F5F3F] to-[#2d7a52] text-white rounded-2xl p-4 shadow-elevated">
+              <p className="text-[10px] font-black tracking-widest uppercase opacity-80 mb-1">للعملاء</p>
+              <p className="text-2xl md:text-3xl font-black mb-1">كاش باك ٥٠ ج</p>
+              <p className="text-xs opacity-90">على أول حجز · ١٠٠ عميل بس</p>
+            </div>
+            <div className="bg-gradient-to-br from-[#B8860B] to-[#D4A12A] text-white rounded-2xl p-4 shadow-elevated">
+              <p className="text-[10px] font-black tracking-widest uppercase opacity-80 mb-1">للموردين</p>
+              <p className="text-2xl md:text-3xl font-black mb-1">٠٪ عمولة</p>
+              <p className="text-xs opacity-90">لأول ٣٠ يوم · غير محدود</p>
+            </div>
+          </div>
 
           {signupCount !== null && (
             <p className="text-sm text-gray-500 flex items-center justify-center gap-2">
@@ -169,7 +244,7 @@ export default function LaunchPage() {
         {/* Categories */}
         <section className="mb-12">
           <p className="text-center text-xs font-black tracking-widest uppercase text-[#B8860B] mb-6">
-            6 فئات · مئات الـlistings
+            ٦ فئات · مئات الـlistings
           </p>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4 max-w-3xl mx-auto">
             {CATEGORIES.map((cat, i) => (
@@ -199,7 +274,7 @@ export default function LaunchPage() {
                 سجّل دلوقتي
               </h2>
               <p className="text-sm text-gray-600">
-                خصم 15% على أول حجز/listing + كود حصري
+                {type === 'customer' ? 'اخد الكاش باك على أول حجز' : 'اعمل دخل بدون عمولة لأول 30 يوم'}
               </p>
             </div>
 
@@ -216,7 +291,7 @@ export default function LaunchPage() {
               >
                 <Zap className="w-5 h-5 mx-auto mb-1" />
                 <span className="block">عايز أحجز</span>
-                <span className="text-[10px] font-normal opacity-70">أبحث عن خدمة</span>
+                <span className="text-[10px] font-normal opacity-70">٥٠ ج كاش باك</span>
               </button>
               <button
                 type="button"
@@ -229,7 +304,7 @@ export default function LaunchPage() {
               >
                 <Building2 className="w-5 h-5 mx-auto mb-1" />
                 <span className="block">عندي خدمة</span>
-                <span className="text-[10px] font-normal opacity-70">عايز أعرض</span>
+                <span className="text-[10px] font-normal opacity-70">٠٪ عمولة ٣٠ يوم</span>
               </button>
             </div>
 
@@ -286,7 +361,11 @@ export default function LaunchPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-[#1F5F3F] hover:bg-[#1F5F3F]/90 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-elevated hover:shadow-luxe hover:-translate-y-0.5"
+                className={`w-full text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 ${
+                  type === 'customer'
+                    ? 'bg-[#1F5F3F] hover:bg-[#1F5F3F]/90'
+                    : 'bg-[#B8860B] hover:bg-[#B8860B]/90'
+                }`}
               >
                 {submitting ? (
                   <>
@@ -296,7 +375,7 @@ export default function LaunchPage() {
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5" />
-                    <span>سجّلني واخدمي على الكود</span>
+                    <span>{type === 'customer' ? 'سجّلني واخدمي على الكاش باك' : 'ابدأ بدون عمولة دلوقتي'}</span>
                   </>
                 )}
               </button>
@@ -310,45 +389,32 @@ export default function LaunchPage() {
           {/* Benefits */}
           <div className="space-y-4 order-1 md:order-2">
             <h3 className="text-2xl font-black text-gray-900 mb-2">
-              ليه تسجل دلوقتي؟
+              {type === 'customer' ? 'ليه تسجل دلوقتي؟' : 'ليه تنضم كمورد دلوقتي؟'}
             </h3>
 
-            <BenefitCard
-              icon={<Gift className="w-5 h-5" />}
-              color="bg-[#B8860B]/10 text-[#B8860B]"
-              title="خصم 15% أول حجز"
-              desc="كود حصري صالح لأول 100 شخص يسجل في الـlaunch week"
-            />
-            <BenefitCard
-              icon={<Zap className="w-5 h-5" />}
-              color="bg-blue-100 text-blue-700"
-              title="early access"
-              desc="ادخل الموقع قبل الجمهور العام، اختار أحسن listings"
-            />
-            <BenefitCard
-              icon={<Phone className="w-5 h-5" />}
-              color="bg-green-100 text-green-700"
-              title="onboarding شخصي"
-              desc="مكالمة 15 دقيقة مع فريقنا تساعدك تستفيد بأقصى حد"
-            />
-            <BenefitCard
-              icon={<Mail className="w-5 h-5" />}
-              color="bg-purple-100 text-purple-700"
-              title="نشرة الـinsiders"
-              desc="أحدث listings وعروض قبل ما تتنشر للعامة"
-            />
+            {benefits.map((b, i) => (
+              <BenefitCard
+                key={`${type}-${i}`}
+                icon={b.icon}
+                color={b.color}
+                title={b.title}
+                desc={b.desc}
+              />
+            ))}
           </div>
         </section>
 
         {/* Trust signals */}
         <section className="mt-12 text-center">
-          <p className="text-xs text-gray-500 mb-4">موصى بها من:</p>
+          <p className="text-xs text-gray-500 mb-4">منصة آمنة وشفافة:</p>
           <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-400">
-            <span>📰 المال</span>
+            <span>✅ موردين موثقين بـKYC</span>
             <span>•</span>
-            <span>🏢 Madmona Coworking</span>
+            <span>🔒 مدفوعات آمنة</span>
             <span>•</span>
-            <span>📰 Daily News Egypt</span>
+            <span>⚡ حجز فوري</span>
+            <span>•</span>
+            <span>💚 ضمان مضمونة</span>
           </div>
         </section>
       </main>
