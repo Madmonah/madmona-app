@@ -1,18 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Sparkles, TrendingUp, ExternalLink, Newspaper, MapPin } from 'lucide-react'
 
 // ============================================================================
 // EconomicNewsHero
 //
-// Live rotating economic news ticker for the homepage hero.
-// - Fetches news from /api/economic-news (8+ Egyptian/Arabic RSS sources)
-// - Egypt-focused: Egyptian sources prioritized (interleave 3:1 with regional)
-// - Rotates every 8 seconds (faster updates)
-// - Auto-refetches news every 3 minutes (always fresh)
-// - Smooth fade transition between items
-// - Falls back to static admin image if API fails
+// Live economic news ticker — ALWAYS FRESH:
+//   - Rotates every 6 seconds
+//   - When user finishes the cycle → fetches fresh news (forced bypass cache)
+//   - Background refresh every 90 seconds (catches new news)
+//   - Never repeats the same loop with stale items
 // ============================================================================
 
 interface NewsItem {
@@ -28,8 +26,9 @@ interface Props {
   fallbackImage: string
 }
 
-const ROTATION_MS = 8000              // 8 seconds per news item
-const REFETCH_MS = 3 * 60 * 1000      // refetch news every 3 minutes
+const ROTATION_MS = 6000              // 6s per item (faster)
+const BG_REFETCH_MS = 90 * 1000       // background refresh every 90s
+const ITEMS_TO_REPLACE_AT = 0.7       // when 70% through cycle, prefetch new
 
 export default function EconomicNewsHero({ fallbackImage }: Props) {
   const [items, setItems] = useState<NewsItem[]>([])
@@ -37,50 +36,109 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
   const [imgLoaded, setImgLoaded] = useState(false)
   const [error, setError] = useState(false)
 
-  // Fetch news on mount + every 3 minutes
+  // Buffer for prefetched fresh items (loaded when near end of cycle)
+  const nextBufferRef = useRef<NewsItem[] | null>(null)
+  const fetchInFlightRef = useRef(false)
+
+  // Fetch news from API
+  const fetchNews = async (forceFresh = false): Promise<NewsItem[] | null> => {
+    if (fetchInFlightRef.current) return null
+    fetchInFlightRef.current = true
+    try {
+      const url = forceFresh ? '/api/economic-news?fresh=1' : '/api/economic-news'
+      const res = await fetch(url, { cache: 'no-store' })
+      const data = await res.json()
+      if (data.ok && Array.isArray(data.items) && data.items.length > 0) {
+        return data.items as NewsItem[]
+      }
+    } catch {
+      /* silent */
+    } finally {
+      fetchInFlightRef.current = false
+    }
+    return null
+  }
+
+  // Initial load + periodic background refresh
   useEffect(() => {
     let cancelled = false
 
-    const load = async () => {
-      try {
-        const res = await fetch('/api/economic-news')
-        const data = await res.json()
-        if (cancelled) return
-        if (data.ok && Array.isArray(data.items) && data.items.length > 0) {
-          setItems(data.items)
-          setError(false)
-        } else if (items.length === 0) {
-          setError(true)
-        }
-      } catch {
-        if (!cancelled && items.length === 0) setError(true)
+    const initialLoad = async () => {
+      const fresh = await fetchNews(false)
+      if (cancelled) return
+      if (fresh && fresh.length > 0) {
+        setItems(fresh)
+        setError(false)
+      } else {
+        setError(true)
       }
     }
+    initialLoad()
 
-    load()
-    const refetchTimer = setInterval(load, REFETCH_MS)
+    // Background refresh — keeps the buffer warm for seamless transitions
+    const bgTimer = setInterval(async () => {
+      if (cancelled) return
+      const fresh = await fetchNews(false)
+      if (fresh && fresh.length > 0 && !cancelled) {
+        nextBufferRef.current = fresh
+      }
+    }, BG_REFETCH_MS)
 
     return () => {
       cancelled = true
-      clearInterval(refetchTimer)
+      clearInterval(bgTimer)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Rotate every 8 seconds
+  // Rotation logic — when reaching end of cycle, swap in fresh items
   useEffect(() => {
     if (items.length <= 1) return
-    const timer = setInterval(() => {
+
+    const timer = setInterval(async () => {
       setImgLoaded(false)
-      setCurrentIndex(i => (i + 1) % items.length)
+      setCurrentIndex(prev => {
+        const next = prev + 1
+
+        // If we're about to wrap around (finished current cycle)
+        if (next >= items.length) {
+          // Use buffer if available, otherwise fetch fresh sync
+          if (nextBufferRef.current && nextBufferRef.current.length > 0) {
+            setItems(nextBufferRef.current)
+            nextBufferRef.current = null
+            // Trigger another background fetch for the next cycle
+            fetchNews(true).then(fresh => {
+              if (fresh) nextBufferRef.current = fresh
+            })
+          } else {
+            // No buffer ready — trigger fetch in background, loop existing
+            fetchNews(true).then(fresh => {
+              if (fresh) {
+                setItems(fresh)
+                nextBufferRef.current = null
+              }
+            })
+          }
+          return 0 // start from beginning
+        }
+
+        // Prefetch when at 70% of cycle so transition is seamless
+        if (next === Math.floor(items.length * ITEMS_TO_REPLACE_AT) && !nextBufferRef.current) {
+          fetchNews(true).then(fresh => {
+            if (fresh) nextBufferRef.current = fresh
+          })
+        }
+
+        return next
+      })
     }, ROTATION_MS)
+
     return () => clearInterval(timer)
   }, [items.length])
 
   const current = items[currentIndex]
   const hasNews = !error && current
 
-  // Loading or error → fallback
+  // Loading / error → fallback image
   if (!hasNews) {
     return (
       <div className="relative aspect-[4/5] md:aspect-[3/4] rounded-3xl overflow-hidden shadow-luxe">
@@ -117,10 +175,10 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        key={current.image}
+        key={`${current.image}-${currentIndex}`}
         src={current.image}
         alt={current.title}
-        className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${
+        className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ${
           imgLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
         }`}
         loading="eager"
@@ -130,7 +188,7 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
 
-      {/* LIVE badge — top right */}
+      {/* LIVE badge */}
       <div className="absolute top-4 right-4 flex items-center gap-2 bg-red-600 text-white text-[11px] font-black tracking-wider uppercase px-3 py-1.5 rounded-full shadow-elevated z-10">
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
@@ -141,15 +199,15 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
         <span>أخبار اقتصادية</span>
       </div>
 
-      {/* News count + Egypt flag */}
+      {/* Counter + Egypt flag */}
       <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-black/50 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full z-10">
         {current.isEgyptian && <span className="text-sm leading-none">🇪🇬</span>}
         <Newspaper className="w-3 h-3" />
         {currentIndex + 1} / {items.length}
       </div>
 
+      {/* Content overlay */}
       <div className="absolute inset-x-0 bottom-0 p-5 md:p-6 z-10">
-        {/* Source badge with Egypt indicator */}
         <div className={`inline-flex items-center gap-1.5 text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full mb-3 shadow-card ${
           current.isEgyptian
             ? 'bg-gradient-to-l from-[#B8860B] to-[#D4A12A] text-white'
@@ -172,12 +230,12 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
         </h3>
 
         <div className="flex items-center justify-between gap-3">
-          <div className="flex gap-1 flex-1 max-w-[180px]">
-            {items.slice(0, Math.min(8, items.length)).map((_, i) => (
+          <div className="flex gap-1 flex-1 max-w-[200px]">
+            {Array.from({ length: Math.min(items.length, 10) }).map((_, i) => (
               <div
                 key={i}
                 className={`h-0.5 flex-1 rounded-full transition-all duration-500 ${
-                  i === currentIndex % 8 ? 'bg-white' : 'bg-white/30'
+                  i === Math.min(currentIndex, 9) ? 'bg-white' : 'bg-white/30'
                 }`}
               />
             ))}

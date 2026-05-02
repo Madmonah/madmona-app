@@ -2,19 +2,19 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { Menu, X, Search, ChevronDown, Building2, User, LogIn, UserPlus, Compass, Sparkles, Share2 } from 'lucide-react'
+import { Menu, X, Search, ChevronDown, Building2, User, LogIn, UserPlus, Compass, Sparkles, Share2, Bell } from 'lucide-react'
 import ShareAppButton from './ShareAppButton'
+import NotificationButton from './NotificationButton'
 
 // ============================================================
 // TopNav — premium sticky glass navbar
-// Includes: Marketplace · Browse · Account · Share · Suppliers menu
+// Includes: Browse · Marketplace · Account · Notifications · Share · Suppliers
 // ============================================================
 
 export default function TopNav() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [supplierMenuOpen, setSupplierMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [shareModalTrigger, setShareModalTrigger] = useState(0) // trigger share from drawer
   const supplierMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -39,7 +39,6 @@ export default function TopNav() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Trigger share programmatically from mobile drawer
   const triggerShare = async () => {
     setMobileOpen(false)
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
@@ -49,21 +48,14 @@ export default function TopNav() {
           text: 'شوف خدمات مضمونة 🟢 - منصة مصرية بتجمع كل اللي يتأجر من موردين معتمدين.',
           url: 'https://madmonacairo.com',
         })
-        return
-      } catch {
-        // fallthrough to programmatic click
-      }
+      } catch {}
     }
-    // Trigger button click programmatically
-    setShareModalTrigger(t => t + 1)
   }
 
   return (
     <>
       <header className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'glass border-b border-white/40 shadow-soft'
-          : 'bg-transparent'
+        scrolled ? 'glass border-b border-white/40 shadow-soft' : 'bg-transparent'
       }`}>
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           {/* Logo */}
@@ -98,7 +90,10 @@ export default function TopNav() {
               حسابي
             </Link>
 
-            {/* SHARE BUTTON — desktop */}
+            {/* Notification button — desktop */}
+            <NotificationButton variant="icon-only" />
+
+            {/* Share button — desktop */}
             <ShareAppButton variant="compact" />
 
             <div className="relative" ref={supplierMenuRef}>
@@ -140,9 +135,8 @@ export default function TopNav() {
 
           {/* Mobile actions */}
           <div className="md:hidden flex items-center gap-2">
-            {/* Share icon button — mobile */}
+            <NotificationButton variant="icon-only" />
             <ShareAppButton variant="icon-only" />
-
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
@@ -171,7 +165,7 @@ export default function TopNav() {
                   <p className="text-[9px] text-gray-500 font-bold tracking-[0.2em]">MADMONA</p>
                 </div>
               </div>
-              <button type="button" onClick={() => setMobileOpen(false)} className="w-9 h-9 hover:bg-gray-50 rounded-xl flex items-center justify-center transition-colors" aria-label="إغلاق">
+              <button type="button" onClick={() => setMobileOpen(false)} className="w-9 h-9 hover:bg-gray-50 rounded-xl flex items-center justify-center transition-colors">
                 <X className="w-5 h-5 text-gray-700" />
               </button>
             </div>
@@ -210,7 +204,7 @@ export default function TopNav() {
                 </div>
               </Link>
 
-              {/* Share button — mobile drawer */}
+              {/* Share button */}
               <button
                 type="button"
                 onClick={triggerShare}
