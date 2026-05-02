@@ -2,13 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { Menu, X, Search, ChevronDown, Building2, User, LogIn, UserPlus, Compass, Sparkles, Share2, Bell } from 'lucide-react'
+import { Menu, X, ChevronDown, Building2, User, LogIn, UserPlus, Compass, Sparkles, Share2 } from 'lucide-react'
 import ShareAppButton from './ShareAppButton'
 import NotificationButton from './NotificationButton'
 
 // ============================================================
 // TopNav — premium sticky glass navbar
-// Includes: Browse · Marketplace · Account · Notifications · Share · Suppliers
+// Single unified brand: "خدمات مضمونة" → /marketplace
 // ============================================================
 
 export default function TopNav() {
@@ -44,7 +44,7 @@ export default function TopNav() {
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
       try {
         await navigator.share({
-          title: 'مضمونة - منصة حجز الخدمات',
+          title: 'خدمات مضمونة - منصة الحجز',
           text: 'شوف خدمات مضمونة 🟢 - منصة مصرية بتجمع كل اللي يتأجر من موردين معتمدين.',
           url: 'https://madmonacairo.com',
         })
@@ -70,16 +70,11 @@ export default function TopNav() {
             </div>
           </Link>
 
-          {/* Center nav (desktop) */}
+          {/* Center nav (desktop) — single unified link */}
           <nav className="hidden md:flex items-center gap-1">
-            <Link href="/browse" className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-gray-700 hover:text-[#1F5F3F] hover:bg-white/60 rounded-xl no-underline transition-all">
-              <Search className="w-4 h-4" />
-              خدمات مضمونة
-            </Link>
             <Link href="/marketplace" className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-gray-700 hover:text-[#1F5F3F] hover:bg-white/60 rounded-xl no-underline transition-all">
               <Compass className="w-4 h-4" />
-              Marketplace
-              <span className="text-[9px] font-bold bg-[#B8860B] text-white px-1.5 py-0.5 rounded-full">جديد</span>
+              خدمات مضمونة
             </Link>
           </nav>
 
@@ -90,10 +85,7 @@ export default function TopNav() {
               حسابي
             </Link>
 
-            {/* Notification button — desktop */}
             <NotificationButton variant="icon-only" />
-
-            {/* Share button — desktop */}
             <ShareAppButton variant="compact" />
 
             <div className="relative" ref={supplierMenuRef}>
@@ -176,21 +168,8 @@ export default function TopNav() {
                   <Compass className="w-5 h-5 text-[#1F5F3F]" />
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-gray-900">Marketplace</span>
-                    <span className="text-[9px] font-bold bg-[#B8860B] text-white px-1.5 py-0.5 rounded-full">جديد</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-0.5">عقارات، مركبات، معدات</p>
-                </div>
-              </Link>
-
-              <Link href="/browse" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline group transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-[#1F5F3F]/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                  <Search className="w-5 h-5 text-[#1F5F3F]" />
-                </div>
-                <div className="flex-1">
                   <p className="font-bold text-gray-900">خدمات مضمونة</p>
-                  <p className="text-xs text-gray-500 mt-0.5">في مصر الجديدة</p>
+                  <p className="text-xs text-gray-500 mt-0.5">كل اللي يتأجر</p>
                 </div>
               </Link>
 
@@ -204,7 +183,6 @@ export default function TopNav() {
                 </div>
               </Link>
 
-              {/* Share button */}
               <button
                 type="button"
                 onClick={triggerShare}

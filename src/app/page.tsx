@@ -1,16 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import {
-  Sparkles,
-  ArrowLeft,
-  Building2,
-  Compass,
-  ShieldCheck,
-  Clock,
-  Zap,
-  MapPin,
-  MessageCircle,
-  Star,
+  ArrowLeft, Compass, ShieldCheck, Clock, Zap, MapPin, MessageCircle, Star,
 } from 'lucide-react'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
@@ -21,28 +12,24 @@ import FinancialTicker from '@/components/FinancialTicker'
 import LaunchBanner from '@/components/LaunchBanner'
 
 // ============================================================
-// Home page — Premium Editorial Redesign
-// "خدمات مضمونة" branding throughout
+// Home page — Single brand: "خدمات مضمونة"
 //
 // Layout (top to bottom):
-//   1. TopNav (sticky)
-//   2. FinancialTicker (live currency + gold)
-//   3. LaunchBanner (LAUNCH WEEK 15% off — dismissible)
+//   1. TopNav
+//   2. FinancialTicker
+//   3. LaunchBanner
 //   4. Hero with live news ticker
-//   5. Categories
+//   5. Categories grid
 //   6. Featured listings
-//   7. Showcase cards
-//   8. How it works
-//   9. Supplier CTA
-//   10. Contact
-//   11. Footer
+//   7. How it works
+//   8. Supplier CTA
+//   9. Contact
+//   10. Footer
 // ============================================================
 
 const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
 
 const DEFAULT_HERO_IMAGE = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=85&auto=format&fit=crop'
-const DEFAULT_MARKETPLACE_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=85&auto=format&fit=crop'
-const DEFAULT_SPACES_IMAGE = 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&q=85&auto=format&fit=crop'
 const DEFAULT_CATEGORY_SPACES_IMG = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&auto=format&fit=crop'
 const DEFAULT_CATEGORY_PROPERTIES_IMG = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80&auto=format&fit=crop'
 const DEFAULT_CATEGORY_VEHICLES_IMG = 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80&auto=format&fit=crop'
@@ -77,9 +64,6 @@ export default async function HomePage() {
   const settings = await getSiteSettings()
 
   const HERO_IMAGE = settings.hero_image_url || DEFAULT_HERO_IMAGE
-  const MARKETPLACE_IMAGE = settings.marketplace_image_url || DEFAULT_MARKETPLACE_IMAGE
-  const SPACES_IMAGE = settings.spaces_image_url || DEFAULT_SPACES_IMAGE
-
   const SPACES_CATEGORY_IMG = settings.category_spaces_image_url || DEFAULT_CATEGORY_SPACES_IMG
   const PROPERTIES_IMG = settings.category_properties_image_url || DEFAULT_CATEGORY_PROPERTIES_IMG
   const VEHICLES_IMG = settings.category_vehicles_image_url || DEFAULT_CATEGORY_VEHICLES_IMG
@@ -89,11 +73,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-[#FAFAF7] text-right overflow-x-hidden pb-20 md:pb-0" dir="rtl">
       <TopNav />
-
-      {/* LIVE Financial Ticker — sticky strip below TopNav */}
       <FinancialTicker />
-
-      {/* LAUNCH WEEK promotional banner — dismissible */}
       <LaunchBanner />
 
       <main className="relative">
@@ -127,14 +107,15 @@ export default async function HomePage() {
                   <span className="text-gray-900 font-medium"> في مكان واحد.</span>
                 </p>
 
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link href="/marketplace" className="group inline-flex items-center justify-center gap-2 bg-[#1F5F3F] text-white px-8 py-4 rounded-full font-bold text-base shadow-elevated hover:shadow-luxe transition-all duration-300 hover:-translate-y-0.5 no-underline">
+                {/* Single unified CTA */}
+                <div>
+                  <Link
+                    href="/marketplace"
+                    className="group inline-flex items-center justify-center gap-2 bg-[#1F5F3F] text-white px-8 py-4 rounded-full font-bold text-base shadow-elevated hover:shadow-luxe transition-all duration-300 hover:-translate-y-0.5 no-underline"
+                  >
                     <Compass className="w-5 h-5" />
                     <span>اكتشف الخدمات</span>
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                  </Link>
-                  <Link href="/browse" className="group inline-flex items-center justify-center gap-2 text-gray-900 px-8 py-4 rounded-full font-bold text-base hover:bg-gray-100 transition-all duration-300 no-underline border-b-2 border-gray-900 rounded-b-none rounded-t-full">
-                    <span>خدمات مضمونة</span>
                   </Link>
                 </div>
 
@@ -172,7 +153,7 @@ export default async function HomePage() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-12 gap-3 md:gap-4">
-              <CategoryCard href="/marketplace?category=spaces" image={SPACES_CATEGORY_IMG} label="مساحات عمل" sublabel="WORKSPACES" count="٤ خيارات" className="md:col-span-6 md:row-span-2 aspect-square md:aspect-auto" size="large" />
+              <CategoryCard href="/marketplace?category=spaces" image={SPACES_CATEGORY_IMG} label="مساحات عمل" sublabel="WORKSPACES" className="md:col-span-6 md:row-span-2 aspect-square md:aspect-auto" size="large" />
               <CategoryCard href="/marketplace?category=properties" image={PROPERTIES_IMG} label="عقارات" sublabel="PROPERTIES" className="md:col-span-3 aspect-square" />
               <CategoryCard href="/marketplace?category=vehicles" image={VEHICLES_IMG} label="مركبات" sublabel="VEHICLES" className="md:col-span-3 aspect-square" />
               <CategoryCard href="/marketplace?category=equipment" image={EQUIPMENT_IMG} label="معدات" sublabel="EQUIPMENT" className="md:col-span-3 aspect-square" />
@@ -201,76 +182,8 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* BIG SHOWCASE */}
-        <section className="py-16 md:py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              <Link href="/marketplace" className="group relative block rounded-3xl overflow-hidden no-underline aspect-[4/5] md:aspect-[3/4]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={MARKETPLACE_IMAGE} alt="Madmona Marketplace" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-between">
-                  <div>
-                    <div className="inline-flex items-center gap-1.5 text-[10px] bg-[#B8860B] text-white px-3 py-1 rounded-full font-bold tracking-widest uppercase">
-                      <Sparkles className="w-3 h-3" />
-                      الجديد
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-3xl md:text-5xl font-black text-white mb-3 leading-[0.95]">
-                      Madmona
-                      <br />
-                      <span className="italic font-light">Marketplace</span>
-                    </h3>
-                    <p className="text-sm md:text-base text-white/85 leading-relaxed mb-6 max-w-md">
-                      عقارات، مركبات، معدات، وفعاليات — من موردين معتمدين على المنصة.
-                    </p>
-                    <div className="inline-flex items-center gap-2 text-white font-bold text-sm group-hover:gap-3 transition-all">
-                      <span>اكتشف الكل</span>
-                      <ArrowLeft className="w-4 h-4" />
-                    </div>
-                  </div>
-                </div>
-              </Link>
-
-              <Link href="/browse" className="group relative block rounded-3xl overflow-hidden no-underline aspect-[4/5] md:aspect-[3/4]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={SPACES_IMAGE} alt="خدمات مضمونة" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1F5F3F]/95 via-[#1F5F3F]/50 to-[#1F5F3F]/20" />
-                <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-between">
-                  <div>
-                    <div className="inline-flex items-center gap-1.5 text-[10px] bg-[#B8860B] text-white px-3 py-1 rounded-full font-bold tracking-widest uppercase">
-                      <Star className="w-3 h-3 fill-white" />
-                      الأصلي
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-3xl md:text-5xl font-black text-white mb-3 leading-[0.95]">
-                      خدمات
-                      <br />
-                      <span className="italic font-light">مضمونة</span>
-                    </h3>
-                    <p className="text-sm md:text-base text-white/90 leading-relaxed mb-6 max-w-md">
-                      مكاتب فردية، غرف اجتماعات، وجاردن في قلب مصر الجديدة. يومك الأول مجاناً.
-                    </p>
-                    <div className="grid grid-cols-3 gap-2 mb-6">
-                      <ServiceMini label="مكاتب" sublabel="من ٥٠ ج/ساعة" />
-                      <ServiceMini label="اجتماعات" sublabel="من ٢٠٠ ج" />
-                      <ServiceMini label="جاردن" sublabel="١٥٠٠ ج/مناسبة" />
-                    </div>
-                    <div className="inline-flex items-center gap-2 bg-white text-[#1F5F3F] px-5 py-2.5 rounded-full font-bold text-sm group-hover:gap-3 transition-all">
-                      <span>احجز دلوقتي</span>
-                      <ArrowLeft className="w-4 h-4" />
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          </div>
-        </section>
-
         {/* HOW IT WORKS */}
-        <section className="py-16 md:py-24">
+        <section className="py-16 md:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-14">
               <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">THE PROCESS</p>
@@ -282,7 +195,7 @@ export default async function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-              <Step num="01" title="استكشف" description="اتصفّح الـMarketplace أو ابحث في فئة معينة. شوف الأسعار والصور قبل أي قرار." icon={<Compass className="w-6 h-6" />} iconAccent="text-[#1F5F3F] bg-[#1F5F3F]/10" />
+              <Step num="01" title="استكشف" description="اتصفّح الخدمات أو ابحث في فئة معينة. شوف الأسعار والصور قبل أي قرار." icon={<Compass className="w-6 h-6" />} iconAccent="text-[#1F5F3F] bg-[#1F5F3F]/10" />
               <Step num="02" title="احجز" description="اختار الوقت اللي يناسبك واحجز فوراً. تأكيد على واتساب من المورد مباشرة." icon={<Zap className="w-6 h-6" />} iconAccent="text-[#B8860B] bg-[#B8860B]/10" />
               <Step num="03" title="استمتع" description="ادفع كاش أو InstaPay. مفيش هيدن فيز. ومتأمن إنك مش هتلاقي مفاجآت." icon={<ShieldCheck className="w-6 h-6" />} iconAccent="text-[#C2410C] bg-[#C2410C]/10" />
             </div>
@@ -304,7 +217,7 @@ export default async function HomePage() {
                   <span className="italic font-light gradient-text-gold">خلّيها تكسبلك</span>
                 </h2>
                 <p className="text-sm md:text-lg text-white/80 leading-relaxed mb-8 max-w-xl">
-                  انضم لـMadmona Marketplace، اعرض خدمتك على آلاف العملاء، واستقبل حجوزات.
+                  انضم لخدمات مضمونة، اعرض خدمتك على آلاف العملاء، واستقبل حجوزات.
                   لوحة كاملة، إشعارات لايف، وعمولة شفافة.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -363,7 +276,7 @@ export default async function HomePage() {
           <div className="flex justify-center items-center gap-3 text-xs flex-wrap mb-6 px-4">
             <Link href="/about" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">عن مضمونة</Link>
             <span className="text-gray-300">·</span>
-            <Link href="/marketplace" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">Marketplace</Link>
+            <Link href="/marketplace" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">خدمات مضمونة</Link>
             <span className="text-gray-300">·</span>
             <Link href="/privacy" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">الخصوصية</Link>
             <span className="text-gray-300">·</span>
@@ -404,15 +317,6 @@ function CategoryCard({ href, image, label, sublabel, count, className = '', siz
         <ArrowLeft className="w-4 h-4 text-white" />
       </div>
     </Link>
-  )
-}
-
-function ServiceMini({ label, sublabel }: { label: string; sublabel: string }) {
-  return (
-    <div className="bg-white/15 backdrop-blur rounded-xl p-2.5 text-center">
-      <p className="text-xs font-bold text-white">{label}</p>
-      <p className="text-[10px] text-white/70 mt-0.5">{sublabel}</p>
-    </div>
   )
 }
 
