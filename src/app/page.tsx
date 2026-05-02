@@ -16,20 +16,23 @@ import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
 import InstallPWA from '@/components/InstallPWA'
 import FeaturedListings from '@/components/FeaturedListings'
+import EconomicNewsHero from '@/components/EconomicNewsHero'
 
 // ============================================================
 // Home page — Premium Editorial Redesign
 // "خدمات مضمونة" branding throughout
-// ALL images are now dynamic — admin can edit them from /admin/site-settings:
-//   - Hero image (top of page)
+//
+// Hero: LIVE economic news ticker (rotates every 10s) with fallback to
+//       admin-controlled hero image if news API fails.
+//
+// All other images dynamic from /admin/site-settings:
 //   - Marketplace card image
 //   - Spaces card image
-//   - 5 category section images (spaces, properties, vehicles, equipment, events)
+//   - 5 category section images
 // ============================================================
 
 const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
 
-// Default Unsplash fallbacks (used if DB query fails or value is empty)
 const DEFAULT_HERO_IMAGE = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=85&auto=format&fit=crop'
 const DEFAULT_MARKETPLACE_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=85&auto=format&fit=crop'
 const DEFAULT_SPACES_IMAGE = 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&q=85&auto=format&fit=crop'
@@ -39,8 +42,7 @@ const DEFAULT_CATEGORY_VEHICLES_IMG = 'https://images.unsplash.com/photo-1503376
 const DEFAULT_CATEGORY_EQUIPMENT_IMG = 'https://images.unsplash.com/photo-1533422902779-aff35862e462?w=600&q=80&auto=format&fit=crop'
 const DEFAULT_CATEGORY_EVENTS_IMG = 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=600&q=80&auto=format&fit=crop'
 
-// Force this page to be dynamic so admin's image changes show up immediately
-export const revalidate = 60 // Re-fetch from DB every 60 seconds
+export const revalidate = 60
 
 async function getSiteSettings(): Promise<Record<string, string>> {
   try {
@@ -67,12 +69,10 @@ async function getSiteSettings(): Promise<Record<string, string>> {
 export default async function HomePage() {
   const settings = await getSiteSettings()
 
-  // Hero & big cards
   const HERO_IMAGE = settings.hero_image_url || DEFAULT_HERO_IMAGE
   const MARKETPLACE_IMAGE = settings.marketplace_image_url || DEFAULT_MARKETPLACE_IMAGE
   const SPACES_IMAGE = settings.spaces_image_url || DEFAULT_SPACES_IMAGE
 
-  // Category cards — all dynamic from DB
   const SPACES_CATEGORY_IMG = settings.category_spaces_image_url || DEFAULT_CATEGORY_SPACES_IMG
   const PROPERTIES_IMG = settings.category_properties_image_url || DEFAULT_CATEGORY_PROPERTIES_IMG
   const VEHICLES_IMG = settings.category_vehicles_image_url || DEFAULT_CATEGORY_VEHICLES_IMG
@@ -85,7 +85,7 @@ export default async function HomePage() {
 
       <main className="relative">
         {/* ============================================================ */}
-        {/* HERO — Editorial split layout with full-bleed image */}
+        {/* HERO — Editorial split layout with LIVE news ticker */}
         {/* ============================================================ */}
         <section className="relative pt-6 md:pt-8 pb-12 md:pb-20">
           <div className="max-w-7xl mx-auto px-4">
@@ -139,7 +139,6 @@ export default async function HomePage() {
                   </Link>
                 </div>
 
-                {/* Trust badges */}
                 <div className="flex items-center gap-6 md:gap-8 mt-10 flex-wrap">
                   <TrustBadge icon={<ShieldCheck className="w-3.5 h-3.5" />} label="حجز مضمون" />
                   <TrustBadge icon={<Clock className="w-3.5 h-3.5" />} label="رد فوري ٢٤/٧" />
@@ -147,29 +146,9 @@ export default async function HomePage() {
                 </div>
               </div>
 
-              {/* Hero image — DYNAMIC from /admin/site-settings */}
+              {/* Hero — LIVE Economic News Ticker (rotates every 10s) */}
               <div className="md:col-span-5 order-1 md:order-2 relative">
-                <div className="relative aspect-[4/5] md:aspect-[3/4] rounded-3xl overflow-hidden shadow-luxe">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={HERO_IMAGE}
-                    alt="Madmona services"
-                    className="absolute inset-0 w-full h-full object-cover"
-                    loading="eager"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-
-                  {/* Floating badge */}
-                  <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md rounded-2xl px-4 py-3 shadow-card max-w-[220px]">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Sparkles className="w-3.5 h-3.5 text-[#B8860B]" />
-                      <p className="text-[10px] font-black tracking-widest uppercase text-[#1F5F3F]">جديد</p>
-                    </div>
-                    <p className="text-xs text-gray-700 leading-relaxed">
-                      أكتر من <span className="font-black text-gray-900">٨ فئات</span> من الخدمات والمنتجات
-                    </p>
-                  </div>
-                </div>
+                <EconomicNewsHero fallbackImage={HERO_IMAGE} />
 
                 {/* Decorative gold accent */}
                 <div className="absolute -top-3 -left-3 w-20 h-20 border-2 border-[#B8860B]/40 rounded-3xl -z-0 hidden md:block" />
@@ -179,7 +158,7 @@ export default async function HomePage() {
         </section>
 
         {/* ============================================================ */}
-        {/* CATEGORIES SHOWCASE — all images dynamic from DB */}
+        {/* CATEGORIES SHOWCASE */}
         {/* ============================================================ */}
         <section className="py-16 md:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4">
@@ -273,12 +252,11 @@ export default async function HomePage() {
         </section>
 
         {/* ============================================================ */}
-        {/* TWO BIG SHOWCASE CARDS — DYNAMIC images */}
+        {/* TWO BIG SHOWCASE CARDS */}
         {/* ============================================================ */}
         <section className="py-16 md:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              {/* Marketplace */}
               <Link
                 href="/marketplace"
                 className="group relative block rounded-3xl overflow-hidden no-underline aspect-[4/5] md:aspect-[3/4]"
@@ -317,7 +295,6 @@ export default async function HomePage() {
                 </div>
               </Link>
 
-              {/* Madmona services */}
               <Link
                 href="/browse"
                 className="group relative block rounded-3xl overflow-hidden no-underline aspect-[4/5] md:aspect-[3/4]"
@@ -542,10 +519,6 @@ export default async function HomePage() {
     </div>
   )
 }
-
-// ============================================================
-// Components
-// ============================================================
 
 function TrustBadge({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
