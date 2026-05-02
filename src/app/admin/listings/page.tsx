@@ -7,13 +7,14 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Loader2, Lock, AlertCircle, Search, Filter,
   Edit2, Trash2, Eye, EyeOff, Building2, MapPin, Image as ImageIcon,
-  CheckCircle, TrendingUp, ShieldAlert, Archive,
+  CheckCircle, TrendingUp, ShieldAlert, Archive, Plus,
 } from 'lucide-react'
 
 // ============================================================================
 // /admin/listings — Master listings management for admin.
 // View, edit, delete, change status of ANY listing across ALL suppliers.
-// Delete uses /api/admin/listings/[id] for safe cascade cleanup.
+// "Create new" button takes admin to /supplier/marketplace/new where the
+// admin bypass picks a supplier and creates the listing.
 // ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'forbidden' | 'ready'
@@ -152,11 +153,9 @@ export default function AdminListingsPage() {
     setActionMsg(null)
 
     try {
-      // Get JWT for API auth
       const { data: { session } } = await supabaseBrowser.auth.getSession()
       const accessToken = session?.access_token || ''
 
-      // Call our server-side delete API (handles cascade + soft-delete)
       const res = await fetch(`/api/admin/listings/${deleting.id}`, {
         method: 'DELETE',
         headers: {
@@ -174,15 +173,12 @@ export default function AdminListingsPage() {
         return
       }
 
-      // Handle response based on type
       if (result.type === 'soft_delete') {
-        // Update in place — listing is now archived (status='rejected')
         setListings(prev => prev.map(l =>
           l.id === deleting.id ? { ...l, status: 'rejected' as const } : l
         ))
         setActionMsg(`✅ ${result.message}`)
       } else {
-        // Hard delete — remove from list
         setListings(prev => prev.filter(l => l.id !== deleting.id))
         setActionMsg(`✅ ${result.message}`)
       }
@@ -279,10 +275,20 @@ export default function AdminListingsPage() {
           >
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
-          <div className="flex items-center gap-2 flex-1">
-            <Building2 className="w-5 h-5 text-[#1F5F3F]" />
-            <h1 className="text-lg font-black text-gray-900">إدارة الخدمات</h1>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Building2 className="w-5 h-5 text-[#1F5F3F] flex-shrink-0" />
+            <h1 className="text-lg font-black text-gray-900 truncate">إدارة الخدمات</h1>
           </div>
+
+          {/* + Create New Listing button */}
+          <Link
+            href="/supplier/marketplace/new"
+            className="inline-flex items-center gap-1.5 bg-[#1F5F3F] text-white px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline flex-shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">ضيف listing</span>
+            <span className="sm:hidden">ضيف</span>
+          </Link>
         </div>
       </header>
 
@@ -336,7 +342,18 @@ export default function AdminListingsPage() {
         {filtered.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-soft p-12 text-center">
             <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">مفيش خدمات تطابق البحث</p>
+            <p className="text-gray-500 mb-4">
+              {listings.length === 0 ? 'مفيش listings لسه. ابدأ بإضافة أول listing.' : 'مفيش خدمات تطابق البحث'}
+            </p>
+            {listings.length === 0 && (
+              <Link
+                href="/supplier/marketplace/new"
+                className="inline-flex items-center gap-2 bg-[#1F5F3F] text-white px-5 py-3 rounded-xl text-sm font-bold shadow-soft hover:shadow-elevated transition-all no-underline"
+              >
+                <Plus className="w-4 h-4" />
+                ضيف أول listing
+              </Link>
+            )}
           </div>
         ) : (
           <div className="space-y-2">
@@ -352,7 +369,7 @@ export default function AdminListingsPage() {
         )}
       </main>
 
-      {/* Delete modal — smart: shows different msg if has bookings */}
+      {/* Delete modal */}
       {deleting && (
         <Modal onClose={() => !actionBusy && setDeleting(null)}>
           <div className="text-center mb-4">

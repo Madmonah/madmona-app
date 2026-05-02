@@ -84,6 +84,9 @@ interface ListingFormProps {
     existingPricing?: PricingRule[]
     existingAttributes?: { attribute_id: string; value: any }[]
   }
+  // Where to navigate after a successful submit. Defaults to /supplier/marketplace.
+  // Pass '/admin/listings' from admin mode.
+  redirectAfterSubmit?: string
 }
 
 const PERIOD_LABELS: Record<PeriodType, string> = {
@@ -98,7 +101,7 @@ const PERIOD_LABELS: Record<PeriodType, string> = {
 // Component
 // ============================================================================
 
-export default function ListingForm({ supplierId, userId, existingId, initialData }: ListingFormProps) {
+export default function ListingForm({ supplierId, userId, existingId, initialData, redirectAfterSubmit }: ListingFormProps) {
   const router = useRouter()
   const isEditing = !!existingId
 
@@ -392,7 +395,9 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         if (pricingErr) throw pricingErr
       }
 
-      router.push('/supplier/marketplace?success=1')
+      // Use custom redirect if provided (e.g. admin mode → /admin/listings),
+      // otherwise default to /supplier/marketplace?success=1
+      router.push(redirectAfterSubmit || '/supplier/marketplace?success=1')
     } catch (e: any) {
       console.error('Submit error:', e)
       setError(e.message || 'حصل خطأ، حاول تاني')
