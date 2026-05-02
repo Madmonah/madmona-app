@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server'
 
 // ============================================================================
-// GET /api/economic-news?seen=url1,url2,url3
+// GET /api/economic-news
 //
-// Returns LIVE economic news from 20+ Egyptian/Arabic RSS sources.
-//
-// "Seen tracking": client passes URLs of articles already shown.
-// API filters them out and returns only NEW articles.
-// → Result: every cycle on the homepage shows TRULY fresh content.
-//
-// Cache TTL = 30 seconds (very short — we want freshness).
+// Egyptian-focused economic news ticker:
+//   - 25+ RSS sources, ~95% Egyptian economy specialized
+//   - Builds a large pool (~150 items)
+//   - Random shuffle on EVERY request → different order every time
+//   - Egyptian items boosted (60% Egyptian / 40% regional baseline)
+//   - 10-second pool cache (very fresh)
 // ============================================================================
 
-export const revalidate = 30
+export const revalidate = 10
 
 interface NewsItem {
   title: string
@@ -21,58 +20,66 @@ interface NewsItem {
   source: string
   pubDate: string
   isEgyptian: boolean
-  category: 'economy' | 'stocks' | 'realestate' | 'general'
 }
 
 interface NewsSource {
   name: string
   url: string
   egyptian: boolean
-  category: 'economy' | 'stocks' | 'realestate' | 'general'
-  weight: number // higher = more items pulled from this source
+  weight: number  // higher = more items pulled
 }
 
 const SOURCES: NewsSource[] = [
-  // 🇪🇬 EGYPTIAN — Top tier financial papers
-  { name: 'المال', url: 'https://almalnews.com/feed/', egyptian: true, category: 'economy', weight: 3 },
-  { name: 'البورصة', url: 'https://alborsaanews.com/feed', egyptian: true, category: 'stocks', weight: 3 },
-  { name: 'مباشر مصر', url: 'https://www.mubasher.info/rss/news', egyptian: true, category: 'stocks', weight: 3 },
-  { name: 'الشروق', url: 'https://www.shorouknews.com/RSS/Feeds/Economy.xml', egyptian: true, category: 'economy', weight: 2 },
-  { name: 'اليوم السابع', url: 'https://www.youm7.com/rss/SectionRss?SectionID=297', egyptian: true, category: 'economy', weight: 2 },
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║ EGYPTIAN ECONOMY SPECIALIZED — TOP PRIORITY              ║
+  // ╚══════════════════════════════════════════════════════════╝
+  { name: 'المال', url: 'https://almalnews.com/feed/', egyptian: true, weight: 5 },
+  { name: 'البورصة', url: 'https://alborsaanews.com/feed', egyptian: true, weight: 5 },
+  { name: 'مباشر مصر', url: 'https://www.mubasher.info/rss/news', egyptian: true, weight: 4 },
+  { name: 'أموال الغد', url: 'https://www.amwalalghad.com/feed/', egyptian: true, weight: 4 },
+  { name: 'Enterprise', url: 'https://enterprise.press/feed/', egyptian: true, weight: 4 },
+  { name: 'Daily News Egypt', url: 'https://dailynewsegypt.com/feed/', egyptian: true, weight: 3 },
+  { name: 'Mada Masr - Business', url: 'https://www.madamasr.com/en/category/business/feed/', egyptian: true, weight: 3 },
 
-  // 🇪🇬 EGYPTIAN — General news (economy sections)
-  { name: 'الأهرام', url: 'https://gate.ahram.org.eg/rss/PortalEconomyRss.aspx', egyptian: true, category: 'economy', weight: 2 },
-  { name: 'المصري اليوم', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=1', egyptian: true, category: 'economy', weight: 2 },
-  { name: 'الوطن', url: 'https://www.elwatannews.com/rss/category/29.rss', egyptian: true, category: 'economy', weight: 2 },
-  { name: 'صدى البلد', url: 'https://www.elbalad.news/rss?type=10', egyptian: true, category: 'economy', weight: 2 },
-  { name: 'الدستور', url: 'https://www.dostor.org/rss/category/3', egyptian: true, category: 'economy', weight: 2 },
-  { name: 'أخبار اليوم', url: 'https://www.akhbarelyom.com/rss', egyptian: true, category: 'general', weight: 2 },
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║ EGYPTIAN GENERAL — ECONOMY SECTIONS                      ║
+  // ╚══════════════════════════════════════════════════════════╝
+  { name: 'الأهرام - اقتصاد', url: 'https://gate.ahram.org.eg/rss/PortalEconomyRss.aspx', egyptian: true, weight: 4 },
+  { name: 'الشروق - اقتصاد', url: 'https://www.shorouknews.com/RSS/Feeds/Economy.xml', egyptian: true, weight: 4 },
+  { name: 'اليوم السابع - اقتصاد', url: 'https://www.youm7.com/rss/SectionRss?SectionID=297', egyptian: true, weight: 4 },
+  { name: 'المصري اليوم - اقتصاد', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=1', egyptian: true, weight: 3 },
+  { name: 'الوطن - اقتصاد', url: 'https://www.elwatannews.com/rss/category/29.rss', egyptian: true, weight: 3 },
+  { name: 'صدى البلد - اقتصاد', url: 'https://www.elbalad.news/rss?type=10', egyptian: true, weight: 3 },
+  { name: 'الدستور - اقتصاد', url: 'https://www.dostor.org/rss/category/3', egyptian: true, weight: 2 },
+  { name: 'أخبار اليوم - اقتصاد', url: 'https://m.akhbarelyom.com/rss/business', egyptian: true, weight: 2 },
 
-  // 🇪🇬 EGYPTIAN — English (translates well, niche audience)
-  { name: 'Daily News Egypt', url: 'https://dailynewsegypt.com/feed/', egyptian: true, category: 'economy', weight: 1 },
-  { name: 'Egypt Today', url: 'https://www.egypttoday.com/rss', egyptian: true, category: 'general', weight: 1 },
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║ EGYPT REAL ESTATE                                        ║
+  // ╚══════════════════════════════════════════════════════════╝
+  { name: 'عقار ماب', url: 'https://aqarmap.com.eg/blog/feed/', egyptian: true, weight: 2 },
 
-  // 🇪🇬 EGYPTIAN — Real estate
-  { name: 'عقار ماب', url: 'https://aqarmap.com.eg/blog/feed/', egyptian: true, category: 'realestate', weight: 1 },
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║ ARABIC REGIONAL — SPECIALIZED ECONOMY                    ║
+  // ╚══════════════════════════════════════════════════════════╝
+  { name: 'أرقام', url: 'https://www.argaam.com/ar/rss', egyptian: false, weight: 2 },
+  { name: 'الاقتصادي', url: 'https://www.aliqtisadi.com/feed/', egyptian: false, weight: 2 },
+  { name: 'العربية - أسواق', url: 'https://www.alarabiya.net/rssfeed/aswaq', egyptian: false, weight: 1 },
 
-  // 🌍 ARABIC REGIONAL — Specialized economy
-  { name: 'أرقام', url: 'https://www.argaam.com/ar/rss', egyptian: false, category: 'stocks', weight: 2 },
-  { name: 'الاقتصادي', url: 'https://www.aliqtisadi.com/feed/', egyptian: false, category: 'economy', weight: 1 },
-  { name: 'الشرق', url: 'https://asharq.com/feed', egyptian: false, category: 'economy', weight: 1 },
-
-  // 🌍 ARABIC REGIONAL — General news
-  { name: 'CNN العربية', url: 'https://arabic.cnn.com/business/rss', egyptian: false, category: 'economy', weight: 1 },
-  { name: 'BBC عربي', url: 'http://feeds.bbci.co.uk/arabic/business/rss.xml', egyptian: false, category: 'economy', weight: 1 },
-  { name: 'Sky News عربية', url: 'https://www.skynewsarabia.com/business/rss', egyptian: false, category: 'economy', weight: 1 },
-  { name: 'الجزيرة', url: 'https://www.aljazeera.net/aljazeerarss/economy.xml', egyptian: false, category: 'economy', weight: 1 },
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║ ARABIC REGIONAL — GENERAL                                ║
+  // ╚══════════════════════════════════════════════════════════╝
+  { name: 'CNN العربية', url: 'https://arabic.cnn.com/business/rss', egyptian: false, weight: 1 },
+  { name: 'BBC عربي', url: 'http://feeds.bbci.co.uk/arabic/business/rss.xml', egyptian: false, weight: 1 },
+  { name: 'Sky News عربية', url: 'https://www.skynewsarabia.com/business/rss', egyptian: false, weight: 1 },
+  { name: 'الجزيرة - اقتصاد', url: 'https://www.aljazeera.net/aljazeerarss/economy.xml', egyptian: false, weight: 1 },
 ]
 
-// In-memory pool — we keep a large set of recent items, refresh periodically
+// Pool — large set of items, refreshed in background
 let pool: { items: NewsItem[]; timestamp: number } | null = null
-const POOL_TTL = 30 * 1000 // refresh pool every 30 seconds
+const POOL_TTL = 10 * 1000  // 10 seconds — VERY fresh
 
 // ----------------------------------------------------------------------------
-// XML parsing helpers
+// XML helpers
 // ----------------------------------------------------------------------------
 
 function decodeCData(s: string) { return s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1') }
@@ -132,7 +139,7 @@ async function fetchSource(source: NewsSource): Promise<NewsItem[]> {
     const items: NewsItem[] = []
     const itemRegex = /<(?:item|entry)(?:\s[^>]*)?>([\s\S]*?)<\/(?:item|entry)>/gi
     let match: RegExpExecArray | null
-    const maxItems = source.weight * 4 // weight 3 → 12 items, weight 2 → 8, weight 1 → 4
+    const maxItems = source.weight * 5  // weight 5 = 25 items, weight 1 = 5 items
 
     while ((match = itemRegex.exec(xml)) !== null && items.length < maxItems) {
       const itemXml = match[1]
@@ -145,14 +152,13 @@ async function fetchSource(source: NewsSource): Promise<NewsItem[]> {
         extractTag(itemXml, 'dc:date') ||
         new Date().toISOString()
 
-      if (title && image && link) {
+      if (title && image && link && title.length > 10) {
         items.push({
           title: title.slice(0, 200),
           link, image,
           source: source.name,
           pubDate,
           isEgyptian: source.egyptian,
-          category: source.category,
         })
       }
     }
@@ -163,7 +169,7 @@ async function fetchSource(source: NewsSource): Promise<NewsItem[]> {
 }
 
 // ----------------------------------------------------------------------------
-// Pool builder — refreshes the entire pool from all 20+ sources
+// Build pool
 // ----------------------------------------------------------------------------
 
 async function buildPool(): Promise<NewsItem[]> {
@@ -172,107 +178,69 @@ async function buildPool(): Promise<NewsItem[]> {
 
   // Dedupe by link
   const seen = new Set<string>()
-  const deduped = allItems.filter(item => {
+  return allItems.filter(item => {
     if (seen.has(item.link)) return false
     seen.add(item.link)
     return true
   })
+}
 
-  // Sort: Egyptian first, then by date desc
-  deduped.sort((a, b) => {
-    if (a.isEgyptian !== b.isEgyptian) return a.isEgyptian ? -1 : 1
-    return new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime()
-  })
-
-  return deduped
+// Fisher-Yates shuffle
+function shuffle<T>(arr: T[]): T[] {
+  const copy = [...arr]
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[copy[i], copy[j]] = [copy[j], copy[i]]
+  }
+  return copy
 }
 
 // ----------------------------------------------------------------------------
-// Smart selector — returns N items, prioritizing UNSEEN ones, varied sources
+// Smart selector — random Egyptian-heavy mix on every call
 // ----------------------------------------------------------------------------
 
-function selectFreshItems(pool: NewsItem[], seenLinks: Set<string>, n: number): NewsItem[] {
-  // 1) Filter out items the client has already seen
-  const unseen = pool.filter(item => !seenLinks.has(item.link))
+function selectRandomMix(pool: NewsItem[], n: number): NewsItem[] {
+  // Split by Egyptian / regional
+  const egyptian = pool.filter(i => i.isEgyptian)
+  const regional = pool.filter(i => !i.isEgyptian)
 
-  // 2) If we have enough unseen items, use only those
-  // 3) Otherwise, fall back to including some seen items (so user always gets content)
-  const candidates = unseen.length >= n ? unseen : [...unseen, ...pool.filter(i => seenLinks.has(i.link))]
+  // Shuffle each group independently
+  const shuffledEg = shuffle(egyptian)
+  const shuffledReg = shuffle(regional)
 
-  // 4) Diversify: ensure we don't show 5 items from same source in a row
-  // Group by source, then interleave round-robin style
-  const bySource = new Map<string, NewsItem[]>()
-  candidates.forEach(item => {
-    if (!bySource.has(item.source)) bySource.set(item.source, [])
-    bySource.get(item.source)!.push(item)
-  })
+  // Target: 70% Egyptian, 30% regional
+  const targetEg = Math.ceil(n * 0.7)
+  const targetReg = n - targetEg
 
-  // Egyptian sources first when interleaving
-  const egyptianGroups: NewsItem[][] = []
-  const regionalGroups: NewsItem[][] = []
-  bySource.forEach(group => {
-    if (group[0].isEgyptian) egyptianGroups.push(group)
-    else regionalGroups.push(group)
-  })
+  const picked: NewsItem[] = []
 
-  // Shuffle groups so order varies between calls
-  egyptianGroups.sort(() => Math.random() - 0.5)
-  regionalGroups.sort(() => Math.random() - 0.5)
-
-  // Round-robin pull: 3 Egyptian → 1 regional → repeat
-  const result: NewsItem[] = []
-  let egIdx = 0
-  let regIdx = 0
-  let consecutiveEg = 0
-
-  while (result.length < n) {
-    let added = false
-
-    // Try to add Egyptian
-    if (consecutiveEg < 3 && egyptianGroups.length > 0) {
-      const group = egyptianGroups[egIdx % egyptianGroups.length]
-      if (group.length > 0) {
-        result.push(group.shift()!)
-        consecutiveEg++
-        added = true
-      }
-      egIdx++
-    }
-
-    // Try to add regional
-    if (!added || consecutiveEg >= 3) {
-      if (regionalGroups.length > 0) {
-        const group = regionalGroups[regIdx % regionalGroups.length]
-        if (group.length > 0) {
-          result.push(group.shift()!)
-          consecutiveEg = 0
-          added = true
-        }
-        regIdx++
-      }
-    }
-
-    // Cleanup empty groups
-    egyptianGroups.forEach((g, i) => { if (g.length === 0) egyptianGroups.splice(i, 1) })
-    regionalGroups.forEach((g, i) => { if (g.length === 0) regionalGroups.splice(i, 1) })
-
-    if (!added) break // pool exhausted
+  // Take Egyptian first
+  for (let i = 0; i < targetEg && i < shuffledEg.length; i++) {
+    picked.push(shuffledEg[i])
   }
 
-  return result
+  // Take regional
+  for (let i = 0; i < targetReg && i < shuffledReg.length; i++) {
+    picked.push(shuffledReg[i])
+  }
+
+  // If we still don't have enough, fill from whichever has more
+  if (picked.length < n) {
+    const remaining = [...shuffledEg.slice(targetEg), ...shuffledReg.slice(targetReg)]
+    while (picked.length < n && remaining.length > 0) {
+      picked.push(remaining.shift()!)
+    }
+  }
+
+  // Shuffle the final pick so Egyptians and regionals are interleaved naturally
+  return shuffle(picked).slice(0, n)
 }
 
 // ----------------------------------------------------------------------------
 // GET handler
 // ----------------------------------------------------------------------------
 
-export async function GET(request: Request) {
-  const url = new URL(request.url)
-  const seenParam = url.searchParams.get('seen') || ''
-  const seenLinks = new Set(
-    seenParam.split(',').map(s => s.trim()).filter(Boolean)
-  )
-
+export async function GET() {
   // Refresh pool if expired
   if (!pool || Date.now() - pool.timestamp > POOL_TTL) {
     const items = await buildPool()
@@ -283,14 +251,22 @@ export async function GET(request: Request) {
     }
   }
 
-  // Select fresh items, excluding seen ones
-  const fresh = selectFreshItems(pool.items, seenLinks, 15)
+  // Random selection — different on every call
+  const fresh = selectRandomMix(pool.items, 15)
 
-  return NextResponse.json({
-    ok: true,
-    items: fresh,
-    count: fresh.length,
-    pool_size: pool.items.length,
-    seen_count: seenLinks.size,
-  })
+  // Disable HTTP caching to ensure each refresh = different items
+  return NextResponse.json(
+    {
+      ok: true,
+      items: fresh,
+      count: fresh.length,
+      pool_size: pool.items.length,
+      egyptian_in_pool: pool.items.filter(i => i.isEgyptian).length,
+    },
+    {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      },
+    }
+  )
 }

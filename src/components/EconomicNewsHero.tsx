@@ -6,15 +6,13 @@ import { Sparkles, TrendingUp, ExternalLink, Newspaper, MapPin } from 'lucide-re
 // ============================================================================
 // EconomicNewsHero — TRULY fresh news ticker
 //
-// Strategy:
-//   1. localStorage tracks every article URL the user has seen
-//   2. API call passes the seen list → server returns only NEW articles
-//   3. After each cycle ends → fetch fresh batch (excluding seen)
-//   4. Result: user NEVER sees the same article twice (until pool exhausts)
+// Server returns randomized 15 items from a pool of 150+ on every call.
+// Component fetches fresh batch:
+//   - On mount
+//   - Every 30 seconds in background
+//   - Whenever the cycle ends
 //
-// - Rotation: 5 seconds (faster than before)
-// - 20+ RSS sources for maximum variety
-// - Egyptian-first interleaving
+// Result: every page refresh + every cycle = different ordering, different items.
 // ============================================================================
 
 interface NewsItem {
@@ -24,17 +22,14 @@ interface NewsItem {
   source: string
   pubDate: string
   isEgyptian?: boolean
-  category?: string
 }
 
 interface Props {
   fallbackImage: string
 }
 
-const ROTATION_MS = 5000              // 5s per item (very lively)
-const SEEN_STORAGE_KEY = 'madmona_seen_news_v1'
-const SEEN_MAX_SIZE = 200             // keep last 200 seen URLs
-const PREFETCH_AT_INDEX_RATIO = 0.5   // prefetch when 50% through cycle
+const ROTATION_MS = 5000              // 5s per item
+const BG_REFETCH_MS = 30 * 1000       // 30s background refresh
 
 export default function EconomicNewsHero({ fallbackImage }: Props) {
   const [items, setItems] = useState<NewsItem[]>([])
@@ -44,47 +39,18 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
 
   const nextBufferRef = useRef<NewsItem[] | null>(null)
   const fetchingRef = useRef(false)
-  const seenRef = useRef<Set<string>>(new Set())
 
-  // ---- Seen-tracking helpers ---------------------------------------------
-
-  const loadSeen = (): Set<string> => {
-    if (typeof window === 'undefined') return new Set()
-    try {
-      const raw = localStorage.getItem(SEEN_STORAGE_KEY)
-      if (!raw) return new Set()
-      const arr = JSON.parse(raw)
-      return Array.isArray(arr) ? new Set(arr) : new Set()
-    } catch {
-      return new Set()
-    }
-  }
-
-  const saveSeen = (set: Set<string>) => {
-    if (typeof window === 'undefined') return
-    try {
-      // Limit size — keep only most recent N
-      const arr = Array.from(set).slice(-SEEN_MAX_SIZE)
-      localStorage.setItem(SEEN_STORAGE_KEY, JSON.stringify(arr))
-    } catch {
-      /* localStorage full or disabled — silent fail */
-    }
-  }
-
-  const markBatchAsSeen = (batch: NewsItem[]) => {
-    batch.forEach(item => seenRef.current.add(item.link))
-    saveSeen(seenRef.current)
-  }
-
-  // ---- Fetch helper -------------------------------------------------------
-
+  // Fetch with cache-busting timestamp
   const fetchNews = async (): Promise<NewsItem[] | null> => {
     if (fetchingRef.current) return null
     fetchingRef.current = true
     try {
-      const seenList = Array.from(seenRef.current).slice(-100) // pass last 100
-      const seenParam = seenList.length > 0 ? `?seen=${encodeURIComponent(seenList.join(','))}` : ''
-      const res = await fetch(`/api/economic-news${seenParam}`, { cache: 'no-store' })
+      // Cache-bust with timestamp + random
+      const cacheBust = `?t=${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+      const res = await fetch(`/api/economic-news${cacheBust}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      })
       const data = await res.json()
       if (data.ok && Array.isArray(data.items) && data.items.length > 0) {
         return data.items
@@ -97,12 +63,10 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
     return null
   }
 
-  // ---- Initial load -------------------------------------------------------
-
+  // Initial load + periodic background refresh
   useEffect(() => {
-    seenRef.current = loadSeen()
-
     let cancelled = false
+
     const init = async () => {
       const fresh = await fetchNews()
       if (cancelled) return
@@ -115,39 +79,39 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
     }
     init()
 
-    return () => { cancelled = true }
+    // Background refresh — keeps buffer fresh for next cycle
+    const bgTimer = setInterval(async () => {
+      if (cancelled) return
+      const fresh = await fetchNews()
+      if (fresh && fresh.length > 0 && !cancelled) {
+        nextBufferRef.current = fresh
+      }
+    }, BG_REFETCH_MS)
+
+    return () => {
+      cancelled = true
+      clearInterval(bgTimer)
+    }
   }, [])
 
-  // ---- Rotation logic with auto-refresh on cycle end ---------------------
-
+  // Rotation — when cycle ends, swap to fresh batch
   useEffect(() => {
     if (items.length <= 1) return
 
-    const timer = setInterval(async () => {
+    const timer = setInterval(() => {
       setImgLoaded(false)
       setCurrentIndex(prev => {
         const next = prev + 1
 
-        // Prefetch fresh batch at 50% through cycle
-        if (next === Math.floor(items.length * PREFETCH_AT_INDEX_RATIO) && !nextBufferRef.current) {
-          fetchNews().then(fresh => {
-            if (fresh && fresh.length > 0) nextBufferRef.current = fresh
-          })
-        }
-
-        // End of cycle → swap to fresh batch
+        // Cycle ended → swap to fresh batch
         if (next >= items.length) {
-          // Mark current batch as seen
-          markBatchAsSeen(items)
-
           if (nextBufferRef.current && nextBufferRef.current.length > 0) {
             const fresh = nextBufferRef.current
             nextBufferRef.current = null
-            setItems(fresh)
-            // Trigger another prefetch right away
-            fetchNews().then(f => { if (f) nextBufferRef.current = f })
+            // Set fresh items; the next render will pick up the new ones
+            setTimeout(() => setItems(fresh), 0)
           } else {
-            // Buffer not ready — fetch sync (may briefly show same)
+            // No buffer ready — fetch immediately
             fetchNews().then(fresh => {
               if (fresh && fresh.length > 0) setItems(fresh)
             })
@@ -160,7 +124,6 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
     }, ROTATION_MS)
 
     return () => clearInterval(timer)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items])
 
   const current = items[currentIndex]
@@ -226,7 +189,7 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
         <span>أخبار اقتصادية</span>
       </div>
 
-      {/* Counter + Egypt flag */}
+      {/* Counter */}
       <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-black/50 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full z-10">
         {current.isEgyptian && <span className="text-sm leading-none">🇪🇬</span>}
         <Newspaper className="w-3 h-3" />
