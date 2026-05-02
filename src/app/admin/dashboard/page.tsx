@@ -7,14 +7,12 @@ import {
   ArrowRight, Loader2, Lock, Crown, Building2, Calendar,
   TrendingUp, DollarSign, Users, Package, Eye, Star,
   AlertCircle, FolderTree, ChevronLeft, UserCog, Wallet,
-  Settings, Layers, Bell,
+  Settings, Layers, Bell, Image as ImageIcon, Phone,
+  ClipboardList, History, Briefcase,
 } from 'lucide-react'
 
 // ============================================================================
-// /admin/dashboard
-// 
-// Unified admin hub — Madmona is now a single Marketplace.
-// All listings live in /marketplace, including Madmona's own.
+// /admin/dashboard — full admin hub with ALL admin routes
 // ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'forbidden' | 'ready'
@@ -144,7 +142,6 @@ export default function AdminDashboardPage() {
       ? reviewsArr.reduce((sum, r) => sum + r.rating, 0) / reviewsArr.length
       : 0
 
-    // Push subscribers count
     // @ts-expect-error
     const { count: pushCount } = await supabaseBrowser
       .from('push_subscriptions').select('id', { count: 'exact', head: true })
@@ -207,10 +204,7 @@ export default function AdminDashboardPage() {
         <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
           <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
-          <Link
-            href="/auth/login?redirect=/admin/dashboard"
-            className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold"
-          >
+          <Link href="/auth/login?redirect=/admin/dashboard" className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold">
             تسجيل دخول
           </Link>
         </div>
@@ -239,10 +233,7 @@ export default function AdminDashboardPage() {
     <div className="min-h-screen gradient-mesh" dir="rtl">
       <header className="sticky top-0 z-40 glass border-b border-white/40">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Link
-            href="/account"
-            className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all"
-          >
+          <Link href="/account" className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all">
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
           <div className="flex items-center gap-2">
@@ -255,62 +246,29 @@ export default function AdminDashboardPage() {
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-8 pb-12">
         {/* HEADLINE METRICS */}
         <section>
-          <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">
-            الأرقام الكبرى
-          </h2>
+          <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">الأرقام الكبرى</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <MetricCard
-              icon={<DollarSign className="w-4 h-4" />}
-              label="عمولة Madmona (شهر)"
-              value={`${stats.monthCommission.toLocaleString('ar-EG')} ج.م`}
-              subtitle={`إجمالي: ${stats.totalCommission.toLocaleString('ar-EG')}`}
-              accent="bg-[#1F5F3F]/10 text-[#1F5F3F]"
-            />
-            <MetricCard
-              icon={<TrendingUp className="w-4 h-4" />}
-              label="GMV (شهر)"
-              value={`${stats.monthGMV.toLocaleString('ar-EG')} ج.م`}
-              subtitle={`إجمالي: ${stats.totalGMV.toLocaleString('ar-EG')}`}
-              accent="bg-[#B8860B]/10 text-[#B8860B]"
-            />
-            <MetricCard
-              icon={<Calendar className="w-4 h-4" />}
-              label="حجوزات الشهر"
-              value={stats.monthBookings.toString()}
-              subtitle={`إجمالي: ${stats.totalBookings}`}
-              accent="bg-blue-100 text-blue-700"
-            />
-            <MetricCard
-              icon={<Users className="w-4 h-4" />}
-              label="عملاء مسجلين"
-              value={stats.totalCustomers.toString()}
-              subtitle={`${stats.approvedSuppliers} مورد · ${stats.pendingSuppliers} معلّق · ${stats.pushSubscribers} 🔔`}
-              accent="bg-purple-100 text-purple-700"
-            />
+            <MetricCard icon={<DollarSign className="w-4 h-4" />} label="عمولة Madmona (شهر)" value={`${stats.monthCommission.toLocaleString('ar-EG')} ج.م`} subtitle={`إجمالي: ${stats.totalCommission.toLocaleString('ar-EG')}`} accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" />
+            <MetricCard icon={<TrendingUp className="w-4 h-4" />} label="GMV (شهر)" value={`${stats.monthGMV.toLocaleString('ar-EG')} ج.م`} subtitle={`إجمالي: ${stats.totalGMV.toLocaleString('ar-EG')}`} accent="bg-[#B8860B]/10 text-[#B8860B]" />
+            <MetricCard icon={<Calendar className="w-4 h-4" />} label="حجوزات الشهر" value={stats.monthBookings.toString()} subtitle={`إجمالي: ${stats.totalBookings}`} accent="bg-blue-100 text-blue-700" />
+            <MetricCard icon={<Users className="w-4 h-4" />} label="عملاء مسجلين" value={stats.totalCustomers.toString()} subtitle={`${stats.approvedSuppliers} مورد · ${stats.pendingSuppliers} معلّق · ${stats.pushSubscribers} 🔔`} accent="bg-purple-100 text-purple-700" />
           </div>
         </section>
 
-        {/* ADMIN TOOLS — UNIFIED */}
+        {/* ADMIN TOOLS */}
         <section>
           <div className="flex items-end justify-between mb-3">
-            <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest">
-              أدوات الإدارة
-            </h2>
+            <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest">أدوات الإدارة</h2>
             {stats.pendingSuppliers > 0 && (
-              <Link
-                href="/admin/marketplace-suppliers"
-                className="text-xs bg-yellow-400 text-gray-900 px-2.5 py-1 rounded-full font-bold animate-pulse-soft"
-              >
+              <Link href="/admin/marketplace-suppliers" className="text-xs bg-yellow-400 text-gray-900 px-2.5 py-1 rounded-full font-bold animate-pulse-soft">
                 {stats.pendingSuppliers} يحتاج موافقة
               </Link>
             )}
           </div>
 
-          {/* Marketplace */}
+          {/* 🛒 Marketplace Section */}
           <div className="mb-4">
-            <p className="text-[10px] font-bold text-[#1F5F3F] uppercase tracking-widest mb-2 px-1">
-              Marketplace
-            </p>
+            <p className="text-[10px] font-bold text-[#1F5F3F] uppercase tracking-widest mb-2 px-1">Marketplace</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <ToolCard
                 href="/admin/listings"
@@ -342,8 +300,6 @@ export default function AdminDashboardPage() {
                 subtitle="Categories + Attributes"
                 accent="bg-purple-100 text-purple-700"
               />
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
               <ToolCard
                 href="/admin/payouts"
                 icon={<Wallet className="w-5 h-5" />}
@@ -354,11 +310,9 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Communications */}
+          {/* 📢 Communications + Site Content */}
           <div className="mb-4">
-            <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest mb-2 px-1">
-              التواصل والإشعارات
-            </p>
+            <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest mb-2 px-1">التواصل والمحتوى</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <ToolCard
                 href="/admin/notifications"
@@ -367,20 +321,32 @@ export default function AdminDashboardPage() {
                 subtitle={`${stats.pushSubscribers} مفعّل الإشعارات`}
                 accent="bg-blue-100 text-blue-700"
               />
+              <ToolCard
+                href="/admin/site-settings"
+                icon={<ImageIcon className="w-5 h-5" />}
+                title="إعدادات الموقع"
+                subtitle="صور الـHero والكروت الكبيرة"
+                accent="bg-pink-100 text-pink-700"
+              />
+              <ToolCard
+                href="/admin/leads"
+                icon={<Phone className="w-5 h-5" />}
+                title="العملاء المحتملين"
+                subtitle="Leads من الفورمات"
+                accent="bg-orange-100 text-orange-700"
+              />
             </div>
           </div>
 
-          {/* Madmona content (our listings) */}
+          {/* ⭐ Madmona Content (our own listings) */}
           <div className="mb-4">
-            <p className="text-[10px] font-bold text-[#B8860B] uppercase tracking-widest mb-2 px-1">
-              المحتوى (إعلاناتنا)
-            </p>
+            <p className="text-[10px] font-bold text-[#B8860B] uppercase tracking-widest mb-2 px-1">المحتوى (إعلاناتنا)</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <ToolCard
                 href="/supplier/marketplace"
                 icon={<Settings className="w-5 h-5" />}
                 title="لوحة المورد (مضمونة)"
-                subtitle="إدارة الإعلانات والحجوزات"
+                subtitle="إدارة إعلاناتنا الخاصة"
                 accent="bg-[#1F5F3F]/10 text-[#1F5F3F]"
               />
               <ToolCard
@@ -398,20 +364,18 @@ export default function AdminDashboardPage() {
                 accent="bg-yellow-100 text-yellow-700"
               />
               <ToolCard
-                href="/browse"
+                href="/"
                 icon={<Eye className="w-5 h-5" />}
-                title="عرض الـMarketplace"
+                title="عرض الموقع"
                 subtitle="شوف الموقع كما يراه العميل"
                 accent="bg-pink-100 text-pink-700"
               />
             </div>
           </div>
 
-          {/* Team & permissions */}
-          <div>
-            <p className="text-[10px] font-bold text-orange-700 uppercase tracking-widest mb-2 px-1">
-              فريق العمل
-            </p>
+          {/* 👥 Team & Account */}
+          <div className="mb-4">
+            <p className="text-[10px] font-bold text-orange-700 uppercase tracking-widest mb-2 px-1">فريق العمل والحساب</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <ToolCard
                 href="/supplier/team"
@@ -429,24 +393,45 @@ export default function AdminDashboardPage() {
               />
             </div>
           </div>
+
+          {/* 📦 Legacy / Older Pages — للرجوع للبيانات القديمة */}
+          <div>
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 px-1">صفحات قديمة (Legacy)</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <ToolCard
+                href="/admin/bookings"
+                icon={<History className="w-5 h-5" />}
+                title="حجوزات قديمة"
+                subtitle="Legacy bookings"
+                accent="bg-gray-100 text-gray-600"
+              />
+              <ToolCard
+                href="/admin/suppliers"
+                icon={<Briefcase className="w-5 h-5" />}
+                title="موردين قدامى"
+                subtitle="Legacy suppliers"
+                accent="bg-gray-100 text-gray-600"
+              />
+              <ToolCard
+                href="/admin/units"
+                icon={<ClipboardList className="w-5 h-5" />}
+                title="Units (قديم)"
+                subtitle="نظام الوحدات القديم"
+                accent="bg-gray-100 text-gray-600"
+              />
+            </div>
+          </div>
         </section>
 
         {/* BOOKINGS BREAKDOWN */}
         <section>
-          <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">
-            توزيع الحجوزات
-          </h2>
+          <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">توزيع الحجوزات</h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <StatusCard label="بانتظار" value={stats.pendingBookings} color="text-yellow-700 bg-yellow-50" />
             <StatusCard label="مؤكّد" value={stats.confirmedBookings} color="text-green-700 bg-green-50" />
             <StatusCard label="تمّ" value={stats.completedBookings} color="text-gray-700 bg-gray-50" />
             <StatusCard label="ملغي" value={stats.cancelledBookings} color="text-red-700 bg-red-50" />
-            <StatusCard
-              label="تقييم متوسط"
-              value={stats.averageRating > 0 ? `${stats.averageRating.toFixed(1)}` : '—'}
-              color="text-[#B8860B] bg-[#B8860B]/10"
-              suffix={stats.totalReviews > 0 ? `(${stats.totalReviews})` : ''}
-            />
+            <StatusCard label="تقييم متوسط" value={stats.averageRating > 0 ? `${stats.averageRating.toFixed(1)}` : '—'} color="text-[#B8860B] bg-[#B8860B]/10" suffix={stats.totalReviews > 0 ? `(${stats.totalReviews})` : ''} />
           </div>
         </section>
 
@@ -454,30 +439,16 @@ export default function AdminDashboardPage() {
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {topListings.length > 0 && (
             <div>
-              <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">
-                الأكثر مشاهدة
-              </h2>
+              <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">الأكثر مشاهدة</h2>
               <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
                 {topListings.map((listing, i) => (
-                  <Link
-                    key={listing.id}
-                    href={`/marketplace/${listing.slug}`}
-                    target="_blank"
-                    className="flex items-center gap-3 p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 no-underline"
-                  >
-                    <span className="w-6 h-6 bg-[#1F5F3F]/10 text-[#1F5F3F] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-                      {i + 1}
-                    </span>
+                  <Link key={listing.id} href={`/marketplace/${listing.slug}`} target="_blank" className="flex items-center gap-3 p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 no-underline">
+                    <span className="w-6 h-6 bg-[#1F5F3F]/10 text-[#1F5F3F] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">{i + 1}</span>
                     <h4 className="flex-1 text-sm font-medium text-gray-900 truncate">{listing.title}</h4>
                     <div className="flex items-center gap-3 text-xs text-gray-500 flex-shrink-0">
-                      <span className="flex items-center gap-1">
-                        <Eye className="w-3 h-3" /> {listing.views_count}
-                      </span>
+                      <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {listing.views_count}</span>
                       {listing.rating && Number(listing.rating) > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Star className="w-3 h-3 fill-[#B8860B] text-[#B8860B]" />
-                          {Number(listing.rating).toFixed(1)}
-                        </span>
+                        <span className="flex items-center gap-1"><Star className="w-3 h-3 fill-[#B8860B] text-[#B8860B]" />{Number(listing.rating).toFixed(1)}</span>
                       )}
                     </div>
                   </Link>
@@ -488,43 +459,23 @@ export default function AdminDashboardPage() {
 
           {recentBookings.length > 0 && (
             <div>
-              <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">
-                آخر الحجوزات
-              </h2>
+              <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">آخر الحجوزات</h2>
               <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
                 {recentBookings.map(booking => {
                   const status = STATUS_LABELS[booking.status] || STATUS_LABELS.pending_payment
                   return (
-                    <Link
-                      key={booking.id}
-                      href={`/bookings/${booking.id}`}
-                      className="flex items-center gap-3 p-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 no-underline"
-                    >
+                    <Link key={booking.id} href={`/bookings/${booking.id}`} className="flex items-center gap-3 p-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 no-underline">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${status.color}`}>
-                            {status.label}
-                          </span>
-                          {booking.reference_code && (
-                            <span className="text-[10px] text-gray-400 font-mono">#{booking.reference_code}</span>
-                          )}
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${status.color}`}>{status.label}</span>
+                          {booking.reference_code && (<span className="text-[10px] text-gray-400 font-mono">#{booking.reference_code}</span>)}
                         </div>
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {booking.listing?.title || 'Listing محذوف'}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {booking.customer?.full_name || 'عميل'} · {booking.supplier?.business_name || 'مورد'}
-                        </p>
+                        <p className="text-sm font-medium text-gray-900 truncate">{booking.listing?.title || 'Listing محذوف'}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{booking.customer?.full_name || 'عميل'} · {booking.supplier?.business_name || 'مورد'}</p>
                       </div>
                       <div className="text-left flex-shrink-0">
-                        <p className="text-sm font-bold text-[#1F5F3F]">
-                          {Number(booking.total_amount).toLocaleString('ar-EG')} <span className="text-xs font-normal">ج.م</span>
-                        </p>
-                        <p className="text-[10px] text-gray-400 mt-0.5">
-                          {new Date(booking.created_at).toLocaleDateString('ar-EG', {
-                            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-                          })}
-                        </p>
+                        <p className="text-sm font-bold text-[#1F5F3F]">{Number(booking.total_amount).toLocaleString('ar-EG')} <span className="text-xs font-normal">ج.م</span></p>
+                        <p className="text-[10px] text-gray-400 mt-0.5">{new Date(booking.created_at).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
                       </div>
                     </Link>
                   )
@@ -538,32 +489,13 @@ export default function AdminDashboardPage() {
   )
 }
 
-// ============================================================================
-// Components
-// ============================================================================
-function ToolCard({
-  href, icon, title, subtitle, accent, badge,
-}: {
-  href: string
-  icon: React.ReactNode
-  title: string
-  subtitle: string
-  accent: string
-  badge?: number
-}) {
+function ToolCard({ href, icon, title, subtitle, accent, badge }: { href: string; icon: React.ReactNode; title: string; subtitle: string; accent: string; badge?: number }) {
   return (
-    <Link
-      href={href}
-      className="group block bg-white rounded-2xl shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all duration-300 p-4 no-underline relative"
-    >
+    <Link href={href} className="group block bg-white rounded-2xl shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all duration-300 p-4 no-underline relative">
       {badge && badge > 0 && (
-        <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-          {badge}
-        </span>
+        <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center">{badge}</span>
       )}
-      <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3 ${accent}`}>
-        {icon}
-      </div>
+      <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3 ${accent}`}>{icon}</div>
       <p className="font-bold text-gray-900 text-sm mb-1 leading-tight">{title}</p>
       <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">{subtitle}</p>
       <ChevronLeft className="absolute bottom-4 left-4 w-3.5 h-3.5 text-gray-300 group-hover:text-[#1F5F3F] group-hover:-translate-x-1 transition-all" />
@@ -571,37 +503,18 @@ function ToolCard({
   )
 }
 
-function MetricCard({
-  icon, label, value, subtitle, accent,
-}: {
-  icon: React.ReactNode
-  label: string
-  value: string
-  subtitle?: string
-  accent: string
-}) {
+function MetricCard({ icon, label, value, subtitle, accent }: { icon: React.ReactNode; label: string; value: string; subtitle?: string; accent: string }) {
   return (
     <div className="bg-white rounded-2xl shadow-soft p-4">
-      <div className={`inline-flex items-center justify-center w-7 h-7 rounded-lg mb-2 ${accent}`}>
-        {icon}
-      </div>
+      <div className={`inline-flex items-center justify-center w-7 h-7 rounded-lg mb-2 ${accent}`}>{icon}</div>
       <p className="text-[11px] text-gray-500 mb-1 leading-tight">{label}</p>
       <p className="text-lg sm:text-xl font-black text-gray-900 tabular">{value}</p>
-      {subtitle && (
-        <p className="text-[10px] text-gray-400 mt-1 tabular">{subtitle}</p>
-      )}
+      {subtitle && (<p className="text-[10px] text-gray-400 mt-1 tabular">{subtitle}</p>)}
     </div>
   )
 }
 
-function StatusCard({
-  label, value, color, suffix,
-}: {
-  label: string
-  value: string | number
-  color: string
-  suffix?: string
-}) {
+function StatusCard({ label, value, color, suffix }: { label: string; value: string | number; color: string; suffix?: string }) {
   return (
     <div className={`rounded-2xl p-3 ${color}`}>
       <p className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-75">{label}</p>

@@ -7,12 +7,13 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Loader2, Lock, AlertCircle, Search, Filter,
   Edit2, Trash2, Eye, EyeOff, Building2, MapPin, Image as ImageIcon,
-  CheckCircle, TrendingUp, ShieldAlert,
+  CheckCircle, TrendingUp, ShieldAlert, Archive,
 } from 'lucide-react'
 
 // ============================================================================
 // /admin/listings — Master listings management for admin.
 // View, edit, delete, change status of ANY listing across ALL suppliers.
+// Delete uses /api/admin/listings/[id] for safe cascade cleanup.
 // ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'forbidden' | 'ready'
@@ -38,7 +39,7 @@ const STATUS_OPTIONS = [
   { value: 'pending_review', label: 'قيد المراجعة', color: 'bg-yellow-100 text-yellow-800', dot: 'bg-yellow-500' },
   { value: 'published', label: 'منشور', color: 'bg-green-100 text-green-800', dot: 'bg-green-500' },
   { value: 'paused', label: 'موقوف', color: 'bg-orange-100 text-orange-800', dot: 'bg-orange-500' },
-  { value: 'rejected', label: 'مرفوض', color: 'bg-red-100 text-red-800', dot: 'bg-red-500' },
+  { value: 'rejected', label: 'مؤرشف', color: 'bg-red-100 text-red-800', dot: 'bg-red-500' },
 ] as const
 
 export default function AdminListingsPage() {
@@ -151,25 +152,46 @@ export default function AdminListingsPage() {
     setActionMsg(null)
 
     try {
-      // @ts-expect-error
-      const { error } = await supabaseBrowser
-        .from('listings')
-        .delete()
-        .eq('id', deleting.id)
+      // Get JWT for API auth
+      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      const accessToken = session?.access_token || ''
 
-      if (error) {
-        setActionMsg('فشل الحذف: ' + error.message)
+      // Call our server-side delete API (handles cascade + soft-delete)
+      const res = await fetch(`/api/admin/listings/${deleting.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const result = await res.json()
+
+      if (!res.ok || result.error) {
+        const errMsg = result.message || result.error || 'فشل الحذف'
+        setActionMsg('فشل الحذف: ' + errMsg)
         setActionBusy(false)
         return
       }
 
-      setListings(prev => prev.filter(l => l.id !== deleting.id))
+      // Handle response based on type
+      if (result.type === 'soft_delete') {
+        // Update in place — listing is now archived (status='rejected')
+        setListings(prev => prev.map(l =>
+          l.id === deleting.id ? { ...l, status: 'rejected' as const } : l
+        ))
+        setActionMsg(`✅ ${result.message}`)
+      } else {
+        // Hard delete — remove from list
+        setListings(prev => prev.filter(l => l.id !== deleting.id))
+        setActionMsg(`✅ ${result.message}`)
+      }
+
       setDeleting(null)
-      setActionMsg('تم حذف الخدمة بنجاح')
-      setTimeout(() => setActionMsg(null), 3000)
+      setTimeout(() => setActionMsg(null), 5000)
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'unknown'
-      setActionMsg('حصل خطأ: ' + msg)
+      setActionMsg('حصل خطأ في الاتصال: ' + msg)
     }
     setActionBusy(false)
   }
@@ -265,7 +287,6 @@ export default function AdminListingsPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard label="الإجمالي" value={totalCount} color="text-[#1F5F3F]" bg="bg-[#1F5F3F]/10" icon={<Building2 className="w-4 h-4" />} />
           <StatCard label="منشورة" value={publishedCount} color="text-green-700" bg="bg-green-100" icon={<CheckCircle className="w-4 h-4" />} />
@@ -273,7 +294,6 @@ export default function AdminListingsPage() {
           <StatCard label="مسودة" value={draftCount} color="text-gray-700" bg="bg-gray-100" icon={<EyeOff className="w-4 h-4" />} />
         </div>
 
-        {/* Filters */}
         <div className="bg-white rounded-2xl shadow-soft p-4">
           <div className="flex flex-col md:flex-row gap-3">
             <div className="flex-1 relative">
@@ -302,12 +322,14 @@ export default function AdminListingsPage() {
 
         {actionMsg && (
           <div className={`p-3 rounded-2xl border flex items-start gap-2 ${
-            actionMsg.includes('بنجاح')
+            actionMsg.includes('✅') || actionMsg.includes('بنجاح')
               ? 'bg-green-50 border-green-200 text-green-900'
               : 'bg-red-50 border-red-200 text-red-900'
           }`}>
-            {actionMsg.includes('بنجاح') ? <CheckCircle className="w-5 h-5 flex-shrink-0" /> : <AlertCircle className="w-5 h-5 flex-shrink-0" />}
-            <p className="text-sm">{actionMsg}</p>
+            {(actionMsg.includes('✅') || actionMsg.includes('بنجاح'))
+              ? <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              : <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+            <p className="text-sm leading-relaxed">{actionMsg}</p>
           </div>
         )}
 
@@ -330,20 +352,37 @@ export default function AdminListingsPage() {
         )}
       </main>
 
-      {/* Delete modal */}
+      {/* Delete modal — smart: shows different msg if has bookings */}
       {deleting && (
         <Modal onClose={() => !actionBusy && setDeleting(null)}>
           <div className="text-center mb-4">
-            <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <Trash2 className="w-7 h-7 text-red-600" />
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 ${
+              deleting.bookings_count > 0 ? 'bg-orange-100' : 'bg-red-100'
+            }`}>
+              {deleting.bookings_count > 0
+                ? <Archive className="w-7 h-7 text-orange-600" />
+                : <Trash2 className="w-7 h-7 text-red-600" />}
             </div>
-            <h2 className="text-xl font-black text-gray-900 mb-2">تأكيد الحذف</h2>
-            <p className="text-sm text-gray-600">
-              متأكد إنك عايز تحذف &quot;{deleting.title}&quot;؟
+            <h2 className="text-xl font-black text-gray-900 mb-2">
+              {deleting.bookings_count > 0 ? 'أرشفة الخدمة' : 'تأكيد الحذف'}
+            </h2>
+            <p className="text-sm text-gray-600 mb-2">
+              &quot;{deleting.title}&quot;
             </p>
-            <p className="text-xs text-red-600 mt-2 font-bold">
-              ⚠️ ده هيحذف الخدمة وكل بياناتها نهائياً ومش هترجع تاني!
-            </p>
+
+            {deleting.bookings_count > 0 ? (
+              <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-right mt-3">
+                <p className="text-xs text-orange-900 leading-relaxed">
+                  <span className="font-bold">⚠️ الخدمة دي عندها {deleting.bookings_count} حجز.</span>
+                  <br />
+                  مش هنحذفها نهائياً عشان نحافظ على تاريخ الحجوزات. هنخفيها من الموقع (status = مؤرشف) ومش هتظهر للعملاء تاني.
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-red-600 mt-2 font-bold">
+                ⚠️ ده هيحذف الخدمة وكل بياناتها (صور، أسعار، إلخ) نهائياً!
+              </p>
+            )}
           </div>
           <div className="flex gap-2">
             <button
@@ -356,16 +395,26 @@ export default function AdminListingsPage() {
             <button
               onClick={handleDelete}
               disabled={actionBusy}
-              className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+              className={`flex-1 py-3 text-white font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-colors ${
+                deleting.bookings_count > 0
+                  ? 'bg-orange-600 hover:bg-orange-700'
+                  : 'bg-red-600 hover:bg-red-700'
+              }`}
             >
-              {actionBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-              {actionBusy ? 'جاري الحذف...' : 'احذف نهائياً'}
+              {actionBusy
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : (deleting.bookings_count > 0
+                    ? <Archive className="w-4 h-4" />
+                    : <Trash2 className="w-4 h-4" />)
+              }
+              {actionBusy
+                ? 'جاري التنفيذ...'
+                : (deleting.bookings_count > 0 ? 'أرشف الخدمة' : 'احذف نهائياً')}
             </button>
           </div>
         </Modal>
       )}
 
-      {/* Status change modal */}
       {statusChanging && (
         <Modal onClose={() => !actionBusy && setStatusChanging(null)}>
           <div className="mb-4">
@@ -509,10 +558,14 @@ function ListingRow({ listing, onDelete, onChangeStatus }: {
         </Link>
         <button
           onClick={onDelete}
-          className="w-9 h-9 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition-colors"
-          title="حذف"
+          className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
+            listing.bookings_count > 0
+              ? 'bg-orange-50 hover:bg-orange-100 text-orange-600'
+              : 'bg-red-50 hover:bg-red-100 text-red-600'
+          }`}
+          title={listing.bookings_count > 0 ? 'أرشفة (عندها حجوزات)' : 'حذف'}
         >
-          <Trash2 className="w-4 h-4" />
+          {listing.bookings_count > 0 ? <Archive className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
         </button>
       </div>
     </div>
