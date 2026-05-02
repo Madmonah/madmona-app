@@ -5,14 +5,19 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ListingForm from '@/components/marketplace/ListingForm'
-import { ArrowRight, Loader2, AlertCircle, Lock, Users } from 'lucide-react'
+import { ArrowRight, Loader2, AlertCircle, Lock, Users, ShieldCheck } from 'lucide-react'
 
 // ============================================================================
 // /supplier/marketplace/[id]/edit
-// Allows owners + staff with can_manage_listings.
+//
+// Auth modes (in order of priority):
+//   1. ADMIN MODE: if `madmona_admin_pw` in sessionStorage → can edit ANY listing
+//   2. OWNER MODE: user owns the supplier → can edit own supplier's listings
+//   3. STAFF MODE: user is staff with can_manage_listings permission
 // ============================================================================
 
 type Stage = 'loading' | 'unauthorized' | 'no-permission' | 'not-found' | 'ready'
+type Mode = 'admin' | 'owner' | 'staff'
 
 interface ListingPhotoRow {
   id: string
@@ -72,12 +77,58 @@ export default function EditListingPage() {
   const [supplierId, setSupplierId] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [initialData, setInitialData] = useState<InitialData | null>(null)
-  const [isStaff, setIsStaff] = useState(false)
+  const [mode, setMode] = useState<Mode>('owner')
   const [roleLabel, setRoleLabel] = useState<string | null>(null)
 
   useEffect(() => {
     const init = async () => {
+      // ============================================================
+      // 1. Check ADMIN MODE first — admin password in sessionStorage
+      // ============================================================
+      const adminPw = typeof window !== 'undefined'
+        ? sessionStorage.getItem('madmona_admin_pw')
+        : null
+
       const { data: { session } } = await supabaseBrowser.auth.getSession()
+
+      if (adminPw) {
+        // Admin can edit ANY listing — skip ownership check
+        setMode('admin')
+
+        // Use the user session if available (for photo uploads under their userId)
+        // Otherwise use the listing's owner supplier_id directly
+        if (session?.user) {
+          setUserId(session.user.id)
+        }
+
+        // Fetch listing without supplier_id filter
+        // @ts-expect-error
+        const { data: listing, error: listingErr } = await supabaseBrowser
+          .from('listings')
+          .select('*')
+          .eq('id', listingId)
+          .maybeSingle()
+
+        if (listingErr || !listing) {
+          setStage('not-found')
+          return
+        }
+
+        // For admin mode, use the listing's actual supplier_id
+        setSupplierId(listing.supplier_id)
+        // Fallback userId for photo paths if user not signed in
+        if (!session?.user) {
+          setUserId(listing.supplier_id) // use supplier_id as userId proxy
+        }
+
+        await loadListingExtras(listing)
+        setStage('ready')
+        return
+      }
+
+      // ============================================================
+      // 2. Not admin — require user session
+      // ============================================================
       if (!session?.user) {
         setStage('unauthorized')
         return
@@ -92,8 +143,10 @@ export default function EditListingPage() {
         .eq('profile_id', session.user.id)
         .maybeSingle()
 
-      // If not owner, check staff with can_manage_listings
-      if (!sup) {
+      if (sup) {
+        setMode('owner')
+      } else {
+        // 3. Check STAFF MODE
         // @ts-expect-error
         const { data: staff } = await supabaseBrowser
           .from('supplier_staff')
@@ -112,7 +165,7 @@ export default function EditListingPage() {
             return
           }
           sup = staff.supplier as typeof sup
-          setIsStaff(true)
+          setMode('staff')
           setRoleLabel(staff.role_label)
         }
       }
@@ -123,7 +176,7 @@ export default function EditListingPage() {
       }
       setSupplierId(sup.id)
 
-      // Fetch listing
+      // Fetch listing — restricted to supplier's own listings
       // @ts-expect-error
       const { data: listing, error: listingErr } = await supabaseBrowser
         .from('listings')
@@ -137,6 +190,12 @@ export default function EditListingPage() {
         return
       }
 
+      await loadListingExtras(listing)
+      setStage('ready')
+    }
+
+    // Helper to load photos, pricing, and attribute values
+    async function loadListingExtras(listing: any) {
       // Photos
       // @ts-expect-error
       const { data: photos } = await supabaseBrowser
@@ -190,9 +249,8 @@ export default function EditListingPage() {
           value: v.value,
         })),
       })
-
-      setStage('ready')
     }
+
     init()
   }, [listingId])
 
@@ -233,7 +291,7 @@ export default function EditListingPage() {
             {stage === 'not-found' ? 'الـlisting ده مش موجود' : 'مش مصرحلك'}
           </h1>
           <Link
-            href="/supplier/marketplace"
+            href={mode === 'admin' ? '/admin/listings' : '/supplier/marketplace'}
             className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold"
           >
             ارجع
@@ -247,7 +305,10 @@ export default function EditListingPage() {
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Link href="/supplier/marketplace" className="p-1 hover:bg-gray-50 rounded-full">
+          <Link
+            href={mode === 'admin' ? '/admin/listings' : '/supplier/marketplace'}
+            className="p-1 hover:bg-gray-50 rounded-full"
+          >
             <ArrowRight className="w-4 h-4 text-gray-600" />
           </Link>
           <div>
@@ -258,7 +319,15 @@ export default function EditListingPage() {
       </header>
 
       <main className="px-4 py-6">
-        {isStaff && (
+        {mode === 'admin' && (
+          <div className="max-w-2xl mx-auto mb-4 p-3 bg-purple-50 border border-purple-200 rounded-xl text-xs text-purple-900 flex items-start gap-2">
+            <ShieldCheck className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span>
+              <strong>وضع الإدارة:</strong> إنت بتعدّل listing بصلاحيات admin
+            </span>
+          </div>
+        )}
+        {mode === 'staff' && (
           <div className="max-w-2xl mx-auto mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-start gap-2">
             <Users className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <span>إنت بتعدّل بصفتك &ldquo;{roleLabel || 'موظف'}&rdquo;</span>
