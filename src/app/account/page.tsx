@@ -12,6 +12,8 @@ import {
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import PushNotificationCard from '@/components/PushNotificationCard'
+import AccountSwitcher from '@/components/AccountSwitcher'
+import WelcomeSupplierBanner from '@/components/WelcomeSupplierBanner'
 
 type Stage = 'loading' | 'unauthenticated' | 'ready'
 
@@ -278,6 +280,20 @@ export default function AccountPage() {
           </div>
         </div>
 
+        {/* 🌟 WELCOME BANNER — shown only if user has no supplier record yet */}
+        {!supplier && (
+          <WelcomeSupplierBanner userName={profile?.full_name} />
+        )}
+
+        {/* 🔁 Account Switcher — switch between accounts WITHOUT browser */}
+        <div className="animate-slide-up delay-75">
+          <AccountSwitcher
+            currentPhone={profile?.phone}
+            currentLabel={profile?.full_name}
+            currentRole={profile?.role}
+          />
+        </div>
+
         {/* Customer section */}
         <div className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-100">
           <div className="px-6 py-3 border-b border-gray-100">
@@ -313,7 +329,7 @@ export default function AccountPage() {
           <PushNotificationCard />
         </div>
 
-        {/* Supplier section */}
+        {/* Supplier section — shown only if user IS a supplier */}
         {(isApprovedSupplier || isPendingSupplier || isRejectedSupplier) && (
           <div className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-200">
             <div className="px-6 py-3 border-b border-gray-100">
@@ -327,25 +343,6 @@ export default function AccountPage() {
               subtitle="listings + الحجوزات + الإيراد"
             />
           </div>
-        )}
-
-        {!supplier && (
-          <Link
-            href="/supplier/register"
-            className="block bg-gradient-to-l from-[#1F5F3F] to-[#2d7a52] text-white rounded-3xl p-5 hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline animate-slide-up delay-200 relative overflow-hidden"
-          >
-            <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-            <div className="relative flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-6 h-6" />
-              </div>
-              <div className="flex-1">
-                <p className="font-black text-base">سجّل كمورد</p>
-                <p className="text-xs text-white/80 mt-0.5">عندك مساحة أو خدمة تأجير؟ اعرضها</p>
-              </div>
-              <ChevronLeft className="w-4 h-4 text-white/80" />
-            </div>
-          </Link>
         )}
 
         {/* Admin section */}
@@ -392,7 +389,7 @@ export default function AccountPage() {
         </button>
 
         <p className="text-xs text-center text-gray-400 pt-2">
-          Madmona Marketplace v1.0
+          خدمات مضمونة v1.0
         </p>
       </main>
 

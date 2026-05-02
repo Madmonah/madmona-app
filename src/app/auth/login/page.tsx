@@ -1,10 +1,11 @@
 'use client'
 
-import { Suspense, useState, type FormEvent } from 'react'
+import { Suspense, useState, useEffect, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
+import { saveAccount } from '@/lib/saved-accounts'
 import {
   ArrowRight, Phone, Lock, AlertCircle, Loader2, LogIn, Sparkles,
 } from 'lucide-react'
@@ -13,11 +14,19 @@ function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/account'
+  const prefilledPhone = searchParams.get('phone') || ''
 
-  const [phone, setPhone] = useState('')
+  const [phone, setPhone] = useState(prefilledPhone)
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Auto-fill phone from query param when account switcher redirects here
+  useEffect(() => {
+    if (prefilledPhone) {
+      setPhone(prefilledPhone)
+    }
+  }, [prefilledPhone])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -36,7 +45,7 @@ function LoginContent() {
     setSubmitting(true)
     const email = phoneToEmail(normalized)
 
-    const { error: signInErr } = await supabaseBrowser.auth.signInWithPassword({
+    const { error: signInErr, data: signInData } = await supabaseBrowser.auth.signInWithPassword({
       email,
       password,
     })
@@ -52,6 +61,27 @@ function LoginContent() {
       }
       setSubmitting(false)
       return
+    }
+
+    // Save account to localStorage for fast switching later
+    try {
+      if (signInData?.user?.id) {
+        // @ts-expect-error
+        const { data: profile } = await supabaseBrowser
+          .from('profiles')
+          .select('full_name, role')
+          .eq('id', signInData.user.id)
+          .maybeSingle()
+
+        const label = profile?.full_name || normalized
+        const role = profile?.role || 'customer'
+        saveAccount(normalized, label, role)
+      } else {
+        saveAccount(normalized, normalized)
+      }
+    } catch (e) {
+      // Silent fail — saving is nice-to-have
+      console.warn('[auth/login] saveAccount failed:', e)
     }
 
     router.push(redirectTo)
@@ -81,9 +111,15 @@ function LoginContent() {
               <span className="text-xs font-bold text-gray-700">مضمونة · Madmona</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight tracking-tight">
-              أهلاً <span className="gradient-text-green">بعودتك</span>
+              {prefilledPhone ? (
+                <>تبديل <span className="gradient-text-green">الحساب</span></>
+              ) : (
+                <>أهلاً <span className="gradient-text-green">بعودتك</span></>
+              )}
             </h1>
-            <p className="text-sm text-gray-500 mt-2">سجّل دخولك بالرقم وكلمة السر</p>
+            <p className="text-sm text-gray-500 mt-2">
+              {prefilledPhone ? 'دخل كلمة السر للحساب ده' : 'سجّل دخولك بالرقم وكلمة السر'}
+            </p>
           </div>
 
           <div className="bg-white rounded-3xl shadow-luxe p-7 md:p-9">
@@ -120,6 +156,7 @@ function LoginContent() {
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   autoComplete="current-password"
+                  autoFocus={!!prefilledPhone}
                   required
                 />
               </div>
