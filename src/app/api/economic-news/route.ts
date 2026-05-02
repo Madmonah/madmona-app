@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 // ============================================================================
 // GET /api/economic-news
 //
-// Pool refreshed FORCIBLY every 5 minutes from 22 RSS sources.
+// Pool refreshed FORCIBLY every 2 minutes from 22 RSS sources.
 // Every request returns 15 randomly-shuffled items.
 // Egypt-focused: 70% Egyptian sources, 30% regional.
 // Response headers: NO caching at any level.
@@ -61,7 +61,6 @@ const SOURCES: NewsSource[] = [
   { name: 'الجزيرة - اقتصاد', url: 'https://www.aljazeera.net/aljazeerarss/economy.xml', egyptian: false, weight: 1 },
 ]
 
-// Module-level pool — refreshed every 5 minutes
 interface Pool {
   items: NewsItem[]
   timestamp: number
@@ -69,7 +68,7 @@ interface Pool {
 }
 
 let pool: Pool | null = null
-const POOL_TTL = 5 * 60 * 1000  // 5 MINUTES — this is what Mohamed asked for
+const POOL_TTL = 2 * 60 * 1000  // 2 MINUTES — Mohamed's updated requirement
 
 // XML helpers ----------------------------------------------------------------
 function decodeCData(s: string) { return s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1') }
@@ -167,7 +166,6 @@ async function buildPool(): Promise<NewsItem[]> {
   })
 }
 
-// Fisher-Yates shuffle
 function shuffle<T>(arr: T[]): T[] {
   const copy = [...arr]
   for (let i = copy.length - 1; i > 0; i--) {
@@ -197,7 +195,6 @@ function selectRandomMix(allItems: NewsItem[], n: number): NewsItem[] {
   return shuffle(picked).slice(0, n)
 }
 
-// Force-refresh in background (don't block response)
 async function refreshPoolBackground() {
   if (pool?.refreshing) return
   if (pool) pool.refreshing = true
@@ -219,7 +216,6 @@ export async function GET(request: Request) {
   const url = new URL(request.url)
   const forceRefresh = url.searchParams.get('refresh') === '1'
 
-  // Build pool if doesn't exist
   if (!pool) {
     const items = await buildPool()
     if (items.length > 0) {
@@ -232,11 +228,9 @@ export async function GET(request: Request) {
     }
   }
 
-  // Force refresh if requested OR pool is older than 5 minutes
   const age = Date.now() - pool.timestamp
   const stale = age > POOL_TTL
   if (forceRefresh || stale) {
-    // Refresh in background — don't block this response
     refreshPoolBackground()
   }
 
