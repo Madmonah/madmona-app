@@ -10,6 +10,12 @@ import {
   MapPin,
   MessageCircle,
   Star,
+  Home,
+  Car,
+  Camera,
+  PartyPopper,
+  Wrench,
+  Briefcase,
 } from 'lucide-react'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
@@ -17,172 +23,328 @@ import InstallPWA from '@/components/InstallPWA'
 import FeaturedListings from '@/components/FeaturedListings'
 
 // ============================================================
-// Home page — premium, cinematic, professional
-// Address: 7 Soliman Azmy St, El Nozha, Heliopolis, Cairo
-// Plus Code: 4974+XX El Nozha
+// Home page — Premium Editorial Redesign
+// "خدمات مضمونة" branding throughout
+// Stock photography via Unsplash
 // ============================================================
 
 const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
 
+// High-quality Unsplash stock photos (free, no attribution required)
+// Selected for: warm tones, premium aesthetic, lifestyle vibes
+const HERO_IMAGE = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=85&auto=format&fit=crop'
+const MARKETPLACE_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=85&auto=format&fit=crop'
+const SPACES_IMAGE = 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&q=85&auto=format&fit=crop'
+
+const PROPERTIES_IMG = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80&auto=format&fit=crop'
+const VEHICLES_IMG = 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80&auto=format&fit=crop'
+const EQUIPMENT_IMG = 'https://images.unsplash.com/photo-1533422902779-aff35862e462?w=600&q=80&auto=format&fit=crop'
+const EVENTS_IMG = 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=600&q=80&auto=format&fit=crop'
+const SPACES_CATEGORY_IMG = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&auto=format&fit=crop'
+const TOOLS_IMG = 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&q=80&auto=format&fit=crop'
+
 export default function HomePage() {
   return (
-    <div className="min-h-screen gradient-mesh text-right overflow-x-hidden pb-20 md:pb-0" dir="rtl">
+    <div className="min-h-screen bg-[#FAFAF7] text-right overflow-x-hidden pb-20 md:pb-0" dir="rtl">
       <TopNav />
 
       <main className="relative">
-        {/* Decorative gradient blobs */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#1F5F3F]/5 rounded-full blur-3xl -z-0 animate-float pointer-events-none" />
-        <div className="absolute top-40 left-20 w-[400px] h-[400px] bg-[#B8860B]/5 rounded-full blur-3xl -z-0 animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
-
-        <div className="max-w-6xl mx-auto px-4 relative">
-          <div className="pt-4">
-            <InstallPWA />
-          </div>
-
-          {/* ========== HERO ========== */}
-          <section className="pt-16 pb-20 md:pt-28 md:pb-32 text-center relative">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur rounded-full mb-8 shadow-soft animate-slide-down">
-              <Sparkles className="w-4 h-4 text-[#B8860B]" />
-              <span className="text-xs font-bold text-gray-700 tracking-wide">
-                أول منصة حجز شاملة في مصر
-              </span>
+        {/* ============================================================ */}
+        {/* HERO — Editorial split layout with full-bleed image */}
+        {/* ============================================================ */}
+        <section className="relative pt-6 md:pt-8 pb-12 md:pb-20">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="pt-2">
+              <InstallPWA />
             </div>
 
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-gray-900 leading-[0.95] mb-6 tracking-tight animate-slide-up">
-              مساحتك،
-              <br />
-              <span className="gradient-text-green">
-                خدمتك،
-              </span>
-              <br />
-              <span className="text-gray-900">مضمونة</span>
-            </h1>
+            {/* Editorial label */}
+            <div className="flex items-center gap-3 mb-8 mt-6 md:mt-12">
+              <div className="h-px w-12 bg-[#1F5F3F]" />
+              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F5F3F]">
+                EST. 2026 — CAIRO, EGYPT
+              </p>
+              <div className="h-px flex-1 bg-gradient-to-l from-[#1F5F3F]/30 to-transparent" />
+            </div>
 
-            <p className="text-base md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto mb-10 animate-slide-up delay-200">
-              مساحات عمل، عقارات، مركبات، ومعدات.
-              <br className="hidden sm:block" />
-              من موردين معتمدين، بضمان كامل، في مكان واحد.
-            </p>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center">
+              {/* Headline + CTA */}
+              <div className="md:col-span-7 order-2 md:order-1">
+                <h1 className="font-black text-gray-900 leading-[0.92] tracking-tight mb-6">
+                  <span className="block text-5xl md:text-7xl lg:text-8xl">
+                    خدمتك،
+                  </span>
+                  <span className="block text-5xl md:text-7xl lg:text-8xl gradient-text-green">
+                    وقتك،
+                  </span>
+                  <span className="block text-5xl md:text-7xl lg:text-8xl">
+                    <span className="italic font-light">مضمونة</span>
+                  </span>
+                </h1>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center animate-slide-up delay-300">
+                <p className="text-base md:text-xl text-gray-600 leading-relaxed max-w-xl mb-8 md:mb-10">
+                  منصة حجز مصرية تجمع كل اللي يتأجر — من موردين معتمدين، بضمان كامل،
+                  <span className="text-gray-900 font-medium"> في مكان واحد.</span>
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link
+                    href="/marketplace"
+                    className="group inline-flex items-center justify-center gap-2 bg-[#1F5F3F] text-white px-8 py-4 rounded-full font-bold text-base shadow-elevated hover:shadow-luxe transition-all duration-300 hover:-translate-y-0.5 no-underline"
+                  >
+                    <Compass className="w-5 h-5" />
+                    <span>اكتشف الخدمات</span>
+                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                  </Link>
+                  <Link
+                    href="/browse"
+                    className="group inline-flex items-center justify-center gap-2 text-gray-900 px-8 py-4 rounded-full font-bold text-base hover:bg-gray-100 transition-all duration-300 no-underline border-b-2 border-gray-900 rounded-b-none rounded-t-full"
+                  >
+                    <span>خدمات مضمونة</span>
+                  </Link>
+                </div>
+
+                {/* Trust badges */}
+                <div className="flex items-center gap-6 md:gap-8 mt-10 flex-wrap">
+                  <TrustBadge icon={<ShieldCheck className="w-3.5 h-3.5" />} label="حجز مضمون" />
+                  <TrustBadge icon={<Clock className="w-3.5 h-3.5" />} label="رد فوري ٢٤/٧" />
+                  <TrustBadge icon={<Star className="w-3.5 h-3.5" />} label="موردين موثّقين" />
+                </div>
+              </div>
+
+              {/* Hero image */}
+              <div className="md:col-span-5 order-1 md:order-2 relative">
+                <div className="relative aspect-[4/5] md:aspect-[3/4] rounded-3xl overflow-hidden shadow-luxe">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={HERO_IMAGE}
+                    alt="Madmona services"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading="eager"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+
+                  {/* Floating badge */}
+                  <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md rounded-2xl px-4 py-3 shadow-card max-w-[220px]">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Sparkles className="w-3.5 h-3.5 text-[#B8860B]" />
+                      <p className="text-[10px] font-black tracking-widest uppercase text-[#1F5F3F]">جديد</p>
+                    </div>
+                    <p className="text-xs text-gray-700 leading-relaxed">
+                      أكتر من <span className="font-black text-gray-900">٨ فئات</span> من الخدمات والمنتجات
+                    </p>
+                  </div>
+                </div>
+
+                {/* Decorative gold accent */}
+                <div className="absolute -top-3 -left-3 w-20 h-20 border-2 border-[#B8860B]/40 rounded-3xl -z-0 hidden md:block" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ============================================================ */}
+        {/* CATEGORIES SHOWCASE — Editorial grid with photos */}
+        {/* ============================================================ */}
+        <section className="py-16 md:py-24 bg-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-end justify-between mb-10 md:mb-14 flex-wrap gap-4">
+              <div>
+                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">
+                  COLLECTIONS
+                </p>
+                <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
+                  كل اللي
+                  <br />
+                  <span className="italic font-light gradient-text-green">يتأجر</span>
+                </h2>
+              </div>
               <Link
                 href="/marketplace"
-                className="group inline-flex items-center justify-center gap-2 bg-[#1F5F3F] text-white px-8 py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe transition-all duration-300 hover:-translate-y-0.5 no-underline"
+                className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-gray-900 hover:text-[#1F5F3F] transition-colors no-underline"
               >
-                <Compass className="w-5 h-5" />
-                <span>اكتشف الـMarketplace</span>
-                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="/browse"
-                className="group inline-flex items-center justify-center gap-2 bg-white/80 backdrop-blur text-gray-900 px-8 py-4 rounded-2xl font-bold text-base shadow-soft hover:shadow-card transition-all duration-300 hover:-translate-y-0.5 border border-gray-100 no-underline"
-              >
-                <Building2 className="w-5 h-5" />
-                <span>مساحات مضمونة</span>
+                <span>شوف الكل</span>
+                <ArrowLeft className="w-4 h-4" />
               </Link>
             </div>
 
-            {/* Trust ribbon */}
-            <div className="flex items-center justify-center gap-6 md:gap-8 mt-12 animate-fade-in delay-500 flex-wrap">
-              <TrustBadge icon={<ShieldCheck className="w-3.5 h-3.5" />} label="حجز مضمون" />
-              <TrustBadge icon={<Clock className="w-3.5 h-3.5" />} label="رد فوري ٢٤/٧" />
-              <TrustBadge icon={<Star className="w-3.5 h-3.5" />} label="موردين موثّقين" />
+            {/* Asymmetric grid */}
+            <div className="grid grid-cols-2 md:grid-cols-12 gap-3 md:gap-4">
+              <CategoryCard
+                href="/marketplace?category=spaces"
+                image={SPACES_CATEGORY_IMG}
+                label="مساحات عمل"
+                sublabel="WORKSPACES"
+                count="١٢ خيار"
+                className="md:col-span-6 md:row-span-2 aspect-square md:aspect-auto"
+                size="large"
+              />
+              <CategoryCard
+                href="/marketplace?category=properties"
+                image={PROPERTIES_IMG}
+                label="عقارات"
+                sublabel="PROPERTIES"
+                className="md:col-span-3 aspect-square"
+              />
+              <CategoryCard
+                href="/marketplace?category=vehicles"
+                image={VEHICLES_IMG}
+                label="مركبات"
+                sublabel="VEHICLES"
+                className="md:col-span-3 aspect-square"
+              />
+              <CategoryCard
+                href="/marketplace?category=equipment"
+                image={EQUIPMENT_IMG}
+                label="معدات"
+                sublabel="EQUIPMENT"
+                className="md:col-span-3 aspect-square"
+              />
+              <CategoryCard
+                href="/marketplace?category=events"
+                image={EVENTS_IMG}
+                label="فعاليات"
+                sublabel="EVENTS"
+                className="md:col-span-3 aspect-square"
+              />
             </div>
-          </section>
 
-          {/* ========== TWO BIG SHOWCASE CARDS ========== */}
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-20 md:mb-28">
-            {/* Marketplace — featured first */}
             <Link
               href="/marketplace"
-              className="group relative block bg-white rounded-3xl p-8 md:p-10 hover:-translate-y-1 transition-all duration-500 no-underline overflow-hidden shadow-card hover:shadow-luxe animate-slide-up delay-100"
+              className="md:hidden mt-6 inline-flex items-center gap-2 text-sm font-bold text-gray-900 no-underline"
             >
-              {/* Gradient accent */}
-              <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-[#B8860B]/10 to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-              <div className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-tl from-[#1F5F3F]/10 to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-
-              <div className="relative z-10">
-                <div className="inline-flex items-center gap-1.5 text-[10px] bg-[#B8860B] text-white px-3 py-1 rounded-full font-bold tracking-widest uppercase mb-6">
-                  <Sparkles className="w-3 h-3" />
-                  جديد
-                </div>
-
-                <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-3 leading-[0.95]">
-                  <span className="gradient-text-green">Madmona</span>
-                  <br />
-                  Marketplace
-                </h2>
-
-                <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-8 max-w-md">
-                  عقارات، مركبات، معدات تصوير، ومساحات تنظيم فعاليات — من موردين معتمدين على المنصة.
-                </p>
-
-                <div className="flex items-center gap-3 mb-6 flex-wrap">
-                  <CategoryPill emoji="🏠" label="عقارات" />
-                  <CategoryPill emoji="🚗" label="مركبات" />
-                  <CategoryPill emoji="🎬" label="معدات" />
-                  <CategoryPill emoji="🎉" label="فعاليات" />
-                </div>
-
-                <div className="inline-flex items-center gap-2 text-[#1F5F3F] font-bold text-sm group-hover:gap-3 transition-all">
-                  <span>اكتشف الكل</span>
-                  <ArrowLeft className="w-4 h-4" />
-                </div>
-              </div>
+              <span>شوف الكل</span>
+              <ArrowLeft className="w-4 h-4" />
             </Link>
+          </div>
+        </section>
 
-            {/* Madmona spaces */}
-            <Link
-              href="/browse"
-              className="group relative block rounded-3xl p-8 md:p-10 hover:-translate-y-1 transition-all duration-500 no-underline overflow-hidden text-white animate-slide-up delay-200"
-              style={{ background: 'linear-gradient(135deg, #1F5F3F 0%, #2d7a52 50%, #1F5F3F 100%)' }}
-            >
-              <div className="absolute -top-12 -left-12 w-48 h-48 border border-white/10 rounded-full" />
-              <div className="absolute -bottom-20 -right-20 w-72 h-72 border border-white/10 rounded-full" />
-              <div className="absolute top-1/2 left-1/3 w-3 h-3 bg-[#B8860B] rounded-full animate-pulse-soft" />
-
-              <div className="relative z-10">
-                <div className="inline-flex items-center gap-1.5 text-[10px] bg-[#B8860B] text-white px-3 py-1 rounded-full font-bold tracking-widest uppercase mb-6">
-                  <Star className="w-3 h-3 fill-white" />
-                  الأصلي
-                </div>
-
-                <h2 className="text-3xl md:text-5xl font-black mb-3 leading-[0.95]">
-                  مساحات
-                  <br />
-                  مضمونة
-                </h2>
-
-                <p className="text-sm md:text-base text-white/80 leading-relaxed mb-8 max-w-md">
-                  مكاتب فردية، غرف اجتماعات، وجاردن في قلب مصر الجديدة. يومك الأول مجاناً.
-                </p>
-
-                <div className="grid grid-cols-3 gap-2 mb-6">
-                  <SpaceMini label="مكاتب" sublabel="من ٥٠ ج/ساعة" />
-                  <SpaceMini label="اجتماعات" sublabel="من ٣٠٠ ج" />
-                  <SpaceMini label="جاردن" sublabel="٦٥ ج/يوم" />
-                </div>
-
-                <div className="inline-flex items-center gap-2 bg-white text-[#1F5F3F] px-5 py-2.5 rounded-xl font-bold text-sm group-hover:gap-3 transition-all">
-                  <span>احجز دلوقتي</span>
-                  <ArrowLeft className="w-4 h-4" />
-                </div>
-              </div>
-            </Link>
-          </section>
-
-          <section className="mb-20 md:mb-28">
+        {/* ============================================================ */}
+        {/* FEATURED LISTINGS */}
+        {/* ============================================================ */}
+        <section className="py-16 md:py-24">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="mb-10 md:mb-14">
+              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">
+                FEATURED
+              </p>
+              <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
+                المختار
+                <br />
+                <span className="italic font-light gradient-text-green">بعناية</span>
+              </h2>
+            </div>
             <FeaturedListings />
-          </section>
+          </div>
+        </section>
 
-          {/* ========== HOW IT WORKS ========== */}
-          <section className="mb-20 md:mb-28">
-            <div className="text-center mb-12">
-              <p className="text-xs font-bold text-[#B8860B] uppercase tracking-widest mb-2">إزاي بيشتغل</p>
-              <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight">
+        {/* ============================================================ */}
+        {/* TWO BIG SHOWCASE CARDS */}
+        {/* ============================================================ */}
+        <section className="py-16 md:py-24 bg-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              {/* Marketplace */}
+              <Link
+                href="/marketplace"
+                className="group relative block rounded-3xl overflow-hidden no-underline aspect-[4/5] md:aspect-[3/4]"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={MARKETPLACE_IMAGE}
+                  alt="Madmona Marketplace"
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+                <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-between">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 text-[10px] bg-[#B8860B] text-white px-3 py-1 rounded-full font-bold tracking-widest uppercase">
+                      <Sparkles className="w-3 h-3" />
+                      الجديد
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-3xl md:text-5xl font-black text-white mb-3 leading-[0.95]">
+                      Madmona
+                      <br />
+                      <span className="italic font-light">Marketplace</span>
+                    </h3>
+                    <p className="text-sm md:text-base text-white/85 leading-relaxed mb-6 max-w-md">
+                      عقارات، مركبات، معدات، وفعاليات — من موردين معتمدين على المنصة.
+                    </p>
+                    <div className="inline-flex items-center gap-2 text-white font-bold text-sm group-hover:gap-3 transition-all">
+                      <span>اكتشف الكل</span>
+                      <ArrowLeft className="w-4 h-4" />
+                    </div>
+                  </div>
+                </div>
+              </Link>
+
+              {/* Madmona services */}
+              <Link
+                href="/browse"
+                className="group relative block rounded-3xl overflow-hidden no-underline aspect-[4/5] md:aspect-[3/4]"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={SPACES_IMAGE}
+                  alt="خدمات مضمونة"
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1F5F3F]/95 via-[#1F5F3F]/50 to-[#1F5F3F]/20" />
+
+                <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-between">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 text-[10px] bg-[#B8860B] text-white px-3 py-1 rounded-full font-bold tracking-widest uppercase">
+                      <Star className="w-3 h-3 fill-white" />
+                      الأصلي
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-3xl md:text-5xl font-black text-white mb-3 leading-[0.95]">
+                      خدمات
+                      <br />
+                      <span className="italic font-light">مضمونة</span>
+                    </h3>
+                    <p className="text-sm md:text-base text-white/90 leading-relaxed mb-6 max-w-md">
+                      مكاتب فردية، غرف اجتماعات، وجاردن في قلب مصر الجديدة. يومك الأول مجاناً.
+                    </p>
+
+                    <div className="grid grid-cols-3 gap-2 mb-6">
+                      <ServiceMini label="مكاتب" sublabel="من ٥٠ ج/ساعة" />
+                      <ServiceMini label="اجتماعات" sublabel="من ٣٠٠ ج" />
+                      <ServiceMini label="جاردن" sublabel="٦٥ ج/يوم" />
+                    </div>
+
+                    <div className="inline-flex items-center gap-2 bg-white text-[#1F5F3F] px-5 py-2.5 rounded-full font-bold text-sm group-hover:gap-3 transition-all">
+                      <span>احجز دلوقتي</span>
+                      <ArrowLeft className="w-4 h-4" />
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ============================================================ */}
+        {/* HOW IT WORKS */}
+        {/* ============================================================ */}
+        <section className="py-16 md:py-24">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-14">
+              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">
+                THE PROCESS
+              </p>
+              <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
                 ٣ خطوات،
                 <br />
-                <span className="gradient-text-green">حجز مضمون</span>
+                <span className="italic font-light gradient-text-green">حجز مضمون</span>
               </h2>
             </div>
 
@@ -192,7 +354,6 @@ export default function HomePage() {
                 title="استكشف"
                 description="اتصفّح الـMarketplace أو ابحث في فئة معينة. شوف الأسعار والصور قبل أي قرار."
                 icon={<Compass className="w-6 h-6" />}
-                accent="from-[#1F5F3F]/10 to-[#1F5F3F]/5"
                 iconAccent="text-[#1F5F3F] bg-[#1F5F3F]/10"
               />
               <Step
@@ -200,7 +361,6 @@ export default function HomePage() {
                 title="احجز"
                 description="اختار الوقت اللي يناسبك واحجز فوراً. تأكيد على واتساب من المورد مباشرة."
                 icon={<Zap className="w-6 h-6" />}
-                accent="from-[#B8860B]/10 to-[#B8860B]/5"
                 iconAccent="text-[#B8860B] bg-[#B8860B]/10"
               />
               <Step
@@ -208,128 +368,150 @@ export default function HomePage() {
                 title="استمتع"
                 description="ادفع كاش أو InstaPay. مفيش هيدن فيز. ومتأمن إنك مش هتلاقي مفاجآت."
                 icon={<ShieldCheck className="w-6 h-6" />}
-                accent="from-[#C2410C]/10 to-[#C2410C]/5"
                 iconAccent="text-[#C2410C] bg-[#C2410C]/10"
               />
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* ========== SUPPLIER CTA ========== */}
-          <section className="mb-20 md:mb-28 relative">
-            <div className="relative bg-gray-900 text-white rounded-3xl p-8 md:p-14 overflow-hidden shadow-luxe">
+        {/* ============================================================ */}
+        {/* SUPPLIER CTA */}
+        {/* ============================================================ */}
+        <section className="py-12 md:py-20">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="relative bg-gray-900 text-white rounded-3xl p-8 md:p-16 overflow-hidden shadow-luxe">
               <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1F5F3F]/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
               <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#B8860B]/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
               <div className="relative z-10 max-w-2xl">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur rounded-full mb-5 border border-white/10">
-                  <Building2 className="w-3 h-3 text-[#B8860B]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/90">للموردين</span>
-                </div>
+                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-4">
+                  FOR SUPPLIERS
+                </p>
 
-                <h2 className="text-3xl md:text-5xl font-black mb-4 leading-[0.95]">
-                  عندك مساحة أو خدمة؟
+                <h2 className="text-3xl md:text-6xl font-black mb-5 leading-[0.92]">
+                  عندك خدمة؟
                   <br />
-                  <span className="gradient-text-gold">خلّيها تكسبلك</span>
+                  <span className="italic font-light gradient-text-gold">خلّيها تكسبلك</span>
                 </h2>
 
                 <p className="text-sm md:text-lg text-white/80 leading-relaxed mb-8 max-w-xl">
-                  انضم لـMadmona Marketplace، اعرض خدمتك على آلاف العملاء، واستقبل حجوزات بدون عمولة جانبية.
+                  انضم لـMadmona Marketplace، اعرض خدمتك على آلاف العملاء، واستقبل حجوزات.
                   لوحة كاملة، إشعارات لايف، وعمولة شفافة.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Link
                     href="/supplier/register"
-                    className="group inline-flex items-center justify-center gap-2 bg-white text-gray-900 px-7 py-3.5 rounded-2xl font-bold text-sm hover:bg-gray-100 transition-all duration-300 hover:-translate-y-0.5 no-underline"
+                    className="group inline-flex items-center justify-center gap-2 bg-white text-gray-900 px-7 py-3.5 rounded-full font-bold text-sm hover:bg-gray-100 transition-all duration-300 hover:-translate-y-0.5 no-underline"
                   >
                     <span>سجّل دلوقتي</span>
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                   </Link>
                   <Link
                     href="/auth/login?redirect=/supplier/marketplace"
-                    className="inline-flex items-center justify-center gap-2 border border-white/30 backdrop-blur text-white px-7 py-3.5 rounded-2xl font-bold text-sm hover:bg-white/10 transition-all no-underline"
+                    className="inline-flex items-center justify-center gap-2 border border-white/30 backdrop-blur text-white px-7 py-3.5 rounded-full font-bold text-sm hover:bg-white/10 transition-all no-underline"
                   >
                     عندي حساب
                   </Link>
                 </div>
               </div>
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* ========== CONTACT ========== */}
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-12">
-            <a
-              href="https://wa.me/201002229982"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center gap-4 p-5 bg-white rounded-2xl shadow-soft hover:shadow-card transition-all duration-300 hover:-translate-y-0.5 no-underline border border-gray-100"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-[#25D366] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                <MessageCircle className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-bold text-gray-900">واتساب</p>
-                <p className="text-xs text-gray-500 mt-0.5" dir="ltr">+20 100 222 9982 · 24/7</p>
-              </div>
-              <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#25D366] group-hover:-translate-x-1 transition-all" />
-            </a>
+        {/* ============================================================ */}
+        {/* CONTACT */}
+        {/* ============================================================ */}
+        <section className="py-12 md:py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3 text-center">
+              GET IN TOUCH
+            </p>
+            <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-[0.95] text-center mb-10">
+              تواصل
+              <span className="italic font-light gradient-text-green"> معانا</span>
+            </h2>
 
-            <a
-              href={MADMONA_MAPS_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center gap-4 p-5 bg-white rounded-2xl shadow-soft hover:shadow-card transition-all duration-300 hover:-translate-y-0.5 no-underline border border-gray-100"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-gray-900 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                <MapPin className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-bold text-gray-900">٧ شارع سليمان عَزْمي</p>
-                <p className="text-xs text-gray-500 mt-0.5">النزهة، مصر الجديدة · ٩ ص → ١١ م</p>
-              </div>
-              <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#1F5F3F] group-hover:-translate-x-1 transition-all" />
-            </a>
-          </section>
-
-          {/* ========== FOOTER ========== */}
-          <footer className="text-center py-10 border-t border-gray-200">
-            <p className="font-black text-2xl gradient-text-green mb-2">مضمونة</p>
-            <p className="text-xs text-gray-500 mb-4 tracking-wide">Your space, guaranteed · مساحتك اللي بتخصك</p>
-            <div className="flex justify-center items-center gap-3 text-xs flex-wrap">
-              <Link href="/about" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
-                عن مضمونة
-              </Link>
-              <span className="text-gray-300">·</span>
-              <Link href="/marketplace" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
-                Marketplace
-              </Link>
-              <span className="text-gray-300">·</span>
-              <Link href="/privacy" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
-                الخصوصية
-              </Link>
-              <span className="text-gray-300">·</span>
-              <Link href="/terms" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
-                الشروط
-              </Link>
-              <span className="text-gray-300">·</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl mx-auto">
               <a
                 href="https://wa.me/201002229982"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors"
+                className="group flex items-center gap-4 p-5 bg-[#FAFAF7] rounded-2xl hover:bg-white hover:shadow-card transition-all duration-300 no-underline border border-gray-100"
               >
-                واتساب
+                <div className="w-12 h-12 rounded-2xl bg-[#25D366] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <MessageCircle className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-gray-900">واتساب</p>
+                  <p className="text-xs text-gray-500 mt-0.5" dir="ltr">+20 100 222 9982 · 24/7</p>
+                </div>
+                <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#25D366] group-hover:-translate-x-1 transition-all" />
+              </a>
+
+              <a
+                href={MADMONA_MAPS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-4 p-5 bg-[#FAFAF7] rounded-2xl hover:bg-white hover:shadow-card transition-all duration-300 no-underline border border-gray-100"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-gray-900 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <MapPin className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-gray-900">٧ شارع سليمان عَزْمي</p>
+                  <p className="text-xs text-gray-500 mt-0.5">النزهة، مصر الجديدة · ٩ ص → ١١ م</p>
+                </div>
+                <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#1F5F3F] group-hover:-translate-x-1 transition-all" />
               </a>
             </div>
-            <p className="text-[10px] text-gray-400 mt-6">© 2026 Madmona. جميع الحقوق محفوظة.</p>
-          </footer>
-        </div>
+          </div>
+        </section>
+
+        {/* ============================================================ */}
+        {/* FOOTER */}
+        {/* ============================================================ */}
+        <footer className="text-center py-12 md:py-16 border-t border-gray-200 bg-white">
+          <p className="font-black text-3xl gradient-text-green mb-2">مضمونة</p>
+          <p className="text-xs text-gray-500 mb-6 tracking-[0.2em] uppercase">Your service, guaranteed</p>
+          <div className="flex justify-center items-center gap-3 text-xs flex-wrap mb-6 px-4">
+            <Link href="/about" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
+              عن مضمونة
+            </Link>
+            <span className="text-gray-300">·</span>
+            <Link href="/marketplace" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
+              Marketplace
+            </Link>
+            <span className="text-gray-300">·</span>
+            <Link href="/privacy" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
+              الخصوصية
+            </Link>
+            <span className="text-gray-300">·</span>
+            <Link href="/terms" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">
+              الشروط
+            </Link>
+            <span className="text-gray-300">·</span>
+            <a
+              href="https://wa.me/201002229982"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors"
+            >
+              واتساب
+            </a>
+          </div>
+          <p className="text-[10px] text-gray-400">© 2026 Madmona. جميع الحقوق محفوظة.</p>
+        </footer>
       </main>
 
       <BottomNav />
     </div>
   )
 }
+
+// ============================================================
+// Components
+// ============================================================
 
 function TrustBadge({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
@@ -340,18 +522,54 @@ function TrustBadge({ icon, label }: { icon: React.ReactNode; label: string }) {
   )
 }
 
-function CategoryPill({ emoji, label }: { emoji: string; label: string }) {
+function CategoryCard({
+  href, image, label, sublabel, count, className = '', size = 'small',
+}: {
+  href: string
+  image: string
+  label: string
+  sublabel: string
+  count?: string
+  className?: string
+  size?: 'small' | 'large'
+}) {
   return (
-    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FAFAF7] rounded-full text-xs font-medium text-gray-700 border border-gray-100">
-      <span>{emoji}</span>
-      <span>{label}</span>
-    </div>
+    <Link
+      href={href}
+      className={`group relative block rounded-2xl overflow-hidden no-underline ${className}`}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={image}
+        alt={label}
+        className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+        loading="lazy"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+      <div className={`absolute inset-0 flex flex-col justify-end ${size === 'large' ? 'p-6 md:p-8' : 'p-4 md:p-5'}`}>
+        <p className={`text-white/70 font-bold tracking-[0.2em] uppercase mb-1 ${size === 'large' ? 'text-[10px] md:text-xs' : 'text-[9px] md:text-[10px]'}`}>
+          {sublabel}
+        </p>
+        <h3 className={`font-black text-white leading-tight ${size === 'large' ? 'text-2xl md:text-4xl' : 'text-lg md:text-2xl'}`}>
+          {label}
+        </h3>
+        {count && (
+          <p className="text-white/80 text-xs mt-2 font-medium">{count}</p>
+        )}
+      </div>
+
+      {/* Hover arrow */}
+      <div className="absolute top-4 left-4 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <ArrowLeft className="w-4 h-4 text-white" />
+      </div>
+    </Link>
   )
 }
 
-function SpaceMini({ label, sublabel }: { label: string; sublabel: string }) {
+function ServiceMini({ label, sublabel }: { label: string; sublabel: string }) {
   return (
-    <div className="bg-white/10 backdrop-blur rounded-xl p-2.5 text-center">
+    <div className="bg-white/15 backdrop-blur rounded-xl p-2.5 text-center">
       <p className="text-xs font-bold text-white">{label}</p>
       <p className="text-[10px] text-white/70 mt-0.5">{sublabel}</p>
     </div>
@@ -359,17 +577,16 @@ function SpaceMini({ label, sublabel }: { label: string; sublabel: string }) {
 }
 
 function Step({
-  num, title, description, icon, accent, iconAccent,
+  num, title, description, icon, iconAccent,
 }: {
   num: string
   title: string
   description: string
   icon: React.ReactNode
-  accent: string
   iconAccent: string
 }) {
   return (
-    <div className={`relative bg-white rounded-3xl p-6 md:p-8 shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-500 overflow-hidden bg-gradient-to-br ${accent}`}>
+    <div className="relative bg-white rounded-3xl p-6 md:p-8 shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-500 overflow-hidden">
       <div className="absolute top-4 left-6 text-7xl md:text-8xl font-black text-gray-100 leading-none -z-0 select-none">
         {num}
       </div>
