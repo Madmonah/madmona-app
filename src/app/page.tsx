@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { createClient } from '@supabase/supabase-js'
 import {
   Sparkles,
   ArrowLeft,
@@ -10,12 +11,6 @@ import {
   MapPin,
   MessageCircle,
   Star,
-  Home,
-  Car,
-  Camera,
-  PartyPopper,
-  Wrench,
-  Briefcase,
 } from 'lucide-react'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
@@ -25,25 +20,56 @@ import FeaturedListings from '@/components/FeaturedListings'
 // ============================================================
 // Home page — Premium Editorial Redesign
 // "خدمات مضمونة" branding throughout
-// Stock photography via Unsplash
+// Hero/Marketplace/Spaces images are now dynamic — admin can edit
+// them from /admin/site-settings.
 // ============================================================
 
 const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
 
-// High-quality Unsplash stock photos (free, no attribution required)
-// Selected for: warm tones, premium aesthetic, lifestyle vibes
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=85&auto=format&fit=crop'
-const MARKETPLACE_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=85&auto=format&fit=crop'
-const SPACES_IMAGE = 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&q=85&auto=format&fit=crop'
+// Default Unsplash fallbacks (used if DB query fails or value is empty)
+const DEFAULT_HERO_IMAGE = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=85&auto=format&fit=crop'
+const DEFAULT_MARKETPLACE_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=85&auto=format&fit=crop'
+const DEFAULT_SPACES_IMAGE = 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&q=85&auto=format&fit=crop'
 
+// Category showcase images (still hardcoded — admin can request to make these dynamic later)
 const PROPERTIES_IMG = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80&auto=format&fit=crop'
 const VEHICLES_IMG = 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80&auto=format&fit=crop'
 const EQUIPMENT_IMG = 'https://images.unsplash.com/photo-1533422902779-aff35862e462?w=600&q=80&auto=format&fit=crop'
 const EVENTS_IMG = 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=600&q=80&auto=format&fit=crop'
 const SPACES_CATEGORY_IMG = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&auto=format&fit=crop'
-const TOOLS_IMG = 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&q=80&auto=format&fit=crop'
 
-export default function HomePage() {
+// Force this page to be dynamic so admin's image changes show up immediately
+export const revalidate = 60 // Re-fetch from DB every 60 seconds
+
+async function getSiteSettings(): Promise<Record<string, string>> {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    // @ts-expect-error
+    const { data } = await supabase
+      .from('site_settings')
+      .select('key, value')
+
+    type Row = { key: string; value: string }
+    const map: Record<string, string> = {}
+    ;(data || []).forEach((row: Row) => {
+      if (row.value) map[row.key] = row.value
+    })
+    return map
+  } catch (e) {
+    return {}
+  }
+}
+
+export default async function HomePage() {
+  const settings = await getSiteSettings()
+
+  const HERO_IMAGE = settings.hero_image_url || DEFAULT_HERO_IMAGE
+  const MARKETPLACE_IMAGE = settings.marketplace_image_url || DEFAULT_MARKETPLACE_IMAGE
+  const SPACES_IMAGE = settings.spaces_image_url || DEFAULT_SPACES_IMAGE
+
   return (
     <div className="min-h-screen bg-[#FAFAF7] text-right overflow-x-hidden pb-20 md:pb-0" dir="rtl">
       <TopNav />
@@ -112,7 +138,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Hero image */}
+              {/* Hero image — DYNAMIC from /admin/site-settings */}
               <div className="md:col-span-5 order-1 md:order-2 relative">
                 <div className="relative aspect-[4/5] md:aspect-[3/4] rounded-3xl overflow-hidden shadow-luxe">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -144,7 +170,7 @@ export default function HomePage() {
         </section>
 
         {/* ============================================================ */}
-        {/* CATEGORIES SHOWCASE — Editorial grid with photos */}
+        {/* CATEGORIES SHOWCASE */}
         {/* ============================================================ */}
         <section className="py-16 md:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4">
@@ -168,7 +194,6 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Asymmetric grid */}
             <div className="grid grid-cols-2 md:grid-cols-12 gap-3 md:gap-4">
               <CategoryCard
                 href="/marketplace?category=spaces"
@@ -239,7 +264,7 @@ export default function HomePage() {
         </section>
 
         {/* ============================================================ */}
-        {/* TWO BIG SHOWCASE CARDS */}
+        {/* TWO BIG SHOWCASE CARDS — DYNAMIC images */}
         {/* ============================================================ */}
         <section className="py-16 md:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4">
@@ -559,7 +584,6 @@ function CategoryCard({
         )}
       </div>
 
-      {/* Hover arrow */}
       <div className="absolute top-4 left-4 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
         <ArrowLeft className="w-4 h-4 text-white" />
       </div>

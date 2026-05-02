@@ -1,0 +1,424 @@
+'use client'
+
+import { useEffect, useState, useRef } from 'react'
+import Link from 'next/link'
+import { supabaseBrowser } from '@/lib/supabase-browser'
+import {
+  ArrowRight, Loader2, Lock, AlertCircle, Image as ImageIcon,
+  Upload, Save, CheckCircle, X, ShieldAlert, Sparkles, Link as LinkIcon,
+  RefreshCw,
+} from 'lucide-react'
+
+// ============================================================================
+// /admin/site-settings — Edit dynamic site content (hero image, etc.)
+// ============================================================================
+
+type Stage = 'loading' | 'unauthenticated' | 'forbidden' | 'ready'
+
+interface SettingField {
+  key: string
+  label: string
+  description: string
+  aspectRatio: string
+  recommendedSize: string
+}
+
+const FIELDS: SettingField[] = [
+  {
+    key: 'hero_image_url',
+    label: 'صورة الـHero الرئيسية',
+    description: 'الصورة الكبيرة في أعلى الصفحة الرئيسية',
+    aspectRatio: '3/4',
+    recommendedSize: '١٢٠٠ × ١٦٠٠ بكسل',
+  },
+  {
+    key: 'marketplace_image_url',
+    label: 'صورة كارت الـMarketplace',
+    description: 'الصورة في كارت "Madmona Marketplace" بالصفحة الرئيسية',
+    aspectRatio: '3/4',
+    recommendedSize: '٩٠٠ × ١٢٠٠ بكسل',
+  },
+  {
+    key: 'spaces_image_url',
+    label: 'صورة كارت "خدمات مضمونة"',
+    description: 'الصورة في كارت "خدمات مضمونة" بالصفحة الرئيسية',
+    aspectRatio: '3/4',
+    recommendedSize: '٩٠٠ × ١٢٠٠ بكسل',
+  },
+]
+
+export default function SiteSettingsPage() {
+  const [stage, setStage] = useState<Stage>('loading')
+  const [settings, setSettings] = useState<Record<string, string>>({})
+  const [originalSettings, setOriginalSettings] = useState<Record<string, string>>({})
+  const [saving, setSaving] = useState<string | null>(null)
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null)
+
+  useEffect(() => { init() }, [])
+
+  const init = async () => {
+    const { data: { session } } = await supabaseBrowser.auth.getSession()
+    if (!session?.user) { setStage('unauthenticated'); return }
+
+    // @ts-expect-error
+    const { data: prof } = await supabaseBrowser
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .maybeSingle()
+
+    if (prof?.role !== 'admin') { setStage('forbidden'); return }
+
+    await loadSettings()
+    setStage('ready')
+  }
+
+  const loadSettings = async () => {
+    // @ts-expect-error
+    const { data } = await supabaseBrowser
+      .from('site_settings')
+      .select('key, value')
+
+    type Row = { key: string; value: string }
+    const map: Record<string, string> = {}
+    ;(data || []).forEach((row: Row) => {
+      map[row.key] = row.value || ''
+    })
+    setSettings(map)
+    setOriginalSettings({ ...map })
+  }
+
+  const handleSave = async (key: string) => {
+    setSaving(key)
+    setMessage(null)
+
+    const value = settings[key] || ''
+
+    try {
+      const { data: { user } } = await supabaseBrowser.auth.getUser()
+
+      // @ts-expect-error
+      const { error } = await supabaseBrowser
+        .from('site_settings')
+        .upsert(
+          { key, value, updated_at: new Date().toISOString(), updated_by: user?.id },
+          { onConflict: 'key' }
+        )
+
+      if (error) {
+        setMessage({ ok: false, text: 'فشل الحفظ: ' + error.message })
+        setSaving(null)
+        return
+      }
+
+      setOriginalSettings(prev => ({ ...prev, [key]: value }))
+      setMessage({ ok: true, text: 'تم الحفظ بنجاح! الصفحة الرئيسية هتحدّث خلال ثواني.' })
+      setTimeout(() => setMessage(null), 4000)
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'unknown'
+      setMessage({ ok: false, text: 'حصل خطأ: ' + msg })
+    }
+    setSaving(null)
+  }
+
+  const updateValue = (key: string, value: string) => {
+    setSettings(prev => ({ ...prev, [key]: value }))
+  }
+
+  // ===========================================================================
+  if (stage === 'loading') {
+    return (
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
+        <Loader2 className="w-6 h-6 text-[#1F5F3F] animate-spin" />
+      </div>
+    )
+  }
+
+  if (stage === 'unauthenticated') {
+    return (
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
+          <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
+          <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
+          <Link href="/auth/login?redirect=/admin/site-settings" className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold">
+            دخول
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (stage === 'forbidden') {
+    return (
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
+          <ShieldAlert className="w-8 h-8 text-red-500 mx-auto mb-3" />
+          <h1 className="font-bold mb-2">مش مسموح</h1>
+          <p className="text-sm text-gray-600 mb-4">الصفحة دي للأدمن فقط.</p>
+          <Link href="/account" className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold">
+            ارجع للحساب
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF7] pb-20" dir="rtl">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
+          <Link
+            href="/admin/dashboard"
+            className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all"
+          >
+            <ArrowRight className="w-4 h-4 text-gray-700" />
+          </Link>
+          <div className="flex items-center gap-2 flex-1">
+            <Sparkles className="w-5 h-5 text-[#B8860B]" />
+            <h1 className="text-lg font-black text-gray-900">إعدادات الموقع</h1>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-4xl mx-auto px-4 py-6 space-y-4">
+        {/* Hero info */}
+        <div className="bg-gradient-to-l from-[#1F5F3F] to-[#2d7a52] text-white rounded-3xl p-6 shadow-luxe">
+          <h2 className="text-xl font-black mb-2">صور الصفحة الرئيسية</h2>
+          <p className="text-sm text-white/85 leading-relaxed">
+            من هنا تقدر تغيّر الصور اللي بتظهر في صفحة madmonacairo.com بدون ما تحتاج تعدّل في الكود.
+            ارفع صورة جديدة أو الصق رابط من Unsplash/أي مصدر خارجي.
+          </p>
+        </div>
+
+        {/* Message */}
+        {message && (
+          <div className={`p-4 rounded-2xl border flex items-start gap-2 ${
+            message.ok
+              ? 'bg-green-50 border-green-200 text-green-900'
+              : 'bg-red-50 border-red-200 text-red-900'
+          }`}>
+            {message.ok ? <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" /> : <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+            <p className="text-sm">{message.text}</p>
+          </div>
+        )}
+
+        {/* Fields */}
+        {FIELDS.map(field => (
+          <ImageSettingField
+            key={field.key}
+            field={field}
+            value={settings[field.key] || ''}
+            originalValue={originalSettings[field.key] || ''}
+            onChange={(v) => updateValue(field.key, v)}
+            onSave={() => handleSave(field.key)}
+            saving={saving === field.key}
+          />
+        ))}
+
+        {/* Tips */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 text-sm text-yellow-900 leading-relaxed">
+          <p className="font-bold mb-2 flex items-center gap-2">
+            <Sparkles className="w-4 h-4" />
+            نصايح للصور المتميزة:
+          </p>
+          <ul className="space-y-1.5 text-xs pr-4">
+            <li>• استخدم صور عالية الجودة (1200px+ عرض)</li>
+            <li>• الصور الـvertical (طولية) أحسن من الـhorizontal</li>
+            <li>• لو هتستخدم Unsplash، أضف <code className="bg-yellow-100 px-1 rounded">?w=1600&amp;q=85&amp;auto=format&amp;fit=crop</code> في آخر الرابط</li>
+            <li>• اتأكد إن الـURL يبدأ بـ <code className="bg-yellow-100 px-1 rounded">https://</code></li>
+            <li>• الـfile upload بيرفع على Supabase Storage تلقائياً</li>
+          </ul>
+        </div>
+      </main>
+    </div>
+  )
+}
+
+// ============================================================================
+
+function ImageSettingField({
+  field, value, originalValue, onChange, onSave, saving,
+}: {
+  field: SettingField
+  value: string
+  originalValue: string
+  onChange: (v: string) => void
+  onSave: () => void
+  saving: boolean
+}) {
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const isDirty = value !== originalValue
+  const isValidUrl = value.startsWith('https://') || value.startsWith('http://')
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    setUploadError(null)
+
+    try {
+      const ext = file.name.split('.').pop() || 'jpg'
+      const fileName = `${field.key}-${Date.now()}.${ext}`
+
+      // @ts-expect-error
+      const { error: uploadErr } = await supabaseBrowser
+        .storage
+        .from('site-assets')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+        })
+
+      if (uploadErr) {
+        setUploadError('فشل الرفع: ' + uploadErr.message)
+        setUploading(false)
+        return
+      }
+
+      // Get public URL
+      const { data: urlData } = supabaseBrowser
+        .storage
+        .from('site-assets')
+        .getPublicUrl(fileName)
+
+      onChange(urlData.publicUrl)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'unknown'
+      setUploadError('حصل خطأ: ' + msg)
+    }
+    setUploading(false)
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
+  return (
+    <div className="bg-white rounded-3xl shadow-soft p-5 md:p-6">
+      <div className="mb-4">
+        <h3 className="font-black text-gray-900 text-base mb-1">{field.label}</h3>
+        <p className="text-xs text-gray-500">{field.description}</p>
+        <p className="text-[10px] text-gray-400 mt-1">
+          الحجم المُوصى به: {field.recommendedSize} · نسبة العرض: {field.aspectRatio}
+        </p>
+      </div>
+
+      {/* Preview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="md:col-span-1">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">معاينة</p>
+          <div
+            className="bg-gray-100 rounded-2xl overflow-hidden border-2 border-gray-100"
+            style={{ aspectRatio: field.aspectRatio }}
+          >
+            {value && isValidUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={value}
+                alt={field.label}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <ImageIcon className="w-8 h-8 text-gray-300" />
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="md:col-span-2 space-y-3">
+          {/* URL input */}
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5 flex items-center gap-1">
+              <LinkIcon className="w-3 h-3" />
+              رابط الصورة
+            </label>
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder="https://images.unsplash.com/..."
+              className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 font-mono"
+              dir="ltr"
+              style={{ textAlign: 'left' }}
+            />
+          </div>
+
+          {/* Upload button */}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">
+              أو ارفع صورة من الكمبيوتر
+            </p>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/avif"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className="w-full px-4 py-2.5 bg-[#FAFAF7] hover:bg-gray-100 border-2 border-dashed border-gray-300 hover:border-[#1F5F3F]/40 rounded-xl text-sm font-bold text-gray-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  جاري الرفع...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" />
+                  اختار صورة من الكمبيوتر
+                </>
+              )}
+            </button>
+            {uploadError && (
+              <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                <X className="w-3 h-3" />
+                {uploadError}
+              </p>
+            )}
+          </div>
+
+          {/* Save button */}
+          <div className="flex gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={!isDirty || !isValidUrl || saving}
+              className="flex-1 px-4 py-2.5 bg-[#1F5F3F] hover:bg-[#1F5F3F]/90 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  جاري الحفظ...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  حفظ التغييرات
+                </>
+              )}
+            </button>
+            {isDirty && !saving && (
+              <button
+                type="button"
+                onClick={() => onChange(originalValue)}
+                className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm flex items-center justify-center gap-1.5 transition-colors"
+                title="إلغاء التغييرات"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
