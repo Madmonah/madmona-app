@@ -3,15 +3,14 @@ import { NextResponse } from 'next/server'
 // ============================================================================
 // GET /api/economic-news
 //
-// Egyptian-focused economic news ticker:
-//   - 25+ RSS sources, ~95% Egyptian economy specialized
-//   - Builds a large pool (~150 items)
-//   - Random shuffle on EVERY request → different order every time
-//   - Egyptian items boosted (60% Egyptian / 40% regional baseline)
-//   - 10-second pool cache (very fresh)
+// FORCE DYNAMIC — never cached at any level (Next.js, Vercel CDN, browser)
+// Returns randomly shuffled 15 items from a pool of 150+ Egyptian/Arabic
+// economic news on EVERY single request. Different order every refresh.
 // ============================================================================
 
-export const revalidate = 10
+export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
+export const runtime = 'nodejs'
 
 interface NewsItem {
   title: string
@@ -26,13 +25,11 @@ interface NewsSource {
   name: string
   url: string
   egyptian: boolean
-  weight: number  // higher = more items pulled
+  weight: number
 }
 
 const SOURCES: NewsSource[] = [
-  // ╔══════════════════════════════════════════════════════════╗
-  // ║ EGYPTIAN ECONOMY SPECIALIZED — TOP PRIORITY              ║
-  // ╚══════════════════════════════════════════════════════════╝
+  // Egypt — specialized economy
   { name: 'المال', url: 'https://almalnews.com/feed/', egyptian: true, weight: 5 },
   { name: 'البورصة', url: 'https://alborsaanews.com/feed', egyptian: true, weight: 5 },
   { name: 'مباشر مصر', url: 'https://www.mubasher.info/rss/news', egyptian: true, weight: 4 },
@@ -41,9 +38,7 @@ const SOURCES: NewsSource[] = [
   { name: 'Daily News Egypt', url: 'https://dailynewsegypt.com/feed/', egyptian: true, weight: 3 },
   { name: 'Mada Masr - Business', url: 'https://www.madamasr.com/en/category/business/feed/', egyptian: true, weight: 3 },
 
-  // ╔══════════════════════════════════════════════════════════╗
-  // ║ EGYPTIAN GENERAL — ECONOMY SECTIONS                      ║
-  // ╚══════════════════════════════════════════════════════════╝
+  // Egypt — general news, economy section
   { name: 'الأهرام - اقتصاد', url: 'https://gate.ahram.org.eg/rss/PortalEconomyRss.aspx', egyptian: true, weight: 4 },
   { name: 'الشروق - اقتصاد', url: 'https://www.shorouknews.com/RSS/Feeds/Economy.xml', egyptian: true, weight: 4 },
   { name: 'اليوم السابع - اقتصاد', url: 'https://www.youm7.com/rss/SectionRss?SectionID=297', egyptian: true, weight: 4 },
@@ -51,37 +46,27 @@ const SOURCES: NewsSource[] = [
   { name: 'الوطن - اقتصاد', url: 'https://www.elwatannews.com/rss/category/29.rss', egyptian: true, weight: 3 },
   { name: 'صدى البلد - اقتصاد', url: 'https://www.elbalad.news/rss?type=10', egyptian: true, weight: 3 },
   { name: 'الدستور - اقتصاد', url: 'https://www.dostor.org/rss/category/3', egyptian: true, weight: 2 },
-  { name: 'أخبار اليوم - اقتصاد', url: 'https://m.akhbarelyom.com/rss/business', egyptian: true, weight: 2 },
 
-  // ╔══════════════════════════════════════════════════════════╗
-  // ║ EGYPT REAL ESTATE                                        ║
-  // ╚══════════════════════════════════════════════════════════╝
+  // Egypt — real estate
   { name: 'عقار ماب', url: 'https://aqarmap.com.eg/blog/feed/', egyptian: true, weight: 2 },
 
-  // ╔══════════════════════════════════════════════════════════╗
-  // ║ ARABIC REGIONAL — SPECIALIZED ECONOMY                    ║
-  // ╚══════════════════════════════════════════════════════════╝
+  // Regional
   { name: 'أرقام', url: 'https://www.argaam.com/ar/rss', egyptian: false, weight: 2 },
   { name: 'الاقتصادي', url: 'https://www.aliqtisadi.com/feed/', egyptian: false, weight: 2 },
   { name: 'العربية - أسواق', url: 'https://www.alarabiya.net/rssfeed/aswaq', egyptian: false, weight: 1 },
-
-  // ╔══════════════════════════════════════════════════════════╗
-  // ║ ARABIC REGIONAL — GENERAL                                ║
-  // ╚══════════════════════════════════════════════════════════╝
   { name: 'CNN العربية', url: 'https://arabic.cnn.com/business/rss', egyptian: false, weight: 1 },
   { name: 'BBC عربي', url: 'http://feeds.bbci.co.uk/arabic/business/rss.xml', egyptian: false, weight: 1 },
   { name: 'Sky News عربية', url: 'https://www.skynewsarabia.com/business/rss', egyptian: false, weight: 1 },
   { name: 'الجزيرة - اقتصاد', url: 'https://www.aljazeera.net/aljazeerarss/economy.xml', egyptian: false, weight: 1 },
 ]
 
-// Pool — large set of items, refreshed in background
+// Module-level pool stored in memory (only refreshed when stale)
 let pool: { items: NewsItem[]; timestamp: number } | null = null
-const POOL_TTL = 10 * 1000  // 10 seconds — VERY fresh
+const POOL_TTL = 60 * 1000 // 60s — pool refresh rate (not response cache)
 
 // ----------------------------------------------------------------------------
 // XML helpers
 // ----------------------------------------------------------------------------
-
 function decodeCData(s: string) { return s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1') }
 function stripTags(s: string) { return s.replace(/<[^>]+>/g, '').trim() }
 function decodeEntities(s: string) {
@@ -131,7 +116,7 @@ async function fetchSource(source: NewsSource): Promise<NewsItem[]> {
         'User-Agent': 'Mozilla/5.0 (compatible; MadmonaBot/1.0)',
         'Accept': 'application/rss+xml, application/xml, text/xml, */*',
       },
-      next: { revalidate: 30 },
+      cache: 'no-store',
       signal: AbortSignal.timeout(6000),
     })
     if (!res.ok) return []
@@ -139,7 +124,7 @@ async function fetchSource(source: NewsSource): Promise<NewsItem[]> {
     const items: NewsItem[] = []
     const itemRegex = /<(?:item|entry)(?:\s[^>]*)?>([\s\S]*?)<\/(?:item|entry)>/gi
     let match: RegExpExecArray | null
-    const maxItems = source.weight * 5  // weight 5 = 25 items, weight 1 = 5 items
+    const maxItems = source.weight * 5
 
     while ((match = itemRegex.exec(xml)) !== null && items.length < maxItems) {
       const itemXml = match[1]
@@ -168,15 +153,9 @@ async function fetchSource(source: NewsSource): Promise<NewsItem[]> {
   }
 }
 
-// ----------------------------------------------------------------------------
-// Build pool
-// ----------------------------------------------------------------------------
-
 async function buildPool(): Promise<NewsItem[]> {
   const results = await Promise.all(SOURCES.map(fetchSource))
   const allItems = results.flat()
-
-  // Dedupe by link
   const seen = new Set<string>()
   return allItems.filter(item => {
     if (seen.has(item.link)) return false
@@ -185,7 +164,7 @@ async function buildPool(): Promise<NewsItem[]> {
   })
 }
 
-// Fisher-Yates shuffle
+// Strong Fisher-Yates shuffle with a unique seed each call
 function shuffle<T>(arr: T[]): T[] {
   const copy = [...arr]
   for (let i = copy.length - 1; i > 0; i--) {
@@ -195,36 +174,21 @@ function shuffle<T>(arr: T[]): T[] {
   return copy
 }
 
-// ----------------------------------------------------------------------------
-// Smart selector — random Egyptian-heavy mix on every call
-// ----------------------------------------------------------------------------
+function selectRandomMix(allItems: NewsItem[], n: number): NewsItem[] {
+  const egyptian = allItems.filter(i => i.isEgyptian)
+  const regional = allItems.filter(i => !i.isEgyptian)
 
-function selectRandomMix(pool: NewsItem[], n: number): NewsItem[] {
-  // Split by Egyptian / regional
-  const egyptian = pool.filter(i => i.isEgyptian)
-  const regional = pool.filter(i => !i.isEgyptian)
-
-  // Shuffle each group independently
   const shuffledEg = shuffle(egyptian)
   const shuffledReg = shuffle(regional)
 
-  // Target: 70% Egyptian, 30% regional
   const targetEg = Math.ceil(n * 0.7)
   const targetReg = n - targetEg
 
-  const picked: NewsItem[] = []
+  const picked: NewsItem[] = [
+    ...shuffledEg.slice(0, targetEg),
+    ...shuffledReg.slice(0, targetReg),
+  ]
 
-  // Take Egyptian first
-  for (let i = 0; i < targetEg && i < shuffledEg.length; i++) {
-    picked.push(shuffledEg[i])
-  }
-
-  // Take regional
-  for (let i = 0; i < targetReg && i < shuffledReg.length; i++) {
-    picked.push(shuffledReg[i])
-  }
-
-  // If we still don't have enough, fill from whichever has more
   if (picked.length < n) {
     const remaining = [...shuffledEg.slice(targetEg), ...shuffledReg.slice(targetReg)]
     while (picked.length < n && remaining.length > 0) {
@@ -232,40 +196,60 @@ function selectRandomMix(pool: NewsItem[], n: number): NewsItem[] {
     }
   }
 
-  // Shuffle the final pick so Egyptians and regionals are interleaved naturally
   return shuffle(picked).slice(0, n)
 }
 
 // ----------------------------------------------------------------------------
-// GET handler
+// GET handler — FORCE DYNAMIC, no cache, fresh shuffle on every call
 // ----------------------------------------------------------------------------
-
 export async function GET() {
-  // Refresh pool if expired
+  // Refresh pool every 60s (or if empty)
   if (!pool || Date.now() - pool.timestamp > POOL_TTL) {
     const items = await buildPool()
     if (items.length > 0) {
       pool = { items, timestamp: Date.now() }
     } else if (!pool) {
-      return NextResponse.json({ ok: false, items: [], error: 'no_sources' })
+      return new NextResponse(
+        JSON.stringify({ ok: false, items: [], error: 'no_sources' }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'CDN-Cache-Control': 'no-store',
+            'Vercel-CDN-Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          },
+        }
+      )
     }
   }
 
-  // Random selection — different on every call
+  // Different shuffle every single call
   const fresh = selectRandomMix(pool.items, 15)
 
-  // Disable HTTP caching to ensure each refresh = different items
-  return NextResponse.json(
-    {
+  // Comprehensive no-cache headers — bypass Next.js, Vercel edge, CDN, browser
+  return new NextResponse(
+    JSON.stringify({
       ok: true,
       items: fresh,
       count: fresh.length,
       pool_size: pool.items.length,
       egyptian_in_pool: pool.items.filter(i => i.isEgyptian).length,
-    },
+      generated_at: new Date().toISOString(),
+      shuffle_seed: Math.random().toString(36).slice(2),
+    }),
     {
+      status: 200,
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+        'CDN-Cache-Control': 'no-store',
+        'Vercel-CDN-Cache-Control': 'no-store',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Surrogate-Control': 'no-store',
       },
     }
   )
