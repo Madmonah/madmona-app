@@ -75,6 +75,8 @@ function BookingDetailContent() {
   const [isOwnerSupplier, setIsOwnerSupplier] = useState(false)
   const [isOwnerCustomer, setIsOwnerCustomer] = useState(false)
   const [copiedAccount, setCopiedAccount] = useState(false)
+  const [cancelDialog, setCancelDialog] = useState<{ open: boolean; byRole: 'supplier' | 'customer' | null }>({ open: false, byRole: null })
+  const [cancelReasonInput, setCancelReasonInput] = useState('')
 
   useEffect(() => {
     const load = async () => {
@@ -170,37 +172,47 @@ function BookingDetailContent() {
       if (reason) update.cancellation_reason = reason
     }
 
+    // Single roundtrip: UPDATE + return enriched row via .select()
     // @ts-expect-error
-    const { error: updateErr } = await supabaseBrowser
+    const { data: refreshed, error: updateErr } = await supabaseBrowser
       .from('marketplace_bookings')
       .update(update)
       .eq('id', booking.id)
+      .select(`
+        *,
+        listing:listings(title, slug, city, district, photos:listing_photos(url, is_primary)),
+        supplier:marketplace_suppliers(
+          business_name,
+          profile:profiles!marketplace_suppliers_profile_id_fkey(phone)
+        )
+      `)
+      .maybeSingle()
 
     if (updateErr) {
       alert('فشل تحديث الحجز: ' + updateErr.message)
     } else {
-      // Fire email if confirmed
-      if (newStatus === 'confirmed') {
-        fireEmailNotification('confirmed')
-      }
-
-      // Reload
-      // @ts-expect-error
-      const { data: refreshed } = await supabaseBrowser
-        .from('marketplace_bookings')
-        .select(`
-          *,
-          listing:listings(title, slug, city, district, photos:listing_photos(url, is_primary)),
-          supplier:marketplace_suppliers(
-            business_name,
-            profile:profiles!marketplace_suppliers_profile_id_fkey(phone)
-          )
-        `)
-        .eq('id', booking.id)
-        .maybeSingle()
+      if (newStatus === 'confirmed') fireEmailNotification('confirmed')
       if (refreshed) setBooking(refreshed as Booking)
     }
     setActioning(false)
+  }
+
+  const openCancelDialog = (byRole: 'supplier' | 'customer') => {
+    setCancelReasonInput('')
+    setCancelDialog({ open: true, byRole })
+  }
+
+  const closeCancelDialog = () => {
+    setCancelDialog({ open: false, byRole: null })
+    setCancelReasonInput('')
+  }
+
+  const confirmCancel = () => {
+    const role = cancelDialog.byRole
+    const reason = cancelReasonInput.trim() ||
+      (role === 'supplier' ? 'تم الرفض من المورد' : 'تم الإلغاء من العميل')
+    closeCancelDialog()
+    void updateBookingStatus('cancelled', reason)
   }
 
   const copyAccountNumber = async () => {
@@ -473,10 +485,7 @@ function BookingDetailContent() {
                 <CheckCircle className="w-4 h-4" /> أكّد الحجز
               </button>
               <button
-                onClick={() => {
-                  const reason = prompt('سبب الرفض (اختياري):')
-                  updateBookingStatus('cancelled', reason || 'تم الرفض من المورد')
-                }}
+                onClick={() => openCancelDialog('supplier')}
                 disabled={actioning}
                 className="bg-red-50 text-red-700 py-2.5 rounded-lg text-sm font-semibold hover:bg-red-100 disabled:opacity-50 flex items-center justify-center gap-1"
               >
@@ -500,12 +509,7 @@ function BookingDetailContent() {
 
         {isOwnerCustomer && (booking.status === 'pending_payment' || booking.status === 'confirmed') && (
           <button
-            onClick={() => {
-              if (confirm('متأكد إنك عاوز تلغي الحجز؟')) {
-                const reason = prompt('سبب الإلغاء (اختياري):')
-                updateBookingStatus('cancelled', reason || 'تم الإلغاء من العميل')
-              }
-            }}
+            onClick={() => openCancelDialog('customer')}
             disabled={actioning}
             className="w-full bg-red-50 text-red-700 py-2.5 rounded-lg text-sm font-semibold hover:bg-red-100 disabled:opacity-50 mb-4 flex items-center justify-center gap-1"
           >
@@ -524,6 +528,57 @@ function BookingDetailContent() {
           </a>
         )}
       </main>
+
+      {cancelDialog.open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          dir="rtl"
+          onClick={closeCancelDialog}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl p-5 max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
+              <h3 className="font-bold text-gray-900">
+                {cancelDialog.byRole === 'supplier' ? 'تأكيد رفض الحجز' : 'تأكيد إلغاء الحجز'}
+              </h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">
+              {cancelDialog.byRole === 'supplier'
+                ? 'متأكد إنك عاوز ترفض الحجز ده؟'
+                : 'متأكد إنك عاوز تلغي الحجز ده؟'}
+            </p>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">السبب (اختياري)</label>
+            <textarea
+              value={cancelReasonInput}
+              onChange={(e) => setCancelReasonInput(e.target.value)}
+              placeholder={cancelDialog.byRole === 'supplier' ? 'مثال: المساحة محجوزة' : 'مثال: تغيرت خطتي'}
+              rows={2}
+              maxLength={300}
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 resize-none mb-4"
+              autoFocus
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={closeCancelDialog}
+                className="bg-gray-100 text-gray-700 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-200"
+              >
+                تراجع
+              </button>
+              <button
+                onClick={confirmCancel}
+                disabled={actioning}
+                className="bg-red-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-1"
+              >
+                {actioning ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+                {cancelDialog.byRole === 'supplier' ? 'ارفض الحجز' : 'ألغي الحجز'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
