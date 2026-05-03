@@ -26,6 +26,14 @@ yarn-error.log*
 .env*.local
 .env
 
+# Local admin tools that may contain credentials (belt & suspenders)
+# These are local helper scripts; sanitized versions read from .env.local.
+# Don't commit unsanitized versions if you ever copy a quick one in.
+REMOVE_LISTING.ps1
+REMOVE_LISTING.bat
+*.local.ps1
+*.secret.ps1
+
 # Vercel
 .vercel
 
