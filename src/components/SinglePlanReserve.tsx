@@ -113,7 +113,10 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
       setPaymentProofUrl(pub.publicUrl)
     } catch (err) {
       console.error('upload error', err)
-      setError('حصل خطأ أثناء رفع الصورة، حاول تاني')
+      const msg = err instanceof Error ? err.message
+        : (err && typeof err === 'object' && 'message' in err) ? String((err as { message: unknown }).message)
+        : 'حصل خطأ أثناء رفع الصورة، حاول تاني'
+      setError(`فشل رفع الصورة: ${msg}`)
     } finally {
       setUploading(false)
     }
@@ -159,7 +162,10 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
       setSubmitting(false)
     } catch (err) {
       console.error('submit error', err)
-      setError('فيه مشكلة في الاتصال، حاول تاني')
+      const msg = err instanceof Error ? err.message
+        : (err && typeof err === 'object' && 'message' in err) ? String((err as { message: unknown }).message)
+        : 'فيه مشكلة في الاتصال، حاول تاني'
+      setError(`فشل الاتصال: ${msg}`)
       setSubmitting(false)
     }
   }

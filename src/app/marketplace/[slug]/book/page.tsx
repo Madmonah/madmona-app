@@ -240,8 +240,20 @@ export default function BookingPage() {
 
       router.push(`/bookings/${newBooking.id}?created=1`)
     } catch (e: unknown) {
-      console.error('Booking error:', e)
-      const msg = e instanceof Error ? e.message : 'حصل خطأ، حاول تاني'
+      // Surface the REAL error — Supabase PostgrestError objects are not
+      // instanceof Error, so the old code always fell through to the
+      // generic message and hid the root cause.
+      console.error('[booking] submit error:', e)
+      let msg = 'حصل خطأ، حاول تاني'
+      if (e && typeof e === 'object') {
+        const err = e as { message?: string; details?: string; hint?: string; code?: string }
+        const parts: string[] = []
+        if (err.message) parts.push(err.message)
+        if (err.details) parts.push(err.details)
+        if (err.hint) parts.push(`(${err.hint})`)
+        if (err.code) parts.push(`[${err.code}]`)
+        if (parts.length > 0) msg = parts.join(' — ')
+      }
       setError(msg)
       setStage('ready')
     }

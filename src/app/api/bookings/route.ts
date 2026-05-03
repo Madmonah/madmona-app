@@ -229,8 +229,15 @@ export async function POST(request: Request) {
   ])
 
   if (bookingsConflict.error || blocksConflict.error) {
-    console.error('[bookings] conflict check error:', bookingsConflict.error || blocksConflict.error)
-    return NextResponse.json({ error: 'Failed to check availability' }, { status: 500 })
+    const realErr = bookingsConflict.error || blocksConflict.error
+    console.error('[bookings] conflict check error:', realErr)
+    const errObj = realErr as { message?: string; details?: string; hint?: string; code?: string }
+    const parts: string[] = ['فشل التحقق من التوفر']
+    if (errObj?.message) parts.push(errObj.message)
+    if (errObj?.details) parts.push(errObj.details)
+    if (errObj?.hint) parts.push(`(${errObj.hint})`)
+    if (errObj?.code) parts.push(`[${errObj.code}]`)
+    return NextResponse.json({ error: parts.join(' — ') }, { status: 500 })
   }
   const hasConflict =
     (bookingsConflict.data && bookingsConflict.data.length > 0) ||
@@ -298,7 +305,13 @@ export async function POST(request: Request) {
 
   if (error) {
     console.error('[bookings] insert error:', error)
-    return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 })
+    const errObj = error as { message?: string; details?: string; hint?: string; code?: string }
+    const parts: string[] = ['فشل الحجز']
+    if (errObj.message) parts.push(errObj.message)
+    if (errObj.details) parts.push(errObj.details)
+    if (errObj.hint) parts.push(`(${errObj.hint})`)
+    if (errObj.code) parts.push(`[${errObj.code}]`)
+    return NextResponse.json({ error: parts.join(' — ') }, { status: 500 })
   }
 
   return NextResponse.json({
