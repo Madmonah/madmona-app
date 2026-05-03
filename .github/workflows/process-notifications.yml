@@ -27,8 +27,9 @@ jobs:
     steps:
       - name: Call process-queue endpoint
         run: |
-          response=$(curl -sS -w "\n%{http_code}" -X POST \
-            "https://madmonacairo.com/api/push/process-queue" \
+          # -L follows redirects (apex -> www handled by Cloudflare)
+          response=$(curl -sSL -w "\n%{http_code}" -X POST \
+            "https://www.madmonacairo.com/api/push/process-queue" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json")
           
