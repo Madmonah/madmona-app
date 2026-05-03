@@ -286,8 +286,8 @@ export default function AdminListingsPage() {
             className="inline-flex items-center gap-1.5 bg-[#1F5F3F] text-white px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline flex-shrink-0"
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">ضيف listing</span>
-            <span className="sm:hidden">ضيف</span>
+            <span className="hidden sm:inline">أضف خدمة</span>
+            <span className="sm:hidden">أضف</span>
           </Link>
         </div>
       </header>
@@ -343,7 +343,7 @@ export default function AdminListingsPage() {
           <div className="bg-white rounded-2xl shadow-soft p-12 text-center">
             <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 mb-4">
-              {listings.length === 0 ? 'مفيش listings لسه. ابدأ بإضافة أول listing.' : 'مفيش خدمات تطابق البحث'}
+              {listings.length === 0 ? 'مفيش خدمات لسه. ابدأ بإضافة أول خدمة.' : 'مفيش خدمات تطابق البحث'}
             </p>
             {listings.length === 0 && (
               <Link
@@ -351,7 +351,7 @@ export default function AdminListingsPage() {
                 className="inline-flex items-center gap-2 bg-[#1F5F3F] text-white px-5 py-3 rounded-xl text-sm font-bold shadow-soft hover:shadow-elevated transition-all no-underline"
               >
                 <Plus className="w-4 h-4" />
-                ضيف أول listing
+                أضف أول خدمة
               </Link>
             )}
           </div>

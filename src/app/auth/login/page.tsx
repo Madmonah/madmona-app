@@ -34,7 +34,7 @@ function LoginContent() {
 
     const normalized = normalizePhone(phone)
     if (!normalized) {
-      setError('رقم التليفون مش صحيح. اكتبه بالشكل ده: 01002229982')
+      setError('رقم التليفون مش صحيح. اكتبه بالشكل ده: 01XXXXXXXXX')
       return
     }
     if (password.length < 6) {
@@ -133,7 +133,7 @@ function LoginContent() {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="01002229982"
+                  placeholder="01XXXXXXXXX"
                   className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
                   dir="ltr"
                   style={{ textAlign: 'right' }}

@@ -143,15 +143,28 @@ export default function CustomerBookingsPage() {
                   className="block bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-sm transition-shadow"
                 >
                   <div className="flex flex-col sm:flex-row">
-                    <div className="sm:w-32 sm:h-28 bg-gray-100 flex-shrink-0">
+                    <div className="sm:w-32 sm:h-28 bg-gray-100 flex-shrink-0 relative">
                       {photoUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={photoUrl} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ImageIcon className="w-8 h-8 text-gray-300" />
-                        </div>
-                      )}
+                        <img
+                          src={photoUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Hide the broken image and show the fallback icon underneath
+                            const img = e.currentTarget
+                            img.style.display = 'none'
+                            const sibling = img.nextElementSibling as HTMLElement | null
+                            if (sibling) sibling.style.display = 'flex'
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className="w-full h-full items-center justify-center absolute inset-0"
+                        style={{ display: photoUrl ? 'none' : 'flex' }}
+                      >
+                        <ImageIcon className="w-8 h-8 text-gray-300" />
+                      </div>
                     </div>
 
                     <div className="flex-1 p-4">

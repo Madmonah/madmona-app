@@ -416,7 +416,7 @@ export default function ListingDetailPage() {
                     >
                       <ChevronLeft className="w-5 h-5" />
                     </button>
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-full tabular">
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-full tabular" dir="ltr">
                       {photoIndex + 1} / {sortedPhotos.length}
                     </div>
                   </>

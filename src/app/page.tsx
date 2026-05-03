@@ -95,9 +95,9 @@ export default async function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center">
               <div className="md:col-span-7 order-2 md:order-1">
                 <h1 className="font-black text-gray-900 leading-[0.92] tracking-tight mb-6">
-                  <span className="block text-5xl md:text-7xl lg:text-8xl">خدمتك،</span>
-                  <span className="block text-5xl md:text-7xl lg:text-8xl gradient-text-green">وقتك،</span>
-                  <span className="block text-5xl md:text-7xl lg:text-8xl">
+                  <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl">خدمتك،</span>
+                  <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl gradient-text-green">وقتك،</span>
+                  <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl">
                     <span className="italic font-light">مضمونة</span>
                   </span>
                 </h1>
@@ -141,9 +141,8 @@ export default async function HomePage() {
               <div>
                 <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">COLLECTIONS</p>
                 <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
-                  كل اللي
-                  <br />
-                  <span className="italic font-light gradient-text-green">يتأجر</span>
+                  <span className="block">كل اللي</span>
+                  <span className="block italic font-light gradient-text-green">يتأجر</span>
                 </h2>
               </div>
               <Link href="/marketplace" className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-gray-900 hover:text-[#1F5F3F] transition-colors no-underline">
@@ -173,9 +172,8 @@ export default async function HomePage() {
             <div className="mb-10 md:mb-14">
               <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">FEATURED</p>
               <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
-                المختار
-                <br />
-                <span className="italic font-light gradient-text-green">بعناية</span>
+                <span className="block">المختار</span>
+                <span className="block italic font-light gradient-text-green">بعناية</span>
               </h2>
             </div>
             <FeaturedListings />
@@ -188,9 +186,8 @@ export default async function HomePage() {
             <div className="text-center mb-14">
               <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">THE PROCESS</p>
               <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
-                ٣ خطوات،
-                <br />
-                <span className="italic font-light gradient-text-green">حجز مضمون</span>
+                <span className="block">٣ خطوات،</span>
+                <span className="block italic font-light gradient-text-green">حجز مضمون</span>
               </h2>
             </div>
 
