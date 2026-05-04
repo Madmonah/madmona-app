@@ -16,10 +16,16 @@ import {
 
 // ============================================================================
 // /supplier/register
-// 
-// New marketplace supplier registration. Requires the user to be signed in
+//
+// Marketplace supplier registration. Requires the user to be signed in
 // (auth.users session). Inserts directly into marketplace_suppliers via RLS
 // (policy "marketplace_suppliers_self_apply" allows self-insert with kyc_status='pending').
+//
+// FLOW (relaxed gate v2):
+// - Anyone with a session can register as a supplier
+// - On registration, kyc_status='pending' (default)
+// - Pending suppliers CAN proceed to the dashboard, add and publish listings
+// - The KYC approval gate is enforced ONLY at booking time (see /marketplace/[slug]/book)
 // ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'has-supplier' | 'form' | 'success'
@@ -172,6 +178,9 @@ export default function SupplierRegisterPage() {
   if (stage === 'has-supplier' && existing) {
     const status = STATUS_LABELS[existing.kyc_status]
     const StatusIcon = status.icon
+    // Pending and approved suppliers can both proceed to dashboard.
+    // Rejected/suspended cannot.
+    const canAccessDashboard = existing.kyc_status === 'approved' || existing.kyc_status === 'pending'
     return (
       <div className="min-h-screen bg-[#FAFAF7] p-4" dir="rtl">
         <div className="max-w-xl mx-auto pt-8">
@@ -189,7 +198,7 @@ export default function SupplierRegisterPage() {
                 <p className="font-semibold mb-1">{status.label}</p>
                 {existing.kyc_status === 'pending' && (
                   <p className="text-sm">
-                    طلبك قيد المراجعة. هنبعتلك إشعار لما الإدارة توافق على حسابك.
+                    تقدر تبدأ تضيف listings دلوقتي وتجهّز عرضك. الموافقة النهائية بتيجي قبل أول حجز.
                   </p>
                 )}
                 {existing.kyc_status === 'approved' && (
@@ -210,7 +219,7 @@ export default function SupplierRegisterPage() {
               </div>
             </div>
 
-            {existing.kyc_status === 'approved' && (
+            {canAccessDashboard && (
               <Link
                 href="/supplier/marketplace"
                 className="block w-full mt-6 bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold text-center hover:bg-[#1F5F3F]/90"
@@ -237,9 +246,15 @@ export default function SupplierRegisterPage() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">تم استلام طلبك</h1>
             <p className="text-sm text-gray-600 mb-6">
-              هنراجع بياناتك ووثائقك في خلال 1-2 يوم عمل، وهنبعتلك إشعار بالنتيجة.
+              تقدر تبدأ تضيف listings على طول. الموافقة النهائية على الحساب بتيجي قبل أول حجز ياخده عميل منك.
             </p>
             <div className="flex gap-3 justify-center">
+              <Link
+                href="/supplier/marketplace"
+                className="px-6 py-2.5 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90"
+              >
+                ابدأ ضيف listings
+              </Link>
               <Link href="/" className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">
                 الرئيسية
               </Link>
@@ -342,7 +357,7 @@ export default function SupplierRegisterPage() {
                 بيانات التحقق (KYC)
               </h2>
               <p className="text-xs text-gray-500 mb-3">
-                البيانات دي بتساعدنا نتحقق من نشاطك. كلها اختيارية دلوقتي بس بتسرّع الموافقة.
+                البيانات دي بتساعدنا نتحقق من نشاطك. كلها اختيارية دلوقتي بس بتسرّع الموافقة قبل أول حجز.
               </p>
               <div className="space-y-3">
                 <div>

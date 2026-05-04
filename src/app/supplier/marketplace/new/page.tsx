@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ListingForm from '@/components/marketplace/ListingForm'
 import {
-  ArrowRight, Loader2, AlertCircle, Lock, Users, ShieldCheck, Building2, ChevronDown,
+  ArrowRight, Loader2, AlertCircle, Lock, Users, ShieldCheck, Building2, ChevronDown, Clock,
 } from 'lucide-react'
 
 // ============================================================================
@@ -14,15 +14,20 @@ import {
 // Auth modes (priority order):
 //   1. ADMIN MODE — `madmona_admin_pw` in sessionStorage → can create under
 //      ANY supplier (picks from a dropdown). Default: Madmona.
-//   2. OWNER MODE — user owns an approved supplier → uses their supplier_id.
+//   2. OWNER MODE — user owns a supplier (any KYC except rejected/suspended)
+//      → uses their supplier_id.
 //   3. STAFF MODE — user is staff with can_manage_listings → uses employer's id.
+//
+// KYC gate philosophy (relaxed v2):
+//   - Pending suppliers CAN add listings. The actual gate is at booking time.
+//   - Only rejected/suspended are blocked here.
 // ============================================================================
 
 type Stage =
   | 'loading'
   | 'unauthenticated'
   | 'no-supplier'
-  | 'not-approved'
+  | 'supplier-blocked'
   | 'no-permission'
   | 'admin-pick-supplier'
   | 'ready'
@@ -43,6 +48,7 @@ export default function NewListingPage() {
   const [supplierId, setSupplierId] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [roleLabel, setRoleLabel] = useState<string | null>(null)
+  const [kycStatus, setKycStatus] = useState<string | null>(null)
 
   // Admin-specific state
   const [suppliers, setSuppliers] = useState<SupplierOption[]>([])
@@ -65,7 +71,9 @@ export default function NewListingPage() {
           setUserId(session.user.id)
         }
 
-        // Load all approved suppliers for the picker
+        // Admin still uses approved-only suppliers (admin assigns to verified
+        // owners). This stays strict because admin is curating; the relaxed
+        // gate only matters for self-service supplier creation.
         // @ts-expect-error
         const { data: sups } = await supabaseBrowser
           .from('marketplace_suppliers')
@@ -138,11 +146,17 @@ export default function NewListingPage() {
         setStage('no-supplier')
         return
       }
-      if (sup.kyc_status !== 'approved') {
-        setStage('not-approved')
+
+      // Relaxed KYC gate: only block rejected/suspended.
+      // Pending and approved both proceed. The booking page enforces the
+      // approval check at booking time.
+      if (sup.kyc_status === 'rejected' || sup.kyc_status === 'suspended') {
+        setKycStatus(sup.kyc_status)
+        setStage('supplier-blocked')
         return
       }
 
+      setKycStatus(sup.kyc_status)
       setSupplierId(sup.id)
       setStage('ready')
     }
@@ -208,25 +222,44 @@ export default function NewListingPage() {
     )
   }
 
-  if (stage === 'no-supplier' || stage === 'not-approved') {
+  if (stage === 'no-supplier') {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-2xl border p-8 text-center max-w-md">
           <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
-          <h1 className="font-bold mb-2">
-            {stage === 'no-supplier' ? 'لازم تسجل كمورد الأول' : 'حسابك لسه قيد المراجعة'}
-          </h1>
+          <h1 className="font-bold mb-2">لازم تسجل كمورد الأول</h1>
           <p className="text-sm text-gray-600 mb-6">
-            {stage === 'no-supplier'
-              ? 'عشان تضيف listings، لازم تكون مورد موثّق على Madmona.'
-              : 'لما الإدارة توافق على حسابك، هتقدر تبدأ تضيف listings.'}
+            عشان تضيف listings، لازم تكون مورد على Madmona.
           </p>
           <Link
-            href={stage === 'no-supplier' ? '/supplier/register' : '/supplier/marketplace'}
+            href="/supplier/register"
             className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold"
           >
-            {stage === 'no-supplier' ? 'سجّل دلوقتي' : 'العودة'}
+            سجّل دلوقتي
           </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (stage === 'supplier-blocked') {
+    const isSuspended = kycStatus === 'suspended'
+    return (
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-2xl border p-8 text-center max-w-md">
+          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
+          <h1 className="font-bold mb-2">
+            {isSuspended ? 'حسابك موقوف مؤقتاً' : 'الحساب محظور'}
+          </h1>
+          <p className="text-sm text-gray-600 mb-6">
+            تواصل مع فريق Madmona على واتساب للتفاصيل وإعادة التفعيل.
+          </p>
+          <a
+            href="https://wa.me/201002229982"
+            className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold"
+          >
+            تواصل
+          </a>
         </div>
       </div>
     )
@@ -336,6 +369,7 @@ export default function NewListingPage() {
   const isAdmin = mode === 'admin'
   const isStaff = mode === 'staff'
   const selectedSupplier = suppliers.find(s => s.id === supplierId)
+  const showPendingNotice = !isAdmin && kycStatus === 'pending'
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
@@ -368,6 +402,14 @@ export default function NewListingPage() {
           <div className="max-w-2xl mx-auto mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-start gap-2">
             <Users className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <span>إنت بتنشر بصفتك &ldquo;{roleLabel || 'موظف'}&rdquo; — الـlisting هيتسجل باسم الـsupplier.</span>
+          </div>
+        )}
+        {showPendingNotice && (
+          <div className="max-w-2xl mx-auto mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-xs text-yellow-900 flex items-start gap-2">
+            <Clock className="w-4 h-4 flex-shrink-0 mt-0.5 text-yellow-700" />
+            <span>
+              <strong>حسابك تحت المراجعة:</strong> تقدر تضيف الـlisting وتنشره عادي. الموافقة النهائية على الحساب بتيجي قبل أول حجز يقدر زبون يعمله عندك.
+            </span>
           </div>
         )}
         {supplierId && userId && (

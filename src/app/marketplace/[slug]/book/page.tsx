@@ -6,17 +6,22 @@ import { useParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Calendar, Loader2, AlertCircle, CheckCircle,
-  Lock, MapPin, Image as ImageIcon, Building2,
+  Lock, MapPin, Image as ImageIcon, Building2, ShieldCheck, Clock,
 } from 'lucide-react'
 
 // ============================================================================
 // /marketplace/[slug]/book
-// 
+//
 // Booking creation page.
 // Customer picks: pricing rule + date/time range
 // Calculates: duration, base, commission, total
 // Submits: marketplace_bookings row with pending_payment status
 // Fires: /api/bookings/notify (fire-and-forget) for email notification
+//
+// KYC GATE (relaxed v2):
+//   This is where the supplier KYC approval gate lives. Pending suppliers can
+//   list, but customers can't book from them until they're approved. We show
+//   a clear "supplier under review" message instead of a generic error.
 // ============================================================================
 
 interface ListingForBooking {
@@ -30,6 +35,7 @@ interface ListingForBooking {
     id: string
     business_name: string
     commission_rate: number | string
+    kyc_status: 'pending' | 'approved' | 'rejected' | 'suspended'
   } | null
   photos: { url: string; is_primary: boolean }[] | null
 }
@@ -62,7 +68,13 @@ const PERIOD_MS: Record<string, number> = {
   per_event: 0,
 }
 
-type Stage = 'loading' | 'unauthenticated' | 'not-found' | 'ready' | 'submitting'
+type Stage =
+  | 'loading'
+  | 'unauthenticated'
+  | 'not-found'
+  | 'supplier-not-approved'
+  | 'ready'
+  | 'submitting'
 
 export default function BookingPage() {
   const params = useParams()
@@ -94,7 +106,7 @@ export default function BookingPage() {
         .from('listings')
         .select(`
           id, title, slug, city, district, status,
-          supplier:marketplace_suppliers(id, business_name, commission_rate),
+          supplier:marketplace_suppliers(id, business_name, commission_rate, kyc_status),
           photos:listing_photos(url, is_primary)
         `)
         .eq('slug', slug)
@@ -105,7 +117,16 @@ export default function BookingPage() {
         setStage('not-found')
         return
       }
-      setListing(l as ListingForBooking)
+      const listingData = l as ListingForBooking
+      setListing(listingData)
+
+      // KYC gate: only allow booking if supplier exists and is approved.
+      // Pending suppliers can have published listings but can't accept bookings yet.
+      const supplierStatus = listingData.supplier?.kyc_status
+      if (!listingData.supplier || supplierStatus !== 'approved') {
+        setStage('supplier-not-approved')
+        return
+      }
 
       // @ts-expect-error
       const { data: rules } = await supabaseBrowser
@@ -183,6 +204,11 @@ export default function BookingPage() {
 
   const handleSubmit = async () => {
     if (!listing?.supplier || !selectedRule || !pricing.valid || !userId) return
+    // Defense-in-depth: even if UI was bypassed, double-check before submit
+    if (listing.supplier.kyc_status !== 'approved') {
+      setError('المورد ده لسه قيد التحقق من إدارة Madmona. الحجز هيتفعّل قريب.')
+      return
+    }
     setError(null)
     setStage('submitting')
 
@@ -301,6 +327,80 @@ export default function BookingPage() {
             تصفح
           </Link>
         </div>
+      </div>
+    )
+  }
+
+  // KYC gate: friendly message when supplier isn't approved yet
+  if (stage === 'supplier-not-approved') {
+    const supplierStatus = listing.supplier?.kyc_status
+    const isSuspended = supplierStatus === 'suspended' || supplierStatus === 'rejected'
+    return (
+      <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+        <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+            <Link href={`/marketplace/${slug}`} className="p-1 hover:bg-gray-50 rounded-full">
+              <ArrowRight className="w-5 h-5 text-gray-700" />
+            </Link>
+            <h1 className="text-lg font-bold text-gray-900">احجز</h1>
+          </div>
+        </header>
+
+        <main className="max-w-xl mx-auto p-4 pt-12">
+          <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+            <div className={`flex items-center justify-center w-14 h-14 rounded-full mx-auto mb-4 ${
+              isSuspended ? 'bg-red-50' : 'bg-yellow-50'
+            }`}>
+              {isSuspended ? (
+                <AlertCircle className="w-7 h-7 text-red-500" />
+              ) : (
+                <ShieldCheck className="w-7 h-7 text-yellow-700" />
+              )}
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              {isSuspended ? 'الحجز مش متاح حالياً' : 'المورد قيد التحقق'}
+            </h2>
+            <p className="text-sm text-gray-600 leading-relaxed mb-6">
+              {isSuspended ? (
+                <>الـlisting ده مش متاح للحجز دلوقتي. تقدر تتصفح ليستنجز تانية.</>
+              ) : (
+                <>
+                  المورد <strong className="text-gray-900">{listing.supplier?.business_name || ''}</strong> لسه بنوثق حسابه عند Madmona،
+                  وعشان أمانك الحجز هيتفتح بعد ما يخلص التحقق.
+                  <br />
+                  <span className="block mt-2 text-xs text-gray-500">
+                    عادة بياخد أقل من ٢٤ ساعة. اعملنا حفظ في المفضلة وهنبعتلك إشعار لما الحجز يفتح.
+                  </span>
+                </>
+              )}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              <Link
+                href={`/marketplace/${slug}`}
+                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-200"
+              >
+                ارجع للـlisting
+              </Link>
+              <Link
+                href="/marketplace"
+                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#1F5F3F] text-white rounded-xl text-sm font-semibold hover:bg-[#1F5F3F]/90"
+              >
+                تصفح ليستنجز تانية
+              </Link>
+            </div>
+            {!isSuspended && (
+              <a
+                href="https://wa.me/201002229982"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 mt-4 text-xs text-[#1F5F3F] hover:underline"
+              >
+                <Clock className="w-3.5 h-3.5" />
+                اسأل Madmona عن المورد ده
+              </a>
+            )}
+          </div>
+        </main>
       </div>
     )
   }

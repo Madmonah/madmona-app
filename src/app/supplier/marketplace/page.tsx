@@ -13,7 +13,18 @@ import {
   DollarSign, Bell, Copy, Crown, Users,
 } from 'lucide-react'
 
-type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'pending' | 'rejected' | 'ready'
+// ============================================================================
+// /supplier/marketplace
+//
+// Supplier dashboard. KYC gate philosophy (relaxed v2):
+//   - 'pending' suppliers: full dashboard access (can add/publish/manage listings).
+//     A small banner reminds them KYC is in review and unlocks before first booking.
+//   - 'rejected' / 'suspended': blocked with reason.
+//   - 'approved': full access, no banner.
+// The actual booking gate lives at /marketplace/[slug]/book.
+// ============================================================================
+
+type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'rejected' | 'ready'
 
 interface SupplierState {
   id: string
@@ -166,9 +177,9 @@ function SupplierMarketplaceContent() {
       setAccess(staffPerms || FULL_ACCESS)
       supplierIdRef.current = sup.id
 
-      if (sup.kyc_status === 'pending') {
-        setStage('pending')
-      } else if (sup.kyc_status === 'rejected' || sup.kyc_status === 'suspended') {
+      // Relaxed gate: only block rejected/suspended.
+      // Pending and approved both go straight to the dashboard.
+      if (sup.kyc_status === 'rejected' || sup.kyc_status === 'suspended') {
         setStage('rejected')
       } else {
         setStage('ready')
@@ -420,20 +431,6 @@ function SupplierMarketplaceContent() {
     )
   }
 
-  if (stage === 'pending') {
-    return (
-      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
-        <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
-          <Clock className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
-          <h1 className="font-bold mb-2">قيد المراجعة</h1>
-          <p className="text-sm text-gray-500">
-            حسابك تحت المراجعة من فريق Madmona. هتوصلك رسالة على واتساب لما يتم الموافقة.
-          </p>
-        </div>
-      </div>
-    )
-  }
-
   if (stage === 'rejected' && supplier) {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
@@ -505,6 +502,21 @@ function SupplierMarketplaceContent() {
           <div className="mb-4 flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-900">
             <CheckCircle className="w-4 h-4 flex-shrink-0" />
             <span>تم إنشاء الـlisting بنجاح!</span>
+          </div>
+        )}
+
+        {/* KYC pending banner — supplier can use the dashboard fully but customers
+            won't be able to book yet until KYC is approved */}
+        {supplier?.kyc_status === 'pending' && (
+          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start gap-3">
+            <Clock className="w-5 h-5 text-yellow-700 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-yellow-900 flex-1">
+              <p className="font-bold mb-0.5">حسابك تحت المراجعة</p>
+              <p className="text-xs leading-relaxed text-yellow-900/85">
+                تقدر تضيف وتعدّل listings عادي. الموافقة النهائية بتيجي قبل أول حجز يقدر زبون يعمله عندك.
+                هنبعتلك إشعار على واتساب لما تتفعل.
+              </p>
+            </div>
           </div>
         )}
 
