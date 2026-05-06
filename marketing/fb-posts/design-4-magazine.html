@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Madmona — Design 4: Magazine Editorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@page { size: A4 portrait; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+body { font-family: 'Cairo', sans-serif; background: #f5f5f5; }
+.a4 { width: 210mm; height: 297mm; page-break-after: always; display: flex; flex-direction: column; position: relative; }
+.a4:last-child { page-break-after: auto; }
+.cut { position: absolute; top: 50%; left: 0; right: 0; border-top: 0.3mm dashed rgba(31,95,63,0.4); z-index: 10; }
+.cut::before { content: '✂'; position: absolute; top: -3.5mm; right: 5mm; color: #1F5F3F; font-size: 10pt; background: #FAF7F0; padding: 0 3mm; }
+.mini { width: 210mm; height: 148.5mm; position: relative; overflow: hidden; }
+
+.logo-circle { width: 18mm; height: 18mm; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 0.4mm #1F5F3F; flex-shrink: 0; background: #FAF7F0; }
+.logo-circle.dark { box-shadow: 0 0 0 0.4mm rgba(184,134,11,0.6); }
+.logo-img { width: 100%; height: 100%; object-fit: cover; }
+
+/* === FRONT: Editorial magazine, ivory base, photo & content === */
+.front { background: #FAF7F0; color: #1F5F3F; display: grid; grid-template-columns: 1fr 1fr; }
+.front .photo-side { background: url('https://drive.google.com/thumbnail?id=1vYchYinn0TcGeNZv7B85LwSIzu7_gyEA&sz=w2000') center/cover, #1F5F3F; position: relative; }
+.front .photo-side::after { content: ''; position: absolute; inset: 0; background: linear-gradient(225deg, transparent 50%, rgba(31,95,63,0.4) 100%); }
+.front .text-side { padding: 12mm 14mm; display: flex; flex-direction: column; justify-content: space-between; }
+.front .top-row { display: flex; align-items: center; justify-content: space-between; }
+.front .brand { font-family: 'Cormorant Garamond', serif; font-size: 9pt; letter-spacing: 8px; color: #1F5F3F; text-transform: uppercase; }
+.front .issue { font-family: 'Cormorant Garamond', serif; font-size: 7pt; letter-spacing: 3px; color: #B8860B; font-style: italic; }
+.front h1 { font-family: 'Cormorant Garamond', serif; font-size: 38pt; font-weight: 600; line-height: 1.05; color: #1F5F3F; margin: 6mm 0 4mm; }
+.front h1 .arabic { font-family: 'Cairo', sans-serif; font-weight: 800; }
+.front h1 .accent { color: #B8860B; font-style: italic; }
+.front .lede { font-family: 'Cairo', sans-serif; font-size: 9.5pt; line-height: 1.65; color: rgba(31,95,63,0.85); border-right: 0.5mm solid #B8860B; padding-right: 4mm; margin-bottom: 4mm; }
+.front .qr-strip { display: flex; align-items: center; gap: 4mm; padding: 4mm; background: #1F5F3F; color: #FAF7F0; }
+.front .qr-strip .qr-mini { background: #FAF7F0; padding: 2mm; flex-shrink: 0; }
+.front .qr-strip .qr-mini img { width: 25mm; height: 25mm; display: block; }
+.front .qr-strip .qr-info { flex: 1; }
+.front .qr-strip .qr-info .scan { font-size: 9pt; font-weight: 800; color: #FAF7F0; }
+.front .qr-strip .qr-info .gold { color: #B8860B; }
+.front .qr-strip .qr-info .url { font-family: 'Cormorant Garamond', serif; font-size: 7.5pt; letter-spacing: 1.5px; color: rgba(250,247,240,0.85); margin-top: 1.5mm; direction: ltr; }
+.front .cats-strip { display: flex; gap: 1.5mm; flex-wrap: wrap; }
+.front .cat { font-size: 7pt; padding: 1.2mm 3mm; border: 0.4px solid #1F5F3F; color: #1F5F3F; font-weight: 600; letter-spacing: 0.3px; }
+
+/* === BACK: Editorial magazine, deep green base === */
+.back { background: #1F5F3F; color: #FAF7F0; padding: 12mm 16mm; display: flex; flex-direction: column; }
+.back .top-row { display: flex; align-items: center; justify-content: space-between; padding-bottom: 4mm; border-bottom: 0.3mm solid rgba(184,134,11,0.4); margin-bottom: 8mm; }
+.back .brand-mark { font-family: 'Cormorant Garamond', serif; font-size: 9pt; letter-spacing: 6px; color: #B8860B; text-transform: uppercase; }
+.back .issue-tag { font-family: 'Cormorant Garamond', serif; font-size: 7pt; letter-spacing: 3px; color: rgba(250,247,240,0.65); font-style: italic; }
+.back .body-grid { flex: 1; display: grid; grid-template-columns: 60mm 1fr; gap: 10mm; align-items: center; }
+.back .photo-circle { width: 60mm; height: 60mm; border-radius: 50%; overflow: hidden; background: url('https://drive.google.com/thumbnail?id=1vYchYinn0TcGeNZv7B85LwSIzu7_gyEA&sz=w2000') center/cover, #143d2a; box-shadow: 0 0 0 0.6mm #B8860B, 0 2mm 8mm rgba(0,0,0,0.3); }
+.back .text-block { text-align: right; }
+.back .invitation { font-family: 'Cormorant Garamond', serif; font-size: 9pt; letter-spacing: 4px; color: #B8860B; text-transform: uppercase; margin-bottom: 4mm; }
+.back h2 { font-size: 30pt; font-weight: 800; line-height: 1.1; }
+.back h2.gold { color: #B8860B; font-style: italic; font-family: 'Cormorant Garamond', serif; font-weight: 700; }
+.back .subtitle { font-size: 10pt; line-height: 1.6; color: rgba(250,247,240,0.88); margin-top: 4mm; max-width: 100mm; margin-right: 0; }
+.back .subtitle .gold { color: #B8860B; font-weight: 700; }
+.back .footer { padding-top: 5mm; border-top: 0.3mm solid rgba(184,134,11,0.4); display: flex; justify-content: space-between; font-size: 7.5pt; }
+.back .footer .item .label { color: #B8860B; font-weight: 700; letter-spacing: 1px; display: block; font-size: 6.5pt; margin-bottom: 1mm; }
+.back .footer .item .value { color: rgba(250,247,240,0.95); }
+
+@media screen { body { padding: 30px 0; } .a4 { margin: 0 auto 30px; box-shadow: 0 8px 30px rgba(0,0,0,0.25); background: white; } }
+</style>
+</head>
+<body>
+<div class="a4"><div class="cut"></div>
+<div class="mini front">
+<div class="photo-side"></div>
+<div class="text-side">
+<div class="top-row"><div class="logo-circle"><img class="logo-img" src="https://madmonacairo.com/madmona-logo.png"></div><div class="brand">Madmona</div></div>
+<div>
+<div class="issue">— No. 01 / Suppliers Edition</div>
+<h1><span class="arabic">أجّر معانا</span><br><span class="accent">واكسب أكتر</span></h1>
+<div class="lede">سجّل نشاطك على أكبر منصة تأجير في مصر — عملاء حقيقيين، حجوزات مباشرة، بدون رسوم تسجيل.</div>
+<div class="cats-strip"><span class="cat">شاليهات</span><span class="cat">سيارات</span><span class="cat">كاميرات</span><span class="cat">ورك سبيس</span><span class="cat">معدات أفراح</span><span class="cat">غرف اجتماعات</span></div>
+</div>
+<div class="qr-strip">
+<div class="qr-mini"><img src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fmadmonacairo.com%2Fsupplier%2Fregister&size=900x900&margin=8&ecc=H"></div>
+<div class="qr-info"><div class="scan">صَوَّر <span class="gold">واتسجل في دقيقة</span></div><div class="url">madmonacairo.com/supplier/register</div></div>
+</div>
+</div>
+</div>
+<div class="mini front">
+<div class="photo-side"></div>
+<div class="text-side">
+<div class="top-row"><div class="logo-circle"><img class="logo-img" src="https://madmonacairo.com/madmona-logo.png"></div><div class="brand">Madmona</div></div>
+<div>
+<div class="issue">— No. 01 / Suppliers Edition</div>
+<h1><span class="arabic">أجّر معانا</span><br><span class="accent">واكسب أكتر</span></h1>
+<div class="lede">سجّل نشاطك على أكبر منصة تأجير في مصر — عملاء حقيقيين، حجوزات مباشرة، بدون رسوم تسجيل.</div>
+<div class="cats-strip"><span class="cat">شاليهات</span><span class="cat">سيارات</span><span class="cat">كاميرات</span><span class="cat">ورك سبيس</span><span class="cat">معدات أفراح</span><span class="cat">غرف اجتماعات</span></div>
+</div>
+<div class="qr-strip">
+<div class="qr-mini"><img src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fmadmonacairo.com%2Fsupplier%2Fregister&size=900x900&margin=8&ecc=H"></div>
+<div class="qr-info"><div class="scan">صَوَّر <span class="gold">واتسجل في دقيقة</span></div><div class="url">madmonacairo.com/supplier/register</div></div>
+</div>
+</div>
+</div>
+</div>
+<div class="a4"><div class="cut"></div>
+<div class="mini back">
+<div class="top-row"><div class="logo-circle dark"><img class="logo-img" src="https://madmonacairo.com/madmona-logo.png"></div><div class="brand-mark">Coworking & Lounge</div><div class="issue-tag">— Heliopolis</div></div>
+<div class="body-grid">
+<div class="photo-circle"></div>
+<div class="text-block">
+<div class="invitation">— دعوة خاصة</div>
+<h2>أول ساعة عندنا</h2><h2 class="gold">على حسابنا</h2>
+<div class="subtitle">تعالى جرّب المكان — <span class="gold">قعدة هادية، نت سريع، قهوة طازة</span> — في قلب مصر الجديدة.</div>
+</div>
+</div>
+<div class="footer">
+<div class="item"><span class="label">العنوان</span><span class="value">٧ ش. سليمان عَزْمي، النزهة</span></div>
+<div class="item"><span class="label">المواعيد</span><span class="value">٩ ص – ١١ م يومياً</span></div>
+<div class="item"><span class="label">للحجز</span><span class="value">01002229982</span></div>
+</div>
+</div>
+<div class="mini back">
+<div class="top-row"><div class="logo-circle dark"><img class="logo-img" src="https://madmonacairo.com/madmona-logo.png"></div><div class="brand-mark">Coworking & Lounge</div><div class="issue-tag">— Heliopolis</div></div>
+<div class="body-grid">
+<div class="photo-circle"></div>
+<div class="text-block">
+<div class="invitation">— دعوة خاصة</div>
+<h2>أول ساعة عندنا</h2><h2 class="gold">على حسابنا</h2>
+<div class="subtitle">تعالى جرّب المكان — <span class="gold">قعدة هادية، نت سريع، قهوة طازة</span> — في قلب مصر الجديدة.</div>
+</div>
+</div>
+<div class="footer">
+<div class="item"><span class="label">العنوان</span><span class="value">٧ ش. سليمان عَزْمي، النزهة</span></div>
+<div class="item"><span class="label">المواعيد</span><span class="value">٩ ص – ١١ م يومياً</span></div>
+<div class="item"><span class="label">للحجز</span><span class="value">01002229982</span></div>
+</div>
+</div>
+</div>
+</body>
+</html>

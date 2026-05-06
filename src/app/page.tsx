@@ -30,11 +30,36 @@ import LaunchBanner from '@/components/LaunchBanner'
 const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
 
 const DEFAULT_HERO_IMAGE = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=85&auto=format&fit=crop'
-const DEFAULT_CATEGORY_SPACES_IMG = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&auto=format&fit=crop'
-const DEFAULT_CATEGORY_PROPERTIES_IMG = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80&auto=format&fit=crop'
-const DEFAULT_CATEGORY_VEHICLES_IMG = 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80&auto=format&fit=crop'
-const DEFAULT_CATEGORY_EQUIPMENT_IMG = 'https://images.unsplash.com/photo-1533422902779-aff35862e462?w=600&q=80&auto=format&fit=crop'
-const DEFAULT_CATEGORY_EVENTS_IMG = 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=600&q=80&auto=format&fit=crop'
+const DEFAULT_CATEGORY_FALLBACK = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&auto=format&fit=crop'
+
+type DBCategory = {
+  id: string
+  name_ar: string
+  name_en: string | null
+  slug: string
+  icon: string | null
+  image_url: string | null
+  display_order: number
+}
+
+async function getRootCategories(): Promise<DBCategory[]> {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    // @ts-expect-error
+    const { data } = await supabase
+      .from('categories')
+      .select('id, name_ar, name_en, slug, icon, image_url, display_order')
+      .is('parent_id', null)
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+    return (data || []) as DBCategory[]
+  } catch (e) {
+    return []
+  }
+}
 
 export const revalidate = 30
 
@@ -61,14 +86,12 @@ async function getSiteSettings(): Promise<Record<string, string>> {
 }
 
 export default async function HomePage() {
-  const settings = await getSiteSettings()
+  const [settings, rootCategories] = await Promise.all([
+    getSiteSettings(),
+    getRootCategories(),
+  ])
 
   const HERO_IMAGE = settings.hero_image_url || DEFAULT_HERO_IMAGE
-  const SPACES_CATEGORY_IMG = settings.category_spaces_image_url || DEFAULT_CATEGORY_SPACES_IMG
-  const PROPERTIES_IMG = settings.category_properties_image_url || DEFAULT_CATEGORY_PROPERTIES_IMG
-  const VEHICLES_IMG = settings.category_vehicles_image_url || DEFAULT_CATEGORY_VEHICLES_IMG
-  const EQUIPMENT_IMG = settings.category_equipment_image_url || DEFAULT_CATEGORY_EQUIPMENT_IMG
-  const EVENTS_IMG = settings.category_events_image_url || DEFAULT_CATEGORY_EVENTS_IMG
 
   return (
     <div className="min-h-screen bg-[#FAFAF7] text-right overflow-x-hidden pb-20 md:pb-0" dir="rtl">
@@ -151,13 +174,34 @@ export default async function HomePage() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-12 gap-3 md:gap-4">
-              <CategoryCard href="/marketplace?category=spaces" image={SPACES_CATEGORY_IMG} label="مساحات عمل" sublabel="WORKSPACES" className="md:col-span-6 md:row-span-2 aspect-square md:aspect-auto" size="large" />
-              <CategoryCard href="/marketplace?category=properties" image={PROPERTIES_IMG} label="عقارات" sublabel="PROPERTIES" className="md:col-span-3 aspect-square" />
-              <CategoryCard href="/marketplace?category=vehicles" image={VEHICLES_IMG} label="مركبات" sublabel="VEHICLES" className="md:col-span-3 aspect-square" />
-              <CategoryCard href="/marketplace?category=equipment" image={EQUIPMENT_IMG} label="معدات" sublabel="EQUIPMENT" className="md:col-span-3 aspect-square" />
-              <CategoryCard href="/marketplace?category=events" image={EVENTS_IMG} label="فعاليات" sublabel="EVENTS" className="md:col-span-3 aspect-square" />
-            </div>
+            {rootCategories.length === 0 ? (
+              <div className="text-center py-12 text-gray-400 text-sm">
+                لسه مفيش فئات. <Link href="/marketplace" className="text-[#1F5F3F] font-bold no-underline">شوف الكل</Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-12 gap-3 md:gap-4">
+                {rootCategories.map((cat, idx) => {
+                  const isFirst = idx === 0
+                  // First item: large hero (spans 6 cols, 2 rows)
+                  // Rest: small (spans 3 cols)
+                  const sizeClass = isFirst
+                    ? 'md:col-span-6 md:row-span-2 aspect-square md:aspect-auto'
+                    : 'md:col-span-3 aspect-square'
+                  return (
+                    <CategoryCard
+                      key={cat.id}
+                      href={`/marketplace?category=${cat.slug}`}
+                      image={cat.image_url || DEFAULT_CATEGORY_FALLBACK}
+                      label={cat.name_ar}
+                      sublabel={(cat.name_en || cat.slug).toUpperCase()}
+                      icon={cat.icon || null}
+                      className={sizeClass}
+                      size={isFirst ? 'large' : 'small'}
+                    />
+                  )
+                })}
+              </div>
+            )}
 
             <Link href="/marketplace" className="md:hidden mt-6 inline-flex items-center gap-2 text-sm font-bold text-gray-900 no-underline">
               <span>شوف الكل</span>
@@ -299,13 +343,16 @@ function TrustBadge({ icon, label }: { icon: React.ReactNode; label: string }) {
   )
 }
 
-function CategoryCard({ href, image, label, sublabel, count, className = '', size = 'small' }: { href: string; image: string; label: string; sublabel: string; count?: string; className?: string; size?: 'small' | 'large' }) {
+function CategoryCard({ href, image, label, sublabel, count, icon, className = '', size = 'small' }: { href: string; image: string; label: string; sublabel: string; count?: string; icon?: string | null; className?: string; size?: 'small' | 'large' }) {
   return (
     <Link href={href} className={`group relative block rounded-2xl overflow-hidden no-underline ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={image} alt={label} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
       <div className={`absolute inset-0 flex flex-col justify-end ${size === 'large' ? 'p-6 md:p-8' : 'p-4 md:p-5'}`}>
+        {icon && (
+          <span className={`mb-2 ${size === 'large' ? 'text-3xl md:text-4xl' : 'text-xl md:text-2xl'}`}>{icon}</span>
+        )}
         <p className={`text-white/70 font-bold tracking-[0.2em] uppercase mb-1 ${size === 'large' ? 'text-[10px] md:text-xs' : 'text-[9px] md:text-[10px]'}`}>{sublabel}</p>
         <h3 className={`font-black text-white leading-tight ${size === 'large' ? 'text-2xl md:text-4xl' : 'text-lg md:text-2xl'}`}>{label}</h3>
         {count && <p className="text-white/80 text-xs mt-2 font-medium">{count}</p>}

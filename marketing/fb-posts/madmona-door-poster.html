@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Madmona — Door Poster 2m × 2m (35 A3 Tiles, Single-Sided)</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+@page { size: A3 portrait; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+html, body { font-family: 'Cairo', sans-serif; background: #777; }
+
+:root {
+  --space-photo: url('https://drive.google.com/thumbnail?id=1vYchYinn0TcGeNZv7B85LwSIzu7_gyEA&sz=w2000');
+}
+
+.tile-front {
+  width: 297mm; height: 420mm;
+  position: relative; overflow: hidden;
+  page-break-after: always;
+  background: #1F5F3F;
+}
+.tile-front:last-child { page-break-after: auto; }
+
+.full-design {
+  position: absolute;
+  width: 2079mm; height: 2100mm;
+  background:
+    linear-gradient(rgba(31, 95, 63, 0.78), rgba(15, 50, 33, 0.88)),
+    var(--space-photo) center/cover no-repeat,
+    #1F5F3F;
+  color: #FAF7F0;
+}
+
+/* Logo + wordmark */
+.logo-block {
+  position: absolute; top: 60mm;
+  left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 12mm;
+}
+.logo-circle {
+  width: 220mm; height: 220mm;
+  border-radius: 50%; overflow: hidden;
+  background: #FAF7F0;
+  box-shadow: 0 0 0 4mm #B8860B, 0 5mm 25mm rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+}
+.logo-circle img { width: 88%; height: 88%; object-fit: contain; }
+.wordmark {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 220pt; letter-spacing: 25mm;
+  color: #FAF7F0; font-weight: 600;
+  text-transform: uppercase; line-height: 0.9;
+  padding-right: 25mm;
+  text-shadow: 0 1mm 5mm rgba(0,0,0,0.4);
+}
+
+/* Hero */
+.hero-block { position: absolute; top: 470mm; left: 0; width: 100%; text-align: center; }
+.hero-tag {
+  display: inline-block;
+  border: 1.5mm solid #B8860B;
+  background: rgba(15, 50, 33, 0.55);
+  backdrop-filter: blur(2mm);
+  padding: 8mm 30mm;
+  font-size: 80pt; letter-spacing: 8mm;
+  color: #B8860B; font-weight: 700;
+  margin-bottom: 30mm;
+}
+.hero-line {
+  font-size: 280pt; font-weight: 900;
+  line-height: 1; letter-spacing: -2mm;
+  color: #FAF7F0;
+  text-shadow: 0 2mm 8mm rgba(0,0,0,0.5);
+}
+.hero-line.gold { color: #B8860B; margin-top: 20mm; }
+
+/* Services grid 3x2 */
+.services-block {
+  position: absolute; top: 1080mm;
+  left: 50mm; right: 50mm;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20mm;
+}
+.service-card {
+  background: rgba(15, 50, 33, 0.7);
+  border: 1mm solid #B8860B;
+  padding: 22mm 12mm;
+  text-align: center; display: flex; flex-direction: column;
+  align-items: center; gap: 10mm; height: 290mm;
+  justify-content: center;
+  box-shadow: 0 3mm 12mm rgba(0,0,0,0.3);
+}
+.service-icon { font-size: 200pt; line-height: 1; }
+.service-name { font-size: 65pt; font-weight: 800; color: #FAF7F0; letter-spacing: 1mm; line-height: 1.1; }
+.service-tag { font-size: 30pt; color: #B8860B; letter-spacing: 2mm; font-weight: 600; }
+
+/* QR */
+.qr-block {
+  position: absolute; top: 1730mm;
+  left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 30mm;
+  background: rgba(15, 50, 33, 0.85);
+  padding: 25mm 40mm;
+  border: 0.8mm solid rgba(184, 134, 11, 0.5);
+  box-shadow: 0 5mm 20mm rgba(0,0,0,0.4);
+}
+.qr-frame { background: #FAF7F0; padding: 10mm; box-shadow: 0 3mm 12mm rgba(0,0,0,0.4); }
+.qr-frame img { width: 220mm; height: 220mm; display: block; }
+.qr-text { text-align: right; }
+.qr-cta-1 { font-size: 100pt; font-weight: 900; color: #FAF7F0; line-height: 1; }
+.qr-cta-2 { font-size: 100pt; font-weight: 900; color: #B8860B; line-height: 1; margin-top: 5mm; }
+.qr-cta-3 { font-size: 50pt; color: rgba(250,247,240,0.85); margin-top: 15mm; letter-spacing: 3mm; }
+
+/* Footer */
+.footer-block {
+  position: absolute; bottom: 50mm;
+  left: 50mm; right: 50mm; text-align: center;
+  border-top: 1mm solid rgba(184,134,11,0.5);
+  padding-top: 25mm;
+  background: rgba(15, 50, 33, 0.5);
+}
+.url-line { font-family: 'Cormorant Garamond', serif; font-size: 70pt; letter-spacing: 5mm; color: #B8860B; font-weight: 700; direction: ltr; }
+.phone { font-family: 'Cormorant Garamond', serif; font-size: 60pt; color: #FAF7F0; margin-top: 12mm; letter-spacing: 4mm; direction: ltr; }
+.address { font-size: 45pt; color: rgba(250,247,240,0.92); margin-top: 12mm; letter-spacing: 2mm; }
+
+/* Edge marks */
+.tile-front::before, .tile-front::after {
+  content: ''; position: absolute;
+  width: 5mm; height: 0.3mm;
+  background: rgba(184, 134, 11, 0.4);
+  z-index: 99;
+}
+.tile-front::before { top: 0; left: 0; }
+.tile-front::after { bottom: 0; right: 0; }
+
+/* Screen-only */
+@media screen {
+  body { padding: 30px 0; }
+  .tile-front { margin: 0 auto 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .instructions {
+    max-width: 297mm; margin: 0 auto 30px; padding: 30px;
+    background: white; border-right: 5px solid #1F5F3F;
+    font-size: 14px; line-height: 1.8; font-family: 'Cairo', sans-serif;
+  }
+  .instructions h2 { color: #1F5F3F; margin-bottom: 15px; font-size: 22px; }
+  .instructions h3 { color: #B8860B; margin-top: 18px; margin-bottom: 8px; font-size: 16px; }
+  .instructions ol { padding-right: 22px; }
+  .instructions strong { color: #1F5F3F; }
+  .label-front {
+    max-width: 297mm; margin: 10px auto 5px;
+    font-family: 'Cairo', sans-serif; font-weight: 700;
+    font-size: 13px; padding: 6px 10px; border-radius: 4px;
+    background: #1F5F3F; color: #FAF7F0;
+  }
+}
+@media print { .instructions, .label-front { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="instructions">
+  <h2>🚪 بوستر باب Madmona — 2م × 2م على A3 (وش واحد فقط)</h2>
+
+  <h3>📐 المخطط</h3>
+  <p><strong>35 ورقة A3</strong> = 7 أعمدة × 5 صفوف. الإعلان مقطّع عبر الـ 35 ورقة. <strong>وش واحد فقط</strong> (مفيش طباعة على الضهر).</p>
+
+  <h3>🚀 الطباعة</h3>
+  <ol>
+    <li>Ctrl+P → Save as PDF</li>
+    <li>Paper: <strong>A3</strong> | Layout: <strong>Portrait</strong></li>
+    <li>✅ <strong>Background graphics</strong> ON (مهم!)</li>
+    <li>Margins: <strong>None</strong></li>
+    <li>الـ PDF فيه <strong>35 صفحة</strong> فقط</li>
+    <li>اطبع <strong>Single-Sided</strong> على ورق A3 جلوسي 200جم أو ستيكر vinyl</li>
+  </ol>
+
+  <h3>📋 الترتيب (يدوي)</h3>
+  <p>الورقات بتطبع بترتيب من فوق لتحت ومن اليمين للشمال:</p>
+  <ul style="padding-right:22px">
+    <li>الورقة الأولى = R1C1 (يمين فوق)</li>
+    <li>الورقة الـ7 = R1C7 (شمال فوق)</li>
+    <li>الورقة الـ8 = R2C1</li>
+    <li>الورقة الـ35 = R5C7 (شمال تحت)</li>
+  </ul>
+  <p>افرد الورق على الأرض → رتّبهم زي ما اطبعوا (٧ في كل صف، 5 صفوف) → الصق على الباب.</p>
+</div>
+
+<div id="tiles-container"></div>
+
+<template id="design-template">
+  <div class="logo-block">
+    <div class="logo-circle"><img src="https://madmonacairo.com/madmona-logo.png" alt="Madmona"></div>
+    <div class="wordmark">MADMONA</div>
+  </div>
+  <div class="hero-block">
+    <div class="hero-tag">منصة التأجير المضمونة</div>
+    <div class="hero-line">بنأجّر</div>
+    <div class="hero-line gold">كل حاجة</div>
+  </div>
+  <div class="services-block">
+    <div class="service-card"><div class="service-icon">🏖️</div><div class="service-name">شاليهات</div><div class="service-tag">CHALETS</div></div>
+    <div class="service-card"><div class="service-icon">🚗</div><div class="service-name">سيارات</div><div class="service-tag">CARS</div></div>
+    <div class="service-card"><div class="service-icon">📷</div><div class="service-name">كاميرات &amp; معدات</div><div class="service-tag">CAMERAS &amp; MEDIA</div></div>
+    <div class="service-card"><div class="service-icon">💻</div><div class="service-name">ورك سبيس</div><div class="service-tag">COWORKING</div></div>
+    <div class="service-card"><div class="service-icon">🎉</div><div class="service-name">معدات أفراح</div><div class="service-tag">EVENTS</div></div>
+    <div class="service-card"><div class="service-icon">🪑</div><div class="service-name">غرف اجتماعات</div><div class="service-tag">MEETING ROOMS</div></div>
+  </div>
+  <div class="qr-block">
+    <div class="qr-frame">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fmadmonacairo.com%2Fsupplier%2Fregister&size=2000x2000&format=png&margin=8&ecc=H" alt="QR">
+    </div>
+    <div class="qr-text">
+      <div class="qr-cta-1">صَوَّر الكود</div>
+      <div class="qr-cta-2">واتسجل دلوقتي</div>
+      <div class="qr-cta-3">٢ دقيقة بس</div>
+    </div>
+  </div>
+  <div class="footer-block">
+    <div class="url-line">madmonacairo.com / supplier / register</div>
+    <div class="phone">📞 01002229982</div>
+    <div class="address">٧ شارع سليمان عَزْمي، النزهة، مصر الجديدة</div>
+  </div>
+</template>
+
+<script>
+(function() {
+  const COLS = 7, ROWS = 5;
+  const TILE_W = 297, TILE_H = 420;
+  const TOTAL = COLS * ROWS;
+
+  const container = document.getElementById('tiles-container');
+  const tmpl = document.getElementById('design-template').innerHTML;
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const num = r * COLS + c + 1;
+      const offsetTop = -r * TILE_H;
+      const offsetLeft = -c * TILE_W;
+
+      const screenLabel = document.createElement('div');
+      screenLabel.className = 'label-front';
+      screenLabel.textContent = `ورقة #${num} / ${TOTAL} (R${r+1}C${c+1})`;
+      container.appendChild(screenLabel);
+
+      const front = document.createElement('div');
+      front.className = 'tile-front';
+      front.innerHTML = `<div class="full-design" style="top: ${offsetTop}mm; left: ${offsetLeft}mm;">${tmpl}</div>`;
+      container.appendChild(front);
+    }
+  }
+})();
+</script>
+
+</body>
+</html>
