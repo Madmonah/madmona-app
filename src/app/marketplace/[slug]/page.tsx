@@ -8,7 +8,7 @@ import {
   ArrowRight, MapPin, Star, MessageCircle, Calendar,
   Loader2, Image as ImageIcon, Building2, Tag,
   ChevronRight, ChevronLeft, CheckCircle, AlertCircle, User, Heart, Share2,
-  ExternalLink, Clock, Sparkles,
+  ExternalLink, Clock, Sparkles, ShieldCheck,
 } from 'lucide-react'
 
 // ============================================================================
@@ -34,10 +34,12 @@ interface ListingDetail {
   reviews_count: number
   views_count: number
   status: string
+  requires_id_verification: boolean | null
   category: { name_ar: string; icon: string | null } | null
   supplier: {
     id: string
     business_name: string
+    kyc_status?: string | null
     profile: { phone: string; full_name: string | null } | null
   } | null
 }
@@ -125,7 +127,7 @@ export default function ListingDetailPage() {
             *,
             category:categories(name_ar, icon),
             supplier:marketplace_suppliers(
-              id, business_name,
+              id, business_name, kyc_status,
               profile:profiles!marketplace_suppliers_profile_id_fkey(phone, full_name)
             )
           `)
@@ -465,6 +467,22 @@ export default function ListingDetailPage() {
               <h1 className="text-2xl md:text-4xl font-black text-gray-900 leading-tight mb-4 tracking-tight">
                 {listing.title}
               </h1>
+
+              {/* Trust badges row */}
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                {listing.supplier?.kyc_status === 'approved' && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full text-xs font-bold text-green-700">
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    أجر معانا موثّق
+                  </span>
+                )}
+                {listing.requires_id_verification && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#B8860B]/10 border border-[#B8860B]/30 rounded-full text-xs font-bold text-[#B8860B]">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    بطاقة مطلوبة للحجز
+                  </span>
+                )}
+              </div>
 
               <div className="flex flex-wrap items-center gap-4 text-sm">
                 {(listing.district || listing.city) && (

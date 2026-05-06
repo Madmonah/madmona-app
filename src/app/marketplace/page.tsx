@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   Search, MapPin, Star, ImageIcon, Loader2, ArrowRight, User, LogIn, Heart,
-  ChevronDown, X, SlidersHorizontal, Sparkles,
+  ChevronDown, X, SlidersHorizontal, Sparkles, ShieldCheck, CheckCircle,
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 
@@ -28,7 +28,9 @@ interface Listing {
   reviews_count: number
   status: string
   created_at: string
+  requires_id_verification: boolean | null
   category: { name_ar: string; icon: string | null; slug: string } | null
+  supplier: { kyc_status: string | null } | null
   photos: { url: string; is_primary: boolean }[] | null
   pricing: { price: number | string; is_active: boolean }[] | null
 }
@@ -121,8 +123,9 @@ function MarketplaceBrowseContent() {
       let query = supabaseBrowser
         .from('listings')
         .select(`
-          id, title, slug, city, district, rating, reviews_count, status, created_at,
+          id, title, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification,
           category:categories(name_ar, icon, slug),
+          supplier:marketplace_suppliers(kyc_status),
           photos:listing_photos(url, is_primary),
           pricing:pricing_rules(price, is_active)
         `)
@@ -492,6 +495,24 @@ function MarketplaceBrowseContent() {
                     <h3 className="font-black text-base md:text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#1F5F3F] transition-colors">
                       {listing.title}
                     </h3>
+
+                    {/* Trust badges */}
+                    {(listing.supplier?.kyc_status === 'approved' || listing.requires_id_verification) && (
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {listing.supplier?.kyc_status === 'approved' && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 border border-green-200 rounded-full text-[10px] font-bold text-green-700">
+                            <CheckCircle className="w-2.5 h-2.5" />
+                            موثّق
+                          </span>
+                        )}
+                        {listing.requires_id_verification && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#B8860B]/10 border border-[#B8860B]/30 rounded-full text-[10px] font-bold text-[#B8860B]">
+                            <ShieldCheck className="w-2.5 h-2.5" />
+                            بطاقة مطلوبة
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     {(listing.district || listing.city) && (
                       <p className="text-xs text-gray-500 flex items-center gap-1 mb-3">

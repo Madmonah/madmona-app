@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
 import {
-  ArrowRight, Phone, Lock, User, Mail, AlertCircle, Loader2, UserPlus, CheckCircle, Sparkles, KeyRound,
+  ArrowRight, Phone, Lock, User, Mail, AlertCircle, Loader2, UserPlus, CheckCircle, Sparkles, KeyRound, CreditCard,
 } from 'lucide-react'
 
 function SignupContent() {
@@ -17,6 +17,7 @@ function SignupContent() {
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
+  const [nationalId, setNationalId] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
@@ -62,6 +63,7 @@ function SignupContent() {
           phone: normalized,
           full_name: fullName.trim(),
           recovery_email: trimmedEmail,
+          ...(nationalId.trim() ? { national_id: nationalId.trim() } : {}),
         },
       },
     })
@@ -77,16 +79,22 @@ function SignupContent() {
       return
     }
 
-    // Save recovery email on the profile (best-effort — the row should exist via DB trigger)
+    // Save recovery email + optional national_id on the profile (best-effort)
     if (data?.user?.id) {
       try {
+        const profileUpdate: Record<string, unknown> = { email: trimmedEmail }
+        // Save national_id if provided. Column may not exist in all DBs - migration:
+        //   ALTER TABLE profiles ADD COLUMN national_id TEXT;
+        if (nationalId.trim()) {
+          profileUpdate.national_id = nationalId.trim()
+        }
         // @ts-expect-error
         await supabaseBrowser
           .from('profiles')
-          .update({ email: trimmedEmail })
+          .update(profileUpdate)
           .eq('id', data.user.id)
       } catch (e) {
-        console.warn('[auth/signup] could not update profile email:', e)
+        console.warn('[auth/signup] could not update profile:', e)
       }
     }
 
@@ -232,6 +240,30 @@ function SignupContent() {
                 />
                 <p className="text-[11px] text-gray-500 mt-1.5 leading-relaxed">
                   💡 محتاجينه عشان نقدر نساعدك تستعيد كلمة السر لو نسيتها
+                </p>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+                  <CreditCard className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                  رقم البطاقة
+                  <span className="text-[10px] font-normal text-gray-400 normal-case tracking-normal mr-auto">
+                    (اختياري)
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  value={nationalId}
+                  onChange={(e) => setNationalId(e.target.value.replace(/\D/g, '').slice(0, 14))}
+                  placeholder="14 رقم"
+                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
+                  dir="ltr"
+                  style={{ textAlign: 'right' }}
+                  inputMode="numeric"
+                  maxLength={14}
+                />
+                <p className="text-[11px] text-gray-500 mt-1.5 leading-relaxed">
+                  🔒 بيسرّع الحجز لو جيت تحجز حاجة محتاجة تحقق هوية (عربيات، عقارات، الخ). بياناتك محفوظة، بس أجر معانا اللي بتحجز عنده بيشوفها.
                 </p>
               </div>
 

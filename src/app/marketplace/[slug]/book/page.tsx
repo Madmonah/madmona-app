@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Calendar, Loader2, AlertCircle, CheckCircle,
-  Lock, MapPin, Image as ImageIcon, Building2, ShieldCheck, Clock,
+  Lock, MapPin, Image as ImageIcon, Building2, ShieldCheck, Clock, CreditCard,
 } from 'lucide-react'
 
 // ============================================================================
@@ -31,6 +31,7 @@ interface ListingForBooking {
   city: string | null
   district: string | null
   status: string
+  requires_id_verification: boolean | null
   supplier: {
     id: string
     business_name: string
@@ -92,6 +93,10 @@ export default function BookingPage() {
   const [customerNotes, setCustomerNotes] = useState('')
   const [error, setError] = useState<string | null>(null)
 
+  // ID verification state for listings that require it
+  const [userNationalId, setUserNationalId] = useState<string | null>(null)
+  const [providedNationalId, setProvidedNationalId] = useState('')
+
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
@@ -105,7 +110,7 @@ export default function BookingPage() {
       const { data: l, error: listingErr } = await supabaseBrowser
         .from('listings')
         .select(`
-          id, title, slug, city, district, status,
+          id, title, slug, city, district, status, requires_id_verification,
           supplier:marketplace_suppliers(id, business_name, commission_rate, kyc_status),
           photos:listing_photos(url, is_primary)
         `)
@@ -140,6 +145,23 @@ export default function BookingPage() {
       setPricingRules(activeRules)
       if (activeRules.length > 0) {
         setSelectedRuleId(activeRules[0].id)
+      }
+
+      // Load user's national_id if exists (for ID verification flow)
+      // Column may not exist in all DBs (migration: ALTER TABLE profiles ADD COLUMN national_id TEXT;)
+      try {
+        // @ts-expect-error
+        const { data: profile } = await supabaseBrowser
+          .from('profiles')
+          .select('national_id')
+          .eq('id', session.user.id)
+          .maybeSingle()
+        if (profile?.national_id) {
+          setUserNationalId(profile.national_id)
+          setProvidedNationalId(profile.national_id)
+        }
+      } catch {
+        // Column doesn't exist - silent fail
       }
 
       setStage('ready')
@@ -248,9 +270,25 @@ export default function BookingPage() {
         total_amount: pricing.total,
         supplier_payout: pricing.supplierPayout,
         currency: selectedRule.currency || 'EGP',
-        status: 'pending_payment',
+        status: listing.requires_id_verification ? 'pending_id_verification' : 'pending_payment',
       }
       if (customerNotes.trim()) insertData.customer_notes = customerNotes.trim()
+
+      // If listing requires ID verification, save the customer's ID
+      if (listing.requires_id_verification && providedNationalId.trim()) {
+        insertData.id_verification_status = 'pending'
+        insertData.customer_national_id = providedNationalId.trim()
+        // Also save it on the user's profile for future bookings
+        try {
+          // @ts-expect-error
+          await supabaseBrowser
+            .from('profiles')
+            .update({ national_id: providedNationalId.trim() })
+            .eq('id', userId)
+        } catch {
+          // silent
+        }
+      }
 
       // @ts-expect-error
       const { data: newBooking, error: insertErr } = await supabaseBrowser
@@ -540,6 +578,44 @@ export default function BookingPage() {
           />
         </div>
 
+        {/* ID Verification - shown only for listings requiring it */}
+        {listing.requires_id_verification && (
+          <div className="bg-gradient-to-br from-[#B8860B]/5 to-amber-50 rounded-2xl border-2 border-[#B8860B]/30 p-4 mb-4">
+            <h3 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-[#B8860B]" />
+              بطاقة مطلوبة
+            </h3>
+            <p className="text-xs text-gray-700 leading-relaxed mb-3">
+              الـlisting ده محتاج رقم بطاقتك للتحقق. الحجز ما بيتأكدش غير لما أجر معانا (<strong>{listing.supplier?.business_name}</strong>) يوافق على بياناتك. رد عادي في خلال ساعات.
+            </p>
+            <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
+              <CreditCard className="w-3.5 h-3.5 text-[#B8860B]" />
+              رقم البطاقة الشخصية *
+            </label>
+            <input
+              type="text"
+              value={providedNationalId}
+              onChange={e => setProvidedNationalId(e.target.value.replace(/\D/g, '').slice(0, 14))}
+              placeholder="14 رقم"
+              maxLength={14}
+              className="w-full px-4 py-2.5 border border-[#B8860B]/40 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#B8860B]/30 focus:border-[#B8860B] bg-white"
+              dir="ltr"
+              style={{ textAlign: 'right' }}
+              inputMode="numeric"
+              required
+            />
+            {userNationalId && (
+              <p className="text-[11px] text-green-700 mt-1.5 flex items-center gap-1">
+                <CheckCircle className="w-3 h-3" />
+                رقم بطاقتك محفوظ عندنا. تقدر تعدله لو عاوز.
+              </p>
+            )}
+            <p className="text-[10px] text-gray-500 mt-2 leading-relaxed">
+              🔒 بياناتك أمان. بتوصل لـأجر معانا بس، وبتتخزن مشفرة في النظام.
+            </p>
+          </div>
+        )}
+
         {/* Price breakdown */}
         {pricing.valid && selectedRule && (
           <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
@@ -575,12 +651,16 @@ export default function BookingPage() {
 
         <button
           onClick={handleSubmit}
-          disabled={!pricing.valid || stage === 'submitting'}
+          disabled={!pricing.valid || stage === 'submitting' || (listing.requires_id_verification === true && providedNationalId.trim().length < 14)}
           className="w-full py-3.5 bg-[#1F5F3F] text-white rounded-xl font-bold hover:bg-[#1F5F3F]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {stage === 'submitting' ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" /> جاري الإرسال...
+            </>
+          ) : listing.requires_id_verification ? (
+            <>
+              <ShieldCheck className="w-5 h-5" /> إرسال طلب الحجز
             </>
           ) : (
             <>
@@ -590,7 +670,9 @@ export default function BookingPage() {
         </button>
 
         <p className="text-xs text-center text-gray-500 mt-3">
-          الحجز هيتأكد بعد ما أجر معانا يوافق. هتقدر تتابع حالة الحجز من &ldquo;حجوزاتي&rdquo;.
+          {listing.requires_id_verification
+            ? 'الحجز هيتأكد بعد ما أجر معانا يراجع بياناتك ويوافق. هتوصلك إشعار لما تتأكد.'
+            : 'الحجز هيتأكد بعد ما أجر معانا يوافق. هتقدر تتابع حالة الحجز من “حجوزاتي”.'}
         </p>
       </main>
     </div>

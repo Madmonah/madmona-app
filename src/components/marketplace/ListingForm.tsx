@@ -6,7 +6,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ChevronLeft, ChevronRight, Check, X, Plus, Upload, Trash2, Star,
   Loader2, AlertCircle, Tag, MapPin, DollarSign, Image as ImageIcon,
-  FolderTree, Info,
+  FolderTree, Info, ShieldCheck,
 } from 'lucide-react'
 
 // ============================================================================
@@ -70,6 +70,7 @@ export interface ListingFormData {
   min_booking_hours: number | null
   max_booking_hours: number | null
   status: 'draft' | 'published'
+  requires_id_verification: boolean
   attributeValues: Record<string, any>
   photos: Photo[]
   pricing: PricingRule[]
@@ -122,6 +123,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     min_booking_hours: initialData?.min_booking_hours ?? null,
     max_booking_hours: initialData?.max_booking_hours ?? null,
     status: initialData?.status || 'draft',
+    requires_id_verification: initialData?.requires_id_verification || false,
     attributeValues: {},
     photos: initialData?.existingPhotos || [],
     pricing: initialData?.existingPricing && initialData.existingPricing.length > 0
@@ -274,6 +276,11 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         district: form.district.trim() || null,
         address: form.address.trim() || null,
         status,
+      }
+      // Add requires_id_verification if column exists in DB
+      // Migration: ALTER TABLE listings ADD COLUMN requires_id_verification BOOLEAN DEFAULT FALSE;
+      if (form.requires_id_verification) {
+        listingPayload.requires_id_verification = true
       }
       if (slug) listingPayload.slug = slug
       if (form.min_booking_hours !== null) listingPayload.min_booking_hours = form.min_booking_hours
@@ -600,6 +607,35 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                     placeholder="(اختياري)"
                   />
                 </div>
+              </div>
+
+              {/* ID Verification Toggle */}
+              <div className="pt-3 border-t border-gray-100">
+                <label
+                  className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                    form.requires_id_verification
+                      ? 'border-[#B8860B] bg-[#B8860B]/5'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={form.requires_id_verification}
+                    onChange={e => setForm(f => ({ ...f, requires_id_verification: e.target.checked }))}
+                    className="w-4 h-4 mt-0.5 accent-[#B8860B]"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className={`w-4 h-4 ${form.requires_id_verification ? 'text-[#B8860B]' : 'text-gray-400'}`} />
+                      <span className="text-sm font-bold text-gray-900">
+                        محتاج رقم بطاقة من العميل عند الحجز؟
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                      فعّل دي لو المنتج/الخدمة جالية (زي عربيات، عقارات، معدات غالية). العميل هيبعتلك بياناته والحجز ما يتأكدش غير لما توافق أنت.
+                    </p>
+                  </div>
+                </label>
               </div>
             </div>
           </div>
