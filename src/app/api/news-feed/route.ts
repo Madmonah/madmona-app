@@ -35,6 +35,26 @@ interface NewsSource {
   category: NewsCategory
 }
 
+// Keyword filter per category - ensures each tab returns content matching its label
+// Items must contain at least ONE keyword from `must` (if defined) to be included
+const CATEGORY_KEYWORDS: Record<NewsCategory, { must?: string[]; exclude?: string[] }> = {
+  economy: {
+    must: ['اقتصاد', 'بورصة', 'دولار', 'جنيه', 'سعر', 'تضخم', 'استثمار', 'بنك', 'عملة', 'صادرات', 'واردات', 'ريال', 'يورو', 'سهم', 'أسهم', 'أسعار', 'تجار', 'سوق', 'ديون', 'money', 'price', 'stock', 'bank', 'invest', 'economy', 'market', 'GDP', 'إجمالي', 'أرباح', 'خسائر', 'البنك'],
+  },
+  interior: {
+    must: ['شرطة', 'الداخلية', 'حادث', 'مقتل', 'سرقة', 'قبض', 'اعتقال', 'جريمة', 'مأمور', 'ضبط', 'مخدرات', 'بلاغ', 'إتهام', 'تهريب', 'سجن', 'حبس', 'الأمن', 'وزارة الداخلية', 'تحري', 'ادارة البحث', 'ملاحقة', 'النيابة', 'إصابة', 'تصادم', 'حريق', 'جريح', 'قتيل'],
+  },
+  locals: {
+    must: ['محافظ', 'محافظة', 'قرية', 'مدينة', 'مجلس', 'حي', 'شارع', 'كهرباء', 'مياه', 'صرف صحي', 'محلي', 'بلدية', 'الأسكندرية', 'الجيزة', 'القاهرة', 'القليوبية', 'البحيرة', 'الفيوم', 'المنوفية', 'الشرقية', 'الأقصر', 'أسيوط', 'المنيا', 'سوهاج', 'بني سويف', 'السويس', 'بورسعيد', 'دمياط', 'رصف', 'ترعة', 'فائض السد', 'خدمات'],
+  },
+  defense: {
+    must: ['الجيش', 'الدفاع', 'القوات المسلحة', 'السيسي', 'الرئاسة', 'الدبلوماسية', 'الخارجية', 'سياسة', 'وزير', 'لقاء', 'قمة', 'برلمان', 'النواب', 'رئيس', 'اتفاق', 'معاهدة', 'عسكري', 'سلاح', 'أمن قومي', 'دولة', 'غزة', 'إسرائيل', 'سوريا', 'السودان', 'ليبيا', 'حرب', 'صراع', 'علاقات'],
+  },
+  sports: {},
+  fashion: {},
+  trending: {},
+}
+
 // Themed fallback images per category
 const FB_SPORTS = 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800&q=80'
 const FB_FOOTBALL = 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=800&q=80'
@@ -225,11 +245,28 @@ async function buildPool(category: NewsCategory): Promise<NewsItem[]> {
   const results = await Promise.all(sources.map(fetchSource))
   const allItems = results.flat()
   const seen = new Set<string>()
-  return allItems.filter(item => {
+  let deduped = allItems.filter(item => {
     if (seen.has(item.link)) return false
     seen.add(item.link)
     return true
   })
+
+  // Apply keyword filter to ensure category relevance
+  const keywords = CATEGORY_KEYWORDS[category]
+  if (keywords?.must && keywords.must.length > 0) {
+    const mustKeywords = keywords.must
+    const filtered = deduped.filter(item => {
+      const haystack = item.title.toLowerCase()
+      return mustKeywords.some(kw => haystack.includes(kw.toLowerCase()))
+    })
+    // Only apply filter if it leaves us with enough items (at least 3)
+    // Otherwise use unfiltered to avoid empty tabs
+    if (filtered.length >= 3) {
+      deduped = filtered
+    }
+  }
+
+  return deduped
 }
 
 function shuffle<T>(arr: T[]): T[] {
