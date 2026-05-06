@@ -7,6 +7,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight,
   Building2,
+  User as UserIcon,
   FileText,
   CheckCircle,
   AlertCircle,
@@ -29,6 +30,7 @@ import {
 // ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'has-supplier' | 'form' | 'success'
+type AccountType = 'individual' | 'business'
 
 interface ExistingSupplier {
   id: string
@@ -52,6 +54,7 @@ export default function SupplierRegisterPage() {
   const [existing, setExisting] = useState<ExistingSupplier | null>(null)
 
   // Form fields
+  const [accountType, setAccountType] = useState<AccountType>('business')
   const [businessName, setBusinessName] = useState('')
   const [businessNameEn, setBusinessNameEn] = useState('')
   const [description, setDescription] = useState('')
@@ -103,6 +106,12 @@ export default function SupplierRegisterPage() {
       business_name: businessName.trim(),
       kyc_status: 'pending',
     }
+    // Note: account_type is captured in UI for conditional field display.
+    // To persist it, add column to DB:
+    //   ALTER TABLE marketplace_suppliers ADD COLUMN account_type TEXT DEFAULT 'business' CHECK (account_type IN ('individual', 'business'));
+    // Then uncomment the next line:
+    // insert.account_type = accountType
+    void accountType  // suppress unused warning until DB migration is applied
     if (businessNameEn) insert.business_name_en = businessNameEn.trim()
     if (description) insert.description = description.trim()
     if (logoUrl) insert.logo_url = logoUrl.trim()
@@ -153,7 +162,7 @@ export default function SupplierRegisterPage() {
           </div>
           <h1 className="text-xl font-bold text-gray-900 mb-1">سجّل دخول الأول</h1>
           <p className="text-sm text-gray-500 mb-6">
-            عشان تتقدم لتبقى مورد على Madmona، لازم تسجل دخول بحسابك أولاً.
+            عشان تسجل في أجر معانا على Madmona، لازم تسجل دخول بحسابك أولاً.
           </p>
           <Link
             href={`/auth/login?redirect=${encodeURIComponent('/supplier/register')}`}
@@ -246,7 +255,7 @@ export default function SupplierRegisterPage() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">تم استلام طلبك</h1>
             <p className="text-sm text-gray-600 mb-6">
-              تقدر تبدأ تضيف listings على طول. الموافقة النهائية على الحساب بتيجي قبل أول حجز ياخده عميل منك.
+              تقدر تبدأ تضيف listings على طول. الموافقة النهائية على الحساب بتيجي قبل أول حجز ياخده أجر مننا.
             </p>
             <div className="flex gap-3 justify-center">
               <Link
@@ -280,10 +289,10 @@ export default function SupplierRegisterPage() {
             <div className="flex items-center justify-center w-10 h-10 bg-[#1F5F3F]/10 rounded-full">
               <Building2 className="w-5 h-5 text-[#1F5F3F]" />
             </div>
-            <h1 className="text-xl font-bold text-gray-900">تسجيل مورد جديد</h1>
+            <h1 className="text-xl font-bold text-gray-900">أجر معانا - تسجيل جديد</h1>
           </div>
           <p className="text-sm text-gray-500 mb-6">
-            املا البيانات دي عشان تقدم لتبقى مورد على Madmona Marketplace.
+            املا البيانات دي عشان تبدأ عرض خدماتك على Madmona Marketplace.
           </p>
 
           {error && (
@@ -294,15 +303,77 @@ export default function SupplierRegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Account Type Toggle */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-3">
+                بتسجل بصفتك
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setAccountType('individual')}
+                  className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                    accountType === 'individual'
+                      ? 'border-[#1F5F3F] bg-[#1F5F3F]/5 shadow-sm'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    accountType === 'individual' ? 'bg-[#1F5F3F] text-white' : 'bg-gray-100 text-gray-500'
+                  }`}>
+                    <UserIcon className="w-5 h-5" />
+                  </div>
+                  <div className="text-center">
+                    <p className={`text-sm font-bold ${
+                      accountType === 'individual' ? 'text-[#1F5F3F]' : 'text-gray-700'
+                    }`}>فرد</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">بصفتك الشخصية</p>
+                  </div>
+                  {accountType === 'individual' && (
+                    <CheckCircle className="absolute top-2 left-2 w-4 h-4 text-[#1F5F3F]" />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAccountType('business')}
+                  className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                    accountType === 'business'
+                      ? 'border-[#1F5F3F] bg-[#1F5F3F]/5 shadow-sm'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    accountType === 'business' ? 'bg-[#1F5F3F] text-white' : 'bg-gray-100 text-gray-500'
+                  }`}>
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <div className="text-center">
+                    <p className={`text-sm font-bold ${
+                      accountType === 'business' ? 'text-[#1F5F3F]' : 'text-gray-700'
+                    }`}>شركة</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">نشاط تجاري</p>
+                  </div>
+                  {accountType === 'business' && (
+                    <CheckCircle className="absolute top-2 left-2 w-4 h-4 text-[#1F5F3F]" />
+                  )}
+                </button>
+              </div>
+            </div>
             {/* Business Info Section */}
             <div>
               <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-[#1F5F3F]" />
-                بيانات النشاط
+                {accountType === 'individual' ? (
+                  <><UserIcon className="w-4 h-4 text-[#1F5F3F]" /> بياناتك الشخصية</>
+                ) : (
+                  <><Building2 className="w-4 h-4 text-[#1F5F3F]" /> بيانات النشاط</>
+                )}
               </h2>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">اسم النشاط بالعربي *</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    {accountType === 'individual' ? 'اسمك بالعربي *' : 'اسم النشاط بالعربي *'}
+                  </label>
                   <input
                     type="text"
                     value={businessName}
@@ -310,23 +381,27 @@ export default function SupplierRegisterPage() {
                     required
                     maxLength={200}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
-                    placeholder="مثلاً: شركة النيل لتأجير السيارات"
+                    placeholder={accountType === 'individual' ? 'مثلاً: أحمد محمد' : 'مثلاً: شركة النيل لتأجير السيارات'}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Business name (English)</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    {accountType === 'individual' ? 'Your name (English)' : 'Business name (English)'}
+                  </label>
                   <input
                     type="text"
                     value={businessNameEn}
                     onChange={(e) => setBusinessNameEn(e.target.value)}
                     maxLength={200}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
-                    placeholder="Nile Car Rentals"
+                    placeholder={accountType === 'individual' ? 'Ahmed Mohamed' : 'Nile Car Rentals'}
                     dir="ltr"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">وصف مختصر للنشاط</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    {accountType === 'individual' ? 'وصف مختصر للخدمة' : 'وصف مختصر للنشاط'}
+                  </label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -337,7 +412,9 @@ export default function SupplierRegisterPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">رابط لوجو النشاط (اختياري)</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    {accountType === 'individual' ? 'رابط صورتك (اختياري)' : 'رابط لوجو النشاط (اختياري)'}
+                  </label>
                   <input
                     type="url"
                     value={logoUrl}
@@ -350,14 +427,16 @@ export default function SupplierRegisterPage() {
               </div>
             </div>
 
-            {/* KYC Section */}
+            {/* KYC Section - shown differently for individual vs business */}
             <div className="pt-4 border-t border-gray-100">
               <h2 className="text-sm font-semibold text-gray-900 mb-1 flex items-center gap-2">
                 <FileText className="w-4 h-4 text-[#1F5F3F]" />
                 بيانات التحقق (KYC)
               </h2>
               <p className="text-xs text-gray-500 mb-3">
-                البيانات دي بتساعدنا نتحقق من نشاطك. كلها اختيارية دلوقتي بس بتسرّع الموافقة قبل أول حجز.
+                {accountType === 'individual'
+                  ? 'بيانات اختيارية بتسرّع الموافقة على حسابك. رقم البطاقة بس كفاية.'
+                  : 'البيانات دي بتساعدنا نتحقق من نشاطك. كلها اختيارية دلوقتي بس بتسرّع الموافقة قبل أول حجز.'}
               </p>
               <div className="space-y-3">
                 <div>
@@ -372,28 +451,33 @@ export default function SupplierRegisterPage() {
                     dir="ltr"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">رقم السجل التجاري</label>
-                  <input
-                    type="text"
-                    value={commercialReg}
-                    onChange={(e) => setCommercialReg(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
-                    placeholder="(لو عندك سجل تجاري)"
-                    dir="ltr"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">الرقم الضريبي</label>
-                  <input
-                    type="text"
-                    value={taxId}
-                    onChange={(e) => setTaxId(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
-                    placeholder="(لو مسجّل ضريبياً)"
-                    dir="ltr"
-                  />
-                </div>
+                {/* Commercial Reg + Tax ID only for businesses */}
+                {accountType === 'business' && (
+                  <>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">رقم السجل التجاري</label>
+                      <input
+                        type="text"
+                        value={commercialReg}
+                        onChange={(e) => setCommercialReg(e.target.value)}
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                        placeholder="(لو عندك سجل تجاري)"
+                        dir="ltr"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">الرقم الضريبي</label>
+                      <input
+                        type="text"
+                        value={taxId}
+                        onChange={(e) => setTaxId(e.target.value)}
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                        placeholder="(لو مسجّل ضريبياً)"
+                        dir="ltr"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 

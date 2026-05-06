@@ -11,6 +11,7 @@ import EconomicNewsHero from '@/components/EconomicNewsHero'
 import FinancialTicker from '@/components/FinancialTicker'
 import LaunchBanner from '@/components/LaunchBanner'
 import NewsTabsSection from '@/components/NewsTabsSection'
+import CompactNewsTabs from '@/components/CompactNewsTabs'
 
 // ============================================================
 // Home page — Single brand: "خدمات مضمونة"
@@ -29,6 +30,7 @@ import NewsTabsSection from '@/components/NewsTabsSection'
 // ============================================================
 
 const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
+const MADMONA_GOOGLE_REVIEW_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
 
 const DEFAULT_HERO_IMAGE = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=85&auto=format&fit=crop'
 const DEFAULT_CATEGORY_FALLBACK = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&auto=format&fit=crop'
@@ -127,7 +129,7 @@ export default async function HomePage() {
                 </h1>
 
                 <p className="text-base md:text-xl text-gray-600 leading-relaxed max-w-xl mb-8 md:mb-10">
-                  منصة حجز مصرية تجمع كل اللي يتأجر — من موردين معتمدين، بضمان كامل،
+                  منصة حجز مصرية تجمع كل اللي يتأجر — من مصادر معتمدة، بضمان كامل،
                   <span className="text-gray-900 font-medium"> في مكان واحد.</span>
                 </p>
 
@@ -146,12 +148,14 @@ export default async function HomePage() {
                 <div className="flex items-center gap-6 md:gap-8 mt-10 flex-wrap">
                   <TrustBadge icon={<ShieldCheck className="w-3.5 h-3.5" />} label="حجز مضمون" />
                   <TrustBadge icon={<Clock className="w-3.5 h-3.5" />} label="رد فوري ٢٤/٧" />
-                  <TrustBadge icon={<Star className="w-3.5 h-3.5" />} label="موردين موثّقين" />
+                  <TrustBadge icon={<Star className="w-3.5 h-3.5" />} label="بجودة مضمونة" />
                 </div>
               </div>
 
-              <div className="md:col-span-5 order-1 md:order-2 relative">
+              <div className="md:col-span-5 order-1 md:order-2 relative space-y-4">
                 <EconomicNewsHero fallbackImage={HERO_IMAGE} />
+                {/* Compact news tabs (sports / fashion / trending) - LIVE beside economic news */}
+                <CompactNewsTabs />
                 <div className="absolute -top-3 -left-3 w-20 h-20 border-2 border-[#B8860B]/40 rounded-3xl -z-0 hidden md:block" />
               </div>
             </div>
@@ -211,9 +215,6 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* NEWS TABS (Sports / Fashion / Trending) */}
-        <NewsTabsSection />
-
         {/* FEATURED */}
         <section className="py-16 md:py-24">
           <div className="max-w-7xl mx-auto px-4">
@@ -241,7 +242,7 @@ export default async function HomePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               <Step num="01" title="استكشف" description="اتصفّح الخدمات أو ابحث في فئة معينة. شوف الأسعار والصور قبل أي قرار." icon={<Compass className="w-6 h-6" />} iconAccent="text-[#1F5F3F] bg-[#1F5F3F]/10" />
-              <Step num="02" title="احجز" description="اختار الوقت اللي يناسبك واحجز فوراً. تأكيد على واتساب من المورد مباشرة." icon={<Zap className="w-6 h-6" />} iconAccent="text-[#B8860B] bg-[#B8860B]/10" />
+              <Step num="02" title="احجز" description="اختار الوقت اللي يناسبك واحجز فوراً. تأكيد على واتساب من أجر معانا مباشرة." icon={<Zap className="w-6 h-6" />} iconAccent="text-[#B8860B] bg-[#B8860B]/10" />
               <Step num="03" title="استمتع" description="ادفع كاش أو InstaPay. مفيش هيدن فيز. ومتأمن إنك مش هتلاقي مفاجآت." icon={<ShieldCheck className="w-6 h-6" />} iconAccent="text-[#C2410C] bg-[#C2410C]/10" />
             </div>
           </div>
@@ -255,14 +256,14 @@ export default async function HomePage() {
               <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#B8860B]/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
               <div className="relative z-10 max-w-2xl">
-                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-4">FOR SUPPLIERS</p>
+                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-4">FOR PARTNERS</p>
                 <h2 className="text-3xl md:text-6xl font-black mb-5 leading-[0.92]">
                   عندك خدمة؟
                   <br />
                   <span className="italic font-light gradient-text-gold">خلّيها تكسبلك</span>
                 </h2>
                 <p className="text-sm md:text-lg text-white/80 leading-relaxed mb-8 max-w-xl">
-                  انضم لخدمات مضمونة، اعرض خدمتك على آلاف العملاء، واستقبل حجوزات.
+                  انضم لـ أجر معانا، اعرض خدمتك على آلاف من أجر مننا، واستقبل حجوزات.
                   لوحة كاملة، إشعارات لايف، وعمولة شفافة.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -288,7 +289,7 @@ export default async function HomePage() {
               <span className="italic font-light gradient-text-green"> معانا</span>
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-5xl mx-auto">
               <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 p-5 bg-[#FAFAF7] rounded-2xl hover:bg-white hover:shadow-card transition-all duration-300 no-underline border border-gray-100">
                 <div className="w-12 h-12 rounded-2xl bg-[#25D366] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                   <MessageCircle className="w-6 h-6 text-white" />
@@ -309,6 +310,18 @@ export default async function HomePage() {
                   <p className="text-xs text-gray-500 mt-0.5">النزهة، مصر الجديدة · ٩ ص → ١١ م</p>
                 </div>
                 <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#1F5F3F] group-hover:-translate-x-1 transition-all" />
+              </a>
+
+              {/* Rate us on Google */}
+              <a href={MADMONA_GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 p-5 bg-[#FAFAF7] rounded-2xl hover:bg-white hover:shadow-card transition-all duration-300 no-underline border border-gray-100">
+                <div className="w-12 h-12 rounded-2xl bg-[#FBBC04] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <Star className="w-6 h-6 text-white fill-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-gray-900">قيّمنا على جوجل</p>
+                  <p className="text-xs text-gray-500 mt-0.5">رأيك بيفرق معانا</p>
+                </div>
+                <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#FBBC04] group-hover:-translate-x-1 transition-all" />
               </a>
             </div>
           </div>
