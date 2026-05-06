@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   Trophy, Sparkles, TrendingUp, ExternalLink, MapPin, RefreshCw, Newspaper,
-  DollarSign, Shield, Building2, Landmark, ChevronLeft, ChevronRight,
+  DollarSign, Home, Car, Briefcase, Plane, Camera, ChevronLeft, ChevronRight,
   Pause, Play, Clock,
 } from 'lucide-react'
 
@@ -11,11 +11,18 @@ import {
 // CompactNewsTabs (Magazine-style News Hub)
 //
 // Layout: 1 large featured (rotating, 5s) + 4 smaller cards beside it.
-// 7 tabs: economy, interior, locals, defense, sports, fashion, trending.
+// 7 tabs aligned to Madmona main categories:
+//   - economy:     universal
+//   - real_estate: matches "عقارات للإيجار"
+//   - automotive:  matches "مركبات ونقل"
+//   - business:    matches "مساحات عمل"
+//   - tourism:     matches "ترفيه + مركبات بحرية"
+//   - fashion:     matches "أعراس وتجهيزات"
+//   - tech:        matches "معدات ميديا"
 // Auto-refresh from API every 3 min. Auto-rotate within tab every 5s.
 // ============================================================================
 
-type Tab = 'economy' | 'interior' | 'locals' | 'defense' | 'sports' | 'fashion' | 'trending'
+type Tab = 'economy' | 'real_estate' | 'automotive' | 'business' | 'tourism' | 'fashion' | 'tech'
 
 interface NewsItem {
   title: string
@@ -35,13 +42,13 @@ interface ApiResponse {
 }
 
 const TABS: { id: Tab; label: string; icon: typeof Trophy; accent: string }[] = [
-  { id: 'economy',  label: 'اقتصاد',   icon: DollarSign, accent: '#10b981' },
-  { id: 'interior', label: 'داخلية',   icon: Shield,     accent: '#3b82f6' },
-  { id: 'locals',   label: 'محليات',   icon: Building2,  accent: '#B8860B' },
-  { id: 'defense',  label: 'دفاع',     icon: Landmark,   accent: '#64748b' },
-  { id: 'sports',   label: 'رياضة',    icon: Trophy,     accent: '#f43f5e' },
-  { id: 'fashion',  label: 'موضة',     icon: Sparkles,   accent: '#ec4899' },
-  { id: 'trending', label: 'ترند',     icon: TrendingUp, accent: '#a855f7' },
+  { id: 'economy',     label: 'اقتصاد',    icon: DollarSign, accent: '#10b981' },
+  { id: 'real_estate', label: 'عقارات',    icon: Home,       accent: '#1F5F3F' },
+  { id: 'automotive',  label: 'سيارات',    icon: Car,        accent: '#3b82f6' },
+  { id: 'business',    label: 'أعمال',     icon: Briefcase,  accent: '#B8860B' },
+  { id: 'tourism',     label: 'سياحة',     icon: Plane,      accent: '#06b6d4' },
+  { id: 'fashion',     label: 'موضة وأعراس', icon: Sparkles,   accent: '#ec4899' },
+  { id: 'tech',        label: 'تكنولوجيا', icon: Camera,     accent: '#a855f7' },
 ]
 
 const REFRESH_INTERVAL = 3 * 60 * 1000   // 3 minutes
@@ -50,12 +57,12 @@ const ROTATION_MS = 5000                  // 5s per featured news
 export default function CompactNewsTabs() {
   const [activeTab, setActiveTab] = useState<Tab>('economy')
   const [items, setItems] = useState<Record<Tab, NewsItem[]>>({
-    economy: [], interior: [], locals: [], defense: [],
-    sports: [], fashion: [], trending: [],
+    economy: [], real_estate: [], automotive: [], business: [],
+    tourism: [], fashion: [], tech: [],
   })
   const [loading, setLoading] = useState<Record<Tab, boolean>>({
-    economy: true, interior: false, locals: false, defense: false,
-    sports: false, fashion: false, trending: false,
+    economy: true, real_estate: false, automotive: false, business: false,
+    tourism: false, fashion: false, tech: false,
   })
   const [featuredIndex, setFeaturedIndex] = useState(0)
   const [paused, setPaused] = useState(false)

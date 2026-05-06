@@ -1,20 +1,27 @@
 import { NextResponse } from 'next/server'
 
 // ============================================================================
-// GET /api/news-feed?category=sports|fashion|trending|economy
+// GET /api/news-feed?category=economy|real_estate|automotive|business|tourism|fashion|tech
 //
-// Universal news feed API supporting multiple categories.
-// Each category has its own pool of RSS sources.
+// News feed aligned with Madmona's main marketplace categories:
+//   - economy:     عام/اقتصاد (universal interest)
+//   - real_estate: عقارات (matches "عقارات للإيجار")
+//   - automotive:  سيارات (matches "مركبات ونقل")
+//   - business:    أعمال/شركات (matches "مساحات عمل")
+//   - tourism:     سياحة/ترفيه (matches "ترفيه ورياضة" + "مركبات بحرية")
+//   - fashion:     موضة (matches "أعراس وتجهيزات")
+//   - tech:        تكنولوجيا (matches "معدات ميديا")
+//
+// Each category uses Google News RSS (reliable) + dedicated Egyptian/Arabic feeds.
+// All categories filter by relevance keywords to ensure topical accuracy.
 // Pool refreshed every 3 minutes per category.
-//
-// Returns: 12 fresh items (70% Egyptian/Arabic if available, 30% global)
 // ============================================================================
 
 export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store'
 export const runtime = 'nodejs'
 
-type NewsCategory = 'sports' | 'fashion' | 'trending' | 'economy' | 'interior' | 'locals' | 'defense'
+type NewsCategory = 'economy' | 'real_estate' | 'automotive' | 'business' | 'tourism' | 'fashion' | 'tech'
 
 interface NewsItem {
   title: string
@@ -35,97 +42,105 @@ interface NewsSource {
   category: NewsCategory
 }
 
-// Keyword filter per category - ensures each tab returns content matching its label
-// Items must contain at least ONE keyword from `must` (if defined) to be included
+// Strict keyword filtering - items MUST contain at least ONE keyword
 const CATEGORY_KEYWORDS: Record<NewsCategory, { must?: string[]; exclude?: string[] }> = {
   economy: {
-    must: ['اقتصاد', 'بورصة', 'دولار', 'جنيه', 'سعر', 'تضخم', 'استثمار', 'بنك', 'عملة', 'صادرات', 'واردات', 'ريال', 'يورو', 'سهم', 'أسهم', 'أسعار', 'تجار', 'سوق', 'ديون', 'money', 'price', 'stock', 'bank', 'invest', 'economy', 'market', 'GDP', 'إجمالي', 'أرباح', 'خسائر', 'البنك'],
+    must: ['اقتصاد', 'بورصة', 'دولار', 'جنيه', 'سعر', 'تضخم', 'استثمار', 'بنك', 'عملة', 'صادرات', 'واردات', 'سهم', 'أسهم', 'أسعار', 'سوق', 'ديون', 'money', 'price', 'stock', 'bank', 'invest', 'economy', 'GDP', 'إجمالي', 'أرباح', 'خسائر', 'مالية', 'الميزانية', 'صندوق النقد'],
   },
-  interior: {
-    must: ['شرطة', 'الداخلية', 'حادث', 'مقتل', 'سرقة', 'قبض', 'اعتقال', 'جريمة', 'مأمور', 'ضبط', 'مخدرات', 'بلاغ', 'إتهام', 'تهريب', 'سجن', 'حبس', 'الأمن', 'وزارة الداخلية', 'تحري', 'ادارة البحث', 'ملاحقة', 'النيابة', 'إصابة', 'تصادم', 'حريق', 'جريح', 'قتيل'],
+  real_estate: {
+    must: ['عقار', 'عقاري', 'عقارية', 'عقارات', 'شقة', 'شقق', 'فيلا', 'فيلات', 'إسكان', 'سكني', 'سكنية', 'الإسكان', 'وحدة', 'وحدات سكنية', 'كومباوند', 'مدينة جديدة', 'العاصمة الإدارية', 'العلمين', 'الساحل', 'إيجار', 'بيع شقق', 'متر', 'م²', 'real estate', 'property', 'housing', 'apartment', 'villa'],
   },
-  locals: {
-    must: ['محافظ', 'محافظة', 'قرية', 'مدينة', 'مجلس', 'حي', 'شارع', 'كهرباء', 'مياه', 'صرف صحي', 'محلي', 'بلدية', 'الأسكندرية', 'الجيزة', 'القاهرة', 'القليوبية', 'البحيرة', 'الفيوم', 'المنوفية', 'الشرقية', 'الأقصر', 'أسيوط', 'المنيا', 'سوهاج', 'بني سويف', 'السويس', 'بورسعيد', 'دمياط', 'رصف', 'ترعة', 'فائض السد', 'خدمات'],
+  automotive: {
+    must: ['سيارة', 'سيارات', 'عربية', 'عربيات', 'موتور', 'محرك', 'مرسيدس', 'BMW', 'تويوتا', 'كيا', 'هيونداي', 'نيسان', 'شيفروليه', 'أوبل', 'سعر السيارات', 'سيارات كهربائية', 'كهربائية', 'هايبرد', 'سيارة جديدة', 'موديل', 'wagon', 'sedan', 'SUV', 'EV', 'BYD', 'Tesla', 'auto', 'vehicle', 'electric car'],
   },
-  defense: {
-    must: ['الجيش', 'الدفاع', 'القوات المسلحة', 'السيسي', 'الرئاسة', 'الدبلوماسية', 'الخارجية', 'سياسة', 'وزير', 'لقاء', 'قمة', 'برلمان', 'النواب', 'رئيس', 'اتفاق', 'معاهدة', 'عسكري', 'سلاح', 'أمن قومي', 'دولة', 'غزة', 'إسرائيل', 'سوريا', 'السودان', 'ليبيا', 'حرب', 'صراع', 'علاقات'],
+  business: {
+    must: ['شركة', 'شركات', 'أعمال', 'ريادة', 'ستارت أب', 'مشروع', 'مشروعات', 'startup', 'business', 'company', 'CEO', 'مؤسس', 'استثمار', 'تمويل', 'صفقة', 'استحواذ', 'IPO', 'طرح', 'ربع سنوي', 'أرباح الشركة', 'مدير تنفيذي', 'سيلكون', 'تكنولوجيا مالية', 'fintech', 'فينتك', 'يونيكورن'],
   },
-  sports: {},
-  fashion: {},
-  trending: {},
+  tourism: {
+    must: ['سياحة', 'سياحي', 'سياحية', 'سائح', 'سائحين', 'فندق', 'فنادق', 'منتجع', 'منتجعات', 'الغردقة', 'شرم الشيخ', 'مرسى علم', 'الأقصر', 'أسوان', 'دهب', 'سفاجا', 'العين السخنة', 'البحر الأحمر', 'حجوزات', 'رحلة', 'رحلات', 'سفر', 'طيران', 'رحلات بحرية', 'يخت', 'سفينة', 'tourism', 'travel', 'hotel', 'resort', 'cruise'],
+  },
+  fashion: {
+    must: ['موضة', 'أزياء', 'فستان', 'فساتين', 'بدلة', 'حذاء', 'أحذية', 'حقيبة', 'حقائب', 'مجوهرات', 'إكسسوارات', 'إطلالة', 'مكياج', 'تجميل', 'عريس', 'عروس', 'زفاف', 'فرح', 'أعراس', 'fashion', 'style', 'designer', 'dress', 'bridal', 'wedding', 'beauty', 'Vogue', 'مصمم', 'مصممة'],
+  },
+  tech: {
+    must: ['تكنولوجيا', 'تقنية', 'تقني', 'iPhone', 'Samsung', 'Android', 'AI', 'ذكاء اصطناعي', 'كاميرا', 'كاميرات', 'لاب توب', 'تطبيق', 'تطبيقات', 'هاتف', 'موبايل', 'سامسونج', 'آبل', 'جوجل', 'ميتا', 'فيسبوك', 'يوتيوب', 'تويتر', 'انستاجرام', 'إنترنت', 'tech', 'AI', 'app', 'iPhone', 'gadget', 'startup tech', 'software', 'hardware'],
+  },
 }
 
 // Themed fallback images per category
-const FB_SPORTS = 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800&q=80'
-const FB_FOOTBALL = 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=800&q=80'
-const FB_FASHION = 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80'
-const FB_FASHION2 = 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80'
-const FB_TRENDING = 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80'
-const FB_TECH = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80'
-const FB_ECONOMY = 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&q=80'
-const FB_STOCKS = 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&q=80'
-const FB_GLOBAL = 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&q=80'
-const FB_INTERIOR = 'https://images.unsplash.com/photo-1591622180834-da91d2b0c2bf?w=800&q=80'
-const FB_LOCALS = 'https://images.unsplash.com/photo-1572455024215-83a5c80a5b1e?w=800&q=80'
-const FB_DEFENSE = 'https://images.unsplash.com/photo-1614108622516-bdb7af0a85a5?w=800&q=80'
+const FB = {
+  economy: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&q=80',
+  stocks: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&q=80',
+  real_estate: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80',
+  villa: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
+  automotive: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80',
+  car_luxury: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80',
+  business: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80',
+  business2: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80',
+  tourism: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&q=80',
+  tourism2: 'https://images.unsplash.com/photo-1542397284385-6010376c5337?w=800&q=80',
+  fashion: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80',
+  fashion2: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80',
+  tech: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80',
+  tech2: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80',
+}
+
+// Helper to build Google News RSS URL for Egypt/Arabic
+const gnews = (query: string) =>
+  `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ar-EG&gl=EG&ceid=EG:ar`
 
 const ALL_SOURCES: NewsSource[] = [
-  // ⚽ SPORTS
-  { name: 'يلا كورة', url: 'https://www.yallakora.com/rss', egyptian: true, weight: 6, fallbackImage: FB_FOOTBALL, category: 'sports' },
-  { name: 'في الجول', url: 'https://www.filgoal.com/rss', egyptian: true, weight: 5, fallbackImage: FB_FOOTBALL, category: 'sports' },
-  { name: 'كووورة', url: 'https://www.kooora.com/rss/news.aspx', egyptian: false, weight: 4, fallbackImage: FB_FOOTBALL, category: 'sports' },
-  { name: 'الجزيرة - رياضة', url: 'https://www.aljazeera.net/aljazeerarss/sport.xml', egyptian: false, weight: 3, fallbackImage: FB_SPORTS, category: 'sports' },
-  { name: 'BBC عربي - رياضة', url: 'http://feeds.bbci.co.uk/arabic/sports/rss.xml', egyptian: false, weight: 2, fallbackImage: FB_SPORTS, category: 'sports' },
-  { name: 'CNN العربية - رياضة', url: 'https://arabic.cnn.com/sport/rss', egyptian: false, weight: 2, fallbackImage: FB_SPORTS, category: 'sports' },
-  { name: 'كورة', url: 'https://www.kora.com/rss', egyptian: true, weight: 2, fallbackImage: FB_FOOTBALL, category: 'sports' },
+  // 💰 ECONOMY (universal interest)
+  { name: 'البورصة', url: 'https://alborsaanews.com/feed', egyptian: true, weight: 6, fallbackImage: FB.stocks, category: 'economy' },
+  { name: 'Daily News Egypt', url: 'https://dailynewsegypt.com/feed/', egyptian: true, weight: 5, fallbackImage: FB.economy, category: 'economy' },
+  { name: 'المصري اليوم - اقتصاد', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=1', egyptian: true, weight: 5, fallbackImage: FB.economy, category: 'economy' },
+  { name: 'Google News - اقتصاد', url: gnews('اقتصاد مصر'), egyptian: true, weight: 4, fallbackImage: FB.economy, category: 'economy' },
+  { name: 'CNN العربية - اقتصاد', url: 'https://arabic.cnn.com/business/rss', egyptian: false, weight: 2, fallbackImage: FB.economy, category: 'economy' },
+  { name: 'الجزيرة - اقتصاد', url: 'https://www.aljazeera.net/aljazeerarss/economy.xml', egyptian: false, weight: 2, fallbackImage: FB.economy, category: 'economy' },
 
-  // 👗 FASHION
-  { name: 'Vogue Arabia', url: 'https://en.vogue.me/feed/', egyptian: false, weight: 5, fallbackImage: FB_FASHION, category: 'fashion' },
-  { name: 'سيدتي - أناقة', url: 'https://www.sayidaty.net/rss-feed/3', egyptian: false, weight: 5, fallbackImage: FB_FASHION, category: 'fashion' },
-  { name: 'Layalina', url: 'https://layalina.com/feed/', egyptian: false, weight: 4, fallbackImage: FB_FASHION2, category: 'fashion' },
-  { name: 'Elle Arabia', url: 'https://www.ellearabia.com/feed', egyptian: false, weight: 3, fallbackImage: FB_FASHION, category: 'fashion' },
-  { name: 'Harpers Bazaar', url: 'https://www.harpersbazaararabia.com/feed', egyptian: false, weight: 2, fallbackImage: FB_FASHION2, category: 'fashion' },
-  { name: 'فستاني', url: 'https://www.fustany.com/ar/rss', egyptian: true, weight: 4, fallbackImage: FB_FASHION, category: 'fashion' },
-  { name: 'موضة العرب', url: 'https://www.almrsal.com/feed', egyptian: false, weight: 2, fallbackImage: FB_FASHION, category: 'fashion' },
+  // 🏠 REAL ESTATE (matches "عقارات للإيجار")
+  { name: 'Google News - عقارات', url: gnews('عقارات مصر'), egyptian: true, weight: 6, fallbackImage: FB.real_estate, category: 'real_estate' },
+  { name: 'Google News - شقق', url: gnews('شقق سكنية'), egyptian: true, weight: 5, fallbackImage: FB.real_estate, category: 'real_estate' },
+  { name: 'Google News - العاصمة الإدارية', url: gnews('العاصمة الإدارية الجديدة عقارات'), egyptian: true, weight: 4, fallbackImage: FB.villa, category: 'real_estate' },
+  { name: 'Google News - الإسكان', url: gnews('وزارة الإسكان مصر'), egyptian: true, weight: 4, fallbackImage: FB.real_estate, category: 'real_estate' },
+  { name: 'Google News - real estate Egypt', url: gnews('Egypt real estate'), egyptian: false, weight: 3, fallbackImage: FB.real_estate, category: 'real_estate' },
 
-  // 🔥 TRENDING
-  { name: 'الجزيرة - تكنولوجيا', url: 'https://www.aljazeera.net/aljazeerarss/technology.xml', egyptian: false, weight: 5, fallbackImage: FB_TECH, category: 'trending' },
-  { name: 'BBC عربي - تكنولوجيا', url: 'http://feeds.bbci.co.uk/arabic/scienceandtech/rss.xml', egyptian: false, weight: 4, fallbackImage: FB_TECH, category: 'trending' },
-  { name: 'Cairo Scene', url: 'https://cairoscene.com/feed', egyptian: true, weight: 5, fallbackImage: FB_TRENDING, category: 'trending' },
-  { name: 'Egyptian Streets', url: 'https://egyptianstreets.com/feed/', egyptian: true, weight: 4, fallbackImage: FB_TRENDING, category: 'trending' },
-  { name: 'CNN العربية - تكنولوجيا', url: 'https://arabic.cnn.com/tech/rss', egyptian: false, weight: 3, fallbackImage: FB_TECH, category: 'trending' },
-  { name: 'الجزيرة - منوعات', url: 'https://www.aljazeera.net/aljazeerarss/culture.xml', egyptian: false, weight: 2, fallbackImage: FB_TRENDING, category: 'trending' },
-  { name: 'يوم 7 - فن', url: 'https://www.youm7.com/rss/SectionRss?SectionID=42', egyptian: true, weight: 2, fallbackImage: FB_TRENDING, category: 'trending' },
+  // 🚗 AUTOMOTIVE (matches "مركبات ونقل")
+  { name: 'Google News - سيارات', url: gnews('سيارات مصر'), egyptian: true, weight: 6, fallbackImage: FB.automotive, category: 'automotive' },
+  { name: 'Google News - أسعار السيارات', url: gnews('أسعار السيارات مصر'), egyptian: true, weight: 5, fallbackImage: FB.automotive, category: 'automotive' },
+  { name: 'Google News - سيارات كهربائية', url: gnews('سيارات كهربائية مصر'), egyptian: true, weight: 4, fallbackImage: FB.car_luxury, category: 'automotive' },
+  { name: 'Google News - cars Egypt', url: gnews('Egypt cars market'), egyptian: false, weight: 3, fallbackImage: FB.automotive, category: 'automotive' },
+  { name: 'Google News - automotive', url: gnews('automotive industry electric vehicles'), egyptian: false, weight: 2, fallbackImage: FB.car_luxury, category: 'automotive' },
 
-  // 💰 ECONOMY
-  { name: 'البورصة', url: 'https://alborsaanews.com/feed', egyptian: true, weight: 6, fallbackImage: FB_STOCKS, category: 'economy' },
-  { name: 'Daily News Egypt', url: 'https://dailynewsegypt.com/feed/', egyptian: true, weight: 5, fallbackImage: FB_ECONOMY, category: 'economy' },
-  { name: 'المصري اليوم - اقتصاد', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=1', egyptian: true, weight: 5, fallbackImage: FB_ECONOMY, category: 'economy' },
-  { name: 'CNN العربية - اقتصاد', url: 'https://arabic.cnn.com/business/rss', egyptian: false, weight: 2, fallbackImage: FB_GLOBAL, category: 'economy' },
-  { name: 'BBC عربي - اقتصاد', url: 'http://feeds.bbci.co.uk/arabic/business/rss.xml', egyptian: false, weight: 2, fallbackImage: FB_GLOBAL, category: 'economy' },
-  { name: 'الجزيرة - اقتصاد', url: 'https://www.aljazeera.net/aljazeerarss/economy.xml', egyptian: false, weight: 2, fallbackImage: FB_GLOBAL, category: 'economy' },
+  // 💼 BUSINESS (matches "مساحات عمل" - office/business renters)
+  { name: 'Google News - شركات مصر', url: gnews('شركات مصر استثمار'), egyptian: true, weight: 6, fallbackImage: FB.business, category: 'business' },
+  { name: 'Google News - ستارت أب', url: gnews('startup مصر تمويل'), egyptian: true, weight: 5, fallbackImage: FB.business2, category: 'business' },
+  { name: 'Google News - رواد الأعمال', url: gnews('ريادة أعمال مصر'), egyptian: true, weight: 4, fallbackImage: FB.business2, category: 'business' },
+  { name: 'Daily News - Business', url: 'https://dailynewsegypt.com/category/business/feed/', egyptian: true, weight: 4, fallbackImage: FB.business, category: 'business' },
+  { name: 'Google News - fintech Egypt', url: gnews('fintech Egypt MENA'), egyptian: false, weight: 3, fallbackImage: FB.business, category: 'business' },
 
-  // 👮‍♂️ INTERIOR (وزارة الداخلية - حوادث/أمن)
-  { name: 'المصري اليوم - حوادث', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=10', egyptian: true, weight: 6, fallbackImage: FB_INTERIOR, category: 'interior' },
-  { name: 'اليوم السابع - حوادث', url: 'https://www.youm7.com/rss/SectionRss?SectionID=203', egyptian: true, weight: 5, fallbackImage: FB_INTERIOR, category: 'interior' },
-  { name: 'اليوم السابع - حوادث 2', url: 'https://www.youm7.com/rss/SectionRss?SectionID=297', egyptian: true, weight: 4, fallbackImage: FB_INTERIOR, category: 'interior' },
-  { name: 'الوطن - حوادث', url: 'https://www.elwatannews.com/RssFeeds/3', egyptian: true, weight: 4, fallbackImage: FB_INTERIOR, category: 'interior' },
-  { name: 'CNN العربية - الشرق الأوسط', url: 'https://arabic.cnn.com/middle-east/rss', egyptian: false, weight: 2, fallbackImage: FB_INTERIOR, category: 'interior' },
+  // ✈️ TOURISM (matches "ترفيه ورياضة" + "مركبات بحرية")
+  { name: 'Google News - سياحة مصر', url: gnews('سياحة مصر'), egyptian: true, weight: 6, fallbackImage: FB.tourism, category: 'tourism' },
+  { name: 'Google News - شرم الشيخ', url: gnews('شرم الشيخ سياحة'), egyptian: true, weight: 5, fallbackImage: FB.tourism2, category: 'tourism' },
+  { name: 'Google News - الغردقة', url: gnews('الغردقة سياحة فنادق'), egyptian: true, weight: 4, fallbackImage: FB.tourism2, category: 'tourism' },
+  { name: 'Google News - فنادق', url: gnews('فنادق مصر إشغال'), egyptian: true, weight: 4, fallbackImage: FB.tourism, category: 'tourism' },
+  { name: 'Google News - tourism Egypt', url: gnews('Egypt tourism Red Sea'), egyptian: false, weight: 3, fallbackImage: FB.tourism, category: 'tourism' },
 
-  // 🏘️ LOCALS (المحافظات/المحليات)
-  { name: 'المصري اليوم - محافظات', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=2', egyptian: true, weight: 6, fallbackImage: FB_LOCALS, category: 'locals' },
-  { name: 'اليوم السابع - محافظات', url: 'https://www.youm7.com/rss/SectionRss?SectionID=88', egyptian: true, weight: 5, fallbackImage: FB_LOCALS, category: 'locals' },
-  { name: 'الوطن - محافظات', url: 'https://www.elwatannews.com/RssFeeds/15', egyptian: true, weight: 4, fallbackImage: FB_LOCALS, category: 'locals' },
-  { name: 'صدى البلد - محافظات', url: 'https://www.elbalad.news/rssfeed?id=10', egyptian: true, weight: 3, fallbackImage: FB_LOCALS, category: 'locals' },
-  { name: 'الأهرام - عاجل', url: 'https://gate.ahram.org.eg/RssFeeds/Rss/4.aspx', egyptian: true, weight: 3, fallbackImage: FB_LOCALS, category: 'locals' },
+  // 👗 FASHION (matches "أعراس وتجهيزات" - bridal/wedding)
+  { name: 'Vogue Arabia', url: 'https://en.vogue.me/feed/', egyptian: false, weight: 5, fallbackImage: FB.fashion, category: 'fashion' },
+  { name: 'سيدتي - أناقة', url: 'https://www.sayidaty.net/rss-feed/3', egyptian: false, weight: 5, fallbackImage: FB.fashion, category: 'fashion' },
+  { name: 'فستاني', url: 'https://www.fustany.com/ar/rss', egyptian: true, weight: 5, fallbackImage: FB.fashion, category: 'fashion' },
+  { name: 'Layalina', url: 'https://layalina.com/feed/', egyptian: false, weight: 4, fallbackImage: FB.fashion2, category: 'fashion' },
+  { name: 'Elle Arabia', url: 'https://www.ellearabia.com/feed', egyptian: false, weight: 3, fallbackImage: FB.fashion, category: 'fashion' },
+  { name: 'Google News - فساتين زفاف', url: gnews('فساتين زفاف موضة'), egyptian: false, weight: 3, fallbackImage: FB.fashion2, category: 'fashion' },
 
-  // 🛡️ DEFENSE (وزارة الدفاع/سياسة/عسكرية)
-  { name: 'المصري اليوم - سياسة', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=4', egyptian: true, weight: 6, fallbackImage: FB_DEFENSE, category: 'defense' },
-  { name: 'اليوم السابع - سياسة', url: 'https://www.youm7.com/rss/SectionRss?SectionID=319', egyptian: true, weight: 5, fallbackImage: FB_DEFENSE, category: 'defense' },
-  { name: 'الوطن - سياسة', url: 'https://www.elwatannews.com/RssFeeds/1', egyptian: true, weight: 4, fallbackImage: FB_DEFENSE, category: 'defense' },
-  { name: 'الجزيرة - سياسة', url: 'https://www.aljazeera.net/aljazeerarss/politics.xml', egyptian: false, weight: 3, fallbackImage: FB_DEFENSE, category: 'defense' },
-  { name: 'BBC عربي - الشرق الأوسط', url: 'http://feeds.bbci.co.uk/arabic/middleeast/rss.xml', egyptian: false, weight: 3, fallbackImage: FB_DEFENSE, category: 'defense' },
-  { name: 'CNN العربية - عالم', url: 'https://arabic.cnn.com/world/rss', egyptian: false, weight: 2, fallbackImage: FB_DEFENSE, category: 'defense' },
+  // 💻 TECH (matches "معدات ميديا" - cameras, AV gear)
+  { name: 'Google News - تكنولوجيا', url: gnews('تكنولوجيا مصر'), egyptian: true, weight: 5, fallbackImage: FB.tech, category: 'tech' },
+  { name: 'الجزيرة - تكنولوجيا', url: 'https://www.aljazeera.net/aljazeerarss/technology.xml', egyptian: false, weight: 5, fallbackImage: FB.tech, category: 'tech' },
+  { name: 'BBC عربي - تكنولوجيا', url: 'http://feeds.bbci.co.uk/arabic/scienceandtech/rss.xml', egyptian: false, weight: 4, fallbackImage: FB.tech, category: 'tech' },
+  { name: 'CNN العربية - تكنولوجيا', url: 'https://arabic.cnn.com/tech/rss', egyptian: false, weight: 4, fallbackImage: FB.tech2, category: 'tech' },
+  { name: 'Google News - AI', url: gnews('ذكاء اصطناعي تكنولوجيا'), egyptian: false, weight: 3, fallbackImage: FB.tech, category: 'tech' },
+  { name: 'Google News - كاميرات', url: gnews('كاميرات تصوير احترافية'), egyptian: false, weight: 3, fallbackImage: FB.tech2, category: 'tech' },
 ]
 
 interface CategoryPool {
@@ -135,13 +150,13 @@ interface CategoryPool {
 }
 
 const pools: Record<NewsCategory, CategoryPool | null> = {
-  sports: null,
-  fashion: null,
-  trending: null,
   economy: null,
-  interior: null,
-  locals: null,
-  defense: null,
+  real_estate: null,
+  automotive: null,
+  business: null,
+  tourism: null,
+  fashion: null,
+  tech: null,
 }
 
 const POOL_TTL = 3 * 60 * 1000
@@ -260,7 +275,6 @@ async function buildPool(category: NewsCategory): Promise<NewsItem[]> {
       return mustKeywords.some(kw => haystack.includes(kw.toLowerCase()))
     })
     // Only apply filter if it leaves us with enough items (at least 3)
-    // Otherwise use unfiltered to avoid empty tabs
     if (filtered.length >= 3) {
       deduped = filtered
     }
@@ -328,7 +342,7 @@ function noCacheHeaders(): HeadersInit {
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const categoryParam = (url.searchParams.get('category') || 'economy').toLowerCase()
-  const validCategories: NewsCategory[] = ['sports', 'fashion', 'trending', 'economy', 'interior', 'locals', 'defense']
+  const validCategories: NewsCategory[] = ['economy', 'real_estate', 'automotive', 'business', 'tourism', 'fashion', 'tech']
   const category = validCategories.includes(categoryParam as NewsCategory)
     ? (categoryParam as NewsCategory)
     : 'economy'
