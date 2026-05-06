@@ -19,11 +19,11 @@ import CompactNewsTabs from '@/components/CompactNewsTabs'
 //   1. TopNav
 //   2. FinancialTicker
 //   3. LaunchBanner
-//   4. Hero with live news ticker
-//   5. Categories grid
-//   6. Featured listings
-//   7. How it works
-//   8. Supplier CTA
+//   4. 🔥 NEWS HUB (top, big, dynamic - replaces hero)
+//   5. 🔥 DUAL CTA (أجر معانا / أجر مننا - hero position)
+//   6. Categories grid
+//   7. Featured listings
+//   8. How it works
 //   9. Contact
 //   10. Footer
 // ============================================================
@@ -102,92 +102,38 @@ export default async function HomePage() {
       <LaunchBanner />
 
       <main className="relative">
-        {/* HERO */}
-        <section className="relative pt-6 md:pt-8 pb-12 md:pb-20">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="pt-2">
-              <InstallPWA />
-            </div>
+        <div className="max-w-7xl mx-auto px-4 pt-4">
+          <InstallPWA />
+        </div>
 
-            <div className="flex items-center gap-3 mb-8 mt-6 md:mt-12">
-              <div className="h-px w-12 bg-[#1F5F3F]" />
+        {/* 🔥 NEWS HUB - Top of page, full prominence */}
+        <section className="relative pt-4 md:pt-6 pb-8 md:pb-10">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center gap-3 mb-5 md:mb-6">
+              <div className="h-px w-10 bg-[#1F5F3F]" />
               <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F5F3F]">
-                EST. 2026 — CAIRO, EGYPT
+                EST. 2026 — LIVE FROM CAIRO
               </p>
               <div className="h-px flex-1 bg-gradient-to-l from-[#1F5F3F]/30 to-transparent" />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center">
-              <div className="md:col-span-7 order-2 md:order-1">
-                <h1 className="font-black text-gray-900 leading-[0.92] tracking-tight mb-6">
-                  <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl">خدمتك،</span>
-                  <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl gradient-text-green">وقتك،</span>
-                  <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl">
-                    <span className="italic font-light">مضمونة</span>
-                  </span>
-                </h1>
-
-                <p className="text-base md:text-xl text-gray-600 leading-relaxed max-w-xl mb-8 md:mb-10">
-                  منصة حجز مصرية تجمع كل اللي يتأجر — من مصادر معتمدة، بضمان كامل،
-                  <span className="text-gray-900 font-medium"> في مكان واحد.</span>
-                </p>
-
-                {/* Single unified CTA */}
-                <div>
-                  <Link
-                    href="/marketplace"
-                    className="group inline-flex items-center justify-center gap-2 bg-[#1F5F3F] text-white px-8 py-4 rounded-full font-bold text-base shadow-elevated hover:shadow-luxe transition-all duration-300 hover:-translate-y-0.5 no-underline"
-                  >
-                    <Compass className="w-5 h-5" />
-                    <span>اكتشف الخدمات</span>
-                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-
-                <div className="flex items-center gap-6 md:gap-8 mt-10 flex-wrap">
-                  <TrustBadge icon={<ShieldCheck className="w-3.5 h-3.5" />} label="حجز مضمون" />
-                  <TrustBadge icon={<Clock className="w-3.5 h-3.5" />} label="رد فوري ٢٤/٧" />
-                  <TrustBadge icon={<Star className="w-3.5 h-3.5" />} label="بجودة مضمونة" />
-                </div>
-              </div>
-
-              <div className="md:col-span-5 order-1 md:order-2 relative">
-                {/* Hero decorative image (no news here anymore - moved to dedicated section below) */}
-                <div className="relative aspect-[4/5] md:aspect-[3/4] rounded-3xl overflow-hidden shadow-luxe">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={HERO_IMAGE}
-                    alt="Madmona"
-                    className="absolute inset-0 w-full h-full object-cover"
-                    loading="eager"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                  <div className="absolute bottom-6 right-6 max-w-[260px]">
-                    <div className="inline-flex items-center gap-1.5 bg-white/95 backdrop-blur px-2.5 py-1 rounded-full mb-3 shadow-card">
-                      <Sparkles className="w-3 h-3 text-[#B8860B]" />
-                      <span className="text-[10px] font-black tracking-widest uppercase text-[#1F5F3F]">جديد</span>
-                    </div>
-                    <p className="text-white text-sm md:text-base font-bold leading-snug drop-shadow-lg">
-                      أكتر من <span className="text-[#B8860B]">٨ فئات</span> من الخدمات والمنتجات
-                    </p>
-                  </div>
-                </div>
-                <div className="absolute -top-3 -left-3 w-20 h-20 border-2 border-[#B8860B]/40 rounded-3xl -z-0 hidden md:block" />
-              </div>
-            </div>
+            <CompactNewsTabs />
           </div>
         </section>
 
-        {/* DUAL CTA - أجر معانا / أجر مننا */}
-        <section className="py-12 md:py-16 bg-gradient-to-br from-[#FAFAF7] via-white to-[#FAFAF7] border-y border-gray-100">
+        {/* 🔥 DUAL CTA - hero position, the registration signs */}
+        <section className="relative py-10 md:py-14 bg-gradient-to-br from-[#1F5F3F]/5 via-[#FAFAF7] to-[#B8860B]/5">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="text-center mb-8 md:mb-10">
-              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">JOIN MADMONA</p>
-              <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-[0.95]">
-                ابدأ <span className="italic font-light gradient-text-green">رحلتك</span>
+            <div className="text-center mb-8 md:mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white shadow-soft border border-gray-100 mb-4">
+                <Sparkles className="w-3.5 h-3.5 text-[#B8860B]" />
+                <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F5F3F]">JOIN MADMONA</span>
+              </div>
+              <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95] tracking-tight">
+                <span className="block mb-2">خدمتك، وقتك،</span>
+                <span className="block italic font-light gradient-text-green">مضمونة</span>
               </h2>
-              <p className="text-sm md:text-base text-gray-600 mt-3 max-w-xl mx-auto">
-                اختار اللي يناسبك — سواء عايز <strong>تأجر</strong> أو عايز <strong>تأجر منك</strong>
+              <p className="text-sm md:text-base text-gray-600 mt-4 md:mt-5 max-w-xl mx-auto leading-relaxed">
+                منصة حجز مصرية تجمع كل اللي يتأجر — اختار مسارك:
               </p>
             </div>
 
@@ -195,43 +141,47 @@ export default async function HomePage() {
               {/* أجر مننا (Customer / Renter) */}
               <Link
                 href="/marketplace"
-                className="group relative overflow-hidden bg-gradient-to-br from-[#1F5F3F] to-[#2d7a52] text-white rounded-3xl p-7 md:p-9 shadow-elevated hover:shadow-luxe hover:-translate-y-1 transition-all duration-500 no-underline"
+                className="group relative overflow-hidden bg-gradient-to-br from-[#1F5F3F] to-[#2d7a52] text-white rounded-3xl p-7 md:p-10 shadow-elevated hover:shadow-luxe hover:-translate-y-1 transition-all duration-500 no-underline"
               >
-                <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#B8860B]/20 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -top-12 -right-12 w-56 h-56 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#B8860B]/20 rounded-full blur-3xl pointer-events-none" />
 
                 <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
-                      <ShoppingBag className="w-7 h-7" />
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+                      <ShoppingBag className="w-8 h-8" />
                     </div>
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/15 backdrop-blur rounded-full text-[10px] font-black tracking-widest uppercase">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 backdrop-blur rounded-full text-[10px] font-black tracking-widest uppercase">
                       <Sparkles className="w-2.5 h-2.5" />
                       للعميل
                     </span>
                   </div>
 
                   <p className="text-[10px] md:text-xs font-bold tracking-[0.25em] uppercase text-white/70 mb-2">RENT FROM US</p>
-                  <h3 className="text-3xl md:text-4xl font-black mb-2 leading-tight">
+                  <h3 className="text-4xl md:text-5xl font-black mb-3 leading-tight">
                     أجر <span className="italic font-light">مننا</span>
                   </h3>
-                  <p className="text-sm md:text-base text-white/85 leading-relaxed mb-5">
+                  <p className="text-sm md:text-base text-white/85 leading-relaxed mb-6">
                     اتصفّح آلاف الخدمات — مساحات، عقارات، عربيات، معدات — من <strong className="text-white">مصادر موثقة</strong>.
                     احجز فوراً، ادفع آمن.
                   </p>
 
-                  <div className="flex items-center gap-2 text-sm font-bold group-hover:gap-3 transition-all">
+                  <div className="inline-flex items-center gap-2 px-5 py-3 bg-white text-[#1F5F3F] rounded-full text-sm font-black group-hover:gap-3 transition-all">
                     <span>اتصفّح الخدمات</span>
                     <ArrowLeft className="w-4 h-4" />
                   </div>
 
-                  <div className="flex items-center gap-3 mt-5 pt-5 border-t border-white/15 text-[11px] text-white/80">
+                  <div className="flex items-center gap-3 mt-6 pt-5 border-t border-white/15 text-[11px] text-white/80">
                     <span className="flex items-center gap-1">
                       <ShieldCheck className="w-3 h-3" /> ضمان كامل
                     </span>
                     <span className="opacity-50">·</span>
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" /> رد فوري
+                    </span>
+                    <span className="opacity-50">·</span>
+                    <span className="flex items-center gap-1">
+                      <Star className="w-3 h-3" /> بجودة مضمونة
                     </span>
                   </div>
                 </div>
@@ -240,37 +190,37 @@ export default async function HomePage() {
               {/* أجر معانا (Supplier) */}
               <Link
                 href="/supplier/register"
-                className="group relative overflow-hidden bg-gradient-to-br from-[#B8860B] to-[#D4A12A] text-white rounded-3xl p-7 md:p-9 shadow-elevated hover:shadow-luxe hover:-translate-y-1 transition-all duration-500 no-underline"
+                className="group relative overflow-hidden bg-gradient-to-br from-[#B8860B] to-[#D4A12A] text-white rounded-3xl p-7 md:p-10 shadow-elevated hover:shadow-luxe hover:-translate-y-1 transition-all duration-500 no-underline"
               >
-                <div className="absolute -top-12 -left-12 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 right-0 w-32 h-32 bg-black/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -top-12 -left-12 w-56 h-56 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 right-0 w-40 h-40 bg-black/10 rounded-full blur-3xl pointer-events-none" />
 
                 <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
-                      <Building2 className="w-7 h-7" />
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+                      <Building2 className="w-8 h-8" />
                     </div>
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/15 backdrop-blur rounded-full text-[10px] font-black tracking-widest uppercase">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 backdrop-blur rounded-full text-[10px] font-black tracking-widest uppercase">
                       <Sparkles className="w-2.5 h-2.5" />
                       للمورد
                     </span>
                   </div>
 
                   <p className="text-[10px] md:text-xs font-bold tracking-[0.25em] uppercase text-white/80 mb-2">RENT WITH US</p>
-                  <h3 className="text-3xl md:text-4xl font-black mb-2 leading-tight">
+                  <h3 className="text-4xl md:text-5xl font-black mb-3 leading-tight">
                     أجر <span className="italic font-light">معانا</span>
                   </h3>
-                  <p className="text-sm md:text-base text-white/95 leading-relaxed mb-5">
+                  <p className="text-sm md:text-base text-white/95 leading-relaxed mb-6">
                     عندك خدمة أو منتج؟ اعرضه على آلاف العملاء، استقبل حجوزات، واكسب.
                     <strong className="text-white"> ٠٪ عمولة</strong> لأول ٣٠ يوم!
                   </p>
 
-                  <div className="flex items-center gap-2 text-sm font-bold group-hover:gap-3 transition-all">
+                  <div className="inline-flex items-center gap-2 px-5 py-3 bg-white text-[#B8860B] rounded-full text-sm font-black group-hover:gap-3 transition-all">
                     <span>سجّل عرضك</span>
                     <ArrowLeft className="w-4 h-4" />
                   </div>
 
-                  <div className="flex items-center gap-3 mt-5 pt-5 border-t border-white/20 text-[11px] text-white/90">
+                  <div className="flex items-center gap-3 mt-6 pt-5 border-t border-white/20 text-[11px] text-white/90">
                     <span className="flex items-center gap-1">
                       <Zap className="w-3 h-3" /> تسجيل سريع
                     </span>
@@ -281,27 +231,6 @@ export default async function HomePage() {
                   </div>
                 </div>
               </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* NEWS HUB - أخبار متعددة التصنيفات */}
-        <section className="py-10 md:py-14 bg-white">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-end justify-between mb-6 md:mb-8 flex-wrap gap-3">
-              <div>
-                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-2">LIVE NEWS</p>
-                <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-[0.95]">
-                  آخر <span className="italic font-light gradient-text-green">الأخبار</span>
-                </h2>
-              </div>
-              <p className="text-xs text-gray-500 max-w-xs">
-                اقتصاد، داخلية، محليات، دفاع، رياضة، موضة، وترند — كل التصنيفات في مكان واحد. تتجدد كل ٣ دقايق.
-              </p>
-            </div>
-
-            <div className="max-w-3xl mx-auto">
-              <CompactNewsTabs />
             </div>
           </div>
         </section>
@@ -388,38 +317,6 @@ export default async function HomePage() {
               <Step num="01" title="استكشف" description="اتصفّح الخدمات أو ابحث في فئة معينة. شوف الأسعار والصور قبل أي قرار." icon={<Compass className="w-6 h-6" />} iconAccent="text-[#1F5F3F] bg-[#1F5F3F]/10" />
               <Step num="02" title="احجز" description="اختار الوقت اللي يناسبك واحجز فوراً. تأكيد على واتساب من أجر معانا مباشرة." icon={<Zap className="w-6 h-6" />} iconAccent="text-[#B8860B] bg-[#B8860B]/10" />
               <Step num="03" title="استمتع" description="ادفع كاش أو InstaPay. مفيش هيدن فيز. ومتأمن إنك مش هتلاقي مفاجآت." icon={<ShieldCheck className="w-6 h-6" />} iconAccent="text-[#C2410C] bg-[#C2410C]/10" />
-            </div>
-          </div>
-        </section>
-
-        {/* SUPPLIER CTA */}
-        <section className="py-12 md:py-20">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="relative bg-gray-900 text-white rounded-3xl p-8 md:p-16 overflow-hidden shadow-luxe">
-              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1F5F3F]/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-              <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#B8860B]/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-
-              <div className="relative z-10 max-w-2xl">
-                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-4">FOR PARTNERS</p>
-                <h2 className="text-3xl md:text-6xl font-black mb-5 leading-[0.92]">
-                  عندك خدمة؟
-                  <br />
-                  <span className="italic font-light gradient-text-gold">خلّيها تكسبلك</span>
-                </h2>
-                <p className="text-sm md:text-lg text-white/80 leading-relaxed mb-8 max-w-xl">
-                  انضم لـ أجر معانا، اعرض خدمتك على آلاف من أجر مننا، واستقبل حجوزات.
-                  لوحة كاملة، إشعارات لايف، وعمولة شفافة.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link href="/supplier/register" className="group inline-flex items-center justify-center gap-2 bg-white text-gray-900 px-7 py-3.5 rounded-full font-bold text-sm hover:bg-gray-100 transition-all duration-300 hover:-translate-y-0.5 no-underline">
-                    <span>سجّل دلوقتي</span>
-                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                  </Link>
-                  <Link href="/auth/login?redirect=/supplier/marketplace" className="inline-flex items-center justify-center gap-2 border border-white/30 backdrop-blur text-white px-7 py-3.5 rounded-full font-bold text-sm hover:bg-white/10 transition-all no-underline">
-                    عندي حساب
-                  </Link>
-                </div>
-              </div>
             </div>
           </div>
         </section>

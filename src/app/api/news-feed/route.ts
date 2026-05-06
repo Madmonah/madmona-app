@@ -86,25 +86,26 @@ const ALL_SOURCES: NewsSource[] = [
   { name: 'الجزيرة - اقتصاد', url: 'https://www.aljazeera.net/aljazeerarss/economy.xml', egyptian: false, weight: 2, fallbackImage: FB_GLOBAL, category: 'economy' },
 
   // 👮‍♂️ INTERIOR (وزارة الداخلية - حوادث/أمن)
-  { name: 'اليوم السابع - حوادث', url: 'https://www.youm7.com/rss/SectionRss?SectionID=203', egyptian: true, weight: 6, fallbackImage: FB_INTERIOR, category: 'interior' },
-  { name: 'المصري اليوم - حوادث', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=10', egyptian: true, weight: 5, fallbackImage: FB_INTERIOR, category: 'interior' },
+  { name: 'المصري اليوم - حوادث', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=10', egyptian: true, weight: 6, fallbackImage: FB_INTERIOR, category: 'interior' },
+  { name: 'اليوم السابع - حوادث', url: 'https://www.youm7.com/rss/SectionRss?SectionID=203', egyptian: true, weight: 5, fallbackImage: FB_INTERIOR, category: 'interior' },
+  { name: 'اليوم السابع - حوادث 2', url: 'https://www.youm7.com/rss/SectionRss?SectionID=297', egyptian: true, weight: 4, fallbackImage: FB_INTERIOR, category: 'interior' },
   { name: 'الوطن - حوادث', url: 'https://www.elwatannews.com/RssFeeds/3', egyptian: true, weight: 4, fallbackImage: FB_INTERIOR, category: 'interior' },
-  { name: 'صدى البلد - حوادث', url: 'https://www.elbalad.news/rssfeed?id=8', egyptian: true, weight: 3, fallbackImage: FB_INTERIOR, category: 'interior' },
-  { name: 'الأهرام - حوادث', url: 'https://gate.ahram.org.eg/RssFeeds/Rss/2.aspx', egyptian: true, weight: 3, fallbackImage: FB_INTERIOR, category: 'interior' },
+  { name: 'CNN العربية - الشرق الأوسط', url: 'https://arabic.cnn.com/middle-east/rss', egyptian: false, weight: 2, fallbackImage: FB_INTERIOR, category: 'interior' },
 
   // 🏘️ LOCALS (المحافظات/المحليات)
-  { name: 'اليوم السابع - محافظات', url: 'https://www.youm7.com/rss/SectionRss?SectionID=88', egyptian: true, weight: 6, fallbackImage: FB_LOCALS, category: 'locals' },
-  { name: 'المصري اليوم - محافظات', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=2', egyptian: true, weight: 5, fallbackImage: FB_LOCALS, category: 'locals' },
+  { name: 'المصري اليوم - محافظات', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=2', egyptian: true, weight: 6, fallbackImage: FB_LOCALS, category: 'locals' },
+  { name: 'اليوم السابع - محافظات', url: 'https://www.youm7.com/rss/SectionRss?SectionID=88', egyptian: true, weight: 5, fallbackImage: FB_LOCALS, category: 'locals' },
   { name: 'الوطن - محافظات', url: 'https://www.elwatannews.com/RssFeeds/15', egyptian: true, weight: 4, fallbackImage: FB_LOCALS, category: 'locals' },
   { name: 'صدى البلد - محافظات', url: 'https://www.elbalad.news/rssfeed?id=10', egyptian: true, weight: 3, fallbackImage: FB_LOCALS, category: 'locals' },
-  { name: 'الأهرام - محافظات', url: 'https://gate.ahram.org.eg/RssFeeds/Rss/12.aspx', egyptian: true, weight: 3, fallbackImage: FB_LOCALS, category: 'locals' },
+  { name: 'الأهرام - عاجل', url: 'https://gate.ahram.org.eg/RssFeeds/Rss/4.aspx', egyptian: true, weight: 3, fallbackImage: FB_LOCALS, category: 'locals' },
 
-  // 🛡️ DEFENSE (وزارة الدفاع/عسكرية)
-  { name: 'اليوم السابع - سياسة', url: 'https://www.youm7.com/rss/SectionRss?SectionID=319', egyptian: true, weight: 6, fallbackImage: FB_DEFENSE, category: 'defense' },
-  { name: 'المصري اليوم - سياسة', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=4', egyptian: true, weight: 5, fallbackImage: FB_DEFENSE, category: 'defense' },
-  { name: 'الأهرام - سياسة', url: 'https://gate.ahram.org.eg/RssFeeds/Rss/1.aspx', egyptian: true, weight: 5, fallbackImage: FB_DEFENSE, category: 'defense' },
+  // 🛡️ DEFENSE (وزارة الدفاع/سياسة/عسكرية)
+  { name: 'المصري اليوم - سياسة', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=4', egyptian: true, weight: 6, fallbackImage: FB_DEFENSE, category: 'defense' },
+  { name: 'اليوم السابع - سياسة', url: 'https://www.youm7.com/rss/SectionRss?SectionID=319', egyptian: true, weight: 5, fallbackImage: FB_DEFENSE, category: 'defense' },
   { name: 'الوطن - سياسة', url: 'https://www.elwatannews.com/RssFeeds/1', egyptian: true, weight: 4, fallbackImage: FB_DEFENSE, category: 'defense' },
-  { name: 'الجزيرة - عسكرية', url: 'https://www.aljazeera.net/aljazeerarss/military.xml', egyptian: false, weight: 2, fallbackImage: FB_DEFENSE, category: 'defense' },
+  { name: 'الجزيرة - سياسة', url: 'https://www.aljazeera.net/aljazeerarss/politics.xml', egyptian: false, weight: 3, fallbackImage: FB_DEFENSE, category: 'defense' },
+  { name: 'BBC عربي - الشرق الأوسط', url: 'http://feeds.bbci.co.uk/arabic/middleeast/rss.xml', egyptian: false, weight: 3, fallbackImage: FB_DEFENSE, category: 'defense' },
+  { name: 'CNN العربية - عالم', url: 'https://arabic.cnn.com/world/rss', egyptian: false, weight: 2, fallbackImage: FB_DEFENSE, category: 'defense' },
 ]
 
 interface CategoryPool {
