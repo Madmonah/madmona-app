@@ -141,7 +141,7 @@ BEGIN
           listing_id, period_type, period_count, price, currency, is_active, display_order
         ) VALUES (
           v_listing_id,
-          v_period,
+          v_period::pricing_period,
           1,
           v_prices[v_idx],
           'EGP',

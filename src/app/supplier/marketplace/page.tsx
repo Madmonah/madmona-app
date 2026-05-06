@@ -469,7 +469,7 @@ function SupplierMarketplaceContent() {
                   </span>
                 )}
               </h1>
-              <p className="text-xs text-gray-500">لوحة المورد</p>
+              <p className="text-xs text-gray-500">لوحة أجر معانا</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -526,7 +526,7 @@ function SupplierMarketplaceContent() {
             <Users className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-bold">إنت في الفريق كـ&ldquo;{access.roleLabel || 'موظف'}&rdquo;</p>
-              <p className="text-blue-700 mt-0.5">صلاحياتك بتتحدد من مالك الـsupplier.</p>
+              <p className="text-blue-700 mt-0.5">صلاحياتك بتتحدد من مالك أجر معانا.</p>
             </div>
           </div>
         )}

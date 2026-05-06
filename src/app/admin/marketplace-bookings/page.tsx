@@ -276,7 +276,7 @@ export default function AdminMarketplaceBookingsPage() {
                       <div className="font-bold text-[#B8860B]">{formatPrice(b.commission_amount)}</div>
                     </div>
                     <div>
-                      <div className="text-gray-500 mb-0.5">للمورد</div>
+                      <div className="text-gray-500 mb-0.5">لأجر معانا</div>
                       <div className="font-bold text-[#1F5F3F]">{formatPrice(b.supplier_payout)}</div>
                     </div>
                   </div>

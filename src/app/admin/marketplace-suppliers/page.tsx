@@ -134,18 +134,18 @@ export default function AdminMarketplaceSuppliersPage() {
   }
 
   const handleApprove = (id: string) => {
-    if (!confirm('تأكيد الموافقة على المورد؟ هيقدر يضيف listings ويستقبل حجوزات.')) return
+    if (!confirm('تأكيد الموافقة على أجر معانا؟ هيقدر يضيف listings ويستقبل حجوزات.')) return
     updateSupplier(id, { kyc_status: 'approved' })
   }
 
   const handleReject = (id: string) => {
-    const reason = prompt('سبب الرفض (يبعت للمورد):')
+    const reason = prompt('سبب الرفض (يبعت لأجر معانا):')
     if (reason === null) return
     updateSupplier(id, { kyc_status: 'rejected', kyc_rejection_reason: reason || 'لم يتم استيفاء متطلبات التحقق' })
   }
 
   const handleSuspend = (id: string) => {
-    if (!confirm('إيقاف المورد؟ هتختفي listings بتاعته من الموقع لحد ما ترجعه.')) return
+    if (!confirm('إيقاف أجر معانا؟ هتختفي listings بتاعته من الموقع لحد ما ترجعه.')) return
     updateSupplier(id, { kyc_status: 'suspended' })
   }
 
@@ -166,7 +166,7 @@ export default function AdminMarketplaceSuppliersPage() {
           <div className="flex items-center justify-center w-12 h-12 bg-[#1F5F3F]/10 rounded-full mb-4 mx-auto">
             <Lock className="w-5 h-5 text-[#1F5F3F]" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 text-center mb-1">موردين Marketplace</h1>
+          <h1 className="text-xl font-bold text-gray-900 text-center mb-1">أجر معانا - Marketplace</h1>
           <p className="text-sm text-gray-500 text-center mb-6">طلبات التسجيل الجديدة</p>
           <form onSubmit={handleLogin} className="space-y-4">
             <input
@@ -200,8 +200,8 @@ export default function AdminMarketplaceSuppliersPage() {
               <ArrowRight className="w-4 h-4 text-gray-600" />
             </Link>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">موردين Marketplace</h1>
-              <p className="text-xs text-gray-500 mt-0.5">{counts.all} مورد</p>
+              <h1 className="text-lg font-bold text-gray-900">أجر معانا - Marketplace</h1>
+              <p className="text-xs text-gray-500 mt-0.5">{counts.all} مسجل</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

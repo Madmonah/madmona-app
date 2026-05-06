@@ -22,7 +22,7 @@ export default function SupplierDashboardPage() {
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100">
         <div className="max-w-md mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-[#1F5F3F]">مضمونة | للموردين</h1>
+          <h1 className="text-2xl font-bold text-[#1F5F3F]">مضمونة | للي بيأجروا معانا</h1>
         </div>
       </header>
 
@@ -34,7 +34,7 @@ export default function SupplierDashboardPage() {
 
           <h2 className="text-xl font-bold text-gray-900 mb-2">قريباً</h2>
           <p className="text-sm text-gray-600 leading-relaxed mb-6">
-            لوحة تحكم الموردين قيد التطوير. لو سجلت معانا، فريقنا هيتواصل معاك على الواتساب لتفعيل حسابك وإضافة وحداتك.
+            لوحة تحكم أجر معانا قيد التطوير. لو سجلت معانا، فريقنا هيتواصل معاك على الواتساب لتفعيل حسابك وإضافة وحداتك.
           </p>
 
           <div className="bg-[#FAFAF7] rounded-xl p-4 mb-6 text-right">

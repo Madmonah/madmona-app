@@ -186,9 +186,9 @@ export default function SupplierReviewsPage() {
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
-          <h1 className="font-bold mb-2">مش مورد على Madmona</h1>
+          <h1 className="font-bold mb-2">مش مسجّل كأجر معانا</h1>
           <Link href="/supplier/register" className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold mt-4">
-            سجّل كمورد
+            سجّل كأجر معانا
           </Link>
         </div>
       </div>
@@ -294,8 +294,8 @@ export default function SupplierReviewsPage() {
             </h3>
             <p className="text-sm text-gray-500">
               {filter === 'all'
-                ? 'لما العملاء يقيّموا حجوزاتهم، هتلاقيها هنا.'
-                : 'الرد على التقييمات بيخلي المورد يبان أكتر احترافية.'}
+                ? 'لما اللي بيأجروا مننا يقيّموا حجوزاتهم، هتلاقيها هنا.'
+                : 'الرد على التقييمات بيخليك تبان أكتر احترافية.'}
             </p>
           </div>
         ) : (
@@ -339,7 +339,7 @@ export default function SupplierReviewsPage() {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-900">
-                            {review.customer?.full_name || 'عميل'}
+                            {review.customer?.full_name || 'أجر مننا'}
                           </p>
                           <p className="text-[10px] text-gray-400">
                             {new Date(review.created_at).toLocaleDateString('ar-EG', {

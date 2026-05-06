@@ -251,7 +251,7 @@ export default function AdminDashboardPage() {
             <MetricCard icon={<DollarSign className="w-4 h-4" />} label="عمولة Madmona (شهر)" value={`${stats.monthCommission.toLocaleString('ar-EG')} ج.م`} subtitle={`إجمالي: ${stats.totalCommission.toLocaleString('ar-EG')}`} accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" />
             <MetricCard icon={<TrendingUp className="w-4 h-4" />} label="GMV (شهر)" value={`${stats.monthGMV.toLocaleString('ar-EG')} ج.م`} subtitle={`إجمالي: ${stats.totalGMV.toLocaleString('ar-EG')}`} accent="bg-[#B8860B]/10 text-[#B8860B]" />
             <MetricCard icon={<Calendar className="w-4 h-4" />} label="حجوزات الشهر" value={stats.monthBookings.toString()} subtitle={`إجمالي: ${stats.totalBookings}`} accent="bg-blue-100 text-blue-700" />
-            <MetricCard icon={<Users className="w-4 h-4" />} label="عملاء مسجلين" value={stats.totalCustomers.toString()} subtitle={`${stats.approvedSuppliers} مورد · ${stats.pendingSuppliers} معلّق · ${stats.pushSubscribers} 🔔`} accent="bg-purple-100 text-purple-700" />
+            <MetricCard icon={<Users className="w-4 h-4" />} label="أجر مننا (عملاء)" value={stats.totalCustomers.toString()} subtitle={`${stats.approvedSuppliers} أجر معانا · ${stats.pendingSuppliers} معلّق · ${stats.pushSubscribers} 🔔`} accent="bg-purple-100 text-purple-700" />
           </div>
         </section>
 
@@ -261,7 +261,7 @@ export default function AdminDashboardPage() {
             <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest">أدوات الإدارة</h2>
             {stats.pendingSuppliers > 0 && (
               <Link href="/admin/marketplace-suppliers" className="text-xs bg-yellow-400 text-gray-900 px-2.5 py-1 rounded-full font-bold animate-pulse-soft">
-                {stats.pendingSuppliers} يحتاج موافقة
+                {stats.pendingSuppliers} أجر معانا يحتاج موافقة
               </Link>
             )}
           </div>
@@ -281,7 +281,7 @@ export default function AdminDashboardPage() {
               <ToolCard
                 href="/admin/marketplace-suppliers"
                 icon={<Building2 className="w-5 h-5" />}
-                title="الموردين"
+                title="أجر معانا"
                 subtitle={`${stats.approvedSuppliers} معتمد · ${stats.pendingSuppliers} معلّق`}
                 accent="bg-[#1F5F3F]/10 text-[#1F5F3F]"
                 badge={stats.pendingSuppliers > 0 ? stats.pendingSuppliers : undefined}
@@ -345,7 +345,7 @@ export default function AdminDashboardPage() {
               <ToolCard
                 href="/supplier/marketplace"
                 icon={<Settings className="w-5 h-5" />}
-                title="لوحة المورد (مضمونة)"
+                title="لوحة أجر معانا (مضمونة)"
                 subtitle="إدارة إعلاناتنا الخاصة"
                 accent="bg-[#1F5F3F]/10 text-[#1F5F3F]"
               />
@@ -367,7 +367,7 @@ export default function AdminDashboardPage() {
                 href="/"
                 icon={<Eye className="w-5 h-5" />}
                 title="عرض الموقع"
-                subtitle="شوف الموقع كما يراه العميل"
+                subtitle="شوف الموقع كما يراه أجر مننا"
                 accent="bg-pink-100 text-pink-700"
               />
             </div>
@@ -408,7 +408,7 @@ export default function AdminDashboardPage() {
               <ToolCard
                 href="/admin/suppliers"
                 icon={<Briefcase className="w-5 h-5" />}
-                title="موردين قدامى"
+                title="أجر معانا (قديم)"
                 subtitle="Legacy suppliers"
                 accent="bg-gray-100 text-gray-600"
               />
@@ -471,7 +471,7 @@ export default function AdminDashboardPage() {
                           {booking.reference_code && (<span className="text-[10px] text-gray-400 font-mono">#{booking.reference_code}</span>)}
                         </div>
                         <p className="text-sm font-medium text-gray-900 truncate">{booking.listing?.title || 'Listing محذوف'}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{booking.customer?.full_name || 'عميل'} · {booking.supplier?.business_name || 'مورد'}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{booking.customer?.full_name || 'أجر مننا'} · {booking.supplier?.business_name || 'أجر معانا'}</p>
                       </div>
                       <div className="text-left flex-shrink-0">
                         <p className="text-sm font-bold text-[#1F5F3F]">{Number(booking.total_amount).toLocaleString('ar-EG')} <span className="text-xs font-normal">ج.م</span></p>
