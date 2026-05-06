@@ -10,6 +10,7 @@ import FeaturedListings from '@/components/FeaturedListings'
 import EconomicNewsHero from '@/components/EconomicNewsHero'
 import FinancialTicker from '@/components/FinancialTicker'
 import LaunchBanner from '@/components/LaunchBanner'
+import NewsTabsSection from '@/components/NewsTabsSection'
 
 // ============================================================
 // Home page — Single brand: "خدمات مضمونة"
@@ -209,6 +210,9 @@ export default async function HomePage() {
             </Link>
           </div>
         </section>
+
+        {/* NEWS TABS (Sports / Fashion / Trending) */}
+        <NewsTabsSection />
 
         {/* FEATURED */}
         <section className="py-16 md:py-24">
