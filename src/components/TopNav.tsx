@@ -45,7 +45,7 @@ export default function TopNav() {
       try {
         await navigator.share({
           title: 'خدمات مضمونة - منصة الحجز',
-          text: 'شوف خدمات مضمونة 🟢 - منصة مصرية بتجمع كل اللي يتأجر من موردين معتمدين.',
+          text: 'شوف خدمات مضمونة 🟢 - منصة مصرية بتجمع كل اللي يتأجر من مصادر معتمدة.',
           url: 'https://madmonacairo.com',
         })
       } catch {}
@@ -95,7 +95,7 @@ export default function TopNav() {
                 className="flex items-center gap-1.5 px-5 py-2.5 bg-[#1F5F3F] text-white text-sm font-bold rounded-xl shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all"
               >
                 <Building2 className="w-4 h-4" />
-                للموردين
+                أجر معانا
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${supplierMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 
@@ -116,7 +116,7 @@ export default function TopNav() {
                       <LogIn className="w-4 h-4 text-[#1F5F3F]" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-900">لوحة المورد</p>
+                      <p className="text-sm font-bold text-gray-900">لوحة أجر معانا</p>
                       <p className="text-xs text-gray-500 mt-0.5">عندك حساب بالفعل</p>
                     </div>
                   </Link>
@@ -199,7 +199,7 @@ export default function TopNav() {
 
               <div className="pt-4 mt-4 border-t border-gray-100">
                 <p className="px-3 text-[10px] font-black text-[#B8860B] uppercase tracking-widest mb-3 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" /> للموردين
+                  <Sparkles className="w-3 h-3" /> أجر معانا
                 </p>
                 <Link href="/supplier/register" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline group transition-colors">
                   <div className="w-10 h-10 rounded-xl bg-[#B8860B]/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
@@ -215,7 +215,7 @@ export default function TopNav() {
                     <LogIn className="w-5 h-5 text-[#1F5F3F]" />
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900">لوحة المورد</p>
+                    <p className="font-bold text-gray-900">لوحة أجر معانا</p>
                     <p className="text-xs text-gray-500 mt-0.5">عندك حساب بالفعل</p>
                   </div>
                 </Link>

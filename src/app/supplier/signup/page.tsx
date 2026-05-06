@@ -106,12 +106,12 @@ export default function SupplierSignupPage() {
         <section className="mb-6 bg-gradient-to-br from-[#1F5F3F] to-[#1F5F3F]/90 text-white rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-3">
             <span className="inline-flex items-center text-xs bg-[#B8860B] text-white px-2.5 py-1 rounded-full font-medium tracking-wide">
-              للموردين
+              أجر معانا
             </span>
           </div>
           <h2 className="text-xl font-bold mb-2">حوّل مساحتك لمصدر دخل دائم</h2>
           <p className="text-sm text-white/85 leading-relaxed">
-            اعرض مساحات العمل بتاعتك على مضمونة، وخلي العملاء يحجزوا أونلاين بأي وقت.
+            اعرض مساحات العمل بتاعتك على مضمونة، وخلي أجر مننا يحجزوا أونلاين بأي وقت.
             عمولة بسيطة على كل حجز ناجح. الدفع شهري.
           </p>
         </section>

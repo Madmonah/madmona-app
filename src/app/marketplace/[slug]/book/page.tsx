@@ -206,7 +206,7 @@ export default function BookingPage() {
     if (!listing?.supplier || !selectedRule || !pricing.valid || !userId) return
     // Defense-in-depth: even if UI was bypassed, double-check before submit
     if (listing.supplier.kyc_status !== 'approved') {
-      setError('المورد ده لسه قيد التحقق من إدارة Madmona. الحجز هيتفعّل قريب.')
+      setError('أجر معانا ده لسه قيد التحقق من إدارة Madmona. الحجز هيتفعّل قريب.')
       return
     }
     setError(null)
@@ -358,14 +358,14 @@ export default function BookingPage() {
               )}
             </div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">
-              {isSuspended ? 'الحجز مش متاح حالياً' : 'المورد قيد التحقق'}
+              {isSuspended ? 'الحجز مش متاح حالياً' : 'أجر معانا قيد التحقق'}
             </h2>
             <p className="text-sm text-gray-600 leading-relaxed mb-6">
               {isSuspended ? (
                 <>الـlisting ده مش متاح للحجز دلوقتي. تقدر تتصفح ليستنجز تانية.</>
               ) : (
                 <>
-                  المورد <strong className="text-gray-900">{listing.supplier?.business_name || ''}</strong> لسه بنوثق حسابه عند Madmona،
+                  أجر معانا <strong className="text-gray-900">{listing.supplier?.business_name || ''}</strong> لسه بنوثق حسابه عند Madmona،
                   وعشان أمانك الحجز هيتفتح بعد ما يخلص التحقق.
                   <br />
                   <span className="block mt-2 text-xs text-gray-500">
@@ -396,7 +396,7 @@ export default function BookingPage() {
                 className="inline-flex items-center justify-center gap-1.5 mt-4 text-xs text-[#1F5F3F] hover:underline"
               >
                 <Clock className="w-3.5 h-3.5" />
-                اسأل Madmona عن المورد ده
+                اسأل Madmona عن أجر معانا ده
               </a>
             )}
           </div>
@@ -411,7 +411,7 @@ export default function BookingPage() {
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
           <h1 className="font-bold mb-2">مفيش أسعار للـlisting ده</h1>
-          <p className="text-sm text-gray-600 mb-4">للحجز، تواصل مباشرة مع المورد.</p>
+          <p className="text-sm text-gray-600 mb-4">للحجز، تواصل مباشرة مع أجر معانا.</p>
           <Link href={`/marketplace/${slug}`} className="bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold inline-block">
             ارجع للـlisting
           </Link>
@@ -535,7 +535,7 @@ export default function BookingPage() {
             onChange={e => setCustomerNotes(e.target.value)}
             rows={3}
             maxLength={500}
-            placeholder="أي طلبات خاصة أو معلومات تحتاج توصلها للمورد"
+            placeholder="أي طلبات خاصة أو معلومات تحتاج توصلها لـ أجر معانا"
             className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
           />
         </div>
@@ -590,7 +590,7 @@ export default function BookingPage() {
         </button>
 
         <p className="text-xs text-center text-gray-500 mt-3">
-          الحجز هيتأكد بعد ما المورد يوافق. هتقدر تتابع حالة الحجز من &ldquo;حجوزاتي&rdquo;.
+          الحجز هيتأكد بعد ما أجر معانا يوافق. هتقدر تتابع حالة الحجز من &ldquo;حجوزاتي&rdquo;.
         </p>
       </main>
     </div>

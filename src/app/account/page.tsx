@@ -270,7 +270,7 @@ export default function AccountPage() {
                    <AlertCircle className="w-4 h-4" />}
                   <span className="font-bold">{supplier.business_name}</span>
                   <span className="text-xs opacity-75 mr-auto">
-                    {isApprovedSupplier ? 'مورد موثّق' :
+                    {isApprovedSupplier ? 'أجر معانا موثّق' :
                      isPendingSupplier ? 'قيد المراجعة' :
                      'موقوف'}
                   </span>
@@ -297,7 +297,7 @@ export default function AccountPage() {
         {/* Customer section */}
         <div className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-100">
           <div className="px-6 py-3 border-b border-gray-100">
-            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">العميل</p>
+            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">أجر مننا</p>
           </div>
           <SectionLink
             href="/account/bookings"
@@ -333,13 +333,13 @@ export default function AccountPage() {
         {(isApprovedSupplier || isPendingSupplier || isRejectedSupplier) && (
           <div className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-200">
             <div className="px-6 py-3 border-b border-gray-100">
-              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">المورد</p>
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">أجر معانا</p>
             </div>
             <SectionLink
               href="/supplier/marketplace"
               icon={<Building2 className="w-5 h-5" />}
               iconBg="bg-[#1F5F3F]/10 text-[#1F5F3F]"
-              title="لوحة المورد"
+              title="لوحة أجر معانا"
               subtitle="listings + الحجوزات + الإيراد"
             />
           </div>
@@ -365,8 +365,8 @@ export default function AccountPage() {
               href="/admin/marketplace-suppliers"
               icon={<Building2 className="w-5 h-5" />}
               iconBg="bg-[#B8860B]/10 text-[#B8860B]"
-              title="طلبات الموردين"
-              subtitle="موافقة/رفض الموردين الجدد"
+              title="طلبات أجر معانا"
+              subtitle="موافقة/رفض أجر معانا الجدد"
             />
             <div className="h-px bg-gray-100 mx-6" />
             <SectionLink

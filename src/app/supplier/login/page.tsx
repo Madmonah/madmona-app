@@ -35,7 +35,7 @@ export default function SupplierLoginPage() {
 
   if (showComingSoon) {
     const phoneClean = '201002229982'
-    const waMessage = `أهلاً يا مضمونة 👋\n\nأنا مورد مسجل عندكم والإيميل بتاعي ${email}، وعاوز أوصل للوحة بتاعتي.`
+    const waMessage = `أهلاً يا مضمونة 👋\n\nأنا أجر معانا مسجل عندكم والإيميل بتاعي ${email}، وعاوز أوصل للوحة بتاعتي.`
     const waUrl = `https://wa.me/${phoneClean}?text=${encodeURIComponent(waMessage)}`
 
     return (
@@ -44,9 +44,9 @@ export default function SupplierLoginPage() {
           <div className="flex items-center justify-center w-14 h-14 bg-[#B8860B]/10 rounded-full mx-auto mb-4">
             <Building2 className="w-6 h-6 text-[#B8860B]" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">لوحة الموردين قريباً</h1>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">لوحة أجر معانا قريباً</h1>
           <p className="text-sm text-gray-600 leading-relaxed mb-6">
-            بنشتغل دلوقتي على لوحة تحكم الموردين. لحد ما تجهز، تقدر تتواصل معانا على الواتساب لإدارة وحداتك أو معرفة حجوزاتك.
+            بنشتغل دلوقتي على لوحة تحكم أجر معانا. لحد ما تجهز، تقدر تتواصل معانا على الواتساب لإدارة وحداتك أو معرفة حجوزاتك.
           </p>
           <div className="space-y-2">
             <a
@@ -77,7 +77,7 @@ export default function SupplierLoginPage() {
           <Link href="/" className="p-1 hover:bg-gray-50 rounded-full">
             <ArrowRight className="w-4 h-4 text-gray-600" />
           </Link>
-          <h1 className="text-lg font-bold text-gray-900">دخول الموردين</h1>
+          <h1 className="text-lg font-bold text-gray-900">دخول أجر معانا</h1>
         </div>
       </header>
 
