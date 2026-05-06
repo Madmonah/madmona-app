@@ -7,7 +7,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Calendar, Clock, MapPin, MessageCircle, Loader2,
   AlertCircle, CheckCircle, X, Star, Image as ImageIcon, Lock,
-  User, Hash, FileText, Phone,
+  User, Hash, FileText, Phone, ShieldCheck, CreditCard, ShieldAlert,
 } from 'lucide-react'
 
 // ============================================================================
@@ -35,6 +35,8 @@ interface BookingDetail {
   customer_notes: string | null
   supplier_notes: string | null
   cancellation_reason: string | null
+  customer_national_id: string | null
+  id_verification_status: string | null
   confirmed_at: string | null
   completed_at: string | null
   created_at: string
@@ -42,6 +44,7 @@ interface BookingDetail {
     id: string
     slug: string
     title: string
+    requires_id_verification: boolean | null
     photos: { url: string; is_primary: boolean }[] | null
   } | null
   customer: {
@@ -52,6 +55,7 @@ interface BookingDetail {
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  pending_id_verification: { label: 'بطاقة بانتظار الموافقة', color: 'bg-[#B8860B]/10 text-[#B8860B] border-[#B8860B]/30' },
   pending_payment: { label: 'بانتظار الدفع', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
   confirmed: { label: 'مؤكّد', color: 'bg-green-100 text-green-800 border-green-200' },
   active: { label: 'جاري', color: 'bg-blue-100 text-blue-800 border-blue-200' },
@@ -99,7 +103,7 @@ export default function SupplierBookingDetailPage() {
         .from('marketplace_bookings')
         .select(`
           *,
-          listing:listings(id, slug, title, photos:listing_photos(url, is_primary)),
+          listing:listings(id, slug, title, requires_id_verification, photos:listing_photos(url, is_primary)),
           customer:profiles!marketplace_bookings_customer_id_fkey(id, phone, full_name)
         `)
         .eq('id', bookingId)
@@ -161,6 +165,38 @@ export default function SupplierBookingDetailPage() {
       return
     }
     setBooking({ ...booking, supplier_notes: supplierNotes.trim() || null })
+  }
+
+  // Approve or reject ID verification (transitions booking from pending_id_verification -> pending_payment OR cancelled)
+  const updateIdVerification = async (decision: 'approved' | 'rejected') => {
+    if (!booking) return
+    setUpdating(true)
+    const update: Record<string, unknown> = {
+      id_verification_status: decision,
+    }
+    if (decision === 'approved') {
+      // Move booking to pending_payment so customer can pay
+      update.status = 'pending_payment'
+    } else {
+      // Reject = cancel the booking
+      update.status = 'cancelled'
+      update.cancelled_by = supplierProfileId
+      update.cancelled_at = new Date().toISOString()
+      update.cancellation_reason = 'رفض التحقق من بيانات البطاقة'
+    }
+
+    // @ts-expect-error
+    const { error } = await supabaseBrowser
+      .from('marketplace_bookings')
+      .update(update)
+      .eq('id', booking.id)
+
+    setUpdating(false)
+    if (error) {
+      alert('فشل التحديث: ' + error.message)
+      return
+    }
+    setBooking({ ...booking, ...(update as Partial<BookingDetail>) })
   }
 
   if (stage === 'loading') {
@@ -349,6 +385,75 @@ export default function SupplierBookingDetailPage() {
             <span className="text-[#1F5F3F]">{Number(booking.supplier_payout).toLocaleString('ar-EG')} ج.م</span>
           </div>
         </div>
+
+        {/* ID Verification card - shown only for listings requiring it */}
+        {booking.listing?.requires_id_verification && booking.customer_national_id && (
+          <div className="bg-gradient-to-br from-[#B8860B]/5 to-amber-50 rounded-2xl border-2 border-[#B8860B]/30 p-4 space-y-3">
+            <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-[#B8860B]" />
+              التحقق من البطاقة
+              {booking.id_verification_status === 'pending' && (
+                <span className="text-[10px] px-2 py-0.5 bg-[#B8860B] text-white rounded-full font-bold">بانتظار ردك</span>
+              )}
+              {booking.id_verification_status === 'approved' && (
+                <span className="text-[10px] px-2 py-0.5 bg-green-600 text-white rounded-full font-bold flex items-center gap-1">
+                  <CheckCircle className="w-2.5 h-2.5" /> موافق
+                </span>
+              )}
+              {booking.id_verification_status === 'rejected' && (
+                <span className="text-[10px] px-2 py-0.5 bg-red-600 text-white rounded-full font-bold flex items-center gap-1">
+                  <X className="w-2.5 h-2.5" /> مرفوض
+                </span>
+              )}
+            </h2>
+
+            <div className="bg-white rounded-xl p-3 border border-gray-100">
+              <div className="flex items-center gap-2 mb-1">
+                <CreditCard className="w-4 h-4 text-[#B8860B]" />
+                <p className="text-xs text-gray-500">رقم البطاقة الشخصية</p>
+              </div>
+              <p className="text-base font-mono font-bold text-gray-900 tracking-widest" dir="ltr">
+                {booking.customer_national_id}
+              </p>
+              <p className="text-[10px] text-gray-500 mt-1">
+                العميل: <strong>{booking.customer?.full_name || booking.customer?.phone || 'غير محدد'}</strong>
+              </p>
+            </div>
+
+            {booking.id_verification_status === 'pending' && (
+              <>
+                <div className="flex items-start gap-2 p-2 bg-blue-50 border border-blue-100 rounded-lg">
+                  <ShieldAlert className="w-3.5 h-3.5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-blue-900 leading-relaxed">
+                    تأكد إن رقم البطاقة صحيح ومتطابق مع بيانات العميل قبل الموافقة. بعد الموافقة هيتحول الحجز لـ &ldquo;بانتظار الدفع&rdquo;.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => updateIdVerification('approved')}
+                    disabled={updating}
+                    className="bg-green-600 text-white py-2.5 rounded-xl font-semibold hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+                  >
+                    {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                    موافقة
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm('رفض البطاقة هيلغي الحجز نهائياً. متأكد؟')) {
+                        updateIdVerification('rejected')
+                      }
+                    }}
+                    disabled={updating}
+                    className="bg-red-100 text-red-700 border border-red-200 py-2.5 rounded-xl font-semibold hover:bg-red-200 disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+                  >
+                    <X className="w-4 h-4" />
+                    رفض
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Customer notes */}
         {booking.customer_notes && (

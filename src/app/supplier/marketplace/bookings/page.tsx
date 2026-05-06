@@ -7,7 +7,7 @@ import { playNotificationSound, showBrowserNotification, requestNotificationPerm
 import BookingToast from '@/components/marketplace/BookingToast'
 import {
   Clock, Loader2, ArrowRight, Lock, AlertCircle, ChevronLeft,
-  Image as ImageIcon, Package, User, Users,
+  Image as ImageIcon, Package, User, Users, ShieldCheck, CreditCard,
 } from 'lucide-react'
 
 // ============================================================================
@@ -16,7 +16,7 @@ import {
 // ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'no-permission' | 'ready'
-type StatusFilter = 'all' | 'pending_payment' | 'confirmed' | 'completed' | 'cancelled'
+type StatusFilter = 'all' | 'pending_id_verification' | 'pending_payment' | 'confirmed' | 'completed' | 'cancelled'
 
 interface BookingSummary {
   id: string
@@ -26,10 +26,13 @@ interface BookingSummary {
   total_amount: number
   status: string
   customer_notes: string | null
+  customer_national_id: string | null
+  id_verification_status: string | null
   created_at: string
   listing: {
     id: string
     title: string
+    requires_id_verification: boolean | null
     photos: { url: string; is_primary: boolean }[] | null
   } | null
   customer: {
@@ -40,6 +43,7 @@ interface BookingSummary {
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  pending_id_verification: { label: 'بطاقة بانتظار الموافقة', color: 'bg-[#B8860B]/10 text-[#B8860B] border border-[#B8860B]/30' },
   pending_payment: { label: 'بانتظار الدفع', color: 'bg-yellow-100 text-yellow-800' },
   confirmed: { label: 'مؤكّد', color: 'bg-green-100 text-green-800' },
   active: { label: 'جاري', color: 'bg-blue-100 text-blue-800' },
@@ -50,6 +54,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 
 const FILTER_TABS: { key: StatusFilter; label: string }[] = [
   { key: 'all', label: 'الكل' },
+  { key: 'pending_id_verification', label: 'بطاقة بانتظار' },
   { key: 'pending_payment', label: 'بانتظار الدفع' },
   { key: 'confirmed', label: 'مؤكّد' },
   { key: 'completed', label: 'تمّ' },
@@ -133,8 +138,8 @@ export default function SupplierBookingsPage() {
     const { data } = await supabaseBrowser
       .from('marketplace_bookings')
       .select(`
-        id, reference_code, start_at, end_at, total_amount, status, customer_notes, created_at,
-        listing:listings(id, title, photos:listing_photos(url, is_primary)),
+        id, reference_code, start_at, end_at, total_amount, status, customer_notes, customer_national_id, id_verification_status, created_at,
+        listing:listings(id, title, requires_id_verification, photos:listing_photos(url, is_primary)),
         customer:profiles!marketplace_bookings_customer_id_fkey(id, phone, full_name)
       `)
       .eq('supplier_id', supId)
@@ -368,6 +373,20 @@ export default function SupplierBookingsPage() {
                           {status.label}
                         </span>
                       </div>
+
+                      {/* ID verification badge */}
+                      {booking.id_verification_status === 'pending' && (
+                        <div className="flex items-center gap-1.5 mb-2 px-2 py-1 bg-[#B8860B]/10 border border-[#B8860B]/30 rounded-lg">
+                          <ShieldCheck className="w-3 h-3 text-[#B8860B] flex-shrink-0" />
+                          <span className="text-[10px] font-bold text-[#B8860B]">محتاج مراجعة البطاقة</span>
+                        </div>
+                      )}
+                      {booking.id_verification_status === 'approved' && booking.listing?.requires_id_verification && (
+                        <div className="flex items-center gap-1.5 mb-2 px-2 py-1 bg-green-50 border border-green-200 rounded-lg">
+                          <ShieldCheck className="w-3 h-3 text-green-700 flex-shrink-0" />
+                          <span className="text-[10px] font-bold text-green-700">بطاقة متحقّقة</span>
+                        </div>
+                      )}
 
                       {booking.reference_code && (
                         <p className="text-xs text-gray-400 font-mono mb-2">#{booking.reference_code}</p>
