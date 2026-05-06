@@ -7,10 +7,13 @@ import { NextResponse } from 'next/server'
 //   - Exchange rates: USD, EUR, GBP, SAR vs EGP
 //   - Gold prices: 24K, 21K, 18K per gram in EGP
 //
-// Cached for 5 minutes to avoid hammering free APIs.
+// Uses internal in-memory cache (60s) — but ALWAYS bypasses Vercel/CDN cache
+// so the user sees fresh data on every page load.
 // ============================================================================
 
-export const revalidate = 300 // 5 minutes
+export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
+export const runtime = 'nodejs'
 
 interface CurrencyRate {
   code: string
@@ -32,7 +35,7 @@ interface FinancialData {
 }
 
 let cache: { data: FinancialData; timestamp: number } | null = null
-const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+const CACHE_TTL = 60 * 1000 // 60 seconds (fresh enough, but spares free APIs)
 
 // Fallback values (used if APIs fail) — updated periodically as defaults
 const FALLBACK_RATES = {
@@ -51,7 +54,7 @@ async function fetchExchangeRates(): Promise<Record<string, number>> {
   // Try primary: open.er-api.com (free, reliable, no key needed)
   try {
     const res = await fetch('https://open.er-api.com/v6/latest/USD', {
-      next: { revalidate: 300 },
+      cache: 'no-store',
       signal: AbortSignal.timeout(6000),
     })
     if (res.ok) {
@@ -73,7 +76,7 @@ async function fetchExchangeRates(): Promise<Record<string, number>> {
   // Fallback: try exchangerate.host
   try {
     const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD', {
-      next: { revalidate: 300 },
+      cache: 'no-store',
       signal: AbortSignal.timeout(6000),
     })
     if (res.ok) {
@@ -100,7 +103,7 @@ async function fetchGoldSpotUSD(): Promise<number> {
   // Try gold-api.com (free public)
   try {
     const res = await fetch('https://api.gold-api.com/price/XAU', {
-      next: { revalidate: 300 },
+      cache: 'no-store',
       signal: AbortSignal.timeout(6000),
     })
     if (res.ok) {
@@ -116,7 +119,7 @@ async function fetchGoldSpotUSD(): Promise<number> {
   // Fallback: try metals.live
   try {
     const res = await fetch('https://api.metals.live/v1/spot/gold', {
-      next: { revalidate: 300 },
+      cache: 'no-store',
       signal: AbortSignal.timeout(6000),
     })
     if (res.ok) {
@@ -163,13 +166,12 @@ function calculateGoldPricesEGP(spotUsdPerOz: number, usdToEgp: number): GoldPri
 // ----------------------------------------------------------------------------
 
 export async function GET() {
-  // Check cache
+  // Check cache (60s in-memory)
   if (cache && Date.now() - cache.timestamp < CACHE_TTL) {
-    return NextResponse.json({
-      ok: true,
-      ...cache.data,
-      cached: true,
-    })
+    return new NextResponse(
+      JSON.stringify({ ok: true, ...cache.data, cached: true }),
+      { status: 200, headers: noCacheHeaders() }
+    )
   }
 
   // Fetch in parallel
@@ -195,9 +197,20 @@ export async function GET() {
 
   cache = { data, timestamp: Date.now() }
 
-  return NextResponse.json({
-    ok: true,
-    ...data,
-    cached: false,
-  })
+  return new NextResponse(
+    JSON.stringify({ ok: true, ...data, cached: false }),
+    { status: 200, headers: noCacheHeaders() }
+  )
+}
+
+function noCacheHeaders(): HeadersInit {
+  return {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+    'CDN-Cache-Control': 'no-store',
+    'Vercel-CDN-Cache-Control': 'no-store',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+    'Surrogate-Control': 'no-store',
+  }
 }

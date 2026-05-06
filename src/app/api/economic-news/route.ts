@@ -38,35 +38,22 @@ const FB_GENERAL = 'https://images.unsplash.com/photo-1495020689067-958852a7765e
 const FB_GLOBAL = 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&q=80'
 
 const SOURCES: NewsSource[] = [
-  // 🇪🇬 Egyptian — Specialized economy
-  { name: 'المال', url: 'https://almalnews.com/feed/', egyptian: true, weight: 5, fallbackImage: FB_ECONOMY },
-  { name: 'البورصة', url: 'https://alborsaanews.com/feed', egyptian: true, weight: 5, fallbackImage: FB_STOCKS },
-  { name: 'مباشر مصر', url: 'https://www.mubasher.info/rss/news', egyptian: true, weight: 4, fallbackImage: FB_STOCKS },
-  { name: 'أموال الغد', url: 'https://www.amwalalghad.com/feed/', egyptian: true, weight: 4, fallbackImage: FB_ECONOMY },
-  { name: 'Enterprise', url: 'https://enterprise.press/feed/', egyptian: true, weight: 4, fallbackImage: FB_ECONOMY },
-  { name: 'Daily News Egypt', url: 'https://dailynewsegypt.com/feed/', egyptian: true, weight: 3, fallbackImage: FB_ECONOMY },
-  { name: 'Mada Masr Business', url: 'https://www.madamasr.com/en/category/business/feed/', egyptian: true, weight: 3, fallbackImage: FB_ECONOMY },
+  // 🇪🇬 Egyptian — working sources only (verified 2026-05-06)
+  { name: 'البورصة', url: 'https://alborsaanews.com/feed', egyptian: true, weight: 6, fallbackImage: FB_STOCKS },
+  { name: 'Daily News Egypt', url: 'https://dailynewsegypt.com/feed/', egyptian: true, weight: 5, fallbackImage: FB_ECONOMY },
+  { name: 'المصري اليوم - اقتصاد', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=1', egyptian: true, weight: 5, fallbackImage: FB_ECONOMY },
 
-  // 🇪🇬 Egyptian — Economy sections
-  { name: 'الأهرام - اقتصاد', url: 'https://gate.ahram.org.eg/rss/PortalEconomyRss.aspx', egyptian: true, weight: 4, fallbackImage: FB_ECONOMY },
-  { name: 'الشروق - اقتصاد', url: 'https://www.shorouknews.com/RSS/Feeds/Economy.xml', egyptian: true, weight: 4, fallbackImage: FB_ECONOMY },
-  { name: 'اليوم السابع - اقتصاد', url: 'https://www.youm7.com/rss/SectionRss?SectionID=297', egyptian: true, weight: 4, fallbackImage: FB_ECONOMY },
-  { name: 'المصري اليوم - اقتصاد', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=1', egyptian: true, weight: 3, fallbackImage: FB_ECONOMY },
-  { name: 'الوطن - اقتصاد', url: 'https://www.elwatannews.com/rss/category/29.rss', egyptian: true, weight: 3, fallbackImage: FB_ECONOMY },
-  { name: 'صدى البلد - اقتصاد', url: 'https://www.elbalad.news/rss?type=10', egyptian: true, weight: 3, fallbackImage: FB_ECONOMY },
-  { name: 'الدستور - اقتصاد', url: 'https://www.dostor.org/rss/category/3', egyptian: true, weight: 2, fallbackImage: FB_ECONOMY },
+  // 🌍 Regional — working sources only
+  { name: 'CNN العربية', url: 'https://arabic.cnn.com/business/rss', egyptian: false, weight: 2, fallbackImage: FB_GLOBAL },
+  { name: 'BBC عربي', url: 'http://feeds.bbci.co.uk/arabic/business/rss.xml', egyptian: false, weight: 2, fallbackImage: FB_GLOBAL },
+  { name: 'الجزيرة - اقتصاد', url: 'https://www.aljazeera.net/aljazeerarss/economy.xml', egyptian: false, weight: 2, fallbackImage: FB_GLOBAL },
 
-  // 🇪🇬 Egypt — real estate
-  { name: 'عقار ماب', url: 'https://aqarmap.com.eg/blog/feed/', egyptian: true, weight: 2, fallbackImage: FB_REALESTATE },
-
-  // 🌍 Regional
-  { name: 'أرقام', url: 'https://www.argaam.com/ar/rss', egyptian: false, weight: 2, fallbackImage: FB_STOCKS },
-  { name: 'الاقتصادي', url: 'https://www.aliqtisadi.com/feed/', egyptian: false, weight: 2, fallbackImage: FB_ECONOMY },
-  { name: 'العربية - أسواق', url: 'https://www.alarabiya.net/rssfeed/aswaq', egyptian: false, weight: 1, fallbackImage: FB_STOCKS },
-  { name: 'CNN العربية', url: 'https://arabic.cnn.com/business/rss', egyptian: false, weight: 1, fallbackImage: FB_GLOBAL },
-  { name: 'BBC عربي', url: 'http://feeds.bbci.co.uk/arabic/business/rss.xml', egyptian: false, weight: 1, fallbackImage: FB_GLOBAL },
-  { name: 'Sky News عربية', url: 'https://www.skynewsarabia.com/business/rss', egyptian: false, weight: 1, fallbackImage: FB_GLOBAL },
-  { name: 'الجزيرة - اقتصاد', url: 'https://www.aljazeera.net/aljazeerarss/economy.xml', egyptian: false, weight: 1, fallbackImage: FB_GLOBAL },
+  // 🔄 Backup sources (rarely return data, kept low weight)
+  { name: 'المال', url: 'https://almalnews.com/feed/', egyptian: true, weight: 2, fallbackImage: FB_ECONOMY },
+  { name: 'Enterprise', url: 'https://enterprise.press/feed/', egyptian: true, weight: 2, fallbackImage: FB_ECONOMY },
+  { name: 'مباشر مصر', url: 'https://www.mubasher.info/rss/news', egyptian: true, weight: 1, fallbackImage: FB_STOCKS },
+  { name: 'أرقام', url: 'https://www.argaam.com/ar/rss', egyptian: false, weight: 1, fallbackImage: FB_STOCKS },
+  { name: 'عقار ماب', url: 'https://aqarmap.com.eg/blog/feed/', egyptian: true, weight: 1, fallbackImage: FB_REALESTATE },
 ]
 
 interface Pool {

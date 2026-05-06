@@ -43,7 +43,11 @@ export default function FinancialTicker() {
 
     const load = async () => {
       try {
-        const res = await fetch('/api/financial-data')
+        const cacheBust = `?t=${Date.now()}`
+        const res = await fetch(`/api/financial-data${cacheBust}`, {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache, no-store' },
+        })
         const json = await res.json()
         if (!cancelled && json.ok) {
           setData(json)
@@ -56,8 +60,8 @@ export default function FinancialTicker() {
     }
 
     load()
-    // Refresh every 5 minutes
-    const interval = setInterval(load, 5 * 60 * 1000)
+    // Refresh every 60 seconds (matches API in-memory cache TTL)
+    const interval = setInterval(load, 60 * 1000)
 
     return () => {
       cancelled = true
