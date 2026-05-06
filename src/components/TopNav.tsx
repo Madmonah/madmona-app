@@ -106,7 +106,7 @@ export default function TopNav() {
                       <UserPlus className="w-4 h-4 text-[#B8860B]" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-900">سجّل عرضك</p>
+                      <p className="text-sm font-bold text-gray-900">هتأجر ايه؟</p>
                       <p className="text-xs text-gray-500 mt-0.5">انضم للمنصة واستقبل حجوزات</p>
                     </div>
                   </Link>
@@ -206,7 +206,7 @@ export default function TopNav() {
                     <UserPlus className="w-5 h-5 text-[#B8860B]" />
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900">سجّل عرضك</p>
+                    <p className="font-bold text-gray-900">هتأجر ايه؟</p>
                     <p className="text-xs text-gray-500 mt-0.5">انضم للمنصة</p>
                   </div>
                 </Link>

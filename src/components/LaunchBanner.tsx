@@ -35,7 +35,7 @@ const MESSAGES = [
     text: '٠٪ عمولة لأول ٣٠ يوم',
     sublabel: 'سجّل خدمتك مجاناً',
     color: 'from-[#B8860B] via-[#D4A12A] to-[#B8860B]',
-    cta: 'سجّل عرضك',
+    cta: 'هتأجر ايه؟',
   },
 ]
 

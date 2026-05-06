@@ -227,7 +227,7 @@ export default async function HomePage() {
                   </p>
 
                   <div className="inline-flex items-center gap-2 px-5 py-3 bg-white text-[#1F2937] rounded-full text-sm font-black group-hover:gap-3 transition-all">
-                    <span>سجّل دلوقتي</span>
+                    <span>هتأجر ايه؟</span>
                     <ArrowLeft className="w-4 h-4" />
                   </div>
 
