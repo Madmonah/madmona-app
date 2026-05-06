@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store'
 export const runtime = 'nodejs'
 
-type NewsCategory = 'sports' | 'fashion' | 'trending' | 'economy'
+type NewsCategory = 'sports' | 'fashion' | 'trending' | 'economy' | 'interior' | 'locals' | 'defense'
 
 interface NewsItem {
   title: string
@@ -45,6 +45,9 @@ const FB_TECH = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=
 const FB_ECONOMY = 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&q=80'
 const FB_STOCKS = 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&q=80'
 const FB_GLOBAL = 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&q=80'
+const FB_INTERIOR = 'https://images.unsplash.com/photo-1591622180834-da91d2b0c2bf?w=800&q=80'
+const FB_LOCALS = 'https://images.unsplash.com/photo-1572455024215-83a5c80a5b1e?w=800&q=80'
+const FB_DEFENSE = 'https://images.unsplash.com/photo-1614108622516-bdb7af0a85a5?w=800&q=80'
 
 const ALL_SOURCES: NewsSource[] = [
   // ⚽ SPORTS
@@ -81,6 +84,27 @@ const ALL_SOURCES: NewsSource[] = [
   { name: 'CNN العربية - اقتصاد', url: 'https://arabic.cnn.com/business/rss', egyptian: false, weight: 2, fallbackImage: FB_GLOBAL, category: 'economy' },
   { name: 'BBC عربي - اقتصاد', url: 'http://feeds.bbci.co.uk/arabic/business/rss.xml', egyptian: false, weight: 2, fallbackImage: FB_GLOBAL, category: 'economy' },
   { name: 'الجزيرة - اقتصاد', url: 'https://www.aljazeera.net/aljazeerarss/economy.xml', egyptian: false, weight: 2, fallbackImage: FB_GLOBAL, category: 'economy' },
+
+  // 👮‍♂️ INTERIOR (وزارة الداخلية - حوادث/أمن)
+  { name: 'اليوم السابع - حوادث', url: 'https://www.youm7.com/rss/SectionRss?SectionID=203', egyptian: true, weight: 6, fallbackImage: FB_INTERIOR, category: 'interior' },
+  { name: 'المصري اليوم - حوادث', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=10', egyptian: true, weight: 5, fallbackImage: FB_INTERIOR, category: 'interior' },
+  { name: 'الوطن - حوادث', url: 'https://www.elwatannews.com/RssFeeds/3', egyptian: true, weight: 4, fallbackImage: FB_INTERIOR, category: 'interior' },
+  { name: 'صدى البلد - حوادث', url: 'https://www.elbalad.news/rssfeed?id=8', egyptian: true, weight: 3, fallbackImage: FB_INTERIOR, category: 'interior' },
+  { name: 'الأهرام - حوادث', url: 'https://gate.ahram.org.eg/RssFeeds/Rss/2.aspx', egyptian: true, weight: 3, fallbackImage: FB_INTERIOR, category: 'interior' },
+
+  // 🏘️ LOCALS (المحافظات/المحليات)
+  { name: 'اليوم السابع - محافظات', url: 'https://www.youm7.com/rss/SectionRss?SectionID=88', egyptian: true, weight: 6, fallbackImage: FB_LOCALS, category: 'locals' },
+  { name: 'المصري اليوم - محافظات', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=2', egyptian: true, weight: 5, fallbackImage: FB_LOCALS, category: 'locals' },
+  { name: 'الوطن - محافظات', url: 'https://www.elwatannews.com/RssFeeds/15', egyptian: true, weight: 4, fallbackImage: FB_LOCALS, category: 'locals' },
+  { name: 'صدى البلد - محافظات', url: 'https://www.elbalad.news/rssfeed?id=10', egyptian: true, weight: 3, fallbackImage: FB_LOCALS, category: 'locals' },
+  { name: 'الأهرام - محافظات', url: 'https://gate.ahram.org.eg/RssFeeds/Rss/12.aspx', egyptian: true, weight: 3, fallbackImage: FB_LOCALS, category: 'locals' },
+
+  // 🛡️ DEFENSE (وزارة الدفاع/عسكرية)
+  { name: 'اليوم السابع - سياسة', url: 'https://www.youm7.com/rss/SectionRss?SectionID=319', egyptian: true, weight: 6, fallbackImage: FB_DEFENSE, category: 'defense' },
+  { name: 'المصري اليوم - سياسة', url: 'https://www.almasryalyoum.com/rss/rssfeeds?category=4', egyptian: true, weight: 5, fallbackImage: FB_DEFENSE, category: 'defense' },
+  { name: 'الأهرام - سياسة', url: 'https://gate.ahram.org.eg/RssFeeds/Rss/1.aspx', egyptian: true, weight: 5, fallbackImage: FB_DEFENSE, category: 'defense' },
+  { name: 'الوطن - سياسة', url: 'https://www.elwatannews.com/RssFeeds/1', egyptian: true, weight: 4, fallbackImage: FB_DEFENSE, category: 'defense' },
+  { name: 'الجزيرة - عسكرية', url: 'https://www.aljazeera.net/aljazeerarss/military.xml', egyptian: false, weight: 2, fallbackImage: FB_DEFENSE, category: 'defense' },
 ]
 
 interface CategoryPool {
@@ -94,6 +118,9 @@ const pools: Record<NewsCategory, CategoryPool | null> = {
   fashion: null,
   trending: null,
   economy: null,
+  interior: null,
+  locals: null,
+  defense: null,
 }
 
 const POOL_TTL = 3 * 60 * 1000
@@ -263,7 +290,7 @@ function noCacheHeaders(): HeadersInit {
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const categoryParam = (url.searchParams.get('category') || 'economy').toLowerCase()
-  const validCategories: NewsCategory[] = ['sports', 'fashion', 'trending', 'economy']
+  const validCategories: NewsCategory[] = ['sports', 'fashion', 'trending', 'economy', 'interior', 'locals', 'defense']
   const category = validCategories.includes(categoryParam as NewsCategory)
     ? (categoryParam as NewsCategory)
     : 'economy'

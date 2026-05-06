@@ -2,15 +2,14 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import {
   ArrowLeft, Compass, ShieldCheck, Clock, Zap, MapPin, MessageCircle, Star,
+  Building2, ShoppingBag, Sparkles,
 } from 'lucide-react'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
 import InstallPWA from '@/components/InstallPWA'
 import FeaturedListings from '@/components/FeaturedListings'
-import EconomicNewsHero from '@/components/EconomicNewsHero'
 import FinancialTicker from '@/components/FinancialTicker'
 import LaunchBanner from '@/components/LaunchBanner'
-import NewsTabsSection from '@/components/NewsTabsSection'
 import CompactNewsTabs from '@/components/CompactNewsTabs'
 
 // ============================================================
@@ -152,12 +151,157 @@ export default async function HomePage() {
                 </div>
               </div>
 
-              <div className="md:col-span-5 order-1 md:order-2 relative space-y-4">
-                <EconomicNewsHero fallbackImage={HERO_IMAGE} />
-                {/* Compact news tabs (sports / fashion / trending) - LIVE beside economic news */}
-                <CompactNewsTabs />
+              <div className="md:col-span-5 order-1 md:order-2 relative">
+                {/* Hero decorative image (no news here anymore - moved to dedicated section below) */}
+                <div className="relative aspect-[4/5] md:aspect-[3/4] rounded-3xl overflow-hidden shadow-luxe">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={HERO_IMAGE}
+                    alt="Madmona"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading="eager"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                  <div className="absolute bottom-6 right-6 max-w-[260px]">
+                    <div className="inline-flex items-center gap-1.5 bg-white/95 backdrop-blur px-2.5 py-1 rounded-full mb-3 shadow-card">
+                      <Sparkles className="w-3 h-3 text-[#B8860B]" />
+                      <span className="text-[10px] font-black tracking-widest uppercase text-[#1F5F3F]">جديد</span>
+                    </div>
+                    <p className="text-white text-sm md:text-base font-bold leading-snug drop-shadow-lg">
+                      أكتر من <span className="text-[#B8860B]">٨ فئات</span> من الخدمات والمنتجات
+                    </p>
+                  </div>
+                </div>
                 <div className="absolute -top-3 -left-3 w-20 h-20 border-2 border-[#B8860B]/40 rounded-3xl -z-0 hidden md:block" />
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* DUAL CTA - أجر معانا / أجر مننا */}
+        <section className="py-12 md:py-16 bg-gradient-to-br from-[#FAFAF7] via-white to-[#FAFAF7] border-y border-gray-100">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-8 md:mb-10">
+              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">JOIN MADMONA</p>
+              <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-[0.95]">
+                ابدأ <span className="italic font-light gradient-text-green">رحلتك</span>
+              </h2>
+              <p className="text-sm md:text-base text-gray-600 mt-3 max-w-xl mx-auto">
+                اختار اللي يناسبك — سواء عايز <strong>تأجر</strong> أو عايز <strong>تأجر منك</strong>
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-5xl mx-auto">
+              {/* أجر مننا (Customer / Renter) */}
+              <Link
+                href="/marketplace"
+                className="group relative overflow-hidden bg-gradient-to-br from-[#1F5F3F] to-[#2d7a52] text-white rounded-3xl p-7 md:p-9 shadow-elevated hover:shadow-luxe hover:-translate-y-1 transition-all duration-500 no-underline"
+              >
+                <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#B8860B]/20 rounded-full blur-3xl pointer-events-none" />
+
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+                      <ShoppingBag className="w-7 h-7" />
+                    </div>
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/15 backdrop-blur rounded-full text-[10px] font-black tracking-widest uppercase">
+                      <Sparkles className="w-2.5 h-2.5" />
+                      للعميل
+                    </span>
+                  </div>
+
+                  <p className="text-[10px] md:text-xs font-bold tracking-[0.25em] uppercase text-white/70 mb-2">RENT FROM US</p>
+                  <h3 className="text-3xl md:text-4xl font-black mb-2 leading-tight">
+                    أجر <span className="italic font-light">مننا</span>
+                  </h3>
+                  <p className="text-sm md:text-base text-white/85 leading-relaxed mb-5">
+                    اتصفّح آلاف الخدمات — مساحات، عقارات، عربيات، معدات — من <strong className="text-white">مصادر موثقة</strong>.
+                    احجز فوراً، ادفع آمن.
+                  </p>
+
+                  <div className="flex items-center gap-2 text-sm font-bold group-hover:gap-3 transition-all">
+                    <span>اتصفّح الخدمات</span>
+                    <ArrowLeft className="w-4 h-4" />
+                  </div>
+
+                  <div className="flex items-center gap-3 mt-5 pt-5 border-t border-white/15 text-[11px] text-white/80">
+                    <span className="flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3" /> ضمان كامل
+                    </span>
+                    <span className="opacity-50">·</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> رد فوري
+                    </span>
+                  </div>
+                </div>
+              </Link>
+
+              {/* أجر معانا (Supplier) */}
+              <Link
+                href="/supplier/register"
+                className="group relative overflow-hidden bg-gradient-to-br from-[#B8860B] to-[#D4A12A] text-white rounded-3xl p-7 md:p-9 shadow-elevated hover:shadow-luxe hover:-translate-y-1 transition-all duration-500 no-underline"
+              >
+                <div className="absolute -top-12 -left-12 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 right-0 w-32 h-32 bg-black/10 rounded-full blur-3xl pointer-events-none" />
+
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+                      <Building2 className="w-7 h-7" />
+                    </div>
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/15 backdrop-blur rounded-full text-[10px] font-black tracking-widest uppercase">
+                      <Sparkles className="w-2.5 h-2.5" />
+                      للمورد
+                    </span>
+                  </div>
+
+                  <p className="text-[10px] md:text-xs font-bold tracking-[0.25em] uppercase text-white/80 mb-2">RENT WITH US</p>
+                  <h3 className="text-3xl md:text-4xl font-black mb-2 leading-tight">
+                    أجر <span className="italic font-light">معانا</span>
+                  </h3>
+                  <p className="text-sm md:text-base text-white/95 leading-relaxed mb-5">
+                    عندك خدمة أو منتج؟ اعرضه على آلاف العملاء، استقبل حجوزات، واكسب.
+                    <strong className="text-white"> ٠٪ عمولة</strong> لأول ٣٠ يوم!
+                  </p>
+
+                  <div className="flex items-center gap-2 text-sm font-bold group-hover:gap-3 transition-all">
+                    <span>سجّل عرضك</span>
+                    <ArrowLeft className="w-4 h-4" />
+                  </div>
+
+                  <div className="flex items-center gap-3 mt-5 pt-5 border-t border-white/20 text-[11px] text-white/90">
+                    <span className="flex items-center gap-1">
+                      <Zap className="w-3 h-3" /> تسجيل سريع
+                    </span>
+                    <span className="opacity-50">·</span>
+                    <span className="flex items-center gap-1">
+                      <Star className="w-3 h-3 fill-white" /> ٠٪ عمولة ٣٠ يوم
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* NEWS HUB - أخبار متعددة التصنيفات */}
+        <section className="py-10 md:py-14 bg-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-end justify-between mb-6 md:mb-8 flex-wrap gap-3">
+              <div>
+                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-2">LIVE NEWS</p>
+                <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-[0.95]">
+                  آخر <span className="italic font-light gradient-text-green">الأخبار</span>
+                </h2>
+              </div>
+              <p className="text-xs text-gray-500 max-w-xs">
+                اقتصاد، داخلية، محليات، دفاع، رياضة، موضة، وترند — كل التصنيفات في مكان واحد. تتجدد كل ٣ دقايق.
+              </p>
+            </div>
+
+            <div className="max-w-3xl mx-auto">
+              <CompactNewsTabs />
             </div>
           </div>
         </section>
