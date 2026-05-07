@@ -37,7 +37,7 @@ export default async function AIOSPage() {
     adsCount, reelsCount, qcCount, briefsCount, playsCount,
     pendingCount, insightsCount,
     pricingCount, fraudCount, demandCount, partnershipsCount,
-    improvementsCount,
+    promptVersionsCount,
   ] = await Promise.all([
     supabaseAdmin.from('ad_creatives').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('reel_scripts').select('*', { count: 'exact', head: true }),
@@ -50,7 +50,7 @@ export default async function AIOSPage() {
     supabaseAdmin.from('fraud_alerts').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('demand_forecasts').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('partnership_opportunities').select('*', { count: 'exact', head: true }),
-    supabaseAdmin.from('agent_improvements').select('*', { count: 'exact', head: true }).eq('status', 'proposed'),
+    supabaseAdmin.from('prompt_versions').select('*', { count: 'exact', head: true }).eq('is_active', false),
   ])
 
   const byTeam = new Map<string, Agent[]>()
@@ -85,17 +85,17 @@ export default async function AIOSPage() {
           </a>
         )}
 
-        {(improvementsCount.count ?? 0) > 0 && (
-          <a href="/admin/performance" style={{
+        {(promptVersionsCount.count ?? 0) > 0 && (
+          <a href="/admin/prompt-versions" style={{
             display: 'block', background: '#0EA5E9', color: '#fff',
             padding: 14, borderRadius: 12, marginBottom: 16,
             textDecoration: 'none', fontWeight: 'bold', textAlign: 'center',
           }}>
-            🔧 {improvementsCount.count} تحسين مقترح للـ agents — راجعهم
+            🧠 {promptVersionsCount.count} prompt جديد محسّن من Prompt Optimizer — راجعهم
           </a>
         )}
 
-        {/* Output stats — 11 tiles */}
+        {/* Output stats — 12 tiles */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
@@ -112,6 +112,7 @@ export default async function AIOSPage() {
             { label: '📈 Demand Forecasts', val: demandCount.count ?? 0, href: '/admin/demand-forecast' },
             { label: '🤝 Partnerships', val: partnershipsCount.count ?? 0, href: '/admin/partnerships' },
             { label: '📊 Performance', val: '→', href: '/admin/performance' },
+            { label: '🧠 Prompt Versions', val: promptVersionsCount.count ?? 0, href: '/admin/prompt-versions' },
             { label: '⏳ Pending', val: pendingCount.count ?? 0 },
           ].map((s, i) => (
             <a key={i} href={s.href ?? '#'} style={{
@@ -145,6 +146,7 @@ export default async function AIOSPage() {
           <a href="/admin/leads-feed" style={navLinkStyle}>Leads Feed</a>
           <a href="/admin/ad-builder" style={navLinkStyle}>Ad Builder</a>
           <a href="/admin/performance" style={navLinkStyle}>📊 Performance</a>
+          <a href="/admin/prompt-versions" style={navLinkStyle}>🧠 Prompts</a>
         </div>
       </div>
     </div>
