@@ -1,5 +1,5 @@
 // src/app/admin/ai-os/page.tsx
-// AI Operating System Dashboard with controls
+// AI Operating System Dashboard with controls — 9 teams, 35 agents
 
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import AIOSControls from './AIOSControls'
@@ -14,38 +14,41 @@ const TEAMS = {
   creative: { label: '🎨 Creative', color: '#C2410C' },
   operations: { label: '💼 Operations', color: '#1F5F3F' },
   strategic: { label: '🧠 Strategic', color: '#2c3e50' },
+  support: { label: '🛠️ Support', color: '#8B5CF6' },
+  intelligence: { label: '📊 Intelligence', color: '#0EA5E9' },
+  growth: { label: '🤝 Growth', color: '#10B981' },
 }
 
 export default async function AIOSPage() {
   const { data: agentsRaw } = await supabaseAdmin
-    .from('agent_registry')
-    .select('*')
-    .order('team', { ascending: true })
-    .order('agent_name', { ascending: true })
+    .from('agent_registry').select('*')
+    .order('team', { ascending: true }).order('agent_name', { ascending: true })
 
   type Agent = {
-    agent_name: string
-    team: string
-    display_name: string | null
-    description: string | null
-    enabled: boolean
-    schedule_cron: string | null
-    last_run_at: string | null
-    run_count: number
-    success_count: number
-    error_count: number
+    agent_name: string; team: string;
+    display_name: string | null; description: string | null;
+    enabled: boolean; schedule_cron: string | null;
+    last_run_at: string | null; run_count: number;
+    success_count: number; error_count: number;
   }
   const agents = (agentsRaw ?? []) as Agent[]
 
-  const [adsCount, reelsCount, qcCount, bookingDecisionsCount, briefsCount, playsCount, pendingCount, insightsCount] = await Promise.all([
+  const [
+    adsCount, reelsCount, qcCount, briefsCount, playsCount,
+    pendingCount, insightsCount,
+    pricingCount, fraudCount, demandCount, partnershipsCount,
+  ] = await Promise.all([
     supabaseAdmin.from('ad_creatives').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('reel_scripts').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('qc_reports').select('*', { count: 'exact', head: true }),
-    supabaseAdmin.from('booking_decisions').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('ceo_briefs').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('strategy_plays').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('agent_runs').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabaseAdmin.from('agent_insights').select('*', { count: 'exact', head: true }).eq('status', 'new').eq('priority', 'high'),
+    supabaseAdmin.from('pricing_suggestions').select('*', { count: 'exact', head: true }),
+    supabaseAdmin.from('fraud_alerts').select('*', { count: 'exact', head: true }),
+    supabaseAdmin.from('demand_forecasts').select('*', { count: 'exact', head: true }),
+    supabaseAdmin.from('partnership_opportunities').select('*', { count: 'exact', head: true }),
   ])
 
   const byTeam = new Map<string, Agent[]>()
@@ -57,10 +60,8 @@ export default async function AIOSPage() {
   return (
     <div dir="rtl" style={{
       fontFamily: 'Tahoma, Arial, sans-serif',
-      background: '#FAF7F0',
-      minHeight: '100vh',
-      padding: '24px 20px',
-      color: '#1a1a1a',
+      background: '#FAF7F0', minHeight: '100vh',
+      padding: '24px 20px', color: '#1a1a1a',
     }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <header style={{ marginBottom: 32, textAlign: 'center' }}>
@@ -68,11 +69,10 @@ export default async function AIOSPage() {
             🤖 Madmona AI Operating System
           </h1>
           <p style={{ color: '#666', marginTop: 8, fontSize: 14 }}>
-            {agents.length} agent بيشتغلوا 24/7 · مدير شركة بالكامل
+            {agents.length} agent عبر 9 فرق · مدير شركة بالكامل · 24/7
           </p>
         </header>
 
-        {/* High priority alert */}
         {(insightsCount.count ?? 0) > 0 && (
           <a href="/admin/insights" style={{
             display: 'block', background: '#C2410C', color: '#fff',
@@ -83,20 +83,22 @@ export default async function AIOSPage() {
           </a>
         )}
 
-        {/* Output stats */}
+        {/* Output stats — 11 tiles for everything AI produced */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-          gap: 12,
-          marginBottom: 24,
+          gap: 12, marginBottom: 24,
         }}>
           {[
             { label: '🎨 Ad Creatives', val: adsCount.count ?? 0, href: '/admin/ad-creatives' },
             { label: '🎬 Reel Scripts', val: reelsCount.count ?? 0, href: '/admin/reels' },
             { label: '✅ QC Reports', val: qcCount.count ?? 0, href: '/admin/qc-reports' },
-            { label: '📅 Booking Decisions', val: bookingDecisionsCount.count ?? 0 },
             { label: '🌅 CEO Briefs', val: briefsCount.count ?? 0, href: '/admin/ceo-briefs' },
             { label: '🧠 Strategy Plays', val: playsCount.count ?? 0, href: '/admin/strategy' },
+            { label: '💰 Pricing Suggs', val: pricingCount.count ?? 0 },
+            { label: '🚨 Fraud Alerts', val: fraudCount.count ?? 0, href: '/admin/fraud-alerts' },
+            { label: '📈 Demand Forecasts', val: demandCount.count ?? 0, href: '/admin/demand-forecast' },
+            { label: '🤝 Partnerships', val: partnershipsCount.count ?? 0, href: '/admin/partnerships' },
             { label: '⏳ Pending', val: pendingCount.count ?? 0 },
           ].map((s, i) => (
             <a key={i} href={s.href ?? '#'} style={{
@@ -110,7 +112,6 @@ export default async function AIOSPage() {
           ))}
         </div>
 
-        {/* Interactive controls (client-side) */}
         <AIOSControls
           agentsByTeam={Object.fromEntries(byTeam)}
           teams={TEAMS}
