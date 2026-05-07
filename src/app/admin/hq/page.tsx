@@ -12,16 +12,13 @@ export default async function HQPage() {
   monthAgo.setMonth(monthAgo.getMonth() - 1)
   const monthAgoIso = monthAgo.toISOString()
 
-  // Pull EVERYTHING in parallel
   const [
-    // AI OS data
     agentsRes, runsTodayRes, runs24hRes,
     adsRes, reelsRes, qcRes, briefsRes, playsRes,
     insightsRes, fraudRes, demandRes, partnershipsRes, pricingRes,
     promptVersionsRes, collabsRes, msgsRes,
     customerSuccessRes, emailResponsesRes, photoBriefsRes,
     contentRes, complaintsRes, recentRunsRes,
-    // Business data
     bookingsAllRes, bookingsRecentRes, suppliersAllRes,
     listingsAllRes, listingsTopRes,
     customersCountRes, reviewsRes, pushSubsRes,
@@ -54,14 +51,20 @@ export default async function HQPage() {
     supabaseAdmin.from('complaint_resolutions').select('*').order('created_at', { ascending: false }).limit(15),
     supabaseAdmin.from('agent_runs').select('id, agent_name, status, duration_ms, started_at, error_message')
       .order('started_at', { ascending: false }).limit(30),
-    // Business
     supabaseAdmin.from('marketplace_bookings').select('id, status, total_amount, commission_amount, created_at'),
     supabaseAdmin.from('marketplace_bookings').select(`
       id, reference_code, total_amount, status, created_at,
       listing:listings(title),
       supplier:marketplace_suppliers(business_name)
     `).order('created_at', { ascending: false }).limit(15),
-    supabaseAdmin.from('marketplace_suppliers').select('id, business_name, kyc_status, created_at, supplier_type').order('created_at', { ascending: false }),
+    // Suppliers WITH profile join (for name/phone display)
+    supabaseAdmin.from('marketplace_suppliers').select(`
+      id, profile_id, business_name, description, logo_url,
+      account_type, kyc_status, kyc_rejection_reason, commission_rate,
+      listings_count, bookings_count, total_revenue, rating, reviews_count,
+      created_at,
+      profile:profiles!marketplace_suppliers_profile_id_fkey(id, full_name, phone, email)
+    `).order('created_at', { ascending: false }),
     supabaseAdmin.from('listings').select('id, title, status, category_id, created_at'),
     supabaseAdmin.from('listings').select('id, title, slug, views_count, bookings_count, rating')
       .eq('status', 'published').order('views_count', { ascending: false }).limit(10),
@@ -76,7 +79,6 @@ export default async function HQPage() {
     supabaseAdmin.from('listing_categories').select('id, name_ar, slug').order('display_order'),
   ])
 
-  // Calculate financial metrics
   type Booking = { status: string; total_amount: number | string; commission_amount: number | string; created_at: string }
   const bookings = (bookingsAllRes.data ?? []) as Booking[]
   const finalized = bookings.filter(b => ['confirmed', 'active', 'completed'].includes(b.status))
@@ -98,7 +100,6 @@ export default async function HQPage() {
   return (
     <HQClient
       data={{
-        // AI OS
         agents: agentsRes.data ?? [],
         runs24hCount: runsTodayRes.count ?? 0,
         recentRuns: recentRunsRes.data ?? [],
@@ -121,7 +122,6 @@ export default async function HQPage() {
         photoBriefs: photoBriefsRes.data ?? [],
         content: contentRes.data ?? [],
         complaints: complaintsRes.data ?? [],
-        // Business KPIs
         kpis: {
           totalGMV, monthGMV, totalCommission, monthCommission,
           totalBookings: bookings.length,
@@ -142,7 +142,6 @@ export default async function HQPage() {
           notificationsCount: notificationsRes.count ?? 0,
           categoriesCount: (categoriesRes.data ?? []).length,
         },
-        // Business data
         bookingsRecent: bookingsRecentRes.data ?? [],
         suppliers: suppliersAllRes.data ?? [],
         topListings: listingsTopRes.data ?? [],
