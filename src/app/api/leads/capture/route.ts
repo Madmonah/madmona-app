@@ -1,12 +1,13 @@
 // src/app/api/leads/capture/route.ts
 // Public endpoint: capture a new lead from landing page
-// AI scoring + email runs SYNCHRONOUSLY (Vercel serverless kills void promises)
+// Pipeline: insert lead → AI score → notify owner → auto-WhatsApp if high-priority
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { sendEmail } from '@/lib/email'
 import { callClaude, parseJsonResponse } from '@/lib/anthropic'
 import { LEAD_QUALIFIER_PROMPT } from '@/lib/agent-prompts/lead-qualifier'
+import { sendText, isWhatsAppConfigured, upsertConversation } from '@/lib/whatsapp'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -28,6 +29,15 @@ function normalizeEgyptianPhone(phone: string): string {
   if (p.startsWith('0')) return '20' + p.slice(1)
   if (p.startsWith('1') && p.length === 10) return '20' + p
   return p
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  apartments: 'شقق وعقارات',
+  cars: 'سيارات',
+  cameras: 'كاميرات ومعدات تصوير',
+  coworking: 'مساحة عمل/كوورك',
+  event: 'معدات فعاليات',
+  other: 'حاجة تانية',
 }
 
 export async function POST(request: NextRequest) {
@@ -69,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     const leadId = leadIdRaw as string
 
-    // Run AI scoring SYNCHRONOUSLY (don't use void — Vercel kills the function before completing)
+    // ============ AI Scoring (synchronous) ============
     let scoringResult: {
       lead_score: number
       intent_suggested: string
@@ -110,33 +120,104 @@ export async function POST(request: NextRequest) {
       console.error('AI scoring failed:', err)
     }
 
-    // Email owner (synchronously, don't void)
-    const isHigh = scoringResult && scoringResult.lead_score >= 70
+    const isHigh = !!(scoringResult && scoringResult.lead_score >= 70)
+    const categoryLabel = body.category ? (CATEGORY_LABELS[body.category] ?? body.category) : null
+
+    // ============ Auto-WhatsApp (high-priority only, if configured) ============
+    let whatsappResult: { sent: boolean; error?: string } = { sent: false }
+    if (isHigh && isWhatsAppConfigured()) {
+      try {
+        const greeting = `أهلاً ${body.name.split(' ')[0]} 👋
+
+شكراً إنك سجلت على مضمونة!${categoryLabel ? `\nشفت إنك مهتم بـ ${categoryLabel}.` : ''}
+
+أنا من فريق مضمونة، وأنا هنا عشان أساعدك تلاقي اللي محتاجه بأفضل سعر وحماية كاملة.
+
+ابعتلي أي سؤال وأنا هرد فوراً 💬
+
+— احنا بتوع الإيجار 🤝`
+
+        const convId = await upsertConversation({
+          phone,
+          name: body.name,
+          contactType: 'customer_lead',
+          agentName: 'lead-auto-reply',
+        })
+
+        const send = await sendText({
+          to: phone,
+          body: greeting,
+          conversationId: convId ?? undefined,
+          agentName: 'lead-auto-reply',
+          aiGenerated: true,
+        })
+
+        whatsappResult = { sent: send.ok, error: send.error }
+
+        // Log to outreach_log
+        if (send.ok) {
+          await supabaseAdmin.from('outreach_log').insert({
+            agent_name: 'lead-auto-reply',
+            target_type: 'lead',
+            target_id: leadId,
+            channel: 'whatsapp',
+            phone,
+            message_text: greeting,
+            body: greeting,
+            status: 'sent',
+            sent_at: new Date().toISOString(),
+            external_id: send.wa_message_id ?? null,
+            model_used: 'claude-sonnet-4-5',
+            metadata: { lead_score: scoringResult?.lead_score },
+          } as never)
+        }
+      } catch (e) {
+        console.error('Auto-WhatsApp failed:', e)
+        whatsappResult = { sent: false, error: 'send failed' }
+      }
+    }
+
+    // ============ Email owner ============
     try {
       await sendEmail({
         to: 'madmona.admin@gmail.com',
         subject: isHigh
           ? `🔥 Lead عالي النية: ${body.name} (${scoringResult!.lead_score}/100)`
-          : `🎯 Lead جديد: ${body.name}${body.category ? ` (${body.category})` : ''}`,
-        html: `<div dir="rtl" style="font-family:Tahoma;padding:20px;max-width:500px">
-          <h2 style="color:${isHigh ? '#C2410C' : '#1F5F3F'}">${isHigh ? '🔥 Lead عالي النية!' : '🎯 Lead جديد!'}</h2>
-          <p><strong>الاسم:</strong> ${body.name}</p>
-          <p><strong>التليفون:</strong> <a href="https://wa.me/${phone}">+${phone}</a></p>
-          ${body.email ? `<p><strong>الإيميل:</strong> ${body.email}</p>` : ''}
-          ${body.category ? `<p><strong>الفئة:</strong> ${body.category}</p>` : ''}
-          ${body.message ? `<p><strong>الرسالة:</strong> ${body.message}</p>` : ''}
-          ${scoringResult ? `<p><strong>AI Score:</strong> ${scoringResult.lead_score}/100</p>
-          <p><strong>التحليل:</strong><br>${scoringResult.reasoning}</p>` : ''}
-          ${body.utm_source ? `<p style="color:#666;font-size:12px"><strong>المصدر:</strong> ${body.utm_source} / ${body.utm_campaign ?? 'organic'}</p>` : ''}
-          <p style="color:#999;font-size:11px;margin-top:24px">Lead ID: ${leadId}</p>
-          <p><a href="https://wa.me/${phone}" style="background:#25D366;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:bold">📱 ${isHigh ? 'كلمه فوراً!' : 'ابعت واتساب'}</a></p>
+          : `🎯 Lead جديد: ${body.name}${categoryLabel ? ` (${categoryLabel})` : ''}`,
+        html: `<div dir="rtl" style="font-family:Tahoma;padding:20px;max-width:560px;margin:0 auto">
+          <h2 style="color:${isHigh ? '#C2410C' : '#1F5F3F'};margin-top:0">${isHigh ? '🔥 Lead عالي النية!' : '🎯 Lead جديد!'}</h2>
+          
+          <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+            <tr><td style="padding:6px 0;color:#666;width:120px">الاسم:</td><td style="padding:6px 0"><strong>${body.name}</strong></td></tr>
+            <tr><td style="padding:6px 0;color:#666">التليفون:</td><td style="padding:6px 0"><a href="https://wa.me/${phone}" style="color:#1F5F3F;font-weight:bold">+${phone}</a></td></tr>
+            ${body.email ? `<tr><td style="padding:6px 0;color:#666">الإيميل:</td><td style="padding:6px 0">${body.email}</td></tr>` : ''}
+            ${categoryLabel ? `<tr><td style="padding:6px 0;color:#666">الفئة:</td><td style="padding:6px 0">${categoryLabel}</td></tr>` : ''}
+            ${body.message ? `<tr><td style="padding:6px 0;color:#666;vertical-align:top">الرسالة:</td><td style="padding:6px 0">${body.message}</td></tr>` : ''}
+          </table>
+
+          ${scoringResult ? `<div style="background:#FAF7F0;padding:16px;border-radius:8px;border-right:4px solid ${isHigh ? '#C2410C' : '#B8860B'};margin-bottom:20px">
+            <p style="margin:0 0 4px;color:#666;font-size:12px">AI Lead Score</p>
+            <p style="margin:0 0 8px;font-size:32px;font-weight:bold;color:${isHigh ? '#C2410C' : '#1F5F3F'}">${scoringResult.lead_score}/100</p>
+            <p style="margin:0;font-size:13px;line-height:1.6">${scoringResult.reasoning}</p>
+          </div>` : ''}
+
+          ${whatsappResult.sent ? `<div style="background:#d4edda;padding:12px;border-radius:8px;margin-bottom:16px">
+            <strong style="color:#155724">✅ رسالة ترحيب تلقائية اتبعت على واتساب</strong>
+          </div>` : whatsappResult.error ? `<div style="background:#fff3cd;padding:12px;border-radius:8px;margin-bottom:16px;font-size:13px;color:#856404">
+            ⚠️ Auto-WhatsApp مش شغال: ${whatsappResult.error}
+          </div>` : ''}
+
+          <a href="https://wa.me/${phone}?text=${encodeURIComponent(`أهلاً ${body.name}، أنا من مضمونة...`)}" style="display:inline-block;background:#25D366;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold">📱 ${isHigh ? 'كلمه دلوقتي!' : 'ابعت واتساب'}</a>
+
+          ${body.utm_source ? `<p style="color:#666;font-size:11px;margin-top:24px;border-top:1px solid #eee;padding-top:12px"><strong>المصدر:</strong> ${body.utm_source} / ${body.utm_campaign ?? 'organic'}</p>` : ''}
+          <p style="color:#999;font-size:10px">Lead ID: ${leadId}</p>
         </div>`,
       })
     } catch (e) {
       console.error('Email failed:', e)
     }
 
-    // Log insight if high priority
+    // ============ Log insight (high-priority) ============
     if (isHigh && scoringResult) {
       try {
         await supabaseAdmin.from('agent_insights').insert({
@@ -146,7 +227,7 @@ export async function POST(request: NextRequest) {
           description: `Score: ${scoringResult.lead_score}. ${scoringResult.reasoning}`,
           priority: scoringResult.priority === 'high' ? 'high' : 'medium',
           recommended_action: `كلمه فوراً على ${phone}`,
-          data_points: { lead_id: leadId, ...scoringResult },
+          data_points: { lead_id: leadId, ...scoringResult, whatsapp_sent: whatsappResult.sent },
         } as never)
       } catch (e) {
         console.error('Insight log failed:', e)

@@ -3,9 +3,11 @@
 // src/app/ad-landing/page.tsx
 // Landing page optimized for Meta ads (Facebook/Instagram)
 // Captures leads → triggers AI follow-up agents
+// Fires Meta Pixel "Lead" event on successful submission for ad attribution
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { pixelEvents } from '@/components/analytics/MetaPixel'
 
 const CATEGORIES = [
   { id: 'apartments', label: 'شقق وعقارات', icon: '🏠' },
@@ -50,6 +52,12 @@ function AdLandingForm() {
         setSubmitting(false)
         return
       }
+
+      // Fire Meta Pixel Lead event for ad attribution
+      try {
+        pixelEvents.lead(category || undefined)
+      } catch {}
+
       setSuccess(true)
     } catch {
       setError('حصل خطأ في الاتصال')
@@ -80,7 +88,7 @@ function AdLandingForm() {
           <div style={{ fontSize: '64px', marginBottom: '16px' }}>✅</div>
           <h1 style={{ color: '#1F5F3F', fontSize: '28px', marginBottom: '12px' }}>تم! استلمنا بياناتك</h1>
           <p style={{ color: '#444', fontSize: '17px', lineHeight: 1.6, marginBottom: '24px' }}>
-            هنتواصل معاك في أقل من ساعة على رقم <strong>{phone}</strong>
+            هنتواصل معاك في أقل من ساعة على رقم <strong dir="ltr">{phone}</strong>
           </p>
           <a
             href={`https://wa.me/201002229982?text=${encodeURIComponent('أهلاً، سجلت اسمي على مضمونة وعايز أعرف تفاصيل أكتر')}`}
@@ -114,7 +122,6 @@ function AdLandingForm() {
       padding: '20px',
       fontFamily: 'Tajawal, Tahoma, sans-serif',
     }}>
-      {/* Hero */}
       <div style={{
         maxWidth: '520px',
         margin: '0 auto',
@@ -147,7 +154,6 @@ function AdLandingForm() {
           احنا بتوع الإيجار 🤝
         </p>
 
-        {/* Form Card */}
         <div style={{
           background: '#FAF7F0',
           padding: '28px 24px',
@@ -272,7 +278,6 @@ function AdLandingForm() {
           </form>
         </div>
 
-        {/* Trust badges */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr',
@@ -292,13 +297,11 @@ function AdLandingForm() {
           ))}
         </div>
 
-        {/* Social proof */}
         <div style={{ textAlign: 'center', color: '#FAF7F0', opacity: 0.7, marginTop: '32px', fontSize: '13px' }}>
           <p style={{ margin: 0 }}>+200 إعلان · مؤجرين معتمدين · مدفوعات آمنة</p>
         </div>
       </div>
 
-      {/* WhatsApp floating button */}
       <a
         href="https://wa.me/201002229982"
         target="_blank"

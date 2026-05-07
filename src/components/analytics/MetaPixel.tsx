@@ -94,4 +94,8 @@ export const pixelEvents = {
 
   contact: () =>
     trackPixelEvent('Contact'),
+
+  // Lead capture from ad landing — most important for ad attribution
+  lead: (category?: string) =>
+    trackPixelEvent('Lead', category ? { content_category: category } : {}),
 }
