@@ -1,5 +1,5 @@
 // src/app/admin/ai-os/page.tsx
-// AI Operating System Dashboard — 9 teams, 40+ agents, full controls + perf
+// AI Operating System Dashboard — 9 teams, 43 agents, full controls
 
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import AIOSControls from './AIOSControls'
@@ -36,8 +36,8 @@ export default async function AIOSPage() {
   const [
     adsCount, reelsCount, qcCount, briefsCount, playsCount,
     pendingCount, insightsCount,
-    pricingCount, fraudCount, demandCount, partnershipsCount,
-    promptVersionsCount,
+    fraudCount, demandCount, partnershipsCount,
+    promptVersionsCount, collabsCount,
   ] = await Promise.all([
     supabaseAdmin.from('ad_creatives').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('reel_scripts').select('*', { count: 'exact', head: true }),
@@ -46,11 +46,11 @@ export default async function AIOSPage() {
     supabaseAdmin.from('strategy_plays').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('agent_runs').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabaseAdmin.from('agent_insights').select('*', { count: 'exact', head: true }).eq('status', 'new').eq('priority', 'high'),
-    supabaseAdmin.from('pricing_suggestions').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('fraud_alerts').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('demand_forecasts').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('partnership_opportunities').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('prompt_versions').select('*', { count: 'exact', head: true }).eq('is_active', false),
+    supabaseAdmin.from('agent_collaborations').select('*', { count: 'exact', head: true }).eq('status', 'active'),
   ])
 
   const byTeam = new Map<string, Agent[]>()
@@ -88,14 +88,24 @@ export default async function AIOSPage() {
         {(promptVersionsCount.count ?? 0) > 0 && (
           <a href="/admin/prompt-versions" style={{
             display: 'block', background: '#0EA5E9', color: '#fff',
-            padding: 14, borderRadius: 12, marginBottom: 16,
+            padding: 14, borderRadius: 12, marginBottom: 12,
             textDecoration: 'none', fontWeight: 'bold', textAlign: 'center',
           }}>
             🧠 {promptVersionsCount.count} prompt جديد محسّن من Prompt Optimizer — راجعهم
           </a>
         )}
 
-        {/* Output stats — 12 tiles */}
+        <a href="/admin/collaborations" style={{
+          display: 'block',
+          background: 'linear-gradient(135deg, #1F5F3F 0%, #10B981 100%)',
+          color: '#fff', padding: 14, borderRadius: 12, marginBottom: 16,
+          textDecoration: 'none', fontWeight: 'bold', textAlign: 'center',
+        }}>
+          🎯 NEW: Agent Collaborations — اطلق Orchestrator يخطط ويوزّع التاسكات
+          {(collabsCount.count ?? 0) > 0 && ` · ${collabsCount.count} active`}
+        </a>
+
+        {/* Output stats */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
@@ -107,12 +117,12 @@ export default async function AIOSPage() {
             { label: '✅ QC Reports', val: qcCount.count ?? 0, href: '/admin/qc-reports' },
             { label: '🌅 CEO Briefs', val: briefsCount.count ?? 0, href: '/admin/ceo-briefs' },
             { label: '🧠 Strategy Plays', val: playsCount.count ?? 0, href: '/admin/strategy' },
-            { label: '💰 Pricing Suggs', val: pricingCount.count ?? 0 },
             { label: '🚨 Fraud Alerts', val: fraudCount.count ?? 0, href: '/admin/fraud-alerts' },
             { label: '📈 Demand Forecasts', val: demandCount.count ?? 0, href: '/admin/demand-forecast' },
             { label: '🤝 Partnerships', val: partnershipsCount.count ?? 0, href: '/admin/partnerships' },
             { label: '📊 Performance', val: '→', href: '/admin/performance' },
             { label: '🧠 Prompt Versions', val: promptVersionsCount.count ?? 0, href: '/admin/prompt-versions' },
+            { label: '🎯 Collaborations', val: collabsCount.count ?? 0, href: '/admin/collaborations' },
             { label: '⏳ Pending', val: pendingCount.count ?? 0 },
           ].map((s, i) => (
             <a key={i} href={s.href ?? '#'} style={{
@@ -144,9 +154,9 @@ export default async function AIOSPage() {
         <div style={{ marginTop: 24, textAlign: 'center', display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <a href="/admin/marketing-hq" style={navLinkStyle}>← Marketing HQ</a>
           <a href="/admin/leads-feed" style={navLinkStyle}>Leads Feed</a>
-          <a href="/admin/ad-builder" style={navLinkStyle}>Ad Builder</a>
           <a href="/admin/performance" style={navLinkStyle}>📊 Performance</a>
           <a href="/admin/prompt-versions" style={navLinkStyle}>🧠 Prompts</a>
+          <a href="/admin/collaborations" style={navLinkStyle}>🎯 Collaborations</a>
         </div>
       </div>
     </div>

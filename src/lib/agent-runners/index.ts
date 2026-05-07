@@ -31,6 +31,8 @@ import {
   runEmailResponder, runListingPhotographer,
 } from './phase5-runners'
 
+import { runOrchestrator } from './phase6-runners'
+
 async function logRun(args: {
   agentName: string; triggerType: string;
   status: 'started' | 'success' | 'error';
@@ -273,6 +275,8 @@ const RUNNERS: Record<string, (args?: Record<string, unknown>) => Promise<Record
   'customer-success-agent': runCustomerSuccessAgent as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
   'email-responder': runEmailResponder as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
   'listing-photographer': runListingPhotographer as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
+  // Phase 6 — Inter-Agent Communication
+  'orchestrator': runOrchestrator as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
 }
 
 export async function dispatchAgent(agentName: string, args?: Record<string, unknown>): Promise<AgentResult> {
