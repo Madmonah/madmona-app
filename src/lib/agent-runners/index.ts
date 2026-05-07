@@ -3,7 +3,6 @@
 
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { callClaude, parseJsonResponse } from '@/lib/anthropic'
-import { sendEmail } from '@/lib/email'
 
 import { SUPPLIER_HUNTER_PROMPT } from '@/lib/agent-prompts/supplier-hunter'
 import { LISTING_OPTIMIZER_PROMPT } from '@/lib/agent-prompts/listing-optimizer'
@@ -14,125 +13,90 @@ import { TREND_SPOTTER_PROMPT } from '@/lib/agent-prompts/trend-spotter'
 import { COMPETITOR_WATCHER_PROMPT } from '@/lib/agent-prompts/competitor-watcher'
 import { CONTENT_MARKETING_PROMPT } from '@/lib/agent-prompts/content-marketing'
 
-// Phase 2 — Creative + Operations + Strategic
 import {
-  runAdDesigner,
-  runReelScriptWriter,
-  runCarouselDesigner,
-  runBookingManager,
-  runQualityControl,
-  runFinanceTracker,
-  runCEOAssistant,
-  runStrategyAgent,
+  runAdDesigner, runReelScriptWriter, runCarouselDesigner,
+  runBookingManager, runQualityControl, runFinanceTracker,
+  runCEOAssistant, runStrategyAgent,
 } from './ai-os-runners'
 
-// Phase 4 — Support + Intelligence + Growth
 import {
-  runComplaintResolver,
-  runDisputeMediator,
-  runPricingOptimizer,
-  runFraudDetector,
-  runDemandForecaster,
-  runPartnershipScout,
+  runComplaintResolver, runDisputeMediator, runPricingOptimizer,
+  runFraudDetector, runDemandForecaster, runPartnershipScout,
   runContentPersonalizer,
 } from './phase4-runners'
 
-const OWNER_EMAIL = 'madmona.admin@gmail.com'
+import {
+  runPromptOptimizer, runPerformanceTracker, runRevenueAttribution,
+  runCompetitorPricingSpy, runCustomerSuccessAgent,
+  runEmailResponder, runListingPhotographer,
+} from './phase5-runners'
 
 async function logRun(args: {
-  agentName: string
-  triggerType: string
-  status: 'started' | 'success' | 'error'
-  inputPayload?: Record<string, unknown>
+  agentName: string; triggerType: string;
+  status: 'started' | 'success' | 'error';
+  inputPayload?: Record<string, unknown>;
 }): Promise<string | undefined> {
   if (args.status === 'started') {
-    const { data } = await supabaseAdmin
-      .from('agent_runs')
-      .insert({
-        agent_name: args.agentName,
-        trigger_type: args.triggerType,
-        status: args.status,
-        input_payload: args.inputPayload ?? null,
-      } as never)
-      .select('id')
-      .single()
+    const { data } = await supabaseAdmin.from('agent_runs').insert({
+      agent_name: args.agentName, trigger_type: args.triggerType,
+      status: args.status, input_payload: args.inputPayload ?? null,
+    } as never).select('id').single()
     return (data as { id?: string } | null)?.id
   }
   return undefined
 }
 
 async function updateRun(runId: string, args: {
-  status: 'success' | 'error'
-  outputSummary?: Record<string, unknown>
-  errorMessage?: string
-  durationMs: number
+  status: 'success' | 'error';
+  outputSummary?: Record<string, unknown>;
+  errorMessage?: string; durationMs: number;
 }): Promise<void> {
-  await supabaseAdmin
-    .from('agent_runs')
-    .update({
-      status: args.status,
-      finished_at: new Date().toISOString(),
-      duration_ms: args.durationMs,
-      output_summary: args.outputSummary ?? null,
-      error_message: args.errorMessage ?? null,
-    } as never)
-    .eq('id', runId)
+  await supabaseAdmin.from('agent_runs').update({
+    status: args.status, finished_at: new Date().toISOString(),
+    duration_ms: args.durationMs,
+    output_summary: args.outputSummary ?? null,
+    error_message: args.errorMessage ?? null,
+  } as never).eq('id', runId)
 }
 
 async function markRan(agentName: string, success: boolean): Promise<void> {
-  await supabaseAdmin.rpc('mark_agent_ran', {
-    p_agent_name: agentName,
-    p_success: success,
-  })
+  await supabaseAdmin.rpc('mark_agent_ran', { p_agent_name: agentName, p_success: success })
 }
 
 export interface AgentResult {
-  success: boolean
-  agent: string
-  output_summary?: Record<string, unknown>
-  error?: string
-  duration_ms: number
+  success: boolean; agent: string;
+  output_summary?: Record<string, unknown>;
+  error?: string; duration_ms: number;
 }
 
-// CONTENT MARKETING
 async function runContentMarketing(): Promise<Record<string, unknown>> {
   const today = new Date().toISOString().split('T')[0]
   const day = new Date().getDate()
   const mod = day % 3
-  const categoryHint = mod === 1 ? 'A (Marketplace)' : mod === 2 ? 'B (Coworking)' : 'C (Brand)'
+  const categoryHint = mod === 1 ? 'A' : mod === 2 ? 'B' : 'C'
   const { count: totalListings } = await supabaseAdmin.from('listings').select('*', { count: 'exact', head: true })
   const { count: totalSuppliers } = await supabaseAdmin.from('marketplace_suppliers').select('*', { count: 'exact', head: true })
-  const userMessage = `النهارده ${today}. اعمل بوست من فئة: ${categoryHint}.
-السياق: ${totalListings} إعلان، ${totalSuppliers} مؤجر.
-اكتب بوست أصلي مش متكرر.`
   const text = await callClaude({
     systemPrompt: CONTENT_MARKETING_PROMPT,
-    userMessage, maxTokens: 2048, temperature: 0.85,
+    userMessage: `${today}, ${categoryHint}, ${totalListings} listings, ${totalSuppliers} suppliers`,
+    maxTokens: 2048, temperature: 0.85,
   })
   const post = parseJsonResponse<{
     category: string; topic: string; headline: string; caption: string;
-    hashtags: string[]; cta: string; design_brief: string; best_posting_time: string;
+    hashtags: string[]; cta: string; design_brief: string;
   }>(text)
-  const { data: contentRow } = await supabaseAdmin
-    .from('content_calendar').insert({
-      content_type: 'instagram_post', title: post.topic, body: post.caption,
-      hashtags: post.hashtags, cta: post.cta, design_brief: post.design_brief,
-      status: 'drafted', agent_name: 'content-marketing', category: post.category,
-      language: 'ar', metadata: { headline: post.headline, best_posting_time: post.best_posting_time },
-    } as never).select('id').single()
-  const contentId = (contentRow as { id?: string } | null)?.id
-  await sendEmail({
-    to: OWNER_EMAIL,
-    subject: `📝 بوست النهارده — ${post.topic}`,
-    html: `<div dir="rtl" style="font-family:Tahoma;padding:20px"><h2 style="color:#1F5F3F">${post.topic}</h2><div style="background:#FAF7F0;padding:16px;border-radius:8px;white-space:pre-wrap">${post.caption}</div><p>Content ID: ${contentId}</p></div>`,
-  })
-  return { topic: post.topic, content_id: contentId }
+  const { data } = await supabaseAdmin.from('content_calendar').insert({
+    content_type: 'instagram_post', title: post.topic, body: post.caption,
+    hashtags: post.hashtags, cta: post.cta, design_brief: post.design_brief,
+    status: 'drafted', agent_name: 'content-marketing', category: post.category,
+    language: 'ar', metadata: { headline: post.headline },
+  } as never).select('id').single()
+  return { topic: post.topic, content_id: (data as { id?: string } | null)?.id }
 }
 
 async function runAnalyticsReporter(): Promise<Record<string, unknown>> {
   const { data: kpis } = await supabaseAdmin.rpc('compute_daily_kpis')
-  const k = (kpis ?? {}) as Record<string, unknown>
-  return k
+  return (kpis ?? {}) as Record<string, unknown>
 }
 
 async function runSupplierHunter(): Promise<Record<string, unknown>> {
@@ -144,13 +108,7 @@ async function runSupplierHunter(): Promise<Record<string, unknown>> {
     }),
     maxTokens: 1500, temperature: 0.7,
   })
-  const result = parseJsonResponse<Record<string, unknown>>(text)
-  await sendEmail({
-    to: OWNER_EMAIL,
-    subject: `🎯 صياد المؤجرين — ${result.target_niche ?? 'فرصة جديدة'}`,
-    html: `<div dir="rtl" style="font-family:Tahoma;padding:20px"><h2>${result.target_niche ?? ''}</h2><p>${result.value_proposition ?? ''}</p></div>`,
-  })
-  return { niche: result.target_niche }
+  return parseJsonResponse<Record<string, unknown>>(text)
 }
 
 async function runSupplierOnboarding(): Promise<Record<string, unknown>> { return { skipped: true } }
@@ -163,6 +121,7 @@ async function runUpsell(): Promise<Record<string, unknown>> { return { skipped:
 async function runFollowUp(): Promise<Record<string, unknown>> { return { skipped: true } }
 async function runReviewGenerator(): Promise<Record<string, unknown>> { return { skipped: true } }
 async function runReferralAgent(): Promise<Record<string, unknown>> { return { sent: 0 } }
+async function runCustomerConcierge(): Promise<Record<string, unknown>> { return { skipped: true } }
 
 async function runListingOptimizer(): Promise<Record<string, unknown>> {
   const { data: listings } = await supabaseAdmin
@@ -171,17 +130,16 @@ async function runListingOptimizer(): Promise<Record<string, unknown>> {
   type L = Record<string, unknown> & { id: string; title: string }
   const rows = (listings ?? []) as L[]
   if (rows.length === 0) return { count: 0 }
-  const recommendations: Array<Record<string, unknown>> = []
+  const recs: Array<Record<string, unknown>> = []
   for (const l of rows) {
     const text = await callClaude({
       systemPrompt: LISTING_OPTIMIZER_PROMPT,
       userMessage: JSON.stringify({ listing: l }),
       maxTokens: 1500, temperature: 0.6,
     })
-    const out = parseJsonResponse<Record<string, unknown>>(text)
-    recommendations.push({ listing_id: l.id, listing_title: l.title, ...out })
+    recs.push({ listing_id: l.id, ...parseJsonResponse<Record<string, unknown>>(text) })
   }
-  return { count: recommendations.length }
+  return { count: recs.length }
 }
 
 async function runSeoAgent(): Promise<Record<string, unknown>> {
@@ -194,8 +152,7 @@ async function runSeoAgent(): Promise<Record<string, unknown>> {
     userMessage: JSON.stringify({ top_categories: counts }),
     maxTokens: 2000, temperature: 0.5,
   })
-  const out = parseJsonResponse<Record<string, unknown>>(text)
-  return { recommendations_count: Object.keys(out).length }
+  return parseJsonResponse<Record<string, unknown>>(text)
 }
 
 async function runWhatsappBroadcaster(): Promise<Record<string, unknown>> {
@@ -213,10 +170,9 @@ async function runWhatsappBroadcaster(): Promise<Record<string, unknown>> {
     campaign_type: 'whatsapp', status: 'draft',
     audience_segment: (out.audience as string) ?? 'active_customers',
     message_template: (out.message_template as string) ?? '',
-    ai_generated: true, agent_name: 'whatsapp-broadcaster',
-    channel_meta: out,
+    ai_generated: true, agent_name: 'whatsapp-broadcaster', channel_meta: out,
   } as never)
-  return { drafted: true, campaign: out.campaign_name }
+  return { drafted: true }
 }
 
 async function runEmailCampaigner(): Promise<Record<string, unknown>> {
@@ -242,7 +198,7 @@ async function runTrendSpotter(): Promise<Record<string, unknown>> {
   ;((cats ?? []) as C[]).forEach(c => { counts[c.category_id] = (counts[c.category_id] ?? 0) + 1 })
   const text = await callClaude({
     systemPrompt: TREND_SPOTTER_PROMPT,
-    userMessage: JSON.stringify({ category_listings_count: counts, category_searches_today: [] }),
+    userMessage: JSON.stringify({ category_listings_count: counts }),
     maxTokens: 1500, temperature: 0.6,
   })
   const out = parseJsonResponse<Record<string, unknown>>(text)
@@ -267,8 +223,7 @@ async function runCompetitorWatcher(): Promise<Record<string, unknown>> {
     userMessage: JSON.stringify({ category: 'كاميرات', our_pricing_data: { avg_price_per_day: 250 } }),
     maxTokens: 1500, temperature: 0.5,
   })
-  const out = parseJsonResponse<Record<string, unknown>>(text)
-  return out
+  return parseJsonResponse<Record<string, unknown>>(text)
 }
 
 const RUNNERS: Record<string, (args?: Record<string, unknown>) => Promise<Record<string, unknown>>> = {
@@ -284,6 +239,7 @@ const RUNNERS: Record<string, (args?: Record<string, unknown>) => Promise<Record
   'cart-abandoner': runCartAbandoner,
   'upsell-agent': runUpsell,
   'follow-up-agent': runFollowUp,
+  'customer-concierge': runCustomerConcierge,
   'listing-optimizer': runListingOptimizer,
   'seo-agent': runSeoAgent,
   'whatsapp-broadcaster': runWhatsappBroadcaster,
@@ -301,7 +257,7 @@ const RUNNERS: Record<string, (args?: Record<string, unknown>) => Promise<Record
   'finance-tracker': runFinanceTracker,
   'ceo-assistant': runCEOAssistant,
   'strategy-agent': runStrategyAgent,
-  // Phase 4 — Support + Intelligence + Growth
+  // Phase 4
   'complaint-resolver': runComplaintResolver as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
   'dispute-mediator': runDisputeMediator as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
   'pricing-optimizer': runPricingOptimizer as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
@@ -309,6 +265,14 @@ const RUNNERS: Record<string, (args?: Record<string, unknown>) => Promise<Record
   'demand-forecaster': runDemandForecaster,
   'partnership-scout': runPartnershipScout,
   'content-personalizer': runContentPersonalizer as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
+  // Phase 5 — Self-Improvement
+  'prompt-optimizer': runPromptOptimizer as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
+  'performance-tracker': runPerformanceTracker,
+  'revenue-attribution-agent': runRevenueAttribution as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
+  'competitor-pricing-spy': runCompetitorPricingSpy,
+  'customer-success-agent': runCustomerSuccessAgent as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
+  'email-responder': runEmailResponder as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
+  'listing-photographer': runListingPhotographer as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
 }
 
 export async function dispatchAgent(agentName: string, args?: Record<string, unknown>): Promise<AgentResult> {
@@ -317,9 +281,7 @@ export async function dispatchAgent(agentName: string, args?: Record<string, unk
   if (!runner) {
     return { success: false, agent: agentName, error: 'Unknown agent', duration_ms: 0 }
   }
-  const runId = await logRun({
-    agentName, triggerType: 'scheduler', status: 'started',
-  })
+  const runId = await logRun({ agentName, triggerType: 'scheduler', status: 'started' })
   try {
     const summary = await runner(args)
     const duration = Date.now() - start

@@ -1,5 +1,5 @@
 // src/app/api/admin/insight-action/route.ts
-// Mark insight as actioned/dismissed/reviewed
+// Mark insight as actioned/dismissed/reviewed + record feedback signal
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
@@ -28,6 +28,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'invalid action' }, { status: 400 })
   }
 
+  // Get the insight first to know which agent created it (for feedback signal)
+  const { data: insight } = await supabaseAdmin
+    .from('agent_insights')
+    .select('agent_name')
+    .eq('id', body.insight_id)
+    .maybeSingle()
+
   const { error } = await supabaseAdmin
     .from('agent_insights')
     .update({
@@ -42,6 +49,19 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // Record feedback signal for the agent that created this insight (Phase 5 learning loop)
+  type I = { agent_name: string }
+  const sourceAgent = (insight as I | null)?.agent_name
+  if (sourceAgent) {
+    await supabaseAdmin.from('feedback_signals').insert({
+      agent_name: sourceAgent,
+      output_table: 'agent_insights',
+      output_id: body.insight_id,
+      signal_type: body.action === 'reviewed' ? 'approved' : body.action,
+      signal_value: body.note ?? null,
+    } as never)
   }
 
   return NextResponse.json({ success: true, insight_id: body.insight_id, action: body.action })
