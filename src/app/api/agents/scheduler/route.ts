@@ -1,15 +1,15 @@
 // src/app/api/agents/scheduler/route.ts
-// Master scheduler — runs every hour, picks 3-5 agents that are due, runs them.
-// Replaces the need for individual cron jobs (Hobby plan limit).
+// Master scheduler — runs once daily, picks all due agents, runs them sequentially.
+// Hobby plan limit: 1 cron/day max.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { dispatchAgent } from '@/lib/agent-runners'
 
 export const runtime = 'nodejs'
-export const maxDuration = 60
+export const maxDuration = 300
 
-const MAX_AGENTS_PER_RUN = 5
+const MAX_AGENTS_PER_RUN = 17
 
 function checkAuth(request: NextRequest, useCron: boolean): boolean {
   const auth = request.headers.get('authorization')
@@ -29,7 +29,6 @@ export async function POST(request: NextRequest) {
   if (!checkAuth(request, false)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  // Allow manual override
   let body: { agent?: string; max?: number } = {}
   try { body = await request.json() } catch {}
 

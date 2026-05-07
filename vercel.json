@@ -12,7 +12,7 @@
   "crons": [
     {
       "path": "/api/agents/scheduler",
-      "schedule": "0 * * * *"
+      "schedule": "0 9 * * *"
     },
     {
       "path": "/api/agents/daily-report",
