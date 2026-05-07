@@ -11,16 +11,12 @@
   ],
   "crons": [
     {
-      "path": "/api/agents/content-marketing",
-      "schedule": "0 6 * * *"
+      "path": "/api/agents/scheduler",
+      "schedule": "0 * * * *"
     },
     {
       "path": "/api/agents/daily-report",
       "schedule": "0 20 * * *"
-    },
-    {
-      "path": "/api/agents/supplier-outreach",
-      "schedule": "0 9 * * *"
     }
   ],
   "headers": [

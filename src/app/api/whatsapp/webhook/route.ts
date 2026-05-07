@@ -1,22 +1,14 @@
 // src/app/api/whatsapp/webhook/route.ts
 // WhatsApp Cloud API webhook handler
-//
-// Meta sends 2 types of POST events here:
-//   1. Message status updates (sent/delivered/read/failed)
-//   2. Inbound messages from customers
-//
-// GET requests are used by Meta to verify webhook ownership
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
-import { upsertConversation, logInboundMessage } from '@/lib/whatsapp'
+import { upsertConversation, logInboundMessage, sendText, getConversationHistory } from '@/lib/whatsapp'
+import { callClaude, parseJsonResponse } from '@/lib/anthropic'
+import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
-
-// ============================================================================
-// GET — webhook verification (Meta calls this once to confirm we own the URL)
-// ============================================================================
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -32,13 +24,8 @@ export async function GET(request: NextRequest) {
       headers: { 'Content-Type': 'text/plain' },
     })
   }
-
   return NextResponse.json({ error: 'verification failed' }, { status: 403 })
 }
-
-// ============================================================================
-// POST — receive events
-// ============================================================================
 
 interface WhatsAppWebhookPayload {
   object: string
@@ -46,8 +33,6 @@ interface WhatsAppWebhookPayload {
     id: string
     changes: Array<{
       value: {
-        messaging_product?: string
-        metadata?: { display_phone_number?: string; phone_number_id?: string }
         contacts?: Array<{ profile?: { name?: string }; wa_id: string }>
         messages?: Array<{
           from: string
@@ -59,7 +44,7 @@ interface WhatsAppWebhookPayload {
           interactive?: {
             type: string
             button_reply?: { id: string; title: string }
-            list_reply?: { id: string; title: string; description?: string }
+            list_reply?: { id: string; title: string }
           }
         }>
         statuses?: Array<{
@@ -83,15 +68,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'invalid json' }, { status: 400 })
   }
 
-  // Always return 200 quickly to Meta — process async
-  // (Meta will retry if we return non-2xx, leading to duplicates)
   try {
     await processPayload(payload)
   } catch (err) {
     console.error('WhatsApp webhook processing error:', err)
-    // still return 200 to prevent retries
   }
-
   return NextResponse.json({ ok: true })
 }
 
@@ -101,15 +82,11 @@ async function processPayload(payload: WhatsAppWebhookPayload): Promise<void> {
   for (const entry of payload.entry ?? []) {
     for (const change of entry.changes ?? []) {
       const value = change.value
-
-      // Inbound messages
       if (value.messages) {
         for (const msg of value.messages) {
           await handleInboundMessage(msg, value.contacts)
         }
       }
-
-      // Status updates
       if (value.statuses) {
         for (const status of value.statuses) {
           await handleStatusUpdate(status)
@@ -126,7 +103,6 @@ async function handleInboundMessage(
   const fromPhone = msg.from
   const contactName = contacts?.find((c) => c.wa_id === fromPhone)?.profile?.name
 
-  // Extract body based on message type
   let body = ''
   let messageType: string = msg.type
   if (msg.type === 'text' && msg.text) {
@@ -146,10 +122,7 @@ async function handleInboundMessage(
     body = `[unsupported message type: ${msg.type}]`
   }
 
-  // Find related supplier/profile
   const related = await findRelated(fromPhone)
-
-  // Upsert conversation
   const conversationId = await upsertConversation({
     phone: fromPhone,
     name: contactName,
@@ -157,21 +130,62 @@ async function handleInboundMessage(
     supplierId: related.supplierId,
     profileId: related.profileId,
   })
+  if (!conversationId) return
 
-  if (!conversationId) {
-    console.error('Failed to upsert conversation for', fromPhone)
-    return
+  await logInboundMessage({ conversationId, wa_message_id: msg.id, body, messageType })
+
+  // Trigger Customer Concierge to reply (realtime)
+  if (msg.type === 'text' || messageType === 'button_reply' || messageType === 'list_reply') {
+    await triggerCustomerConcierge({
+      conversationId,
+      contactType: related.contactType,
+      currentMessage: body,
+    })
   }
+}
 
-  await logInboundMessage({
-    conversationId,
-    wa_message_id: msg.id,
-    body,
-    messageType,
-  })
+async function triggerCustomerConcierge(args: {
+  conversationId: string
+  contactType: string
+  currentMessage: string
+}): Promise<void> {
+  try {
+    const history = await getConversationHistory(args.conversationId, 15)
 
-  // Trigger any auto-responder agents here in the future
-  // (e.g., if conversation has agent_name = 'lead-conversion', call that agent)
+    // Get conversation phone for sending reply
+    const { data: conv } = await supabaseAdmin
+      .from('whatsapp_conversations')
+      .select('contact_phone')
+      .eq('id', args.conversationId)
+      .single()
+    type C = { contact_phone: string }
+    const cv = conv as C | null
+    if (!cv?.contact_phone) return
+
+    const text = await callClaude({
+      systemPrompt: CUSTOMER_CONCIERGE_PROMPT,
+      userMessage: JSON.stringify({
+        conversation_history: history,
+        contact_type: args.contactType,
+        current_message: args.currentMessage,
+      }),
+      maxTokens: 1024,
+      temperature: 0.7,
+    })
+    const out = parseJsonResponse<{ reply: string; needs_human_handoff?: boolean }>(text)
+
+    if (out.reply && !out.needs_human_handoff) {
+      await sendText({
+        to: cv.contact_phone,
+        body: out.reply,
+        conversationId: args.conversationId,
+        agentName: 'customer-concierge',
+        aiGenerated: true,
+      })
+    }
+  } catch (err) {
+    console.error('Customer concierge auto-reply failed:', err)
+  }
 }
 
 async function findRelated(phone: string): Promise<{
@@ -179,34 +193,24 @@ async function findRelated(phone: string): Promise<{
   supplierId?: string
   profileId?: string
 }> {
-  // Try matching by phone in profiles
   const { data: profile } = await supabaseAdmin
     .from('profiles')
     .select('id')
     .eq('phone', phone)
     .maybeSingle()
-
-  type ProfileRow = { id: string }
-  const profileRow = profile as ProfileRow | null
-
-  if (profileRow?.id) {
-    const { data: supplier } = await supabaseAdmin
+  type P = { id: string }
+  const pr = profile as P | null
+  if (pr?.id) {
+    const { data: s } = await supabaseAdmin
       .from('marketplace_suppliers')
       .select('id')
-      .eq('profile_id', profileRow.id)
+      .eq('profile_id', pr.id)
       .maybeSingle()
-    type SupplierRow = { id: string }
-    const supplierRow = supplier as SupplierRow | null
-    if (supplierRow?.id) {
-      return {
-        contactType: 'existing_supplier',
-        supplierId: supplierRow.id,
-        profileId: profileRow.id,
-      }
-    }
-    return { contactType: 'existing_customer', profileId: profileRow.id }
+    type S = { id: string }
+    const sr = s as S | null
+    if (sr?.id) return { contactType: 'existing_supplier', supplierId: sr.id, profileId: pr.id }
+    return { contactType: 'existing_customer', profileId: pr.id }
   }
-
   return { contactType: 'unknown' }
 }
 
