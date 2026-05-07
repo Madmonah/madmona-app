@@ -36,6 +36,7 @@ async function getOverview() {
   type I = { priority: string }
   const insights = (insightsRes.data ?? []) as I[]
   const newInsights = insights.length
+  const highInsights = insights.filter(i => i.priority === 'high').length
 
   return {
     enabledAgents: enabledCount,
@@ -48,6 +49,7 @@ async function getOverview() {
     highPriority,
     pageViewsToday,
     newInsights,
+    highInsights,
     kpis: kpiRes.data as Record<string, unknown> | null,
   }
 }
@@ -76,7 +78,7 @@ export default async function MarketingHQ() {
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
           gap: 12,
           marginBottom: 32,
         }}>
@@ -86,7 +88,7 @@ export default async function MarketingHQ() {
             { label: 'Leads النهارده', val: overview.todayLeads, sub: `إجمالي: ${overview.totalLeads}`, color: '#B8860B' },
             { label: '🔥 عالي النية', val: overview.highPriority, color: '#C2410C' },
             { label: 'زوار النهارده', val: overview.pageViewsToday, color: '#666' },
-            { label: 'Insights جديدة', val: overview.newInsights, color: '#B8860B' },
+            { label: '💡 Insights جديدة', val: overview.newInsights, sub: overview.highInsights > 0 ? `🔥 ${overview.highInsights} عاجل` : undefined, color: '#B8860B' },
           ].map((s, i) => (
             <div key={i} style={{
               background: '#fff',
@@ -95,8 +97,8 @@ export default async function MarketingHQ() {
               border: '1px solid #eee',
               textAlign: 'center',
             }}>
-              <div style={{ fontSize: 32, fontWeight: 'bold', color: s.color }}>{s.val}</div>
-              <div style={{ fontSize: 12, color: '#666', marginTop: 4, fontWeight: 'bold' }}>{s.label}</div>
+              <div style={{ fontSize: 28, fontWeight: 'bold', color: s.color }}>{s.val}</div>
+              <div style={{ fontSize: 11, color: '#666', marginTop: 4, fontWeight: 'bold' }}>{s.label}</div>
               {s.sub && <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>{s.sub}</div>}
             </div>
           ))}
@@ -137,13 +139,15 @@ export default async function MarketingHQ() {
         <h2 style={{ color: '#1F5F3F', margin: '32px 0 16px', fontSize: 20 }}>🔧 Tools</h2>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
           gap: 12,
         }}>
           {[
             { href: '/admin/agents', icon: '🤖', title: 'Agents Dashboard', desc: 'كل الـ 20 agent وحالة كل واحد' },
             { href: '/admin/leads-feed', icon: '🎯', title: 'Leads Feed', desc: 'كل الـ leads جاية لايف' },
             { href: '/admin/funnel', icon: '📊', title: 'Conversion Funnel', desc: 'من ad → lead → booking' },
+            { href: '/admin/insights', icon: '💡', title: 'AI Insights', desc: 'كل الـ insights والفرص', badge: overview.newInsights > 0 ? overview.newInsights : null },
+            { href: '/admin/listing-performance', icon: '📈', title: 'Listing Performance', desc: 'مين بيجيب فلوس ومين قاعد' },
             { href: '/admin/ad-builder', icon: '📣', title: 'Ad Builder', desc: 'اعمل لينك جاهز لـ Meta ads' },
             { href: '/admin/activity', icon: '⚡', title: 'Live Activity', desc: 'كل النشاط في آخر 24 ساعة' },
             { href: '/ad-landing', icon: '🌐', title: 'Landing Page', desc: 'الـ ad page العام (preview)' },
@@ -156,12 +160,26 @@ export default async function MarketingHQ() {
               textDecoration: 'none',
               color: 'inherit',
               display: 'block',
+              position: 'relative',
             }}>
               <div style={{ fontSize: 28, marginBottom: 8 }}>{link.icon}</div>
               <div style={{ fontWeight: 'bold', color: '#1F5F3F', fontSize: 15, marginBottom: 4 }}>
                 {link.title}
               </div>
               <div style={{ fontSize: 12, color: '#666' }}>{link.desc}</div>
+              {link.badge && (
+                <span style={{
+                  position: 'absolute',
+                  top: 12,
+                  left: 12,
+                  background: '#C2410C',
+                  color: '#fff',
+                  fontSize: 11,
+                  fontWeight: 'bold',
+                  padding: '2px 8px',
+                  borderRadius: 12,
+                }}>{link.badge}</span>
+              )}
             </a>
           ))}
         </div>
