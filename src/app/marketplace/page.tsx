@@ -49,7 +49,8 @@ function MarketplaceBrowseContent() {
   const searchParams = useSearchParams()
   const initialCategorySlug = searchParams.get('category')
 
-  const [rootCategories, setRootCategories] = useState<Category[]>([])
+  const [allCategories, setAllCategories] = useState<Category[]>([])
+  const rootCategories = allCategories.filter(c => c.parent_id === null)
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -85,9 +86,8 @@ function MarketplaceBrowseContent() {
         .from('categories')
         .select('id, parent_id, name_ar, slug, icon')
         .eq('is_active', true)
-        .is('parent_id', null)
         .order('display_order', { ascending: true })
-      setRootCategories(data || [])
+      setAllCategories(data || [])
     }
     load()
   }, [])
@@ -214,7 +214,14 @@ function MarketplaceBrowseContent() {
     filteredListings = filteredListings.sort((a, b) => getMinPrice(b) - getMinPrice(a))
   }
 
-  const selectedCategoryName = rootCategories.find(c => c.slug === selectedCategorySlug)?.name_ar
+  const selectedCategory = allCategories.find(c => c.slug === selectedCategorySlug)
+  const selectedRootSlug = selectedCategory?.parent_id
+    ? allCategories.find(c => c.id === selectedCategory.parent_id)?.slug || selectedCategorySlug
+    : selectedCategorySlug
+  const subCategories = selectedRootSlug
+    ? allCategories.filter(c => c.parent_id === allCategories.find(rc => rc.slug === selectedRootSlug)?.id)
+    : []
+  const selectedCategoryName = allCategories.find(c => c.slug === selectedCategorySlug)?.name_ar
   const hasFilters = selectedCategorySlug || searchQuery || cityFilter || sortBy !== 'newest'
 
   const clearAllFilters = () => {
@@ -285,13 +292,43 @@ function MarketplaceBrowseContent() {
             {rootCategories.map(cat => (
               <CategoryPill
                 key={cat.id}
-                active={selectedCategorySlug === cat.slug}
+                active={selectedRootSlug === cat.slug}
                 onClick={() => setSelectedCategorySlug(cat.slug)}
                 label={cat.name_ar}
                 icon={cat.icon || ''}
               />
             ))}
           </div>
+
+          {/* Subcategory pills (visible when a root category is selected) */}
+          {subCategories.length > 0 && (
+            <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4 animate-slide-down">
+              <button
+                onClick={() => setSelectedCategorySlug(selectedRootSlug || null)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all flex items-center gap-1 ${
+                  selectedCategorySlug === selectedRootSlug
+                    ? 'bg-[#B8860B] text-white shadow-soft'
+                    : 'bg-white/80 text-gray-600 hover:bg-white border border-gray-100'
+                }`}
+              >
+                كل الأقسام
+              </button>
+              {subCategories.map(sub => (
+                <button
+                  key={sub.id}
+                  onClick={() => setSelectedCategorySlug(sub.slug)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all flex items-center gap-1 ${
+                    selectedCategorySlug === sub.slug
+                      ? 'bg-[#B8860B] text-white shadow-soft'
+                      : 'bg-white/80 text-gray-700 hover:bg-white border border-gray-100'
+                  }`}
+                >
+                  {sub.icon && <span>{sub.icon}</span>}
+                  <span>{sub.name_ar}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="flex gap-2 mt-3 flex-wrap">
             <div className="relative">

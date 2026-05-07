@@ -37,6 +37,7 @@ interface ExistingSupplier {
   business_name: string
   kyc_status: 'pending' | 'approved' | 'rejected' | 'suspended'
   kyc_rejection_reason: string | null
+  listings_count: number  // <-- NEW: track if they've created any listing yet
 }
 
 const STATUS_LABELS = {
@@ -85,7 +86,13 @@ export default function SupplierRegisterPage() {
         .maybeSingle()
 
       if (supplier) {
-        setExisting(supplier as ExistingSupplier)
+        // Count their listings to know if they finished onboarding
+        // @ts-expect-error
+        const { count } = await supabaseBrowser
+          .from('listings')
+          .select('id', { count: 'exact', head: true })
+          .eq('supplier_id', supplier.id)
+        setExisting({ ...(supplier as Omit<ExistingSupplier, 'listings_count'>), listings_count: count || 0 })
         setStage('has-supplier')
       } else {
         setStage('form')
@@ -138,6 +145,15 @@ export default function SupplierRegisterPage() {
 
     setStage('success')
   }
+
+  // Auto-redirect to listing creation after success (3s delay so they read the message)
+  useEffect(() => {
+    if (stage !== 'success') return
+    const t = setTimeout(() => {
+      router.push('/supplier/marketplace/new?welcome=1')
+    }, 3500)
+    return () => clearTimeout(t)
+  }, [stage, router])
 
   // ============================================================================
   // Render: loading
@@ -228,12 +244,27 @@ export default function SupplierRegisterPage() {
               </div>
             </div>
 
-            {canAccessDashboard && (
+            {canAccessDashboard && existing.listings_count === 0 && (
+              <div className="mt-6 p-4 bg-gradient-to-br from-[#B8860B]/10 to-amber-50 border-2 border-[#B8860B]/30 rounded-xl">
+                <p className="text-sm font-bold text-gray-900 mb-1">⚠️ خطوة ناقصة!</p>
+                <p className="text-xs text-gray-700 mb-3 leading-relaxed">
+                  حسابك مسجل بس لسّه مفيش إعلانات ليه — عشان تستقبل حجوزات، لازم تضيف إعلان واحد على الأقل.
+                </p>
+                <Link
+                  href="/supplier/marketplace/new?welcome=1"
+                  className="block w-full bg-[#B8860B] text-white py-3 rounded-xl font-bold text-center hover:bg-[#B8860B]/90 shadow-sm"
+                >
+                  ضيف أول إعلان دلوقتي →
+                </Link>
+              </div>
+            )}
+
+            {canAccessDashboard && existing.listings_count > 0 && (
               <Link
                 href="/supplier/marketplace"
                 className="block w-full mt-6 bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold text-center hover:bg-[#1F5F3F]/90"
               >
-                روح للوحة التحكم
+                روح للوحة التحكم ({existing.listings_count} إعلان)
               </Link>
             )}
           </div>
@@ -243,7 +274,7 @@ export default function SupplierRegisterPage() {
   }
 
   // ============================================================================
-  // Render: success
+  // Render: success — auto-redirects to /supplier/marketplace/new after 3.5s
   // ============================================================================
   if (stage === 'success') {
     return (
@@ -253,19 +284,23 @@ export default function SupplierRegisterPage() {
             <div className="flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4 mx-auto">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">تم استلام طلبك</h1>
-            <p className="text-sm text-gray-600 mb-6">
-              تقدر تبدأ تضيف listings على طول. الموافقة النهائية على الحساب بتيجي قبل أول حجز ياخده أجر مننا.
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">تم تسجيل حسابك ✅</h1>
+            <p className="text-sm text-gray-700 mb-2 font-semibold">
+              دلوقتي الخطوة الأهم: ضيف أول listing (إعلان)
             </p>
+            <p className="text-xs text-gray-500 mb-6">
+              حسابك لوحده مابيظهرش للعملاء — لازم تضيف إعلان واحد على الأقل عشان تستقبل حجوزات.
+            </p>
+            <div className="flex items-center justify-center gap-2 text-xs text-gray-500 mb-4">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              بنحولك لإضافة أول إعلان...
+            </div>
             <div className="flex gap-3 justify-center">
               <Link
-                href="/supplier/marketplace"
+                href="/supplier/marketplace/new?welcome=1"
                 className="px-6 py-2.5 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90"
               >
-                ابدأ ضيف listings
-              </Link>
-              <Link href="/" className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">
-                الرئيسية
+                ضيف إعلانك الأول دلوقتي
               </Link>
             </div>
           </div>
@@ -289,10 +324,15 @@ export default function SupplierRegisterPage() {
             <div className="flex items-center justify-center w-10 h-10 bg-[#1F5F3F]/10 rounded-full">
               <Building2 className="w-5 h-5 text-[#1F5F3F]" />
             </div>
-            <h1 className="text-xl font-bold text-gray-900">أجر معانا - تسجيل جديد</h1>
+            <h1 className="text-xl font-bold text-gray-900">أجر معانا - الخطوة 1 من 2: تسجيل حساب</h1>
+          </div>
+          <div className="mb-6 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+            <p className="text-xs text-blue-900 leading-relaxed">
+              💡 <strong>دي خطوة حساب واحد بس</strong> — دي مش خانة تسجيل إعلان. بعد ما تسجل حسابك، هناخدك تلقائياً لخانة إضافة الإعلان (خطوة 2).
+            </p>
           </div>
           <p className="text-sm text-gray-500 mb-6">
-            املا البيانات دي عشان تبدأ عرض خدماتك على Madmona Marketplace.
+            املا بياناتك الأساسية عشان نعرف مين إنت (فرد ولا شركة).
           </p>
 
           {error && (
@@ -383,6 +423,11 @@ export default function SupplierRegisterPage() {
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
                     placeholder={accountType === 'individual' ? 'مثلاً: أحمد محمد' : 'مثلاً: شركة النيل لتأجير السيارات'}
                   />
+                  <p className="text-[10px] text-gray-400 mt-1">
+                    {accountType === 'individual'
+                      ? 'ده اسمك إنت، مش اسم الإعلان (مثل: "أحمد" مش "شاليه 70 متر")'
+                      : 'ده اسم نشاطك (مثل "شركة أحمد للتأجير")، مش اسم إعلان واحد. الإعلانات هتضيفها بعدين.'}
+                  </p>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -492,7 +537,7 @@ export default function SupplierRegisterPage() {
                   جاري الإرسال...
                 </>
               ) : (
-                'قدّم طلب التسجيل'
+                'سجل حسابي وروح لإضافة الإعلان (خطوة 2)'
               )}
             </button>
 
