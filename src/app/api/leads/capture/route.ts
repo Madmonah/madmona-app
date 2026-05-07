@@ -1,5 +1,5 @@
 // src/app/api/leads/capture/route.ts
-// Public endpoint: capture a new lead from landing page
+// Public endpoint: capture a new lead from landing page or direct listing page
 // Pipeline: insert lead → AI score → notify owner → auto-WhatsApp if high-priority
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -20,6 +20,8 @@ interface LeadInput {
   message?: string
   utm_source?: string
   utm_campaign?: string
+  listing_id?: string
+  listing_title?: string
 }
 
 function normalizeEgyptianPhone(phone: string): string {
@@ -60,6 +62,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'رقم تليفون مصري غير صحيح' }, { status: 400 })
   }
 
+  const sourceLabel = body.listing_id ? 'listing_direct' : 'landing_page'
+
   try {
     const { data: leadIdRaw, error } = await supabaseAdmin.rpc('capture_lead', {
       p_name: body.name.trim(),
@@ -67,9 +71,10 @@ export async function POST(request: NextRequest) {
       p_email: body.email?.trim() || null,
       p_category: body.category?.trim() || null,
       p_message: body.message?.trim() || null,
-      p_source: 'landing_page',
+      p_source: sourceLabel,
       p_utm_source: body.utm_source || null,
       p_utm_campaign: body.utm_campaign || null,
+      p_listing_id: body.listing_id || null,
     })
 
     if (error) {
@@ -95,9 +100,10 @@ export async function POST(request: NextRequest) {
           contact_phone: phone,
           contact_email: body.email?.trim() || null,
           interested_category: body.category?.trim() || null,
+          interested_listing: body.listing_title || null,
           notes: body.message?.trim() || null,
-          source: 'landing_page',
-          has_started_checkout: false,
+          source: sourceLabel,
+          has_started_checkout: !!body.listing_id, // listing-direct = stronger intent
           utm_source: body.utm_source || null,
           utm_campaign: body.utm_campaign || null,
         }),
@@ -122,6 +128,7 @@ export async function POST(request: NextRequest) {
 
     const isHigh = !!(scoringResult && scoringResult.lead_score >= 70)
     const categoryLabel = body.category ? (CATEGORY_LABELS[body.category] ?? body.category) : null
+    const listingContext = body.listing_title ? `إعلان "${body.listing_title}"` : null
 
     // ============ Auto-WhatsApp (high-priority only, if configured) ============
     let whatsappResult: { sent: boolean; error?: string } = { sent: false }
@@ -129,7 +136,7 @@ export async function POST(request: NextRequest) {
       try {
         const greeting = `أهلاً ${body.name.split(' ')[0]} 👋
 
-شكراً إنك سجلت على مضمونة!${categoryLabel ? `\nشفت إنك مهتم بـ ${categoryLabel}.` : ''}
+شكراً إنك سجلت على مضمونة!${listingContext ? `\nشفت إنك مهتم بـ ${listingContext}.` : categoryLabel ? `\nشفت إنك مهتم بـ ${categoryLabel}.` : ''}
 
 أنا من فريق مضمونة، وأنا هنا عشان أساعدك تلاقي اللي محتاجه بأفضل سعر وحماية كاملة.
 
@@ -154,7 +161,6 @@ export async function POST(request: NextRequest) {
 
         whatsappResult = { sent: send.ok, error: send.error }
 
-        // Log to outreach_log
         if (send.ok) {
           await supabaseAdmin.from('outreach_log').insert({
             agent_name: 'lead-auto-reply',
@@ -168,7 +174,7 @@ export async function POST(request: NextRequest) {
             sent_at: new Date().toISOString(),
             external_id: send.wa_message_id ?? null,
             model_used: 'claude-sonnet-4-5',
-            metadata: { lead_score: scoringResult?.lead_score },
+            metadata: { lead_score: scoringResult?.lead_score, listing_id: body.listing_id },
           } as never)
         }
       } catch (e) {
@@ -179,11 +185,12 @@ export async function POST(request: NextRequest) {
 
     // ============ Email owner ============
     try {
+      const subjectSuffix = listingContext ? ` — ${body.listing_title}` : (categoryLabel ? ` (${categoryLabel})` : '')
       await sendEmail({
         to: 'madmona.admin@gmail.com',
         subject: isHigh
-          ? `🔥 Lead عالي النية: ${body.name} (${scoringResult!.lead_score}/100)`
-          : `🎯 Lead جديد: ${body.name}${categoryLabel ? ` (${categoryLabel})` : ''}`,
+          ? `🔥 Lead عالي النية: ${body.name} (${scoringResult!.lead_score}/100)${subjectSuffix}`
+          : `🎯 Lead جديد: ${body.name}${subjectSuffix}`,
         html: `<div dir="rtl" style="font-family:Tahoma;padding:20px;max-width:560px;margin:0 auto">
           <h2 style="color:${isHigh ? '#C2410C' : '#1F5F3F'};margin-top:0">${isHigh ? '🔥 Lead عالي النية!' : '🎯 Lead جديد!'}</h2>
           
@@ -191,6 +198,7 @@ export async function POST(request: NextRequest) {
             <tr><td style="padding:6px 0;color:#666;width:120px">الاسم:</td><td style="padding:6px 0"><strong>${body.name}</strong></td></tr>
             <tr><td style="padding:6px 0;color:#666">التليفون:</td><td style="padding:6px 0"><a href="https://wa.me/${phone}" style="color:#1F5F3F;font-weight:bold">+${phone}</a></td></tr>
             ${body.email ? `<tr><td style="padding:6px 0;color:#666">الإيميل:</td><td style="padding:6px 0">${body.email}</td></tr>` : ''}
+            ${body.listing_title ? `<tr><td style="padding:6px 0;color:#666">الإعلان:</td><td style="padding:6px 0;color:#1F5F3F"><strong>${body.listing_title}</strong></td></tr>` : ''}
             ${categoryLabel ? `<tr><td style="padding:6px 0;color:#666">الفئة:</td><td style="padding:6px 0">${categoryLabel}</td></tr>` : ''}
             ${body.message ? `<tr><td style="padding:6px 0;color:#666;vertical-align:top">الرسالة:</td><td style="padding:6px 0">${body.message}</td></tr>` : ''}
           </table>
@@ -207,10 +215,10 @@ export async function POST(request: NextRequest) {
             ⚠️ Auto-WhatsApp مش شغال: ${whatsappResult.error}
           </div>` : ''}
 
-          <a href="https://wa.me/${phone}?text=${encodeURIComponent(`أهلاً ${body.name}، أنا من مضمونة...`)}" style="display:inline-block;background:#25D366;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold">📱 ${isHigh ? 'كلمه دلوقتي!' : 'ابعت واتساب'}</a>
+          <a href="https://wa.me/${phone}?text=${encodeURIComponent(body.listing_title ? `أهلاً ${body.name}، أنا من مضمونة بخصوص "${body.listing_title}"...` : `أهلاً ${body.name}، أنا من مضمونة...`)}" style="display:inline-block;background:#25D366;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold">📱 ${isHigh ? 'كلمه دلوقتي!' : 'ابعت واتساب'}</a>
 
           ${body.utm_source ? `<p style="color:#666;font-size:11px;margin-top:24px;border-top:1px solid #eee;padding-top:12px"><strong>المصدر:</strong> ${body.utm_source} / ${body.utm_campaign ?? 'organic'}</p>` : ''}
-          <p style="color:#999;font-size:10px">Lead ID: ${leadId}</p>
+          <p style="color:#999;font-size:10px">Lead ID: ${leadId}${body.listing_id ? ` · Listing: ${body.listing_id}` : ''}</p>
         </div>`,
       })
     } catch (e) {
@@ -223,11 +231,11 @@ export async function POST(request: NextRequest) {
         await supabaseAdmin.from('agent_insights').insert({
           agent_name: 'lead-qualifier',
           insight_type: 'opportunity',
-          title: `Lead عالي النية: ${body.name}`,
+          title: `Lead عالي النية: ${body.name}${listingContext ? ` — ${body.listing_title}` : ''}`,
           description: `Score: ${scoringResult.lead_score}. ${scoringResult.reasoning}`,
           priority: scoringResult.priority === 'high' ? 'high' : 'medium',
           recommended_action: `كلمه فوراً على ${phone}`,
-          data_points: { lead_id: leadId, ...scoringResult, whatsapp_sent: whatsappResult.sent },
+          data_points: { lead_id: leadId, ...scoringResult, whatsapp_sent: whatsappResult.sent, listing_id: body.listing_id },
         } as never)
       } catch (e) {
         console.error('Insight log failed:', e)
