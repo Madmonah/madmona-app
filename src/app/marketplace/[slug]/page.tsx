@@ -10,6 +10,7 @@ import {
   ChevronRight, ChevronLeft, CheckCircle, AlertCircle, User, Heart, Share2,
   ExternalLink, Clock, Sparkles, ShieldCheck,
 } from 'lucide-react'
+import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 
 // ============================================================================
 // /marketplace/[slug]
@@ -307,15 +308,19 @@ export default function ListingDetailPage() {
     return a.display_order - b.display_order
   })
 
+  const isDemo = isDemoListing(listing.title)
+  const displayTitle = cleanListingTitle(listing.title)
   const currentPhoto = sortedPhotos[photoIndex]
   const phone = listing.supplier?.profile?.phone || ''
   const phoneClean = phone.replace(/\D/g, '')
   const startingPrice = pricing.length > 0 ? Number(pricing[0].price) : null
-  const canBook = pricing.length > 0
+  const canBook = pricing.length > 0 && !isDemo  // <-- DEMOs can NOT be booked
   const hasMap = listing.latitude !== null && listing.longitude !== null
 
   const whatsappMessage = encodeURIComponent(
-    `مرحباً، أنا مهتم بـ "${listing.title}" على Madmona Marketplace.\nاللينك: https://madmonacairo.com/marketplace/${listing.slug}`
+    isDemo
+      ? `مرحباً، شفت "${displayTitle}" على Madmona وعايز أعرف إمتى هيبقى متاح. اللينك: https://madmonacairo.com/marketplace/${listing.slug}`
+      : `مرحباً، أنا مهتم بـ "${displayTitle}" على Madmona Marketplace.\nاللينك: https://madmonacairo.com/marketplace/${listing.slug}`
   )
 
   const formatAttrValue = (av: AttributeWithValue): string => {
@@ -350,7 +355,7 @@ export default function ListingDetailPage() {
           >
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
-          <h1 className="text-sm font-bold text-gray-700 truncate flex-1 hidden sm:block">{listing.title}</h1>
+          <h1 className="text-sm font-bold text-gray-700 truncate flex-1 hidden sm:block">{displayTitle}</h1>
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={handleShare}
@@ -465,8 +470,25 @@ export default function ListingDetailPage() {
                 </div>
               )}
               <h1 className="text-2xl md:text-4xl font-black text-gray-900 leading-tight mb-4 tracking-tight">
-                {listing.title}
+                {displayTitle}
               </h1>
+
+              {/* Coming Soon banner for DEMO listings */}
+              {isDemo && (
+                <div className="mb-4 p-4 bg-gradient-to-l from-amber-50 to-amber-100/50 border-2 border-amber-400 rounded-2xl">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-400 flex items-center justify-center flex-shrink-0">
+                      <Clock className="w-5 h-5 text-amber-900" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-black text-amber-900 mb-1">نموذج للعرض · متوفر قريباً</p>
+                      <p className="text-xs text-amber-800 leading-relaxed">
+                        ده مثال للفئة ده مدمونة بتدعمها. لسّه مفيش موردين حقيقيين فيه دلوقتي — لو حابب تتبلّغ لما يبقى متاح، كلّمنا واتساب.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Trust badges row */}
               <div className="flex flex-wrap items-center gap-2 mb-4">
@@ -716,6 +738,13 @@ export default function ListingDetailPage() {
                     </Link>
                   )}
 
+                  {isDemo && (
+                    <div className="flex items-center justify-center gap-2 bg-amber-100 text-amber-900 py-3.5 rounded-2xl font-bold text-sm border-2 border-amber-400 cursor-not-allowed">
+                      <Clock className="w-4 h-4" />
+                      الحجز مش مفعل للنماذج
+                    </div>
+                  )}
+
                   {phoneClean && (
                     <a
                       href={`https://wa.me/${phoneClean}?text=${whatsappMessage}`}
@@ -724,7 +753,7 @@ export default function ListingDetailPage() {
                       className="flex items-center justify-center gap-2 bg-[#25D366] text-white py-3.5 rounded-2xl font-bold text-sm shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all no-underline w-full"
                     >
                       <MessageCircle className="w-4 h-4" />
-                      تواصل واتساب
+                      {isDemo ? 'بلّغني لما يبقى متاح' : 'تواصل واتساب'}
                     </a>
                   )}
                 </div>
@@ -794,6 +823,11 @@ export default function ListingDetailPage() {
               <Calendar className="w-4 h-4" />
               احجز
             </Link>
+          ) : isDemo ? (
+            <div className="flex items-center gap-1.5 bg-amber-100 text-amber-900 border-2 border-amber-400 px-4 py-3 rounded-2xl font-bold text-xs flex-shrink-0">
+              <Clock className="w-4 h-4" />
+              قريباً
+            </div>
           ) : (
             <a
               href={phoneClean ? `https://wa.me/${phoneClean}?text=${whatsappMessage}` : 'https://wa.me/201002229982'}

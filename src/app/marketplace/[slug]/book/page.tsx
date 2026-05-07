@@ -6,8 +6,9 @@ import { useParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Calendar, Loader2, AlertCircle, CheckCircle,
-  Lock, MapPin, Image as ImageIcon, Building2, ShieldCheck, Clock, CreditCard,
+  Lock, MapPin, Image as ImageIcon, Building2, ShieldCheck, Clock, CreditCard, MessageCircle,
 } from 'lucide-react'
+import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 
 // ============================================================================
 // /marketplace/[slug]/book
@@ -73,6 +74,7 @@ type Stage =
   | 'loading'
   | 'unauthenticated'
   | 'not-found'
+  | 'demo-not-bookable'  // <-- NEW: blocks direct URL access to DEMO listings
   | 'supplier-not-approved'
   | 'ready'
   | 'submitting'
@@ -124,6 +126,12 @@ export default function BookingPage() {
       }
       const listingData = l as ListingForBooking
       setListing(listingData)
+
+      // Block direct URL access to DEMO listings (they're not bookable)
+      if (isDemoListing(listingData.title)) {
+        setStage('demo-not-bookable')
+        return
+      }
 
       // KYC gate: only allow booking if supplier exists and is approved.
       // Pending suppliers can have published listings but can't accept bookings yet.
@@ -437,6 +445,56 @@ export default function BookingPage() {
                 اسأل Madmona عن أجر معانا ده
               </a>
             )}
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  // Coming Soon gate: DEMO listings are visible but not bookable
+  if (stage === 'demo-not-bookable' && listing) {
+    const displayTitle = cleanListingTitle(listing.title)
+    return (
+      <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+        <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+            <Link href={`/marketplace/${slug}`} className="p-1 hover:bg-gray-50 rounded-full">
+              <ArrowRight className="w-5 h-5 text-gray-700" />
+            </Link>
+            <h1 className="text-lg font-bold text-gray-900">احجز</h1>
+          </div>
+        </header>
+
+        <main className="max-w-xl mx-auto p-4 pt-12">
+          <div className="bg-white rounded-2xl border-2 border-amber-400 p-8">
+            <div className="flex items-center justify-center w-14 h-14 rounded-full mx-auto mb-4 bg-amber-100">
+              <Clock className="w-7 h-7 text-amber-700" />
+            </div>
+            <h2 className="text-xl font-black text-amber-900 mb-2 text-center">الحجز مش مفعل للنماذج</h2>
+            <p className="text-sm text-gray-700 leading-relaxed mb-6 text-center">
+              “<strong>{displayTitle}</strong>” ده نموذج للعرض · متوفر قريباً. لسّه مفيش موردين حقيقيين في الفئة دي.
+              <br />
+              <span className="block mt-2 text-xs text-gray-500">
+                لو حابب تتبلّغ لما يبقى متاح، كلّمنا واتساب وهنبعتلك إشعار أول ما نلاقي أجر معانا في الفئة دي.
+              </span>
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              <a
+                href={`https://wa.me/201002229982?text=${encodeURIComponent(`مرحباً، شفت "${displayTitle}" على Madmona وعايز أعرف إمتى هيبقى متاح`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#25D366] text-white rounded-xl text-sm font-semibold no-underline hover:bg-[#25D366]/90"
+              >
+                <MessageCircle className="w-4 h-4" />
+                بلّغني لما يبقى متاح
+              </a>
+              <Link
+                href="/marketplace"
+                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#1F5F3F] text-white rounded-xl text-sm font-semibold hover:bg-[#1F5F3F]/90"
+              >
+                تصفح ليستنجز حقيقية
+              </Link>
+            </div>
           </div>
         </main>
       </div>

@@ -6,9 +6,10 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   Search, MapPin, Star, ImageIcon, Loader2, ArrowRight, User, LogIn, Heart,
-  ChevronDown, X, SlidersHorizontal, Sparkles, ShieldCheck, CheckCircle,
+  ChevronDown, X, SlidersHorizontal, Sparkles, ShieldCheck, CheckCircle, Clock,
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
+import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 
 interface Category {
   id: string
@@ -474,6 +475,8 @@ function MarketplaceBrowseContent() {
               const minPrice = getMinPrice(listing)
               const startingPrice = minPrice !== Infinity ? minPrice : null
               const isFav = favorites.has(listing.id)
+              const isDemo = isDemoListing(listing.title)
+              const displayTitle = cleanListingTitle(listing.title)
 
               return (
                 <Link
@@ -488,14 +491,22 @@ function MarketplaceBrowseContent() {
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={photoUrl}
-                          alt={listing.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                          alt={displayTitle}
+                          className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out ${isDemo ? 'opacity-90' : ''}`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       </>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <ImageIcon className="w-12 h-12 text-gray-300" />
+                      </div>
+                    )}
+
+                    {/* Coming Soon badge (DEMO listings) */}
+                    {isDemo && (
+                      <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-l from-amber-400 to-amber-300 text-amber-900 rounded-full text-[10px] font-black shadow-card border border-amber-500/30">
+                        <Clock className="w-2.5 h-2.5" />
+                        <span>قريباً · نموذج</span>
                       </div>
                     )}
 
@@ -513,7 +524,7 @@ function MarketplaceBrowseContent() {
                     </button>
 
                     {listing.category && (
-                      <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold text-gray-800">
+                      <div className={`absolute ${isDemo ? 'bottom-12' : 'top-3'} right-3 inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold text-gray-800`}>
                         <span>{listing.category.icon}</span>
                         <span>{listing.category.name_ar}</span>
                       </div>
@@ -530,7 +541,7 @@ function MarketplaceBrowseContent() {
 
                   <div className="p-5">
                     <h3 className="font-black text-base md:text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#1F5F3F] transition-colors">
-                      {listing.title}
+                      {displayTitle}
                     </h3>
 
                     {/* Trust badges */}
@@ -560,7 +571,12 @@ function MarketplaceBrowseContent() {
 
                     <div className="flex items-end justify-between pt-3 border-t border-gray-100">
                       <div>
-                        {startingPrice !== null ? (
+                        {isDemo ? (
+                          <p className="text-[10px] text-amber-700 font-bold flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            متوفر قريباً
+                          </p>
+                        ) : startingPrice !== null ? (
                           <>
                             <p className="text-[10px] text-gray-500 font-medium">يبدأ من</p>
                             <p className="text-xl font-black text-[#1F5F3F] leading-none mt-0.5 tabular">
@@ -573,7 +589,7 @@ function MarketplaceBrowseContent() {
                         )}
                       </div>
                       <div className="inline-flex items-center gap-1 text-[#1F5F3F] font-bold text-xs group-hover:gap-2 transition-all">
-                        <span>تفاصيل</span>
+                        <span>{isDemo ? 'عرض' : 'تفاصيل'}</span>
                         <ArrowRight className="w-3.5 h-3.5 rotate-180" />
                       </div>
                     </div>

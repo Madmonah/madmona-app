@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
-import { ArrowLeft, MapPin, Star, ImageIcon } from 'lucide-react'
+import { ArrowLeft, MapPin, Star, ImageIcon, Clock } from 'lucide-react'
+import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 
 // ============================================================
 // FeaturedListings — premium cinematic strip on home page.
@@ -39,6 +40,7 @@ export default function FeaturedListings() {
           pricing:pricing_rules(price, is_active)
         `)
         .eq('status', 'published')
+        .not('title', 'ilike', 'DEMO%')  // <-- exclude DEMOs from homepage featured
         .order('views_count', { ascending: false })
         .limit(3)
 
@@ -101,6 +103,8 @@ export default function FeaturedListings() {
             .map(p => Number(p.price))
             .filter(p => p > 0)
           const startingPrice = activePrices.length > 0 ? Math.min(...activePrices) : null
+          const isDemo = isDemoListing(listing.title)
+          const displayTitle = cleanListingTitle(listing.title)
 
           return (
             <Link
@@ -126,6 +130,14 @@ export default function FeaturedListings() {
                   </div>
                 )}
 
+                {/* Coming Soon badge for any DEMO that slips through */}
+                {isDemo && (
+                  <div className="absolute top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-l from-amber-400 to-amber-300 text-amber-900 rounded-full text-[10px] font-black shadow-card border border-amber-500/30">
+                    <Clock className="w-2.5 h-2.5" />
+                    قريباً · نموذج
+                  </div>
+                )}
+
                 {/* Category chip overlay */}
                 {listing.category && (
                   <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold text-gray-800">
@@ -145,7 +157,7 @@ export default function FeaturedListings() {
 
               <div className="p-5">
                 <h3 className="font-black text-base md:text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#1F5F3F] transition-colors">
-                  {listing.title}
+                  {displayTitle}
                 </h3>
 
                 {(listing.district || listing.city) && (
