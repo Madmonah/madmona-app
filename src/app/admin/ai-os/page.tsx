@@ -1,5 +1,5 @@
 // src/app/admin/ai-os/page.tsx
-// AI Operating System Dashboard with controls — 9 teams, 35 agents
+// AI Operating System Dashboard — 9 teams, 40+ agents, full controls + perf
 
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import AIOSControls from './AIOSControls'
@@ -37,6 +37,7 @@ export default async function AIOSPage() {
     adsCount, reelsCount, qcCount, briefsCount, playsCount,
     pendingCount, insightsCount,
     pricingCount, fraudCount, demandCount, partnershipsCount,
+    improvementsCount,
   ] = await Promise.all([
     supabaseAdmin.from('ad_creatives').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('reel_scripts').select('*', { count: 'exact', head: true }),
@@ -49,6 +50,7 @@ export default async function AIOSPage() {
     supabaseAdmin.from('fraud_alerts').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('demand_forecasts').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('partnership_opportunities').select('*', { count: 'exact', head: true }),
+    supabaseAdmin.from('agent_improvements').select('*', { count: 'exact', head: true }).eq('status', 'proposed'),
   ])
 
   const byTeam = new Map<string, Agent[]>()
@@ -76,14 +78,24 @@ export default async function AIOSPage() {
         {(insightsCount.count ?? 0) > 0 && (
           <a href="/admin/insights" style={{
             display: 'block', background: '#C2410C', color: '#fff',
-            padding: 16, borderRadius: 12, marginBottom: 16,
+            padding: 16, borderRadius: 12, marginBottom: 12,
             textDecoration: 'none', fontWeight: 'bold', textAlign: 'center',
           }}>
             🚨 {insightsCount.count} insight عالي الأولوية محتاج إجراء — اضغط هنا
           </a>
         )}
 
-        {/* Output stats — 11 tiles for everything AI produced */}
+        {(improvementsCount.count ?? 0) > 0 && (
+          <a href="/admin/performance" style={{
+            display: 'block', background: '#0EA5E9', color: '#fff',
+            padding: 14, borderRadius: 12, marginBottom: 16,
+            textDecoration: 'none', fontWeight: 'bold', textAlign: 'center',
+          }}>
+            🔧 {improvementsCount.count} تحسين مقترح للـ agents — راجعهم
+          </a>
+        )}
+
+        {/* Output stats — 11 tiles */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
@@ -99,6 +111,7 @@ export default async function AIOSPage() {
             { label: '🚨 Fraud Alerts', val: fraudCount.count ?? 0, href: '/admin/fraud-alerts' },
             { label: '📈 Demand Forecasts', val: demandCount.count ?? 0, href: '/admin/demand-forecast' },
             { label: '🤝 Partnerships', val: partnershipsCount.count ?? 0, href: '/admin/partnerships' },
+            { label: '📊 Performance', val: '→', href: '/admin/performance' },
             { label: '⏳ Pending', val: pendingCount.count ?? 0 },
           ].map((s, i) => (
             <a key={i} href={s.href ?? '#'} style={{
@@ -131,6 +144,7 @@ export default async function AIOSPage() {
           <a href="/admin/marketing-hq" style={navLinkStyle}>← Marketing HQ</a>
           <a href="/admin/leads-feed" style={navLinkStyle}>Leads Feed</a>
           <a href="/admin/ad-builder" style={navLinkStyle}>Ad Builder</a>
+          <a href="/admin/performance" style={navLinkStyle}>📊 Performance</a>
         </div>
       </div>
     </div>
