@@ -1,6 +1,6 @@
 // src/app/api/leads/capture/route.ts
 // Public endpoint: capture a new lead from landing page
-// Triggers immediate AI lead qualification + agent dispatch if high-priority
+// AI scoring + email runs SYNCHRONOUSLY (Vercel serverless kills void promises)
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
@@ -69,119 +69,99 @@ export async function POST(request: NextRequest) {
 
     const leadId = leadIdRaw as string
 
-    // Run AI scoring in background (don't block response)
-    void runAiScoring({
-      leadId,
-      name: body.name.trim(),
-      phone,
-      email: body.email?.trim() || null,
-      category: body.category?.trim() || null,
-      message: body.message?.trim() || null,
-      utm_source: body.utm_source || null,
-      utm_campaign: body.utm_campaign || null,
-    })
-
-    // Notify owner immediately
-    void sendEmail({
-      to: 'madmona.admin@gmail.com',
-      subject: `🎯 Lead جديد: ${body.name}${body.category ? ` (${body.category})` : ''}`,
-      html: `<div dir="rtl" style="font-family:Tahoma;padding:20px;max-width:500px">
-        <h2 style="color:#1F5F3F">🎯 Lead جديد!</h2>
-        <p><strong>الاسم:</strong> ${body.name}</p>
-        <p><strong>التليفون:</strong> <a href="https://wa.me/${phone}">+${phone}</a></p>
-        ${body.email ? `<p><strong>الإيميل:</strong> ${body.email}</p>` : ''}
-        ${body.category ? `<p><strong>الفئة:</strong> ${body.category}</p>` : ''}
-        ${body.message ? `<p><strong>الرسالة:</strong> ${body.message}</p>` : ''}
-        ${body.utm_source ? `<p style="color:#666;font-size:12px"><strong>المصدر:</strong> ${body.utm_source} / ${body.utm_campaign ?? 'organic'}</p>` : ''}
-        <p style="color:#999;font-size:11px;margin-top:24px">Lead ID: ${leadId}</p>
-        <p><a href="https://wa.me/${phone}" style="background:#25D366;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-block">📱 ابعت واتساب فوراً</a></p>
-      </div>`,
-    }).catch(() => {})
-
-    return NextResponse.json({
-      success: true,
-      lead_id: leadId,
-      message: 'تم استلام بياناتك، هنتواصل معاك قريباً',
-    })
-  } catch (err) {
-    console.error('Lead capture error:', err)
-    return NextResponse.json({ error: 'حصل خطأ' }, { status: 500 })
-  }
-}
-
-async function runAiScoring(args: {
-  leadId: string
-  name: string
-  phone: string
-  email: string | null
-  category: string | null
-  message: string | null
-  utm_source: string | null
-  utm_campaign: string | null
-}): Promise<void> {
-  try {
-    const text = await callClaude({
-      systemPrompt: LEAD_QUALIFIER_PROMPT,
-      userMessage: JSON.stringify({
-        contact_name: args.name,
-        contact_phone: args.phone,
-        contact_email: args.email,
-        interested_category: args.category,
-        notes: args.message,
-        source: 'landing_page',
-        has_started_checkout: false,
-        utm_source: args.utm_source,
-        utm_campaign: args.utm_campaign,
-      }),
-      maxTokens: 512,
-      temperature: 0.3,
-    })
-    const out = parseJsonResponse<{
+    // Run AI scoring SYNCHRONOUSLY (don't use void — Vercel kills the function before completing)
+    let scoringResult: {
       lead_score: number
       intent_suggested: string
       reasoning: string
       should_contact: boolean
       priority: string
-    }>(text)
+    } | null = null
+    try {
+      const text = await callClaude({
+        systemPrompt: LEAD_QUALIFIER_PROMPT,
+        userMessage: JSON.stringify({
+          contact_name: body.name.trim(),
+          contact_phone: phone,
+          contact_email: body.email?.trim() || null,
+          interested_category: body.category?.trim() || null,
+          notes: body.message?.trim() || null,
+          source: 'landing_page',
+          has_started_checkout: false,
+          utm_source: body.utm_source || null,
+          utm_campaign: body.utm_campaign || null,
+        }),
+        maxTokens: 512,
+        temperature: 0.3,
+      })
+      scoringResult = parseJsonResponse(text)
 
-    await supabaseAdmin
-      .from('sales_leads')
-      .update({
-        lead_score: out.lead_score,
-        intent: out.intent_suggested,
-        notes: out.reasoning,
-      } as never)
-      .eq('id', args.leadId)
+      if (scoringResult) {
+        await supabaseAdmin
+          .from('sales_leads')
+          .update({
+            lead_score: scoringResult.lead_score,
+            intent: scoringResult.intent_suggested,
+            notes: scoringResult.reasoning,
+          } as never)
+          .eq('id', leadId)
+      }
+    } catch (err) {
+      console.error('AI scoring failed:', err)
+    }
 
-    // For high-priority leads, log an insight
-    if (out.lead_score >= 70 || out.priority === 'high') {
-      await supabaseAdmin.from('agent_insights').insert({
-        agent_name: 'lead-qualifier',
-        insight_type: 'opportunity',
-        title: `Lead عالي النية: ${args.name}`,
-        description: `Score: ${out.lead_score}. ${out.reasoning}`,
-        priority: out.priority === 'high' ? 'high' : 'medium',
-        recommended_action: `كلمه فوراً على ${args.phone}`,
-        data_points: { lead_id: args.leadId, ...out },
-      } as never)
-
-      // Notify owner about high-priority lead
+    // Email owner (synchronously, don't void)
+    const isHigh = scoringResult && scoringResult.lead_score >= 70
+    try {
       await sendEmail({
         to: 'madmona.admin@gmail.com',
-        subject: `🔥 Lead عالي النية: ${args.name} (${out.lead_score}/100)`,
+        subject: isHigh
+          ? `🔥 Lead عالي النية: ${body.name} (${scoringResult!.lead_score}/100)`
+          : `🎯 Lead جديد: ${body.name}${body.category ? ` (${body.category})` : ''}`,
         html: `<div dir="rtl" style="font-family:Tahoma;padding:20px;max-width:500px">
-          <h2 style="color:#C2410C">🔥 Lead عالي النية!</h2>
-          <p><strong>الاسم:</strong> ${args.name}</p>
-          <p><strong>التليفون:</strong> <a href="https://wa.me/${args.phone}">+${args.phone}</a></p>
-          ${args.category ? `<p><strong>عايز:</strong> ${args.category}</p>` : ''}
-          <p><strong>Score:</strong> ${out.lead_score}/100</p>
-          <p><strong>التحليل:</strong><br>${out.reasoning}</p>
-          <p><a href="https://wa.me/${args.phone}" style="background:#25D366;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:bold">📱 كلمه فوراً!</a></p>
+          <h2 style="color:${isHigh ? '#C2410C' : '#1F5F3F'}">${isHigh ? '🔥 Lead عالي النية!' : '🎯 Lead جديد!'}</h2>
+          <p><strong>الاسم:</strong> ${body.name}</p>
+          <p><strong>التليفون:</strong> <a href="https://wa.me/${phone}">+${phone}</a></p>
+          ${body.email ? `<p><strong>الإيميل:</strong> ${body.email}</p>` : ''}
+          ${body.category ? `<p><strong>الفئة:</strong> ${body.category}</p>` : ''}
+          ${body.message ? `<p><strong>الرسالة:</strong> ${body.message}</p>` : ''}
+          ${scoringResult ? `<p><strong>AI Score:</strong> ${scoringResult.lead_score}/100</p>
+          <p><strong>التحليل:</strong><br>${scoringResult.reasoning}</p>` : ''}
+          ${body.utm_source ? `<p style="color:#666;font-size:12px"><strong>المصدر:</strong> ${body.utm_source} / ${body.utm_campaign ?? 'organic'}</p>` : ''}
+          <p style="color:#999;font-size:11px;margin-top:24px">Lead ID: ${leadId}</p>
+          <p><a href="https://wa.me/${phone}" style="background:#25D366;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:bold">📱 ${isHigh ? 'كلمه فوراً!' : 'ابعت واتساب'}</a></p>
         </div>`,
       })
+    } catch (e) {
+      console.error('Email failed:', e)
     }
+
+    // Log insight if high priority
+    if (isHigh && scoringResult) {
+      try {
+        await supabaseAdmin.from('agent_insights').insert({
+          agent_name: 'lead-qualifier',
+          insight_type: 'opportunity',
+          title: `Lead عالي النية: ${body.name}`,
+          description: `Score: ${scoringResult.lead_score}. ${scoringResult.reasoning}`,
+          priority: scoringResult.priority === 'high' ? 'high' : 'medium',
+          recommended_action: `كلمه فوراً على ${phone}`,
+          data_points: { lead_id: leadId, ...scoringResult },
+        } as never)
+      } catch (e) {
+        console.error('Insight log failed:', e)
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      lead_id: leadId,
+      score: scoringResult?.lead_score ?? null,
+      message: 'تم استلام بياناتك، هنتواصل معاك قريباً',
+    })
   } catch (err) {
-    console.error('AI scoring failed:', err)
+    console.error('Lead capture error:', err)
+    return NextResponse.json({ error: 'حصل خطأ' }, { status: 500 })
   }
 }
 
