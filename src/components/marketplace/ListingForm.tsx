@@ -58,6 +58,9 @@ interface Photo {
   // For new uploads
   file?: File
   uploading?: boolean
+  // Compression info
+  originalSize?: number
+  compressedSize?: number
 }
 
 export interface ListingFormData {
@@ -85,8 +88,6 @@ interface ListingFormProps {
     existingPricing?: PricingRule[]
     existingAttributes?: { attribute_id: string; value: any }[]
   }
-  // Where to navigate after a successful submit. Defaults to /supplier/marketplace.
-  // Pass '/admin/listings' from admin mode.
   redirectAfterSubmit?: string
 }
 
@@ -96,6 +97,85 @@ const PERIOD_LABELS: Record<PeriodType, string> = {
   weekly: 'بالأسبوع',
   monthly: 'بالشهر',
   per_event: 'مرة واحدة',
+}
+
+// ============================================================================
+// Image compression — auto-resize/compress large images before upload
+// ============================================================================
+
+const MAX_FILE_SIZE_MB = 25 // Max raw input size
+const TARGET_MAX_DIMENSION = 1920 // Max width/height after compression
+const TARGET_QUALITY = 0.85 // JPEG quality
+
+async function compressImage(file: File): Promise<File> {
+  // Skip compression for already-small files (<800KB)
+  if (file.size < 800 * 1024) return file
+
+  // Skip compression for unsupported types
+  if (!file.type.match(/^image\/(jpeg|jpg|png|webp)$/i)) return file
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('فشل قراءة الصورة'))
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onerror = () => reject(new Error('فشل معالجة الصورة'))
+      img.onload = () => {
+        let { width, height } = img
+
+        // Resize if larger than target dimension
+        if (width > TARGET_MAX_DIMENSION || height > TARGET_MAX_DIMENSION) {
+          const ratio = Math.min(TARGET_MAX_DIMENSION / width, TARGET_MAX_DIMENSION / height)
+          width = Math.round(width * ratio)
+          height = Math.round(height * ratio)
+        }
+
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          reject(new Error('Canvas غير متاح'))
+          return
+        }
+
+        // High-quality resize
+        ctx.imageSmoothingEnabled = true
+        ctx.imageSmoothingQuality = 'high'
+        ctx.drawImage(img, 0, 0, width, height)
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('فشل ضغط الصورة'))
+              return
+            }
+            // If compressed is larger than original, keep original
+            if (blob.size >= file.size) {
+              resolve(file)
+              return
+            }
+            const compressed = new File(
+              [blob],
+              file.name.replace(/\.(png|webp)$/i, '.jpg'),
+              { type: 'image/jpeg', lastModified: Date.now() }
+            )
+            resolve(compressed)
+          },
+          'image/jpeg',
+          TARGET_QUALITY
+        )
+      }
+      img.src = e.target?.result as string
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes}B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)}KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
 }
 
 // ============================================================================
@@ -109,6 +189,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
   const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [processingImages, setProcessingImages] = useState(false)
 
   const [categories, setCategories] = useState<Category[]>([])
   const [loadingCategories, setLoadingCategories] = useState(true)
@@ -165,7 +246,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         .order('display_order', { ascending: true })
       setAttributes(data || [])
 
-      // Pre-fill values from existing listing if editing
       if (initialData?.existingAttributes && Object.keys(form.attributeValues).length === 0) {
         const valuesMap: Record<string, any> = {}
         for (const ea of initialData.existingAttributes) {
@@ -203,25 +283,71 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
   }
 
   const handlePhotoUpload = async (files: FileList | null) => {
-    if (!files) return
+    if (!files || files.length === 0) return
+    setError(null)
+    setProcessingImages(true)
+
     const newPhotos: Photo[] = []
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      if (!file.type.startsWith('image/')) continue
-      if (file.size > 5 * 1024 * 1024) {
-        setError(`الصورة "${file.name}" أكبر من 5 ميجا`)
-        continue
+    const errors: string[] = []
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+
+        if (!file.type.startsWith('image/')) {
+          errors.push(`"${file.name}" مش صورة`)
+          continue
+        }
+
+        // Hard upper limit: 25MB raw input
+        if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+          errors.push(`"${file.name}" حجمها ${formatBytes(file.size)} (الحد الأقصى ${MAX_FILE_SIZE_MB}MB)`)
+          continue
+        }
+
+        try {
+          // Auto-compress if large
+          const processed = await compressImage(file)
+
+          newPhotos.push({
+            url: URL.createObjectURL(processed),
+            caption: '',
+            is_primary: form.photos.length === 0 && newPhotos.length === 0,
+            display_order: form.photos.length + newPhotos.length,
+            file: processed,
+            uploading: false,
+            originalSize: file.size,
+            compressedSize: processed.size,
+          })
+        } catch (compressErr: any) {
+          // If compression fails, fall back to original (if reasonable size)
+          if (file.size <= 8 * 1024 * 1024) {
+            newPhotos.push({
+              url: URL.createObjectURL(file),
+              caption: '',
+              is_primary: form.photos.length === 0 && newPhotos.length === 0,
+              display_order: form.photos.length + newPhotos.length,
+              file,
+              uploading: false,
+              originalSize: file.size,
+              compressedSize: file.size,
+            })
+          } else {
+            errors.push(`"${file.name}": ${compressErr?.message || 'فشل المعالجة'}`)
+          }
+        }
       }
-      newPhotos.push({
-        url: URL.createObjectURL(file),
-        caption: '',
-        is_primary: form.photos.length === 0 && newPhotos.length === 0,
-        display_order: form.photos.length + newPhotos.length,
-        file,
-        uploading: false,
-      })
+
+      if (newPhotos.length > 0) {
+        setForm(f => ({ ...f, photos: [...f.photos, ...newPhotos] }))
+      }
+
+      if (errors.length > 0) {
+        setError(errors.join(' · '))
+      }
+    } finally {
+      setProcessingImages(false)
     }
-    setForm(f => ({ ...f, photos: [...f.photos, ...newPhotos] }))
   }
 
   const removePhoto = (idx: number) => {
@@ -277,8 +403,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         address: form.address.trim() || null,
         status,
       }
-      // Add requires_id_verification if column exists in DB
-      // Migration: ALTER TABLE listings ADD COLUMN requires_id_verification BOOLEAN DEFAULT FALSE;
       if (form.requires_id_verification) {
         listingPayload.requires_id_verification = true
       }
@@ -315,14 +439,14 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         let storagePath: string | null = photo.storage_path || null
 
         if (photo.file) {
-          const ext = photo.file.name.split('.').pop() || 'jpg'
+          const ext = (photo.file.name.split('.').pop() || 'jpg').toLowerCase()
           const path = `${userId}/${listingId}/${Date.now()}-${i}.${ext}`
           const { error: uploadErr } = await supabaseBrowser.storage
             .from('listing-photos')
             .upload(path, photo.file, { cacheControl: '3600', upsert: false })
           if (uploadErr) {
-            console.error('Upload failed:', uploadErr)
-            throw new Error(`فشل رفع صورة ${i + 1}: ${uploadErr.message}`)
+            console.error('Upload failed:', uploadErr, 'size:', photo.file.size, 'type:', photo.file.type)
+            throw new Error(`فشل رفع صورة ${i + 1} (${formatBytes(photo.file.size)}): ${uploadErr.message}`)
           }
           const { data: { publicUrl } } = supabaseBrowser.storage
             .from('listing-photos')
@@ -341,7 +465,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         })
       }
 
-      // 4. Replace photos
       if (isEditing) {
         // @ts-expect-error
         await supabaseBrowser.from('listing_photos').delete().eq('listing_id', listingId)
@@ -352,7 +475,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         if (photosErr) throw photosErr
       }
 
-      // 5. Save attribute values (composite PK on listing_id+attribute_id)
+      // 5. Save attribute values
       if (isEditing) {
         // @ts-expect-error
         await supabaseBrowser.from('listing_values').delete().eq('listing_id', listingId)
@@ -402,8 +525,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         if (pricingErr) throw pricingErr
       }
 
-      // Use custom redirect if provided (e.g. admin mode → /admin/listings),
-      // otherwise default to /supplier/marketplace?success=1
       router.push(redirectAfterSubmit || '/supplier/marketplace?success=1')
     } catch (e: any) {
       console.error('Submit error:', e)
@@ -609,7 +730,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                 </div>
               </div>
 
-              {/* ID Verification Toggle */}
               <div className="pt-3 border-t border-gray-100">
                 <label
                   className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
@@ -675,13 +795,15 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
           </div>
         )}
 
-        {/* Step 4: Photos */}
+        {/* Step 4: Photos — UPGRADED with auto-compression */}
         {step === 4 && (
           <div>
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
               <ImageIcon className="w-5 h-5 text-[#1F5F3F]" /> الصور
             </h2>
-            <p className="text-sm text-gray-500 mb-4">ارفع على الأقل صورة واحدة (الصور بتفرق جداً!)</p>
+            <p className="text-sm text-gray-500 mb-4">
+              ارفع على الأقل صورة واحدة. الصور الكبيرة بيتم ضغطها تلقائياً (محتفظين بجودة عالية).
+            </p>
 
             <input
               type="file"
@@ -690,50 +812,73 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
               onChange={(e) => handlePhotoUpload(e.target.files)}
               className="hidden"
               id="photo-upload"
+              disabled={processingImages}
             />
 
             <label
               htmlFor="photo-upload"
-              className="block border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-[#1F5F3F] hover:bg-[#1F5F3F]/5 cursor-pointer transition-colors"
+              className={`block border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+                processingImages
+                  ? 'border-[#B8860B] bg-[#B8860B]/5 cursor-wait'
+                  : 'border-gray-300 hover:border-[#1F5F3F] hover:bg-[#1F5F3F]/5 cursor-pointer'
+              }`}
             >
-              <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-700">اضغط لرفع صور</p>
-              <p className="text-xs text-gray-500 mt-1">JPG, PNG, WebP — حد أقصى 5MB لكل صورة</p>
+              {processingImages ? (
+                <>
+                  <Loader2 className="w-8 h-8 text-[#B8860B] mx-auto mb-2 animate-spin" />
+                  <p className="text-sm font-medium text-[#B8860B]">جاري معالجة الصور...</p>
+                  <p className="text-xs text-gray-500 mt-1">الصور الكبيرة بيتم ضغطها لتحسين السرعة</p>
+                </>
+              ) : (
+                <>
+                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm font-medium text-gray-700">اضغط لرفع صور</p>
+                  <p className="text-xs text-gray-500 mt-1">JPG, PNG, WebP — حتى {MAX_FILE_SIZE_MB}MB لكل صورة (هيتم ضغطها تلقائياً)</p>
+                </>
+              )}
             </label>
 
             {form.photos.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
-                {form.photos.map((photo, idx) => (
-                  <div key={idx} className="relative group rounded-lg overflow-hidden border border-gray-200">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photo.url} alt="" className="w-full h-32 object-cover" />
-                    {photo.is_primary && (
-                      <div className="absolute top-2 right-2 bg-[#B8860B] text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <Star className="w-3 h-3 fill-white" /> رئيسية
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      {!photo.is_primary && (
+                {form.photos.map((photo, idx) => {
+                  const compressed = photo.originalSize && photo.compressedSize && photo.compressedSize < photo.originalSize
+                  return (
+                    <div key={idx} className="relative group rounded-lg overflow-hidden border border-gray-200">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={photo.url} alt="" className="w-full h-32 object-cover" />
+                      {photo.is_primary && (
+                        <div className="absolute top-2 right-2 bg-[#B8860B] text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-white" /> رئيسية
+                        </div>
+                      )}
+                      {compressed && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] px-2 py-1 text-center">
+                          ضُغطت من {formatBytes(photo.originalSize!)} إلى {formatBytes(photo.compressedSize!)}
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        {!photo.is_primary && (
+                          <button
+                            type="button"
+                            onClick={() => setPrimary(idx)}
+                            className="p-2 bg-white rounded-full hover:bg-gray-100"
+                            title="اجعلها الصورة الرئيسية"
+                          >
+                            <Star className="w-4 h-4 text-[#B8860B]" />
+                          </button>
+                        )}
                         <button
                           type="button"
-                          onClick={() => setPrimary(idx)}
-                          className="p-2 bg-white rounded-full hover:bg-gray-100"
-                          title="اجعلها الصورة الرئيسية"
+                          onClick={() => removePhoto(idx)}
+                          className="p-2 bg-white rounded-full hover:bg-red-50"
+                          title="حذف"
                         >
-                          <Star className="w-4 h-4 text-[#B8860B]" />
+                          <Trash2 className="w-4 h-4 text-red-600" />
                         </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => removePhoto(idx)}
-                        className="p-2 bg-white rounded-full hover:bg-red-50"
-                        title="حذف"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-600" />
-                      </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
@@ -811,7 +956,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
             <button
               type="button"
               onClick={() => setStep(s => s + 1)}
-              disabled={!canGoNext()}
+              disabled={!canGoNext() || processingImages}
               className="px-5 py-2 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
             >
               التالي <ChevronLeft className="w-4 h-4" />
