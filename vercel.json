@@ -9,6 +9,16 @@
       "destination": "/api/:path*"
     }
   ],
+  "crons": [
+    {
+      "path": "/api/agents/content-marketing",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/agents/daily-report",
+      "schedule": "0 20 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

@@ -10,6 +10,7 @@
     "generate-vapid": "node -e \"const wp=require('web-push'); const k=wp.generateVAPIDKeys(); console.log('NEXT_PUBLIC_VAPID_PUBLIC_KEY=' + k.publicKey); console.log('VAPID_PRIVATE_KEY=' + k.privateKey)\""
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
     "next": "14.2.34",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
