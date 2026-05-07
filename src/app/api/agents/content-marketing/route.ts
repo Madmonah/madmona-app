@@ -1,6 +1,6 @@
 // src/app/api/agents/content-marketing/route.ts
-// Content Marketing Agent: runs daily at 8 AM Cairo time (6 AM UTC) via Vercel Cron
-// Generates a daily Instagram/Facebook post and emails it to Mohamed
+// Content Marketing Agent — Generates daily Instagram/Facebook posts.
+// Saves to content_calendar table for review + emails draft.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { callClaude, parseJsonResponse } from '@/lib/anthropic'
@@ -30,6 +30,42 @@ function getTodaysCategoryHint(): string {
   return 'C (Brand & Values)'
 }
 
+async function gatherMarketContext(): Promise<Record<string, unknown>> {
+  const { count: totalListings } = await supabaseAdmin
+    .from('listings')
+    .select('*', { count: 'exact', head: true })
+
+  const { count: totalSuppliers } = await supabaseAdmin
+    .from('marketplace_suppliers')
+    .select('*', { count: 'exact', head: true })
+
+  const { data: recentBookings } = await supabaseAdmin
+    .from('marketplace_bookings')
+    .select('id, total_amount, created_at')
+    .order('created_at', { ascending: false })
+    .limit(5)
+
+  const { data: trendingCategories } = await supabaseAdmin
+    .from('listings')
+    .select('category')
+    .limit(100)
+  type C = { category: string }
+  const cats = (trendingCategories ?? []) as C[]
+  const counts: Record<string, number> = {}
+  cats.forEach((c) => { counts[c.category] = (counts[c.category] ?? 0) + 1 })
+  const sortedCats = Object.entries(counts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([cat, count]) => ({ category: cat, count }))
+
+  return {
+    total_listings: totalListings ?? 0,
+    total_suppliers: totalSuppliers ?? 0,
+    recent_bookings_count: (recentBookings ?? []).length,
+    top_categories: sortedCats,
+  }
+}
+
 async function runAgent() {
   const runStart = Date.now()
   const today = new Date().toISOString().split('T')[0]
@@ -45,11 +81,15 @@ async function runAgent() {
     } as never)
     .select('id')
     .single()
-
   const runId = (run as { id?: string } | null)?.id
 
   try {
+    const marketCtx = await gatherMarketContext()
+
     const userMessage = `النهارده ${today}. اعمل بوست من فئة: ${categoryHint}.
+السياق الحالي للسوق:
+${JSON.stringify(marketCtx, null, 2)}
+
 اكتب بوست أصلي مش متكرر، مع التزام كامل بقواعد البراند.`
 
     const claudeText = await callClaude({
@@ -60,7 +100,32 @@ async function runAgent() {
     })
 
     const post = parseJsonResponse<ContentOutput>(claudeText)
-    const emailHtml = buildContentEmailHtml(post, today)
+
+    const { data: contentRow } = await supabaseAdmin
+      .from('content_calendar')
+      .insert({
+        content_type: 'instagram_post',
+        title: post.topic,
+        body: post.caption,
+        hashtags: post.hashtags,
+        cta: post.cta,
+        design_brief: post.design_brief,
+        status: 'drafted',
+        agent_name: 'content-marketing',
+        category: post.category,
+        language: 'ar',
+        metadata: {
+          headline: post.headline,
+          best_posting_time: post.best_posting_time,
+          market_context: marketCtx,
+        },
+      } as never)
+      .select('id')
+      .single()
+
+    const contentId = (contentRow as { id?: string } | null)?.id
+
+    const emailHtml = buildContentEmailHtml(post, today, contentId)
     const ownerEmail = process.env.MADMONA_OWNER_EMAIL ?? 'madmona.admin@gmail.com'
 
     const sendResult = await sendEmail({
@@ -69,9 +134,7 @@ async function runAgent() {
       html: emailHtml,
     })
 
-    if (!sendResult.ok) {
-      throw new Error(`Email send failed: ${sendResult.error}`)
-    }
+    if (!sendResult.ok) throw new Error(`Email send failed: ${sendResult.error}`)
 
     if (runId) {
       await supabaseAdmin
@@ -81,16 +144,16 @@ async function runAgent() {
           finished_at: new Date().toISOString(),
           duration_ms: Date.now() - runStart,
           output_summary: {
+            content_id: contentId,
             category: post.category,
             topic: post.topic,
             email_id: sendResult.id,
-            sent_to: ownerEmail,
           },
         } as never)
         .eq('id', runId)
     }
 
-    return { success: true, post, email_id: sendResult.id, sent_to: ownerEmail }
+    return { success: true, post, content_id: contentId, email_id: sendResult.id }
   } catch (err) {
     const error = err as Error
     if (runId) {
@@ -108,13 +171,14 @@ async function runAgent() {
   }
 }
 
-function buildContentEmailHtml(post: ContentOutput, date: string): string {
+function buildContentEmailHtml(post: ContentOutput, date: string, contentId?: string): string {
   const hashtagsLine = post.hashtags.join(' ')
   return `<div dir="rtl" style="font-family: Tahoma, Arial, sans-serif; line-height: 1.8; color: #1a1a1a; max-width: 640px; margin: 0 auto; padding: 24px;">
 
   <div style="border-right: 4px solid #1F5F3F; padding-right: 16px; margin-bottom: 24px;">
     <h2 style="color: #1F5F3F; margin: 0 0 4px 0;">📝 بوست النهارده</h2>
     <p style="color: #666; margin: 0; font-size: 14px;">${date} — فئة ${post.category}</p>
+    ${contentId ? `<p style="color: #999; margin: 4px 0 0; font-size: 11px;">Content ID: ${contentId}</p>` : ''}
   </div>
 
   <div style="background: #FAF7F0; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -141,15 +205,13 @@ ${escapeHtml(hashtagsLine)}</div>
   <p>${translatePostingTime(post.best_posting_time)}</p>
 
   <hr style="border: none; border-top: 1px solid #ddd; margin: 32px 0;">
-  <p style="color: #999; font-size: 12px; text-align: center;">Content Marketing Agent — مضمونة 🤝</p>
+  <p style="color: #999; font-size: 12px; text-align: center;">Content Marketing Agent — مضمونة 🤝<br>
+  محفوظ في content_calendar — راجع وافع publish من الداشبورد</p>
 </div>`
 }
 
 function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
 function translatePostingTime(t: string): string {
@@ -158,46 +220,31 @@ function translatePostingTime(t: string): string {
   return 'بالليل (8-10 م)'
 }
 
-// ============================================================================
-// HTTP handlers
-// ============================================================================
-
 export async function GET(request: NextRequest) {
   const cronSecret = request.headers.get('authorization')
   if (process.env.CRON_SECRET && cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-
   try {
     const result = await runAgent()
     return NextResponse.json(result)
   } catch (err) {
     const error = err as Error
     console.error('Content Marketing agent error:', error)
-    return NextResponse.json(
-      { error: 'Agent failed', detail: error.message },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Agent failed', detail: error.message }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
-  if (
-    !process.env.AGENT_WEBHOOK_SECRET ||
-    authHeader !== `Bearer ${process.env.AGENT_WEBHOOK_SECRET}`
-  ) {
+  if (!process.env.AGENT_WEBHOOK_SECRET || authHeader !== `Bearer ${process.env.AGENT_WEBHOOK_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-
   try {
     const result = await runAgent()
     return NextResponse.json(result)
   } catch (err) {
     const error = err as Error
-    return NextResponse.json(
-      { error: 'Agent failed', detail: error.message },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Agent failed', detail: error.message }, { status: 500 })
   }
 }
