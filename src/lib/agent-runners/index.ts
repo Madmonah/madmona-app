@@ -3,25 +3,15 @@
 
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { callClaude, parseJsonResponse } from '@/lib/anthropic'
-import { sendText, upsertConversation } from '@/lib/whatsapp'
 import { sendEmail } from '@/lib/email'
 
 import { SUPPLIER_HUNTER_PROMPT } from '@/lib/agent-prompts/supplier-hunter'
-import { SUPPLIER_ONBOARDING_PROMPT } from '@/lib/agent-prompts/supplier-onboarding'
-import { SUPPLIER_REACTIVATION_PROMPT } from '@/lib/agent-prompts/supplier-reactivation'
-import { LEAD_QUALIFIER_PROMPT } from '@/lib/agent-prompts/lead-qualifier'
-import { BOOKING_CLOSER_PROMPT } from '@/lib/agent-prompts/booking-closer'
-import { CART_ABANDONER_PROMPT } from '@/lib/agent-prompts/cart-abandoner'
-import { UPSELL_PROMPT } from '@/lib/agent-prompts/upsell-agent'
-import { FOLLOW_UP_PROMPT } from '@/lib/agent-prompts/follow-up-agent'
 import { LISTING_OPTIMIZER_PROMPT } from '@/lib/agent-prompts/listing-optimizer'
 import { SEO_AGENT_PROMPT } from '@/lib/agent-prompts/seo-agent'
 import { WHATSAPP_BROADCASTER_PROMPT } from '@/lib/agent-prompts/whatsapp-broadcaster'
 import { EMAIL_CAMPAIGNER_PROMPT } from '@/lib/agent-prompts/email-campaigner'
 import { TREND_SPOTTER_PROMPT } from '@/lib/agent-prompts/trend-spotter'
 import { COMPETITOR_WATCHER_PROMPT } from '@/lib/agent-prompts/competitor-watcher'
-import { REVIEW_GENERATOR_PROMPT } from '@/lib/agent-prompts/review-generator'
-import { REFERRAL_AGENT_PROMPT } from '@/lib/agent-prompts/referral-agent'
 import { CONTENT_MARKETING_PROMPT } from '@/lib/agent-prompts/content-marketing'
 
 // Phase 2 — Creative + Operations + Strategic
@@ -35,6 +25,17 @@ import {
   runCEOAssistant,
   runStrategyAgent,
 } from './ai-os-runners'
+
+// Phase 4 — Support + Intelligence + Growth
+import {
+  runComplaintResolver,
+  runDisputeMediator,
+  runPricingOptimizer,
+  runFraudDetector,
+  runDemandForecaster,
+  runPartnershipScout,
+  runContentPersonalizer,
+} from './phase4-runners'
 
 const OWNER_EMAIL = 'madmona.admin@gmail.com'
 
@@ -122,17 +123,8 @@ async function runContentMarketing(): Promise<Record<string, unknown>> {
   const contentId = (contentRow as { id?: string } | null)?.id
   await sendEmail({
     to: OWNER_EMAIL,
-    subject: `📝 بوست النهارده — ${post.topic} (${today})`,
-    html: `<div dir="rtl" style="font-family:Tahoma;padding:20px;max-width:640px;margin:0 auto">
-      <h2 style="color:#1F5F3F">📝 ${post.topic}</h2>
-      <h3 style="color:#1F5F3F">${post.headline}</h3>
-      <div style="background:#FAF7F0;padding:16px;border-radius:8px;white-space:pre-wrap">${post.caption}
-
-${post.cta}
-
-${post.hashtags.join(' ')}</div>
-      <p style="color:#666;font-size:12px">Content ID: ${contentId}</p>
-    </div>`,
+    subject: `📝 بوست النهارده — ${post.topic}`,
+    html: `<div dir="rtl" style="font-family:Tahoma;padding:20px"><h2 style="color:#1F5F3F">${post.topic}</h2><div style="background:#FAF7F0;padding:16px;border-radius:8px;white-space:pre-wrap">${post.caption}</div><p>Content ID: ${contentId}</p></div>`,
   })
   return { topic: post.topic, content_id: contentId }
 }
@@ -140,45 +132,27 @@ ${post.hashtags.join(' ')}</div>
 async function runAnalyticsReporter(): Promise<Record<string, unknown>> {
   const { data: kpis } = await supabaseAdmin.rpc('compute_daily_kpis')
   const k = (kpis ?? {}) as Record<string, unknown>
-  await sendEmail({
-    to: OWNER_EMAIL,
-    subject: `📊 تقرير اليوم — ${k.date}`,
-    html: `<div dir="rtl" style="font-family:Tahoma;padding:20px;max-width:680px;margin:0 auto">
-      <h2 style="color:#1F5F3F">📊 تقرير اليوم</h2>
-      <table style="width:100%;border-collapse:collapse">
-        <tr><td>تسجيلات</td><td><strong>${k.total_signups ?? 0}</strong></td></tr>
-        <tr><td>مؤجرين جداد</td><td><strong>${k.new_suppliers ?? 0}</strong></td></tr>
-        <tr><td>إعلانات جديدة</td><td><strong>${k.new_listings ?? 0}</strong></td></tr>
-        <tr><td>حجوزات</td><td><strong>${k.new_bookings ?? 0}</strong></td></tr>
-        <tr><td>قيمة الحجوزات</td><td><strong>${Number(k.bookings_value ?? 0).toLocaleString()} ج</strong></td></tr>
-      </table>
-    </div>`,
-  })
   return k
 }
 
 async function runSupplierHunter(): Promise<Record<string, unknown>> {
-  const userMsg = JSON.stringify({
-    current_categories: ['كاميرات', 'شقق', 'سيارات', 'كوورك', 'معدات تصوير'],
-    our_supplier_count: 6, our_listing_count: 212,
-  })
   const text = await callClaude({
-    systemPrompt: SUPPLIER_HUNTER_PROMPT, userMessage: userMsg,
+    systemPrompt: SUPPLIER_HUNTER_PROMPT,
+    userMessage: JSON.stringify({
+      current_categories: ['كاميرات', 'شقق', 'سيارات', 'كوورك'],
+      our_supplier_count: 6, our_listing_count: 212,
+    }),
     maxTokens: 1500, temperature: 0.7,
   })
   const result = parseJsonResponse<Record<string, unknown>>(text)
   await sendEmail({
     to: OWNER_EMAIL,
     subject: `🎯 صياد المؤجرين — ${result.target_niche ?? 'فرصة جديدة'}`,
-    html: `<div dir="rtl" style="font-family:Tahoma;padding:20px;max-width:640px;margin:0 auto">
-      <h2 style="color:#1F5F3F">🎯 ${result.target_niche ?? ''}</h2>
-      <p>${result.value_proposition ?? ''}</p>
-    </div>`,
+    html: `<div dir="rtl" style="font-family:Tahoma;padding:20px"><h2>${result.target_niche ?? ''}</h2><p>${result.value_proposition ?? ''}</p></div>`,
   })
-  return { niche: result.target_niche, sent_email: true }
+  return { niche: result.target_niche }
 }
 
-// Stub runners for legacy agents (keeping them simple)
 async function runSupplierOnboarding(): Promise<Record<string, unknown>> { return { skipped: true } }
 async function runSupplierActivation(): Promise<Record<string, unknown>> { return { skipped: true } }
 async function runSupplierReactivation(): Promise<Record<string, unknown>> { return { skipped: true } }
@@ -187,10 +161,12 @@ async function runBookingCloser(): Promise<Record<string, unknown>> { return { s
 async function runCartAbandoner(): Promise<Record<string, unknown>> { return { skipped: true } }
 async function runUpsell(): Promise<Record<string, unknown>> { return { skipped: true } }
 async function runFollowUp(): Promise<Record<string, unknown>> { return { skipped: true } }
+async function runReviewGenerator(): Promise<Record<string, unknown>> { return { skipped: true } }
+async function runReferralAgent(): Promise<Record<string, unknown>> { return { sent: 0 } }
 
 async function runListingOptimizer(): Promise<Record<string, unknown>> {
   const { data: listings } = await supabaseAdmin
-    .from('listings').select('id, title, description, category_id, city, district, created_at')
+    .from('listings').select('id, title, description, category_id, city, district')
     .order('created_at', { ascending: false }).limit(5)
   type L = Record<string, unknown> & { id: string; title: string }
   const rows = (listings ?? []) as L[]
@@ -205,11 +181,6 @@ async function runListingOptimizer(): Promise<Record<string, unknown>> {
     const out = parseJsonResponse<Record<string, unknown>>(text)
     recommendations.push({ listing_id: l.id, listing_title: l.title, ...out })
   }
-  await sendEmail({
-    to: OWNER_EMAIL,
-    subject: `📝 ${recommendations.length} تحسينات إعلانات`,
-    html: `<div dir="rtl" style="font-family:Tahoma;padding:20px"><h2>📝 تحسينات</h2>${recommendations.map(r => `<div style="background:#FAF7F0;padding:12px;border-radius:8px;margin-bottom:8px"><strong>${r.listing_title}</strong></div>`).join('')}</div>`,
-  })
   return { count: recommendations.length }
 }
 
@@ -224,11 +195,6 @@ async function runSeoAgent(): Promise<Record<string, unknown>> {
     maxTokens: 2000, temperature: 0.5,
   })
   const out = parseJsonResponse<Record<string, unknown>>(text)
-  await sendEmail({
-    to: OWNER_EMAIL,
-    subject: '🔍 SEO تحسينات',
-    html: `<div dir="rtl"><pre>${JSON.stringify(out, null, 2)}</pre></div>`,
-  })
   return { recommendations_count: Object.keys(out).length }
 }
 
@@ -305,9 +271,6 @@ async function runCompetitorWatcher(): Promise<Record<string, unknown>> {
   return out
 }
 
-async function runReviewGenerator(): Promise<Record<string, unknown>> { return { skipped: true } }
-async function runReferralAgent(): Promise<Record<string, unknown>> { return { sent: 0 } }
-
 const RUNNERS: Record<string, (args?: Record<string, unknown>) => Promise<Record<string, unknown>>> = {
   // Phase 1
   'content-marketing': runContentMarketing,
@@ -329,7 +292,7 @@ const RUNNERS: Record<string, (args?: Record<string, unknown>) => Promise<Record
   'competitor-watcher': runCompetitorWatcher,
   'review-generator': runReviewGenerator,
   'referral-agent': runReferralAgent,
-  // Phase 2 — AI Operating System
+  // Phase 2
   'ad-designer': runAdDesigner as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
   'reel-script-writer': runReelScriptWriter as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
   'carousel-designer': runCarouselDesigner as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
@@ -338,6 +301,14 @@ const RUNNERS: Record<string, (args?: Record<string, unknown>) => Promise<Record
   'finance-tracker': runFinanceTracker,
   'ceo-assistant': runCEOAssistant,
   'strategy-agent': runStrategyAgent,
+  // Phase 4 — Support + Intelligence + Growth
+  'complaint-resolver': runComplaintResolver as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
+  'dispute-mediator': runDisputeMediator as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
+  'pricing-optimizer': runPricingOptimizer as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
+  'fraud-detector': runFraudDetector,
+  'demand-forecaster': runDemandForecaster,
+  'partnership-scout': runPartnershipScout,
+  'content-personalizer': runContentPersonalizer as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
 }
 
 export async function dispatchAgent(agentName: string, args?: Record<string, unknown>): Promise<AgentResult> {
