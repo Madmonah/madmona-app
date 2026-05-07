@@ -1,16 +1,15 @@
 'use client'
 
-import { useEffect, useState, type FormEvent } from 'react'
+// src/app/admin/marketplace-suppliers/page.tsx
+// Suppliers management — uses session auth, no separate password needed
+
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
-  Lock, RefreshCw, LogOut, ArrowRight, CheckCircle, XCircle,
-  AlertCircle, Clock, Phone, Mail, FileText, IdCard, Building2,
-  Percent, Tag,
+  RefreshCw, ArrowRight, CheckCircle, XCircle, AlertCircle, Clock,
+  Phone, Mail, FileText, IdCard, Building2, Tag, Loader2, ShieldAlert,
 } from 'lucide-react'
-
-// ============================================================================
-// Types
-// ============================================================================
+import { supabaseBrowser } from '@/lib/supabase-browser'
 
 type KycStatus = 'pending' | 'approved' | 'rejected' | 'suspended'
 
@@ -58,60 +57,45 @@ function formatDate(iso: string): string {
   } catch { return iso }
 }
 
-// ============================================================================
-// Page
-// ============================================================================
-
 export default function AdminMarketplaceSuppliersPage() {
-  const [password, setPassword] = useState('')
-  const [authed, setAuthed] = useState(false)
-  const [authError, setAuthError] = useState('')
+  const [authState, setAuthState] = useState<'checking' | 'unauth' | 'not_admin' | 'ready'>('checking')
   const [suppliers, setSuppliers] = useState<MarketplaceSupplier[]>([])
   const [loading, setLoading] = useState(false)
   const [filter, setFilter] = useState<'all' | KycStatus>('all')
   const [actioning, setActioning] = useState<string | null>(null)
 
+  // Verify admin session on mount
   useEffect(() => {
-    const stored = sessionStorage.getItem('madmona_admin_pw')
-    if (stored) {
-      setPassword(stored)
-      tryFetch(stored, true)
-    }
+    (async () => {
+      const { data: { user } } = await supabaseBrowser.auth.getUser()
+      if (!user) { setAuthState('unauth'); return }
+
+      // @ts-expect-error
+      const { data: profile } = await supabaseBrowser
+        .from('profiles').select('role').eq('id', user.id).maybeSingle()
+
+      if (profile?.role !== 'admin') { setAuthState('not_admin'); return }
+
+      setAuthState('ready')
+      fetchSuppliers()
+    })()
   }, [])
 
-  const tryFetch = async (pw: string, silent = false) => {
+  const fetchSuppliers = async () => {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/marketplace-suppliers', {
-        headers: { 'X-Admin-Password': pw },
+        credentials: 'include',
       })
-      if (res.status === 401) {
-        if (!silent) setAuthError('كلمة السر غلط')
-        sessionStorage.removeItem('madmona_admin_pw')
-        setAuthed(false)
+      if (!res.ok) {
+        if (res.status === 401) setAuthState('unauth')
         return
       }
-      if (!res.ok) return
       const data = await res.json()
       setSuppliers(data.suppliers || [])
-      setAuthed(true)
-      sessionStorage.setItem('madmona_admin_pw', pw)
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleLogin = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setAuthError('')
-    tryFetch(password)
-  }
-
-  const handleLogout = () => {
-    sessionStorage.removeItem('madmona_admin_pw')
-    setAuthed(false)
-    setPassword('')
-    setSuppliers([])
   }
 
   const updateSupplier = async (
@@ -122,11 +106,15 @@ export default function AdminMarketplaceSuppliersPage() {
     try {
       const res = await fetch('/api/admin/marketplace-suppliers', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ id, ...update }),
       })
       if (res.ok) {
-        await tryFetch(password, true)
+        await fetchSuppliers()
+      } else {
+        const err = await res.json().catch(() => ({}))
+        alert(`فشل: ${err.error || 'حصلت مشكلة'}`)
       }
     } finally {
       setActioning(null)
@@ -134,18 +122,18 @@ export default function AdminMarketplaceSuppliersPage() {
   }
 
   const handleApprove = (id: string) => {
-    if (!confirm('تأكيد الموافقة على أجر معانا؟ هيقدر يضيف listings ويستقبل حجوزات.')) return
+    if (!confirm('تأكيد الموافقة على المؤجر؟ هيقدر يضيف إعلانات ويستقبل حجوزات.')) return
     updateSupplier(id, { kyc_status: 'approved' })
   }
 
   const handleReject = (id: string) => {
-    const reason = prompt('سبب الرفض (يبعت لأجر معانا):')
+    const reason = prompt('سبب الرفض (يبعت للمؤجر):')
     if (reason === null) return
     updateSupplier(id, { kyc_status: 'rejected', kyc_rejection_reason: reason || 'لم يتم استيفاء متطلبات التحقق' })
   }
 
   const handleSuspend = (id: string) => {
-    if (!confirm('إيقاف أجر معانا؟ هتختفي listings بتاعته من الموقع لحد ما ترجعه.')) return
+    if (!confirm('إيقاف المؤجر؟ هتختفي إعلاناته من الموقع لحد ما ترجعه.')) return
     updateSupplier(id, { kyc_status: 'suspended' })
   }
 
@@ -158,64 +146,78 @@ export default function AdminMarketplaceSuppliersPage() {
     suspended: suppliers.filter(s => s.kyc_status === 'suspended').length,
   }
 
-  // ----- Login screen -----
-  if (!authed) {
+  // ============ STATES ============
+  if (authState === 'checking') {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
-        <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-          <div className="flex items-center justify-center w-12 h-12 bg-[#1F5F3F]/10 rounded-full mb-4 mx-auto">
-            <Lock className="w-5 h-5 text-[#1F5F3F]" />
+      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF7]" dir="rtl">
+        <Loader2 className="w-6 h-6 text-[#1F5F3F] animate-spin" />
+      </div>
+    )
+  }
+
+  if (authState === 'unauth') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF7] p-4" dir="rtl">
+        <div className="max-w-sm w-full bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center">
+          <div className="w-12 h-12 bg-[#1F5F3F]/10 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <ShieldAlert className="w-5 h-5 text-[#1F5F3F]" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 text-center mb-1">أجر معانا - Marketplace</h1>
-          <p className="text-sm text-gray-500 text-center mb-6">طلبات التسجيل الجديدة</p>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="كلمة السر"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F] text-right"
-              autoFocus
-            />
-            {authError && <p className="text-sm text-red-600 text-center">{authError}</p>}
-            <button
-              type="submit"
-              disabled={loading || !password}
-              className="w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50"
-            >
-              {loading ? 'جاري التحقق...' : 'دخول'}
-            </button>
-          </form>
+          <h1 className="text-lg font-bold text-gray-900 mb-2">لازم تسجل دخول الأول</h1>
+          <p className="text-sm text-gray-600 mb-5">
+            عشان توصل لإدارة المؤجرين، لازم تكون داخل بحساب أدمن.
+          </p>
+          <Link
+            href={`/auth/login?redirect=${encodeURIComponent('/admin/marketplace-suppliers')}`}
+            className="block w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-bold"
+          >
+            دخول
+          </Link>
+          <div className="mt-4 p-3 bg-[#FAFAF7] rounded-xl text-xs text-gray-700 text-right space-y-1">
+            <p><strong>📱 رقم التليفون:</strong> 01002229982</p>
+            <p><strong>🔐 كلمة السر:</strong> Madmona123</p>
+          </div>
         </div>
       </div>
     )
   }
 
+  if (authState === 'not_admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF7] p-4" dir="rtl">
+        <div className="max-w-sm w-full bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center">
+          <div className="w-12 h-12 bg-red-50 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <ShieldAlert className="w-5 h-5 text-red-600" />
+          </div>
+          <h1 className="text-lg font-bold text-gray-900 mb-2">صفحة الأدمن بس</h1>
+          <p className="text-sm text-gray-600">
+            الحساب اللي إنت داخل بيه مش أدمن. اخرج وادخل بحساب الإدارة.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // ============ MAIN UI (admin authenticated) ============
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/admin/dashboard" className="p-1 hover:bg-gray-50 rounded-full">
+            <Link href="/admin/hq" className="p-1 hover:bg-gray-50 rounded-full">
               <ArrowRight className="w-4 h-4 text-gray-600" />
             </Link>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">أجر معانا - Marketplace</h1>
+              <h1 className="text-lg font-bold text-gray-900">المؤجرين - أجر معانا</h1>
               <p className="text-xs text-gray-500 mt-0.5">{counts.all} مسجل</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => tryFetch(password)}
-              disabled={loading}
-              className="p-2 hover:bg-gray-50 rounded-full"
-            >
-              <RefreshCw className={`w-4 h-4 text-gray-600 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-            <button onClick={handleLogout} className="p-2 hover:bg-gray-50 rounded-full">
-              <LogOut className="w-4 h-4 text-gray-600" />
-            </button>
-          </div>
+          <button
+            onClick={fetchSuppliers}
+            disabled={loading}
+            className="p-2 hover:bg-gray-50 rounded-full"
+          >
+            <RefreshCw className={`w-4 h-4 text-gray-600 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
 
         <div className="max-w-4xl mx-auto px-4 pb-3 flex gap-2 overflow-x-auto">
@@ -244,11 +246,16 @@ export default function AdminMarketplaceSuppliersPage() {
         {counts.pending > 0 && filter === 'all' && (
           <div className="mb-4 flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-900">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-            <span>عندك {counts.pending} طلب قيد المراجعة</span>
+            <span>عندك <strong>{counts.pending} طلب</strong> قيد المراجعة</span>
           </div>
         )}
 
-        {filtered.length === 0 ? (
+        {loading && suppliers.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <Loader2 className="w-5 h-5 mx-auto animate-spin mb-2" />
+            بنحمّل البيانات...
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-12 text-gray-500">مفيش بيانات</div>
         ) : (
           <div className="space-y-3">
@@ -258,7 +265,6 @@ export default function AdminMarketplaceSuppliersPage() {
               const phoneClean = phone.replace(/\D/g, '')
               return (
                 <div key={s.id} className="bg-white rounded-xl border border-gray-100 p-5">
-                  {/* Header */}
                   <div className="flex items-start gap-3 mb-3">
                     {s.logo_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -282,12 +288,10 @@ export default function AdminMarketplaceSuppliersPage() {
                     </span>
                   </div>
 
-                  {/* Description */}
                   {s.description && (
                     <p className="text-sm text-gray-700 mb-3">{s.description}</p>
                   )}
 
-                  {/* Contact info */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mb-3">
                     {phone && (
                       <a
@@ -311,7 +315,6 @@ export default function AdminMarketplaceSuppliersPage() {
                     )}
                   </div>
 
-                  {/* KYC details */}
                   {(s.national_id || s.commercial_registration || s.tax_id) && (
                     <div className="text-xs bg-gray-50 rounded-lg p-3 mb-3 space-y-1.5">
                       {s.national_id && (
@@ -335,14 +338,12 @@ export default function AdminMarketplaceSuppliersPage() {
                     </div>
                   )}
 
-                  {/* Rejection reason */}
                   {s.kyc_rejection_reason && s.kyc_status === 'rejected' && (
                     <div className="text-xs text-red-700 bg-red-50 rounded-lg p-2 mb-3">
                       <strong>سبب الرفض:</strong> {s.kyc_rejection_reason}
                     </div>
                   )}
 
-                  {/* Stats (for approved) */}
                   {s.kyc_status === 'approved' && (
                     <div className="grid grid-cols-3 gap-2 text-xs bg-green-50 rounded-lg p-3 mb-3">
                       <div>
@@ -360,7 +361,6 @@ export default function AdminMarketplaceSuppliersPage() {
                     </div>
                   )}
 
-                  {/* Actions */}
                   <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                     <span className="text-xs text-gray-400 flex items-center gap-1">
                       <Clock className="w-3 h-3" />
