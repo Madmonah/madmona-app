@@ -1,6 +1,5 @@
 // src/app/api/agents/daily-report/route.ts
 // Daily Report Agent: runs daily at 10 PM Cairo time (8 PM UTC) via Vercel Cron
-// Pulls metrics from Supabase, asks Claude to interpret them, emails the result
 
 import { NextRequest, NextResponse } from 'next/server'
 import { callClaude, parseJsonResponse } from '@/lib/anthropic'
@@ -61,25 +60,21 @@ async function gatherMetrics(): Promise<DailyMetrics> {
   const todayStartIso = todayStart.toISOString()
   const sevenDaysAgoIso = sevenDaysAgo.toISOString()
 
-  // Today's signups (profiles created today)
   const { count: newSignupsToday } = await supabaseAdmin
     .from('profiles')
     .select('*', { count: 'exact', head: true })
     .gte('created_at', todayStartIso)
 
-  // Today's suppliers
   const { count: newSuppliersToday } = await supabaseAdmin
     .from('marketplace_suppliers')
     .select('*', { count: 'exact', head: true })
     .gte('created_at', todayStartIso)
 
-  // Today's listings
   const { count: newListingsToday } = await supabaseAdmin
     .from('listings')
     .select('*', { count: 'exact', head: true })
     .gte('created_at', todayStartIso)
 
-  // Today's bookings + total value
   const { data: todayBookings } = await supabaseAdmin
     .from('marketplace_bookings')
     .select('id, total_amount, created_at')
@@ -93,7 +88,6 @@ async function gatherMetrics(): Promise<DailyMetrics> {
     0
   )
 
-  // Past 7 days for averages
   const { count: signups7d } = await supabaseAdmin
     .from('profiles')
     .select('*', { count: 'exact', head: true })
@@ -112,7 +106,6 @@ async function gatherMetrics(): Promise<DailyMetrics> {
     .gte('created_at', sevenDaysAgoIso)
     .lt('created_at', todayStartIso)
 
-  // Totals
   const { count: totalSuppliers } = await supabaseAdmin
     .from('marketplace_suppliers')
     .select('*', { count: 'exact', head: true })
@@ -131,7 +124,6 @@ async function gatherMetrics(): Promise<DailyMetrics> {
     0
   )
 
-  // Recent signup sample (last 5)
   const { data: recentSignups } = await supabaseAdmin
     .from('profiles')
     .select('role, created_at')
@@ -201,7 +193,7 @@ async function runAgent() {
 
     const report = parseJsonResponse<ReportOutput>(claudeText)
     const emailHtml = buildReportEmailHtml(report, metrics)
-    const ownerEmail = process.env.MADMONA_OWNER_EMAIL ?? 'madmonaspace@gmail.com'
+    const ownerEmail = process.env.MADMONA_OWNER_EMAIL ?? 'madmona.admin@gmail.com'
 
     const sendResult = await sendEmail({
       to: ownerEmail,
@@ -226,12 +218,13 @@ async function runAgent() {
             email_id: sendResult.id,
             wins_count: report.wins.length,
             concerns_count: report.concerns.length,
+            sent_to: ownerEmail,
           },
         } as never)
         .eq('id', runId)
     }
 
-    return { success: true, report, metrics, email_id: sendResult.id }
+    return { success: true, report, metrics, email_id: sendResult.id, sent_to: ownerEmail }
   } catch (err) {
     const error = err as Error
     if (runId) {

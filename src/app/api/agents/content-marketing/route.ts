@@ -22,12 +22,6 @@ interface ContentOutput {
   best_posting_time: 'morning' | 'afternoon' | 'evening'
 }
 
-/**
- * Decide which category to generate today.
- * Day 1, 4, 7... → A (Marketplace)
- * Day 2, 5, 8... → B (Coworking)
- * Day 3, 6, 9... → C (Brand & Values)
- */
 function getTodaysCategoryHint(): string {
   const day = new Date().getDate()
   const mod = day % 3
@@ -41,7 +35,6 @@ async function runAgent() {
   const today = new Date().toISOString().split('T')[0]
   const categoryHint = getTodaysCategoryHint()
 
-  // Log run start
   const { data: run } = await supabaseAdmin
     .from('agent_runs')
     .insert({
@@ -68,7 +61,7 @@ async function runAgent() {
 
     const post = parseJsonResponse<ContentOutput>(claudeText)
     const emailHtml = buildContentEmailHtml(post, today)
-    const ownerEmail = process.env.MADMONA_OWNER_EMAIL ?? 'madmonaspace@gmail.com'
+    const ownerEmail = process.env.MADMONA_OWNER_EMAIL ?? 'madmona.admin@gmail.com'
 
     const sendResult = await sendEmail({
       to: ownerEmail,
@@ -91,12 +84,13 @@ async function runAgent() {
             category: post.category,
             topic: post.topic,
             email_id: sendResult.id,
+            sent_to: ownerEmail,
           },
         } as never)
         .eq('id', runId)
     }
 
-    return { success: true, post, email_id: sendResult.id }
+    return { success: true, post, email_id: sendResult.id, sent_to: ownerEmail }
   } catch (err) {
     const error = err as Error
     if (runId) {
@@ -169,7 +163,6 @@ function translatePostingTime(t: string): string {
 // ============================================================================
 
 export async function GET(request: NextRequest) {
-  // Vercel Cron sends GET requests with this header
   const cronSecret = request.headers.get('authorization')
   if (process.env.CRON_SECRET && cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -188,7 +181,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Allow manual trigger (for testing)
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
   if (
