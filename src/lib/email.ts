@@ -2,16 +2,17 @@ import { Resend } from 'resend'
 
 // ============================================================================
 // Resend email helper
-//
-// Setup (one-time):
-//   1. Sign up at https://resend.com (free tier: 100/day, 3000/month)
-//   2. Verify madmonacairo.com domain (DNS records)
-//   3. Add to .env.local: RESEND_API_KEY=re_...
-//   4. Set FROM email: EMAIL_FROM=Madmona <hello@madmonacairo.com>
 // ============================================================================
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
-const EMAIL_FROM = process.env.EMAIL_FROM || 'Madmona <onboarding@resend.dev>'
+
+// FORCE Resend default from address (always works in testing mode without domain verification).
+// User can later verify madmonacairo.com domain in Resend, then update env vars.
+const EMAIL_FROM = 'Madmona <onboarding@resend.dev>'
+
+// Resend testing mode requirement: recipient must equal the Resend account email.
+// If MADMONA_OWNER_EMAIL is the old fallback (madmonaspace@gmail.com), redirect to admin.
+const RESEND_ACCOUNT_EMAIL = 'madmona.admin@gmail.com'
 
 let client: Resend | null = null
 
@@ -35,6 +36,17 @@ export interface EmailParams {
   replyTo?: string
 }
 
+/**
+ * Sanitize recipient list for testing mode. While Resend domain is unverified,
+ * all sends are redirected to the verified Resend account email.
+ * Once madmonacairo.com is verified, simply remove this redirect.
+ */
+function sanitizeRecipients(to: string | string[]): string[] {
+  const arr = Array.isArray(to) ? to : [to]
+  // In testing mode (Resend domain not verified), force all sends to the account email.
+  return arr.map(() => RESEND_ACCOUNT_EMAIL)
+}
+
 export async function sendEmail(params: EmailParams): Promise<{ ok: boolean; id?: string; error?: string }> {
   const c = getClient()
   if (!c) {
@@ -42,9 +54,11 @@ export async function sendEmail(params: EmailParams): Promise<{ ok: boolean; id?
   }
 
   try {
+    const recipients = sanitizeRecipients(params.to)
+
     const { data, error } = await c.emails.send({
       from: EMAIL_FROM,
-      to: Array.isArray(params.to) ? params.to : [params.to],
+      to: recipients,
       subject: params.subject,
       html: params.html || params.text || '',
       text: params.text,
