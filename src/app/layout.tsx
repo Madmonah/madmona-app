@@ -2,10 +2,12 @@ import type { Metadata, Viewport } from 'next'
 import { Tajawal } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { Suspense } from 'react'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 import NotificationPrompt from '@/components/NotificationPrompt'
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics'
 import MetaPixel from '@/components/analytics/MetaPixel'
+import AnalyticsTracker from '@/components/AnalyticsTracker'
 import './globals.css'
 
 // Madmona root layout — Arabic typography (Tajawal), brand metadata,
@@ -38,9 +40,7 @@ export const metadata: Metadata = {
   publisher: 'Madmona',
   manifest: '/manifest.json',
   metadataBase: new URL(SITE_URL),
-  alternates: {
-    canonical: SITE_URL,
-  },
+  alternates: { canonical: SITE_URL },
   openGraph: {
     title: 'مضمونة | منصة حجز شاملة',
     description: 'مساحات، عقارات، مركبات، ومعدات — في مكان واحد بضمان كامل.',
@@ -57,18 +57,9 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
   },
-  appleWebApp: {
-    capable: true,
-    title: 'مضمونة',
-    statusBarStyle: 'default',
-  },
+  appleWebApp: { capable: true, title: 'مضمونة', statusBarStyle: 'default' },
   category: 'business',
 }
 
@@ -79,7 +70,6 @@ export const viewport: Viewport = {
   themeColor: '#1F5F3F',
 }
 
-// LocalBusiness — for Google Business presence (Madmona physical coworking space)
 const businessJsonLd = {
   '@context': 'https://schema.org',
   '@type': ['LocalBusiness', 'CoworkingSpace'],
@@ -96,11 +86,7 @@ const businessJsonLd = {
     addressRegion: 'القاهرة',
     addressCountry: 'EG',
   },
-  geo: {
-    '@type': 'GeoCoordinates',
-    latitude: 30.1134075,
-    longitude: 31.3655983,
-  },
+  geo: { '@type': 'GeoCoordinates', latitude: 30.1134075, longitude: 31.3655983 },
   hasMap: 'https://share.google/QbWskGlQ49AUTJrTc',
   openingHoursSpecification: [
     {
@@ -115,7 +101,6 @@ const businessJsonLd = {
   sameAs: ['https://www.instagram.com/madmona.space'],
 }
 
-// Organization — corporate identity for the marketplace
 const organizationJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
@@ -134,7 +119,6 @@ const organizationJsonLd = {
   sameAs: ['https://www.instagram.com/madmona.space'],
 }
 
-// WebSite — enables sitelinks search box in Google results
 const websiteJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
@@ -151,26 +135,13 @@ const websiteJsonLd = {
   },
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ar" dir="rtl" className={tajawal.variable}>
       <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
-        />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
       </head>
       <body className={`${tajawal.className} bg-[#FAFAF7] text-gray-900 antialiased`}>
         {children}
@@ -180,6 +151,9 @@ export default function RootLayout({
         <SpeedInsights />
         <GoogleAnalytics />
         <MetaPixel />
+        <Suspense fallback={null}>
+          <AnalyticsTracker />
+        </Suspense>
       </body>
     </html>
   )
