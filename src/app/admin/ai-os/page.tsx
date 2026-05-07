@@ -37,7 +37,7 @@ export default async function AIOSPage() {
   }
   const agents = (agentsRaw ?? []) as Agent[]
 
-  const [adsCount, reelsCount, qcCount, bookingDecisionsCount, briefsCount, playsCount, pendingCount] = await Promise.all([
+  const [adsCount, reelsCount, qcCount, bookingDecisionsCount, briefsCount, playsCount, pendingCount, insightsCount] = await Promise.all([
     supabaseAdmin.from('ad_creatives').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('reel_scripts').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('qc_reports').select('*', { count: 'exact', head: true }),
@@ -45,6 +45,7 @@ export default async function AIOSPage() {
     supabaseAdmin.from('ceo_briefs').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('strategy_plays').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('agent_runs').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabaseAdmin.from('agent_insights').select('*', { count: 'exact', head: true }).eq('status', 'new').eq('priority', 'high'),
   ])
 
   const byTeam = new Map<string, Agent[]>()
@@ -71,6 +72,17 @@ export default async function AIOSPage() {
           </p>
         </header>
 
+        {/* High priority alert */}
+        {(insightsCount.count ?? 0) > 0 && (
+          <a href="/admin/insights" style={{
+            display: 'block', background: '#C2410C', color: '#fff',
+            padding: 16, borderRadius: 12, marginBottom: 16,
+            textDecoration: 'none', fontWeight: 'bold', textAlign: 'center',
+          }}>
+            🚨 {insightsCount.count} insight عالي الأولوية محتاج إجراء — اضغط هنا
+          </a>
+        )}
+
         {/* Output stats */}
         <div style={{
           display: 'grid',
@@ -80,8 +92,8 @@ export default async function AIOSPage() {
         }}>
           {[
             { label: '🎨 Ad Creatives', val: adsCount.count ?? 0, href: '/admin/ad-creatives' },
-            { label: '🎬 Reel Scripts', val: reelsCount.count ?? 0 },
-            { label: '✅ QC Reports', val: qcCount.count ?? 0 },
+            { label: '🎬 Reel Scripts', val: reelsCount.count ?? 0, href: '/admin/reels' },
+            { label: '✅ QC Reports', val: qcCount.count ?? 0, href: '/admin/qc-reports' },
             { label: '📅 Booking Decisions', val: bookingDecisionsCount.count ?? 0 },
             { label: '🌅 CEO Briefs', val: briefsCount.count ?? 0, href: '/admin/ceo-briefs' },
             { label: '🧠 Strategy Plays', val: playsCount.count ?? 0, href: '/admin/strategy' },
