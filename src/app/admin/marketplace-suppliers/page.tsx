@@ -1,7 +1,7 @@
 'use client'
 
 // src/app/admin/marketplace-suppliers/page.tsx
-// Suppliers management — uses session auth, no separate password needed
+// Suppliers management — uses Supabase RPCs directly (no API endpoint, no env vars needed)
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -15,7 +15,7 @@ type KycStatus = 'pending' | 'approved' | 'rejected' | 'suspended'
 
 interface ProfileSummary {
   id: string
-  phone: string
+  phone: string | null
   email: string | null
   full_name: string | null
   avatar_url: string | null
@@ -57,42 +57,67 @@ function formatDate(iso: string): string {
   } catch { return iso }
 }
 
+type Stage = 'checking' | 'unauth' | 'not_admin' | 'ready' | 'error'
+
 export default function AdminMarketplaceSuppliersPage() {
-  const [authState, setAuthState] = useState<'checking' | 'unauth' | 'not_admin' | 'ready'>('checking')
+  const [stage, setStage] = useState<Stage>('checking')
   const [suppliers, setSuppliers] = useState<MarketplaceSupplier[]>([])
   const [loading, setLoading] = useState(false)
   const [filter, setFilter] = useState<'all' | KycStatus>('all')
   const [actioning, setActioning] = useState<string | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string>('')
 
-  // Verify admin session on mount
   useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabaseBrowser.auth.getUser()
-      if (!user) { setAuthState('unauth'); return }
+    init()
+  }, [])
+
+  const init = async () => {
+    try {
+      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      if (!session?.user) {
+        setStage('unauth')
+        return
+      }
 
       // @ts-expect-error
-      const { data: profile } = await supabaseBrowser
-        .from('profiles').select('role').eq('id', user.id).maybeSingle()
+      const { data: profile, error: profileError } = await supabaseBrowser
+        .from('profiles').select('role').eq('id', session.user.id).maybeSingle()
 
-      if (profile?.role !== 'admin') { setAuthState('not_admin'); return }
+      if (profileError) {
+        setErrorMsg(profileError.message)
+        setStage('error')
+        return
+      }
 
-      setAuthState('ready')
-      fetchSuppliers()
-    })()
-  }, [])
+      if (profile?.role !== 'admin') {
+        setStage('not_admin')
+        return
+      }
+
+      await fetchSuppliers()
+      setStage('ready')
+    } catch (e) {
+      setErrorMsg(e instanceof Error ? e.message : 'حصلت مشكلة')
+      setStage('error')
+    }
+  }
 
   const fetchSuppliers = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/admin/marketplace-suppliers', {
-        credentials: 'include',
-      })
-      if (!res.ok) {
-        if (res.status === 401) setAuthState('unauth')
+      // @ts-expect-error
+      const { data, error } = await supabaseBrowser.rpc('get_marketplace_suppliers_admin')
+      if (error) {
+        const msg = (error.message || '').toLowerCase()
+        if (msg.includes('forbidden')) { setStage('not_admin'); return }
+        if (msg.includes('unauthenticated')) { setStage('unauth'); return }
+        setErrorMsg(error.message)
+        setStage('error')
         return
       }
-      const data = await res.json()
-      setSuppliers(data.suppliers || [])
+      setSuppliers((data as MarketplaceSupplier[]) || [])
+    } catch (e) {
+      setErrorMsg(e instanceof Error ? e.message : 'حصلت مشكلة')
     } finally {
       setLoading(false)
     }
@@ -100,22 +125,22 @@ export default function AdminMarketplaceSuppliersPage() {
 
   const updateSupplier = async (
     id: string,
-    update: { kyc_status: KycStatus; kyc_rejection_reason?: string; commission_rate?: number }
+    kycStatus: KycStatus,
+    rejectionReason?: string,
   ) => {
     setActioning(id)
     try {
-      const res = await fetch('/api/admin/marketplace-suppliers', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ id, ...update }),
+      // @ts-expect-error
+      const { error } = await supabaseBrowser.rpc('update_supplier_kyc_admin', {
+        p_supplier_id: id,
+        p_kyc_status: kycStatus,
+        p_rejection_reason: rejectionReason || null,
       })
-      if (res.ok) {
-        await fetchSuppliers()
-      } else {
-        const err = await res.json().catch(() => ({}))
-        alert(`فشل: ${err.error || 'حصلت مشكلة'}`)
+      if (error) {
+        alert(`فشل: ${error.message}`)
+        return
       }
+      await fetchSuppliers()
     } finally {
       setActioning(null)
     }
@@ -123,18 +148,18 @@ export default function AdminMarketplaceSuppliersPage() {
 
   const handleApprove = (id: string) => {
     if (!confirm('تأكيد الموافقة على المؤجر؟ هيقدر يضيف إعلانات ويستقبل حجوزات.')) return
-    updateSupplier(id, { kyc_status: 'approved' })
+    updateSupplier(id, 'approved')
   }
 
   const handleReject = (id: string) => {
     const reason = prompt('سبب الرفض (يبعت للمؤجر):')
     if (reason === null) return
-    updateSupplier(id, { kyc_status: 'rejected', kyc_rejection_reason: reason || 'لم يتم استيفاء متطلبات التحقق' })
+    updateSupplier(id, 'rejected', reason || 'لم يتم استيفاء متطلبات التحقق')
   }
 
   const handleSuspend = (id: string) => {
     if (!confirm('إيقاف المؤجر؟ هتختفي إعلاناته من الموقع لحد ما ترجعه.')) return
-    updateSupplier(id, { kyc_status: 'suspended' })
+    updateSupplier(id, 'suspended')
   }
 
   const filtered = filter === 'all' ? suppliers : suppliers.filter(s => s.kyc_status === filter)
@@ -147,7 +172,7 @@ export default function AdminMarketplaceSuppliersPage() {
   }
 
   // ============ STATES ============
-  if (authState === 'checking') {
+  if (stage === 'checking') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAF7]" dir="rtl">
         <Loader2 className="w-6 h-6 text-[#1F5F3F] animate-spin" />
@@ -155,7 +180,27 @@ export default function AdminMarketplaceSuppliersPage() {
     )
   }
 
-  if (authState === 'unauth') {
+  if (stage === 'error') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF7] p-4" dir="rtl">
+        <div className="max-w-sm w-full bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center">
+          <div className="w-12 h-12 bg-red-50 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <AlertCircle className="w-5 h-5 text-red-600" />
+          </div>
+          <h1 className="text-lg font-bold text-gray-900 mb-2">حصلت مشكلة</h1>
+          <p className="text-sm text-gray-600 mb-4">{errorMsg}</p>
+          <button
+            onClick={() => { setStage('checking'); init() }}
+            className="block w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-bold"
+          >
+            حاول تاني
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (stage === 'unauth') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAF7] p-4" dir="rtl">
         <div className="max-w-sm w-full bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center">
@@ -172,16 +217,12 @@ export default function AdminMarketplaceSuppliersPage() {
           >
             دخول
           </Link>
-          <div className="mt-4 p-3 bg-[#FAFAF7] rounded-xl text-xs text-gray-700 text-right space-y-1">
-            <p><strong>📱 رقم التليفون:</strong> 01002229982</p>
-            <p><strong>🔐 كلمة السر:</strong> Madmona123</p>
-          </div>
         </div>
       </div>
     )
   }
 
-  if (authState === 'not_admin') {
+  if (stage === 'not_admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAF7] p-4" dir="rtl">
         <div className="max-w-sm w-full bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center">
@@ -190,20 +231,20 @@ export default function AdminMarketplaceSuppliersPage() {
           </div>
           <h1 className="text-lg font-bold text-gray-900 mb-2">صفحة الأدمن بس</h1>
           <p className="text-sm text-gray-600">
-            الحساب اللي إنت داخل بيه مش أدمن. اخرج وادخل بحساب الإدارة.
+            الحساب اللي إنت داخل بيه مش أدمن.
           </p>
         </div>
       </div>
     )
   }
 
-  // ============ MAIN UI (admin authenticated) ============
+  // ============ MAIN UI ============
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/admin/hq" className="p-1 hover:bg-gray-50 rounded-full">
+            <Link href="/admin/dashboard" className="p-1 hover:bg-gray-50 rounded-full">
               <ArrowRight className="w-4 h-4 text-gray-600" />
             </Link>
             <div>
@@ -230,9 +271,7 @@ export default function AdminMarketplaceSuppliersPage() {
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  filter === f
-                    ? 'bg-[#1F5F3F] text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  filter === f ? 'bg-[#1F5F3F] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 {labels[f]} ({counts[f]})
