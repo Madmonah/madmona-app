@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة الموردين - مضمونة</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tahoma', 'Arial', sans-serif; }
+  body { background: #FAF7F0; min-height: 100vh; padding: 20px; color: #1a1a1a; }
+  .container { max-width: 900px; margin: 0 auto; }
+  header {
+    background: linear-gradient(135deg, #1F5F3F 0%, #2d8259 100%);
+    color: #FAF7F0; padding: 24px; border-radius: 16px;
+    margin-bottom: 24px; box-shadow: 0 8px 32px rgba(31,95,63,0.2);
+  }
+  h1 { font-size: 24px; margin-bottom: 8px; }
+  .subtitle { font-size: 13px; opacity: 0.9; }
+  .filter-bar {
+    display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .filter-btn {
+    background: #fff; border: 1px solid #1F5F3F; color: #1F5F3F;
+    padding: 8px 16px; border-radius: 20px; cursor: pointer;
+    font-size: 13px; font-weight: bold; font-family: inherit;
+  }
+  .filter-btn.active { background: #1F5F3F; color: #fff; }
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px; margin-bottom: 20px;
+  }
+  .stat-box {
+    background: #fff; padding: 16px; border-radius: 12px;
+    text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .stat-box .value { font-size: 28px; font-weight: bold; color: #1F5F3F; }
+  .stat-box .label { font-size: 11px; color: #666; margin-top: 4px; }
+  .alert {
+    background: #fff3cd; border: 1px solid #ffc107; color: #856404;
+    padding: 14px; border-radius: 12px; margin-bottom: 20px; font-size: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .supplier-card {
+    background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-right: 4px solid #28a745;
+  }
+  .supplier-card.pending { border-right-color: #C2410C; background: #fffbeb; }
+  .supplier-card.rejected { border-right-color: #666; }
+  .supplier-card.suspended { border-right-color: #999; }
+  .supplier-header {
+    display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;
+  }
+  .supplier-name { font-size: 17px; font-weight: bold; color: #1F5F3F; }
+  .supplier-info { font-size: 13px; color: #666; margin-top: 4px; }
+  .status-badge {
+    padding: 6px 14px; border-radius: 16px; font-size: 12px; font-weight: bold;
+  }
+  .status-pending { background: #fff3cd; color: #856404; }
+  .status-approved { background: #d4edda; color: #155724; }
+  .status-rejected { background: #f8d7da; color: #721c24; }
+  .status-suspended { background: #e2e3e5; color: #383d41; }
+  .actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+  .btn { padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; border: none; font-family: inherit; }
+  .btn-approve { background: #28a745; color: #fff; }
+  .btn-reject { background: #C2410C; color: #fff; }
+  .btn-suspend { background: #6c757d; color: #fff; }
+  .btn-reactivate { background: #28a745; color: #fff; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .stats-mini {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    background: #f0fdf4; padding: 10px; border-radius: 8px; margin: 10px 0;
+  }
+  .stats-mini > div { text-align: center; }
+  .stats-mini .v { font-weight: bold; color: #1F5F3F; font-size: 16px; }
+  .stats-mini .l { font-size: 11px; color: #666; }
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #1F5F3F; color: #fff; padding: 14px 28px; border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 1000;
+    font-size: 14px; opacity: 0; transition: opacity 0.3s;
+    font-weight: bold;
+  }
+  .toast.show { opacity: 1; }
+  .loading { text-align: center; padding: 40px; color: #999; font-size: 14px; }
+  .empty { text-align: center; padding: 40px; color: #999; background: #fff; border-radius: 12px; font-size: 14px; }
+  .whatsapp { color: #25D366; text-decoration: none; font-weight: bold; }
+  .whatsapp:hover { text-decoration: underline; }
+  .description { font-size: 13px; color: #444; margin: 8px 0; line-height: 1.5; }
+  .refresh-btn {
+    background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.3);
+    padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px;
+    font-family: inherit; margin-top: 8px;
+  }
+  .refresh-btn:hover { background: rgba(255,255,255,0.3); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>👨‍💼 إدارة الموردين - مضمونة</h1>
+    <p class="subtitle">شغّال تلقائياً • مفيش حاجة محتاجة إعداد</p>
+    <button class="refresh-btn" onclick="loadSuppliers()">🔄 تحديث</button>
+  </header>
+
+  <div id="content">
+    <div class="stats" id="stats"></div>
+    <div id="alertBox"></div>
+    <div class="filter-bar" id="filterBar"></div>
+    <div id="suppliersList"><div class="loading">⏳ جاري تحميل الموردين...</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://mjhflxpxunwycbiquoig.supabase.co';
+const ADMIN_USER_ID = '147cd904-3228-401c-8b5f-79f43d6d081f';
+// Service key مدمج تلقائياً — مش محتاج تعمل copy/paste
+const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qaGZseHB4dW53eWNiaXF1b2lnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzMyODk5NiwiZXhwIjoyMDkyOTA0OTk2fQ.2hi_UCmFL9Cn4xvQKJRpna_JpWqqEVW8lJzhJ5h6ODw';
+
+let suppliers = [];
+let currentFilter = 'all';
+
+// Auto-load on page open
+window.addEventListener('DOMContentLoaded', loadSuppliers);
+
+async function supabaseFetch(path, options = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...options,
+    headers: {
+      'apikey': SERVICE_KEY,
+      'Authorization': `Bearer ${SERVICE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...(options.headers || {}),
+    },
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`${res.status}: ${text}`);
+  }
+  return res.json();
+}
+
+async function loadSuppliers() {
+  document.getElementById('suppliersList').innerHTML = '<div class="loading">⏳ جاري تحميل الموردين...</div>';
+  try {
+    const data = await supabaseFetch(
+      'marketplace_suppliers?select=*,profile:profiles!marketplace_suppliers_profile_id_fkey(id,full_name,phone,email)&order=created_at.desc'
+    );
+    suppliers = data;
+    render();
+  } catch (e) {
+    document.getElementById('suppliersList').innerHTML =
+      `<div class="empty">❌ خطأ: ${e.message}</div>`;
+    showToast('فشل التحميل');
+  }
+}
+
+function render() {
+  const counts = {
+    all: suppliers.length,
+    pending: suppliers.filter(s => s.kyc_status === 'pending').length,
+    approved: suppliers.filter(s => s.kyc_status === 'approved').length,
+    rejected: suppliers.filter(s => s.kyc_status === 'rejected').length,
+    suspended: suppliers.filter(s => s.kyc_status === 'suspended').length,
+  };
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-box"><div class="value" style="color:#28a745">${counts.approved}</div><div class="label">✅ معتمد</div></div>
+    <div class="stat-box"><div class="value" style="color:#C2410C">${counts.pending}</div><div class="label">⏳ في الانتظار</div></div>
+    <div class="stat-box"><div class="value" style="color:#666">${counts.rejected}</div><div class="label">❌ مرفوض</div></div>
+    <div class="stat-box"><div class="value" style="color:#999">${counts.suspended}</div><div class="label">🚫 موقوف</div></div>
+    <div class="stat-box"><div class="value">${counts.all}</div><div class="label">المجموع</div></div>
+  `;
+
+  document.getElementById('alertBox').innerHTML = counts.pending > 0
+    ? `<div class="alert">🟡 <strong>${counts.pending} مؤجر</strong> في انتظار موافقتك دلوقتي</div>`
+    : '';
+
+  document.getElementById('filterBar').innerHTML = `
+    <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" onclick="setFilter('all')">الكل (${counts.all})</button>
+    <button class="filter-btn ${currentFilter === 'pending' ? 'active' : ''}" onclick="setFilter('pending')">⏳ في الانتظار (${counts.pending})</button>
+    <button class="filter-btn ${currentFilter === 'approved' ? 'active' : ''}" onclick="setFilter('approved')">✅ معتمد (${counts.approved})</button>
+    <button class="filter-btn ${currentFilter === 'rejected' ? 'active' : ''}" onclick="setFilter('rejected')">❌ مرفوض (${counts.rejected})</button>
+    <button class="filter-btn ${currentFilter === 'suspended' ? 'active' : ''}" onclick="setFilter('suspended')">🚫 موقوف (${counts.suspended})</button>
+  `;
+
+  const filtered = currentFilter === 'all' ? suppliers : suppliers.filter(s => s.kyc_status === currentFilter);
+  if (filtered.length === 0) {
+    document.getElementById('suppliersList').innerHTML = '<div class="empty">مفيش مؤجرين في الفلتر ده</div>';
+    return;
+  }
+  document.getElementById('suppliersList').innerHTML = filtered.map(s => renderSupplier(s)).join('');
+}
+
+function renderSupplier(s) {
+  const phone = s.profile?.phone || '';
+  const phoneClean = phone.replace(/\D/g, '');
+  const statusLabels = {
+    pending: { label: '⏳ في الانتظار', class: 'pending' },
+    approved: { label: '✅ معتمد', class: 'approved' },
+    rejected: { label: '❌ مرفوض', class: 'rejected' },
+    suspended: { label: '🚫 موقوف', class: 'suspended' },
+  };
+  const statusInfo = statusLabels[s.kyc_status] || { label: s.kyc_status, class: 'pending' };
+
+  let actions = '';
+  if (s.kyc_status === 'pending') {
+    actions = `
+      <button class="btn btn-approve" onclick="action('${s.id}', 'approved')">✅ موافقة</button>
+      <button class="btn btn-reject" onclick="actionReject('${s.id}')">❌ رفض</button>
+    `;
+  } else if (s.kyc_status === 'approved') {
+    actions = `<button class="btn btn-suspend" onclick="actionConfirm('${s.id}', 'suspended', 'إيقاف هذا المؤجر؟')">🚫 إيقاف</button>`;
+  } else if (s.kyc_status === 'rejected' || s.kyc_status === 'suspended') {
+    actions = `<button class="btn btn-reactivate" onclick="action('${s.id}', 'approved')">✅ إعادة تفعيل</button>`;
+  }
+
+  const stats = s.kyc_status === 'approved' ? `
+    <div class="stats-mini">
+      <div><div class="v">${s.listings_count || 0}</div><div class="l">إعلانات</div></div>
+      <div><div class="v">${s.bookings_count || 0}</div><div class="l">حجوزات</div></div>
+      <div><div class="v">${s.commission_rate || 10}%</div><div class="l">عمولة</div></div>
+    </div>
+  ` : '';
+
+  const date = new Date(s.created_at).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  return `
+    <div class="supplier-card ${statusInfo.class}">
+      <div class="supplier-header">
+        <div>
+          <div class="supplier-name">🏪 ${s.business_name}</div>
+          ${s.profile?.full_name ? `<div class="supplier-info">👤 ${s.profile.full_name}</div>` : ''}
+          ${phone ? `<div class="supplier-info">📱 <a href="https://wa.me/${phoneClean}" target="_blank" class="whatsapp">${phone} (واتساب)</a></div>` : ''}
+          ${s.profile?.email ? `<div class="supplier-info">📧 ${s.profile.email}</div>` : ''}
+          <div class="supplier-info">📅 ${date}</div>
+        </div>
+        <span class="status-badge status-${statusInfo.class}">${statusInfo.label}</span>
+      </div>
+      ${s.description ? `<p class="description">${s.description}</p>` : ''}
+      ${stats}
+      ${s.kyc_rejection_reason ? `<div style="background:#f8d7da;color:#721c24;padding:8px;border-radius:6px;font-size:12px;margin-top:8px;"><strong>سبب الرفض:</strong> ${s.kyc_rejection_reason}</div>` : ''}
+      ${actions ? `<div class="actions">${actions}</div>` : ''}
+    </div>
+  `;
+}
+
+function setFilter(f) { currentFilter = f; render(); }
+
+async function action(id, newStatus, extraData = {}) {
+  if (newStatus === 'approved' && !confirm('تأكيد الموافقة على المؤجر؟ هيقدر يضيف إعلانات.')) return;
+
+  const update = {
+    kyc_status: newStatus,
+    kyc_reviewed_by: ADMIN_USER_ID,
+    kyc_reviewed_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    ...extraData,
+  };
+
+  try {
+    await supabaseFetch(`marketplace_suppliers?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(update),
+    });
+    showToast(newStatus === 'approved' ? '✅ تمت الموافقة بنجاح' :
+              newStatus === 'rejected' ? '❌ تم الرفض' :
+              newStatus === 'suspended' ? '🚫 تم الإيقاف' : '✅ تم التحديث');
+    await loadSuppliers();
+  } catch (e) {
+    showToast('فشل: ' + e.message);
+  }
+}
+
+function actionConfirm(id, status, message) {
+  if (!confirm(message)) return;
+  action(id, status);
+}
+
+function actionReject(id) {
+  const reason = prompt('سبب الرفض (اختياري):');
+  if (reason === null) return;
+  action(id, 'rejected', { kyc_rejection_reason: reason || 'لم يتم استيفاء متطلبات التحقق' });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

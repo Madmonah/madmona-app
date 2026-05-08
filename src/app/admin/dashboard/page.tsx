@@ -13,11 +13,12 @@ import {
 
 // ============================================================================
 // /admin/dashboard — full admin hub with ALL admin routes
+// FAST VERSION: uses get_admin_dashboard_stats() RPC (1 query instead of 9)
 // ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'forbidden' | 'ready'
 
-interface Stats {
+interface DashboardData {
   totalBookings: number
   monthBookings: number
   pendingBookings: number
@@ -36,6 +37,8 @@ interface Stats {
   totalReviews: number
   averageRating: number
   pushSubscribers: number
+  recentBookings: RecentBooking[]
+  topListings: TopListing[]
 }
 
 interface RecentBooking {
@@ -69,126 +72,38 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 
 export default function AdminDashboardPage() {
   const [stage, setStage] = useState<Stage>('loading')
-  const [stats, setStats] = useState<Stats | null>(null)
-  const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([])
-  const [topListings, setTopListings] = useState<TopListing[]>([])
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     const init = async () => {
-      const { data: { session } } = await supabaseBrowser.auth.getSession()
-      if (!session?.user) { setStage('unauthenticated'); return }
+      try {
+        const { data: { session } } = await supabaseBrowser.auth.getSession()
+        if (!session?.user) { setStage('unauthenticated'); return }
 
-      // @ts-expect-error
-      const { data: prof } = await supabaseBrowser
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .maybeSingle()
+        // Single fast RPC call - replaces 9 separate queries
+        // @ts-expect-error
+        const { data: stats, error } = await supabaseBrowser.rpc('get_admin_dashboard_stats')
 
-      if (prof?.role !== 'admin') { setStage('forbidden'); return }
+        if (error) {
+          // Try to detect forbidden/unauth from RPC error messages
+          const msg = (error.message || '').toLowerCase()
+          if (msg.includes('forbidden')) { setStage('forbidden'); return }
+          if (msg.includes('unauthenticated')) { setStage('unauthenticated'); return }
+          setLoadError(error.message || 'فشل تحميل البيانات')
+          setStage('ready')
+          return
+        }
 
-      await loadAllStats()
-      setStage('ready')
+        setData(stats as DashboardData)
+        setStage('ready')
+      } catch (e) {
+        setLoadError(e instanceof Error ? e.message : 'حصلت مشكلة')
+        setStage('ready')
+      }
     }
     init()
   }, [])
-
-  const loadAllStats = async () => {
-    const monthAgo = new Date()
-    monthAgo.setMonth(monthAgo.getMonth() - 1)
-
-    // @ts-expect-error
-    const { data: bookings } = await supabaseBrowser
-      .from('marketplace_bookings')
-      .select('id, status, total_amount, commission_amount, created_at')
-
-    const bookingsArr = (bookings || []) as Array<{
-      status: string
-      total_amount: number | string
-      commission_amount: number | string
-      created_at: string
-    }>
-
-    const totalGMV = bookingsArr
-      .filter(b => ['confirmed', 'active', 'completed'].includes(b.status))
-      .reduce((sum, b) => sum + Number(b.total_amount || 0), 0)
-    const totalCommission = bookingsArr
-      .filter(b => ['confirmed', 'active', 'completed'].includes(b.status))
-      .reduce((sum, b) => sum + Number(b.commission_amount || 0), 0)
-    const monthGMV = bookingsArr
-      .filter(b => ['confirmed', 'active', 'completed'].includes(b.status) && new Date(b.created_at) > monthAgo)
-      .reduce((sum, b) => sum + Number(b.total_amount || 0), 0)
-    const monthCommission = bookingsArr
-      .filter(b => ['confirmed', 'active', 'completed'].includes(b.status) && new Date(b.created_at) > monthAgo)
-      .reduce((sum, b) => sum + Number(b.commission_amount || 0), 0)
-
-    // @ts-expect-error
-    const { data: suppliers } = await supabaseBrowser.from('marketplace_suppliers').select('kyc_status')
-    const suppliersArr = (suppliers || []) as Array<{ kyc_status: string }>
-
-    // @ts-expect-error
-    const { data: listings } = await supabaseBrowser.from('listings').select('status')
-    const listingsArr = (listings || []) as Array<{ status: string }>
-
-    // @ts-expect-error
-    const { count: customersCount } = await supabaseBrowser
-      .from('profiles').select('id', { count: 'exact', head: true })
-
-    // @ts-expect-error
-    const { data: reviews } = await supabaseBrowser
-      .from('reviews').select('rating').eq('is_published', true)
-    const reviewsArr = (reviews || []) as Array<{ rating: number }>
-    const avgRating = reviewsArr.length > 0
-      ? reviewsArr.reduce((sum, r) => sum + r.rating, 0) / reviewsArr.length
-      : 0
-
-    // @ts-expect-error
-    const { count: pushCount } = await supabaseBrowser
-      .from('push_subscriptions').select('id', { count: 'exact', head: true })
-
-    setStats({
-      totalBookings: bookingsArr.length,
-      monthBookings: bookingsArr.filter(b => new Date(b.created_at) > monthAgo).length,
-      pendingBookings: bookingsArr.filter(b => b.status === 'pending_payment').length,
-      confirmedBookings: bookingsArr.filter(b => b.status === 'confirmed').length,
-      completedBookings: bookingsArr.filter(b => b.status === 'completed').length,
-      cancelledBookings: bookingsArr.filter(b => b.status === 'cancelled').length,
-      totalCommission,
-      monthCommission,
-      totalGMV,
-      monthGMV,
-      approvedSuppliers: suppliersArr.filter(s => s.kyc_status === 'approved').length,
-      pendingSuppliers: suppliersArr.filter(s => s.kyc_status === 'pending').length,
-      publishedListings: listingsArr.filter(l => l.status === 'published').length,
-      draftListings: listingsArr.filter(l => ['draft', 'pending_review'].includes(l.status)).length,
-      totalCustomers: customersCount || 0,
-      totalReviews: reviewsArr.length,
-      averageRating: avgRating,
-      pushSubscribers: pushCount || 0,
-    })
-
-    // @ts-expect-error
-    const { data: recent } = await supabaseBrowser
-      .from('marketplace_bookings')
-      .select(`
-        id, reference_code, total_amount, status, created_at,
-        listing:listings(title),
-        supplier:marketplace_suppliers(business_name),
-        customer:profiles!marketplace_bookings_customer_id_fkey(full_name)
-      `)
-      .order('created_at', { ascending: false })
-      .limit(8)
-    setRecentBookings((recent || []) as RecentBooking[])
-
-    // @ts-expect-error
-    const { data: top } = await supabaseBrowser
-      .from('listings')
-      .select('id, title, slug, views_count, bookings_count, rating')
-      .eq('status', 'published')
-      .order('views_count', { ascending: false })
-      .limit(5)
-    setTopListings((top || []) as TopListing[])
-  }
 
   if (stage === 'loading') {
     return (
@@ -227,7 +142,23 @@ export default function AdminDashboardPage() {
     )
   }
 
-  if (!stats) return null
+  if (loadError || !data) {
+    return (
+      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
+          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
+          <h1 className="font-bold mb-2">حصلت مشكلة في التحميل</h1>
+          <p className="text-sm text-gray-600 mb-4">{loadError || 'مفيش بيانات'}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold"
+          >
+            حاول تاني
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen gradient-mesh" dir="rtl">
@@ -244,204 +175,91 @@ export default function AdminDashboardPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-8 pb-12">
-        {/* HEADLINE METRICS */}
         <section>
           <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">الأرقام الكبرى</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <MetricCard icon={<DollarSign className="w-4 h-4" />} label="عمولة Madmona (شهر)" value={`${stats.monthCommission.toLocaleString('ar-EG')} ج.م`} subtitle={`إجمالي: ${stats.totalCommission.toLocaleString('ar-EG')}`} accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" />
-            <MetricCard icon={<TrendingUp className="w-4 h-4" />} label="GMV (شهر)" value={`${stats.monthGMV.toLocaleString('ar-EG')} ج.م`} subtitle={`إجمالي: ${stats.totalGMV.toLocaleString('ar-EG')}`} accent="bg-[#B8860B]/10 text-[#B8860B]" />
-            <MetricCard icon={<Calendar className="w-4 h-4" />} label="حجوزات الشهر" value={stats.monthBookings.toString()} subtitle={`إجمالي: ${stats.totalBookings}`} accent="bg-blue-100 text-blue-700" />
-            <MetricCard icon={<Users className="w-4 h-4" />} label="أجر مننا (عملاء)" value={stats.totalCustomers.toString()} subtitle={`${stats.approvedSuppliers} أجر معانا · ${stats.pendingSuppliers} معلّق · ${stats.pushSubscribers} 🔔`} accent="bg-purple-100 text-purple-700" />
+            <MetricCard icon={<DollarSign className="w-4 h-4" />} label="عمولة Madmona (شهر)" value={`${Number(data.monthCommission).toLocaleString('ar-EG')} ج.م`} subtitle={`إجمالي: ${Number(data.totalCommission).toLocaleString('ar-EG')}`} accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" />
+            <MetricCard icon={<TrendingUp className="w-4 h-4" />} label="GMV (شهر)" value={`${Number(data.monthGMV).toLocaleString('ar-EG')} ج.م`} subtitle={`إجمالي: ${Number(data.totalGMV).toLocaleString('ar-EG')}`} accent="bg-[#B8860B]/10 text-[#B8860B]" />
+            <MetricCard icon={<Calendar className="w-4 h-4" />} label="حجوزات الشهر" value={data.monthBookings.toString()} subtitle={`إجمالي: ${data.totalBookings}`} accent="bg-blue-100 text-blue-700" />
+            <MetricCard icon={<Users className="w-4 h-4" />} label="أجر مننا (عملاء)" value={data.totalCustomers.toString()} subtitle={`${data.approvedSuppliers} أجر معانا · ${data.pendingSuppliers} معلّق · ${data.pushSubscribers} 🔔`} accent="bg-purple-100 text-purple-700" />
           </div>
         </section>
 
-        {/* ADMIN TOOLS */}
         <section>
           <div className="flex items-end justify-between mb-3">
             <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest">أدوات الإدارة</h2>
-            {stats.pendingSuppliers > 0 && (
+            {data.pendingSuppliers > 0 && (
               <Link href="/admin/marketplace-suppliers" className="text-xs bg-yellow-400 text-gray-900 px-2.5 py-1 rounded-full font-bold animate-pulse-soft">
-                {stats.pendingSuppliers} أجر معانا يحتاج موافقة
+                {data.pendingSuppliers} أجر معانا يحتاج موافقة
               </Link>
             )}
           </div>
 
-          {/* 🛒 Marketplace Section */}
           <div className="mb-4">
             <p className="text-[10px] font-bold text-[#1F5F3F] uppercase tracking-widest mb-2 px-1">Marketplace</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard
-                href="/admin/listings"
-                icon={<Package className="w-5 h-5" />}
-                title="إدارة الخدمات"
-                subtitle={`${stats.publishedListings} منشور · ${stats.draftListings} مسودة`}
-                accent="bg-emerald-100 text-emerald-700"
-                badge={stats.draftListings > 0 ? stats.draftListings : undefined}
-              />
-              <ToolCard
-                href="/admin/marketplace-suppliers"
-                icon={<Building2 className="w-5 h-5" />}
-                title="أجر معانا"
-                subtitle={`${stats.approvedSuppliers} معتمد · ${stats.pendingSuppliers} معلّق`}
-                accent="bg-[#1F5F3F]/10 text-[#1F5F3F]"
-                badge={stats.pendingSuppliers > 0 ? stats.pendingSuppliers : undefined}
-              />
-              <ToolCard
-                href="/admin/marketplace-bookings"
-                icon={<Calendar className="w-5 h-5" />}
-                title="كل الحجوزات"
-                subtitle={`${stats.pendingBookings} بانتظار · ${stats.confirmedBookings} مؤكّد`}
-                accent="bg-blue-100 text-blue-700"
-              />
-              <ToolCard
-                href="/admin/categories"
-                icon={<FolderTree className="w-5 h-5" />}
-                title="الفئات والخصائص"
-                subtitle="Categories + Attributes"
-                accent="bg-purple-100 text-purple-700"
-              />
-              <ToolCard
-                href="/admin/payouts"
-                icon={<Wallet className="w-5 h-5" />}
-                title="المدفوعات"
-                subtitle="حساب وإصدار التحويلات"
-                accent="bg-green-100 text-green-700"
-              />
+              <ToolCard href="/admin/listings" icon={<Package className="w-5 h-5" />} title="إدارة الخدمات" subtitle={`${data.publishedListings} منشور · ${data.draftListings} مسودة`} accent="bg-emerald-100 text-emerald-700" badge={data.draftListings > 0 ? data.draftListings : undefined} />
+              <ToolCard href="/admin/marketplace-suppliers" icon={<Building2 className="w-5 h-5" />} title="أجر معانا" subtitle={`${data.approvedSuppliers} معتمد · ${data.pendingSuppliers} معلّق`} accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" badge={data.pendingSuppliers > 0 ? data.pendingSuppliers : undefined} />
+              <ToolCard href="/admin/marketplace-bookings" icon={<Calendar className="w-5 h-5" />} title="كل الحجوزات" subtitle={`${data.pendingBookings} بانتظار · ${data.confirmedBookings} مؤكّد`} accent="bg-blue-100 text-blue-700" />
+              <ToolCard href="/admin/categories" icon={<FolderTree className="w-5 h-5" />} title="الفئات والخصائص" subtitle="Categories + Attributes" accent="bg-purple-100 text-purple-700" />
+              <ToolCard href="/admin/payouts" icon={<Wallet className="w-5 h-5" />} title="المدفوعات" subtitle="حساب وإصدار التحويلات" accent="bg-green-100 text-green-700" />
             </div>
           </div>
 
-          {/* 📢 Communications + Site Content */}
           <div className="mb-4">
             <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest mb-2 px-1">التواصل والمحتوى</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard
-                href="/admin/notifications"
-                icon={<Bell className="w-5 h-5" />}
-                title="إرسال إشعارات"
-                subtitle={`${stats.pushSubscribers} مفعّل الإشعارات`}
-                accent="bg-blue-100 text-blue-700"
-              />
-              <ToolCard
-                href="/admin/site-settings"
-                icon={<ImageIcon className="w-5 h-5" />}
-                title="إعدادات الموقع"
-                subtitle="صور الـHero والكروت الكبيرة"
-                accent="bg-pink-100 text-pink-700"
-              />
-              <ToolCard
-                href="/admin/leads"
-                icon={<Phone className="w-5 h-5" />}
-                title="العملاء المحتملين"
-                subtitle="Leads من الفورمات"
-                accent="bg-orange-100 text-orange-700"
-              />
+              <ToolCard href="/admin/notifications" icon={<Bell className="w-5 h-5" />} title="إرسال إشعارات" subtitle={`${data.pushSubscribers} مفعّل الإشعارات`} accent="bg-blue-100 text-blue-700" />
+              <ToolCard href="/admin/site-settings" icon={<ImageIcon className="w-5 h-5" />} title="إعدادات الموقع" subtitle="صور الـHero والكروت الكبيرة" accent="bg-pink-100 text-pink-700" />
+              <ToolCard href="/admin/leads" icon={<Phone className="w-5 h-5" />} title="العملاء المحتملين" subtitle="Leads من الفورمات" accent="bg-orange-100 text-orange-700" />
             </div>
           </div>
 
-          {/* ⭐ Madmona Content (our own listings) */}
           <div className="mb-4">
             <p className="text-[10px] font-bold text-[#B8860B] uppercase tracking-widest mb-2 px-1">المحتوى (إعلاناتنا)</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard
-                href="/supplier/marketplace"
-                icon={<Settings className="w-5 h-5" />}
-                title="لوحة أجر معانا (مضمونة)"
-                subtitle="إدارة إعلاناتنا الخاصة"
-                accent="bg-[#1F5F3F]/10 text-[#1F5F3F]"
-              />
-              <ToolCard
-                href="/supplier/marketplace/new"
-                icon={<Package className="w-5 h-5" />}
-                title="إضافة إعلان جديد"
-                subtitle="مساحة، معدة، عربية..."
-                accent="bg-blue-100 text-blue-700"
-              />
-              <ToolCard
-                href="/supplier/marketplace/reviews"
-                icon={<Star className="w-5 h-5" />}
-                title="التقييمات"
-                subtitle={stats.totalReviews > 0 ? `${stats.totalReviews} تقييم · ${stats.averageRating.toFixed(1)} ⭐` : 'مفيش تقييمات'}
-                accent="bg-yellow-100 text-yellow-700"
-              />
-              <ToolCard
-                href="/"
-                icon={<Eye className="w-5 h-5" />}
-                title="عرض الموقع"
-                subtitle="شوف الموقع كما يراه أجر مننا"
-                accent="bg-pink-100 text-pink-700"
-              />
+              <ToolCard href="/supplier/marketplace" icon={<Settings className="w-5 h-5" />} title="لوحة أجر معانا (مضمونة)" subtitle="إدارة إعلاناتنا الخاصة" accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" />
+              <ToolCard href="/supplier/marketplace/new" icon={<Package className="w-5 h-5" />} title="إضافة إعلان جديد" subtitle="مساحة، معدة، عربية..." accent="bg-blue-100 text-blue-700" />
+              <ToolCard href="/supplier/marketplace/reviews" icon={<Star className="w-5 h-5" />} title="التقييمات" subtitle={data.totalReviews > 0 ? `${data.totalReviews} تقييم · ${Number(data.averageRating).toFixed(1)} ⭐` : 'مفيش تقييمات'} accent="bg-yellow-100 text-yellow-700" />
+              <ToolCard href="/" icon={<Eye className="w-5 h-5" />} title="عرض الموقع" subtitle="شوف الموقع كما يراه أجر مننا" accent="bg-pink-100 text-pink-700" />
             </div>
           </div>
 
-          {/* 👥 Team & Account */}
           <div className="mb-4">
             <p className="text-[10px] font-bold text-orange-700 uppercase tracking-widest mb-2 px-1">فريق العمل والحساب</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard
-                href="/supplier/team"
-                icon={<UserCog className="w-5 h-5" />}
-                title="إدارة الفريق"
-                subtitle="موظفين بصلاحيات"
-                accent="bg-orange-100 text-orange-700"
-              />
-              <ToolCard
-                href="/account"
-                icon={<Layers className="w-5 h-5" />}
-                title="حسابي"
-                subtitle="الإعدادات الشخصية"
-                accent="bg-gray-100 text-gray-700"
-              />
+              <ToolCard href="/supplier/team" icon={<UserCog className="w-5 h-5" />} title="إدارة الفريق" subtitle="موظفين بصلاحيات" accent="bg-orange-100 text-orange-700" />
+              <ToolCard href="/account" icon={<Layers className="w-5 h-5" />} title="حسابي" subtitle="الإعدادات الشخصية" accent="bg-gray-100 text-gray-700" />
             </div>
           </div>
 
-          {/* 📦 Legacy / Older Pages — للرجوع للبيانات القديمة */}
           <div>
             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 px-1">صفحات قديمة (Legacy)</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard
-                href="/admin/bookings"
-                icon={<History className="w-5 h-5" />}
-                title="حجوزات قديمة"
-                subtitle="Legacy bookings"
-                accent="bg-gray-100 text-gray-600"
-              />
-              <ToolCard
-                href="/admin/suppliers"
-                icon={<Briefcase className="w-5 h-5" />}
-                title="أجر معانا (قديم)"
-                subtitle="Legacy suppliers"
-                accent="bg-gray-100 text-gray-600"
-              />
-              <ToolCard
-                href="/admin/units"
-                icon={<ClipboardList className="w-5 h-5" />}
-                title="Units (قديم)"
-                subtitle="نظام الوحدات القديم"
-                accent="bg-gray-100 text-gray-600"
-              />
+              <ToolCard href="/admin/bookings" icon={<History className="w-5 h-5" />} title="حجوزات قديمة" subtitle="Legacy bookings" accent="bg-gray-100 text-gray-600" />
+              <ToolCard href="/admin/suppliers" icon={<Briefcase className="w-5 h-5" />} title="أجر معانا (قديم)" subtitle="Legacy suppliers" accent="bg-gray-100 text-gray-600" />
+              <ToolCard href="/admin/units" icon={<ClipboardList className="w-5 h-5" />} title="Units (قديم)" subtitle="نظام الوحدات القديم" accent="bg-gray-100 text-gray-600" />
             </div>
           </div>
         </section>
 
-        {/* BOOKINGS BREAKDOWN */}
         <section>
           <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">توزيع الحجوزات</h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <StatusCard label="بانتظار" value={stats.pendingBookings} color="text-yellow-700 bg-yellow-50" />
-            <StatusCard label="مؤكّد" value={stats.confirmedBookings} color="text-green-700 bg-green-50" />
-            <StatusCard label="تمّ" value={stats.completedBookings} color="text-gray-700 bg-gray-50" />
-            <StatusCard label="ملغي" value={stats.cancelledBookings} color="text-red-700 bg-red-50" />
-            <StatusCard label="تقييم متوسط" value={stats.averageRating > 0 ? `${stats.averageRating.toFixed(1)}` : '—'} color="text-[#B8860B] bg-[#B8860B]/10" suffix={stats.totalReviews > 0 ? `(${stats.totalReviews})` : ''} />
+            <StatusCard label="بانتظار" value={data.pendingBookings} color="text-yellow-700 bg-yellow-50" />
+            <StatusCard label="مؤكّد" value={data.confirmedBookings} color="text-green-700 bg-green-50" />
+            <StatusCard label="تمّ" value={data.completedBookings} color="text-gray-700 bg-gray-50" />
+            <StatusCard label="ملغي" value={data.cancelledBookings} color="text-red-700 bg-red-50" />
+            <StatusCard label="تقييم متوسط" value={data.averageRating > 0 ? `${Number(data.averageRating).toFixed(1)}` : '—'} color="text-[#B8860B] bg-[#B8860B]/10" suffix={data.totalReviews > 0 ? `(${data.totalReviews})` : ''} />
           </div>
         </section>
 
-        {/* TOP + RECENT */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {topListings.length > 0 && (
+          {data.topListings.length > 0 && (
             <div>
               <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">الأكثر مشاهدة</h2>
               <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
-                {topListings.map((listing, i) => (
+                {data.topListings.map((listing, i) => (
                   <Link key={listing.id} href={`/marketplace/${listing.slug}`} target="_blank" className="flex items-center gap-3 p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 no-underline">
                     <span className="w-6 h-6 bg-[#1F5F3F]/10 text-[#1F5F3F] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">{i + 1}</span>
                     <h4 className="flex-1 text-sm font-medium text-gray-900 truncate">{listing.title}</h4>
@@ -457,11 +275,11 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {recentBookings.length > 0 && (
+          {data.recentBookings.length > 0 && (
             <div>
               <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">آخر الحجوزات</h2>
               <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
-                {recentBookings.map(booking => {
+                {data.recentBookings.map(booking => {
                   const status = STATUS_LABELS[booking.status] || STATUS_LABELS.pending_payment
                   return (
                     <Link key={booking.id} href={`/bookings/${booking.id}`} className="flex items-center gap-3 p-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 no-underline">
