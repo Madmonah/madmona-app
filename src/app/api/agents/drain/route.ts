@@ -27,9 +27,8 @@ export async function POST(request: NextRequest) {
     .from('agent_runs')
     .select('id, agent_name, input_payload, started_at')
     .eq('status', 'pending')
-    .gte('started_at', oneHourAgo)
     .order('started_at', { ascending: true })
-    .limit(10)
+    .limit(50)
 
   type R = {
     id: string
