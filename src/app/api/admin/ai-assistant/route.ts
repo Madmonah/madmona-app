@@ -124,7 +124,9 @@ ${AGENT_CATALOG}
 5. اوعى تستخدم agents مش متاحة
 6. inputs لازم تكون detailed وواضحة
 
-# Output JSON:
+# Output JSON (رد بـ JSON فقط بدون أي نص إضافي):
+خلي الـ reply مختصر جداً (جملتين ماكس) والـ rationale سطر واحد.
+إدا لم تلتزم بالإيجاز، سيتم قطع الرد والفشل.
 {
   "understood": true/false,
   "reply": "رد بالعامية",
@@ -195,7 +197,7 @@ export async function POST(request: NextRequest) {
     const claudeResponse = await callClaude({
       systemPrompt: PARSER_SYSTEM_PROMPT,
       userMessage: userPayload,
-      maxTokens: 3000,
+      maxTokens: 8000,
       temperature: 0.4,
     })
 
