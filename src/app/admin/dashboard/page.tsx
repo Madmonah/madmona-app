@@ -188,6 +188,25 @@ export default function AdminDashboardPage() {
           </div>
         </section>
 
+        {/* AI Assistant Big Banner — chat with all 46 agents */}
+        <Link href="/admin/ai-assistant" className="block bg-gradient-to-l from-[#B8860B] via-[#d4a017] to-[#B8860B] text-white rounded-3xl p-6 shadow-luxe hover:shadow-2xl hover:-translate-y-0.5 transition-all no-underline relative overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/15 rounded-full blur-3xl" />
+          <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-[#1F5F3F]/30 rounded-full blur-3xl" />
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+                <Sparkles className="w-7 h-7" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black tracking-[0.3em] uppercase text-white/80 mb-1">CHAT · NATURAL LANGUAGE</p>
+                <h3 className="text-2xl font-black mb-1">المساعد الذكي</h3>
+                <p className="text-sm text-white/90">اومر الـ 46 agent بالعامية وهم ينفذوا</p>
+              </div>
+            </div>
+            <ArrowRight className="w-6 h-6 -scale-x-100 transition-transform hidden md:block" />
+          </div>
+        </Link>
+
         {/* AI OS Big Banner */}
         <Link href="/admin/ai-os" className="block bg-gradient-to-l from-[#1F5F3F] via-[#2d7a52] to-[#1F5F3F] text-white rounded-3xl p-6 shadow-luxe hover:shadow-2xl hover:-translate-y-0.5 transition-all no-underline relative overflow-hidden">
           <div className="absolute -top-12 -left-12 w-40 h-40 bg-[#B8860B]/20 rounded-full blur-3xl" />
@@ -239,6 +258,7 @@ export default function AdminDashboardPage() {
               <Bot className="w-3 h-3" /> الذكاء الاصطناعي والأتمتة
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <ToolCard href="/admin/ai-assistant" icon={<Sparkles className="w-5 h-5" />} title="المساعد الذكي" subtitle="اومر الـ agents بالعامية" accent="bg-gradient-to-br from-[#B8860B] to-[#1F5F3F] text-white" />
               <ToolCard href="/admin/ai-os" icon={<Bot className="w-5 h-5" />} title="AI OS Hub" subtitle="42 agents · 8 teams" accent="bg-[#1F5F3F] text-white" />
               <ToolCard href="/admin/agents" icon={<Brain className="w-5 h-5" />} title="إدارة الـ Agents" subtitle="تحكم في كل agent" accent="bg-purple-100 text-purple-700" />
               <ToolCard href="/admin/prompt-versions" icon={<GitBranch className="w-5 h-5" />} title="نسخ الـ Prompts" subtitle="META agent self-improving" accent="bg-indigo-100 text-indigo-700" />
