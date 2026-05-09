@@ -1,0 +1,62 @@
+{
+  "name": "مضمونة - احجز مساحتك",
+  "short_name": "مضمونة",
+  "description": "مساحات عمل في مصر الجديدة، القاهرة. احجز مكتبك أو غرفة اجتماعاتك في ثواني.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAF7",
+  "theme_color": "#1F5F3F",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/madmona-logo.png",
+      "sizes": "200x200",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "استكشف المساحات",
+      "short_name": "استكشف",
+      "description": "استكشف كل المساحات المتاحة",
+      "url": "/browse"
+    },
+    {
+      "name": "احجز غرفة اجتماعات",
+      "short_name": "اجتماعات",
+      "description": "احجز غرفة اجتماعات فوراً",
+      "url": "/reserve/meeting-room"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

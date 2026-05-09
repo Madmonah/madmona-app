@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Madmona — A4 Print (2-up Double-Sided)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Cormorant+Garamond:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    @page { size: A4 portrait; margin: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    html, body { font-family: 'Cairo', sans-serif; background: #f5f5f5; }
+
+    /* CSS variables for the photo (easy swap) */
+    :root {
+      --space-photo: url('https://drive.google.com/thumbnail?id=1vYchYinn0TcGeNZv7B85LwSIzu7_gyEA&sz=w2000');
+    }
+
+    .a4-sheet {
+      width: 210mm;
+      height: 297mm;
+      page-break-after: always;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .a4-sheet:last-child { page-break-after: auto; }
+
+    .cut-guide {
+      position: absolute;
+      top: 50%;
+      left: 0; right: 0;
+      border-top: 0.3mm dashed rgba(255, 255, 255, 0.25);
+      pointer-events: none;
+      z-index: 10;
+    }
+    .cut-guide::before {
+      content: '✂';
+      position: absolute;
+      top: -3mm; right: 3mm;
+      color: rgba(184, 134, 11, 0.7);
+      font-size: 10pt;
+      background: #1F5F3F;
+      padding: 0 2mm;
+    }
+    .cut-guide::after {
+      content: 'قص هنا';
+      position: absolute;
+      top: -2.5mm; left: 6mm;
+      color: rgba(184, 134, 11, 0.7);
+      font-size: 7pt;
+      letter-spacing: 2px;
+      background: #1F5F3F;
+      padding: 0 2mm;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .mini {
+      width: 210mm;
+      height: 148.5mm;
+      color: #FAF7F0;
+      padding: 12mm 15mm;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+    }
+
+    /* Logo */
+    .logo-circle-wrap {
+      width: 22mm;
+      height: 22mm;
+      border-radius: 50%;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 0 0 0.4mm rgba(184, 134, 11, 0.6);
+      flex-shrink: 0;
+      background: rgba(0,0,0,0.2);
+    }
+    .logo-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      mix-blend-mode: multiply;
+      filter: brightness(1.4) contrast(1.2) saturate(1.5);
+    }
+
+    /* ============ FRONT (Supplier) — with photo strip ============ */
+    .mini-front {
+      background: #1F5F3F;
+      grid-template-columns: 55mm auto 1fr;
+      grid-template-rows: auto 1fr auto;
+      grid-template-areas:
+        "photo logo  pitch"
+        "photo qr    cats"
+        "photo qr    url";
+      column-gap: 6mm;
+      row-gap: 5mm;
+      align-items: center;
+      padding-left: 0;
+    }
+
+    .mini-front .photo-strip {
+      grid-area: photo;
+      align-self: stretch;
+      justify-self: stretch;
+      background: var(--space-photo) center/cover no-repeat, #143d2a;
+      position: relative;
+    }
+    .mini-front .photo-strip::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to left, rgba(31,95,63,0) 0%, rgba(31,95,63,0.4) 70%, rgba(31,95,63,0.95) 100%);
+    }
+
+    .mini-front .logo-area {
+      grid-area: logo;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 2mm;
+    }
+    .mini-front .logo-tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 7pt; letter-spacing: 4px;
+      color: #B8860B; text-transform: uppercase;
+    }
+
+    .mini-front .pitch-area { grid-area: pitch; text-align: right; padding-left: 5mm; }
+    .pitch-headline {
+      font-size: 24pt; font-weight: 800;
+      line-height: 1.15; letter-spacing: -0.3px;
+    }
+    .pitch-headline .gold { color: #B8860B; }
+    .pitch-sub {
+      font-size: 9pt; font-weight: 400;
+      color: rgba(250, 247, 240, 0.82);
+      margin-top: 3mm; line-height: 1.5;
+    }
+
+    .mini-front .qr-area {
+      grid-area: qr;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 2mm;
+    }
+    .qr-block {
+      background: #FAF7F0; padding: 2.5mm;
+      box-shadow: 0 1mm 4mm rgba(0,0,0,0.2);
+    }
+    .qr-block img { width: 32mm; height: 32mm; display: block; }
+    .scan-cta {
+      font-size: 7.5pt; font-weight: 600;
+      color: #B8860B; letter-spacing: 0.5px;
+      text-align: center;
+    }
+
+    .mini-front .cats-area { grid-area: cats; align-self: center; padding-left: 5mm; }
+    .categories-frame {
+      border: 0.5px solid rgba(184, 134, 11, 0.7);
+      padding: 4mm 5mm;
+      position: relative;
+    }
+    .categories-frame::before {
+      content: 'نقبل';
+      position: absolute; top: -2.2mm;
+      right: 50%; transform: translateX(50%);
+      background: #1F5F3F; padding: 0 3mm;
+      font-size: 7pt; letter-spacing: 3px;
+      color: #B8860B; font-weight: 600;
+    }
+    .categories-list {
+      font-size: 7.5pt; line-height: 1.9;
+      letter-spacing: 0.2px;
+      color: rgba(250, 247, 240, 0.92);
+      text-align: center;
+    }
+    .categories-list .dot { color: #B8860B; margin: 0 1.5mm; font-weight: 700; }
+
+    .mini-front .url-area { grid-area: url; text-align: center; padding-left: 5mm; }
+    .url-block {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 8pt; letter-spacing: 2px;
+      color: #B8860B; text-transform: lowercase;
+      direction: ltr;
+    }
+
+    /* ============ BACK (Coworking) — full photo background ============ */
+    .mini-back {
+      background:
+        linear-gradient(rgba(31, 95, 63, 0.88), rgba(15, 50, 33, 0.92)),
+        var(--space-photo) center/cover no-repeat,
+        #1F5F3F;
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto 1fr auto;
+      grid-template-areas:
+        "logo  tag"
+        "logo  hero"
+        "info  info";
+      column-gap: 10mm;
+      row-gap: 4mm;
+    }
+
+    .mini-back .logo-area {
+      grid-area: logo;
+      align-self: center;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 2mm;
+    }
+    .mini-back .logo-tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 7pt; letter-spacing: 3px;
+      color: #B8860B; text-transform: uppercase;
+      text-align: center; max-width: 28mm; line-height: 1.4;
+    }
+
+    .mini-back .tag-area { grid-area: tag; align-self: end; text-align: right; }
+    .free-tag {
+      display: inline-block;
+      border: 0.5px solid #B8860B;
+      padding: 1.5mm 5mm;
+      font-size: 7.5pt; letter-spacing: 3px;
+      color: #B8860B; font-weight: 700;
+      background: rgba(31, 95, 63, 0.5);
+      backdrop-filter: blur(2mm);
+    }
+
+    .mini-back .hero-area { grid-area: hero; text-align: right; align-self: start; }
+    .hero-line {
+      font-size: 30pt; font-weight: 800;
+      line-height: 1.1;
+      text-shadow: 0 0.5mm 2mm rgba(0,0,0,0.3);
+    }
+    .hero-line-gold { color: #B8860B; }
+    .hero-subtext {
+      font-size: 9.5pt; line-height: 1.7;
+      font-weight: 400;
+      color: rgba(250, 247, 240, 0.92);
+      margin-top: 3mm;
+      text-shadow: 0 0.3mm 1mm rgba(0,0,0,0.3);
+    }
+    .hero-subtext .gold { color: #B8860B; font-weight: 600; }
+
+    .mini-back .info-area {
+      grid-area: info; text-align: center;
+      font-size: 8pt; line-height: 1.8;
+      letter-spacing: 0.2px;
+      border-top: 0.4px solid rgba(184, 134, 11, 0.6);
+      padding-top: 3mm;
+      background: rgba(0,0,0,0.15);
+      margin: 0 -10mm -2mm -10mm;
+      padding-left: 10mm;
+      padding-right: 10mm;
+      padding-bottom: 2mm;
+    }
+    .info-line { display: inline-block; margin: 0 4mm; }
+    .info-line .label { color: #B8860B; font-weight: 700; margin-left: 2mm; }
+
+    /* === Screen-only === */
+    @media screen {
+      body { padding: 30px 0; }
+      .a4-sheet { margin: 0 auto 30px; box-shadow: 0 8px 30px rgba(0,0,0,0.25); background: white; }
+      .instructions {
+        max-width: 210mm;
+        margin: 0 auto 30px;
+        padding: 25px 30px;
+        background: white;
+        border-right: 4px solid #1F5F3F;
+        font-size: 14px; line-height: 1.8;
+        font-family: 'Cairo', sans-serif;
+      }
+      .instructions h2 { color: #1F5F3F; margin-bottom: 12px; font-size: 18px; }
+      .instructions ol { padding-right: 22px; }
+      .instructions strong { color: #1F5F3F; }
+      .instructions .note { background: #FFF8E1; padding: 10px; margin-top: 12px; border-radius: 4px; font-size: 13px; }
+    }
+    @media print { .instructions { display: none; } }
+  </style>
+</head>
+<body>
+
+  <div class="instructions">
+    <h2>📄 طباعة A4 وش وضهر — تصميمين على كل وش</h2>
+    <ol>
+      <li>اضغط <strong>Ctrl+P</strong></li>
+      <li>Destination: <strong>"Save as PDF"</strong></li>
+      <li><strong>More settings</strong> → ✅ <strong>"Background graphics"</strong></li>
+      <li>Margins: <strong>None</strong> &nbsp;|&nbsp; Layout: <strong>Portrait</strong></li>
+      <li><strong>Save</strong> → اطبعه على المطبعة <strong>Double-Sided</strong></li>
+      <li>قص الورقة بالمقص في خط القص (السطر المنقط)</li>
+    </ol>
+    <div class="note">📌 الصورة من Drive — لو ما ظهرتش، تأكد من الـ Sharing settings (Anyone with the link can view). أو ابعت لي صور تانية وأنا أحط أكتر من واحدة.</div>
+  </div>
+
+  <!-- A4 #1: FRONT (2 × Supplier) -->
+  <div class="a4-sheet">
+    <div class="cut-guide"></div>
+
+    <div class="mini mini-front">
+      <div class="photo-strip"></div>
+      <div class="logo-area">
+        <div class="logo-circle-wrap">
+          <img class="logo-img" src="https://madmonacairo.com/madmona-logo.png" alt="Madmona">
+        </div>
+        <div class="logo-tagline">مضمونة</div>
+      </div>
+      <div class="pitch-area">
+        <div class="pitch-headline">أجّر معانا<br><span class="gold">واكسب أكتر</span></div>
+        <div class="pitch-sub">سجّل نشاطك على أكبر منصة تأجير في مصر — عملاء حقيقيين، حجوزات مباشرة، بدون رسوم تسجيل</div>
+      </div>
+      <div class="qr-area">
+        <div class="qr-block">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fmadmonacairo.com%2Fsupplier%2Fregister&size=900x900&format=png&margin=8&ecc=H" alt="Scan">
+        </div>
+        <div class="scan-cta">صَوَّر الكود واتسجل</div>
+      </div>
+      <div class="cats-area">
+        <div class="categories-frame">
+          <div class="categories-list">
+            شاليهات <span class="dot">•</span> سيارات <span class="dot">•</span> كاميرات و معدات ميديا<br>
+            ورك سبيس <span class="dot">•</span> معدات أفراح <span class="dot">•</span> غرف اجتماعات
+          </div>
+        </div>
+      </div>
+      <div class="url-area">
+        <div class="url-block">madmonacairo.com/supplier/register</div>
+      </div>
+    </div>
+
+    <!-- Mini #2 (copy) -->
+    <div class="mini mini-front">
+      <div class="photo-strip"></div>
+      <div class="logo-area">
+        <div class="logo-circle-wrap">
+          <img class="logo-img" src="https://madmonacairo.com/madmona-logo.png" alt="Madmona">
+        </div>
+        <div class="logo-tagline">مضمونة</div>
+      </div>
+      <div class="pitch-area">
+        <div class="pitch-headline">أجّر معانا<br><span class="gold">واكسب أكتر</span></div>
+        <div class="pitch-sub">سجّل نشاطك على أكبر منصة تأجير في مصر — عملاء حقيقيين، حجوزات مباشرة، بدون رسوم تسجيل</div>
+      </div>
+      <div class="qr-area">
+        <div class="qr-block">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fmadmonacairo.com%2Fsupplier%2Fregister&size=900x900&format=png&margin=8&ecc=H" alt="Scan">
+        </div>
+        <div class="scan-cta">صَوَّر الكود واتسجل</div>
+      </div>
+      <div class="cats-area">
+        <div class="categories-frame">
+          <div class="categories-list">
+            شاليهات <span class="dot">•</span> سيارات <span class="dot">•</span> كاميرات و معدات ميديا<br>
+            ورك سبيس <span class="dot">•</span> معدات أفراح <span class="dot">•</span> غرف اجتماعات
+          </div>
+        </div>
+      </div>
+      <div class="url-area">
+        <div class="url-block">madmonacairo.com/supplier/register</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- A4 #2: BACK (2 × Coworking) -->
+  <div class="a4-sheet">
+    <div class="cut-guide"></div>
+
+    <div class="mini mini-back">
+      <div class="logo-area">
+        <div class="logo-circle-wrap">
+          <img class="logo-img" src="https://madmonacairo.com/madmona-logo.png" alt="Madmona">
+        </div>
+        <div class="logo-tagline">Coworking<br>&amp; Lounge</div>
+      </div>
+      <div class="tag-area">
+        <div class="free-tag">دعوة خاصة</div>
+      </div>
+      <div class="hero-area">
+        <div class="hero-line">أول ساعة عندنا</div>
+        <div class="hero-line hero-line-gold">على حسابنا</div>
+        <div class="hero-subtext">
+          تعالى جرّب — <span class="gold">قعدة هادية، نت سريع، قهوة طازة</span> — في قلب مصر الجديدة
+        </div>
+      </div>
+      <div class="info-area">
+        <span class="info-line"><span class="label">العنوان:</span>٧ ش. سليمان عَزْمي، النزهة، مصر الجديدة</span>
+        <span class="info-line"><span class="label">المواعيد:</span>٩ ص – ١١ م يومياً</span>
+        <span class="info-line"><span class="label">الحجز:</span>01002229982</span>
+      </div>
+    </div>
+
+    <!-- Mini #2 (copy) -->
+    <div class="mini mini-back">
+      <div class="logo-area">
+        <div class="logo-circle-wrap">
+          <img class="logo-img" src="https://madmonacairo.com/madmona-logo.png" alt="Madmona">
+        </div>
+        <div class="logo-tagline">Coworking<br>&amp; Lounge</div>
+      </div>
+      <div class="tag-area">
+        <div class="free-tag">دعوة خاصة</div>
+      </div>
+      <div class="hero-area">
+        <div class="hero-line">أول ساعة عندنا</div>
+        <div class="hero-line hero-line-gold">على حسابنا</div>
+        <div class="hero-subtext">
+          تعالى جرّب — <span class="gold">قعدة هادية، نت سريع، قهوة طازة</span> — في قلب مصر الجديدة
+        </div>
+      </div>
+      <div class="info-area">
+        <span class="info-line"><span class="label">العنوان:</span>٧ ش. سليمان عَزْمي، النزهة، مصر الجديدة</span>
+        <span class="info-line"><span class="label">المواعيد:</span>٩ ص – ١١ م يومياً</span>
+        <span class="info-line"><span class="label">الحجز:</span>01002229982</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Madmona Door Poster — Full Preview (How it'll look)</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+html, body {
+  font-family: 'Cairo', sans-serif;
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 20px;
+}
+h1 {
+  color: #FAF7F0;
+  margin-bottom: 8px;
+  font-size: 24px;
+  font-weight: 800;
+  text-align: center;
+}
+.subtitle {
+  color: #B8860B;
+  font-size: 14px;
+  letter-spacing: 4px;
+  margin-bottom: 25px;
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+}
+.info {
+  color: rgba(250,247,240,0.7);
+  font-size: 13px;
+  max-width: 800px;
+  text-align: center;
+  margin-bottom: 30px;
+  line-height: 1.7;
+}
+
+/* Door wrapper showing actual scale */
+.door-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.door-label {
+  color: #B8860B;
+  font-size: 11px;
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+/* Door frame (visualizes door dimensions) */
+.door-frame {
+  width: 800px;
+  height: 800px;
+  position: relative;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 6px #2a2a2a, 0 0 0 8px #555;
+  background: #1F5F3F;
+  overflow: hidden;
+  /* Dimension marks */
+}
+
+/* Grid overlay showing tile boundaries */
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  z-index: 50;
+  pointer-events: none;
+}
+.grid-cell {
+  border: 0.5px dashed rgba(184, 134, 11, 0.18);
+  position: relative;
+}
+.grid-cell::after {
+  content: attr(data-label);
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  font-size: 7px;
+  color: rgba(184, 134, 11, 0.4);
+  font-weight: 600;
+  font-family: monospace;
+}
+
+/* The full design (scaled) */
+.full-design {
+  width: 2079px;
+  height: 2100px;
+  transform: scale(0.385);
+  transform-origin: top left;
+  position: absolute;
+  top: 0; left: 0;
+  background:
+    linear-gradient(rgba(31, 95, 63, 0.78), rgba(15, 50, 33, 0.88)),
+    url('https://drive.google.com/thumbnail?id=1vYchYinn0TcGeNZv7B85LwSIzu7_gyEA&sz=w2000') center/cover no-repeat,
+    #1F5F3F;
+  color: #FAF7F0;
+  font-family: 'Cairo', sans-serif;
+}
+
+/* === Logo === */
+.logo-block {
+  position: absolute;
+  top: 60mm;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12mm;
+}
+.logo-circle {
+  width: 220mm;
+  height: 220mm;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #FAF7F0;
+  box-shadow: 0 0 0 4mm #B8860B, 0 5mm 25mm rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.logo-circle img { width: 88%; height: 88%; object-fit: contain; }
+.wordmark {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 220pt;
+  letter-spacing: 25mm;
+  color: #FAF7F0;
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: 0.9;
+  padding-right: 25mm;
+  text-shadow: 0 1mm 5mm rgba(0,0,0,0.4);
+}
+
+/* === Hero === */
+.hero-block { position: absolute; top: 470mm; left: 0; width: 100%; text-align: center; }
+.hero-tag {
+  display: inline-block;
+  border: 1.5mm solid #B8860B;
+  background: rgba(15, 50, 33, 0.55);
+  padding: 8mm 30mm;
+  font-size: 80pt;
+  letter-spacing: 8mm;
+  color: #B8860B;
+  font-weight: 700;
+  margin-bottom: 30mm;
+}
+.hero-line {
+  font-size: 280pt;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -2mm;
+  color: #FAF7F0;
+  text-shadow: 0 2mm 8mm rgba(0,0,0,0.5);
+}
+.hero-line.gold { color: #B8860B; margin-top: 20mm; }
+
+/* === Services === */
+.services-block {
+  position: absolute;
+  top: 1080mm;
+  left: 50mm;
+  right: 50mm;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20mm;
+}
+.service-card {
+  background: rgba(15, 50, 33, 0.7);
+  border: 1mm solid #B8860B;
+  padding: 22mm 12mm;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10mm;
+  height: 290mm;
+  justify-content: center;
+  box-shadow: 0 3mm 12mm rgba(0,0,0,0.3);
+}
+.service-icon { font-size: 200pt; line-height: 1; }
+.service-name { font-size: 65pt; font-weight: 800; color: #FAF7F0; letter-spacing: 1mm; }
+.service-tag { font-size: 30pt; color: #B8860B; letter-spacing: 2mm; font-weight: 600; }
+
+/* === QR === */
+.qr-block {
+  position: absolute;
+  top: 1730mm;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 30mm;
+  background: rgba(15, 50, 33, 0.85);
+  padding: 25mm 40mm;
+  border: 0.8mm solid rgba(184, 134, 11, 0.5);
+  box-shadow: 0 5mm 20mm rgba(0,0,0,0.4);
+}
+.qr-frame { background: #FAF7F0; padding: 10mm; box-shadow: 0 3mm 12mm rgba(0,0,0,0.4); }
+.qr-frame img { width: 220mm; height: 220mm; display: block; }
+.qr-text { text-align: right; }
+.qr-cta-1 { font-size: 100pt; font-weight: 900; color: #FAF7F0; line-height: 1; }
+.qr-cta-2 { font-size: 100pt; font-weight: 900; color: #B8860B; line-height: 1; margin-top: 5mm; }
+.qr-cta-3 { font-size: 50pt; color: rgba(250,247,240,0.85); margin-top: 15mm; letter-spacing: 3mm; }
+
+/* === Footer === */
+.footer-block {
+  position: absolute;
+  bottom: 50mm;
+  left: 50mm;
+  right: 50mm;
+  text-align: center;
+  border-top: 1mm solid rgba(184,134,11,0.5);
+  padding-top: 25mm;
+  background: rgba(15, 50, 33, 0.5);
+}
+.url-line { font-family: 'Cormorant Garamond', serif; font-size: 70pt; letter-spacing: 5mm; color: #B8860B; font-weight: 700; direction: ltr; }
+.phone { font-family: 'Cormorant Garamond', serif; font-size: 60pt; color: #FAF7F0; margin-top: 12mm; letter-spacing: 4mm; direction: ltr; }
+.address { font-size: 45pt; color: rgba(250,247,240,0.92); margin-top: 12mm; letter-spacing: 2mm; }
+
+/* Toggle grid display */
+.controls {
+  margin-top: 25px;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+.controls button {
+  background: #1F5F3F;
+  color: #FAF7F0;
+  border: 1px solid #B8860B;
+  padding: 10px 20px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.controls button:hover { background: #2a7a52; }
+.controls .label-info { color: rgba(250,247,240,0.6); font-size: 12px; }
+
+/* Side dimensions */
+.dim-h, .dim-v {
+  position: absolute;
+  color: #B8860B;
+  font-size: 11px;
+  letter-spacing: 2px;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.dim-h { top: -28px; left: 50%; transform: translateX(-50%); }
+.dim-v { top: 50%; right: -50px; transform: translateY(-50%) rotate(-90deg); transform-origin: center; }
+</style>
+</head>
+<body>
+
+<h1>🚪 شكل الباب لما تتجمع الـ ٣٥ ورقة سوا</h1>
+<div class="subtitle">MADMONA DOOR POSTER — 2M × 2M PREVIEW</div>
+<div class="info">
+  المعاينة دي بتوريك التصميم كامل بعد ما تركّب الـ 35 ورقة A3 على الباب.<br>
+  الخطوط الذهبية المنقّطة بتورّيك مكان كل ورقة (R1C1 = يمين فوق، R5C7 = شمال تحت).
+</div>
+
+<div class="door-wrapper">
+  <div class="door-label">⬆ أعلى الباب — TOP ⬆</div>
+  <div class="door-frame" id="door">
+    <span class="dim-h">2 م</span>
+    <span class="dim-v">2 م</span>
+
+    <div class="full-design">
+      <!-- Logo + wordmark -->
+      <div class="logo-block">
+        <div class="logo-circle"><img src="https://madmonacairo.com/madmona-logo.png" alt="Madmona"></div>
+        <div class="wordmark">MADMONA</div>
+      </div>
+
+      <!-- Hero -->
+      <div class="hero-block">
+        <div class="hero-tag">منصة التأجير المضمونة</div>
+        <div class="hero-line">بنأجّر</div>
+        <div class="hero-line gold">كل حاجة</div>
+      </div>
+
+      <!-- Services -->
+      <div class="services-block">
+        <div class="service-card">
+          <div class="service-icon">🏖️</div>
+          <div class="service-name">شاليهات</div>
+          <div class="service-tag">CHALETS</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🚗</div>
+          <div class="service-name">سيارات</div>
+          <div class="service-tag">CARS</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">📷</div>
+          <div class="service-name">كاميرات &amp; معدات</div>
+          <div class="service-tag">CAMERAS &amp; MEDIA</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">💻</div>
+          <div class="service-name">ورك سبيس</div>
+          <div class="service-tag">COWORKING</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🎉</div>
+          <div class="service-name">معدات أفراح</div>
+          <div class="service-tag">EVENTS</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🪑</div>
+          <div class="service-name">غرف اجتماعات</div>
+          <div class="service-tag">MEETING ROOMS</div>
+        </div>
+      </div>
+
+      <!-- QR -->
+      <div class="qr-block">
+        <div class="qr-frame">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fmadmonacairo.com%2Fsupplier%2Fregister&size=2000x2000&format=png&margin=8&ecc=H" alt="QR">
+        </div>
+        <div class="qr-text">
+          <div class="qr-cta-1">صَوَّر الكود</div>
+          <div class="qr-cta-2">واتسجل دلوقتي</div>
+          <div class="qr-cta-3">٢ دقيقة بس</div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer-block">
+        <div class="url-line">madmonacairo.com / supplier / register</div>
+        <div class="phone">📞 01002229982</div>
+        <div class="address">٧ شارع سليمان عَزْمي، النزهة، مصر الجديدة</div>
+      </div>
+    </div>
+
+    <!-- Grid overlay (35 cells) -->
+    <div class="grid-overlay" id="grid"></div>
+  </div>
+  <div class="door-label">⬇ أسفل الباب — BOTTOM ⬇</div>
+</div>
+
+<div class="controls">
+  <button id="toggleGrid">إخفاء/إظهار خطوط التقطيع</button>
+  <span class="label-info">٣٥ ورقة A3 = ٧ أعمدة × ٥ صفوف</span>
+</div>
+
+<script>
+// Generate 35 grid cells with R/C labels
+const grid = document.getElementById('grid');
+for (let r = 0; r < 5; r++) {
+  for (let c = 0; c < 7; c++) {
+    const cell = document.createElement('div');
+    cell.className = 'grid-cell';
+    cell.dataset.label = `R${r+1}C${c+1}`;
+    grid.appendChild(cell);
+  }
+}
+
+// Toggle grid
+document.getElementById('toggleGrid').addEventListener('click', () => {
+  const g = document.getElementById('grid');
+  g.style.display = g.style.display === 'none' ? 'grid' : 'none';
+});
+</script>
+
+</body>
+</html>

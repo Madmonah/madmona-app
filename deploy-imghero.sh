@@ -1,0 +1,90 @@
+#!/bin/bash
+# Madmona  -  Deploy: Hero category images + Madmona-aligned news
+set +e
+cd "$(dirname "$0")" || exit 1
+
+LOG="/tmp/madmona-imghero.txt"
+echo "Madmona Deploy: Hero Images + Aligned News - $(date)" > "$LOG"
+
+clear
+echo "=========================================================="
+echo "  Madmona  -  Hero Images Fix + Madmona-Aligned News"
+echo "=========================================================="
+echo ""
+echo "  THIS DEPLOY (code only):"
+echo ""
+echo "  1. NEWS API REWRITTEN with Madmona-aligned categories:"
+echo "     OLD: economy/interior/locals/defense/sports/fashion/trending"
+echo "     NEW: economy/real_estate/automotive/business/tourism/fashion/tech"
+echo ""
+echo "     Each tab now matches a Madmona main category:"
+echo "       - economy:     universal interest"
+echo "       - real_estate: matches \"عقارات للإيجار\""
+echo "       - automotive:  matches \"مركبات ونقل\""
+echo "       - business:    matches \"مساحات عمل\""
+echo "       - tourism:     matches \"ترفيه + مركبات بحرية\""
+echo "       - fashion:     matches \"أعراس وتجهيزات\""
+echo "       - tech:        matches \"معدات ميديا\""
+echo ""
+echo "     Sources: 38 RSS feeds (Egyptian + Arabic + Google News RSS)"
+echo "     Strict keyword filtering for ALL categories now"
+echo ""
+echo "  2. CompactNewsTabs UPDATED with new tabs + icons:"
+echo "       💰 اقتصاد · 🏠 عقارات · 🚗 سيارات · 💼 أعمال"
+echo "       ✈️ سياحة · ✨ موضة وأعراس · 📷 تكنولوجيا"
+echo ""
+echo "  =========================================================="
+echo "  AFTER DEPLOY - RUN SQL TO FIX CATEGORY IMAGES:"
+echo "  =========================================================="
+echo ""
+echo "  File: migrations/2026-05-fix-category-images.sql"
+echo ""
+echo "  This fixes the homepage problem where 5 main categories"
+echo "  were all showing the SAME generic office image because"
+echo "  categories.image_url was NULL."
+echo ""
+echo "  SQL assigns themed Unsplash images per category:"
+echo "    📷 معدات ميديا  → camera/media setup"
+echo "    🏢 مساحات عمل   → coworking space"
+echo "    🏠 عقارات       → modern apartment"
+echo "    🚗 مركبات       → car dealership"
+echo "    🚜 معدات ثقيلة  → construction equipment"
+echo "    💒 أعراس        → wedding setup"
+echo "    🎯 ترفيه        → camping/outdoors"
+echo "    ⛵ مركبات بحرية → yacht"
+echo ""
+echo "  Open Supabase SQL Editor and paste the file content."
+echo ""
+read -p "Press Enter to deploy code..."
+
+echo ""
+echo "[1/3] Staging + committing..."
+git add -A 2>&1 | tee -a "$LOG"
+git commit -m "feat: rewrite news around Madmona main categories + fix hero category images SQL" 2>&1 | tee -a "$LOG"
+
+echo ""
+echo "[2/3] Rebase + pull..."
+git pull --rebase origin main 2>&1 | tee -a "$LOG"
+
+echo ""
+echo "[3/3] Push..."
+git push origin main 2>&1 | tee -a "$LOG"
+RC=$?
+
+if [ $RC -eq 0 ]; then
+  echo ""
+  echo "[SUCCESS] Pushed!"
+  git log --oneline -5
+  echo ""
+  echo "=========================================================="
+  echo "  NEXT STEP:"
+  echo "  Run migrations/2026-05-fix-category-images.sql"
+  echo "  in Supabase SQL Editor to populate category images"
+  echo "=========================================================="
+else
+  echo "[FAIL] Push exit: $RC"
+fi
+
+read -p "Press Enter to view log..."
+notepad.exe "$LOG"
+read -p "Press Enter to close..."

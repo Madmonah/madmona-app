@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Madmona — Design 3: Bold Photo Hero</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+@page { size: A4 portrait; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+body { font-family: 'Cairo', sans-serif; background: #f5f5f5; }
+.a4 { width: 210mm; height: 297mm; page-break-after: always; display: flex; flex-direction: column; position: relative; }
+.a4:last-child { page-break-after: auto; }
+.cut { position: absolute; top: 50%; left: 0; right: 0; border-top: 0.3mm dashed #B8860B; z-index: 10; }
+.cut::before { content: 'قص هنا ✂'; position: absolute; top: -3mm; right: 5mm; color: #B8860B; font-size: 7pt; background: #FAF7F0; padding: 0 3mm; letter-spacing: 2px; font-weight: 700; }
+.mini { width: 210mm; height: 148.5mm; position: relative; overflow: hidden; }
+
+.logo-circle { width: 16mm; height: 16mm; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 0.4mm rgba(184,134,11,0.7); flex-shrink: 0; }
+.logo-img { width: 100%; height: 100%; object-fit: cover; }
+
+/* === FRONT: Big photo top-left, content right === */
+.front { background: #1F5F3F; display: grid; grid-template-columns: 90mm 1fr; }
+.front .photo-area { background: url('https://drive.google.com/thumbnail?id=1vYchYinn0TcGeNZv7B85LwSIzu7_gyEA&sz=w2000') center/cover, #143d2a; position: relative; }
+.front .photo-area::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(31,95,63,0.15) 0%, rgba(31,95,63,0.6) 100%); }
+.front .photo-overlay { position: absolute; inset: 0; padding: 10mm; display: flex; flex-direction: column; justify-content: space-between; z-index: 2; color: #FAF7F0; }
+.front .photo-overlay .top { display: flex; align-items: center; gap: 4mm; }
+.front .photo-overlay .top-text { font-family: 'Cormorant Garamond', serif; font-size: 10pt; letter-spacing: 4px; color: #FAF7F0; text-transform: uppercase; }
+.front .photo-overlay .bottom { font-size: 14pt; font-weight: 700; line-height: 1.3; text-shadow: 0 0.5mm 2mm rgba(0,0,0,0.5); }
+.front .photo-overlay .bottom .gold { color: #B8860B; }
+.front .content-area { padding: 10mm 12mm; display: flex; flex-direction: column; justify-content: space-between; color: #FAF7F0; }
+.front h1 { font-size: 22pt; font-weight: 800; line-height: 1.15; letter-spacing: -0.3px; }
+.front h1 .gold { color: #B8860B; }
+.front .sub { font-size: 8.5pt; color: rgba(250,247,240,0.85); margin-top: 3mm; line-height: 1.55; }
+.front .qr-row { display: flex; align-items: center; gap: 5mm; margin: 5mm 0; }
+.front .qr-box { background: #FAF7F0; padding: 2.5mm; box-shadow: 0 1mm 4mm rgba(0,0,0,0.25); }
+.front .qr-box img { width: 28mm; height: 28mm; display: block; }
+.front .qr-text { flex: 1; }
+.front .qr-text .scan { font-size: 9pt; font-weight: 700; color: #B8860B; letter-spacing: 0.5px; }
+.front .qr-text .url { font-family: 'Cormorant Garamond', serif; font-size: 8pt; letter-spacing: 1px; color: rgba(250,247,240,0.8); margin-top: 2mm; direction: ltr; }
+.front .cats-pills { display: flex; flex-wrap: wrap; gap: 1.5mm; margin-top: 3mm; }
+.front .pill { background: rgba(184,134,11,0.15); border: 0.4px solid rgba(184,134,11,0.5); padding: 1.2mm 3mm; font-size: 7pt; color: #FAF7F0; border-radius: 1mm; }
+
+/* === BACK: Photo full background, big bold text overlay === */
+.back { background: linear-gradient(rgba(31,95,63,0.45), rgba(15,50,33,0.85)), url('https://drive.google.com/thumbnail?id=1vYchYinn0TcGeNZv7B85LwSIzu7_gyEA&sz=w2000') center/cover, #1F5F3F; padding: 12mm 18mm; color: #FAF7F0; display: flex; flex-direction: column; justify-content: space-between; }
+.back .header-row { display: flex; align-items: center; justify-content: space-between; }
+.back .header-left { display: flex; align-items: center; gap: 4mm; }
+.back .brand-mark { font-family: 'Cormorant Garamond', serif; font-size: 9pt; letter-spacing: 5px; color: #FAF7F0; text-transform: uppercase; }
+.back .free-tag { display: inline-block; border: 0.5px solid #B8860B; background: rgba(31,95,63,0.6); padding: 1.5mm 6mm; font-size: 8pt; letter-spacing: 4px; color: #B8860B; font-weight: 700; }
+.back .hero-block { text-align: center; }
+.back h2 { font-size: 38pt; font-weight: 800; line-height: 1.1; text-shadow: 0 1mm 4mm rgba(0,0,0,0.5); }
+.back h2.gold { color: #B8860B; }
+.back .subtitle { font-size: 10.5pt; line-height: 1.6; max-width: 145mm; margin: 4mm auto 0; color: #FAF7F0; text-shadow: 0 0.3mm 1mm rgba(0,0,0,0.4); }
+.back .subtitle .gold { color: #B8860B; font-weight: 700; }
+.back .footer-row { display: flex; justify-content: space-between; align-items: center; padding-top: 4mm; border-top: 0.4mm solid rgba(184,134,11,0.5); font-size: 8pt; }
+.back .footer-row span { color: rgba(250,247,240,0.95); }
+.back .footer-row b { color: #B8860B; }
+@media screen { body { padding: 30px 0; } .a4 { margin: 0 auto 30px; box-shadow: 0 8px 30px rgba(0,0,0,0.25); background: white; } }
+</style>
+</head>
+<body>
+<div class="a4"><div class="cut"></div>
+<div class="mini front">
+<div class="photo-area">
+<div class="photo-overlay">
+<div class="top"><div class="logo-circle"><img class="logo-img" src="https://madmonacairo.com/madmona-logo.png"></div><div class="top-text">Madmona</div></div>
+<div class="bottom">منصة تأجير<br><span class="gold">مصرية</span></div>
+</div>
+</div>
+<div class="content-area">
+<div>
+<h1>أجّر معانا<br><span class="gold">واكسب أكتر</span></h1>
+<div class="sub">سجّل نشاطك على أكبر منصة تأجير في مصر، عملاء حقيقيين، حجوزات مباشرة، بدون رسوم تسجيل</div>
+</div>
+<div class="qr-row">
+<div class="qr-box"><img src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fmadmonacairo.com%2Fsupplier%2Fregister&size=900x900&margin=8&ecc=H"></div>
+<div class="qr-text"><div class="scan">صَوَّر الكود<br>واتسجل دلوقتي</div><div class="url">madmonacairo.com<br>/supplier/register</div></div>
+</div>
+<div>
+<div style="font-size:7pt;color:#B8860B;letter-spacing:3px;margin-bottom:2mm;font-weight:700;">نقبل:</div>
+<div class="cats-pills"><span class="pill">شاليهات</span><span class="pill">سيارات</span><span class="pill">كاميرات</span><span class="pill">معدات ميديا</span><span class="pill">ورك سبيس</span><span class="pill">معدات أفراح</span><span class="pill">غرف اجتماعات</span></div>
+</div>
+</div>
+</div>
+<div class="mini front">
+<div class="photo-area">
+<div class="photo-overlay">
+<div class="top"><div class="logo-circle"><img class="logo-img" src="https://madmonacairo.com/madmona-logo.png"></div><div class="top-text">Madmona</div></div>
+<div class="bottom">منصة تأجير<br><span class="gold">مصرية</span></div>
+</div>
+</div>
+<div class="content-area">
+<div>
+<h1>أجّر معانا<br><span class="gold">واكسب أكتر</span></h1>
+<div class="sub">سجّل نشاطك على أكبر منصة تأجير في مصر، عملاء حقيقيين، حجوزات مباشرة، بدون رسوم تسجيل</div>
+</div>
+<div class="qr-row">
+<div class="qr-box"><img src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fmadmonacairo.com%2Fsupplier%2Fregister&size=900x900&margin=8&ecc=H"></div>
+<div class="qr-text"><div class="scan">صَوَّر الكود<br>واتسجل دلوقتي</div><div class="url">madmonacairo.com<br>/supplier/register</div></div>
+</div>
+<div>
+<div style="font-size:7pt;color:#B8860B;letter-spacing:3px;margin-bottom:2mm;font-weight:700;">نقبل:</div>
+<div class="cats-pills"><span class="pill">شاليهات</span><span class="pill">سيارات</span><span class="pill">كاميرات</span><span class="pill">معدات ميديا</span><span class="pill">ورك سبيس</span><span class="pill">معدات أفراح</span><span class="pill">غرف اجتماعات</span></div>
+</div>
+</div>
+</div>
+</div>
+<div class="a4"><div class="cut"></div>
+<div class="mini back">
+<div class="header-row">
+<div class="header-left"><div class="logo-circle"><img class="logo-img" src="https://madmonacairo.com/madmona-logo.png"></div><div class="brand-mark">Coworking & Lounge</div></div>
+<div class="free-tag">دعوة خاصة</div>
+</div>
+<div class="hero-block">
+<h2>أول ساعة عندنا</h2><h2 class="gold">على حسابنا</h2>
+<div class="subtitle">تعالى جرّب المكان — <span class="gold">قعدة هادية، نت سريع، قهوة طازة</span> — في قلب مصر الجديدة</div>
+</div>
+<div class="footer-row">
+<span><b>📍</b> ٧ ش. سليمان عَزْمي، النزهة</span>
+<span><b>🕐</b> ٩ ص – ١١ م يومياً</span>
+<span><b>📞</b> 01002229982</span>
+</div>
+</div>
+<div class="mini back">
+<div class="header-row">
+<div class="header-left"><div class="logo-circle"><img class="logo-img" src="https://madmonacairo.com/madmona-logo.png"></div><div class="brand-mark">Coworking & Lounge</div></div>
+<div class="free-tag">دعوة خاصة</div>
+</div>
+<div class="hero-block">
+<h2>أول ساعة عندنا</h2><h2 class="gold">على حسابنا</h2>
+<div class="subtitle">تعالى جرّب المكان — <span class="gold">قعدة هادية، نت سريع، قهوة طازة</span> — في قلب مصر الجديدة</div>
+</div>
+<div class="footer-row">
+<span><b>📍</b> ٧ ش. سليمان عَزْمي، النزهة</span>
+<span><b>🕐</b> ٩ ص – ١١ م يومياً</span>
+<span><b>📞</b> 01002229982</span>
+</div>
+</div>
+</div>
+</body>
+</html>

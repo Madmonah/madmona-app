@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>👑 Madmona OS</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+body { background: #0a0e0c; color: #e0e0e0; min-height: 100vh; }
+.topbar { background: linear-gradient(135deg, #1F5F3F 0%, #0f3a23 100%); color: #FAF7F0; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 2px solid #B8860B; }
+.topbar h1 { font-size: 20px; display: flex; align-items: center; gap: 10px; }
+.live-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.topbar button { background: rgba(255,255,255,0.1); color: #FAF7F0; border: 1px solid rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: inherit; }
+.tabs { background: #141816; padding: 0 24px; display: flex; overflow-x: auto; border-bottom: 1px solid #2a2f2c; position: sticky; top: 60px; z-index: 99; }
+.tab { padding: 14px 18px; cursor: pointer; color: #888; font-size: 13px; font-weight: bold; white-space: nowrap; border-bottom: 3px solid transparent; }
+.tab:hover { color: #ccc; background: rgba(31,95,63,0.1); }
+.tab.active { color: #B8860B; border-bottom-color: #B8860B; background: rgba(184,134,11,0.05); }
+.tab.special { color: #25D366; }
+.tab.special.active { color: #25D366; border-bottom-color: #25D366; background: rgba(37,211,102,0.1); }
+.container { max-width: 1280px; margin: 0 auto; padding: 24px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.kpi-card { background: linear-gradient(135deg, #1a1f1c 0%, #131715 100%); border: 1px solid #2a2f2c; border-radius: 12px; padding: 18px; border-right: 3px solid var(--accent, #1F5F3F); }
+.kpi-card .icon { font-size: 22px; margin-bottom: 8px; }
+.kpi-card .label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+.kpi-card .value { font-size: 26px; font-weight: bold; color: var(--accent, #B8860B); margin-top: 6px; }
+.kpi-card .sub { font-size: 11px; color: #666; margin-top: 4px; }
+.section-h { color: #B8860B; font-size: 16px; margin: 24px 0 14px; font-weight: bold; padding-bottom: 8px; border-bottom: 1px solid #2a2f2c; display: flex; justify-content: space-between; align-items: center; }
+.card { background: #1a1f1c; border: 1px solid #2a2f2c; border-radius: 10px; padding: 16px; margin-bottom: 12px; border-right: 3px solid #1F5F3F; }
+.card.urgent { border-right-color: #C2410C; background: linear-gradient(135deg, #2a1612 0%, #1a1f1c 100%); }
+.card.high { border-right-color: #B8860B; }
+.card.success { border-right-color: #22c55e; }
+.card.whatsapp { border-right-color: #25D366; background: linear-gradient(135deg, #122a18 0%, #1a1f1c 100%); }
+.card-title { font-size: 14px; font-weight: bold; color: #FAF7F0; }
+.card-meta { font-size: 11px; color: #888; margin-top: 4px; }
+.card-body { font-size: 12px; color: #bbb; line-height: 1.6; margin: 8px 0; }
+.card-action { background: rgba(31,95,63,0.2); border: 1px solid #1F5F3F; padding: 8px 10px; border-radius: 6px; font-size: 11px; color: #4ade80; margin-top: 8px; }
+.badge { padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: bold; display: inline-block; }
+.badge-urgent { background: #C2410C; color: #fff; }
+.badge-high { background: #B8860B; color: #fff; }
+.badge-success { background: #22c55e; color: #fff; }
+.badge-pending { background: #f59e0b; color: #fff; }
+.badge-rejected { background: #6b7280; color: #fff; }
+.badge-whatsapp { background: #25D366; color: #fff; }
+.btn { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; border: none; font-family: inherit; text-decoration: none; display: inline-block; }
+.btn-primary { background: #1F5F3F; color: #fff; }
+.btn-gold { background: #B8860B; color: #fff; }
+.btn-danger { background: #C2410C; color: #fff; }
+.btn-success { background: #22c55e; color: #fff; }
+.btn-whatsapp { background: #25D366; color: #fff; font-size: 13px; padding: 12px 24px; }
+.btn-whatsapp:hover { background: #1da851; }
+.btn-ghost { background: transparent; color: #B8860B; border: 1px solid #B8860B; }
+table { width: 100%; border-collapse: collapse; background: #1a1f1c; border-radius: 8px; overflow: hidden; }
+th { background: #0f3a23; color: #FAF7F0; padding: 10px; text-align: right; font-size: 11px; }
+td { padding: 10px; font-size: 12px; border-bottom: 1px solid #2a2f2c; color: #bbb; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1F5F3F; color: #fff; padding: 14px 28px; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); z-index: 1000; font-size: 14px; opacity: 0; transition: opacity 0.3s; font-weight: bold; pointer-events: none; }
+.toast.show { opacity: 1; }
+.toast.error { background: #C2410C; }
+.loading { text-align: center; padding: 40px; color: #888; }
+.empty { text-align: center; padding: 30px; color: #666; background: #1a1f1c; border-radius: 8px; }
+.filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-btn { background: #1a1f1c; border: 1px solid #2a2f2c; color: #888; padding: 6px 14px; border-radius: 16px; cursor: pointer; font-size: 12px; font-family: inherit; }
+.filter-btn.active { background: #B8860B; color: #fff; border-color: #B8860B; }
+a { color: #4ade80; text-decoration: none; }
+.message-preview { background: #0a0e0c; padding: 14px; border-radius: 8px; font-size: 13px; color: #ddd; white-space: pre-wrap; line-height: 1.7; border: 1px solid #2a2f2c; max-height: 200px; overflow-y: auto; margin: 10px 0; }
+.outbox-card { background: linear-gradient(135deg, #122a18 0%, #1a1f1c 100%); border: 1px solid #25D366; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.send-all-bar { background: linear-gradient(135deg, #25D366 0%, #1da851 100%); padding: 18px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
+.send-all-bar h3 { color: white; font-size: 16px; margin-bottom: 8px; }
+.send-all-bar p { color: rgba(255,255,255,0.9); font-size: 13px; margin-bottom: 12px; }
+.huge-btn { background: white; color: #25D366; padding: 14px 32px; border-radius: 10px; font-size: 16px; font-weight: bold; border: none; cursor: pointer; font-family: inherit; }
+.huge-btn:hover { background: #f0f0f0; }
+.intro-card { background: linear-gradient(135deg, #1F5F3F 0%, #B8860B 100%); padding: 20px; border-radius: 12px; margin-bottom: 24px; }
+.intro-card h2 { color: white; font-size: 20px; margin-bottom: 8px; }
+.intro-card p { color: rgba(255,255,255,0.9); font-size: 14px; line-height: 1.7; }
+.target-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #131715; border-radius: 6px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1><span class="live-dot"></span>👑 Madmona OS</h1>
+  <div style="display:flex;gap:8px;">
+    <span id="lastUpdate" style="font-size:11px;opacity:0.7;align-self:center;"></span>
+    <button onclick="loadAll()">🔄 تحديث</button>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <div class="tab active" data-tab="dashboard">📊 لوحة القيادة</div>
+  <div class="tab special" data-tab="outbox">📤 رسائل جاهزة (Outbox)</div>
+  <div class="tab" data-tab="suppliers">🏪 موردين</div>
+  <div class="tab" data-tab="bookings">📅 حجوزات</div>
+  <div class="tab" data-tab="partnerships">🤝 شراكات</div>
+  <div class="tab" data-tab="insights">💡 Insights</div>
+  <div class="tab" data-tab="agents">🤖 AI Agents</div>
+  <div class="tab" data-tab="ai-command">⚡ AI Command</div>
+</nav>
+
+<main class="container">
+  <div id="content"><div class="loading">⏳ بنحمل البيانات...</div></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://mjhflxpxunwycbiquoig.supabase.co';
+const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qaGZseHB4dW53eWNiaXF1b2lnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzMyODk5NiwiZXhwIjoyMDkyOTA0OTk2fQ.2hi_UCmFL9Cn4xvQKJRpna_JpWqqEVW8lJzhJ5h6ODw';
+const ADMIN_USER_ID = '147cd904-3228-401c-8b5f-79f43d6d081f';
+const AGENT_WEBHOOK = 'c9aade438b57204664c496dcd43ab8a640af5061273abc6591522bf96065d0c7';
+
+let DATA = { suppliers: [], bookings: [], listings: [], customers: 0, insights: [], partnerships: [], agents: [], outbox: [] };
+let currentTab = 'dashboard';
+
+async function sb(path, options = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...options,
+    headers: { 'apikey': SERVICE_KEY, 'Authorization': `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation', ...(options.headers || {}) },
+  });
+  if (!res.ok) { const text = await res.text(); throw new Error(`${res.status}: ${text.substring(0, 200)}`); }
+  return res.json();
+}
+
+// Generate "outbox" messages based on data
+function generateOutbox() {
+  const messages = [];
+  
+  // Inactive suppliers (approved but no listings)
+  DATA.suppliers
+    .filter(s => s.kyc_status === 'approved' && (s.listings_count || 0) === 0 && s.profile?.phone)
+    .forEach(s => {
+      const name = s.profile?.full_name || s.business_name;
+      messages.push({
+        id: 'sup_' + s.id,
+        category: 'موردين معندهومش إعلانات',
+        priority: 'high',
+        targetName: name,
+        targetPhone: s.profile.phone,
+        targetType: 'مورد',
+        message: `مرحبا ${name} 👋\n\nمن فريق مضمونة. شفنا إنك مسجل عندنا بـ "${s.business_name}" وحسابك معتمد ✓\n\nبس لسه ما عملتش إعلان لحد دلوقتي. عايزين نساعدك تطلق إعلانك في 5 دقايق:\n\n1️⃣ ادخل اللينك ده: madmonacairo.com/supplier/listings/new\n2️⃣ ارفع صورة + اكتب وصف بسيط\n3️⃣ حدد سعر اليوم/الساعة\n4️⃣ انشر — وإحنا هنبدأ نروج إعلانك\n\nاحنا بتوع الإيجار 🤝`,
+        sent: isSent('sup_' + s.id),
+      });
+    });
+
+  // Urgent partnerships (have outreach_message ready)
+  DATA.partnerships
+    .filter(p => (p.priority === 'urgent' || p.priority === 'high') && p.outreach_message)
+    .forEach(p => {
+      const handle = (p.partner_handle || '').replace('@', '');
+      messages.push({
+        id: 'part_' + p.id,
+        category: 'شراكات (Instagram)',
+        priority: p.priority,
+        targetName: p.partner_name,
+        targetPhone: null,
+        targetIG: handle,
+        targetType: 'شراكة',
+        message: p.outreach_message,
+        potentialValue: p.potential_value,
+        sent: isSent('part_' + p.id),
+      });
+    });
+
+  return messages.sort((a, b) => {
+    if (a.sent !== b.sent) return a.sent ? 1 : -1;
+    if (a.priority === 'urgent' && b.priority !== 'urgent') return -1;
+    if (b.priority === 'urgent' && a.priority !== 'urgent') return 1;
+    return 0;
+  });
+}
+
+function getSent() { return JSON.parse(localStorage.getItem('madmona_sent') || '{}'); }
+function isSent(id) { return !!getSent()[id]; }
+function markSent(id) {
+  const sent = getSent();
+  sent[id] = new Date().toISOString();
+  localStorage.setItem('madmona_sent', JSON.stringify(sent));
+  showToast('✅ تم تسجيل الرسالة كمبعوتة');
+  render();
+}
+function unmarkSent(id) {
+  const sent = getSent();
+  delete sent[id];
+  localStorage.setItem('madmona_sent', JSON.stringify(sent));
+  render();
+}
+
+async function loadAll() {
+  document.getElementById('content').innerHTML = '<div class="loading">⏳ بنحمل البيانات...</div>';
+  try {
+    const [suppliers, bookings, listings, customersRes, insights, partnerships, agents] = await Promise.all([
+      sb('marketplace_suppliers?select=*,profile:profiles!marketplace_suppliers_profile_id_fkey(id,full_name,phone,email)&order=created_at.desc'),
+      sb('marketplace_bookings?select=*,listing:listings(title,slug),supplier:marketplace_suppliers(business_name)&order=created_at.desc&limit=50'),
+      sb('listings?select=id,title,slug,status,views_count,bookings_count,rating,price_per_day&order=views_count.desc&limit=30'),
+      fetch(`${SUPABASE_URL}/rest/v1/profiles?select=count`, { headers: { 'apikey': SERVICE_KEY, 'Authorization': `Bearer ${SERVICE_KEY}`, 'Prefer': 'count=exact', 'Range': '0-0' }}).then(r => r.headers.get('content-range')?.split('/')[1] || 0),
+      sb('agent_insights?select=*&status=eq.new&order=priority.desc,created_at.desc&limit=20').catch(() => []),
+      sb('partnership_opportunities?select=*&order=created_at.desc&limit=20').catch(() => []),
+      sb('agent_registry?select=*&order=team,agent_name').catch(() => []),
+    ]);
+    
+    DATA = { suppliers, bookings, listings, customers: parseInt(customersRes) || 0, insights, partnerships, agents };
+    DATA.outbox = generateOutbox();
+    document.getElementById('lastUpdate').textContent = `✓ ${new Date().toLocaleTimeString('ar-EG')}`;
+    render();
+  } catch (e) {
+    document.getElementById('content').innerHTML = `<div class="empty">❌ ${e.message}</div>`;
+  }
+}
+
+function render() {
+  const renderers = {
+    dashboard: renderDashboard,
+    outbox: renderOutbox,
+    suppliers: renderSuppliers,
+    bookings: renderBookings,
+    partnerships: renderPartnerships,
+    insights: renderInsights,
+    agents: renderAgents,
+    'ai-command': renderAICommand,
+  };
+  document.getElementById('content').innerHTML = (renderers[currentTab] || renderDashboard)();
+}
+
+// ===== OUTBOX TAB - الأهم =====
+function renderOutbox() {
+  const pending = DATA.outbox.filter(m => !m.sent);
+  const sent = DATA.outbox.filter(m => m.sent);
+
+  return `
+    <div class="intro-card">
+      <h2>📤 رسائل جاهزة - ابعتها بضغطة واحدة</h2>
+      <p>
+        الـ AI كاتب رسالة مخصصة لكل مورد وعميل وشراكة. كل رسالة فيها زرار <strong>"📱 ابعت على واتساب"</strong> — ضغطة واحدة هتفتح لك واتساب الويب أو الموبايل بالرسالة جاهزة. اضغط Send وخلاص.
+      </p>
+    </div>
+
+    ${pending.length > 0 ? `
+      <div class="send-all-bar">
+        <h3>🚀 ${pending.length} رسالة جاهزة للإرسال</h3>
+        <p>اضغط الزرار وافتح كل الرسائل دفعة واحدة في واتساب الويب</p>
+        <button class="huge-btn" onclick="sendAllPending()">⚡ افتح كل الرسائل في واتساب</button>
+      </div>
+    ` : ''}
+
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--accent:#25D366"><div class="icon">📤</div><div class="label">جاهزة للإرسال</div><div class="value">${pending.length}</div></div>
+      <div class="kpi-card" style="--accent:#22c55e"><div class="icon">✅</div><div class="label">اتبعتت</div><div class="value">${sent.length}</div></div>
+      <div class="kpi-card" style="--accent:#B8860B"><div class="icon">📋</div><div class="label">المجموع</div><div class="value">${DATA.outbox.length}</div></div>
+    </div>
+
+    ${pending.length === 0 && sent.length === 0 ? `
+      <div class="empty">
+        <h3 style="color:#888;margin-bottom:8px;">📭 مفيش رسائل جاهزة</h3>
+        <p style="font-size:12px;">شغل الـ AI agents من tab "Agents" عشان يجهزوا رسائل جديدة</p>
+      </div>
+    ` : ''}
+
+    ${pending.length > 0 ? `
+      <div class="section-h">⏳ في انتظار الإرسال (${pending.length})</div>
+      ${pending.map(m => renderOutboxCard(m)).join('')}
+    ` : ''}
+
+    ${sent.length > 0 ? `
+      <div class="section-h">✅ اتبعتت (${sent.length})</div>
+      ${sent.map(m => renderOutboxCard(m)).join('')}
+    ` : ''}
+  `;
+}
+
+function renderOutboxCard(m) {
+  const phoneClean = m.targetPhone ? m.targetPhone.replace(/\D/g, '') : '';
+  const encoded = encodeURIComponent(m.message);
+  const waLink = m.targetPhone ? `https://wa.me/${phoneClean}?text=${encoded}` : null;
+  const igLink = m.targetIG ? `https://instagram.com/${m.targetIG}` : null;
+
+  return `
+    <div class="outbox-card" style="${m.sent ? 'opacity:0.6;' : ''}">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+        <div>
+          <div style="font-size:14px;font-weight:bold;color:#FAF7F0;">${m.targetType === 'مورد' ? '🏪' : '🤝'} ${m.targetName}</div>
+          <div style="font-size:11px;color:#888;margin-top:4px;">
+            ${m.targetType} · ${m.category}
+            ${m.targetPhone ? `· 📱 ${m.targetPhone}` : ''}
+            ${m.targetIG ? `· 📷 @${m.targetIG}` : ''}
+          </div>
+          ${m.potentialValue ? `<div style="margin-top:6px;font-size:11px;color:#4ade80;">💎 ${m.potentialValue}</div>` : ''}
+        </div>
+        <span class="badge badge-${m.priority || 'success'}">${m.sent ? '✅ اتبعتت' : m.priority || 'high'}</span>
+      </div>
+      
+      <div class="message-preview">${m.message}</div>
+      
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+        ${waLink && !m.sent ? `<a href="${waLink}" target="_blank" class="btn btn-whatsapp" onclick="markSent('${m.id}')">📱 ابعت على واتساب</a>` : ''}
+        ${igLink && !m.sent ? `<a href="${igLink}" target="_blank" class="btn btn-primary" onclick="markSent('${m.id}')">📷 افتح Instagram</a>` : ''}
+        <button class="btn btn-ghost" onclick="copyText(\`${m.message.replace(/`/g, "'").replace(/\\/g, '\\\\')}\`)">📋 نسخ الرسالة</button>
+        ${m.sent ? `<button class="btn btn-ghost" onclick="unmarkSent('${m.id}')">↩️ علامة مش مبعوتة</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function sendAllPending() {
+  const pending = DATA.outbox.filter(m => !m.sent && m.targetPhone);
+  if (pending.length === 0) { showToast('مفيش رسائل بأرقام تليفون', true); return; }
+  if (!confirm(`هتفتح ${pending.length} تاب في المتصفح. كل تاب فيه واتساب جاهز برسالة. متأكد؟`)) return;
+  
+  pending.forEach((m, i) => {
+    setTimeout(() => {
+      const phoneClean = m.targetPhone.replace(/\D/g, '');
+      const encoded = encodeURIComponent(m.message);
+      window.open(`https://wa.me/${phoneClean}?text=${encoded}`, '_blank');
+      markSent(m.id);
+    }, i * 500); // 0.5 sec apart
+  });
+  showToast(`✅ بنفتح ${pending.length} تاب...`);
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+  const k = computeKPIs();
+  const pending = DATA.outbox.filter(m => !m.sent).length;
+  const urgent = DATA.insights.filter(i => i.priority === 'high').slice(0, 3);
+
+  return `
+    ${pending > 0 ? `
+      <div class="send-all-bar">
+        <h3>📤 ${pending} رسالة جاهزة في الـ Outbox</h3>
+        <p>الـ AI كاتب رسائل مخصصة للموردين والشراكات. ابعتها كلها بضغطة واحدة.</p>
+        <button class="huge-btn" onclick="switchTab('outbox')">⚡ روح للـ Outbox</button>
+      </div>
+    ` : ''}
+
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--accent:#22c55e"><div class="icon">💎</div><div class="label">عمولة</div><div class="value">${k.commission.toLocaleString('ar-EG')} ج</div></div>
+      <div class="kpi-card" style="--accent:#B8860B"><div class="icon">📈</div><div class="label">GMV</div><div class="value">${k.gmv.toLocaleString('ar-EG')} ج</div></div>
+      <div class="kpi-card" style="--accent:#0EA5E9"><div class="icon">🏪</div><div class="label">موردين معتمدين</div><div class="value">${k.approvedSuppliers}</div><div class="sub">${k.pendingSuppliers} معلق</div></div>
+      <div class="kpi-card" style="--accent:#8B5CF6"><div class="icon">📦</div><div class="label">إعلانات</div><div class="value">${k.publishedListings}</div></div>
+      <div class="kpi-card" style="--accent:#ec4899"><div class="icon">👥</div><div class="label">عملاء</div><div class="value">${k.customers}</div></div>
+      <div class="kpi-card" style="--accent:#25D366"><div class="icon">📤</div><div class="label">رسائل جاهزة</div><div class="value">${pending}</div></div>
+    </div>
+
+    ${urgent.length > 0 ? `
+      <div class="section-h">🚨 يحتاج اهتمامك</div>
+      ${urgent.map(ins => `
+        <div class="card high">
+          <div class="card-title">${ins.title}</div>
+          <div class="card-body">${(ins.description || '').substring(0, 250)}</div>
+          ${ins.recommended_action ? `<div class="card-action">👉 ${ins.recommended_action.substring(0, 200)}</div>` : ''}
+        </div>
+      `).join('')}
+    ` : ''}
+
+    <div class="section-h">📅 آخر الحجوزات</div>
+    ${DATA.bookings.slice(0, 5).map(b => `
+      <div class="card">
+        <div style="display:flex; justify-content:space-between;">
+          <div>
+            <div class="card-title">${b.listing?.title || '—'}</div>
+            <div class="card-meta">${b.supplier?.business_name || ''} · ${formatDate(b.created_at)}</div>
+          </div>
+          <div style="text-align:left">
+            <div style="font-size:14px;font-weight:bold;color:#22c55e">${Number(b.total_amount).toLocaleString('ar-EG')} ج</div>
+            <span class="badge badge-${b.status === 'confirmed' ? 'success' : 'pending'}">${b.status}</span>
+          </div>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+// ===== Other tabs =====
+let suppliersFilter = 'all';
+function renderSuppliers() {
+  const counts = countByStatus(DATA.suppliers, 'kyc_status');
+  const filtered = suppliersFilter === 'all' ? DATA.suppliers : DATA.suppliers.filter(s => s.kyc_status === suppliersFilter);
+  return `
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--accent:#22c55e"><div class="label">معتمد</div><div class="value">${counts.approved || 0}</div></div>
+      <div class="kpi-card" style="--accent:#C2410C"><div class="label">معلق</div><div class="value">${counts.pending || 0}</div></div>
+    </div>
+    <div class="filter-bar">
+      ${['all', 'pending', 'approved', 'rejected', 'suspended'].map(f => `
+        <button class="filter-btn ${suppliersFilter === f ? 'active' : ''}" onclick="setFilter('suppliers', '${f}')">
+          ${f === 'all' ? 'الكل' : f === 'pending' ? '⏳ معلق' : f === 'approved' ? '✅ معتمد' : f === 'rejected' ? '❌ مرفوض' : '🚫 موقوف'} (${f === 'all' ? DATA.suppliers.length : (counts[f] || 0)})
+        </button>
+      `).join('')}
+    </div>
+    ${filtered.map(s => renderSupplierCard(s)).join('')}
+  `;
+}
+
+function renderSupplierCard(s) {
+  const phone = s.profile?.phone || '';
+  const phoneClean = phone.replace(/\D/g, '');
+  const status = s.kyc_status;
+  const statusBadge = status === 'approved' ? 'success' : status === 'pending' ? 'pending' : 'rejected';
+  const statusLabel = status === 'approved' ? '✅ معتمد' : status === 'pending' ? '⏳ في الانتظار' : status === 'rejected' ? '❌ مرفوض' : '🚫 موقوف';
+
+  let actions = '';
+  if (status === 'pending') {
+    actions = `<button class="btn btn-success" onclick="supplierAction('${s.id}', 'approved')">✅ موافقة</button>
+               <button class="btn btn-danger" onclick="supplierReject('${s.id}')">❌ رفض</button>`;
+  } else if (status === 'approved') {
+    actions = `<button class="btn btn-ghost" onclick="if(confirm('إيقاف؟')) supplierAction('${s.id}', 'suspended')">🚫 إيقاف</button>`;
+  }
+  if (phone) {
+    actions += `<a href="https://wa.me/${phoneClean}" target="_blank" class="btn btn-whatsapp" style="font-size:12px;padding:8px 16px;">📱 واتساب</a>`;
+  }
+
+  return `
+    <div class="card ${status === 'pending' ? 'urgent' : ''}">
+      <div style="display:flex; justify-content:space-between;">
+        <div>
+          <div class="card-title">🏪 ${s.business_name}</div>
+          <div class="card-meta">
+            ${s.profile?.full_name ? `👤 ${s.profile.full_name}` : ''}
+            ${phone ? `· 📱 ${phone}` : ''}
+          </div>
+        </div>
+        <span class="badge badge-${statusBadge}">${statusLabel}</span>
+      </div>
+      ${status === 'approved' ? `<div class="card-meta" style="margin-top:8px">📦 ${s.listings_count || 0} إعلان · 📅 ${s.bookings_count || 0} حجز</div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end;flex-wrap:wrap">${actions}</div>
+    </div>
+  `;
+}
+
+function renderBookings() {
+  return `
+    <div class="section-h">📅 كل الحجوزات (${DATA.bookings.length})</div>
+    <table>
+      <thead><tr><th>الإعلان</th><th>المؤجر</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+      <tbody>
+        ${DATA.bookings.map(b => `
+          <tr>
+            <td>${b.listing?.title || '—'}</td>
+            <td>${b.supplier?.business_name || '—'}</td>
+            <td><strong>${Number(b.total_amount).toLocaleString('ar-EG')} ج</strong></td>
+            <td><span class="badge badge-${b.status === 'confirmed' ? 'success' : 'pending'}">${b.status}</span></td>
+            <td>${formatDate(b.created_at)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderPartnerships() {
+  return `
+    <div class="section-h">🤝 شراكات (${DATA.partnerships.length})</div>
+    ${DATA.partnerships.map(p => `
+      <div class="card ${p.priority === 'urgent' ? 'urgent' : 'high'}">
+        <div class="card-title">${p.priority === 'urgent' ? '🔥' : '⭐'} ${p.partner_name}</div>
+        <div class="card-meta">${p.partner_handle || ''} · ${p.partner_type}</div>
+        <div class="card-body">${(p.opportunity_summary || '').substring(0, 200)}</div>
+        ${p.potential_value ? `<div class="card-action">💎 ${p.potential_value}</div>` : ''}
+        <div style="margin-top:10px;">
+          <button class="btn btn-whatsapp" onclick="switchTab('outbox')">📤 شوف الرسالة في Outbox</button>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function renderInsights() {
+  return DATA.insights.map(ins => `
+    <div class="card ${ins.priority === 'high' ? 'urgent' : ''}">
+      <div class="card-title">${ins.title}</div>
+      <div class="card-body">${(ins.description || '').substring(0, 300)}</div>
+      ${ins.recommended_action ? `<div class="card-action">👉 ${ins.recommended_action}</div>` : ''}
+    </div>
+  `).join('') || '<div class="empty">مفيش insights</div>';
+}
+
+let agentTeamFilter = 'all';
+function renderAgents() {
+  const teams = [...new Set(DATA.agents.map(a => a.team))].sort();
+  const filtered = agentTeamFilter === 'all' ? DATA.agents : DATA.agents.filter(a => a.team === agentTeamFilter);
+  return `
+    <div class="filter-bar">
+      <button class="filter-btn ${agentTeamFilter === 'all' ? 'active' : ''}" onclick="setFilter('agents', 'all')">الكل (${DATA.agents.length})</button>
+      ${teams.map(t => `<button class="filter-btn ${agentTeamFilter === t ? 'active' : ''}" onclick="setFilter('agents', '${t}')">${t}</button>`).join('')}
+    </div>
+    <table>
+      <thead><tr><th>Agent</th><th>Team</th><th>الحالة</th><th>الإجراء</th></tr></thead>
+      <tbody>${filtered.map(a => `<tr><td><strong>${a.display_name || a.agent_name}</strong></td><td>${a.team}</td><td><span class="badge badge-${a.enabled ? 'success' : 'rejected'}">${a.enabled ? 'ON' : 'OFF'}</span></td><td><button class="btn btn-primary" onclick="runAgent('${a.agent_name}')">▶ شغل</button></td></tr>`).join('')}</tbody>
+    </table>
+  `;
+}
+
+function renderAICommand() {
+  return `
+    <div style="background: linear-gradient(135deg, #1F5F3F 0%, #B8860B 100%); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+      <h3 style="color:#fff;font-size:14px;margin-bottom:10px;">⚡ AI Command</h3>
+      <textarea id="aiGoal" style="width:100%;background:rgba(0,0,0,0.4);color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:10px;font-size:13px;font-family:inherit;min-height:60px;margin-bottom:8px;" placeholder="اكتب الـ goal..."></textarea>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+        <button class="btn btn-ghost" onclick="setGoal('🤝 ابحث عن 5 شراكات urgent')">🤝 شراكات</button>
+        <button class="btn btn-ghost" onclick="setGoal('📊 حلل أداء آخر 30 يوم')">📊 تحليل</button>
+        <button class="btn btn-ghost" onclick="setGoal('🎨 جهز 5 إعلانات Meta')">🎨 إعلانات</button>
+      </div>
+      <button class="btn btn-gold" onclick="runOrchestrator()">🚀 اطلق</button>
+    </div>
+  `;
+}
+
+// ===== HELPERS =====
+function computeKPIs() {
+  const f = DATA.bookings.filter(b => ['confirmed', 'active', 'completed'].includes(b.status));
+  return {
+    suppliers: DATA.suppliers.length,
+    approvedSuppliers: DATA.suppliers.filter(s => s.kyc_status === 'approved').length,
+    pendingSuppliers: DATA.suppliers.filter(s => s.kyc_status === 'pending').length,
+    publishedListings: DATA.listings.filter(l => l.status === 'published').length,
+    bookings: DATA.bookings.length,
+    gmv: f.reduce((s, b) => s + Number(b.total_amount || 0), 0),
+    commission: f.reduce((s, b) => s + Number(b.commission_amount || 0), 0),
+    customers: DATA.customers,
+  };
+}
+
+function countByStatus(arr, field) {
+  const c = {};
+  arr.forEach(i => { c[i[field]] = (c[i[field]] || 0) + 1; });
+  return c;
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' });
+}
+
+function setFilter(tab, val) {
+  if (tab === 'suppliers') suppliersFilter = val;
+  if (tab === 'agents') agentTeamFilter = val;
+  render();
+}
+
+function switchTab(tabId) {
+  currentTab = tabId;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
+  render();
+}
+
+function setGoal(g) { document.getElementById('aiGoal').value = g; }
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => showToast('✅ تم النسخ'));
+}
+
+async function supplierAction(id, status, extra = {}) {
+  if (status === 'approved' && !confirm('تأكيد؟')) return;
+  try {
+    await sb(`marketplace_suppliers?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ kyc_status: status, kyc_reviewed_by: ADMIN_USER_ID, kyc_reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString(), ...extra }),
+    });
+    showToast('✅ تم');
+    await loadAll();
+  } catch (e) { showToast('فشل', true); }
+}
+
+function supplierReject(id) {
+  const reason = prompt('سبب الرفض:');
+  if (reason === null) return;
+  supplierAction(id, 'rejected', { kyc_rejection_reason: reason });
+}
+
+async function runAgent(name) {
+  showToast(`⏳ ${name}...`);
+  try {
+    const res = await fetch('https://www.madmonacairo.com/api/agents/scheduler', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AGENT_WEBHOOK}` },
+      body: JSON.stringify({ agent: name }),
+    });
+    const d = await res.json();
+    showToast(d.result?.success ? '✅ نجح' : '❌ فشل', !d.result?.success);
+    if (d.result?.success) setTimeout(loadAll, 2000);
+  } catch (e) { showToast('خطأ', true); }
+}
+
+async function runOrchestrator() {
+  const goal = document.getElementById('aiGoal').value.trim();
+  if (!goal) return;
+  showToast('⏳ بنخطط...');
+  try {
+    const res = await fetch('https://www.madmonacairo.com/api/agents/scheduler', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AGENT_WEBHOOK}` },
+      body: JSON.stringify({ agent: 'orchestrator', args: { goal } }),
+    });
+    const d = await res.json();
+    showToast(d.result?.success ? '✅ تم التخطيط' : '❌ فشل', !d.result?.success);
+  } catch (e) { showToast('خطأ', true); }
+}
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', isError);
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+window.addEventListener('DOMContentLoaded', loadAll);
+setInterval(loadAll, 60000);
+</script>
+</body>
+</html>
