@@ -6,11 +6,13 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Loader2, Lock, AlertCircle, Image as ImageIcon,
   Upload, Save, CheckCircle, X, ShieldAlert, Sparkles, Link as LinkIcon,
-  RefreshCw, Layers, FolderTree, Newspaper,
+  RefreshCw, FolderTree, Newspaper, Instagram, Facebook, Linkedin,
+  Youtube, Twitter, Music2, AtSign, ExternalLink, Globe,
 } from 'lucide-react'
 
 // ============================================================================
-// /admin/site-settings — Edit dynamic site content (hero + categories images)
+// /admin/site-settings — Edit dynamic site content
+// Sections: News (link), Hero/Cards images, Categories images, SOCIAL MEDIA
 // ============================================================================
 
 type Stage = 'loading' | 'unauthenticated' | 'forbidden' | 'ready'
@@ -30,6 +32,82 @@ interface FieldGroup {
   iconColor: string
   fields: SettingField[]
 }
+
+interface SocialPlatform {
+  key: string
+  label: string
+  placeholder: string
+  example: string
+  icon: React.ReactNode
+  brandColor: string
+  bgColor: string
+}
+
+const SOCIAL_PLATFORMS: SocialPlatform[] = [
+  {
+    key: 'social_instagram_url',
+    label: 'Instagram',
+    placeholder: 'https://instagram.com/madmonacairo',
+    example: 'instagram.com/madmonacairo',
+    icon: <Instagram className="w-5 h-5" />,
+    brandColor: '#E4405F',
+    bgColor: 'bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400',
+  },
+  {
+    key: 'social_facebook_url',
+    label: 'Facebook',
+    placeholder: 'https://facebook.com/madmonacairo',
+    example: 'facebook.com/madmonacairo',
+    icon: <Facebook className="w-5 h-5" />,
+    brandColor: '#1877F2',
+    bgColor: 'bg-[#1877F2]',
+  },
+  {
+    key: 'social_tiktok_url',
+    label: 'TikTok',
+    placeholder: 'https://tiktok.com/@madmonacairo',
+    example: 'tiktok.com/@madmonacairo',
+    icon: <Music2 className="w-5 h-5" />,
+    brandColor: '#000000',
+    bgColor: 'bg-black',
+  },
+  {
+    key: 'social_youtube_url',
+    label: 'YouTube',
+    placeholder: 'https://youtube.com/@madmonacairo',
+    example: 'youtube.com/@madmonacairo',
+    icon: <Youtube className="w-5 h-5" />,
+    brandColor: '#FF0000',
+    bgColor: 'bg-[#FF0000]',
+  },
+  {
+    key: 'social_linkedin_url',
+    label: 'LinkedIn',
+    placeholder: 'https://linkedin.com/company/madmona',
+    example: 'linkedin.com/company/madmona',
+    icon: <Linkedin className="w-5 h-5" />,
+    brandColor: '#0A66C2',
+    bgColor: 'bg-[#0A66C2]',
+  },
+  {
+    key: 'social_x_url',
+    label: 'X (Twitter)',
+    placeholder: 'https://x.com/madmonacairo',
+    example: 'x.com/madmonacairo',
+    icon: <Twitter className="w-5 h-5" />,
+    brandColor: '#000000',
+    bgColor: 'bg-black',
+  },
+  {
+    key: 'social_threads_url',
+    label: 'Threads',
+    placeholder: 'https://threads.net/@madmonacairo',
+    example: 'threads.net/@madmonacairo',
+    icon: <AtSign className="w-5 h-5" />,
+    brandColor: '#000000',
+    bgColor: 'bg-black',
+  },
+]
 
 const FIELD_GROUPS: FieldGroup[] = [
   {
@@ -261,14 +339,13 @@ export default function SiteSettingsPage() {
           <h2 className="text-xl font-black mb-2">صور الصفحة الرئيسية</h2>
           <p className="text-sm text-white/85 leading-relaxed">
             من هنا تقدر تغيّر كل الصور اللي بتظهر في صفحة madmonacairo.com بدون ما تحتاج تعدّل في الكود.
-            ارفع صورة جديدة من الكمبيوتر أو الصق رابط من Canva/Unsplash/أي مصدر خارجي.
           </p>
           <div className="mt-3 flex items-center gap-3 flex-wrap text-xs">
             <span className="bg-white/15 backdrop-blur px-2.5 py-1 rounded-full">
               {FIELD_GROUPS.reduce((sum, g) => sum + g.fields.length, 0)} صورة قابلة للتعديل
             </span>
             <span className="bg-white/15 backdrop-blur px-2.5 py-1 rounded-full">
-              تحديث فوري
+              {SOCIAL_PLATFORMS.length} حسابات سوشيال ميديا
             </span>
           </div>
         </div>
@@ -285,10 +362,45 @@ export default function SiteSettingsPage() {
           </div>
         )}
 
-        {/* Field Groups */}
+        {/* SOCIAL MEDIA SECTION (NEW - on top because most important) */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-3 px-1 pt-2">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 text-white flex items-center justify-center">
+              <Globe className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="font-black text-gray-900 text-base">حسابات السوشيال ميديا</h2>
+              <p className="text-xs text-gray-500">الحسابات اللي هتظهر في الـFooter وصفحة Contact. الفاضي مش بيظهر.</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-soft p-5 md:p-6">
+            <div className="space-y-4">
+              {SOCIAL_PLATFORMS.map(platform => (
+                <SocialField
+                  key={platform.key}
+                  platform={platform}
+                  value={settings[platform.key] || ''}
+                  originalValue={originalSettings[platform.key] || ''}
+                  onChange={(v) => updateValue(platform.key, v)}
+                  onSave={() => handleSave(platform.key)}
+                  saving={saving === platform.key}
+                />
+              ))}
+            </div>
+
+            <div className="mt-5 pt-5 border-t border-gray-100">
+              <p className="text-xs text-gray-500 leading-relaxed">
+                💡 <strong>نصيحة:</strong> اللي مش هتحط لينك ليه، الأيقونة بتاعته مش هتظهر على الموقع.
+                ده بيخلي الـFooter نظيف ومحترم. لما تحط لينك جديد، هيظهر فوراً.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Field Groups (Images) */}
         {FIELD_GROUPS.map((group, gIdx) => (
           <div key={gIdx} className="space-y-3">
-            {/* Group header */}
             <div className="flex items-center gap-3 px-1 pt-2">
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${group.iconColor}`}>
                 {group.icon}
@@ -299,7 +411,6 @@ export default function SiteSettingsPage() {
               </div>
             </div>
 
-            {/* Fields in this group */}
             <div className="space-y-3">
               {group.fields.map(field => (
                 <ImageSettingField
@@ -326,8 +437,6 @@ export default function SiteSettingsPage() {
             <li>• استخدم صور عالية الجودة (1200px+ عرض)</li>
             <li>• الصور الـvertical (طولية) أحسن للـHero</li>
             <li>• الصور الـsquare أحسن للأقسام (Categories)</li>
-            <li>• لو هتستخدم Unsplash، أضف <code className="bg-yellow-100 px-1 rounded">?w=1600&amp;q=85&amp;auto=format&amp;fit=crop</code> في آخر الرابط</li>
-            <li>• اتأكد إن الـURL يبدأ بـ <code className="bg-yellow-100 px-1 rounded">https://</code></li>
             <li>• الـfile upload بيرفع على Supabase Storage تلقائياً (حد أقصى 10MB)</li>
             <li>• لتصدير من Canva: Download → PNG/JPG ثم ارفعها هنا</li>
           </ul>
@@ -337,6 +446,74 @@ export default function SiteSettingsPage() {
   )
 }
 
+// ============================================================================
+// SocialField — Input + Preview button + Save
+// ============================================================================
+
+function SocialField({
+  platform, value, originalValue, onChange, onSave, saving,
+}: {
+  platform: SocialPlatform
+  value: string
+  originalValue: string
+  onChange: (v: string) => void
+  onSave: () => void
+  saving: boolean
+}) {
+  const isDirty = value !== originalValue
+  const hasValue = value.trim().length > 0
+  const isValidUrl = value.startsWith('https://') || value.startsWith('http://')
+
+  return (
+    <div className="flex items-center gap-3">
+      {/* Brand icon */}
+      <div className={`w-11 h-11 rounded-2xl ${platform.bgColor} text-white flex items-center justify-center flex-shrink-0 shadow-soft`}>
+        {platform.icon}
+      </div>
+
+      {/* Label + Input */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-xs font-bold text-gray-700">{platform.label}</p>
+          {hasValue && isValidUrl && (
+            <a
+              href={value}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] text-gray-400 hover:text-[#1F5F3F] flex items-center gap-1 no-underline"
+            >
+              <ExternalLink className="w-2.5 h-2.5" />
+              اختبر
+            </a>
+          )}
+        </div>
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={platform.placeholder}
+          className="w-full px-3 py-2 bg-[#FAFAF7] border border-gray-100 rounded-xl text-xs focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 font-mono"
+          dir="ltr"
+          style={{ textAlign: 'left' }}
+        />
+      </div>
+
+      {/* Save button */}
+      <button
+        type="button"
+        onClick={onSave}
+        disabled={!isDirty || saving || (hasValue && !isValidUrl)}
+        className="px-3 py-2 bg-[#1F5F3F] hover:bg-[#1F5F3F]/90 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+        title={!isDirty ? 'مفيش تغييرات' : (hasValue && !isValidUrl) ? 'الرابط لازم يبدأ بـ https://' : 'حفظ'}
+      >
+        {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+      </button>
+    </div>
+  )
+}
+
+// ============================================================================
+// ImageSettingField — image preview + URL input + file upload + save
 // ============================================================================
 
 function ImageSettingField({

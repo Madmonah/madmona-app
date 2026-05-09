@@ -10,6 +10,7 @@ import InstallPWA from '@/components/InstallPWA'
 import FeaturedListings from '@/components/FeaturedListings'
 import FinancialTicker from '@/components/FinancialTicker'
 import CompactNewsTabs from '@/components/CompactNewsTabs'
+import SocialLinks from '@/components/SocialLinks'
 
 // ============================================================
 // Home page — Single brand: "خدمات مضمونة"
@@ -377,21 +378,29 @@ export default async function HomePage() {
         </section>
 
         {/* FOOTER */}
-        <footer className="text-center py-12 md:py-16 border-t border-gray-200 bg-white">
-          <p className="font-black text-3xl gradient-text-green mb-2">مضمونة</p>
-          <p className="text-xs text-gray-500 mb-6 tracking-[0.2em] uppercase">Your service, guaranteed</p>
-          <div className="flex justify-center items-center gap-3 text-xs flex-wrap mb-6 px-4">
-            <Link href="/about" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">عن مضمونة</Link>
-            <span className="text-gray-300">·</span>
-            <Link href="/marketplace" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">خدمات مضمونة</Link>
-            <span className="text-gray-300">·</span>
-            <Link href="/privacy" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">الخصوصية</Link>
-            <span className="text-gray-300">·</span>
-            <Link href="/terms" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">الشروط</Link>
-            <span className="text-gray-300">·</span>
-            <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">واتساب</a>
+        <footer className="py-12 md:py-16 border-t border-gray-200 bg-white">
+          <div className="max-w-7xl mx-auto px-4 text-center">
+            <p className="font-black text-3xl gradient-text-green mb-2">مضمونة</p>
+            <p className="text-xs text-gray-500 mb-6 tracking-[0.2em] uppercase">Your service, guaranteed · احنا بتوع الإيجار</p>
+
+            {/* Social media icons (smart-hide if URL empty) */}
+            <div className="mb-8">
+              <SocialLinks variant="default" />
+            </div>
+
+            <div className="flex justify-center items-center gap-3 text-xs flex-wrap mb-6 px-4">
+              <Link href="/about" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">عن مضمونة</Link>
+              <span className="text-gray-300">·</span>
+              <Link href="/marketplace" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">خدمات مضمونة</Link>
+              <span className="text-gray-300">·</span>
+              <Link href="/privacy" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">الخصوصية</Link>
+              <span className="text-gray-300">·</span>
+              <Link href="/terms" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">الشروط</Link>
+              <span className="text-gray-300">·</span>
+              <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#1F5F3F] font-medium no-underline transition-colors">واتساب</a>
+            </div>
+            <p className="text-[10px] text-gray-400">© 2026 Madmona. جميع الحقوق محفوظة.</p>
           </div>
-          <p className="text-[10px] text-gray-400">© 2026 Madmona. جميع الحقوق محفوظة.</p>
         </footer>
       </main>
 

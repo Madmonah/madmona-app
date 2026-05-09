@@ -8,7 +8,11 @@ import {
   TrendingUp, DollarSign, Users, Package, Eye, Star,
   AlertCircle, FolderTree, ChevronLeft, UserCog, Wallet,
   Settings, Layers, Bell, Image as ImageIcon, Phone,
-  ClipboardList, History, Briefcase,
+  ClipboardList, History, Briefcase, Bot, Sparkles, Target,
+  Megaphone, Video, BarChart3, Activity, Shield, ShieldAlert,
+  FlaskConical, MessageSquare, GitBranch, Brain, Lightbulb,
+  Compass, Newspaper, Handshake, FileBarChart, Network,
+  Rss, Zap, ScrollText,
 } from 'lucide-react'
 
 // ============================================================================
@@ -81,12 +85,10 @@ export default function AdminDashboardPage() {
         const { data: { session } } = await supabaseBrowser.auth.getSession()
         if (!session?.user) { setStage('unauthenticated'); return }
 
-        // Single fast RPC call - replaces 9 separate queries
         // @ts-expect-error
         const { data: stats, error } = await supabaseBrowser.rpc('get_admin_dashboard_stats')
 
         if (error) {
-          // Try to detect forbidden/unauth from RPC error messages
           const msg = (error.message || '').toLowerCase()
           if (msg.includes('forbidden')) { setStage('forbidden'); return }
           if (msg.includes('unauthenticated')) { setStage('unauthenticated'); return }
@@ -175,6 +177,7 @@ export default function AdminDashboardPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-8 pb-12">
+        {/* Big metrics */}
         <section>
           <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">الأرقام الكبرى</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -185,64 +188,143 @@ export default function AdminDashboardPage() {
           </div>
         </section>
 
+        {/* AI OS Big Banner */}
+        <Link href="/admin/ai-os" className="block bg-gradient-to-l from-[#1F5F3F] via-[#2d7a52] to-[#1F5F3F] text-white rounded-3xl p-6 shadow-luxe hover:shadow-2xl hover:-translate-y-0.5 transition-all no-underline relative overflow-hidden">
+          <div className="absolute -top-12 -left-12 w-40 h-40 bg-[#B8860B]/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">
+                <Bot className="w-7 h-7" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black tracking-[0.3em] uppercase text-white/70 mb-1">42 AGENTS · 8 TEAMS</p>
+                <h3 className="text-2xl font-black mb-1">AI OS · مركز التحكم</h3>
+                <p className="text-sm text-white/85">Sales · Marketing · Creative · Operations · Strategic · Support · Intelligence · Growth</p>
+              </div>
+            </div>
+            <ArrowRight className="w-6 h-6 -scale-x-100 group-hover:-translate-x-1 transition-transform hidden md:block" />
+          </div>
+        </Link>
+
+        {/* All admin tools by section */}
         <section>
           <div className="flex items-end justify-between mb-3">
             <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest">أدوات الإدارة</h2>
             {data.pendingSuppliers > 0 && (
-              <Link href="/admin/marketplace-suppliers" className="text-xs bg-yellow-400 text-gray-900 px-2.5 py-1 rounded-full font-bold animate-pulse-soft">
+              <Link href="/admin/sup" className="text-xs bg-yellow-400 text-gray-900 px-2.5 py-1 rounded-full font-bold animate-pulse-soft">
                 {data.pendingSuppliers} أجر معانا يحتاج موافقة
               </Link>
             )}
           </div>
 
+          {/* 1. MARKETPLACE */}
           <div className="mb-4">
             <p className="text-[10px] font-bold text-[#1F5F3F] uppercase tracking-widest mb-2 px-1">Marketplace</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <ToolCard href="/admin/listings" icon={<Package className="w-5 h-5" />} title="إدارة الخدمات" subtitle={`${data.publishedListings} منشور · ${data.draftListings} مسودة`} accent="bg-emerald-100 text-emerald-700" badge={data.draftListings > 0 ? data.draftListings : undefined} />
-              <ToolCard href="/admin/marketplace-suppliers" icon={<Building2 className="w-5 h-5" />} title="أجر معانا" subtitle={`${data.approvedSuppliers} معتمد · ${data.pendingSuppliers} معلّق`} accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" badge={data.pendingSuppliers > 0 ? data.pendingSuppliers : undefined} />
+              <ToolCard href="/admin/sup" icon={<Building2 className="w-5 h-5" />} title="أجر معانا (Suppliers)" subtitle={`${data.approvedSuppliers} معتمد · ${data.pendingSuppliers} معلّق`} accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" badge={data.pendingSuppliers > 0 ? data.pendingSuppliers : undefined} />
               <ToolCard href="/admin/marketplace-bookings" icon={<Calendar className="w-5 h-5" />} title="كل الحجوزات" subtitle={`${data.pendingBookings} بانتظار · ${data.confirmedBookings} مؤكّد`} accent="bg-blue-100 text-blue-700" />
               <ToolCard href="/admin/categories" icon={<FolderTree className="w-5 h-5" />} title="الفئات والخصائص" subtitle="Categories + Attributes" accent="bg-purple-100 text-purple-700" />
               <ToolCard href="/admin/payouts" icon={<Wallet className="w-5 h-5" />} title="المدفوعات" subtitle="حساب وإصدار التحويلات" accent="bg-green-100 text-green-700" />
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest mb-2 px-1">التواصل والمحتوى</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard href="/admin/notifications" icon={<Bell className="w-5 h-5" />} title="إرسال إشعارات" subtitle={`${data.pushSubscribers} مفعّل الإشعارات`} accent="bg-blue-100 text-blue-700" />
-              <ToolCard href="/admin/site-settings" icon={<ImageIcon className="w-5 h-5" />} title="إعدادات الموقع" subtitle="صور الـHero والكروت الكبيرة" accent="bg-pink-100 text-pink-700" />
+              <ToolCard href="/admin/listing-performance" icon={<FileBarChart className="w-5 h-5" />} title="أداء الإعلانات" subtitle="Performance per listing" accent="bg-teal-100 text-teal-700" />
               <ToolCard href="/admin/leads" icon={<Phone className="w-5 h-5" />} title="العملاء المحتملين" subtitle="Leads من الفورمات" accent="bg-orange-100 text-orange-700" />
+              <ToolCard href="/admin/leads-feed" icon={<Rss className="w-5 h-5" />} title="Leads Feed" subtitle="Realtime leads stream" accent="bg-rose-100 text-rose-700" />
             </div>
           </div>
 
+          {/* 2. AI & AUTOMATION */}
           <div className="mb-4">
-            <p className="text-[10px] font-bold text-[#B8860B] uppercase tracking-widest mb-2 px-1">المحتوى (إعلاناتنا)</p>
+            <p className="text-[10px] font-bold text-purple-700 uppercase tracking-widest mb-2 px-1 flex items-center gap-1">
+              <Bot className="w-3 h-3" /> الذكاء الاصطناعي والأتمتة
+            </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard href="/supplier/marketplace" icon={<Settings className="w-5 h-5" />} title="لوحة أجر معانا (مضمونة)" subtitle="إدارة إعلاناتنا الخاصة" accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" />
+              <ToolCard href="/admin/ai-os" icon={<Bot className="w-5 h-5" />} title="AI OS Hub" subtitle="42 agents · 8 teams" accent="bg-[#1F5F3F] text-white" />
+              <ToolCard href="/admin/agents" icon={<Brain className="w-5 h-5" />} title="إدارة الـ Agents" subtitle="تحكم في كل agent" accent="bg-purple-100 text-purple-700" />
+              <ToolCard href="/admin/prompt-versions" icon={<GitBranch className="w-5 h-5" />} title="نسخ الـ Prompts" subtitle="META agent self-improving" accent="bg-indigo-100 text-indigo-700" />
+              <ToolCard href="/admin/performance" icon={<Activity className="w-5 h-5" />} title="أداء الـ AI" subtitle="Performance metrics" accent="bg-violet-100 text-violet-700" />
+            </div>
+          </div>
+
+          {/* 3. MARKETING & CONTENT */}
+          <div className="mb-4">
+            <p className="text-[10px] font-bold text-[#B8860B] uppercase tracking-widest mb-2 px-1 flex items-center gap-1">
+              <Megaphone className="w-3 h-3" /> التسويق والمحتوى
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <ToolCard href="/admin/marketing-hq" icon={<Target className="w-5 h-5" />} title="Marketing HQ" subtitle="مركز التسويق" accent="bg-[#B8860B]/10 text-[#B8860B]" />
+              <ToolCard href="/admin/news" icon={<Newspaper className="w-5 h-5" />} title="إدارة الأخبار" subtitle="Admin news + RSS" accent="bg-amber-100 text-amber-700" />
+              <ToolCard href="/admin/ad-builder" icon={<Sparkles className="w-5 h-5" />} title="مولد الإعلانات" subtitle="Ad Builder AI" accent="bg-pink-100 text-pink-700" />
+              <ToolCard href="/admin/ad-creatives" icon={<ImageIcon className="w-5 h-5" />} title="إعلاناتي" subtitle="Ad Creatives library" accent="bg-fuchsia-100 text-fuchsia-700" />
+              <ToolCard href="/admin/reels" icon={<Video className="w-5 h-5" />} title="الـ Reels" subtitle="فيديوهات قصيرة" accent="bg-rose-100 text-rose-700" />
+              <ToolCard href="/admin/site-settings" icon={<ImageIcon className="w-5 h-5" />} title="إعدادات الموقع" subtitle="صور + سوشيال ميديا" accent="bg-pink-100 text-pink-700" />
+              <ToolCard href="/admin/notifications" icon={<Bell className="w-5 h-5" />} title="إرسال إشعارات" subtitle={`${data.pushSubscribers} مفعّل الإشعارات`} accent="bg-blue-100 text-blue-700" />
+            </div>
+          </div>
+
+          {/* 4. ANALYTICS & INTELLIGENCE */}
+          <div className="mb-4">
+            <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest mb-2 px-1 flex items-center gap-1">
+              <BarChart3 className="w-3 h-3" /> التحليلات والذكاء التجاري
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <ToolCard href="/admin/hq" icon={<Compass className="w-5 h-5" />} title="HQ · مركز القيادة" subtitle="Top-level overview" accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" />
+              <ToolCard href="/admin/insights" icon={<Lightbulb className="w-5 h-5" />} title="Insights" subtitle="رؤى وتحليلات" accent="bg-yellow-100 text-yellow-700" />
+              <ToolCard href="/admin/funnel" icon={<TrendingUp className="w-5 h-5" />} title="Sales Funnel" subtitle="مسار التحويل" accent="bg-cyan-100 text-cyan-700" />
+              <ToolCard href="/admin/demand-forecast" icon={<Zap className="w-5 h-5" />} title="توقعات الطلب" subtitle="Demand Forecast AI" accent="bg-blue-100 text-blue-700" />
+              <ToolCard href="/admin/ceo-briefs" icon={<ScrollText className="w-5 h-5" />} title="CEO Briefs" subtitle="ملخصات يومية" accent="bg-slate-100 text-slate-700" />
+              <ToolCard href="/admin/strategy" icon={<Target className="w-5 h-5" />} title="Strategy" subtitle="الاستراتيجية" accent="bg-indigo-100 text-indigo-700" />
+            </div>
+          </div>
+
+          {/* 5. OPERATIONS & TRUST */}
+          <div className="mb-4">
+            <p className="text-[10px] font-bold text-orange-700 uppercase tracking-widest mb-2 px-1 flex items-center gap-1">
+              <Shield className="w-3 h-3" /> العمليات والأمان
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <ToolCard href="/admin/activity" icon={<Activity className="w-5 h-5" />} title="نشاط الموقع" subtitle="Activity feed live" accent="bg-cyan-100 text-cyan-700" />
+              <ToolCard href="/admin/fraud-alerts" icon={<ShieldAlert className="w-5 h-5" />} title="تنبيهات الاحتيال" subtitle="Fraud detection" accent="bg-red-100 text-red-700" />
+              <ToolCard href="/admin/qc-reports" icon={<FlaskConical className="w-5 h-5" />} title="تقارير الجودة" subtitle="QC Reports" accent="bg-emerald-100 text-emerald-700" />
+              <ToolCard href="/admin/collaborations" icon={<Network className="w-5 h-5" />} title="التعاونات" subtitle="Collaborations" accent="bg-teal-100 text-teal-700" />
+              <ToolCard href="/admin/partnerships" icon={<Handshake className="w-5 h-5" />} title="الشراكات" subtitle="Partnerships" accent="bg-amber-100 text-amber-700" />
+            </div>
+          </div>
+
+          {/* 6. OUR LISTINGS (Madmona supplier acct) */}
+          <div className="mb-4">
+            <p className="text-[10px] font-bold text-[#B8860B] uppercase tracking-widest mb-2 px-1">إعلاناتنا (Madmona Coworking)</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <ToolCard href="/supplier/marketplace" icon={<Settings className="w-5 h-5" />} title="لوحة أجر معانا" subtitle="إدارة إعلاناتنا" accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" />
               <ToolCard href="/supplier/marketplace/new" icon={<Package className="w-5 h-5" />} title="إضافة إعلان جديد" subtitle="مساحة، معدة، عربية..." accent="bg-blue-100 text-blue-700" />
               <ToolCard href="/supplier/marketplace/reviews" icon={<Star className="w-5 h-5" />} title="التقييمات" subtitle={data.totalReviews > 0 ? `${data.totalReviews} تقييم · ${Number(data.averageRating).toFixed(1)} ⭐` : 'مفيش تقييمات'} accent="bg-yellow-100 text-yellow-700" />
               <ToolCard href="/" icon={<Eye className="w-5 h-5" />} title="عرض الموقع" subtitle="شوف الموقع كما يراه أجر مننا" accent="bg-pink-100 text-pink-700" />
             </div>
           </div>
 
+          {/* 7. TEAM & ACCOUNT */}
           <div className="mb-4">
-            <p className="text-[10px] font-bold text-orange-700 uppercase tracking-widest mb-2 px-1">فريق العمل والحساب</p>
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 px-1">فريق العمل والحساب</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <ToolCard href="/supplier/team" icon={<UserCog className="w-5 h-5" />} title="إدارة الفريق" subtitle="موظفين بصلاحيات" accent="bg-orange-100 text-orange-700" />
               <ToolCard href="/account" icon={<Layers className="w-5 h-5" />} title="حسابي" subtitle="الإعدادات الشخصية" accent="bg-gray-100 text-gray-700" />
             </div>
           </div>
 
+          {/* 8. LEGACY */}
           <div>
             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 px-1">صفحات قديمة (Legacy)</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <ToolCard href="/admin/marketplace-suppliers" icon={<Building2 className="w-5 h-5" />} title="Suppliers (Old)" subtitle="نسخة قديمة → /admin/sup" accent="bg-gray-100 text-gray-600" />
+              <ToolCard href="/admin/suppliers" icon={<Briefcase className="w-5 h-5" />} title="أجر معانا (V1)" subtitle="Legacy suppliers" accent="bg-gray-100 text-gray-600" />
+              <ToolCard href="/admin/suppliers-v2" icon={<Briefcase className="w-5 h-5" />} title="أجر معانا (V2)" subtitle="Legacy suppliers v2" accent="bg-gray-100 text-gray-600" />
               <ToolCard href="/admin/bookings" icon={<History className="w-5 h-5" />} title="حجوزات قديمة" subtitle="Legacy bookings" accent="bg-gray-100 text-gray-600" />
-              <ToolCard href="/admin/suppliers" icon={<Briefcase className="w-5 h-5" />} title="أجر معانا (قديم)" subtitle="Legacy suppliers" accent="bg-gray-100 text-gray-600" />
               <ToolCard href="/admin/units" icon={<ClipboardList className="w-5 h-5" />} title="Units (قديم)" subtitle="نظام الوحدات القديم" accent="bg-gray-100 text-gray-600" />
             </div>
           </div>
         </section>
 
+        {/* Booking distribution */}
         <section>
           <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">توزيع الحجوزات</h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -254,6 +336,7 @@ export default function AdminDashboardPage() {
           </div>
         </section>
 
+        {/* Top listings + recent bookings */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {data.topListings.length > 0 && (
             <div>
