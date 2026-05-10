@@ -6,14 +6,16 @@ import Link from 'next/link'
 import {
   Home, Car, Briefcase, Camera, Wrench, Heart, Palmtree, Gamepad2, Ship,
   ArrowRight, Loader2, CheckCircle, AlertCircle, ShieldCheck, Zap, Users,
+  Lock,
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
-import { normalizePhone } from '@/lib/auth-helpers'
+import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
 
-// Public guest form. No login required. The asset draft is saved to cold_leads
-// (already in the DB) with a 'list_your_asset' source, then we redirect to
-// /auth/signup with the contact info pre-filled. After signup completes,
-// the team converts the draft into a proper listing via /admin/listings.
+// Single-step guest flow:
+//   user fills asset details + contact + password in ONE form.
+//   on submit: create the account (Supabase auth) + save the asset draft
+//   to cold_leads, then redirect to /supplier/marketplace so they can
+//   add the rest of their assets after the team approves the first one.
 
 type Category = {
   slug: string
@@ -37,15 +39,19 @@ const CATEGORIES: Category[] = [
 export default function ListYourAssetForm() {
   const router = useRouter()
 
+  // Asset details
   const [category, setCategory] = useState<string>('')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
   const [location, setLocation] = useState('')
 
+  // Contact + password
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -54,6 +60,7 @@ export default function ListYourAssetForm() {
     e.preventDefault()
     setError(null)
 
+    // ── Validation ───────────────────────────────────────────────
     if (!category) {
       setError('اختار نوع الأصل')
       return
@@ -76,30 +83,59 @@ export default function ListYourAssetForm() {
       setError('اكتب إيميل صحيح')
       return
     }
-
-    setSubmitting(true)
-
-    const fullPhone = '+' + normalizedPhone
-    const draftPayload = {
-      category,
-      title: title.trim(),
-      description: description.trim(),
-      price: price.trim() ? Number(price) : null,
-      location: location.trim(),
-      name: name.trim(),
-      phone: fullPhone,
-      email: trimmedEmail,
-      submitted_at: new Date().toISOString(),
+    if (password.length < 6) {
+      setError('كلمة السر قصيرة جداً (6 حروف على الأقل)')
+      return
+    }
+    if (password !== confirmPassword) {
+      setError('كلمتين السر مش متطابقتين')
+      return
     }
 
-    // Persist locally so signup page can offer to attach it after the account exists.
-    try {
-      localStorage.setItem('madmona_pending_listing', JSON.stringify(draftPayload))
-    } catch { /* localStorage might be disabled — non-fatal */ }
+    setSubmitting(true)
+    const fullPhone = '+' + normalizedPhone
+    const authEmail = phoneToEmail(normalizedPhone)
 
-    // Save lead row so the ops team can follow up even if signup is abandoned.
+    // ── Step 1: Create account ───────────────────────────────────
+    const { data: authData, error: signUpErr } = await supabaseBrowser.auth.signUp({
+      email: authEmail,
+      password,
+      options: {
+        data: {
+          phone: normalizedPhone,
+          full_name: name.trim(),
+          recovery_email: trimmedEmail,
+        },
+      },
+    })
+
+    if (signUpErr) {
+      if (
+        signUpErr.message.includes('already registered') ||
+        signUpErr.message.includes('User already')
+      ) {
+        setError('فيه حساب موجود بالرقم ده. سجّل دخول أو اعمل reset لكلمة السر من /auth/login')
+      } else {
+        setError(signUpErr.message || 'حصل خطأ في إنشاء الحساب — جرّب تاني')
+      }
+      setSubmitting(false)
+      return
+    }
+
+    // Save recovery email on the profile (best-effort)
+    if (authData?.user?.id) {
+      try {
+        // @ts-expect-error — profiles types may lag
+        await supabaseBrowser.from('profiles').update({ email: trimmedEmail }).eq('id', authData.user.id)
+      } catch {
+        /* non-fatal */
+      }
+    }
+
+    // ── Step 2: Save asset draft to cold_leads ───────────────────
+    // The ops team converts these into proper listings via /admin.
     try {
-      // @ts-expect-error — cold_leads is in the public schema, types may lag
+      // @ts-expect-error — cold_leads types may lag
       await supabaseBrowser.from('cold_leads').insert({
         business_name: title.trim().slice(0, 100),
         phone: fullPhone,
@@ -108,28 +144,29 @@ export default function ListYourAssetForm() {
         source: 'list_your_asset_form',
         source_url: typeof window !== 'undefined' ? window.location.href : null,
         status: 'new',
-        notes: `الاسم: ${name.trim()} | إيميل: ${trimmedEmail}\n` +
-               `سعر تقريبي: ${price.trim() || 'لم يحدد'}\n` +
-               `الوصف: ${description.trim() || 'لا يوجد'}`,
+        notes:
+          `الاسم: ${name.trim()} | إيميل: ${trimmedEmail}\n` +
+          `سعر تقريبي: ${price.trim() || 'لم يحدد'}\n` +
+          `الوصف: ${description.trim() || 'لا يوجد'}\n` +
+          (authData?.user?.id ? `User ID: ${authData.user.id}` : ''),
       })
-    } catch (err) {
-      // Non-fatal — we still want to redirect the user
-      console.warn('[list-your-asset] cold_leads insert failed:', err)
+    } catch {
+      /* non-fatal — account was created, draft can be added later */
     }
 
-    const params = new URLSearchParams({
-      from: 'listing',
-      name: name.trim(),
-      phone: normalizedPhone,
-      email: trimmedEmail,
-      redirect: '/supplier/marketplace',
-    })
-    router.push(`/auth/signup?${params.toString()}`)
+    // ── Step 3: Sign in if session not auto-created, then redirect
+    if (!authData.session) {
+      await supabaseBrowser.auth
+        .signInWithPassword({ email: authEmail, password })
+        .catch(() => null)
+    }
+
+    router.push('/supplier/marketplace')
+    router.refresh()
   }
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
@@ -142,7 +179,6 @@ export default function ListYourAssetForm() {
         </div>
       </header>
 
-      {/* Hero */}
       <section className="bg-gradient-to-b from-[#1F5F3F] to-[#164d32] text-white">
         <div className="max-w-3xl mx-auto px-4 py-10 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold mb-3">أجر معانا في 60 ثانية</h1>
@@ -170,7 +206,6 @@ export default function ListYourAssetForm() {
         </div>
       </section>
 
-      {/* Form */}
       <main className="max-w-3xl mx-auto px-4 py-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Step 1: Category */}
@@ -179,7 +214,7 @@ export default function ListYourAssetForm() {
               <div className="w-7 h-7 bg-[#1F5F3F] text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
               <h2 className="font-bold text-gray-900">إيه نوع الأصل؟</h2>
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {CATEGORIES.map(c => {
                 const Icon = c.Icon
                 const selected = category === c.slug
@@ -189,9 +224,7 @@ export default function ListYourAssetForm() {
                     type="button"
                     onClick={() => setCategory(c.slug)}
                     className={`p-3 rounded-xl border-2 text-center transition-all ${
-                      selected
-                        ? 'border-[#1F5F3F] bg-[#1F5F3F]/5'
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                      selected ? 'border-[#1F5F3F] bg-[#1F5F3F]/5' : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
                     <Icon className={`w-6 h-6 mx-auto mb-1.5 ${selected ? 'text-[#1F5F3F]' : 'text-gray-500'}`} />
@@ -260,11 +293,11 @@ export default function ListYourAssetForm() {
             </div>
           </div>
 
-          {/* Step 3: Contact */}
+          {/* Step 3: Account creation in same step */}
           <div className="bg-white rounded-2xl border border-gray-100 p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-7 h-7 bg-[#1F5F3F] text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
-              <h2 className="font-bold text-gray-900">بياناتك للتواصل</h2>
+              <h2 className="font-bold text-gray-900">بياناتك للحساب</h2>
             </div>
             <div className="space-y-3">
               <div>
@@ -302,10 +335,43 @@ export default function ListYourAssetForm() {
                   required
                 />
               </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> كلمة السر *
+                  </label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="6 حروف على الأقل"
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1F5F3F]/50 focus:ring-2 focus:ring-[#1F5F3F]/10"
+                    dir="ltr"
+                    autoComplete="new-password"
+                    minLength={6}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> أكّد كلمة السر *
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1F5F3F]/50 focus:ring-2 focus:ring-[#1F5F3F]/10"
+                    dir="ltr"
+                    autoComplete="new-password"
+                    minLength={6}
+                    required
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Error */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
@@ -313,7 +379,6 @@ export default function ListYourAssetForm() {
             </div>
           )}
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={submitting}
@@ -326,18 +391,17 @@ export default function ListYourAssetForm() {
               </>
             ) : (
               <>
-                سجل الأصل وأكمل التسجيل
+                اعمل الحساب وسجل الأصل
                 <ArrowRight className="w-5 h-5 rotate-180" />
               </>
             )}
           </button>
 
           <p className="text-center text-xs text-gray-500 leading-relaxed">
-            بإرسال البيانات، أنت توافق على شروط مضمونة. الخطوة الجاية: تكمل تسجيل الحساب (دقيقتين) عشان نقدر ننشر الأصل على المنصة.
+            بإرسال البيانات، أنت توافق على شروط مضمونة. هنعمل لك حساب فوراً وفريقنا هينشر الأصل خلال 24 ساعة.
           </p>
         </form>
 
-        {/* Trust strip */}
         <section className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
             <CheckCircle className="w-5 h-5 text-[#1F5F3F] mx-auto mb-2" />
