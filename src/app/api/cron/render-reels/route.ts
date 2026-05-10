@@ -28,7 +28,7 @@ interface Reel {
 // ============================================================================
 
 const FFMPEG_PATH = '/tmp/ffmpeg'
-const FFMPEG_URL = 'https://github.com/eugeneware/ffmpeg-static/releases/download/b6.0/linux-x64'
+const FFMPEG_URL = 'https://github.com/eugeneware/ffmpeg-static/releases/download/b4.4.1/linux-x64'
 
 let ffmpegReady = false
 
