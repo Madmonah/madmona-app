@@ -12,7 +12,7 @@ import {
   Megaphone, Video, BarChart3, Activity, Shield, ShieldAlert,
   FlaskConical, MessageSquare, GitBranch, Brain, Lightbulb,
   Compass, Newspaper, Handshake, FileBarChart, Network,
-  Rss, Zap, ScrollText,
+  Rss, Zap, ScrollText, Mail, ExternalLink, Cloud, Database, Globe,
 } from 'lucide-react'
 
 // ============================================================================
@@ -266,6 +266,23 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
+          {/* 2.5 EXTERNAL SERVICES — Resend, Vercel, Supabase, Cloudflare, GitHub */}
+          <div className="mb-4">
+            <p className="text-[10px] font-bold text-gray-700 uppercase tracking-widest mb-2 px-1 flex items-center gap-1">
+              <ExternalLink className="w-3 h-3" /> الخدمات الخارجية
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <ExternalToolCard href="https://resend.com/emails" icon={<Mail className="w-5 h-5" />} title="Resend Emails" subtitle="سجل الإيميلات المرسلة" accent="bg-blue-100 text-blue-700" />
+              <ExternalToolCard href="https://vercel.com/dashboard" icon={<Cloud className="w-5 h-5" />} title="Vercel" subtitle="Deployments + Logs" accent="bg-black text-white" />
+              <ExternalToolCard href="https://supabase.com/dashboard/project/mjhflxpxunwycbiquoig" icon={<Database className="w-5 h-5" />} title="Supabase" subtitle="DB + Edge Functions" accent="bg-emerald-100 text-emerald-700" />
+              <ExternalToolCard href="https://dash.cloudflare.com" icon={<Globe className="w-5 h-5" />} title="Cloudflare" subtitle="DNS + CDN" accent="bg-orange-100 text-orange-700" />
+              <ExternalToolCard href="https://github.com/Madmonah/madmona-app" icon={<GitBranch className="w-5 h-5" />} title="GitHub Repo" subtitle="الكود + Commits" accent="bg-gray-900 text-white" />
+              <ExternalToolCard href="https://business.facebook.com" icon={<Megaphone className="w-5 h-5" />} title="Meta Business" subtitle="إعلانات + WhatsApp" accent="bg-blue-600 text-white" />
+              <ExternalToolCard href="https://www.canva.com" icon={<ImageIcon className="w-5 h-5" />} title="Canva" subtitle="تصاميم + قوالب" accent="bg-purple-600 text-white" />
+              <ExternalToolCard href="https://console.anthropic.com" icon={<Sparkles className="w-5 h-5" />} title="Anthropic Console" subtitle="Claude API usage" accent="bg-[#B8860B] text-white" />
+            </div>
+          </div>
+
           {/* 3. MARKETING & CONTENT */}
           <div className="mb-4">
             <p className="text-[10px] font-bold text-[#B8860B] uppercase tracking-widest mb-2 px-1 flex items-center gap-1">
@@ -421,6 +438,17 @@ function ToolCard({ href, icon, title, subtitle, accent, badge }: { href: string
       <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">{subtitle}</p>
       <ChevronLeft className="absolute bottom-4 left-4 w-3.5 h-3.5 text-gray-300 group-hover:text-[#1F5F3F] group-hover:-translate-x-1 transition-all" />
     </Link>
+  )
+}
+
+function ExternalToolCard({ href, icon, title, subtitle, accent }: { href: string; icon: React.ReactNode; title: string; subtitle: string; accent: string }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="group block bg-white rounded-2xl shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all duration-300 p-4 no-underline relative">
+      <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3 ${accent}`}>{icon}</div>
+      <p className="font-bold text-gray-900 text-sm mb-1 leading-tight">{title}</p>
+      <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">{subtitle}</p>
+      <ExternalLink className="absolute bottom-4 left-4 w-3.5 h-3.5 text-gray-300 group-hover:text-[#1F5F3F] transition-all" />
+    </a>
   )
 }
 

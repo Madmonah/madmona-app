@@ -1,25 +1,27 @@
 @echo off
 cd /d "%~dp0"
 echo ================================================================
-echo   Resend Custom Domain: noreply@madmonacairo.com
+echo   Admin Dashboard: External Services Section
 echo ================================================================
 echo.
-echo   CHANGE: Email FROM updated
-echo   * Was: Madmona ^<onboarding@resend.dev^>
-echo   * Now: Madmona ^<noreply@madmonacairo.com^>
-echo.
-echo   Resend domain madmonacairo.com is now VERIFIED.
-echo   DNS records added auto via Cloudflare integration.
-echo   Recipient redirect to admin removed (sends to actual users now).
+echo   ADDED: "الخدمات الخارجية" section in /admin/dashboard
+echo   * Resend Emails (سجل الإيميلات المرسلة)
+echo   * Vercel (Deployments + Logs)
+echo   * Supabase (DB + Edge Functions)
+echo   * Cloudflare (DNS + CDN)
+echo   * GitHub Repo
+echo   * Meta Business (إعلانات + WhatsApp)
+echo   * Canva
+echo   * Anthropic Console
 echo.
 echo   Affected files:
-echo   * src/lib/email.ts
+echo   * src/app/admin/dashboard/page.tsx
 echo.
 echo   Pushing to GitHub now...
 echo.
 echo   --- 1) Stage and commit any local changes ---
 git add .
-git commit -m "feat: switch Resend FROM to verified domain noreply@madmonacairo.com" --allow-empty
+git commit -m "feat: add External Services section to admin dashboard" --allow-empty
 echo.
 echo   --- 2) Pull remote with rebase ---
 git pull --rebase origin main
