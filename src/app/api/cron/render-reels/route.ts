@@ -1,22 +1,20 @@
 // src/app/api/cron/render-reels/route.ts
-// Renders drafted reel scripts to MP4 videos using FFmpeg.
-// CURRENT: Solid Madmona-green background with fade in/out (timeout-safe, ~3s/reel)
-// User adds Arabic text overlays + photos in Instagram (which has perfect Arabic support)
+// Renders drafted reel scripts to MP4 videos.
+// Downloads FFmpeg binary once on cold-start (cached in /tmp).
+// Outputs Madmona-branded MP4 (1080x1920 portrait, fade in/out, solid green).
+// User adds Arabic text overlays + photos in Instagram.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { spawn } from 'child_process'
-import { mkdtempSync, readFileSync, rmSync } from 'fs'
+import { mkdtempSync, readFileSync, rmSync, existsSync, chmodSync, createWriteStream, statSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
+import { pipeline } from 'stream/promises'
+import { Readable } from 'stream'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
-
-// Lazy import to avoid bundle issues
-function getFfmpegPath(): string {
-  return require('ffmpeg-static') as string
-}
 
 interface Reel {
   id: string
@@ -25,24 +23,46 @@ interface Reel {
   total_duration_sec: number | null
 }
 
-function runFFmpeg(args: string[]): Promise<void> {
+// ============================================================================
+// FFmpeg binary management — download once, cache in /tmp
+// ============================================================================
+
+const FFMPEG_PATH = '/tmp/ffmpeg'
+const FFMPEG_URL = 'https://github.com/eugeneware/ffmpeg-static/releases/download/b6.0/linux-x64'
+
+let ffmpegReady = false
+
+async function ensureFFmpeg(): Promise<string> {
+  if (ffmpegReady && existsSync(FFMPEG_PATH)) return FFMPEG_PATH
+
+  if (existsSync(FFMPEG_PATH)) {
+    const sz = statSync(FFMPEG_PATH).size
+    if (sz > 50_000_000) {  // sanity check — should be ~80MB
+      try { chmodSync(FFMPEG_PATH, 0o755) } catch {}
+      ffmpegReady = true
+      return FFMPEG_PATH
+    }
+  }
+
+  console.log('[ffmpeg] downloading binary...')
+  const r = await fetch(FFMPEG_URL)
+  if (!r.ok || !r.body) {
+    throw new Error(`Failed to download FFmpeg: ${r.status}`)
+  }
+
+  const file = createWriteStream(FFMPEG_PATH)
+  // Convert web ReadableStream to Node Readable, then pipe to file
+  const nodeStream = Readable.fromWeb(r.body as never)
+  await pipeline(nodeStream, file)
+
+  chmodSync(FFMPEG_PATH, 0o755)
+  console.log(`[ffmpeg] downloaded ${statSync(FFMPEG_PATH).size} bytes`)
+  ffmpegReady = true
+  return FFMPEG_PATH
+}
+
+function runFFmpeg(ffmpegPath: string, args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
-    const ffmpegPath = getFfmpegPath()
-    console.log(`[ffmpeg] using path: ${ffmpegPath}`)
-    if (!ffmpegPath) {
-      return reject(new Error('ffmpeg-static binary not found'))
-    }
-    // Verify the binary exists
-    try {
-      const fs = require('fs') as typeof import('fs')
-      if (!fs.existsSync(ffmpegPath)) {
-        return reject(new Error(`ffmpeg binary missing at: ${ffmpegPath}`))
-      }
-      // Make sure it's executable
-      try { fs.chmodSync(ffmpegPath, 0o755) } catch {}
-    } catch (e) {
-      console.error('[ffmpeg] check failed:', e)
-    }
     const proc = spawn(ffmpegPath, args, { stdio: ['ignore', 'ignore', 'pipe'] })
     let stderr = ''
     proc.stderr.on('data', (d) => { stderr += d.toString() })
@@ -54,13 +74,16 @@ function runFFmpeg(args: string[]): Promise<void> {
   })
 }
 
-async function renderReel(reel: Reel): Promise<string> {
+// ============================================================================
+// Render
+// ============================================================================
+
+async function renderReel(reel: Reel, ffmpegPath: string): Promise<string> {
   const tmpDir = mkdtempSync(join(tmpdir(), 'reel-'))
   try {
     const totalDur = reel.total_duration_sec || 22
     const outFile = join(tmpDir, 'output.mp4')
 
-    // Madmona-branded solid green video with smooth fade transitions
     const ffmpegArgs = [
       '-y',
       '-f', 'lavfi',
@@ -73,8 +96,8 @@ async function renderReel(reel: Reel): Promise<string> {
       outFile,
     ]
 
-    console.log(`[render-reel ${reel.id}] Starting FFmpeg...`)
-    await runFFmpeg(ffmpegArgs)
+    console.log(`[render-reel ${reel.id}] FFmpeg starting...`)
+    await runFFmpeg(ffmpegPath, ffmpegArgs)
     console.log(`[render-reel ${reel.id}] FFmpeg done, uploading...`)
 
     const buf = readFileSync(outFile)
@@ -105,8 +128,11 @@ async function renderReel(reel: Reel): Promise<string> {
   }
 }
 
+// ============================================================================
+// Handler
+// ============================================================================
+
 async function handle(req: NextRequest) {
-  // Auth: Vercel cron OR admin pw
   const cronAuth = req.headers.get('authorization')
   const adminPw = req.headers.get('x-admin-pw')
   const vercelCronHeader = req.headers.get('x-vercel-cron')
@@ -120,6 +146,17 @@ async function handle(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '5', 10), 10)
   const specificReelId = searchParams.get('reel_id')
+
+  // Ensure FFmpeg is downloaded BEFORE we touch the DB (clearer errors)
+  let ffmpegPath: string
+  try {
+    ffmpegPath = await ensureFFmpeg()
+  } catch (e) {
+    return NextResponse.json({
+      ok: false,
+      error: `FFmpeg setup failed: ${e instanceof Error ? e.message : 'unknown'}`,
+    }, { status: 500 })
+  }
 
   let query = supabaseAdmin
     .from('reel_scripts')
@@ -143,7 +180,7 @@ async function handle(req: NextRequest) {
 
   for (const reel of (reels ?? []) as Reel[]) {
     try {
-      const url = await renderReel(reel)
+      const url = await renderReel(reel, ffmpegPath)
       results.push({ id: reel.id, title: reel.title, status: 'OK', url })
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'unknown'

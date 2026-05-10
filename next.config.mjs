@@ -9,13 +9,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    serverComponentsExternalPackages: ['ffmpeg-static'],
-  },
-  // Include ffmpeg-static binary in serverless function bundle
-  outputFileTracingIncludes: {
-    '/api/cron/render-reels': ['./node_modules/ffmpeg-static/**'],
-  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'media.canva.com' },
