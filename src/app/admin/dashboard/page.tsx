@@ -13,6 +13,7 @@ import {
   FlaskConical, MessageSquare, GitBranch, Brain, Lightbulb,
   Compass, Newspaper, Handshake, FileBarChart, Network,
   Rss, Zap, ScrollText, Mail, ExternalLink, Cloud, Database, Globe,
+  Workflow,
 } from 'lucide-react'
 
 // ============================================================================
@@ -259,6 +260,7 @@ export default function AdminDashboardPage() {
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <ToolCard href="/admin/ai-assistant" icon={<Sparkles className="w-5 h-5" />} title="المساعد الذكي" subtitle="اومر الـ agents بالعامية" accent="bg-gradient-to-br from-[#B8860B] to-[#1F5F3F] text-white" />
+              <ToolCard href="/admin/pipelines" icon={<Workflow className="w-5 h-5" />} title="Pipeline OS" subtitle="فريق الأجينتس المتناسق" accent="bg-gradient-to-br from-[#0F3324] to-[#1F5F3F] text-white" />
               <ToolCard href="/admin/ai-os" icon={<Bot className="w-5 h-5" />} title="AI OS Hub" subtitle="42 agents · 8 teams" accent="bg-[#1F5F3F] text-white" />
               <ToolCard href="/admin/agents" icon={<Brain className="w-5 h-5" />} title="إدارة الـ Agents" subtitle="تحكم في كل agent" accent="bg-purple-100 text-purple-700" />
               <ToolCard href="/admin/prompt-versions" icon={<GitBranch className="w-5 h-5" />} title="نسخ الـ Prompts" subtitle="META agent self-improving" accent="bg-indigo-100 text-indigo-700" />

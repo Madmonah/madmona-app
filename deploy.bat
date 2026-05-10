@@ -1,37 +1,48 @@
 @echo off
 cd /d "%~dp0"
 echo ================================================================
-echo   FIX: Robust JSON parsing for all Vercel agents
+echo   PIPELINE OS: Coordinated Agent Teams
 echo ================================================================
 echo.
-echo   ROOT CAUSE: parseJsonResponse failed on truncated Claude output.
-echo   * 11 Vercel agents were failing with "Unexpected end of JSON input"
-echo   * Examples: ad-designer, content-marketing, seo-agent, trend-spotter
+echo   FEATURE: Agents now work as coordinated TEAMS
+echo   * 4 pipelines defined:
+echo     - daily-content (6am): trend -^> content -^> reel -^> ad -^> carousel
+echo     - lead-funnel (every 2h): qualifier -^> outreach -^> followup -^> closer
+echo     - quality-trust (every 6h): qc -^> fraud -^> complaints
+echo     - pricing-strategy (10am): demand -^> competitors -^> optimizer
 echo.
-echo   FIX:
-echo   * Bumped max_tokens default 4096 -^> 8192
-echo   * parseJsonResponse: 4 repair strategies (was 1)
-echo     1. Remove trailing commas
-echo     2. Close unclosed strings + brackets
-echo     3. Extract last complete top-level object
-echo   * Better error messages (first + last chars of response)
+echo   ADMIN UI: New /admin/pipelines page
+echo   * Live status indicators for running pipelines
+echo   * One-click manual trigger
+echo   * Step-by-step run history
+echo   * Shared context viewer (see what each agent passed to next)
 echo.
-echo   ALSO: Added "الخدمات الخارجية" section in /admin/dashboard
-echo   * Resend, Vercel, Supabase, Cloudflare, GitHub, Meta, Canva, Anthropic
+echo   New API routes:
+echo   * GET  /api/admin/pipelines (list + stats)
+echo   * POST /api/admin/pipelines/trigger (manual run)
+echo   * GET  /api/admin/pipelines/runs/[id] (run details)
+echo.
+echo   New Edge Function: pipeline-runner (Supabase, deployed)
+echo   New tables: agent_pipelines, pipeline_runs, pipeline_step_runs
+echo   New cron jobs: 4 (one per pipeline)
 echo.
 echo   Affected files:
-echo   * src/lib/anthropic.ts (parseJsonResponse + max_tokens)
-echo   * src/app/admin/dashboard/page.tsx (External Services section)
+echo   * src/app/admin/pipelines/page.tsx (NEW - 500 lines)
+echo   * src/app/api/admin/pipelines/route.ts (NEW)
+echo   * src/app/api/admin/pipelines/trigger/route.ts (NEW)
+echo   * src/app/api/admin/pipelines/runs/[id]/route.ts (NEW)
+echo   * src/app/admin/dashboard/page.tsx (added Pipeline OS card)
 echo.
 echo   Pushing to GitHub now...
 echo.
 git add .
-git commit -m "fix: robust JSON parsing for Vercel agents + dashboard external links" --allow-empty
+git commit -m "feat: Pipeline OS - coordinated agent teams with admin UI" --allow-empty
 git pull --rebase origin main
 git push origin main
 echo.
 if %ERRORLEVEL% EQU 0 (
-  echo   DONE. Wait 1-2 min for Vercel deploy, then run agents again.
+  echo   DONE. Wait 2 min for Vercel deploy then visit:
+  echo   https://www.madmonacairo.com/admin/pipelines
 ) else (
   echo   PUSH FAILED.
 )
