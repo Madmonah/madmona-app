@@ -1,5 +1,6 @@
 // src/app/admin/reels/page.tsx
 import { supabase as supabaseAdmin } from '@/lib/supabase'
+import RenderTrigger from './components/RenderTrigger'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -18,6 +19,7 @@ interface Reel {
   hashtags: string[] | null
   cta: string | null
   status: string
+  video_url: string | null
   created_at: string
 }
 
@@ -42,6 +44,8 @@ export default async function ReelsPage() {
           {all.length} reel script جاهز للتصوير
         </p>
 
+        <RenderTrigger />
+
         {all.length === 0 ? (
           <div style={{ background: '#fff', padding: 60, borderRadius: 12, textAlign: 'center', color: '#999' }}>
             <div style={{ fontSize: 48 }}>🎬</div>
@@ -58,11 +62,32 @@ export default async function ReelsPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                   <h2 style={{ margin: 0, color: '#1F5F3F', fontSize: 18 }}>{reel.title}</h2>
                   <span style={{
-                    background: reel.status === 'approved' ? '#d4edda' : '#fff3cd',
-                    color: reel.status === 'approved' ? '#155724' : '#856404',
+                    background: reel.video_url ? '#1F5F3F' : reel.status === 'approved' ? '#d4edda' : '#fff3cd',
+                    color: reel.video_url ? '#FAF7F0' : reel.status === 'approved' ? '#155724' : '#856404',
                     padding: '4px 12px', borderRadius: 12, fontSize: 11, fontWeight: 'bold',
-                  }}>{reel.status}</span>
+                  }}>{reel.video_url ? '🎬 جاهز للنشر' : reel.status}</span>
                 </div>
+
+                {/* Video player (if rendered) */}
+                {reel.video_url && (
+                  <div style={{ margin: '12px 0', background: '#000', borderRadius: 8, overflow: 'hidden', maxWidth: 360 }}>
+                    <video
+                      src={reel.video_url}
+                      controls
+                      playsInline
+                      style={{ width: '100%', display: 'block' }}
+                    />
+                    <div style={{ padding: 8, background: '#1F5F3F', display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <a href={reel.video_url} download style={{ color: '#FAF7F0', fontSize: 12, textDecoration: 'underline' }}>
+                        ⬇ تحميل MP4
+                      </a>
+                      <span style={{ color: '#B8860B', fontSize: 11 }}>·</span>
+                      <a href={reel.video_url} target="_blank" rel="noopener noreferrer" style={{ color: '#FAF7F0', fontSize: 12, textDecoration: 'underline' }}>
+                        🔗 URL
+                      </a>
+                    </div>
+                  </div>
+                )}
 
                 {/* Hook */}
                 <div style={{

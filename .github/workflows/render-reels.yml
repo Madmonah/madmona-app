@@ -1,0 +1,69 @@
+name: Render Reels
+
+# Runs on schedule + manual trigger from GitHub UI or via API
+on:
+  schedule:
+    # 5:30 AM UTC = 7:30 AM Cairo  (after daily-content pipeline finishes at 6 AM)
+    - cron: '30 5 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Render mode'
+        required: true
+        default: 'all-drafted'
+        type: choice
+        options:
+          - all-drafted
+          - latest
+      reel_id:
+        description: '(optional) Specific reel ID to render'
+        required: false
+        type: string
+
+jobs:
+  render:
+    name: Render Drafted Reels
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify FFmpeg (pre-installed on Ubuntu)
+        run: ffmpeg -version | head -1
+
+      - name: Install dependencies
+        run: |
+          npm install --no-save ffmpeg-static node-fetch@2 dotenv
+
+      - name: Render reels
+        env:
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          MODE="${{ github.event.inputs.mode || 'all-drafted' }}"
+          REEL_ID="${{ github.event.inputs.reel_id }}"
+
+          if [ -n "$REEL_ID" ]; then
+            echo "▶ Rendering specific reel: $REEL_ID"
+            node scripts/reels/render-reel.js "$REEL_ID"
+          elif [ "$MODE" = "latest" ]; then
+            echo "▶ Rendering latest reel only"
+            node scripts/reels/render-reel.js --latest
+          else
+            echo "▶ Rendering all drafted reels"
+            node scripts/reels/render-reel.js --all-drafted
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "Done. Check /admin/reels for video previews."
+          echo "Videos uploaded to Supabase Storage bucket: reels"
