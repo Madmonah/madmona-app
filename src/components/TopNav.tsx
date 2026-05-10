@@ -96,7 +96,7 @@ export default function TopNav() {
 
               {supplierMenuOpen && (
                 <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-2xl shadow-luxe border border-gray-100 overflow-hidden animate-scale-in">
-                  <Link href="/supplier/register" onClick={() => setSupplierMenuOpen(false)} className="flex items-start gap-3 p-4 hover:bg-[#FAFAF7] no-underline transition-colors group">
+                  <Link href="/add-listing" onClick={() => setSupplierMenuOpen(false)} className="flex items-start gap-3 p-4 hover:bg-[#FAFAF7] no-underline transition-colors group">
                     <div className="w-9 h-9 rounded-xl bg-[#B8860B]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#B8860B]/20 transition-colors">
                       <UserPlus className="w-4 h-4 text-[#B8860B]" />
                     </div>
@@ -144,7 +144,7 @@ export default function TopNav() {
           <div className="md:hidden flex items-center gap-2">
             {/* Mobile primary CTA pill - أجر معانا for suppliers */}
             <Link
-              href="/supplier/register"
+              href="/add-listing"
               className="flex items-center gap-1 px-3 py-2 bg-[#B8860B] text-white text-xs font-black rounded-lg shadow-soft no-underline"
             >
               <Building2 className="w-3.5 h-3.5" />
@@ -200,7 +200,7 @@ export default function TopNav() {
               </Link>
 
               <Link
-                href="/supplier/register"
+                href="/add-listing"
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-br from-[#B8860B] to-[#d4a017] text-white no-underline shadow-soft hover:shadow-elevated transition-all"
               >
