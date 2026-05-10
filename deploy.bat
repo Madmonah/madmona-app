@@ -17,15 +17,12 @@ echo   * src/lib/email.ts
 echo.
 echo   Pushing to GitHub now...
 echo.
-echo   --- git status ---
-git status -s
-echo.
-echo   --- git remote ---
-git remote -v
+echo   --- Syncing with remote first ---
+git pull --rebase origin main
 echo.
 git add .
 git commit -m "feat: switch Resend FROM to verified domain noreply@madmonacairo.com" --allow-empty
-git push -u origin main
+git push origin main
 echo.
 if %ERRORLEVEL% EQU 0 (
   echo   DONE. Wait 1-2 min for Vercel.
