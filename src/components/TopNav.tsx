@@ -142,13 +142,13 @@ export default function TopNav() {
 
           {/* Mobile actions */}
           <div className="md:hidden flex items-center gap-2">
-            {/* Mobile dual CTA pill - immediately visible */}
+            {/* Mobile primary CTA pill - أجر معانا for suppliers */}
             <Link
-              href="/marketplace"
-              className="flex items-center gap-1 px-3 py-2 bg-[#1F5F3F] text-white text-xs font-black rounded-lg shadow-soft no-underline"
+              href="/supplier/register"
+              className="flex items-center gap-1 px-3 py-2 bg-[#B8860B] text-white text-xs font-black rounded-lg shadow-soft no-underline"
             >
-              <ShoppingBag className="w-3.5 h-3.5" />
-              <span>أجر مننا</span>
+              <Building2 className="w-3.5 h-3.5" />
+              <span>أجر معانا</span>
             </Link>
             <button
               type="button"
