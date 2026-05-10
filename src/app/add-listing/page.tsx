@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 
@@ -60,6 +60,18 @@ interface DraftPayload {
 }
 
 export default function AddListingPage() {
+  return (
+    <Suspense fallback={
+      <div dir="rtl" lang="ar" className="min-h-screen bg-[#1F5F3F] text-[#FAF7F0] flex items-center justify-center">
+        جاري التحميل...
+      </div>
+    }>
+      <AddListingPageInner />
+    </Suspense>
+  );
+}
+
+function AddListingPageInner() {
   const router = useRouter();
   const params = useSearchParams();
 

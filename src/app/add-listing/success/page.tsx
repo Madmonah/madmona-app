@@ -1,9 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function ListingSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div dir="rtl" lang="ar" className="min-h-screen bg-[#1F5F3F] text-[#FAF7F0] flex items-center justify-center">
+        جاري التحميل...
+      </div>
+    }>
+      <ListingSuccessPageInner />
+    </Suspense>
+  );
+}
+
+function ListingSuccessPageInner() {
   const router = useRouter();
   const params = useSearchParams();
   const token = params.get('token');
