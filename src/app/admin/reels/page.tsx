@@ -44,7 +44,11 @@ export default async function ReelsPage() {
           {all.length} reel script جاهز للتصوير
         </p>
 
-        <RenderTrigger />
+        <RenderTrigger
+          draftedReels={all
+            .filter(r => !r.video_url && r.status !== 'rendered')
+            .map(r => ({ id: r.id, title: r.title }))}
+        />
 
         {all.length === 0 ? (
           <div style={{ background: '#fff', padding: 60, borderRadius: 12, textAlign: 'center', color: '#999' }}>

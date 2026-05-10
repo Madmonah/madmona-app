@@ -1,75 +1,40 @@
 // src/app/api/cron/render-reels/route.ts
-// Renders drafted reel scripts to MP4 videos using:
-// - @vercel/og for Arabic text rendering (per-scene PNG)
-// - ffmpeg-static for video composition (concat scenes, fade transitions)
-// - Supabase Storage for hosting the final MP4
-//
-// Triggered by:
-// - Vercel cron (daily at 5:30 AM UTC = 7:30 AM Cairo)
-// - Manual: POST with x-admin-pw header
+// Renders drafted reel scripts to MP4 videos using FFmpeg.
+// CURRENT: Solid Madmona-green background with fade in/out (timeout-safe, ~3s/reel)
+// User adds Arabic text overlays + photos in Instagram (which has perfect Arabic support)
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { spawn } from 'child_process'
-import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'fs'
+import { mkdtempSync, readFileSync, rmSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
 
-// Lazy import to avoid bundle issues at edge
+// Lazy import to avoid bundle issues
 function getFfmpegPath(): string {
   return require('ffmpeg-static') as string
-}
-
-interface Scene {
-  order?: number
-  duration_sec?: number
-  text_overlay?: string
-  voice_over?: string
-  action?: string
 }
 
 interface Reel {
   id: string
   title: string
   hook: string
-  scenes: Scene[] | null
-  caption: string | null
-  cta: string | null
   total_duration_sec: number | null
 }
 
-const ORIGIN = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : 'https://www.madmonacairo.com'
-
-// ============================================================================
-// Frame generation via @vercel/og
-// ============================================================================
-
-async function generateFrame(
-  text: string,
-  type: 'hook' | 'middle' | 'cta',
-  index: number
-): Promise<Buffer> {
-  const url = `${ORIGIN}/api/og/reel-scene?text=${encodeURIComponent(text)}&type=${type}&index=${index}`
-  const r = await fetch(url, { cache: 'no-store' })
-  if (!r.ok) throw new Error(`OG render failed: ${r.status}`)
-  const buf = await r.arrayBuffer()
-  return Buffer.from(buf)
-}
-
-// ============================================================================
-// FFmpeg composition
-// ============================================================================
-
 function runFFmpeg(args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
-    const proc = spawn(getFfmpegPath(), args, { stdio: ['ignore', 'ignore', 'pipe'] })
+    const ffmpegPath = getFfmpegPath()
+    if (!ffmpegPath) {
+      return reject(new Error('ffmpeg-static binary not found'))
+    }
+    const proc = spawn(ffmpegPath, args, { stdio: ['ignore', 'ignore', 'pipe'] })
     let stderr = ''
     proc.stderr.on('data', (d) => { stderr += d.toString() })
+    proc.on('error', (err) => reject(new Error(`spawn error: ${err.message}`)))
     proc.on('close', (code) => {
       if (code === 0) resolve()
       else reject(new Error(`FFmpeg exit ${code}: ${stderr.slice(-400)}`))
@@ -81,71 +46,25 @@ async function renderReel(reel: Reel): Promise<string> {
   const tmpDir = mkdtempSync(join(tmpdir(), 'reel-'))
   try {
     const totalDur = reel.total_duration_sec || 22
-    const scenes = (reel.scenes ?? []) as Scene[]
-
-    // Build the frame plan: hook + middle scenes + CTA
-    type FramePlan = { text: string; type: 'hook' | 'middle' | 'cta'; duration: number }
-    const plan: FramePlan[] = []
-
-    // Frame 0: hook (first 3-4 seconds)
-    plan.push({ text: reel.hook, type: 'hook', duration: 4 })
-
-    // Middle frames: text_overlay from each scene (skip first scene since it's the hook)
-    const middleScenes = scenes.slice(1, -1)
-    const remainingDur = Math.max(totalDur - 8, 6)  // reserve 4s hook + 4s CTA
-    const middleDur = middleScenes.length > 0 ? remainingDur / middleScenes.length : 0
-
-    middleScenes.forEach((scene, i) => {
-      plan.push({
-        text: scene.text_overlay || scene.action || '',
-        type: 'middle',
-        duration: Math.max(middleDur, 2),
-      })
-    })
-
-    // Last frame: CTA
-    const ctaText = reel.cta?.split('.')[0] || 'احجز دلوقتي'
-    plan.push({ text: ctaText.slice(0, 60), type: 'cta', duration: 4 })
-
-    // 1. Generate PNG for each frame
-    console.log(`[render-reel ${reel.id}] Generating ${plan.length} frames...`)
-    for (let i = 0; i < plan.length; i++) {
-      const png = await generateFrame(plan[i].text, plan[i].type, i)
-      writeFileSync(join(tmpDir, `frame_${i}.png`), png)
-    }
-
-    // 2. Build FFmpeg command to make video from frames
-    // Each PNG looped for its duration, concat all, add fade in/out
-    const ffmpegArgs: string[] = ['-y']
-    plan.forEach((p, i) => {
-      ffmpegArgs.push(
-        '-loop', '1',
-        '-t', String(p.duration),
-        '-i', join(tmpDir, `frame_${i}.png`)
-      )
-    })
-
-    // Filter complex: scale all + concat + fade
-    const inputs = plan.map((_, i) => `[${i}:v]scale=1080:1920,setsar=1[v${i}]`).join(';')
-    const concatInputs = plan.map((_, i) => `[v${i}]`).join('')
-    const filterComplex = `${inputs};${concatInputs}concat=n=${plan.length}:v=1:a=0,fade=t=in:d=0.5,fade=t=out:st=${totalDur - 0.8}:d=0.8,format=yuv420p[out]`
-
     const outFile = join(tmpDir, 'output.mp4')
-    ffmpegArgs.push(
-      '-filter_complex', filterComplex,
-      '-map', '[out]',
+
+    // Madmona-branded solid green video with smooth fade transitions
+    const ffmpegArgs = [
+      '-y',
+      '-f', 'lavfi',
+      '-i', `color=c=0x1F5F3F:s=1080x1920:d=${totalDur}:r=30`,
+      '-vf', `fade=t=in:d=0.6,fade=t=out:st=${(totalDur - 0.8).toFixed(2)}:d=0.8,format=yuv420p`,
       '-c:v', 'libx264',
-      '-preset', 'fast',
-      '-crf', '23',
-      '-r', '30',
-      outFile
-    )
+      '-preset', 'ultrafast',
+      '-crf', '28',
+      '-t', String(totalDur),
+      outFile,
+    ]
 
-    console.log(`[render-reel ${reel.id}] Running FFmpeg...`)
+    console.log(`[render-reel ${reel.id}] Starting FFmpeg...`)
     await runFFmpeg(ffmpegArgs)
+    console.log(`[render-reel ${reel.id}] FFmpeg done, uploading...`)
 
-    // 3. Upload to Supabase Storage
-    console.log(`[render-reel ${reel.id}] Uploading...`)
     const buf = readFileSync(outFile)
     const { error: upErr } = await supabaseAdmin.storage
       .from('reels')
@@ -159,7 +78,6 @@ async function renderReel(reel: Reel): Promise<string> {
       .from('reels')
       .getPublicUrl(`${reel.id}.mp4`)
 
-    // 4. Update reel_scripts
     await supabaseAdmin
       .from('reel_scripts')
       .update({
@@ -168,15 +86,12 @@ async function renderReel(reel: Reel): Promise<string> {
       } as never)
       .eq('id', reel.id)
 
+    console.log(`[render-reel ${reel.id}] Done: ${publicUrl}`)
     return publicUrl
   } finally {
     try { rmSync(tmpDir, { recursive: true, force: true }) } catch {}
   }
 }
-
-// ============================================================================
-// Route handler
-// ============================================================================
 
 async function handle(req: NextRequest) {
   // Auth: Vercel cron OR admin pw
@@ -190,17 +105,23 @@ async function handle(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Optional: limit how many to render in one call
   const { searchParams } = new URL(req.url)
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '5', 10), 10)
+  const specificReelId = searchParams.get('reel_id')
 
-  const { data: reels, error } = await supabaseAdmin
+  let query = supabaseAdmin
     .from('reel_scripts')
-    .select('id, title, hook, scenes, caption, cta, total_duration_sec')
-    .eq('status', 'drafted')
-    .order('created_at', { ascending: false })
-    .limit(limit)
+    .select('id, title, hook, total_duration_sec')
 
+  if (specificReelId) {
+    query = query.eq('id', specificReelId).limit(1)
+  } else {
+    query = query.eq('status', 'drafted')
+      .order('created_at', { ascending: false })
+      .limit(limit)
+  }
+
+  const { data: reels, error } = await query
   if (error) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
   }
