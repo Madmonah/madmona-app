@@ -17,11 +17,14 @@ echo   * src/lib/email.ts
 echo.
 echo   Pushing to GitHub now...
 echo.
-echo   --- Syncing with remote first ---
-git pull --rebase origin main
-echo.
+echo   --- 1) Stage and commit any local changes ---
 git add .
 git commit -m "feat: switch Resend FROM to verified domain noreply@madmonacairo.com" --allow-empty
+echo.
+echo   --- 2) Pull remote with rebase ---
+git pull --rebase origin main
+echo.
+echo   --- 3) Push ---
 git push origin main
 echo.
 if %ERRORLEVEL% EQU 0 (
