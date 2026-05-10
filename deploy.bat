@@ -1,35 +1,23 @@
 @echo off
 cd /d "%~dp0"
 echo ================================================================
-echo   Tier 5: Admin Broadcast Notifications System
+echo   Resend Custom Domain: noreply@madmonacairo.com
 echo ================================================================
 echo.
-echo   NEW: /admin/notifications page
-echo   * Send custom push notifications to:
-echo     - Single user (search by name/phone)
-echo     - Group of selected users (multi-pick)
-echo     - All customers
-echo     - All suppliers
-echo     - All users
-echo   * 4 quick templates (offers, reminders, updates, thanks)
-echo   * Live preview of the notification
-echo   * Shows who has push enabled vs not
-echo   * Custom URL for click destination
+echo   CHANGE: Email FROM updated
+echo   * Was: Madmona ^<onboarding@resend.dev^>
+echo   * Now: Madmona ^<noreply@madmonacairo.com^>
 echo.
-echo   DB: 5 new RLS policies on notification_queue + push_subscriptions
-echo   * Admins can insert/view notification queue
-echo   * Users can view their own queue items
-echo   * Service role bypass for cron processing
-echo   * Admins can see all subscriptions for stats
+echo   Resend domain madmonacairo.com is now VERIFIED.
+echo   DNS records added auto via Cloudflare integration.
+echo   Recipient redirect to admin removed (sends to actual users now).
 echo.
-echo   ADMIN DASHBOARD:
-echo   * New "التواصل والإشعارات" section
-echo   * Shows total push subscribers count
-echo   * Direct link to /admin/notifications
+echo   Affected files:
+echo   * src/lib/email.ts
 echo.
-pause
+echo   Pushing to GitHub now...
 git add .
-git commit -m "feat: admin broadcast notifications page + RLS policies"
+git commit -m "feat: switch Resend FROM to verified domain noreply@madmonacairo.com"
 git push
 echo.
 if %ERRORLEVEL% EQU 0 (

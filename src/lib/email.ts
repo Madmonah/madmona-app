@@ -6,13 +6,8 @@ import { Resend } from 'resend'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 
-// FORCE Resend default from address (always works in testing mode without domain verification).
-// User can later verify madmonacairo.com domain in Resend, then update env vars.
-const EMAIL_FROM = 'Madmona <onboarding@resend.dev>'
-
-// Resend testing mode requirement: recipient must equal the Resend account email.
-// If MADMONA_OWNER_EMAIL is the old fallback (madmonaspace@gmail.com), redirect to admin.
-const RESEND_ACCOUNT_EMAIL = 'madmona.admin@gmail.com'
+// Domain madmonacairo.com is verified in Resend (May 2026) — sending from custom domain.
+const EMAIL_FROM = 'Madmona <noreply@madmonacairo.com>'
 
 let client: Resend | null = null
 
@@ -37,14 +32,12 @@ export interface EmailParams {
 }
 
 /**
- * Sanitize recipient list for testing mode. While Resend domain is unverified,
- * all sends are redirected to the verified Resend account email.
- * Once madmonacairo.com is verified, simply remove this redirect.
+ * Sanitize recipient list. Domain is verified, so we send to actual recipients.
+ * Strips empty strings and de-duplicates.
  */
 function sanitizeRecipients(to: string | string[]): string[] {
   const arr = Array.isArray(to) ? to : [to]
-  // In testing mode (Resend domain not verified), force all sends to the account email.
-  return arr.map(() => RESEND_ACCOUNT_EMAIL)
+  return Array.from(new Set(arr.map(s => s.trim()).filter(Boolean)))
 }
 
 export async function sendEmail(params: EmailParams): Promise<{ ok: boolean; id?: string; error?: string }> {
