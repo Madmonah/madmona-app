@@ -21,9 +21,8 @@ export async function callClaude(opts: {
 }): Promise<string> {
   const response = await anthropic.messages.create({
     model: CLAUDE_MODEL,
-    // Default 4096 (was 2048) — most Madmona agents return JSON >2k tokens.
-    // Bump explicitly via opts.maxTokens for very large outputs (8k max safe).
-    max_tokens: opts.maxTokens ?? 4096,
+    // Bumped to 8192 (was 4096) to prevent JSON truncation across all agents.
+    max_tokens: opts.maxTokens ?? 8192,
     temperature: opts.temperature ?? 0.7,
     system: opts.systemPrompt,
     messages: [
@@ -44,9 +43,12 @@ export async function callClaude(opts: {
 }
 
 /**
- * Parse a JSON response from Claude, handling code fences if present.
- * Falls back to extracting the largest valid JSON object if the response
- * is wrapped in extra text or got truncated mid-string.
+ * Parse a JSON response from Claude. Robust against:
+ *   - Markdown code fences
+ *   - Leading/trailing prose
+ *   - Truncated responses (closes unclosed strings/objects/arrays)
+ *   - Trailing commas
+ *   - Mid-JSON truncation (extracts last complete top-level object)
  */
 export function parseJsonResponse<T = unknown>(text: string): T {
   // Strip markdown code fences
@@ -67,21 +69,66 @@ export function parseJsonResponse<T = unknown>(text: string): T {
     }
   }
 
+  // First attempt: parse as-is
   try {
     return JSON.parse(cleaned) as T
-  } catch (err) {
-    // Try to repair common issues: trailing commas, truncated strings
-    try {
-      // Remove trailing commas before } or ]
-      const repaired = cleaned
-        .replace(/,(\s*[}\]])/g, '$1')
-        // If truncated mid-string, close the last open string
-        .replace(/("[^"\\]*(?:\\.[^"\\]*)*?)$/, '$1"')
-      return JSON.parse(repaired) as T
-    } catch {
-      throw new Error(
-        `Failed to parse Claude response as JSON: ${(err as Error).message}\n\nResponse:\n${text.slice(0, 500)}...`
-      )
+  } catch {}
+
+  // Repair strategy 1: Remove trailing commas
+  try {
+    return JSON.parse(cleaned.replace(/,(\s*[}\]])/g, '$1')) as T
+  } catch {}
+
+  // Repair strategy 2: Close truncated strings + unclosed brackets
+  try {
+    let s = cleaned
+    // Count unescaped quotes; if odd, close the open string
+    const quotes = (s.match(/(?<!\\)"/g) || []).length
+    if (quotes % 2 === 1) s += '"'
+    // Close unclosed objects/arrays by tracking depth
+    const stack: string[] = []
+    let inString = false
+    let escape = false
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i]
+      if (escape) { escape = false; continue }
+      if (c === '\\') { escape = true; continue }
+      if (c === '"') { inString = !inString; continue }
+      if (inString) continue
+      if (c === '{') stack.push('}')
+      else if (c === '[') stack.push(']')
+      else if (c === '}' || c === ']') stack.pop()
     }
-  }
+    // Strip trailing comma before adding closers
+    s = s.replace(/,\s*$/, '')
+    while (stack.length > 0) s += stack.pop()
+    return JSON.parse(s) as T
+  } catch {}
+
+  // Repair strategy 3: Find last complete top-level object
+  try {
+    let depth = 0
+    let lastValid = -1
+    let inString = false
+    let escape = false
+    for (let i = 0; i < cleaned.length; i++) {
+      const c = cleaned[i]
+      if (escape) { escape = false; continue }
+      if (c === '\\') { escape = true; continue }
+      if (c === '"') { inString = !inString; continue }
+      if (inString) continue
+      if (c === '{' || c === '[') depth++
+      if (c === '}' || c === ']') {
+        depth--
+        if (depth === 0) lastValid = i
+      }
+    }
+    if (lastValid > 0) {
+      return JSON.parse(cleaned.slice(0, lastValid + 1)) as T
+    }
+  } catch {}
+
+  throw new Error(
+    `Failed to parse Claude response as JSON after all repair attempts.\n\nFirst 500 chars:\n${text.slice(0, 500)}\n\nLast 200 chars:\n${text.slice(-200)}`
+  )
 }
