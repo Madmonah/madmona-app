@@ -18,8 +18,8 @@ import SocialLinks from '@/components/SocialLinks'
 // Layout (top to bottom):
 //   1. TopNav
 //   2. FinancialTicker
-//   3. 🔥 NEWS HUB (top, big, dynamic - admin-managed + RSS)
-//   4. 🔥 DUAL CTA (أجر معانا / أجر مننا - hero position)
+//   3. Simple dual tabs (أجر مننا + أجر معانا)
+//   4. NEWS HUB
 //   5. Categories grid
 //   6. Featured listings
 //   7. How it works
@@ -104,6 +104,26 @@ export default async function HomePage() {
           <InstallPWA />
         </div>
 
+        {/* 🎯 Simple dual tabs - above news */}
+        <div className="max-w-7xl mx-auto px-4 pt-4">
+          <div className="grid grid-cols-2 gap-2 md:gap-3">
+            <Link
+              href="/marketplace"
+              className="flex items-center justify-center gap-2 py-3 md:py-4 bg-[#1F5F3F] text-white text-sm md:text-base font-black rounded-xl shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>أجر مننا</span>
+            </Link>
+            <Link
+              href="/supplier/register"
+              className="flex items-center justify-center gap-2 py-3 md:py-4 bg-[#B8860B] text-white text-sm md:text-base font-black rounded-xl shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
+            >
+              <Building2 className="w-4 h-4" />
+              <span>أجر معانا</span>
+            </Link>
+          </div>
+        </div>
+
         {/* 🔥 NEWS HUB - Top of page, full prominence */}
         <section className="relative pt-4 md:pt-6 pb-8 md:pb-10">
           <div className="max-w-7xl mx-auto px-4">
@@ -126,121 +146,6 @@ export default async function HomePage() {
               </p>
             </div>
             <CompactNewsTabs />
-          </div>
-        </section>
-
-        {/* 🔥 DUAL CTA - hero position, the registration signs */}
-        <section className="relative py-10 md:py-14 bg-gradient-to-br from-[#1F5F3F]/5 via-[#FAFAF7] to-[#B8860B]/5">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="text-center mb-8 md:mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white shadow-soft border border-gray-100 mb-4">
-                <Sparkles className="w-3.5 h-3.5 text-[#B8860B]" />
-                <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F5F3F]">JOIN MADMONA</span>
-              </div>
-              <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95] tracking-tight">
-                <span className="block mb-2">خدمتك، وقتك،</span>
-                <span className="block italic font-light gradient-text-green">مضمونة</span>
-              </h2>
-              <p className="text-sm md:text-base text-gray-600 mt-4 md:mt-5 max-w-xl mx-auto leading-relaxed">
-                منصة حجز مصرية تجمع كل اللي يتأجر — اختار مسارك:
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-5xl mx-auto">
-              {/* أجر مننا (Customer / Renter) */}
-              <Link
-                href="/marketplace"
-                className="group relative overflow-hidden bg-gradient-to-br from-[#1F5F3F] to-[#2d7a52] text-white rounded-3xl p-7 md:p-10 shadow-elevated hover:shadow-luxe hover:-translate-y-1 transition-all duration-500 no-underline"
-              >
-                <div className="absolute -top-12 -right-12 w-56 h-56 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#B8860B]/20 rounded-full blur-3xl pointer-events-none" />
-
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
-                      <ShoppingBag className="w-8 h-8" />
-                    </div>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 backdrop-blur rounded-full text-[10px] font-black tracking-widest uppercase">
-                      <Sparkles className="w-2.5 h-2.5" />
-                      للعميل
-                    </span>
-                  </div>
-
-                  <p className="text-[10px] md:text-xs font-bold tracking-[0.25em] uppercase text-white/70 mb-2">RENT FROM US</p>
-                  <h3 className="text-4xl md:text-5xl font-black mb-3 leading-tight">
-                    أجر <span className="italic font-light">مننا</span>
-                  </h3>
-                  <p className="text-sm md:text-base text-white/85 leading-relaxed mb-6">
-                    اتصفّح آلاف الخدمات — مساحات، عقارات، عربيات، معدات — من <strong className="text-white">مصادر موثقة</strong>.
-                    احجز فوراً، ادفع آمن.
-                  </p>
-
-                  <div className="inline-flex items-center gap-2 px-5 py-3 bg-white text-[#1F5F3F] rounded-full text-sm font-black group-hover:gap-3 transition-all">
-                    <span>اتصفّح الخدمات</span>
-                    <ArrowLeft className="w-4 h-4" />
-                  </div>
-
-                  <div className="flex items-center gap-3 mt-6 pt-5 border-t border-white/15 text-[11px] text-white/80">
-                    <span className="flex items-center gap-1">
-                      <ShieldCheck className="w-3 h-3" /> ضمان كامل
-                    </span>
-                    <span className="opacity-50">·</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> رد فوري
-                    </span>
-                    <span className="opacity-50">·</span>
-                    <span className="flex items-center gap-1">
-                      <Star className="w-3 h-3" /> بجودة مضمونة
-                    </span>
-                  </div>
-                </div>
-              </Link>
-
-              {/* أجر معانا (Supplier) */}
-              <Link
-                href="/supplier/register"
-                className="group relative overflow-hidden bg-gradient-to-br from-[#1F2937] via-[#374151] to-[#1F2937] text-white rounded-3xl p-7 md:p-10 shadow-elevated hover:shadow-luxe hover:-translate-y-1 transition-all duration-500 no-underline"
-              >
-                <div className="absolute -top-12 -left-12 w-56 h-56 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 right-0 w-40 h-40 bg-[#B8860B]/15 rounded-full blur-3xl pointer-events-none" />
-
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center border border-white/10">
-                      <Building2 className="w-8 h-8" />
-                    </div>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 backdrop-blur rounded-full text-[10px] font-black tracking-widest uppercase border border-white/10">
-                      <Sparkles className="w-2.5 h-2.5" />
-                      للمورد
-                    </span>
-                  </div>
-
-                  <p className="text-[10px] md:text-xs font-bold tracking-[0.25em] uppercase text-white/60 mb-2">RENT WITH US</p>
-                  <h3 className="text-4xl md:text-5xl font-black mb-3 leading-tight">
-                    أجر <span className="italic font-light">معانا</span>
-                  </h3>
-                  <p className="text-sm md:text-base text-white/85 leading-relaxed mb-6">
-                    عندك خدمة أو منتج؟ اعرضه على آلاف العملاء، استقبل حجوزات، واكسب.
-                    <strong className="text-white"> ٠٪ عمولة</strong> لأول ٣٠ يوم!
-                  </p>
-
-                  <div className="inline-flex items-center gap-2 px-5 py-3 bg-white text-[#1F2937] rounded-full text-sm font-black group-hover:gap-3 transition-all">
-                    <span>هتأجر ايه؟</span>
-                    <ArrowLeft className="w-4 h-4" />
-                  </div>
-
-                  <div className="flex items-center gap-3 mt-6 pt-5 border-t border-white/10 text-[11px] text-white/80">
-                    <span className="flex items-center gap-1">
-                      <Zap className="w-3 h-3" /> تسجيل سريع
-                    </span>
-                    <span className="opacity-50">·</span>
-                    <span className="flex items-center gap-1">
-                      <Star className="w-3 h-3 fill-white" /> ٠٪ عمولة ٣٠ يوم
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            </div>
           </div>
         </section>
 
