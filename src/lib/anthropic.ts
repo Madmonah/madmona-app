@@ -51,11 +51,12 @@ export async function callClaude(opts: {
  *   - Mid-JSON truncation (extracts last complete top-level object)
  */
 export function parseJsonResponse<T = unknown>(text: string): T {
-  // Strip markdown code fences
+  // Strip markdown code fences (handles ```json, ```js, ```javascript, ```ts, ```)
   let cleaned = text
-    .replace(/^[\s\S]*?```json\s*/i, '')
-    .replace(/^[\s\S]*?```\s*/i, '')
-    .replace(/\s*```[\s\S]*$/i, '')
+    .replace(/^[\s\S]*?```\w*\s*\n/i, '')
+    .replace(/^```\w*\s*\n/i, '')
+    .replace(/\n```[\s\S]*$/i, '')
+    .replace(/```[\s\S]*$/i, '')
     .trim()
 
   // If still doesn't start with { or [, try to extract the JSON object
@@ -79,9 +80,24 @@ export function parseJsonResponse<T = unknown>(text: string): T {
     return JSON.parse(cleaned.replace(/,(\s*[}\]])/g, '$1')) as T
   } catch {}
 
-  // Repair strategy 2: Close truncated strings + unclosed brackets
+  // Repair strategy 2: Convert JS object literal to JSON
+  // (unquoted keys, single quotes, trailing commas)
+  try {
+    const jsToJson = cleaned
+      // Quote unquoted keys: {foo: -> {"foo":
+      .replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')
+      // Convert single-quoted strings to double-quoted (basic)
+      .replace(/:\s*'([^'\\]*(\\.[^'\\]*)*)'/g, ': "$1"')
+      // Remove trailing commas
+      .replace(/,(\s*[}\]])/g, '$1')
+    return JSON.parse(jsToJson) as T
+  } catch {}
+
+  // Repair strategy 3: Close truncated strings + unclosed brackets (after JS->JSON)
   try {
     let s = cleaned
+      .replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')
+      .replace(/:\s*'([^'\\]*(\\.[^'\\]*)*)'/g, ': "$1"')
     // Count unescaped quotes; if odd, close the open string
     const quotes = (s.match(/(?<!\\)"/g) || []).length
     if (quotes % 2 === 1) s += '"'
@@ -99,20 +115,22 @@ export function parseJsonResponse<T = unknown>(text: string): T {
       else if (c === '[') stack.push(']')
       else if (c === '}' || c === ']') stack.pop()
     }
-    // Strip trailing comma before adding closers
     s = s.replace(/,\s*$/, '')
     while (stack.length > 0) s += stack.pop()
     return JSON.parse(s) as T
   } catch {}
 
-  // Repair strategy 3: Find last complete top-level object
+  // Repair strategy 4: Find last complete top-level object
   try {
+    const s = cleaned
+      .replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')
+      .replace(/:\s*'([^'\\]*(\\.[^'\\]*)*)'/g, ': "$1"')
     let depth = 0
     let lastValid = -1
     let inString = false
     let escape = false
-    for (let i = 0; i < cleaned.length; i++) {
-      const c = cleaned[i]
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i]
       if (escape) { escape = false; continue }
       if (c === '\\') { escape = true; continue }
       if (c === '"') { inString = !inString; continue }
@@ -124,7 +142,7 @@ export function parseJsonResponse<T = unknown>(text: string): T {
       }
     }
     if (lastValid > 0) {
-      return JSON.parse(cleaned.slice(0, lastValid + 1)) as T
+      return JSON.parse(s.slice(0, lastValid + 1)) as T
     }
   } catch {}
 
