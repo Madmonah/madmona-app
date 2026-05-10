@@ -14,9 +14,15 @@ function SignupContent() {
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/account'
 
-  const [fullName, setFullName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [email, setEmail] = useState('')
+  // Pre-fill from /list-your-asset hand-off
+  const fromListing = searchParams.get('from') === 'listing'
+  const prefilledName = searchParams.get('name') || ''
+  const prefilledPhone = searchParams.get('phone') || ''
+  const prefilledEmail = searchParams.get('email') || ''
+
+  const [fullName, setFullName] = useState(prefilledName)
+  const [phone, setPhone] = useState(prefilledPhone)
+  const [email, setEmail] = useState(prefilledEmail)
   const [nationalId, setNationalId] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -175,12 +181,18 @@ function SignupContent() {
           <div className="text-center mb-6">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/80 backdrop-blur rounded-full mb-4 shadow-soft">
               <Sparkles className="w-3 h-3 text-[#B8860B]" />
-              <span className="text-xs font-bold text-gray-700">انضم لمضمونة</span>
+              <span className="text-xs font-bold text-gray-700">
+                {fromListing ? 'أصلك متسجل ✓ خطوة واحدة لباقي العملية' : 'انضم لمضمونة'}
+              </span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight tracking-tight">
-              ابدأ <span className="gradient-text-green">رحلتك</span>
+              {fromListing ? (<>أكمل <span className="gradient-text-green">حسابك</span></>) : (<>ابدأ <span className="gradient-text-green">رحلتك</span></>)}
             </h1>
-            <p className="text-sm text-gray-500 mt-2">أنشئ حسابك وابدأ تحجز فوراً</p>
+            <p className="text-sm text-gray-500 mt-2">
+              {fromListing
+                ? 'الأصل اللي سجلته جاهز. اعمل حساب وفريقنا هينشره خلال 24 ساعة.'
+                : 'أنشئ حسابك وابدأ تحجز فوراً'}
+            </p>
           </div>
 
           <div className="bg-white rounded-3xl shadow-luxe p-7 md:p-9">
