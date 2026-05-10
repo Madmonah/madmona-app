@@ -28,8 +28,20 @@ interface Reel {
 function runFFmpeg(args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
     const ffmpegPath = getFfmpegPath()
+    console.log(`[ffmpeg] using path: ${ffmpegPath}`)
     if (!ffmpegPath) {
       return reject(new Error('ffmpeg-static binary not found'))
+    }
+    // Verify the binary exists
+    try {
+      const fs = require('fs') as typeof import('fs')
+      if (!fs.existsSync(ffmpegPath)) {
+        return reject(new Error(`ffmpeg binary missing at: ${ffmpegPath}`))
+      }
+      // Make sure it's executable
+      try { fs.chmodSync(ffmpegPath, 0o755) } catch {}
+    } catch (e) {
+      console.error('[ffmpeg] check failed:', e)
     }
     const proc = spawn(ffmpegPath, args, { stdio: ['ignore', 'ignore', 'pipe'] })
     let stderr = ''

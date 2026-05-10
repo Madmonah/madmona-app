@@ -1,23 +1,24 @@
 @echo off
 cd /d "%~dp0"
 echo ================================================================
-echo   FIX: Simplified renderer (no internal HTTP fetch, ~3s per reel)
+echo   FIX: Bundle ffmpeg-static binary in Vercel deployment
 echo ================================================================
 echo.
-echo   Removed dependency on /api/og/reel-scene (was hanging on Vercel)
-echo   Each reel now renders in ~3 seconds via direct FFmpeg lavfi.
+echo   Issue: ffmpeg binary path resolved to wrong location after webpack bundling
 echo.
-echo   Output: 1080x1920 portrait MP4, Madmona green (#1F5F3F),
-echo           with smooth fade in/out, duration matches reel script.
-echo.
-echo   You can add Arabic text + photos in Instagram (perfect Arabic support).
+echo   Fix:
+echo   * next.config.mjs:
+echo     - serverComponentsExternalPackages: ['ffmpeg-static']  ^(skip bundling^)
+echo     - outputFileTracingIncludes: includes binary in deployment
+echo   * route.ts: verify binary exists + chmod 755 before spawn
+echo   * Better error messages
 echo.
 git add .
-git commit -m "fix: simplified ffmpeg renderer (no internal fetch, fast)" --allow-empty
+git commit -m "fix: bundle ffmpeg-static binary correctly in vercel deployment" --allow-empty
 git pull --rebase origin main
 git push origin main
 echo.
 if %ERRORLEVEL% EQU 0 (
-  echo   PUSHED. Wait 90 seconds for Vercel deploy.
+  echo   PUSHED. Wait 90 sec for Vercel deploy.
 )
 pause
