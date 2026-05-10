@@ -21,6 +21,18 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 86400, // 24h
   },
+  async redirects() {
+    return [
+      // RESCUE: WhatsApp AI bot was sending /categories/* URLs that don't exist.
+      // Redirect them to /marketplace/* so old customer messages still work.
+      // Edge function v4 (deployed 2026-05-10) now uses /marketplace/* directly.
+      {
+        source: '/categories/:slug*',
+        destination: '/marketplace/:slug*',
+        permanent: true,
+      },
+    ]
+  },
   async headers() {
     return [
       {
