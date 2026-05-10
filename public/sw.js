@@ -1,8 +1,8 @@
 // Service Worker for Madmona PWA
 // Offline caching + Push notifications + Notification clicks
-// Version: 2 — added push notification support
+// Version: 3 — listing-first deploy: forces cache invalidation for /add-listing rollout
 
-const CACHE_NAME = 'madmona-v2';
+const CACHE_NAME = 'madmona-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
