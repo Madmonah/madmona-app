@@ -13,6 +13,12 @@ function SignupContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/account'
+  // Claim token from /add-listing/success — append to post-signup URL so
+  // MadmonaListingClaimer can pick it up and convert the draft into a real listing.
+  const claimToken = searchParams.get('token')
+  const finalRedirect = claimToken
+    ? `${redirectTo}${redirectTo.includes('?') ? '&' : '?'}token=${encodeURIComponent(claimToken)}`
+    : redirectTo
 
   // Pre-fill from /list-your-asset hand-off
   const fromListing = searchParams.get('from') === 'listing'
@@ -105,7 +111,7 @@ function SignupContent() {
     }
 
     if (data.session) {
-      router.push(redirectTo)
+      router.push(finalRedirect)
       router.refresh()
       return
     }
@@ -134,7 +140,7 @@ function SignupContent() {
       }
     }
 
-    router.push(redirectTo)
+    router.push(finalRedirect)
     router.refresh()
   }
 

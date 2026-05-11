@@ -29,10 +29,19 @@ const nextConfig = {
     ];
     const redirects = [];
 
+    // The /add-listing/success page links to /signup?token=...&phone=... — this
+    // redirect makes that flow land on the real auth signup page (which
+    // accepts ?phone= to prefill, and MadmonaListingClaimer auto-claims the
+    // draft after account creation). Query params are preserved automatically.
+    redirects.push(
+      { source: '/signup', destination: '/auth/signup', permanent: false },
+    );
+
     // Deprecated supplier-signup paths → unified /add-listing flow
     // (old WhatsApp messages still contain these URLs)
+    // NOTE: /auth/signup is NOT redirected — it's the legitimate account
+    // creation page used after listing submission.
     redirects.push(
-      { source: '/auth/signup', destination: '/add-listing', permanent: true },
       { source: '/supplier/register', destination: '/add-listing', permanent: true },
       { source: '/list-your-asset', destination: '/add-listing', permanent: true },
     );
