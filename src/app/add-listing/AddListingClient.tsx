@@ -11,21 +11,151 @@ import Image from 'next/image';
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
-type Category = {
+type SubCategory = {
   slug: string;
   name_ar: string;
   emoji: string;
 };
 
-const CATEGORIES: Category[] = [
-  { slug: 'apartments', name_ar: 'شقة',          emoji: '🏠' },
-  { slug: 'chalets',    name_ar: 'شاليه',        emoji: '🏖' },
-  { slug: 'villas',     name_ar: 'فيلا',         emoji: '🏡' },
-  { slug: 'cars',       name_ar: 'عربية',        emoji: '🚗' },
-  { slug: 'cameras',    name_ar: 'كاميرا/معدات', emoji: '📷' },
-  { slug: 'workspace',  name_ar: 'مساحة عمل',    emoji: '🏢' },
-  { slug: 'equipment',  name_ar: 'معدات/أدوات',  emoji: '🛠' },
-  { slug: 'other',      name_ar: 'حاجة تانية',   emoji: '✨' },
+type MainCategory = {
+  slug: string;
+  name_ar: string;
+  emoji: string;
+  subs: SubCategory[];
+};
+
+// Hierarchy mirrors the categories table in Supabase. Sub slugs MUST match
+// `categories.slug` exactly so the eventual claim → listing INSERT can resolve
+// the right category_id by slug lookup.
+const MAIN_CATEGORIES: MainCategory[] = [
+  {
+    slug: 'properties', name_ar: 'عقارات للإيجار', emoji: '🏠',
+    subs: [
+      { slug: 'properties-apartment', name_ar: 'شقة',           emoji: '🏢' },
+      { slug: 'properties-villa',     name_ar: 'فيلا',          emoji: '🏡' },
+      { slug: 'tourism-chalet',       name_ar: 'شاليه',         emoji: '🏖️' },
+      { slug: 'properties-studio',    name_ar: 'استوديو',       emoji: '🛏️' },
+      { slug: 'properties-penthouse', name_ar: 'روف',           emoji: '🌃' },
+      { slug: 'properties-retail',    name_ar: 'محل تجاري',     emoji: '🏪' },
+      { slug: 'properties-clinics',   name_ar: 'عيادات',        emoji: '🩺' },
+      { slug: 'properties-storage',   name_ar: 'مساحة تخزين',   emoji: '📦' },
+    ],
+  },
+  {
+    slug: 'vehicles', name_ar: 'مركبات ونقل', emoji: '🚗',
+    subs: [
+      { slug: 'vehicles-car',        name_ar: 'سيارة',              emoji: '🚗' },
+      { slug: 'vehicles-luxury',     name_ar: 'سيارة فاخرة',        emoji: '🏎️' },
+      { slug: 'vehicles-4x4',        name_ar: 'سيارة دفع رباعي',    emoji: '🚙' },
+      { slug: 'vehicles-microbus',   name_ar: 'ميكروباص',           emoji: '🚐' },
+      { slug: 'vehicles-bus',        name_ar: 'أوتوبيس',            emoji: '🚌' },
+      { slug: 'vehicles-motorcycle', name_ar: 'موتوسيكل',           emoji: '🏍️' },
+      { slug: 'vehicles-tuktuk',     name_ar: 'تروسيكل',            emoji: '🛺' },
+      { slug: 'vehicles-cargo',      name_ar: 'سيارات نقل بضائع',   emoji: '🚚' },
+      { slug: 'vehicles-workforce',  name_ar: 'سيارات نقل عمالة',   emoji: '🚐' },
+    ],
+  },
+  {
+    slug: 'workspaces', name_ar: 'مساحات عمل', emoji: '🏢',
+    subs: [
+      { slug: 'workspaces-hot-desk', name_ar: 'مكتب مشترك',     emoji: '🪑' },
+      { slug: 'workspaces-office',   name_ar: 'مكتب خاص',       emoji: '🚪' },
+      { slug: 'workspaces-meeting',  name_ar: 'قاعة اجتماعات',  emoji: '👥' },
+      { slug: 'workspaces-training', name_ar: 'قاعة تدريب',     emoji: '🎓' },
+      { slug: 'workspaces-podcast',  name_ar: 'استوديو بودكاست', emoji: '🎙️' },
+      { slug: 'workspaces-outdoor',  name_ar: 'مساحة خارجية',   emoji: '🌳' },
+    ],
+  },
+  {
+    slug: 'tourism', name_ar: 'السياحة', emoji: '🏝️',
+    subs: [
+      { slug: 'tourism-chalet',   name_ar: 'شاليه',                emoji: '🏖️' },
+      { slug: 'tourism-packages', name_ar: 'باكدج سياحي',          emoji: '🎒' },
+      { slug: 'tourism-day',      name_ar: 'رحلات يومية',          emoji: '🌅' },
+      { slug: 'tourism-safari',   name_ar: 'رحلات سفاري',          emoji: '🐪' },
+      { slug: 'tourism-diving',   name_ar: 'رحلات غطس وسنوركلينج', emoji: '🤿' },
+      { slug: 'tourism-cruises',  name_ar: 'رحلات بحرية',          emoji: '🛥️' },
+      { slug: 'tourism-city',     name_ar: 'سيتي تور',             emoji: '🚌' },
+      { slug: 'tourism-camps',    name_ar: 'كامبات وجلامبينج',     emoji: '⛺' },
+      { slug: 'tourism-bikes',    name_ar: 'تأجير دراجات وموتورات', emoji: '🛵' },
+      { slug: 'tourism-boats',    name_ar: 'تأجير قوارب',          emoji: '⛵' },
+      { slug: 'tourism-guides',   name_ar: 'مرشدين سياحيين',       emoji: '🗺️' },
+    ],
+  },
+  {
+    slug: 'weddings', name_ar: 'أعراس وتجهيزات', emoji: '💒',
+    subs: [
+      { slug: 'weddings-dress',       name_ar: 'فستان فرح',          emoji: '👰' },
+      { slug: 'weddings-suit',        name_ar: 'بدلة عريس',          emoji: '🤵' },
+      { slug: 'weddings-decor',       name_ar: 'كوشة وديكور',        emoji: '🎀' },
+      { slug: 'weddings-av',          name_ar: 'معدات صوت وإضاءة',   emoji: '💡' },
+      { slug: 'weddings-catering',    name_ar: 'تجهيزات ضيافة',      emoji: '🍽️' },
+      { slug: 'weddings-furniture',   name_ar: 'أرابيسك ومفروشات',   emoji: '🪑' },
+      { slug: 'weddings-accessories', name_ar: 'إكسسوارات',          emoji: '💎' },
+    ],
+  },
+  {
+    slug: 'media', name_ar: 'معدات ميديا', emoji: '📷',
+    subs: [
+      { slug: 'equipment-camera',       name_ar: 'كاميرات',         emoji: '📷' },
+      { slug: 'media-lighting',         name_ar: 'إضاءة تصوير',     emoji: '💡' },
+      { slug: 'media-projector',        name_ar: 'بروجيكتور وشاشة', emoji: '📽️' },
+      { slug: 'media-drone',            name_ar: 'درون',            emoji: '📡' },
+      { slug: 'media-equipment-audio',  name_ar: 'معدات صوت',       emoji: '🎤' },
+    ],
+  },
+  {
+    slug: 'recreation', name_ar: 'ترفيه ورياضة', emoji: '🎯',
+    subs: [
+      { slug: 'recreation-camping',   name_ar: 'معدات تخييم',      emoji: '⛺' },
+      { slug: 'recreation-gym',       name_ar: 'أجهزة جيم منزلية', emoji: '💪' },
+      { slug: 'recreation-bicycles',  name_ar: 'دراجات هوائية',    emoji: '🚲' },
+      { slug: 'recreation-scooter',   name_ar: 'سكوتر كهربائي',    emoji: '🛴' },
+      { slug: 'recreation-swim',      name_ar: 'معدات سباحة وغطس', emoji: '🤿' },
+      { slug: 'recreation-kayak',     name_ar: 'كاياك وقوارب',     emoji: '🛶' },
+      { slug: 'recreation-gaming',    name_ar: 'بلايستيشن وألعاب', emoji: '🎮' },
+    ],
+  },
+  {
+    slug: 'marine', name_ar: 'مركبات بحرية', emoji: '⛵',
+    subs: [
+      { slug: 'marine-yacht',     name_ar: 'يخت',               emoji: '🛥️' },
+      { slug: 'marine-speedboat', name_ar: 'لانش',              emoji: '🚤' },
+      { slug: 'marine-jetski',    name_ar: 'جت سكي',            emoji: '🌊' },
+      { slug: 'marine-boat',      name_ar: 'قارب صغير',         emoji: '⛵' },
+      { slug: 'marine-fishing',   name_ar: 'مركب صيد',          emoji: '🎣' },
+      { slug: 'marine-kayak',     name_ar: 'كاياك وكانو',       emoji: '🛶' },
+      { slug: 'marine-felucca',   name_ar: 'فيلوكا / مركب نيلي', emoji: '⛵' },
+    ],
+  },
+  {
+    slug: 'equipment', name_ar: 'معدات ثقيلة', emoji: '🚜',
+    subs: [
+      { slug: 'equipment-earthmoving',  name_ar: 'معدات تحريك التربة', emoji: '🚜' },
+      { slug: 'equipment-cranes',       name_ar: 'أوناش ومعدات رفع',   emoji: '🏗️' },
+      { slug: 'equipment-concrete',     name_ar: 'معدات خرسانة',        emoji: '🏭' },
+      { slug: 'equipment-foundation',   name_ar: 'معدات أساسات',        emoji: '🛠️' },
+      { slug: 'equipment-mixing-plants', name_ar: 'محطات خلط',          emoji: '🏭' },
+      { slug: 'equipment-generators',   name_ar: 'مولدات كهرباء',       emoji: '⚡' },
+      { slug: 'equipment-welding',      name_ar: 'معدات لحام',          emoji: '🔥' },
+      { slug: 'equipment-compressors',  name_ar: 'كومبريسور',           emoji: '💨' },
+    ],
+  },
+  {
+    slug: 'professionals', name_ar: 'خدمات احترافية', emoji: '👨‍💼',
+    subs: [
+      { slug: 'photographers',  name_ar: 'مصورين فوتوغرافيين', emoji: '📸' },
+      { slug: 'videographers',  name_ar: 'مصورين فيديو',       emoji: '🎬' },
+      { slug: 'djs',            name_ar: 'DJs ومنسقين',         emoji: '🎵' },
+      { slug: 'mcs',            name_ar: 'مذيعين و MCs',        emoji: '🎤' },
+      { slug: 'audio-engineers', name_ar: 'مهندسي صوت',         emoji: '🎧' },
+      { slug: 'designers',      name_ar: 'مصممين جرافيك',       emoji: '🎨' },
+      { slug: 'makeup-artists', name_ar: 'ميك أب أرتست',        emoji: '💄' },
+      { slug: 'event-planners', name_ar: 'منظمي فعاليات',       emoji: '🎉' },
+      { slug: 'tutors',         name_ar: 'مدرسين خصوصي',        emoji: '📚' },
+      { slug: 'translators',    name_ar: 'مترجمين',             emoji: '🌍' },
+    ],
+  },
 ];
 
 const CITIES = [
@@ -267,24 +397,73 @@ function StepCategory({
   value?: string;
   onSelect: (slug: string) => void;
 }) {
+  // Resolve "starting" main from any incoming slug:
+  //  - sub slug (e.g. "properties-apartment") → find its parent main
+  //  - main slug (e.g. "properties")          → use directly
+  const startingMainSlug = useMemo(() => {
+    if (!value) return null;
+    const asMain = MAIN_CATEGORIES.find((m) => m.slug === value);
+    if (asMain) return asMain.slug;
+    const asSub = MAIN_CATEGORIES.find((m) => m.subs.some((s) => s.slug === value));
+    return asSub?.slug ?? null;
+  }, [value]);
+
+  const [selectedMain, setSelectedMain] = useState<string | null>(startingMainSlug);
+  const main = MAIN_CATEGORIES.find((m) => m.slug === selectedMain);
+
+  // STAGE 1 — main categories
+  if (!main) {
+    return (
+      <section>
+        <h2 className="text-lg font-semibold mb-1">إيه اللي عايز تأجره؟</h2>
+        <p className="text-sm text-[#FAF7F0]/60 mb-6">اختار التصنيف الرئيسي</p>
+        <div className="grid grid-cols-2 gap-3">
+          {MAIN_CATEGORIES.map((c) => (
+            <button
+              key={c.slug}
+              type="button"
+              onClick={() => setSelectedMain(c.slug)}
+              className="p-5 rounded-2xl border text-right transition-all bg-[#FAF7F0]/5 border-[#FAF7F0]/15 hover:bg-[#FAF7F0]/10 hover:border-[#B8860B]/50"
+            >
+              <div className="text-3xl mb-2">{c.emoji}</div>
+              <div className="font-semibold">{c.name_ar}</div>
+              <div className="text-[10px] text-[#FAF7F0]/50 mt-1">{c.subs.length} نوع</div>
+            </button>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  // STAGE 2 — sub-categories filtered by selected main
   return (
     <section>
-      <h2 className="text-lg font-semibold mb-1">إيه اللي عايز تأجره؟</h2>
+      <button
+        type="button"
+        onClick={() => setSelectedMain(null)}
+        className="mb-3 inline-flex items-center gap-1 text-sm text-[#FAF7F0]/70 hover:text-[#B8860B] transition-colors"
+      >
+        ← رجوع للتصنيفات الرئيسية
+      </button>
+      <h2 className="text-lg font-semibold mb-1">
+        <span className="text-2xl me-2">{main.emoji}</span>
+        {main.name_ar}
+      </h2>
       <p className="text-sm text-[#FAF7F0]/60 mb-6">اختار النوع الأقرب لما عندك</p>
       <div className="grid grid-cols-2 gap-3">
-        {CATEGORIES.map((c) => (
+        {main.subs.map((s) => (
           <button
-            key={c.slug}
+            key={s.slug}
             type="button"
-            onClick={() => onSelect(c.slug)}
+            onClick={() => onSelect(s.slug)}
             className={`p-5 rounded-2xl border text-right transition-all ${
-              value === c.slug
+              value === s.slug
                 ? 'bg-[#B8860B] border-[#B8860B] text-[#1F5F3F]'
                 : 'bg-[#FAF7F0]/5 border-[#FAF7F0]/15 hover:bg-[#FAF7F0]/10 hover:border-[#B8860B]/50'
             }`}
           >
-            <div className="text-3xl mb-2">{c.emoji}</div>
-            <div className="font-semibold">{c.name_ar}</div>
+            <div className="text-3xl mb-2">{s.emoji}</div>
+            <div className="font-semibold text-sm">{s.name_ar}</div>
           </button>
         ))}
       </div>

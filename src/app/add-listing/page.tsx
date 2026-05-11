@@ -30,14 +30,16 @@ export const metadata = {
 };
 
 const SAMPLE_CATEGORIES = [
-  { emoji: '🏠', label: 'شقة' },
-  { emoji: '🏖', label: 'شاليه' },
-  { emoji: '🏡', label: 'فيلا' },
-  { emoji: '🚗', label: 'عربية' },
-  { emoji: '📷', label: 'كاميرا' },
-  { emoji: '🏢', label: 'مساحة عمل' },
-  { emoji: '🛠', label: 'معدات' },
-  { emoji: '✨', label: 'حاجة تانية' },
+  { emoji: '🏠', label: 'عقارات للإيجار' },
+  { emoji: '🚗', label: 'مركبات ونقل' },
+  { emoji: '🏢', label: 'مساحات عمل' },
+  { emoji: '🏝️', label: 'السياحة' },
+  { emoji: '💒', label: 'أعراس وتجهيزات' },
+  { emoji: '📷', label: 'معدات ميديا' },
+  { emoji: '🎯', label: 'ترفيه ورياضة' },
+  { emoji: '⛵', label: 'مركبات بحرية' },
+  { emoji: '🚜', label: 'معدات ثقيلة' },
+  { emoji: '👨‍💼', label: 'خدمات احترافية' },
 ];
 
 /**
@@ -82,7 +84,7 @@ function StaticPageFallback() {
       </header>
 
       <main className="px-5 pb-8 max-w-2xl mx-auto">
-        <h2 className="text-lg font-bold mb-4">إنت بتعرض إيه؟</h2>
+        <h2 className="text-lg font-bold mb-4">إيه اللي عايز تأجره؟ — اختار التصنيف الرئيسي</h2>
 
         <div className="grid grid-cols-2 gap-3" aria-hidden>
           {SAMPLE_CATEGORIES.map((c, i) => (
