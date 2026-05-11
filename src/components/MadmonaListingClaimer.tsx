@@ -55,6 +55,27 @@ export default function MadmonaListingClaimer() {
             localStorage.setItem(CLAIMED_KEY, JSON.stringify(claimed))
           } catch {}
 
+          // ALSO claim any other unclaimed drafts under the same phone number.
+          // Catches the case where a user submitted multiple drafts (e.g.
+          // 3 cars on different days) — token-based claim only handles one.
+          try {
+            const { data: profile } = await supabaseBrowser
+              .from('profiles')
+              .select('phone')
+              .eq('id', user.id)
+              .single()
+            const phone = (profile as { phone?: string } | null)?.phone
+            if (phone) {
+              await fetch('/api/listing-drafts/claim-by-phone', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, profile_id: user.id }),
+              })
+            }
+          } catch (e) {
+            console.warn('[MadmonaListingClaimer] phone-bulk-claim skipped:', e)
+          }
+
           // Friendly toast confirming the listing is linked
           const banner = document.createElement('div')
           banner.style.cssText = [
