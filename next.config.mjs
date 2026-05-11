@@ -22,16 +22,29 @@ const nextConfig = {
     minimumCacheTTL: 86400, // 24h
   },
   async redirects() {
-    return [
-      // RESCUE: WhatsApp AI bot was sending /categories/* URLs that don't exist.
-      // Redirect them to /marketplace/* so old customer messages still work.
-      // Edge function v4 (deployed 2026-05-10) now uses /marketplace/* directly.
-      {
-        source: '/categories/:slug*',
-        destination: '/marketplace/:slug*',
+    const CATEGORY_SLUGS = [
+      'properties', 'vehicles', 'workspaces', 'equipment',
+      'media', 'weddings', 'tourism', 'recreation', 'marine',
+      'apartments', 'chalets', 'villas', 'cars', 'cameras', 'workspace',
+    ];
+    const redirects = [];
+    for (const slug of CATEGORY_SLUGS) {
+      // OLD: /categories/properties → /marketplace?category=properties
+      redirects.push({
+        source: `/categories/${slug}`,
+        destination: `/marketplace?category=${slug}`,
         permanent: true,
-      },
-    ]
+      });
+      // NEW: /marketplace/properties → /marketplace?category=properties
+      // (Earlier AI sent these as if they were category pages, but /marketplace/[slug]
+      //  is for individual listings, so we redirect them to the filtered marketplace.)
+      redirects.push({
+        source: `/marketplace/${slug}`,
+        destination: `/marketplace?category=${slug}`,
+        permanent: false, // some real listings may want these slugs eventually
+      });
+    }
+    return redirects;
   },
   async headers() {
     return [
