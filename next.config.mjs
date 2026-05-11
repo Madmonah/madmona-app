@@ -28,6 +28,15 @@ const nextConfig = {
       'apartments', 'chalets', 'villas', 'cars', 'cameras', 'workspace',
     ];
     const redirects = [];
+
+    // Deprecated supplier-signup paths → unified /add-listing flow
+    // (old WhatsApp messages still contain these URLs)
+    redirects.push(
+      { source: '/auth/signup', destination: '/add-listing', permanent: true },
+      { source: '/supplier/register', destination: '/add-listing', permanent: true },
+      { source: '/list-your-asset', destination: '/add-listing', permanent: true },
+    );
+
     for (const slug of CATEGORY_SLUGS) {
       // OLD: /categories/properties → /marketplace?category=properties
       redirects.push({
