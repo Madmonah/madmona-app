@@ -451,21 +451,36 @@ function StepCategory({
       </h2>
       <p className="text-sm text-[#FAF7F0]/60 mb-6">اختار النوع الأقرب لما عندك</p>
       <div className="grid grid-cols-2 gap-3">
-        {main.subs.map((s) => (
-          <button
-            key={s.slug}
-            type="button"
-            onClick={() => onSelect(s.slug)}
-            className={`p-5 rounded-2xl border text-right transition-all ${
-              value === s.slug
-                ? 'bg-[#B8860B] border-[#B8860B] text-[#1F5F3F]'
-                : 'bg-[#FAF7F0]/5 border-[#FAF7F0]/15 hover:bg-[#FAF7F0]/10 hover:border-[#B8860B]/50'
-            }`}
-          >
-            <div className="text-3xl mb-2">{s.emoji}</div>
-            <div className="font-semibold text-sm">{s.name_ar}</div>
-          </button>
-        ))}
+        {main.subs.map((s) => {
+          // A sub is "cross-listed" when it appears under more than one main
+          // in MAIN_CATEGORIES (currently: tourism-chalet under both properties
+          // and tourism). Show a small badge so the user knows.
+          const appearsUnderMains = MAIN_CATEGORIES
+            .filter((m) => m.subs.some((sub) => sub.slug === s.slug))
+            .map((m) => m.name_ar);
+          const isCrossListed = appearsUnderMains.length > 1;
+
+          return (
+            <button
+              key={s.slug}
+              type="button"
+              onClick={() => onSelect(s.slug)}
+              className={`p-5 rounded-2xl border text-right transition-all ${
+                value === s.slug
+                  ? 'bg-[#B8860B] border-[#B8860B] text-[#1F5F3F]'
+                  : 'bg-[#FAF7F0]/5 border-[#FAF7F0]/15 hover:bg-[#FAF7F0]/10 hover:border-[#B8860B]/50'
+              }`}
+            >
+              <div className="text-3xl mb-2">{s.emoji}</div>
+              <div className="font-semibold text-sm">{s.name_ar}</div>
+              {isCrossListed && (
+                <div className="mt-1.5 text-[10px] text-[#B8860B] font-bold leading-tight">
+                  هيظهر في: {appearsUnderMains.join(' + ')}
+                </div>
+              )}
+            </button>
+          );
+        })}
       </div>
     </section>
   );
