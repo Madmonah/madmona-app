@@ -16,6 +16,13 @@
 import { Suspense } from 'react';
 import AddListingClient from './AddListingClient';
 
+// Force dynamic rendering so the Suspense fallback is rendered into SSR HTML.
+// Without this, Next.js detects useSearchParams() inside AddListingClient and
+// bails out to client-side rendering entirely, emitting an empty body that
+// WhatsApp's in-app browser cannot recover from.
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 export const metadata = {
   title: 'أضف إعلانك في 5 خطوات — مضمونة',
   description:
