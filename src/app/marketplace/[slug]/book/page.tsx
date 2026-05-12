@@ -74,8 +74,9 @@ type Stage =
   | 'loading'
   | 'unauthenticated'
   | 'not-found'
-  | 'demo-not-bookable'  // <-- NEW: blocks direct URL access to DEMO listings
+  | 'demo-not-bookable'  // <-- blocks direct URL access to DEMO listings
   | 'supplier-not-approved'
+  | 'listing-paused'     // <-- NEW: listing temporarily paused by owner
   | 'ready'
   | 'submitting'
 
@@ -108,6 +109,9 @@ export default function BookingPage() {
       }
       setUserId(session.user.id)
 
+      // Look up the listing WITHOUT filtering on status — we want to differentiate
+      // between truly missing listings and ones that are paused/draft/etc, so we
+      // can show the correct gate message.
       // @ts-expect-error
       const { data: l, error: listingErr } = await supabaseBrowser
         .from('listings')
@@ -117,7 +121,6 @@ export default function BookingPage() {
           photos:listing_photos(url, is_primary)
         `)
         .eq('slug', slug)
-        .eq('status', 'published')
         .maybeSingle()
 
       if (listingErr || !l) {
@@ -126,6 +129,14 @@ export default function BookingPage() {
       }
       const listingData = l as ListingForBooking
       setListing(listingData)
+
+      // PAUSED gate: listing exists but owner temporarily disabled it.
+      // This was previously showing as 'not-found' which made users think
+      // the listing was deleted. Now they get a clearer message.
+      if (listingData.status !== 'published') {
+        setStage('listing-paused')
+        return
+      }
 
       // Block direct URL access to DEMO listings (they're not bookable)
       if (isDemoListing(listingData.title)) {
@@ -282,19 +293,28 @@ export default function BookingPage() {
       }
       if (customerNotes.trim()) insertData.customer_notes = customerNotes.trim()
 
-      // If listing requires ID verification, save the customer's ID
-      if (listing.requires_id_verification && providedNationalId.trim()) {
-        insertData.id_verification_status = 'pending'
-        insertData.customer_national_id = providedNationalId.trim()
-        // Also save it on the user's profile for future bookings
-        try {
-          // @ts-expect-error
-          await supabaseBrowser
-            .from('profiles')
-            .update({ national_id: providedNationalId.trim() })
-            .eq('id', userId)
-        } catch {
-          // silent
+      // If listing requires ID verification, save the customer's ID (if provided).
+      // ID is now OPTIONAL at submit time — booking is created with status
+      // 'pending_id_verification' and customer is prompted for ID on next page
+      // if they didn't provide it here. This stops the "button disabled" friction
+      // that was killing conversion on car listings.
+      if (listing.requires_id_verification) {
+        if (providedNationalId.trim().length >= 14) {
+          insertData.id_verification_status = 'pending'
+          insertData.customer_national_id = providedNationalId.trim()
+          // Also save it on the user's profile for future bookings
+          try {
+            // @ts-expect-error
+            await supabaseBrowser
+              .from('profiles')
+              .update({ national_id: providedNationalId.trim() })
+              .eq('id', userId)
+          } catch {
+            // silent
+          }
+        } else {
+          // Booking submitted without ID — flag for follow-up
+          insertData.id_verification_status = 'awaiting_id'
         }
       }
 
@@ -373,6 +393,54 @@ export default function BookingPage() {
             تصفح
           </Link>
         </div>
+      </div>
+    )
+  }
+
+  // PAUSED gate: listing exists but is temporarily unavailable
+  if (stage === 'listing-paused' && listing) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+        <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+            <Link href="/marketplace" className="p-1 hover:bg-gray-50 rounded-full">
+              <ArrowRight className="w-5 h-5 text-gray-700" />
+            </Link>
+            <h1 className="text-lg font-bold text-gray-900">احجز</h1>
+          </div>
+        </header>
+        <main className="max-w-xl mx-auto p-4 pt-12">
+          <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+            <div className="flex items-center justify-center w-14 h-14 rounded-full mx-auto mb-4 bg-amber-50">
+              <Clock className="w-7 h-7 text-amber-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">الـlisting ده موقّف مؤقتاً</h2>
+            <p className="text-sm text-gray-600 leading-relaxed mb-6">
+              صاحب الإعلان <strong className="text-gray-900">{listing.supplier?.business_name || ''}</strong> أوقف الـlisting ده مؤقتاً. هتلاقي listings تانية مشابهة في الـmarketplace.
+              <br />
+              <span className="block mt-2 text-xs text-gray-500">
+                لو محتاج تتواصل مع صاحب الـlisting، كلّمنا واتساب وهنوصلك.
+              </span>
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              <a
+                href={`https://wa.me/201002229982?text=${encodeURIComponent(`مرحباً، شفت listing "${listing.title}" على مضمونة وعايز أحجز بس مكتوب إنه موقّف. ممكن تساعدني؟`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#25D366] text-white rounded-xl text-sm font-semibold no-underline hover:bg-[#25D366]/90"
+              >
+                <MessageCircle className="w-4 h-4" />
+                اطلب مساعدة في الحجز
+              </a>
+              <Link
+                href="/marketplace"
+                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#1F5F3F] text-white rounded-xl text-sm font-semibold hover:bg-[#1F5F3F]/90"
+              >
+                تصفح listings تانية
+              </Link>
+            </div>
+          </div>
+        </main>
       </div>
     )
   }
@@ -636,31 +704,33 @@ export default function BookingPage() {
           />
         </div>
 
-        {/* ID Verification - shown only for listings requiring it */}
+        {/* ID Verification - shown only for listings requiring it. ID is OPTIONAL
+            at submit time. If skipped, booking is created with status
+            'awaiting_id' and admin/supplier follows up. This removes the
+            disable-on-submit friction that was killing car-listing conversion. */}
         {listing.requires_id_verification && (
           <div className="bg-gradient-to-br from-[#B8860B]/5 to-amber-50 rounded-2xl border-2 border-[#B8860B]/30 p-4 mb-4">
             <h3 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-[#B8860B]" />
-              بطاقة مطلوبة
+              بطاقة مطلوبة (اختياري دلوقتي)
             </h3>
             <p className="text-xs text-gray-700 leading-relaxed mb-3">
-              الـlisting ده محتاج رقم بطاقتك للتحقق. الحجز ما بيتأكدش غير لما صاحب الإعلان (<strong>{listing.supplier?.business_name}</strong>) يوافق على بياناتك. رد عادي في خلال ساعات.
+              الـlisting ده محتاج رقم بطاقتك للتحقق. لو معاك الرقم دلوقتي، اكتبه — وده هيسرّع تأكيد الحجز. لو مش معاك دلوقتي، عادي اكمل الحجز وهنطلبها بعدين قبل ما يتأكد.
             </p>
             <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
               <CreditCard className="w-3.5 h-3.5 text-[#B8860B]" />
-              رقم البطاقة الشخصية *
+              رقم البطاقة الشخصية
             </label>
             <input
               type="text"
               value={providedNationalId}
               onChange={e => setProvidedNationalId(e.target.value.replace(/\D/g, '').slice(0, 14))}
-              placeholder="14 رقم"
+              placeholder="14 رقم — أو سيبها فاضية دلوقتي"
               maxLength={14}
               className="w-full px-4 py-2.5 border border-[#B8860B]/40 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#B8860B]/30 focus:border-[#B8860B] bg-white"
               dir="ltr"
               style={{ textAlign: 'right' }}
               inputMode="numeric"
-              required
             />
             {userNationalId && (
               <p className="text-[11px] text-green-700 mt-1.5 flex items-center gap-1">
@@ -709,7 +779,7 @@ export default function BookingPage() {
 
         <button
           onClick={handleSubmit}
-          disabled={!pricing.valid || stage === 'submitting' || (listing.requires_id_verification === true && providedNationalId.trim().length < 14)}
+          disabled={!pricing.valid || stage === 'submitting'}
           className="w-full py-3.5 bg-[#1F5F3F] text-white rounded-xl font-bold hover:bg-[#1F5F3F]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {stage === 'submitting' ? (

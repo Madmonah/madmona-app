@@ -72,6 +72,17 @@ interface CeoBrief {
   full_brief_html: string
 }
 
+interface AdminAlert {
+  id: string
+  alert_type: string
+  severity: 'info' | 'warn' | 'critical'
+  title: string
+  summary: string
+  detail: Record<string, unknown>
+  action_url: string | null
+  created_at: string
+}
+
 type Stage = 'loading' | 'unauthenticated' | 'ready'
 
 const TIER_STYLES: Record<string, string> = {
@@ -125,6 +136,7 @@ export default function CommandCenterPage() {
   const [data, setData] = useState<CommandCenterData | null>(null)
   const [leads, setLeads] = useState<Lead[]>([])
   const [brief, setBrief] = useState<CeoBrief | null>(null)
+  const [alerts, setAlerts] = useState<AdminAlert[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [actionFilter, setActionFilter] = useState<string>('reply_now')
   const [error, setError] = useState<string | null>(null)
@@ -134,14 +146,16 @@ export default function CommandCenterPage() {
     if (isRefresh) setRefreshing(true)
     setError(null)
     try {
-      const [ccData, leadsData, briefRow] = await Promise.all([
+      const [ccData, leadsData, briefRow, alertsRow] = await Promise.all([
         callEdge('ceo-command-center'),
         callEdge(`hot-leads-now?limit=30&action=${actionFilter}`),
         supabaseBrowser.from('ceo_briefs').select('*').order('brief_date', { ascending: false }).limit(1).maybeSingle(),
+        supabaseBrowser.from('admin_alerts').select('*').eq('status', 'unread').order('created_at', { ascending: false }).limit(10),
       ])
       setData(ccData as CommandCenterData)
       setLeads(((leadsData as { leads?: Lead[] }).leads) ?? [])
       setBrief((briefRow as { data?: CeoBrief | null }).data ?? null)
+      setAlerts(((alertsRow as { data?: AdminAlert[] | null }).data) ?? [])
     } catch (e) {
       setError(e instanceof Error ? e.message : 'unknown')
     } finally {
@@ -241,6 +255,23 @@ export default function CommandCenterPage() {
               sub={`${data?.conversations?.reply_rate_pct ?? 0}% reply rate`} color="ok" />
           </div>
         </section>
+
+        {alerts.length > 0 && (
+          <section className="mb-8">
+            <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-red-700">
+              <ShieldAlert className="h-5 w-5" />تنبيهات فورية
+              <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">{alerts.length}</span>
+            </h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {alerts.slice(0, 6).map(alert => (
+                <AdminAlertCard key={alert.id} alert={alert} onDismiss={async (id) => {
+                  await supabaseBrowser.from('admin_alerts').update({ status: 'read' }).eq('id', id)
+                  setAlerts(a => a.filter(x => x.id !== id))
+                }} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {brief && (
           <section className="mb-8">
@@ -433,6 +464,41 @@ export default function CommandCenterPage() {
           </div>
         </section>
       </main>
+    </div>
+  )
+}
+
+function AdminAlertCard({ alert, onDismiss }: { alert: AdminAlert; onDismiss: (id: string) => void }) {
+  const styles = {
+    critical: 'border-red-400 bg-red-50',
+    warn: 'border-amber-400 bg-amber-50',
+    info: 'border-blue-400 bg-blue-50',
+  }[alert.severity] || 'border-gray-300 bg-gray-50'
+  const iconColor = {
+    critical: 'text-red-700',
+    warn: 'text-amber-700',
+    info: 'text-blue-700',
+  }[alert.severity] || 'text-gray-700'
+  return (
+    <div className={`rounded-2xl border-2 p-4 ${styles}`}>
+      <div className="flex items-start gap-2 mb-1">
+        <ShieldAlert className={`h-5 w-5 flex-shrink-0 ${iconColor}`} />
+        <h3 className="font-bold text-emerald-900 text-sm leading-tight flex-1">{alert.title}</h3>
+      </div>
+      {alert.summary && <p className="text-xs text-stone-700 mt-2 leading-relaxed">{alert.summary}</p>}
+      <div className="mt-3 flex items-center gap-2">
+        {alert.action_url && (
+          <a href={alert.action_url} className="flex-1 rounded-lg bg-emerald-900 px-3 py-1.5 text-xs text-white text-center hover:bg-emerald-800">
+            تصفح
+          </a>
+        )}
+        <button
+          onClick={() => onDismiss(alert.id)}
+          className="rounded-lg bg-white/60 px-3 py-1.5 text-xs hover:bg-white text-stone-700"
+        >
+          إخفاء
+        </button>
+      </div>
     </div>
   )
 }
