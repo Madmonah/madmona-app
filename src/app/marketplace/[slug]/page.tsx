@@ -495,7 +495,7 @@ export default function ListingDetailPage() {
                 {listing.supplier?.kyc_status === 'approved' && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full text-xs font-bold text-green-700">
                     <CheckCircle className="w-3.5 h-3.5" />
-                    أجر معانا موثّق
+                    صاحب الإعلان موثّق
                   </span>
                 )}
                 {listing.requires_id_verification && (
@@ -691,7 +691,7 @@ export default function ListingDetailPage() {
                                 <div className="flex items-center gap-2 mb-2">
                                   <Building2 className="w-3.5 h-3.5 text-[#1F5F3F]" />
                                   <span className="text-xs font-bold text-[#1F5F3F]">
-                                    رد {listing.supplier?.business_name || 'أجر معانا'}
+                                    رد {listing.supplier?.business_name || 'صاحب الإعلان'}
                                   </span>
                                 </div>
                                 <p className="text-sm text-gray-700 leading-relaxed">{r.supplier_response}</p>
@@ -767,7 +767,7 @@ export default function ListingDetailPage() {
               {/* Supplier card */}
               {listing.supplier && (
                 <div className="bg-white rounded-3xl shadow-soft p-6">
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">أجر معانا</p>
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">صاحب الإعلان</p>
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1F5F3F] to-[#2d7a52] flex items-center justify-center flex-shrink-0">
                       <Building2 className="w-6 h-6 text-white" />
@@ -775,7 +775,7 @@ export default function ListingDetailPage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-gray-900 truncate">{listing.supplier.business_name}</p>
                       <p className="text-xs text-green-600 flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" /> أجر معانا موثّق
+                        <CheckCircle className="w-3 h-3" /> صاحب الإعلان موثّق
                       </p>
                     </div>
                   </div>

@@ -23,14 +23,20 @@ export async function GET(req: NextRequest) {
 }
 
 async function handle(req: NextRequest) {
-  // Verify auth: either CRON_SECRET header OR authenticated admin user (Bearer JWT)
+  // Verify auth: CRON_SECRET, Vercel cron header, OR authenticated admin user (Bearer JWT)
   const auth = req.headers.get('authorization') || ''
   const provided = auth.replace(/^Bearer\s+/i, '').trim()
+  const vercelCron = req.headers.get('x-vercel-cron') || req.headers.get('x-vercel-cron-signature')
 
   let authorized = false
 
-  // Method 1: CRON_SECRET match
-  if (CRON_SECRET && provided === CRON_SECRET) {
+  // Method 1: Vercel cron auto-auth (request originated from Vercel cron infrastructure)
+  if (vercelCron) {
+    authorized = true
+  }
+
+  // Method 2: CRON_SECRET match
+  if (!authorized && CRON_SECRET && provided === CRON_SECRET) {
     authorized = true
   }
 

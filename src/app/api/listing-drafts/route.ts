@@ -20,12 +20,46 @@ function normEgPhone(raw?: string): string | null {
 }
 
 // =====================================================
-// POST: create a new draft
+// POST: create a new draft  (with phone-based dedup)
 // =====================================================
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const phone = normEgPhone(body.contact_phone) || body.contact_phone || null;
+
+    // -----------------------------------------------------------------
+    // DEDUP: if the same phone already has an open draft created in the
+    // last 7 days, return THAT token instead of creating a new row.
+    // This stops the duplicate-draft explosion we saw when users tap
+    // the WhatsApp link multiple times (e.g. 6 drafts for one car).
+    // -----------------------------------------------------------------
+    if (phone) {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: existing } = await supabase
+        .from('listing_drafts')
+        .select('id, claim_token, status, created_at')
+        .eq('contact_phone', phone)
+        .in('status', ['draft', 'submitted'])
+        .gte('created_at', sevenDaysAgo)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) {
+        // Touch updated_at so admin sees they came back
+        await supabase
+          .from('listing_drafts')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('id', existing.id);
+
+        return NextResponse.json({
+          success: true,
+          token: existing.claim_token,
+          id: existing.id,
+          reused: true,
+        });
+      }
+    }
 
     // Resolve category_id from category_slug if provided
     let category_id: string | null = null;

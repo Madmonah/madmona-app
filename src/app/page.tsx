@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import {
   ArrowLeft, Compass, ShieldCheck, Clock, Zap, MapPin, MessageCircle, Star,
-  Building2, ShoppingBag, Sparkles,
+  Plus, ShoppingBag, Sparkles,
 } from 'lucide-react'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
@@ -120,8 +120,8 @@ export default async function HomePage() {
               href="/add-listing"
               className="flex items-center justify-center gap-2 py-3 md:py-4 bg-[#B8860B] text-white text-sm md:text-base font-black rounded-xl shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
             >
-              <Building2 className="w-4 h-4" />
-              <span>أجر معانا</span>
+              <Plus className="w-4 h-4" strokeWidth={3} />
+              <span>إضافة ليستنج</span>
             </Link>
           </div>
         </div>
@@ -231,7 +231,7 @@ export default async function HomePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               <Step num="01" title="استكشف" description="اتصفّح الخدمات أو ابحث في فئة معينة. شوف الأسعار والصور قبل أي قرار." icon={<Compass className="w-6 h-6" />} iconAccent="text-[#1F5F3F] bg-[#1F5F3F]/10" />
-              <Step num="02" title="احجز" description="اختار الوقت اللي يناسبك واحجز فوراً. تأكيد على واتساب من أجر معانا مباشرة." icon={<Zap className="w-6 h-6" />} iconAccent="text-[#B8860B] bg-[#B8860B]/10" />
+              <Step num="02" title="احجز" description="اختار الوقت اللي يناسبك واحجز فوراً. تأكيد على واتساب من صاحب الإعلان مباشرة." icon={<Zap className="w-6 h-6" />} iconAccent="text-[#B8860B] bg-[#B8860B]/10" />
               <Step num="03" title="استمتع" description="ادفع كاش أو InstaPay. مفيش هيدن فيز. ومتأمن إنك مش هتلاقي مفاجآت." icon={<ShieldCheck className="w-6 h-6" />} iconAccent="text-[#C2410C] bg-[#C2410C]/10" />
             </div>
           </div>

@@ -64,6 +64,7 @@ const MAIN_CATEGORIES: MainCategory[] = [
       { slug: 'workspaces-training', name_ar: 'قاعة تدريب',     emoji: '🎓' },
       { slug: 'workspaces-podcast',  name_ar: 'استوديو بودكاست', emoji: '🎙️' },
       { slug: 'workspaces-outdoor',  name_ar: 'مساحة خارجية',   emoji: '🌳' },
+      { slug: 'makeup-artists',      name_ar: 'استوديو ميكب',   emoji: '💄' },
     ],
   },
   {
@@ -210,21 +211,116 @@ function AddListingPageInner() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Read URL params (UTM, pre-fill phone from WhatsApp link)
+  // ALSO: restore token from localStorage if URL doesn't have one — stops
+  // duplicate drafts when users re-open the WhatsApp link.
   useEffect(() => {
     const phone = params.get('phone') || params.get('p');
     const utm_source = params.get('utm_source') || undefined;
     const utm_medium = params.get('utm_medium') || undefined;
     const utm_campaign = params.get('utm_campaign') || undefined;
     const cat = params.get('cat') || undefined;
-    const existing = params.get('token');
-    if (existing) setToken(existing);
+    const urlToken = params.get('token');
+
+    // Token priority: URL > localStorage
+    let activeToken: string | null = urlToken;
+    if (!activeToken && typeof window !== 'undefined') {
+      try {
+        activeToken = window.localStorage.getItem('madmona_draft_token');
+      } catch {}
+    }
+    if (activeToken) setToken(activeToken);
+
     setDraft((d) => ({
       ...d,
       contact_phone: phone || d.contact_phone,
       category_slug: cat || d.category_slug,
       utm_source, utm_medium, utm_campaign,
     }));
+
+    // If we have a token (URL or localStorage), hydrate the draft state from DB
+    if (activeToken) {
+      (async () => {
+        try {
+          const res = await fetch(`/api/listing-drafts?token=${activeToken}`);
+          const json = await res.json();
+          if (res.ok && json.success && json.draft) {
+            const d = json.draft;
+            setDraft((prev) => ({
+              ...prev,
+              category_slug: d.category_slug || prev.category_slug,
+              title: d.title && d.title !== '(جاري التحرير)' ? d.title : prev.title,
+              description: d.description || prev.description,
+              city: d.city || prev.city,
+              district: d.district || prev.district,
+              price: d.price || prev.price,
+              price_period: d.price_period || prev.price_period,
+              photos: d.photos || prev.photos,
+              contact_name: d.contact_name || prev.contact_name,
+              contact_phone: d.contact_phone || prev.contact_phone,
+              account_type: d.account_type || prev.account_type,
+              business_name: d.business_name || prev.business_name,
+            }));
+            if (d.current_step && d.current_step >= 1 && d.current_step <= 5) {
+              setStep(d.current_step as Step);
+            }
+          } else {
+            // Stale token (deleted/expired). Clear it.
+            if (typeof window !== 'undefined') {
+              try { window.localStorage.removeItem('madmona_draft_token'); } catch {}
+            }
+            setToken(null);
+          }
+        } catch {
+          // Network glitch — keep token, let next persist() reconnect
+        }
+      })();
+    }
   }, [params]);
+
+  // ============================================================
+  // CRITICAL FIX: When user lands with an existing token (e.g. from
+  // a WhatsApp link), fetch the existing draft data and pre-fill the
+  // wizard. Without this, the form starts empty and each Next-click
+  // overwrites the draft with blank values.
+  // ============================================================
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/listing-drafts?token=${token}`);
+        const json = await res.json();
+        if (cancelled || !json.success || !json.draft) return;
+        const d = json.draft;
+        // Merge fetched draft with any existing in-memory state
+        // (URL params take priority since they were just set)
+        setDraft((prev) => ({
+          ...d,
+          // Preserve UTM and any URL-provided values
+          source: prev.source || d.source || 'whatsapp_link',
+          utm_source: prev.utm_source || undefined,
+          utm_medium: prev.utm_medium || undefined,
+          utm_campaign: prev.utm_campaign || undefined,
+          contact_phone: prev.contact_phone || d.contact_phone,
+          category_slug: prev.category_slug || d.category_slug,
+          claim_token: token,
+        }));
+        // Jump the user to where they left off, but never start at
+        // step 5 if essential data is missing (avoids submitting blanks)
+        const desiredStep = d.current_step && d.current_step >= 1 && d.current_step <= 5 ? d.current_step : 1;
+        // Validate that previous steps have data; if not, rewind
+        let safeStep = desiredStep as Step;
+        if (safeStep >= 2 && !d.category_slug) safeStep = 1 as Step;
+        else if (safeStep >= 3 && (!d.title || d.title === '(جاري التحرير)' || !d.city)) safeStep = 2 as Step;
+        else if (safeStep >= 4 && (!d.price || d.price <= 0)) safeStep = 3 as Step;
+        setStep(safeStep);
+      } catch (e) {
+        console.error('Failed to load existing draft:', e);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   // Persist draft on every meaningful change
   async function persist(patch: Partial<DraftPayload>): Promise<string | null> {
@@ -241,7 +337,13 @@ function AddListingPageInner() {
         setErrors({ form: json.error || 'حصل خطأ، حاول تاني' });
         return null;
       }
-      if (json.token && !token) setToken(json.token);
+      if (json.token && !token) {
+        setToken(json.token);
+        // Persist token so re-opens reuse the same draft
+        if (typeof window !== 'undefined') {
+          try { window.localStorage.setItem('madmona_draft_token', json.token); } catch {}
+        }
+      }
       setDraft({ ...body, claim_token: json.token || token || undefined });
       return json.token || token;
     } catch (e: any) {
@@ -370,6 +472,11 @@ function AddListingPageInner() {
               if (!ok) return;
               const t = await persist({ ...patch, status: 'submitted' });
               if (t) {
+                // Clear the stored token — this draft is done. A future
+                // /add-listing visit should start fresh, not reuse this one.
+                if (typeof window !== 'undefined') {
+                  try { window.localStorage.removeItem('madmona_draft_token'); } catch {}
+                }
                 router.push(`/add-listing/success?token=${t}`);
               }
             }}

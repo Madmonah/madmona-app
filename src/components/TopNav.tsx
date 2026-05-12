@@ -2,14 +2,14 @@
 
 // ============================================================================
 // TopNav — minimal: logo + 2 primary tabs only.
-//   "أجر مننا"  → /marketplace      (rent FROM us — customer)
-//   "أجر معانا" → /add-listing      (rent WITH us — supplier; main→sub wizard)
+//   "أجر مننا"      → /marketplace      (rent FROM us — customer)
+//   "إضافة ليستنج" → /add-listing      (any user can add a listing; we approve in background)
 // Everything else (account, login, share) lives behind the hamburger.
 // ============================================================================
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, ShoppingBag, Building2, User, LogIn, Share2 } from 'lucide-react'
+import { Menu, X, ShoppingBag, Plus, User, LogIn, Share2 } from 'lucide-react'
 
 export default function TopNav() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -85,8 +85,8 @@ export default function TopNav() {
               href="/add-listing"
               className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 bg-[#B8860B] text-white text-xs sm:text-sm font-black rounded-xl shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline whitespace-nowrap"
             >
-              <Building2 className="w-4 h-4" />
-              <span>أجر معانا</span>
+              <Plus className="w-4 h-4" strokeWidth={3} />
+              <span>إضافة ليستنج</span>
             </Link>
           </nav>
 

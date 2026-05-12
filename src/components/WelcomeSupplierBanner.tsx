@@ -87,7 +87,7 @@ export default function WelcomeSupplierBanner({ userName }: Props) {
         <p className="text-sm md:text-base text-white/95 leading-relaxed mb-4">
           حسابك الواحد بيشتغل <span className="font-black bg-white/15 px-1.5 py-0.5 rounded">أجر مننا</span>
           {' '}<span className="opacity-80">و</span>{' '}
-          <span className="font-black bg-[#B8860B]/30 px-1.5 py-0.5 rounded">أجر معانا</span> في نفس الوقت!
+          <span className="font-black bg-[#B8860B]/30 px-1.5 py-0.5 rounded">ضيف الليستنج</span> في نفس الوقت!
         </p>
 
         {/* Two columns: customer + supplier */}
@@ -105,7 +105,7 @@ export default function WelcomeSupplierBanner({ userName }: Props) {
           <div className="bg-[#B8860B]/25 backdrop-blur rounded-xl p-3 border border-[#B8860B]/40">
             <div className="flex items-center gap-1.5 mb-1">
               <TrendingUp className="w-3.5 h-3.5" />
-              <p className="text-[10px] font-black uppercase tracking-widest">كـ أجر معانا</p>
+              <p className="text-[10px] font-black uppercase tracking-widest">ضيف الليستنج</p>
             </div>
             <p className="text-xs text-white/95 leading-snug font-semibold">
               ٠٪ عمولة لأول ٣٠ يوم!
