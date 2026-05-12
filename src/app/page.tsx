@@ -117,7 +117,7 @@ export default async function HomePage() {
               <span>أجر مننا</span>
             </Link>
             <Link
-              href="/supplier/register"
+              href="/add-listing"
               className="flex items-center justify-center gap-2 py-3 md:py-4 bg-[#B8860B] text-white text-sm md:text-base font-black rounded-xl shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
             >
               <Building2 className="w-4 h-4" />

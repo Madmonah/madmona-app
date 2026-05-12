@@ -115,7 +115,7 @@ export default function WelcomeSupplierBanner({ userName }: Props) {
 
         {/* CTA */}
         <Link
-          href="/supplier/register"
+          href="/add-listing"
           className="group flex items-center justify-between gap-2 bg-white text-[#1F5F3F] px-4 py-3 rounded-2xl font-black text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline"
         >
           <span className="flex items-center gap-2">

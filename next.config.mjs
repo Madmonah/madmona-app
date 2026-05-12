@@ -22,16 +22,47 @@ const nextConfig = {
     minimumCacheTTL: 86400, // 24h
   },
   async redirects() {
-    return [
-      // RESCUE: WhatsApp AI bot was sending /categories/* URLs that don't exist.
-      // Redirect them to /marketplace/* so old customer messages still work.
-      // Edge function v4 (deployed 2026-05-10) now uses /marketplace/* directly.
-      {
-        source: '/categories/:slug*',
-        destination: '/marketplace/:slug*',
+    const CATEGORY_SLUGS = [
+      'properties', 'vehicles', 'workspaces', 'equipment',
+      'media', 'weddings', 'tourism', 'recreation', 'marine',
+      'apartments', 'chalets', 'villas', 'cars', 'cameras', 'workspace',
+    ];
+    const redirects = [];
+
+    // The /add-listing/success page links to /signup?token=...&phone=... — this
+    // redirect makes that flow land on the real auth signup page (which
+    // accepts ?phone= to prefill, and MadmonaListingClaimer auto-claims the
+    // draft after account creation). Query params are preserved automatically.
+    redirects.push(
+      { source: '/signup', destination: '/auth/signup', permanent: false },
+    );
+
+    // Deprecated supplier-signup paths → unified /add-listing flow
+    // (old WhatsApp messages still contain these URLs)
+    // NOTE: /auth/signup is NOT redirected — it's the legitimate account
+    // creation page used after listing submission.
+    redirects.push(
+      { source: '/supplier/register', destination: '/add-listing', permanent: true },
+      { source: '/list-your-asset', destination: '/add-listing', permanent: true },
+    );
+
+    for (const slug of CATEGORY_SLUGS) {
+      // OLD: /categories/properties → /marketplace?category=properties
+      redirects.push({
+        source: `/categories/${slug}`,
+        destination: `/marketplace?category=${slug}`,
         permanent: true,
-      },
-    ]
+      });
+      // NEW: /marketplace/properties → /marketplace?category=properties
+      // (Earlier AI sent these as if they were category pages, but /marketplace/[slug]
+      //  is for individual listings, so we redirect them to the filtered marketplace.)
+      redirects.push({
+        source: `/marketplace/${slug}`,
+        destination: `/marketplace?category=${slug}`,
+        permanent: false, // some real listings may want these slugs eventually
+      });
+    }
+    return redirects;
   },
   async headers() {
     return [

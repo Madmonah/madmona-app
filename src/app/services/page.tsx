@@ -89,7 +89,7 @@ export default function ServicesPage() {
                 <ArrowLeft className="w-4 h-4" />
               </Link>
               <Link
-                href="/supplier/register"
+                href="/add-listing"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#B8860B] text-white font-black rounded-full shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
               >
                 <Building2 className="w-4 h-4" />
@@ -226,7 +226,7 @@ export default function ServicesPage() {
 
             <div className="text-center">
               <Link
-                href="/supplier/register"
+                href="/add-listing"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-[#B8860B] text-white font-black rounded-full shadow-elevated hover:-translate-y-0.5 transition-all no-underline text-base"
               >
                 <Building2 className="w-5 h-5" />

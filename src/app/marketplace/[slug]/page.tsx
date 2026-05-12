@@ -483,7 +483,7 @@ export default function ListingDetailPage() {
                     <div className="flex-1">
                       <p className="text-sm font-black text-amber-900 mb-1">نموذج للعرض · متوفر قريباً</p>
                       <p className="text-xs text-amber-800 leading-relaxed">
-                        ده مثال للفئة ده مدمونة بتدعمها. لسّه مفيش موردين حقيقيين فيه دلوقتي — لو حابب تتبلّغ لما يبقى متاح، كلّمنا واتساب.
+                        ده مثال للفئة دي مضمونة بتدعمها. لسّه مفيش موردين حقيقيين فيه دلوقتي — لو حابب تتبلّغ لما يبقى متاح، كلّمنا واتساب.
                       </p>
                     </div>
                   </div>

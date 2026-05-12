@@ -13,6 +13,12 @@ function SignupContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/account'
+  // Claim token from /add-listing/success — append to post-signup URL so
+  // MadmonaListingClaimer can pick it up and convert the draft into a real listing.
+  const claimToken = searchParams.get('token')
+  const finalRedirect = claimToken
+    ? `${redirectTo}${redirectTo.includes('?') ? '&' : '?'}token=${encodeURIComponent(claimToken)}`
+    : redirectTo
 
   // Pre-fill from /list-your-asset hand-off
   const fromListing = searchParams.get('from') === 'listing'
@@ -104,8 +110,43 @@ function SignupContent() {
       }
     }
 
+    // ============================================================
+    // INLINE CLAIM — runs synchronously while we still have the
+    // user.id in hand. Service-role API doesn't need an active
+    // session, so this works even if email confirmation is required
+    // and the auto-login below fails. Belt-and-suspenders: the
+    // MadmonaListingClaimer in the layout will also try if the user
+    // navigates with ?token=... later.
+    // ============================================================
+    if (data?.user?.id) {
+      const profileId = data.user.id
+      // (a) Token-based claim (if user came from /add-listing/success)
+      if (claimToken) {
+        try {
+          await fetch('/api/listing-drafts/claim', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: claimToken, profile_id: profileId }),
+          })
+        } catch (e) {
+          console.warn('[auth/signup] token claim failed:', e)
+        }
+      }
+      // (b) Phone-based bulk claim — catches users with multiple drafts,
+      // or with a draft but no token in the signup URL.
+      try {
+        await fetch('/api/listing-drafts/claim-by-phone', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: normalized, profile_id: profileId }),
+        })
+      } catch (e) {
+        console.warn('[auth/signup] phone claim failed:', e)
+      }
+    }
+
     if (data.session) {
-      router.push(redirectTo)
+      router.push(finalRedirect)
       router.refresh()
       return
     }
@@ -134,7 +175,7 @@ function SignupContent() {
       }
     }
 
-    router.push(redirectTo)
+    router.push(finalRedirect)
     router.refresh()
   }
 
