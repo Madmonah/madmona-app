@@ -11,6 +11,7 @@ import FeaturedListings from '@/components/FeaturedListings'
 import FinancialTicker from '@/components/FinancialTicker'
 import CompactNewsTabs from '@/components/CompactNewsTabs'
 import SocialLinks from '@/components/SocialLinks'
+import MUACampaignBanner from '@/components/MUACampaignBanner'
 
 // ============================================================
 // Home page — Single brand: "خدمات مضمونة"
@@ -97,6 +98,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-[#FAFAF7] text-right overflow-x-hidden pb-20 md:pb-0" dir="rtl">
       <TopNav />
+      <MUACampaignBanner />
       <FinancialTicker />
 
       <main className="relative">
