@@ -1,0 +1,39 @@
+name: Deploy to Vercel (fallback)
+
+# Fires when Vercel's git webhook doesn't trigger automatically.
+# Requires these GitHub Secrets:
+#   - VERCEL_DEPLOY_HOOK_URL  (create in Vercel dashboard: Project → Settings → Git → Deploy Hooks)
+# Optional alternative path (CLI-based):
+#   - VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  trigger-vercel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel deploy hook
+        if: ${{ vars.VERCEL_DEPLOY_HOOK_URL != '' || secrets.VERCEL_DEPLOY_HOOK_URL != '' }}
+        run: |
+          HOOK="${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"
+          if [ -z "$HOOK" ]; then HOOK="${{ vars.VERCEL_DEPLOY_HOOK_URL }}"; fi
+          if [ -z "$HOOK" ]; then
+            echo "::warning::No VERCEL_DEPLOY_HOOK_URL set — skipping fallback. Add it as a GitHub secret to enable."
+            exit 0
+          fi
+          echo "Triggering Vercel deploy hook..."
+          curl -fsSL -X POST "$HOOK" \
+            -H "Content-Type: application/json" \
+            -d "{\"ref\":\"${{ github.ref_name }}\",\"trigger\":\"github-action-fallback\"}"
+          echo ""
+          echo "✅ Deploy hook fired."
+
+      - name: Notify Supabase (optional log)
+        if: always()
+        run: |
+          echo "Commit: ${{ github.sha }}"
+          echo "Pushed by: ${{ github.actor }}"
+          echo "Message: ${{ github.event.head_commit.message }}"

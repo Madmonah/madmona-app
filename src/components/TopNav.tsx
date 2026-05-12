@@ -10,6 +10,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Menu, X, ShoppingBag, Plus, User, LogIn, Share2 } from 'lucide-react'
+import NotificationButton from './NotificationButton'
 
 export default function TopNav() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -91,14 +92,17 @@ export default function TopNav() {
           </nav>
 
           {/* Compact "more" menu — account/login/share */}
-          <button
-            type="button"
-            onClick={() => setMobileOpen(true)}
-            className="w-10 h-10 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-xl flex items-center justify-center transition-all flex-shrink-0"
-            aria-label="القائمة"
-          >
-            <Menu className="w-5 h-5 text-gray-700" />
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <NotificationButton variant="icon-only" />
+            <button
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              className="w-10 h-10 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-xl flex items-center justify-center transition-all"
+              aria-label="القائمة"
+            >
+              <Menu className="w-5 h-5 text-gray-700" />
+            </button>
+          </div>
         </div>
       </header>
 

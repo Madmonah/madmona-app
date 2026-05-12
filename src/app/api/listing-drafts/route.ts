@@ -35,11 +35,18 @@ export async function POST(req: NextRequest) {
     // -----------------------------------------------------------------
     if (phone) {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      // CRITICAL FIX: include 'claimed' in dedup status filter.
+      // The auto-claim DB trigger flips status to 'claimed' when phone matches
+      // an existing profile. Without this fix, every WhatsApp link click was
+      // creating a NEW orphan draft (one user had 7 empty claimed drafts).
+      // Now we reuse the most recent open draft regardless of claim state,
+      // as long as it isn't actually a converted listing or expired.
       const { data: existing } = await supabase
         .from('listing_drafts')
-        .select('id, claim_token, status, created_at')
+        .select('id, claim_token, status, created_at, converted_listing_id')
         .eq('contact_phone', phone)
-        .in('status', ['draft', 'submitted'])
+        .in('status', ['draft', 'submitted', 'claimed'])
+        .is('converted_listing_id', null)
         .gte('created_at', sevenDaysAgo)
         .order('created_at', { ascending: false })
         .limit(1)
