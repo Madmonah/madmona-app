@@ -1,0 +1,298 @@
+'use client'
+
+import { useEffect, useState, useCallback } from 'react'
+import { supabaseBrowser } from '@/lib/supabase-browser'
+import { MessageCircle, X, Phone, Check, Loader2 } from 'lucide-react'
+
+// ============================================================================
+// BookingHelper — multi-purpose conversion-rescue widget
+//
+// Behavior:
+//   - For ANONYMOUS visitors: shows a phone-capture card after 20s
+//     ("سيب رقمك ونساعدك تحجز")
+//   - For AUTHENTICATED visitors: shows a "concierge" card after 45s
+//     with no submit ("في مشكلة؟ كلّمنا واتساب")
+//   - Saves all captures to phone_captures via capture_phone RPC
+//   - Tracks every show + interaction in site_events
+//
+// Mounted on:
+//   - /marketplace/[slug]/book (booking page) — primary placement
+//   - Can be extended to listing detail pages later
+//
+// Brand: deep green (#1F5F3F) + gold (#B8860B) + clean ivory
+// ============================================================================
+
+interface Props {
+  listingId?: string | null
+  listingTitle?: string | null
+  listingSlug?: string | null
+  // If true (auth'd user), show concierge mode. If false, show phone capture.
+  isAuthenticated: boolean
+  // Delay in ms before showing the widget. Defaults differ by mode.
+  delayMs?: number
+}
+
+const ADMIN_WHATSAPP = '+201002229982'
+
+// Stable visitor ID (same as analytics.ts)
+function getVisitorId(): string {
+  if (typeof window === 'undefined') return 'server'
+  try {
+    let id = localStorage.getItem('madmona_visitor_id')
+    if (!id) {
+      id = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36)
+      localStorage.setItem('madmona_visitor_id', id)
+    }
+    return id
+  } catch { return 'anon' }
+}
+
+function getSessionId(): string {
+  if (typeof window === 'undefined') return 'server'
+  try {
+    let id = sessionStorage.getItem('madmona_session_id')
+    if (!id) {
+      id = 's_' + Math.random().toString(36).slice(2) + Date.now().toString(36)
+      sessionStorage.setItem('madmona_session_id', id)
+    }
+    return id
+  } catch { return 'anon' }
+}
+
+// Has user already been shown this widget on this listing?
+function getDismissKey(listingId: string | null | undefined): string {
+  return `madmona_booking_helper_dismissed_${listingId || 'global'}`
+}
+
+export default function BookingHelper({
+  listingId,
+  listingTitle,
+  listingSlug,
+  isAuthenticated,
+  delayMs,
+}: Props) {
+  const [visible, setVisible] = useState(false)
+  const [stage, setStage] = useState<'prompt' | 'submitting' | 'success'>('prompt')
+  const [phone, setPhone] = useState('')
+  const [name, setName] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  // Don't show if already dismissed this session
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      if (sessionStorage.getItem(getDismissKey(listingId))) return
+    } catch { /* ignore */ }
+
+    const ms = delayMs ?? (isAuthenticated ? 45_000 : 20_000)
+    const timer = setTimeout(() => {
+      setVisible(true)
+      // Track the show event (best-effort)
+      void supabaseBrowser.rpc('track_event', {
+        p_event_type: 'booking_helper_shown',
+        p_visitor_id: getVisitorId(),
+        p_session_id: getSessionId(),
+        p_listing_id: listingId || null,
+        p_category: null,
+        p_page_url: typeof window !== 'undefined' ? window.location.pathname : null,
+        p_metadata: { mode: isAuthenticated ? 'concierge' : 'phone_capture' },
+      }).then(() => { /* ok */ }, () => { /* ignore */ })
+    }, ms)
+
+    return () => clearTimeout(timer)
+  }, [delayMs, isAuthenticated, listingId])
+
+  const dismiss = useCallback((reason: 'closed' | 'submitted' | 'whatsapp_click') => {
+    try {
+      sessionStorage.setItem(getDismissKey(listingId), '1')
+    } catch { /* ignore */ }
+    setVisible(false)
+    void supabaseBrowser.rpc('track_event', {
+      p_event_type: 'booking_helper_dismissed',
+      p_visitor_id: getVisitorId(),
+      p_session_id: getSessionId(),
+      p_listing_id: listingId || null,
+      p_category: null,
+      p_page_url: typeof window !== 'undefined' ? window.location.pathname : null,
+      p_metadata: { reason },
+    }).then(() => { /* ok */ }, () => { /* ignore */ })
+  }, [listingId])
+
+  const handleSubmit = useCallback(async () => {
+    setError(null)
+    // Validate Egyptian phone format
+    const cleaned = phone.replace(/[^\d+]/g, '')
+    const isValid = /^(\+?20)?01\d{9}$/.test(cleaned)
+    if (!isValid) {
+      setError('رقم الموبايل لازم يكون 11 رقم ويبدأ بـ 01')
+      return
+    }
+    setStage('submitting')
+    try {
+      const { error: rpcErr } = await supabaseBrowser.rpc('capture_phone', {
+        p_phone: cleaned,
+        p_visitor_id: getVisitorId(),
+        p_session_id: getSessionId(),
+        p_page_url: typeof window !== 'undefined' ? window.location.pathname : null,
+        p_listing_id: listingId || null,
+        p_capture_context: 'booking_helper',
+        p_user_name: name.trim() || null,
+        p_notes: null,
+        p_metadata: { listing_title: listingTitle, listing_slug: listingSlug },
+      })
+      if (rpcErr) throw new Error(rpcErr.message)
+      setStage('success')
+      // Track success
+      void supabaseBrowser.rpc('track_event', {
+        p_event_type: 'phone_captured',
+        p_visitor_id: getVisitorId(),
+        p_session_id: getSessionId(),
+        p_listing_id: listingId || null,
+        p_category: null,
+        p_page_url: typeof window !== 'undefined' ? window.location.pathname : null,
+        p_metadata: { source: 'booking_helper' },
+      }).then(() => { /* ok */ }, () => { /* ignore */ })
+      // Auto-dismiss after showing success for 4 seconds
+      setTimeout(() => dismiss('submitted'), 4000)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'حصل خطأ، حاول تاني')
+      setStage('prompt')
+    }
+  }, [phone, name, listingId, listingTitle, listingSlug, dismiss])
+
+  const handleWhatsAppClick = useCallback(() => {
+    const msg = listingTitle
+      ? `مرحباً، شفت "${listingTitle}" على مضمونة وعايز أحجز. ممكن تساعدوني؟`
+      : 'مرحباً، عايز أحجز على مضمونة وعايز مساعدة'
+    void supabaseBrowser.rpc('track_event', {
+      p_event_type: 'whatsapp_click',
+      p_visitor_id: getVisitorId(),
+      p_session_id: getSessionId(),
+      p_listing_id: listingId || null,
+      p_category: null,
+      p_page_url: typeof window !== 'undefined' ? window.location.pathname : null,
+      p_metadata: { source: 'booking_helper' },
+    }).then(() => { /* ok */ }, () => { /* ignore */ })
+    window.open(
+      `https://wa.me/${ADMIN_WHATSAPP.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`,
+      '_blank',
+      'noopener,noreferrer'
+    )
+    dismiss('whatsapp_click')
+  }, [listingTitle, listingId, dismiss])
+
+  if (!visible) return null
+
+  return (
+    <div
+      dir="rtl"
+      className="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 max-w-md mx-auto sm:mx-0 animate-slide-up"
+      style={{ animation: 'slideUp 0.3s ease-out' }}
+    >
+      <style jsx>{`
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+      <div className="bg-white rounded-2xl border-2 border-[#1F5F3F]/20 shadow-2xl overflow-hidden">
+        {/* Header bar */}
+        <div className="flex items-center justify-between gap-2 bg-gradient-to-l from-[#1F5F3F] to-[#2a7a52] px-4 py-2.5 text-white">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
+              <MessageCircle className="w-4 h-4" />
+            </div>
+            <p className="text-sm font-bold truncate">مضمونة معاك</p>
+          </div>
+          <button
+            onClick={() => dismiss('closed')}
+            className="p-1 hover:bg-white/15 rounded-full transition-colors"
+            aria-label="إغلاق"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-4">
+          {stage === 'success' ? (
+            <div className="text-center py-4">
+              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
+                <Check className="w-6 h-6 text-green-700" />
+              </div>
+              <h3 className="font-bold text-[#1F5F3F] mb-1">تمام، خد بالك من تليفونك</h3>
+              <p className="text-xs text-gray-600">هنوصلك في أقل من ساعة على واتساب 🌿</p>
+            </div>
+          ) : isAuthenticated ? (
+            // Concierge mode for authenticated users (they have an account but maybe stuck)
+            <>
+              <h3 className="font-bold text-gray-900 mb-1.5">في مشكلة في الحجز؟</h3>
+              <p className="text-xs text-gray-600 mb-3 leading-relaxed">
+                لو الفورم مش راضي يتقدم أو في أي حاجة مش واضحة، كلّمنا واتساب وهنخلّص الحجز معاك في دقايق.
+              </p>
+              <button
+                onClick={handleWhatsAppClick}
+                className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#25D366]/90 text-white font-bold py-2.5 px-4 rounded-xl transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+                ابعت واتساب لمضمونة
+              </button>
+            </>
+          ) : (
+            // Phone-capture mode for anonymous visitors
+            <>
+              <h3 className="font-bold text-gray-900 mb-1.5">سيب رقمك ونساعدك تحجز</h3>
+              <p className="text-xs text-gray-600 mb-3 leading-relaxed">
+                {listingTitle
+                  ? `هنبعتلك تفاصيل "${listingTitle}" على واتساب ونرد على أي سؤال. مفيش حساب لازم.`
+                  : 'هنوصلك على واتساب ونساعدك تخلص الحجز في دقايق. مفيش حساب لازم.'}
+              </p>
+              <div className="space-y-2 mb-3">
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value.replace(/[^\d+]/g, '').slice(0, 14))}
+                  placeholder="رقم الموبايل · 01x xxxx xxxx"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                  dir="ltr"
+                  style={{ textAlign: 'right' }}
+                  inputMode="tel"
+                  autoComplete="tel"
+                />
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value.slice(0, 60))}
+                  placeholder="اسمك (اختياري)"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                  autoComplete="name"
+                />
+              </div>
+              {error && (
+                <p className="text-xs text-red-700 mb-2">{error}</p>
+              )}
+              <button
+                onClick={handleSubmit}
+                disabled={stage === 'submitting' || phone.length < 10}
+                className="w-full flex items-center justify-center gap-2 bg-[#1F5F3F] hover:bg-[#1F5F3F]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2.5 px-4 rounded-xl transition-colors"
+              >
+                {stage === 'submitting' ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Phone className="w-4 h-4" />
+                )}
+                <span>كلّموني على واتساب</span>
+              </button>
+              <button
+                onClick={handleWhatsAppClick}
+                className="w-full mt-2 text-xs text-[#1F5F3F] hover:underline"
+              >
+                أو ابعت واتساب لمضمونة دلوقتي ←
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

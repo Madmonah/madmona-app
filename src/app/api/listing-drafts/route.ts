@@ -19,8 +19,55 @@ function normEgPhone(raw?: string): string | null {
   return null;
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// Shared helper: build the listing_drafts UPDATE payload from request body
+// Only includes keys explicitly present in body (avoids accidentally
+// nulling fields the wizard didn't intend to change).
+// ─────────────────────────────────────────────────────────────────────
+async function buildUpdatePayload(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const phone = normEgPhone(body.contact_phone as string | undefined) || (body.contact_phone as string | undefined) || null;
+
+  // Resolve category_id from category_slug if provided
+  let category_id: string | null = null;
+  if (body.category_slug) {
+    const { data } = await supabase
+      .from('categories')
+      .select('id')
+      .or(`slug.eq.${body.category_slug},name_ar.eq.${body.category_slug}`)
+      .limit(1)
+      .single();
+    if (data) category_id = (data as { id: string }).id;
+  }
+
+  const payload: Record<string, unknown> = {};
+  if (body.category_slug !== undefined) {
+    payload.category_slug = body.category_slug;
+    payload.category_id = category_id;
+  }
+  // NOTE: title falls back to placeholder ONLY when explicitly sent empty.
+  // If the body doesn't include title at all, we don't touch the DB column.
+  if (body.title !== undefined)        payload.title         = body.title || '(جاري التحرير)';
+  if (body.description !== undefined)  payload.description   = body.description;
+  if (body.city !== undefined)         payload.city          = body.city;
+  if (body.district !== undefined)     payload.district      = body.district;
+  if (body.price !== undefined)        payload.price         = body.price;
+  if (body.price_period !== undefined) payload.price_period  = body.price_period;
+  if (body.photos !== undefined)       payload.photos        = body.photos;
+  if (body.contact_name !== undefined) payload.contact_name  = body.contact_name;
+  if (body.contact_phone !== undefined) payload.contact_phone = phone;
+  if (body.account_type !== undefined) payload.account_type  = body.account_type;
+  if (body.business_name !== undefined) payload.business_name = body.business_name;
+  if (body.current_step !== undefined) payload.current_step  = body.current_step;
+  if (body.status !== undefined)       payload.status        = body.status;
+  if (body.utm_source !== undefined)   payload.utm_source    = body.utm_source;
+  if (body.utm_medium !== undefined)   payload.utm_medium    = body.utm_medium;
+  if (body.utm_campaign !== undefined) payload.utm_campaign  = body.utm_campaign;
+
+  return payload;
+}
+
 // =====================================================
-// POST: create a new draft  (with phone-based dedup)
+// POST: create a new draft  (with phone-based dedup that MERGES new data)
 // =====================================================
 export async function POST(req: NextRequest) {
   try {
@@ -28,19 +75,14 @@ export async function POST(req: NextRequest) {
     const phone = normEgPhone(body.contact_phone) || body.contact_phone || null;
 
     // -----------------------------------------------------------------
-    // DEDUP: if the same phone already has an open draft created in the
-    // last 7 days, return THAT token instead of creating a new row.
-    // This stops the duplicate-draft explosion we saw when users tap
-    // the WhatsApp link multiple times (e.g. 6 drafts for one car).
+    // DEDUP-AND-MERGE: if the same phone already has an open draft created
+    // in the last 7 days, MERGE the new body into that draft (instead of
+    // just touching updated_at). This fixes the bug where users restarting
+    // from a new device or after localStorage clear were silently losing
+    // every field they typed in this new session.
     // -----------------------------------------------------------------
     if (phone) {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      // CRITICAL FIX: include 'claimed' in dedup status filter.
-      // The auto-claim DB trigger flips status to 'claimed' when phone matches
-      // an existing profile. Without this fix, every WhatsApp link click was
-      // creating a NEW orphan draft (one user had 7 empty claimed drafts).
-      // Now we reuse the most recent open draft regardless of claim state,
-      // as long as it isn't actually a converted listing or expired.
       const { data: existing } = await supabase
         .from('listing_drafts')
         .select('id, claim_token, status, created_at, converted_listing_id')
@@ -53,22 +95,28 @@ export async function POST(req: NextRequest) {
         .maybeSingle();
 
       if (existing) {
-        // Touch updated_at so admin sees they came back
+        const mergePayload = await buildUpdatePayload(body);
+        // Always bump updated_at so admin sees the activity
+        mergePayload.updated_at = new Date().toISOString();
+
         await supabase
           .from('listing_drafts')
-          .update({ updated_at: new Date().toISOString() })
-          .eq('id', existing.id);
+          .update(mergePayload)
+          .eq('id', (existing as { id: string }).id);
 
         return NextResponse.json({
           success: true,
-          token: existing.claim_token,
-          id: existing.id,
+          token: (existing as { claim_token: string }).claim_token,
+          id: (existing as { id: string }).id,
           reused: true,
+          merged_fields: Object.keys(mergePayload).filter(k => k !== 'updated_at'),
         });
       }
     }
 
-    // Resolve category_id from category_slug if provided
+    // -----------------------------------------------------------------
+    // No existing match → create a fresh draft
+    // -----------------------------------------------------------------
     let category_id: string | null = null;
     if (body.category_slug) {
       const { data } = await supabase
@@ -124,9 +172,10 @@ export async function POST(req: NextRequest) {
       token: data.claim_token,
       id: data.id,
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'unknown';
     console.error('listing_drafts POST exception:', e);
-    return NextResponse.json({ success: false, error: e.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: msg }, { status: 500 });
   }
 }
 
@@ -142,41 +191,13 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
-    const phone = normEgPhone(body.contact_phone) || body.contact_phone || null;
-
-    let category_id: string | null = null;
-    if (body.category_slug) {
-      const { data } = await supabase
-        .from('categories')
-        .select('id')
-        .or(`slug.eq.${body.category_slug},name_ar.eq.${body.category_slug}`)
-        .limit(1)
-        .single();
-      if (data) category_id = data.id;
-    }
-
-    const updatePayload: any = {
-      ...(body.category_slug !== undefined && { category_slug: body.category_slug, category_id }),
-      ...(body.title !== undefined && { title: body.title || '(جاري التحرير)' }),
-      ...(body.description !== undefined && { description: body.description }),
-      ...(body.city !== undefined && { city: body.city }),
-      ...(body.district !== undefined && { district: body.district }),
-      ...(body.price !== undefined && { price: body.price }),
-      ...(body.price_period !== undefined && { price_period: body.price_period }),
-      ...(body.photos !== undefined && { photos: body.photos }),
-      ...(body.contact_name !== undefined && { contact_name: body.contact_name }),
-      ...(body.contact_phone !== undefined && { contact_phone: phone }),
-      ...(body.account_type !== undefined && { account_type: body.account_type }),
-      ...(body.business_name !== undefined && { business_name: body.business_name }),
-      ...(body.current_step !== undefined && { current_step: body.current_step }),
-      ...(body.status !== undefined && { status: body.status }),
-    };
+    const updatePayload = await buildUpdatePayload(body);
 
     const { data, error } = await supabase
       .from('listing_drafts')
       .update(updatePayload)
       .eq('claim_token', token)
-      .select('claim_token, id, status')
+      .select('claim_token, id, status, contact_phone, contact_name')
       .single();
 
     if (error) {
@@ -185,10 +206,12 @@ export async function PATCH(req: NextRequest) {
     }
 
     // If submitted, also fire a WhatsApp confirmation to the user
-    if (body.status === 'submitted' && phone) {
+    if (body.status === 'submitted' && (data as { contact_phone?: string }).contact_phone) {
+      const recipPhone = (data as { contact_phone: string }).contact_phone;
+      const recipName = (data as { contact_name?: string }).contact_name || body.contact_name || 'صديقنا';
       await supabase.from('whatsapp_outbound_queue').insert({
-        recipient_phone: phone,
-        recipient_name: body.contact_name || 'صديقنا',
+        recipient_phone: recipPhone,
+        recipient_name: recipName,
         message:
           'استلمنا ليستنجك في *مضمونة* 🎉\n\n' +
           'فريقنا هيراجعه ويتواصل معاك خلال ساعات قليلة.\n\n' +
@@ -210,9 +233,10 @@ export async function PATCH(req: NextRequest) {
       id: data.id,
       status: data.status,
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'unknown';
     console.error('listing_drafts PATCH exception:', e);
-    return NextResponse.json({ success: false, error: e.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: msg }, { status: 500 });
   }
 }
 
@@ -237,7 +261,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'not found' }, { status: 404 });
     }
     return NextResponse.json({ success: true, draft: data });
-  } catch (e: any) {
-    return NextResponse.json({ success: false, error: e.message }, { status: 500 });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'unknown';
+    return NextResponse.json({ success: false, error: msg }, { status: 500 });
   }
 }

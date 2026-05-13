@@ -9,6 +9,7 @@ import {
   Lock, MapPin, Image as ImageIcon, Building2, ShieldCheck, Clock, CreditCard, MessageCircle,
 } from 'lucide-react'
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
+import BookingHelper from '@/components/BookingHelper'
 
 // ============================================================================
 // /marketplace/[slug]/book
@@ -361,25 +362,35 @@ export default function BookingPage() {
 
   if (stage === 'unauthenticated') {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
-        <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
-          <h1 className="font-bold mb-2">سجّل دخول الأول</h1>
-          <p className="text-sm text-gray-600 mb-6">عشان تحجز، لازم تسجّل دخول أو تعمل حساب جديد.</p>
-          <Link
-            href={`/auth/login?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`}
-            className="block w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold mb-2"
-          >
-            تسجيل دخول
-          </Link>
-          <Link
-            href={`/auth/signup?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`}
-            className="block w-full text-sm text-gray-600 hover:text-[#1F5F3F]"
-          >
-            مفيش حساب؟ اعمل حساب جديد
-          </Link>
+      <>
+        <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+          <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
+            <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
+            <h1 className="font-bold mb-2">سجّل دخول الأول</h1>
+            <p className="text-sm text-gray-600 mb-6">عشان تحجز، لازم تسجّل دخول أو تعمل حساب جديد.</p>
+            <Link
+              href={`/auth/login?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`}
+              className="block w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold mb-2"
+            >
+              تسجيل دخول
+            </Link>
+            <Link
+              href={`/auth/signup?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`}
+              className="block w-full text-sm text-gray-600 hover:text-[#1F5F3F]"
+            >
+              مفيش حساب؟ اعمل حساب جديد
+            </Link>
+          </div>
         </div>
-      </div>
+        {/* Phone-capture widget for anonymous visitors — lets them get help
+            without going through full signup. Appears after 20s. */}
+        <BookingHelper
+          listingId={null}
+          listingTitle={null}
+          listingSlug={slug}
+          isAuthenticated={false}
+        />
+      </>
     )
   }
 
@@ -803,6 +814,16 @@ export default function BookingPage() {
             : 'الحجز هيتأكد بعد ما صاحب الإعلان يوافق. هتقدر تتابع حالة الحجز من “حجوزاتي”.'}
         </p>
       </main>
+
+      {/* Conversion-rescue widget: appears after 45s on the booking page.
+          For authenticated users it offers WhatsApp concierge help.
+          For paused/blocked listings (handled in earlier gates) it doesn't render. */}
+      <BookingHelper
+        listingId={listing.id}
+        listingTitle={listing.title}
+        listingSlug={listing.slug}
+        isAuthenticated={true}
+      />
     </div>
   )
 }

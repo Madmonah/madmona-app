@@ -1,90 +1,82 @@
 @echo off
 REM ============================================================
-REM  Quantum Leap V3 Deploy
-REM  Includes:
-REM  - Command Center page (/admin/command-center)
-REM  - Analytics tracker (src/lib/analytics.ts)
-REM  - Booking page bug fixes (paused state + ID verification optional)
-REM  - Listing-drafts dedup fix (claimed status)
-REM  - GitHub Actions fallback workflow
+REM  Quantum Leap V5 Deploy
+REM  Wave 4: Phone capture + BookingHelper
+REM  Wave 5: Customer recovery drafter
+REM  Wave 6: AI Content Studio (Reels, TikTok, posts, stories)
 REM ============================================================
 setlocal enabledelayedexpansion
 cd /d C:\madmona-app
 
 echo.
 echo ==========================================================
-echo   QUANTUM LEAP DEPLOY V3
+echo   QUANTUM LEAP DEPLOY V5
 echo ==========================================================
-echo   1. Create /admin/command-center route
-echo   2. Install src/lib/analytics.ts
-echo   3. Install GitHub Action fallback workflow
-echo   4. Booking page bug fix already applied to:
-echo      src/app/marketplace/[slug]/book/page.tsx
-echo      - listing 'paused' status shows clearer message
-echo      - ID verification is now OPTIONAL at submit time
-echo      - Booking with no ID -> id_verification_status=awaiting_id
-echo   5. Listing-drafts dedup fix already applied to:
-echo      src/app/api/listing-drafts/route.ts
-echo   6. Commit + push
+echo   What's new in this wave:
+echo     - BookingHelper widget (phone capture + concierge)
+echo     - phone_captures table + RPC + admin section
+echo     - booking_help_v1, ai_matchmaker_v1, ai_matchmaker_v2
+echo       WhatsApp templates submitted to Meta (PENDING)
+echo     - customer-recovery-drafter (AI WA recovery messages)
+echo     - content-script-generator (Reels/TikTok/posts/stories)
+echo     - weekly-content-plan cron (every Sunday 8 AM Cairo)
+echo     - /admin/content-studio admin page UI
 echo ==========================================================
 echo.
 
 REM ----------------------------------------------------------
-REM 1. Create command-center directory
+REM Create content-studio directory and move staged file
 REM ----------------------------------------------------------
-if not exist "src\app\admin\command-center" (
-    mkdir "src\app\admin\command-center"
-    echo [+] Created src\app\admin\command-center
-) else (
-    echo [=] src\app\admin\command-center already exists
-)
-
-REM ----------------------------------------------------------
-REM 2. Move staged files
-REM ----------------------------------------------------------
-if exist "command-center-page.tsx" (
-    move /Y "command-center-page.tsx" "src\app\admin\command-center\page.tsx" >nul
-    echo [+] Moved command-center page.tsx into place
-) else (
-    if exist "src\app\admin\command-center\page.tsx" (
-        echo [=] command-center page.tsx already in place
-    ) else (
-        echo [!] WARN: no command-center-page.tsx to move
+if exist "_staged_content_studio_page.tsx" (
+    if not exist "src\app\admin\content-studio" (
+        mkdir "src\app\admin\content-studio"
+        echo [+] Created src\app\admin\content-studio
     )
-)
-
-if exist "analytics-lib.ts" (
-    move /Y "analytics-lib.ts" "src\lib\analytics.ts" >nul
-    echo [+] Installed src\lib\analytics.ts
-) else (
-    if exist "src\lib\analytics.ts" (
-        echo [=] analytics.ts already in place
+    move /Y "_staged_content_studio_page.tsx" "src\app\admin\content-studio\page.tsx" >nul
+    if errorlevel 1 (
+        echo [!] Failed to move staged page file
     ) else (
-        echo [!] WARN: no analytics-lib.ts to move
+        echo [+] Moved _staged_content_studio_page.tsx to src\app\admin\content-studio\page.tsx
+    )
+) else (
+    if exist "src\app\admin\content-studio\page.tsx" (
+        echo [+] content-studio\page.tsx already in place
+    ) else (
+        echo [!] WARN: neither staged file nor final file exists
     )
 )
 
 REM ----------------------------------------------------------
-REM 3. Verify GitHub workflow
+REM Verify all files in place
 REM ----------------------------------------------------------
-if exist ".github\workflows\vercel-deploy-fallback.yml" (
-    echo [+] vercel-deploy-fallback.yml in place
+if exist "src\components\BookingHelper.tsx" (
+    echo [+] BookingHelper.tsx in place
 ) else (
-    echo [!] WARN: vercel-deploy-fallback.yml missing
+    echo [!] WARN: BookingHelper.tsx missing
 )
 
-REM ----------------------------------------------------------
-REM 4. Verify booking page fix is in place
-REM ----------------------------------------------------------
-findstr /C:"listing-paused" "src\app\marketplace\[slug]\book\page.tsx" >nul
+if exist "src\app\admin\content-studio\page.tsx" (
+    echo [+] content-studio page in place
+) else (
+    echo [!] WARN: content-studio page missing
+)
+
+findstr /C:"import BookingHelper" "src\app\marketplace\[slug]\book\page.tsx" >nul
 if errorlevel 1 (
-    echo [!] WARN: booking page fix NOT applied
+    echo [!] WARN: BookingHelper not imported in booking page
 ) else (
-    echo [+] booking page fix verified
+    echo [+] BookingHelper imported in booking page
+)
+
+findstr /C:"phone_captures" "src\app\admin\command-center\page.tsx" >nul
+if errorlevel 1 (
+    echo [!] WARN: phone_captures section missing from command-center
+) else (
+    echo [+] phone_captures section in command-center
 )
 
 REM ----------------------------------------------------------
-REM 5. Stage and commit
+REM Stage and commit
 REM ----------------------------------------------------------
 echo.
 echo --- Git status ---
@@ -93,42 +85,43 @@ echo.
 
 git add -A
 
-git commit -m "feat(quantum-leap-v3): Booking bug fix + Command Center + friction detection
+git commit -m "feat(quantum-leap-v5): Content Studio + Wave 4 + Wave 5
 
-ROOT CAUSE FIXED: Booking page was blocking high-intent visitors.
-Investigation found:
-- مكاريوس (intent_score=100) attempted 10 bookings on 3 different listings
-- Another visitor (mp1llupl) attempted 6 bookings on same Mercedes listing
-- Bug #1: listing-mp1lat47-bxrd is PAUSED, page showed 'not-found'
-- Bug #2: requires_id_verification=true disabled submit button until 14-digit ID
-- Bug #3: 'unknown_friction' on BMW 740 + Mercedes G Class (now monitored)
+WAVE 4 - Conversion rescue infrastructure:
+- BookingHelper widget: floating phone capture + WhatsApp concierge
+- phone_captures table + capture_phone RPC + admin section
+- booking_help_v1 WhatsApp template (PENDING Meta)
 
-Frontend changes (this commit):
-- src/app/marketplace/[slug]/book/page.tsx:
-  * Added 'listing-paused' gate with clearer message + WhatsApp escape hatch
-  * ID verification is now OPTIONAL at submit time (was: disabled button)
-  * Booking submitted without ID gets id_verification_status='awaiting_id'
-  * Form lookup no longer filters on status='published' (so we can show
-    paused state instead of fake 'not-found')
-- src/app/admin/command-center/page.tsx: ops hub UI
-- src/lib/analytics.ts: track.pageView/listingView/booking helpers
-- src/app/api/listing-drafts/route.ts: dedup includes 'claimed' status
-- .github/workflows/vercel-deploy-fallback.yml: GitHub Action fallback
+WAVE 5 - Customer recovery:
+- customer-recovery-drafter edge function (AI message draft)
+- Runs every 6 hours via cron
+- AI uses Claude Sonnet 4.6 for empathetic Egyptian Arabic messages
 
-Backend changes (already deployed via Supabase):
-- visitor_intelligence view (intent scoring 0-100)
-- listing_friction view (per-listing booking abandonment)
-- admin_alerts table (replaces blocked admin WhatsApp alerts)
-- abandoned-booking-alerter edge function (4h cron)
-- listing-friction-alerter edge function (daily 8:15 AM Cairo)
-- system-health-monitor edge function (4h cron)
-- daily-ai-brief v3 (now surfaces booking bugs)
-- bulk-outreach-top-leads, drip-campaign-engine
-- cleanup_orphan_drafts() (daily 5 AM Cairo)"
+WAVE 6 - AI Content Studio:
+- content_drafts table with full schema for Reels/TikTok/posts/stories
+- content-script-generator edge function
+  Generates: hook, script with timing, visual directions (shot-by-shot),
+  caption, hashtags, CTA, thumbnail text, music suggestion, AI reasoning
+- weekly-content-plan edge function
+  Every Sunday 8 AM Cairo: drafts a 7-day content calendar
+  (3 Reels + 5 TikToks + 2 posts + 3 stories)
+- /admin/content-studio admin UI
+  Format picker (reel/tiktok/post/story/thread/carousel)
+  Intent + tone + audience + duration controls
+  Status workflow: generated -> approved -> in_production -> published
+  Copy buttons for script/caption/hashtags
+  Status filters and expanded shot-by-shot view
+
+WhatsApp templates submitted to Meta:
+- booking_help_v1 (PENDING) - for phone captures
+- madmona_ai_matchmaker_v1 (PENDING) - initial supplier outreach
+- madmona_ai_matchmaker_v2 (PENDING, candidate) - 'wasalna leek bel AI' hook
+
+auto-flip-default-template will activate v2 as default once Meta approves."
 
 if errorlevel 1 (
     echo.
-    echo [!] git commit had nothing to commit, or failed
+    echo [!] git commit had nothing to commit or failed
     echo Continuing to push pending commits anyway...
 )
 
@@ -138,29 +131,25 @@ git push origin main
 
 if errorlevel 1 (
     echo.
-    echo ==========================================================
     echo [!] git push failed
-    echo ==========================================================
     pause
     exit /b 1
 )
 
 echo.
 echo ==========================================================
-echo  PUSHED. Next steps:
+echo  PUSHED. Test these URLs once Vercel rebuilds:
 echo.
-echo  1. Open Vercel dashboard:
-echo     https://vercel.com/dashboard
-echo  2. If madmona-app hasn't auto-deployed in 2 min,
-echo     manually click "Redeploy" on the latest commit.
-echo  3. Once live, TEST THE BOOKING FLOW:
-echo     https://madmonacairo.com/marketplace/listing-mp1m00ri-hhij/book
-echo     - The submit button should no longer be disabled
-echo     - Try booking WITHOUT entering national_id
-echo  4. Then open the Command Center:
-echo     https://madmonacairo.com/admin/command-center
-echo  5. Call مكاريوس on +201206134041 and offer manual booking
+echo   1. Content Studio (AI generates Reels, TikTok, posts)
+echo      https://madmonacairo.com/admin/content-studio
 echo.
+echo   2. Booking page (BookingHelper widget appears after 20-45s)
+echo      https://madmonacairo.com/marketplace/listing-mp05vakz-oxyp/book
+echo.
+echo   3. Command Center (phone captures + recovery alerts)
+echo      https://madmonacairo.com/admin/command-center
+echo.
+echo  All AI features ready. WhatsApp templates pending Meta.
 echo ==========================================================
 echo.
 pause

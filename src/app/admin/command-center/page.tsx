@@ -13,7 +13,7 @@ import {
   Loader2, Lock, Flame, TrendingUp, MessageSquare, DollarSign,
   Users, Package, Activity, RefreshCw, ChevronRight, ChevronLeft,
   Zap, Brain, Send, ListChecks, ShieldAlert, Calendar, ExternalLink,
-  ArrowUpRight,
+  ArrowUpRight, Phone,
 } from 'lucide-react'
 
 interface CommandCenterData {
@@ -83,6 +83,17 @@ interface AdminAlert {
   created_at: string
 }
 
+interface PhoneCapture {
+  id: string
+  phone: string
+  user_name: string | null
+  page_url: string | null
+  capture_context: string | null
+  whatsapp_sent: boolean
+  created_at: string
+  metadata: { listing_title?: string; listing_slug?: string } | null
+}
+
 type Stage = 'loading' | 'unauthenticated' | 'ready'
 
 const TIER_STYLES: Record<string, string> = {
@@ -137,6 +148,7 @@ export default function CommandCenterPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [brief, setBrief] = useState<CeoBrief | null>(null)
   const [alerts, setAlerts] = useState<AdminAlert[]>([])
+  const [phoneCaptures, setPhoneCaptures] = useState<PhoneCapture[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [actionFilter, setActionFilter] = useState<string>('reply_now')
   const [error, setError] = useState<string | null>(null)
@@ -146,16 +158,18 @@ export default function CommandCenterPage() {
     if (isRefresh) setRefreshing(true)
     setError(null)
     try {
-      const [ccData, leadsData, briefRow, alertsRow] = await Promise.all([
+      const [ccData, leadsData, briefRow, alertsRow, captureRow] = await Promise.all([
         callEdge('ceo-command-center'),
         callEdge(`hot-leads-now?limit=30&action=${actionFilter}`),
         supabaseBrowser.from('ceo_briefs').select('*').order('brief_date', { ascending: false }).limit(1).maybeSingle(),
         supabaseBrowser.from('admin_alerts').select('*').eq('status', 'unread').order('created_at', { ascending: false }).limit(10),
+        supabaseBrowser.from('phone_captures').select('*').eq('whatsapp_sent', false).order('created_at', { ascending: false }).limit(10),
       ])
       setData(ccData as CommandCenterData)
       setLeads(((leadsData as { leads?: Lead[] }).leads) ?? [])
       setBrief((briefRow as { data?: CeoBrief | null }).data ?? null)
       setAlerts(((alertsRow as { data?: AdminAlert[] | null }).data) ?? [])
+      setPhoneCaptures(((captureRow as { data?: PhoneCapture[] | null }).data) ?? [])
     } catch (e) {
       setError(e instanceof Error ? e.message : 'unknown')
     } finally {
@@ -255,6 +269,56 @@ export default function CommandCenterPage() {
               sub={`${data?.conversations?.reply_rate_pct ?? 0}% reply rate`} color="ok" />
           </div>
         </section>
+
+        {phoneCaptures.length > 0 && (
+          <section className="mb-8">
+            <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-emerald-900">
+              <Phone className="h-5 w-5 text-amber-600" />تليفونات ملتقطة (محتاجة follow-up)
+              <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">{phoneCaptures.length}</span>
+            </h2>
+            <div className="overflow-hidden rounded-2xl border border-amber-200 bg-amber-50/30">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-amber-100/50 text-xs uppercase text-amber-900/70">
+                    <tr>
+                      <th className="px-4 py-2 text-right">الاسم</th>
+                      <th className="px-4 py-2 text-right">التليفون</th>
+                      <th className="px-4 py-2 text-right">سياق الالتقاط</th>
+                      <th className="px-4 py-2 text-right">الـlisting</th>
+                      <th className="px-4 py-2 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-amber-200/50">
+                    {phoneCaptures.map(cap => (
+                      <tr key={cap.id} className="hover:bg-amber-50/50">
+                        <td className="px-4 py-3 font-medium text-emerald-900">{cap.user_name || '—'}</td>
+                        <td className="px-4 py-3 font-mono text-xs">{cap.phone}</td>
+                        <td className="px-4 py-3 text-xs text-emerald-900/70">{cap.capture_context}</td>
+                        <td className="px-4 py-3 text-xs text-emerald-900/70 truncate max-w-[200px]">
+                          {cap.metadata?.listing_title || cap.metadata?.listing_slug || '—'}
+                        </td>
+                        <td className="px-4 py-3">
+                          <a
+                            href={`https://wa.me/${cap.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`أهلاً ${cap.user_name || ''}، أنا من فريق مضمونة. شفنا إنك سيبت رقمك علشان نساعدك تخلص الحجز${cap.metadata?.listing_title ? ` على \"${cap.metadata.listing_title}\"` : ''}.`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={async () => {
+                              await supabaseBrowser.from('phone_captures').update({ whatsapp_sent: true, whatsapp_sent_at: new Date().toISOString() }).eq('id', cap.id)
+                              setPhoneCaptures(c => c.filter(x => x.id !== cap.id))
+                            }}
+                            className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs text-white hover:bg-emerald-700"
+                          >
+                            ابعت WA <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        )}
 
         {alerts.length > 0 && (
           <section className="mb-8">

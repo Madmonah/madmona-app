@@ -1,12 +1,16 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
 
 // ============================================================================
 // Madmona "Add Listing First" — public, no-auth multi-step form
 // Brand: deep green (#1F5F3F), gold (#B8860B), ivory (#FAF7F0)
+//
+// FIX (May 13 2026): Consolidated 2 racing useEffects into 1, removed the
+// step-rollback bug that was bouncing users back to step 1 after their
+// first POST, and tightened the merge logic so DB hydration never clobbers
+// user typing. See system_runbook entry: add_listing_wizard_data_loss.
 // ============================================================================
 
 type Step = 1 | 2 | 3 | 4 | 5;
@@ -24,9 +28,6 @@ type MainCategory = {
   subs: SubCategory[];
 };
 
-// Hierarchy mirrors the categories table in Supabase. Sub slugs MUST match
-// `categories.slug` exactly so the eventual claim → listing INSERT can resolve
-// the right category_id by slug lookup.
 const MAIN_CATEGORIES: MainCategory[] = [
   {
     slug: 'properties', name_ar: 'عقارات للإيجار', emoji: '🏠',
@@ -190,6 +191,9 @@ interface DraftPayload {
   utm_campaign?: string;
 }
 
+// Treat "(جاري التحرير)" as no real title so it doesn't show up in form fields
+const PLACEHOLDER_TITLE = '(جاري التحرير)';
+
 export default function AddListingClient() {
   return (
     <Suspense fallback={null}>
@@ -203,18 +207,32 @@ function AddListingPageInner() {
   const params = useSearchParams();
 
   const [step, setStep] = useState<Step>(1);
-  const [draft, setDraft] = useState<DraftPayload>({
-    source: 'whatsapp_link',
-  });
+  const [draft, setDraft] = useState<DraftPayload>({ source: 'whatsapp_link' });
   const [token, setToken] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Read URL params (UTM, pre-fill phone from WhatsApp link)
-  // ALSO: restore token from localStorage if URL doesn't have one — stops
-  // duplicate drafts when users re-open the WhatsApp link.
+  // Tracks whether we've already done the initial mount hydration.
+  // Prevents the rehydrate-from-DB logic from running again later when
+  // token state changes due to our own POST (which is what was causing
+  // the step-rollback bug previously).
+  const hydratedRef = useRef(false);
+
+  // ──────────────────────────────────────────────────────────────────
+  // INITIAL HYDRATION (runs ONCE on mount only)
+  //
+  // Reads URL params (UTM, phone hint, category hint, ?token=...) and
+  // localStorage for a resume token. If a token is present, fetches the
+  // draft from the API and pre-fills the wizard at the right step.
+  //
+  // After this, draft state is owned by the user's typing + our persist()
+  // function. We never refetch from the DB and override local state.
+  // ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const phone = params.get('phone') || params.get('p');
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
+
+    const phone = params.get('phone') || params.get('p') || undefined;
     const utm_source = params.get('utm_source') || undefined;
     const utm_medium = params.get('utm_medium') || undefined;
     const utm_campaign = params.get('utm_campaign') || undefined;
@@ -224,105 +242,94 @@ function AddListingPageInner() {
     // Token priority: URL > localStorage
     let activeToken: string | null = urlToken;
     if (!activeToken && typeof window !== 'undefined') {
-      try {
-        activeToken = window.localStorage.getItem('madmona_draft_token');
-      } catch {}
+      try { activeToken = window.localStorage.getItem('madmona_draft_token'); } catch {}
     }
-    if (activeToken) setToken(activeToken);
 
-    setDraft((d) => ({
-      ...d,
-      contact_phone: phone || d.contact_phone,
-      category_slug: cat || d.category_slug,
-      utm_source, utm_medium, utm_campaign,
+    // Seed from URL/localStorage synchronously
+    setDraft(prev => ({
+      ...prev,
+      contact_phone: phone || prev.contact_phone,
+      category_slug: cat || prev.category_slug,
+      utm_source: utm_source || prev.utm_source,
+      utm_medium: utm_medium || prev.utm_medium,
+      utm_campaign: utm_campaign || prev.utm_campaign,
     }));
 
-    // If we have a token (URL or localStorage), hydrate the draft state from DB
-    if (activeToken) {
-      (async () => {
-        try {
-          const res = await fetch(`/api/listing-drafts?token=${activeToken}`);
-          const json = await res.json();
-          if (res.ok && json.success && json.draft) {
-            const d = json.draft;
-            setDraft((prev) => ({
-              ...prev,
-              category_slug: d.category_slug || prev.category_slug,
-              title: d.title && d.title !== '(جاري التحرير)' ? d.title : prev.title,
-              description: d.description || prev.description,
-              city: d.city || prev.city,
-              district: d.district || prev.district,
-              price: d.price || prev.price,
-              price_period: d.price_period || prev.price_period,
-              photos: d.photos || prev.photos,
-              contact_name: d.contact_name || prev.contact_name,
-              contact_phone: d.contact_phone || prev.contact_phone,
-              account_type: d.account_type || prev.account_type,
-              business_name: d.business_name || prev.business_name,
-            }));
-            if (d.current_step && d.current_step >= 1 && d.current_step <= 5) {
-              setStep(d.current_step as Step);
-            }
-          } else {
-            // Stale token (deleted/expired). Clear it.
-            if (typeof window !== 'undefined') {
-              try { window.localStorage.removeItem('madmona_draft_token'); } catch {}
-            }
-            setToken(null);
-          }
-        } catch {
-          // Network glitch — keep token, let next persist() reconnect
-        }
-      })();
-    }
-  }, [params]);
+    if (!activeToken) return;
+    setToken(activeToken);
 
-  // ============================================================
-  // CRITICAL FIX: When user lands with an existing token (e.g. from
-  // a WhatsApp link), fetch the existing draft data and pre-fill the
-  // wizard. Without this, the form starts empty and each Next-click
-  // overwrites the draft with blank values.
-  // ============================================================
-  useEffect(() => {
-    if (!token) return;
+    // Hydrate from DB — this is the ONLY place we fetch and merge.
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/listing-drafts?token=${token}`);
+        const res = await fetch(`/api/listing-drafts?token=${activeToken}`);
         const json = await res.json();
-        if (cancelled || !json.success || !json.draft) return;
+        if (cancelled) return;
+
+        if (!res.ok || !json.success || !json.draft) {
+          // Stale token (deleted/expired). Clear it.
+          if (typeof window !== 'undefined') {
+            try { window.localStorage.removeItem('madmona_draft_token'); } catch {}
+          }
+          setToken(null);
+          return;
+        }
+
         const d = json.draft;
-        // Merge fetched draft with any existing in-memory state
-        // (URL params take priority since they were just set)
-        setDraft((prev) => ({
-          ...d,
-          // Preserve UTM and any URL-provided values
-          source: prev.source || d.source || 'whatsapp_link',
-          utm_source: prev.utm_source || undefined,
-          utm_medium: prev.utm_medium || undefined,
-          utm_campaign: prev.utm_campaign || undefined,
-          contact_phone: prev.contact_phone || d.contact_phone,
-          category_slug: prev.category_slug || d.category_slug,
-          claim_token: token,
+
+        // Conservative merge: DB values fill in MISSING local fields only.
+        // This protects against clobbering anything the user has already
+        // typed (though on initial mount they haven't typed anything yet,
+        // so practically this is equivalent to taking DB values).
+        setDraft(prev => ({
+          ...prev,
+          claim_token: activeToken,
+          category_slug:  prev.category_slug   ?? (d.category_slug || undefined),
+          title:          prev.title           ?? (d.title && d.title !== PLACEHOLDER_TITLE ? d.title : undefined),
+          description:    prev.description     ?? (d.description || undefined),
+          city:           prev.city            ?? (d.city || undefined),
+          district:       prev.district        ?? (d.district || undefined),
+          price:          prev.price           ?? (d.price ?? undefined),
+          price_period:   prev.price_period    ?? (d.price_period || undefined),
+          photos:         prev.photos          ?? (d.photos || undefined),
+          contact_name:   prev.contact_name    ?? (d.contact_name || undefined),
+          contact_phone:  prev.contact_phone   ?? (d.contact_phone || undefined),
+          account_type:   prev.account_type    ?? (d.account_type || undefined),
+          business_name:  prev.business_name   ?? (d.business_name || undefined),
         }));
-        // Jump the user to where they left off, but never start at
-        // step 5 if essential data is missing (avoids submitting blanks)
-        const desiredStep = d.current_step && d.current_step >= 1 && d.current_step <= 5 ? d.current_step : 1;
-        // Validate that previous steps have data; if not, rewind
-        let safeStep = desiredStep as Step;
-        if (safeStep >= 2 && !d.category_slug) safeStep = 1 as Step;
-        else if (safeStep >= 3 && (!d.title || d.title === '(جاري التحرير)' || !d.city)) safeStep = 2 as Step;
-        else if (safeStep >= 4 && (!d.price || d.price <= 0)) safeStep = 3 as Step;
-        setStep(safeStep);
+
+        // Resume at the right step — but only if the DB has enough data
+        // for that step to make sense. We DO NOT rewind further than the
+        // user's last completed step.
+        if (typeof d.current_step === 'number' && d.current_step >= 1 && d.current_step <= 5) {
+          let resumeStep = d.current_step as Step;
+          // If a "later" step has no data behind it, bring them to the earliest
+          // unfilled step so they don't re-submit blanks.
+          if (resumeStep >= 2 && !d.category_slug) resumeStep = 1;
+          else if (resumeStep >= 3 && (!d.title || d.title === PLACEHOLDER_TITLE || !d.city)) resumeStep = 2;
+          else if (resumeStep >= 4 && (!d.price || d.price <= 0)) resumeStep = 3;
+          setStep(resumeStep);
+        }
       } catch (e) {
-        console.error('Failed to load existing draft:', e);
+        // Network glitch — proceed with empty draft, persist() will reconnect
+        console.warn('Failed to hydrate draft from DB:', e);
       }
     })();
+
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, []); // ← intentionally empty: hydration is a one-time-on-mount concern.
 
-  // Persist draft on every meaningful change
+  // ──────────────────────────────────────────────────────────────────
+  // PERSIST: send the current draft state to the API.
+  //
+  // - First call (no token): POST → creates draft, returns token.
+  // - Subsequent calls: PATCH → updates draft.
+  //
+  // We trust local state. The response token is stored, but we do NOT
+  // re-fetch the draft body — that's what caused the data-loss race in
+  // the previous version of this component.
+  // ──────────────────────────────────────────────────────────────────
   async function persist(patch: Partial<DraftPayload>): Promise<string | null> {
     setSaving(true);
     try {
@@ -337,17 +344,19 @@ function AddListingPageInner() {
         setErrors({ form: json.error || 'حصل خطأ، حاول تاني' });
         return null;
       }
-      if (json.token && !token) {
-        setToken(json.token);
-        // Persist token so re-opens reuse the same draft
+      const newToken: string | null = json.token || token || null;
+      if (newToken && !token) {
+        setToken(newToken);
         if (typeof window !== 'undefined') {
-          try { window.localStorage.setItem('madmona_draft_token', json.token); } catch {}
+          try { window.localStorage.setItem('madmona_draft_token', newToken); } catch {}
         }
       }
-      setDraft({ ...body, claim_token: json.token || token || undefined });
-      return json.token || token;
-    } catch (e: any) {
-      setErrors({ form: e.message || 'حصل خطأ، حاول تاني' });
+      // Keep accumulating local state with whatever was just sent.
+      setDraft({ ...body, claim_token: newToken || undefined });
+      return newToken;
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'حصل خطأ، حاول تاني';
+      setErrors({ form: msg });
       return null;
     } finally {
       setSaving(false);
@@ -472,11 +481,9 @@ function AddListingPageInner() {
               if (!ok) return;
               const t = await persist({ ...patch, status: 'submitted' });
               if (t) {
-                // Clear the stored token — this draft is done. A future
-                // /add-listing visit should start fresh, not reuse this one.
-                if (typeof window !== 'undefined') {
-                  try { window.localStorage.removeItem('madmona_draft_token'); } catch {}
-                }
+                // NOTE: we do NOT clear localStorage here. That used to cause
+                // duplicate drafts on accidental return visits. The success
+                // page now clears it after a short delay (or on signup).
                 router.push(`/add-listing/success?token=${t}`);
               }
             }}
@@ -504,9 +511,6 @@ function StepCategory({
   value?: string;
   onSelect: (slug: string) => void;
 }) {
-  // Resolve "starting" main from any incoming slug:
-  //  - sub slug (e.g. "properties-apartment") → find its parent main
-  //  - main slug (e.g. "properties")          → use directly
   const startingMainSlug = useMemo(() => {
     if (!value) return null;
     const asMain = MAIN_CATEGORIES.find((m) => m.slug === value);
@@ -518,7 +522,6 @@ function StepCategory({
   const [selectedMain, setSelectedMain] = useState<string | null>(startingMainSlug);
   const main = MAIN_CATEGORIES.find((m) => m.slug === selectedMain);
 
-  // STAGE 1 — main categories
   if (!main) {
     return (
       <section>
@@ -542,7 +545,6 @@ function StepCategory({
     );
   }
 
-  // STAGE 2 — sub-categories filtered by selected main
   return (
     <section>
       <button
@@ -559,9 +561,6 @@ function StepCategory({
       <p className="text-sm text-[#FAF7F0]/60 mb-6">اختار النوع الأقرب لما عندك</p>
       <div className="grid grid-cols-2 gap-3">
         {main.subs.map((s) => {
-          // A sub is "cross-listed" when it appears under more than one main
-          // in MAIN_CATEGORIES (currently: tourism-chalet under both properties
-          // and tourism). Show a small badge so the user knows.
           const appearsUnderMains = MAIN_CATEGORIES
             .filter((m) => m.subs.some((sub) => sub.slug === s.slug))
             .map((m) => m.name_ar);
@@ -602,8 +601,16 @@ function StepBasics({
   onSubmit,
   onBack,
   saving,
-}: any) {
-  const [title, setTitle] = useState(draft.title || '');
+}: {
+  draft: DraftPayload;
+  errors: Record<string, string>;
+  onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
+  onBack: () => void;
+  saving: boolean;
+}) {
+  // Strip the placeholder so users don't see it pre-filled
+  const initialTitle = draft.title && draft.title !== PLACEHOLDER_TITLE ? draft.title : '';
+  const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(draft.description || '');
   const [city, setCity] = useState(draft.city || '');
   const [district, setDistrict] = useState(draft.district || '');
@@ -661,9 +668,11 @@ function StepBasics({
   );
 }
 
-function validateBasics(patch: any, setErrors: any) {
-  const errs: any = {};
-  if (!patch.title || patch.title.length < 5) errs.title = 'العنوان قصير، خليه على الأقل 5 حروف';
+function validateBasics(patch: Partial<DraftPayload>, setErrors: (e: Record<string, string>) => void): boolean {
+  const errs: Record<string, string> = {};
+  if (!patch.title || patch.title.length < 5 || patch.title === PLACEHOLDER_TITLE) {
+    errs.title = 'العنوان قصير، خليه على الأقل 5 حروف';
+  }
   if (!patch.city) errs.city = 'اختار المحافظة';
   setErrors(errs);
   return Object.keys(errs).length === 0;
@@ -672,15 +681,24 @@ function validateBasics(patch: any, setErrors: any) {
 // =================================================
 // STEP 3 — PRICING
 // =================================================
-function StepPricing({ draft, errors, onSubmit, onBack, saving }: any) {
+function StepPricing({
+  draft,
+  errors,
+  onSubmit,
+  onBack,
+  saving,
+}: {
+  draft: DraftPayload;
+  errors: Record<string, string>;
+  onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
+  onBack: () => void;
+  saving: boolean;
+}) {
   const [period, setPeriod] = useState<string>(draft.price_period || 'daily');
-  const [price, setPrice] = useState<number | ''>(draft.price || '');
+  const [price, setPrice] = useState<number | ''>(draft.price ?? '');
 
   const periodLabel: Record<string, string> = {
-    hourly: 'ساعة',
-    daily: 'يوم',
-    weekly: 'أسبوع',
-    monthly: 'شهر',
+    hourly: 'ساعة', daily: 'يوم', weekly: 'أسبوع', monthly: 'شهر',
   };
 
   return (
@@ -722,7 +740,7 @@ function StepPricing({ draft, errors, onSubmit, onBack, saving }: any) {
         </div>
       </Field>
 
-      {price && period === 'daily' && Number(price) > 0 && (
+      {price !== '' && period === 'daily' && Number(price) > 0 && (
         <div className="mt-4 p-4 rounded-xl bg-[#B8860B]/10 border border-[#B8860B]/30 text-sm">
           💰 لو حد أجره أسبوع كامل = <strong>{Number(price) * 7} جنيه</strong>
           <br />
@@ -740,7 +758,16 @@ function StepPricing({ draft, errors, onSubmit, onBack, saving }: any) {
 // =================================================
 // STEP 4 — PHOTOS
 // =================================================
-function StepPhotos({ draft, token, onSubmit, onSkip, onBack, saving }: any) {
+function StepPhotos({
+  draft, token, onSubmit, onSkip, onBack, saving,
+}: {
+  draft: DraftPayload;
+  token: string | null;
+  onSubmit: (photos: { url: string }[]) => void | Promise<void>;
+  onSkip: () => void;
+  onBack: () => void;
+  saving: boolean;
+}) {
   const [photos, setPhotos] = useState<{ url: string; caption?: string }[]>(draft.photos || []);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -760,16 +787,14 @@ function StepPhotos({ draft, token, onSubmit, onSkip, onBack, saving }: any) {
         const fd = new FormData();
         fd.append('file', file);
         if (token) fd.append('token', token);
-        const res = await fetch('/api/listing-drafts/upload', {
-          method: 'POST',
-          body: fd,
-        });
+        const res = await fetch('/api/listing-drafts/upload', { method: 'POST', body: fd });
         const json = await res.json();
         if (json.url) uploaded.push({ url: json.url });
       }
       setPhotos([...photos, ...uploaded]);
-    } catch (e: any) {
-      setError(e.message || 'الصور مرفعتش، حاول تاني');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'الصور مرفعتش، حاول تاني';
+      setError(msg);
     } finally {
       setUploading(false);
     }
@@ -790,6 +815,7 @@ function StepPhotos({ draft, token, onSubmit, onSkip, onBack, saving }: any) {
         <div className="grid grid-cols-3 gap-2 mb-4">
           {photos.map((p, i) => (
             <div key={i} className="relative aspect-square rounded-xl overflow-hidden bg-black/20">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.url} alt="" className="w-full h-full object-cover" />
               <button
                 type="button"
@@ -822,13 +848,7 @@ function StepPhotos({ draft, token, onSubmit, onSkip, onBack, saving }: any) {
       {error && <div className="mt-3 text-sm text-red-300">{error}</div>}
 
       <div className="grid grid-cols-2 gap-3 mt-6">
-        <button
-          type="button"
-          onClick={onBack}
-          className={btnSecondary}
-        >
-          ← رجوع
-        </button>
+        <button type="button" onClick={onBack} className={btnSecondary}>← رجوع</button>
         {photos.length > 0 ? (
           <button
             type="button"
@@ -839,11 +859,7 @@ function StepPhotos({ draft, token, onSubmit, onSkip, onBack, saving }: any) {
             {saving ? '...' : 'كمل →'}
           </button>
         ) : (
-          <button
-            type="button"
-            onClick={onSkip}
-            className={btnPrimary}
-          >
+          <button type="button" onClick={onSkip} className={btnPrimary}>
             تخطى دلوقتي →
           </button>
         )}
@@ -855,7 +871,15 @@ function StepPhotos({ draft, token, onSubmit, onSkip, onBack, saving }: any) {
 // =================================================
 // STEP 5 — CONTACT (the soft signup)
 // =================================================
-function StepContact({ draft, errors, onSubmit, onBack, saving }: any) {
+function StepContact({
+  draft, errors, onSubmit, onBack, saving,
+}: {
+  draft: DraftPayload;
+  errors: Record<string, string>;
+  onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
+  onBack: () => void;
+  saving: boolean;
+}) {
   const [name, setName] = useState(draft.contact_name || '');
   const [phone, setPhone] = useState(draft.contact_phone || '');
   const [accountType, setAccountType] = useState<'individual' | 'business'>(draft.account_type || 'individual');
@@ -940,7 +964,7 @@ function StepContact({ draft, errors, onSubmit, onBack, saving }: any) {
           contact_name: name,
           contact_phone: phone,
           account_type: accountType,
-          business_name: accountType === 'business' ? businessName : null,
+          business_name: accountType === 'business' ? businessName : undefined,
         })}
         saving={saving}
         nextLabel="ابعت الليستنج 🚀"
@@ -949,8 +973,8 @@ function StepContact({ draft, errors, onSubmit, onBack, saving }: any) {
   );
 }
 
-function validateContact(patch: any, setErrors: any) {
-  const errs: any = {};
+function validateContact(patch: Partial<DraftPayload>, setErrors: (e: Record<string, string>) => void): boolean {
+  const errs: Record<string, string> = {};
   if (!patch.contact_name || patch.contact_name.length < 2) errs.contact_name = 'اكتب اسمك';
   if (!patch.contact_phone || !/^(\+?2)?01\d{9}$/.test(String(patch.contact_phone).replace(/\s/g, '')))
     errs.contact_phone = 'رقم تليفون مش صحيح (لازم 11 رقم)';
@@ -972,7 +996,12 @@ const btnPrimary =
 const btnSecondary =
   'py-3 px-4 rounded-xl bg-[#FAF7F0]/5 border border-[#FAF7F0]/15 hover:bg-[#FAF7F0]/10 transition-all';
 
-function Field({ label, error, required, children }: any) {
+function Field({ label, error, required, children }: {
+  label: string;
+  error?: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div className="mb-4">
       <label className="block text-sm font-medium mb-2">
@@ -985,7 +1014,12 @@ function Field({ label, error, required, children }: any) {
   );
 }
 
-function Nav({ onBack, onNext, saving, nextLabel }: any) {
+function Nav({ onBack, onNext, saving, nextLabel }: {
+  onBack: () => void;
+  onNext: () => void;
+  saving: boolean;
+  nextLabel?: string;
+}) {
   return (
     <div className="grid grid-cols-2 gap-3 mt-6">
       <button type="button" onClick={onBack} className={btnSecondary}>
