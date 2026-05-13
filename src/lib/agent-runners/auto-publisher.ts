@@ -23,7 +23,7 @@ export async function runAutoPublisher(): Promise<Record<string, unknown>> {
   // Pick oldest drafted post (only single posts, not carousels for now)
   const { data: drafts } = await supabaseAdmin
     .from('content_calendar')
-    .select('id, content_type, title, body, hashtags, cta')
+    .select('id, content_type, title, body, hashtags, cta, metadata')
     .eq('status', 'drafted')
     .eq('content_type', 'instagram_post')
     .order('created_at', { ascending: true })
@@ -36,12 +36,16 @@ export async function runAutoPublisher(): Promise<Record<string, unknown>> {
     body: string
     hashtags: string[] | null
     cta: string | null
+    metadata: Record<string, unknown> | null
   }
   const draft = ((drafts ?? []) as Draft[])[0]
 
   if (!draft) {
     return { skipped: true, reason: 'no drafted instagram_post entries' }
   }
+
+  // Pull listingId from metadata so generator uses the REAL listing photo
+  const listingId = (draft.metadata?.listing_id as string | undefined) ?? undefined
 
   // Step 1: Generate image
   const imageRes = await generateAndUploadImage({
@@ -50,6 +54,7 @@ export async function runAutoPublisher(): Promise<Record<string, unknown>> {
     body: draft.body.slice(0, 400), // body for image overlay
     contentType: 'instagram_post',
     hashtags: draft.hashtags ?? [],
+    listingId,
   })
 
   if (!imageRes.ok || !imageRes.url) {

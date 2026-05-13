@@ -43,6 +43,18 @@ export async function runAdDesigner(args?: { listingId?: string }): Promise<Reco
     const { data: cat } = await supabaseAdmin.from('categories').select('name_ar').eq('id', listing.category_id).maybeSingle()
     categoryName = (cat as { name_ar?: string } | null)?.name_ar ?? ''
   }
+
+  // 2026-05-13: pull the listing's primary photo so the creative has a REAL image
+  // (Mohamed: "بوستات بصور غلط" — caused by ad-designer never linking a photo)
+  let primaryPhotoUrl: string | null = null
+  const { data: photos } = await supabaseAdmin
+    .from('listing_photos').select('url, is_primary, display_order')
+    .eq('listing_id', listing.id)
+    .order('is_primary', { ascending: false })
+    .order('display_order', { ascending: true })
+    .limit(1)
+  primaryPhotoUrl = ((photos ?? []) as Array<{ url: string }>)[0]?.url ?? null
+
   const text = await callClaude({
     systemPrompt: AD_DESIGNER_PROMPT,
     userMessage: JSON.stringify({ listing: { ...listing, category: categoryName }, ad_type: 'meta_static' }),
@@ -60,6 +72,7 @@ export async function runAdDesigner(args?: { listingId?: string }): Promise<Reco
     cta_link: `https://www.madmonacairo.com/ad-listing/${(listing as { slug?: string }).slug ?? ''}`,
     hashtags: ad.hashtags, design_brief: ad.design_brief,
     visual_concept: ad.visual_concept, color_palette: ad.color_palette, status: 'drafted',
+    thumbnail_url: primaryPhotoUrl, // REAL listing photo (May 13 2026)
   } as never).select('id').single()
   const adId = (created as { id?: string } | null)?.id
   if (Array.isArray(ad.alt_versions)) {
@@ -68,6 +81,7 @@ export async function runAdDesigner(args?: { listingId?: string }): Promise<Reco
         listing_id: listing.id, category: categoryName, ad_type: 'meta_static',
         headline: (alt.headline as string) ?? '', visual_concept: (alt.angle as string) ?? '',
         status: 'drafted', design_brief: { ...ad.design_brief, angle: alt.angle },
+        thumbnail_url: primaryPhotoUrl, // same real photo for alt versions
       } as never)
     }
   }

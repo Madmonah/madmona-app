@@ -35,6 +35,7 @@ import { runOrchestrator } from './phase6-runners'
 
 import { runAutoPublisher } from './auto-publisher'
 import { runBufferPublisher } from './buffer-publisher'
+import { runReelPublisher } from './reel-publisher'
 
 async function logRun(args: {
   agentName: string; triggerType: string;
@@ -283,6 +284,7 @@ const RUNNERS: Record<string, (args?: Record<string, unknown>) => Promise<Record
   // Phase 7 — Auto Publisher (Instagram direct + Buffer)
   'auto-publisher': runAutoPublisher,
   'buffer-publisher': runBufferPublisher,
+  'reel-publisher': runReelPublisher,
 }
 
 export async function dispatchAgent(agentName: string, args?: Record<string, unknown>): Promise<AgentResult> {

@@ -43,9 +43,36 @@ async function createMediaContainer(
   }
 }
 
-async function waitForContainer(containerId: string): Promise<boolean> {
+// REELS need media_type=REELS + video_url. Container takes longer to be ready (video processing).
+async function createReelContainer(
+  videoUrl: string,
+  caption: string
+): Promise<{ ok: boolean; container_id?: string; error?: string }> {
+  try {
+    const res = await fetch(`${IG_BASE}/${IG_ACCOUNT_ID}/media`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        media_type: 'REELS',
+        video_url: videoUrl,
+        caption,
+        share_to_feed: true,
+        access_token: IG_TOKEN,
+      }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      return { ok: false, error: data?.error?.message ?? `HTTP ${res.status}` }
+    }
+    return { ok: true, container_id: data.id }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'unknown' }
+  }
+}
+
+async function waitForContainer(containerId: string, maxMs: number = 30000): Promise<boolean> {
   const start = Date.now()
-  while (Date.now() - start < 30000) {
+  while (Date.now() - start < maxMs) {
     const res = await fetch(
       `${IG_BASE}/${containerId}?fields=status_code&access_token=${IG_TOKEN}`
     )
@@ -106,4 +133,24 @@ export async function publishToInstagram(args: {
   }
 
   return result
+}
+
+// Publish a Reel (video). Caller is responsible for updating the source table.
+// Video processing on Instagram side can take up to ~60s for 20-30s reels.
+export async function publishReelToInstagram(args: {
+  videoUrl: string
+  caption: string
+}): Promise<PublishResult> {
+  if (!isInstagramConfigured()) {
+    return { ok: false, error: 'Instagram env vars missing' }
+  }
+
+  const c = await createReelContainer(args.videoUrl, args.caption)
+  if (!c.ok || !c.container_id) return { ok: false, error: c.error }
+
+  // Reels need more time than photos (video transcoding on IG side).
+  const ready = await waitForContainer(c.container_id, 120000)
+  if (!ready) return { ok: false, error: 'Reel container not ready in 120s (likely video processing failed)' }
+
+  return publishContainer(c.container_id)
 }
