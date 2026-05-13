@@ -1,15 +1,14 @@
 'use client'
 
 // ============================================================================
-// TopNav — minimal: logo + 2 primary tabs only.
-//   "أجر مننا"      → /marketplace      (rent FROM us — customer)
-//   "إضافة ليستنج" → /add-listing      (any user can add a listing; we approve in background)
-// Everything else (account, login, share) lives behind the hamburger.
+// TopNav — ultra-minimal: logo + notifications + menu.
+// Primary CTAs ("أجر مننا" / "إضافة ليستنج") moved to the body of the home page
+// so the header stays clean and boutique-luxe (May 13 2026 — Mohamed request).
 // ============================================================================
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, ShoppingBag, Plus, User, LogIn, Share2 } from 'lucide-react'
+import { Menu, X, User, LogIn, Share2 } from 'lucide-react'
 import NotificationButton from './NotificationButton'
 
 export default function TopNav() {
@@ -72,32 +71,15 @@ export default function TopNav() {
             </div>
           </Link>
 
-          {/* 2 PRIMARY TABS — visible on every breakpoint */}
-          <nav className="flex items-center gap-2 flex-1 justify-center md:justify-end">
-            <Link
-              href="/marketplace"
-              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 bg-[#1F5F3F] text-white text-xs sm:text-sm font-black rounded-xl shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline whitespace-nowrap"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              <span>أجر مننا</span>
-            </Link>
+          {/* 2 primary tabs removed — they live in the home page body now */}
 
-            <Link
-              href="/add-listing"
-              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 bg-[#B8860B] text-white text-xs sm:text-sm font-black rounded-xl shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline whitespace-nowrap"
-            >
-              <Plus className="w-4 h-4" strokeWidth={3} />
-              <span>إضافة ليستنج</span>
-            </Link>
-          </nav>
-
-          {/* Compact "more" menu — account/login/share */}
+          {/* Compact actions — notifications (enlarged) + menu */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <NotificationButton variant="icon-only" />
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="w-10 h-10 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-xl flex items-center justify-center transition-all"
+              className="w-11 h-11 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-2xl flex items-center justify-center transition-all"
               aria-label="القائمة"
             >
               <Menu className="w-5 h-5 text-gray-700" />

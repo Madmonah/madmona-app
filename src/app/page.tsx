@@ -106,22 +106,24 @@ export default async function HomePage() {
           <InstallPWA />
         </div>
 
-        {/* 🎯 Simple dual tabs - above news */}
+        {/* 🎯 Primary CTAs — above news (the only place these tabs live now) */}
         <div className="max-w-7xl mx-auto px-4 pt-4">
-          <div className="grid grid-cols-2 gap-2 md:gap-3">
+          <div className="grid grid-cols-2 gap-2.5 md:gap-3">
             <Link
               href="/marketplace"
-              className="flex items-center justify-center gap-2 py-3 md:py-4 bg-[#1F5F3F] text-white text-sm md:text-base font-black rounded-xl shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
+              className="group relative flex items-center justify-center gap-2 py-3.5 md:py-5 bg-gradient-to-l from-[#1F5F3F] to-[#2a7a52] text-white text-sm md:text-base font-black rounded-2xl shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-300 no-underline overflow-hidden"
             >
-              <ShoppingBag className="w-4 h-4" />
-              <span>أجر مننا</span>
+              <span className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors" />
+              <ShoppingBag className="w-4 h-4 md:w-5 md:h-5 relative" />
+              <span className="relative">أجر مننا</span>
             </Link>
             <Link
               href="/add-listing"
-              className="flex items-center justify-center gap-2 py-3 md:py-4 bg-[#B8860B] text-white text-sm md:text-base font-black rounded-xl shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
+              className="group relative flex items-center justify-center gap-2 py-3.5 md:py-5 bg-gradient-to-l from-[#B8860B] to-[#d4a017] text-white text-sm md:text-base font-black rounded-2xl shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-300 no-underline overflow-hidden"
             >
-              <Plus className="w-4 h-4" strokeWidth={3} />
-              <span>إضافة ليستنج</span>
+              <span className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors" />
+              <Plus className="w-4 h-4 md:w-5 md:h-5 relative" strokeWidth={3} />
+              <span className="relative">إضافة ليستنج</span>
             </Link>
           </div>
         </div>

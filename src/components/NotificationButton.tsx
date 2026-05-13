@@ -78,21 +78,21 @@ export default function NotificationButton({ variant = 'icon-only' }: Props) {
   // Choose visual based on status
   const cfg = {
     idle: {
-      icon: <Bell className="w-4 h-4" />,
+      icon: <Bell className="w-5 h-5" strokeWidth={2.25} />,
       bg: 'bg-white',
       text: 'text-[#1F5F3F]',
       pulse: true,
       label: 'فعّل الإشعارات',
     },
     subscribed: {
-      icon: <BellRing className="w-4 h-4" />,
+      icon: <BellRing className="w-5 h-5" strokeWidth={2.25} />,
       bg: 'bg-[#1F5F3F]',
       text: 'text-white',
       pulse: false,
       label: 'الإشعارات مفعّلة',
     },
     denied: {
-      icon: <BellOff className="w-4 h-4" />,
+      icon: <BellOff className="w-5 h-5" strokeWidth={2.25} />,
       bg: 'bg-red-50',
       text: 'text-red-600',
       pulse: false,
@@ -102,7 +102,7 @@ export default function NotificationButton({ variant = 'icon-only' }: Props) {
 
   const buttonClass = variant === 'compact'
     ? `flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all hover:-translate-y-0.5 ${cfg.bg} ${cfg.text} shadow-soft hover:shadow-card`
-    : `relative w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:-translate-y-0.5 shadow-soft hover:shadow-card ${cfg.bg} ${cfg.text}`
+    : `relative w-11 h-11 rounded-2xl flex items-center justify-center transition-all hover:-translate-y-0.5 shadow-soft hover:shadow-card ${cfg.bg} ${cfg.text}`
 
   return (
     <>
