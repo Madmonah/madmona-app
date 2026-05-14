@@ -15,7 +15,7 @@
 
 import { Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
-import AddListingClient, { type MainCategory } from './AddListingClient';
+import AddListingClient, { type MainCategory, type BeautySchema } from './AddListingClient';
 
 // Force dynamic rendering so the Suspense fallback is rendered into SSR HTML.
 // Without this, Next.js detects useSearchParams() inside AddListingClient and
@@ -195,12 +195,51 @@ async function getDBExtraCategories(): Promise<MainCategory[]> {
   }
 }
 
+// ====================================================================
+// BEAUTY SCHEMAS: each beauty sub-category has an attribute_schema in
+// the DB containing { price_unit, suggested_addons[] }. We fetch them
+// all here so the wizard's pricing step can adapt to beauty UX:
+//   - period selector shows per_service / per_session / per_package
+//   - add-ons section appears below the base price with editable list
+// ====================================================================
+const BEAUTY_SUB_SLUGS_FOR_FETCH = [
+  'bridal-beauty', 'makeup-artists', 'hair-stylists', 'nail-care',
+  'skincare-facial', 'brows-lashes', 'hair-removal', 'massage-spa',
+];
+
+async function getBeautySchemas(): Promise<Record<string, BeautySchema>> {
+  try {
+    const { data } = await supabase
+      .from('categories')
+      .select('slug, attribute_schema')
+      .in('slug', BEAUTY_SUB_SLUGS_FOR_FETCH);
+    if (!data) return {};
+    const result: Record<string, BeautySchema> = {};
+    for (const row of data) {
+      const schema = row.attribute_schema as BeautySchema | null;
+      if (schema && schema.price_unit && Array.isArray(schema.suggested_addons)) {
+        result[row.slug] = schema;
+      }
+    }
+    return result;
+  } catch (e) {
+    console.warn('[add-listing] Failed to load beauty schemas:', e);
+    return {};
+  }
+}
+
 export default async function AddListingPage() {
-  const dbExtraCategories = await getDBExtraCategories();
+  const [dbExtraCategories, beautySchemas] = await Promise.all([
+    getDBExtraCategories(),
+    getBeautySchemas(),
+  ]);
 
   return (
     <Suspense fallback={<StaticPageFallback />}>
-      <AddListingClient dbExtraCategories={dbExtraCategories} />
+      <AddListingClient
+        dbExtraCategories={dbExtraCategories}
+        beautySchemas={beautySchemas}
+      />
     </Suspense>
   );
 }

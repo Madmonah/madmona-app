@@ -28,6 +28,43 @@ export type MainCategory = {
   subs: SubCategory[];
 };
 
+// ============================================================================
+// BEAUTY TYPES + HELPERS (May 14 2026)
+// Beauty categories use a different pricing model (per service / per session /
+// per package) and offer suggested add-ons defined per sub-category in the DB
+// attribute_schema. The wizard's StepPricing reads these and renders a
+// beauty-specific UI when the selected category is beauty or a beauty sub.
+// ============================================================================
+export type AddonSuggestion = {
+  slug: string;
+  name_ar: string;
+  emoji?: string;
+  default_price_egp: number;
+};
+
+export type Addon = {
+  slug: string;
+  name_ar: string;
+  emoji?: string;
+  price_egp: number;
+};
+
+export type BeautyPriceUnit = 'per_service' | 'per_session' | 'per_package';
+
+export type BeautySchema = {
+  price_unit: BeautyPriceUnit;
+  suggested_addons: AddonSuggestion[];
+};
+
+const BEAUTY_SUB_SLUGS = new Set([
+  'bridal-beauty', 'makeup-artists', 'hair-stylists', 'nail-care',
+  'skincare-facial', 'brows-lashes', 'hair-removal', 'massage-spa',
+]);
+
+function isBeautyCategory(slug?: string | null): boolean {
+  return !!slug && (slug === 'beauty' || BEAUTY_SUB_SLUGS.has(slug));
+}
+
 const MAIN_CATEGORIES: MainCategory[] = [
   {
     slug: 'properties', name_ar: 'عقارات للإيجار', emoji: '🏠',
@@ -215,6 +252,7 @@ interface DraftPayload {
   utm_source?: string;
   utm_medium?: string;
   utm_campaign?: string;
+  attributes?: Record<string, unknown> & { addons?: Addon[] };
 }
 
 // Treat "(جاري التحرير)" as no real title so it doesn't show up in form fields
@@ -222,20 +260,27 @@ const PLACEHOLDER_TITLE = '(جاري التحرير)';
 
 export default function AddListingClient({
   dbExtraCategories = [],
+  beautySchemas = {},
 }: {
   dbExtraCategories?: MainCategory[];
+  beautySchemas?: Record<string, BeautySchema>;
 } = {}) {
   return (
     <Suspense fallback={null}>
-      <AddListingPageInner dbExtraCategories={dbExtraCategories} />
+      <AddListingPageInner
+        dbExtraCategories={dbExtraCategories}
+        beautySchemas={beautySchemas}
+      />
     </Suspense>
   );
 }
 
 function AddListingPageInner({
   dbExtraCategories,
+  beautySchemas,
 }: {
   dbExtraCategories: MainCategory[];
+  beautySchemas: Record<string, BeautySchema>;
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -484,6 +529,7 @@ function AddListingPageInner({
           <StepPricing
             draft={draft}
             errors={errors}
+            beautySchemas={beautySchemas}
             onSubmit={async (patch) => {
               if (!patch.price || patch.price <= 0) {
                 setErrors({ price: 'حط سعر صحيح من فضلك' });
@@ -739,28 +785,107 @@ function StepPricing({
   onSubmit,
   onBack,
   saving,
+  beautySchemas,
 }: {
   draft: DraftPayload;
   errors: Record<string, string>;
   onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
   onBack: () => void;
   saving: boolean;
+  beautySchemas: Record<string, BeautySchema>;
 }) {
-  const [period, setPeriod] = useState<string>(draft.price_period || 'daily');
-  const [price, setPrice] = useState<number | ''>(draft.price ?? '');
+  const isBeauty = isBeautyCategory(draft.category_slug);
+  const schema = isBeauty && draft.category_slug ? beautySchemas[draft.category_slug] : undefined;
+  const suggestedAddons = schema?.suggested_addons || [];
 
   const periodLabel: Record<string, string> = {
     hourly: 'ساعة', daily: 'يوم', weekly: 'أسبوع', monthly: 'شهر',
+    per_service: 'الخدمة', per_session: 'الجلسة', per_package: 'الباكدج',
   };
+
+  const periodOptions: string[] = isBeauty
+    ? ['per_service', 'per_session', 'per_package']
+    : ['hourly', 'daily', 'weekly', 'monthly'];
+
+  const defaultPeriod = isBeauty ? (schema?.price_unit || 'per_service') : 'daily';
+  const [period, setPeriod] = useState<string>(() => {
+    if (draft.price_period && periodOptions.includes(draft.price_period)) {
+      return draft.price_period;
+    }
+    return defaultPeriod;
+  });
+  const [price, setPrice] = useState<number | ''>(draft.price ?? '');
+
+  // ─── Add-ons state ────────────────────────────────────────────────
+  // Supplier picks which suggested add-ons they offer + can override prices.
+  // Final selection is saved to draft.attributes.addons.
+  const initialEnabled = useMemo(() => {
+    const existing = draft.attributes?.addons || [];
+    return new Set<string>(existing.map((a) => a.slug));
+  }, [draft.attributes]);
+
+  const initialPrices = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const s of suggestedAddons) map[s.slug] = s.default_price_egp;
+    const existing = draft.attributes?.addons || [];
+    for (const a of existing) map[a.slug] = a.price_egp;
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft.attributes, suggestedAddons.length]);
+
+  const [enabledAddons, setEnabledAddons] = useState<Set<string>>(initialEnabled);
+  const [addonPrices, setAddonPrices] = useState<Record<string, number>>(initialPrices);
+
+  function toggleAddon(slug: string) {
+    setEnabledAddons((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug);
+      else next.add(slug);
+      return next;
+    });
+  }
+
+  function setAddonPrice(slug: string, p: number) {
+    setAddonPrices((prev) => ({ ...prev, [slug]: p }));
+  }
+
+  function buildAddonsPatch(): Addon[] {
+    return suggestedAddons
+      .filter((s) => enabledAddons.has(s.slug))
+      .map((s) => ({
+        slug: s.slug,
+        name_ar: s.name_ar,
+        emoji: s.emoji,
+        price_egp: addonPrices[s.slug] ?? s.default_price_egp,
+      }));
+  }
+
+  function handleNext() {
+    const patch: Partial<DraftPayload> = {
+      price: Number(price),
+      price_period: period,
+    };
+    if (isBeauty) {
+      patch.attributes = {
+        ...(draft.attributes || {}),
+        addons: buildAddonsPatch(),
+      };
+    }
+    onSubmit(patch);
+  }
 
   return (
     <section>
-      <h2 className="text-lg font-semibold mb-1">السعر</h2>
-      <p className="text-sm text-[#FAF7F0]/60 mb-6">حضرتك بتأجره بكام؟</p>
+      <h2 className="text-lg font-semibold mb-1">
+        {isBeauty ? 'سعر الخدمة' : 'السعر'}
+      </h2>
+      <p className="text-sm text-[#FAF7F0]/60 mb-6">
+        {isBeauty ? 'بكام بتقدم الخدمة الأساسية؟' : 'حضرتك بتأجره بكام؟'}
+      </p>
 
-      <Field label="مدة الإيجار" required>
-        <div className="grid grid-cols-4 gap-2">
-          {['hourly','daily','weekly','monthly'].map((p) => (
+      <Field label={isBeauty ? 'نوع السعر' : 'مدة الإيجار'} required>
+        <div className={`grid gap-2 ${isBeauty ? 'grid-cols-3' : 'grid-cols-4'}`}>
+          {periodOptions.map((p) => (
             <button
               key={p}
               type="button"
@@ -777,7 +902,13 @@ function StepPricing({
         </div>
       </Field>
 
-      <Field label={`السعر بالجنيه لكل ${periodLabel[period]}`} error={errors.price} required>
+      <Field
+        label={isBeauty
+          ? `سعر ${periodLabel[period]} بالجنيه`
+          : `السعر بالجنيه لكل ${periodLabel[period]}`}
+        error={errors.price}
+        required
+      >
         <div className="relative">
           <input
             type="number"
@@ -792,7 +923,8 @@ function StepPricing({
         </div>
       </Field>
 
-      {price !== '' && period === 'daily' && Number(price) > 0 && (
+      {/* Non-beauty: weekly projection (existing UX) */}
+      {!isBeauty && price !== '' && period === 'daily' && Number(price) > 0 && (
         <div className="mt-4 p-4 rounded-xl bg-[#B8860B]/10 border border-[#B8860B]/30 text-sm">
           💰 لو حد أجره أسبوع كامل = <strong>{Number(price) * 7} جنيه</strong>
           <br />
@@ -802,7 +934,88 @@ function StepPricing({
         </div>
       )}
 
-      <Nav onBack={onBack} onNext={() => onSubmit({ price: Number(price), price_period: period })} saving={saving} />
+      {/* Beauty: per-service commission preview */}
+      {isBeauty && price !== '' && Number(price) > 0 && (
+        <div className="mt-4 p-4 rounded-xl bg-[#B8860B]/10 border border-[#B8860B]/30 text-sm">
+          💰 من كل {periodLabel[period]}:
+          <br />
+          • نصيب حضرتك (فرد، 10% عمولة): <strong>{Math.round(Number(price) * 0.9)} جنيه</strong>
+          <br />
+          • نصيب حضرتك (شركة، 5% عمولة): <strong>{Math.round(Number(price) * 0.95)} جنيه</strong>
+        </div>
+      )}
+
+      {/* Beauty: add-ons section */}
+      {isBeauty && suggestedAddons.length > 0 && (
+        <div className="mt-8 pt-6 border-t border-[#FAF7F0]/10">
+          <h3 className="text-base font-semibold mb-1">✨ خدمات إضافية اختيارية</h3>
+          <p className="text-xs text-[#FAF7F0]/60 mb-4">
+            العميل يقدر يضيفها لحجزه. شيّك على اللي بتقدمه وعدّل السعر لو حابب.
+          </p>
+          <div className="grid grid-cols-1 gap-2">
+            {suggestedAddons.map((addon) => {
+              const isEnabled = enabledAddons.has(addon.slug);
+              return (
+                <div
+                  key={addon.slug}
+                  className={`p-3 rounded-xl border transition-all ${
+                    isEnabled
+                      ? 'bg-[#B8860B]/15 border-[#B8860B]/50'
+                      : 'bg-[#FAF7F0]/5 border-[#FAF7F0]/15'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleAddon(addon.slug)}
+                      className={`w-6 h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all ${
+                        isEnabled
+                          ? 'bg-[#B8860B] border-[#B8860B]'
+                          : 'bg-transparent border-[#FAF7F0]/30'
+                      }`}
+                      aria-pressed={isEnabled}
+                      aria-label={`${isEnabled ? 'الغاء' : 'اختيار'} ${addon.name_ar}`}
+                    >
+                      {isEnabled && <span className="text-[#1F5F3F] text-xs font-bold">✓</span>}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleAddon(addon.slug)}
+                      className="flex-1 flex items-center gap-2 text-right"
+                    >
+                      {addon.emoji && <span className="text-lg flex-shrink-0">{addon.emoji}</span>}
+                      <span className="text-sm font-medium">{addon.name_ar}</span>
+                    </button>
+                    <div className="relative flex-shrink-0">
+                      <input
+                        type="number"
+                        value={addonPrices[addon.slug] ?? addon.default_price_egp}
+                        onChange={(e) => setAddonPrice(addon.slug, Number(e.target.value) || 0)}
+                        disabled={!isEnabled}
+                        className={`w-24 p-2 rounded-lg text-sm text-left pl-9 ${
+                          isEnabled
+                            ? 'bg-[#FAF7F0]/10 border border-[#FAF7F0]/20 text-[#FAF7F0]'
+                            : 'bg-[#FAF7F0]/5 border border-transparent opacity-50 text-[#FAF7F0]/60'
+                        } focus:outline-none focus:border-[#B8860B]`}
+                      />
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-[#FAF7F0]/50 pointer-events-none">
+                        ج.م
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-3 text-xs text-[#FAF7F0]/50 text-center">
+            {enabledAddons.size === 0
+              ? 'لسة معديتش أي خدمة إضافية'
+              : `${enabledAddons.size} ${enabledAddons.size === 1 ? 'خدمة إضافية' : 'خدمات إضافية'} مختارة`}
+          </div>
+        </div>
+      )}
+
+      <Nav onBack={onBack} onNext={handleNext} saving={saving} />
     </section>
   );
 }
