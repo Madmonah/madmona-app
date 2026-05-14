@@ -21,7 +21,7 @@ type SubCategory = {
   emoji: string;
 };
 
-type MainCategory = {
+export type MainCategory = {
   slug: string;
   name_ar: string;
   emoji: string;
@@ -220,15 +220,23 @@ interface DraftPayload {
 // Treat "(جاري التحرير)" as no real title so it doesn't show up in form fields
 const PLACEHOLDER_TITLE = '(جاري التحرير)';
 
-export default function AddListingClient() {
+export default function AddListingClient({
+  dbExtraCategories = [],
+}: {
+  dbExtraCategories?: MainCategory[];
+} = {}) {
   return (
     <Suspense fallback={null}>
-      <AddListingPageInner />
+      <AddListingPageInner dbExtraCategories={dbExtraCategories} />
     </Suspense>
   );
 }
 
-function AddListingPageInner() {
+function AddListingPageInner({
+  dbExtraCategories,
+}: {
+  dbExtraCategories: MainCategory[];
+}) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -446,6 +454,7 @@ function AddListingPageInner() {
         {step === 1 && (
           <StepCategory
             value={draft.category_slug}
+            categories={[...MAIN_CATEGORIES, ...dbExtraCategories]}
             onSelect={async (slug) => {
               // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
               const t = await persist({ category_slug: slug });
@@ -548,20 +557,22 @@ function AddListingPageInner() {
 function StepCategory({
   value,
   onSelect,
+  categories,
 }: {
   value?: string;
   onSelect: (slug: string) => void;
+  categories: MainCategory[];
 }) {
   const startingMainSlug = useMemo(() => {
     if (!value) return null;
-    const asMain = MAIN_CATEGORIES.find((m) => m.slug === value);
+    const asMain = categories.find((m) => m.slug === value);
     if (asMain) return asMain.slug;
-    const asSub = MAIN_CATEGORIES.find((m) => m.subs.some((s) => s.slug === value));
+    const asSub = categories.find((m) => m.subs.some((s) => s.slug === value));
     return asSub?.slug ?? null;
-  }, [value]);
+  }, [value, categories]);
 
   const [selectedMain, setSelectedMain] = useState<string | null>(startingMainSlug);
-  const main = MAIN_CATEGORIES.find((m) => m.slug === selectedMain);
+  const main = categories.find((m) => m.slug === selectedMain);
 
   if (!main) {
     return (
@@ -569,7 +580,7 @@ function StepCategory({
         <h2 className="text-lg font-semibold mb-1">إيه اللي عايز تأجره؟</h2>
         <p className="text-sm text-[#FAF7F0]/60 mb-6">اختار التصنيف الرئيسي</p>
         <div className="grid grid-cols-2 gap-3">
-          {MAIN_CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <button
               key={c.slug}
               type="button"
@@ -602,7 +613,7 @@ function StepCategory({
       <p className="text-sm text-[#FAF7F0]/60 mb-6">اختار النوع الأقرب لما عندك</p>
       <div className="grid grid-cols-2 gap-3">
         {main.subs.map((s) => {
-          const appearsUnderMains = MAIN_CATEGORIES
+          const appearsUnderMains = categories
             .filter((m) => m.subs.some((sub) => sub.slug === s.slug))
             .map((m) => m.name_ar);
           const isCrossListed = appearsUnderMains.length > 1;

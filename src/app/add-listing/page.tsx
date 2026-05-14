@@ -14,7 +14,8 @@
 // =====================================================================
 
 import { Suspense } from 'react';
-import AddListingClient from './AddListingClient';
+import { supabase } from '@/lib/supabase';
+import AddListingClient, { type MainCategory } from './AddListingClient';
 
 // Force dynamic rendering so the Suspense fallback is rendered into SSR HTML.
 // Without this, Next.js detects useSearchParams() inside AddListingClient and
@@ -141,10 +142,65 @@ function StaticPageFallback() {
   );
 }
 
-export default function AddListingPage() {
+// ====================================================================
+// DB FETCH (May 14 2026 root-cause fix): any top-level category in the
+// categories table that is NOT in the wizard's hardcoded MAIN_CATEGORIES
+// list is auto-fetched here and passed to the client as
+// `dbExtraCategories`. This means new top-level categories added to the
+// DB after deploy will automatically appear at the bottom of the
+// wizard's step-1 grid — no code change needed.
+// See system_runbook: add_listing_wizard_db_driven_extras.
+// ====================================================================
+const HARDCODED_TOP_SLUGS = new Set([
+  'properties', 'vehicles', 'workspaces', 'tourism', 'beauty',
+  'weddings', 'media', 'recreation', 'marine', 'equipment',
+  'printing', 'professionals',
+]);
+
+async function getDBExtraCategories(): Promise<MainCategory[]> {
+  try {
+    const { data: tops, error: topsErr } = await supabase
+      .from('categories')
+      .select('id, slug, name_ar, icon, display_order')
+      .is('parent_id', null)
+      .eq('is_active', true)
+      .order('display_order');
+    if (topsErr || !tops?.length) return [];
+
+    const extras = tops.filter((t) => !HARDCODED_TOP_SLUGS.has(t.slug));
+    if (!extras.length) return [];
+
+    const { data: allSubs } = await supabase
+      .from('categories')
+      .select('id, slug, name_ar, icon, parent_id, display_order')
+      .in('parent_id', extras.map((t) => t.id))
+      .eq('is_active', true)
+      .order('display_order');
+
+    return extras.map((top) => ({
+      slug: top.slug,
+      name_ar: top.name_ar,
+      emoji: top.icon || '📁',
+      subs: (allSubs || [])
+        .filter((s) => s.parent_id === top.id)
+        .map((s) => ({
+          slug: s.slug,
+          name_ar: s.name_ar,
+          emoji: s.icon || '📁',
+        })),
+    }));
+  } catch (e) {
+    console.warn('[add-listing] Failed to load DB-only top-level categories:', e);
+    return [];
+  }
+}
+
+export default async function AddListingPage() {
+  const dbExtraCategories = await getDBExtraCategories();
+
   return (
     <Suspense fallback={<StaticPageFallback />}>
-      <AddListingClient />
+      <AddListingClient dbExtraCategories={dbExtraCategories} />
     </Suspense>
   );
 }
