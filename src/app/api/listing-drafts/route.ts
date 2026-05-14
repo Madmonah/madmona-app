@@ -62,6 +62,7 @@ async function buildUpdatePayload(body: Record<string, unknown>): Promise<Record
   if (body.utm_source !== undefined)   payload.utm_source    = body.utm_source;
   if (body.utm_medium !== undefined)   payload.utm_medium    = body.utm_medium;
   if (body.utm_campaign !== undefined) payload.utm_campaign  = body.utm_campaign;
+  if (body.attributes !== undefined)   payload.attributes    = body.attributes;
 
   return payload;
 }
@@ -183,14 +184,21 @@ export async function POST(req: NextRequest) {
 // PATCH: update an existing draft by token
 // =====================================================
 export async function PATCH(req: NextRequest) {
+  const startedAt = Date.now();
   try {
     const url = new URL(req.url);
     const token = url.searchParams.get('token');
     if (!token) {
+      console.error('[listing-drafts PATCH] missing token in query');
       return NextResponse.json({ success: false, error: 'token required' }, { status: 400 });
     }
 
     const body = await req.json();
+    
+    // Log incoming body (truncated) for debugging silent data loss
+    const bodyKeys = Object.keys(body).filter(k => body[k] !== undefined);
+    console.log(`[listing-drafts PATCH] token=${token.slice(0,8)}... step=${body.current_step} fields=[${bodyKeys.join(',')}] title="${(body.title || '').slice(0,30)}"`);
+    
     const updatePayload = await buildUpdatePayload(body);
 
     const { data, error } = await supabase
@@ -201,9 +209,22 @@ export async function PATCH(req: NextRequest) {
       .single();
 
     if (error) {
-      console.error('listing_drafts PATCH error:', error);
+      console.error(`[listing-drafts PATCH] DB error token=${token.slice(0,8)} step=${body.current_step}:`, error.message, error.code);
+      // Also write to a debug table so we can audit failures
+      await supabase.from('listing_drafts_failures').insert({
+        token,
+        step: body.current_step,
+        error_code: error.code,
+        error_message: error.message,
+        body_keys: bodyKeys,
+        body_snapshot: body,
+      }).then(({ error: insertErr }) => {
+        if (insertErr) console.error('[listing-drafts PATCH] failed to log failure:', insertErr.message);
+      });
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
+    
+    console.log(`[listing-drafts PATCH] OK token=${token.slice(0,8)} step=${body.current_step} dur=${Date.now()-startedAt}ms`);
 
     // If submitted, also fire a WhatsApp confirmation to the user
     if (body.status === 'submitted' && (data as { contact_phone?: string }).contact_phone) {
