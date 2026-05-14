@@ -34,6 +34,7 @@ const SAMPLE_CATEGORIES = [
   { emoji: '🚗', label: 'مركبات ونقل' },
   { emoji: '🏢', label: 'مساحات عمل' },
   { emoji: '🏝️', label: 'السياحة' },
+  { emoji: '💄', label: 'تجميل' },
   { emoji: '💒', label: 'أعراس وتجهيزات' },
   { emoji: '📷', label: 'معدات ميديا' },
   { emoji: '🎯', label: 'ترفيه ورياضة' },

@@ -85,6 +85,19 @@ const MAIN_CATEGORIES: MainCategory[] = [
     ],
   },
   {
+    slug: 'beauty', name_ar: 'تجميل', emoji: '💄',
+    subs: [
+      { slug: 'bridal-beauty',   name_ar: 'باكدج عروس - شعر ومكياج', emoji: '👰' },
+      { slug: 'makeup-artists',  name_ar: 'ميك أب أرتست',           emoji: '💄' },
+      { slug: 'hair-stylists',   name_ar: 'كوافير وهير ستايلست',    emoji: '💇‍♀️' },
+      { slug: 'nail-care',       name_ar: 'منيكير وبيديكير',         emoji: '💅' },
+      { slug: 'skincare-facial', name_ar: 'عناية بالبشرة',          emoji: '✨' },
+      { slug: 'brows-lashes',    name_ar: 'حواجب ورموش',            emoji: '👁️' },
+      { slug: 'hair-removal',    name_ar: 'إزالة الشعر',            emoji: '🌟' },
+      { slug: 'massage-spa',     name_ar: 'مساج وسبا',              emoji: '🌸' },
+    ],
+  },
+  {
     slug: 'weddings', name_ar: 'أعراس وتجهيزات', emoji: '💒',
     subs: [
       { slug: 'weddings-dress',       name_ar: 'فستان فرح',          emoji: '👰' },
@@ -141,6 +154,19 @@ const MAIN_CATEGORIES: MainCategory[] = [
       { slug: 'equipment-generators',   name_ar: 'مولدات كهرباء',       emoji: '⚡' },
       { slug: 'equipment-welding',      name_ar: 'معدات لحام',          emoji: '🔥' },
       { slug: 'equipment-compressors',  name_ar: 'كومبريسور',           emoji: '💨' },
+    ],
+  },
+  {
+    slug: 'printing', name_ar: 'طباعة', emoji: '🖨️',
+    subs: [
+      { slug: 'printing-digital',      name_ar: 'طباعة رقمية',          emoji: '💻' },
+      { slug: 'printing-offset',       name_ar: 'طباعة أوفست',          emoji: '📰' },
+      { slug: 'printing-large-format', name_ar: 'طباعة عرض كبير وبنر',  emoji: '📏' },
+      { slug: 'printing-uv',           name_ar: 'طباعة UV',             emoji: '✨' },
+      { slug: 'printing-textile',      name_ar: 'طباعة على القماش',     emoji: '👕' },
+      { slug: 'printing-3d',           name_ar: 'طباعة ثلاثية الأبعاد', emoji: '🧊' },
+      { slug: 'printing-screen',       name_ar: 'طباعة سيلك',           emoji: '🎨' },
+      { slug: 'printing-finishing',    name_ar: 'تجليد وقص وتشطيب',     emoji: '✂️' },
     ],
   },
   {
@@ -301,13 +327,14 @@ function AddListingPageInner() {
         // Resume at the right step — but only if the DB has enough data
         // for that step to make sense. We DO NOT rewind further than the
         // user's last completed step.
+        // CRITICAL FIX (May 13 2026): rewind logic now applies to step 5 too.
+        // Old chain used `else if` so step 5 returning without data fell through.
         if (typeof d.current_step === 'number' && d.current_step >= 1 && d.current_step <= 5) {
           let resumeStep = d.current_step as Step;
-          // If a "later" step has no data behind it, bring them to the earliest
-          // unfilled step so they don't re-submit blanks.
+          // Cascade rewind — each check independent so step 5 with no title still goes back to step 2.
+          if (resumeStep >= 4 && (!d.price || d.price <= 0)) resumeStep = 3;
+          if (resumeStep >= 3 && (!d.title || d.title === PLACEHOLDER_TITLE || !d.city)) resumeStep = 2;
           if (resumeStep >= 2 && !d.category_slug) resumeStep = 1;
-          else if (resumeStep >= 3 && (!d.title || d.title === PLACEHOLDER_TITLE || !d.city)) resumeStep = 2;
-          else if (resumeStep >= 4 && (!d.price || d.price <= 0)) resumeStep = 3;
           setStep(resumeStep);
         }
       } catch (e) {
@@ -420,8 +447,9 @@ function AddListingPageInner() {
           <StepCategory
             value={draft.category_slug}
             onSelect={async (slug) => {
-              await persist({ category_slug: slug });
-              next();
+              // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
+              const t = await persist({ category_slug: slug });
+              if (t) next();
             }}
           />
         )}
@@ -433,8 +461,10 @@ function AddListingPageInner() {
             onSubmit={async (patch) => {
               const ok = validateBasics(patch, setErrors);
               if (!ok) return;
-              await persist(patch);
-              next();
+              // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
+              // Old code: await persist; next(); — caused silent data loss when API failed.
+              const t = await persist(patch);
+              if (t) next();
             }}
             onBack={back}
             saving={saving}
@@ -450,8 +480,9 @@ function AddListingPageInner() {
                 setErrors({ price: 'حط سعر صحيح من فضلك' });
                 return;
               }
-              await persist(patch);
-              next();
+              // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
+              const t = await persist(patch);
+              if (t) next();
             }}
             onBack={back}
             saving={saving}
@@ -463,10 +494,20 @@ function AddListingPageInner() {
             draft={draft}
             token={token}
             onSubmit={async (photos) => {
-              await persist({ photos });
-              next();
+              // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
+              const t = await persist({ photos });
+              if (t) next();
             }}
-            onSkip={() => next()}
+            onUpload={async (photos) => {
+              // AUTO-SAVE (May 13 2026 fix for photo data-loss):
+              // محمد طاهر complaint: "رفعت الصور مرات كتير، فيه مشكلة عندكم"
+              // Root cause: local component state held the uploaded photos
+              // but draft.photos in DB stayed empty until user clicked Continue.
+              // If they closed the page or refreshed first, photos were lost.
+              // Now every successful upload persists immediately — no
+              // Continue click needed for the photos to survive.
+              await persist({ photos });
+            }}
             onBack={back}
             saving={saving}
           />
@@ -757,20 +798,26 @@ function StepPricing({
 
 // =================================================
 // STEP 4 — PHOTOS
+// May 13 2026 fix: photos are now REQUIRED (was skippable).
+// Rationale: 14 of 14 claimed drafts had 0 photos → all stuck in
+// pending_review, never visible publicly. Forcing ≥1 photo at the
+// wizard means every published listing has at least a hero image,
+// which dramatically improves marketplace appeal and conversion.
 // =================================================
 function StepPhotos({
-  draft, token, onSubmit, onSkip, onBack, saving,
+  draft, token, onSubmit, onUpload, onBack, saving,
 }: {
   draft: DraftPayload;
   token: string | null;
   onSubmit: (photos: { url: string }[]) => void | Promise<void>;
-  onSkip: () => void;
+  onUpload?: (photos: { url: string }[]) => void | Promise<void>;
   onBack: () => void;
   saving: boolean;
 }) {
   const [photos, setPhotos] = useState<{ url: string; caption?: string }[]>(draft.photos || []);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [autoSaving, setAutoSaving] = useState(false);
 
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || []);
@@ -791,7 +838,16 @@ function StepPhotos({
         const json = await res.json();
         if (json.url) uploaded.push({ url: json.url });
       }
-      setPhotos([...photos, ...uploaded]);
+      const newPhotos = [...photos, ...uploaded];
+      setPhotos(newPhotos);
+      // AUTO-SAVE: persist to DB immediately so photos survive even if user
+      // closes/refreshes the page before clicking Continue.
+      if (onUpload && uploaded.length > 0) {
+        setAutoSaving(true);
+        try { await onUpload(newPhotos); }
+        catch (e) { console.warn('autosave failed (photo still in storage):', e); }
+        finally { setAutoSaving(false); }
+      }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'الصور مرفعتش، حاول تاني';
       setError(msg);
@@ -800,15 +856,23 @@ function StepPhotos({
     }
   }
 
-  function removePhoto(idx: number) {
-    setPhotos(photos.filter((_, i) => i !== idx));
+  async function removePhoto(idx: number) {
+    const next = photos.filter((_, i) => i !== idx);
+    setPhotos(next);
+    // AUTO-SAVE removals too, same reasoning as upload.
+    if (onUpload) {
+      setAutoSaving(true);
+      try { await onUpload(next); }
+      catch (e) { console.warn('autosave (remove) failed:', e); }
+      finally { setAutoSaving(false); }
+    }
   }
 
   return (
     <section>
-      <h2 className="text-lg font-semibold mb-1">الصور (اختياري)</h2>
+      <h2 className="text-lg font-semibold mb-1">الصور</h2>
       <p className="text-sm text-[#FAF7F0]/60 mb-6">
-        ليستنج فيه صور كويسة بيتأجر أسرع 3 مرات. تقدر تتخطى وتضيف الصور بعدين.
+        ارفع صورة واحدة على الأقل عشان نقدر ننشر إعلانك فوراً. الإعلانات بصور بتاخد حجوزات أسرع بـ 7 مرات.
       </p>
 
       {photos.length > 0 && (
@@ -846,24 +910,34 @@ function StepPhotos({
       </label>
 
       {error && <div className="mt-3 text-sm text-red-300">{error}</div>}
+      {autoSaving && (
+        <div className="mt-2 text-xs text-[#FAF7F0]/60">
+          ⏳ جاري حفظ الصور…
+        </div>
+      )}
+      {!autoSaving && !error && photos.length > 0 && (
+        <div className="mt-2 text-xs text-emerald-300">
+          ✓ {photos.length} {photos.length === 1 ? 'صورة محفوظة' : 'صور محفوظة'}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3 mt-6">
         <button type="button" onClick={onBack} className={btnSecondary}>← رجوع</button>
-        {photos.length > 0 ? (
-          <button
-            type="button"
-            onClick={() => onSubmit(photos)}
-            disabled={saving}
-            className={btnPrimary}
-          >
-            {saving ? '...' : 'كمل →'}
-          </button>
-        ) : (
-          <button type="button" onClick={onSkip} className={btnPrimary}>
-            تخطى دلوقتي →
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => onSubmit(photos)}
+          disabled={saving || uploading || photos.length === 0}
+          className={btnPrimary}
+          title={photos.length === 0 ? 'ارفع صورة واحدة على الأقل' : undefined}
+        >
+          {saving ? '...' : photos.length === 0 ? '📸 ارفع صورة الأول' : 'كمل →'}
+        </button>
       </div>
+      {photos.length === 0 && (
+        <p className="text-xs text-[#FAF7F0]/50 mt-3 text-center">
+          💡 صورة واحدة كافية عشان تبدأ — تقدر تضيف باقي الصور من حسابك بعدين.
+        </p>
+      )}
     </section>
   );
 }
