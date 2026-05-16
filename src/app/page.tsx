@@ -12,6 +12,7 @@ import FinancialTicker from '@/components/FinancialTicker'
 import CompactNewsTabs from '@/components/CompactNewsTabs'
 import SocialLinks from '@/components/SocialLinks'
 import MUACampaignBanner from '@/components/MUACampaignBanner'
+import CategoryTrackTabs from '@/components/CategoryTrackTabs'
 
 // ============================================================
 // Home page — Single brand: "خدمات مضمونة"
@@ -42,6 +43,7 @@ type DBCategory = {
   icon: string | null
   image_url: string | null
   display_order: number
+  track: string | null
 }
 
 async function getRootCategories(): Promise<DBCategory[]> {
@@ -53,9 +55,10 @@ async function getRootCategories(): Promise<DBCategory[]> {
     // @ts-expect-error
     const { data } = await supabase
       .from('categories')
-      .select('id, name_ar, name_en, slug, icon, image_url, display_order')
+      .select('id, name_ar, name_en, slug, icon, image_url, display_order, track')
       .is('parent_id', null)
       .eq('is_active', true)
+      .not('slug', 'eq', 'properties') // Hide legacy all-in-one properties cat
       .order('display_order', { ascending: true })
     return (data || []) as DBCategory[]
   } catch (e) {
@@ -160,8 +163,8 @@ export default async function HomePage() {
               <div>
                 <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">COLLECTIONS</p>
                 <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
-                  <span className="block">كل اللي</span>
-                  <span className="block italic font-light gradient-text-green">يتأجر</span>
+                  <span className="block">ابحث في</span>
+                  <span className="block italic font-light gradient-text-green">الخدمات والإيجارات</span>
                 </h2>
               </div>
               <Link href="/marketplace" className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-gray-900 hover:text-[#1F5F3F] transition-colors no-underline">
@@ -175,28 +178,7 @@ export default async function HomePage() {
                 لسه مفيش فئات. <Link href="/marketplace" className="text-[#1F5F3F] font-bold no-underline">شوف الكل</Link>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-12 gap-3 md:gap-4">
-                {rootCategories.map((cat, idx) => {
-                  const isFirst = idx === 0
-                  // First item: large hero (spans 6 cols, 2 rows)
-                  // Rest: small (spans 3 cols)
-                  const sizeClass = isFirst
-                    ? 'md:col-span-6 md:row-span-2 aspect-square md:aspect-auto'
-                    : 'md:col-span-3 aspect-square'
-                  return (
-                    <CategoryCard
-                      key={cat.id}
-                      href={`/marketplace?category=${cat.slug}`}
-                      image={cat.image_url || DEFAULT_CATEGORY_FALLBACK}
-                      label={cat.name_ar}
-                      sublabel={(cat.name_en || cat.slug).toUpperCase()}
-                      icon={cat.icon || null}
-                      className={sizeClass}
-                      size={isFirst ? 'large' : 'small'}
-                    />
-                  )
-                })}
-              </div>
+              <CategoryTrackTabs categories={rootCategories} />
             )}
 
             <Link href="/marketplace" className="md:hidden mt-6 inline-flex items-center gap-2 text-sm font-bold text-gray-900 no-underline">
