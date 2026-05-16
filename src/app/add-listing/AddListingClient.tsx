@@ -512,6 +512,7 @@ function AddListingPageInner({
           <StepBasics
             draft={draft}
             errors={errors}
+            categories={[...MAIN_CATEGORIES, ...dbExtraCategories]}
             onSubmit={async (patch) => {
               const ok = validateBasics(patch, setErrors);
               if (!ok) return;
@@ -521,6 +522,7 @@ function AddListingPageInner({
               if (t) next();
             }}
             onBack={back}
+            onChangeCategory={() => setStep(1)}
             saving={saving}
           />
         )}
@@ -691,19 +693,71 @@ function StepCategory({
 }
 
 // =================================================
+// CATEGORY CHIP — shows selected category at top of step 2-5
+// with a "تغيير الفئة" button to return to step 1.
+// Added May 16 2026 (Mohamed: "اخترت شاليه وحبيت اغير لشقة مفيش زرار يرجعني").
+// =================================================
+function CategoryChip({
+  slug,
+  categories,
+  onChange,
+}: {
+  slug?: string | null;
+  categories: MainCategory[];
+  onChange: () => void;
+}) {
+  if (!slug) return null;
+  // Try to match as a main category first
+  const main = categories.find((m) => m.slug === slug);
+  // Otherwise search subs
+  let display: { emoji: string; name: string } | null = null;
+  if (main) {
+    display = { emoji: main.emoji, name: main.name_ar };
+  } else {
+    for (const m of categories) {
+      const s = m.subs.find((x) => x.slug === slug);
+      if (s) {
+        display = { emoji: s.emoji, name: `${m.name_ar} · ${s.name_ar}` };
+        break;
+      }
+    }
+  }
+  if (!display) return null;
+  return (
+    <div className="mb-5 flex items-center justify-between rounded-xl bg-[#FAF7F0]/8 border border-[#FAF7F0]/15 px-4 py-3">
+      <div className="flex items-center gap-2 text-sm">
+        <span className="text-lg leading-none">{display.emoji}</span>
+        <span className="font-medium">{display.name}</span>
+      </div>
+      <button
+        type="button"
+        onClick={onChange}
+        className="text-xs text-[#B8860B] hover:text-[#B8860B]/80 font-medium whitespace-nowrap"
+      >
+        تغيير الفئة ←
+      </button>
+    </div>
+  );
+}
+
+// =================================================
 // STEP 2 — BASIC DETAILS
 // =================================================
 function StepBasics({
   draft,
   errors,
+  categories,
   onSubmit,
   onBack,
+  onChangeCategory,
   saving,
 }: {
   draft: DraftPayload;
   errors: Record<string, string>;
+  categories: MainCategory[];
   onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
   onBack: () => void;
+  onChangeCategory: () => void;
   saving: boolean;
 }) {
   // Strip the placeholder so users don't see it pre-filled
@@ -717,6 +771,8 @@ function StepBasics({
     <section>
       <h2 className="text-lg font-semibold mb-1">معلومات أساسية</h2>
       <p className="text-sm text-[#FAF7F0]/60 mb-6">وصف قصير، مكان، وفينك</p>
+
+      <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
 
       <Field label="عنوان الإعلان" error={errors.title} required>
         <input
