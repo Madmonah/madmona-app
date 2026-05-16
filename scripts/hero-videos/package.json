@@ -1,0 +1,17 @@
+{
+  "name": "madmona-hero-recorder",
+  "version": "1.0.0",
+  "description": "Auto-records Madmona hero films (Cosmos V4, Genesis V3, Storyboard V2) to MP4 using Puppeteer + ffmpeg",
+  "scripts": {
+    "record": "node record.js",
+    "record:cosmos": "node record.js cosmos",
+    "record:genesis": "node record.js genesis",
+    "record:storyboard": "node record.js storyboard",
+    "record:all": "node record.js all"
+  },
+  "dependencies": {
+    "puppeteer": "^23.0.0",
+    "puppeteer-screen-recorder": "^3.0.6",
+    "ffmpeg-static": "^5.2.0"
+  }
+}

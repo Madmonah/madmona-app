@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>مضمونة — Cosmos · Opening Title Sequence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;400;700;800;900&family=Tajawal:wght@200;300;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold:        #C9A04B;
+      --gold-bright: #FFE5A0;
+      --gold-deep:   #6E4F1A;
+      --amber:       #FF9B3E;
+      --ember:       #E25822;
+      --ivory:       #F4EFE3;
+      --ivory-dim:   rgba(244,239,227,0.55);
+      --void:        #000204;
+      --void-deep:   #000000;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *::selection { background: var(--gold); color: var(--void); }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--void-deep);
+      font-family: 'Cairo', system-ui, sans-serif;
+      color: var(--ivory);
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ====================================================
+       CINEMATIC FRAME
+       ==================================================== */
+    .cinema {
+      position: fixed; inset: 0;
+      background: var(--void-deep);
+    }
+    .letterbox {
+      position: absolute; left: 0; right: 0;
+      height: 12vh;
+      background: var(--void-deep);
+      z-index: 80;
+      pointer-events: none;
+    }
+    .letterbox.top    { top: 0; }
+    .letterbox.bottom { bottom: 0; }
+
+    #webgl {
+      position: absolute;
+      top: 12vh; bottom: 12vh;
+      left: 0; right: 0;
+      width: 100%;
+      height: calc(100vh - 24vh);
+      z-index: 1;
+      display: block;
+      background: radial-gradient(ellipse at center, #000810 0%, #000204 50%, #000000 100%);
+    }
+
+    /* Atmospheric tint over the entire scene */
+    .atmo-tint {
+      position: absolute;
+      top: 12vh; bottom: 12vh;
+      left: 0; right: 0;
+      z-index: 6;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 20%, rgba(0,8,16,0.4) 70%, rgba(0,2,4,0.85) 100%);
+    }
+
+    /* Film grain */
+    .grain {
+      position: absolute;
+      top: 12vh; bottom: 12vh;
+      left: 0; right: 0;
+      z-index: 20;
+      pointer-events: none;
+      opacity: 0.08;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+      background-size: 200px 200px;
+      animation: grain-shift 0.35s steps(6) infinite;
+    }
+    @keyframes grain-shift {
+      0% { transform: translate(0, 0); }
+      16% { transform: translate(-2px, 1px); }
+      33% { transform: translate(1px, -2px); }
+      50% { transform: translate(2px, 2px); }
+      66% { transform: translate(-1px, -1px); }
+      83% { transform: translate(2px, -2px); }
+      100% { transform: translate(-2px, 1px); }
+    }
+
+    /* Volumetric bloom — fires during key dramatic moments */
+    .bloom {
+      position: absolute;
+      top: 12vh; bottom: 12vh;
+      left: 0; right: 0;
+      z-index: 8;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 50%, rgba(255,229,160,0.18) 0%, rgba(201,160,75,0.06) 25%, transparent 55%);
+      opacity: 0;
+      transition: opacity 2s ease;
+    }
+    .bloom.visible { opacity: 1; }
+    .bloom.intense { opacity: 1; background: radial-gradient(circle at 50% 50%, rgba(255,229,160,0.45) 0%, rgba(255,155,62,0.18) 20%, transparent 50%); }
+
+    /* Chromatic aberration overlay — for impact moments */
+    .chroma {
+      position: absolute;
+      top: 12vh; bottom: 12vh;
+      left: 0; right: 0;
+      z-index: 22;
+      pointer-events: none;
+      opacity: 0;
+      mix-blend-mode: screen;
+      transition: opacity 0.4s ease;
+    }
+    .chroma.fire {
+      opacity: 0.6;
+      background:
+        radial-gradient(circle at 48% 50%, rgba(255,80,80,0.3) 0%, transparent 30%),
+        radial-gradient(circle at 52% 50%, rgba(80,200,255,0.3) 0%, transparent 30%);
+      animation: chroma-pulse 0.6s ease;
+    }
+    @keyframes chroma-pulse {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 0.6; }
+    }
+
+    /* Light streaks for forward motion */
+    .streak {
+      position: absolute;
+      width: 2px;
+      height: 30px;
+      background: linear-gradient(to bottom, transparent, var(--gold-bright), transparent);
+      pointer-events: none;
+      z-index: 12;
+      opacity: 0;
+      animation: streak-flash 0.4s ease forwards;
+    }
+    @keyframes streak-flash {
+      0% { opacity: 0; transform: scaleY(0.3); }
+      30% { opacity: 1; transform: scaleY(1); }
+      100% { opacity: 0; transform: scaleY(2); }
+    }
+
+    /* ====================================================
+       HTML OVERLAYS (above WebGL)
+       ==================================================== */
+    .overlay {
+      position: absolute;
+      top: 12vh; bottom: 12vh;
+      left: 0; right: 0;
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .overlay.visible { opacity: 1; }
+
+    /* PHASE 1: Netflix-style attribution */
+    .netflix-attrib {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(12px, 1.4vw, 16px);
+      letter-spacing: 8px;
+      color: var(--ivory-dim);
+      text-transform: uppercase;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 2s ease, transform 2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .netflix-attrib.in { opacity: 1; transform: translateY(0); }
+    .netflix-attrib strong {
+      color: var(--gold);
+      font-weight: 400;
+      font-style: normal;
+      margin: 0 4px;
+    }
+
+    /* PHASE 2: Giant cinematic typography */
+    .big-title {
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      font-size: clamp(60px, 14vw, 180px);
+      letter-spacing: -4px;
+      line-height: 0.95;
+      color: var(--ivory);
+      opacity: 0;
+      transform: translateY(40px) scale(0.96);
+      transition: opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1), transform 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+      text-shadow:
+        0 0 60px rgba(0,0,0,0.8),
+        0 0 30px rgba(201,160,75,0.15);
+    }
+    .big-title.in { opacity: 1; transform: translateY(0) scale(1); }
+    .big-title.gold {
+      background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 50%, var(--gold-deep) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 25px rgba(201,160,75,0.4));
+    }
+    .big-title.outline {
+      color: transparent;
+      -webkit-text-stroke: 1px var(--gold);
+      text-stroke: 1px var(--gold);
+    }
+
+    /* PHASE 3: Premise tagline (bilingual) */
+    .premise-en {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(20px, 3vw, 36px);
+      color: var(--ivory-dim);
+      letter-spacing: 2px;
+      text-align: center;
+      max-width: 80vw;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 1.6s ease, transform 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .premise-en.in { opacity: 1; transform: translateY(0); }
+    .premise-en em { font-style: normal; color: var(--gold); }
+    .premise-ar {
+      font-family: 'Tajawal', sans-serif;
+      font-weight: 200;
+      font-size: clamp(22px, 4vw, 48px);
+      color: var(--ivory);
+      letter-spacing: 0;
+      margin-top: 18px;
+      opacity: 0;
+      transition: opacity 1.6s ease 0.6s;
+      text-align: center;
+    }
+    .premise-ar.in { opacity: 1; }
+
+    /* PHASE 5: Category labels (floating tags) */
+    .cat-labels { position: absolute; inset: 0; pointer-events: none; z-index: 22; }
+    .cat-label {
+      position: absolute;
+      padding: 8px 14px;
+      border: 0.5px solid var(--gold);
+      border-radius: 1px;
+      opacity: 0;
+      transform: translate(-50%, -50%) translateY(6px);
+      transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .cat-label.visible { opacity: 1; transform: translate(-50%, -50%); }
+    .cat-label::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: -1px;
+      width: 6px; height: 6px;
+      border-top: 1px solid var(--gold);
+      border-left: 1px solid var(--gold);
+    }
+    .cat-label::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; right: -1px;
+      width: 6px; height: 6px;
+      border-bottom: 1px solid var(--gold);
+      border-right: 1px solid var(--gold);
+    }
+    .cat-label-cat {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--gold);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .cat-label-name {
+      font-family: 'Cairo', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--ivory);
+      display: block;
+    }
+
+    /* PHASE 7: Slogan reveal */
+    .slogan-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .slogan-word {
+      display: inline-block;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      font-size: clamp(60px, 12vw, 150px);
+      letter-spacing: -3px;
+      line-height: 1;
+      color: var(--ivory);
+      opacity: 0;
+      transform: translateY(80px) scale(0.9);
+      transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+      text-shadow: 0 0 50px rgba(255,229,160,0.3), 0 0 20px rgba(0,0,0,0.8);
+    }
+    .slogan-word.gold {
+      background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 50%, var(--gold-deep) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 35px rgba(255,229,160,0.6));
+    }
+    .slogan-word.in { opacity: 1; transform: translateY(0) scale(1); }
+    .slogan-period {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--gold-bright);
+      margin-right: 12px;
+      vertical-align: 14px;
+      opacity: 0;
+      transform: scale(0);
+      box-shadow: 0 0 25px var(--gold-bright);
+      transition: opacity 0.4s ease, transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .slogan-period.in { opacity: 1; transform: scale(1); }
+
+    /* PHASE 8: CTA */
+    .cta-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1.2s ease, transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .cta-card.in { opacity: 1; transform: translateY(0); }
+    .cta-logo {
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      font-size: clamp(50px, 8vw, 96px);
+      letter-spacing: -2px;
+      color: var(--ivory);
+      line-height: 1;
+      text-shadow: 0 0 40px rgba(255,229,160,0.4);
+    }
+    .cta-rule {
+      width: 120px; height: 0.5px;
+      background: var(--gold);
+      margin: 10px 0 4px;
+    }
+    .cta-url {
+      font-family: 'Cairo', sans-serif;
+      font-size: clamp(14px, 1.8vw, 22px);
+      color: var(--gold-bright);
+      letter-spacing: 4px;
+      font-weight: 500;
+    }
+    .cta-pillars {
+      display: flex;
+      gap: clamp(16px, 2.5vw, 40px);
+      margin-top: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 92%;
+    }
+    .cta-pillars span {
+      font-family: 'Cairo', sans-serif;
+      font-size: clamp(12px, 1.3vw, 15px);
+      color: var(--ivory-dim);
+      font-weight: 400;
+      letter-spacing: 0.5px;
+    }
+    .cta-pillars span::before {
+      content: '·';
+      color: var(--gold);
+      margin-left: 10px;
+      font-weight: 900;
+    }
+    .cta-pillars span:first-child::before { content: ''; }
+
+    /* ====================================================
+       UI CHROME
+       ==================================================== */
+    .meta {
+      position: fixed;
+      top: calc(12vh + 16px);
+      left: 24px;
+      z-index: 100;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--ivory-dim);
+      text-transform: uppercase;
+    }
+    .meta strong { color: var(--gold); font-weight: 500; font-style: normal; }
+    .meta-sep { display: inline-block; margin: 0 8px; color: var(--gold); }
+
+    .hud {
+      position: fixed;
+      top: calc(12vh + 16px);
+      right: 24px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .hud-phase {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    .hud-time {
+      font-family: 'Cairo', sans-serif;
+      font-size: 12px;
+      color: var(--ivory-dim);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.5px;
+    }
+    .hud-progress {
+      width: 180px;
+      height: 1px;
+      background: rgba(244,239,227,0.15);
+      overflow: hidden;
+    }
+    .hud-progress-fill {
+      height: 100%; width: 0%;
+      background: var(--gold);
+      transition: width 0.1s linear;
+    }
+
+    .controls {
+      position: fixed;
+      bottom: calc(12vh + 18px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    .controls.visible { opacity: 1; }
+    .ctl-btn {
+      background: rgba(244,239,227,0.05);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 0.5px solid rgba(201,160,75,0.5);
+      color: var(--ivory);
+      padding: 11px 22px;
+      border-radius: 1px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .ctl-btn:hover { background: rgba(201,160,75,0.15); border-color: var(--gold); transform: translateY(-1px); }
+    .ctl-btn.primary { background: var(--gold); color: var(--void); border-color: var(--gold); font-weight: 700; }
+    .ctl-btn.primary:hover { background: var(--gold-bright); }
+
+    .sound-tog {
+      position: fixed;
+      bottom: calc(12vh + 18px);
+      right: 24px;
+      z-index: 100;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(244,239,227,0.05);
+      border: 0.5px solid rgba(201,160,75,0.4);
+      color: var(--ivory-dim);
+      backdrop-filter: blur(12px);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+      font-size: 14px;
+    }
+    .sound-tog:hover { color: var(--gold); border-color: var(--gold); }
+    .sound-tog.on { color: var(--gold-bright); border-color: var(--gold); }
+
+    /* Loader */
+    .loader {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: var(--void-deep);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 24px;
+      transition: opacity 1s ease;
+    }
+    .loader.gone { opacity: 0; pointer-events: none; }
+    .loader-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 13px;
+      letter-spacing: 6px;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    .loader-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--gold);
+      animation: loader-pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes loader-pulse {
+      0%, 100% { opacity: 0.2; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.4); }
+    }
+
+    /* WebGL fallback */
+    .nogl {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: var(--void-deep);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+    .nogl.show { display: flex; }
+    .nogl h2 {
+      font-family: 'Cairo', sans-serif;
+      font-size: 22px;
+      color: var(--gold);
+    }
+    .nogl p {
+      font-family: 'Tajawal', sans-serif;
+      color: var(--ivory-dim);
+      font-size: 14px;
+      max-width: 400px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 700px) {
+      .meta { left: 12px; font-size: 9px; letter-spacing: 2px; }
+      .hud { right: 12px; }
+      .hud-progress { width: 110px; }
+      .letterbox { height: 10vh; }
+      #webgl, .atmo-tint, .grain, .bloom, .chroma, .overlay {
+        top: 10vh; bottom: 10vh; height: calc(100vh - 20vh);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cinema">
+    <div class="letterbox top"></div>
+
+    <canvas id="webgl"></canvas>
+
+    <div class="atmo-tint"></div>
+    <div class="bloom" id="bloom"></div>
+    <div class="chroma" id="chroma"></div>
+    <div class="grain"></div>
+
+    <div class="cat-labels" id="cat-labels"></div>
+
+    <!-- PHASE 1: Cold open / Studio attribution -->
+    <div class="overlay visible" id="ovl-cold">
+      <div class="netflix-attrib" id="netflix-attrib">
+        A <strong>MADMONA</strong> ORIGINAL
+      </div>
+    </div>
+
+    <!-- PHASE 2: Big title cards (sequential) -->
+    <div class="overlay" id="ovl-title-1">
+      <div class="big-title" id="t1-1">EVERYTHING</div>
+    </div>
+    <div class="overlay" id="ovl-title-2">
+      <div class="big-title gold" id="t2-1">RENTABLE.</div>
+    </div>
+    <div class="overlay" id="ovl-title-3">
+      <div class="big-title outline" id="t3-1">ONE PLACE.</div>
+    </div>
+
+    <!-- PHASE 3: Premise (bilingual) -->
+    <div class="overlay" id="ovl-premise">
+      <div class="premise-en" id="prem-en">In Egypt, <em>everything</em> is rentable</div>
+      <div class="premise-ar" id="prem-ar">في مصر، كل حاجة بتتأجر</div>
+    </div>
+
+    <!-- PHASE 7: Slogan -->
+    <div class="overlay" id="ovl-slogan">
+      <div class="slogan-block">
+        <div><span class="slogan-word" id="s-w1">احنا</span></div>
+        <div>
+          <span class="slogan-word" id="s-w2">بتوع</span>
+          <span class="slogan-word gold" id="s-w3">الإيجار</span>
+          <span class="slogan-period" id="s-period"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 8: CTA -->
+    <div class="overlay" id="ovl-cta">
+      <div class="cta-card" id="cta">
+        <div class="cta-logo">مضمونة</div>
+        <div class="cta-rule"></div>
+        <div class="cta-url">madmonacairo.com</div>
+        <div class="cta-pillars">
+          <span>حماية كاملة</span>
+          <span>دفع سريع</span>
+          <span>دعم ٢٤/٧</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="letterbox bottom"></div>
+  </div>
+
+  <div class="meta">
+    <strong>HERO FILM</strong>
+    <span class="meta-sep">/</span>
+    Cosmos · Title Sequence
+    <span class="meta-sep">/</span>
+    38s · v4
+  </div>
+
+  <div class="hud">
+    <div class="hud-phase" id="hud-phase">VOID</div>
+    <div class="hud-time"><span id="hud-cur">00:00</span> / 00:38</div>
+    <div class="hud-progress"><div class="hud-progress-fill" id="hud-fill"></div></div>
+  </div>
+
+  <button class="sound-tog" id="snd" title="تشغيل الصوت">♪</button>
+
+  <div class="controls" id="ctrls">
+    <button class="ctl-btn primary" id="replay">شغل تاني <span style="font-size:11px;margin-right:4px;opacity:0.8;">▶</span></button>
+  </div>
+
+  <div class="loader" id="loader">
+    <div class="loader-dot"></div>
+    <div class="loader-text">Entering Cosmos</div>
+  </div>
+
+  <div class="nogl" id="nogl">
+    <h2>⚠ المتصفح ده مش بيدعم 3D</h2>
+    <p>الإعلان ده محتاج WebGL — افتحه في Chrome أو Edge أو Safari حديث على كمبيوتر أو موبايل.</p>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.150.0/three.min.js"></script>
+
+  <script>
+  function hasWebGL() {
+    try {
+      const c = document.createElement('canvas');
+      return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+    } catch(e) { return false; }
+  }
+
+  if (!hasWebGL() || typeof THREE === 'undefined') {
+    document.getElementById('nogl').classList.add('show');
+    document.getElementById('loader').classList.add('gone');
+  } else {
+    initCosmos();
+  }
+
+  function initCosmos() {
+
+  // ===========================================================
+  // CATEGORIES — 18 fragment-orbs, each represents a rental type
+  // ===========================================================
+  const CATEGORIES = [
+    { cat: 'TOURISM',     label: 'شاليه ساحل' },
+    { cat: 'VEHICLES',    label: 'BMW ٢٠٢٣' },
+    { cat: 'MEDIA',       label: 'كاميرا Sony FX3' },
+    { cat: 'WEDDINGS',    label: 'كوشة فرح' },
+    { cat: 'EVENTS',      label: 'DJ + معدات صوت' },
+    { cat: 'MEDICAL',     label: 'استشارة طبية' },
+    { cat: 'INDUSTRIAL',  label: 'مخزن ٥٠٠م²' },
+    { cat: 'MARINE',      label: 'يخت مارينا' },
+    { cat: 'BEAUTY',      label: 'ميك أب عروسة' },
+    { cat: 'CLINICS',     label: 'عيادة مجهزة' },
+    { cat: 'EQUIPMENT',   label: 'كرين ٢٥ طن' },
+    { cat: 'FASHION',     label: 'فستان سهرة' },
+    { cat: 'CATERING',    label: 'كاترينج فعاليات' },
+    { cat: 'TECH',        label: 'MacBook Pro' },
+    { cat: 'LUXURY',      label: 'Rolex Submariner' },
+    { cat: 'EDUCATION',   label: 'كورس IELTS' },
+    { cat: 'PRINTING',    label: 'طباعة بنر' },
+    { cat: 'SERVICES',    label: 'ميكانيكي متنقل' },
+  ];
+
+  // ===========================================================
+  // SCENE
+  // ===========================================================
+  const canvas = document.getElementById('webgl');
+  const W = () => canvas.clientWidth;
+  const H = () => canvas.clientHeight;
+
+  const renderer = new THREE.WebGLRenderer({
+    canvas: canvas,
+    antialias: true,
+    alpha: true,
+    powerPreference: 'high-performance'
+  });
+  renderer.setSize(W(), H());
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.3;
+  renderer.outputEncoding = THREE.sRGBEncoding || 3001;
+
+  const scene = new THREE.Scene();
+  scene.background = null; // CSS background handles void
+  scene.fog = new THREE.FogExp2(0x000408, 0.025);
+
+  const camera = new THREE.PerspectiveCamera(50, W()/H(), 0.1, 500);
+  camera.position.set(0, 0, 30);
+  camera.lookAt(0, 0, 0);
+
+  window.addEventListener('resize', () => {
+    renderer.setSize(W(), H());
+    camera.aspect = W()/H();
+    camera.updateProjectionMatrix();
+  });
+
+  // ===========================================================
+  // LIGHTING — Dim cosmic ambient + warm key
+  // ===========================================================
+  const ambient = new THREE.AmbientLight(0x080a14, 0.2);
+  scene.add(ambient);
+
+  const keyLight = new THREE.DirectionalLight(0xffd896, 0.4);
+  keyLight.position.set(8, 4, 6);
+  scene.add(keyLight);
+
+  const fillBlue = new THREE.DirectionalLight(0x4060a0, 0.15);
+  fillBlue.position.set(-6, -2, -4);
+  scene.add(fillBlue);
+
+  // Core point light (orbits, fragments)
+  const corePoint = new THREE.PointLight(0xFFE5A0, 0, 30, 2);
+  corePoint.position.set(0, 0, 0);
+  scene.add(corePoint);
+
+  // ===========================================================
+  // STARFIELD — distant stars
+  // ===========================================================
+  const starCount = 3000;
+  const starGeo = new THREE.BufferGeometry();
+  const starPos = new Float32Array(starCount * 3);
+  const starColors = new Float32Array(starCount * 3);
+  for (let i = 0; i < starCount; i++) {
+    // Spherical distribution
+    const r = 60 + Math.random() * 140;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    starPos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+    starPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+    starPos[i*3+2] = r * Math.cos(phi);
+    // Color variation (warm to cool)
+    const warmth = Math.random();
+    starColors[i*3]   = 1 - warmth * 0.2;
+    starColors[i*3+1] = 1 - warmth * 0.4;
+    starColors[i*3+2] = 1 - warmth * 0.6;
+  }
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+  starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+  const starMat = new THREE.PointsMaterial({
+    size: 0.18,
+    transparent: true,
+    opacity: 0,
+    vertexColors: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    sizeAttenuation: true,
+  });
+  const stars = new THREE.Points(starGeo, starMat);
+  scene.add(stars);
+
+  // ===========================================================
+  // COSMIC DUST — flows past camera (forward motion illusion)
+  // ===========================================================
+  const dustCount = 1800;
+  const dustGeo = new THREE.BufferGeometry();
+  const dustPos = new Float32Array(dustCount * 3);
+  const dustOrigZ = new Float32Array(dustCount); // remember initial z
+  for (let i = 0; i < dustCount; i++) {
+    dustPos[i*3]   = (Math.random() - 0.5) * 60;
+    dustPos[i*3+1] = (Math.random() - 0.5) * 40;
+    dustPos[i*3+2] = -80 + Math.random() * 100;
+    dustOrigZ[i]   = dustPos[i*3+2];
+  }
+  dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+  const dustMat = new THREE.PointsMaterial({
+    color: 0xC9A04B,
+    size: 0.08,
+    transparent: true,
+    opacity: 0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    sizeAttenuation: true,
+  });
+  const dust = new THREE.Points(dustGeo, dustMat);
+  scene.add(dust);
+
+  // ===========================================================
+  // FRAGMENT-ORBS — 18 small geometric pieces, each a category
+  // Initial state: tightly packed at center (sphere)
+  // Then: explode outward into orbit positions
+  // ===========================================================
+  function makeFragmentTexture(cat, label) {
+    const c = document.createElement('canvas');
+    c.width = 256; c.height = 256;
+    const ctx = c.getContext('2d');
+    // Black bg
+    ctx.fillStyle = '#000204';
+    ctx.fillRect(0, 0, 256, 256);
+    // Gold border (thin)
+    ctx.strokeStyle = '#C9A04B';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(8, 8, 240, 240);
+    // Corner ornaments
+    ctx.strokeStyle = '#6E4F1A';
+    ctx.lineWidth = 1;
+    const cs = 20;
+    [[16,16,1,1],[240,16,-1,1],[16,240,1,-1],[240,240,-1,-1]].forEach(([x,y,sx,sy]) => {
+      ctx.beginPath();
+      ctx.moveTo(x, y+cs*sy);
+      ctx.lineTo(x, y);
+      ctx.lineTo(x+cs*sx, y);
+      ctx.stroke();
+    });
+    // Category text (italic small)
+    ctx.fillStyle = '#C9A04B';
+    ctx.font = 'italic 14px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(cat, 128, 100);
+    // Rule
+    ctx.strokeStyle = '#C9A04B';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(108, 112);
+    ctx.lineTo(148, 112);
+    ctx.stroke();
+    // Arabic label
+    ctx.fillStyle = '#F4EFE3';
+    ctx.font = '700 22px Cairo, sans-serif';
+    ctx.fillText(label, 128, 145);
+    // Bottom mark
+    ctx.fillStyle = '#6E4F1A';
+    ctx.font = '500 10px serif';
+    ctx.fillText('· MADMONA ·', 128, 220);
+    const tex = new THREE.CanvasTexture(c);
+    tex.anisotropy = 4;
+    return tex;
+  }
+
+  // Spherical distribution for fragments
+  const fragRadius = 1.2; // initial tight pack radius
+  const finalRadius = 7;  // exploded orbit radius
+  const fragments = CATEGORIES.map((cat, i) => {
+    // Distribute on sphere using golden ratio (fibonacci sphere)
+    const phi = Math.acos(1 - 2 * (i + 0.5) / CATEGORIES.length);
+    const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
+    const initX = fragRadius * Math.sin(phi) * Math.cos(theta);
+    const initY = fragRadius * Math.sin(phi) * Math.sin(theta);
+    const initZ = fragRadius * Math.cos(phi);
+    const finalX = finalRadius * Math.sin(phi) * Math.cos(theta);
+    const finalY = finalRadius * Math.sin(phi) * Math.sin(theta);
+    const finalZ = finalRadius * Math.cos(phi);
+
+    // Random irregular geometry (gives Goodbye Earth fragmented look)
+    let geo;
+    const r = Math.random();
+    if (r < 0.33)      geo = new THREE.TetrahedronGeometry(0.4 + Math.random() * 0.2);
+    else if (r < 0.66) geo = new THREE.OctahedronGeometry(0.35 + Math.random() * 0.2);
+    else               geo = new THREE.IcosahedronGeometry(0.32 + Math.random() * 0.18);
+
+    const tex = makeFragmentTexture(cat.cat, cat.label);
+    const mat = new THREE.MeshStandardMaterial({
+      map: tex,
+      emissiveMap: tex,
+      emissive: new THREE.Color(0xFFE5A0),
+      emissiveIntensity: 0,
+      metalness: 0.4,
+      roughness: 0.6,
+      color: 0x404040,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(initX, initY, initZ);
+    mesh.userData = {
+      initX, initY, initZ,
+      finalX, finalY, finalZ,
+      finalDist: finalRadius,
+      rotAxis: new THREE.Vector3(Math.random(), Math.random(), Math.random()).normalize(),
+      rotSpeed: 0.3 + Math.random() * 0.6,
+      bobPhase: Math.random() * Math.PI * 2,
+      ignited: false,
+      ignitionTime: 0,
+      mat: mat,
+      category: cat,
+      index: i,
+    };
+    scene.add(mesh);
+    return mesh;
+  });
+
+  // ===========================================================
+  // CORE BEAM — column of light that becomes the wordmark
+  // ===========================================================
+  const beamGeo = new THREE.CylinderGeometry(0.04, 0.04, 8, 24);
+  const beamMat = new THREE.MeshBasicMaterial({
+    color: 0xFFE5A0,
+    transparent: true,
+    opacity: 0,
+    blending: THREE.AdditiveBlending,
+  });
+  const beam = new THREE.Mesh(beamGeo, beamMat);
+  beam.position.set(0, 0, 0);
+  scene.add(beam);
+
+  // Wordmark plane (revealed after beam)
+  function makeWordmarkTexture() {
+    const c = document.createElement('canvas');
+    c.width = 1024; c.height = 256;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = 'rgba(0,0,0,0)';
+    ctx.fillRect(0, 0, 1024, 256);
+    // Gold gradient text
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, '#FFE5A0');
+    grad.addColorStop(0.5, '#C9A04B');
+    grad.addColorStop(1, '#6E4F1A');
+    ctx.fillStyle = grad;
+    ctx.font = '900 200px Cairo, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = '#FFE5A0';
+    ctx.shadowBlur = 40;
+    ctx.fillText('مضمونة', 512, 128);
+    const tex = new THREE.CanvasTexture(c);
+    tex.anisotropy = 8;
+    return tex;
+  }
+  const wordmarkTex = makeWordmarkTexture();
+  const wordmarkGeo = new THREE.PlaneGeometry(8, 2);
+  const wordmarkMat = new THREE.MeshBasicMaterial({
+    map: wordmarkTex,
+    transparent: true,
+    opacity: 0,
+    side: THREE.DoubleSide,
+  });
+  const wordmark = new THREE.Mesh(wordmarkGeo, wordmarkMat);
+  wordmark.position.set(0, 0, 0);
+  scene.add(wordmark);
+
+  // ===========================================================
+  // TIMELINE
+  // ===========================================================
+  const DURATION = 38000;
+
+  function showOvl(id) { document.getElementById(id).classList.add('visible'); }
+  function hideOvl(id) { document.getElementById(id).classList.remove('visible'); }
+
+  const PHASES = [
+    // ===== PHASE 1: COLD OPEN (0-3s) =====
+    // Camera in deep space, slowly dollying forward. Studio attribution fades in.
+    { time: 0,     id: 'VOID',     do: () => {} },
+    { time: 600,   id: 'VOID',     do: () => { document.getElementById('netflix-attrib').classList.add('in'); } },
+    { time: 2800,  id: 'VOID',     do: () => { document.getElementById('netflix-attrib').classList.remove('in'); } },
+
+    // ===== PHASE 2: BIG TITLE CARDS (3-9s) =====
+    // Cinematic typography emerges through the stars/dust
+    { time: 3500,  id: 'WORLDS',   do: () => { hideOvl('ovl-cold'); showOvl('ovl-title-1'); document.getElementById('t1-1').classList.add('in'); } },
+    { time: 5500,  id: 'WORLDS',   do: () => { document.getElementById('t1-1').classList.remove('in'); } },
+    { time: 6000,  id: 'WORLDS',   do: () => { hideOvl('ovl-title-1'); showOvl('ovl-title-2'); document.getElementById('t2-1').classList.add('in'); } },
+    { time: 8000,  id: 'WORLDS',   do: () => { document.getElementById('t2-1').classList.remove('in'); } },
+    { time: 8500,  id: 'WORLDS',   do: () => { hideOvl('ovl-title-2'); showOvl('ovl-title-3'); document.getElementById('t3-1').classList.add('in'); } },
+    { time: 10500, id: 'WORLDS',   do: () => { document.getElementById('t3-1').classList.remove('in'); } },
+
+    // ===== PHASE 3: PREMISE (10-13s) =====
+    { time: 11000, id: 'PREMISE',  do: () => { hideOvl('ovl-title-3'); showOvl('ovl-premise'); document.getElementById('prem-en').classList.add('in'); document.getElementById('prem-ar').classList.add('in'); } },
+
+    // ===== PHASE 4: APPROACH (13-16s) =====
+    // Object becomes visible in distance
+    { time: 14000, id: 'APPROACH', do: () => { hideOvl('ovl-premise'); document.getElementById('bloom').classList.add('visible'); coreVisible = true; } },
+
+    // ===== PHASE 5: EXPLOSION (16-21s) =====
+    // The cluster shatters outward into orbit
+    { time: 16500, id: 'SHATTER',  do: () => { explode = true; document.getElementById('chroma').classList.add('fire'); setTimeout(() => document.getElementById('chroma').classList.remove('fire'), 800); if (soundOn) playWhoosh(); } },
+
+    // ===== PHASE 6: ORBIT (21-26s) =====
+    // Camera orbits showing each fragment, igniting them
+    { time: 19500, id: 'CATALOG',  do: () => { ignitionStart = true; } },
+
+    // ===== PHASE 7: CONVERGE (26-29s) =====
+    { time: 26000, id: 'CONVERGE', do: () => { converging = true; if (soundOn) playRisingTone(); } },
+
+    // ===== PHASE 8: BEAM (29-30.5s) =====
+    { time: 29000, id: 'SINGULAR', do: () => { singularity = true; document.getElementById('bloom').classList.add('intense'); document.getElementById('chroma').classList.add('fire'); setTimeout(() => document.getElementById('chroma').classList.remove('fire'), 1000); } },
+
+    // ===== PHASE 9: SLOGAN (30-34s) =====
+    { time: 30800, id: 'SLOGAN',   do: () => { showOvl('ovl-slogan'); document.getElementById('s-w1').classList.add('in'); if (soundOn) playTone(330, 0.5, 'sine'); } },
+    { time: 31500, id: 'SLOGAN',   do: () => { document.getElementById('s-w2').classList.add('in'); if (soundOn) playTone(440, 0.5, 'sine'); } },
+    { time: 32200, id: 'SLOGAN',   do: () => { document.getElementById('s-w3').classList.add('in'); if (soundOn) playTone(550, 0.6, 'sine'); } },
+    { time: 32900, id: 'SLOGAN',   do: () => { document.getElementById('s-period').classList.add('in'); if (soundOn) playTone(880, 0.4, 'triangle'); } },
+
+    // ===== PHASE 10: END CARD (34-38s) =====
+    { time: 34500, id: 'END CARD', do: () => { hideOvl('ovl-slogan'); showOvl('ovl-cta'); document.getElementById('cta').classList.add('in'); document.getElementById('bloom').classList.remove('intense'); } },
+    { time: 37500, id: 'END CARD', do: () => { document.getElementById('ctrls').classList.add('visible'); } },
+  ];
+
+  // State flags
+  let coreVisible = false;
+  let explode = false;
+  let ignitionStart = false;
+  let converging = false;
+  let singularity = false;
+
+  // ===========================================================
+  // SOUND DESIGN — Web Audio API
+  // Atmospheric pad + sub-bass drone + crystal accents
+  // ===========================================================
+  let audioCtx = null;
+  let soundOn = false;
+  let masterGain = null;
+  let droneVoices = [];
+  let noiseSource = null;
+
+  function initAudio() {
+    if (audioCtx) return;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = 0.18;
+      masterGain.connect(audioCtx.destination);
+    } catch(e) {}
+  }
+
+  function playTone(freq, duration = 0.3, type = 'sine') {
+    if (!soundOn || !audioCtx) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    o.connect(g);
+    g.connect(masterGain);
+    o.start();
+    o.stop(audioCtx.currentTime + duration);
+  }
+
+  function playCrystal(freq) {
+    if (!soundOn || !audioCtx) return;
+    // Crystalline ping: high frequency + chorus + short decay
+    [freq, freq * 1.5, freq * 2].forEach((f, i) => {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'sine';
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0, audioCtx.currentTime);
+      g.gain.linearRampToValueAtTime(0.12 / (i + 1), audioCtx.currentTime + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+      o.connect(g);
+      g.connect(masterGain);
+      o.start();
+      o.stop(audioCtx.currentTime + 0.6);
+    });
+  }
+
+  function playWhoosh() {
+    if (!soundOn || !audioCtx) return;
+    // White noise burst with descending filter
+    const bufferSize = audioCtx.sampleRate * 1.5;
+    const buf = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() - 0.5) * 2;
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(4000, audioCtx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 1.4);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.4);
+    src.connect(filter);
+    filter.connect(g);
+    g.connect(masterGain);
+    src.start();
+    src.stop(audioCtx.currentTime + 1.5);
+  }
+
+  function playRisingTone() {
+    if (!soundOn || !audioCtx) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(60, audioCtx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 3);
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(200, audioCtx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(3000, audioCtx.currentTime + 3);
+    g.gain.setValueAtTime(0, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 0.5);
+    g.gain.setValueAtTime(0.25, audioCtx.currentTime + 2.5);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 3);
+    o.connect(filter);
+    filter.connect(g);
+    g.connect(masterGain);
+    o.start();
+    o.stop(audioCtx.currentTime + 3);
+  }
+
+  function startCosmicDrone() {
+    if (!soundOn || !audioCtx || droneVoices.length > 0) return;
+    // Multi-oscillator drone for cosmic depth
+    const freqs = [40, 40.5, 60, 80.3];
+    freqs.forEach((f, i) => {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 500;
+      filter.Q.value = 1.2;
+      o.type = i % 2 === 0 ? 'sawtooth' : 'triangle';
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0, audioCtx.currentTime);
+      g.gain.linearRampToValueAtTime(0.06 / freqs.length, audioCtx.currentTime + 4);
+      o.connect(filter);
+      filter.connect(g);
+      g.connect(masterGain);
+      o.start();
+      droneVoices.push({ o, g });
+    });
+    // White noise atmospheric layer
+    const bufferSize = audioCtx.sampleRate * 2;
+    const buf = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() - 0.5) * 0.3;
+    noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = buf;
+    noiseSource.loop = true;
+    const noiseFilter = audioCtx.createBiquadFilter();
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.value = 800;
+    noiseFilter.Q.value = 0.8;
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(0, audioCtx.currentTime);
+    noiseGain.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 5);
+    noiseSource.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(masterGain);
+    noiseSource.start();
+    droneVoices.push({ noiseGain });
+  }
+
+  function stopDrone() {
+    droneVoices.forEach(v => {
+      if (v.o) try { v.o.stop(); } catch(e){}
+    });
+    if (noiseSource) try { noiseSource.stop(); } catch(e){}
+    droneVoices = [];
+    noiseSource = null;
+  }
+
+  document.getElementById('snd').addEventListener('click', function() {
+    initAudio();
+    soundOn = !soundOn;
+    this.classList.toggle('on', soundOn);
+    this.title = soundOn ? 'إيقاف الصوت' : 'تشغيل الصوت';
+    if (soundOn) startCosmicDrone();
+    else stopDrone();
+  });
+
+  // ===========================================================
+  // CATEGORY LABEL (projected from 3D position)
+  // ===========================================================
+  function showCategoryLabel(frag) {
+    const lbl = document.createElement('div');
+    lbl.className = 'cat-label';
+    lbl.innerHTML = `
+      <span class="cat-label-cat">${frag.userData.category.cat}</span>
+      <span class="cat-label-name">${frag.userData.category.label}</span>
+    `;
+    document.getElementById('cat-labels').appendChild(lbl);
+
+    const v = new THREE.Vector3();
+    frag.getWorldPosition(v);
+    v.project(camera);
+    const x = (v.x * 0.5 + 0.5) * W();
+    const yBase = (-v.y * 0.5 + 0.5) * H();
+    const y = yBase + (window.innerHeight * 0.12); // letterbox offset
+    lbl.style.left = x + 'px';
+    lbl.style.top  = y + 'px';
+
+    requestAnimationFrame(() => lbl.classList.add('visible'));
+    setTimeout(() => { lbl.classList.remove('visible'); setTimeout(() => lbl.remove(), 700); }, 1300);
+    if (soundOn) playCrystal(600 + frag.userData.index * 40);
+  }
+
+  // ===========================================================
+  // ANIMATION LOOP
+  // ===========================================================
+  let startTs = null;
+  let firedPhases = new Set();
+  let ignitionIdx = 0;
+  let lastIgnition = 0;
+
+  function reset() {
+    startTs = null;
+    firedPhases.clear();
+    coreVisible = false;
+    explode = false;
+    ignitionStart = false;
+    converging = false;
+    singularity = false;
+    ignitionIdx = 0;
+    lastIgnition = 0;
+
+    ['ovl-cold','ovl-title-1','ovl-title-2','ovl-title-3','ovl-premise','ovl-slogan','ovl-cta'].forEach(id => {
+      document.getElementById(id).classList.remove('visible');
+    });
+    document.getElementById('ovl-cold').classList.add('visible');
+
+    ['netflix-attrib','t1-1','t2-1','t3-1','prem-en','prem-ar','s-w1','s-w2','s-w3','s-period','cta'].forEach(id => {
+      document.getElementById(id).classList.remove('in');
+    });
+    document.getElementById('bloom').classList.remove('visible','intense');
+    document.getElementById('chroma').classList.remove('fire');
+    document.getElementById('ctrls').classList.remove('visible');
+    document.getElementById('cat-labels').innerHTML = '';
+
+    // Reset 3D
+    fragments.forEach(f => {
+      f.position.set(f.userData.initX, f.userData.initY, f.userData.initZ);
+      f.userData.ignited = false;
+      f.userData.ignitionTime = 0;
+      f.userData.mat.emissiveIntensity = 0;
+      f.scale.set(1, 1, 1);
+      f.visible = false;
+    });
+    beam.scale.set(1, 0.01, 1);
+    beamMat.opacity = 0;
+    wordmarkMat.opacity = 0;
+    wordmark.scale.set(0.01, 0.01, 0.01);
+    starMat.opacity = 0;
+    dustMat.opacity = 0;
+    corePoint.intensity = 0;
+  }
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+  function easeIn(t) { return t * t * t; }
+  function easeInOut(t) { return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2)/2; }
+
+  function tick(ts) {
+    if (!startTs) startTs = ts;
+    const elapsed = ts - startTs;
+    const dt = 1/60;
+
+    // HUD
+    document.getElementById('hud-cur').textContent = '00:' + String(Math.floor(elapsed/1000)).padStart(2,'0');
+    document.getElementById('hud-fill').style.width = Math.min(100, (elapsed/DURATION)*100) + '%';
+
+    // Phases
+    PHASES.forEach((p,i) => {
+      if (elapsed >= p.time && !firedPhases.has(i)) {
+        firedPhases.add(i);
+        p.do();
+        document.getElementById('hud-phase').textContent = p.id;
+      }
+    });
+
+    // ===== CAMERA ANIMATION =====
+    // Forward dolly through space, then approach, orbit, pull back, settle.
+    if (elapsed < 2000) {
+      // Phase 1: Cold open — slow forward dolly from very far
+      const t = elapsed / 2000;
+      camera.position.z = lerp(40, 32, easeOut(t));
+      camera.position.y = 0.5;
+      camera.lookAt(0, 0, 0);
+    } else if (elapsed < 11000) {
+      // Phases 2-3: Continuous forward dolly through stars + titles
+      const t = (elapsed - 2000) / 9000;
+      camera.position.z = lerp(32, 18, easeInOut(t));
+      camera.position.y = lerp(0.5, 0, easeOut(t));
+      camera.position.x = Math.sin(elapsed/2000) * 0.3;
+      camera.lookAt(0, 0, 0);
+    } else if (elapsed < 16500) {
+      // Phase 4: Approach the cluster
+      const t = (elapsed - 11000) / 5500;
+      camera.position.z = lerp(18, 12, easeInOut(t));
+      camera.position.y = lerp(0, 1, easeOut(t));
+      camera.position.x = Math.sin(elapsed/2500) * 0.5;
+      camera.lookAt(0, 0, 0);
+    } else if (elapsed < 19500) {
+      // Phase 5: Shatter — camera shake + pull back slightly
+      const t = (elapsed - 16500) / 3000;
+      const shake = (1 - t) * 0.15;
+      camera.position.x = Math.sin(elapsed*0.04) * shake;
+      camera.position.y = lerp(1, 1.5, easeOut(t)) + Math.cos(elapsed*0.04) * shake;
+      camera.position.z = lerp(12, 14, easeOut(t));
+      camera.lookAt(0, 0, 0);
+    } else if (elapsed < 26000) {
+      // Phase 6: Orbit around the exploded fragments
+      const t = (elapsed - 19500) / 6500;
+      const angle = lerp(0, Math.PI * 1.8, t);
+      const r = lerp(14, 11, easeInOut(t));
+      camera.position.x = Math.sin(angle) * r;
+      camera.position.z = Math.cos(angle) * r;
+      camera.position.y = 1.5 + Math.sin(angle * 1.5) * 0.6;
+      camera.lookAt(0, 0, 0);
+    } else if (elapsed < 30000) {
+      // Phase 7-8: Pull back for convergence + flash
+      const t = (elapsed - 26000) / 4000;
+      const angle = Math.PI * 1.8 + t * 0.4;
+      const r = lerp(11, 16, easeInOut(t));
+      camera.position.x = Math.sin(angle) * r;
+      camera.position.z = Math.cos(angle) * r;
+      camera.position.y = lerp(1.5, 2, easeOut(t));
+      camera.lookAt(0, 0, 0);
+    } else if (elapsed < 34500) {
+      // Phase 9: Static for slogan
+      camera.position.x = 0;
+      camera.position.y = 2;
+      camera.position.z = 16;
+      camera.lookAt(0, 0, 0);
+    } else {
+      // Phase 10: CTA — gentle drift
+      const t = (elapsed - 34500) / 3500;
+      camera.position.x = Math.sin(t * 0.6) * 0.4;
+      camera.position.y = lerp(2, 1.5, t);
+      camera.position.z = lerp(16, 14, t);
+      camera.lookAt(0, 0, 0);
+    }
+
+    // ===== STARFIELD =====
+    if (elapsed > 200) {
+      starMat.opacity = Math.min(0.85, starMat.opacity + dt * 0.4);
+    }
+    stars.rotation.y += dt * 0.005;
+    stars.rotation.x += dt * 0.002;
+
+    // ===== COSMIC DUST (streams past camera) =====
+    if (elapsed > 1500) {
+      dustMat.opacity = Math.min(0.7, dustMat.opacity + dt * 0.25);
+    }
+    if (dustMat.opacity > 0) {
+      const pos = dustGeo.attributes.position.array;
+      // Speed varies by phase — faster during titles for dramatic streak effect
+      let speed = 0.08;
+      if (elapsed > 3500 && elapsed < 11000) speed = 0.25; // title cards: fast streaks
+      else if (elapsed > 11000 && elapsed < 16500) speed = 0.15; // approach: medium
+      else if (elapsed > 16500) speed = 0.04; // after shatter: slow
+
+      for (let i = 0; i < dustCount; i++) {
+        pos[i*3+2] += speed * dt * 60;
+        if (pos[i*3+2] > 25) {
+          pos[i*3]   = (Math.random() - 0.5) * 60;
+          pos[i*3+1] = (Math.random() - 0.5) * 40;
+          pos[i*3+2] = -80 + Math.random() * 10;
+        }
+      }
+      dustGeo.attributes.position.needsUpdate = true;
+    }
+
+    // ===== FRAGMENTS =====
+    if (coreVisible) {
+      fragments.forEach((f, i) => {
+        if (!f.visible) f.visible = true;
+
+        // Rotation around random axis
+        f.rotateOnAxis(f.userData.rotAxis, dt * f.userData.rotSpeed);
+
+        if (explode) {
+          // Animate from initial tight pack to orbit position
+          const explodeT = clamp((elapsed - 16500) / 3000, 0, 1);
+          const e = easeOut(explodeT);
+          f.position.x = lerp(f.userData.initX, f.userData.finalX, e);
+          f.position.y = lerp(f.userData.initY, f.userData.finalY, e);
+          f.position.z = lerp(f.userData.initZ, f.userData.finalZ, e);
+        }
+
+        // Continuous orbit drift after explosion
+        if (explode && !converging) {
+          const phase = elapsed/1000 * 0.15 + f.userData.bobPhase;
+          // Slight orbital drift around final position
+          const driftAngle = elapsed/1000 * 0.1;
+          const driftR = 0.3;
+          f.position.x += Math.sin(phase) * 0.003;
+          f.position.y += Math.cos(phase * 1.3) * 0.003;
+        }
+
+        // Ignition: when camera passes near a fragment
+        if (ignitionStart && !converging && !f.userData.ignited) {
+          const d = camera.position.distanceTo(f.position);
+          if (d < 6 && elapsed - lastIgnition > 280) {
+            f.userData.ignited = true;
+            f.userData.ignitionTime = elapsed;
+            lastIgnition = elapsed;
+            f.userData.mat.emissiveIntensity = 1.2;
+            showCategoryLabel(f);
+          }
+        }
+
+        // Maintain emission for ignited fragments (with slight pulse)
+        if (f.userData.ignited && !converging) {
+          f.userData.mat.emissiveIntensity = 0.9 + Math.sin(elapsed/300 + i) * 0.2;
+        }
+
+        // Convergence — spiral into center
+        if (converging && !singularity) {
+          const cT = clamp((elapsed - 26000) / 3000, 0, 1);
+          const e = easeIn(cT);
+          // Spiral
+          const baseAngle = Math.atan2(f.userData.finalZ, f.userData.finalX);
+          const angle = baseAngle + cT * 5;
+          const r = lerp(f.userData.finalDist, 0, e);
+          f.position.x = Math.cos(angle) * r;
+          f.position.z = Math.sin(angle) * r;
+          f.position.y = lerp(f.userData.finalY, 0, e);
+          const scl = lerp(1, 0.05, e);
+          f.scale.setScalar(scl);
+          f.userData.mat.emissiveIntensity = lerp(0.9, 2.5, e);
+        }
+
+        // Singularity — fragments collapse fully
+        if (singularity) {
+          const sT = clamp((elapsed - 29000) / 1000, 0, 1);
+          f.scale.setScalar(lerp(0.05, 0.001, sT));
+          f.userData.mat.emissiveIntensity = lerp(2.5, 0, sT);
+        }
+      });
+    }
+
+    // ===== CORE POINT LIGHT =====
+    if (coreVisible) {
+      if (!explode) {
+        corePoint.intensity = lerp(corePoint.intensity, 1.5, 0.04);
+      } else if (singularity) {
+        const sT = clamp((elapsed - 29000) / 1000, 0, 1);
+        corePoint.intensity = lerp(2, 10, sT);
+        if (elapsed > 29800) {
+          corePoint.intensity = lerp(10, 1, clamp((elapsed - 29800) / 1500, 0, 1));
+        }
+      } else if (converging) {
+        const cT = clamp((elapsed - 26000) / 3000, 0, 1);
+        corePoint.intensity = lerp(1.5, 4, cT);
+      }
+    }
+
+    // ===== BEAM =====
+    if (singularity) {
+      const bT = clamp((elapsed - 29200) / 800, 0, 1);
+      beamMat.opacity = lerp(0, 0.9, bT);
+      beam.scale.y = lerp(0.01, 1, easeOut(bT));
+      // Beam fades out as wordmark appears
+      if (elapsed > 30500) {
+        const fadeOutT = clamp((elapsed - 30500) / 800, 0, 1);
+        beamMat.opacity = lerp(0.9, 0, fadeOutT);
+      }
+    }
+
+    // ===== WORDMARK =====
+    if (elapsed > 30200 && elapsed < 34500) {
+      const wT = clamp((elapsed - 30200) / 1500, 0, 1);
+      wordmarkMat.opacity = lerp(0, 0.6, wT);
+      wordmark.scale.setScalar(lerp(0.01, 1, easeOut(wT)));
+      wordmark.rotation.y += dt * 0.1;
+      // Fade out before CTA
+      if (elapsed > 33500) {
+        const fT = clamp((elapsed - 33500) / 1000, 0, 1);
+        wordmarkMat.opacity = lerp(0.6, 0, fT);
+      }
+    }
+
+    renderer.render(scene, camera);
+
+    if (elapsed < DURATION + 1000) {
+      requestAnimationFrame(tick);
+    }
+  }
+
+  function play() {
+    reset();
+    if (soundOn) startCosmicDrone();
+    requestAnimationFrame(tick);
+  }
+
+  document.getElementById('replay').addEventListener('click', () => {
+    stopDrone();
+    play();
+  });
+
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('gone');
+    setTimeout(() => document.getElementById('loader').remove(), 1000);
+    play();
+  }, 800);
+
+  } // end initCosmos
+  </script>
+</body>
+</html>

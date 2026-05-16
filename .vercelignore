@@ -1,0 +1,89 @@
+# Files NOT uploaded to Vercel on deploy.
+# Patterns WITHOUT leading slash match any folder level.
+# Patterns WITH leading slash match ROOT only.
+
+# Dependencies (Vercel reinstalls)
+node_modules
+.pnp
+.pnp.js
+
+# Build artifacts (Vercel rebuilds)
+.next
+out
+build
+
+# Local env (use Vercel dashboard env vars for production)
+.env
+.env.local
+.env*.local
+BUFFER_ENV_VARS.env
+
+# Logs
+*.log
+push-log.txt
+
+# Local helper scripts EXCEPT setup/deploy
+*.bat
+*.sh
+*.ps1
+!SETUP.bat
+!DEPLOY.bat
+
+# Old docs (root-only)
+/COMPLETE_DEPLOYMENT_FIX.md
+/DEPLOYMENT_CHECKLIST.md
+/DEPLOY_GUIDE.md
+/CREATE_REPO_STEPS.md
+/DIAGNOSE_DOMAIN.md
+/FIX_DOMAIN.md
+/FIX_GITHUB.md
+/FIX_PREVIEW_DEPLOYMENT.md
+/GITHUB_GUIDE.md
+/LAUNCH_STRATEGY.md
+/PROJECT_COMPLETE.md
+/README_FIRST.md
+/SETUP_GUIDE.md
+/VERCEL_BUFFER_ENV_VARS.md
+
+# Archives (anywhere)
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# Orphan files (ROOT ONLY — important! `route.ts` without slash would block API routes)
+/Build
+/next
+/94
+/id_verification_status
+/madmona-app@1.0.0
+/_staged_content_studio_page.tsx
+/route.ts
+/next.config.js.bak
+
+# Old standalone HTML drafts at root only
+/admin-suppliers.html
+/madmona-os.html
+
+# Old supabase SQL at root only
+/supabase_create_*.sql
+/supabase_iteration*.sql
+/supabase_more_categories.sql
+/supabase_schema.sql
+/supabase_update_pricing.sql
+
+# Old top-level dirs (ROOT only)
+/LAUNCH_KIT
+/LINKS
+/WHATSAPP
+/marketing
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo

@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>مضمونة — Genesis · 3D Hero Film</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;400;500;700;800;900&family=Tajawal:wght@200;500;700;900&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold:        #C9A04B;
+      --gold-bright: #E5C580;
+      --gold-deep:   #6E4F1A;
+      --ivory:       #F4EFE3;
+      --ivory-dim:   rgba(244,239,227,0.55);
+      --green:       #1F6F5F;
+      --black:       #000000;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *::selection { background: var(--gold); color: var(--black); }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--black);
+      font-family: 'Cairo', system-ui, sans-serif;
+      color: var(--ivory);
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ====================================================
+       CINEMATIC FRAME
+       ==================================================== */
+    .cinema {
+      position: fixed; inset: 0;
+      background: var(--black);
+    }
+
+    .letterbox {
+      position: absolute; left: 0; right: 0;
+      height: 11vh;
+      background: var(--black);
+      z-index: 80;
+      pointer-events: none;
+    }
+    .letterbox.top    { top: 0; }
+    .letterbox.bottom { bottom: 0; }
+
+    /* WebGL canvas fills the stage */
+    #webgl {
+      position: absolute;
+      top: 11vh; bottom: 11vh;
+      left: 0; right: 0;
+      width: 100%;
+      height: calc(100vh - 22vh);
+      z-index: 1;
+      display: block;
+    }
+
+    /* Film grain over WebGL */
+    .grain {
+      position: absolute;
+      top: 11vh; bottom: 11vh;
+      left: 0; right: 0;
+      z-index: 20;
+      pointer-events: none;
+      opacity: 0.06;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+      background-size: 200px 200px;
+      animation: grain-shift 0.35s steps(6) infinite;
+    }
+    @keyframes grain-shift {
+      0% { transform: translate(0, 0); }
+      16% { transform: translate(-2px, 1px); }
+      33% { transform: translate(1px, -2px); }
+      50% { transform: translate(2px, 2px); }
+      66% { transform: translate(-1px, -1px); }
+      83% { transform: translate(2px, -2px); }
+      100% { transform: translate(-2px, 1px); }
+    }
+
+    /* Vignette */
+    .vignette {
+      position: absolute;
+      top: 11vh; bottom: 11vh;
+      left: 0; right: 0;
+      z-index: 18;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.4) 75%, rgba(0,0,0,0.85) 100%);
+    }
+
+    /* Bloom haze (CSS replacement for postprocessing bloom) */
+    .bloom-haze {
+      position: absolute;
+      top: 11vh; bottom: 11vh;
+      left: 0; right: 0;
+      z-index: 5;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 50%, rgba(201,160,75,0.15) 0%, rgba(201,160,75,0.04) 30%, transparent 60%);
+      opacity: 0;
+      transition: opacity 2s ease;
+    }
+    .bloom-haze.visible { opacity: 1; }
+
+    /* ====================================================
+       HTML OVERLAYS (over WebGL)
+       ==================================================== */
+    .overlay {
+      position: absolute;
+      top: 11vh; bottom: 11vh;
+      left: 0; right: 0;
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .overlay.visible { opacity: 1; }
+
+    /* PHASE 1: Cold open */
+    .ovl-pre {
+      gap: 20px;
+    }
+    .pre-line {
+      width: 0;
+      height: 0.5px;
+      background: var(--gold);
+      transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .pre-line.in { width: 80px; }
+    .pre-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(14px, 1.5vw, 18px);
+      letter-spacing: 6px;
+      color: var(--gold);
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 1.4s ease 0.4s;
+    }
+    .pre-text.in { opacity: 1; }
+
+    /* PHASE 2: Title cards */
+    .title-en {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(26px, 4.2vw, 52px);
+      color: var(--ivory);
+      letter-spacing: 1px;
+      max-width: 80vw;
+      text-align: center;
+      line-height: 1.3;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 1.4s ease, transform 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .title-en.in { opacity: 1; transform: translateY(0); }
+    .title-en em { font-style: normal; color: var(--gold); font-weight: 400; }
+    .title-ar {
+      font-family: 'Tajawal', sans-serif;
+      font-weight: 300;
+      font-size: clamp(22px, 3.5vw, 40px);
+      color: var(--ivory-dim);
+      margin-top: 14px;
+      opacity: 0;
+      transition: opacity 1.4s ease 0.5s;
+    }
+    .title-ar.in { opacity: 1; }
+
+    /* PHASE 4: Category labels (appear over each cube as camera passes) */
+    .cat-labels {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 22;
+    }
+    .cat-label {
+      position: absolute;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 0.5px solid var(--gold);
+      padding: 10px 16px;
+      border-radius: 2px;
+      opacity: 0;
+      transform: translate(-50%, -50%) translateY(8px);
+      transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .cat-label.visible { opacity: 1; transform: translate(-50%, -50%) translateY(0); }
+    .cat-label-cat {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .cat-label-name {
+      font-family: 'Cairo', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--ivory);
+      display: block;
+    }
+    .cat-label-price {
+      font-family: 'Cairo', sans-serif;
+      font-size: 10px;
+      color: var(--gold-bright);
+      margin-top: 4px;
+      display: block;
+    }
+
+    /* PHASE 6: Slogan */
+    .slogan-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .slogan-word {
+      display: inline-block;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      font-size: clamp(56px, 11vw, 130px);
+      letter-spacing: -3px;
+      line-height: 1;
+      color: var(--ivory);
+      opacity: 0;
+      transform: translateY(60px) scale(0.92);
+      transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+      text-shadow: 0 0 40px rgba(201,160,75,0.4);
+    }
+    .slogan-word.gold {
+      background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold) 45%, var(--gold-deep) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 30px rgba(201,160,75,0.6));
+    }
+    .slogan-word.in { opacity: 1; transform: translateY(0) scale(1); }
+    .slogan-period {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--gold);
+      margin-right: 10px;
+      vertical-align: 12px;
+      opacity: 0;
+      transform: scale(0);
+      box-shadow: 0 0 20px var(--gold);
+      transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .slogan-period.in { opacity: 1; transform: scale(1); }
+
+    /* PHASE 7: Final CTA */
+    .cta-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1.2s ease, transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .cta-card.in { opacity: 1; transform: translateY(0); }
+    .cta-logo {
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      font-size: clamp(46px, 7vw, 88px);
+      letter-spacing: -2px;
+      color: var(--ivory);
+      line-height: 1;
+      text-shadow: 0 0 30px rgba(201,160,75,0.3);
+    }
+    .cta-rule {
+      width: 100px; height: 0.5px;
+      background: var(--gold);
+      margin: 10px 0 4px;
+    }
+    .cta-url {
+      font-family: 'Cairo', sans-serif;
+      font-size: clamp(14px, 1.8vw, 21px);
+      color: var(--gold-bright);
+      letter-spacing: 3px;
+      font-weight: 500;
+    }
+    .cta-pillars {
+      display: flex;
+      gap: clamp(16px, 2.5vw, 40px);
+      margin-top: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 92%;
+    }
+    .cta-pillars span {
+      font-family: 'Cairo', sans-serif;
+      font-size: clamp(12px, 1.3vw, 15px);
+      color: var(--ivory-dim);
+      font-weight: 400;
+      letter-spacing: 0.5px;
+    }
+    .cta-pillars span::before {
+      content: '·';
+      color: var(--gold);
+      margin-left: 10px;
+      font-weight: 900;
+    }
+    .cta-pillars span:first-child::before { content: ''; }
+
+    /* ====================================================
+       UI CHROME
+       ==================================================== */
+    .meta {
+      position: fixed;
+      top: calc(11vh + 16px);
+      left: 24px;
+      z-index: 100;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--ivory-dim);
+      text-transform: uppercase;
+    }
+    .meta strong {
+      color: var(--gold);
+      font-weight: 500;
+      font-style: normal;
+    }
+    .meta-sep { display: inline-block; margin: 0 8px; color: var(--gold); }
+
+    .hud {
+      position: fixed;
+      top: calc(11vh + 16px);
+      right: 24px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .hud-phase {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    .hud-time {
+      font-family: 'Cairo', sans-serif;
+      font-size: 12px;
+      color: var(--ivory-dim);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.5px;
+    }
+    .hud-progress {
+      width: 180px;
+      height: 1px;
+      background: rgba(244,239,227,0.15);
+      overflow: hidden;
+    }
+    .hud-progress-fill {
+      height: 100%; width: 0%;
+      background: var(--gold);
+      transition: width 0.1s linear;
+    }
+
+    .controls {
+      position: fixed;
+      bottom: calc(11vh + 18px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    .controls.visible { opacity: 1; }
+    .ctl-btn {
+      background: rgba(244,239,227,0.08);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 0.5px solid rgba(201,160,75,0.5);
+      color: var(--ivory);
+      padding: 11px 22px;
+      border-radius: 2px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .ctl-btn:hover { background: rgba(201,160,75,0.15); border-color: var(--gold); transform: translateY(-1px); }
+    .ctl-btn.primary { background: var(--gold); color: var(--black); border-color: var(--gold); font-weight: 700; }
+    .ctl-btn.primary:hover { background: var(--gold-bright); }
+
+    .sound-tog {
+      position: fixed;
+      bottom: calc(11vh + 18px);
+      right: 24px;
+      z-index: 100;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(244,239,227,0.08);
+      border: 0.5px solid rgba(201,160,75,0.4);
+      color: var(--ivory-dim);
+      backdrop-filter: blur(12px);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+      font-size: 14px;
+    }
+    .sound-tog:hover { color: var(--gold); border-color: var(--gold); }
+    .sound-tog.on { color: var(--gold-bright); border-color: var(--gold); }
+
+    /* Loader */
+    .loader {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 24px;
+      transition: opacity 1s ease;
+    }
+    .loader.gone { opacity: 0; pointer-events: none; }
+    .loader-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 13px;
+      letter-spacing: 6px;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    .loader-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--gold);
+      animation: loader-pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes loader-pulse {
+      0%, 100% { opacity: 0.2; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.4); }
+    }
+
+    /* WebGL fallback */
+    .nogl {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: var(--black);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+    .nogl.show { display: flex; }
+    .nogl h2 {
+      font-family: 'Cairo', sans-serif;
+      font-size: 22px;
+      color: var(--gold);
+    }
+    .nogl p {
+      font-family: 'Tajawal', sans-serif;
+      color: var(--ivory-dim);
+      font-size: 14px;
+      max-width: 400px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 700px) {
+      .meta { left: 12px; font-size: 9px; letter-spacing: 2px; }
+      .hud { right: 12px; }
+      .hud-progress { width: 110px; }
+      .letterbox { height: 9vh; }
+      #webgl, .grain, .vignette, .bloom-haze, .overlay {
+        top: 9vh; bottom: 9vh; height: calc(100vh - 18vh);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cinema">
+    <div class="letterbox top"></div>
+
+    <canvas id="webgl"></canvas>
+
+    <div class="bloom-haze" id="bloom"></div>
+    <div class="vignette"></div>
+    <div class="grain"></div>
+
+    <div class="cat-labels" id="cat-labels"></div>
+
+    <!-- PHASE 1: Cold open -->
+    <div class="overlay ovl-pre visible" id="ovl-pre">
+      <div class="pre-line" id="pre-line"></div>
+      <div class="pre-text" id="pre-text">A Madmona Genesis</div>
+    </div>
+
+    <!-- PHASE 2: Title cards -->
+    <div class="overlay" id="ovl-title">
+      <div class="title-en" id="title-en">In a world where <em>everything</em> can be rented</div>
+      <div class="title-ar" id="title-ar">في عالم بيتأجر فيه كل حاجة</div>
+    </div>
+
+    <!-- PHASE 6: Slogan -->
+    <div class="overlay" id="ovl-slogan">
+      <div class="slogan-block">
+        <div><span class="slogan-word" id="s-w1">احنا</span></div>
+        <div>
+          <span class="slogan-word" id="s-w2">بتوع</span>
+          <span class="slogan-word gold" id="s-w3">الإيجار</span>
+          <span class="slogan-period" id="s-period"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 7: CTA -->
+    <div class="overlay" id="ovl-cta">
+      <div class="cta-card" id="cta">
+        <div class="cta-logo">مضمونة</div>
+        <div class="cta-rule"></div>
+        <div class="cta-url">madmonacairo.com</div>
+        <div class="cta-pillars">
+          <span>حماية كاملة</span>
+          <span>دفع سريع</span>
+          <span>دعم ٢٤/٧</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="letterbox bottom"></div>
+  </div>
+
+  <div class="meta">
+    <strong>HERO FILM</strong>
+    <span class="meta-sep">/</span>
+    Genesis · 3D
+    <span class="meta-sep">/</span>
+    38s · v3
+  </div>
+
+  <div class="hud">
+    <div class="hud-phase" id="hud-phase">VOID</div>
+    <div class="hud-time"><span id="hud-cur">00:00</span> / 00:38</div>
+    <div class="hud-progress"><div class="hud-progress-fill" id="hud-fill"></div></div>
+  </div>
+
+  <button class="sound-tog" id="snd" title="تشغيل الصوت">♪</button>
+
+  <div class="controls" id="ctrls">
+    <button class="ctl-btn primary" id="replay">شغل تاني <span style="font-size:11px;margin-right:4px;opacity:0.8;">▶</span></button>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader" id="loader">
+    <div class="loader-dot"></div>
+    <div class="loader-text">Initializing Genesis</div>
+  </div>
+
+  <!-- WebGL Fallback -->
+  <div class="nogl" id="nogl">
+    <h2>⚠ المتصفح ده مش بيدعم 3D</h2>
+    <p>الإعلان ده محتاج WebGL — افتحه في Chrome أو Edge أو Safari حديث على كمبيوتر أو موبايل.</p>
+  </div>
+
+  <!-- Three.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.150.0/three.min.js"></script>
+
+  <script>
+  // ===========================================================
+  // GENESIS — Madmona 3D Hero Film
+  // ===========================================================
+
+  // WebGL check
+  function hasWebGL() {
+    try {
+      const canvas = document.createElement('canvas');
+      return !!(window.WebGLRenderingContext &&
+        (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+    } catch(e) { return false; }
+  }
+
+  if (!hasWebGL() || typeof THREE === 'undefined') {
+    document.getElementById('nogl').classList.add('show');
+    document.getElementById('loader').classList.add('gone');
+  } else {
+    initGenesis();
+  }
+
+  function initGenesis() {
+
+  // ===========================================================
+  // CATEGORIES — 20 things that get rented in Egypt
+  // ===========================================================
+  const CATEGORIES = [
+    { cat: 'TOURISM',     label: 'شاليه ساحل',        price: '٢,٥٠٠ ج · ليلة',  glyph: '✦' },
+    { cat: 'VEHICLES',    label: 'BMW ٢٠٢٣',          price: '١,٨٠٠ ج · يوم',   glyph: '◈' },
+    { cat: 'MEDIA',       label: 'كاميرا Sony FX3',   price: '٩٠٠ ج · يوم',     glyph: '◎' },
+    { cat: 'WEDDINGS',    label: 'كوشة فرح',          price: 'حسب الباكدج',     glyph: '✿' },
+    { cat: 'EVENTS',      label: 'DJ + معدات صوت',    price: '٣,٥٠٠ ج · فرح',   glyph: '◉' },
+    { cat: 'MEDICAL',     label: 'استشارة طبية',      price: '٤٠٠ ج · كشف',     glyph: '✛' },
+    { cat: 'INDUSTRIAL',  label: 'مخزن ٥٠٠م²',         price: '١٢,٠٠٠ ج · شهر', glyph: '▣' },
+    { cat: 'MARINE',      label: 'يخت مارينا',         price: '٨,٠٠٠ ج · يوم',  glyph: '⌘' },
+    { cat: 'BEAUTY',      label: 'ميك أب عروسة',      price: '٢,٠٠٠ ج · فرح',   glyph: '❋' },
+    { cat: 'CLINICS',     label: 'عيادة مجهزة',        price: '٥,٠٠٠ ج · شهر',  glyph: '✚' },
+    { cat: 'EQUIPMENT',   label: 'كرين ٢٥ طن',         price: '٣,٠٠٠ ج · يوم',  glyph: '⌬' },
+    { cat: 'FASHION',     label: 'فستان سهرة',         price: '٥٠٠ ج · ليلة',   glyph: '◇' },
+    { cat: 'CATERING',    label: 'كاترينج فعاليات',    price: '١٥٠ ج · شخص',    glyph: '◐' },
+    { cat: 'TECH',        label: 'MacBook Pro',         price: '٢٠٠ ج · يوم',    glyph: '◊' },
+    { cat: 'PETS',        label: 'دادة كلاب',          price: '١٥٠ ج · ساعة',   glyph: '✜' },
+    { cat: 'PRINTING',    label: 'طباعة بنر',          price: '٥٠ ج · متر',     glyph: '▤' },
+    { cat: 'LUXURY',      label: 'Rolex Submariner',   price: '١,٢٠٠ ج · يوم',  glyph: '◯' },
+    { cat: 'EDUCATION',   label: 'كورس IELTS',         price: '٤,٠٠٠ ج · باكدج', glyph: '✦' },
+    { cat: 'MARINE',      label: 'لانش ٣٠ قدم',        price: '٢,٥٠٠ ج · يوم',  glyph: '⌒' },
+    { cat: 'SERVICES',    label: 'ميكانيكي متنقل',     price: '٢٠٠ ج · زيارة',  glyph: '◈' },
+  ];
+
+  // ===========================================================
+  // SCENE SETUP
+  // ===========================================================
+  const canvas = document.getElementById('webgl');
+  const W = () => canvas.clientWidth;
+  const H = () => canvas.clientHeight;
+
+  const renderer = new THREE.WebGLRenderer({
+    canvas: canvas,
+    antialias: true,
+    alpha: true,
+    powerPreference: 'high-performance'
+  });
+  renderer.setSize(W(), H());
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.4;
+  renderer.outputEncoding = THREE.sRGBEncoding || 3001;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x000000);
+  scene.fog = new THREE.FogExp2(0x000000, 0.04);
+
+  const camera = new THREE.PerspectiveCamera(40, W()/H(), 0.1, 200);
+  camera.position.set(0, 1.5, 9);
+  camera.lookAt(0, 0, 0);
+
+  window.addEventListener('resize', () => {
+    renderer.setSize(W(), H());
+    camera.aspect = W()/H();
+    camera.updateProjectionMatrix();
+  });
+
+  // ===========================================================
+  // LIGHTING — 3-point cinematic + accent
+  // ===========================================================
+  const ambient = new THREE.AmbientLight(0x1a1a2a, 0.15);
+  scene.add(ambient);
+
+  const keyLight = new THREE.DirectionalLight(0xfff0d0, 0.5);
+  keyLight.position.set(6, 12, 4);
+  scene.add(keyLight);
+
+  const fillLight = new THREE.DirectionalLight(0x4d6b73, 0.25);
+  fillLight.position.set(-5, 3, -2);
+  scene.add(fillLight);
+
+  // Gold point lights at core
+  const goldKey = new THREE.PointLight(0xC9A04B, 3, 8, 2);
+  goldKey.position.set(0, 0, 0);
+  scene.add(goldKey);
+
+  const goldRim = new THREE.PointLight(0xE5C580, 1.5, 12, 2);
+  goldRim.position.set(0, 4, 2);
+  scene.add(goldRim);
+
+  // ===========================================================
+  // FLOOR — dark reflective plane
+  // ===========================================================
+  const floorGeo = new THREE.PlaneGeometry(60, 60);
+  const floorMat = new THREE.MeshStandardMaterial({
+    color: 0x080808,
+    metalness: 0.9,
+    roughness: 0.4,
+  });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -1.5;
+  scene.add(floor);
+
+  // Glowing ring on floor
+  const ringGeo = new THREE.RingGeometry(3.6, 3.8, 80);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0xC9A04B,
+    transparent: true,
+    opacity: 0,
+    side: THREE.DoubleSide
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = -1.49;
+  scene.add(ring);
+
+  // ===========================================================
+  // CANVAS TEXTURE FACTORY
+  // ===========================================================
+  function makeTextTexture(text, opts = {}) {
+    const o = Object.assign({
+      width: 512, height: 512,
+      bg: '#0a0a0a',
+      borderColor: '#C9A04B',
+      borderWidth: 4,
+      textColor: '#F4EFE3',
+      categoryColor: '#C9A04B',
+      glyphColor: '#C9A04B',
+      category: '',
+      glyph: '',
+      priceColor: '#E5C580',
+      price: '',
+    }, opts);
+
+    const c = document.createElement('canvas');
+    c.width = o.width; c.height = o.height;
+    const ctx = c.getContext('2d');
+
+    // Background
+    const grad = ctx.createLinearGradient(0, 0, o.width, o.height);
+    grad.addColorStop(0, '#0d0d0d');
+    grad.addColorStop(1, '#000000');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, o.width, o.height);
+
+    // Gold border
+    ctx.strokeStyle = o.borderColor;
+    ctx.lineWidth = o.borderWidth;
+    ctx.strokeRect(o.borderWidth/2, o.borderWidth/2, o.width - o.borderWidth, o.height - o.borderWidth);
+
+    // Corner ornaments
+    ctx.strokeStyle = '#6E4F1A';
+    ctx.lineWidth = 2;
+    const cs = 30;
+    [[24,24,1,1],[o.width-24,24,-1,1],[24,o.height-24,1,-1],[o.width-24,o.height-24,-1,-1]].forEach(([x,y,sx,sy]) => {
+      ctx.beginPath();
+      ctx.moveTo(x, y+cs*sy);
+      ctx.lineTo(x, y);
+      ctx.lineTo(x+cs*sx, y);
+      ctx.stroke();
+    });
+
+    // Glyph (top center)
+    if (o.glyph) {
+      ctx.fillStyle = o.glyphColor;
+      ctx.font = 'bold 90px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(o.glyph, o.width/2, o.height/2 - 110);
+    }
+
+    // Rule above category
+    ctx.strokeStyle = o.glyphColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(o.width/2 - 30, o.height/2 - 50);
+    ctx.lineTo(o.width/2 + 30, o.height/2 - 50);
+    ctx.stroke();
+
+    // Category (italic small)
+    if (o.category) {
+      ctx.fillStyle = o.categoryColor;
+      ctx.font = 'italic 24px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(o.category, o.width/2, o.height/2 - 20);
+    }
+
+    // Main label (Arabic, bold)
+    ctx.fillStyle = o.textColor;
+    ctx.font = '700 42px Cairo, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(text, o.width/2, o.height/2 + 40);
+
+    // Price
+    if (o.price) {
+      ctx.fillStyle = o.priceColor;
+      ctx.font = '500 20px Cairo, sans-serif';
+      ctx.fillText(o.price, o.width/2, o.height/2 + 90);
+    }
+
+    // Bottom mark
+    ctx.fillStyle = o.glyphColor;
+    ctx.font = '500 14px serif';
+    ctx.letterSpacing = '4px';
+    ctx.fillText('MADMONA', o.width/2, o.height - 50);
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.anisotropy = 4;
+    return tex;
+  }
+
+  // Madmona core texture
+  function makeCoreTexture() {
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 512;
+    const ctx = c.getContext('2d');
+
+    // Dark green gradient bg
+    const grad = ctx.createRadialGradient(256, 256, 0, 256, 256, 360);
+    grad.addColorStop(0, '#1F6F5F');
+    grad.addColorStop(0.7, '#0F3D33');
+    grad.addColorStop(1, '#000000');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Gold border
+    ctx.strokeStyle = '#C9A04B';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(20, 20, 472, 472);
+
+    // Inner gold border
+    ctx.strokeStyle = '#6E4F1A';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(36, 36, 440, 440);
+
+    // Corner ornaments
+    ctx.strokeStyle = '#C9A04B';
+    ctx.lineWidth = 3;
+    [[40,40,1,1],[472,40,-1,1],[40,472,1,-1],[472,472,-1,-1]].forEach(([x,y,sx,sy]) => {
+      ctx.beginPath();
+      ctx.moveTo(x, y+40*sy);
+      ctx.lineTo(x, y);
+      ctx.lineTo(x+40*sx, y);
+      ctx.stroke();
+    });
+
+    // "مضمونة"
+    ctx.fillStyle = '#F4EFE3';
+    ctx.font = '900 120px Cairo, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('مضمونة', 256, 220);
+
+    // Gold rule
+    ctx.strokeStyle = '#C9A04B';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(196, 300);
+    ctx.lineTo(316, 300);
+    ctx.stroke();
+
+    // MADMONA
+    ctx.fillStyle = '#C9A04B';
+    ctx.font = '500 28px serif';
+    ctx.fillText('M A D M O N A', 256, 340);
+
+    // EST. 2026
+    ctx.fillStyle = '#E5C580';
+    ctx.font = 'italic 20px serif';
+    ctx.fillText('EST. CAIRO · 2026', 256, 380);
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.anisotropy = 4;
+    return tex;
+  }
+
+  // ===========================================================
+  // CENTRAL CORE — the Madmona monolith
+  // ===========================================================
+  const coreSize = 1.4;
+  const coreGeo = new THREE.BoxGeometry(coreSize, coreSize, coreSize);
+  const coreTex = makeCoreTexture();
+  const coreMat = new THREE.MeshStandardMaterial({
+    map: coreTex,
+    metalness: 0.4,
+    roughness: 0.45,
+    emissive: 0x1F6F5F,
+    emissiveIntensity: 0.15,
+  });
+  const core = new THREE.Mesh(coreGeo, [coreMat, coreMat, coreMat, coreMat, coreMat, coreMat]);
+  core.position.y = -2; // start below floor
+  core.scale.set(0.001, 0.001, 0.001); // start tiny
+  scene.add(core);
+
+  // Core base pedestal (subtle)
+  const pedGeo = new THREE.CylinderGeometry(0.85, 0.95, 0.15, 32);
+  const pedMat = new THREE.MeshStandardMaterial({
+    color: 0x222222,
+    metalness: 0.9,
+    roughness: 0.3,
+  });
+  const ped = new THREE.Mesh(pedGeo, pedMat);
+  ped.position.y = -1.4;
+  ped.scale.set(0.001, 0.001, 0.001);
+  scene.add(ped);
+
+  // ===========================================================
+  // SATELLITE MONOLITHS — 20 cubes orbiting
+  // ===========================================================
+  const SAT_RADIUS = 4.2;
+  const satellites = CATEGORIES.map((cat, i) => {
+    const angle = (i / CATEGORIES.length) * Math.PI * 2;
+
+    const tex = makeTextTexture(cat.label, {
+      category: cat.cat,
+      glyph: cat.glyph,
+      price: cat.price,
+    });
+    const litMat = new THREE.MeshStandardMaterial({
+      map: tex,
+      emissiveMap: tex,
+      emissive: new THREE.Color(0xC9A04B),
+      emissiveIntensity: 0,
+      metalness: 0.3,
+      roughness: 0.6,
+    });
+    const sideMat = new THREE.MeshStandardMaterial({
+      color: 0x0a0a0a,
+      metalness: 0.6,
+      roughness: 0.5,
+      emissive: 0x000000,
+      emissiveIntensity: 0,
+    });
+
+    const size = 0.7;
+    const geo = new THREE.BoxGeometry(size, size, size);
+    const materials = [sideMat, sideMat, sideMat, sideMat, litMat, sideMat];
+    const cube = new THREE.Mesh(geo, materials);
+
+    // Final position
+    const fx = Math.cos(angle) * SAT_RADIUS;
+    const fy = (i % 4 - 1.5) * 0.5; // staggered heights
+    const fz = Math.sin(angle) * SAT_RADIUS;
+
+    // Start position: below floor
+    cube.position.set(fx, -3, fz);
+    cube.userData = {
+      finalY: fy, finalX: fx, finalZ: fz,
+      angle: angle,
+      category: cat,
+      ignited: false,
+      ignitionTime: 0,
+      rotSpeed: 0.3 + Math.random() * 0.4,
+      bobPhase: Math.random() * Math.PI * 2,
+      sideMat: sideMat,
+      litMat: litMat,
+      index: i,
+    };
+    scene.add(cube);
+    return cube;
+  });
+
+  // ===========================================================
+  // PARTICLE SYSTEMS
+  // ===========================================================
+  // Cosmic dust drifting upward
+  const dustCount = 600;
+  const dustGeo = new THREE.BufferGeometry();
+  const dustPos = new Float32Array(dustCount * 3);
+  const dustVel = new Float32Array(dustCount * 3);
+  for (let i = 0; i < dustCount; i++) {
+    dustPos[i*3]   = (Math.random() - 0.5) * 25;
+    dustPos[i*3+1] = (Math.random() - 0.5) * 12;
+    dustPos[i*3+2] = (Math.random() - 0.5) * 25;
+    dustVel[i*3]   = (Math.random() - 0.5) * 0.02;
+    dustVel[i*3+1] = 0.05 + Math.random() * 0.08;
+    dustVel[i*3+2] = (Math.random() - 0.5) * 0.02;
+  }
+  dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+  const dustMat = new THREE.PointsMaterial({
+    color: 0xC9A04B,
+    size: 0.04,
+    transparent: true,
+    opacity: 0,
+    sizeAttenuation: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const dust = new THREE.Points(dustGeo, dustMat);
+  scene.add(dust);
+
+  // Bigger sparkle particles (rare, brighter)
+  const sparkCount = 120;
+  const sparkGeo = new THREE.BufferGeometry();
+  const sparkPos = new Float32Array(sparkCount * 3);
+  for (let i = 0; i < sparkCount; i++) {
+    const r = 3 + Math.random() * 6;
+    const a = Math.random() * Math.PI * 2;
+    sparkPos[i*3]   = Math.cos(a) * r;
+    sparkPos[i*3+1] = (Math.random() - 0.3) * 6;
+    sparkPos[i*3+2] = Math.sin(a) * r;
+  }
+  sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPos, 3));
+  const sparkMat = new THREE.PointsMaterial({
+    color: 0xE5C580,
+    size: 0.08,
+    transparent: true,
+    opacity: 0,
+    sizeAttenuation: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const sparks = new THREE.Points(sparkGeo, sparkMat);
+  scene.add(sparks);
+
+  // ===========================================================
+  // TIMELINE
+  // ===========================================================
+  const DURATION = 38000;
+
+  const PHASES = [
+    { time: 0,     id: 'VOID',     do: () => { /* black void */ } },
+    { time: 700,   id: 'VOID',     do: () => { document.getElementById('pre-line').classList.add('in'); document.getElementById('pre-text').classList.add('in'); } },
+    { time: 3000,  id: 'EMERGE',   do: () => { hideOvl('ovl-pre'); document.getElementById('pre-line').classList.remove('in'); document.getElementById('pre-text').classList.remove('in'); } },
+    { time: 3200,  id: 'EMERGE',   do: () => { showOvl('ovl-title'); document.getElementById('title-en').classList.add('in'); document.getElementById('title-ar').classList.add('in'); } },
+    { time: 5800,  id: 'CORE',     do: () => { hideOvl('ovl-title'); coreRising = true; document.getElementById('bloom').classList.add('visible'); } },
+    { time: 7500,  id: 'GENESIS',  do: () => { satellitesRising = true; } },
+    { time: 10000, id: 'AWAKENING',do: () => { ignitionStart = true; ringGlow = true; } },
+    { time: 26000, id: 'CONVERGE', do: () => { converging = true; } },
+    { time: 29000, id: 'SINGULAR', do: () => { singularity = true; } },
+    { time: 30500, id: 'SLOGAN',   do: () => { showOvl('ovl-slogan'); document.getElementById('s-w1').classList.add('in'); playTone(440, 0.4); } },
+    { time: 31200, id: 'SLOGAN',   do: () => { document.getElementById('s-w2').classList.add('in'); playTone(523, 0.4); } },
+    { time: 31900, id: 'SLOGAN',   do: () => { document.getElementById('s-w3').classList.add('in'); playTone(659, 0.5); } },
+    { time: 32600, id: 'SLOGAN',   do: () => { document.getElementById('s-period').classList.add('in'); playTone(880, 0.3); } },
+    { time: 34500, id: 'END CARD', do: () => { hideOvl('ovl-slogan'); showOvl('ovl-cta'); document.getElementById('cta').classList.add('in'); } },
+    { time: 37500, id: 'END CARD', do: () => { document.getElementById('ctrls').classList.add('visible'); } },
+  ];
+
+  function showOvl(id) { document.getElementById(id).classList.add('visible'); }
+  function hideOvl(id) { document.getElementById(id).classList.remove('visible'); }
+
+  // State flags
+  let coreRising = false;
+  let satellitesRising = false;
+  let ignitionStart = false;
+  let converging = false;
+  let singularity = false;
+  let ringGlow = false;
+
+  // ===========================================================
+  // SOUND DESIGN — Web Audio API procedural
+  // ===========================================================
+  let audioCtx = null;
+  let soundOn = false;
+  let masterGain = null;
+  let droneOsc1 = null, droneOsc2 = null;
+
+  function initAudio() {
+    if (audioCtx) return;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = 0.15;
+      masterGain.connect(audioCtx.destination);
+    } catch(e) {}
+  }
+
+  function playTone(freq, duration = 0.3, type = 'sine') {
+    if (!soundOn || !audioCtx) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(0.35, audioCtx.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    o.connect(g);
+    g.connect(masterGain);
+    o.start();
+    o.stop(audioCtx.currentTime + duration);
+  }
+
+  function startDrone() {
+    if (!soundOn || !audioCtx || droneOsc1) return;
+    // Detuned dual-oscillator pad
+    droneOsc1 = audioCtx.createOscillator();
+    droneOsc2 = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 700;
+    filter.Q.value = 1.5;
+    droneOsc1.type = 'sawtooth';
+    droneOsc1.frequency.value = 55;
+    droneOsc2.type = 'sawtooth';
+    droneOsc2.frequency.value = 55.7;
+    g.gain.setValueAtTime(0, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 3);
+    droneOsc1.connect(filter);
+    droneOsc2.connect(filter);
+    filter.connect(g);
+    g.connect(masterGain);
+    droneOsc1.start();
+    droneOsc2.start();
+  }
+  function stopDrone() {
+    [droneOsc1, droneOsc2].forEach(o => { if (o) try { o.stop(); } catch(e){} });
+    droneOsc1 = null; droneOsc2 = null;
+  }
+
+  document.getElementById('snd').addEventListener('click', function() {
+    initAudio();
+    soundOn = !soundOn;
+    this.classList.toggle('on', soundOn);
+    this.title = soundOn ? 'إيقاف الصوت' : 'تشغيل الصوت';
+    if (soundOn) startDrone(); else stopDrone();
+  });
+
+  // ===========================================================
+  // CATEGORY LABEL OVERLAY (HTML, positioned over cubes)
+  // ===========================================================
+  function showCategoryLabel(satellite) {
+    const sat = satellite;
+    const lbl = document.createElement('div');
+    lbl.className = 'cat-label';
+    lbl.innerHTML = `
+      <span class="cat-label-cat">${sat.userData.category.cat}</span>
+      <span class="cat-label-name">${sat.userData.category.label}</span>
+      <span class="cat-label-price">${sat.userData.category.price}</span>
+    `;
+    document.getElementById('cat-labels').appendChild(lbl);
+
+    // Project 3D position to screen
+    const v = new THREE.Vector3();
+    sat.getWorldPosition(v);
+    v.project(camera);
+    const x = (v.x * 0.5 + 0.5) * W();
+    const y = (-v.y * 0.5 + 0.5) * H() + (window.innerHeight * 0.11); // letterbox offset
+    lbl.style.left = x + 'px';
+    lbl.style.top = y + 'px';
+
+    requestAnimationFrame(() => lbl.classList.add('visible'));
+    setTimeout(() => { lbl.classList.remove('visible'); setTimeout(() => lbl.remove(), 600); }, 1500);
+
+    if (soundOn) playTone(200 + sat.userData.index * 25, 0.18, 'triangle');
+  }
+
+  // ===========================================================
+  // ANIMATION LOOP
+  // ===========================================================
+  let startTs = null;
+  let firedPhases = new Set();
+  let ignitionIdx = 0;
+  let lastIgnition = 0;
+
+  function reset() {
+    startTs = null;
+    firedPhases.clear();
+    coreRising = false;
+    satellitesRising = false;
+    ignitionStart = false;
+    converging = false;
+    singularity = false;
+    ringGlow = false;
+    ignitionIdx = 0;
+    lastIgnition = 0;
+
+    // Reset DOM
+    ['ovl-pre','ovl-title','ovl-slogan','ovl-cta'].forEach(id => document.getElementById(id).classList.remove('visible'));
+    document.getElementById('ovl-pre').classList.add('visible');
+    ['pre-line','pre-text','title-en','title-ar','s-w1','s-w2','s-w3','s-period','cta'].forEach(id => document.getElementById(id).classList.remove('in'));
+    document.getElementById('bloom').classList.remove('visible');
+    document.getElementById('ctrls').classList.remove('visible');
+    document.getElementById('cat-labels').innerHTML = '';
+
+    // Reset 3D
+    core.position.y = -2;
+    core.scale.set(0.001, 0.001, 0.001);
+    ped.scale.set(0.001, 0.001, 0.001);
+    satellites.forEach(s => {
+      s.position.set(s.userData.finalX, -3, s.userData.finalZ);
+      s.userData.ignited = false;
+      s.userData.ignitionTime = 0;
+      s.userData.litMat.emissiveIntensity = 0;
+      s.userData.sideMat.emissiveIntensity = 0;
+      s.userData.sideMat.emissive = new THREE.Color(0x000000);
+    });
+    ringMat.opacity = 0;
+    dustMat.opacity = 0;
+    sparkMat.opacity = 0;
+  }
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function tick(ts) {
+    if (!startTs) startTs = ts;
+    const elapsed = ts - startTs;
+    const dt = 1/60;
+
+    // HUD
+    document.getElementById('hud-cur').textContent = '00:' + String(Math.floor(elapsed/1000)).padStart(2,'0');
+    document.getElementById('hud-fill').style.width = Math.min(100, (elapsed/DURATION)*100) + '%';
+
+    // Fire phases
+    PHASES.forEach((p,i) => {
+      if (elapsed >= p.time && !firedPhases.has(i)) {
+        firedPhases.add(i);
+        p.do();
+        document.getElementById('hud-phase').textContent = p.id;
+      }
+    });
+
+    // Camera animation — different per phase
+    if (elapsed < 3000) {
+      // Pre-emergence: camera dollying in slowly from far
+      const t = elapsed / 3000;
+      camera.position.set(0, 1.5, lerp(14, 9, easeOut(t)));
+      camera.lookAt(0, 0, 0);
+    } else if (elapsed < 6000) {
+      // Static while titles fade
+      camera.position.set(0, 1.5, 9);
+      camera.lookAt(0, 0, 0);
+    } else if (elapsed < 10000) {
+      // Camera lifts and tilts as core rises
+      const t = (elapsed - 6000) / 4000;
+      camera.position.set(0, lerp(1.5, 3, easeOut(t)), lerp(9, 8, easeOut(t)));
+      camera.lookAt(0, 0, 0);
+    } else if (elapsed < 26000) {
+      // Slow orbital pass (the main reveal)
+      const t = (elapsed - 10000) / 16000;
+      const angle = lerp(0, Math.PI * 2, t);
+      camera.position.x = Math.sin(angle) * 7.5;
+      camera.position.z = Math.cos(angle) * 7.5;
+      camera.position.y = 2 + Math.sin(angle * 2) * 0.3;
+      camera.lookAt(0, 0, 0);
+    } else if (elapsed < 30000) {
+      // Pull back for convergence
+      const t = (elapsed - 26000) / 4000;
+      const r = lerp(7.5, 11, easeOut(t));
+      const angle = Math.PI * 2 + t * 0.3;
+      camera.position.x = Math.sin(angle) * r;
+      camera.position.z = Math.cos(angle) * r;
+      camera.position.y = lerp(2, 3, t);
+      camera.lookAt(0, 0, 0);
+    } else if (elapsed < 34500) {
+      // Final stillness during slogan
+      camera.position.set(0, 2, 8);
+      camera.lookAt(0, 0, 0);
+    } else {
+      // CTA — gentle drift
+      const t = (elapsed - 34500) / 4000;
+      camera.position.x = Math.sin(t * 0.5) * 0.3;
+      camera.position.y = 2 + Math.sin(t) * 0.1;
+      camera.position.z = 8;
+      camera.lookAt(0, 0, 0);
+    }
+
+    // Core rising
+    if (coreRising && core.position.y < 0) {
+      const target = 0;
+      core.position.y += (target - core.position.y) * 0.04;
+      const scaleTarget = 1;
+      const curScale = core.scale.x;
+      core.scale.setScalar(lerp(curScale, scaleTarget, 0.05));
+      ped.scale.setScalar(lerp(ped.scale.x, 1, 0.05));
+    }
+    core.rotation.y += dt * 0.3;
+
+    // Satellites rising
+    if (satellitesRising) {
+      satellites.forEach((s, i) => {
+        const delay = i * 80; // staggered
+        const localElapsed = elapsed - 7500 - delay;
+        if (localElapsed > 0 && s.position.y < s.userData.finalY) {
+          const t = clamp(localElapsed / 1500, 0, 1);
+          s.position.y = lerp(-3, s.userData.finalY, easeOut(t));
+        }
+        // Continuous bobbing
+        s.position.y += Math.sin(elapsed/1000 * 0.8 + s.userData.bobPhase) * 0.002;
+        s.rotation.y += dt * s.userData.rotSpeed * 0.4;
+      });
+    }
+
+    // Ring glow on floor
+    if (ringGlow) {
+      ringMat.opacity = Math.min(0.5, ringMat.opacity + dt * 0.5);
+      ring.rotation.z += dt * 0.1;
+    }
+
+    // Dust fade in
+    if (elapsed > 6000) {
+      dustMat.opacity = Math.min(0.5, dustMat.opacity + dt * 0.2);
+    }
+    if (elapsed > 9000) {
+      sparkMat.opacity = Math.min(0.8, sparkMat.opacity + dt * 0.3);
+    }
+
+    // Animate dust upward
+    if (dustMat.opacity > 0) {
+      const pos = dustGeo.attributes.position.array;
+      for (let i = 0; i < dustCount; i++) {
+        pos[i*3]   += dustVel[i*3] * dt * 60;
+        pos[i*3+1] += dustVel[i*3+1] * dt * 60;
+        pos[i*3+2] += dustVel[i*3+2] * dt * 60;
+        if (pos[i*3+1] > 6) {
+          pos[i*3]   = (Math.random() - 0.5) * 25;
+          pos[i*3+1] = -6;
+          pos[i*3+2] = (Math.random() - 0.5) * 25;
+        }
+      }
+      dustGeo.attributes.position.needsUpdate = true;
+    }
+
+    // Sparks twinkle
+    if (sparkMat.opacity > 0) {
+      sparks.rotation.y += dt * 0.05;
+      sparkMat.size = 0.06 + Math.sin(elapsed/300) * 0.03;
+    }
+
+    // Ignition: as camera passes near a satellite
+    if (ignitionStart && !converging) {
+      satellites.forEach((s, i) => {
+        if (s.userData.ignited) {
+          // Already lit — keep emissive at intensity 0.7, animate side glow gold
+          const t = (elapsed - s.userData.ignitionTime) / 1000;
+          s.userData.litMat.emissiveIntensity = 0.7 + Math.sin(elapsed/400 + i) * 0.1;
+          s.userData.sideMat.emissive = new THREE.Color(0xC9A04B);
+          s.userData.sideMat.emissiveIntensity = Math.min(0.25, t * 0.3);
+          return;
+        }
+        const d = camera.position.distanceTo(s.position);
+        if (d < 5.2 && elapsed - lastIgnition > 500) {
+          s.userData.ignited = true;
+          s.userData.ignitionTime = elapsed;
+          lastIgnition = elapsed;
+          s.userData.litMat.emissiveIntensity = 0.7;
+          showCategoryLabel(s);
+        }
+      });
+    }
+
+    // Update existing category labels' screen positions
+    document.querySelectorAll('.cat-label.visible').forEach(lbl => {
+      // Re-position cheaply by skipping; labels live ~1.5s, mostly static
+    });
+
+    // Convergence — all satellites spiral inward
+    if (converging && !singularity) {
+      const t = (elapsed - 26000) / 3000;
+      satellites.forEach((s, i) => {
+        const angle = s.userData.angle + t * 4; // spin around
+        const r = lerp(SAT_RADIUS, 0.1, easeOut(clamp(t, 0, 1)));
+        s.position.x = Math.cos(angle) * r;
+        s.position.z = Math.sin(angle) * r;
+        s.position.y = lerp(s.userData.finalY, 0, easeOut(clamp(t, 0, 1)));
+        const scl = lerp(1, 0.01, easeOut(clamp(t, 0, 1)));
+        s.scale.set(scl, scl, scl);
+        s.rotation.y += dt * 3;
+      });
+      // Core grows + glows
+      const cs = lerp(1, 1.3, clamp(t, 0, 1));
+      core.scale.setScalar(cs);
+      coreMat.emissiveIntensity = lerp(0.15, 0.9, clamp(t, 0, 1));
+      goldKey.intensity = lerp(3, 10, clamp(t, 0, 1));
+    }
+
+    // Singularity — bright flash
+    if (singularity) {
+      const t = (elapsed - 29000) / 1500;
+      goldKey.intensity = lerp(10, 1, clamp(t, 0, 1));
+      coreMat.emissiveIntensity = lerp(0.9, 0.4, clamp(t, 0, 1));
+      // Core shrinks slightly back
+      if (t > 0.5) {
+        core.scale.setScalar(lerp(1.3, 1.0, (t-0.5)*2));
+      }
+    }
+
+    // Slogan phase: dim everything except core
+    if (elapsed > 30500) {
+      const t = clamp((elapsed - 30500) / 1500, 0, 1);
+      coreMat.emissiveIntensity = lerp(0.4, 0.2, t);
+      // Hide satellites
+      satellites.forEach(s => {
+        if (s.scale.x > 0.001) s.scale.setScalar(lerp(s.scale.x, 0.001, 0.1));
+      });
+    }
+
+    renderer.render(scene, camera);
+
+    if (elapsed < DURATION + 1000) {
+      requestAnimationFrame(tick);
+    }
+  }
+
+  function play() {
+    reset();
+    if (soundOn) startDrone();
+    requestAnimationFrame(tick);
+  }
+
+  document.getElementById('replay').addEventListener('click', () => {
+    stopDrone();
+    play();
+  });
+
+  // Hide loader, start
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('gone');
+    setTimeout(() => document.getElementById('loader').remove(), 1000);
+    play();
+  }, 800);
+
+  } // end initGenesis
+  </script>
+</body>
+</html>
