@@ -129,6 +129,7 @@ export default async function AIOSPage() {
             justifyContent: 'center', marginTop: 16,
           }}>
             <a href="/admin/runbook" style={navLinkStyle}>📓 Runbook</a>
+            <a href="/admin/agent-network" style={navLinkStyle}>🕸️ Agent Network</a>
             <a href="/admin/wa-review" style={navLinkStyle}>💬 WhatsApp Review</a>
             <a href="/admin/marketing-hq" style={navLinkStyle}>📣 Marketing HQ</a>
             <a href="/admin/leads-feed" style={navLinkStyle}>🎣 Leads Feed</a>
