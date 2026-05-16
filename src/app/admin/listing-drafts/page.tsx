@@ -20,8 +20,8 @@ type Draft = {
   district: string | null;
   price: number | null;
   price_period: string | null;
-  contact_name: string;
-  contact_phone: string;
+  contact_name: string | null;
+  contact_phone: string | null;
   account_type: 'individual' | 'business';
   business_name: string | null;
   photos: { url: string }[];
@@ -289,9 +289,13 @@ function DraftCard({ draft, onUpdate }: { draft: Draft; onUpdate: () => void }) 
         </Field>
         <Field label="الاسم">{draft.contact_name || '-'}</Field>
         <Field label="الموبايل">
-          <a href={`https://wa.me/${draft.contact_phone.replace(/[^\d]/g, '')}`} target="_blank" className="text-[#B8860B] hover:underline" dir="ltr">
-            {draft.contact_phone}
-          </a>
+          {draft.contact_phone ? (
+            <a href={`https://wa.me/${draft.contact_phone.replace(/[^\d]/g, '')}`} target="_blank" className="text-[#B8860B] hover:underline" dir="ltr">
+              {draft.contact_phone}
+            </a>
+          ) : (
+            <span className="text-[#FAF7F0]/40">—</span>
+          )}
         </Field>
         <Field label="النوع">
           {draft.account_type === 'business' ? `شركة (${draft.business_name || '-'})` : 'فرد'}
