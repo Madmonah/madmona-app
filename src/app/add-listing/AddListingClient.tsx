@@ -194,6 +194,12 @@ function AddListingPageInner({
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Phase G+ (May 18 2026): tracks "تغيير الفئة" clicks. When this changes,
+  // StepCategory resets to mains view (instead of resuming at the sub-list of
+  // the previously selected main — which was the bug Mohamed reported:
+  // "لو دوست بالغلط على شاليه وحبيت ارجع لشقة مش بعرف").
+  const [resetCategoryView, setResetCategoryView] = useState(0);
+
   // Tracks whether we've already done the initial mount hydration.
   // Prevents the rehydrate-from-DB logic from running again later when
   // token state changes due to our own POST (which is what was causing
@@ -403,6 +409,7 @@ function AddListingPageInner({
           <StepCategory
             value={draft.category_slug}
             categories={dbExtraCategories}
+            resetSignal={resetCategoryView}
             onSelect={async (slug) => {
               // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
               const t = await persist({ category_slug: slug });
@@ -425,7 +432,12 @@ function AddListingPageInner({
               if (t) next();
             }}
             onBack={back}
-            onChangeCategory={() => setStep(1)}
+            onChangeCategory={() => {
+              // Phase G+ (May 18 2026): explicit category change should land
+              // on the mains list, not the sub list of the previous selection.
+              setResetCategoryView((n) => n + 1);
+              setStep(1);
+            }}
             saving={saving}
           />
         )}
@@ -528,10 +540,15 @@ function StepCategory({
   value,
   onSelect,
   categories,
+  resetSignal = 0,
 }: {
   value?: string;
   onSelect: (slug: string) => void;
   categories: MainCategory[];
+  // Phase G+ (May 18 2026): when this number changes, StepCategory resets to
+  // the mains view (clears selectedMain). Used by "تغيير الفئة" button so the
+  // user can quickly switch between mains without drilling out of subs first.
+  resetSignal?: number;
 }) {
   const startingMainSlug = useMemo(() => {
     if (!value) return null;
@@ -544,6 +561,14 @@ function StepCategory({
   const [selectedMain, setSelectedMain] = useState<string | null>(startingMainSlug);
   const [activeTrack, setActiveTrack] = useState<TrackTab>('all');
   const main = categories.find((m) => m.slug === selectedMain);
+
+  // Phase G+ (May 18 2026): when parent signals "reset", jump back to the
+  // mains list so the user can pick a totally different category.
+  useEffect(() => {
+    if (resetSignal > 0) {
+      setSelectedMain(null);
+    }
+  }, [resetSignal]);
 
   // Filter mains by selected track tab
   const visibleMains = useMemo(() => {
@@ -662,12 +687,15 @@ function StepCategory({
 
   return (
     <section>
+      {/* Phase G+ (May 18 2026): bigger, more visible back-to-mains button.
+          Old version was a small gray text link easy to miss. */}
       <button
         type="button"
         onClick={() => setSelectedMain(null)}
-        className="mb-3 inline-flex items-center gap-1 text-sm text-gray-600 hover:text-[#1F6F5F] transition-colors"
+        className="mb-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1F6F5F]/8 hover:bg-[#1F6F5F]/12 border border-[#1F6F5F]/20 text-sm font-semibold text-[#1F6F5F] transition-colors"
       >
-        ← رجوع للتصنيفات الرئيسية
+        <span className="text-base">→</span>
+        <span>اختار فئة تانية</span>
       </button>
       <h2 className="text-lg font-semibold mb-1">
         <span className="text-2xl me-2">{main.emoji}</span>
@@ -740,16 +768,18 @@ function CategoryChip({
   if (!display) return null;
   return (
     <div className="mb-5 flex items-center justify-between rounded-xl bg-[#F5F4F0] border border-[#E5E5E0] px-4 py-3">
-      <div className="flex items-center gap-2 text-sm">
-        <span className="text-lg leading-none">{display.emoji}</span>
-        <span className="font-medium">{display.name}</span>
+      <div className="flex items-center gap-2 text-sm min-w-0">
+        <span className="text-lg leading-none flex-shrink-0">{display.emoji}</span>
+        <span className="font-medium truncate">{display.name}</span>
       </div>
+      {/* Phase G+ (May 18 2026): bigger "change category" button — was a tiny
+          text link that users missed. Now it's a clearly tappable button. */}
       <button
         type="button"
         onClick={onChange}
-        className="text-xs text-[#1F6F5F] hover:text-[#1F6F5F]/80 font-medium whitespace-nowrap"
+        className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white border border-[#1F6F5F]/30 text-xs text-[#1F6F5F] hover:bg-[#1F6F5F]/5 font-bold whitespace-nowrap"
       >
-        تغيير الفئة ←
+        تغيير الفئة
       </button>
     </div>
   );
