@@ -143,54 +143,95 @@ function StaticPageFallback() {
 }
 
 // ====================================================================
-// DB FETCH (May 14 2026 root-cause fix): any top-level category in the
-// categories table that is NOT in the wizard's hardcoded MAIN_CATEGORIES
-// list is auto-fetched here and passed to the client as
-// `dbExtraCategories`. This means new top-level categories added to the
-// DB after deploy will automatically appear at the bottom of the
-// wizard's step-1 grid — no code change needed.
-// See system_runbook: add_listing_wizard_db_driven_extras.
+// DB FETCH (May 17 2026 root-cause fix): the wizard is now fully
+// DB-driven. ALL active top-level categories are fetched here and
+// passed to the client as `dbExtraCategories` (legacy prop name kept
+// to avoid breaking the client signature — semantically it's now "all"
+// categories, not just extras). The hardcoded MAIN_CATEGORIES array in
+// AddListingClient.tsx has been removed.
+//
+// Cross-listing: subs with a non-empty `also_show_in` array appear under
+// multiple mains' subs lists. This preserves the discoverability we had
+// when the wizard manually duplicated subs (e.g. makeup-artists under
+// workspaces + beauty + professionals) — now driven from DB instead.
+//
+// See system_runbook: categories_db_driven_consolidation_may17.
 // ====================================================================
-const HARDCODED_TOP_SLUGS = new Set([
-  'properties', 'vehicles', 'workspaces', 'tourism', 'beauty',
-  'weddings', 'media', 'recreation', 'marine', 'equipment',
-  'printing', 'professionals',
-]);
-
 async function getDBExtraCategories(): Promise<MainCategory[]> {
   try {
+    // Phase E (May 18 2026): wizard metadata columns added — read them here
+    // so the client can use category-specific placeholders + pricing periods
+    // instead of hardcoded values. Null/missing values → client falls back to
+    // existing hardcoded defaults (zero-regression guarantee).
+    const WIZARD_META_COLS = 'id, slug, name_ar, icon, track, display_order, title_placeholder, description_placeholder, district_placeholder, allowed_pricing_periods, default_pricing_period, pricing_unit_label';
+
     const { data: tops, error: topsErr } = await supabase
       .from('categories')
-      .select('id, slug, name_ar, icon, display_order')
+      .select(WIZARD_META_COLS)
       .is('parent_id', null)
       .eq('is_active', true)
       .order('display_order');
     if (topsErr || !tops?.length) return [];
 
-    const extras = tops.filter((t) => !HARDCODED_TOP_SLUGS.has(t.slug));
-    if (!extras.length) return [];
-
     const { data: allSubs } = await supabase
       .from('categories')
-      .select('id, slug, name_ar, icon, parent_id, display_order')
-      .in('parent_id', extras.map((t) => t.id))
+      .select(WIZARD_META_COLS + ', parent_id, also_show_in')
+      .in('parent_id', tops.map((t) => t.id))
       .eq('is_active', true)
       .order('display_order');
 
-    return extras.map((top) => ({
-      slug: top.slug,
-      name_ar: top.name_ar,
-      emoji: top.icon || '📁',
-      subs: (allSubs || [])
-        .filter((s) => s.parent_id === top.id)
-        .map((s) => ({
+    type WizardMetaRow = {
+      title_placeholder: string | null;
+      description_placeholder: string | null;
+      district_placeholder: string | null;
+      allowed_pricing_periods: string[] | null;
+      default_pricing_period: string | null;
+      pricing_unit_label: string | null;
+    };
+    type SubRow = WizardMetaRow & {
+      id: string;
+      slug: string;
+      name_ar: string;
+      icon: string | null;
+      parent_id: string;
+      also_show_in: string[] | null;
+    };
+    const subs = (allSubs || []) as SubRow[];
+
+    return tops.map((top) => {
+      const topMeta = top as unknown as WizardMetaRow;
+      // Subs whose primary parent IS this main, OR who list this main in also_show_in.
+      const matchingSubs = subs.filter(
+        (s) =>
+          s.parent_id === top.id ||
+          (Array.isArray(s.also_show_in) && s.also_show_in.includes(top.id)),
+      );
+      return {
+        slug: top.slug,
+        name_ar: top.name_ar,
+        emoji: top.icon || '📁',
+        track: (top.track as 'rentals' | 'services' | 'hybrid' | null) || null,
+        title_placeholder: topMeta.title_placeholder ?? null,
+        description_placeholder: topMeta.description_placeholder ?? null,
+        district_placeholder: topMeta.district_placeholder ?? null,
+        allowed_pricing_periods: topMeta.allowed_pricing_periods ?? null,
+        default_pricing_period: topMeta.default_pricing_period ?? null,
+        pricing_unit_label: topMeta.pricing_unit_label ?? null,
+        subs: matchingSubs.map((s) => ({
           slug: s.slug,
           name_ar: s.name_ar,
           emoji: s.icon || '📁',
+          title_placeholder: s.title_placeholder ?? null,
+          description_placeholder: s.description_placeholder ?? null,
+          district_placeholder: s.district_placeholder ?? null,
+          allowed_pricing_periods: s.allowed_pricing_periods ?? null,
+          default_pricing_period: s.default_pricing_period ?? null,
+          pricing_unit_label: s.pricing_unit_label ?? null,
         })),
-    }));
+      };
+    });
   } catch (e) {
-    console.warn('[add-listing] Failed to load DB-only top-level categories:', e);
+    console.warn('[add-listing] Failed to load categories from DB:', e);
     return [];
   }
 }

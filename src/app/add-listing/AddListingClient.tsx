@@ -15,18 +15,67 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
+// Phase E (May 18 2026): wizard metadata for DB-driven placeholders & pricing.
+// These fields come from categories.title_placeholder etc. When null/undefined
+// the wizard falls back to hardcoded defaults — zero-regression guarantee.
+type WizardMeta = {
+  title_placeholder?: string | null;
+  description_placeholder?: string | null;
+  district_placeholder?: string | null;
+  allowed_pricing_periods?: string[] | null;
+  default_pricing_period?: string | null;
+  pricing_unit_label?: string | null;
+};
+
 type SubCategory = {
   slug: string;
   name_ar: string;
   emoji: string;
-};
+} & WizardMeta;
 
 export type MainCategory = {
   slug: string;
   name_ar: string;
   emoji: string;
+  track?: 'rentals' | 'services' | 'hybrid' | null;
   subs: SubCategory[];
-};
+} & WizardMeta;
+
+// Resolve effective wizard metadata for a category slug, with fallback chain:
+//   sub-level value → main-level value → null (caller uses hardcoded default)
+function getCategoryWizardMeta(
+  categorySlug: string | undefined | null,
+  categories: MainCategory[],
+): WizardMeta {
+  if (!categorySlug) return {};
+  // Try sub first (more specific)
+  for (const main of categories) {
+    const sub = main.subs.find((s) => s.slug === categorySlug);
+    if (sub) {
+      return {
+        title_placeholder: sub.title_placeholder ?? main.title_placeholder ?? null,
+        description_placeholder: sub.description_placeholder ?? main.description_placeholder ?? null,
+        district_placeholder: sub.district_placeholder ?? main.district_placeholder ?? null,
+        allowed_pricing_periods: sub.allowed_pricing_periods ?? main.allowed_pricing_periods ?? null,
+        default_pricing_period: sub.default_pricing_period ?? main.default_pricing_period ?? null,
+        pricing_unit_label: sub.pricing_unit_label ?? main.pricing_unit_label ?? null,
+      };
+    }
+  }
+  // Fallback to main-level if user selected a main directly
+  const main = categories.find((m) => m.slug === categorySlug);
+  if (main) {
+    return {
+      title_placeholder: main.title_placeholder ?? null,
+      description_placeholder: main.description_placeholder ?? null,
+      district_placeholder: main.district_placeholder ?? null,
+      allowed_pricing_periods: main.allowed_pricing_periods ?? null,
+      default_pricing_period: main.default_pricing_period ?? null,
+      pricing_unit_label: main.pricing_unit_label ?? null,
+    };
+  }
+  return {};
+}
 
 // ============================================================================
 // BEAUTY TYPES + HELPERS (May 14 2026)
@@ -65,163 +114,11 @@ function isBeautyCategory(slug?: string | null): boolean {
   return !!slug && (slug === 'beauty' || BEAUTY_SUB_SLUGS.has(slug));
 }
 
-const MAIN_CATEGORIES: MainCategory[] = [
-  {
-    slug: 'properties', name_ar: 'عقارات للإيجار', emoji: '🏠',
-    subs: [
-      { slug: 'properties-apartment', name_ar: 'شقة',           emoji: '🏢' },
-      { slug: 'properties-villa',     name_ar: 'فيلا',          emoji: '🏡' },
-      { slug: 'tourism-chalet',       name_ar: 'شاليه',         emoji: '🏖️' },
-      { slug: 'properties-studio',    name_ar: 'استوديو',       emoji: '🛏️' },
-      { slug: 'properties-penthouse', name_ar: 'روف',           emoji: '🌃' },
-      { slug: 'properties-retail',    name_ar: 'محل تجاري',     emoji: '🏪' },
-      { slug: 'properties-clinics',   name_ar: 'عيادات',        emoji: '🩺' },
-      { slug: 'properties-storage',   name_ar: 'مساحة تخزين',   emoji: '📦' },
-    ],
-  },
-  {
-    slug: 'vehicles', name_ar: 'مركبات ونقل', emoji: '🚗',
-    subs: [
-      { slug: 'vehicles-car',        name_ar: 'سيارة',              emoji: '🚗' },
-      { slug: 'vehicles-luxury',     name_ar: 'سيارة فاخرة',        emoji: '🏎️' },
-      { slug: 'vehicles-4x4',        name_ar: 'سيارة دفع رباعي',    emoji: '🚙' },
-      { slug: 'vehicles-microbus',   name_ar: 'ميكروباص',           emoji: '🚐' },
-      { slug: 'vehicles-bus',        name_ar: 'أوتوبيس',            emoji: '🚌' },
-      { slug: 'vehicles-motorcycle', name_ar: 'موتوسيكل',           emoji: '🏍️' },
-      { slug: 'vehicles-tuktuk',     name_ar: 'تروسيكل',            emoji: '🛺' },
-      { slug: 'vehicles-cargo',      name_ar: 'سيارات نقل بضائع',   emoji: '🚚' },
-      { slug: 'vehicles-workforce',  name_ar: 'سيارات نقل عمالة',   emoji: '🚐' },
-    ],
-  },
-  {
-    slug: 'workspaces', name_ar: 'مساحات عمل', emoji: '🏢',
-    subs: [
-      { slug: 'workspaces-hot-desk', name_ar: 'مكتب مشترك',     emoji: '🪑' },
-      { slug: 'workspaces-office',   name_ar: 'مكتب خاص',       emoji: '🚪' },
-      { slug: 'workspaces-meeting',  name_ar: 'قاعة اجتماعات',  emoji: '👥' },
-      { slug: 'workspaces-training', name_ar: 'قاعة تدريب',     emoji: '🎓' },
-      { slug: 'workspaces-podcast',  name_ar: 'استوديو بودكاست', emoji: '🎙️' },
-      { slug: 'workspaces-outdoor',  name_ar: 'مساحة خارجية',   emoji: '🌳' },
-      { slug: 'makeup-artists',      name_ar: 'استوديو ميكب',   emoji: '💄' },
-    ],
-  },
-  {
-    slug: 'tourism', name_ar: 'السياحة', emoji: '🏝️',
-    subs: [
-      { slug: 'tourism-chalet',   name_ar: 'شاليه',                emoji: '🏖️' },
-      { slug: 'tourism-packages', name_ar: 'باكدج سياحي',          emoji: '🎒' },
-      { slug: 'tourism-day',      name_ar: 'رحلات يومية',          emoji: '🌅' },
-      { slug: 'tourism-safari',   name_ar: 'رحلات سفاري',          emoji: '🐪' },
-      { slug: 'tourism-diving',   name_ar: 'رحلات غطس وسنوركلينج', emoji: '🤿' },
-      { slug: 'tourism-cruises',  name_ar: 'رحلات بحرية',          emoji: '🛥️' },
-      { slug: 'tourism-city',     name_ar: 'سيتي تور',             emoji: '🚌' },
-      { slug: 'tourism-camps',    name_ar: 'كامبات وجلامبينج',     emoji: '⛺' },
-      { slug: 'tourism-bikes',    name_ar: 'تأجير دراجات وموتورات', emoji: '🛵' },
-      { slug: 'tourism-boats',    name_ar: 'تأجير قوارب',          emoji: '⛵' },
-      { slug: 'tourism-guides',   name_ar: 'مرشدين سياحيين',       emoji: '🗺️' },
-    ],
-  },
-  {
-    slug: 'beauty', name_ar: 'تجميل', emoji: '💄',
-    subs: [
-      { slug: 'bridal-beauty',   name_ar: 'باكدج عروس - شعر ومكياج', emoji: '👰' },
-      { slug: 'makeup-artists',  name_ar: 'ميك أب أرتست',           emoji: '💄' },
-      { slug: 'hair-stylists',   name_ar: 'كوافير وهير ستايلست',    emoji: '💇‍♀️' },
-      { slug: 'nail-care',       name_ar: 'منيكير وبيديكير',         emoji: '💅' },
-      { slug: 'skincare-facial', name_ar: 'عناية بالبشرة',          emoji: '✨' },
-      { slug: 'brows-lashes',    name_ar: 'حواجب ورموش',            emoji: '👁️' },
-      { slug: 'hair-removal',    name_ar: 'إزالة الشعر',            emoji: '🌟' },
-      { slug: 'massage-spa',     name_ar: 'مساج وسبا',              emoji: '🌸' },
-    ],
-  },
-  {
-    slug: 'weddings', name_ar: 'أعراس وتجهيزات', emoji: '💒',
-    subs: [
-      { slug: 'weddings-dress',       name_ar: 'فستان فرح',          emoji: '👰' },
-      { slug: 'weddings-suit',        name_ar: 'بدلة عريس',          emoji: '🤵' },
-      { slug: 'weddings-decor',       name_ar: 'كوشة وديكور',        emoji: '🎀' },
-      { slug: 'weddings-av',          name_ar: 'معدات صوت وإضاءة',   emoji: '💡' },
-      { slug: 'weddings-catering',    name_ar: 'تجهيزات ضيافة',      emoji: '🍽️' },
-      { slug: 'weddings-furniture',   name_ar: 'أرابيسك ومفروشات',   emoji: '🪑' },
-      { slug: 'weddings-accessories', name_ar: 'إكسسوارات',          emoji: '💎' },
-    ],
-  },
-  {
-    slug: 'media', name_ar: 'معدات ميديا', emoji: '📷',
-    subs: [
-      { slug: 'equipment-camera',       name_ar: 'كاميرات',         emoji: '📷' },
-      { slug: 'media-lighting',         name_ar: 'إضاءة تصوير',     emoji: '💡' },
-      { slug: 'media-projector',        name_ar: 'بروجيكتور وشاشة', emoji: '📽️' },
-      { slug: 'media-drone',            name_ar: 'درون',            emoji: '📡' },
-      { slug: 'media-equipment-audio',  name_ar: 'معدات صوت',       emoji: '🎤' },
-    ],
-  },
-  {
-    slug: 'recreation', name_ar: 'ترفيه ورياضة', emoji: '🎯',
-    subs: [
-      { slug: 'recreation-camping',   name_ar: 'معدات تخييم',      emoji: '⛺' },
-      { slug: 'recreation-gym',       name_ar: 'أجهزة جيم منزلية', emoji: '💪' },
-      { slug: 'recreation-bicycles',  name_ar: 'دراجات هوائية',    emoji: '🚲' },
-      { slug: 'recreation-scooter',   name_ar: 'سكوتر كهربائي',    emoji: '🛴' },
-      { slug: 'recreation-swim',      name_ar: 'معدات سباحة وغطس', emoji: '🤿' },
-      { slug: 'recreation-kayak',     name_ar: 'كاياك وقوارب',     emoji: '🛶' },
-      { slug: 'recreation-gaming',    name_ar: 'بلايستيشن وألعاب', emoji: '🎮' },
-    ],
-  },
-  {
-    slug: 'marine', name_ar: 'مركبات بحرية', emoji: '⛵',
-    subs: [
-      { slug: 'marine-yacht',     name_ar: 'يخت',               emoji: '🛥️' },
-      { slug: 'marine-speedboat', name_ar: 'لانش',              emoji: '🚤' },
-      { slug: 'marine-jetski',    name_ar: 'جت سكي',            emoji: '🌊' },
-      { slug: 'marine-boat',      name_ar: 'قارب صغير',         emoji: '⛵' },
-      { slug: 'marine-fishing',   name_ar: 'مركب صيد',          emoji: '🎣' },
-      { slug: 'marine-kayak',     name_ar: 'كاياك وكانو',       emoji: '🛶' },
-      { slug: 'marine-felucca',   name_ar: 'فيلوكا / مركب نيلي', emoji: '⛵' },
-    ],
-  },
-  {
-    slug: 'equipment', name_ar: 'معدات ثقيلة', emoji: '🚜',
-    subs: [
-      { slug: 'equipment-earthmoving',  name_ar: 'معدات تحريك التربة', emoji: '🚜' },
-      { slug: 'equipment-cranes',       name_ar: 'أوناش ومعدات رفع',   emoji: '🏗️' },
-      { slug: 'equipment-concrete',     name_ar: 'معدات خرسانة',        emoji: '🏭' },
-      { slug: 'equipment-foundation',   name_ar: 'معدات أساسات',        emoji: '🛠️' },
-      { slug: 'equipment-mixing-plants', name_ar: 'محطات خلط',          emoji: '🏭' },
-      { slug: 'equipment-generators',   name_ar: 'مولدات كهرباء',       emoji: '⚡' },
-      { slug: 'equipment-welding',      name_ar: 'معدات لحام',          emoji: '🔥' },
-      { slug: 'equipment-compressors',  name_ar: 'كومبريسور',           emoji: '💨' },
-    ],
-  },
-  {
-    slug: 'printing', name_ar: 'طباعة', emoji: '🖨️',
-    subs: [
-      { slug: 'printing-digital',      name_ar: 'طباعة رقمية',          emoji: '💻' },
-      { slug: 'printing-offset',       name_ar: 'طباعة أوفست',          emoji: '📰' },
-      { slug: 'printing-large-format', name_ar: 'طباعة عرض كبير وبنر',  emoji: '📏' },
-      { slug: 'printing-uv',           name_ar: 'طباعة UV',             emoji: '✨' },
-      { slug: 'printing-textile',      name_ar: 'طباعة على القماش',     emoji: '👕' },
-      { slug: 'printing-3d',           name_ar: 'طباعة ثلاثية الأبعاد', emoji: '🧊' },
-      { slug: 'printing-screen',       name_ar: 'طباعة سيلك',           emoji: '🎨' },
-      { slug: 'printing-finishing',    name_ar: 'تجليد وقص وتشطيب',     emoji: '✂️' },
-    ],
-  },
-  {
-    slug: 'professionals', name_ar: 'خدمات احترافية', emoji: '👨‍💼',
-    subs: [
-      { slug: 'photographers',  name_ar: 'مصورين فوتوغرافيين', emoji: '📸' },
-      { slug: 'videographers',  name_ar: 'مصورين فيديو',       emoji: '🎬' },
-      { slug: 'djs',            name_ar: 'DJs ومنسقين',         emoji: '🎵' },
-      { slug: 'mcs',            name_ar: 'مذيعين و MCs',        emoji: '🎤' },
-      { slug: 'audio-engineers', name_ar: 'مهندسي صوت',         emoji: '🎧' },
-      { slug: 'designers',      name_ar: 'مصممين جرافيك',       emoji: '🎨' },
-      { slug: 'makeup-artists', name_ar: 'ميك أب أرتست',        emoji: '💄' },
-      { slug: 'event-planners', name_ar: 'منظمي فعاليات',       emoji: '🎉' },
-      { slug: 'tutors',         name_ar: 'مدرسين خصوصي',        emoji: '📚' },
-      { slug: 'translators',    name_ar: 'مترجمين',             emoji: '🌍' },
-    ],
-  },
-];
+// MAIN_CATEGORIES removed (May 17 2026): all categories are now loaded
+// from the DB via getDBExtraCategories in page.tsx. The wizard is fully
+// DB-driven. Cross-listing (a sub appearing under multiple mains) is
+// handled via the categories.also_show_in column.
+// See system_runbook: categories_db_driven_consolidation_may17.
 
 const CITIES = [
   'القاهرة', 'الجيزة', 'الإسكندرية', 'الساحل الشمالي',
@@ -499,7 +396,7 @@ function AddListingPageInner({
         {step === 1 && (
           <StepCategory
             value={draft.category_slug}
-            categories={[...MAIN_CATEGORIES, ...dbExtraCategories]}
+            categories={dbExtraCategories}
             onSelect={async (slug) => {
               // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
               const t = await persist({ category_slug: slug });
@@ -512,7 +409,7 @@ function AddListingPageInner({
           <StepBasics
             draft={draft}
             errors={errors}
-            categories={[...MAIN_CATEGORIES, ...dbExtraCategories]}
+            categories={dbExtraCategories}
             onSubmit={async (patch) => {
               const ok = validateBasics(patch, setErrors);
               if (!ok) return;
@@ -531,6 +428,7 @@ function AddListingPageInner({
           <StepPricing
             draft={draft}
             errors={errors}
+            categories={dbExtraCategories}
             beautySchemas={beautySchemas}
             onSubmit={async (patch) => {
               if (!patch.price || patch.price <= 0) {
@@ -600,8 +498,26 @@ function AddListingPageInner({
 }
 
 // =================================================
-// STEP 1 — CATEGORY
+// STEP 1 — CATEGORY (with track tabs for hierarchy)
+// May 17 2026: Added track tabs (الكل/إيجار/خدمات/هايبرد) above the mains
+// grid so 27 categories don't overwhelm the user. Same DB, cleaner UX.
 // =================================================
+type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid';
+
+const TRACK_LABELS: Record<TrackTab, string> = {
+  all: 'الكل',
+  rentals: 'إيجار',
+  services: 'خدمات',
+  hybrid: 'هايبرد',
+};
+
+const TRACK_EMOJI: Record<TrackTab, string> = {
+  all: '✨',
+  rentals: '🏠',
+  services: '🛠️',
+  hybrid: '💒',
+};
+
 function StepCategory({
   value,
   onSelect,
@@ -620,27 +536,68 @@ function StepCategory({
   }, [value, categories]);
 
   const [selectedMain, setSelectedMain] = useState<string | null>(startingMainSlug);
+  const [activeTrack, setActiveTrack] = useState<TrackTab>('all');
   const main = categories.find((m) => m.slug === selectedMain);
+
+  // Filter mains by selected track tab
+  const visibleMains = useMemo(() => {
+    if (activeTrack === 'all') return categories;
+    return categories.filter((c) => c.track === activeTrack);
+  }, [activeTrack, categories]);
 
   if (!main) {
     return (
       <section>
         <h2 className="text-lg font-semibold mb-1">إيه اللي عايز تأجره؟</h2>
-        <p className="text-sm text-gray-500 mb-6">اختار التصنيف الرئيسي</p>
-        <div className="grid grid-cols-2 gap-3">
-          {categories.map((c) => (
-            <button
-              key={c.slug}
-              type="button"
-              onClick={() => setSelectedMain(c.slug)}
-              className="p-5 rounded-2xl border text-right transition-all bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300"
-            >
-              <div className="text-3xl mb-2">{c.emoji}</div>
-              <div className="font-semibold">{c.name_ar}</div>
-              <div className="text-[10px] text-gray-500 mt-1">{c.subs.length} نوع</div>
-            </button>
-          ))}
+        <p className="text-sm text-gray-500 mb-5">اختار التصنيف الرئيسي</p>
+
+        {/* Track tabs */}
+        <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-5 px-5">
+          {(['all', 'rentals', 'services', 'hybrid'] as TrackTab[]).map((t) => {
+            const count = t === 'all'
+              ? categories.length
+              : categories.filter((c) => c.track === t).length;
+            return (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setActiveTrack(t)}
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold border transition-all flex items-center gap-1.5 ${
+                  activeTrack === t
+                    ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
+                    : 'bg-white border-[#E5E5E0] text-gray-700 hover:bg-[#F5F4F0]'
+                }`}
+              >
+                <span>{TRACK_EMOJI[t]}</span>
+                <span>{TRACK_LABELS[t]}</span>
+                <span className={`text-[10px] ${activeTrack === t ? 'opacity-80' : 'text-gray-400'}`}>
+                  ({count})
+                </span>
+              </button>
+            );
+          })}
         </div>
+
+        {visibleMains.length === 0 ? (
+          <div className="text-center py-12 text-sm text-gray-500">
+            مفيش تصنيفات في التبويب ده دلوقتي
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {visibleMains.map((c) => (
+              <button
+                key={c.slug}
+                type="button"
+                onClick={() => setSelectedMain(c.slug)}
+                className="p-5 rounded-2xl border text-right transition-all bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300"
+              >
+                <div className="text-3xl mb-2">{c.emoji}</div>
+                <div className="font-semibold">{c.name_ar}</div>
+                <div className="text-[10px] text-gray-500 mt-1">{c.subs.length} نوع</div>
+              </button>
+            ))}
+          </div>
+        )}
       </section>
     );
   }
@@ -767,6 +724,14 @@ function StepBasics({
   const [city, setCity] = useState(draft.city || '');
   const [district, setDistrict] = useState(draft.district || '');
 
+  // Phase E (May 18 2026): use category-specific placeholders from DB.
+  // Fallback to original hardcoded values when meta is null (e.g. new categories
+  // not yet filled, or DB read failure).
+  const meta = getCategoryWizardMeta(draft.category_slug, categories);
+  const titlePh = meta.title_placeholder || 'مثلاً: شاليه في مراسي بحر مباشر، 4 غرف';
+  const descPh = meta.description_placeholder || 'إيه اللي بيميز اللي عندك؟ (المسبح، الإطلالة، الموقع...)';
+  const districtPh = meta.district_placeholder || 'مثلاً: مراسي، التجمع الخامس، الزمالك...';
+
   return (
     <section>
       <h2 className="text-lg font-semibold mb-1">معلومات أساسية</h2>
@@ -779,7 +744,7 @@ function StepBasics({
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="مثلاً: شاليه في مراسي بحر مباشر، 4 غرف"
+          placeholder={titlePh}
           className={inputCls}
         />
       </Field>
@@ -789,7 +754,7 @@ function StepBasics({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          placeholder="إيه اللي بيميز اللي عندك؟ (المسبح، الإطلالة، الموقع...)"
+          placeholder={descPh}
           className={inputCls}
         />
       </Field>
@@ -812,7 +777,7 @@ function StepBasics({
           type="text"
           value={district}
           onChange={(e) => setDistrict(e.target.value)}
-          placeholder="مثلاً: مراسي، التجمع الخامس، الزمالك..."
+          placeholder={districtPh}
           className={inputCls}
         />
       </Field>
@@ -838,6 +803,7 @@ function validateBasics(patch: Partial<DraftPayload>, setErrors: (e: Record<stri
 function StepPricing({
   draft,
   errors,
+  categories,
   onSubmit,
   onBack,
   saving,
@@ -845,6 +811,7 @@ function StepPricing({
 }: {
   draft: DraftPayload;
   errors: Record<string, string>;
+  categories: MainCategory[];
   onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
   onBack: () => void;
   saving: boolean;
@@ -854,16 +821,29 @@ function StepPricing({
   const schema = isBeauty && draft.category_slug ? beautySchemas[draft.category_slug] : undefined;
   const suggestedAddons = schema?.suggested_addons || [];
 
+  // Phase E (May 18 2026): expanded period labels — added per_event, per_visit
+  // to match the new DB-driven allowed_pricing_periods values.
   const periodLabel: Record<string, string> = {
     hourly: 'ساعة', daily: 'يوم', weekly: 'أسبوع', monthly: 'شهر',
     per_service: 'الخدمة', per_session: 'الجلسة', per_package: 'الباكدج',
+    per_event: 'الحدث', per_visit: 'الزيارة',
   };
+
+  // Phase E: read category-specific pricing periods from DB. Beauty keeps its
+  // existing per_service/session/package flow (already DB-driven via beauty
+  // schemas). For everything else, use the category's allowed_pricing_periods
+  // if set; otherwise fall back to the original hardcoded daily/weekly etc.
+  const meta = getCategoryWizardMeta(draft.category_slug, categories);
 
   const periodOptions: string[] = isBeauty
     ? ['per_service', 'per_session', 'per_package']
-    : ['hourly', 'daily', 'weekly', 'monthly'];
+    : (meta.allowed_pricing_periods && meta.allowed_pricing_periods.length > 0
+        ? meta.allowed_pricing_periods
+        : ['hourly', 'daily', 'weekly', 'monthly']);
 
-  const defaultPeriod = isBeauty ? (schema?.price_unit || 'per_service') : 'daily';
+  const defaultPeriod = isBeauty
+    ? (schema?.price_unit || 'per_service')
+    : (meta.default_pricing_period || 'daily');
   const [period, setPeriod] = useState<string>(() => {
     if (draft.price_period && periodOptions.includes(draft.price_period)) {
       return draft.price_period;
@@ -959,9 +939,13 @@ function StepPricing({
       </Field>
 
       <Field
-        label={isBeauty
-          ? `سعر ${periodLabel[period]} بالجنيه`
-          : `السعر بالجنيه لكل ${periodLabel[period]}`}
+        label={
+          meta.pricing_unit_label
+            ? meta.pricing_unit_label
+            : (isBeauty
+                ? `سعر ${periodLabel[period] || period} بالجنيه`
+                : `السعر بالجنيه لكل ${periodLabel[period] || period}`)
+        }
         error={errors.price}
         required
       >
@@ -979,7 +963,7 @@ function StepPricing({
         </div>
       </Field>
 
-      {/* Non-beauty: weekly projection (existing UX) */}
+      {/* Phase E (May 18 2026): weekly projection for daily rentals (existing UX) */}
       {!isBeauty && price !== '' && period === 'daily' && Number(price) > 0 && (
         <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
           💰 لو حد أجره أسبوع كامل = <strong>{Number(price) * 7} جنيه</strong>
@@ -990,10 +974,12 @@ function StepPricing({
         </div>
       )}
 
-      {/* Beauty: per-service commission preview */}
-      {isBeauty && price !== '' && Number(price) > 0 && (
+      {/* Phase E: per-unit commission preview — shown for beauty AND for any
+          non-daily non-beauty period (lawyers per_session, photographers
+          per_event, etc). Previously only beauty had this preview. */}
+      {price !== '' && Number(price) > 0 && (isBeauty || period !== 'daily') && (
         <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
-          💰 من كل {periodLabel[period]}:
+          💰 من كل {periodLabel[period] || period}:
           <br />
           • نصيب حضرتك (فرد، 10% عمولة): <strong>{Math.round(Number(price) * 0.9)} جنيه</strong>
           <br />
