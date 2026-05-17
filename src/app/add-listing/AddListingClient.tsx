@@ -39,6 +39,12 @@ export type MainCategory = {
   emoji: string;
   track?: 'rentals' | 'services' | 'hybrid' | null;
   subs: SubCategory[];
+  // Phase G (May 18 2026): group metadata for visual grouping in StepCategory.
+  // When null, the wizard falls back to flat rendering (zero-regression).
+  group_slug?: string | null;
+  group_name_ar?: string | null;
+  group_emoji?: string | null;
+  group_display_order?: number | null;
 } & WizardMeta;
 
 // Resolve effective wizard metadata for a category slug, with fallback chain:
@@ -582,22 +588,74 @@ function StepCategory({
           <div className="text-center py-12 text-sm text-gray-500">
             مفيش تصنيفات في التبويب ده دلوقتي
           </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {visibleMains.map((c) => (
-              <button
-                key={c.slug}
-                type="button"
-                onClick={() => setSelectedMain(c.slug)}
-                className="p-5 rounded-2xl border text-right transition-all bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300"
-              >
-                <div className="text-3xl mb-2">{c.emoji}</div>
-                <div className="font-semibold">{c.name_ar}</div>
-                <div className="text-[10px] text-gray-500 mt-1">{c.subs.length} نوع</div>
-              </button>
-            ))}
-          </div>
-        )}
+        ) : (() => {
+          // Phase G (May 18 2026): render visible mains GROUPED by group_slug
+          // with a heading per group. If a main has no group_slug (legacy/null),
+          // it falls into an "أخرى" bucket at the end so nothing is hidden.
+          const groupsMap = new Map<string, { name_ar: string; emoji: string; order: number; mains: MainCategory[] }>();
+          for (const c of visibleMains) {
+            const key = c.group_slug || '__other';
+            if (!groupsMap.has(key)) {
+              groupsMap.set(key, {
+                name_ar: c.group_name_ar || 'أخرى',
+                emoji: c.group_emoji || '📦',
+                order: c.group_display_order ?? 999,
+                mains: [],
+              });
+            }
+            groupsMap.get(key)!.mains.push(c);
+          }
+          const orderedGroups = Array.from(groupsMap.entries())
+            .sort((a, b) => a[1].order - b[1].order);
+
+          // If everything ended up in one group, render flat (no heading needed).
+          if (orderedGroups.length === 1) {
+            return (
+              <div className="grid grid-cols-2 gap-3">
+                {orderedGroups[0][1].mains.map((c) => (
+                  <button
+                    key={c.slug}
+                    type="button"
+                    onClick={() => setSelectedMain(c.slug)}
+                    className="p-5 rounded-2xl border text-right transition-all bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300"
+                  >
+                    <div className="text-3xl mb-2">{c.emoji}</div>
+                    <div className="font-semibold">{c.name_ar}</div>
+                    <div className="text-[10px] text-gray-500 mt-1">{c.subs.length} نوع</div>
+                  </button>
+                ))}
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-6">
+              {orderedGroups.map(([key, group]) => (
+                <div key={key}>
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-[#1F6F5F] mb-3">
+                    <span className="text-lg leading-none">{group.emoji}</span>
+                    <span>{group.name_ar}</span>
+                    <span className="text-[10px] font-normal text-gray-400">({group.mains.length})</span>
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {group.mains.map((c) => (
+                      <button
+                        key={c.slug}
+                        type="button"
+                        onClick={() => setSelectedMain(c.slug)}
+                        className="p-5 rounded-2xl border text-right transition-all bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300"
+                      >
+                        <div className="text-3xl mb-2">{c.emoji}</div>
+                        <div className="font-semibold">{c.name_ar}</div>
+                        <div className="text-[10px] text-gray-500 mt-1">{c.subs.length} نوع</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
       </section>
     );
   }
