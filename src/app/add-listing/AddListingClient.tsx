@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 // ============================================================================
 // Madmona "Add Listing First" — public, no-auth multi-step form
-// Brand: deep green (#1F5F3F), gold (#B8860B), ivory (#FAF7F0)
+// Brand: deep green (#1F6F5F), gold (#2FA084), ivory (#FAF7F0)
 //
 // FIX (May 13 2026): Consolidated 2 racing useEffects into 1, removed the
 // step-rollback bug that was bouncing users back to step 1 after their
@@ -455,34 +455,34 @@ function AddListingPageInner({
   const progress = (step / 5) * 100;
 
   return (
-    <div dir="rtl" lang="ar" className="min-h-screen bg-[#1F5F3F] text-[#FAF7F0]">
+    <div dir="rtl" lang="ar" className="min-h-screen bg-[#FAFAF7] text-[#1A2E26]">
       {/* Header */}
-      <header className="px-5 pt-6 pb-4 border-b border-[#FAF7F0]/10">
+      <header className="px-5 pt-6 pb-4 border-b border-[#E5E5E0]">
         <div className="flex items-center justify-between max-w-2xl mx-auto">
           <div className="flex items-center gap-3">
             <div className="text-2xl font-bold tracking-tight">مضمونة</div>
-            <span className="text-xs text-[#B8860B] uppercase tracking-widest">MADMONA</span>
+            <span className="text-xs text-[#1F6F5F] uppercase tracking-widest">MADMONA</span>
           </div>
-          <a href="/" className="text-xs text-[#FAF7F0]/70 hover:text-[#FAF7F0]">
+          <a href="/" className="text-xs text-gray-600 hover:text-[#1A2E26]">
             ← الرئيسية
           </a>
         </div>
         <h1 className="text-xl font-semibold mt-5 max-w-2xl mx-auto">
           أَجِّر معانا — أضف ليستنجك في 60 ثانية
         </h1>
-        <p className="text-sm text-[#FAF7F0]/70 mt-1 max-w-2xl mx-auto">
+        <p className="text-sm text-gray-600 mt-1 max-w-2xl mx-auto">
           خطوة واحدة من 5 — مش لازم تعمل حساب دلوقتي
         </p>
 
         {/* Progress bar */}
         <div className="mt-4 max-w-2xl mx-auto">
-          <div className="h-1 bg-[#FAF7F0]/10 rounded-full overflow-hidden">
+          <div className="h-1 bg-[#F5F4F0] rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#B8860B] transition-all duration-500"
+              className="h-full bg-[#1F6F5F] transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <div className="text-xs text-[#FAF7F0]/60 mt-2 text-center">
+          <div className="text-xs text-gray-500 mt-2 text-center">
             خطوة {step} من 5
           </div>
         </div>
@@ -491,7 +491,7 @@ function AddListingPageInner({
       {/* Main */}
       <main className="px-5 py-8 max-w-2xl mx-auto">
         {errors.form && (
-          <div className="mb-4 p-3 rounded-lg bg-red-900/30 border border-red-500/40 text-sm">
+          <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm">
             {errors.form}
           </div>
         )}
@@ -592,7 +592,7 @@ function AddListingPageInner({
       </main>
 
       {/* Footer */}
-      <footer className="px-5 pb-8 mt-4 max-w-2xl mx-auto text-center text-xs text-[#FAF7F0]/50">
+      <footer className="px-5 pb-8 mt-4 max-w-2xl mx-auto text-center text-xs text-gray-500">
         🛡 حماية كاملة • 💰 دفع سريع • 📞 دعم 24/7 • عمولة 10% (5% للشركات)
       </footer>
     </div>
@@ -626,18 +626,18 @@ function StepCategory({
     return (
       <section>
         <h2 className="text-lg font-semibold mb-1">إيه اللي عايز تأجره؟</h2>
-        <p className="text-sm text-[#FAF7F0]/60 mb-6">اختار التصنيف الرئيسي</p>
+        <p className="text-sm text-gray-500 mb-6">اختار التصنيف الرئيسي</p>
         <div className="grid grid-cols-2 gap-3">
           {categories.map((c) => (
             <button
               key={c.slug}
               type="button"
               onClick={() => setSelectedMain(c.slug)}
-              className="p-5 rounded-2xl border text-right transition-all bg-[#FAF7F0]/5 border-[#FAF7F0]/15 hover:bg-[#FAF7F0]/10 hover:border-[#B8860B]/50"
+              className="p-5 rounded-2xl border text-right transition-all bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300"
             >
               <div className="text-3xl mb-2">{c.emoji}</div>
               <div className="font-semibold">{c.name_ar}</div>
-              <div className="text-[10px] text-[#FAF7F0]/50 mt-1">{c.subs.length} نوع</div>
+              <div className="text-[10px] text-gray-500 mt-1">{c.subs.length} نوع</div>
             </button>
           ))}
         </div>
@@ -650,7 +650,7 @@ function StepCategory({
       <button
         type="button"
         onClick={() => setSelectedMain(null)}
-        className="mb-3 inline-flex items-center gap-1 text-sm text-[#FAF7F0]/70 hover:text-[#B8860B] transition-colors"
+        className="mb-3 inline-flex items-center gap-1 text-sm text-gray-600 hover:text-[#1F6F5F] transition-colors"
       >
         ← رجوع للتصنيفات الرئيسية
       </button>
@@ -658,7 +658,7 @@ function StepCategory({
         <span className="text-2xl me-2">{main.emoji}</span>
         {main.name_ar}
       </h2>
-      <p className="text-sm text-[#FAF7F0]/60 mb-6">اختار النوع الأقرب لما عندك</p>
+      <p className="text-sm text-gray-500 mb-6">اختار النوع الأقرب لما عندك</p>
       <div className="grid grid-cols-2 gap-3">
         {main.subs.map((s) => {
           const appearsUnderMains = categories
@@ -673,14 +673,14 @@ function StepCategory({
               onClick={() => onSelect(s.slug)}
               className={`p-5 rounded-2xl border text-right transition-all ${
                 value === s.slug
-                  ? 'bg-[#B8860B] border-[#B8860B] text-[#1F5F3F]'
-                  : 'bg-[#FAF7F0]/5 border-[#FAF7F0]/15 hover:bg-[#FAF7F0]/10 hover:border-[#B8860B]/50'
+                  ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
+                  : 'bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300'
               }`}
             >
               <div className="text-3xl mb-2">{s.emoji}</div>
               <div className="font-semibold text-sm">{s.name_ar}</div>
               {isCrossListed && (
-                <div className="mt-1.5 text-[10px] text-[#B8860B] font-bold leading-tight">
+                <div className="mt-1.5 text-[10px] text-[#1F6F5F] font-bold leading-tight">
                   هيظهر في: {appearsUnderMains.join(' + ')}
                 </div>
               )}
@@ -724,7 +724,7 @@ function CategoryChip({
   }
   if (!display) return null;
   return (
-    <div className="mb-5 flex items-center justify-between rounded-xl bg-[#FAF7F0]/8 border border-[#FAF7F0]/15 px-4 py-3">
+    <div className="mb-5 flex items-center justify-between rounded-xl bg-[#F5F4F0] border border-[#E5E5E0] px-4 py-3">
       <div className="flex items-center gap-2 text-sm">
         <span className="text-lg leading-none">{display.emoji}</span>
         <span className="font-medium">{display.name}</span>
@@ -732,7 +732,7 @@ function CategoryChip({
       <button
         type="button"
         onClick={onChange}
-        className="text-xs text-[#B8860B] hover:text-[#B8860B]/80 font-medium whitespace-nowrap"
+        className="text-xs text-[#1F6F5F] hover:text-[#1F6F5F]/80 font-medium whitespace-nowrap"
       >
         تغيير الفئة ←
       </button>
@@ -770,7 +770,7 @@ function StepBasics({
   return (
     <section>
       <h2 className="text-lg font-semibold mb-1">معلومات أساسية</h2>
-      <p className="text-sm text-[#FAF7F0]/60 mb-6">وصف قصير، مكان، وفينك</p>
+      <p className="text-sm text-gray-500 mb-6">وصف قصير، مكان، وفينك</p>
 
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
 
@@ -935,7 +935,7 @@ function StepPricing({
       <h2 className="text-lg font-semibold mb-1">
         {isBeauty ? 'سعر الخدمة' : 'السعر'}
       </h2>
-      <p className="text-sm text-[#FAF7F0]/60 mb-6">
+      <p className="text-sm text-gray-500 mb-6">
         {isBeauty ? 'بكام بتقدم الخدمة الأساسية؟' : 'حضرتك بتأجره بكام؟'}
       </p>
 
@@ -948,8 +948,8 @@ function StepPricing({
               onClick={() => setPeriod(p)}
               className={`py-3 rounded-xl border text-sm transition-all ${
                 period === p
-                  ? 'bg-[#B8860B] border-[#B8860B] text-[#1F5F3F] font-semibold'
-                  : 'bg-[#FAF7F0]/5 border-[#FAF7F0]/15'
+                  ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white font-semibold'
+                  : 'bg-white border-[#E5E5E0]'
               }`}
             >
               {periodLabel[p]}
@@ -973,7 +973,7 @@ function StepPricing({
             placeholder="مثلاً: 1500"
             className={inputCls + ' pl-16'}
           />
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#FAF7F0]/60 text-sm">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
             ج.م
           </span>
         </div>
@@ -981,7 +981,7 @@ function StepPricing({
 
       {/* Non-beauty: weekly projection (existing UX) */}
       {!isBeauty && price !== '' && period === 'daily' && Number(price) > 0 && (
-        <div className="mt-4 p-4 rounded-xl bg-[#B8860B]/10 border border-[#B8860B]/30 text-sm">
+        <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
           💰 لو حد أجره أسبوع كامل = <strong>{Number(price) * 7} جنيه</strong>
           <br />
           • نصيب حضرتك (فرد، 10% عمولة): <strong>{Math.round(Number(price) * 7 * 0.9)} جنيه</strong>
@@ -992,7 +992,7 @@ function StepPricing({
 
       {/* Beauty: per-service commission preview */}
       {isBeauty && price !== '' && Number(price) > 0 && (
-        <div className="mt-4 p-4 rounded-xl bg-[#B8860B]/10 border border-[#B8860B]/30 text-sm">
+        <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
           💰 من كل {periodLabel[period]}:
           <br />
           • نصيب حضرتك (فرد، 10% عمولة): <strong>{Math.round(Number(price) * 0.9)} جنيه</strong>
@@ -1003,9 +1003,9 @@ function StepPricing({
 
       {/* Beauty: add-ons section */}
       {isBeauty && suggestedAddons.length > 0 && (
-        <div className="mt-8 pt-6 border-t border-[#FAF7F0]/10">
+        <div className="mt-8 pt-6 border-t border-[#E5E5E0]">
           <h3 className="text-base font-semibold mb-1">✨ خدمات إضافية اختيارية</h3>
-          <p className="text-xs text-[#FAF7F0]/60 mb-4">
+          <p className="text-xs text-gray-500 mb-4">
             العميل يقدر يضيفها لحجزه. شيّك على اللي بتقدمه وعدّل السعر لو حابب.
           </p>
           <div className="grid grid-cols-1 gap-2">
@@ -1016,8 +1016,8 @@ function StepPricing({
                   key={addon.slug}
                   className={`p-3 rounded-xl border transition-all ${
                     isEnabled
-                      ? 'bg-[#B8860B]/15 border-[#B8860B]/50'
-                      : 'bg-[#FAF7F0]/5 border-[#FAF7F0]/15'
+                      ? 'bg-emerald-50 border-emerald-300'
+                      : 'bg-white border-[#E5E5E0]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -1026,13 +1026,13 @@ function StepPricing({
                       onClick={() => toggleAddon(addon.slug)}
                       className={`w-6 h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all ${
                         isEnabled
-                          ? 'bg-[#B8860B] border-[#B8860B]'
-                          : 'bg-transparent border-[#FAF7F0]/30'
+                          ? 'bg-[#1F6F5F] border-[#1F6F5F]'
+                          : 'bg-transparent border-[#E5E5E0]'
                       }`}
                       aria-pressed={isEnabled}
                       aria-label={`${isEnabled ? 'الغاء' : 'اختيار'} ${addon.name_ar}`}
                     >
-                      {isEnabled && <span className="text-[#1F5F3F] text-xs font-bold">✓</span>}
+                      {isEnabled && <span className="text-white text-xs font-bold">✓</span>}
                     </button>
                     <button
                       type="button"
@@ -1050,11 +1050,11 @@ function StepPricing({
                         disabled={!isEnabled}
                         className={`w-24 p-2 rounded-lg text-sm text-left pl-9 ${
                           isEnabled
-                            ? 'bg-[#FAF7F0]/10 border border-[#FAF7F0]/20 text-[#FAF7F0]'
-                            : 'bg-[#FAF7F0]/5 border border-transparent opacity-50 text-[#FAF7F0]/60'
-                        } focus:outline-none focus:border-[#B8860B]`}
+                            ? 'bg-[#F5F4F0] border border-[#E5E5E0] text-[#1A2E26]'
+                            : 'bg-white border border-transparent opacity-50 text-gray-500'
+                        } focus:outline-none focus:border-[#1F6F5F]`}
                       />
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-[#FAF7F0]/50 pointer-events-none">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 pointer-events-none">
                         ج.م
                       </span>
                     </div>
@@ -1063,7 +1063,7 @@ function StepPricing({
               );
             })}
           </div>
-          <div className="mt-3 text-xs text-[#FAF7F0]/50 text-center">
+          <div className="mt-3 text-xs text-gray-500 text-center">
             {enabledAddons.size === 0
               ? 'لسة معديتش أي خدمة إضافية'
               : `${enabledAddons.size} ${enabledAddons.size === 1 ? 'خدمة إضافية' : 'خدمات إضافية'} مختارة`}
@@ -1151,14 +1151,14 @@ function StepPhotos({
   return (
     <section>
       <h2 className="text-lg font-semibold mb-1">الصور</h2>
-      <p className="text-sm text-[#FAF7F0]/60 mb-6">
+      <p className="text-sm text-gray-500 mb-6">
         ارفع صورة واحدة على الأقل عشان نقدر ننشر إعلانك فوراً. الإعلانات بصور بتاخد حجوزات أسرع بـ 7 مرات.
       </p>
 
       {photos.length > 0 && (
         <div className="grid grid-cols-3 gap-2 mb-4">
           {photos.map((p, i) => (
-            <div key={i} className="relative aspect-square rounded-xl overflow-hidden bg-black/20">
+            <div key={i} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.url} alt="" className="w-full h-full object-cover" />
               <button
@@ -1174,10 +1174,10 @@ function StepPhotos({
       )}
 
       <label className="block">
-        <div className="border-2 border-dashed border-[#FAF7F0]/25 rounded-2xl p-8 text-center cursor-pointer hover:border-[#B8860B] transition-colors">
+        <div className="border-2 border-dashed border-[#D1D5DB] rounded-2xl p-8 text-center cursor-pointer hover:border-[#1F6F5F] transition-colors">
           <div className="text-3xl mb-2">📸</div>
           <div className="font-semibold">{uploading ? 'جاري الرفع...' : 'اضغط هنا لإضافة صور'}</div>
-          <div className="text-xs text-[#FAF7F0]/60 mt-1">JPG/PNG، حتى 8 صور</div>
+          <div className="text-xs text-gray-500 mt-1">JPG/PNG، حتى 8 صور</div>
         </div>
         <input
           type="file"
@@ -1189,14 +1189,14 @@ function StepPhotos({
         />
       </label>
 
-      {error && <div className="mt-3 text-sm text-red-300">{error}</div>}
+      {error && <div className="mt-3 text-sm text-red-600">{error}</div>}
       {autoSaving && (
-        <div className="mt-2 text-xs text-[#FAF7F0]/60">
+        <div className="mt-2 text-xs text-gray-500">
           ⏳ جاري حفظ الصور…
         </div>
       )}
       {!autoSaving && !error && photos.length > 0 && (
-        <div className="mt-2 text-xs text-emerald-300">
+        <div className="mt-2 text-xs text-emerald-700">
           ✓ {photos.length} {photos.length === 1 ? 'صورة محفوظة' : 'صور محفوظة'}
         </div>
       )}
@@ -1214,7 +1214,7 @@ function StepPhotos({
         </button>
       </div>
       {photos.length === 0 && (
-        <p className="text-xs text-[#FAF7F0]/50 mt-3 text-center">
+        <p className="text-xs text-gray-500 mt-3 text-center">
           💡 صورة واحدة كافية عشان تبدأ — تقدر تضيف باقي الصور من حسابك بعدين.
         </p>
       )}
@@ -1242,7 +1242,7 @@ function StepContact({
   return (
     <section>
       <h2 className="text-lg font-semibold mb-1">بياناتك</h2>
-      <p className="text-sm text-[#FAF7F0]/60 mb-6">
+      <p className="text-sm text-gray-500 mb-6">
         آخر خطوة. هنبعتلك تأكيد على الواتس اب.
       </p>
 
@@ -1274,24 +1274,24 @@ function StepContact({
             onClick={() => setAccountType('individual')}
             className={`p-4 rounded-xl border text-right transition-all ${
               accountType === 'individual'
-                ? 'bg-[#B8860B] border-[#B8860B] text-[#1F5F3F]'
-                : 'bg-[#FAF7F0]/5 border-[#FAF7F0]/15'
+                ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
+                : 'bg-white border-[#E5E5E0]'
             }`}
           >
             <div className="font-semibold">فرد</div>
-            <div className={`text-xs mt-1 ${accountType === 'individual' ? 'text-[#1F5F3F]/70' : 'text-[#FAF7F0]/60'}`}>عمولة 10%</div>
+            <div className={`text-xs mt-1 ${accountType === 'individual' ? 'text-white/70' : 'text-gray-500'}`}>عمولة 10%</div>
           </button>
           <button
             type="button"
             onClick={() => setAccountType('business')}
             className={`p-4 rounded-xl border text-right transition-all ${
               accountType === 'business'
-                ? 'bg-[#B8860B] border-[#B8860B] text-[#1F5F3F]'
-                : 'bg-[#FAF7F0]/5 border-[#FAF7F0]/15'
+                ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
+                : 'bg-white border-[#E5E5E0]'
             }`}
           >
             <div className="font-semibold">شركة</div>
-            <div className={`text-xs mt-1 ${accountType === 'business' ? 'text-[#1F5F3F]/70' : 'text-[#FAF7F0]/60'}`}>عمولة 5%</div>
+            <div className={`text-xs mt-1 ${accountType === 'business' ? 'text-white/70' : 'text-gray-500'}`}>عمولة 5%</div>
           </button>
         </div>
       </Field>
@@ -1308,7 +1308,7 @@ function StepContact({
         </Field>
       )}
 
-      <div className="mt-6 p-4 rounded-xl bg-[#FAF7F0]/5 border border-[#FAF7F0]/10 text-xs text-[#FAF7F0]/70">
+      <div className="mt-6 p-4 rounded-xl bg-white border border-[#E5E5E0] text-xs text-gray-600">
         ✅ بكدا حضرتك سجلت الليستنج — هنبعتلك تأكيد على الواتس اب وتقدر تكمل تسجيل حسابك (دقيقة واحدة).
       </div>
 
@@ -1342,13 +1342,13 @@ function validateContact(patch: Partial<DraftPayload>, setErrors: (e: Record<str
 // SHARED UI
 // =================================================
 const inputCls =
-  'w-full p-3 rounded-xl bg-[#FAF7F0]/5 border border-[#FAF7F0]/15 text-[#FAF7F0] placeholder:text-[#FAF7F0]/40 focus:outline-none focus:border-[#B8860B]';
+  'w-full p-3 rounded-xl bg-white border border-[#E5E5E0] text-[#1A2E26] placeholder:text-gray-400 focus:outline-none focus:border-[#1F6F5F]';
 
 const btnPrimary =
-  'py-3 px-4 rounded-xl bg-[#B8860B] text-[#1F5F3F] font-semibold hover:bg-[#B8860B]/90 disabled:opacity-50 transition-all';
+  'py-3 px-4 rounded-xl bg-[#1F6F5F] text-white font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50 transition-all';
 
 const btnSecondary =
-  'py-3 px-4 rounded-xl bg-[#FAF7F0]/5 border border-[#FAF7F0]/15 hover:bg-[#FAF7F0]/10 transition-all';
+  'py-3 px-4 rounded-xl bg-white border border-[#E5E5E0] hover:bg-[#F5F4F0] transition-all';
 
 function Field({ label, error, required, children }: {
   label: string;
@@ -1360,10 +1360,10 @@ function Field({ label, error, required, children }: {
     <div className="mb-4">
       <label className="block text-sm font-medium mb-2">
         {label}
-        {required && <span className="text-[#B8860B] mr-1">*</span>}
+        {required && <span className="text-[#1F6F5F] mr-1">*</span>}
       </label>
       {children}
-      {error && <div className="text-xs text-red-300 mt-1">{error}</div>}
+      {error && <div className="text-xs text-red-600 mt-1">{error}</div>}
     </div>
   );
 }
