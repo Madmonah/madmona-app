@@ -64,7 +64,7 @@ export default function TopNav() {
               />
             </div>
             <div className="hidden sm:block">
-              <p className="font-black text-[#1F5F3F] text-base leading-none">مضمونة</p>
+              <p className="font-black text-[#1F6F5F] text-base leading-none">مضمونة</p>
               <p className="text-[9px] text-gray-500 font-bold tracking-[0.25em] mt-0.5">
                 MADMONA
               </p>
@@ -109,7 +109,7 @@ export default function TopNav() {
                   />
                 </div>
                 <div>
-                  <p className="font-black text-[#1F5F3F]">مضمونة</p>
+                  <p className="font-black text-[#1F6F5F]">مضمونة</p>
                   <p className="text-[9px] text-gray-500 font-bold tracking-[0.2em]">
                     MADMONA
                   </p>
@@ -144,8 +144,8 @@ export default function TopNav() {
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline group transition-colors"
               >
-                <div className="w-10 h-10 rounded-xl bg-[#1F5F3F]/10 flex items-center justify-center flex-shrink-0">
-                  <LogIn className="w-5 h-5 text-[#1F5F3F]" />
+                <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 flex items-center justify-center flex-shrink-0">
+                  <LogIn className="w-5 h-5 text-[#1F6F5F]" />
                 </div>
                 <div className="flex-1">
                   <p className="font-bold text-gray-900">تسجيل الدخول</p>
@@ -158,8 +158,8 @@ export default function TopNav() {
                 onClick={triggerShare}
                 className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] group transition-colors text-right"
               >
-                <div className="w-10 h-10 rounded-xl bg-[#B8860B]/10 flex items-center justify-center flex-shrink-0">
-                  <Share2 className="w-5 h-5 text-[#B8860B]" />
+                <div className="w-10 h-10 rounded-xl bg-[#2FA084]/10 flex items-center justify-center flex-shrink-0">
+                  <Share2 className="w-5 h-5 text-[#2FA084]" />
                 </div>
                 <div className="flex-1">
                   <p className="font-bold text-gray-900">شارك مضمونة</p>

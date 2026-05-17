@@ -43,9 +43,9 @@ interface ApiResponse {
 
 const TABS: { id: Tab; label: string; icon: typeof Trophy; accent: string }[] = [
   { id: 'economy',     label: 'اقتصاد',    icon: DollarSign, accent: '#10b981' },
-  { id: 'real_estate', label: 'عقارات',    icon: Home,       accent: '#1F5F3F' },
+  { id: 'real_estate', label: 'عقارات',    icon: Home,       accent: '#1F6F5F' },
   { id: 'automotive',  label: 'سيارات',    icon: Car,        accent: '#3b82f6' },
-  { id: 'business',    label: 'أعمال',     icon: Briefcase,  accent: '#B8860B' },
+  { id: 'business',    label: 'أعمال',     icon: Briefcase,  accent: '#2FA084' },
   { id: 'tourism',     label: 'سياحة',     icon: Plane,      accent: '#06b6d4' },
   { id: 'fashion',     label: 'موضة وأعراس', icon: Sparkles,   accent: '#ec4899' },
   { id: 'tech',        label: 'تكنولوجيا', icon: Camera,     accent: '#a855f7' },
@@ -146,7 +146,7 @@ export default function CompactNewsTabs() {
   return (
     <div className="bg-white rounded-3xl shadow-elevated overflow-hidden border border-gray-100">
       {/* Header strip */}
-      <div className="bg-gradient-to-l from-[#1F5F3F] via-[#2d7a52] to-[#1F5F3F] px-5 py-3 flex items-center justify-between">
+      <div className="bg-gradient-to-l from-[#1F6F5F] via-[#2d7a52] to-[#1F6F5F] px-5 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <Newspaper className="w-4 h-4 text-white" />
           <span className="text-sm font-black text-white tracking-wider">آخر الأخبار</span>
@@ -199,7 +199,7 @@ export default function CompactNewsTabs() {
           <p className="text-sm text-gray-500">مفيش أخبار دلوقتي في {activeTabConfig.label}</p>
           <button
             onClick={() => fetchTab(activeTab)}
-            className="mt-4 text-xs font-bold text-[#1F5F3F] hover:underline flex items-center gap-1 mx-auto"
+            className="mt-4 text-xs font-bold text-[#1F6F5F] hover:underline flex items-center gap-1 mx-auto"
           >
             <RefreshCw className="w-3 h-3" /> حاول تاني
           </button>
@@ -277,7 +277,7 @@ export default function CompactNewsTabs() {
             <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
               <div className={`inline-flex items-center gap-1 text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full mb-3 ${
                 featured.isEgyptian
-                  ? 'bg-[#B8860B] text-white'
+                  ? 'bg-[#2FA084] text-white'
                   : 'bg-white/95 text-gray-900'
               }`}>
                 {featured.isEgyptian && <MapPin className="w-2.5 h-2.5" />}
@@ -324,7 +324,7 @@ export default function CompactNewsTabs() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-                  <h4 className="text-xs sm:text-sm font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-[#1F5F3F] transition-colors">
+                  <h4 className="text-xs sm:text-sm font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-[#1F6F5F] transition-colors">
                     {item.title}
                   </h4>
                   <div className="flex items-center justify-between gap-2 mt-1.5">

@@ -226,11 +226,11 @@ export default function CustomerBookingDetailPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
           <Link
             href={`/auth/login?redirect=/account/bookings/${bookingId}`}
-            className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold"
+            className="block bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold"
           >
             تسجيل دخول
           </Link>
@@ -245,7 +245,7 @@ export default function CustomerBookingDetailPage() {
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-3" />
           <h1 className="font-bold mb-2">الحجز ده مش موجود</h1>
-          <Link href="/account/bookings" className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold mt-4">
+          <Link href="/account/bookings" className="inline-block bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold mt-4">
             ارجع للحجوزات
           </Link>
         </div>
@@ -380,7 +380,7 @@ export default function CustomerBookingDetailPage() {
           )}
           <div className="flex justify-between font-bold pt-2 border-t border-gray-100">
             <span>الإجمالي</span>
-            <span className="text-[#1F5F3F]">{Number(booking.total_amount).toLocaleString('ar-EG')} ج.م</span>
+            <span className="text-[#1F6F5F]">{Number(booking.total_amount).toLocaleString('ar-EG')} ج.م</span>
           </div>
         </div>
 
@@ -397,7 +397,7 @@ export default function CustomerBookingDetailPage() {
         {booking.supplier_notes && (
           <div className="bg-white rounded-2xl border border-gray-100 p-4">
             <h2 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#1F5F3F]" /> ملاحظات المورد
+              <FileText className="w-4 h-4 text-[#1F6F5F]" /> ملاحظات المورد
             </h2>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">{booking.supplier_notes}</p>
           </div>
@@ -471,7 +471,7 @@ export default function CustomerBookingDetailPage() {
               {[1, 2, 3, 4, 5].map(s => (
                 <Star
                   key={s}
-                  className={`w-5 h-5 ${s <= review.rating ? 'fill-[#B8860B] text-[#B8860B]' : 'text-gray-200'}`}
+                  className={`w-5 h-5 ${s <= review.rating ? 'fill-[#2FA084] text-[#2FA084]' : 'text-gray-200'}`}
                 />
               ))}
               <span className="text-sm font-medium text-gray-700 mr-2">{review.rating}/5</span>
@@ -495,7 +495,7 @@ export default function CustomerBookingDetailPage() {
                   className="p-1"
                 >
                   <Star
-                    className={`w-8 h-8 ${s <= rating ? 'fill-[#B8860B] text-[#B8860B]' : 'text-gray-300'}`}
+                    className={`w-8 h-8 ${s <= rating ? 'fill-[#2FA084] text-[#2FA084]' : 'text-gray-300'}`}
                   />
                 </button>
               ))}
@@ -507,7 +507,7 @@ export default function CustomerBookingDetailPage() {
               rows={3}
               maxLength={500}
               placeholder="شارك تجربتك (اختياري)"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30"
             />
 
             {reviewError && (
@@ -520,7 +520,7 @@ export default function CustomerBookingDetailPage() {
             <button
               type="submit"
               disabled={submittingReview || rating === 0}
-              className="w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {submittingReview ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> جاري الإرسال...</>

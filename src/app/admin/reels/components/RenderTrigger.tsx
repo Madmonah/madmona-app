@@ -118,7 +118,7 @@ export default function RenderTrigger({ draftedReels }: Props) {
         style={{
           background: loading || draftedReels.length === 0
             ? '#999'
-            : 'linear-gradient(135deg, #1F5F3F 0%, #2d7a52 50%, #B8860B 100%)',
+            : 'linear-gradient(135deg, #1F6F5F 0%, #2d7a52 50%, #2FA084 100%)',
           color: '#FAF7F0',
           border: 'none',
           padding: '14px 28px',
@@ -126,7 +126,7 @@ export default function RenderTrigger({ draftedReels }: Props) {
           fontSize: 16,
           fontWeight: 'bold',
           cursor: loading || draftedReels.length === 0 ? 'wait' : 'pointer',
-          boxShadow: '0 6px 16px rgba(31, 95, 63, 0.3)',
+          boxShadow: '0 6px 16px rgba(31, 111, 95, 0.3)',
           transition: 'all 0.2s',
         }}
       >
@@ -143,7 +143,7 @@ export default function RenderTrigger({ draftedReels }: Props) {
           <div style={{ background: '#f0f0f0', height: 6, borderRadius: 3, overflow: 'hidden' }}>
             <div style={{
               width: `${(progress.current / progress.total) * 100}%`,
-              background: 'linear-gradient(90deg, #1F5F3F, #B8860B)',
+              background: 'linear-gradient(90deg, #1F6F5F, #2FA084)',
               height: '100%', transition: 'width 0.3s',
             }} />
           </div>
@@ -164,7 +164,7 @@ export default function RenderTrigger({ draftedReels }: Props) {
           marginTop: 16, padding: 16, background: '#fff', borderRadius: 12,
           border: '1px solid #eee',
         }}>
-          <div style={{ fontWeight: 'bold', color: '#1F5F3F', marginBottom: 8 }}>
+          <div style={{ fontWeight: 'bold', color: '#1F6F5F', marginBottom: 8 }}>
             📊 النتيجة: {results.filter(r => r.status === 'OK').length} نجح / {results.filter(r => r.status === 'FAIL').length} فشل من أصل {results.length}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, maxHeight: 300, overflowY: 'auto' }}>
@@ -188,7 +188,7 @@ export default function RenderTrigger({ draftedReels }: Props) {
             <button
               onClick={() => window.location.reload()}
               style={{
-                marginTop: 12, background: '#1F5F3F', color: '#fff', border: 'none',
+                marginTop: 12, background: '#1F6F5F', color: '#fff', border: 'none',
                 padding: '10px 20px', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 'bold',
               }}
             >

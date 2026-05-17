@@ -62,11 +62,11 @@ export default function TrustStatsSection() {
   return (
     <section className="py-16 md:py-20 relative overflow-hidden">
       {/* Decorative background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#1F5F3F]/3 via-white to-[#B8860B]/3" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#1F6F5F]/3 via-white to-[#2FA084]/3" />
 
       <div className="max-w-7xl mx-auto px-4 relative z-10">
         <div className="text-center mb-10 md:mb-14">
-          <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">
+          <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2FA084] mb-3">
             BY THE NUMBERS
           </p>
           <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-[0.95]">
@@ -85,8 +85,8 @@ export default function TrustStatsSection() {
             suffix="+"
             label="خدمة متاحة"
             sublabel="موثقة وجاهزة"
-            color="from-[#1F5F3F]/10 to-[#1F5F3F]/5"
-            iconColor="bg-[#1F5F3F]/15 text-[#1F5F3F]"
+            color="from-[#1F6F5F]/10 to-[#1F6F5F]/5"
+            iconColor="bg-[#1F6F5F]/15 text-[#1F6F5F]"
             loaded={loaded}
             delay={0}
           />
@@ -97,8 +97,8 @@ export default function TrustStatsSection() {
             suffix="+"
             label="مورد معتمد"
             sublabel="بعد التحقق الكامل"
-            color="from-[#B8860B]/10 to-[#B8860B]/5"
-            iconColor="bg-[#B8860B]/15 text-[#B8860B]"
+            color="from-[#2FA084]/10 to-[#2FA084]/5"
+            iconColor="bg-[#2FA084]/15 text-[#2FA084]"
             loaded={loaded}
             delay={150}
           />

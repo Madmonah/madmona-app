@@ -389,7 +389,7 @@ function SupplierMarketplaceContent() {
   if (stage === 'loading') {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#1F5F3F] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
       </div>
     )
   }
@@ -398,11 +398,11 @@ function SupplierMarketplaceContent() {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
           <Link
             href="/auth/login?redirect=/supplier/marketplace"
-            className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold"
+            className="block bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold"
           >
             دخول
           </Link>
@@ -415,14 +415,14 @@ function SupplierMarketplaceContent() {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
-          <Building2 className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
+          <Building2 className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
           <h1 className="font-bold mb-2">مش مورد على Madmona</h1>
           <p className="text-sm text-gray-500 mb-4">
             عشان تنشر listings لازم تسجّل كمورد، أو يدعوك مدير فريق.
           </p>
           <Link
             href="/supplier/register"
-            className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold"
+            className="inline-block bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold"
           >
             سجّل دلوقتي
           </Link>
@@ -442,7 +442,7 @@ function SupplierMarketplaceContent() {
               {supplier.kyc_rejection_reason}
             </p>
           )}
-          <a href="https://wa.me/201002229982" className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold">
+          <a href="https://wa.me/201002229982" className="inline-block bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold">
             تواصل مع Madmona
           </a>
         </div>
@@ -462,9 +462,9 @@ function SupplierMarketplaceContent() {
               <h1 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                 {supplier?.business_name}
                 {access.isOwner ? (
-                  <Crown className="w-4 h-4 text-[#B8860B]" aria-label="مالك" />
+                  <Crown className="w-4 h-4 text-[#2FA084]" aria-label="مالك" />
                 ) : (
-                  <span className="text-[10px] font-bold px-2 py-0.5 bg-[#1F5F3F]/10 text-[#1F5F3F] rounded-full">
+                  <span className="text-[10px] font-bold px-2 py-0.5 bg-[#1F6F5F]/10 text-[#1F6F5F] rounded-full">
                     {access.roleLabel || 'موظف'}
                   </span>
                 )}
@@ -474,7 +474,7 @@ function SupplierMarketplaceContent() {
           </div>
           <div className="flex items-center gap-2">
             {access.canManageBookings && (
-              <Link href="/supplier/marketplace/bookings" className="text-xs font-bold text-[#1F5F3F] hover:underline px-2">
+              <Link href="/supplier/marketplace/bookings" className="text-xs font-bold text-[#1F6F5F] hover:underline px-2">
                 الحجوزات
               </Link>
             )}
@@ -535,7 +535,7 @@ function SupplierMarketplaceContent() {
         {(access.isOwner || access.canViewAnalytics) && (
           <div className="grid grid-cols-3 gap-3 mb-6">
             <div className="bg-white rounded-xl border border-gray-100 p-3">
-              <div className="flex items-center gap-1.5 mb-1 text-[#1F5F3F]">
+              <div className="flex items-center gap-1.5 mb-1 text-[#1F6F5F]">
                 <DollarSign className="w-3.5 h-3.5" />
                 <p className="text-[10px] font-medium uppercase tracking-wider">إيرادات صافية</p>
               </div>
@@ -578,7 +578,7 @@ function SupplierMarketplaceContent() {
           {access.canManageListings && (
             <Link
               href="/supplier/marketplace/new"
-              className="flex items-center gap-1 px-4 py-2 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90"
+              className="flex items-center gap-1 px-4 py-2 bg-[#1F6F5F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F6F5F]/90"
             >
               <Plus className="w-4 h-4" /> ضيف listing جديد
             </Link>
@@ -595,7 +595,7 @@ function SupplierMarketplaceContent() {
             {access.canManageListings && (
               <Link
                 href="/supplier/marketplace/new"
-                className="inline-flex items-center gap-1 px-5 py-2.5 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90"
+                className="inline-flex items-center gap-1 px-5 py-2.5 bg-[#1F6F5F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F6F5F]/90"
               >
                 <Plus className="w-4 h-4" /> ضيف أول listing
               </Link>
@@ -714,7 +714,7 @@ function SupplierMarketplaceContent() {
                         {access.canManageListings && (
                           <Link
                             href={`/supplier/marketplace/${listing.id}/edit`}
-                            className="p-1.5 text-[#1F5F3F] hover:bg-[#1F5F3F]/10 rounded"
+                            className="p-1.5 text-[#1F6F5F] hover:bg-[#1F6F5F]/10 rounded"
                             title="تعديل"
                           >
                             <Edit2 className="w-3.5 h-3.5" />

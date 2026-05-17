@@ -93,23 +93,23 @@ export default async function AdBuilderPage() {
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div>
-            <h1 style={{ color: '#1F5F3F', margin: 0, fontSize: 26 }}>📣 Ad Builder</h1>
+            <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>📣 Ad Builder</h1>
             <p style={{ color: '#666', margin: '4px 0 0', fontSize: 13 }}>اختار إعلان واحصل على لينك جاهز لـ Meta ads</p>
           </div>
           <div style={{ display: 'flex', gap: 12, fontSize: 13 }}>
-            <a href="/admin/agents" style={{ color: '#1F5F3F' }}>← Agents</a>
-            <a href="/admin/leads-feed" style={{ color: '#1F5F3F' }}>← Leads</a>
-            <a href="/admin/activity" style={{ color: '#1F5F3F' }}>← Activity</a>
+            <a href="/admin/agents" style={{ color: '#1F6F5F' }}>← Agents</a>
+            <a href="/admin/leads-feed" style={{ color: '#1F6F5F' }}>← Leads</a>
+            <a href="/admin/activity" style={{ color: '#1F6F5F' }}>← Activity</a>
           </div>
         </div>
 
         <div style={{ background: '#fff', padding: 16, borderRadius: 12, marginBottom: 20, border: '1px solid #eee' }}>
-          <h3 style={{ color: '#1F5F3F', margin: '0 0 8px', fontSize: 14 }}>📌 إزاي تستخدم الـ Ad Builder؟</h3>
+          <h3 style={{ color: '#1F6F5F', margin: '0 0 8px', fontSize: 14 }}>📌 إزاي تستخدم الـ Ad Builder؟</h3>
           <ol style={{ margin: 0, paddingRight: 20, fontSize: 13, color: '#444', lineHeight: 1.8 }}>
             <li>اختار إعلان من القائمة تحت</li>
             <li>اعمل campaign name بسيط (مثلاً <code style={{ background: '#f0f0f0', padding: '2px 6px', borderRadius: 4 }}>cam_sony_oct</code>)</li>
             <li>انسخ الـ URL وحطه في Meta Ads Manager كـ destination</li>
-            <li>راقب الـ leads في <a href="/admin/leads-feed" style={{ color: '#1F5F3F' }}>Leads Feed</a></li>
+            <li>راقب الـ leads في <a href="/admin/leads-feed" style={{ color: '#1F6F5F' }}>Leads Feed</a></li>
           </ol>
         </div>
 

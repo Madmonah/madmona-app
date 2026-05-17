@@ -206,8 +206,8 @@ function SignupContent() {
   return (
     <div className="min-h-screen gradient-mesh flex flex-col relative overflow-hidden" dir="rtl">
       {/* Decorative blobs */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1F5F3F]/5 rounded-full blur-3xl animate-float pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#B8860B]/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1F6F5F]/5 rounded-full blur-3xl animate-float pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#2FA084]/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <header className="relative z-10">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
@@ -221,7 +221,7 @@ function SignupContent() {
         <div className="w-full max-w-md animate-slide-up">
           <div className="text-center mb-6">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/80 backdrop-blur rounded-full mb-4 shadow-soft">
-              <Sparkles className="w-3 h-3 text-[#B8860B]" />
+              <Sparkles className="w-3 h-3 text-[#2FA084]" />
               <span className="text-xs font-bold text-gray-700">
                 {fromListing ? 'أصلك متسجل ✓ خطوة واحدة لباقي العملية' : 'انضم لمضمونة'}
               </span>
@@ -240,7 +240,7 @@ function SignupContent() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                  <User className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                  <User className="w-3.5 h-3.5 text-[#1F6F5F]" />
                   الاسم بالكامل
                 </label>
                 <input
@@ -248,14 +248,14 @@ function SignupContent() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="محمد أحمد"
-                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
+                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
                   required
                 />
               </div>
 
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Phone className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                  <Phone className="w-3.5 h-3.5 text-[#1F6F5F]" />
                   رقم التليفون
                 </label>
                 <input
@@ -263,7 +263,7 @@ function SignupContent() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="01XXXXXXXXX"
-                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
+                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   autoComplete="tel"
@@ -273,7 +273,7 @@ function SignupContent() {
 
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Mail className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                  <Mail className="w-3.5 h-3.5 text-[#1F6F5F]" />
                   الإيميل
                   <span className="text-[10px] font-normal text-gray-400 normal-case tracking-normal mr-auto flex items-center gap-1">
                     <KeyRound className="w-2.5 h-2.5" />
@@ -285,7 +285,7 @@ function SignupContent() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
+                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   autoComplete="email"
@@ -298,7 +298,7 @@ function SignupContent() {
 
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                  <CreditCard className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                  <CreditCard className="w-3.5 h-3.5 text-[#1F6F5F]" />
                   رقم البطاقة
                   <span className="text-[10px] font-normal text-gray-400 normal-case tracking-normal mr-auto">
                     (اختياري)
@@ -309,7 +309,7 @@ function SignupContent() {
                   value={nationalId}
                   onChange={(e) => setNationalId(e.target.value.replace(/\D/g, '').slice(0, 14))}
                   placeholder="14 رقم"
-                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
+                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   inputMode="numeric"
@@ -322,7 +322,7 @@ function SignupContent() {
 
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Lock className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                  <Lock className="w-3.5 h-3.5 text-[#1F6F5F]" />
                   كلمة السر
                 </label>
                 <input
@@ -330,7 +330,7 @@ function SignupContent() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="6 حروف على الأقل"
-                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
+                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   autoComplete="new-password"
@@ -341,7 +341,7 @@ function SignupContent() {
 
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Lock className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                  <Lock className="w-3.5 h-3.5 text-[#1F6F5F]" />
                   أكّد كلمة السر
                 </label>
                 <input
@@ -349,7 +349,7 @@ function SignupContent() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
+                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   autoComplete="new-password"
@@ -368,7 +368,7 @@ function SignupContent() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-[#1F5F3F] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-elevated transition-all flex items-center justify-center gap-2"
+                className="w-full bg-[#1F6F5F] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-elevated transition-all flex items-center justify-center gap-2"
               >
                 {submitting ? (
                   <>
@@ -388,7 +388,7 @@ function SignupContent() {
               <p className="text-sm text-gray-600 mb-2">عندك حساب بالفعل؟</p>
               <Link
                 href={`/auth/login${redirectTo !== '/account' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
-                className="inline-flex items-center gap-1 text-[#1F5F3F] font-bold hover:gap-2 transition-all no-underline"
+                className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold hover:gap-2 transition-all no-underline"
               >
                 سجّل دخولك
                 <ArrowRight className="w-3.5 h-3.5 rotate-180" />
@@ -398,11 +398,11 @@ function SignupContent() {
 
           <p className="text-center text-xs text-gray-500 mt-6">
             بالتسجيل، أنت توافق على{' '}
-            <Link href="/terms" className="text-[#1F5F3F] font-semibold hover:underline">
+            <Link href="/terms" className="text-[#1F6F5F] font-semibold hover:underline">
               الشروط والأحكام
             </Link>
             {' '}و{' '}
-            <Link href="/privacy" className="text-[#1F5F3F] font-semibold hover:underline">
+            <Link href="/privacy" className="text-[#1F6F5F] font-semibold hover:underline">
               سياسة الخصوصية
             </Link>
           </p>
@@ -418,7 +418,7 @@ export default function SignupPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#1F5F3F] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
       </div>
     }>
       <SignupContent />

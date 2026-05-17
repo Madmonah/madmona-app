@@ -71,7 +71,7 @@ export default function FinancialTicker() {
 
   if (loading || !data) {
     return (
-      <div className="bg-gradient-to-l from-[#1F5F3F] to-[#2d7a52] text-white py-2 overflow-hidden">
+      <div className="bg-gradient-to-l from-[#1F6F5F] to-[#2d7a52] text-white py-2 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 flex items-center gap-2 text-xs">
           <RefreshCw className="w-3 h-3 animate-spin" />
           <span className="font-bold">جاري تحميل أسعار الصرف والذهب...</span>
@@ -105,7 +105,7 @@ export default function FinancialTicker() {
 
   return (
     <div
-      className="bg-gradient-to-l from-[#1F5F3F] via-[#2d7a52] to-[#1F5F3F] text-white py-2.5 overflow-hidden border-b border-white/10"
+      className="bg-gradient-to-l from-[#1F6F5F] via-[#2d7a52] to-[#1F6F5F] text-white py-2.5 overflow-hidden border-b border-white/10"
       dir="ltr"
     >
       <div className="max-w-full overflow-hidden relative">
@@ -117,7 +117,7 @@ export default function FinancialTicker() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
             </span>
             <span className="text-[11px] font-black uppercase tracking-widest">LIVE</span>
-            <TrendingUp className="w-3.5 h-3.5 text-[#B8860B]" />
+            <TrendingUp className="w-3.5 h-3.5 text-[#2FA084]" />
           </div>
 
           {tickerItems.map((item, i) => (

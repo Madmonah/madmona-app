@@ -94,8 +94,8 @@ function ResetPasswordContent() {
 
   return (
     <div className="min-h-screen gradient-mesh flex flex-col relative overflow-hidden" dir="rtl">
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1F5F3F]/5 rounded-full blur-3xl animate-float pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#B8860B]/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1F6F5F]/5 rounded-full blur-3xl animate-float pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#2FA084]/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <header className="relative z-10">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
@@ -110,7 +110,7 @@ function ResetPasswordContent() {
           {/* Loading */}
           {stage === 'loading' && (
             <div className="bg-white rounded-3xl shadow-luxe p-10 text-center">
-              <Loader2 className="w-8 h-8 text-[#1F5F3F] animate-spin mx-auto mb-3" />
+              <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin mx-auto mb-3" />
               <p className="text-sm text-gray-600">جاري التحقق من اللينك...</p>
             </div>
           )}
@@ -133,7 +133,7 @@ function ResetPasswordContent() {
               </p>
               <Link
                 href="/auth/forgot-password"
-                className="inline-flex items-center gap-2 bg-[#1F5F3F] text-white px-6 py-3.5 rounded-xl font-bold shadow-elevated hover:shadow-luxe transition-all no-underline"
+                className="inline-flex items-center gap-2 bg-[#1F6F5F] text-white px-6 py-3.5 rounded-xl font-bold shadow-elevated hover:shadow-luxe transition-all no-underline"
               >
                 <KeyRound className="w-4 h-4" />
                 اطلب لينك جديد
@@ -153,7 +153,7 @@ function ResetPasswordContent() {
               </p>
               <Link
                 href="/auth/login"
-                className="inline-flex items-center gap-2 bg-[#1F5F3F] text-white px-6 py-3.5 rounded-xl font-bold shadow-elevated hover:shadow-luxe transition-all no-underline"
+                className="inline-flex items-center gap-2 bg-[#1F6F5F] text-white px-6 py-3.5 rounded-xl font-bold shadow-elevated hover:shadow-luxe transition-all no-underline"
               >
                 سجّل دخول
                 <ArrowRight className="w-4 h-4 rotate-180" />
@@ -166,7 +166,7 @@ function ResetPasswordContent() {
             <>
               <div className="text-center mb-6">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/80 backdrop-blur rounded-full mb-4 shadow-soft">
-                  <Sparkles className="w-3 h-3 text-[#B8860B]" />
+                  <Sparkles className="w-3 h-3 text-[#2FA084]" />
                   <span className="text-xs font-bold text-gray-700">مضمونة · Madmona</span>
                 </div>
                 <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight tracking-tight">
@@ -181,9 +181,9 @@ function ResetPasswordContent() {
               </div>
 
               <div className="bg-white rounded-3xl shadow-luxe p-7 md:p-9">
-                <div className="mb-4 p-3 bg-[#1F5F3F]/5 border border-[#1F5F3F]/15 rounded-xl flex items-start gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#1F5F3F] flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-[#1F5F3F]/90 leading-relaxed">
+                <div className="mb-4 p-3 bg-[#1F6F5F]/5 border border-[#1F6F5F]/15 rounded-xl flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-[#1F6F5F]/90 leading-relaxed">
                     اختار كلمة سر قوية: 8 حروف أو أكتر، وتجمع بين أحرف وأرقام.
                   </p>
                 </div>
@@ -191,7 +191,7 @@ function ResetPasswordContent() {
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
                     <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                      <Lock className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                      <Lock className="w-3.5 h-3.5 text-[#1F6F5F]" />
                       كلمة السر الجديدة
                     </label>
                     <div className="relative">
@@ -200,7 +200,7 @@ function ResetPasswordContent() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all pl-12"
+                        className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all pl-12"
                         dir="ltr"
                         style={{ textAlign: 'right' }}
                         autoComplete="new-password"
@@ -225,7 +225,7 @@ function ResetPasswordContent() {
 
                   <div>
                     <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                      <Lock className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                      <Lock className="w-3.5 h-3.5 text-[#1F6F5F]" />
                       تأكيد كلمة السر
                     </label>
                     <input
@@ -233,7 +233,7 @@ function ResetPasswordContent() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
+                      className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
                       dir="ltr"
                       style={{ textAlign: 'right' }}
                       autoComplete="new-password"
@@ -256,7 +256,7 @@ function ResetPasswordContent() {
                   <button
                     type="submit"
                     disabled={submitting || !password || !confirmPassword || password.length < 8 || password !== confirmPassword}
-                    className="w-full bg-[#1F5F3F] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-[#1F6F5F] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
                   >
                     {submitting ? (
                       <>
@@ -286,7 +286,7 @@ export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#1F5F3F] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
       </div>
     }>
       <ResetPasswordContent />

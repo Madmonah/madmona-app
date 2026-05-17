@@ -57,34 +57,34 @@ export default function RefreshFBTokenPage() {
           <h2 className="font-bold text-gray-900 mb-3">خطوات التجديد (دقيقتين):</h2>
           <ol className="space-y-3 text-sm text-gray-700">
             <li className="flex gap-2">
-              <span className="font-bold text-[#1F5F3F]">1.</span>
+              <span className="font-bold text-[#1F6F5F]">1.</span>
               <span>
                 اضغط على{' '}
                 <a
                   href="https://developers.facebook.com/tools/explorer/"
                   target="_blank"
-                  className="text-[#1F5F3F] underline font-bold"
+                  className="text-[#1F6F5F] underline font-bold"
                 >
                   Graph API Explorer ↗
                 </a>
               </span>
             </li>
             <li className="flex gap-2">
-              <span className="font-bold text-[#1F5F3F]">2.</span>
+              <span className="font-bold text-[#1F6F5F]">2.</span>
               <span>
                 اختار التطبيق من <code className="bg-gray-100 px-1.5 py-0.5 rounded">Meta App</code>{' '}
                 — أي تطبيق فيه إدارة لصفحة مضمونة
               </span>
             </li>
             <li className="flex gap-2">
-              <span className="font-bold text-[#1F5F3F]">3.</span>
+              <span className="font-bold text-[#1F6F5F]">3.</span>
               <span>
                 في <code className="bg-gray-100 px-1.5 py-0.5 rounded">User or Page</code>: اختار{' '}
                 <strong>User Token</strong>
               </span>
             </li>
             <li className="flex gap-2">
-              <span className="font-bold text-[#1F5F3F]">4.</span>
+              <span className="font-bold text-[#1F6F5F]">4.</span>
               <span>
                 في <code className="bg-gray-100 px-1.5 py-0.5 rounded">Permissions</code>: أضف{' '}
                 <code className="bg-amber-50 px-1.5 py-0.5 rounded text-amber-800">pages_show_list</code>{' '}
@@ -93,13 +93,13 @@ export default function RefreshFBTokenPage() {
               </span>
             </li>
             <li className="flex gap-2">
-              <span className="font-bold text-[#1F5F3F]">5.</span>
+              <span className="font-bold text-[#1F6F5F]">5.</span>
               <span>
                 اضغط <strong>Generate Access Token</strong> → وافق في النافذة → انسخ التوكن
               </span>
             </li>
             <li className="flex gap-2">
-              <span className="font-bold text-[#1F5F3F]">6.</span>
+              <span className="font-bold text-[#1F6F5F]">6.</span>
               <span>
                 الصق التوكن تحت دلوقتي واضغط <strong>جدّد وانشر</strong> — كل الـ 24 إعلان هينشروا فوراً
               </span>
@@ -123,7 +123,7 @@ export default function RefreshFBTokenPage() {
           <button
             onClick={submit}
             disabled={submitting || token.length < 50}
-            className="mt-3 bg-[#1F5F3F] text-white px-6 py-3 rounded-xl font-bold shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="mt-3 bg-[#1F6F5F] text-white px-6 py-3 rounded-xl font-bold shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {submitting ? '...بيتم التحقق والنشر' : 'جدّد وانشر الـ 24 إعلان'}
           </button>
@@ -141,7 +141,7 @@ export default function RefreshFBTokenPage() {
             {result.ok && (
               <Link
                 href="/admin/social-packs"
-                className="mt-3 inline-block text-sm text-[#1F5F3F] underline font-bold"
+                className="mt-3 inline-block text-sm text-[#1F6F5F] underline font-bold"
               >
                 شوف الإعلانات بتنشر دلوقتي ↗
               </Link>

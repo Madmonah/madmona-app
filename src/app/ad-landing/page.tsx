@@ -69,7 +69,7 @@ function AdLandingForm() {
     return (
       <div style={{
         minHeight: '100vh',
-        background: '#1F5F3F',
+        background: '#1F6F5F',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -86,7 +86,7 @@ function AdLandingForm() {
           boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
         }}>
           <div style={{ fontSize: '64px', marginBottom: '16px' }}>✅</div>
-          <h1 style={{ color: '#1F5F3F', fontSize: '28px', marginBottom: '12px' }}>تم! استلمنا بياناتك</h1>
+          <h1 style={{ color: '#1F6F5F', fontSize: '28px', marginBottom: '12px' }}>تم! استلمنا بياناتك</h1>
           <p style={{ color: '#444', fontSize: '17px', lineHeight: 1.6, marginBottom: '24px' }}>
             هنتواصل معاك في أقل من ساعة على رقم <strong dir="ltr">{phone}</strong>
           </p>
@@ -118,7 +118,7 @@ function AdLandingForm() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #1F5F3F 0%, #164D32 100%)',
+      background: 'linear-gradient(135deg, #1F6F5F 0%, #164D32 100%)',
       padding: '20px',
       fontFamily: 'Tajawal, Tahoma, sans-serif',
     }}>
@@ -135,7 +135,7 @@ function AdLandingForm() {
           marginBottom: '12px',
           lineHeight: 1.2,
         }}>
-          محتاج تأجر <span style={{ color: '#B8860B' }}>أي حاجة</span>؟
+          محتاج تأجر <span style={{ color: '#2FA084' }}>أي حاجة</span>؟
         </h1>
         <p style={{
           color: '#FAF7F0',
@@ -146,7 +146,7 @@ function AdLandingForm() {
           شقق · سيارات · كاميرات · معدات
         </p>
         <p style={{
-          color: '#B8860B',
+          color: '#2FA084',
           fontSize: '16px',
           fontWeight: 'bold',
           marginBottom: '32px',
@@ -162,7 +162,7 @@ function AdLandingForm() {
           textAlign: 'right',
         }}>
           <h2 style={{
-            color: '#1F5F3F',
+            color: '#1F6F5F',
             fontSize: '20px',
             marginBottom: '6px',
           }}>
@@ -195,7 +195,7 @@ function AdLandingForm() {
               style={{ ...inputStyle, textAlign: 'right' }}
             />
 
-            <p style={{ color: '#1F5F3F', fontWeight: 'bold', marginTop: '16px', marginBottom: '8px', fontSize: '14px' }}>
+            <p style={{ color: '#1F6F5F', fontWeight: 'bold', marginTop: '16px', marginBottom: '8px', fontSize: '14px' }}>
               عايز تأجر إيه؟ <span style={{ color: '#999', fontWeight: 'normal' }}>(اختياري)</span>
             </p>
             <div style={{
@@ -210,9 +210,9 @@ function AdLandingForm() {
                   type="button"
                   onClick={() => setCategory(cat.id === category ? '' : cat.id)}
                   style={{
-                    background: category === cat.id ? '#1F5F3F' : '#fff',
-                    color: category === cat.id ? '#FAF7F0' : '#1F5F3F',
-                    border: `2px solid ${category === cat.id ? '#1F5F3F' : '#ddd'}`,
+                    background: category === cat.id ? '#1F6F5F' : '#fff',
+                    color: category === cat.id ? '#FAF7F0' : '#1F6F5F',
+                    border: `2px solid ${category === cat.id ? '#1F6F5F' : '#ddd'}`,
                     padding: '12px 8px',
                     borderRadius: '10px',
                     fontWeight: 'bold',
@@ -251,7 +251,7 @@ function AdLandingForm() {
               disabled={submitting}
               style={{
                 width: '100%',
-                background: submitting ? '#999' : '#1F5F3F',
+                background: submitting ? '#999' : '#1F6F5F',
                 color: '#FAF7F0',
                 padding: '16px',
                 borderRadius: '12px',
@@ -344,7 +344,7 @@ const inputStyle: React.CSSProperties = {
 
 export default function AdLandingPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#1F5F3F' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#1F6F5F' }} />}>
       <AdLandingForm />
     </Suspense>
   )

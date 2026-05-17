@@ -82,8 +82,8 @@ export default function AdminUnitEditPage({ params }: PageProps) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-          <div className="flex items-center justify-center w-12 h-12 bg-[#1F5F3F]/10 rounded-full mb-4 mx-auto">
-            <Lock className="w-5 h-5 text-[#1F5F3F]" />
+          <div className="flex items-center justify-center w-12 h-12 bg-[#1F6F5F]/10 rounded-full mb-4 mx-auto">
+            <Lock className="w-5 h-5 text-[#1F6F5F]" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 text-center mb-1">تعديل وحدة</h1>
           <form onSubmit={handleLogin} className="space-y-4 mt-6">
@@ -92,14 +92,14 @@ export default function AdminUnitEditPage({ params }: PageProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="كلمة السر"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F] text-right"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F] text-right"
               autoFocus
             />
             {authError && <p className="text-sm text-red-600 text-center">{authError}</p>}
             <button
               type="submit"
               disabled={verifying || !password}
-              className="w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50"
+              className="w-full bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50"
             >
               {verifying ? 'جاري التحقق...' : 'دخول'}
             </button>
@@ -117,7 +117,7 @@ export default function AdminUnitEditPage({ params }: PageProps) {
             <ArrowRight className="w-4 h-4 text-gray-600" />
           </Link>
           <div className="flex items-center gap-2">
-            <Edit className="w-5 h-5 text-[#1F5F3F]" />
+            <Edit className="w-5 h-5 text-[#1F6F5F]" />
             <h1 className="text-lg font-bold text-gray-900">
               {data?.name_ar || 'تعديل الوحدة'}
             </h1>
@@ -128,7 +128,7 @@ export default function AdminUnitEditPage({ params }: PageProps) {
       <main className="max-w-2xl mx-auto px-4 py-6">
         {loading || !data ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 text-[#1F5F3F] animate-spin" />
+            <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
           </div>
         ) : loadError ? (
           <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-800 text-center">

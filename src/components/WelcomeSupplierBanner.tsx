@@ -48,9 +48,9 @@ export default function WelcomeSupplierBanner({ userName }: Props) {
   const firstName = userName?.split(' ')[0] || ''
 
   return (
-    <div className="relative bg-gradient-to-br from-[#1F5F3F] via-[#2d7a52] to-[#1F5F3F] text-white rounded-3xl p-6 md:p-7 shadow-luxe overflow-hidden animate-slide-up">
+    <div className="relative bg-gradient-to-br from-[#1F6F5F] via-[#2d7a52] to-[#1F6F5F] text-white rounded-3xl p-6 md:p-7 shadow-luxe overflow-hidden animate-slide-up">
       {/* Decorative background blobs */}
-      <div className="absolute top-0 left-0 w-48 h-48 bg-[#B8860B]/30 rounded-full blur-3xl pointer-events-none -translate-y-1/2 -translate-x-1/2" />
+      <div className="absolute top-0 left-0 w-48 h-48 bg-[#2FA084]/30 rounded-full blur-3xl pointer-events-none -translate-y-1/2 -translate-x-1/2" />
       <div className="absolute bottom-0 right-0 w-56 h-56 bg-white/10 rounded-full blur-3xl pointer-events-none translate-y-1/3 translate-x-1/3" />
 
       {/* Animated shine */}
@@ -73,7 +73,7 @@ export default function WelcomeSupplierBanner({ userName }: Props) {
             <Sparkles className="w-6 h-6" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#B8860B]/30 backdrop-blur rounded-full text-[10px] font-black tracking-widest uppercase mb-2">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#2FA084]/30 backdrop-blur rounded-full text-[10px] font-black tracking-widest uppercase mb-2">
               <Clock className="w-2.5 h-2.5" />
               عرض الـlaunch
             </div>
@@ -87,7 +87,7 @@ export default function WelcomeSupplierBanner({ userName }: Props) {
         <p className="text-sm md:text-base text-white/95 leading-relaxed mb-4">
           حسابك الواحد بيشتغل <span className="font-black bg-white/15 px-1.5 py-0.5 rounded">أجر مننا</span>
           {' '}<span className="opacity-80">و</span>{' '}
-          <span className="font-black bg-[#B8860B]/30 px-1.5 py-0.5 rounded">ضيف الليستنج</span> في نفس الوقت!
+          <span className="font-black bg-[#2FA084]/30 px-1.5 py-0.5 rounded">ضيف الليستنج</span> في نفس الوقت!
         </p>
 
         {/* Two columns: customer + supplier */}
@@ -102,7 +102,7 @@ export default function WelcomeSupplierBanner({ userName }: Props) {
             </p>
           </div>
 
-          <div className="bg-[#B8860B]/25 backdrop-blur rounded-xl p-3 border border-[#B8860B]/40">
+          <div className="bg-[#2FA084]/25 backdrop-blur rounded-xl p-3 border border-[#2FA084]/40">
             <div className="flex items-center gap-1.5 mb-1">
               <TrendingUp className="w-3.5 h-3.5" />
               <p className="text-[10px] font-black uppercase tracking-widest">ضيف الليستنج</p>
@@ -116,10 +116,10 @@ export default function WelcomeSupplierBanner({ userName }: Props) {
         {/* CTA */}
         <Link
           href="/add-listing"
-          className="group flex items-center justify-between gap-2 bg-white text-[#1F5F3F] px-4 py-3 rounded-2xl font-black text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline"
+          className="group flex items-center justify-between gap-2 bg-white text-[#1F6F5F] px-4 py-3 rounded-2xl font-black text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline"
         >
           <span className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#B8860B]" />
+            <Sparkles className="w-4 h-4 text-[#2FA084]" />
             عندك خدمة؟ سجّلها في ٥ دقايق
           </span>
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />

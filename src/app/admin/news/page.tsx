@@ -35,9 +35,9 @@ interface AdminNewsRow {
 
 const CATEGORIES: { id: Category; label: string; icon: React.ElementType; accent: string }[] = [
   { id: 'economy',     label: 'اقتصاد',      icon: DollarSign, accent: '#10b981' },
-  { id: 'real_estate', label: 'عقارات',      icon: Home,       accent: '#1F5F3F' },
+  { id: 'real_estate', label: 'عقارات',      icon: Home,       accent: '#1F6F5F' },
   { id: 'automotive',  label: 'سيارات',      icon: Car,        accent: '#3b82f6' },
-  { id: 'business',    label: 'أعمال',       icon: Briefcase,  accent: '#B8860B' },
+  { id: 'business',    label: 'أعمال',       icon: Briefcase,  accent: '#2FA084' },
   { id: 'tourism',     label: 'سياحة',       icon: Plane,      accent: '#06b6d4' },
   { id: 'fashion',     label: 'موضة وأعراس', icon: Sparkles,   accent: '#ec4899' },
   { id: 'tech',        label: 'تكنولوجيا',   icon: Camera,     accent: '#a855f7' },
@@ -229,15 +229,15 @@ export default function AdminNewsPage() {
   const filtered = filter === 'all' ? items : items.filter(i => i.category === filter)
 
   if (stage === 'loading') {
-    return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-6 h-6 text-[#1F5F3F] animate-spin" /></div>
+    return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" /></div>
   }
   if (stage === 'unauthenticated') {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
-          <Link href="/auth/login?redirect=/admin/news" className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold">دخول</Link>
+          <Link href="/auth/login?redirect=/admin/news" className="block bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold">دخول</Link>
         </div>
       </div>
     )
@@ -249,7 +249,7 @@ export default function AdminNewsPage() {
           <ShieldAlert className="w-8 h-8 text-red-500 mx-auto mb-3" />
           <h1 className="font-bold mb-2">مش مسموح</h1>
           <p className="text-sm text-gray-600 mb-4">الصفحة دي للأدمن فقط.</p>
-          <Link href="/account" className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold">ارجع للحساب</Link>
+          <Link href="/account" className="inline-block bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold">ارجع للحساب</Link>
         </div>
       </div>
     )
@@ -263,11 +263,11 @@ export default function AdminNewsPage() {
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
           <div className="flex items-center gap-2 flex-1">
-            <Newspaper className="w-5 h-5 text-[#B8860B]" />
+            <Newspaper className="w-5 h-5 text-[#2FA084]" />
             <h1 className="text-lg font-black text-gray-900">إدارة الأخبار</h1>
           </div>
           {!showForm && (
-            <button onClick={startNew} className="flex items-center gap-1.5 px-4 py-2 bg-[#1F5F3F] text-white rounded-xl text-sm font-bold hover:bg-[#1F5F3F]/90 transition-colors">
+            <button onClick={startNew} className="flex items-center gap-1.5 px-4 py-2 bg-[#1F6F5F] text-white rounded-xl text-sm font-bold hover:bg-[#1F6F5F]/90 transition-colors">
               <Plus className="w-4 h-4" /> خبر جديد
             </button>
           )}
@@ -275,7 +275,7 @@ export default function AdminNewsPage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        <div className="bg-gradient-to-l from-[#1F5F3F] to-[#2d7a52] text-white rounded-3xl p-6 shadow-luxe">
+        <div className="bg-gradient-to-l from-[#1F6F5F] to-[#2d7a52] text-white rounded-3xl p-6 shadow-luxe">
           <h2 className="text-xl font-black mb-2">أخبار يدوية لـ Madmona</h2>
           <p className="text-sm text-white/85 leading-relaxed">
             من هنا تقدر تضيف أخبار خاصة بـ Madmona تظهر في الـ news widget على الصفحة الرئيسية.
@@ -312,7 +312,7 @@ export default function AdminNewsPage() {
                   onChange={(e) => setForm(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="مثال: مضمونة تطلق قسم السياحة - شاليهات الساحل الشمالي"
                   rows={2}
-                  className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 resize-none"
+                  className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 resize-none"
                 />
                 <p className="text-[10px] text-gray-400 mt-1">{form.title.length} / 300</p>
               </div>
@@ -328,7 +328,7 @@ export default function AdminNewsPage() {
                         key={c.id}
                         type="button"
                         onClick={() => setForm(prev => ({ ...prev, category: c.id }))}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${isActive ? 'bg-[#1F5F3F] text-white' : 'bg-[#FAFAF7] text-gray-700 hover:bg-gray-100'}`}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${isActive ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-gray-700 hover:bg-gray-100'}`}
                       >
                         <Icon className="w-3.5 h-3.5" />
                         {c.label}
@@ -345,7 +345,7 @@ export default function AdminNewsPage() {
                   value={form.link}
                   onChange={(e) => setForm(prev => ({ ...prev, link: e.target.value }))}
                   placeholder="https://madmonacairo.com/blog/..."
-                  className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 font-mono"
+                  className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 font-mono"
                   dir="ltr"
                   style={{ textAlign: 'left' }}
                 />
@@ -359,7 +359,7 @@ export default function AdminNewsPage() {
                   value={form.image_url}
                   onChange={(e) => setForm(prev => ({ ...prev, image_url: e.target.value }))}
                   placeholder="https://... أو ارفع صورة من الكمبيوتر"
-                  className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 font-mono mb-2"
+                  className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 font-mono mb-2"
                   dir="ltr"
                   style={{ textAlign: 'left' }}
                 />
@@ -394,7 +394,7 @@ export default function AdminNewsPage() {
                   value={form.source_label}
                   onChange={(e) => setForm(prev => ({ ...prev, source_label: e.target.value }))}
                   placeholder="Madmona"
-                  className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40"
+                  className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
                 />
               </div>
 
@@ -402,7 +402,7 @@ export default function AdminNewsPage() {
                 <button
                   type="button"
                   onClick={() => setForm(prev => ({ ...prev, is_pinned: !prev.is_pinned }))}
-                  className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all ${form.is_pinned ? 'bg-[#B8860B] text-white' : 'bg-[#FAFAF7] text-gray-700 hover:bg-gray-100'}`}
+                  className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all ${form.is_pinned ? 'bg-[#2FA084] text-white' : 'bg-[#FAFAF7] text-gray-700 hover:bg-gray-100'}`}
                 >
                   {form.is_pinned ? <Pin className="w-4 h-4" /> : <PinOff className="w-4 h-4" />}
                   {form.is_pinned ? 'مثبت في الأعلى' : 'غير مثبت'}
@@ -421,7 +421,7 @@ export default function AdminNewsPage() {
                 <button
                   onClick={handleSave}
                   disabled={saving || !form.title.trim()}
-                  className="flex-1 px-4 py-3 bg-[#1F5F3F] hover:bg-[#1F5F3F]/90 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 px-4 py-3 bg-[#1F6F5F] hover:bg-[#1F6F5F]/90 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {saving ? (<><Loader2 className="w-4 h-4 animate-spin" /> جاري الحفظ...</>) : (<><Save className="w-4 h-4" /> {editing ? 'تحديث' : 'إضافة'}</>)}
                 </button>
@@ -437,13 +437,13 @@ export default function AdminNewsPage() {
         )}
 
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          <button onClick={() => setFilter('all')} className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${filter === 'all' ? 'bg-[#1F5F3F] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+          <button onClick={() => setFilter('all')} className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${filter === 'all' ? 'bg-[#1F6F5F] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
             <Filter className="w-3 h-3 inline-block ml-1" /> الكل ({items.length})
           </button>
           {CATEGORIES.map(c => {
             const count = items.filter(i => i.category === c.id).length
             return (
-              <button key={c.id} onClick={() => setFilter(c.id)} className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${filter === c.id ? 'bg-[#1F5F3F] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+              <button key={c.id} onClick={() => setFilter(c.id)} className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${filter === c.id ? 'bg-[#1F6F5F] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
                 {c.label} ({count})
               </button>
             )
@@ -455,7 +455,7 @@ export default function AdminNewsPage() {
             <div className="bg-white rounded-3xl p-12 text-center shadow-soft">
               <Newspaper className="w-10 h-10 mx-auto text-gray-300 mb-3" />
               <p className="text-sm text-gray-500 mb-4">لسه مفيش أخبار {filter !== 'all' ? `في "${CATEGORIES.find(c => c.id === filter)?.label}"` : ''}</p>
-              <button onClick={startNew} className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1F5F3F] text-white rounded-xl text-sm font-bold">
+              <button onClick={startNew} className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1F6F5F] text-white rounded-xl text-sm font-bold">
                 <Plus className="w-4 h-4" /> أضف أول خبر
               </button>
             </div>
@@ -470,12 +470,12 @@ export default function AdminNewsPage() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={row.image_url} alt={row.title} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none' }} />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-[#1F5F3F]">
-                        <Icon className="w-6 h-6 text-[#B8860B]" />
+                      <div className="w-full h-full flex items-center justify-center bg-[#1F6F5F]">
+                        <Icon className="w-6 h-6 text-[#2FA084]" />
                       </div>
                     )}
                     {row.is_pinned && (
-                      <div className="absolute top-1 right-1 bg-[#B8860B] rounded-full w-5 h-5 flex items-center justify-center">
+                      <div className="absolute top-1 right-1 bg-[#2FA084] rounded-full w-5 h-5 flex items-center justify-center">
                         <Pin className="w-2.5 h-2.5 text-white" />
                       </div>
                     )}
@@ -495,7 +495,7 @@ export default function AdminNewsPage() {
 
                   <div className="flex flex-col gap-1 flex-shrink-0">
                     <button onClick={() => togglePin(row)} title={row.is_pinned ? 'إلغاء التثبيت' : 'تثبيت في الأعلى'} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600">
-                      {row.is_pinned ? <Pin className="w-4 h-4 text-[#B8860B]" /> : <PinOff className="w-4 h-4" />}
+                      {row.is_pinned ? <Pin className="w-4 h-4 text-[#2FA084]" /> : <PinOff className="w-4 h-4" />}
                     </button>
                     <button onClick={() => togglePublished(row)} title={row.is_published ? 'إخفاء' : 'نشر'} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600">
                       {row.is_published ? <Eye className="w-4 h-4 text-green-600" /> : <EyeOff className="w-4 h-4" />}

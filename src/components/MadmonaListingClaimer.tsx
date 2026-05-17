@@ -81,7 +81,7 @@ export default function MadmonaListingClaimer() {
           banner.style.cssText = [
             'position:fixed', 'bottom:24px', 'left:50%',
             'transform:translateX(-50%)',
-            'background:#1F5F3F', 'color:#FAF7F0',
+            'background:#1F6F5F', 'color:#FAF7F0',
             'padding:16px 24px', 'border-radius:14px',
             'box-shadow:0 12px 30px rgba(0,0,0,0.35)',
             'z-index:9999', 'font-family:system-ui,sans-serif',

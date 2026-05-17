@@ -68,7 +68,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: '#1F5F3F',
+  themeColor: '#1F6F5F',
 }
 
 const businessJsonLd = {

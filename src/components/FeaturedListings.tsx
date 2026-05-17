@@ -77,7 +77,7 @@ export default function FeaturedListings() {
     <section>
       <div className="flex items-end justify-between mb-8">
         <div>
-          <p className="text-xs font-bold text-[#B8860B] uppercase tracking-widest mb-2">معروض حالياً</p>
+          <p className="text-xs font-bold text-[#2FA084] uppercase tracking-widest mb-2">معروض حالياً</p>
           <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight">
             أحدث ما على
             <br />
@@ -86,7 +86,7 @@ export default function FeaturedListings() {
         </div>
         <Link
           href="/marketplace"
-          className="hidden sm:inline-flex items-center gap-1.5 text-sm text-[#1F5F3F] font-bold hover:gap-2.5 transition-all no-underline"
+          className="hidden sm:inline-flex items-center gap-1.5 text-sm text-[#1F6F5F] font-bold hover:gap-2.5 transition-all no-underline"
         >
           <span>تصفّح الكل</span>
           <ArrowLeft className="w-4 h-4" />
@@ -149,14 +149,14 @@ export default function FeaturedListings() {
                 {/* Rating overlay */}
                 {listing.rating && Number(listing.rating) > 0 && (
                   <div className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold text-gray-800">
-                    <Star className="w-3 h-3 fill-[#B8860B] text-[#B8860B]" />
+                    <Star className="w-3 h-3 fill-[#2FA084] text-[#2FA084]" />
                     <span>{Number(listing.rating).toFixed(1)}</span>
                   </div>
                 )}
               </div>
 
               <div className="p-5">
-                <h3 className="font-black text-base md:text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#1F5F3F] transition-colors">
+                <h3 className="font-black text-base md:text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#1F6F5F] transition-colors">
                   {displayTitle}
                 </h3>
 
@@ -172,7 +172,7 @@ export default function FeaturedListings() {
                     {startingPrice !== null ? (
                       <>
                         <p className="text-[10px] text-gray-500 font-medium">يبدأ من</p>
-                        <p className="text-xl font-black text-[#1F5F3F] leading-none mt-0.5 tabular">
+                        <p className="text-xl font-black text-[#1F6F5F] leading-none mt-0.5 tabular">
                           {startingPrice.toLocaleString('ar-EG')}
                           <span className="text-xs font-medium text-gray-500 mr-1">ج.م</span>
                         </p>
@@ -181,7 +181,7 @@ export default function FeaturedListings() {
                       <p className="text-xs text-gray-400 font-medium">السعر عند الطلب</p>
                     )}
                   </div>
-                  <div className="inline-flex items-center gap-1 text-[#1F5F3F] font-bold text-xs group-hover:gap-2 transition-all">
+                  <div className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold text-xs group-hover:gap-2 transition-all">
                     <span>اعرف أكتر</span>
                     <ArrowLeft className="w-3.5 h-3.5" />
                   </div>
@@ -195,7 +195,7 @@ export default function FeaturedListings() {
       {/* Mobile see all link */}
       <Link
         href="/marketplace"
-        className="sm:hidden mt-6 flex items-center justify-center gap-2 px-5 py-3 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-[#1F5F3F] no-underline"
+        className="sm:hidden mt-6 flex items-center justify-center gap-2 px-5 py-3 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-[#1F6F5F] no-underline"
       >
         <span>تصفّح الكل</span>
         <ArrowLeft className="w-4 h-4" />

@@ -112,7 +112,7 @@ export function bookingConfirmationEmail(args: {
         <tr><td style="padding:8px 0; color:#666; font-size:13px;">إلى</td>
             <td style="padding:8px 0; text-align:left;">${escapeHtml(args.endAt)}</td></tr>
         <tr><td style="padding:8px 0; color:#666; font-size:13px; border-top:1px solid #eee;">الإجمالي</td>
-            <td style="padding:8px 0; font-weight:bold; font-size:16px; color:#1F5F3F; text-align:left; border-top:1px solid #eee;">${args.totalAmount.toLocaleString('ar-EG')} ج.م</td></tr>
+            <td style="padding:8px 0; font-weight:bold; font-size:16px; color:#1F6F5F; text-align:left; border-top:1px solid #eee;">${args.totalAmount.toLocaleString('ar-EG')} ج.م</td></tr>
       </table>
     `,
     cta: { label: 'شوف تفاصيل الحجز', url: args.bookingUrl },
@@ -161,7 +161,7 @@ export function newBookingForSupplierEmail(args: {
         <tr><td style="padding:8px 0; color:#666; font-size:13px;">إلى</td>
             <td style="padding:8px 0; text-align:left;">${escapeHtml(args.endAt)}</td></tr>
         <tr><td style="padding:8px 0; color:#666; font-size:13px; border-top:1px solid #eee;">الإجمالي</td>
-            <td style="padding:8px 0; font-weight:bold; color:#1F5F3F; text-align:left; border-top:1px solid #eee;">${args.totalAmount.toLocaleString('ar-EG')} ج.م</td></tr>
+            <td style="padding:8px 0; font-weight:bold; color:#1F6F5F; text-align:left; border-top:1px solid #eee;">${args.totalAmount.toLocaleString('ar-EG')} ج.م</td></tr>
       </table>
     `,
     cta: { label: 'راجع وأكّد الحجز', url: args.bookingUrl },
@@ -214,7 +214,7 @@ function baseEmailLayout(args: {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FAFAF7; padding:40px 20px;">
     <tr><td align="center">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; background:#fff; border-radius:24px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.04);">
-        <tr><td style="padding:32px 32px 16px; text-align:center; background: linear-gradient(135deg, #1F5F3F 0%, #2d7a52 100%); color:#fff;">
+        <tr><td style="padding:32px 32px 16px; text-align:center; background: linear-gradient(135deg, #1F6F5F 0%, #2d7a52 100%); color:#fff;">
           <h1 style="margin:0; font-size:28px; font-weight:900; letter-spacing:-0.5px;">مضمونة</h1>
           <p style="margin:6px 0 0; font-size:11px; letter-spacing:3px; opacity:0.7; font-weight:bold;">MADMONA</p>
         </td></tr>
@@ -226,7 +226,7 @@ function baseEmailLayout(args: {
           ${args.cta ? `
           <div style="margin:32px 0 8px; text-align:center;">
             <a href="${escapeHtml(args.cta.url)}"
-               style="display:inline-block; background:#1F5F3F; color:#fff; padding:14px 28px; border-radius:14px; text-decoration:none; font-weight:bold; font-size:15px;">
+               style="display:inline-block; background:#1F6F5F; color:#fff; padding:14px 28px; border-radius:14px; text-decoration:none; font-weight:bold; font-size:15px;">
               ${escapeHtml(args.cta.label)}
             </a>
           </div>
@@ -236,7 +236,7 @@ function baseEmailLayout(args: {
           <p style="margin:0 0 4px;">مضمونة - منصة الحجز المصرية</p>
           <p style="margin:0;">٧ شارع سليمان عَزْمي، مصر الجديدة، القاهرة</p>
           <p style="margin:8px 0 0;">
-            <a href="https://wa.me/201002229982" style="color:#1F5F3F; text-decoration:none;">واتساب: +20 100 222 9982</a>
+            <a href="https://wa.me/201002229982" style="color:#1F6F5F; text-decoration:none;">واتساب: +20 100 222 9982</a>
           </p>
         </td></tr>
       </table>

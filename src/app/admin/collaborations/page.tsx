@@ -30,7 +30,7 @@ interface Message {
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  active: '#0EA5E9', completed: '#28a745', failed: '#C2410C', paused: '#666',
+  active: '#0EA5E9', completed: '#28a745', failed: '#6FCF97', paused: '#666',
 }
 
 export default async function CollaborationsPage() {
@@ -50,8 +50,8 @@ export default async function CollaborationsPage() {
     <div dir="rtl" style={{ fontFamily: 'Tahoma', background: '#FAF7F0', minHeight: '100vh', padding: 24 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h1 style={{ color: '#1F5F3F', margin: 0, fontSize: 26 }}>🎯 Agent Collaborations</h1>
-          <a href="/admin/ai-os" style={{ color: '#1F5F3F', fontSize: 13 }}>← AI OS</a>
+          <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>🎯 Agent Collaborations</h1>
+          <a href="/admin/ai-os" style={{ color: '#1F6F5F', fontSize: 13 }}>← AI OS</a>
         </div>
 
         <p style={{ color: '#666', fontSize: 14, marginBottom: 16 }}>
@@ -62,9 +62,9 @@ export default async function CollaborationsPage() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
           {[
-            { label: 'Collaborations', val: collaborations.length, color: '#1F5F3F' },
+            { label: 'Collaborations', val: collaborations.length, color: '#1F6F5F' },
             { label: 'Active', val: collaborations.filter(c => c.status === 'active').length, color: '#0EA5E9' },
-            { label: 'Messages', val: messages.length, color: '#B8860B' },
+            { label: 'Messages', val: messages.length, color: '#2FA084' },
           ].map((s, i) => (
             <div key={i} style={{ background: '#fff', padding: 18, borderRadius: 12, textAlign: 'center' }}>
               <div style={{ fontSize: 28, fontWeight: 'bold', color: s.color }}>{s.val}</div>
@@ -73,7 +73,7 @@ export default async function CollaborationsPage() {
           ))}
         </div>
 
-        <h2 style={{ color: '#1F5F3F', fontSize: 18, marginBottom: 12 }}>🤝 Active Collaborations</h2>
+        <h2 style={{ color: '#1F6F5F', fontSize: 18, marginBottom: 12 }}>🤝 Active Collaborations</h2>
 
         {collaborations.length === 0 ? (
           <div style={{ background: '#fff', padding: 60, borderRadius: 12, textAlign: 'center', color: '#999' }}>
@@ -89,7 +89,7 @@ export default async function CollaborationsPage() {
                 borderRight: `4px solid ${STATUS_COLOR[c.status] ?? '#666'}`,
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <h3 style={{ margin: 0, color: '#1F5F3F', fontSize: 15 }}>
+                  <h3 style={{ margin: 0, color: '#1F6F5F', fontSize: 15 }}>
                     🎯 {c.collaboration_name}
                   </h3>
                   <span style={{
@@ -100,7 +100,7 @@ export default async function CollaborationsPage() {
                   </span>
                 </div>
                 <p style={{ fontSize: 13, color: '#666', margin: '8px 0' }}>{c.goal}</p>
-                <div style={{ fontSize: 12, color: '#1F5F3F' }}>
+                <div style={{ fontSize: 12, color: '#1F6F5F' }}>
                   <strong>Agents:</strong> {(c.participating_agents ?? []).join(' · ')}
                 </div>
                 <div style={{ marginTop: 8, fontSize: 11, color: '#999' }}>
@@ -111,7 +111,7 @@ export default async function CollaborationsPage() {
           </div>
         )}
 
-        <h2 style={{ color: '#1F5F3F', fontSize: 18, marginBottom: 12 }}>📬 Recent Messages</h2>
+        <h2 style={{ color: '#1F6F5F', fontSize: 18, marginBottom: 12 }}>📬 Recent Messages</h2>
 
         {messages.length === 0 ? (
           <div style={{ background: '#fff', padding: 30, borderRadius: 12, textAlign: 'center', color: '#999' }}>
@@ -121,7 +121,7 @@ export default async function CollaborationsPage() {
           <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
               <thead>
-                <tr style={{ background: '#1F5F3F', color: '#FAF7F0' }}>
+                <tr style={{ background: '#1F6F5F', color: '#FAF7F0' }}>
                   <th style={{ padding: 10, textAlign: 'right' }}>From → To</th>
                   <th style={{ padding: 10, textAlign: 'right' }}>Subject</th>
                   <th style={{ padding: 10, textAlign: 'center' }}>Type</th>

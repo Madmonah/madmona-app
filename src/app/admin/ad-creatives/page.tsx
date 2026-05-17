@@ -31,10 +31,10 @@ export default async function AdCreativesPage() {
     <div dir="rtl" style={{ fontFamily: 'Tahoma', background: '#FAF7F0', minHeight: '100vh', padding: 24 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h1 style={{ color: '#1F5F3F', margin: 0, fontSize: 26 }}>🎨 Ad Creatives</h1>
+          <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>🎨 Ad Creatives</h1>
           <div style={{ display: 'flex', gap: 12, fontSize: 13 }}>
-            <a href="/admin/ai-os" style={{ color: '#1F5F3F' }}>← AI OS</a>
-            <a href="/admin/marketing-hq" style={{ color: '#1F5F3F' }}>← HQ</a>
+            <a href="/admin/ai-os" style={{ color: '#1F6F5F' }}>← AI OS</a>
+            <a href="/admin/marketing-hq" style={{ color: '#1F6F5F' }}>← HQ</a>
           </div>
         </div>
 
@@ -53,7 +53,7 @@ export default async function AdCreativesPage() {
             {all.map(ad => (
               <div key={ad.id} style={{ background: '#fff', padding: 20, borderRadius: 12, border: '1px solid #eee' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <h2 style={{ margin: 0, color: '#1F5F3F', fontSize: 18 }}>
+                  <h2 style={{ margin: 0, color: '#1F6F5F', fontSize: 18 }}>
                     {ad.headline ?? '(بدون عنوان)'}
                   </h2>
                   <span style={{
@@ -71,13 +71,13 @@ export default async function AdCreativesPage() {
                   <p style={{ color: '#666', fontSize: 13, margin: '8px 0' }}>{ad.description}</p>
                 )}
                 {ad.cta_text && (
-                  <span style={{ display: 'inline-block', background: '#B8860B', color: '#fff', padding: '6px 16px', borderRadius: 6, fontSize: 12, fontWeight: 'bold' }}>
+                  <span style={{ display: 'inline-block', background: '#2FA084', color: '#fff', padding: '6px 16px', borderRadius: 6, fontSize: 12, fontWeight: 'bold' }}>
                     {ad.cta_text}
                   </span>
                 )}
                 {ad.visual_concept && (
                   <details style={{ marginTop: 12, fontSize: 12 }}>
-                    <summary style={{ cursor: 'pointer', color: '#1F5F3F' }}>🎨 Visual Concept</summary>
+                    <summary style={{ cursor: 'pointer', color: '#1F6F5F' }}>🎨 Visual Concept</summary>
                     <p style={{ background: '#f9f9f9', padding: 10, marginTop: 6, borderRadius: 6, color: '#444' }}>
                       {ad.visual_concept}
                     </p>

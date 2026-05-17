@@ -175,15 +175,15 @@ export default async function ListingPerformancePage({
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div>
-            <h1 style={{ color: '#1F5F3F', margin: 0, fontSize: 26 }}>📊 Listing Performance</h1>
+            <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>📊 Listing Performance</h1>
             <p style={{ color: '#666', margin: '4px 0 0', fontSize: 13 }}>
               مين بيجيب فلوس، ومين قاعد بدون حجز
             </p>
           </div>
           <div style={{ display: 'flex', gap: 12, fontSize: 13 }}>
-            <a href="/admin/marketing-hq" style={{ color: '#1F5F3F' }}>← HQ</a>
-            <a href="/admin/funnel" style={{ color: '#1F5F3F' }}>← Funnel</a>
-            <a href="/admin/insights" style={{ color: '#1F5F3F' }}>← Insights</a>
+            <a href="/admin/marketing-hq" style={{ color: '#1F6F5F' }}>← HQ</a>
+            <a href="/admin/funnel" style={{ color: '#1F6F5F' }}>← Funnel</a>
+            <a href="/admin/insights" style={{ color: '#1F6F5F' }}>← Insights</a>
           </div>
         </div>
 
@@ -195,10 +195,10 @@ export default async function ListingPerformancePage({
           marginBottom: 20,
         }}>
           {[
-            { label: '💵 إجمالي الإيرادات', val: `${totalRevenue.toLocaleString()}ج`, color: '#1F5F3F' },
-            { label: '📅 إجمالي الحجوزات', val: totalBookings, color: '#1F5F3F' },
+            { label: '💵 إجمالي الإيرادات', val: `${totalRevenue.toLocaleString()}ج`, color: '#1F6F5F' },
+            { label: '📅 إجمالي الحجوزات', val: totalBookings, color: '#1F6F5F' },
             { label: '🌱 لسه ولا حجز', val: `${idleCount}/${all.length}`, color: '#999' },
-            { label: '🏆 الأقوى', val: topPerformer?.title.slice(0, 22) ?? '—', color: '#B8860B' },
+            { label: '🏆 الأقوى', val: topPerformer?.title.slice(0, 22) ?? '—', color: '#2FA084' },
           ].map((s, i) => (
             <div key={i} style={{
               background: '#fff',
@@ -223,14 +223,14 @@ export default async function ListingPerformancePage({
             { value: 'idle', label: '🌱 الميتة' },
           ].map(opt => (
             <a key={opt.value} href={`?sort=${opt.value}`} style={{
-              background: sortBy === opt.value ? '#1F5F3F' : '#fff',
-              color: sortBy === opt.value ? '#FAF7F0' : '#1F5F3F',
+              background: sortBy === opt.value ? '#1F6F5F' : '#fff',
+              color: sortBy === opt.value ? '#FAF7F0' : '#1F6F5F',
               padding: '6px 14px',
               borderRadius: 8,
               textDecoration: 'none',
               fontSize: 12,
               fontWeight: 'bold',
-              border: '1px solid #1F5F3F',
+              border: '1px solid #1F6F5F',
             }}>{opt.label}</a>
           ))}
         </div>
@@ -259,7 +259,7 @@ export default async function ListingPerformancePage({
                 {!l.hero_photo && '📦'}
               </div>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: 'bold', color: '#1F5F3F', fontSize: 13, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontWeight: 'bold', color: '#1F6F5F', fontSize: 13, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   #{i + 1}. {l.title}
                 </div>
                 <div style={{ fontSize: 11, color: '#666' }}>
@@ -269,11 +269,11 @@ export default async function ListingPerformancePage({
                 </div>
               </div>
               <div style={{ textAlign: 'center', minWidth: 70 }}>
-                <div style={{ fontSize: 18, fontWeight: 'bold', color: '#1F5F3F' }}>{l.bookings_count}</div>
+                <div style={{ fontSize: 18, fontWeight: 'bold', color: '#1F6F5F' }}>{l.bookings_count}</div>
                 <div style={{ fontSize: 9, color: '#999' }}>حجز</div>
               </div>
               <div style={{ textAlign: 'center', minWidth: 70 }}>
-                <div style={{ fontSize: 16, fontWeight: 'bold', color: l.total_revenue > 0 ? '#1F5F3F' : '#ccc' }}>
+                <div style={{ fontSize: 16, fontWeight: 'bold', color: l.total_revenue > 0 ? '#1F6F5F' : '#ccc' }}>
                   {l.total_revenue > 0 ? `${l.total_revenue.toLocaleString()}ج` : '—'}
                 </div>
                 <div style={{ fontSize: 9, color: '#999' }}>إيراد</div>

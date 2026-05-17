@@ -79,10 +79,10 @@ export const SIGNUP_CONCIERGE_PROMPT = `أنت موظف ترحيب رقمي في
 
 - لازم \`<div dir="rtl" style="font-family: Tahoma, Arial, sans-serif; line-height: 1.8; color: #1a1a1a; max-width: 600px; margin: 0 auto;">\`
 - الألوان المسموحة بس:
-  - أخضر داكن: #1F5F3F (للعناوين والزرار)
-  - ذهبي: #B8860B (للأكسنت)
+  - أخضر داكن: #1F6F5F (للعناوين والزرار)
+  - ذهبي: #2FA084 (للأكسنت)
   - كريمي: #FAF7F0 (لخلفية الزرار text)
-- الزرار: خلفية #1F5F3F، نص #FAF7F0، padding: 12px 32px، border-radius: 4px
+- الزرار: خلفية #1F6F5F، نص #FAF7F0، padding: 12px 32px، border-radius: 4px
 - متعملش inline images — نص بس + زرار واحد
 
 # قواعد صارمة

@@ -103,7 +103,7 @@ export default function InstallPWA() {
   return (
     <>
       {/* Compact banner — sits above content on home page */}
-      <div className="bg-gradient-to-r from-[#1F5F3F] to-[#2a7a52] rounded-2xl p-4 mb-6 flex items-center gap-3 shadow-sm">
+      <div className="bg-gradient-to-r from-[#1F6F5F] to-[#2a7a52] rounded-2xl p-4 mb-6 flex items-center gap-3 shadow-sm">
         <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
           <Smartphone className="w-5 h-5 text-white" />
         </div>
@@ -113,7 +113,7 @@ export default function InstallPWA() {
         </div>
         <button
           onClick={handleInstall}
-          className="bg-white text-[#1F5F3F] px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-white/90 flex-shrink-0"
+          className="bg-white text-[#1F6F5F] px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-white/90 flex-shrink-0"
         >
           <Download className="w-3.5 h-3.5" />
           تثبيت
@@ -138,8 +138,8 @@ export default function InstallPWA() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-[#1F5F3F]/10 flex items-center justify-center">
-                <Smartphone className="w-5 h-5 text-[#1F5F3F]" />
+              <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 flex items-center justify-center">
+                <Smartphone className="w-5 h-5 text-[#1F6F5F]" />
               </div>
               <div>
                 <p className="font-bold text-gray-900">تثبيت على الآيفون</p>
@@ -148,21 +148,21 @@ export default function InstallPWA() {
             </div>
             <ol className="space-y-3 text-sm text-gray-700 mb-5">
               <li className="flex gap-3">
-                <span className="w-6 h-6 rounded-full bg-[#1F5F3F]/10 text-[#1F5F3F] flex items-center justify-center text-xs font-bold flex-shrink-0">١</span>
+                <span className="w-6 h-6 rounded-full bg-[#1F6F5F]/10 text-[#1F6F5F] flex items-center justify-center text-xs font-bold flex-shrink-0">١</span>
                 <span>اضغط زرار المشاركة <span className="inline-block px-1.5 py-0.5 bg-gray-100 rounded text-xs">⬆︎</span> أسفل الشاشة</span>
               </li>
               <li className="flex gap-3">
-                <span className="w-6 h-6 rounded-full bg-[#1F5F3F]/10 text-[#1F5F3F] flex items-center justify-center text-xs font-bold flex-shrink-0">٢</span>
+                <span className="w-6 h-6 rounded-full bg-[#1F6F5F]/10 text-[#1F6F5F] flex items-center justify-center text-xs font-bold flex-shrink-0">٢</span>
                 <span>اختر &quot;إضافة إلى الشاشة الرئيسية&quot;</span>
               </li>
               <li className="flex gap-3">
-                <span className="w-6 h-6 rounded-full bg-[#1F5F3F]/10 text-[#1F5F3F] flex items-center justify-center text-xs font-bold flex-shrink-0">٣</span>
+                <span className="w-6 h-6 rounded-full bg-[#1F6F5F]/10 text-[#1F6F5F] flex items-center justify-center text-xs font-bold flex-shrink-0">٣</span>
                 <span>اضغط &quot;إضافة&quot; — التطبيق هيظهر زي أي تطبيق عادي</span>
               </li>
             </ol>
             <button
               onClick={() => setShowIOSTip(false)}
-              className="w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-bold"
+              className="w-full bg-[#1F6F5F] text-white py-3 rounded-xl font-bold"
             >
               تمام
             </button>

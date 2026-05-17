@@ -45,9 +45,9 @@ export async function GET(req: NextRequest) {
   const cairo = await loadCairoFont()
 
   const gradients: Record<string, string> = {
-    hook: 'linear-gradient(180deg, #0F3324 0%, #1F5F3F 100%)',
-    middle: `linear-gradient(${135 + sceneIndex * 15}deg, #1F5F3F 0%, #2d7a52 100%)`,
-    cta: 'linear-gradient(180deg, #1F5F3F 0%, #B8860B 100%)',
+    hook: 'linear-gradient(180deg, #0F3324 0%, #1F6F5F 100%)',
+    middle: `linear-gradient(${135 + sceneIndex * 15}deg, #1F6F5F 0%, #2d7a52 100%)`,
+    cta: 'linear-gradient(180deg, #1F6F5F 0%, #2FA084 100%)',
   }
 
   const fonts = cairo
@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
           <div style={{
             position: 'absolute', top: 80, left: 0, right: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#B8860B', fontSize: 44, fontWeight: 800, letterSpacing: 8,
+            color: '#2FA084', fontSize: 44, fontWeight: 800, letterSpacing: 8,
           }}>
             MADMONA
           </div>
@@ -114,7 +114,7 @@ export async function GET(req: NextRequest) {
               </div>
               <div style={{
                 display: 'flex', fontSize: 50, fontWeight: 700,
-                color: '#B8860B', letterSpacing: 4,
+                color: '#2FA084', letterSpacing: 4,
               }}>
                 Scene {sceneIndex + 1}
               </div>
@@ -148,7 +148,7 @@ export async function GET(req: NextRequest) {
       (
         <div style={{
           width: '100%', height: '100%',
-          background: '#1F5F3F', color: '#FAF7F0',
+          background: '#1F6F5F', color: '#FAF7F0',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 120, fontWeight: 900, letterSpacing: 8,
         }}>

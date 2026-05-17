@@ -69,7 +69,7 @@ function MUABannerInner() {
 
   return (
     <div
-      className={`relative bg-gradient-to-br from-[#1F5F3F] via-[#2d7a52] to-[#1F5F3F] text-white overflow-hidden transition-all duration-300 ${
+      className={`relative bg-gradient-to-br from-[#1F6F5F] via-[#2d7a52] to-[#1F6F5F] text-white overflow-hidden transition-all duration-300 ${
         animatingOut ? 'opacity-0 -translate-y-2' : 'opacity-100'
       }`}
       dir="rtl"
@@ -78,7 +78,7 @@ function MUABannerInner() {
       <div className="absolute inset-0 -translate-x-full animate-[shine_4s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
 
       {/* Decorative blobs */}
-      <div className="absolute top-0 left-0 w-48 h-48 bg-[#B8860B]/30 rounded-full blur-3xl pointer-events-none -translate-y-1/2 -translate-x-1/2" />
+      <div className="absolute top-0 left-0 w-48 h-48 bg-[#2FA084]/30 rounded-full blur-3xl pointer-events-none -translate-y-1/2 -translate-x-1/2" />
       <div className="absolute bottom-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl pointer-events-none translate-y-1/3 translate-x-1/3" />
 
       {/* Close button */}
@@ -95,10 +95,10 @@ function MUABannerInner() {
         {/* Header */}
         <div className="flex items-start gap-3 mb-4">
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
-            <Heart className="w-5 h-5 md:w-6 md:h-6 fill-[#B8860B]/40 text-[#B8860B]" />
+            <Heart className="w-5 h-5 md:w-6 md:h-6 fill-[#2FA084]/40 text-[#2FA084]" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#B8860B]/30 backdrop-blur rounded-full text-[10px] font-black tracking-widest uppercase mb-1.5">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#2FA084]/30 backdrop-blur rounded-full text-[10px] font-black tracking-widest uppercase mb-1.5">
               <Sparkles className="w-2.5 h-2.5" />
               <span>Beauty Pros</span>
             </div>
@@ -116,7 +116,7 @@ function MUABannerInner() {
           {/* CTA 1: Register as supplier */}
           <Link
             href="/supplier/register?utm_source=meta&utm_campaign=mua&utm_content=banner"
-            className="group flex items-center gap-3 bg-[#B8860B] hover:bg-[#9d710a] text-white p-4 rounded-2xl no-underline shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all"
+            className="group flex items-center gap-3 bg-[#2FA084] hover:bg-[#9d710a] text-white p-4 rounded-2xl no-underline shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all"
           >
             <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
               <Building2 className="w-5 h-5" />
@@ -135,10 +135,10 @@ function MUABannerInner() {
           {/* CTA 2: Browse the studio */}
           <Link
             href={`/marketplace/${STUDIO_SLUG}?utm_source=meta&utm_campaign=mua&utm_content=banner`}
-            className="group flex items-center gap-3 bg-white text-[#1F5F3F] hover:bg-gray-50 p-4 rounded-2xl no-underline shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all"
+            className="group flex items-center gap-3 bg-white text-[#1F6F5F] hover:bg-gray-50 p-4 rounded-2xl no-underline shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all"
           >
-            <div className="w-11 h-11 rounded-xl bg-[#1F5F3F]/10 flex items-center justify-center flex-shrink-0">
-              <ShoppingBag className="w-5 h-5 text-[#1F5F3F]" />
+            <div className="w-11 h-11 rounded-xl bg-[#1F6F5F]/10 flex items-center justify-center flex-shrink-0">
+              <ShoppingBag className="w-5 h-5 text-[#1F6F5F]" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-black text-sm md:text-base leading-tight">
@@ -148,7 +148,7 @@ function MUABannerInner() {
                 مصر الجديدة · من ٣٠٠ج/ساعة
               </p>
             </div>
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform flex-shrink-0 text-[#1F5F3F]" />
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform flex-shrink-0 text-[#1F6F5F]" />
           </Link>
         </div>
 

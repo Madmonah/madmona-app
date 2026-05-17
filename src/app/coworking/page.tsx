@@ -28,14 +28,14 @@ export default function CoworkingPage() {
     <div className="min-h-screen bg-[#FAFAF7] text-right overflow-x-hidden pb-20 md:pb-0" dir="rtl">
       <TopNav />
       <main className="relative">
-        <section className="relative pt-8 pb-12 md:pt-16 md:pb-20 bg-gradient-to-br from-[#1F5F3F]/8 via-[#FAFAF7] to-[#B8860B]/8 overflow-hidden">
-          <div className="absolute -top-20 -right-20 w-96 h-96 bg-[#B8860B]/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 -left-20 w-72 h-72 bg-[#1F5F3F]/10 rounded-full blur-3xl pointer-events-none" />
+        <section className="relative pt-8 pb-12 md:pt-16 md:pb-20 bg-gradient-to-br from-[#1F6F5F]/8 via-[#FAFAF7] to-[#2FA084]/8 overflow-hidden">
+          <div className="absolute -top-20 -right-20 w-96 h-96 bg-[#2FA084]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 -left-20 w-72 h-72 bg-[#1F6F5F]/10 rounded-full blur-3xl pointer-events-none" />
           <div className="max-w-7xl mx-auto px-4 relative z-10">
             <div className="text-center mb-8">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white shadow-soft border border-gray-100 mb-5">
-                <Sparkles className="w-3.5 h-3.5 text-[#B8860B]" />
-                <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F5F3F]">عرض حصري</span>
+                <Sparkles className="w-3.5 h-3.5 text-[#2FA084]" />
+                <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F6F5F]">عرض حصري</span>
               </div>
               <h1 className="text-4xl md:text-7xl font-black text-gray-900 leading-[0.95] tracking-tight mb-5">
                 <span className="block mb-2">مساحة عملك</span>
@@ -47,11 +47,11 @@ export default function CoworkingPage() {
             </div>
             <div className="flex items-center justify-center gap-3 flex-wrap mt-6">
               <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-white px-3 py-1.5 rounded-full border border-gray-100">
-                <MapPin className="w-3 h-3 text-[#1F5F3F]" />
+                <MapPin className="w-3 h-3 text-[#1F6F5F]" />
                 ٧ سليمان عزمي، النزهة
               </span>
               <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-white px-3 py-1.5 rounded-full border border-gray-100">
-                <Clock className="w-3 h-3 text-[#1F5F3F]" />
+                <Clock className="w-3 h-3 text-[#1F6F5F]" />
                 ٩ ص → ١١ م
               </span>
               <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-white px-3 py-1.5 rounded-full border border-gray-100">
@@ -65,9 +65,9 @@ export default function CoworkingPage() {
         <section className="py-12 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-10">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1F5F3F]/10 mb-4">
-                <GraduationCap className="w-4 h-4 text-[#1F5F3F]" />
-                <span className="text-xs font-black tracking-widest uppercase text-[#1F5F3F]">للطلاب الثانوية العامة</span>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1F6F5F]/10 mb-4">
+                <GraduationCap className="w-4 h-4 text-[#1F6F5F]" />
+                <span className="text-xs font-black tracking-widest uppercase text-[#1F6F5F]">للطلاب الثانوية العامة</span>
               </div>
               <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight">خصم <span className="gradient-text-green italic font-light">50%</span></h2>
               <p className="text-sm md:text-base text-gray-600 mt-3 max-w-xl mx-auto">بس Story على Instagram تاج <strong>@madmona.cairo</strong> والخصم بتاعك ✨</p>
@@ -76,13 +76,13 @@ export default function CoworkingPage() {
               {STUDENT_OFFERS.map((offer, i) => {
                 const Icon = offer.icon
                 return (
-                  <div key={i} className="relative bg-gradient-to-br from-[#1F5F3F]/5 to-[#FAFAF7] border border-[#1F5F3F]/15 rounded-3xl p-7 md:p-8 hover:shadow-card transition-all">
-                    <div className="absolute top-4 left-4 inline-flex items-center gap-1 px-3 py-1 bg-[#B8860B] text-white rounded-full text-[10px] font-black tracking-widest uppercase">-50%</div>
-                    <div className="w-14 h-14 rounded-2xl bg-[#1F5F3F]/10 flex items-center justify-center mb-5"><Icon className="w-7 h-7 text-[#1F5F3F]" /></div>
+                  <div key={i} className="relative bg-gradient-to-br from-[#1F6F5F]/5 to-[#FAFAF7] border border-[#1F6F5F]/15 rounded-3xl p-7 md:p-8 hover:shadow-card transition-all">
+                    <div className="absolute top-4 left-4 inline-flex items-center gap-1 px-3 py-1 bg-[#2FA084] text-white rounded-full text-[10px] font-black tracking-widest uppercase">-50%</div>
+                    <div className="w-14 h-14 rounded-2xl bg-[#1F6F5F]/10 flex items-center justify-center mb-5"><Icon className="w-7 h-7 text-[#1F6F5F]" /></div>
                     <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-2">{offer.type}</h3>
                     <p className="text-sm text-gray-600 leading-relaxed mb-5">{offer.desc}</p>
                     <div className="flex items-baseline gap-3">
-                      <span className="text-4xl md:text-5xl font-black text-[#1F5F3F]">{offer.price}</span>
+                      <span className="text-4xl md:text-5xl font-black text-[#1F6F5F]">{offer.price}</span>
                       <span className="text-sm text-gray-500 line-through">{offer.original}ج</span>
                       <span className="text-sm text-gray-600">جنيه/اليوم</span>
                     </div>
@@ -103,9 +103,9 @@ export default function CoworkingPage() {
         <section className="py-12 md:py-16 bg-[#FAFAF7]">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-10">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#B8860B]/10 mb-4">
-                <Briefcase className="w-4 h-4 text-[#B8860B]" />
-                <span className="text-xs font-black tracking-widest uppercase text-[#B8860B]">للمحترفين والـFreelancers</span>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2FA084]/10 mb-4">
+                <Briefcase className="w-4 h-4 text-[#2FA084]" />
+                <span className="text-xs font-black tracking-widest uppercase text-[#2FA084]">للمحترفين والـFreelancers</span>
               </div>
               <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight"><span className="gradient-text-green italic font-light">120 جنيه</span> اليوم</h2>
               <p className="text-sm md:text-base text-gray-600 mt-3 max-w-xl mx-auto">مساحة عمل احترافية كاملة - من الصبح للمسا - بكل اللي محتاجه.</p>
@@ -115,7 +115,7 @@ export default function CoworkingPage() {
                 const Icon = f.icon
                 return (
                   <div key={i} className="bg-white rounded-2xl p-5 text-center border border-gray-100 hover:shadow-card transition-all">
-                    <div className="w-12 h-12 rounded-2xl bg-[#1F5F3F]/10 flex items-center justify-center mx-auto mb-3"><Icon className="w-6 h-6 text-[#1F5F3F]" /></div>
+                    <div className="w-12 h-12 rounded-2xl bg-[#1F6F5F]/10 flex items-center justify-center mx-auto mb-3"><Icon className="w-6 h-6 text-[#1F6F5F]" /></div>
                     <p className="font-bold text-gray-900 text-sm md:text-base mb-1">{f.label}</p>
                     <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
                   </div>
@@ -123,7 +123,7 @@ export default function CoworkingPage() {
               })}
             </div>
             <div className="text-center">
-              <a href="https://wa.me/201002229982?text=أهلاً!%20عاوز%20أحجز%20كوورك%20بـ120%20جنيه" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-4 bg-[#1F5F3F] text-white text-base font-black rounded-2xl shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline">
+              <a href="https://wa.me/201002229982?text=أهلاً!%20عاوز%20أحجز%20كوورك%20بـ120%20جنيه" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-4 bg-[#1F6F5F] text-white text-base font-black rounded-2xl shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline">
                 <Calendar className="w-5 h-5" />
                 <span>احجز يومك دلوقتي</span>
                 <ArrowLeft className="w-4 h-4" />
@@ -132,7 +132,7 @@ export default function CoworkingPage() {
           </div>
         </section>
 
-        <section className="py-12 md:py-16 bg-gradient-to-br from-[#1F5F3F] to-[#0f3a26] text-white">
+        <section className="py-12 md:py-16 bg-gradient-to-br from-[#1F6F5F] to-[#0f3a26] text-white">
           <div className="max-w-4xl mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-5xl font-black mb-4 leading-tight">
               <span className="block">جاهز تيجي؟</span>
@@ -144,7 +144,7 @@ export default function CoworkingPage() {
                 <MessageCircle className="w-5 h-5" />
                 <span>واتساب · رد فوري</span>
               </a>
-              <a href="https://share.google/QbWskGlQ49AUTJrTc" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#1F5F3F] text-base font-black rounded-2xl shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline">
+              <a href="https://share.google/QbWskGlQ49AUTJrTc" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#1F6F5F] text-base font-black rounded-2xl shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline">
                 <MapPin className="w-5 h-5" />
                 <span>الموقع على الخريطة</span>
               </a>

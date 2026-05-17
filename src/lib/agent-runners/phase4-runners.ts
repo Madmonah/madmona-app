@@ -86,7 +86,7 @@ export async function runComplaintResolver(args?: {
       to: OWNER_EMAIL,
       subject: `🚨 شكوى تحتاج تدخل — ${result.severity}`,
       html: `<div dir="rtl" style="font-family:Tahoma;padding:20px">
-        <h2 style="color:#C2410C">🚨 شكوى ${result.severity}</h2>
+        <h2 style="color:#6FCF97">🚨 شكوى ${result.severity}</h2>
         <p><strong>الشكوى:</strong> ${args.complaintText}</p>
         <p><strong>السبب للتصعيد:</strong> ${result.escalation_reason ?? '—'}</p>
         <p>راجع /admin/complaints لاتخاذ قرار</p>

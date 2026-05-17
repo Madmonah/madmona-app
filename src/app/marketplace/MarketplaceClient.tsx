@@ -257,8 +257,8 @@ function MarketplaceBrowseContent() {
 
   return (
     <div className="min-h-screen gradient-mesh pb-20 md:pb-0" dir="rtl">
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#1F5F3F]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
-      <div className="fixed top-40 left-20 w-[300px] h-[300px] bg-[#B8860B]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#1F6F5F]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
+      <div className="fixed top-40 left-20 w-[300px] h-[300px] bg-[#2FA084]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
 
       <header className="sticky top-0 z-40 glass border-b border-white/40">
         <div className="max-w-6xl mx-auto px-4 py-4">
@@ -271,7 +271,7 @@ function MarketplaceBrowseContent() {
                 <ArrowRight className="w-4 h-4 text-gray-700" />
               </Link>
               <div className="min-w-0">
-                <p className="text-[10px] font-bold text-[#B8860B] uppercase tracking-widest">Madmona</p>
+                <p className="text-[10px] font-bold text-[#2FA084] uppercase tracking-widest">Madmona</p>
                 <h1 className="text-lg md:text-xl font-black text-gray-900 truncate">Marketplace</h1>
               </div>
             </div>
@@ -287,7 +287,7 @@ function MarketplaceBrowseContent() {
             ) : isAuthed === false ? (
               <Link
                 href="/auth/login?redirect=/marketplace"
-                className="inline-flex items-center gap-1 px-4 py-2 bg-[#1F5F3F] text-white rounded-full text-xs font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all flex-shrink-0"
+                className="inline-flex items-center gap-1 px-4 py-2 bg-[#1F6F5F] text-white rounded-full text-xs font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all flex-shrink-0"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 دخول
@@ -302,7 +302,7 @@ function MarketplaceBrowseContent() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="ابحث عن مساحة، عقار، عربية، معدات..."
-              className="w-full pr-12 pl-4 py-3.5 bg-white/80 backdrop-blur border border-gray-100 rounded-2xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all shadow-soft"
+              className="w-full pr-12 pl-4 py-3.5 bg-white/80 backdrop-blur border border-gray-100 rounded-2xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all shadow-soft"
             />
           </div>
 
@@ -331,7 +331,7 @@ function MarketplaceBrowseContent() {
                 onClick={() => setSelectedCategorySlug(selectedRootSlug || null)}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all flex items-center gap-1 ${
                   selectedCategorySlug === selectedRootSlug
-                    ? 'bg-[#B8860B] text-white shadow-soft'
+                    ? 'bg-[#2FA084] text-white shadow-soft'
                     : 'bg-white/80 text-gray-600 hover:bg-white border border-gray-100'
                 }`}
               >
@@ -343,7 +343,7 @@ function MarketplaceBrowseContent() {
                   onClick={() => setSelectedCategorySlug(sub.slug)}
                   className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all flex items-center gap-1 ${
                     selectedCategorySlug === sub.slug
-                      ? 'bg-[#B8860B] text-white shadow-soft'
+                      ? 'bg-[#2FA084] text-white shadow-soft'
                       : 'bg-white/80 text-gray-700 hover:bg-white border border-gray-100'
                   }`}
                 >
@@ -360,7 +360,7 @@ function MarketplaceBrowseContent() {
                 onClick={() => { setSortMenuOpen(o => !o); setCityMenuOpen(false) }}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition-all shadow-soft hover:shadow-card ${
                   sortBy !== 'newest'
-                    ? 'bg-[#1F5F3F] border-[#1F5F3F] text-white'
+                    ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
                     : 'bg-white border-gray-100 text-gray-700 hover:border-gray-200'
                 }`}
               >
@@ -374,8 +374,8 @@ function MarketplaceBrowseContent() {
                     <button
                       key={option}
                       onClick={() => { setSortBy(option); setSortMenuOpen(false) }}
-                      className={`w-full text-right px-4 py-2.5 text-xs hover:bg-[#1F5F3F]/5 font-medium transition-colors ${
-                        sortBy === option ? 'bg-[#1F5F3F]/10 text-[#1F5F3F]' : 'text-gray-700'
+                      className={`w-full text-right px-4 py-2.5 text-xs hover:bg-[#1F6F5F]/5 font-medium transition-colors ${
+                        sortBy === option ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'text-gray-700'
                       }`}
                     >
                       {SORT_LABELS[option]}
@@ -391,7 +391,7 @@ function MarketplaceBrowseContent() {
                   onClick={() => { setCityMenuOpen(o => !o); setSortMenuOpen(false) }}
                   className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition-all shadow-soft hover:shadow-card ${
                     cityFilter
-                      ? 'bg-[#1F5F3F] border-[#1F5F3F] text-white'
+                      ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
                       : 'bg-white border-gray-100 text-gray-700 hover:border-gray-200'
                   }`}
                 >
@@ -403,8 +403,8 @@ function MarketplaceBrowseContent() {
                   <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-2xl shadow-luxe border border-gray-100 z-50 overflow-hidden max-h-72 overflow-y-auto animate-scale-in">
                     <button
                       onClick={() => { setCityFilter(null); setCityMenuOpen(false) }}
-                      className={`w-full text-right px-4 py-2.5 text-xs hover:bg-[#1F5F3F]/5 font-medium transition-colors ${
-                        !cityFilter ? 'bg-[#1F5F3F]/10 text-[#1F5F3F]' : 'text-gray-700'
+                      className={`w-full text-right px-4 py-2.5 text-xs hover:bg-[#1F6F5F]/5 font-medium transition-colors ${
+                        !cityFilter ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'text-gray-700'
                       }`}
                     >
                       كل المدن
@@ -413,8 +413,8 @@ function MarketplaceBrowseContent() {
                       <button
                         key={city}
                         onClick={() => { setCityFilter(city); setCityMenuOpen(false) }}
-                        className={`w-full text-right px-4 py-2.5 text-xs hover:bg-[#1F5F3F]/5 font-medium transition-colors ${
-                          cityFilter === city ? 'bg-[#1F5F3F]/10 text-[#1F5F3F]' : 'text-gray-700'
+                        className={`w-full text-right px-4 py-2.5 text-xs hover:bg-[#1F6F5F]/5 font-medium transition-colors ${
+                          cityFilter === city ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'text-gray-700'
                         }`}
                       >
                         {city}
@@ -482,7 +482,7 @@ function MarketplaceBrowseContent() {
             {hasFilters && (
               <button
                 onClick={clearAllFilters}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#1F5F3F] text-white rounded-2xl text-sm font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#1F6F5F] text-white rounded-2xl text-sm font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
               >
                 <Sparkles className="w-4 h-4" />
                 مسح كل الفلاتر
@@ -555,7 +555,7 @@ function MarketplaceBrowseContent() {
 
                     {listing.rating && Number(listing.rating) > 0 && (
                       <div className="absolute bottom-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 bg-black/60 backdrop-blur rounded-full text-[10px] font-bold text-white">
-                        <Star className="w-3 h-3 fill-[#B8860B] text-[#B8860B]" />
+                        <Star className="w-3 h-3 fill-[#2FA084] text-[#2FA084]" />
                         <span>{Number(listing.rating).toFixed(1)}</span>
                         <span className="opacity-60">({listing.reviews_count})</span>
                       </div>
@@ -563,7 +563,7 @@ function MarketplaceBrowseContent() {
                   </div>
 
                   <div className="p-5">
-                    <h3 className="font-black text-base md:text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#1F5F3F] transition-colors">
+                    <h3 className="font-black text-base md:text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#1F6F5F] transition-colors">
                       {displayTitle}
                     </h3>
 
@@ -577,7 +577,7 @@ function MarketplaceBrowseContent() {
                           </span>
                         )}
                         {listing.requires_id_verification && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#B8860B]/10 border border-[#B8860B]/30 rounded-full text-[10px] font-bold text-[#B8860B]">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#2FA084]/10 border border-[#2FA084]/30 rounded-full text-[10px] font-bold text-[#2FA084]">
                             <ShieldCheck className="w-2.5 h-2.5" />
                             بطاقة مطلوبة
                           </span>
@@ -602,7 +602,7 @@ function MarketplaceBrowseContent() {
                         ) : startingPrice !== null ? (
                           <>
                             <p className="text-[10px] text-gray-500 font-medium">يبدأ من</p>
-                            <p className="text-xl font-black text-[#1F5F3F] leading-none mt-0.5 tabular">
+                            <p className="text-xl font-black text-[#1F6F5F] leading-none mt-0.5 tabular">
                               {startingPrice.toLocaleString('ar-EG')}
                               <span className="text-xs font-medium text-gray-500 mr-1">ج.م</span>
                             </p>
@@ -611,7 +611,7 @@ function MarketplaceBrowseContent() {
                           <p className="text-xs text-gray-400 font-medium">السعر عند الطلب</p>
                         )}
                       </div>
-                      <div className="inline-flex items-center gap-1 text-[#1F5F3F] font-bold text-xs group-hover:gap-2 transition-all">
+                      <div className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold text-xs group-hover:gap-2 transition-all">
                         <span>{isDemo ? 'عرض' : 'تفاصيل'}</span>
                         <ArrowRight className="w-3.5 h-3.5 rotate-180" />
                       </div>
@@ -642,7 +642,7 @@ function CategoryPill({
       onClick={onClick}
       className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 shadow-soft ${
         active
-          ? 'bg-[#1F5F3F] text-white shadow-elevated'
+          ? 'bg-[#1F6F5F] text-white shadow-elevated'
           : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-card border border-gray-100'
       }`}
     >

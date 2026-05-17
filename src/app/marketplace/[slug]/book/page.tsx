@@ -365,18 +365,18 @@ export default function BookingPage() {
       <>
         <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
           <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-            <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
+            <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
             <h1 className="font-bold mb-2">سجّل دخول الأول</h1>
             <p className="text-sm text-gray-600 mb-6">عشان تحجز، لازم تسجّل دخول أو تعمل حساب جديد.</p>
             <Link
               href={`/auth/login?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`}
-              className="block w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold mb-2"
+              className="block w-full bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold mb-2"
             >
               تسجيل دخول
             </Link>
             <Link
               href={`/auth/signup?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`}
-              className="block w-full text-sm text-gray-600 hover:text-[#1F5F3F]"
+              className="block w-full text-sm text-gray-600 hover:text-[#1F6F5F]"
             >
               مفيش حساب؟ اعمل حساب جديد
             </Link>
@@ -400,7 +400,7 @@ export default function BookingPage() {
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-3" />
           <h1 className="font-bold mb-4">الـlisting ده مش موجود</h1>
-          <Link href="/marketplace" className="bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold">
+          <Link href="/marketplace" className="bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold">
             تصفح
           </Link>
         </div>
@@ -445,7 +445,7 @@ export default function BookingPage() {
               </a>
               <Link
                 href="/marketplace"
-                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#1F5F3F] text-white rounded-xl text-sm font-semibold hover:bg-[#1F5F3F]/90"
+                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#1F6F5F] text-white rounded-xl text-sm font-semibold hover:bg-[#1F6F5F]/90"
               >
                 تصفح listings تانية
               </Link>
@@ -508,7 +508,7 @@ export default function BookingPage() {
               </Link>
               <Link
                 href="/marketplace"
-                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#1F5F3F] text-white rounded-xl text-sm font-semibold hover:bg-[#1F5F3F]/90"
+                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#1F6F5F] text-white rounded-xl text-sm font-semibold hover:bg-[#1F6F5F]/90"
               >
                 تصفح ليستنجز تانية
               </Link>
@@ -518,7 +518,7 @@ export default function BookingPage() {
                 href="https://wa.me/201002229982"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 mt-4 text-xs text-[#1F5F3F] hover:underline"
+                className="inline-flex items-center justify-center gap-1.5 mt-4 text-xs text-[#1F6F5F] hover:underline"
               >
                 <Clock className="w-3.5 h-3.5" />
                 اسأل Madmona عن صاحب الإعلان ده
@@ -569,7 +569,7 @@ export default function BookingPage() {
               </a>
               <Link
                 href="/marketplace"
-                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#1F5F3F] text-white rounded-xl text-sm font-semibold hover:bg-[#1F5F3F]/90"
+                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#1F6F5F] text-white rounded-xl text-sm font-semibold hover:bg-[#1F6F5F]/90"
               >
                 تصفح ليستنجز حقيقية
               </Link>
@@ -587,7 +587,7 @@ export default function BookingPage() {
           <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
           <h1 className="font-bold mb-2">مفيش أسعار للـlisting ده</h1>
           <p className="text-sm text-gray-600 mb-4">للحجز، تواصل مباشرة مع صاحب الإعلان.</p>
-          <Link href={`/marketplace/${slug}`} className="bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold inline-block">
+          <Link href={`/marketplace/${slug}`} className="bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold inline-block">
             ارجع للـlisting
           </Link>
         </div>
@@ -648,7 +648,7 @@ export default function BookingPage() {
                 key={rule.id}
                 className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer ${
                   selectedRuleId === rule.id
-                    ? 'border-[#1F5F3F] bg-[#1F5F3F]/5'
+                    ? 'border-[#1F6F5F] bg-[#1F6F5F]/5'
                     : 'border-gray-100 hover:border-gray-200'
                 }`}
               >
@@ -658,13 +658,13 @@ export default function BookingPage() {
                     name="rule"
                     checked={selectedRuleId === rule.id}
                     onChange={() => setSelectedRuleId(rule.id)}
-                    className="w-4 h-4 text-[#1F5F3F]"
+                    className="w-4 h-4 text-[#1F6F5F]"
                   />
                   <span className="text-sm font-medium text-gray-900">
                     {rule.label_ar || PERIOD_LABELS[rule.period_type] || rule.period_type}
                   </span>
                 </div>
-                <span className="font-bold text-[#1F5F3F]">
+                <span className="font-bold text-[#1F6F5F]">
                   {Number(rule.price).toLocaleString('ar-EG')} ج.م
                 </span>
               </label>
@@ -675,7 +675,7 @@ export default function BookingPage() {
         {/* Date/time picker */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
           <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-[#1F5F3F]" /> تاريخ الحجز
+            <Calendar className="w-4 h-4 text-[#1F6F5F]" /> تاريخ الحجز
           </h3>
           <div className="space-y-3">
             <div>
@@ -684,7 +684,7 @@ export default function BookingPage() {
                 type="datetime-local"
                 value={startAt}
                 onChange={e => setStartAt(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30"
                 required
               />
             </div>
@@ -695,7 +695,7 @@ export default function BookingPage() {
                 value={endAt}
                 onChange={e => setEndAt(e.target.value)}
                 min={startAt}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30"
                 required
               />
             </div>
@@ -711,7 +711,7 @@ export default function BookingPage() {
             rows={3}
             maxLength={500}
             placeholder="أي طلبات خاصة أو معلومات تحتاج توصلها لصاحب الإعلان"
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30"
           />
         </div>
 
@@ -720,16 +720,16 @@ export default function BookingPage() {
             'awaiting_id' and admin/supplier follows up. This removes the
             disable-on-submit friction that was killing car-listing conversion. */}
         {listing.requires_id_verification && (
-          <div className="bg-gradient-to-br from-[#B8860B]/5 to-amber-50 rounded-2xl border-2 border-[#B8860B]/30 p-4 mb-4">
+          <div className="bg-gradient-to-br from-[#2FA084]/5 to-amber-50 rounded-2xl border-2 border-[#2FA084]/30 p-4 mb-4">
             <h3 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-[#B8860B]" />
+              <ShieldCheck className="w-5 h-5 text-[#2FA084]" />
               بطاقة مطلوبة (اختياري دلوقتي)
             </h3>
             <p className="text-xs text-gray-700 leading-relaxed mb-3">
               الـlisting ده محتاج رقم بطاقتك للتحقق. لو معاك الرقم دلوقتي، اكتبه — وده هيسرّع تأكيد الحجز. لو مش معاك دلوقتي، عادي اكمل الحجز وهنطلبها بعدين قبل ما يتأكد.
             </p>
             <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
-              <CreditCard className="w-3.5 h-3.5 text-[#B8860B]" />
+              <CreditCard className="w-3.5 h-3.5 text-[#2FA084]" />
               رقم البطاقة الشخصية
             </label>
             <input
@@ -738,7 +738,7 @@ export default function BookingPage() {
               onChange={e => setProvidedNationalId(e.target.value.replace(/\D/g, '').slice(0, 14))}
               placeholder="14 رقم — أو سيبها فاضية دلوقتي"
               maxLength={14}
-              className="w-full px-4 py-2.5 border border-[#B8860B]/40 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#B8860B]/30 focus:border-[#B8860B] bg-white"
+              className="w-full px-4 py-2.5 border border-[#2FA084]/40 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2FA084]/30 focus:border-[#2FA084] bg-white"
               dir="ltr"
               style={{ textAlign: 'right' }}
               inputMode="numeric"
@@ -768,7 +768,7 @@ export default function BookingPage() {
               </div>
               <div className="flex justify-between font-bold pt-2 border-t border-gray-100 text-base">
                 <span>الإجمالي</span>
-                <span className="text-[#1F5F3F]">{pricing.total.toLocaleString('ar-EG')} ج.م</span>
+                <span className="text-[#1F6F5F]">{pricing.total.toLocaleString('ar-EG')} ج.م</span>
               </div>
             </div>
           </div>
@@ -791,7 +791,7 @@ export default function BookingPage() {
         <button
           onClick={handleSubmit}
           disabled={!pricing.valid || stage === 'submitting'}
-          className="w-full py-3.5 bg-[#1F5F3F] text-white rounded-xl font-bold hover:bg-[#1F5F3F]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-3.5 bg-[#1F6F5F] text-white rounded-xl font-bold hover:bg-[#1F6F5F]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {stage === 'submitting' ? (
             <>

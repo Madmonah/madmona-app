@@ -30,14 +30,14 @@ export default function AboutPage() {
       <main className="max-w-3xl mx-auto px-4 pb-12">
         {/* Hero */}
         <section className="py-10 md:py-16 text-center">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#1F5F3F]/10 rounded-full mb-4">
-            <Sparkles className="w-3 h-3 text-[#1F5F3F]" />
-            <span className="text-xs font-medium text-[#1F5F3F]">عن مضمونة</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#1F6F5F]/10 rounded-full mb-4">
+            <Sparkles className="w-3 h-3 text-[#1F6F5F]" />
+            <span className="text-xs font-medium text-[#1F6F5F]">عن مضمونة</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
             مساحتك اللي بتخصك،
             <br />
-            <span className="text-[#1F5F3F]">بضمان كامل</span>
+            <span className="text-[#1F6F5F]">بضمان كامل</span>
           </h1>
           <p className="text-base md:text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
             مضمونة بدأت كمساحة عمل مشتركة في مصر الجديدة، وكبرت لتكون منصة لحجز كل أنواع المساحات والخدمات من مصادر معتمدة في القاهرة.
@@ -68,7 +68,7 @@ export default function AboutPage() {
               icon={<Building2 className="w-5 h-5" />}
               title="مساحات مضمونة"
               description="مكاتب فردية، غرف اجتماعات، وجاردن في النزهة، مصر الجديدة. احجز فوراً."
-              accent="bg-[#1F5F3F]/10 text-[#1F5F3F]"
+              accent="bg-[#1F6F5F]/10 text-[#1F6F5F]"
               href="/browse"
               cta="استكشف المساحات"
             />
@@ -76,7 +76,7 @@ export default function AboutPage() {
               icon={<Compass className="w-5 h-5" />}
               title="Madmona Marketplace"
               description="عقارات، مركبات، معدات، وفعاليات من مصادر معتمدة."
-              accent="bg-[#B8860B]/10 text-[#B8860B]"
+              accent="bg-[#2FA084]/10 text-[#2FA084]"
               href="/marketplace"
               cta="اكتشف الـMarketplace"
             />
@@ -146,12 +146,12 @@ export default function AboutPage() {
         </section>
 
         {/* CTA */}
-        <section className="bg-[#1F5F3F] text-white rounded-2xl p-6 md:p-8 text-center mb-8">
+        <section className="bg-[#1F6F5F] text-white rounded-2xl p-6 md:p-8 text-center mb-8">
           <h3 className="text-xl md:text-2xl font-bold mb-2">جاهز تجرب؟</h3>
           <p className="text-sm md:text-base text-white/85 mb-5">يومك الأول مجاناً في مساحاتنا — بدون التزام.</p>
           <Link
             href="/browse"
-            className="inline-flex items-center gap-2 bg-white text-[#1F5F3F] px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 no-underline"
+            className="inline-flex items-center gap-2 bg-white text-[#1F6F5F] px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 no-underline"
           >
             استكشف المساحات
             <ArrowLeft className="w-4 h-4" />
@@ -159,7 +159,7 @@ export default function AboutPage() {
         </section>
 
         <footer className="text-center text-xs text-gray-500 py-6 border-t border-gray-100">
-          <p className="font-bold text-[#1F5F3F] text-sm mb-1">مضمونة</p>
+          <p className="font-bold text-[#1F6F5F] text-sm mb-1">مضمونة</p>
           <p>Your space, guaranteed · مساحتك اللي بتخصك</p>
         </footer>
       </main>
@@ -180,14 +180,14 @@ function FeatureCard({
   return (
     <Link
       href={href}
-      className="group block bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#1F5F3F]/30 hover:shadow-sm no-underline transition-all"
+      className="group block bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#1F6F5F]/30 hover:shadow-sm no-underline transition-all"
     >
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${accent}`}>
         {icon}
       </div>
       <h3 className="font-bold text-gray-900 mb-1">{title}</h3>
       <p className="text-sm text-gray-600 leading-relaxed mb-3">{description}</p>
-      <p className="text-xs text-[#1F5F3F] font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
+      <p className="text-xs text-[#1F6F5F] font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
         {cta}
         <ArrowLeft className="w-3 h-3" />
       </p>
@@ -204,7 +204,7 @@ function ValueRow({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="w-9 h-9 rounded-lg bg-[#1F5F3F]/10 text-[#1F5F3F] flex items-center justify-center flex-shrink-0">
+      <div className="w-9 h-9 rounded-lg bg-[#1F6F5F]/10 text-[#1F6F5F] flex items-center justify-center flex-shrink-0">
         {icon}
       </div>
       <div className="flex-1">

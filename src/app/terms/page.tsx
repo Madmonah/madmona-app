@@ -17,17 +17,17 @@ export default function TermsPage() {
         <div className="mb-8 animate-slide-up">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-[#1F5F3F] font-bold hover:gap-2 transition-all no-underline mb-4"
+            className="inline-flex items-center gap-1.5 text-sm text-[#1F6F5F] font-bold hover:gap-2 transition-all no-underline mb-4"
           >
             <ArrowRight className="w-4 h-4" />
             الرئيسية
           </Link>
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#B8860B]/10 flex items-center justify-center">
-              <ScrollText className="w-6 h-6 text-[#B8860B]" />
+            <div className="w-12 h-12 rounded-2xl bg-[#2FA084]/10 flex items-center justify-center">
+              <ScrollText className="w-6 h-6 text-[#2FA084]" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#B8860B] uppercase tracking-widest">شروط الاستخدام</p>
+              <p className="text-xs font-bold text-[#2FA084] uppercase tracking-widest">شروط الاستخدام</p>
               <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight">الشروط والأحكام</h1>
             </div>
           </div>

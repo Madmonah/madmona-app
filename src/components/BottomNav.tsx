@@ -34,13 +34,13 @@ export default function BottomNav() {
               key={tab.href}
               href={tab.href}
               className={`flex flex-col items-center justify-center gap-1 py-3 no-underline transition-all ${
-                active ? 'text-[#1F5F3F]' : 'text-gray-500 hover:text-gray-700'
+                active ? 'text-[#1F6F5F]' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               <div className={`relative ${active ? 'scale-110' : ''} transition-transform`}>
-                <Icon className={`w-5 h-5 ${active ? 'fill-[#1F5F3F]/10' : ''}`} strokeWidth={active ? 2.5 : 2} />
+                <Icon className={`w-5 h-5 ${active ? 'fill-[#1F6F5F]/10' : ''}`} strokeWidth={active ? 2.5 : 2} />
                 {active && (
-                  <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#B8860B]" />
+                  <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#2FA084]" />
                 )}
               </div>
               <span className={`text-[10px] ${active ? 'font-bold' : 'font-medium'}`}>

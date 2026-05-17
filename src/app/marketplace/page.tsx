@@ -34,10 +34,10 @@ const CATEGORY_PREVIEW = [
 function MarketplaceFallback() {
   return (
     <div dir="rtl" lang="ar" className="min-h-screen bg-[#FAFAF7]">
-      <header className="bg-[#1F5F3F] text-[#FAF7F0] px-5 py-6">
+      <header className="bg-[#1F6F5F] text-[#FAF7F0] px-5 py-6">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-black mb-1">
-            مضمونة <span className="text-[#B8860B]">·</span> تصفح الإيجارات
+            مضمونة <span className="text-[#2FA084]">·</span> تصفح الإيجارات
           </h1>
           <p className="text-sm text-[#FAF7F0]/80">
             احنا بتوع الإيجار — حماية كاملة، دفع آمن، دعم 24/7
@@ -46,17 +46,17 @@ function MarketplaceFallback() {
       </header>
 
       <main className="px-5 py-6 max-w-6xl mx-auto">
-        <h2 className="text-lg font-bold mb-4 text-[#1F5F3F]">
+        <h2 className="text-lg font-bold mb-4 text-[#1F6F5F]">
           الفئات
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" aria-hidden>
           {CATEGORY_PREVIEW.map((c) => (
             <div
               key={c.slug}
-              className="p-4 rounded-xl bg-white border border-gray-200 flex items-center gap-3 hover:border-[#1F5F3F] transition-colors"
+              className="p-4 rounded-xl bg-white border border-gray-200 flex items-center gap-3 hover:border-[#1F6F5F] transition-colors"
             >
               <span className="text-2xl">{c.emoji}</span>
-              <span className="text-[#1F5F3F] font-medium">{c.label}</span>
+              <span className="text-[#1F6F5F] font-medium">{c.label}</span>
             </div>
           ))}
         </div>
@@ -74,7 +74,7 @@ function MarketplaceFallback() {
               لو الصفحة مش بتفتح،{' '}
               <a
                 href="https://wa.me/201002229982?text=عايز%20أتفرج%20على%20الإيجارات"
-                className="underline text-[#1F5F3F] font-bold"
+                className="underline text-[#1F6F5F] font-bold"
               >
                 كلمنا على واتس
               </a>{' '}
@@ -86,7 +86,7 @@ function MarketplaceFallback() {
         <div className="mt-6 text-center">
           <a
             href="/add-listing"
-            className="inline-block px-6 py-3 bg-[#B8860B] text-white font-bold rounded-xl hover:bg-[#B8860B]/90 transition-all"
+            className="inline-block px-6 py-3 bg-[#2FA084] text-white font-bold rounded-xl hover:bg-[#2FA084]/90 transition-all"
           >
             عندك حاجة تأجرها؟ سجّل ليستنجك في 60 ثانية
           </a>

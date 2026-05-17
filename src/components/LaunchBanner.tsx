@@ -27,14 +27,14 @@ const MESSAGES = [
     badge: 'لـ أجر مننا',
     text: 'كاش باك ٥٠ ج على أول حجز',
     sublabel: 'ساري لأول ١٠٠ من أجر مننا',
-    color: 'from-[#1F5F3F] via-[#2d7a52] to-[#1F5F3F]',
+    color: 'from-[#1F6F5F] via-[#2d7a52] to-[#1F6F5F]',
     cta: 'احجز دلوقتي',
   },
   {
     badge: 'لـ أجر معانا',
     text: '٠٪ عمولة لأول ٣٠ يوم',
     sublabel: 'سجّل خدمتك مجاناً',
-    color: 'from-[#B8860B] via-[#D4A12A] to-[#B8860B]',
+    color: 'from-[#2FA084] via-[#D4A12A] to-[#2FA084]',
     cta: 'هتأجر ايه؟',
   },
 ]

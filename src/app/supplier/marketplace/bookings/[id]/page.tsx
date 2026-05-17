@@ -55,7 +55,7 @@ interface BookingDetail {
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  pending_id_verification: { label: 'بطاقة بانتظار الموافقة', color: 'bg-[#B8860B]/10 text-[#B8860B] border-[#B8860B]/30' },
+  pending_id_verification: { label: 'بطاقة بانتظار الموافقة', color: 'bg-[#2FA084]/10 text-[#2FA084] border-[#2FA084]/30' },
   pending_payment: { label: 'بانتظار الدفع', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
   confirmed: { label: 'مؤكّد', color: 'bg-green-100 text-green-800 border-green-200' },
   active: { label: 'جاري', color: 'bg-blue-100 text-blue-800 border-blue-200' },
@@ -211,11 +211,11 @@ export default function SupplierBookingDetailPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
           <Link
             href={`/auth/login?redirect=/supplier/marketplace/bookings/${bookingId}`}
-            className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold"
+            className="block bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold"
           >
             تسجيل دخول
           </Link>
@@ -232,7 +232,7 @@ export default function SupplierBookingDetailPage() {
           <h1 className="font-bold mb-2">
             {stage === 'no-supplier' ? 'مش مورد' : 'الحجز ده مش موجود'}
           </h1>
-          <Link href="/supplier/marketplace/bookings" className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold mt-4">
+          <Link href="/supplier/marketplace/bookings" className="inline-block bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold mt-4">
             ارجع للحجوزات
           </Link>
         </div>
@@ -314,7 +314,7 @@ export default function SupplierBookingDetailPage() {
                   <Phone className="w-4 h-4 text-gray-400" />
                   <a
                     href={`tel:${booking.customer.phone}`}
-                    className="font-medium text-[#1F5F3F]"
+                    className="font-medium text-[#1F6F5F]"
                     dir="ltr"
                   >
                     {booking.customer.phone}
@@ -382,18 +382,18 @@ export default function SupplierBookingDetailPage() {
           </div>
           <div className="flex justify-between font-bold pt-2 border-t border-gray-100">
             <span className="text-gray-900">صافيك</span>
-            <span className="text-[#1F5F3F]">{Number(booking.supplier_payout).toLocaleString('ar-EG')} ج.م</span>
+            <span className="text-[#1F6F5F]">{Number(booking.supplier_payout).toLocaleString('ar-EG')} ج.م</span>
           </div>
         </div>
 
         {/* ID Verification card - shown only for listings requiring it */}
         {booking.listing?.requires_id_verification && booking.customer_national_id && (
-          <div className="bg-gradient-to-br from-[#B8860B]/5 to-amber-50 rounded-2xl border-2 border-[#B8860B]/30 p-4 space-y-3">
+          <div className="bg-gradient-to-br from-[#2FA084]/5 to-amber-50 rounded-2xl border-2 border-[#2FA084]/30 p-4 space-y-3">
             <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-[#B8860B]" />
+              <ShieldCheck className="w-5 h-5 text-[#2FA084]" />
               التحقق من البطاقة
               {booking.id_verification_status === 'pending' && (
-                <span className="text-[10px] px-2 py-0.5 bg-[#B8860B] text-white rounded-full font-bold">بانتظار ردك</span>
+                <span className="text-[10px] px-2 py-0.5 bg-[#2FA084] text-white rounded-full font-bold">بانتظار ردك</span>
               )}
               {booking.id_verification_status === 'approved' && (
                 <span className="text-[10px] px-2 py-0.5 bg-green-600 text-white rounded-full font-bold flex items-center gap-1">
@@ -409,7 +409,7 @@ export default function SupplierBookingDetailPage() {
 
             <div className="bg-white rounded-xl p-3 border border-gray-100">
               <div className="flex items-center gap-2 mb-1">
-                <CreditCard className="w-4 h-4 text-[#B8860B]" />
+                <CreditCard className="w-4 h-4 text-[#2FA084]" />
                 <p className="text-xs text-gray-500">رقم البطاقة الشخصية</p>
               </div>
               <p className="text-base font-mono font-bold text-gray-900 tracking-widest" dir="ltr">
@@ -459,7 +459,7 @@ export default function SupplierBookingDetailPage() {
         {booking.customer_notes && (
           <div className="bg-white rounded-2xl border border-gray-100 p-4">
             <h2 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#1F5F3F]" /> ملاحظات العميل
+              <FileText className="w-4 h-4 text-[#1F6F5F]" /> ملاحظات العميل
             </h2>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">{booking.customer_notes}</p>
           </div>
@@ -503,7 +503,7 @@ export default function SupplierBookingDetailPage() {
             <button
               onClick={() => updateStatus('confirmed')}
               disabled={updating}
-              className="w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
               أكّد استلام الدفع

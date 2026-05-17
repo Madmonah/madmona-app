@@ -56,7 +56,7 @@ export default async function CapabilitiesPage({
     <div dir="rtl" style={pageStyle}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <header style={{ marginBottom: 20, textAlign: 'center' }}>
-          <h1 style={{ color: '#1F5F3F', margin: 0, fontSize: 26 }}>🛠️ Agent Capabilities</h1>
+          <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>🛠️ Agent Capabilities</h1>
           <p style={{ color: '#666', marginTop: 6, fontSize: 13 }}>
             {caps.length} capability · {coveredCount}/{filteredAgents.length} agent declared
           </p>
@@ -85,7 +85,7 @@ export default async function CapabilitiesPage({
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 8 }}>
                   <div>
-                    <h3 style={{ margin: 0, color: '#1F5F3F', fontSize: 14 }}>
+                    <h3 style={{ margin: 0, color: '#1F6F5F', fontSize: 14 }}>
                       {a.agent_name}
                       {a.display_name && <span style={{ color: '#888', fontSize: 12, fontWeight: 'normal' }}> · {a.display_name}</span>}
                     </h3>
@@ -124,9 +124,9 @@ function BackBtn() {
   return (
     <div style={{ marginTop: 24, textAlign: 'center' }}>
       <a href="/admin/ai-os" style={{
-        color: '#1F5F3F', textDecoration: 'none', fontSize: 13,
+        color: '#1F6F5F', textDecoration: 'none', fontSize: 13,
         padding: '8px 16px', background: '#fff', borderRadius: 8,
-        border: '1px solid #1F5F3F', display: 'inline-block',
+        border: '1px solid #1F6F5F', display: 'inline-block',
       }}>← رجوع للداشبورد</a>
     </div>
   )
@@ -144,10 +144,10 @@ const cardStyle: React.CSSProperties = {
 const chipStyle: React.CSSProperties = {
   fontSize: 12, padding: '6px 12px', background: '#fff',
   borderRadius: 20, border: '1px solid #E5E5E0',
-  color: '#1F5F3F', textDecoration: 'none',
+  color: '#1F6F5F', textDecoration: 'none',
 }
 const chipActiveStyle: React.CSSProperties = {
-  ...chipStyle, background: '#1F5F3F', color: '#fff', borderColor: '#1F5F3F',
+  ...chipStyle, background: '#1F6F5F', color: '#fff', borderColor: '#1F6F5F',
 }
 const badge: React.CSSProperties = {
   fontSize: 10, padding: '3px 8px', borderRadius: 12,

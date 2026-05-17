@@ -99,11 +99,11 @@ export default function FavoritesPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
           <Link
             href="/auth/login?redirect=/account/favorites"
-            className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold"
+            className="block bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold"
           >
             تسجيل دخول
           </Link>
@@ -136,7 +136,7 @@ export default function FavoritesPage() {
             </p>
             <Link
               href="/marketplace"
-              className="inline-flex items-center gap-1 bg-[#1F5F3F] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90"
+              className="inline-flex items-center gap-1 bg-[#1F6F5F] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1F6F5F]/90"
             >
               <Search className="w-4 h-4" />
               تصفح الـMarketplace
@@ -202,7 +202,7 @@ export default function FavoritesPage() {
                         {startingPrice !== null ? (
                           <>
                             <span className="text-xs text-gray-500">يبدأ من</span>
-                            <p className="font-bold text-[#1F5F3F]">
+                            <p className="font-bold text-[#1F6F5F]">
                               {startingPrice.toLocaleString('ar-EG')} <span className="text-xs font-normal">ج.م</span>
                             </p>
                           </>
@@ -212,7 +212,7 @@ export default function FavoritesPage() {
                       </div>
                       {listing.rating && Number(listing.rating) > 0 && (
                         <div className="flex items-center gap-1 text-xs">
-                          <Star className="w-3 h-3 fill-[#B8860B] text-[#B8860B]" />
+                          <Star className="w-3 h-3 fill-[#2FA084] text-[#2FA084]" />
                           <span className="font-semibold text-gray-900">{Number(listing.rating).toFixed(1)}</span>
                         </div>
                       )}

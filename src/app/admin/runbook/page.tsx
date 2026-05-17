@@ -77,7 +77,7 @@ export default async function RunbookPage({
           {entries.map(e => (
             <article key={e.id} style={cardStyle}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 12 }}>
-                <h3 style={{ margin: 0, color: '#1F5F3F', fontSize: 16 }}>{e.title}</h3>
+                <h3 style={{ margin: 0, color: '#1F6F5F', fontSize: 16 }}>{e.title}</h3>
                 <span style={statusBadgeStyle(e.status)}>{e.status}</span>
               </div>
               <div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>
@@ -97,8 +97,8 @@ export default async function RunbookPage({
               </pre>
               {(e.blocker || e.next_steps) && (
                 <div style={{ marginTop: 8, fontSize: 12 }}>
-                  {e.blocker && <div style={{ color: '#C2410C' }}><strong>blocker:</strong> {e.blocker}</div>}
-                  {e.next_steps && <div style={{ color: '#1F5F3F' }}><strong>next:</strong> {e.next_steps}</div>}
+                  {e.blocker && <div style={{ color: '#6FCF97' }}><strong>blocker:</strong> {e.blocker}</div>}
+                  {e.next_steps && <div style={{ color: '#1F6F5F' }}><strong>next:</strong> {e.next_steps}</div>}
                 </div>
               )}
             </article>
@@ -114,7 +114,7 @@ export default async function RunbookPage({
 function Header({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <header style={{ marginBottom: 20, textAlign: 'center' }}>
-      <h1 style={{ color: '#1F5F3F', margin: 0, fontSize: 26 }}>{title}</h1>
+      <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>{title}</h1>
       <p style={{ color: '#666', marginTop: 6, fontSize: 13 }}>{subtitle}</p>
     </header>
   )
@@ -124,9 +124,9 @@ function BackToDashboard() {
   return (
     <div style={{ marginTop: 24, textAlign: 'center' }}>
       <a href="/admin/ai-os" style={{
-        color: '#1F5F3F', textDecoration: 'none', fontSize: 13,
+        color: '#1F6F5F', textDecoration: 'none', fontSize: 13,
         padding: '8px 16px', background: '#fff', borderRadius: 8,
-        border: '1px solid #1F5F3F', display: 'inline-block',
+        border: '1px solid #1F6F5F', display: 'inline-block',
       }}>← رجوع للداشبورد</a>
     </div>
   )
@@ -144,10 +144,10 @@ const cardStyle: React.CSSProperties = {
 const chipStyle: React.CSSProperties = {
   fontSize: 12, padding: '6px 12px', background: '#fff',
   borderRadius: 20, border: '1px solid #E5E5E0',
-  color: '#1F5F3F', textDecoration: 'none',
+  color: '#1F6F5F', textDecoration: 'none',
 }
 const chipActiveStyle: React.CSSProperties = {
-  ...chipStyle, background: '#1F5F3F', color: '#fff', borderColor: '#1F5F3F',
+  ...chipStyle, background: '#1F6F5F', color: '#fff', borderColor: '#1F6F5F',
 }
 const emptyStyle: React.CSSProperties = {
   textAlign: 'center', padding: 40, color: '#888',
@@ -155,7 +155,7 @@ const emptyStyle: React.CSSProperties = {
 }
 function statusBadgeStyle(status: string): React.CSSProperties {
   const colors: Record<string, string> = {
-    active: '#10B981', resolved: '#888', blocked: '#DC2626', deferred: '#B8860B',
+    active: '#10B981', resolved: '#888', blocked: '#DC2626', deferred: '#2FA084',
   }
   return {
     fontSize: 10, padding: '3px 8px', borderRadius: 12,

@@ -90,7 +90,7 @@ export default function LaunchPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1F5F3F]/5 via-white to-[#B8860B]/5" dir="rtl">
+      <div className="min-h-screen bg-gradient-to-br from-[#1F6F5F]/5 via-white to-[#2FA084]/5" dir="rtl">
         <TopNav />
         <main className="max-w-2xl mx-auto px-4 py-20 text-center">
           <div className="w-20 h-20 bg-green-100 rounded-3xl flex items-center justify-center mx-auto mb-6 animate-scale-in">
@@ -103,9 +103,9 @@ export default function LaunchPage() {
             هنتواصل معاك على واتساب في خلال 24 ساعة.
             <br />
             {type === 'customer' ? (
-              <span className="font-bold text-[#1F5F3F]">عرضك جاهز: كاش باك ٥٠ ج على أول حجز 💚</span>
+              <span className="font-bold text-[#1F6F5F]">عرضك جاهز: كاش باك ٥٠ ج على أول حجز 💚</span>
             ) : (
-              <span className="font-bold text-[#B8860B]">عرضك جاهز: ٠٪ عمولة لأول ٣٠ يوم 🎁</span>
+              <span className="font-bold text-[#2FA084]">عرضك جاهز: ٠٪ عمولة لأول ٣٠ يوم 🎁</span>
             )}
           </p>
 
@@ -123,7 +123,7 @@ export default function LaunchPage() {
               </a>
               <Link
                 href="/marketplace"
-                className="inline-flex items-center gap-2 bg-[#1F5F3F] text-white px-5 py-2.5 rounded-full font-bold text-sm hover:scale-105 transition-transform no-underline"
+                className="inline-flex items-center gap-2 bg-[#1F6F5F] text-white px-5 py-2.5 rounded-full font-bold text-sm hover:scale-105 transition-transform no-underline"
               >
                 <ArrowLeft className="w-4 h-4" />
                 استكشف المنصة
@@ -139,7 +139,7 @@ export default function LaunchPage() {
   const customerBenefits = [
     {
       icon: <Gift className="w-5 h-5" />,
-      color: 'bg-[#1F5F3F]/10 text-[#1F5F3F]',
+      color: 'bg-[#1F6F5F]/10 text-[#1F6F5F]',
       title: 'كاش باك ٥٠ ج',
       desc: 'على أول حجز فوق ٥٠٠ ج · لأول ١٠٠ من أجر مننا بس',
     },
@@ -167,7 +167,7 @@ export default function LaunchPage() {
   const supplierBenefits = [
     {
       icon: <TrendingUp className="w-5 h-5" />,
-      color: 'bg-[#B8860B]/10 text-[#B8860B]',
+      color: 'bg-[#2FA084]/10 text-[#2FA084]',
       title: '٠٪ عمولة لأول ٣٠ يوم',
       desc: 'كل اللي تكسبه في الشهر الأول — يخصك إنت 100%',
     },
@@ -194,7 +194,7 @@ export default function LaunchPage() {
   const benefits = type === 'customer' ? customerBenefits : supplierBenefits
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1F5F3F]/5 via-white to-[#B8860B]/5" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-[#1F6F5F]/5 via-white to-[#2FA084]/5" dir="rtl">
       <TopNav />
 
       <main className="max-w-6xl mx-auto px-4 py-8 md:py-12">
@@ -218,12 +218,12 @@ export default function LaunchPage() {
 
           {/* Double Offer Highlight */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto mb-8">
-            <div className="bg-gradient-to-br from-[#1F5F3F] to-[#2d7a52] text-white rounded-2xl p-4 shadow-elevated">
+            <div className="bg-gradient-to-br from-[#1F6F5F] to-[#2d7a52] text-white rounded-2xl p-4 shadow-elevated">
               <p className="text-[10px] font-black tracking-widest uppercase opacity-80 mb-1">لـ أجر مننا</p>
               <p className="text-2xl md:text-3xl font-black mb-1">كاش باك ٥٠ ج</p>
               <p className="text-xs opacity-90">على أول حجز · ١٠٠ من أجر مننا</p>
             </div>
-            <div className="bg-gradient-to-br from-[#B8860B] to-[#D4A12A] text-white rounded-2xl p-4 shadow-elevated">
+            <div className="bg-gradient-to-br from-[#2FA084] to-[#D4A12A] text-white rounded-2xl p-4 shadow-elevated">
               <p className="text-[10px] font-black tracking-widest uppercase opacity-80 mb-1">لـ أجر معانا</p>
               <p className="text-2xl md:text-3xl font-black mb-1">٠٪ عمولة</p>
               <p className="text-xs opacity-90">لأول ٣٠ يوم · غير محدود</p>
@@ -232,9 +232,9 @@ export default function LaunchPage() {
 
           {signupCount !== null && (
             <p className="text-sm text-gray-500 flex items-center justify-center gap-2">
-              <Users className="w-4 h-4 text-[#1F5F3F]" />
+              <Users className="w-4 h-4 text-[#1F6F5F]" />
               <span>
-                <span className="font-black text-[#1F5F3F]">{signupCount.toLocaleString('ar-EG')}</span>
+                <span className="font-black text-[#1F6F5F]">{signupCount.toLocaleString('ar-EG')}</span>
                 {' '}مصري سجل قبلك
               </span>
             </p>
@@ -243,7 +243,7 @@ export default function LaunchPage() {
 
         {/* Categories */}
         <section className="mb-12">
-          <p className="text-center text-xs font-black tracking-widest uppercase text-[#B8860B] mb-6">
+          <p className="text-center text-xs font-black tracking-widest uppercase text-[#2FA084] mb-6">
             ٦ فئات · مئات الـlistings
           </p>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4 max-w-3xl mx-auto">
@@ -266,7 +266,7 @@ export default function LaunchPage() {
           {/* Form */}
           <div className="bg-white rounded-3xl shadow-luxe p-6 md:p-8 order-2 md:order-1">
             <div className="text-center mb-6">
-              <div className="inline-flex items-center gap-2 bg-[#B8860B]/10 text-[#B8860B] px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase mb-3">
+              <div className="inline-flex items-center gap-2 bg-[#2FA084]/10 text-[#2FA084] px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase mb-3">
                 <Gift className="w-3 h-3" />
                 LAUNCH WEEK ONLY
               </div>
@@ -285,7 +285,7 @@ export default function LaunchPage() {
                 onClick={() => setType('customer')}
                 className={`p-3 rounded-2xl border-2 font-bold text-sm transition-all ${
                   type === 'customer'
-                    ? 'border-[#1F5F3F] bg-[#1F5F3F]/5 text-[#1F5F3F]'
+                    ? 'border-[#1F6F5F] bg-[#1F6F5F]/5 text-[#1F6F5F]'
                     : 'border-gray-200 text-gray-500 hover:border-gray-300'
                 }`}
               >
@@ -298,7 +298,7 @@ export default function LaunchPage() {
                 onClick={() => setType('supplier')}
                 className={`p-3 rounded-2xl border-2 font-bold text-sm transition-all ${
                   type === 'supplier'
-                    ? 'border-[#B8860B] bg-[#B8860B]/5 text-[#B8860B]'
+                    ? 'border-[#2FA084] bg-[#2FA084]/5 text-[#2FA084]'
                     : 'border-gray-200 text-gray-500 hover:border-gray-300'
                 }`}
               >
@@ -319,7 +319,7 @@ export default function LaunchPage() {
                   onChange={(e) => setName(e.target.value)}
                   required
                   placeholder="إسمك بالكامل"
-                  className="w-full px-4 py-3 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40"
+                  className="w-full px-4 py-3 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
                 />
               </div>
 
@@ -334,7 +334,7 @@ export default function LaunchPage() {
                   required
                   placeholder="01XXXXXXXXX"
                   dir="ltr"
-                  className="w-full px-4 py-3 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40"
+                  className="w-full px-4 py-3 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
                   style={{ textAlign: 'right' }}
                 />
               </div>
@@ -349,7 +349,7 @@ export default function LaunchPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="example@email.com"
                   dir="ltr"
-                  className="w-full px-4 py-3 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40"
+                  className="w-full px-4 py-3 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
                   style={{ textAlign: 'right' }}
                 />
               </div>
@@ -363,8 +363,8 @@ export default function LaunchPage() {
                 disabled={submitting}
                 className={`w-full text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 ${
                   type === 'customer'
-                    ? 'bg-[#1F5F3F] hover:bg-[#1F5F3F]/90'
-                    : 'bg-[#B8860B] hover:bg-[#B8860B]/90'
+                    ? 'bg-[#1F6F5F] hover:bg-[#1F6F5F]/90'
+                    : 'bg-[#2FA084] hover:bg-[#2FA084]/90'
                 }`}
               >
                 {submitting ? (

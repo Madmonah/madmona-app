@@ -142,15 +142,15 @@ export default async function FunnelDashboard({
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div>
-            <h1 style={{ color: '#1F5F3F', margin: 0, fontSize: 26 }}>📊 Conversion Funnel</h1>
+            <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>📊 Conversion Funnel</h1>
             <p style={{ color: '#666', margin: '4px 0 0', fontSize: 13 }}>
               من إعلان إلى Lead إلى حجز — لكل campaign
             </p>
           </div>
           <div style={{ display: 'flex', gap: 12, fontSize: 13 }}>
-            <a href="/admin/agents" style={{ color: '#1F5F3F' }}>← Agents</a>
-            <a href="/admin/leads-feed" style={{ color: '#1F5F3F' }}>← Leads</a>
-            <a href="/admin/ad-builder" style={{ color: '#1F5F3F' }}>← Ad Builder</a>
+            <a href="/admin/agents" style={{ color: '#1F6F5F' }}>← Agents</a>
+            <a href="/admin/leads-feed" style={{ color: '#1F6F5F' }}>← Leads</a>
+            <a href="/admin/ad-builder" style={{ color: '#1F6F5F' }}>← Ad Builder</a>
           </div>
         </div>
 
@@ -166,14 +166,14 @@ export default async function FunnelDashboard({
               key={opt.d}
               href={`?days=${opt.d}`}
               style={{
-                background: days === opt.d ? '#1F5F3F' : '#fff',
-                color: days === opt.d ? '#FAF7F0' : '#1F5F3F',
+                background: days === opt.d ? '#1F6F5F' : '#fff',
+                color: days === opt.d ? '#FAF7F0' : '#1F6F5F',
                 padding: '8px 16px',
                 borderRadius: 8,
                 textDecoration: 'none',
                 fontSize: 13,
                 fontWeight: 'bold',
-                border: '1px solid #1F5F3F',
+                border: '1px solid #1F6F5F',
               }}
             >
               {opt.label}
@@ -190,7 +190,7 @@ export default async function FunnelDashboard({
             marginBottom: 20,
             border: '1px solid #eee',
           }}>
-            <h3 style={{ color: '#1F5F3F', margin: '0 0 16px' }}>📐 Funnel الإجمالي ({days} يوم)</h3>
+            <h3 style={{ color: '#1F6F5F', margin: '0 0 16px' }}>📐 Funnel الإجمالي ({days} يوم)</h3>
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(5, 1fr)',
@@ -199,13 +199,13 @@ export default async function FunnelDashboard({
             }}>
               {[
                 { label: '👁️ زيارات', val: rows[0].visits, color: '#666' },
-                { label: '🎯 Leads', val: rows[0].leads, color: '#B8860B', rate: rate(rows[0].leads, rows[0].visits) },
-                { label: '🔥 عالي النية', val: rows[0].high_priority_leads, color: '#C2410C', rate: rate(rows[0].high_priority_leads, rows[0].leads) },
-                { label: '💰 حجوزات', val: rows[0].bookings, color: '#1F5F3F', rate: rate(rows[0].bookings, rows[0].leads) },
-                { label: '💵 إيرادات', val: `${rows[0].total_revenue.toLocaleString()}ج`, color: '#1F5F3F' },
+                { label: '🎯 Leads', val: rows[0].leads, color: '#2FA084', rate: rate(rows[0].leads, rows[0].visits) },
+                { label: '🔥 عالي النية', val: rows[0].high_priority_leads, color: '#6FCF97', rate: rate(rows[0].high_priority_leads, rows[0].leads) },
+                { label: '💰 حجوزات', val: rows[0].bookings, color: '#1F6F5F', rate: rate(rows[0].bookings, rows[0].leads) },
+                { label: '💵 إيرادات', val: `${rows[0].total_revenue.toLocaleString()}ج`, color: '#1F6F5F' },
               ].map((stage, i) => (
                 <div key={i} style={{
-                  background: i === 0 ? '#FAF7F0' : i === 4 ? '#1F5F3F' : '#fff',
+                  background: i === 0 ? '#FAF7F0' : i === 4 ? '#1F6F5F' : '#fff',
                   color: i === 4 ? '#FAF7F0' : '#1a1a1a',
                   padding: 14,
                   borderRadius: 10,
@@ -234,7 +234,7 @@ export default async function FunnelDashboard({
         {/* Per-campaign breakdown */}
         <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', border: '1px solid #eee' }}>
           <div style={{ padding: '12px 16px', background: '#FAF7F0', borderBottom: '1px solid #eee' }}>
-            <h3 style={{ margin: 0, color: '#1F5F3F', fontSize: 16 }}>📋 تفصيل لكل Campaign</h3>
+            <h3 style={{ margin: 0, color: '#1F6F5F', fontSize: 16 }}>📋 تفصيل لكل Campaign</h3>
           </div>
 
           {rows.length === 1 ? (
@@ -259,7 +259,7 @@ export default async function FunnelDashboard({
               <tbody>
                 {rows.slice(1).map((r, i) => (
                   <tr key={i} style={{ borderTop: '1px solid #f0f0f0' }}>
-                    <td style={{ ...tdStyle, fontWeight: 'bold', color: '#1F5F3F' }}>{r.campaign}</td>
+                    <td style={{ ...tdStyle, fontWeight: 'bold', color: '#1F6F5F' }}>{r.campaign}</td>
                     <td style={tdStyle}>
                       <span style={{
                         background: '#FAF7F0',
@@ -271,7 +271,7 @@ export default async function FunnelDashboard({
                     <td style={tdStyle}>{r.visits}</td>
                     <td style={{ ...tdStyle, fontWeight: 'bold' }}>{r.leads}</td>
                     <td style={tdStyle}>{rate(r.leads, r.visits)}</td>
-                    <td style={{ ...tdStyle, color: r.high_priority_leads > 0 ? '#C2410C' : '#999' }}>
+                    <td style={{ ...tdStyle, color: r.high_priority_leads > 0 ? '#6FCF97' : '#999' }}>
                       {r.high_priority_leads > 0 ? `🔥 ${r.high_priority_leads}` : '—'}
                     </td>
                     <td style={tdStyle}>
@@ -295,7 +295,7 @@ export default async function FunnelDashboard({
           color: '#666',
           lineHeight: 1.7,
         }}>
-          <strong style={{ color: '#1F5F3F' }}>💡 نصايح:</strong>
+          <strong style={{ color: '#1F6F5F' }}>💡 نصايح:</strong>
           <ul style={{ margin: '8px 0', paddingRight: 20 }}>
             <li>CR (Conversion Rate) أعلى = الـ landing page شغّالة كويس</li>
             <li>متوسط Score أعلى = الـ targeting بتاعك دقيق</li>

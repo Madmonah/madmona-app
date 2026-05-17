@@ -20,8 +20,8 @@ interface Alert {
 
 const SEV_COLOR: Record<string, { bg: string; fg: string; emoji: string }> = {
   critical: { bg: '#7c1d1d', fg: '#fff', emoji: '🚨' },
-  high: { bg: '#C2410C', fg: '#fff', emoji: '🔥' },
-  medium: { bg: '#B8860B', fg: '#fff', emoji: '⚠️' },
+  high: { bg: '#6FCF97', fg: '#fff', emoji: '🔥' },
+  medium: { bg: '#2FA084', fg: '#fff', emoji: '⚠️' },
   low: { bg: '#666', fg: '#fff', emoji: '👁️' },
 }
 
@@ -38,8 +38,8 @@ export default async function FraudAlertsPage() {
     <div dir="rtl" style={{ fontFamily: 'Tahoma', background: '#FAF7F0', minHeight: '100vh', padding: 24 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h1 style={{ color: '#1F5F3F', margin: 0, fontSize: 26 }}>🚨 Fraud Alerts</h1>
-          <a href="/admin/ai-os" style={{ color: '#1F5F3F', fontSize: 13 }}>← AI OS</a>
+          <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>🚨 Fraud Alerts</h1>
+          <a href="/admin/ai-os" style={{ color: '#1F6F5F', fontSize: 13 }}>← AI OS</a>
         </div>
 
         <p style={{ color: '#666', fontSize: 14, marginBottom: 16 }}>
@@ -81,13 +81,13 @@ export default async function FraudAlertsPage() {
                     </span>
                   </div>
 
-                  <h3 style={{ margin: '8px 0', color: '#1F5F3F', fontSize: 15 }}>
+                  <h3 style={{ margin: '8px 0', color: '#1F6F5F', fontSize: 15 }}>
                     {a.description}
                   </h3>
 
                   {a.evidence && Object.keys(a.evidence).length > 0 && (
                     <details style={{ marginTop: 8 }}>
-                      <summary style={{ cursor: 'pointer', color: '#C2410C', fontWeight: 'bold', fontSize: 12 }}>
+                      <summary style={{ cursor: 'pointer', color: '#6FCF97', fontWeight: 'bold', fontSize: 12 }}>
                         📋 الأدلة
                       </summary>
                       <pre style={{
@@ -101,7 +101,7 @@ export default async function FraudAlertsPage() {
                   )}
 
                   <div style={{
-                    background: '#1F5F3F', color: '#FAF7F0',
+                    background: '#1F6F5F', color: '#FAF7F0',
                     padding: 10, borderRadius: 6, marginTop: 10, fontSize: 12,
                   }}>
                     <strong>👉 الإجراء:</strong> {a.recommended_action}

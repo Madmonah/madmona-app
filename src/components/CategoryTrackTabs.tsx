@@ -55,8 +55,8 @@ export default function CategoryTrackTabs({ categories }: { categories: Category
               type="button"
               className={`flex-shrink-0 inline-flex items-center gap-2 px-5 py-3 rounded-full text-sm font-bold transition-all border-2 ${
                 isActive
-                  ? 'bg-[#1F5F3F] text-white border-[#1F5F3F] shadow-soft'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-[#1F5F3F]'
+                  ? 'bg-[#1F6F5F] text-white border-[#1F6F5F] shadow-soft'
+                  : 'bg-white text-gray-700 border-gray-200 hover:border-[#1F6F5F]'
               }`}
             >
               <span className="text-base">{TRACK_LABELS[key].emoji}</span>

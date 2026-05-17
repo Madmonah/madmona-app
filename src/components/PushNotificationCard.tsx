@@ -86,7 +86,7 @@ export default function PushNotificationCard() {
     <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-soft">
       <div className="flex items-start gap-3">
         <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-          status === 'subscribed' ? 'bg-[#1F5F3F]/10 text-[#1F5F3F]' : 'bg-gray-100 text-gray-500'
+          status === 'subscribed' ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'bg-gray-100 text-gray-500'
         }`}>
           {status === 'subscribed' ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
         </div>
@@ -132,7 +132,7 @@ export default function PushNotificationCard() {
               <button
                 onClick={handleEnable}
                 disabled={busy}
-                className="text-xs font-bold text-white bg-[#1F5F3F] hover:bg-[#1F5F3F]/90 px-4 py-2 rounded-xl flex items-center gap-1.5 disabled:opacity-50"
+                className="text-xs font-bold text-white bg-[#1F6F5F] hover:bg-[#1F6F5F]/90 px-4 py-2 rounded-xl flex items-center gap-1.5 disabled:opacity-50"
               >
                 {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <Bell className="w-3 h-3" />}
                 {busy ? 'جاري...' : 'فعّل الإشعارات'}

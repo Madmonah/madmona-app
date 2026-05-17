@@ -129,7 +129,7 @@ export default async function AdListingPage({ params }: { params: Promise<{ slug
           <div style={{ position: 'absolute', bottom: 16, right: 20, color: '#fff' }}>
             {categoryName && (
               <span style={{
-                background: '#B8860B',
+                background: '#2FA084',
                 color: '#fff',
                 padding: '4px 12px',
                 borderRadius: 12,
@@ -145,7 +145,7 @@ export default async function AdListingPage({ params }: { params: Promise<{ slug
 
       <div style={{ maxWidth: 560, margin: '0 auto', padding: '20px' }}>
         {/* Title + Location */}
-        <h1 style={{ color: '#1F5F3F', fontSize: 26, margin: '0 0 8px', lineHeight: 1.3 }}>
+        <h1 style={{ color: '#1F6F5F', fontSize: 26, margin: '0 0 8px', lineHeight: 1.3 }}>
           {listing.title}
         </h1>
         {(listing.district || listing.city) && (
@@ -174,7 +174,7 @@ export default async function AdListingPage({ params }: { params: Promise<{ slug
         {/* Price card */}
         {lowestPrice && (
           <div style={{
-            background: '#1F5F3F',
+            background: '#1F6F5F',
             color: '#FAF7F0',
             padding: 20,
             borderRadius: 16,
@@ -183,7 +183,7 @@ export default async function AdListingPage({ params }: { params: Promise<{ slug
           }}>
             <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 4 }}>السعر يبدأ من</div>
             <div style={{ fontSize: 32, fontWeight: 'bold' }}>{formatPrice(lowestPrice)}</div>
-            <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4, color: '#B8860B' }}>
+            <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4, color: '#2FA084' }}>
               ✓ حماية كاملة · ✓ دفع سريع · ✓ دعم مستمر
             </div>
           </div>
@@ -232,7 +232,7 @@ export default async function AdListingPage({ params }: { params: Promise<{ slug
 
         {/* Trust footer */}
         <div style={{
-          background: '#1F5F3F',
+          background: '#1F6F5F',
           color: '#FAF7F0',
           padding: 16,
           borderRadius: 12,

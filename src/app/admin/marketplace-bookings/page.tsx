@@ -157,21 +157,21 @@ export default function AdminMarketplaceBookingsPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-          <div className="flex items-center justify-center w-12 h-12 bg-[#1F5F3F]/10 rounded-full mb-4 mx-auto">
-            <Lock className="w-5 h-5 text-[#1F5F3F]" />
+          <div className="flex items-center justify-center w-12 h-12 bg-[#1F6F5F]/10 rounded-full mb-4 mx-auto">
+            <Lock className="w-5 h-5 text-[#1F6F5F]" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 text-center mb-1">حجوزات Marketplace</h1>
           <form onSubmit={handleLogin} className="space-y-4 mt-6">
             <input
               type="password" value={password} onChange={(e) => setPassword(e.target.value)}
               placeholder="كلمة السر"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F] text-right"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F] text-right"
               autoFocus
             />
             {authError && <p className="text-sm text-red-600 text-center">{authError}</p>}
             <button
               type="submit" disabled={loading || !password}
-              className="w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50"
+              className="w-full bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50"
             >
               {loading ? 'جاري التحقق...' : 'دخول'}
             </button>
@@ -244,7 +244,7 @@ export default function AdminMarketplaceBookingsPage() {
                       </div>
                     )}
                     {b.supplier_name && (
-                      <div className="flex items-center gap-2 text-[#B8860B]">
+                      <div className="flex items-center gap-2 text-[#2FA084]">
                         <User className="w-3.5 h-3.5" />
                         <span className="truncate">{b.supplier_name}</span>
                       </div>
@@ -273,18 +273,18 @@ export default function AdminMarketplaceBookingsPage() {
                     </div>
                     <div>
                       <div className="text-gray-500 mb-0.5">عمولة</div>
-                      <div className="font-bold text-[#B8860B]">{formatPrice(b.commission_amount)}</div>
+                      <div className="font-bold text-[#2FA084]">{formatPrice(b.commission_amount)}</div>
                     </div>
                     <div>
                       <div className="text-gray-500 mb-0.5">لأجر معانا</div>
-                      <div className="font-bold text-[#1F5F3F]">{formatPrice(b.supplier_payout)}</div>
+                      <div className="font-bold text-[#1F6F5F]">{formatPrice(b.supplier_payout)}</div>
                     </div>
                   </div>
 
                   {isInstaPay && b.payment_proof_url && (
                     <button
                       onClick={() => setProofModalUrl(b.payment_proof_url)}
-                      className="w-full flex items-center justify-center gap-2 py-2 mb-3 bg-[#B8860B]/10 text-[#B8860B] rounded-lg text-xs font-medium hover:bg-[#B8860B]/20"
+                      className="w-full flex items-center justify-center gap-2 py-2 mb-3 bg-[#2FA084]/10 text-[#2FA084] rounded-lg text-xs font-medium hover:bg-[#2FA084]/20"
                     >
                       <ImageIcon className="w-3.5 h-3.5" />
                       عرض صورة التحويل

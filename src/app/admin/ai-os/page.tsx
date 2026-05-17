@@ -13,12 +13,12 @@ export const revalidate = 0
 
 // Canonical team list (matches agent_registry.team values; 8 teams as of May 2026)
 const TEAMS = {
-  sales: { label: '💰 Sales', color: '#1F5F3F' },
-  marketing: { label: '📣 Marketing', color: '#B8860B' },
-  creative: { label: '🎨 Creative', color: '#C2410C' },
+  sales: { label: '💰 Sales', color: '#1F6F5F' },
+  marketing: { label: '📣 Marketing', color: '#2FA084' },
+  creative: { label: '🎨 Creative', color: '#6FCF97' },
   intelligence: { label: '📊 Intelligence', color: '#0EA5E9' },
   growth: { label: '🤝 Growth', color: '#10B981' },
-  operations: { label: '💼 Operations', color: '#1F5F3F' },
+  operations: { label: '💼 Operations', color: '#1F6F5F' },
   strategic: { label: '🧠 Strategic', color: '#2c3e50' },
   support: { label: '🛠️ Support', color: '#8B5CF6' },
 }
@@ -116,7 +116,7 @@ export default async function AIOSPage() {
 
         {/* HEADER */}
         <header style={{ marginBottom: 24 }}>
-          <h1 style={{ color: '#1F5F3F', margin: 0, fontSize: 30, fontWeight: 'bold', textAlign: 'center' }}>
+          <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 30, fontWeight: 'bold', textAlign: 'center' }}>
             🤖 Madmona AI Operating System
           </h1>
           <p style={{ color: '#666', marginTop: 6, fontSize: 13, textAlign: 'center' }}>
@@ -146,7 +146,7 @@ export default async function AIOSPage() {
           )}
 
           {(insightsCount.count ?? 0) > 0 && (
-            <a href="/admin/insights" style={bannerStyle('#C2410C')}>
+            <a href="/admin/insights" style={bannerStyle('#6FCF97')}>
               🚨 {insightsCount.count} insight عالي الأولوية محتاج إجراء
             </a>
           )}
@@ -158,7 +158,7 @@ export default async function AIOSPage() {
           )}
 
           {(collabsCount.count ?? 0) > 0 && (
-            <a href="/admin/collaborations" style={bannerStyle('linear-gradient(135deg, #1F5F3F 0%, #10B981 100%)')}>
+            <a href="/admin/collaborations" style={bannerStyle('linear-gradient(135deg, #1F6F5F 0%, #10B981 100%)')}>
               🎯 {collabsCount.count} Agent Collaborations نشطة — Orchestrator بيخطط ويوزّع التاسكات
             </a>
           )}
@@ -212,7 +212,7 @@ export default async function AIOSPage() {
         ]} />
 
         {/* TEAMS & AGENTS (existing component, unchanged) */}
-        <h2 style={{ color: '#1F5F3F', marginTop: 32, marginBottom: 12, fontSize: 18 }}>
+        <h2 style={{ color: '#1F6F5F', marginTop: 32, marginBottom: 12, fontSize: 18 }}>
           الفرق والأجينتس
         </h2>
         <AIOSControls
@@ -222,7 +222,7 @@ export default async function AIOSPage() {
 
         {/* FOOTER STATUS */}
         <div style={{
-          background: '#1F5F3F', color: '#FAF7F0',
+          background: '#1F6F5F', color: '#FAF7F0',
           padding: 24, borderRadius: 16, marginTop: 32, textAlign: 'center',
         }}>
           <h3 style={{ margin: '0 0 8px' }}>🚀 الـ AI OS بيشتغل دلوقتي</h3>
@@ -250,7 +250,7 @@ function CategorySection({
   return (
     <section style={{ marginBottom: 16 }}>
       <h3 style={{
-        color: '#1F5F3F', fontSize: 13, fontWeight: 600,
+        color: '#1F6F5F', fontSize: 13, fontWeight: 600,
         marginBottom: 8, paddingRight: 4,
       }}>
         {title}
@@ -270,7 +270,7 @@ function CategorySection({
               textDecoration: 'none', color: 'inherit', display: 'block',
             }}
           >
-            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#1F5F3F' }}>
+            <div style={{ fontSize: 24, fontWeight: 'bold', color: '#1F6F5F' }}>
               {c.val}
             </div>
             <div style={{ fontSize: 11, color: '#666', marginTop: 4 }}>
@@ -298,7 +298,7 @@ function bannerStyle(bg: string): React.CSSProperties {
 }
 
 const navLinkStyle: React.CSSProperties = {
-  color: '#1F5F3F', textDecoration: 'none', fontSize: 12,
+  color: '#1F6F5F', textDecoration: 'none', fontSize: 12,
   padding: '6px 14px', background: '#fff',
   borderRadius: 8, border: '1px solid #E5E5E0',
 }

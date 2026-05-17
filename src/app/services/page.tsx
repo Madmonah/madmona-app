@@ -63,11 +63,11 @@ export default function ServicesPage() {
 
       <main className="relative">
         {/* HERO */}
-        <section className="relative py-12 md:py-20 bg-gradient-to-br from-[#1F5F3F]/5 via-[#FAFAF7] to-[#B8860B]/5">
+        <section className="relative py-12 md:py-20 bg-gradient-to-br from-[#1F6F5F]/5 via-[#FAFAF7] to-[#2FA084]/5">
           <div className="max-w-5xl mx-auto px-4 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white shadow-soft border border-gray-100 mb-5">
-              <Sparkles className="w-3.5 h-3.5 text-[#B8860B]" />
-              <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F5F3F]">خدمات مضمونة</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#2FA084]" />
+              <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F6F5F]">خدمات مضمونة</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95] tracking-tight">
               <span className="block">كل ما يتأجر،</span>
@@ -82,7 +82,7 @@ export default function ServicesPage() {
             <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
               <Link
                 href="/marketplace"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#1F5F3F] text-white font-black rounded-full shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#1F6F5F] text-white font-black rounded-full shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
               >
                 <ShoppingBag className="w-4 h-4" />
                 <span>أجر مننا</span>
@@ -90,7 +90,7 @@ export default function ServicesPage() {
               </Link>
               <Link
                 href="/add-listing"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#B8860B] text-white font-black rounded-full shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#2FA084] text-white font-black rounded-full shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
               >
                 <Building2 className="w-4 h-4" />
                 <span>أجر معانا</span>
@@ -104,7 +104,7 @@ export default function ServicesPage() {
         <section className="py-14 md:py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-12">
-              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">١٠ فئات رئيسية</p>
+              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2FA084] mb-3">١٠ فئات رئيسية</p>
               <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight">كل اللي يتأجر</h2>
               <p className="text-sm md:text-base text-gray-600 mt-3 max-w-xl mx-auto">
                 من المساحات الصغيرة للمعدات الثقيلة — مضمونة بتغطي كل احتياجاتك.
@@ -118,18 +118,18 @@ export default function ServicesPage() {
                   <Link
                     key={cat.slug}
                     href={`/categories/${cat.slug}`}
-                    className="group bg-[#FAFAF7] hover:bg-white border border-gray-100 hover:border-[#1F5F3F]/20 hover:shadow-elevated rounded-2xl p-6 transition-all no-underline"
+                    className="group bg-[#FAFAF7] hover:bg-white border border-gray-100 hover:border-[#1F6F5F]/20 hover:shadow-elevated rounded-2xl p-6 transition-all no-underline"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-[#1F5F3F]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#1F5F3F]/20 group-hover:scale-105 transition-all">
-                        <Icon className="w-6 h-6 text-[#1F5F3F]" />
+                      <div className="w-12 h-12 rounded-2xl bg-[#1F6F5F]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#1F6F5F]/20 group-hover:scale-105 transition-all">
+                        <Icon className="w-6 h-6 text-[#1F6F5F]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-black text-gray-900 text-lg mb-1.5 group-hover:text-[#1F5F3F] transition-colors">
+                        <h3 className="font-black text-gray-900 text-lg mb-1.5 group-hover:text-[#1F6F5F] transition-colors">
                           {cat.name}
                         </h3>
                         <p className="text-sm text-gray-600 leading-relaxed">{cat.desc}</p>
-                        <div className="inline-flex items-center gap-1 mt-3 text-xs font-bold text-[#1F5F3F] group-hover:gap-2 transition-all">
+                        <div className="inline-flex items-center gap-1 mt-3 text-xs font-bold text-[#1F6F5F] group-hover:gap-2 transition-all">
                           <span>اتصفح</span>
                           <ArrowLeft className="w-3 h-3" />
                         </div>
@@ -143,10 +143,10 @@ export default function ServicesPage() {
         </section>
 
         {/* PLATFORM FEATURES — booking experience */}
-        <section className="py-14 md:py-20 bg-gradient-to-br from-[#1F5F3F]/5 to-[#B8860B]/5">
+        <section className="py-14 md:py-20 bg-gradient-to-br from-[#1F6F5F]/5 to-[#2FA084]/5">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-12">
-              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F5F3F] mb-3">تجربة الحجز</p>
+              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-3">تجربة الحجز</p>
               <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight">من البحث للحجز</h2>
               <p className="text-sm md:text-base text-gray-600 mt-3 max-w-xl mx-auto">
                 كل خطوة مدروسة عشان تكون رحلتك سلسة — من أول ضغطة لحد التأكيد.
@@ -158,8 +158,8 @@ export default function ServicesPage() {
                 const Icon = f.icon
                 return (
                   <div key={f.name} className="bg-white rounded-2xl p-6 shadow-soft hover:shadow-elevated transition-all">
-                    <div className="w-12 h-12 rounded-2xl bg-[#B8860B]/10 flex items-center justify-center mb-4">
-                      <Icon className="w-6 h-6 text-[#B8860B]" />
+                    <div className="w-12 h-12 rounded-2xl bg-[#2FA084]/10 flex items-center justify-center mb-4">
+                      <Icon className="w-6 h-6 text-[#2FA084]" />
                     </div>
                     <h3 className="font-black text-gray-900 text-lg mb-2">{f.name}</h3>
                     <p className="text-sm text-gray-600 leading-relaxed">{f.desc}</p>
@@ -174,7 +174,7 @@ export default function ServicesPage() {
         <section className="py-14 md:py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-12">
-              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">معلوماتك أهم</p>
+              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2FA084] mb-3">معلوماتك أهم</p>
               <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight">أخبار ومؤشرات حية</h2>
               <p className="text-sm md:text-base text-gray-600 mt-3 max-w-xl mx-auto">
                 مش بس منصة حجز — مضمونة بتديك معلومات السوق اللي بتحتاجها.
@@ -185,9 +185,9 @@ export default function ServicesPage() {
               {NEWS_FEATURES.map((f) => {
                 const Icon = f.icon
                 return (
-                  <div key={f.name} className="border border-gray-100 rounded-2xl p-6 hover:border-[#1F5F3F]/20 hover:shadow-soft transition-all">
-                    <div className="w-12 h-12 rounded-2xl bg-[#1F5F3F]/10 flex items-center justify-center mb-4">
-                      <Icon className="w-6 h-6 text-[#1F5F3F]" />
+                  <div key={f.name} className="border border-gray-100 rounded-2xl p-6 hover:border-[#1F6F5F]/20 hover:shadow-soft transition-all">
+                    <div className="w-12 h-12 rounded-2xl bg-[#1F6F5F]/10 flex items-center justify-center mb-4">
+                      <Icon className="w-6 h-6 text-[#1F6F5F]" />
                     </div>
                     <h3 className="font-black text-gray-900 text-lg mb-2">{f.name}</h3>
                     <p className="text-sm text-gray-600 leading-relaxed">{f.desc}</p>
@@ -202,7 +202,7 @@ export default function ServicesPage() {
         <section className="py-14 md:py-20 bg-gradient-to-br from-gray-900 to-[#1F2937] text-white">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-12">
-              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">للموردين</p>
+              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2FA084] mb-3">للموردين</p>
               <h2 className="text-3xl md:text-5xl font-black leading-tight">عندك خدمة؟ أجر معانا</h2>
               <p className="text-sm md:text-base text-white/80 mt-3 max-w-xl mx-auto">
                 مضمونة بتساعدك تكسب أكتر — ٠٪ عمولة لأول ٣٠ يوم، تسويق مجاني، ولوحة إدارة كاملة.
@@ -214,8 +214,8 @@ export default function ServicesPage() {
                 const Icon = f.icon
                 return (
                   <div key={f.name} className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all">
-                    <div className="w-12 h-12 rounded-2xl bg-[#B8860B]/20 flex items-center justify-center mb-4">
-                      <Icon className="w-6 h-6 text-[#B8860B]" />
+                    <div className="w-12 h-12 rounded-2xl bg-[#2FA084]/20 flex items-center justify-center mb-4">
+                      <Icon className="w-6 h-6 text-[#2FA084]" />
                     </div>
                     <h3 className="font-black text-lg mb-2">{f.name}</h3>
                     <p className="text-sm text-white/75 leading-relaxed">{f.desc}</p>
@@ -227,7 +227,7 @@ export default function ServicesPage() {
             <div className="text-center">
               <Link
                 href="/add-listing"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-[#B8860B] text-white font-black rounded-full shadow-elevated hover:-translate-y-0.5 transition-all no-underline text-base"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-[#2FA084] text-white font-black rounded-full shadow-elevated hover:-translate-y-0.5 transition-all no-underline text-base"
               >
                 <Building2 className="w-5 h-5" />
                 <span>سجّل وابدأ تأجير دلوقتي</span>

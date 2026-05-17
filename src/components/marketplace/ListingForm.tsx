@@ -552,15 +552,15 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-colors ${
                 s < step
-                  ? 'bg-[#1F5F3F] text-white'
+                  ? 'bg-[#1F6F5F] text-white'
                   : s === step
-                  ? 'bg-[#1F5F3F]/10 text-[#1F5F3F] ring-2 ring-[#1F5F3F]'
+                  ? 'bg-[#1F6F5F]/10 text-[#1F6F5F] ring-2 ring-[#1F6F5F]'
                   : 'bg-gray-100 text-gray-400'
               }`}
             >
               {s < step ? <Check className="w-4 h-4" /> : s}
             </div>
-            {s < 5 && <div className={`flex-1 h-0.5 mx-1 ${s < step ? 'bg-[#1F5F3F]' : 'bg-gray-200'}`} />}
+            {s < 5 && <div className={`flex-1 h-0.5 mx-1 ${s < step ? 'bg-[#1F6F5F]' : 'bg-gray-200'}`} />}
           </div>
         ))}
       </div>
@@ -578,7 +578,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         {step === 1 && (
           <div>
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <FolderTree className="w-5 h-5 text-[#1F5F3F]" /> اختار الفئة
+              <FolderTree className="w-5 h-5 text-[#1F6F5F]" /> اختار الفئة
             </h2>
             <p className="text-sm text-gray-500 mb-4">إيه نوع الـlisting اللي بتضيفه؟</p>
 
@@ -596,7 +596,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                         onClick={() => setForm(f => ({ ...f, category_id: rc.id, attributeValues: {} }))}
                         className={`p-4 rounded-xl border-2 text-center transition-colors ${
                           isSelected
-                            ? 'border-[#1F5F3F] bg-[#1F5F3F]/5'
+                            ? 'border-[#1F6F5F] bg-[#1F6F5F]/5'
                             : 'border-gray-100 hover:border-gray-200 bg-white'
                         }`}
                       >
@@ -620,7 +620,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                             onClick={() => setForm(f => ({ ...f, category_id: sc.id, attributeValues: {} }))}
                             className={`p-3 rounded-lg border text-center transition-colors ${
                               isSelected
-                                ? 'border-[#1F5F3F] bg-[#1F5F3F]/5 text-[#1F5F3F]'
+                                ? 'border-[#1F6F5F] bg-[#1F6F5F]/5 text-[#1F6F5F]'
                                 : 'border-gray-100 hover:border-gray-200 text-gray-700'
                             }`}
                           >
@@ -641,7 +641,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         {step === 2 && (
           <div>
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <Info className="w-5 h-5 text-[#1F5F3F]" /> المعلومات الأساسية
+              <Info className="w-5 h-5 text-[#1F6F5F]" /> المعلومات الأساسية
             </h2>
             <p className="text-sm text-gray-500 mb-4">عرّف الـlisting بشكل واضح</p>
 
@@ -654,7 +654,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                   onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                   maxLength={300}
                   required
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
                   placeholder="مثلاً: شاليه فاخر بإطلالة على البحر - مرسى علم"
                 />
               </div>
@@ -665,7 +665,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   rows={4}
                   maxLength={2000}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
                   placeholder="وصف تفصيلي يساعد العميل يفهم الـlisting"
                 />
               </div>
@@ -678,7 +678,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                     value={form.city}
                     onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
                     required
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
                   />
                 </div>
                 <div>
@@ -688,7 +688,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                     value={form.district}
                     onChange={e => setForm(f => ({ ...f, district: e.target.value }))}
                     required
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
                     placeholder="مصر الجديدة"
                   />
                 </div>
@@ -700,7 +700,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                   type="text"
                   value={form.address}
                   onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
                   placeholder="(اختياري)"
                 />
               </div>
@@ -713,7 +713,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                     value={form.min_booking_hours ?? ''}
                     onChange={e => setForm(f => ({ ...f, min_booking_hours: e.target.value ? parseInt(e.target.value) : null }))}
                     min={1}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
                     placeholder="(اختياري)"
                   />
                 </div>
@@ -724,7 +724,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                     value={form.max_booking_hours ?? ''}
                     onChange={e => setForm(f => ({ ...f, max_booking_hours: e.target.value ? parseInt(e.target.value) : null }))}
                     min={1}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
                     placeholder="(اختياري)"
                   />
                 </div>
@@ -734,7 +734,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                 <label
                   className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
                     form.requires_id_verification
-                      ? 'border-[#B8860B] bg-[#B8860B]/5'
+                      ? 'border-[#2FA084] bg-[#2FA084]/5'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
@@ -742,11 +742,11 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                     type="checkbox"
                     checked={form.requires_id_verification}
                     onChange={e => setForm(f => ({ ...f, requires_id_verification: e.target.checked }))}
-                    className="w-4 h-4 mt-0.5 accent-[#B8860B]"
+                    className="w-4 h-4 mt-0.5 accent-[#2FA084]"
                   />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className={`w-4 h-4 ${form.requires_id_verification ? 'text-[#B8860B]' : 'text-gray-400'}`} />
+                      <ShieldCheck className={`w-4 h-4 ${form.requires_id_verification ? 'text-[#2FA084]' : 'text-gray-400'}`} />
                       <span className="text-sm font-bold text-gray-900">
                         محتاج رقم بطاقة من العميل عند الحجز؟
                       </span>
@@ -765,7 +765,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         {step === 3 && (
           <div>
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <Tag className="w-5 h-5 text-[#1F5F3F]" /> الخصائص
+              <Tag className="w-5 h-5 text-[#1F6F5F]" /> الخصائص
             </h2>
             <p className="text-sm text-gray-500 mb-4">
               تفاصيل خاصة بالفئة اللي اخترتها ({selectedCat?.name_ar})
@@ -799,7 +799,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         {step === 4 && (
           <div>
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-[#1F5F3F]" /> الصور
+              <ImageIcon className="w-5 h-5 text-[#1F6F5F]" /> الصور
             </h2>
             <p className="text-sm text-gray-500 mb-4">
               ارفع على الأقل صورة واحدة. الصور الكبيرة بيتم ضغطها تلقائياً (محتفظين بجودة عالية).
@@ -819,14 +819,14 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
               htmlFor="photo-upload"
               className={`block border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
                 processingImages
-                  ? 'border-[#B8860B] bg-[#B8860B]/5 cursor-wait'
-                  : 'border-gray-300 hover:border-[#1F5F3F] hover:bg-[#1F5F3F]/5 cursor-pointer'
+                  ? 'border-[#2FA084] bg-[#2FA084]/5 cursor-wait'
+                  : 'border-gray-300 hover:border-[#1F6F5F] hover:bg-[#1F6F5F]/5 cursor-pointer'
               }`}
             >
               {processingImages ? (
                 <>
-                  <Loader2 className="w-8 h-8 text-[#B8860B] mx-auto mb-2 animate-spin" />
-                  <p className="text-sm font-medium text-[#B8860B]">جاري معالجة الصور...</p>
+                  <Loader2 className="w-8 h-8 text-[#2FA084] mx-auto mb-2 animate-spin" />
+                  <p className="text-sm font-medium text-[#2FA084]">جاري معالجة الصور...</p>
                   <p className="text-xs text-gray-500 mt-1">الصور الكبيرة بيتم ضغطها لتحسين السرعة</p>
                 </>
               ) : (
@@ -847,7 +847,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={photo.url} alt="" className="w-full h-32 object-cover" />
                       {photo.is_primary && (
-                        <div className="absolute top-2 right-2 bg-[#B8860B] text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <div className="absolute top-2 right-2 bg-[#2FA084] text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
                           <Star className="w-3 h-3 fill-white" /> رئيسية
                         </div>
                       )}
@@ -864,7 +864,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                             className="p-2 bg-white rounded-full hover:bg-gray-100"
                             title="اجعلها الصورة الرئيسية"
                           >
-                            <Star className="w-4 h-4 text-[#B8860B]" />
+                            <Star className="w-4 h-4 text-[#2FA084]" />
                           </button>
                         )}
                         <button
@@ -888,7 +888,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         {step === 5 && (
           <div>
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-[#1F5F3F]" /> الأسعار
+              <DollarSign className="w-5 h-5 text-[#1F6F5F]" /> الأسعار
             </h2>
             <p className="text-sm text-gray-500 mb-4">حدد السعر بفترات مختلفة (الأقل سعراً هيظهر للعميل)</p>
 
@@ -933,7 +933,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
               <button
                 type="button"
                 onClick={addPricingRule}
-                className="w-full py-2 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-600 hover:border-[#1F5F3F] hover:text-[#1F5F3F] flex items-center justify-center gap-1"
+                className="w-full py-2 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-600 hover:border-[#1F6F5F] hover:text-[#1F6F5F] flex items-center justify-center gap-1"
               >
                 <Plus className="w-4 h-4" /> ضيف فترة سعر تانية
               </button>
@@ -957,7 +957,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
               type="button"
               onClick={() => setStep(s => s + 1)}
               disabled={!canGoNext() || processingImages}
-              className="px-5 py-2 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              className="px-5 py-2 bg-[#1F6F5F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
             >
               التالي <ChevronLeft className="w-4 h-4" />
             </button>
@@ -975,7 +975,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                 type="button"
                 onClick={() => handleSubmit(false)}
                 disabled={submitting || !canGoNext()}
-                className="px-5 py-2 bg-[#1F5F3F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50 flex items-center gap-1"
+                className="px-5 py-2 bg-[#1F6F5F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50 flex items-center gap-1"
               >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 {submitting ? 'جاري النشر...' : (isEditing ? 'حفظ التعديلات' : 'نشر الـlisting')}
@@ -1019,7 +1019,7 @@ function DynamicField({
             value={value || ''}
             onChange={e => onChange(e.target.value)}
             placeholder={attribute.placeholder || ''}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30"
           />
         </div>
       )
@@ -1033,7 +1033,7 @@ function DynamicField({
             value={value ?? ''}
             onChange={e => onChange(e.target.value === '' ? null : parseFloat(e.target.value))}
             placeholder={attribute.placeholder || ''}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30"
           />
         </div>
       )
@@ -1058,7 +1058,7 @@ function DynamicField({
           <select
             value={value || ''}
             onChange={e => onChange(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30"
           >
             <option value="">— اختر —</option>
             {(attribute.options || []).map(opt => (
@@ -1099,7 +1099,7 @@ function DynamicField({
             type="date"
             value={value || ''}
             onChange={e => onChange(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30"
           />
         </div>
       )

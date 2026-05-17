@@ -24,9 +24,9 @@ export default function OpenGraphImage() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#1F5F3F',
+          backgroundColor: '#1F6F5F',
           backgroundImage:
-            'radial-gradient(circle at 30% 20%, rgba(184, 134, 11, 0.15) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%)',
+            'radial-gradient(circle at 30% 20%, rgba(47, 160, 132, 0.15) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%)',
           fontFamily: 'system-ui, sans-serif',
           padding: 80,
         }}
@@ -39,7 +39,7 @@ export default function OpenGraphImage() {
             left: 0,
             right: 0,
             height: 6,
-            backgroundColor: '#B8860B',
+            backgroundColor: '#2FA084',
           }}
         />
 
@@ -62,7 +62,7 @@ export default function OpenGraphImage() {
           style={{
             fontSize: 36,
             fontWeight: 500,
-            color: '#B8860B',
+            color: '#2FA084',
             letterSpacing: '0.4em',
             marginBottom: 60,
             display: 'flex',
@@ -108,7 +108,7 @@ export default function OpenGraphImage() {
           }}
         >
           <span>مصر الجديدة، القاهرة</span>
-          <span style={{ color: '#B8860B' }}>·</span>
+          <span style={{ color: '#2FA084' }}>·</span>
           <span>madmonacairo.com</span>
         </div>
       </div>

@@ -52,7 +52,7 @@ ${r.plan_summary}`)
 
   return (
     <div style={{
-      background: '#1F5F3F', color: '#FAF7F0',
+      background: '#1F6F5F', color: '#FAF7F0',
       padding: 20, borderRadius: 12, marginBottom: 24,
     }}>
       <h2 style={{ margin: '0 0 12px', fontSize: 18 }}>🚀 اطلق Collaboration جديدة</h2>
@@ -93,7 +93,7 @@ ${r.plan_summary}`)
         onClick={() => launch(goal)}
         disabled={loading || !goal.trim()}
         style={{
-          background: loading ? '#666' : '#B8860B',
+          background: loading ? '#666' : '#2FA084',
           color: '#fff', border: 'none',
           padding: '10px 24px', borderRadius: 8,
           cursor: loading ? 'wait' : 'pointer',

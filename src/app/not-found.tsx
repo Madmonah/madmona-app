@@ -26,7 +26,7 @@ export default function NotFound() {
         <div className="space-y-2">
           <Link
             href="/"
-            className="flex items-center justify-center gap-2 w-full bg-[#1F5F3F] text-white py-3.5 px-6 rounded-2xl font-bold hover:bg-[#1F5F3F]/90 shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline"
+            className="flex items-center justify-center gap-2 w-full bg-[#1F6F5F] text-white py-3.5 px-6 rounded-2xl font-bold hover:bg-[#1F6F5F]/90 shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline"
           >
             <Home className="w-4 h-4" />
             <span>الصفحة الرئيسية</span>

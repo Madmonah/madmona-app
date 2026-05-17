@@ -143,7 +143,7 @@ export default function SocialPackDetail({ params }: { params: Promise<{ id: str
     return (
       <div className="min-h-screen bg-gray-50 p-8" dir="rtl">
         <p className="text-red-600">Pack مش موجود</p>
-        <Link href="/admin/social-packs" className="text-[#1F5F3F] underline">رجوع</Link>
+        <Link href="/admin/social-packs" className="text-[#1F6F5F] underline">رجوع</Link>
       </div>
     )
   }
@@ -176,7 +176,7 @@ export default function SocialPackDetail({ params }: { params: Promise<{ id: str
             <img src={photo.url} alt="" className="w-24 h-24 rounded-xl object-cover flex-shrink-0" />
           )}
           <div className="flex-1">
-            <p className="text-xs text-[#B8860B] font-bold mb-1">{pack.listing?.category?.name_ar}</p>
+            <p className="text-xs text-[#2FA084] font-bold mb-1">{pack.listing?.category?.name_ar}</p>
             <h1 className="text-xl font-bold text-gray-900">{pack.listing?.title}</h1>
             <p className="text-sm text-gray-500 mt-1">
               {pack.listing?.city} {pack.listing?.district && `· ${pack.listing.district}`}
@@ -186,7 +186,7 @@ export default function SocialPackDetail({ params }: { params: Promise<{ id: str
               <Link
                 href={`https://madmonacairo.com/listing/${pack.listing?.slug ?? pack.listing?.id}`}
                 target="_blank"
-                className="text-xs text-[#1F5F3F] hover:underline"
+                className="text-xs text-[#1F6F5F] hover:underline"
               >
                 صفحة الـ listing ↗
               </Link>
@@ -218,7 +218,7 @@ export default function SocialPackDetail({ params }: { params: Promise<{ id: str
               <p className="text-xs text-gray-500">🎵 {pack.reel_script.music_hint}</p>
               <button
                 onClick={() => copyText(JSON.stringify(pack.reel_script, null, 2))}
-                className="text-xs text-[#1F5F3F] hover:underline"
+                className="text-xs text-[#1F6F5F] hover:underline"
               >
                 نسخ السكريبت كامل (JSON)
               </button>
@@ -238,7 +238,7 @@ export default function SocialPackDetail({ params }: { params: Promise<{ id: str
                       <p className="text-xs text-gray-500 font-bold">{labels[k]}</p>
                       <button
                         onClick={() => copyText(pack.post_copies![k])}
-                        className="text-xs text-[#1F5F3F] hover:underline"
+                        className="text-xs text-[#1F6F5F] hover:underline"
                       >
                         نسخ
                       </button>
@@ -264,7 +264,7 @@ export default function SocialPackDetail({ params }: { params: Promise<{ id: str
               </div>
               <button
                 onClick={() => copyText(pack.hashtags!.join(' '))}
-                className="text-xs text-[#1F5F3F] hover:underline whitespace-nowrap"
+                className="text-xs text-[#1F6F5F] hover:underline whitespace-nowrap"
               >
                 نسخ الكل
               </button>
@@ -279,17 +279,17 @@ export default function SocialPackDetail({ params }: { params: Promise<{ id: str
             {(pack.square_canva_url || pack.carousel_canva_url) && (
               <div className="flex gap-3 mt-3">
                 {pack.square_canva_url && (
-                  <a href={pack.square_canva_url} target="_blank" className="text-xs text-[#1F5F3F] hover:underline">
+                  <a href={pack.square_canva_url} target="_blank" className="text-xs text-[#1F6F5F] hover:underline">
                     تصميم مربع ↗
                   </a>
                 )}
                 {pack.story_canva_url && (
-                  <a href={pack.story_canva_url} target="_blank" className="text-xs text-[#1F5F3F] hover:underline">
+                  <a href={pack.story_canva_url} target="_blank" className="text-xs text-[#1F6F5F] hover:underline">
                     ستوري ↗
                   </a>
                 )}
                 {pack.carousel_canva_url && (
-                  <a href={pack.carousel_canva_url} target="_blank" className="text-xs text-[#1F5F3F] hover:underline">
+                  <a href={pack.carousel_canva_url} target="_blank" className="text-xs text-[#1F6F5F] hover:underline">
                     كاروسيل ↗
                   </a>
                 )}
@@ -311,7 +311,7 @@ export default function SocialPackDetail({ params }: { params: Promise<{ id: str
           {groupPosts.length === 0 ? (
             <p className="text-sm text-gray-500">
               مفيش جروبات متربوطة بالتصنيف ده. أضف من{' '}
-              <Link href="/admin/social-groups" className="text-[#1F5F3F] underline">
+              <Link href="/admin/social-groups" className="text-[#1F6F5F] underline">
                 /admin/social-groups
               </Link>
             </p>
@@ -336,7 +336,7 @@ export default function SocialPackDetail({ params }: { params: Promise<{ id: str
                       <a
                         href={g.group.group_url}
                         target="_blank"
-                        className="text-xs text-gray-500 hover:text-[#1F5F3F] no-underline"
+                        className="text-xs text-gray-500 hover:text-[#1F6F5F] no-underline"
                       >
                         {g.group.group_url} ↗
                       </a>
@@ -372,7 +372,7 @@ export default function SocialPackDetail({ params }: { params: Promise<{ id: str
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => copyText(g.post_text, g.id)}
-                      className="text-xs px-3 py-1.5 bg-[#1F5F3F] text-white rounded-lg font-bold hover:opacity-90"
+                      className="text-xs px-3 py-1.5 bg-[#1F6F5F] text-white rounded-lg font-bold hover:opacity-90"
                     >
                       نسخ النص
                     </button>
@@ -403,7 +403,7 @@ export default function SocialPackDetail({ params }: { params: Promise<{ id: str
                       <a
                         href={g.external_post_url}
                         target="_blank"
-                        className="text-xs px-3 py-1.5 text-[#1F5F3F] underline"
+                        className="text-xs px-3 py-1.5 text-[#1F6F5F] underline"
                       >
                         البوست المنشور
                       </a>

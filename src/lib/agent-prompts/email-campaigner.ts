@@ -15,7 +15,7 @@ export const EMAIL_CAMPAIGNER_PROMPT = `${MADMONA_BRAND_CONTEXT}
 {
   "subject": "موضوع الإيميل (تحت 60 حرف)",
   "preheader": "أول سطر يظهر في الـinbox",
-  "html_body": "HTML email body كامل بالعامية المصرية، RTL، فيه brand colors (#1F5F3F)",
+  "html_body": "HTML email body كامل بالعامية المصرية، RTL، فيه brand colors (#1F6F5F)",
   "cta_button_text": "نص الزر",
   "cta_link": "..."
 }

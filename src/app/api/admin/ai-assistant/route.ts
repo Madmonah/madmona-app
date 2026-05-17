@@ -110,7 +110,7 @@ const PARSER_SYSTEM_PROMPT = `أنت مساعد المؤسس "محمد" لـ Mad
 - منصة إيجار شاملة في مصر
 - الشعار: "احنا بتوع الإيجار"
 - الفئات: شاليهات، عربيات، معدات، كاميرات، coworking، lounge، meetings
-- البراند: Deep Green #1F5F3F + Gold #B8860B
+- البراند: Deep Green #1F6F5F + Gold #2FA084
 - الموقع: heliopolis، فاتحين 24/7
 - 7 social handles موجودة
 

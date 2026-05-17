@@ -226,7 +226,7 @@ export default function AdminListingsPage() {
   if (stage === 'loading') {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#1F5F3F] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
       </div>
     )
   }
@@ -235,9 +235,9 @@ export default function AdminListingsPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
-          <Link href="/auth/login?redirect=/admin/listings" className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold">
+          <Link href="/auth/login?redirect=/admin/listings" className="block bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold">
             دخول
           </Link>
         </div>
@@ -252,7 +252,7 @@ export default function AdminListingsPage() {
           <ShieldAlert className="w-8 h-8 text-red-500 mx-auto mb-3" />
           <h1 className="font-bold mb-2">مش مسموح</h1>
           <p className="text-sm text-gray-600 mb-4">الصفحة دي للأدمن فقط.</p>
-          <Link href="/account" className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold">
+          <Link href="/account" className="inline-block bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold">
             ارجع للحساب
           </Link>
         </div>
@@ -276,14 +276,14 @@ export default function AdminListingsPage() {
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Building2 className="w-5 h-5 text-[#1F5F3F] flex-shrink-0" />
+            <Building2 className="w-5 h-5 text-[#1F6F5F] flex-shrink-0" />
             <h1 className="text-lg font-black text-gray-900 truncate">إدارة الخدمات</h1>
           </div>
 
           {/* + Create New Listing button */}
           <Link
             href="/supplier/marketplace/new"
-            className="inline-flex items-center gap-1.5 bg-[#1F5F3F] text-white px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline flex-shrink-0"
+            className="inline-flex items-center gap-1.5 bg-[#1F6F5F] text-white px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline flex-shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">أضف خدمة</span>
@@ -294,7 +294,7 @@ export default function AdminListingsPage() {
 
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard label="الإجمالي" value={totalCount} color="text-[#1F5F3F]" bg="bg-[#1F5F3F]/10" icon={<Building2 className="w-4 h-4" />} />
+          <StatCard label="الإجمالي" value={totalCount} color="text-[#1F6F5F]" bg="bg-[#1F6F5F]/10" icon={<Building2 className="w-4 h-4" />} />
           <StatCard label="منشورة" value={publishedCount} color="text-green-700" bg="bg-green-100" icon={<CheckCircle className="w-4 h-4" />} />
           <StatCard label="قيد المراجعة" value={pendingCount} color="text-yellow-700" bg="bg-yellow-100" icon={<TrendingUp className="w-4 h-4" />} />
           <StatCard label="مسودة" value={draftCount} color="text-gray-700" bg="bg-gray-100" icon={<EyeOff className="w-4 h-4" />} />
@@ -309,7 +309,7 @@ export default function AdminListingsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="ابحث بالعنوان، اسم المورد، أو المدينة..."
-                className="w-full pr-10 pl-3 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40"
+                className="w-full pr-10 pl-3 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
               />
             </div>
             <div className="flex gap-2 overflow-x-auto">
@@ -348,7 +348,7 @@ export default function AdminListingsPage() {
             {listings.length === 0 && (
               <Link
                 href="/supplier/marketplace/new"
-                className="inline-flex items-center gap-2 bg-[#1F5F3F] text-white px-5 py-3 rounded-xl text-sm font-bold shadow-soft hover:shadow-elevated transition-all no-underline"
+                className="inline-flex items-center gap-2 bg-[#1F6F5F] text-white px-5 py-3 rounded-xl text-sm font-bold shadow-soft hover:shadow-elevated transition-all no-underline"
               >
                 <Plus className="w-4 h-4" />
                 أضف أول خدمة
@@ -448,15 +448,15 @@ export default function AdminListingsPage() {
                   disabled={actionBusy || isCurrent}
                   className={`w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all ${
                     isCurrent
-                      ? 'border-[#1F5F3F] bg-[#1F5F3F]/5 cursor-default'
-                      : 'border-gray-100 hover:border-[#1F5F3F]/30 bg-white'
+                      ? 'border-[#1F6F5F] bg-[#1F6F5F]/5 cursor-default'
+                      : 'border-gray-100 hover:border-[#1F6F5F]/30 bg-white'
                   } disabled:opacity-50`}
                 >
                   <div className="flex items-center gap-2">
                     <div className={`w-2.5 h-2.5 rounded-full ${opt.dot}`} />
                     <span className="font-bold text-sm">{opt.label}</span>
                   </div>
-                  {isCurrent && <span className="text-xs text-[#1F5F3F] font-bold">الحالة الحالية</span>}
+                  {isCurrent && <span className="text-xs text-[#1F6F5F] font-bold">الحالة الحالية</span>}
                 </button>
               )
             })}
@@ -494,7 +494,7 @@ function FilterChip({ active, onClick, label }: { active: boolean; onClick: () =
       onClick={onClick}
       className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
         active
-          ? 'bg-[#1F5F3F] text-white'
+          ? 'bg-[#1F6F5F] text-white'
           : 'bg-[#FAFAF7] text-gray-600 hover:bg-gray-100'
       }`}
     >
@@ -542,7 +542,7 @@ function ListingRow({ listing, onDelete, onChangeStatus }: {
             </span>
           )}
           {listing.bookings_count > 0 && (
-            <span className="font-bold text-[#1F5F3F]">
+            <span className="font-bold text-[#1F6F5F]">
               {listing.bookings_count} حجز
             </span>
           )}
@@ -568,7 +568,7 @@ function ListingRow({ listing, onDelete, onChangeStatus }: {
         </button>
         <Link
           href={`/supplier/marketplace/${listing.id}/edit`}
-          className="w-9 h-9 rounded-xl bg-[#1F5F3F]/10 hover:bg-[#1F5F3F]/20 text-[#1F5F3F] flex items-center justify-center transition-colors"
+          className="w-9 h-9 rounded-xl bg-[#1F6F5F]/10 hover:bg-[#1F6F5F]/20 text-[#1F6F5F] flex items-center justify-center transition-colors"
           title="تعديل"
         >
           <Edit2 className="w-4 h-4" />

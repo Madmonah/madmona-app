@@ -70,7 +70,7 @@ export default async function MarketingHQ() {
     }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <header style={{ marginBottom: 32, textAlign: 'center' }}>
-          <h1 style={{ color: '#1F5F3F', margin: 0, fontSize: 32, fontWeight: 'bold' }}>
+          <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 32, fontWeight: 'bold' }}>
             🎯 Madmona Command Center
           </h1>
           <p style={{ color: '#666', marginTop: 8, fontSize: 14 }}>
@@ -85,14 +85,14 @@ export default async function MarketingHQ() {
           marginBottom: 32,
         }}>
           {[
-            { label: 'AI Agents', val: `${overview.enabledAgents}/${overview.totalAgents}`, color: '#1F5F3F' },
-            { label: 'نجاح المهام', val: `${overview.successRate}%`, sub: `${overview.totalSuccess}/${overview.totalRuns}`, color: '#1F5F3F' },
-            { label: 'Leads النهارده', val: overview.todayLeads, sub: `إجمالي: ${overview.totalLeads}`, color: '#B8860B' },
-            { label: '🔥 عالي النية', val: overview.highPriority, color: '#C2410C' },
-            { label: '🎨 Ad Creatives', val: overview.adsCount, color: '#1F5F3F' },
-            { label: '🌅 CEO Briefs', val: overview.briefsCount, color: '#B8860B' },
+            { label: 'AI Agents', val: `${overview.enabledAgents}/${overview.totalAgents}`, color: '#1F6F5F' },
+            { label: 'نجاح المهام', val: `${overview.successRate}%`, sub: `${overview.totalSuccess}/${overview.totalRuns}`, color: '#1F6F5F' },
+            { label: 'Leads النهارده', val: overview.todayLeads, sub: `إجمالي: ${overview.totalLeads}`, color: '#2FA084' },
+            { label: '🔥 عالي النية', val: overview.highPriority, color: '#6FCF97' },
+            { label: '🎨 Ad Creatives', val: overview.adsCount, color: '#1F6F5F' },
+            { label: '🌅 CEO Briefs', val: overview.briefsCount, color: '#2FA084' },
             { label: '🧠 Strategy Plays', val: overview.playsCount, color: '#2c3e50' },
-            { label: '💡 Insights', val: overview.newInsights, sub: overview.highInsights > 0 ? `🔥 ${overview.highInsights}` : undefined, color: '#B8860B' },
+            { label: '💡 Insights', val: overview.newInsights, sub: overview.highInsights > 0 ? `🔥 ${overview.highInsights}` : undefined, color: '#2FA084' },
           ].map((s, i) => (
             <div key={i} style={{
               background: '#fff', padding: 16, borderRadius: 12,
@@ -107,7 +107,7 @@ export default async function MarketingHQ() {
 
         {Object.keys(k).length > 0 && (
           <div style={cardStyle}>
-            <h2 style={{ color: '#1F5F3F', margin: '0 0 16px', fontSize: 18 }}>📊 KPIs النهارده</h2>
+            <h2 style={{ color: '#1F6F5F', margin: '0 0 16px', fontSize: 18 }}>📊 KPIs النهارده</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 }}>
               {[
                 { label: 'تسجيلات', val: k.total_signups },
@@ -118,7 +118,7 @@ export default async function MarketingHQ() {
                 { label: 'ايميلات', val: k.emails_sent },
               ].map((kpi) => (
                 <div key={kpi.label} style={{ padding: 12, background: '#FAF7F0', borderRadius: 8, textAlign: 'center' }}>
-                  <div style={{ fontSize: 20, fontWeight: 'bold', color: '#1F5F3F' }}>{String(kpi.val ?? 0)}</div>
+                  <div style={{ fontSize: 20, fontWeight: 'bold', color: '#1F6F5F' }}>{String(kpi.val ?? 0)}</div>
                   <div style={{ fontSize: 11, color: '#666' }}>{kpi.label}</div>
                 </div>
               ))}
@@ -126,7 +126,7 @@ export default async function MarketingHQ() {
           </div>
         )}
 
-        <h2 style={{ color: '#1F5F3F', margin: '32px 0 16px', fontSize: 20 }}>🤖 AI Operating System</h2>
+        <h2 style={{ color: '#1F6F5F', margin: '32px 0 16px', fontSize: 20 }}>🤖 AI Operating System</h2>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
@@ -139,21 +139,21 @@ export default async function MarketingHQ() {
             { href: '/admin/strategy', icon: '🧠', title: 'Strategy Plays', desc: 'خطط نمو استراتيجية', badge: overview.playsCount },
           ].map((link) => (
             <a key={link.href} href={link.href} style={{
-              background: link.highlight ? '#1F5F3F' : '#fff',
+              background: link.highlight ? '#1F6F5F' : '#fff',
               color: link.highlight ? '#FAF7F0' : 'inherit',
               padding: 18, borderRadius: 12,
               border: link.highlight ? 'none' : '1px solid #eee',
               textDecoration: 'none', display: 'block', position: 'relative',
             }}>
               <div style={{ fontSize: 28, marginBottom: 8 }}>{link.icon}</div>
-              <div style={{ fontWeight: 'bold', fontSize: 15, marginBottom: 4, color: link.highlight ? '#FAF7F0' : '#1F5F3F' }}>
+              <div style={{ fontWeight: 'bold', fontSize: 15, marginBottom: 4, color: link.highlight ? '#FAF7F0' : '#1F6F5F' }}>
                 {link.title}
               </div>
               <div style={{ fontSize: 12, opacity: link.highlight ? 0.9 : 1, color: link.highlight ? '#FAF7F0' : '#666' }}>{link.desc}</div>
               {link.badge !== undefined && link.badge > 0 && (
                 <span style={{
                   position: 'absolute', top: 12, left: 12,
-                  background: '#B8860B', color: '#fff',
+                  background: '#2FA084', color: '#fff',
                   fontSize: 11, fontWeight: 'bold',
                   padding: '2px 8px', borderRadius: 12,
                 }}>{link.badge}</span>
@@ -162,7 +162,7 @@ export default async function MarketingHQ() {
           ))}
         </div>
 
-        <h2 style={{ color: '#1F5F3F', margin: '32px 0 16px', fontSize: 20 }}>📊 Operations</h2>
+        <h2 style={{ color: '#1F6F5F', margin: '32px 0 16px', fontSize: 20 }}>📊 Operations</h2>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
@@ -184,12 +184,12 @@ export default async function MarketingHQ() {
               color: 'inherit', display: 'block', position: 'relative',
             }}>
               <div style={{ fontSize: 28, marginBottom: 8 }}>{link.icon}</div>
-              <div style={{ fontWeight: 'bold', color: '#1F5F3F', fontSize: 15, marginBottom: 4 }}>{link.title}</div>
+              <div style={{ fontWeight: 'bold', color: '#1F6F5F', fontSize: 15, marginBottom: 4 }}>{link.title}</div>
               <div style={{ fontSize: 12, color: '#666' }}>{link.desc}</div>
               {link.badge !== undefined && link.badge > 0 && (
                 <span style={{
                   position: 'absolute', top: 12, left: 12,
-                  background: '#C2410C', color: '#fff',
+                  background: '#6FCF97', color: '#fff',
                   fontSize: 11, fontWeight: 'bold',
                   padding: '2px 8px', borderRadius: 12,
                 }}>{link.badge}</span>

@@ -40,3 +40,4 @@ REMOVE_LISTING.bat
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+.tmp-palette-backup/ 

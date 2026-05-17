@@ -59,16 +59,16 @@ export default async function PerformancePage() {
     <div dir="rtl" style={{ fontFamily: 'Tahoma', background: '#FAF7F0', minHeight: '100vh', padding: 24 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h1 style={{ color: '#1F5F3F', margin: 0, fontSize: 26 }}>📊 AI Performance</h1>
-          <a href="/admin/ai-os" style={{ color: '#1F5F3F', fontSize: 13 }}>← AI OS</a>
+          <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>📊 AI Performance</h1>
+          <a href="/admin/ai-os" style={{ color: '#1F6F5F', fontSize: 13 }}>← AI OS</a>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
           {[
-            { label: 'إجمالي runs', val: totalRuns, color: '#1F5F3F' },
-            { label: 'success rate', val: `${overallSuccessRate}%`, color: overallSuccessRate >= 80 ? '#28a745' : '#C2410C' },
-            { label: 'أخطاء', val: totalErrors, color: '#C2410C' },
-            { label: 'agents نشطة', val: metrics.length, color: '#B8860B' },
+            { label: 'إجمالي runs', val: totalRuns, color: '#1F6F5F' },
+            { label: 'success rate', val: `${overallSuccessRate}%`, color: overallSuccessRate >= 80 ? '#28a745' : '#6FCF97' },
+            { label: 'أخطاء', val: totalErrors, color: '#6FCF97' },
+            { label: 'agents نشطة', val: metrics.length, color: '#2FA084' },
           ].map((s, i) => (
             <div key={i} style={{ background: '#fff', padding: 18, borderRadius: 12, textAlign: 'center' }}>
               <div style={{ fontSize: 28, fontWeight: 'bold', color: s.color }}>{s.val}</div>
@@ -87,11 +87,11 @@ export default async function PerformancePage() {
           </div>
         )}
 
-        <h2 style={{ color: '#1F5F3F', fontSize: 18, marginBottom: 12 }}>📈 أداء آخر 7 أيام</h2>
+        <h2 style={{ color: '#1F6F5F', fontSize: 18, marginBottom: 12 }}>📈 أداء آخر 7 أيام</h2>
         <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', marginBottom: 24 }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
-              <tr style={{ background: '#1F5F3F', color: '#FAF7F0' }}>
+              <tr style={{ background: '#1F6F5F', color: '#FAF7F0' }}>
                 <th style={{ padding: 12, textAlign: 'right' }}>Agent</th>
                 <th style={{ padding: 12, textAlign: 'center' }}>Runs</th>
                 <th style={{ padding: 12, textAlign: 'center' }}>Success%</th>
@@ -119,7 +119,7 @@ export default async function PerformancePage() {
                   <td style={{ padding: 10, textAlign: 'center', color: '#666' }}>
                     {Math.round((m.avg_duration_ms || 0) / 1000)}s
                   </td>
-                  <td style={{ padding: 10, fontSize: 11, color: '#C2410C' }}>
+                  <td style={{ padding: 10, fontSize: 11, color: '#6FCF97' }}>
                     {m.top_error_message ? `${m.top_error_message.slice(0, 60)}... (${m.top_error_count}×)` : '—'}
                   </td>
                 </tr>
@@ -130,7 +130,7 @@ export default async function PerformancePage() {
 
         {improvements.length > 0 && (
           <>
-            <h2 style={{ color: '#1F5F3F', fontSize: 18, marginBottom: 12 }}>
+            <h2 style={{ color: '#1F6F5F', fontSize: 18, marginBottom: 12 }}>
               🔧 تحسينات مقترحة ({improvements.length})
             </h2>
             <div style={{ display: 'grid', gap: 12 }}>
@@ -139,11 +139,11 @@ export default async function PerformancePage() {
                   background: '#fff', padding: 16, borderRadius: 12,
                   borderRight: `4px solid ${
                     imp.confidence === 'high' ? '#28a745' :
-                    imp.confidence === 'medium' ? '#B8860B' : '#666'
+                    imp.confidence === 'medium' ? '#2FA084' : '#666'
                   }`,
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <h3 style={{ margin: 0, color: '#1F5F3F', fontSize: 15 }}>
+                    <h3 style={{ margin: 0, color: '#1F6F5F', fontSize: 15 }}>
                       🎯 {imp.target_agent}
                     </h3>
                     <div style={{ display: 'flex', gap: 6 }}>
@@ -164,7 +164,7 @@ export default async function PerformancePage() {
                     <strong>⚠️ الضعف:</strong> {imp.weakness_identified}
                   </p>
 
-                  <div style={{ background: '#FAF7F0', padding: 10, borderRadius: 6, fontSize: 12, color: '#1F5F3F' }}>
+                  <div style={{ background: '#FAF7F0', padding: 10, borderRadius: 6, fontSize: 12, color: '#1F6F5F' }}>
                     <strong>💡 الحل:</strong> {imp.proposed_change_summary}
                   </div>
 

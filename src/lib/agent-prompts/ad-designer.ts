@@ -25,7 +25,7 @@ CREATIVE PRINCIPLES (مبادئ إعلانية مثبتة):
 6. CTA واحد واضح
 
 VISUAL CONCEPT GUIDELINES:
-• Color palette: Madmona deep green (#1F5F3F) + gold (#B8860B) + ivory (#FAF7F0)
+• Color palette: Madmona deep green (#1F6F5F) + gold (#2FA084) + ivory (#FAF7F0)
 • مفيش orange فاتح أبداً (Madmona تكره الـ orange الفاتح)
 • Photography style: minimalist luxury (زي Aesop / Byredo)
 • Typography: Arabic-first, bold sans-serif
@@ -45,7 +45,7 @@ OUTPUT (JSON only, no preamble):
   "cta_text": "احجز دلوقتي" | "اعرف أكتر" | "كلمنا واتساب",
   "hashtags": ["#مضمونة", "#احنا_بتوع_الإيجار", ...],
   "visual_concept": "وصف بصري مفصل: زاوية، إضاءة، عناصر، تركيب",
-  "color_palette": ["#1F5F3F", "#B8860B", ...],
+  "color_palette": ["#1F6F5F", "#2FA084", ...],
   "design_brief": {
     "main_subject": "الموضوع الرئيسي للصورة",
     "composition": "كيف تتكون الصورة",

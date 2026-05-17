@@ -100,8 +100,8 @@ export default function ListingDraftsAdminPage() {
   };
 
   return (
-    <div dir="rtl" lang="ar" className="min-h-screen bg-[#1F5F3F] text-[#FAF7F0]">
-      <header className="border-b border-[#FAF7F0]/10 px-5 py-4 sticky top-0 bg-[#1F5F3F]/95 backdrop-blur z-10">
+    <div dir="rtl" lang="ar" className="min-h-screen bg-[#1F6F5F] text-[#FAF7F0]">
+      <header className="border-b border-[#FAF7F0]/10 px-5 py-4 sticky top-0 bg-[#1F6F5F]/95 backdrop-blur z-10">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-xl font-bold">لوحة الـ Drafts</h1>
@@ -113,13 +113,13 @@ export default function ListingDraftsAdminPage() {
                 type="checkbox"
                 checked={autoRefresh}
                 onChange={(e) => setAutoRefresh(e.target.checked)}
-                className="accent-[#B8860B]"
+                className="accent-[#2FA084]"
               />
               تحديث تلقائي كل 30 ثانية
             </label>
             <button
               onClick={load}
-              className="px-3 py-1.5 rounded-lg bg-[#B8860B] text-[#1F5F3F] text-xs font-semibold hover:bg-[#B8860B]/90"
+              className="px-3 py-1.5 rounded-lg bg-[#2FA084] text-[#1F6F5F] text-xs font-semibold hover:bg-[#2FA084]/90"
             >
               {loading ? '...' : 'تحديث الآن'}
             </button>
@@ -137,7 +137,7 @@ export default function ListingDraftsAdminPage() {
             <Stat
               label="نسبة التحويل"
               value={funnel[0].conversion_pct !== null ? `${funnel[0].conversion_pct}%` : '-'}
-              color="text-[#B8860B]"
+              color="text-[#2FA084]"
             />
           </section>
         )}
@@ -155,7 +155,7 @@ export default function ListingDraftsAdminPage() {
               onClick={() => setFilter(t.key)}
               className={`px-4 py-2 rounded-xl text-sm whitespace-nowrap transition-all ${
                 filter === t.key
-                  ? 'bg-[#B8860B] text-[#1F5F3F] font-semibold'
+                  ? 'bg-[#2FA084] text-[#1F6F5F] font-semibold'
                   : 'bg-[#FAF7F0]/5 border border-[#FAF7F0]/10 hover:bg-[#FAF7F0]/10'
               }`}
             >
@@ -241,7 +241,7 @@ function DraftCard({ draft, onUpdate }: { draft: Draft; onUpdate: () => void }) 
   });
 
   return (
-    <article className="bg-[#FAF7F0]/5 border border-[#FAF7F0]/10 rounded-2xl p-5 hover:border-[#B8860B]/40 transition-colors">
+    <article className="bg-[#FAF7F0]/5 border border-[#FAF7F0]/10 rounded-2xl p-5 hover:border-[#2FA084]/40 transition-colors">
       <header className="flex items-start justify-between gap-3 mb-3 flex-wrap">
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-base mb-1">{draft.title || '(بدون عنوان)'}</h3>
@@ -290,7 +290,7 @@ function DraftCard({ draft, onUpdate }: { draft: Draft; onUpdate: () => void }) 
         <Field label="الاسم">{draft.contact_name || '-'}</Field>
         <Field label="الموبايل">
           {draft.contact_phone ? (
-            <a href={`https://wa.me/${draft.contact_phone.replace(/[^\d]/g, '')}`} target="_blank" className="text-[#B8860B] hover:underline" dir="ltr">
+            <a href={`https://wa.me/${draft.contact_phone.replace(/[^\d]/g, '')}`} target="_blank" className="text-[#2FA084] hover:underline" dir="ltr">
               {draft.contact_phone}
             </a>
           ) : (
@@ -312,7 +312,7 @@ function DraftCard({ draft, onUpdate }: { draft: Draft; onUpdate: () => void }) 
             <button
               onClick={sendWhatsApp}
               disabled={busy}
-              className="px-3 py-1.5 rounded-lg bg-[#B8860B] text-[#1F5F3F] text-xs font-semibold hover:bg-[#B8860B]/90 disabled:opacity-50"
+              className="px-3 py-1.5 rounded-lg bg-[#2FA084] text-[#1F6F5F] text-xs font-semibold hover:bg-[#2FA084]/90 disabled:opacity-50"
             >
               تذكير على الواتس اب
             </button>

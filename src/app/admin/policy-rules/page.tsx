@@ -46,7 +46,7 @@ export default async function PolicyRulesPage({
     <div dir="rtl" style={pageStyle}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <header style={{ marginBottom: 20, textAlign: 'center' }}>
-          <h1 style={{ color: '#1F5F3F', margin: 0, fontSize: 26 }}>📋 Policy Rules</h1>
+          <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>📋 Policy Rules</h1>
           <p style={{ color: '#666', marginTop: 6, fontSize: 13 }}>
             {rules.length} rule · enforcement عند DB trigger أو AI prompt
           </p>
@@ -74,7 +74,7 @@ export default async function PolicyRulesPage({
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 8 }}>
                 <div style={{ minWidth: 0 }}>
-                  <h3 style={{ margin: 0, color: '#1F5F3F', fontSize: 14, wordBreak: 'break-word' }}>
+                  <h3 style={{ margin: 0, color: '#1F6F5F', fontSize: 14, wordBreak: 'break-word' }}>
                     {r.rule_key}
                   </h3>
                   <div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>
@@ -104,9 +104,9 @@ export default async function PolicyRulesPage({
 
         <div style={{ marginTop: 24, textAlign: 'center' }}>
           <a href="/admin/ai-os" style={{
-            color: '#1F5F3F', textDecoration: 'none', fontSize: 13,
+            color: '#1F6F5F', textDecoration: 'none', fontSize: 13,
             padding: '8px 16px', background: '#fff', borderRadius: 8,
-            border: '1px solid #1F5F3F', display: 'inline-block',
+            border: '1px solid #1F6F5F', display: 'inline-block',
           }}>← رجوع للداشبورد</a>
         </div>
       </div>
@@ -117,7 +117,7 @@ export default async function PolicyRulesPage({
 function enforcementColor(level: string | null): string {
   switch (level) {
     case 'hard': case 'block': case 'block_and_log': return '#DC2626'
-    case 'soft': case 'auto_correct': return '#B8860B'
+    case 'soft': case 'auto_correct': return '#2FA084'
     case 'warn': return '#0EA5E9'
     default: return '#10B981'
   }
@@ -135,10 +135,10 @@ const cardStyle: React.CSSProperties = {
 const chipStyle: React.CSSProperties = {
   fontSize: 12, padding: '6px 12px', background: '#fff',
   borderRadius: 20, border: '1px solid #E5E5E0',
-  color: '#1F5F3F', textDecoration: 'none',
+  color: '#1F6F5F', textDecoration: 'none',
 }
 const chipActiveStyle: React.CSSProperties = {
-  ...chipStyle, background: '#1F5F3F', color: '#fff', borderColor: '#1F5F3F',
+  ...chipStyle, background: '#1F6F5F', color: '#fff', borderColor: '#1F6F5F',
 }
 const activeBadge: React.CSSProperties = {
   fontSize: 10, padding: '3px 8px', borderRadius: 12,

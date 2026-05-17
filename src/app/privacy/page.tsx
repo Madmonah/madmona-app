@@ -17,17 +17,17 @@ export default function PrivacyPage() {
         <div className="mb-8 animate-slide-up">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-[#1F5F3F] font-bold hover:gap-2 transition-all no-underline mb-4"
+            className="inline-flex items-center gap-1.5 text-sm text-[#1F6F5F] font-bold hover:gap-2 transition-all no-underline mb-4"
           >
             <ArrowRight className="w-4 h-4" />
             الرئيسية
           </Link>
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#1F5F3F]/10 flex items-center justify-center">
-              <ShieldCheck className="w-6 h-6 text-[#1F5F3F]" />
+            <div className="w-12 h-12 rounded-2xl bg-[#1F6F5F]/10 flex items-center justify-center">
+              <ShieldCheck className="w-6 h-6 text-[#1F6F5F]" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#B8860B] uppercase tracking-widest">حماية بياناتك</p>
+              <p className="text-xs font-bold text-[#2FA084] uppercase tracking-widest">حماية بياناتك</p>
               <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight">سياسة الخصوصية</h1>
             </div>
           </div>
@@ -136,9 +136,9 @@ export default function PrivacyPage() {
             </a>
             <a
               href="mailto:privacy@madmonacairo.com"
-              className="flex items-center gap-3 p-4 bg-gradient-to-l from-[#1F5F3F]/10 to-transparent rounded-2xl border border-[#1F5F3F]/20 hover:shadow-soft hover:-translate-y-0.5 transition-all no-underline"
+              className="flex items-center gap-3 p-4 bg-gradient-to-l from-[#1F6F5F]/10 to-transparent rounded-2xl border border-[#1F6F5F]/20 hover:shadow-soft hover:-translate-y-0.5 transition-all no-underline"
             >
-              <div className="w-10 h-10 rounded-xl bg-[#1F5F3F] flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#1F6F5F] flex items-center justify-center flex-shrink-0">
                 <Mail className="w-5 h-5 text-white" />
               </div>
               <div>

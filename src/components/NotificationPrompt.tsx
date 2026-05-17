@@ -142,8 +142,8 @@ export default function NotificationPrompt() {
 
           {stage === 'success' ? (
             <div className="text-center py-4">
-              <div className="w-16 h-16 bg-[#1F5F3F]/10 rounded-3xl flex items-center justify-center mx-auto mb-3">
-                <CheckCircle className="w-8 h-8 text-[#1F5F3F]" />
+              <div className="w-16 h-16 bg-[#1F6F5F]/10 rounded-3xl flex items-center justify-center mx-auto mb-3">
+                <CheckCircle className="w-8 h-8 text-[#1F6F5F]" />
               </div>
               <h2 className="text-xl font-black text-gray-900 mb-2">
                 تم التفعيل بنجاح! 🎉
@@ -165,10 +165,10 @@ export default function NotificationPrompt() {
 
               {/* Icon + sparkles */}
               <div className="relative inline-flex items-center justify-center mb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-[#1F5F3F] to-[#2d7a52] rounded-3xl flex items-center justify-center shadow-lg">
+                <div className="w-16 h-16 bg-gradient-to-br from-[#1F6F5F] to-[#2d7a52] rounded-3xl flex items-center justify-center shadow-lg">
                   <Bell className="w-8 h-8 text-white" />
                 </div>
-                <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-[#B8860B] animate-pulse" />
+                <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-[#2FA084] animate-pulse" />
               </div>
 
               {/* Title */}
@@ -184,19 +184,19 @@ export default function NotificationPrompt() {
               {/* Benefits list */}
               <ul className="space-y-2 mb-6">
                 <li className="flex items-start gap-2.5 text-sm text-gray-700">
-                  <div className="w-5 h-5 bg-[#1F5F3F]/10 text-[#1F5F3F] rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-5 h-5 bg-[#1F6F5F]/10 text-[#1F6F5F] rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-xs">✓</span>
                   </div>
                   <span>تأكيد الحجوزات وتحديثاتها فوراً</span>
                 </li>
                 <li className="flex items-start gap-2.5 text-sm text-gray-700">
-                  <div className="w-5 h-5 bg-[#B8860B]/10 text-[#B8860B] rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-5 h-5 bg-[#2FA084]/10 text-[#2FA084] rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-xs">✓</span>
                   </div>
                   <span>عروض حصرية لفترة محدودة</span>
                 </li>
                 <li className="flex items-start gap-2.5 text-sm text-gray-700">
-                  <div className="w-5 h-5 bg-[#C2410C]/10 text-[#C2410C] rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-5 h-5 bg-[#6FCF97]/10 text-[#6FCF97] rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-xs">✓</span>
                   </div>
                   <span>منتجات وخدمات جديدة على المنصة</span>
@@ -215,7 +215,7 @@ export default function NotificationPrompt() {
                 <button
                   onClick={handleEnable}
                   disabled={stage === 'busy'}
-                  className="w-full bg-gradient-to-l from-[#1F5F3F] to-[#2d7a52] text-white font-black py-3.5 rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+                  className="w-full bg-gradient-to-l from-[#1F6F5F] to-[#2d7a52] text-white font-black py-3.5 rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed transition-all"
                 >
                   {stage === 'busy' ? (
                     <>

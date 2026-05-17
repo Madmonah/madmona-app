@@ -107,7 +107,7 @@ export default function NewsTabsSection() {
         {/* Header */}
         <div className="flex items-end justify-between mb-8 md:mb-10 flex-wrap gap-4">
           <div>
-            <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#B8860B] mb-3">LIVE NEWS</p>
+            <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2FA084] mb-3">LIVE NEWS</p>
             <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-[0.95]">
               <span className="block">آخر</span>
               <span className="block italic font-light gradient-text-green">الأخبار</span>
@@ -133,14 +133,14 @@ export default function NewsTabsSection() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-shrink-0 flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 rounded-full text-sm font-bold transition-all duration-300 ${
                   isActive
-                    ? 'bg-[#1F5F3F] text-white shadow-elevated scale-105'
+                    ? 'bg-[#1F6F5F] text-white shadow-elevated scale-105'
                     : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow-card'
                 }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
                 {items[tab.id].length > 0 && !isActive && (
-                  <span className="text-[10px] bg-[#1F5F3F]/10 text-[#1F5F3F] px-1.5 py-0.5 rounded-full font-black">
+                  <span className="text-[10px] bg-[#1F6F5F]/10 text-[#1F6F5F] px-1.5 py-0.5 rounded-full font-black">
                     {items[tab.id].length}
                   </span>
                 )}
@@ -173,7 +173,7 @@ export default function NewsTabsSection() {
             <p className="text-sm text-gray-500 mb-4">جرّب تاني بعد شوية</p>
             <button
               onClick={() => fetchTab(activeTab)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1F5F3F] text-white rounded-full text-sm font-bold hover:shadow-elevated"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1F6F5F] text-white rounded-full text-sm font-bold hover:shadow-elevated"
             >
               <RefreshCw className="w-4 h-4" />
               حاول تاني
@@ -207,7 +207,7 @@ export default function NewsTabsSection() {
                   {/* Source badge */}
                   <div className={`absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black backdrop-blur-md shadow-card ${
                     item.isEgyptian
-                      ? 'bg-gradient-to-l from-[#B8860B] to-[#D4A12A] text-white'
+                      ? 'bg-gradient-to-l from-[#2FA084] to-[#D4A12A] text-white'
                       : 'bg-white/90 text-gray-800'
                   }`}>
                     {item.isEgyptian && <MapPin className="w-2.5 h-2.5" />}
@@ -222,7 +222,7 @@ export default function NewsTabsSection() {
 
                 {/* Content */}
                 <div className="p-4 md:p-5">
-                  <h3 className="font-black text-sm md:text-base text-gray-900 leading-snug line-clamp-3 mb-3 group-hover:text-[#1F5F3F] transition-colors">
+                  <h3 className="font-black text-sm md:text-base text-gray-900 leading-snug line-clamp-3 mb-3 group-hover:text-[#1F6F5F] transition-colors">
                     {item.title}
                   </h3>
                   <div className="flex items-center justify-between text-[11px] text-gray-500 pt-2 border-t border-gray-100">
@@ -230,7 +230,7 @@ export default function NewsTabsSection() {
                       <Clock className="w-3 h-3" />
                       <span>{formatTime(item.pubDate)}</span>
                     </span>
-                    <span className="inline-flex items-center gap-1 text-[#1F5F3F] font-bold group-hover:gap-2 transition-all">
+                    <span className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold group-hover:gap-2 transition-all">
                       اقرأ
                       <ExternalLink className="w-3 h-3" />
                     </span>

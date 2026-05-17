@@ -192,8 +192,8 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center px-6 py-8" dir="rtl">
         <div className="max-w-md w-full bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-          <div className="flex items-center justify-center w-14 h-14 bg-[#1F5F3F]/10 rounded-full mx-auto mb-5">
-            <CheckCircle className="w-7 h-7 text-[#1F5F3F]" />
+          <div className="flex items-center justify-center w-14 h-14 bg-[#1F6F5F]/10 rounded-full mx-auto mb-5">
+            <CheckCircle className="w-7 h-7 text-[#1F6F5F]" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 text-center mb-1">تم تسجيل حجزك</h1>
           <p className="text-sm text-gray-500 text-center mb-6">
@@ -204,7 +204,7 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
               <span className="text-xs text-gray-500">كود الحجز</span>
               <button
                 onClick={() => navigator.clipboard?.writeText(bookingResult.booking_code)}
-                className="text-xs text-[#1F5F3F] flex items-center gap-1 hover:underline"
+                className="text-xs text-[#1F6F5F] flex items-center gap-1 hover:underline"
               >
                 <Copy className="w-3 h-3" />
                 نسخ
@@ -225,7 +225,7 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
             </div>
             <div className="flex justify-between pt-2 border-t border-gray-100">
               <dt className="text-gray-500">الإجمالي</dt>
-              <dd className="text-[#1F5F3F] font-bold">
+              <dd className="text-[#1F6F5F] font-bold">
                 {formatPrice(bookingResult.total_price_egp)}
               </dd>
             </div>
@@ -238,7 +238,7 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
           >
             <span>ابعت تأكيد على واتساب</span>
           </a>
-          <Link href="/" className="block text-center text-sm text-gray-500 hover:text-[#1F5F3F]">
+          <Link href="/" className="block text-center text-sm text-gray-500 hover:text-[#1F6F5F]">
             الصفحة الرئيسية
           </Link>
         </div>
@@ -287,7 +287,7 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
                   onClick={() => setSelectedDate(c.iso)}
                   className={`flex-shrink-0 px-3 py-2.5 rounded-xl border min-w-[70px] text-center transition-colors ${
                     selected
-                      ? 'border-[#1F5F3F] bg-[#1F5F3F] text-white'
+                      ? 'border-[#1F6F5F] bg-[#1F6F5F] text-white'
                       : 'border-gray-200 bg-white text-gray-700'
                   }`}
                 >
@@ -316,7 +316,7 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="اسمك بالكامل"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F] text-right"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F] text-right"
               autoComplete="name"
             />
           </div>
@@ -332,7 +332,7 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
                 setCustomerPhone(e.target.value.replace(/[^\d+]/g, '').slice(0, 14))
               }
               placeholder="01xxxxxxxxx"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
               dir="ltr"
               style={{ textAlign: 'right' }}
               autoComplete="tel"
@@ -349,7 +349,7 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="أي تفاصيل إضافية"
               rows={2}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F] text-right resize-none"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F] text-right resize-none"
             />
           </div>
         </section>
@@ -363,12 +363,12 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
               onClick={() => setPaymentMethod('cash_on_arrival')}
               className={`w-full flex items-center gap-3 p-4 rounded-xl border text-right transition-colors ${
                 paymentMethod === 'cash_on_arrival'
-                  ? 'border-[#1F5F3F] bg-[#1F5F3F]/5 ring-2 ring-[#1F5F3F]/20'
+                  ? 'border-[#1F6F5F] bg-[#1F6F5F]/5 ring-2 ring-[#1F6F5F]/20'
                   : 'border-gray-200 bg-white'
               }`}
             >
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#1F5F3F]/10 flex items-center justify-center">
-                <Banknote className="w-5 h-5 text-[#1F5F3F]" />
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#1F6F5F]/10 flex items-center justify-center">
+                <Banknote className="w-5 h-5 text-[#1F6F5F]" />
               </div>
               <div className="flex-1">
                 <div className="font-semibold text-gray-900">الدفع عند الوصول</div>
@@ -380,12 +380,12 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
               onClick={() => setPaymentMethod('instapay')}
               className={`w-full flex items-center gap-3 p-4 rounded-xl border text-right transition-colors ${
                 paymentMethod === 'instapay'
-                  ? 'border-[#1F5F3F] bg-[#1F5F3F]/5 ring-2 ring-[#1F5F3F]/20'
+                  ? 'border-[#1F6F5F] bg-[#1F6F5F]/5 ring-2 ring-[#1F6F5F]/20'
                   : 'border-gray-200 bg-white'
               }`}
             >
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#B8860B]/10 flex items-center justify-center">
-                <Smartphone className="w-5 h-5 text-[#B8860B]" />
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#2FA084]/10 flex items-center justify-center">
+                <Smartphone className="w-5 h-5 text-[#2FA084]" />
               </div>
               <div className="flex-1">
                 <div className="font-semibold text-gray-900">InstaPay</div>
@@ -396,9 +396,9 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
         </section>
 
         {paymentMethod === 'instapay' && (
-          <section className="mb-6 bg-[#B8860B]/5 border border-[#B8860B]/20 rounded-xl p-4">
+          <section className="mb-6 bg-[#2FA084]/5 border border-[#2FA084]/20 rounded-xl p-4">
             <p className="text-sm text-gray-700 mb-3 leading-relaxed">
-              حوّل <span className="font-bold text-[#1F5F3F]">{formatPrice(props.price)}</span>{' '}
+              حوّل <span className="font-bold text-[#1F6F5F]">{formatPrice(props.price)}</span>{' '}
               على InstaPay لـ:
             </p>
             <div className="bg-white rounded-lg p-3 mb-4 flex items-center justify-between">
@@ -407,7 +407,7 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
               </span>
               <button
                 onClick={() => navigator.clipboard?.writeText(INSTAPAY_HANDLE)}
-                className="text-xs text-[#1F5F3F] flex items-center gap-1"
+                className="text-xs text-[#1F6F5F] flex items-center gap-1"
               >
                 <Copy className="w-3 h-3" />
                 نسخ
@@ -423,11 +423,11 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
                 accept="image/jpeg,image/png,image/webp"
                 onChange={handleFileUpload}
                 disabled={uploading}
-                className="block w-full text-sm text-gray-500 file:ml-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#1F5F3F]/10 file:text-[#1F5F3F] disabled:opacity-50"
+                className="block w-full text-sm text-gray-500 file:ml-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#1F6F5F]/10 file:text-[#1F6F5F] disabled:opacity-50"
               />
               {uploading && <p className="text-xs text-gray-500 mt-2">جاري رفع الصورة...</p>}
               {paymentProofUrl && !uploading && (
-                <div className="mt-3 flex items-center gap-2 text-sm text-[#1F5F3F]">
+                <div className="mt-3 flex items-center gap-2 text-sm text-[#1F6F5F]">
                   <CheckCircle className="w-4 h-4" />
                   <span>تم رفع الصورة</span>
                 </div>
@@ -448,13 +448,13 @@ export default function SinglePlanReserve(props: SinglePlanReserveProps) {
         <div className="max-w-md mx-auto flex items-center gap-3">
           <div className="flex-1">
             <div className="text-xs text-gray-500">الإجمالي</div>
-            <div className="text-lg font-bold text-[#1F5F3F]">{formatPrice(props.price)}</div>
+            <div className="text-lg font-bold text-[#1F6F5F]">{formatPrice(props.price)}</div>
           </div>
           <button
             type="button"
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="flex-1 bg-[#1F5F3F] text-white py-3 px-6 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 bg-[#1F6F5F] text-white py-3 px-6 rounded-xl font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {submitting ? 'جاري الحجز...' : 'تأكيد الحجز'}
           </button>

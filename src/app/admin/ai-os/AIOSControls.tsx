@@ -118,7 +118,7 @@ export default function AIOSControls({ agentsByTeam, teams }: Props) {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                       <div>
-                        <h3 style={{ margin: 0, color: '#1F5F3F', fontSize: 14 }}>
+                        <h3 style={{ margin: 0, color: '#1F6F5F', fontSize: 14 }}>
                           {agent.display_name ?? agent.agent_name}
                         </h3>
                         <div style={{ fontSize: 10, color: '#999', fontFamily: 'monospace' }}>
@@ -149,7 +149,7 @@ export default function AIOSControls({ agentsByTeam, teams }: Props) {
                     )}
                     <div style={{ display: 'flex', gap: 12, marginTop: 8, fontSize: 11, color: '#999' }}>
                       <span>📊 {agent.run_count} runs</span>
-                      <span style={{ color: successRate >= 80 ? '#28a745' : successRate >= 50 ? '#B8860B' : '#C2410C' }}>
+                      <span style={{ color: successRate >= 80 ? '#28a745' : successRate >= 50 ? '#2FA084' : '#6FCF97' }}>
                         ✓ {successRate}%
                       </span>
                     </div>
@@ -163,7 +163,7 @@ export default function AIOSControls({ agentsByTeam, teams }: Props) {
                           borderRadius: 6,
                           border: 'none',
                           cursor: isLoading || !agent.enabled ? 'not-allowed' : 'pointer',
-                          background: agent.enabled ? '#1F5F3F' : '#ccc',
+                          background: agent.enabled ? '#1F6F5F' : '#ccc',
                           color: '#fff',
                           fontSize: 11,
                           fontWeight: 'bold'

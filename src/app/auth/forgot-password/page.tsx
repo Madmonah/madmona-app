@@ -62,8 +62,8 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen gradient-mesh flex flex-col relative overflow-hidden" dir="rtl">
       {/* Decorative blobs */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1F5F3F]/5 rounded-full blur-3xl animate-float pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#B8860B]/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1F6F5F]/5 rounded-full blur-3xl animate-float pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#2FA084]/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <header className="relative z-10">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
         <div className="w-full max-w-md animate-slide-up">
           <div className="text-center mb-6">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/80 backdrop-blur rounded-full mb-4 shadow-soft">
-              <Sparkles className="w-3 h-3 text-[#B8860B]" />
+              <Sparkles className="w-3 h-3 text-[#2FA084]" />
               <span className="text-xs font-bold text-gray-700">مضمونة · Madmona</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight tracking-tight">
@@ -101,7 +101,7 @@ export default function ForgotPasswordPage() {
               </p>
               <Link
                 href="/auth/login"
-                className="inline-block bg-[#1F5F3F] text-white px-6 py-3 rounded-xl font-bold shadow-elevated hover:shadow-luxe transition-all no-underline"
+                className="inline-block bg-[#1F6F5F] text-white px-6 py-3 rounded-xl font-bold shadow-elevated hover:shadow-luxe transition-all no-underline"
               >
                 ارجع لتسجيل الدخول
               </Link>
@@ -137,7 +137,7 @@ export default function ForgotPasswordPage() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Mail className="w-3.5 h-3.5 text-[#1F5F3F]" />
+                    <Mail className="w-3.5 h-3.5 text-[#1F6F5F]" />
                     الإيميل
                   </label>
                   <input
@@ -145,7 +145,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F5F3F]/40 focus:ring-4 focus:ring-[#1F5F3F]/10 transition-all"
+                    className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
                     dir="ltr"
                     style={{ textAlign: 'right' }}
                     autoComplete="email"
@@ -167,7 +167,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={submitting || !email}
-                  className="w-full bg-[#1F5F3F] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-[#1F6F5F] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
                 >
                   {submitting ? (
                     <>
@@ -187,7 +187,7 @@ export default function ForgotPasswordPage() {
                 <p className="text-sm text-gray-600 mb-2">فاكر كلمة السر؟</p>
                 <Link
                   href="/auth/login"
-                  className="inline-flex items-center gap-1 text-[#1F5F3F] font-bold hover:gap-2 transition-all no-underline"
+                  className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold hover:gap-2 transition-all no-underline"
                 >
                   ارجع لتسجيل الدخول
                   <ArrowRight className="w-3.5 h-3.5" />

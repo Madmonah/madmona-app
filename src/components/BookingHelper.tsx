@@ -19,7 +19,7 @@ import { MessageCircle, X, Phone, Check, Loader2 } from 'lucide-react'
 //   - /marketplace/[slug]/book (booking page) — primary placement
 //   - Can be extended to listing detail pages later
 //
-// Brand: deep green (#1F5F3F) + gold (#B8860B) + clean ivory
+// Brand: deep green (#1F6F5F) + gold (#2FA084) + clean ivory
 // ============================================================================
 
 interface Props {
@@ -195,9 +195,9 @@ export default function BookingHelper({
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-      <div className="bg-white rounded-2xl border-2 border-[#1F5F3F]/20 shadow-2xl overflow-hidden">
+      <div className="bg-white rounded-2xl border-2 border-[#1F6F5F]/20 shadow-2xl overflow-hidden">
         {/* Header bar */}
-        <div className="flex items-center justify-between gap-2 bg-gradient-to-l from-[#1F5F3F] to-[#2a7a52] px-4 py-2.5 text-white">
+        <div className="flex items-center justify-between gap-2 bg-gradient-to-l from-[#1F6F5F] to-[#2a7a52] px-4 py-2.5 text-white">
           <div className="flex items-center gap-2 min-w-0">
             <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
               <MessageCircle className="w-4 h-4" />
@@ -220,7 +220,7 @@ export default function BookingHelper({
               <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
                 <Check className="w-6 h-6 text-green-700" />
               </div>
-              <h3 className="font-bold text-[#1F5F3F] mb-1">تمام، خد بالك من تليفونك</h3>
+              <h3 className="font-bold text-[#1F6F5F] mb-1">تمام، خد بالك من تليفونك</h3>
               <p className="text-xs text-gray-600">هنوصلك في أقل من ساعة على واتساب 🌿</p>
             </div>
           ) : isAuthenticated ? (
@@ -253,7 +253,7 @@ export default function BookingHelper({
                   value={phone}
                   onChange={e => setPhone(e.target.value.replace(/[^\d+]/g, '').slice(0, 14))}
                   placeholder="رقم الموبايل · 01x xxxx xxxx"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   inputMode="tel"
@@ -264,7 +264,7 @@ export default function BookingHelper({
                   value={name}
                   onChange={e => setName(e.target.value.slice(0, 60))}
                   placeholder="اسمك (اختياري)"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F]"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
                   autoComplete="name"
                 />
               </div>
@@ -274,7 +274,7 @@ export default function BookingHelper({
               <button
                 onClick={handleSubmit}
                 disabled={stage === 'submitting' || phone.length < 10}
-                className="w-full flex items-center justify-center gap-2 bg-[#1F5F3F] hover:bg-[#1F5F3F]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2.5 px-4 rounded-xl transition-colors"
+                className="w-full flex items-center justify-center gap-2 bg-[#1F6F5F] hover:bg-[#1F6F5F]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2.5 px-4 rounded-xl transition-colors"
               >
                 {stage === 'submitting' ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -285,7 +285,7 @@ export default function BookingHelper({
               </button>
               <button
                 onClick={handleWhatsAppClick}
-                className="w-full mt-2 text-xs text-[#1F5F3F] hover:underline"
+                className="w-full mt-2 text-xs text-[#1F6F5F] hover:underline"
               >
                 أو ابعت واتساب لمضمونة دلوقتي ←
               </button>

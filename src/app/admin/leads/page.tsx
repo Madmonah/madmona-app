@@ -129,8 +129,8 @@ export default function AdminLeadsPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-          <div className="flex items-center justify-center w-12 h-12 bg-[#1F5F3F]/10 rounded-full mb-4 mx-auto">
-            <Lock className="w-5 h-5 text-[#1F5F3F]" />
+          <div className="flex items-center justify-center w-12 h-12 bg-[#1F6F5F]/10 rounded-full mb-4 mx-auto">
+            <Lock className="w-5 h-5 text-[#1F6F5F]" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 text-center mb-1">لوحة الإدارة</h1>
           <p className="text-sm text-gray-500 text-center mb-6">إدخال كلمة السر للوصول</p>
@@ -141,14 +141,14 @@ export default function AdminLeadsPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="كلمة السر"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F] transition-colors text-right"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F] transition-colors text-right"
               autoFocus
             />
             {authError && <p className="text-sm text-red-600 text-center">{authError}</p>}
             <button
               type="submit"
               disabled={loading || !password}
-              className="w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50 transition-colors"
+              className="w-full bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50 transition-colors"
             >
               {loading ? 'جاري التحقق...' : 'دخول'}
             </button>
@@ -234,7 +234,7 @@ export default function AdminLeadsPage() {
                     <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                     <span>{spaceName}</span>
                     {lead.pricing_label && (
-                      <span className="text-xs text-[#B8860B]">· {lead.pricing_label}</span>
+                      <span className="text-xs text-[#2FA084]">· {lead.pricing_label}</span>
                     )}
                   </div>
                   {lead.preferred_date && (
@@ -264,7 +264,7 @@ export default function AdminLeadsPage() {
                   </a>
                   <a
                     href={telUrl}
-                    className="px-3 py-1.5 bg-[#1F5F3F]/10 text-[#1F5F3F] rounded-lg text-xs font-medium hover:bg-[#1F5F3F]/20 transition-colors"
+                    className="px-3 py-1.5 bg-[#1F6F5F]/10 text-[#1F6F5F] rounded-lg text-xs font-medium hover:bg-[#1F6F5F]/20 transition-colors"
                   >
                     اتصال
                   </a>

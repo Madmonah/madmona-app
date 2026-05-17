@@ -20,7 +20,7 @@ export default async function Image() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(180deg, #1F5F3F 0%, #164d32 100%)',
+          background: 'linear-gradient(180deg, #1F6F5F 0%, #164d32 100%)',
           color: '#FFFFFF',
           fontFamily: 'sans-serif',
           padding: 80,
@@ -45,7 +45,7 @@ export default async function Image() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#1F5F3F',
+              color: '#1F6F5F',
               fontSize: 48,
               fontWeight: 700,
             }}
@@ -54,7 +54,7 @@ export default async function Image() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ fontSize: 36, fontWeight: 700 }}>مضمونة</div>
-            <div style={{ fontSize: 18, color: '#B8860B', letterSpacing: 4 }}>MADMONA</div>
+            <div style={{ fontSize: 18, color: '#2FA084', letterSpacing: 4 }}>MADMONA</div>
           </div>
         </div>
 
@@ -97,7 +97,7 @@ export default async function Image() {
               alignItems: 'center',
             }}
           >
-            <div style={{ fontSize: 40, fontWeight: 700, color: '#B8860B' }}>10%</div>
+            <div style={{ fontSize: 40, fontWeight: 700, color: '#2FA084' }}>10%</div>
             <div style={{ fontSize: 20 }}>عمولة بس</div>
           </div>
           <div
@@ -110,7 +110,7 @@ export default async function Image() {
               alignItems: 'center',
             }}
           >
-            <div style={{ fontSize: 40, fontWeight: 700, color: '#B8860B' }}>AI</div>
+            <div style={{ fontSize: 40, fontWeight: 700, color: '#2FA084' }}>AI</div>
             <div style={{ fontSize: 20 }}>matching ذكي</div>
           </div>
           <div
@@ -123,7 +123,7 @@ export default async function Image() {
               alignItems: 'center',
             }}
           >
-            <div style={{ fontSize: 40, fontWeight: 700, color: '#B8860B' }}>2019</div>
+            <div style={{ fontSize: 40, fontWeight: 700, color: '#2FA084' }}>2019</div>
             <div style={{ fontSize: 20 }}>تأسسنا من</div>
           </div>
         </div>

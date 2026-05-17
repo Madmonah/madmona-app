@@ -117,10 +117,10 @@ function PostCard({ post, onShareAdded }: { post: Post; onShareAdded: () => void
           <div className="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">
             {CATEGORY_LABELS[post.category] ?? post.category}
           </div>
-          <h3 className="text-base font-bold text-[#1F5F3F]">{post.title}</h3>
+          <h3 className="text-base font-bold text-[#1F6F5F]">{post.title}</h3>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-[10px] bg-[#1F5F3F]/10 text-[#1F5F3F] px-2.5 py-1 rounded-full font-bold">
+          <span className="text-[10px] bg-[#1F6F5F]/10 text-[#1F6F5F] px-2.5 py-1 rounded-full font-bold">
             {post.shares.length} جروب
           </span>
           {post.external_url && (
@@ -128,7 +128,7 @@ function PostCard({ post, onShareAdded }: { post: Post; onShareAdded: () => void
               href={post.external_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] text-gray-500 hover:text-[#1F5F3F] underline"
+              className="text-[10px] text-gray-500 hover:text-[#1F6F5F] underline"
             >
               البوست الأصلي ↗
             </a>
@@ -152,7 +152,7 @@ function PostCard({ post, onShareAdded }: { post: Post; onShareAdded: () => void
             className={`px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all ${
               copied
                 ? 'bg-green-600 text-white'
-                : 'bg-[#1F5F3F] text-white hover:shadow-md'
+                : 'bg-[#1F6F5F] text-white hover:shadow-md'
             }`}
           >
             {copied ? '✓ تم النسخ' : '📋 نسخ كامل'}
@@ -164,7 +164,7 @@ function PostCard({ post, onShareAdded }: { post: Post; onShareAdded: () => void
               href={`https://www.facebook.com/search/groups/?q=${encodeURIComponent(q)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-2.5 rounded-xl text-xs bg-white border-2 border-gray-200 hover:border-[#1F5F3F] hover:text-[#1F5F3F] text-gray-700 transition-all"
+              className="px-3 py-2.5 rounded-xl text-xs bg-white border-2 border-gray-200 hover:border-[#1F6F5F] hover:text-[#1F6F5F] text-gray-700 transition-all"
             >
               🔍 {q}
             </a>
@@ -179,7 +179,7 @@ function PostCard({ post, onShareAdded }: { post: Post; onShareAdded: () => void
             <h4 className="text-xs font-bold text-gray-700">الجروبات اللي نشرت فيها:</h4>
             <button
               onClick={() => setShowAddGroup((v) => !v)}
-              className="text-xs text-[#1F5F3F] font-bold hover:underline"
+              className="text-xs text-[#1F6F5F] font-bold hover:underline"
             >
               {showAddGroup ? '× إلغاء' : '+ ضيف جروب'}
             </button>
@@ -204,7 +204,7 @@ function PostCard({ post, onShareAdded }: { post: Post; onShareAdded: () => void
               <button
                 onClick={handleAddGroup}
                 disabled={saving || !groupName.trim()}
-                className="w-full px-3 py-2 bg-[#1F5F3F] text-white text-sm font-bold rounded-lg disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#1F6F5F] text-white text-sm font-bold rounded-lg disabled:opacity-50"
               >
                 {saving ? '...حفظ' : 'سجّل النشر في الجروب ده'}
               </button>
@@ -231,7 +231,7 @@ function PostCard({ post, onShareAdded }: { post: Post; onShareAdded: () => void
                           href={s.group_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#1F5F3F] hover:underline"
+                          className="text-[#1F6F5F] hover:underline"
                         >
                           {s.group_name} ↗
                         </a>
@@ -305,11 +305,11 @@ export default function SupplierPostsPage() {
         {/* Quick stats */}
         <div className="mb-6 grid grid-cols-3 gap-3">
           <div className="bg-white rounded-xl p-3 text-center border border-gray-100">
-            <div className="text-2xl font-bold text-[#1F5F3F]">{posts.length}</div>
+            <div className="text-2xl font-bold text-[#1F6F5F]">{posts.length}</div>
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">بوست</div>
           </div>
           <div className="bg-white rounded-xl p-3 text-center border border-gray-100">
-            <div className="text-2xl font-bold text-[#B8860B]">{totalShares}</div>
+            <div className="text-2xl font-bold text-[#2FA084]">{totalShares}</div>
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">نشر</div>
           </div>
           <div className="bg-white rounded-xl p-3 text-center border border-gray-100">

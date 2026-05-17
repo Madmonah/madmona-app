@@ -80,13 +80,13 @@ export default function NotificationButton({ variant = 'icon-only' }: Props) {
     idle: {
       icon: <Bell className="w-5 h-5" strokeWidth={2.25} />,
       bg: 'bg-white',
-      text: 'text-[#1F5F3F]',
+      text: 'text-[#1F6F5F]',
       pulse: true,
       label: 'فعّل الإشعارات',
     },
     subscribed: {
       icon: <BellRing className="w-5 h-5" strokeWidth={2.25} />,
-      bg: 'bg-[#1F5F3F]',
+      bg: 'bg-[#1F6F5F]',
       text: 'text-white',
       pulse: false,
       label: 'الإشعارات مفعّلة',
@@ -118,8 +118,8 @@ export default function NotificationButton({ variant = 'icon-only' }: Props) {
 
         {cfg.pulse && (
           <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#B8860B] opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#B8860B] border border-white" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2FA084] opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#2FA084] border border-white" />
           </span>
         )}
       </button>
@@ -141,9 +141,9 @@ export default function NotificationButton({ variant = 'icon-only' }: Props) {
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                    status === 'subscribed' ? 'bg-[#1F5F3F]/10 text-[#1F5F3F]'
+                    status === 'subscribed' ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]'
                       : status === 'denied' ? 'bg-red-100 text-red-600'
-                      : 'bg-[#B8860B]/10 text-[#B8860B]'
+                      : 'bg-[#2FA084]/10 text-[#2FA084]'
                   }`}>
                     {status === 'subscribed' ? <BellRing className="w-6 h-6" />
                       : status === 'denied' ? <BellOff className="w-6 h-6" />
@@ -168,26 +168,26 @@ export default function NotificationButton({ variant = 'icon-only' }: Props) {
 
               {status === 'idle' && (
                 <>
-                  <div className="bg-gradient-to-l from-[#1F5F3F]/5 to-[#B8860B]/5 rounded-2xl p-4 mb-4">
+                  <div className="bg-gradient-to-l from-[#1F6F5F]/5 to-[#2FA084]/5 rounded-2xl p-4 mb-4">
                     <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                       <span className="text-lg">🔔</span>
                       هتوصلك إشعارات لما:
                     </h3>
                     <ul className="space-y-2 text-sm text-gray-700 pr-2">
                       <li className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-[#1F5F3F] flex-shrink-0 mt-0.5" />
+                        <CheckCircle className="w-4 h-4 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
                         <span>حجزك يتأكد من المورد</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-[#1F5F3F] flex-shrink-0 mt-0.5" />
+                        <CheckCircle className="w-4 h-4 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
                         <span>عروض جديدة في فئتك المفضلة</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-[#1F5F3F] flex-shrink-0 mt-0.5" />
+                        <CheckCircle className="w-4 h-4 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
                         <span>تذكير بمواعيد حجوزاتك</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-[#1F5F3F] flex-shrink-0 mt-0.5" />
+                        <CheckCircle className="w-4 h-4 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
                         <span>تخفيضات وعروض خاصة</span>
                       </li>
                     </ul>
@@ -197,7 +197,7 @@ export default function NotificationButton({ variant = 'icon-only' }: Props) {
                     type="button"
                     onClick={handleEnable}
                     disabled={busy}
-                    className="w-full bg-[#1F5F3F] hover:bg-[#1F5F3F]/90 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50 transition-colors shadow-elevated"
+                    className="w-full bg-[#1F6F5F] hover:bg-[#1F6F5F]/90 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50 transition-colors shadow-elevated"
                   >
                     {busy ? <><Loader2 className="w-5 h-5 animate-spin" /><span>جاري التفعيل...</span></>
                       : <><Bell className="w-5 h-5" /><span>فعّل الإشعارات الآن</span></>}

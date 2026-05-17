@@ -47,17 +47,17 @@ export default function SpaceBookingButton({ spaceId, pricing }: Props) {
               onClick={() => setSelectedType(p.type)}
               className={`w-full p-4 rounded-xl border-2 transition-all text-right ${
                 isSelected
-                  ? 'border-[#1F5F3F] bg-[#1F5F3F]/5'
-                  : 'border-gray-100 bg-white hover:border-[#1F5F3F]/30'
+                  ? 'border-[#1F6F5F] bg-[#1F6F5F]/5'
+                  : 'border-gray-100 bg-white hover:border-[#1F6F5F]/30'
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold text-[#1F5F3F]">
+                  <span className="text-lg font-bold text-[#1F6F5F]">
                     {formatPrice(p.price)}
                   </span>
                   {p.highlight && (
-                    <span className="px-2 py-0.5 bg-[#B8860B] text-white text-xs rounded-full font-medium">
+                    <span className="px-2 py-0.5 bg-[#2FA084] text-white text-xs rounded-full font-medium">
                       الأشهر
                     </span>
                   )}
@@ -65,7 +65,7 @@ export default function SpaceBookingButton({ spaceId, pricing }: Props) {
                 <div
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                     isSelected
-                      ? 'border-[#1F5F3F] bg-[#1F5F3F]'
+                      ? 'border-[#1F6F5F] bg-[#1F6F5F]'
                       : 'border-gray-300'
                   }`}
                 >
@@ -83,7 +83,7 @@ export default function SpaceBookingButton({ spaceId, pricing }: Props) {
         <div className="max-w-md mx-auto">
           <button
             onClick={handleBookNow}
-            className="w-full bg-[#1F5F3F] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#1F5F3F]/90 transition-colors shadow-lg"
+            className="w-full bg-[#1F6F5F] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#1F6F5F]/90 transition-colors shadow-lg"
           >
             احجز الآن
           </button>

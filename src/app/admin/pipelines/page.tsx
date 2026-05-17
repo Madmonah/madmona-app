@@ -69,9 +69,9 @@ interface RunDetail {
 // ============================================================================
 
 const PIPELINE_META: Record<string, { icon: typeof Megaphone; gradient: string; emoji: string; arabicName: string }> = {
-  'daily-content': { icon: Megaphone, gradient: 'from-[#1F5F3F] to-[#2d7a52]', emoji: '🎬', arabicName: 'محتوى اليوم' },
-  'lead-funnel': { icon: Target, gradient: 'from-[#B8860B] to-[#d4a017]', emoji: '🎯', arabicName: 'تأهيل وقفل العملاء' },
-  'quality-trust': { icon: Shield, gradient: 'from-[#C2410C] to-[#ea580c]', emoji: '🛡️', arabicName: 'الجودة والأمان' },
+  'daily-content': { icon: Megaphone, gradient: 'from-[#1F6F5F] to-[#2d7a52]', emoji: '🎬', arabicName: 'محتوى اليوم' },
+  'lead-funnel': { icon: Target, gradient: 'from-[#2FA084] to-[#d4a017]', emoji: '🎯', arabicName: 'تأهيل وقفل العملاء' },
+  'quality-trust': { icon: Shield, gradient: 'from-[#6FCF97] to-[#ea580c]', emoji: '🛡️', arabicName: 'الجودة والأمان' },
   'pricing-strategy': { icon: DollarSign, gradient: 'from-purple-700 to-indigo-600', emoji: '💎', arabicName: 'استراتيجية التسعير' },
 }
 
@@ -185,8 +185,8 @@ export default function PipelinesPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#FAF7F0] to-[#f5efe1] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-[#1F5F3F] animate-spin mx-auto mb-4" />
-          <p className="text-[#1F5F3F] font-bold">جاري تحميل النظام...</p>
+          <Loader2 className="w-12 h-12 text-[#1F6F5F] animate-spin mx-auto mb-4" />
+          <p className="text-[#1F6F5F] font-bold">جاري تحميل النظام...</p>
         </div>
       </div>
     )
@@ -201,7 +201,7 @@ export default function PipelinesPage() {
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => { sessionStorage.removeItem('madmona_admin_pw'); window.location.reload() }}
-            className="px-6 py-3 bg-[#1F5F3F] text-white rounded-xl font-bold hover:bg-[#164a30] transition-colors"
+            className="px-6 py-3 bg-[#1F6F5F] text-white rounded-xl font-bold hover:bg-[#164a30] transition-colors"
           >
             حاول تاني
           </button>
@@ -213,7 +213,7 @@ export default function PipelinesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FAF7F0] via-[#f5efe1] to-[#FAF7F0]" dir="rtl">
       {/* ============== HERO ============== */}
-      <header className="relative overflow-hidden bg-gradient-to-br from-[#0F3324] via-[#1F5F3F] to-[#2d7a52] text-white">
+      <header className="relative overflow-hidden bg-gradient-to-br from-[#0F3324] via-[#1F6F5F] to-[#2d7a52] text-white">
         <div className="absolute inset-0 opacity-10" style={{
           backgroundImage: `radial-gradient(circle at 20% 50%, white 0, transparent 50%), radial-gradient(circle at 80% 80%, white 0, transparent 50%)`,
         }} />
@@ -225,16 +225,16 @@ export default function PipelinesPage() {
           <div className="flex items-start justify-between flex-wrap gap-6">
             <div>
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-14 h-14 bg-[#B8860B]/20 backdrop-blur rounded-2xl flex items-center justify-center border border-[#B8860B]/30">
-                  <Workflow className="w-7 h-7 text-[#B8860B]" />
+                <div className="w-14 h-14 bg-[#2FA084]/20 backdrop-blur rounded-2xl flex items-center justify-center border border-[#2FA084]/30">
+                  <Workflow className="w-7 h-7 text-[#2FA084]" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-[3px] text-[#B8860B] font-bold">PIPELINE OS</p>
+                  <p className="text-[10px] uppercase tracking-[3px] text-[#2FA084] font-bold">PIPELINE OS</p>
                   <h1 className="text-4xl md:text-5xl font-black leading-none">مركز التشغيل</h1>
                 </div>
               </div>
               <p className="text-lg text-white/80 max-w-2xl leading-relaxed">
-                نظام تشغيل لـ <span className="font-bold text-[#B8860B]">47 agent</span> بيشتغلوا كفريق واحد متناسق.
+                نظام تشغيل لـ <span className="font-bold text-[#2FA084]">47 agent</span> بيشتغلوا كفريق واحد متناسق.
                 كل pipeline = سلسلة من الأجينتس بتمرّر شغلها لبعض أوتوماتيك.
               </p>
             </div>
@@ -254,7 +254,7 @@ export default function PipelinesPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-10">
             <StatTile icon={<Workflow className="w-5 h-5" />} label="Pipelines" value={pipelines.length} accent="bg-white/10" />
             <StatTile icon={<Activity className="w-5 h-5" />} label="إجمالي الـ runs" value={totalRuns} accent="bg-white/10" />
-            <StatTile icon={<TrendingUp className="w-5 h-5" />} label="معدل النجاح" value={`${successRate}%`} accent="bg-[#B8860B]/20" />
+            <StatTile icon={<TrendingUp className="w-5 h-5" />} label="معدل النجاح" value={`${successRate}%`} accent="bg-[#2FA084]/20" />
             <StatTile icon={<Calendar className="w-5 h-5" />} label="runs اليوم" value={todayRuns} accent="bg-white/10" />
           </div>
         </div>
@@ -268,7 +268,7 @@ export default function PipelinesPage() {
           </h2>
           <button
             onClick={() => fetchPipelines(adminPw)}
-            className="flex items-center gap-2 text-xs text-gray-500 hover:text-[#1F5F3F] transition-colors"
+            className="flex items-center gap-2 text-xs text-gray-500 hover:text-[#1F6F5F] transition-colors"
           >
             <RefreshCw className="w-3 h-3" /> تحديث
           </button>
@@ -380,7 +380,7 @@ function PipelineCard({ pipeline, onTrigger, triggering, onViewRun }: {
               <div key={i} className="flex items-center gap-1 flex-shrink-0">
                 <div className={`relative px-3 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap ${
                   step.required
-                    ? 'bg-[#1F5F3F] text-white'
+                    ? 'bg-[#1F6F5F] text-white'
                     : 'bg-gray-100 text-gray-700 border border-gray-200'
                 }`}>
                   {step.agent}
@@ -509,7 +509,7 @@ function RunDetailModal({ detail, loading, onClose }: { detail: RunDetail | null
       >
         {loading ? (
           <div className="p-20 text-center">
-            <Loader2 className="w-12 h-12 text-[#1F5F3F] animate-spin mx-auto mb-4" />
+            <Loader2 className="w-12 h-12 text-[#1F6F5F] animate-spin mx-auto mb-4" />
             <p className="text-gray-500">جاري التحميل...</p>
           </div>
         ) : detail ? (

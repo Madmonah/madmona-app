@@ -96,7 +96,7 @@ export default function ShareAppButton({ variant = 'default', className = '' }: 
           aria-label="مشاركة التطبيق"
           title="مشاركة الموقع"
         >
-          <Share2 className="w-4 h-4 text-[#1F5F3F]" />
+          <Share2 className="w-4 h-4 text-[#1F6F5F]" />
         </button>
       )
     }
@@ -105,7 +105,7 @@ export default function ShareAppButton({ variant = 'default', className = '' }: 
         <button
           type="button"
           onClick={handleClick}
-          className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-700 hover:text-[#1F5F3F] hover:bg-white/60 rounded-xl transition-all ${className}`}
+          className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-700 hover:text-[#1F6F5F] hover:bg-white/60 rounded-xl transition-all ${className}`}
         >
           <Share2 className="w-4 h-4" />
           <span className="hidden lg:inline">مشاركة</span>
@@ -116,7 +116,7 @@ export default function ShareAppButton({ variant = 'default', className = '' }: 
       <button
         type="button"
         onClick={handleClick}
-        className={`flex items-center justify-center gap-2 bg-[#B8860B] hover:bg-[#a07509] text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all ${className}`}
+        className={`flex items-center justify-center gap-2 bg-[#2FA084] hover:bg-[#a07509] text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all ${className}`}
       >
         <Share2 className="w-4 h-4" />
         <span>شارك الموقع</span>
@@ -143,8 +143,8 @@ export default function ShareAppButton({ variant = 'default', className = '' }: 
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 bg-[#B8860B]/10 rounded-2xl flex items-center justify-center">
-                    <Share2 className="w-5 h-5 text-[#B8860B]" />
+                  <div className="w-11 h-11 bg-[#2FA084]/10 rounded-2xl flex items-center justify-center">
+                    <Share2 className="w-5 h-5 text-[#2FA084]" />
                   </div>
                   <div>
                     <h2 className="font-black text-gray-900 text-lg">شارك مضمونة</h2>
@@ -188,7 +188,7 @@ export default function ShareAppButton({ variant = 'default', className = '' }: 
                   className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-1.5 transition-all ${
                     copied
                       ? 'bg-green-600 text-white'
-                      : 'bg-[#1F5F3F] hover:bg-[#1F5F3F]/90 text-white'
+                      : 'bg-[#1F6F5F] hover:bg-[#1F6F5F]/90 text-white'
                   }`}
                 >
                   {copied ? (

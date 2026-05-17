@@ -50,8 +50,8 @@ export default function AdminUnitNewPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-          <div className="flex items-center justify-center w-12 h-12 bg-[#1F5F3F]/10 rounded-full mb-4 mx-auto">
-            <Lock className="w-5 h-5 text-[#1F5F3F]" />
+          <div className="flex items-center justify-center w-12 h-12 bg-[#1F6F5F]/10 rounded-full mb-4 mx-auto">
+            <Lock className="w-5 h-5 text-[#1F6F5F]" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 text-center mb-1">إضافة وحدة جديدة</h1>
           <form onSubmit={handleLogin} className="space-y-4 mt-6">
@@ -60,14 +60,14 @@ export default function AdminUnitNewPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="كلمة السر"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F5F3F]/30 focus:border-[#1F5F3F] text-right"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F] text-right"
               autoFocus
             />
             {authError && <p className="text-sm text-red-600 text-center">{authError}</p>}
             <button
               type="submit"
               disabled={verifying || !password}
-              className="w-full bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F5F3F]/90 disabled:opacity-50"
+              className="w-full bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50"
             >
               {verifying ? 'جاري التحقق...' : 'دخول'}
             </button>
@@ -85,7 +85,7 @@ export default function AdminUnitNewPage() {
             <ArrowRight className="w-4 h-4 text-gray-600" />
           </Link>
           <div className="flex items-center gap-2">
-            <Plus className="w-5 h-5 text-[#1F5F3F]" />
+            <Plus className="w-5 h-5 text-[#1F6F5F]" />
             <h1 className="text-lg font-bold text-gray-900">إضافة وحدة جديدة</h1>
           </div>
         </div>

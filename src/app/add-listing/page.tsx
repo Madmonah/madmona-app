@@ -54,7 +54,7 @@ function StaticPageFallback() {
     <div
       dir="rtl"
       lang="ar"
-      className="min-h-screen bg-[#1F5F3F] text-[#FAF7F0]"
+      className="min-h-screen bg-[#1F6F5F] text-[#FAF7F0]"
     >
       <header className="px-5 pt-8 pb-4">
         <div className="max-w-2xl mx-auto">
@@ -63,7 +63,7 @@ function StaticPageFallback() {
               📝
             </div>
             <h1 className="text-2xl md:text-3xl font-black mb-2">
-              أضف إعلانك في <span className="text-[#B8860B]">5 خطوات</span>
+              أضف إعلانك في <span className="text-[#2FA084]">5 خطوات</span>
             </h1>
             <p className="text-[#FAF7F0]/80 text-sm md:text-base">
               ابدأ من غير ما تعمل حساب — هنعملك واحد في الآخر تلقائيًا
@@ -75,7 +75,7 @@ function StaticPageFallback() {
             {[1, 2, 3, 4, 5].map((n) => (
               <div
                 key={n}
-                className={`h-1.5 rounded-full ${n === 1 ? 'bg-[#B8860B]' : 'bg-[#FAF7F0]/15'}`}
+                className={`h-1.5 rounded-full ${n === 1 ? 'bg-[#2FA084]' : 'bg-[#FAF7F0]/15'}`}
               />
             ))}
           </div>
@@ -114,7 +114,7 @@ function StaticPageFallback() {
               لو الصفحة مش بتفتح،{' '}
               <a
                 href="https://wa.me/201002229982?text=عايز%20أضيف%20إعلان"
-                className="underline text-[#B8860B] font-bold"
+                className="underline text-[#2FA084] font-bold"
               >
                 كلمنا على واتس
               </a>{' '}
@@ -128,7 +128,7 @@ function StaticPageFallback() {
         <div className="mt-4 text-center">
           <a
             href="https://wa.me/201002229982?text=عايز%20أضيف%20إعلان%20والفورم%20مش%20شغال"
-            className="inline-block text-xs text-[#FAF7F0]/60 hover:text-[#B8860B] underline"
+            className="inline-block text-xs text-[#FAF7F0]/60 hover:text-[#2FA084] underline"
           >
             عندك مشكلة في تحميل الصفحة؟ كلمنا واتس
           </a>

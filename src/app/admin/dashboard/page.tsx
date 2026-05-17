@@ -111,7 +111,7 @@ export default function AdminDashboardPage() {
   if (stage === 'loading') {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#1F5F3F] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
       </div>
     )
   }
@@ -120,9 +120,9 @@ export default function AdminDashboardPage() {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#1F5F3F] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
-          <Link href="/auth/login?redirect=/admin/dashboard" className="block bg-[#1F5F3F] text-white py-3 rounded-xl font-semibold">
+          <Link href="/auth/login?redirect=/admin/dashboard" className="block bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold">
             تسجيل دخول
           </Link>
         </div>
@@ -137,7 +137,7 @@ export default function AdminDashboardPage() {
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
           <h1 className="font-bold mb-2">مش مسموح</h1>
           <p className="text-sm text-gray-600 mb-4">الصفحة دي للأدمن فقط.</p>
-          <Link href="/account" className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold">
+          <Link href="/account" className="inline-block bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold">
             ارجع للحساب
           </Link>
         </div>
@@ -154,7 +154,7 @@ export default function AdminDashboardPage() {
           <p className="text-sm text-gray-600 mb-4">{loadError || 'مفيش بيانات'}</p>
           <button
             onClick={() => window.location.reload()}
-            className="inline-block bg-[#1F5F3F] text-white px-5 py-2.5 rounded-xl font-semibold"
+            className="inline-block bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold"
           >
             حاول تاني
           </button>
@@ -171,7 +171,7 @@ export default function AdminDashboardPage() {
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
           <div className="flex items-center gap-2">
-            <Crown className="w-5 h-5 text-[#B8860B]" />
+            <Crown className="w-5 h-5 text-[#2FA084]" />
             <h1 className="text-lg font-black text-gray-900">Admin Dashboard</h1>
           </div>
         </div>
@@ -182,17 +182,17 @@ export default function AdminDashboardPage() {
         <section>
           <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">الأرقام الكبرى</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <MetricCard icon={<DollarSign className="w-4 h-4" />} label="عمولة Madmona (شهر)" value={`${Number(data.monthCommission).toLocaleString('ar-EG')} ج.م`} subtitle={`إجمالي: ${Number(data.totalCommission).toLocaleString('ar-EG')}`} accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" />
-            <MetricCard icon={<TrendingUp className="w-4 h-4" />} label="GMV (شهر)" value={`${Number(data.monthGMV).toLocaleString('ar-EG')} ج.م`} subtitle={`إجمالي: ${Number(data.totalGMV).toLocaleString('ar-EG')}`} accent="bg-[#B8860B]/10 text-[#B8860B]" />
+            <MetricCard icon={<DollarSign className="w-4 h-4" />} label="عمولة Madmona (شهر)" value={`${Number(data.monthCommission).toLocaleString('ar-EG')} ج.م`} subtitle={`إجمالي: ${Number(data.totalCommission).toLocaleString('ar-EG')}`} accent="bg-[#1F6F5F]/10 text-[#1F6F5F]" />
+            <MetricCard icon={<TrendingUp className="w-4 h-4" />} label="GMV (شهر)" value={`${Number(data.monthGMV).toLocaleString('ar-EG')} ج.م`} subtitle={`إجمالي: ${Number(data.totalGMV).toLocaleString('ar-EG')}`} accent="bg-[#2FA084]/10 text-[#2FA084]" />
             <MetricCard icon={<Calendar className="w-4 h-4" />} label="حجوزات الشهر" value={data.monthBookings.toString()} subtitle={`إجمالي: ${data.totalBookings}`} accent="bg-blue-100 text-blue-700" />
             <MetricCard icon={<Users className="w-4 h-4" />} label="أجر مننا (عملاء)" value={data.totalCustomers.toString()} subtitle={`${data.approvedSuppliers} أجر معانا · ${data.pendingSuppliers} معلّق · ${data.pushSubscribers} 🔔`} accent="bg-purple-100 text-purple-700" />
           </div>
         </section>
 
         {/* AI Assistant Big Banner — chat with all 46 agents */}
-        <Link href="/admin/ai-assistant" className="block bg-gradient-to-l from-[#B8860B] via-[#d4a017] to-[#B8860B] text-white rounded-3xl p-6 shadow-luxe hover:shadow-2xl hover:-translate-y-0.5 transition-all no-underline relative overflow-hidden">
+        <Link href="/admin/ai-assistant" className="block bg-gradient-to-l from-[#2FA084] via-[#d4a017] to-[#2FA084] text-white rounded-3xl p-6 shadow-luxe hover:shadow-2xl hover:-translate-y-0.5 transition-all no-underline relative overflow-hidden">
           <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/15 rounded-full blur-3xl" />
-          <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-[#1F5F3F]/30 rounded-full blur-3xl" />
+          <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-[#1F6F5F]/30 rounded-full blur-3xl" />
           <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
@@ -209,8 +209,8 @@ export default function AdminDashboardPage() {
         </Link>
 
         {/* AI OS Big Banner */}
-        <Link href="/admin/ai-os" className="block bg-gradient-to-l from-[#1F5F3F] via-[#2d7a52] to-[#1F5F3F] text-white rounded-3xl p-6 shadow-luxe hover:shadow-2xl hover:-translate-y-0.5 transition-all no-underline relative overflow-hidden">
-          <div className="absolute -top-12 -left-12 w-40 h-40 bg-[#B8860B]/20 rounded-full blur-3xl" />
+        <Link href="/admin/ai-os" className="block bg-gradient-to-l from-[#1F6F5F] via-[#2d7a52] to-[#1F6F5F] text-white rounded-3xl p-6 shadow-luxe hover:shadow-2xl hover:-translate-y-0.5 transition-all no-underline relative overflow-hidden">
+          <div className="absolute -top-12 -left-12 w-40 h-40 bg-[#2FA084]/20 rounded-full blur-3xl" />
           <div className="absolute -bottom-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
           <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -240,10 +240,10 @@ export default function AdminDashboardPage() {
 
           {/* 1. MARKETPLACE */}
           <div className="mb-4">
-            <p className="text-[10px] font-bold text-[#1F5F3F] uppercase tracking-widest mb-2 px-1">Marketplace</p>
+            <p className="text-[10px] font-bold text-[#1F6F5F] uppercase tracking-widest mb-2 px-1">Marketplace</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <ToolCard href="/admin/listings" icon={<Package className="w-5 h-5" />} title="إدارة الخدمات" subtitle={`${data.publishedListings} منشور · ${data.draftListings} مسودة`} accent="bg-emerald-100 text-emerald-700" badge={data.draftListings > 0 ? data.draftListings : undefined} />
-              <ToolCard href="/admin/sup" icon={<Building2 className="w-5 h-5" />} title="أجر معانا (Suppliers)" subtitle={`${data.approvedSuppliers} معتمد · ${data.pendingSuppliers} معلّق`} accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" badge={data.pendingSuppliers > 0 ? data.pendingSuppliers : undefined} />
+              <ToolCard href="/admin/sup" icon={<Building2 className="w-5 h-5" />} title="أجر معانا (Suppliers)" subtitle={`${data.approvedSuppliers} معتمد · ${data.pendingSuppliers} معلّق`} accent="bg-[#1F6F5F]/10 text-[#1F6F5F]" badge={data.pendingSuppliers > 0 ? data.pendingSuppliers : undefined} />
               <ToolCard href="/admin/marketplace-bookings" icon={<Calendar className="w-5 h-5" />} title="كل الحجوزات" subtitle={`${data.pendingBookings} بانتظار · ${data.confirmedBookings} مؤكّد`} accent="bg-blue-100 text-blue-700" />
               <ToolCard href="/admin/categories" icon={<FolderTree className="w-5 h-5" />} title="الفئات والخصائص" subtitle="Categories + Attributes" accent="bg-purple-100 text-purple-700" />
               <ToolCard href="/admin/payouts" icon={<Wallet className="w-5 h-5" />} title="المدفوعات" subtitle="حساب وإصدار التحويلات" accent="bg-green-100 text-green-700" />
@@ -259,9 +259,9 @@ export default function AdminDashboardPage() {
               <Bot className="w-3 h-3" /> الذكاء الاصطناعي والأتمتة
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard href="/admin/ai-assistant" icon={<Sparkles className="w-5 h-5" />} title="المساعد الذكي" subtitle="اومر الـ agents بالعامية" accent="bg-gradient-to-br from-[#B8860B] to-[#1F5F3F] text-white" />
-              <ToolCard href="/admin/pipelines" icon={<Workflow className="w-5 h-5" />} title="Pipeline OS" subtitle="فريق الأجينتس المتناسق" accent="bg-gradient-to-br from-[#0F3324] to-[#1F5F3F] text-white" />
-              <ToolCard href="/admin/ai-os" icon={<Bot className="w-5 h-5" />} title="AI OS Hub" subtitle="42 agents · 8 teams" accent="bg-[#1F5F3F] text-white" />
+              <ToolCard href="/admin/ai-assistant" icon={<Sparkles className="w-5 h-5" />} title="المساعد الذكي" subtitle="اومر الـ agents بالعامية" accent="bg-gradient-to-br from-[#2FA084] to-[#1F6F5F] text-white" />
+              <ToolCard href="/admin/pipelines" icon={<Workflow className="w-5 h-5" />} title="Pipeline OS" subtitle="فريق الأجينتس المتناسق" accent="bg-gradient-to-br from-[#0F3324] to-[#1F6F5F] text-white" />
+              <ToolCard href="/admin/ai-os" icon={<Bot className="w-5 h-5" />} title="AI OS Hub" subtitle="42 agents · 8 teams" accent="bg-[#1F6F5F] text-white" />
               <ToolCard href="/admin/agents" icon={<Brain className="w-5 h-5" />} title="إدارة الـ Agents" subtitle="تحكم في كل agent" accent="bg-purple-100 text-purple-700" />
               <ToolCard href="/admin/prompt-versions" icon={<GitBranch className="w-5 h-5" />} title="نسخ الـ Prompts" subtitle="META agent self-improving" accent="bg-indigo-100 text-indigo-700" />
               <ToolCard href="/admin/performance" icon={<Activity className="w-5 h-5" />} title="أداء الـ AI" subtitle="Performance metrics" accent="bg-violet-100 text-violet-700" />
@@ -281,17 +281,17 @@ export default function AdminDashboardPage() {
               <ExternalToolCard href="https://github.com/Madmonah/madmona-app" icon={<GitBranch className="w-5 h-5" />} title="GitHub Repo" subtitle="الكود + Commits" accent="bg-gray-900 text-white" />
               <ExternalToolCard href="https://business.facebook.com" icon={<Megaphone className="w-5 h-5" />} title="Meta Business" subtitle="إعلانات + WhatsApp" accent="bg-blue-600 text-white" />
               <ExternalToolCard href="https://www.canva.com" icon={<ImageIcon className="w-5 h-5" />} title="Canva" subtitle="تصاميم + قوالب" accent="bg-purple-600 text-white" />
-              <ExternalToolCard href="https://console.anthropic.com" icon={<Sparkles className="w-5 h-5" />} title="Anthropic Console" subtitle="Claude API usage" accent="bg-[#B8860B] text-white" />
+              <ExternalToolCard href="https://console.anthropic.com" icon={<Sparkles className="w-5 h-5" />} title="Anthropic Console" subtitle="Claude API usage" accent="bg-[#2FA084] text-white" />
             </div>
           </div>
 
           {/* 3. MARKETING & CONTENT */}
           <div className="mb-4">
-            <p className="text-[10px] font-bold text-[#B8860B] uppercase tracking-widest mb-2 px-1 flex items-center gap-1">
+            <p className="text-[10px] font-bold text-[#2FA084] uppercase tracking-widest mb-2 px-1 flex items-center gap-1">
               <Megaphone className="w-3 h-3" /> التسويق والمحتوى
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard href="/admin/marketing-hq" icon={<Target className="w-5 h-5" />} title="Marketing HQ" subtitle="مركز التسويق" accent="bg-[#B8860B]/10 text-[#B8860B]" />
+              <ToolCard href="/admin/marketing-hq" icon={<Target className="w-5 h-5" />} title="Marketing HQ" subtitle="مركز التسويق" accent="bg-[#2FA084]/10 text-[#2FA084]" />
               <ToolCard href="/admin/news" icon={<Newspaper className="w-5 h-5" />} title="إدارة الأخبار" subtitle="Admin news + RSS" accent="bg-amber-100 text-amber-700" />
               <ToolCard href="/admin/ad-builder" icon={<Sparkles className="w-5 h-5" />} title="مولد الإعلانات" subtitle="Ad Builder AI" accent="bg-pink-100 text-pink-700" />
               <ToolCard href="/admin/ad-creatives" icon={<ImageIcon className="w-5 h-5" />} title="إعلاناتي" subtitle="Ad Creatives library" accent="bg-fuchsia-100 text-fuchsia-700" />
@@ -307,7 +307,7 @@ export default function AdminDashboardPage() {
               <BarChart3 className="w-3 h-3" /> التحليلات والذكاء التجاري
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard href="/admin/hq" icon={<Compass className="w-5 h-5" />} title="HQ · مركز القيادة" subtitle="Top-level overview" accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" />
+              <ToolCard href="/admin/hq" icon={<Compass className="w-5 h-5" />} title="HQ · مركز القيادة" subtitle="Top-level overview" accent="bg-[#1F6F5F]/10 text-[#1F6F5F]" />
               <ToolCard href="/admin/insights" icon={<Lightbulb className="w-5 h-5" />} title="Insights" subtitle="رؤى وتحليلات" accent="bg-yellow-100 text-yellow-700" />
               <ToolCard href="/admin/funnel" icon={<TrendingUp className="w-5 h-5" />} title="Sales Funnel" subtitle="مسار التحويل" accent="bg-cyan-100 text-cyan-700" />
               <ToolCard href="/admin/demand-forecast" icon={<Zap className="w-5 h-5" />} title="توقعات الطلب" subtitle="Demand Forecast AI" accent="bg-blue-100 text-blue-700" />
@@ -332,9 +332,9 @@ export default function AdminDashboardPage() {
 
           {/* 6. OUR LISTINGS (Madmona supplier acct) */}
           <div className="mb-4">
-            <p className="text-[10px] font-bold text-[#B8860B] uppercase tracking-widest mb-2 px-1">إعلاناتنا (Madmona Coworking)</p>
+            <p className="text-[10px] font-bold text-[#2FA084] uppercase tracking-widest mb-2 px-1">إعلاناتنا (Madmona Coworking)</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard href="/supplier/marketplace" icon={<Settings className="w-5 h-5" />} title="لوحة أجر معانا" subtitle="إدارة إعلاناتنا" accent="bg-[#1F5F3F]/10 text-[#1F5F3F]" />
+              <ToolCard href="/supplier/marketplace" icon={<Settings className="w-5 h-5" />} title="لوحة أجر معانا" subtitle="إدارة إعلاناتنا" accent="bg-[#1F6F5F]/10 text-[#1F6F5F]" />
               <ToolCard href="/supplier/marketplace/new" icon={<Package className="w-5 h-5" />} title="إضافة إعلان جديد" subtitle="مساحة، معدة، عربية..." accent="bg-blue-100 text-blue-700" />
               <ToolCard href="/supplier/marketplace/reviews" icon={<Star className="w-5 h-5" />} title="التقييمات" subtitle={data.totalReviews > 0 ? `${data.totalReviews} تقييم · ${Number(data.averageRating).toFixed(1)} ⭐` : 'مفيش تقييمات'} accent="bg-yellow-100 text-yellow-700" />
               <ToolCard href="/" icon={<Eye className="w-5 h-5" />} title="عرض الموقع" subtitle="شوف الموقع كما يراه أجر مننا" accent="bg-pink-100 text-pink-700" />
@@ -371,7 +371,7 @@ export default function AdminDashboardPage() {
             <StatusCard label="مؤكّد" value={data.confirmedBookings} color="text-green-700 bg-green-50" />
             <StatusCard label="تمّ" value={data.completedBookings} color="text-gray-700 bg-gray-50" />
             <StatusCard label="ملغي" value={data.cancelledBookings} color="text-red-700 bg-red-50" />
-            <StatusCard label="تقييم متوسط" value={data.averageRating > 0 ? `${Number(data.averageRating).toFixed(1)}` : '—'} color="text-[#B8860B] bg-[#B8860B]/10" suffix={data.totalReviews > 0 ? `(${data.totalReviews})` : ''} />
+            <StatusCard label="تقييم متوسط" value={data.averageRating > 0 ? `${Number(data.averageRating).toFixed(1)}` : '—'} color="text-[#2FA084] bg-[#2FA084]/10" suffix={data.totalReviews > 0 ? `(${data.totalReviews})` : ''} />
           </div>
         </section>
 
@@ -383,12 +383,12 @@ export default function AdminDashboardPage() {
               <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
                 {data.topListings.map((listing, i) => (
                   <Link key={listing.id} href={`/marketplace/${listing.slug}`} target="_blank" className="flex items-center gap-3 p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 no-underline">
-                    <span className="w-6 h-6 bg-[#1F5F3F]/10 text-[#1F5F3F] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">{i + 1}</span>
+                    <span className="w-6 h-6 bg-[#1F6F5F]/10 text-[#1F6F5F] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">{i + 1}</span>
                     <h4 className="flex-1 text-sm font-medium text-gray-900 truncate">{listing.title}</h4>
                     <div className="flex items-center gap-3 text-xs text-gray-500 flex-shrink-0">
                       <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {listing.views_count}</span>
                       {listing.rating && Number(listing.rating) > 0 && (
-                        <span className="flex items-center gap-1"><Star className="w-3 h-3 fill-[#B8860B] text-[#B8860B]" />{Number(listing.rating).toFixed(1)}</span>
+                        <span className="flex items-center gap-1"><Star className="w-3 h-3 fill-[#2FA084] text-[#2FA084]" />{Number(listing.rating).toFixed(1)}</span>
                       )}
                     </div>
                   </Link>
@@ -414,7 +414,7 @@ export default function AdminDashboardPage() {
                         <p className="text-xs text-gray-500 mt-0.5">{booking.customer?.full_name || 'أجر مننا'} · {booking.supplier?.business_name || 'أجر معانا'}</p>
                       </div>
                       <div className="text-left flex-shrink-0">
-                        <p className="text-sm font-bold text-[#1F5F3F]">{Number(booking.total_amount).toLocaleString('ar-EG')} <span className="text-xs font-normal">ج.م</span></p>
+                        <p className="text-sm font-bold text-[#1F6F5F]">{Number(booking.total_amount).toLocaleString('ar-EG')} <span className="text-xs font-normal">ج.م</span></p>
                         <p className="text-[10px] text-gray-400 mt-0.5">{new Date(booking.created_at).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
                       </div>
                     </Link>
@@ -438,7 +438,7 @@ function ToolCard({ href, icon, title, subtitle, accent, badge }: { href: string
       <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3 ${accent}`}>{icon}</div>
       <p className="font-bold text-gray-900 text-sm mb-1 leading-tight">{title}</p>
       <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">{subtitle}</p>
-      <ChevronLeft className="absolute bottom-4 left-4 w-3.5 h-3.5 text-gray-300 group-hover:text-[#1F5F3F] group-hover:-translate-x-1 transition-all" />
+      <ChevronLeft className="absolute bottom-4 left-4 w-3.5 h-3.5 text-gray-300 group-hover:text-[#1F6F5F] group-hover:-translate-x-1 transition-all" />
     </Link>
   )
 }
@@ -449,7 +449,7 @@ function ExternalToolCard({ href, icon, title, subtitle, accent }: { href: strin
       <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3 ${accent}`}>{icon}</div>
       <p className="font-bold text-gray-900 text-sm mb-1 leading-tight">{title}</p>
       <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">{subtitle}</p>
-      <ExternalLink className="absolute bottom-4 left-4 w-3.5 h-3.5 text-gray-300 group-hover:text-[#1F5F3F] transition-all" />
+      <ExternalLink className="absolute bottom-4 left-4 w-3.5 h-3.5 text-gray-300 group-hover:text-[#1F6F5F] transition-all" />
     </a>
   )
 }

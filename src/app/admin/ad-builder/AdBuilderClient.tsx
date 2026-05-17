@@ -63,7 +63,7 @@ export default function AdBuilderClient({ listings }: { listings: ListingExtras[
     <div>
       {/* Step 1: Campaign settings */}
       <div style={cardStyle}>
-        <h3 style={{ color: '#1F5F3F', margin: '0 0 12px' }}>1️⃣ إعدادات الـ Campaign</h3>
+        <h3 style={{ color: '#1F6F5F', margin: '0 0 12px' }}>1️⃣ إعدادات الـ Campaign</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
           <div>
             <label style={labelStyle}>اسم الـ Campaign</label>
@@ -95,7 +95,7 @@ export default function AdBuilderClient({ listings }: { listings: ListingExtras[
           padding: 12,
           borderRadius: 8,
           marginTop: 12,
-          border: '1px dashed #1F5F3F',
+          border: '1px dashed #1F6F5F',
         }}>
           <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>
             🌐 لينك عام (لما الـ ad مش عن إعلان معين):
@@ -124,7 +124,7 @@ export default function AdBuilderClient({ listings }: { listings: ListingExtras[
 
       {/* Step 2: Pick a listing */}
       <div style={cardStyle}>
-        <h3 style={{ color: '#1F5F3F', margin: '0 0 12px' }}>2️⃣ اختار إعلان (اختياري)</h3>
+        <h3 style={{ color: '#1F6F5F', margin: '0 0 12px' }}>2️⃣ اختار إعلان (اختياري)</h3>
         <input
           type="text"
           placeholder="🔍 ابحث في الإعلانات..."
@@ -149,9 +149,9 @@ export default function AdBuilderClient({ listings }: { listings: ListingExtras[
                 key={l.id}
                 onClick={() => setSelectedSlug(selectedSlug === l.slug ? null : l.slug)}
                 style={{
-                  background: selectedSlug === l.slug ? '#1F5F3F' : '#fff',
+                  background: selectedSlug === l.slug ? '#1F6F5F' : '#fff',
                   color: selectedSlug === l.slug ? '#FAF7F0' : '#1a1a1a',
-                  border: `2px solid ${selectedSlug === l.slug ? '#1F5F3F' : '#eee'}`,
+                  border: `2px solid ${selectedSlug === l.slug ? '#1F6F5F' : '#eee'}`,
                   borderRadius: 12,
                   padding: 10,
                   textAlign: 'right',
@@ -197,7 +197,7 @@ export default function AdBuilderClient({ listings }: { listings: ListingExtras[
       {selected && listingLink && (
         <div style={{
           ...cardStyle,
-          background: '#1F5F3F',
+          background: '#1F6F5F',
           color: '#FAF7F0',
         }}>
           <h3 style={{ margin: '0 0 12px', color: '#FAF7F0' }}>3️⃣ الـ Ad Link جاهز ✨</h3>
@@ -222,7 +222,7 @@ export default function AdBuilderClient({ listings }: { listings: ListingExtras[
             <button
               onClick={() => copy(listingLink, 'listing')}
               style={{
-                background: '#B8860B',
+                background: '#2FA084',
                 color: '#fff',
                 border: 'none',
                 padding: '8px 16px',
@@ -239,7 +239,7 @@ export default function AdBuilderClient({ listings }: { listings: ListingExtras[
 
           <div style={{ marginTop: 16, fontSize: 12, opacity: 0.85, lineHeight: 1.7 }}>
             <strong>👁️ Preview:</strong>{' '}
-            <a href={listingLink} target="_blank" rel="noopener" style={{ color: '#B8860B', textDecoration: 'underline' }}>
+            <a href={listingLink} target="_blank" rel="noopener" style={{ color: '#2FA084', textDecoration: 'underline' }}>
               افتح الصفحة في تاب جديد
             </a>
           </div>
@@ -277,7 +277,7 @@ const inputStyle: React.CSSProperties = {
 }
 
 const copyBtnStyle = (active: boolean): React.CSSProperties => ({
-  background: active ? '#28a745' : '#1F5F3F',
+  background: active ? '#28a745' : '#1F6F5F',
   color: '#fff',
   border: 'none',
   padding: '6px 14px',
