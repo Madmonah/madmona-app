@@ -17,6 +17,7 @@ interface Category {
   name_ar: string
   slug: string
   icon: string | null
+  track?: 'rentals' | 'services' | 'hybrid' | null
 }
 
 interface Listing {
@@ -45,13 +46,33 @@ const SORT_LABELS: Record<SortOption, string> = {
   rating: 'الأعلى تقييماً',
 }
 
+type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid'
+
+const TRACK_LABELS: Record<TrackTab, string> = {
+  all: 'الكل',
+  rentals: 'إيجار',
+  services: 'خدمات',
+  hybrid: 'هايبرد',
+}
+
+const TRACK_EMOJI: Record<TrackTab, string> = {
+  all: '✨',
+  rentals: '🏠',
+  services: '🛠️',
+  hybrid: '💒',
+}
+
 function MarketplaceBrowseContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialCategorySlug = searchParams.get('category')
 
   const [allCategories, setAllCategories] = useState<Category[]>([])
-  const rootCategories = allCategories.filter(c => c.parent_id === null)
+  const allRootCategories = allCategories.filter(c => c.parent_id === null)
+  const [activeTrack, setActiveTrack] = useState<TrackTab>('all')
+  const rootCategories = activeTrack === 'all'
+    ? allRootCategories
+    : allRootCategories.filter(c => c.track === activeTrack)
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -85,7 +106,7 @@ function MarketplaceBrowseContent() {
       // @ts-expect-error
       const { data } = await supabaseBrowser
         .from('categories')
-        .select('id, parent_id, name_ar, slug, icon, also_show_in')
+        .select('id, parent_id, name_ar, slug, icon, track, also_show_in')
         .eq('is_active', true)
         .order('display_order', { ascending: true })
       setAllCategories(data || [])
@@ -306,7 +327,42 @@ function MarketplaceBrowseContent() {
             />
           </div>
 
+          {/* Track tabs (hierarchy filter: all/rentals/services/hybrid) */}
           <div className="flex gap-2 mt-4 overflow-x-auto pb-1 -mx-4 px-4">
+            {(['all', 'rentals', 'services', 'hybrid'] as TrackTab[]).map(t => {
+              const count = t === 'all'
+                ? allRootCategories.length
+                : allRootCategories.filter(c => c.track === t).length
+              return (
+                <button
+                  key={t}
+                  onClick={() => {
+                    setActiveTrack(t)
+                    // Clear category selection if it doesn't belong to the new track
+                    if (selectedRootSlug) {
+                      const stillVisible = allRootCategories.some(
+                        c => c.slug === selectedRootSlug && (t === 'all' || c.track === t)
+                      )
+                      if (!stillVisible) setSelectedCategorySlug(null)
+                    }
+                  }}
+                  className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold border transition-all shadow-soft flex items-center gap-1.5 ${
+                    activeTrack === t
+                      ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white shadow-elevated'
+                      : 'bg-white border-gray-100 text-gray-700 hover:shadow-card'
+                  }`}
+                >
+                  <span>{TRACK_EMOJI[t]}</span>
+                  <span>{TRACK_LABELS[t]}</span>
+                  <span className={`text-[10px] ${activeTrack === t ? 'opacity-80' : 'text-gray-400'}`}>
+                    ({count})
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
             <CategoryPill
               active={!selectedCategorySlug}
               onClick={() => setSelectedCategorySlug(null)}
