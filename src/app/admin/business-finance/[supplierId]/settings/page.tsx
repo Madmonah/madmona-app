@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, use, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import {
@@ -60,9 +60,9 @@ type RoleTemplate = { role: string; role_ar: string }
 export default function SettingsPage({
   params,
 }: {
-  params: Promise<{ supplierId: string }>
+  params: { supplierId: string }
 }) {
-  const { supplierId } = use(params)
+  const { supplierId } = params
   const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [branches, setBranches] = useState<Branch[]>([])
   const [employees, setEmployees] = useState<Employee[]>([])

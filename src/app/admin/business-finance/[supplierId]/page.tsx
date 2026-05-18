@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo, use, type ReactNode } from 'react'
+import { useEffect, useState, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import {
@@ -84,9 +84,9 @@ type DailySummary = {
 export default function BusinessFinancePage({
   params,
 }: {
-  params: Promise<{ supplierId: string }>
+  params: { supplierId: string }
 }) {
-  const { supplierId } = use(params)
+  const { supplierId } = params
   const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [branches, setBranches] = useState<Branch[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
