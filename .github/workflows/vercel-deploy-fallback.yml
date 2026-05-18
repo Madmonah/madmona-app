@@ -1,10 +1,8 @@
 name: Deploy to Vercel (fallback)
 
 # Fires when Vercel's git webhook doesn't trigger automatically.
-# Requires these GitHub Secrets:
-#   - VERCEL_DEPLOY_HOOK_URL  (create in Vercel dashboard: Project → Settings → Git → Deploy Hooks)
-# Optional alternative path (CLI-based):
-#   - VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
+# This is a FALLBACK — Vercel auto-deploys via git integration anyway.
+# If the hook is missing/invalid, we log a warning but do NOT fail the run.
 
 on:
   push:
@@ -16,22 +14,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Vercel deploy hook
-        if: ${{ vars.VERCEL_DEPLOY_HOOK_URL != '' || secrets.VERCEL_DEPLOY_HOOK_URL != '' }}
+        continue-on-error: true
         run: |
           HOOK="${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"
-          if [ -z "$HOOK" ]; then HOOK="${{ vars.VERCEL_DEPLOY_HOOK_URL }}"; fi
           if [ -z "$HOOK" ]; then
-            echo "::warning::No VERCEL_DEPLOY_HOOK_URL set — skipping fallback. Add it as a GitHub secret to enable."
+            echo "::notice::No VERCEL_DEPLOY_HOOK_URL secret set. Skipping fallback (Vercel auto-deploys via git integration anyway)."
             exit 0
           fi
           echo "Triggering Vercel deploy hook..."
-          curl -fsSL -X POST "$HOOK" \
+          # Note: NO -f flag — we don't fail on HTTP errors (fallback is non-critical)
+          response=$(curl -sSL -w "\n%{http_code}" -X POST "$HOOK" \
             -H "Content-Type: application/json" \
-            -d "{\"ref\":\"${{ github.ref_name }}\",\"trigger\":\"github-action-fallback\"}"
-          echo ""
-          echo "✅ Deploy hook fired."
+            -d "{\"ref\":\"${{ github.ref_name }}\",\"trigger\":\"github-action-fallback\"}")
+          status=$(echo "$response" | tail -n 1)
+          body=$(echo "$response" | head -n -1)
+          echo "Status: $status"
+          echo "Body: $body"
+          if [ "$status" != "200" ] && [ "$status" != "201" ]; then
+            echo "::warning::Deploy hook returned $status (non-fatal — Vercel auto-deploys via git anyway)"
+          else
+            echo "✅ Deploy hook fired successfully."
+          fi
 
-      - name: Notify Supabase (optional log)
+      - name: Log commit info
         if: always()
         run: |
           echo "Commit: ${{ github.sha }}"

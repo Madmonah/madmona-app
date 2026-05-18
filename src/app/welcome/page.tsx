@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import Link from 'next/link'
 import {
   Sparkles, Shield, Zap, Headphones, ArrowLeft, ArrowRight,
@@ -126,7 +126,7 @@ function PathPicker({ onPick }: { onPick: (p: Path) => void }) {
 function PathCard({
   icon, title, subtitle, benefits, cta, accent, onClick,
 }: {
-  icon: React.ReactNode
+  icon: ReactNode
   title: string
   subtitle: string
   benefits: string[]
@@ -374,7 +374,7 @@ function FlowFrame({
   title: string
   stepIndex: number
   stepCount: number
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <div className="max-w-3xl mx-auto">
@@ -416,7 +416,7 @@ function FlowFrame({
 function StepCard({
   icon, title, desc, bullets, index, total,
 }: {
-  icon: React.ReactNode
+  icon: ReactNode
   title: string
   desc: string
   bullets: string[]
@@ -457,7 +457,7 @@ function StepCard({
 
 function PillarBadge({
   icon, title, desc,
-}: { icon: React.ReactNode, title: string, desc: string }) {
+}: { icon: ReactNode, title: string, desc: string }) {
   return (
     <div className="p-4 rounded-2xl bg-white border border-gray-100">
       <div className="inline-grid place-items-center w-9 h-9 rounded-lg bg-[#1F6F5F]/10 text-[#1F6F5F] mb-2">

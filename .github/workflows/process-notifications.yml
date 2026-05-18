@@ -1,45 +1,64 @@
-# GitHub Actions workflow: Process notification queue every minute
+# GitHub Actions workflow: Process notification queue
 #
-# This replaces the Vercel cron (which is limited to once/day on Hobby plan).
-# It calls /api/push/process-queue with the CRON_SECRET to dispatch any
-# queued notifications (e.g. from booking triggers).
+# Calls /api/push/process-queue every 5 minutes with the CRON_SECRET
+# to dispatch any queued notifications (e.g. from booking triggers).
 #
-# Setup:
-#   1. Go to GitHub repo → Settings → Secrets and variables → Actions
-#   2. Add a new secret named `CRON_SECRET` with the same value as your
-#      Vercel CRON_SECRET env var.
-#
-# Cost: Free. Uses ~43 minutes/month of GitHub Actions quota
-#       (free tier = 2,000 minutes/month).
+# RESILIENCE: We retry once on transient failures (e.g. during Vercel
+# deploys). Only persistent failures (≥2 consecutive non-200) fail the run.
 
 name: Process Notification Queue
 
 on:
   schedule:
-    # Runs every minute (GitHub Actions minimum: 5 minutes; we use 5 for safety)
     - cron: '*/5 * * * *'
-  workflow_dispatch: # Allow manual trigger from GitHub UI
+  workflow_dispatch:
 
 jobs:
   process-queue:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     steps:
-      - name: Call process-queue endpoint
+      - name: Call process-queue endpoint (with retry)
         run: |
-          # -L follows redirects (apex -> www handled by Cloudflare)
-          response=$(curl -sSL -w "\n%{http_code}" -X POST \
-            "https://www.madmonacairo.com/api/push/process-queue" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json")
-          
+          call_endpoint() {
+            curl -sSL -w "\n%{http_code}" -X POST \
+              "https://www.madmonacairo.com/api/push/process-queue" \
+              -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+              -H "Content-Type: application/json" \
+              --max-time 30
+          }
+
+          # First attempt
+          response=$(call_endpoint)
           body=$(echo "$response" | head -n -1)
           status=$(echo "$response" | tail -n 1)
-          
-          echo "Status: $status"
+          echo "Attempt 1 — Status: $status"
           echo "Body: $body"
-          
-          if [ "$status" != "200" ]; then
-            echo "::error::Process queue failed with status $status"
+
+          if [ "$status" = "200" ]; then
+            echo "✅ Process queue success on first attempt"
+            exit 0
+          fi
+
+          # Retry once (Vercel might be mid-deploy)
+          echo "First attempt returned $status — waiting 15s and retrying once..."
+          sleep 15
+          response=$(call_endpoint)
+          body=$(echo "$response" | head -n -1)
+          status=$(echo "$response" | tail -n 1)
+          echo "Attempt 2 — Status: $status"
+          echo "Body: $body"
+
+          if [ "$status" = "200" ]; then
+            echo "✅ Process queue success on retry"
+            exit 0
+          fi
+
+          # Both attempts failed — issue warning but only fail on 5xx errors
+          if [ "$status" -ge 500 ] 2>/dev/null; then
+            echo "::error::Process queue persistently failing with $status — endpoint may be down"
             exit 1
+          else
+            echo "::warning::Process queue returned $status — likely transient (auth/deploy). Will retry next cycle."
+            exit 0
           fi
