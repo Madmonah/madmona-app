@@ -25,16 +25,21 @@ const tajawal = Tajawal({
 
 export const metadata: Metadata = {
   title: {
-    default: 'مضمونة | منصة حجز شاملة - مساحات، عقارات، معدات',
+    default: 'مضمونة | احنا بتوع الإيجار - شاليهات، عربيات، قاعات، كاميرات',
     template: '%s | مضمونة',
   },
   description:
-    'مضمونة - منصة حجز مصرية لكل ما يمكن تأجيره. مساحات عمل، عقارات، مركبات، معدات تصوير، فعاليات. من موردين معتمدين، بضمان كامل.',
+    'مضمونة - منصة إيجار كل حاجة في مصر. شاليهات، عربيات، قاعات، كاميرات، ومساحات شغل. حماية كاملة على كل صفقة، دفع مستحقات سريع، ودعم ٢٤/٧. احنا بتوع الإيجار.',
   keywords: [
-    'مضمونة', 'madmona', 'مساحة عمل', 'coworking', 'مصر الجديدة', 'القاهرة',
-    'تأجير', 'rental', 'marketplace', 'فريلانسر', 'remote work',
-    'meeting room', 'مكتب خاص', 'تأجير معدات', 'تأجير سيارات',
-    'تأجير شقق', 'تأجير عقارات', 'منصة حجز', 'booking platform',
+    'مضمونة', 'madmona', 'احنا بتوع الإيجار',
+    'إيجار', 'تأجير', 'rental', 'rental Egypt', 'marketplace',
+    'تأجير شاليهات', 'إيجار شاليه', 'شاليهات الساحل', 'شاليهات العين السخنة',
+    'تأجير عربيات', 'تأجير سيارات', 'إيجار عربية',
+    'تأجير قاعات', 'قاعات اجتماعات', 'قاعات افراح', 'meeting room Cairo',
+    'تأجير كاميرات', 'تأجير معدات تصوير', 'camera rental Egypt',
+    'مساحة عمل', 'coworking', 'كوّيركينج', 'مصر الجديدة', 'النزهة', 'القاهرة',
+    'فريلانسر', 'remote work', 'مكتب خاص',
+    'منصة حجز', 'booking platform',
   ],
   authors: [{ name: 'Madmona' }],
   creator: 'Madmona',
@@ -43,17 +48,29 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   alternates: { canonical: SITE_URL },
   openGraph: {
-    title: 'مضمونة | منصة حجز شاملة',
-    description: 'مساحات، عقارات، مركبات، ومعدات — في مكان واحد بضمان كامل.',
+    title: 'مضمونة | احنا بتوع الإيجار',
+    description:
+      'منصة إيجار كل حاجة في مصر — شاليهات، عربيات، قاعات، كاميرات، ومساحات شغل. حماية كاملة + دفع سريع + دعم ٢٤/٧.',
     url: SITE_URL,
     siteName: 'مضمونة',
     locale: 'ar_EG',
     type: 'website',
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'مضمونة - منصة إيجار كل حاجة في مصر',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'مضمونة - Your Space, Guaranteed',
-    description: 'منصة حجز مصرية لكل ما يمكن تأجيره.',
+    title: 'مضمونة | احنا بتوع الإيجار',
+    description: 'منصة إيجار كل حاجة في مصر — شاليهات، عربيات، قاعات، كاميرات.',
+    images: ['/opengraph-image'],
+    site: '@madmonacairo',
+    creator: '@madmonacairo',
   },
   robots: {
     index: true,
@@ -73,11 +90,13 @@ export const viewport: Viewport = {
 
 const businessJsonLd = {
   '@context': 'https://schema.org',
-  '@type': ['LocalBusiness', 'CoworkingSpace'],
+  '@type': ['LocalBusiness', 'RentalAgency'],
   '@id': `${SITE_URL}/#business`,
   name: 'مضمونة',
   alternateName: 'Madmona',
-  description: 'مساحة عمل بوتيك في مصر الجديدة + منصة حجز لكل ما يمكن تأجيره',
+  description:
+    'منصة إيجار كل حاجة في مصر — شاليهات، عربيات، قاعات، كاميرات، ومساحات شغل. حماية كاملة، دفع سريع، ودعم ٢٤/٧.',
+  slogan: 'احنا بتوع الإيجار',
   url: SITE_URL,
   telephone: '+201002229982',
   address: {
@@ -93,13 +112,24 @@ const businessJsonLd = {
     {
       '@type': 'OpeningHoursSpecification',
       dayOfWeek: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-      opens: '09:00',
-      closes: '23:00',
+      opens: '00:00',
+      closes: '23:59',
     },
   ],
   priceRange: 'EGP',
-  image: `${SITE_URL}/og-image.png`,
-  sameAs: ['https://www.instagram.com/madmona.space'],
+  areaServed: { '@type': 'Country', name: 'Egypt' },
+  foundingDate: '2019',
+  image: `${SITE_URL}/opengraph-image`,
+  logo: `${SITE_URL}/madmona-logo.png`,
+  sameAs: [
+    'https://www.instagram.com/madmona.cairo',
+    'https://www.facebook.com/MadmonaCairo',
+    'https://www.tiktok.com/@madmonacairo',
+    'https://www.youtube.com/@Madmonacairo',
+    'https://www.linkedin.com/in/madmona-cairo-a48a71406',
+    'https://x.com/madmonacairo',
+    'https://www.threads.net/@madmona.cairo',
+  ],
 }
 
 const organizationJsonLd = {
@@ -117,7 +147,15 @@ const organizationJsonLd = {
     areaServed: 'EG',
     availableLanguage: ['Arabic', 'English'],
   },
-  sameAs: ['https://www.instagram.com/madmona.space'],
+  sameAs: [
+    'https://www.instagram.com/madmona.cairo',
+    'https://www.facebook.com/MadmonaCairo',
+    'https://www.tiktok.com/@madmonacairo',
+    'https://www.youtube.com/@Madmonacairo',
+    'https://www.linkedin.com/in/madmona-cairo-a48a71406',
+    'https://x.com/madmonacairo',
+    'https://www.threads.net/@madmona.cairo',
+  ],
 }
 
 const websiteJsonLd = {
@@ -126,7 +164,8 @@ const websiteJsonLd = {
   '@id': `${SITE_URL}/#website`,
   url: SITE_URL,
   name: 'Madmona',
-  description: 'منصة حجز مصرية لكل ما يمكن تأجيره',
+  alternateName: 'مضمونة',
+  description: 'منصة إيجار كل حاجة في مصر — شاليهات، عربيات، قاعات، كاميرات، ومساحات شغل.',
   inLanguage: 'ar-EG',
   publisher: { '@id': `${SITE_URL}/#organization` },
   potentialAction: {

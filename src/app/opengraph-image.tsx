@@ -1,8 +1,9 @@
 import { ImageResponse } from 'next/og'
 
 // Auto-generated Open Graph image (1200x630) used when the site is shared
-// on WhatsApp, Facebook, Twitter, LinkedIn, etc. Designed to match the brand:
-// deep green background, gold accent, white wordmark, Aesop/Byredo aesthetic.
+// on WhatsApp, Facebook, Twitter, LinkedIn, etc.
+// STRICT palette v3 (May 18 2026): #1F6F5F primary green, #FAFAF7 cream,
+// #FFFFFF white only. NO gold/amber/orange/yellow/mint anywhere.
 
 export const runtime = 'edge'
 export const contentType = 'image/png'
@@ -11,7 +12,7 @@ export const size = {
   height: 630,
 }
 
-export const alt = 'مضمونة - مساحة عمل بوتيك في مصر الجديدة'
+export const alt = 'مضمونة - منصة إيجار كل حاجة في مصر'
 
 export default function OpenGraphImage() {
   return new ImageResponse(
@@ -26,12 +27,12 @@ export default function OpenGraphImage() {
           justifyContent: 'center',
           backgroundColor: '#1F6F5F',
           backgroundImage:
-            'radial-gradient(circle at 30% 20%, rgba(47, 160, 132, 0.15) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%)',
+            'radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.04) 0%, transparent 50%)',
           fontFamily: 'system-ui, sans-serif',
           padding: 80,
         }}
       >
-        {/* Subtle gold accent bar at the top */}
+        {/* Subtle cream accent bar at the top */}
         <div
           style={{
             position: 'absolute',
@@ -39,7 +40,7 @@ export default function OpenGraphImage() {
             left: 0,
             right: 0,
             height: 6,
-            backgroundColor: '#2FA084',
+            backgroundColor: '#FAFAF7',
           }}
         />
 
@@ -62,7 +63,7 @@ export default function OpenGraphImage() {
           style={{
             fontSize: 36,
             fontWeight: 500,
-            color: '#2FA084',
+            color: 'rgba(255, 255, 255, 0.85)',
             letterSpacing: '0.4em',
             marginBottom: 60,
             display: 'flex',
@@ -71,28 +72,28 @@ export default function OpenGraphImage() {
           MADMONA
         </div>
 
-        {/* Tagline */}
+        {/* Tagline - الشعار الجديد */}
         <div
           style={{
-            fontSize: 44,
-            color: 'rgba(255, 255, 255, 0.9)',
-            fontWeight: 400,
+            fontSize: 52,
+            color: '#FFFFFF',
+            fontWeight: 500,
             marginBottom: 16,
             display: 'flex',
           }}
         >
-          مساحتك اللي بتخصك
+          احنا بتوع الإيجار
         </div>
 
         <div
           style={{
             fontSize: 28,
-            color: 'rgba(255, 255, 255, 0.6)',
+            color: 'rgba(255, 255, 255, 0.65)',
             fontWeight: 400,
             display: 'flex',
           }}
         >
-          Coworking · Meeting Rooms · Private Office
+          شاليهات · عربيات · قاعات · كاميرات · مساحات شغل
         </div>
 
         {/* Bottom location strip */}
@@ -107,8 +108,8 @@ export default function OpenGraphImage() {
             color: 'rgba(255, 255, 255, 0.5)',
           }}
         >
-          <span>مصر الجديدة، القاهرة</span>
-          <span style={{ color: '#2FA084' }}>·</span>
+          <span>القاهرة، مصر</span>
+          <span>·</span>
           <span>madmonacairo.com</span>
         </div>
       </div>

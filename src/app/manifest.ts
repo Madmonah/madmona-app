@@ -5,9 +5,9 @@ import type { MetadataRoute } from 'next'
 // chrome). Scoped to the root domain.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'مضمونة - Your Space, Guaranteed',
+    name: 'مضمونة - احنا بتوع الإيجار',
     short_name: 'مضمونة',
-    description: 'مساحة عمل بوتيك في مصر الجديدة. مساحتك اللي بتخصك.',
+    description: 'منصة إيجار كل حاجة في مصر — شاليهات، عربيات، قاعات، كاميرات، ومساحات شغل.',
     start_url: '/',
     display: 'standalone',
     background_color: '#FAFAF7',
@@ -15,7 +15,7 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: 'portrait',
     lang: 'ar',
     dir: 'rtl',
-    categories: ['business', 'productivity', 'lifestyle'],
+    categories: ['business', 'shopping', 'travel', 'productivity', 'lifestyle'],
     icons: [
       {
         src: '/icon',
