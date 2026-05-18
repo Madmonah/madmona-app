@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo, use, type ReactNode } from 'react'
+import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import {
   TrendingUp, TrendingDown, Wallet, Building2, Users, Calendar,
@@ -257,6 +258,13 @@ export default function BusinessFinancePage({
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               تحديث
             </button>
+            <Link
+              href={`/admin/business-finance/${supplierId}/team`}
+              className="px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold flex items-center gap-2 hover:shadow-md transition-shadow"
+            >
+              <Users className="w-4 h-4" />
+              الفريق
+            </Link>
           </div>
         </div>
 
