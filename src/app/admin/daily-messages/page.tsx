@@ -32,6 +32,9 @@ interface DailyMessage {
   end_date: string | null
   priority: number
   show_once_per_user: boolean
+  send_as_push: boolean       // Phase Ω: also broadcast as push notification
+  push_hour: number           // Phase Ω: Cairo hour 0-23 (default 9)
+  last_push_sent_at: string | null  // Phase Ω: idempotency guard
   created_at: string
 }
 
@@ -56,6 +59,8 @@ const EMPTY_DRAFT: Partial<DailyMessage> = {
   end_date: null,
   priority: 5,
   show_once_per_user: false,
+  send_as_push: false,
+  push_hour: 9,
 }
 
 export default function AdminDailyMessagesPage() {
@@ -135,6 +140,8 @@ export default function AdminDailyMessagesPage() {
       end_date: editing.end_date || null,
       priority: editing.priority ?? 5,
       show_once_per_user: editing.show_once_per_user ?? false,
+      send_as_push: editing.send_as_push ?? false,
+      push_hour: editing.push_hour ?? 9,
       updated_at: new Date().toISOString(),
     }
 
@@ -529,6 +536,41 @@ function EditModal({
           >
             {(draft.is_active ?? true) ? '✓ الرسالة نشطة' : '○ موقّفة'}
           </button>
+
+          {/* Phase Ω (May 18 2026): push notification toggle + hour picker.
+              When send_as_push=true, the message also fires as a web-push at push_hour Cairo time.
+              Wired to broadcast_daily_message_push() RPC + madmona_daily_message_push cron. */}
+          <div className="p-4 rounded-xl border-2 border-blue-200 bg-blue-50/40 space-y-3">
+            <button
+              type="button"
+              onClick={() => onChange({ ...draft, send_as_push: !draft.send_as_push })}
+              className={`w-full p-3 rounded-xl border-2 text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                draft.send_as_push
+                  ? 'bg-blue-100 border-blue-400 text-blue-900'
+                  : 'bg-white border-gray-200 text-gray-500'
+              }`}
+            >
+              {draft.send_as_push ? '🔔 تتبعت كـ push notification' : '○ مفعلس push (بتظهر بس على الصفحة)'}
+            </button>
+
+            {draft.send_as_push && (
+              <div>
+                <label className="block text-xs font-bold text-blue-900 mb-1">تتبعت الساعة كام (بتوقيت القاهرة)؟</label>
+                <select
+                  value={draft.push_hour ?? 9}
+                  onChange={e => onChange({ ...draft, push_hour: parseInt(e.target.value, 10) })}
+                  className="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-sm focus:outline-none focus:border-blue-400"
+                >
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <option key={i} value={i}>{i.toString().padStart(2, '0')}:00 — {i < 12 ? `${i || 12} ص` : `${i - 12 || 12} م`}</option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-blue-800/70 mt-1.5">
+                  💡 الرسالة هتوصل للـ 13 مشترك اللي مفعّلين push. لو الساعة فاتت النهاردة، هتتبعت بكرة وقتها.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="sticky bottom-0 bg-white border-t border-gray-100 px-5 py-4 flex gap-2">
