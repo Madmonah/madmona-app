@@ -5,16 +5,16 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import {
   Users, Crown, Building2, ListChecks, ChevronLeft, Loader2,
-  CheckCircle2, Circle, Clock, AlertTriangle, RefreshCw, Plus,
-  TrendingUp, Sparkles,
+  CheckCircle2, Circle, X, RefreshCw, Plus,
+  TrendingUp, Sparkles, AlertCircle,
 } from 'lucide-react'
 
 /* ============================================================
    /admin/business-finance/[supplierId]/team
    
-   Madmona-as-Admin oversight of a B2B partner's team.
-   Shows the hierarchy: Madmona → Owner → Branch managers → Staff
-   Each employee has live daily-task completion stats.
+   - Hierarchy view (Madmona → Owner → Branch managers)
+   - Employee cards (click to open task modal)
+   - Modal: see + check off employee's daily tasks live
    ============================================================ */
 
 const supabase = createClient(
@@ -51,6 +51,18 @@ type Employee = {
   week_completion_pct: number | null
 }
 
+type Task = {
+  id: string
+  title_ar: string
+  description: string | null
+  priority: 'low' | 'medium' | 'high'
+  status: 'pending' | 'in_progress' | 'completed' | 'skipped' | 'overdue'
+  due_time: string | null
+  completed_at: string | null
+  notes: string | null
+  is_auto_generated: boolean
+}
+
 export default function TeamOversightPage({
   params,
 }: {
@@ -63,6 +75,7 @@ export default function TeamOversightPage({
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [message, setMessage] = useState('')
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
 
   async function loadAll() {
     setLoading(true)
@@ -105,7 +118,6 @@ export default function TeamOversightPage({
     setGenerating(false)
   }
 
-  // Group employees by branch
   const owner = useMemo(() => employees.find((e) => e.role === 'owner'), [employees])
   const byBranch = useMemo(() => {
     const map = new Map<string, Employee[]>()
@@ -133,12 +145,10 @@ export default function TeamOversightPage({
       </div>
     )
   }
-
   if (!supplier) return null
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <Link
@@ -182,59 +192,44 @@ export default function TeamOversightPage({
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Toast */}
         {message && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 text-sm text-[#1A2E26]">
             {message}
           </div>
         )}
 
-        {/* Hierarchy visualization */}
+        {/* Hint banner */}
+        <div className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 rounded-2xl p-3 text-xs text-[#1A2E26] flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-[#1F6F5F] flex-shrink-0" />
+          <span>اضغط على أي كارت موظف عشان تشوف مهامه + تقدر تشطبها</span>
+        </div>
+
+        {/* Hierarchy */}
         <section className="bg-white rounded-3xl border border-gray-100 p-5 md:p-7">
           <h2 className="text-sm font-bold tracking-wider uppercase text-[#6B7280] mb-5">
             🏛️ هيكل الإدارة
           </h2>
           <div className="space-y-4">
-            {/* Madmona (top) */}
-            <HierNode
-              level={0}
-              icon={<Crown className="w-5 h-5" />}
-              title="Madmona"
-              subtitle="ادمن المنصة"
-              accent
-            />
-            {/* Connector line */}
+            <HierNode level={0} icon={<Crown className="w-5 h-5" />} title="Madmona" subtitle="ادمن المنصة" accent />
             <Connector />
-            {/* Elite Owner */}
-            <HierNode
-              level={1}
+            <HierNode level={1}
               icon={<Users className="w-5 h-5" />}
               title={owner?.full_name || 'صاحب المكان'}
               subtitle={`${supplier.business_name} · صاحب`}
-              taskStats={owner ? {
-                done: owner.today_completed,
-                total: owner.today_total_tasks,
-              } : undefined}
+              taskStats={owner ? { done: owner.today_completed, total: owner.today_total_tasks } : undefined}
+              onClick={owner ? () => setSelectedEmployee(owner) : undefined}
             />
             <Connector />
-            {/* Branch managers row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {branches.map((b) => {
-                const mgr = employees.find(
-                  (e) => e.branch_id === b.id && e.role === 'branch_manager',
-                )
+                const mgr = employees.find((e) => e.branch_id === b.id && e.role === 'branch_manager')
                 return (
-                  <HierNode
-                    key={b.id}
-                    level={2}
-                    compact
+                  <HierNode key={b.id} level={2} compact
                     icon={<Building2 className="w-4 h-4" />}
                     title={b.code || ''}
                     subtitle={mgr?.full_name || 'بدون مدير'}
-                    taskStats={mgr ? {
-                      done: mgr.today_completed,
-                      total: mgr.today_total_tasks,
-                    } : undefined}
+                    taskStats={mgr ? { done: mgr.today_completed, total: mgr.today_total_tasks } : undefined}
+                    onClick={mgr ? () => setSelectedEmployee(mgr) : undefined}
                   />
                 )
               })}
@@ -242,7 +237,7 @@ export default function TeamOversightPage({
           </div>
         </section>
 
-        {/* Stats row */}
+        {/* Stats */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard label="موظفين" value={stats.totalEmployees} icon={<Users className="w-4 h-4" />} />
           <StatCard label="مهام اليوم" value={stats.totalTasks} icon={<ListChecks className="w-4 h-4" />} />
@@ -250,7 +245,7 @@ export default function TeamOversightPage({
           <StatCard label="إنجاز" value={`${stats.completionPct}%`} icon={<TrendingUp className="w-4 h-4" />} primary />
         </section>
 
-        {/* Branch sections */}
+        {/* Branches */}
         {branches.map((b) => {
           const branchEmps = byBranch.get(b.id) || []
           if (branchEmps.length === 0) {
@@ -285,14 +280,18 @@ export default function TeamOversightPage({
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-4">
                 {branchEmps.map((e) => (
-                  <EmployeeCard key={e.employee_id} emp={e} />
+                  <EmployeeCard
+                    key={e.employee_id}
+                    emp={e}
+                    onClick={() => setSelectedEmployee(e)}
+                  />
                 ))}
               </div>
             </section>
           )
         })}
 
-        {/* Bottom info card */}
+        {/* Bottom Madmona positioning */}
         <section className="bg-[#1F6F5F] text-white rounded-3xl p-6 md:p-8">
           <div className="flex items-start gap-4">
             <div className="inline-grid place-items-center w-12 h-12 rounded-2xl bg-white/15 flex-shrink-0">
@@ -303,20 +302,252 @@ export default function TeamOversightPage({
                 Madmona كمنصّة إدارة شاملة
               </h3>
               <p className="text-sm text-white/90 leading-relaxed mb-3">
-                مش بس وسيط للحجوزات — كمان منصة إدارة. كل موظف، كل مهمة، كل ج بـ يدخل أو يخرج، 
-                Madmona شايفاه live. هذه القيمة المضافة اللي بنقدمها لشركائنا.
+                مش بس وسيط للحجوزات — كمان منصة إدارة. كل موظف، كل مهمة، كل ج بـ يدخل أو يخرج،
+                Madmona شايفاه live.
               </p>
               <div className="flex flex-wrap gap-2 text-xs">
                 <Badge>هيكل إدارة كامل</Badge>
                 <Badge>Daily tasks تلقائي</Badge>
                 <Badge>Live tracking</Badge>
-                <Badge>Madmona admin</Badge>
-                <Badge>عمولة على gross bookings</Badge>
+                <Badge>عمولة على gross</Badge>
               </div>
             </div>
           </div>
         </section>
       </main>
+
+      {/* Task modal */}
+      {selectedEmployee && (
+        <TaskModal
+          employee={selectedEmployee}
+          supplierName={supplier.business_name}
+          onClose={() => setSelectedEmployee(null)}
+          onRefresh={loadAll}
+        />
+      )}
+    </div>
+  )
+}
+
+/* ============================================================
+   TASK MODAL
+   ============================================================ */
+function TaskModal({
+  employee, supplierName, onClose, onRefresh,
+}: {
+  employee: Employee
+  supplierName: string
+  onClose: () => void
+  onRefresh: () => void
+}) {
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
+  const [adding, setAdding] = useState(false)
+  const [newTaskTitle, setNewTaskTitle] = useState('')
+
+  async function loadTasks() {
+    setLoading(true)
+    const today = new Date().toISOString().slice(0, 10)
+    // @ts-expect-error
+    const { data } = await supabase.from('daily_tasks')
+      .select('id, title_ar, description, priority, status, due_time, completed_at, notes, is_auto_generated')
+      .eq('employee_id', employee.employee_id)
+      .eq('task_date', today)
+      .order('priority', { ascending: false })
+      .order('created_at')
+    setTasks((data || []) as Task[])
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    loadTasks()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [employee.employee_id])
+
+  async function toggleTask(task: Task) {
+    const newStatus = task.status === 'completed' ? 'pending' : 'completed'
+    // Optimistic update
+    setTasks((prev) => prev.map((t) => t.id === task.id ? { ...t, status: newStatus, completed_at: newStatus === 'completed' ? new Date().toISOString() : null } : t))
+    // @ts-expect-error
+    await supabase.rpc('admin_update_task_status', { p_task_id: task.id, p_status: newStatus })
+    onRefresh()
+  }
+
+  async function addTask() {
+    if (!newTaskTitle.trim()) return
+    // @ts-expect-error
+    await supabase.rpc('admin_add_task', {
+      p_employee_id: employee.employee_id,
+      p_title_ar: newTaskTitle.trim(),
+      p_priority: 'medium',
+    })
+    setNewTaskTitle('')
+    setAdding(false)
+    await loadTasks()
+    onRefresh()
+  }
+
+  async function deleteTask(taskId: string) {
+    if (!confirm('متأكد من حذف المهمة؟')) return
+    // @ts-expect-error
+    await supabase.from('daily_tasks').delete().eq('id', taskId)
+    await loadTasks()
+    onRefresh()
+  }
+
+  const stats = {
+    total: tasks.length,
+    done: tasks.filter((t) => t.status === 'completed').length,
+  }
+  const pct = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" dir="rtl">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+
+      {/* Sheet */}
+      <div className="relative bg-[#FAFAF7] rounded-t-3xl md:rounded-3xl w-full md:max-w-2xl md:mx-4 max-h-[90vh] flex flex-col shadow-2xl">
+        {/* Header */}
+        <header className="px-5 py-4 border-b border-gray-100 bg-white rounded-t-3xl flex items-center gap-3">
+          <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] font-black text-base flex-shrink-0">
+            {employee.avatar_initial || employee.full_name.charAt(0)}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base md:text-lg font-black text-[#1A2E26] truncate">{employee.full_name}</h2>
+            <p className="text-xs text-[#6B7280] truncate">
+              {employee.role_ar} · {employee.branch_name || supplierName}
+            </p>
+          </div>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <ProgressRing pct={pct} />
+            <button
+              onClick={onClose}
+              className="p-2 rounded-lg hover:bg-[#FAFAF7] text-[#6B7280] hover:text-[#1A2E26] transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </header>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
+            </div>
+          ) : tasks.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-8 text-center">
+              <ListChecks className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
+              <p className="text-sm font-bold text-[#1A2E26]">مفيش مهام لليوم</p>
+              <p className="text-xs text-[#6B7280] mt-1">اضف مهمة من فوق أو رجع الـ team page وأضغط "توليد مهام"</p>
+            </div>
+          ) : (
+            tasks.map((task) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                onToggle={() => toggleTask(task)}
+                onDelete={() => deleteTask(task.id)}
+              />
+            ))
+          )}
+
+          {/* Add task */}
+          {adding ? (
+            <div className="bg-white rounded-2xl border-2 border-[#1F6F5F] p-3 flex items-center gap-2">
+              <input
+                type="text"
+                value={newTaskTitle}
+                onChange={(e) => setNewTaskTitle(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') addTask() }}
+                placeholder="عنوان المهمة..."
+                autoFocus
+                className="flex-1 px-2 py-1.5 text-sm bg-transparent text-[#1A2E26] focus:outline-none placeholder-[#6B7280]"
+              />
+              <button
+                onClick={addTask}
+                disabled={!newTaskTitle.trim()}
+                className="px-3 py-1.5 rounded-lg bg-[#1F6F5F] text-white text-xs font-bold disabled:opacity-50"
+              >
+                اضف
+              </button>
+              <button
+                onClick={() => { setAdding(false); setNewTaskTitle('') }}
+                className="text-[#6B7280] hover:text-[#1A2E26] p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setAdding(true)}
+              className="w-full p-3 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#1F6F5F] text-[#6B7280] hover:text-[#1F6F5F] text-sm font-bold transition-colors flex items-center justify-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              اضف مهمة
+            </button>
+          )}
+        </div>
+
+        {/* Footer */}
+        <footer className="px-5 py-3 border-t border-gray-100 bg-white text-xs text-[#6B7280] flex items-center justify-between">
+          <span>{stats.done}/{stats.total} مكتمل</span>
+          <span>اضغط على الدائرة عشان تشطب</span>
+        </footer>
+      </div>
+    </div>
+  )
+}
+
+function TaskRow({ task, onToggle, onDelete }: { task: Task; onToggle: () => void; onDelete: () => void }) {
+  const isDone = task.status === 'completed'
+  const priorityColor =
+    task.priority === 'high' ? 'bg-red-500' :
+    task.priority === 'medium' ? 'bg-amber-500' : 'bg-gray-300'
+
+  return (
+    <div className={`bg-white rounded-2xl border p-3 md:p-4 flex items-start gap-3 group transition-all ${
+      isDone ? 'border-[#1F6F5F]/30 bg-[#1F6F5F]/5' : 'border-gray-100 hover:shadow-sm'
+    }`}>
+      {/* Checkbox */}
+      <button onClick={onToggle} className="flex-shrink-0 mt-0.5 transition-transform active:scale-90">
+        {isDone ? (
+          <CheckCircle2 className="w-6 h-6 text-[#1F6F5F]" />
+        ) : (
+          <Circle className="w-6 h-6 text-gray-300 hover:text-[#1F6F5F] transition-colors" />
+        )}
+      </button>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start gap-2">
+          <span className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 ${priorityColor}`} />
+          <p className={`text-sm leading-relaxed flex-1 ${
+            isDone ? 'text-[#6B7280] line-through' : 'text-[#1A2E26] font-medium'
+          }`}>
+            {task.title_ar}
+          </p>
+        </div>
+        {!task.is_auto_generated && (
+          <p className="text-[10px] text-[#6B7280] mt-1 mr-3.5">يدوي</p>
+        )}
+        {task.completed_at && isDone && (
+          <p className="text-[10px] text-[#1F6F5F] mt-1 mr-3.5">
+            ✓ {new Date(task.completed_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
+          </p>
+        )}
+      </div>
+
+      {/* Delete (only show on manual tasks) */}
+      {!task.is_auto_generated && (
+        <button
+          onClick={onDelete}
+          className="opacity-0 group-hover:opacity-100 text-[#6B7280] hover:text-red-600 transition-all p-1"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      )}
     </div>
   )
 }
@@ -326,7 +557,7 @@ export default function TeamOversightPage({
    ============================================================ */
 
 function HierNode({
-  level, icon, title, subtitle, accent, compact, taskStats,
+  level, icon, title, subtitle, accent, compact, taskStats, onClick,
 }: {
   level: number
   icon: ReactNode
@@ -335,23 +566,29 @@ function HierNode({
   accent?: boolean
   compact?: boolean
   taskStats?: { done: number; total: number }
+  onClick?: () => void
 }) {
   const pct = taskStats && taskStats.total > 0
     ? Math.round((taskStats.done / taskStats.total) * 100)
     : null
 
+  const Wrapper: any = onClick ? 'button' : 'div'
+
   return (
-    <div className={`flex items-center gap-3 rounded-2xl border ${
-      accent
-        ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]'
-        : 'bg-white text-[#1A2E26] border-gray-100'
-    } ${compact ? 'p-3' : 'p-4'}`}>
+    <Wrapper
+      onClick={onClick}
+      className={`flex items-center gap-3 rounded-2xl border w-full text-right ${
+        accent
+          ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]'
+          : `bg-white text-[#1A2E26] border-gray-100 ${onClick ? 'hover:border-[#1F6F5F] hover:shadow-sm cursor-pointer' : ''}`
+      } ${compact ? 'p-3' : 'p-4'} transition-all`}
+    >
       <div className={`inline-grid place-items-center rounded-xl flex-shrink-0 ${
         compact ? 'w-9 h-9' : 'w-11 h-11'
       } ${accent ? 'bg-white/15 text-white' : 'bg-[#1F6F5F]/10 text-[#1F6F5F]'}`}>
         {icon}
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 text-right">
         <h3 className={`font-black tracking-tight truncate ${
           compact ? 'text-sm' : 'text-base'
         } ${accent ? 'text-white' : 'text-[#1A2E26]'}`}>
@@ -370,7 +607,7 @@ function HierNode({
           {pct}%
         </div>
       )}
-    </div>
+    </Wrapper>
   )
 }
 
@@ -407,12 +644,11 @@ function StatCard({
   )
 }
 
-function EmployeeCard({ emp }: { emp: Employee }) {
+function EmployeeCard({ emp, onClick }: { emp: Employee; onClick: () => void }) {
   const pct = emp.today_total_tasks > 0
     ? Math.round((emp.today_completed / emp.today_total_tasks) * 100)
     : null
   const initial = emp.avatar_initial || emp.full_name.charAt(0)
-
   const statusColor =
     pct === null ? 'bg-gray-100 text-gray-500' :
     pct >= 80 ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' :
@@ -420,7 +656,10 @@ function EmployeeCard({ emp }: { emp: Employee }) {
     'bg-red-50 text-red-700'
 
   return (
-    <div className="rounded-2xl border border-gray-100 p-4 hover:shadow-sm hover:border-[#1F6F5F] transition-all">
+    <button
+      onClick={onClick}
+      className="w-full text-right rounded-2xl border border-gray-100 p-4 hover:shadow-md hover:border-[#1F6F5F] transition-all"
+    >
       <div className="flex items-start gap-3 mb-3">
         <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] font-black text-base flex-shrink-0">
           {initial}
@@ -443,13 +682,9 @@ function EmployeeCard({ emp }: { emp: Employee }) {
             {emp.today_completed}/{emp.today_total_tasks}
           </span>
         </div>
-        {/* Progress bar */}
         {emp.today_total_tasks > 0 && (
           <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#1F6F5F] transition-all"
-              style={{ width: `${pct}%` }}
-            />
+            <div className="h-full bg-[#1F6F5F] transition-all" style={{ width: `${pct}%` }} />
           </div>
         )}
       </div>
@@ -460,7 +695,7 @@ function EmployeeCard({ emp }: { emp: Employee }) {
           <span className="font-mono font-bold text-[#1A2E26]">{emp.week_completion_pct}%</span>
         </div>
       )}
-    </div>
+    </button>
   )
 }
 
@@ -471,13 +706,8 @@ function ProgressRing({ pct }: { pct: number }) {
     <div className="relative w-12 h-12 flex-shrink-0">
       <svg className="w-12 h-12 -rotate-90" viewBox="0 0 44 44">
         <circle cx="22" cy="22" r="18" fill="none" stroke="#E5E7EB" strokeWidth="3" />
-        <circle
-          cx="22" cy="22" r="18" fill="none"
-          stroke="#1F6F5F" strokeWidth="3"
-          strokeDasharray={circ}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-        />
+        <circle cx="22" cy="22" r="18" fill="none" stroke="#1F6F5F" strokeWidth="3"
+          strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" />
       </svg>
       <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-[#1A2E26]">
         {pct}%
