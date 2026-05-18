@@ -265,6 +265,13 @@ export default function BusinessFinancePage({
               <Users className="w-4 h-4" />
               الفريق
             </Link>
+            <Link
+              href={`/admin/business-finance/${supplierId}/settings`}
+              className="px-3 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] transition-colors"
+              title="الإعدادات"
+            >
+              إعدادات
+            </Link>
           </div>
         </div>
 
