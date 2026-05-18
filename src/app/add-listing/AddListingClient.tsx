@@ -284,6 +284,9 @@ function AddListingPageInner({
           contact_phone:  prev.contact_phone   ?? (d.contact_phone || undefined),
           account_type:   prev.account_type    ?? (d.account_type || undefined),
           business_name:  prev.business_name   ?? (d.business_name || undefined),
+          // Phase F (May 18 2026): hydrate category-specific attribute values
+          // so user doesn't lose them on resume/refresh.
+          attributes:     prev.attributes      ?? (d.attributes || undefined),
         }));
 
         // Resume at the right step — but only if the DB has enough data
@@ -422,12 +425,12 @@ function AddListingPageInner({
           <StepBasics
             draft={draft}
             errors={errors}
+            setErrors={setErrors}
             categories={dbExtraCategories}
             onSubmit={async (patch) => {
-              const ok = validateBasics(patch, setErrors);
-              if (!ok) return;
-              // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
-              // Old code: await persist; next(); — caused silent data loss when API failed.
+              // Phase F (May 18 2026): validation moved INTO StepBasics so it
+              // can also enforce required category-specific attributes.
+              // Parent only persists + advances when child says patch is ready.
               const t = await persist(patch);
               if (t) next();
             }}
@@ -786,11 +789,26 @@ function CategoryChip({
 }
 
 // =================================================
-// STEP 2 — BASIC DETAILS
+// STEP 2 — BASIC DETAILS + CATEGORY-SPECIFIC ATTRIBUTES (Phase F, May 18 2026)
+//
+// Step 2 now collects two layers of info:
+//   1. Universal fields: title, description, city, district
+//   2. Category-specific attributes (rooms, year, transmission, accepted
+//      insurance, etc.) fetched lazily from /api/listing-drafts/attributes
+//      based on the selected category slug.
+//
+// Validation is done HERE (not in the parent) so we can enforce required
+// attributes which the parent has no knowledge of. Parent's onSubmit just
+// persists + advances when the child says the patch is ready.
+//
+// Values are saved to draft.attributes as { field_key: value }. The DB-side
+// claim_listing_draft (Phase F migration) maps these to attribute_ids and
+// inserts listing_values rows when the draft converts to a listing.
 // =================================================
 function StepBasics({
   draft,
   errors,
+  setErrors,
   categories,
   onSubmit,
   onBack,
@@ -799,6 +817,7 @@ function StepBasics({
 }: {
   draft: DraftPayload;
   errors: Record<string, string>;
+  setErrors: (e: Record<string, string>) => void;
   categories: MainCategory[];
   onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
   onBack: () => void;
@@ -819,6 +838,81 @@ function StepBasics({
   const titlePh = meta.title_placeholder || 'مثلاً: شاليه في مراسي بحر مباشر، 4 غرف';
   const descPh = meta.description_placeholder || 'إيه اللي بيميز اللي عندك؟ (المسبح، الإطلالة، الموقع...)';
   const districtPh = meta.district_placeholder || 'مثلاً: مراسي، التجمع الخامس، الزمالك...';
+
+  // Phase F: attributes state + lazy fetch.
+  // 'addons' is owned by StepPricing (beauty add-ons) so we strip it out
+  // of the local attribute values to avoid double-management.
+  const [attributes, setAttributes] = useState<AttributeField[]>([]);
+  const [loadingAttrs, setLoadingAttrs] = useState(false);
+  const [attrValues, setAttrValues] = useState<Record<string, unknown>>(() => {
+    const init = (draft.attributes || {}) as Record<string, unknown>;
+    const rest: Record<string, unknown> = {};
+    for (const k of Object.keys(init)) {
+      if (k !== 'addons') rest[k] = init[k];
+    }
+    return rest;
+  });
+
+  // Fetch attributes whenever the selected category changes.
+  useEffect(() => {
+    if (!draft.category_slug) {
+      setAttributes([]);
+      return;
+    }
+    let cancelled = false;
+    setLoadingAttrs(true);
+    fetch(`/api/listing-drafts/attributes?slug=${encodeURIComponent(draft.category_slug)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return;
+        if (data.success && Array.isArray(data.attributes)) {
+          setAttributes(data.attributes);
+        } else {
+          setAttributes([]);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setAttributes([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingAttrs(false);
+      });
+    return () => { cancelled = true; };
+  }, [draft.category_slug]);
+
+  // Validation is fully local now — covers title, city, AND required attrs.
+  function handleNext() {
+    const errs: Record<string, string> = {};
+    if (!title || title.length < 5 || title === PLACEHOLDER_TITLE) {
+      errs.title = 'العنوان قصير، خليه على الأقل 5 حروف';
+    }
+    if (!city) errs.city = 'اختار المحافظة';
+    // Required attributes
+    for (const attr of attributes) {
+      if (!attr.is_required) continue;
+      const v = attrValues[attr.field_key];
+      const isEmpty =
+        v === undefined ||
+        v === null ||
+        v === '' ||
+        (Array.isArray(v) && v.length === 0);
+      if (isEmpty) {
+        errs[`attr_${attr.field_key}`] = `${attr.name_ar} مطلوب`;
+      }
+    }
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      return;
+    }
+    setErrors({});
+
+    // Preserve beauty 'addons' (managed by StepPricing) when patching attributes.
+    const existingAddons = (draft.attributes as { addons?: unknown } | undefined)?.addons;
+    const finalAttrs: Record<string, unknown> = { ...attrValues };
+    if (existingAddons !== undefined) finalAttrs.addons = existingAddons;
+
+    onSubmit({ title, description, city, district, attributes: finalAttrs });
+  }
 
   return (
     <section>
@@ -870,19 +964,232 @@ function StepBasics({
         />
       </Field>
 
-      <Nav onBack={onBack} onNext={() => onSubmit({ title, description, city, district })} saving={saving} />
+      {/* Phase F (May 18 2026): category-specific attributes section.
+          Lazy-fetched per category. Required attrs validated on Next click.
+          Beauty 'addons' kept separate — owned by StepPricing. */}
+      {loadingAttrs && (
+        <div className="mt-6 text-sm text-gray-500 text-center">
+          ⏳ جاري تحميل تفاصيل التصنيف...
+        </div>
+      )}
+      {!loadingAttrs && attributes.length > 0 && (
+        <div className="mt-8 pt-6 border-t border-[#E5E5E0]">
+          <h3 className="text-base font-semibold mb-1">تفاصيل إضافية</h3>
+          <p className="text-xs text-gray-500 mb-5">
+            البيانات دي بتساعد العميل يلاقي إعلانك بسرعة وتزود الحجوزات.{' '}
+            <span className="text-[#1F6F5F] font-medium">المعلّمة بنجمة مطلوبة.</span>
+          </p>
+          {attributes.map(attr => (
+            <AttributeFieldRenderer
+              key={attr.id}
+              attr={attr}
+              value={attrValues[attr.field_key]}
+              onChange={(v) => setAttrValues(prev => ({ ...prev, [attr.field_key]: v }))}
+              error={errors[`attr_${attr.field_key}`]}
+            />
+          ))}
+        </div>
+      )}
+
+      <Nav onBack={onBack} onNext={handleNext} saving={saving} />
     </section>
   );
 }
 
-function validateBasics(patch: Partial<DraftPayload>, setErrors: (e: Record<string, string>) => void): boolean {
-  const errs: Record<string, string> = {};
-  if (!patch.title || patch.title.length < 5 || patch.title === PLACEHOLDER_TITLE) {
-    errs.title = 'العنوان قصير، خليه على الأقل 5 حروف';
+// =================================================
+// ATTRIBUTE FIELD RENDERER (Phase F, May 18 2026)
+// Renders an attribute input based on field_type.
+// Field types: number, text, boolean, select, multi_select.
+// =================================================
+type AttributeFieldType = 'number' | 'text' | 'boolean' | 'select' | 'multi_select';
+
+interface AttributeField {
+  id: string;
+  name_ar: string;
+  field_key: string;
+  field_type: AttributeFieldType;
+  options: { key: string; label_ar: string }[] | null;
+  unit: string | null;
+  placeholder: string | null;
+  help_text: string | null;
+  is_required: boolean;
+  is_filterable: boolean;
+  display_order: number;
+}
+
+function AttributeFieldRenderer({
+  attr,
+  value,
+  onChange,
+  error,
+}: {
+  attr: AttributeField;
+  value: unknown;
+  onChange: (v: unknown) => void;
+  error?: string;
+}) {
+  const helpText = attr.help_text ? (
+    <p className="text-[11px] text-gray-500 mt-1">{attr.help_text}</p>
+  ) : null;
+
+  if (attr.field_type === 'number') {
+    return (
+      <Field label={attr.name_ar} required={attr.is_required} error={error}>
+        <div className="relative">
+          <input
+            type="number"
+            value={value === undefined || value === null ? '' : String(value)}
+            onChange={(e) => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+            placeholder={attr.placeholder || ''}
+            className={inputCls + (attr.unit ? ' pl-16' : '')}
+          />
+          {attr.unit && (
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+              {attr.unit}
+            </span>
+          )}
+        </div>
+        {helpText}
+      </Field>
+    );
   }
-  if (!patch.city) errs.city = 'اختار المحافظة';
-  setErrors(errs);
-  return Object.keys(errs).length === 0;
+
+  if (attr.field_type === 'text') {
+    return (
+      <Field label={attr.name_ar} required={attr.is_required} error={error}>
+        <input
+          type="text"
+          value={(value as string) || ''}
+          onChange={(e) => onChange(e.target.value || undefined)}
+          placeholder={attr.placeholder || ''}
+          className={inputCls}
+        />
+        {helpText}
+      </Field>
+    );
+  }
+
+  if (attr.field_type === 'boolean') {
+    return (
+      <Field label={attr.name_ar} required={attr.is_required} error={error}>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => onChange(true)}
+            className={`py-2.5 rounded-xl border text-sm transition-all ${
+              value === true
+                ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white font-semibold'
+                : 'bg-white border-[#E5E5E0]'
+            }`}
+          >
+            ✓ نعم
+          </button>
+          <button
+            type="button"
+            onClick={() => onChange(false)}
+            className={`py-2.5 rounded-xl border text-sm transition-all ${
+              value === false
+                ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white font-semibold'
+                : 'bg-white border-[#E5E5E0]'
+            }`}
+          >
+            ✗ لا
+          </button>
+        </div>
+        {helpText}
+      </Field>
+    );
+  }
+
+  if (attr.field_type === 'select') {
+    const options = attr.options || [];
+    // Button group for small option sets, dropdown for many.
+    if (options.length <= 6) {
+      return (
+        <Field label={attr.name_ar} required={attr.is_required} error={error}>
+          <div className="grid grid-cols-2 gap-2">
+            {options.map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => onChange(opt.key)}
+                className={`py-2.5 rounded-xl border text-sm transition-all ${
+                  value === opt.key
+                    ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white font-semibold'
+                    : 'bg-white border-[#E5E5E0]'
+                }`}
+              >
+                {opt.label_ar}
+              </button>
+            ))}
+          </div>
+          {helpText}
+        </Field>
+      );
+    }
+    return (
+      <Field label={attr.name_ar} required={attr.is_required} error={error}>
+        <select
+          value={(value as string) || ''}
+          onChange={(e) => onChange(e.target.value || undefined)}
+          className={inputCls}
+        >
+          <option value="">اختار</option>
+          {options.map((opt) => (
+            <option key={opt.key} value={opt.key}>{opt.label_ar}</option>
+          ))}
+        </select>
+        {helpText}
+      </Field>
+    );
+  }
+
+  if (attr.field_type === 'multi_select') {
+    const options = attr.options || [];
+    const selected = Array.isArray(value) ? (value as string[]) : [];
+    return (
+      <Field label={attr.name_ar} required={attr.is_required} error={error}>
+        <div className="grid grid-cols-2 gap-2">
+          {options.map((opt) => {
+            const isSel = selected.includes(opt.key);
+            return (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => {
+                  if (isSel) onChange(selected.filter(k => k !== opt.key));
+                  else onChange([...selected, opt.key]);
+                }}
+                className={`py-2.5 rounded-xl border text-xs transition-all ${
+                  isSel
+                    ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white font-semibold'
+                    : 'bg-white border-[#E5E5E0]'
+                }`}
+              >
+                {isSel ? '✓ ' : ''}{opt.label_ar}
+              </button>
+            );
+          })}
+        </div>
+        {selected.length > 0 && (
+          <p className="text-[11px] text-gray-500 mt-1.5">
+            {selected.length} مختار
+          </p>
+        )}
+        {helpText}
+      </Field>
+    );
+  }
+
+  // Unknown field_type — render nothing (forward-compat).
+  return null;
+}
+
+function validateBasics(_patch: Partial<DraftPayload>, _setErrors: (e: Record<string, string>) => void): boolean {
+  // Phase F (May 18 2026): validation moved INTO StepBasics (so it can also
+  // enforce required category-specific attributes). This shim is kept as a
+  // no-op for any future caller — the parent's onSubmit no longer calls it.
+  return true;
 }
 
 // =================================================

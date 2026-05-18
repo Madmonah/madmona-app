@@ -272,9 +272,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'token required' }, { status: 400 });
     }
 
+    // Phase F (May 18 2026): also return attributes + pricing_tiers for full
+    // wizard hydration on resume. Without these the user loses their
+    // category-specific specs when returning to a draft.
     const { data, error } = await supabase
       .from('listing_drafts')
-      .select('id, claim_token, category_slug, title, description, city, district, price, price_period, photos, contact_name, contact_phone, account_type, business_name, current_step, status, created_at')
+      .select('id, claim_token, category_slug, title, description, city, district, price, price_period, pricing_tiers, photos, contact_name, contact_phone, account_type, business_name, current_step, status, created_at, attributes')
       .eq('claim_token', token)
       .single();
 
