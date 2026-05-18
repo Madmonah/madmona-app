@@ -8,6 +8,7 @@ import {
   Upload, Save, CheckCircle, X, ShieldAlert, Sparkles, Link as LinkIcon,
   RefreshCw, FolderTree, Newspaper, Instagram, Facebook, Linkedin,
   Youtube, Twitter, Music2, AtSign, ExternalLink, Globe,
+  CreditCard, Building2,
 } from 'lucide-react'
 
 // ============================================================================
@@ -106,6 +107,65 @@ const SOCIAL_PLATFORMS: SocialPlatform[] = [
     icon: <AtSign className="w-5 h-5" />,
     brandColor: '#000000',
     bgColor: 'bg-black',
+  },
+]
+
+// Phase Z (May 18 2026): payment settings shown as a separate section.
+// Plain text fields (not images, not URLs). Each saves to site_settings
+// via the same upsert flow as the other sections.
+interface PaymentField {
+  key: string
+  label: string
+  hint: string
+  placeholder: string
+  dir?: 'ltr' | 'rtl'
+  mono?: boolean
+}
+
+const PAYMENT_FIELDS: PaymentField[] = [
+  {
+    key: 'payment_bank_name',
+    label: 'اسم البنك',
+    hint: 'البنك اللي عنده الحساب (مثلاً: بنك مصر)',
+    placeholder: 'بنك مصر',
+  },
+  {
+    key: 'instapay_holder_name',
+    label: 'اسم المستفيد على الحساب',
+    hint: 'الاسم اللي العميل هيشوفه',
+    placeholder: 'مضمونة - شركة الإيجار',
+  },
+  {
+    key: 'instapay_account_number',
+    label: 'رقم الحساب',
+    hint: 'رقم الحساب البنكي (يقبل InstaPay من أي بنك)',
+    placeholder: '5220001000009207',
+    dir: 'ltr',
+    mono: true,
+  },
+  {
+    key: 'instapay_ipa',
+    label: 'الـ IPA (اختياري)',
+    hint: 'مثل: madmona@instapay — أسهل لو متاح',
+    placeholder: '',
+    dir: 'ltr',
+    mono: true,
+  },
+  {
+    key: 'payment_iban',
+    label: 'IBAN (اختياري — للتحويل الدولي)',
+    hint: 'يبدأ بـ EG ثم 27 رقم',
+    placeholder: 'EG380002...',
+    dir: 'ltr',
+    mono: true,
+  },
+  {
+    key: 'instapay_payment_link',
+    label: 'رابط Collect Money (اختياري)',
+    hint: 'لو ولّدت لينك من InstaPay حطه هنا — حساب الشركات غالباً مش يقدره.',
+    placeholder: 'https://ipn.eg/S/.../instapay/...',
+    dir: 'ltr',
+    mono: true,
   },
 ]
 
@@ -427,6 +487,41 @@ export default function SiteSettingsPage() {
           </div>
         ))}
 
+        {/* Phase Z (May 18 2026): Payment settings section.
+            Customer-facing payment box on the booking page reads these. */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-3 px-1 pt-2">
+            <div className="w-9 h-9 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] flex items-center justify-center">
+              <CreditCard className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="font-black text-gray-900 text-base">إعدادات الدفع (التحويل البنكي)</h2>
+              <p className="text-xs text-gray-500">البيانات اللي العميل بيشوفها على صفحة الحجز. يحوّل من تطبيق بنكه أو InstaPay.</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-soft p-5 md:p-6">
+            <div className="space-y-4">
+              {PAYMENT_FIELDS.map(field => (
+                <PaymentSettingField
+                  key={field.key}
+                  field={field}
+                  value={settings[field.key] || ''}
+                  originalValue={originalSettings[field.key] || ''}
+                  onChange={(v) => updateValue(field.key, v)}
+                  onSave={() => handleSave(field.key)}
+                  saving={saving === field.key}
+                />
+              ))}
+            </div>
+            <div className="mt-5 pt-5 border-t border-gray-100">
+              <p className="text-xs text-gray-500 leading-relaxed">
+                💡 <strong>نصيحة:</strong> الـ InstaPay link اختياري — لو حساب الشركة مش بيقدر يولّده، سيبه فاضي. العميل هيشوف رقم الحساب + البنك + المستفيد ويحوّل من أي تطبيق.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Tips */}
         <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 text-sm text-yellow-900 leading-relaxed">
           <p className="font-bold mb-2 flex items-center gap-2">
@@ -442,6 +537,52 @@ export default function SiteSettingsPage() {
           </ul>
         </div>
       </main>
+    </div>
+  )
+}
+
+// ============================================================================
+// PaymentSettingField — plain text field (no images, no URLs).
+// Same save-on-button-click flow as the social and image fields.
+// ============================================================================
+function PaymentSettingField({
+  field, value, originalValue, onChange, onSave, saving,
+}: {
+  field: PaymentField
+  value: string
+  originalValue: string
+  onChange: (v: string) => void
+  onSave: () => void
+  saving: boolean
+}) {
+  const isDirty = value !== originalValue
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-11 h-11 rounded-2xl bg-[#1F6F5F]/10 text-[#1F6F5F] flex items-center justify-center flex-shrink-0">
+        <Building2 className="w-5 h-5" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <label className="text-xs font-bold text-gray-700 block mb-1">{field.label}</label>
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={field.placeholder}
+          dir={field.dir || 'rtl'}
+          className={`w-full px-3 py-2 bg-[#FAFAF7] border border-gray-100 rounded-xl text-xs focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 ${field.mono ? 'font-mono' : ''}`}
+          style={field.dir === 'ltr' ? { textAlign: 'left' } : undefined}
+        />
+        <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">{field.hint}</p>
+      </div>
+      <button
+        type="button"
+        onClick={onSave}
+        disabled={!isDirty || saving}
+        className="px-3 py-2 bg-[#1F6F5F] hover:bg-[#1F6F5F]/90 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+        title={!isDirty ? 'مفيش تغييرات' : 'حفظ'}
+      >
+        {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+      </button>
     </div>
   )
 }

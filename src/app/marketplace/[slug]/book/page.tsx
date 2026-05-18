@@ -34,6 +34,7 @@ interface ListingForBooking {
   district: string | null
   status: string
   requires_id_verification: boolean | null
+  available_addons: ListingAddon[] | null
   supplier: {
     id: string
     business_name: string
@@ -41,6 +42,17 @@ interface ListingForBooking {
     kyc_status: 'pending' | 'approved' | 'rejected' | 'suspended'
   } | null
   photos: { url: string; is_primary: boolean }[] | null
+}
+
+// Phase Z (May 18 2026): customer-facing add-ons selection.
+// Add-ons are configured by the supplier in the wizard (StepPricing) and
+// stored on listings.available_addons. The booking page reads them, lets
+// the customer pick any subset, and includes them in the total.
+interface ListingAddon {
+  slug: string
+  name_ar: string
+  emoji?: string | null
+  price_egp: number
 }
 
 interface PricingRule {
@@ -97,6 +109,9 @@ export default function BookingPage() {
   const [customerNotes, setCustomerNotes] = useState('')
   const [error, setError] = useState<string | null>(null)
 
+  // Phase Z (May 18 2026): set of selected add-on slugs.
+  const [selectedAddonSlugs, setSelectedAddonSlugs] = useState<Set<string>>(new Set())
+
   // ID verification state for listings that require it
   const [userNationalId, setUserNationalId] = useState<string | null>(null)
   const [providedNationalId, setProvidedNationalId] = useState('')
@@ -117,7 +132,7 @@ export default function BookingPage() {
       const { data: l, error: listingErr } = await supabaseBrowser
         .from('listings')
         .select(`
-          id, title, slug, city, district, status, requires_id_verification,
+          id, title, slug, city, district, status, requires_id_verification, available_addons,
           supplier:marketplace_suppliers(id, business_name, commission_rate, kyc_status),
           photos:listing_photos(url, is_primary)
         `)
@@ -192,6 +207,27 @@ export default function BookingPage() {
 
   const selectedRule = pricingRules.find(r => r.id === selectedRuleId) || null
 
+  // Phase Z (May 18 2026): available add-ons + selected list + addons amount.
+  const availableAddons: ListingAddon[] = Array.isArray(listing?.available_addons)
+    ? (listing!.available_addons as ListingAddon[])
+    : []
+  const selectedAddons: ListingAddon[] = availableAddons.filter(a =>
+    selectedAddonSlugs.has(a.slug)
+  )
+  const addonsAmount = selectedAddons.reduce(
+    (sum, a) => sum + Number(a.price_egp || 0),
+    0
+  )
+
+  function toggleAddon(slug: string) {
+    setSelectedAddonSlugs(prev => {
+      const next = new Set(prev)
+      if (next.has(slug)) next.delete(slug)
+      else next.add(slug)
+      return next
+    })
+  }
+
   const calcPricing = () => {
     if (!selectedRule || !startAt || !endAt) {
       return { periods: 0, baseAmount: 0, commission: 0, total: 0, supplierPayout: 0, valid: false, error: '' }
@@ -217,9 +253,11 @@ export default function BookingPage() {
     const price = Number(selectedRule.price)
     const baseAmount = price * periods
     const commissionRate = Number(listing?.supplier?.commission_rate || 10)
+    // Phase Z: commission is charged on base only (not on add-ons) so suppliers
+    // keep the full add-on revenue. Easy to change later if business decides.
     const commission = Math.round((baseAmount * commissionRate / 100) * 100) / 100
-    const total = baseAmount
-    const supplierPayout = Math.round((baseAmount - commission) * 100) / 100
+    const total = baseAmount + addonsAmount
+    const supplierPayout = Math.round((baseAmount - commission + addonsAmount) * 100) / 100
 
     return { periods, baseAmount, commission, total, supplierPayout, valid: true, error: '' }
   }
@@ -291,6 +329,9 @@ export default function BookingPage() {
         supplier_payout: pricing.supplierPayout,
         currency: selectedRule.currency || 'EGP',
         status: listing.requires_id_verification ? 'pending_id_verification' : 'pending_payment',
+        // Phase Z (May 18 2026): freeze the selected add-ons + sum at booking time
+        selected_addons: selectedAddons,
+        addons_amount: addonsAmount,
       }
       if (customerNotes.trim()) insertData.customer_notes = customerNotes.trim()
 
@@ -672,6 +713,52 @@ export default function BookingPage() {
           </div>
         </div>
 
+        {/* Phase Z (May 18 2026): customer-facing add-ons selection.
+            Renders only when the supplier configured add-ons in the wizard. */}
+        {availableAddons.length > 0 && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
+            <h3 className="text-base font-bold text-gray-900 mb-1">✨ خدمات إضافية اختيارية</h3>
+            <p className="text-xs text-gray-500 mb-3">
+              اختار اللي تحتاجه مع حجزك. التكلفة بتتضاف على الإجمالي.
+            </p>
+            <div className="space-y-2">
+              {availableAddons.map(addon => {
+                const isSel = selectedAddonSlugs.has(addon.slug)
+                return (
+                  <button
+                    key={addon.slug}
+                    type="button"
+                    onClick={() => toggleAddon(addon.slug)}
+                    className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-right ${
+                      isSel
+                        ? 'bg-[#1F6F5F]/5 border-[#1F6F5F]'
+                        : 'bg-white border-gray-100 hover:border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className={`w-5 h-5 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all ${
+                        isSel ? 'bg-[#1F6F5F] border-[#1F6F5F]' : 'bg-transparent border-gray-300'
+                      }`}>
+                        {isSel && <span className="text-white text-xs font-bold">✓</span>}
+                      </div>
+                      {addon.emoji && <span className="text-base">{addon.emoji}</span>}
+                      <span className="text-sm font-medium text-gray-900">{addon.name_ar}</span>
+                    </div>
+                    <span className={`font-bold text-sm ${isSel ? 'text-[#1F6F5F]' : 'text-gray-700'}`}>
+                      +{Number(addon.price_egp).toLocaleString('ar-EG')} ج.م
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+            {selectedAddons.length > 0 && (
+              <p className="text-xs text-[#1F6F5F] font-semibold mt-3 text-center">
+                اخترت {selectedAddons.length} خدمة · إجمالي الإضافات: {addonsAmount.toLocaleString('ar-EG')} ج.م
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Date/time picker */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
           <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -766,6 +853,13 @@ export default function BookingPage() {
                 </span>
                 <span>{pricing.baseAmount.toLocaleString('ar-EG')} ج.م</span>
               </div>
+              {/* Phase Z: line item per selected add-on */}
+              {selectedAddons.map(a => (
+                <div key={a.slug} className="flex justify-between text-xs text-gray-600">
+                  <span>{a.emoji ? `${a.emoji} ` : ''}{a.name_ar}</span>
+                  <span>+{Number(a.price_egp).toLocaleString('ar-EG')} ج.م</span>
+                </div>
+              ))}
               <div className="flex justify-between font-bold pt-2 border-t border-gray-100 text-base">
                 <span>الإجمالي</span>
                 <span className="text-[#1F6F5F]">{pricing.total.toLocaleString('ar-EG')} ج.م</span>

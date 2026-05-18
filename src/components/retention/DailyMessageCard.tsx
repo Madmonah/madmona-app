@@ -85,6 +85,30 @@ export default function DailyMessageCard() {
     }).catch(() => {});
   }
 
+  // Phase Z (May 18 2026): share via Web Share API + WhatsApp fallback.
+  async function handleShare() {
+    if (!message) return;
+    const shareText = `${message.title}\n\n${message.body}\n\n— مضمونة (madmonacairo.com)`;
+    const shareUrl = 'https://madmonacairo.com';
+    // Try Web Share API first (mobile-friendly, opens native share sheet)
+    if (typeof navigator !== 'undefined' && (navigator as Navigator & { share?: (data: ShareData) => Promise<void> }).share) {
+      try {
+        await (navigator as Navigator & { share: (data: ShareData) => Promise<void> }).share({
+          title: message.title,
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch {
+        // User cancelled — fall through silently
+        return;
+      }
+    }
+    // Fallback: open WhatsApp web/app with pre-filled message
+    const wa = `https://wa.me/?text=${encodeURIComponent(shareText + '\n' + shareUrl)}`;
+    window.open(wa, '_blank', 'noopener');
+  }
+
   if (loading) {
     // Show a skeleton to avoid layout shift
     return (
@@ -148,6 +172,21 @@ export default function DailyMessageCard() {
               {message.cta_label} ←
             </Link>
           )}
+
+          {/* Phase Z (May 18 2026): share button — always shown */}
+          <button
+            type="button"
+            onClick={handleShare}
+            className={`inline-flex items-center gap-1.5 ${message.cta_label && message.cta_url ? 'ms-2 mt-3' : 'mt-3'} px-3 py-2 rounded-xl bg-white border border-[#1F6F5F]/30 text-[#1F6F5F] font-semibold text-xs hover:bg-[#1F6F5F]/5 transition-colors`}
+            title="شارك على واتساب أو غيره"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <polyline points="16 6 12 2 8 6"/>
+              <line x1="12" y1="2" x2="12" y2="15"/>
+            </svg>
+            شارك
+          </button>
         </div>
       </div>
     </div>
