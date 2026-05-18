@@ -9,6 +9,7 @@ import {
   AlertCircle, CheckCircle, X, Star, Image as ImageIcon, Lock,
   Building2, Hash, FileText,
 } from 'lucide-react'
+import InstaPayPaymentBox from '@/components/payment/InstaPayPaymentBox'
 
 // ============================================================================
 // /account/bookings/[id]
@@ -383,6 +384,17 @@ export default function CustomerBookingDetailPage() {
             <span className="text-[#1F6F5F]">{Number(booking.total_amount).toLocaleString('ar-EG')} ج.م</span>
           </div>
         </div>
+
+        {/* InstaPay payment box — only when payment is pending (Phase X, May 18 2026).
+            Pulls saved account/IPA/payment_link from site_settings via /api/payment/instapay.
+            Pre-fills the booking total + reference so customer can include it in the
+            InstaPay note field. */}
+        {booking.status === 'pending_payment' && (
+          <InstaPayPaymentBox
+            amount={Number(booking.total_amount)}
+            reference={booking.reference_code || booking.id.slice(0, 8)}
+          />
+        )}
 
         {/* Notes */}
         {booking.customer_notes && (

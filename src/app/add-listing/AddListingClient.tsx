@@ -83,6 +83,27 @@ function getCategoryWizardMeta(
   return {};
 }
 
+// Phase Y2 (May 18 2026): resolve the effective TRACK for a selected category
+// slug (whether the user picked a main or a sub). Used by StepPricing to
+// switch copy between rental prompts ("حضرتك بتأجره بكام") vs service
+// prompts ("بكام بتقدم الخدمة") and to decide whether to show the optional
+// add-ons builder. Subs don't carry track in MainCategory; we resolve via
+// the parent main.
+function getCategoryTrack(
+  categorySlug: string | undefined | null,
+  categories: MainCategory[],
+): 'rentals' | 'services' | 'hybrid' | null {
+  if (!categorySlug) return null;
+  const asMain = categories.find((m) => m.slug === categorySlug);
+  if (asMain) return asMain.track ?? null;
+  for (const main of categories) {
+    if (main.subs.some((s) => s.slug === categorySlug)) {
+      return main.track ?? null;
+    }
+  }
+  return null;
+}
+
 // ============================================================================
 // BEAUTY TYPES + HELPERS (May 14 2026)
 // Beauty categories use a different pricing model (per service / per session /
@@ -1216,6 +1237,15 @@ function StepPricing({
   const schema = isBeauty && draft.category_slug ? beautySchemas[draft.category_slug] : undefined;
   const suggestedAddons = schema?.suggested_addons || [];
 
+  // Phase Y2 (May 18 2026): track-aware copy + add-ons for all non-rentals.
+  // Pure rentals keep the “حضرتك بتأجره” prompt; services + hybrid +
+  // beauty get service-flavoured copy and the optional add-ons builder.
+  const track = getCategoryTrack(draft.category_slug, categories);
+  const isRentalCopy = track === 'rentals';
+  const isHybrid = track === 'hybrid';
+  const showAddons = !isRentalCopy;          // services + hybrid + beauty
+  const showCustomAddonBuilder = showAddons && !isBeauty;
+
   // Phase E (May 18 2026): expanded period labels — added per_event, per_visit
   // to match the new DB-driven allowed_pricing_periods values.
   const periodLabel: Record<string, string> = {
@@ -1291,15 +1321,51 @@ function StepPricing({
       }));
   }
 
+  // ─── Custom add-ons (Phase Y2, May 18 2026) ──────────────────
+  // For non-beauty services + hybrid categories, the supplier defines
+  // their own optional add-ons (name + price). Stored in the same
+  // draft.attributes.addons array as beauty's suggested ones, so the
+  // booking page can render them uniformly downstream.
+  const [customAddons, setCustomAddons] = useState<Addon[]>(() => {
+    if (isBeauty) return [];
+    return (draft.attributes?.addons as Addon[] | undefined) || [];
+  });
+
+  function addCustomAddon() {
+    setCustomAddons((prev) => [
+      ...prev,
+      { slug: `custom_${Date.now()}_${prev.length}`, name_ar: '', price_egp: 0 },
+    ]);
+  }
+
+  function updateCustomAddon(idx: number, patch: Partial<Addon>) {
+    setCustomAddons((prev) => prev.map((a, i) => (i === idx ? { ...a, ...patch } : a)));
+  }
+
+  function removeCustomAddon(idx: number) {
+    setCustomAddons((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  function buildCustomAddonsPatch(): Addon[] {
+    return customAddons
+      .filter((a) => a.name_ar.trim().length > 0 && a.price_egp > 0)
+      .map((a) => ({
+        slug: a.slug || `custom_${Date.now()}`,
+        name_ar: a.name_ar.trim(),
+        emoji: a.emoji,
+        price_egp: a.price_egp,
+      }));
+  }
+
   function handleNext() {
     const patch: Partial<DraftPayload> = {
       price: Number(price),
       price_period: period,
     };
-    if (isBeauty) {
+    if (showAddons) {
       patch.attributes = {
         ...(draft.attributes || {}),
-        addons: buildAddonsPatch(),
+        addons: isBeauty ? buildAddonsPatch() : buildCustomAddonsPatch(),
       };
     }
     onSubmit(patch);
@@ -1308,13 +1374,19 @@ function StepPricing({
   return (
     <section>
       <h2 className="text-lg font-semibold mb-1">
-        {isBeauty ? 'سعر الخدمة' : 'السعر'}
+        {isRentalCopy ? 'السعر' : (isHybrid ? 'سعر الفعالية' : 'سعر الخدمة')}
       </h2>
       <p className="text-sm text-gray-500 mb-6">
-        {isBeauty ? 'بكام بتقدم الخدمة الأساسية؟' : 'حضرتك بتأجره بكام؟'}
+        {isRentalCopy
+          ? 'حضرتك بتأجره بكام؟'
+          : isBeauty
+            ? 'بكام بتقدم الخدمة الأساسية؟'
+            : isHybrid
+              ? 'بكام بتقدم الفعالية الأساسية؟'
+              : 'بكام بتقدم الخدمة؟'}
       </p>
 
-      <Field label={isBeauty ? 'نوع السعر' : 'مدة الإيجار'} required>
+      <Field label={isRentalCopy ? 'مدة الإيجار' : 'نوع التسعير'} required>
         <div className={`grid gap-2 ${isBeauty ? 'grid-cols-3' : 'grid-cols-4'}`}>
           {periodOptions.map((p) => (
             <button
@@ -1337,9 +1409,9 @@ function StepPricing({
         label={
           meta.pricing_unit_label
             ? meta.pricing_unit_label
-            : (isBeauty
-                ? `سعر ${periodLabel[period] || period} بالجنيه`
-                : `السعر بالجنيه لكل ${periodLabel[period] || period}`)
+            : (isRentalCopy
+                ? `السعر بالجنيه لكل ${periodLabel[period] || period}`
+                : `سعر ${periodLabel[period] || period} بالجنيه`)
         }
         error={errors.price}
         required
@@ -1359,7 +1431,7 @@ function StepPricing({
       </Field>
 
       {/* Phase E (May 18 2026): weekly projection for daily rentals (existing UX) */}
-      {!isBeauty && price !== '' && period === 'daily' && Number(price) > 0 && (
+      {isRentalCopy && price !== '' && period === 'daily' && Number(price) > 0 && (
         <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
           💰 لو حد أجره أسبوع كامل = <strong>{Number(price) * 7} جنيه</strong>
           <br />
@@ -1372,7 +1444,7 @@ function StepPricing({
       {/* Phase E: per-unit commission preview — shown for beauty AND for any
           non-daily non-beauty period (lawyers per_session, photographers
           per_event, etc). Previously only beauty had this preview. */}
-      {price !== '' && Number(price) > 0 && (isBeauty || period !== 'daily') && (
+      {price !== '' && Number(price) > 0 && (!isRentalCopy || period !== 'daily') && (
         <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
           💰 من كل {periodLabel[period] || period}:
           <br />
@@ -1449,6 +1521,77 @@ function StepPricing({
               ? 'لسة معديتش أي خدمة إضافية'
               : `${enabledAddons.size} ${enabledAddons.size === 1 ? 'خدمة إضافية' : 'خدمات إضافية'} مختارة`}
           </div>
+        </div>
+      )}
+
+      {/* Phase Y2 (May 18 2026): custom add-ons builder for all non-beauty
+          service-like categories. Supplier types name + price for each
+          extra. Saved to draft.attributes.addons (same shape as beauty's
+          suggested add-ons) so the booking page renders them uniformly. */}
+      {showCustomAddonBuilder && (
+        <div className="mt-8 pt-6 border-t border-[#E5E5E0]">
+          <h3 className="text-base font-semibold mb-1">✨ خدمات إضافية اختيارية</h3>
+          <p className="text-xs text-gray-500 mb-4">
+            ضيف خدمات يقدر العميل يضمّها لحجزه (مثلاً: توصيل للمنزل، صور إضافية،
+            خامات خاصة...). كل خدمة لها سعرها المستقل.
+          </p>
+
+          {customAddons.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {customAddons.map((addon, idx) => (
+                <div
+                  key={addon.slug || idx}
+                  className="p-3 rounded-xl bg-white border border-[#E5E5E0]"
+                >
+                  <div className="flex items-stretch gap-2">
+                    <input
+                      type="text"
+                      value={addon.name_ar}
+                      onChange={(e) => updateCustomAddon(idx, { name_ar: e.target.value })}
+                      placeholder="اسم الخدمة الإضافية"
+                      className="flex-1 p-2 rounded-lg bg-[#F5F4F0] border border-[#E5E5E0] text-sm text-[#1A2E26] placeholder:text-gray-400 focus:outline-none focus:border-[#1F6F5F]"
+                    />
+                    <div className="relative w-28 flex-shrink-0">
+                      <input
+                        type="number"
+                        value={addon.price_egp || ''}
+                        onChange={(e) =>
+                          updateCustomAddon(idx, { price_egp: Number(e.target.value) || 0 })
+                        }
+                        placeholder="السعر"
+                        className="w-full p-2 rounded-lg bg-[#F5F4F0] border border-[#E5E5E0] text-sm text-[#1A2E26] placeholder:text-gray-400 focus:outline-none focus:border-[#1F6F5F] pl-10"
+                      />
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 pointer-events-none">
+                        ج.م
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeCustomAddon(idx)}
+                      className="flex-shrink-0 w-9 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-base font-bold transition-colors"
+                      aria-label="احذف الخدمة"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={addCustomAddon}
+            className="w-full py-3 rounded-xl border-2 border-dashed border-[#1F6F5F]/30 hover:border-[#1F6F5F]/60 hover:bg-[#1F6F5F]/5 text-sm font-semibold text-[#1F6F5F] transition-colors"
+          >
+            + ضيف خدمة إضافية
+          </button>
+
+          {customAddons.length === 0 && (
+            <p className="text-[11px] text-gray-500 text-center mt-3">
+              اختياري — تقدر تتخطاها لو الخدمة سعر واحد بدون إضافات
+            </p>
+          )}
         </div>
       )}
 

@@ -13,6 +13,7 @@ import CompactNewsTabs from '@/components/CompactNewsTabs'
 import SocialLinks from '@/components/SocialLinks'
 import MUACampaignBanner from '@/components/MUACampaignBanner'
 import CategoryTrackTabs from '@/components/CategoryTrackTabs'
+import DailyMessageCard from '@/components/retention/DailyMessageCard'
 
 // ============================================================
 // Home page — Single brand: "خدمات مضمونة"
@@ -129,6 +130,15 @@ export default async function HomePage() {
               <span className="relative">إضافة ليستنج</span>
             </Link>
           </div>
+        </div>
+
+        {/* 📅 Daily message card — retention feature (Phase X, May 18 2026).
+            Renders a tappable card with greeting/tip/announcement.
+            Hides itself if no message available or user dismissed it.
+            Logged-in users get rotating personalized messages; anonymous
+            users get weighted-random from active pool. */}
+        <div className="max-w-7xl mx-auto px-4">
+          <DailyMessageCard />
         </div>
 
         {/* 🔥 NEWS HUB - Top of page, full prominence */}

@@ -1,0 +1,155 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+
+// =====================================================================
+// DailyMessageCard
+//
+// A retention card displayed on the home page (typically above the
+// marketplace browse area). Fetches the day's message via /api/daily-messages
+// and renders a big tappable card with title, body, optional image, and
+// CTA button.
+//
+// Behavior:
+//   - On mount: fetch + auto-record 'view' interaction (for logged-in users)
+//   - Dismiss (×): hides the card + posts 'dismiss' interaction
+//   - CTA click: posts 'cta_click' interaction + navigates
+//   - Hidden if no message available or already dismissed in this session
+// =====================================================================
+
+type DailyMessage = {
+  id: string;
+  title: string;
+  body: string;
+  category: string;
+  image_url: string | null;
+  cta_label: string | null;
+  cta_url: string | null;
+  deal_code: string | null;
+  already_viewed: boolean;
+};
+
+const categoryStyles: Record<string, { bg: string; border: string; emoji: string }> = {
+  greeting:     { bg: 'bg-[#FAFAF7]', border: 'border-[#1F6F5F]/30', emoji: '👋' },
+  announcement: { bg: 'bg-amber-50',  border: 'border-amber-300',    emoji: '📢' },
+  tip:          { bg: 'bg-emerald-50', border: 'border-emerald-300', emoji: '💡' },
+  deal:         { bg: 'bg-rose-50',    border: 'border-rose-300',    emoji: '🎁' },
+  motivation:   { bg: 'bg-sky-50',     border: 'border-sky-300',     emoji: '⭐' },
+};
+
+export default function DailyMessageCard() {
+  const [message, setMessage] = useState<DailyMessage | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/daily-messages')
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return;
+        if (data.success && data.message) {
+          setMessage(data.message);
+          // Auto-record view (fire-and-forget; ignored for anonymous users)
+          fetch('/api/daily-messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message_id: data.message.id, action: 'view' }),
+          }).catch(() => {});
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  function handleDismiss() {
+    if (!message) return;
+    setDismissed(true);
+    fetch('/api/daily-messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message_id: message.id, action: 'dismiss' }),
+    }).catch(() => {});
+  }
+
+  function handleCtaClick() {
+    if (!message) return;
+    fetch('/api/daily-messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message_id: message.id, action: 'cta_click' }),
+    }).catch(() => {});
+  }
+
+  if (loading) {
+    // Show a skeleton to avoid layout shift
+    return (
+      <div className="my-4 h-28 rounded-2xl bg-gray-100 animate-pulse" />
+    );
+  }
+
+  if (!message || dismissed) return null;
+
+  const style = categoryStyles[message.category] || categoryStyles.tip;
+
+  return (
+    <div
+      className={`my-4 relative rounded-2xl ${style.bg} ${style.border} border-2 p-5 transition-all hover:shadow-md`}
+    >
+      {/* Dismiss button (×) */}
+      <button
+        type="button"
+        onClick={handleDismiss}
+        className="absolute top-3 left-3 w-7 h-7 rounded-full bg-white/70 hover:bg-white text-gray-500 hover:text-gray-700 flex items-center justify-center text-lg leading-none transition-colors"
+        aria-label="إخفاء"
+      >
+        ×
+      </button>
+
+      {/* Body */}
+      <div className="flex items-start gap-3 pe-8">
+        {message.image_url ? (
+          <img
+            src={message.image_url}
+            alt=""
+            className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
+          />
+        ) : (
+          <div className="w-14 h-14 rounded-xl bg-white/60 flex items-center justify-center text-3xl flex-shrink-0">
+            {style.emoji}
+          </div>
+        )}
+
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-base text-gray-900 mb-1">{message.title}</h3>
+          <p className="text-sm text-gray-700 leading-relaxed">{message.body}</p>
+
+          {/* Deal code (revealed inline) */}
+          {message.deal_code && (
+            <div className="mt-3 inline-flex items-center gap-2 bg-white border border-dashed border-rose-400 px-3 py-1.5 rounded-lg">
+              <span className="text-xs text-gray-500">كود الخصم:</span>
+              <span className="font-mono font-bold text-rose-600 text-sm tracking-wide">
+                {message.deal_code}
+              </span>
+            </div>
+          )}
+
+          {/* CTA button */}
+          {message.cta_label && message.cta_url && (
+            <Link
+              href={message.cta_url}
+              onClick={handleCtaClick}
+              className="inline-block mt-3 px-4 py-2 rounded-xl bg-[#1F6F5F] text-white font-semibold text-sm hover:bg-[#1F6F5F]/90 transition-colors"
+            >
+              {message.cta_label} ←
+            </Link>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
