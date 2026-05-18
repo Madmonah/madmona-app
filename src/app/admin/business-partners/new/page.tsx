@@ -89,61 +89,42 @@ export default function NewBusinessPartnerPage() {
     setSubmitting(true)
     setError('')
     try {
-      // Create supplier
-      // @ts-expect-error
-      const { data: sup, error: supError } = await supabase
-        .from('suppliers')
-        .insert({
-          business_name: businessName.trim(),
-          contact_name: contactName.trim() || 'Owner',
-          contact_phone: contactPhone.trim(),
-          contact_email: contactEmail.trim() || `${businessName.toLowerCase().replace(/\s+/g, '_')}.placeholder@madmonacairo.com`,
-          city,
-          district: district.trim(),
-          address: address.trim(),
-          business_type: 'multi_branch',
-          industry,
-          contract_status: contractStatus,
-          subscription_tier: 'business',
-          commission_rate: commissionRate,
-          commission_extra_rate: commissionExtraRate,
-          status: 'approved',
-        })
-        .select('id')
-        .single()
-
-      if (supError || !sup) {
-        throw new Error(supError?.message || 'فشل إنشاء الشريك')
-      }
-
-      const supplierId = (sup as { id: string }).id
-
-      // Create branches
-      const branchRows = branches.map((b) => ({
-        supplier_id: supplierId,
-        name: b.name.trim(),
-        code: b.code.trim(),
-        address: b.address.trim() || null,
-        district: b.district.trim() || null,
+      // Build payload
+      const payload = {
+        business_name: businessName.trim(),
+        contact_name: contactName.trim() || 'Owner',
+        contact_phone: contactPhone.trim(),
+        contact_email: contactEmail.trim() || null,
         city,
-        phone: b.phone.trim() || null,
-        manager_name: b.manager_name.trim() || null,
-        status: 'active' as const,
-        opens_at: '10:00',
-        closes_at: '22:00',
-      }))
-
-      // @ts-expect-error
-      const { error: brError } = await supabase
-        .from('supplier_branches')
-        .insert(branchRows)
-
-      if (brError) {
-        throw new Error('تم إنشاء الشريك لكن فشل إنشاء الفروع: ' + brError.message)
+        district: district.trim() || null,
+        address: address.trim() || null,
+        industry,
+        contract_status: contractStatus,
+        commission_rate: commissionRate,
+        commission_extra_rate: commissionExtraRate,
+        branches: branches.map((b) => ({
+          name: b.name.trim(),
+          code: b.code.trim(),
+          address: b.address.trim() || null,
+          district: b.district.trim() || null,
+          phone: b.phone.trim() || null,
+          manager_name: b.manager_name.trim() || null,
+        })),
       }
 
-      // Redirect to the new partner's finance page
-      router.push(`/admin/business-finance/${supplierId}`)
+      // Call SECURITY DEFINER RPC (bypasses RLS safely)
+      // @ts-expect-error
+      const { data, error: rpcError } = await supabase.rpc('admin_create_b2b_partner', { payload })
+
+      if (rpcError) {
+        throw new Error(rpcError.message)
+      }
+      const result = data as { ok: boolean; supplier_id?: string; error?: string }
+      if (!result.ok) {
+        throw new Error(result.error || 'فشل إنشاء الشريك')
+      }
+
+      router.push(`/admin/business-finance/${result.supplier_id}`)
     } catch (e: any) {
       setError(e.message || 'حدث خطأ غير متوقع')
       setSubmitting(false)
