@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   TrendingUp, TrendingDown, Wallet, Building2, Users, Calendar,
   ArrowDownCircle, ArrowUpCircle, Loader2, RefreshCw, Eye,
-  CheckCircle2, AlertCircle, BadgePercent, ChevronDown, Plus,
+  CheckCircle2, AlertCircle, BadgePercent, ChevronDown, Plus, Heart,
 } from 'lucide-react'
 
 /* ============================================================
@@ -271,6 +271,20 @@ export default function BusinessFinancePage({
             >
               <Users className="w-4 h-4" />
               الفريق
+            </Link>
+            <Link
+              href={`/admin/business-finance/${supplierId}/customers`}
+              className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2 transition-colors"
+            >
+              <Heart className="w-4 h-4" />
+              العملاء
+            </Link>
+            <Link
+              href={`/admin/business-finance/${supplierId}/appointments`}
+              className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2 transition-colors"
+            >
+              <Calendar className="w-4 h-4" />
+              المواعيد
             </Link>
             <Link
               href={`/admin/business-finance/${supplierId}/settings`}

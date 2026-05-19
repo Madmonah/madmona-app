@@ -7,6 +7,7 @@ import {
   Users, Crown, Building2, ListChecks, ChevronLeft, Loader2,
   CheckCircle2, Circle, X, RefreshCw, Plus,
   TrendingUp, Sparkles, AlertCircle, Clock, LogIn, LogOut, Star, QrCode, ShieldCheck,
+  Heart, Calendar,
 } from 'lucide-react'
 
 /* ============================================================
@@ -170,7 +171,21 @@ export default function TeamOversightPage({
                 {stats.totalEmployees} موظف · {stats.totalTasks} مهمة اليوم · إنجاز {stats.completionPct}%
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Link
+                href={`/admin/business-finance/${supplierId}/customers`}
+                className="px-4 py-2 rounded-xl bg-[#1F6F5F] hover:opacity-90 text-sm font-bold text-white flex items-center gap-2 transition-colors"
+              >
+                <Heart className="w-4 h-4" />
+                العملاء
+              </Link>
+              <Link
+                href={`/admin/business-finance/${supplierId}/appointments`}
+                className="px-4 py-2 rounded-xl bg-[#1F6F5F] hover:opacity-90 text-sm font-bold text-white flex items-center gap-2 transition-colors"
+              >
+                <Calendar className="w-4 h-4" />
+                المواعيد
+              </Link>
               <Link
                 href={`/admin/business-finance/${supplierId}/ratings`}
                 className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2 transition-colors"
