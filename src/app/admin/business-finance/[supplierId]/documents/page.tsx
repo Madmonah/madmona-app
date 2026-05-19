@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
-import { ChevronLeft, Loader2, RefreshCw, FileText, Plus, X, AlertTriangle, FileCheck } from 'lucide-react'
+import { ChevronLeft, Loader2, RefreshCw, FileText, Plus, X, AlertTriangle, FileCheck, Upload, Download } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -38,6 +38,16 @@ export default function DocumentsPage({ params }: { params: { supplierId: string
 
   useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId])
 
+  async function downloadDoc(filePath: string, fileName: string) {
+    // @ts-expect-error
+    const { data, error } = await supabase.storage.from('supplier-documents').createSignedUrl(filePath, 60)
+    if (error) {
+      alert('فشل تحميل الملف: ' + error.message)
+      return
+    }
+    window.open(data.signedUrl, '_blank')
+  }
+
   if (!supplier) return <Loader />
 
   const today = new Date()
@@ -58,7 +68,7 @@ export default function DocumentsPage({ params }: { params: { supplierId: string
               <p className="text-sm text-[#6B7280] mt-1">{docs.length} مستند {expiringSoon.length > 0 && `· ${expiringSoon.length} ينتهي قريب`} {expired.length > 0 && `· ${expired.length} منتهي`}</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setShowAdd(true)} className="px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> مستند جديد</button>
+              <button onClick={() => setShowAdd(true)} className="px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> رفع مستند</button>
               <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7]"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
             </div>
           </div>
@@ -66,7 +76,6 @@ export default function DocumentsPage({ params }: { params: { supplierId: string
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-5">
-        {/* Warnings */}
         {expired.length > 0 && (
           <section className="bg-red-50 border border-red-200 rounded-2xl p-4">
             <div className="flex items-center gap-2 text-red-700 font-bold text-sm mb-1">
@@ -95,7 +104,7 @@ export default function DocumentsPage({ params }: { params: { supplierId: string
             <div className="col-span-3 py-12 text-center bg-white rounded-2xl border border-gray-100">
               <FileCheck className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
               <p className="text-sm font-bold text-[#1A2E26]">مفيش مستندات</p>
-              <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold">رفع أول مستند</button>
+              <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold">ارفع أول مستند</button>
             </div>
           ) : docs.map(d => {
             const isExpired = d.expires_at && new Date(d.expires_at) <= today
@@ -115,7 +124,18 @@ export default function DocumentsPage({ params }: { params: { supplierId: string
                   </p>
                 )}
                 {d.file_url && (
-                  <a href={d.file_url} target="_blank" rel="noreferrer" className="block mt-3 px-3 py-1.5 rounded-lg bg-[#FAFAF7] text-[#1F6F5F] text-xs font-bold text-center">عرض الملف</a>
+                  d.file_url.startsWith('http') ? (
+                    <a href={d.file_url} target="_blank" rel="noreferrer" className="block mt-3 px-3 py-1.5 rounded-lg bg-[#FAFAF7] text-[#1F6F5F] text-xs font-bold text-center">
+                      <Download className="w-3 h-3 inline ml-1" /> فتح الملف
+                    </a>
+                  ) : (
+                    <button onClick={() => downloadDoc(d.file_url, d.document_name)} className="block w-full mt-3 px-3 py-1.5 rounded-lg bg-[#FAFAF7] text-[#1F6F5F] text-xs font-bold text-center">
+                      <Download className="w-3 h-3 inline ml-1" /> تحميل
+                    </button>
+                  )
+                )}
+                {d.file_size_bytes && (
+                  <p className="text-[10px] text-[#6B7280] mt-1 text-center">{(d.file_size_bytes / 1024).toFixed(1)} KB</p>
                 )}
                 {d.notes && <p className="mt-2 text-xs text-[#6B7280]">{d.notes}</p>}
               </div>
@@ -125,48 +145,124 @@ export default function DocumentsPage({ params }: { params: { supplierId: string
       </main>
 
       {showAdd && (
-        <AddDocModal supplierId={supplierId} onClose={() => setShowAdd(false)} onSaved={() => { setShowAdd(false); load() }} />
+        <UploadDocModal supplierId={supplierId} onClose={() => setShowAdd(false)} onSaved={() => { setShowAdd(false); load() }} />
       )}
     </div>
   )
 }
 
-function AddDocModal({ supplierId, onClose, onSaved }: any) {
-  const [form, setForm] = useState({ document_type: 'contract', document_name: '', file_url: '', expires_at: '', notes: '' })
-  const [saving, setSaving] = useState(false)
+function UploadDocModal({ supplierId, onClose, onSaved }: any) {
+  const [form, setForm] = useState({ document_type: 'contract', document_name: '', expires_at: '', notes: '' })
+  const [file, setFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]
+    if (f) {
+      if (f.size > 10 * 1024 * 1024) {
+        alert('الملف أكبر من 10 ميجا. اختار ملف أصغر.')
+        return
+      }
+      setFile(f)
+      if (!form.document_name) {
+        setForm({ ...form, document_name: f.name.replace(/\.[^/.]+$/, '') })
+      }
+    }
+  }
+
   async function save() {
     if (!form.document_name) return alert('اكتب اسم المستند')
-    setSaving(true)
-    // @ts-expect-error
-    await supabase.from('supplier_documents').insert({
-      supplier_id: supplierId,
-      document_type: form.document_type,
-      document_name: form.document_name,
-      file_url: form.file_url || null,
-      expires_at: form.expires_at || null,
-      notes: form.notes || null,
-    })
-    onSaved()
+    if (!file) return alert('اختار ملف للرفع')
+    
+    setUploading(true)
+    
+    try {
+      // Upload file to Storage
+      const fileExt = file.name.split('.').pop()
+      const filePath = `${supplierId}/${form.document_type}/${Date.now()}.${fileExt}`
+      
+      // @ts-expect-error
+      const { error: uploadError } = await supabase.storage
+        .from('supplier-documents')
+        .upload(filePath, file)
+      
+      if (uploadError) {
+        alert('فشل رفع الملف: ' + uploadError.message)
+        setUploading(false)
+        return
+      }
+      
+      // Save metadata
+      // @ts-expect-error
+      const { error } = await supabase.from('supplier_documents').insert({
+        supplier_id: supplierId,
+        document_type: form.document_type,
+        document_name: form.document_name,
+        file_url: filePath,
+        file_size_bytes: file.size,
+        expires_at: form.expires_at || null,
+        notes: form.notes || null,
+      })
+      
+      if (error) {
+        alert('فشل حفظ البيانات: ' + error.message)
+      } else {
+        onSaved()
+      }
+    } catch (err: any) {
+      alert('خطأ: ' + err.message)
+    }
+    setUploading(false)
   }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" dir="rtl">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white rounded-t-3xl md:rounded-3xl w-full md:max-w-md md:mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
         <header className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-lg font-black text-[#1A2E26]">مستند جديد</h2>
+          <h2 className="text-lg font-black text-[#1A2E26]">رفع مستند جديد</h2>
           <button onClick={onClose}><X className="w-5 h-5 text-[#6B7280]" /></button>
         </header>
         <div className="p-5 space-y-3">
+          {/* File upload */}
+          <Field label="الملف *">
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className={`w-full p-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${
+                file ? 'border-[#1F6F5F] bg-[#1F6F5F]/5' : 'border-gray-300 bg-[#FAFAF7] hover:border-[#1F6F5F]'
+              }`}
+            >
+              <input ref={fileInputRef} type="file" onChange={onFileChange} accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp" className="hidden" />
+              {file ? (
+                <div className="text-center">
+                  <FileCheck className="w-8 h-8 text-[#1F6F5F] mx-auto mb-1" />
+                  <p className="text-sm font-bold text-[#1A2E26] truncate">{file.name}</p>
+                  <p className="text-[10px] text-[#6B7280] mt-0.5">{(file.size / 1024).toFixed(1)} KB</p>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <Upload className="w-8 h-8 text-[#6B7280] mx-auto mb-1" />
+                  <p className="text-sm font-bold text-[#1A2E26]">اضغط هنا لاختيار ملف</p>
+                  <p className="text-[10px] text-[#6B7280] mt-0.5">PDF / Word / Excel / صور · حد أقصى 10 ميجا</p>
+                </div>
+              )}
+            </div>
+          </Field>
+          
           <Field label="النوع">
             <select value={form.document_type} onChange={e => setForm({ ...form, document_type: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm">
               {DOCUMENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
           </Field>
           <Field label="اسم المستند *"><input type="text" value={form.document_name} onChange={e => setForm({ ...form, document_name: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
-          <Field label="رابط الملف (اختياري)"><input type="url" value={form.file_url} onChange={e => setForm({ ...form, file_url: e.target.value })} placeholder="https://..." className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
           <Field label="تاريخ الانتهاء (اختياري)"><input type="date" value={form.expires_at} onChange={e => setForm({ ...form, expires_at: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
           <Field label="ملاحظات"><textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
-          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black text-sm disabled:opacity-50">{saving ? 'جاري الحفظ...' : 'احفظ'}</button>
+          
+          <button onClick={save} disabled={uploading || !file} className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
+            {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري الرفع...</> : <><Upload className="w-4 h-4" /> ارفع المستند</>}
+          </button>
         </div>
       </div>
     </div>

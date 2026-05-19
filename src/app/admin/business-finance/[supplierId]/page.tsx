@@ -8,7 +8,7 @@ import {
   ArrowDownCircle, ArrowUpCircle, Loader2, RefreshCw, Eye,
   CheckCircle2, AlertCircle, BadgePercent, ChevronDown, Plus, Heart, Package,
   BarChart3, DollarSign, Clock, ShoppingCart, Truck, Gift,
-  MessageCircle, FileText, Calculator, FileCheck, Scissors,
+  MessageCircle, FileText, Calculator, FileCheck, Scissors, UserX, Receipt,
 } from 'lucide-react'
 
 /* ============================================================
@@ -336,6 +336,8 @@ export default function BusinessFinancePage({
             <ModuleCard href={`/admin/business-finance/${supplierId}/whatsapp-campaigns`} icon={<MessageCircle />} label="WhatsApp" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/documents`} icon={<FileCheck />} label="المستندات" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/audit-log`} icon={<FileText />} label="سجل التعديلات" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/at-risk`} icon={<UserX />} label="عملاء في خطر" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/vat-report`} icon={<Receipt />} label="VAT Report" />
           </div>
         </section>
 
