@@ -1102,7 +1102,90 @@ function SystemPulseBar({ pulse }: { pulse: PulseData }) {
       <p className="text-[10px] text-[#6B7280] mt-2 font-mono">
         تحديث تلقائي كل دقيقة · 6 watchdogs بـ تُ راقب · أي alert بـ يوصلك push + WhatsApp
       </p>
+
+      {/* Buffer + Make health check */}
+      <div className="mt-3 pt-3 border-t border-gray-100">
+        <BufferHealthCheck />
+      </div>
     </section>
+  )
+}
+
+function BufferHealthCheck() {
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<{
+    overall: string
+    checks: Array<{ name: string; status: string; detail?: string }>
+    db_queue: { approved_ready: number; drafted: number; sent_to_make: number }
+  } | null>(null)
+
+  async function check() {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/admin/buffer-check', { credentials: 'include' })
+      const data = await res.json()
+      setResult(data)
+    } catch (e) {
+      setResult({
+        overall: 'error',
+        checks: [{ name: 'fetch', status: 'error', detail: String(e) }],
+        db_queue: { approved_ready: 0, drafted: 0, sent_to_make: 0 },
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div>
+      <button onClick={check} disabled={loading}
+        className="text-xs font-bold bg-[#1F6F5F] text-white px-3 py-1.5 rounded-lg hover:bg-[#185547] disabled:opacity-50 flex items-center gap-2">
+        {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
+        🔍 افحص Buffer + Make الآن
+      </button>
+
+      {result && (
+        <div className="mt-3 bg-[#FAFAF7] rounded-xl p-3 text-xs">
+          <p className={`font-black mb-2 ${
+            result.overall === 'healthy' ? 'text-[#1F6F5F]' : 'text-red-700'
+          }`}>
+            {result.overall === 'healthy' ? '✅ كل حاجة تمام' : '⚠️ فيه مشاكل'}
+          </p>
+          <div className="space-y-1">
+            {result.checks.map((c, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <span className={`mt-0.5 font-bold ${
+                  c.status === 'ok' ? 'text-[#1F6F5F]' :
+                  c.status === 'missing' ? 'text-amber-600' : 'text-red-600'
+                }`}>
+                  {c.status === 'ok' ? '✓' : c.status === 'missing' ? '⚠' : '✕'}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-mono text-[10px] font-bold">{c.name}</p>
+                  {c.detail && <p className="text-[10px] text-[#6B7280] break-all">{c.detail}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2 pt-2 border-t border-gray-200 grid grid-cols-3 gap-2 text-center">
+            <div>
+              <p className="text-[9px] text-[#6B7280]">approved</p>
+              <p className="text-sm font-black text-[#1F6F5F]">{result.db_queue.approved_ready}</p>
+            </div>
+            <div>
+              <p className="text-[9px] text-[#6B7280]">drafted</p>
+              <p className="text-sm font-black text-[#6B7280]">{result.db_queue.drafted}</p>
+            </div>
+            <div>
+              <p className="text-[9px] text-[#6B7280]">stuck make</p>
+              <p className={`text-sm font-black ${result.db_queue.sent_to_make > 0 ? 'text-amber-600' : 'text-[#1F6F5F]'}`}>
+                {result.db_queue.sent_to_make}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
