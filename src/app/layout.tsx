@@ -9,6 +9,7 @@ import GoogleAnalytics from '@/components/analytics/GoogleAnalytics'
 import MetaPixel from '@/components/analytics/MetaPixel'
 import AnalyticsTracker from '@/components/AnalyticsTracker'
 import MadmonaListingClaimer from '@/components/MadmonaListingClaimer'
+import DailyMessageBanner from '@/components/DailyMessageBanner'
 import './globals.css'
 
 // Madmona root layout — Arabic typography (Tajawal), brand metadata,
@@ -196,6 +197,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Suspense>
         <Suspense fallback={null}>
           <MadmonaListingClaimer />
+        </Suspense>
+        <Suspense fallback={null}>
+          <DailyMessageBanner />
         </Suspense>
       </body>
     </html>
