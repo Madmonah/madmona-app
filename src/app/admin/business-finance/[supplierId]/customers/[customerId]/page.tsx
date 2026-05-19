@@ -24,6 +24,7 @@ const TIER_LABELS: Record<string, { label: string; class: string; icon?: React.R
 export default function CustomerDetailPage({ params }: { params: { supplierId: string; customerId: string } }) {
   const { supplierId, customerId } = params
   const [data, setData] = useState<any>(null)
+  const [ltv, setLtv] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<any>({})
@@ -34,6 +35,9 @@ export default function CustomerDetailPage({ params }: { params: { supplierId: s
     // @ts-expect-error
     const { data: result } = await supabase.rpc('admin_get_customer_detail', { p_customer_id: customerId })
     setData(result)
+    // @ts-expect-error
+    const { data: ltvData } = await supabase.rpc('admin_get_customer_ltv', { p_customer_id: customerId })
+    setLtv(ltvData)
     if (result?.customer) {
       setForm({
         full_name: result.customer.full_name || '',
@@ -133,8 +137,40 @@ export default function CustomerDetailPage({ params }: { params: { supplierId: s
           <StatCard label="زيارات" value={c.total_visits} icon={<Calendar className="w-4 h-4" />} />
           <StatCard label="إجمالي صرف" value={`${Number(c.total_spent_egp).toLocaleString()} ج`} icon={<TrendingUp className="w-4 h-4" />} />
           <StatCard label="نقاط ولاء" value={c.loyalty_points} icon={<Award className="w-4 h-4" />} primary />
-          <StatCard label="LTV متوقع" value={`${(Number(c.total_spent_egp) * 1.5).toFixed(0)} ج`} icon={<Star className="w-4 h-4" />} tone="positive" />
+          <StatCard label="متوسط الفاتورة" value={`${Number(ltv?.avg_ticket || 0).toLocaleString()} ج`} icon={<Star className="w-4 h-4" />} tone="positive" />
         </section>
+
+        {/* LTV Deep Dive */}
+        {ltv && ltv.total_visits > 0 && (
+          <section className="bg-white rounded-2xl border border-gray-100 p-5">
+            <h3 className="text-sm font-bold tracking-wider uppercase text-[#6B7280] mb-4 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-[#1F6F5F]" /> Customer Lifetime Value
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+              <div className="p-3 rounded-xl bg-[#FAFAF7]">
+                <p className="text-[10px] font-bold uppercase text-[#6B7280]">أول زيارة</p>
+                <p className="text-sm font-black text-[#1A2E26] mt-1">{ltv.first_visit_at ? new Date(ltv.first_visit_at).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</p>
+              </div>
+              <div className="p-3 rounded-xl bg-[#FAFAF7]">
+                <p className="text-[10px] font-bold uppercase text-[#6B7280]">آخر زيارة</p>
+                <p className="text-sm font-black text-[#1A2E26] mt-1">{ltv.last_visit_at ? new Date(ltv.last_visit_at).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' }) : '—'}</p>
+              </div>
+              <div className="p-3 rounded-xl bg-[#1F6F5F]/5 border border-[#1F6F5F]/20">
+                <p className="text-[10px] font-bold uppercase text-[#1F6F5F]">عميلة عندنا</p>
+                <p className="text-sm font-black text-[#1F6F5F] mt-1">{ltv.days_as_customer} يوم</p>
+              </div>
+              <div className="p-3 rounded-xl bg-[#FAFAF7]">
+                <p className="text-[10px] font-bold uppercase text-[#6B7280]">حجوزات ملغية</p>
+                <p className={`text-sm font-black mt-1 ${ltv.cancelled_count > 0 ? 'text-amber-700' : 'text-[#1A2E26]'}`}>{ltv.cancelled_count}</p>
+              </div>
+            </div>
+            {ltv.days_as_customer > 30 && (
+              <p className="text-xs text-[#6B7280] mt-3 text-center">
+                متوسط إنفاق شهري: <span className="font-mono font-bold text-[#1A2E26]">{Math.round(Number(ltv.total_spent) / (ltv.days_as_customer / 30)).toLocaleString()} ج</span>
+              </p>
+            )}
+          </section>
+        )}
 
         {/* Customer details */}
         <section className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
