@@ -9,6 +9,12 @@
 // 2026-05-13 update (Mohamed: FB posts stuck since May 11):
 // Now also picks `facebook_post` content_type, not just instagram_post.
 // For facebook_post entries, only routes to FB channels (Page + Group), skips IG.
+//
+// 2026-05-19 update (Phase B.11 — Mohamed: publishing stuck since May 15):
+// Now picks status='approved' as well as 'drafted'. Admin approval flow
+// moves posts to 'approved' status; previously these stayed unpicked and
+// 40 posts were stuck for 2-4 days. Also enforces visual_status='qc_passed'
+// to prevent unreviewed posts from reaching social channels.
 
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { generateAndUploadImage } from '@/lib/image-generator'
@@ -19,10 +25,14 @@ const BUFFER_FACEBOOK_PAGE_CHANNEL_ID = process.env.BUFFER_FACEBOOK_PAGE_CHANNEL
 const BUFFER_FACEBOOK_GROUP_CHANNEL_ID = process.env.BUFFER_FACEBOOK_GROUP_CHANNEL_ID
 
 /**
- * Pick oldest drafted instagram_post OR facebook_post and schedule to Buffer.
+ * Pick oldest drafted/approved instagram_post OR facebook_post and schedule to Buffer.
  *   - instagram_post  → all 3 channels (IG + FB Page + FB Group) [cross-post]
  *   - facebook_post   → FB channels only (Page + Group)
  * Buffer publishes at the optimal time per channel.
+ *
+ * Picks from both 'drafted' (auto-generated, not yet reviewed) and 'approved'
+ * (admin manually approved). visual_status must be 'qc_passed' so we never
+ * publish a post that failed quality checks.
  */
 export async function runBufferPublisher(): Promise<Record<string, unknown>> {
   if (!isBufferConfigured()) {
@@ -39,28 +49,35 @@ export async function runBufferPublisher(): Promise<Record<string, unknown>> {
     }
   }
 
-  // Pick oldest drafted post of EITHER type
+  // Pick oldest drafted/approved post of EITHER type that has passed QC
+  // Posts approved by admin (status='approved') AND auto-generated posts
+  // (status='drafted') are both candidates. visual_status='qc_passed' guards
+  // against publishing low-quality images.
   const { data: drafts } = await supabaseAdmin
     .from('content_calendar')
-    .select('id, content_type, title, body, hashtags, cta, metadata')
-    .eq('status', 'drafted')
+    .select('id, status, content_type, title, body, hashtags, cta, metadata, visual_status, image_url')
+    .in('status', ['drafted', 'approved'])
     .in('content_type', ['instagram_post', 'facebook_post'])
+    .eq('visual_status', 'qc_passed')
     .order('created_at', { ascending: true })
     .limit(1)
 
   type Draft = {
     id: string
+    status: 'drafted' | 'approved'
     content_type: 'instagram_post' | 'facebook_post'
     title: string
     body: string
     hashtags: string[] | null
     cta: string | null
     metadata: Record<string, unknown> | null
+    visual_status: string | null
+    image_url: string | null
   }
   const draft = ((drafts ?? []) as Draft[])[0]
 
   if (!draft) {
-    return { skipped: true, reason: 'no drafted instagram_post or facebook_post entries' }
+    return { skipped: true, reason: 'no drafted/approved instagram_post or facebook_post entries with qc_passed' }
   }
 
   // Route to channels based on content_type
@@ -87,28 +104,41 @@ export async function runBufferPublisher(): Promise<Record<string, unknown>> {
   // Pull listingId from metadata so generator uses the REAL listing photo
   const listingId = (draft.metadata?.listing_id as string | undefined) ?? undefined
 
-  // Generate branded image
-  const imageRes = await generateAndUploadImage({
-    contentId: draft.id,
-    title: draft.title,
-    body: draft.body.slice(0, 400),
-    contentType: 'instagram_post',
-    hashtags: draft.hashtags ?? [],
-    listingId,
-  })
+  // Use existing image_url if present (admin-approved or previously generated).
+  // Only regenerate if image is missing — saves API calls and respects manual
+  // image curation done by Mohamed in /admin/ad-review.
+  let finalImageUrl: string
+  let imageSource: string
 
-  if (!imageRes.ok || !imageRes.url) {
-    await supabaseAdmin
-      .from('content_calendar')
-      .update({ status: 'image_failed' } as never)
-      .eq('id', draft.id)
-    return {
-      published: false,
-      content_id: draft.id,
-      content_type: draft.content_type,
-      stage: 'image_generation',
-      error: imageRes.error,
+  if (draft.image_url && draft.image_url.startsWith('http')) {
+    finalImageUrl = draft.image_url
+    imageSource = 'existing'
+  } else {
+    const imageRes = await generateAndUploadImage({
+      contentId: draft.id,
+      title: draft.title,
+      body: draft.body.slice(0, 400),
+      contentType: 'instagram_post',
+      hashtags: draft.hashtags ?? [],
+      listingId,
+    })
+
+    if (!imageRes.ok || !imageRes.url) {
+      await supabaseAdmin
+        .from('content_calendar')
+        .update({ status: 'image_failed' } as never)
+        .eq('id', draft.id)
+      return {
+        published: false,
+        content_id: draft.id,
+        content_type: draft.content_type,
+        stage: 'image_generation',
+        error: imageRes.error,
+      }
     }
+
+    finalImageUrl = imageRes.url
+    imageSource = imageRes.source
   }
 
   // Build full caption
@@ -122,7 +152,7 @@ export async function runBufferPublisher(): Promise<Record<string, unknown>> {
   const result = await createBufferPost({
     channelIds,
     text: fullCaption,
-    imageUrl: imageRes.url,
+    imageUrl: finalImageUrl,
     status: 'queued',
   })
 
@@ -152,13 +182,14 @@ export async function runBufferPublisher(): Promise<Record<string, unknown>> {
 
   return {
     scheduled: true,
+    previous_status: draft.status,
     content_id: draft.id,
     content_type: draft.content_type,
     title: draft.title,
     buffer_post_id: result.post_id,
     channels_count: channelIds.length,
     channels: channelIds,
-    image_url: imageRes.url,
-    image_source: imageRes.source,
+    image_url: finalImageUrl,
+    image_source: imageSource,
   }
 }
