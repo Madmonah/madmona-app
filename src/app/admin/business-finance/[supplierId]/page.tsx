@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   TrendingUp, TrendingDown, Wallet, Building2, Users, Calendar,
   ArrowDownCircle, ArrowUpCircle, Loader2, RefreshCw, Eye,
-  CheckCircle2, AlertCircle, BadgePercent, ChevronDown,
+  CheckCircle2, AlertCircle, BadgePercent, ChevronDown, Plus,
 } from 'lucide-react'
 
 /* ============================================================
@@ -259,8 +259,15 @@ export default function BusinessFinancePage({
               تحديث
             </button>
             <Link
-              href={`/admin/business-finance/${supplierId}/team`}
+              href={`/admin/business-finance/${supplierId}/operations`}
               className="px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold flex items-center gap-2 hover:shadow-md transition-shadow"
+            >
+              <Plus className="w-4 h-4" />
+              سجّل عملية
+            </Link>
+            <Link
+              href={`/admin/business-finance/${supplierId}/team`}
+              className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2 transition-colors"
             >
               <Users className="w-4 h-4" />
               الفريق
