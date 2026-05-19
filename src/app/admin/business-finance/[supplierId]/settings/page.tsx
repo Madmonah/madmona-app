@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   ChevronLeft, Plus, Trash2, Edit2, Save, X, Loader2,
   Building2, Users, BadgePercent, AlertCircle, Check, Sparkles,
+  MapPin, Navigation, ShieldCheck,
 } from 'lucide-react'
 
 /* ============================================================
@@ -42,6 +43,10 @@ type Branch = {
   phone: string | null
   manager_name: string | null
   status: string
+  latitude?: number | null
+  longitude?: number | null
+  geofence_radius_meters?: number | null
+  geofence_enabled?: boolean | null
 }
 
 type Employee = {
@@ -316,6 +321,17 @@ function BranchesTab({
                 <p className="text-[11px] text-[#6B7280] truncate">
                   {b.code} · {b.district || '—'} · {b.manager_name || 'بدون مدير'} · {b.phone || '—'}
                 </p>
+                {b.latitude && b.longitude ? (
+                  <p className="text-[10px] text-[#1F6F5F] font-mono mt-0.5 flex items-center gap-1">
+                    <ShieldCheck className="w-2.5 h-2.5" />
+                    GPS مفعّل ({b.latitude.toFixed(4)}, {b.longitude.toFixed(4)}) · ±{b.geofence_radius_meters || 100}م
+                  </p>
+                ) : (
+                  <p className="text-[10px] text-amber-600 mt-0.5 flex items-center gap-1">
+                    <AlertCircle className="w-2.5 h-2.5" />
+                    مفيش GPS · الحضور جوول الفرع غير محمي
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
@@ -370,9 +386,36 @@ function BranchEditForm({
   const [address, setAddress] = useState(branch.address || '')
   const [phone, setPhone] = useState(branch.phone || '')
   const [manager, setManager] = useState(branch.manager_name || '')
+  const [lat, setLat] = useState<number | ''>(branch.latitude ?? '')
+  const [lng, setLng] = useState<number | ''>(branch.longitude ?? '')
+  const [radius, setRadius] = useState<number>(branch.geofence_radius_meters || 150)
+  const [geoEnabled, setGeoEnabled] = useState<boolean>(branch.geofence_enabled ?? true)
+  const [locating, setLocating] = useState(false)
+  const [locError, setLocError] = useState('')
+
+  function useMyLocation() {
+    setLocError('')
+    if (!('geolocation' in navigator)) {
+      setLocError('المتصفح ما يدعمش GPS')
+      return
+    }
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLat(Number(pos.coords.latitude.toFixed(6)))
+        setLng(Number(pos.coords.longitude.toFixed(6)))
+        setLocating(false)
+      },
+      (err) => {
+        setLocError(err.code === err.PERMISSION_DENIED ? 'السماح مرفوض' : 'فشل الموقع')
+        setLocating(false)
+      },
+      { enableHighAccuracy: true, timeout: 15000 },
+    )
+  }
 
   return (
-    <div className="bg-white rounded-2xl border-2 border-[#1F6F5F] p-4 space-y-2">
+    <div className="bg-white rounded-2xl border-2 border-[#1F6F5F] p-4 space-y-3">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اسم الفرع *" className={INPUT_SMALL} />
         <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="كود" className={`${INPUT_SMALL} font-mono`} />
@@ -381,10 +424,65 @@ function BranchEditForm({
         <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="العنوان" className={`md:col-span-2 ${INPUT_SMALL}`} />
         <input value={manager} onChange={(e) => setManager(e.target.value)} placeholder="اسم المدير" className={`md:col-span-2 ${INPUT_SMALL}`} />
       </div>
+
+      {/* GPS section */}
+      <div className="bg-[#FAFAF7] rounded-xl p-3 space-y-2 border border-gray-100">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-3.5 h-3.5 text-[#1F6F5F]" />
+            <p className="text-xs font-bold text-[#1A2E26]">موقع الفرع GPS</p>
+          </div>
+          <label className="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" checked={geoEnabled} onChange={(e) => setGeoEnabled(e.target.checked)} className="w-3.5 h-3.5" />
+            <span className="text-[11px] text-[#6B7280]">حماية الحضور</span>
+          </label>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <input
+            type="number" step="0.000001" value={lat}
+            onChange={(e) => setLat(e.target.value === '' ? '' : Number(e.target.value))}
+            placeholder="latitude" className={`${INPUT_SMALL} font-mono text-[11px]`}
+          />
+          <input
+            type="number" step="0.000001" value={lng}
+            onChange={(e) => setLng(e.target.value === '' ? '' : Number(e.target.value))}
+            placeholder="longitude" className={`${INPUT_SMALL} font-mono text-[11px]`}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-[11px] text-[#6B7280] flex-shrink-0">نصف قطر السماح:</label>
+          <input
+            type="number" min="50" max="500" step="10" value={radius}
+            onChange={(e) => setRadius(Number(e.target.value))}
+            className={`${INPUT_SMALL} font-mono w-20`}
+          />
+          <span className="text-[11px] text-[#6B7280]">متر</span>
+        </div>
+        <button
+          type="button"
+          onClick={useMyLocation}
+          disabled={locating}
+          className="w-full mt-1 py-2 rounded-lg bg-[#1F6F5F]/10 hover:bg-[#1F6F5F]/20 text-[#1F6F5F] text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-50"
+        >
+          {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5" />}
+          {locating ? 'جاري تحديد الموقع...' : 'حدد من موقعي الحالي (أنا في الفرع)'}
+        </button>
+        {locError && <p className="text-[11px] text-red-600">{locError}</p>}
+        <p className="text-[10px] text-[#6B7280] leading-relaxed">
+          ⓘ فتح الصفحة دي وإنت في الفرع واضغط “حدد من موقعي”. لو GPS متفعّل، أي موظف يدخل من خارج الفرع = رفض تسجيل الحضور.
+        </p>
+      </div>
+
       <div className="flex items-center justify-end gap-2 pt-2">
         <button onClick={onCancel} className="px-3 py-1.5 text-xs font-bold text-[#6B7280] hover:text-[#1A2E26]">إلغاء</button>
         <button
-          onClick={() => onSave({ name, code, district, address, phone, manager_name: manager })}
+          onClick={() => onSave({
+            name, code, district, address, phone, manager_name: manager,
+            latitude: lat === '' ? null : Number(lat),
+            longitude: lng === '' ? null : Number(lng),
+            geofence_radius_meters: radius,
+            geofence_enabled: geoEnabled,
+          })}
           disabled={!name.trim()}
           className="px-4 py-1.5 rounded-lg bg-[#1F6F5F] text-white text-xs font-bold hover:shadow-md transition-shadow disabled:opacity-50 flex items-center gap-1"
         >

@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   Users, Crown, Building2, ListChecks, ChevronLeft, Loader2,
   CheckCircle2, Circle, X, RefreshCw, Plus,
-  TrendingUp, Sparkles, AlertCircle,
+  TrendingUp, Sparkles, AlertCircle, Clock, LogIn, LogOut, Star, QrCode, ShieldCheck,
 } from 'lucide-react'
 
 /* ============================================================
@@ -171,6 +171,27 @@ export default function TeamOversightPage({
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <Link
+                href={`/admin/business-finance/${supplierId}/ratings`}
+                className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2 transition-colors"
+              >
+                <Star className="w-4 h-4" />
+                التقييمات
+              </Link>
+              <Link
+                href={`/admin/business-finance/${supplierId}/qr-posters`}
+                className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2 transition-colors"
+              >
+                <QrCode className="w-4 h-4" />
+                QR ملصقات
+              </Link>
+              <Link
+                href={`/admin/business-finance/${supplierId}/attendance`}
+                className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2 transition-colors"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                سجل الحضور
+              </Link>
               <button
                 onClick={regenerateTasks}
                 disabled={generating}
@@ -344,6 +365,7 @@ function TaskModal({
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState(false)
   const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [attendance, setAttendance] = useState<{ clock_in_at: string | null; clock_out_at: string | null; hours_worked: number | null } | null>(null)
 
   async function loadTasks() {
     setLoading(true)
@@ -356,7 +378,29 @@ function TaskModal({
       .order('priority', { ascending: false })
       .order('created_at')
     setTasks((data || []) as Task[])
+    
+    // Load today's attendance
+    // @ts-expect-error
+    const { data: att } = await supabase.from('attendance_logs')
+      .select('clock_in_at, clock_out_at, hours_worked')
+      .eq('employee_id', employee.employee_id)
+      .eq('date', today)
+      .maybeSingle()
+    setAttendance(att as any)
+    
     setLoading(false)
+  }
+
+  async function clockIn() {
+    // @ts-expect-error
+    await supabase.rpc('admin_clock_in', { p_employee_id: employee.employee_id })
+    await loadTasks()
+  }
+
+  async function clockOut() {
+    // @ts-expect-error
+    await supabase.rpc('admin_clock_out', { p_employee_id: employee.employee_id })
+    await loadTasks()
   }
 
   useEffect(() => {
@@ -431,7 +475,39 @@ function TaskModal({
         </header>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {/* Attendance widget */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <Clock className="w-4 h-4 text-[#1F6F5F]" />
+              <div>
+                <p className="text-xs font-bold text-[#1A2E26]">
+                  {attendance?.clock_in_at
+                    ? `دخل الساعة ${new Date(attendance.clock_in_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`
+                    : 'لسه ما سجلش حضور'}
+                </p>
+                {attendance?.clock_out_at && (
+                  <p className="text-[10px] text-[#6B7280]">
+                    خرج {new Date(attendance.clock_out_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
+                    {attendance.hours_worked && ` · ${attendance.hours_worked} ساعة`}
+                  </p>
+                )}
+              </div>
+            </div>
+            {!attendance?.clock_in_at ? (
+              <button onClick={clockIn} className="px-3 py-1.5 rounded-lg bg-[#1F6F5F] text-white text-xs font-bold flex items-center gap-1">
+                <LogIn className="w-3.5 h-3.5" />
+                سجل حضور
+              </button>
+            ) : !attendance?.clock_out_at ? (
+              <button onClick={clockOut} className="px-3 py-1.5 rounded-lg bg-[#FAFAF7] hover:bg-gray-100 text-[#1A2E26] text-xs font-bold flex items-center gap-1 border border-gray-200">
+                <LogOut className="w-3.5 h-3.5" />
+                سجل انصراف
+              </button>
+            ) : (
+              <span className="text-[10px] font-bold text-[#1F6F5F]">اتسجل ✓</span>
+            )}
+          </div>
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
