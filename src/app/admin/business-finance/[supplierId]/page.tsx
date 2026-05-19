@@ -325,7 +325,8 @@ export default function BusinessFinancePage({
             <ModuleCard href={`/admin/business-finance/${supplierId}/customers`} icon={<Heart />} label="العملاء" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/appointments`} icon={<Calendar />} label="المواعيد" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/inventory`} icon={<Package />} label="المخزون" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/services`} icon={<Scissors />} label="الخدمات" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/services-catalog`} icon={<Scissors />} label="قائمة الخدمات" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/services`} icon={<Scissors />} label="ربط خدمة-منتج" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/expenses`} icon={<DollarSign />} label="المصاريف" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/attendance`} icon={<Clock />} label="الحضور" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/cash-recon`} icon={<Wallet />} label="جرد الكاش" />
