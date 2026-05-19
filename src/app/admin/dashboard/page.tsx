@@ -438,23 +438,43 @@ export default function AdminDashboardV2() {
 
         {/* ============ 💬 MESSAGES & COMMUNICATIONS (4 channels) ============ */}
         <Section title="💬 الرسائل والاتصالات" subtitle="WhatsApp · Email · Push · رسالة اليوم · Agent-to-agent">
-          {/* 💌 WELCOME MESSAGES BANNER */}
-          <Link href="/admin/welcome-messages"
-            className="block bg-gradient-to-l from-[#1F6F5F] to-[#185547] text-white rounded-2xl p-4 mb-3 hover:shadow-lg transition-all group">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
-                  <Heart className="w-5 h-5" />
+          {/* 💌 WELCOME + 📬 DAILY BANNERS (side-by-side) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            <Link href="/admin/welcome-messages"
+              className="block bg-gradient-to-l from-[#1F6F5F] to-[#185547] text-white rounded-2xl p-4 hover:shadow-lg transition-all group">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
+                    <Heart className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black tracking-[0.3em] uppercase text-white/80 mb-0.5">WELCOME FLOWS</p>
+                    <h3 className="text-base font-black">💌 الرسائل الترحيبية</h3>
+                    <p className="text-xs text-white/85">Email + WhatsApp + B2B onboarding</p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-black tracking-[0.3em] uppercase text-white/80 mb-0.5">WELCOME FLOWS</p>
-                  <h3 className="text-base font-black">💌 الرسائل الترحيبية</h3>
-                  <p className="text-xs text-white/85">Email + WhatsApp + B2B onboarding</p>
-                </div>
+                <ChevronLeft className="w-5 h-5 -scale-x-100 group-hover:-translate-x-1 transition-transform hidden md:block" />
               </div>
-              <ChevronLeft className="w-5 h-5 -scale-x-100 group-hover:-translate-x-1 transition-transform hidden md:block" />
-            </div>
-          </Link>
+            </Link>
+
+            <Link href="/admin/daily-messages"
+              className="block bg-gradient-to-l from-[#1F6F5F] to-[#185547] text-white rounded-2xl p-4 hover:shadow-lg transition-all group relative overflow-hidden">
+              <div className="absolute -top-8 -left-8 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
+              <div className="flex items-center justify-between gap-3 relative">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
+                    <Send className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black tracking-[0.3em] uppercase text-white/80 mb-0.5">DAILY MESSAGES</p>
+                    <h3 className="text-base font-black">📬 رسالة اليوم</h3>
+                    <p className="text-xs text-white/85">{messages?.daily.total || 5} رسالة تتغير تلقائيًا · بانر حي</p>
+                  </div>
+                </div>
+                <ChevronLeft className="w-5 h-5 -scale-x-100 group-hover:-translate-x-1 transition-transform hidden md:block" />
+              </div>
+            </Link>
+          </div>
 
           {/* WA pipeline KPIs */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
