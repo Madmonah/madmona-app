@@ -33,7 +33,13 @@ const BUFFER_FACEBOOK_GROUP_CHANNEL_ID = process.env.BUFFER_FACEBOOK_GROUP_CHANN
  * Picks from both 'drafted' (auto-generated, not yet reviewed) and 'approved'
  * (admin manually approved). visual_status must be 'qc_passed' so we never
  * publish a post that failed quality checks.
+ *
+ * BATCH MODE (Phase B.11.1, May 19 2026): processes up to BATCH_SIZE posts
+ * per run instead of 1. With a 30-min cron, this clears 40 approved posts
+ * in ~4 hours instead of ~3 days.
  */
+const BATCH_SIZE = 5
+
 export async function runBufferPublisher(): Promise<Record<string, unknown>> {
   if (!isBufferConfigured()) {
     return {
@@ -49,10 +55,7 @@ export async function runBufferPublisher(): Promise<Record<string, unknown>> {
     }
   }
 
-  // Pick oldest drafted/approved post of EITHER type that has passed QC
-  // Posts approved by admin (status='approved') AND auto-generated posts
-  // (status='drafted') are both candidates. visual_status='qc_passed' guards
-  // against publishing low-quality images.
+  // Pick oldest BATCH_SIZE drafted/approved posts of EITHER type that passed QC
   const { data: drafts } = await supabaseAdmin
     .from('content_calendar')
     .select('id, status, content_type, title, body, hashtags, cta, metadata, visual_status, image_url')
@@ -60,7 +63,7 @@ export async function runBufferPublisher(): Promise<Record<string, unknown>> {
     .in('content_type', ['instagram_post', 'facebook_post'])
     .eq('visual_status', 'qc_passed')
     .order('created_at', { ascending: true })
-    .limit(1)
+    .limit(BATCH_SIZE)
 
   type Draft = {
     id: string
@@ -74,11 +77,40 @@ export async function runBufferPublisher(): Promise<Record<string, unknown>> {
     visual_status: string | null
     image_url: string | null
   }
-  const draft = ((drafts ?? []) as Draft[])[0]
+  const draftList = (drafts ?? []) as Draft[]
 
-  if (!draft) {
-    return { skipped: true, reason: 'no drafted/approved instagram_post or facebook_post entries with qc_passed' }
+  if (draftList.length === 0) {
+    return { skipped: true, reason: 'no drafted/approved posts with qc_passed', processed: 0 }
   }
+
+  const results: Array<Record<string, unknown>> = []
+
+  for (const draft of draftList) {
+    const result = await publishOne(draft)
+    results.push(result)
+  }
+
+  return {
+    batch: true,
+    processed: results.length,
+    succeeded: results.filter((r) => r.scheduled === true).length,
+    failed: results.filter((r) => r.published === false).length,
+    items: results,
+  }
+}
+
+async function publishOne(draft: {
+  id: string
+  status: 'drafted' | 'approved'
+  content_type: 'instagram_post' | 'facebook_post'
+  title: string
+  body: string
+  hashtags: string[] | null
+  cta: string | null
+  metadata: Record<string, unknown> | null
+  visual_status: string | null
+  image_url: string | null
+}): Promise<Record<string, unknown>> {
 
   // Route to channels based on content_type
   const channelIds: string[] = []
