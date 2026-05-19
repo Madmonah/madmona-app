@@ -1,274 +1,210 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import {
-  ChevronLeft, Loader2, ShieldCheck, ShieldAlert, MapPin, Clock,
-  LogIn, LogOut, AlertTriangle, Navigation, Filter,
+  ChevronLeft, Loader2, RefreshCw, Clock, AlertTriangle, CheckCircle2,
+  LogIn, LogOut, Users, Calendar, Filter,
 } from 'lucide-react'
 
-/* ============================================================
-   /admin/business-finance/[supplierId]/attendance
-   
-   Audit dashboard for Mohamed + Ahmed:
-   - All clock-in/out events
-   - GPS distance from branch
-   - Flagged: no_gps, edge_clock_in, far_clock_in
-   ============================================================ */
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-type Audit = {
-  log_id: string
-  date: string
-  employee_id: string
-  full_name: string
-  role_ar: string
-  branch_id: string | null
-  branch_name: string | null
-  branch_code: string | null
-  clock_in_at: string | null
-  clock_out_at: string | null
-  hours_worked: number | null
-  clock_in_distance_m: number | null
-  clock_out_distance_m: number | null
-  clock_in_flag: 'normal' | 'edge_clock_in' | 'far_clock_in' | 'no_gps'
-  clock_in_method: string
-}
-
-export default function AttendanceAuditPage({
-  params,
-}: {
-  params: { supplierId: string }
-}) {
+export default function AttendancePage({ params }: { params: { supplierId: string } }) {
   const { supplierId } = params
-  const [supplierName, setSupplierName] = useState('')
-  const [logs, setLogs] = useState<Audit[]>([])
+  const [supplier, setSupplier] = useState<any>(null)
+  const [branches, setBranches] = useState<any[]>([])
+  const [branchFilter, setBranchFilter] = useState<string | null>(null)
+  const [data, setData] = useState<any>(null)
+  const [view, setView] = useState<'today' | 'summary' | 'logs'>('today')
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'flagged'>('all')
-  const [days, setDays] = useState(7)
 
   async function load() {
     setLoading(true)
     // @ts-expect-error
-    const { data: sup } = await supabase.from('suppliers')
-      .select('business_name').eq('id', supplierId).single()
-    setSupplierName((sup as any)?.business_name || '')
-
+    const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
+    setSupplier(s)
     // @ts-expect-error
-    const { data } = await supabase.rpc('admin_get_attendance_audit', {
-      p_supplier_id: supplierId, p_days: days,
+    const { data: br } = await supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).order('code')
+    setBranches(br || [])
+    // @ts-expect-error
+    const { data: att } = await supabase.rpc('admin_get_attendance', {
+      p_supplier_id: supplierId,
+      p_branch_id: branchFilter,
     })
-    setLogs((data || []) as Audit[])
+    setData(att)
     setLoading(false)
   }
 
-  useEffect(() => {
-    load()
-    const id = setInterval(load, 60000)
-    return () => clearInterval(id)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [supplierId, days])
+  useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId, branchFilter])
 
-  const filtered = useMemo(() => {
-    if (filter === 'flagged') return logs.filter((l) => l.clock_in_flag !== 'normal')
-    return logs
-  }, [logs, filter])
-
-  const stats = useMemo(() => {
-    return {
-      total: logs.length,
-      normal: logs.filter((l) => l.clock_in_flag === 'normal').length,
-      edge: logs.filter((l) => l.clock_in_flag === 'edge_clock_in').length,
-      far: logs.filter((l) => l.clock_in_flag === 'far_clock_in').length,
-      noGps: logs.filter((l) => l.clock_in_flag === 'no_gps').length,
-    }
-  }, [logs])
+  if (!supplier) return <Loader />
+  
+  const today = data?.today || {}
+  const logs = (data?.logs || []).filter((l: any) => l.date === new Date().toISOString().slice(0, 10))
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link
-            href={`/admin/business-finance/${supplierId}/team`}
-            className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2 transition-colors"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-            رجوع للفريق
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2">
+            <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
-          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">
-            ATTENDANCE AUDIT · GPS VERIFIED
-          </p>
-          <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">
-            حضور وانصراف — {supplierName}
-          </h1>
-          <p className="text-sm text-[#6B7280] mt-1">
-            كل تسجيل بـ GPS موقع — المريبة بـ تظهر باللون الأحمر
-          </p>
-
-          <div className="flex items-center gap-2 mt-4 flex-wrap">
-            <div className="flex items-center gap-1 bg-white rounded-xl p-1 border border-gray-200">
-              {[
-                { v: 'all' as const, l: 'كل الكلوكس' },
-                { v: 'flagged' as const, l: '🚩 المريبة فقط' },
-              ].map((f) => (
-                <button
-                  key={f.v} onClick={() => setFilter(f.v)}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                    filter === f.v ? 'bg-[#1F6F5F] text-white' : 'text-[#6B7280]'
-                  }`}
-                >{f.l}</button>
-              ))}
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">B2B PARTNER · ATTENDANCE</p>
+              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">الحضور · {supplier?.business_name}</h1>
             </div>
-            <select
-              value={days} onChange={(e) => setDays(Number(e.target.value))}
-              className="text-xs font-bold bg-white border border-gray-200 rounded-xl px-3 py-1.5 text-[#1A2E26]"
-            >
-              <option value={1}>اليوم</option>
-              <option value={3}>آخر ٣ أيام</option>
-              <option value={7}>الأسبوع</option>
-              <option value={30}>الشهر</option>
-            </select>
+            <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7]"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Stats */}
+      <main className="max-w-7xl mx-auto px-4 py-6 space-y-5">
+        {/* Today stats */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard label="إجمالي الكلوكس" value={stats.total} icon={<Clock className="w-4 h-4" />} primary />
-          <StatCard label="✅ عادي (داخل النطاق)" value={stats.normal} icon={<ShieldCheck className="w-4 h-4" />} tone="positive" />
-          <StatCard label="⚠️ على الحدود" value={stats.edge} icon={<MapPin className="w-4 h-4" />} tone={stats.edge > 0 ? 'amber' : 'neutral'} />
-          <StatCard label="🚩 مريب (بعيد / مفيش GPS)" value={stats.far + stats.noGps} icon={<ShieldAlert className="w-4 h-4" />} tone={(stats.far + stats.noGps) > 0 ? 'negative' : 'neutral'} />
+          <StatCard label="حاضر اليوم" value={today.present || 0} icon={<CheckCircle2 />} tone="positive" />
+          <StatCard label="غايب اليوم" value={today.absent || 0} icon={<AlertTriangle />} tone={today.absent > 5 ? 'danger' : 'warning'} />
+          <StatCard label="لسه في الشغل" value={today.still_in || 0} icon={<LogIn />} primary />
+          <StatCard label="ساعات اليوم" value={Math.round(today.total_hours || 0)} icon={<Clock />} />
         </section>
 
-        {/* Logs */}
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" />
+        {/* Branch filter */}
+        <section className="bg-white rounded-2xl border border-gray-100 p-4">
+          <div className="flex gap-2 flex-wrap items-center">
+            <Filter className="w-3.5 h-3.5 text-[#6B7280]" />
+            <button onClick={() => setBranchFilter(null)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
+              !branchFilter ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
+            }`}>كل الفروع</button>
+            {branches.map(b => (
+              <button key={b.id} onClick={() => setBranchFilter(b.id)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
+                branchFilter === b.id ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
+              }`}>{b.name}</button>
+            ))}
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-dashed border-gray-300 p-12 text-center">
-            <Clock className="w-12 h-12 text-[#6B7280] opacity-30 mx-auto mb-3" />
-            <h3 className="text-lg font-black text-[#1A2E26] mb-1">
-              {filter === 'flagged' ? 'مفيش كلوكس مريبة 👌' : 'لسه ما فيش حضور النهارده'}
-            </h3>
-            <p className="text-sm text-[#6B7280]">
-              {filter === 'flagged' ? 'كل الموظفين سجلوا من جوه الفرع' : 'لما حد يـ scan هـ يظهر هنا'}
-            </p>
+        </section>
+
+        {/* View tabs */}
+        <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div className="flex border-b border-gray-100">
+            <TabBtn active={view === 'today'} onClick={() => setView('today')}>اليوم</TabBtn>
+            <TabBtn active={view === 'summary'} onClick={() => setView('summary')}>ملخص الشهر</TabBtn>
+            <TabBtn active={view === 'logs'} onClick={() => setView('logs')}>سجل كامل</TabBtn>
           </div>
-        ) : (
-          <div className="space-y-2">
-            {filtered.map((log) => <AuditRow key={log.log_id} log={log} />)}
-          </div>
-        )}
+
+          {view === 'today' && (
+            <div className="divide-y divide-gray-100">
+              {logs.length === 0 ? (
+                <p className="py-12 text-center text-sm text-[#6B7280]">مفيش حضور مسجل اليوم</p>
+              ) : logs.map((l: any) => (
+                <AttendanceRow key={l.log_id} log={l} />
+              ))}
+            </div>
+          )}
+
+          {view === 'summary' && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-[#FAFAF7]">
+                  <tr className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280]">
+                    <th className="text-right px-4 py-3">الموظف</th>
+                    <th className="text-right px-4 py-3">الفرع</th>
+                    <th className="text-center px-4 py-3">أيام الحضور</th>
+                    <th className="text-center px-4 py-3">ساعات الشهر</th>
+                    <th className="text-center px-4 py-3">أيام تأخير</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {(data?.employee_summary || []).map((e: any) => (
+                    <tr key={e.employee_id}>
+                      <td className="px-4 py-2">
+                        <p className="font-bold text-[#1A2E26]">{e.employee_name}</p>
+                        <p className="text-[10px] text-[#6B7280]">{e.role_ar}</p>
+                      </td>
+                      <td className="px-4 py-2 text-[#6B7280]">{e.branch_name || '—'}</td>
+                      <td className="px-4 py-2 text-center font-bold">{e.days_present}</td>
+                      <td className="px-4 py-2 text-center font-black text-[#1F6F5F] font-mono">{Math.round(e.total_hours || 0)}</td>
+                      <td className="px-4 py-2 text-center">
+                        {e.late_days > 0 ? (
+                          <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-800 text-xs font-bold">{e.late_days}</span>
+                        ) : <span className="text-[#6B7280]">—</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {view === 'logs' && (
+            <div className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
+              {(data?.logs || []).map((l: any) => (
+                <AttendanceRow key={l.log_id} log={l} showDate />
+              ))}
+            </div>
+          )}
+        </section>
       </main>
     </div>
   )
 }
 
-function StatCard({ label, value, icon, tone, primary }: any) {
-  const t = tone === 'positive' ? 'text-[#1F6F5F]'
-    : tone === 'negative' ? 'text-red-600'
-    : tone === 'amber' ? 'text-amber-600'
-    : 'text-[#1A2E26]'
+function AttendanceRow({ log, showDate }: { log: any; showDate?: boolean }) {
+  const inTime = log.clock_in_at ? new Date(log.clock_in_at) : null
+  const outTime = log.clock_out_at ? new Date(log.clock_out_at) : null
+  const isLate = log.is_late
+
   return (
-    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'}`}>
-      <div className={`flex items-center gap-2 mb-1.5 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>
-        {icon}
-        <p className="text-[10px] font-bold tracking-wider uppercase">{label}</p>
+    <div className="px-4 py-3 flex items-center gap-3 text-sm">
+      <div className="flex-1 min-w-0">
+        <p className="font-bold text-[#1A2E26]">{log.employee_name}</p>
+        <p className="text-[10px] text-[#6B7280]">{log.role_ar} · {log.branch_name || '—'}</p>
       </div>
-      <p className={`text-2xl md:text-3xl font-black ${primary ? 'text-white' : t}`}>{value}</p>
+      {showDate && <span className="text-xs text-[#6B7280]">{log.date}</span>}
+      <div className="flex items-center gap-3 text-xs">
+        {inTime && (
+          <div className={`flex items-center gap-1 ${isLate ? 'text-amber-700' : 'text-[#1F6F5F]'}`}>
+            <LogIn className="w-3.5 h-3.5" />
+            <span className="font-bold">{inTime.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+        )}
+        {outTime ? (
+          <div className="flex items-center gap-1 text-[#1A2E26]">
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="font-bold">{outTime.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+        ) : inTime && (
+          <span className="px-2 py-0.5 rounded bg-[#1F6F5F]/10 text-[#1F6F5F] text-[10px] font-bold">في الشغل</span>
+        )}
+        {log.hours_worked && (
+          <span className="text-[#6B7280] font-mono">{log.hours_worked}س</span>
+        )}
+      </div>
     </div>
   )
 }
 
-function AuditRow({ log }: { log: Audit }) {
-  const isFlagged = log.clock_in_flag !== 'normal'
-  const flagLabel = {
-    normal: '',
-    edge_clock_in: '⚠️ على الحدود',
-    far_clock_in: '🚩 بعيد عن الفرع',
-    no_gps: '❓ بدون GPS',
-  }[log.clock_in_flag]
-  const flagColor = {
-    normal: '',
-    edge_clock_in: 'border-amber-200 bg-amber-50/40',
-    far_clock_in: 'border-red-200 bg-red-50/40',
-    no_gps: 'border-gray-300 bg-gray-50',
-  }[log.clock_in_flag]
-
-  const day = new Date(log.date).toLocaleDateString('ar-EG', { weekday: 'short', day: 'numeric', month: 'short' })
-  const ti = log.clock_in_at ? new Date(log.clock_in_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : '—'
-  const to = log.clock_out_at ? new Date(log.clock_out_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : '—'
-
+function StatCard({ label, value, icon, tone, primary }: any) {
+  const toneClass = tone === 'warning' ? 'text-amber-700' : tone === 'danger' ? 'text-red-600' : tone === 'positive' ? 'text-[#1F6F5F]' : 'text-[#1A2E26]'
   return (
-    <div className={`bg-white rounded-2xl border p-4 ${isFlagged ? flagColor : 'border-gray-100'}`}>
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        {/* Employee */}
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="inline-grid place-items-center w-10 h-10 rounded-xl bg-[#FAFAF7] text-[#1F6F5F] flex-shrink-0 font-black text-sm">
-            {log.full_name?.[0] || '?'}
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-sm font-black text-[#1A2E26] truncate">{log.full_name}</h3>
-            <p className="text-[11px] text-[#6B7280]">{log.role_ar} · {log.branch_name || log.branch_code}</p>
-          </div>
-        </div>
-
-        {/* Times */}
-        <div className="flex items-center gap-4 text-xs flex-shrink-0">
-          <div className="text-center">
-            <p className="text-[10px] text-[#6B7280] flex items-center justify-center gap-1">
-              <LogIn className="w-3 h-3" /> دخل
-            </p>
-            <p className="font-mono font-bold text-[#1A2E26]">{ti}</p>
-            {log.clock_in_distance_m !== null && (
-              <p className={`text-[10px] mt-0.5 ${
-                log.clock_in_flag === 'far_clock_in' ? 'text-red-600 font-bold'
-                : log.clock_in_flag === 'edge_clock_in' ? 'text-amber-600'
-                : 'text-[#6B7280]'
-              }`}>
-                <MapPin className="w-2.5 h-2.5 inline" /> {Math.round(log.clock_in_distance_m)}م
-              </p>
-            )}
-            {log.clock_in_distance_m === null && (
-              <p className="text-[10px] mt-0.5 text-gray-500">بدون GPS</p>
-            )}
-          </div>
-
-          <div className="text-center">
-            <p className="text-[10px] text-[#6B7280] flex items-center justify-center gap-1">
-              <LogOut className="w-3 h-3" /> خرج
-            </p>
-            <p className="font-mono font-bold text-[#1A2E26]">{to}</p>
-            {log.clock_out_distance_m !== null && (
-              <p className="text-[10px] mt-0.5 text-[#6B7280]">
-                <MapPin className="w-2.5 h-2.5 inline" /> {Math.round(log.clock_out_distance_m)}م
-              </p>
-            )}
-          </div>
-
-          {log.hours_worked && (
-            <div className="text-center">
-              <p className="text-[10px] text-[#6B7280]">إجمالي</p>
-              <p className="font-mono font-bold text-[#1F6F5F]">{log.hours_worked}س</p>
-            </div>
-          )}
-
-          <div className="text-left text-[10px] text-[#6B7280] min-w-[60px]">{day}</div>
-        </div>
+    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'}`}>
+      <div className={`flex items-center gap-2 mb-1.5 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>
+        <div className="w-4 h-4">{icon}</div>
+        <p className="text-[10px] font-bold tracking-wider uppercase">{label}</p>
       </div>
-
-      {flagLabel && (
-        <div className="mt-2 pt-2 border-t border-current/10 text-[11px] font-bold text-[#1A2E26]">
-          {flagLabel} — راجع التسجيل ده مع الموظف
-        </div>
-      )}
+      <p className={`text-2xl md:text-3xl font-black ${primary ? 'text-white' : toneClass}`}>{value}</p>
     </div>
   )
+}
+
+function TabBtn({ active, onClick, children }: any) {
+  return (
+    <button onClick={onClick} className={`flex-1 px-4 py-3 text-sm font-bold transition-colors ${
+      active ? 'bg-[#1F6F5F]/5 text-[#1F6F5F] border-b-2 border-[#1F6F5F]' : 'text-[#6B7280] hover:text-[#1A2E26]'
+    }`}>{children}</button>
+  )
+}
+
+function Loader() {
+  return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div>
 }

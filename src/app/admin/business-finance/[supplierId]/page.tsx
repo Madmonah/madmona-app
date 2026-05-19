@@ -7,6 +7,8 @@ import {
   TrendingUp, TrendingDown, Wallet, Building2, Users, Calendar,
   ArrowDownCircle, ArrowUpCircle, Loader2, RefreshCw, Eye,
   CheckCircle2, AlertCircle, BadgePercent, ChevronDown, Plus, Heart, Package,
+  BarChart3, DollarSign, Clock, ShoppingCart, Truck, Gift,
+  MessageCircle, FileText, Calculator, FileCheck,
 } from 'lucide-react'
 
 /* ============================================================
@@ -266,34 +268,6 @@ export default function BusinessFinancePage({
               سجّل عملية
             </Link>
             <Link
-              href={`/admin/business-finance/${supplierId}/team`}
-              className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2 transition-colors"
-            >
-              <Users className="w-4 h-4" />
-              الفريق
-            </Link>
-            <Link
-              href={`/admin/business-finance/${supplierId}/customers`}
-              className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2 transition-colors"
-            >
-              <Heart className="w-4 h-4" />
-              العملاء
-            </Link>
-            <Link
-              href={`/admin/business-finance/${supplierId}/appointments`}
-              className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2 transition-colors"
-            >
-              <Calendar className="w-4 h-4" />
-              المواعيد
-            </Link>
-            <Link
-              href={`/admin/business-finance/${supplierId}/inventory`}
-              className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2 transition-colors"
-            >
-              <Package className="w-4 h-4" />
-              المخزون
-            </Link>
-            <Link
               href={`/admin/business-finance/${supplierId}/settings`}
               className="px-3 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] transition-colors"
               title="الإعدادات"
@@ -340,6 +314,30 @@ export default function BusinessFinancePage({
 
       {/* Body */}
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* MODULES GRID - all 14 admin modules */}
+        <section>
+          <h2 className="text-sm font-bold tracking-wider uppercase text-[#6B7280] mb-3">
+            🎛️ الوحدات
+          </h2>
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+            <ModuleCard href={`/admin/business-finance/${supplierId}/dashboard`} icon={<BarChart3 />} label="Dashboard" primary />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/team`} icon={<Users />} label="الفريق" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/customers`} icon={<Heart />} label="العملاء" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/appointments`} icon={<Calendar />} label="المواعيد" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/inventory`} icon={<Package />} label="المخزون" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/expenses`} icon={<DollarSign />} label="المصاريف" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/attendance`} icon={<Clock />} label="الحضور" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/cash-recon`} icon={<Wallet />} label="جرد الكاش" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/payroll`} icon={<Calculator />} label="المرتبات" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/purchase-orders`} icon={<ShoppingCart />} label="طلبات شراء" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/vendors`} icon={<Truck />} label="الموردين" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/promotions`} icon={<Gift />} label="العروض" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/whatsapp-campaigns`} icon={<MessageCircle />} label="WhatsApp" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/documents`} icon={<FileCheck />} label="المستندات" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/audit-log`} icon={<FileText />} label="سجل التعديلات" />
+          </div>
+        </section>
+
         {/* TOP: 4 stat cards */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatCard
@@ -612,5 +610,21 @@ function KV({ label, value }: { label: string; value: string }) {
       <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-0.5">{label}</p>
       <p className="text-sm font-black text-[#1A2E26]">{value}</p>
     </div>
+  )
+}
+
+function ModuleCard({ href, icon, label, primary }: { href: string; icon: ReactNode; label: string; primary?: boolean }) {
+  return (
+    <Link
+      href={href}
+      className={`rounded-2xl p-3 border flex flex-col items-center gap-1.5 transition-all hover:shadow-md hover:-translate-y-0.5 ${
+        primary
+          ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
+          : 'bg-white border-gray-100 text-[#1A2E26] hover:border-[#1F6F5F]'
+      }`}
+    >
+      <div className="w-5 h-5">{icon}</div>
+      <span className="text-[11px] font-bold text-center leading-tight">{label}</span>
+    </Link>
   )
 }
