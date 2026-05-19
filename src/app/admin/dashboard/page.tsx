@@ -49,6 +49,57 @@ type B2BPartner = {
   avg_rating: number | null
 }
 
+type MessagesData = {
+  whatsapp: {
+    conversations_open: number
+    unanswered: number
+    inbound_today: number
+    outbound_today: number
+    failed_today: number
+    queue_pending: number
+    queue_failed: number
+    review_pending: number
+    policy_violations_recent: number
+  }
+  email: {
+    admin_queued: number
+    admin_sent_today: number
+    admin_failed: number
+    customer_queued: number
+    customer_sent_today: number
+    customer_failed: number
+  }
+  push: {
+    queued: number
+    sent_today: number
+    subscribers: number
+  }
+  daily: { today: number; total: number }
+  agents: { unread: number; today: number; urgent: number }
+  recent_conversations: Array<{
+    id: string
+    contact_phone: string
+    contact_name: string | null
+    contact_type: string | null
+    last_message_at: string
+    last_message_direction: string
+    message_count: number
+    first_category: string | null
+    first_intent: string | null
+    needs_reply: boolean
+  }>
+  recent_agent_msgs: Array<{
+    id: string
+    from_agent: string
+    to_agent: string
+    subject: string | null
+    message_type: string
+    priority: string
+    status: string
+    created_at: string
+  }>
+}
+
 type DashboardData = {
   b2b: {
     active_partners: number
@@ -110,6 +161,7 @@ type DashboardData = {
 export default function AdminDashboardV2() {
   const [stage, setStage] = useState<Stage>('loading')
   const [data, setData] = useState<DashboardData | null>(null)
+  const [messages, setMessages] = useState<MessagesData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
@@ -119,18 +171,23 @@ export default function AdminDashboardV2() {
       if (!session?.user) { setStage('unauthenticated'); return }
 
       setRefreshing(true)
-      // @ts-expect-error
-      const { data: stats, error: rpcError } = await supabaseBrowser.rpc('get_admin_dashboard_v2')
+      const [statsRes, msgsRes] = await Promise.all([
+        // @ts-expect-error
+        supabaseBrowser.rpc('get_admin_dashboard_v2'),
+        // @ts-expect-error
+        supabaseBrowser.rpc('get_admin_messages_summary'),
+      ])
       setRefreshing(false)
 
-      if (rpcError) {
-        const msg = (rpcError.message || '').toLowerCase()
+      if (statsRes.error) {
+        const msg = (statsRes.error.message || '').toLowerCase()
         if (msg.includes('forbidden')) { setStage('forbidden'); return }
-        setError(rpcError.message)
+        setError(statsRes.error.message)
         setStage('ready')
         return
       }
-      setData(stats as DashboardData)
+      setData(statsRes.data as DashboardData)
+      if (msgsRes.data) setMessages(msgsRes.data as MessagesData)
       setStage('ready')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'فشل التحميل')
@@ -287,9 +344,9 @@ export default function AdminDashboardV2() {
             title="المساعد الذكي" sub="اومر الـ agents بالعامية" accent />
           <QuickAction href="/admin/business-partners" icon={<Building2 className="w-5 h-5" />}
             title="شركاء B2B" sub={`${data.b2b.active_partners} نشط · ${data.b2b.leads_ready} lead`} />
-          <QuickAction href="/admin/wa-review" icon={<MessageSquare className="w-5 h-5" />}
-            title="مراجعة WhatsApp" sub={data.whatsapp.review_pending > 0 ? `${data.whatsapp.review_pending} في الانتظار` : 'كله متراجع'} 
-            badge={data.whatsapp.review_pending > 0 ? data.whatsapp.review_pending : undefined} />
+          <QuickAction href="/admin/messages" icon={<MessageSquare className="w-5 h-5" />}
+            title="المحادثات" sub={messages?.whatsapp.unanswered ? `${messages.whatsapp.unanswered} محتاجة رد` : 'كله مترد عليه'} 
+            badge={messages?.whatsapp.unanswered || undefined} />
           <QuickAction href="/admin/ai-os" icon={<Bot className="w-5 h-5" />}
             title="AI OS" sub={`${data.ai.agents_enabled} agent شغال`} />
         </section>
@@ -379,21 +436,158 @@ export default function AdminDashboardV2() {
           </div>
         </Section>
 
-        {/* ============ WHATSAPP ============ */}
-        <Section title="📱 WhatsApp Pipeline" subtitle="WABA + supplier acquisition + AI auto-responder">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-            <SubKpi label="مرسلة اليوم" value={data.whatsapp.sent_today} tone="positive" />
-            <SubKpi label="في الطابور" value={data.whatsapp.queue_pending} />
-            <SubKpi label="بانتظار المراجعة" value={data.whatsapp.review_pending}
-              tone={data.whatsapp.review_pending > 0 ? 'amber' : 'neutral'} />
-            <SubKpi label="فشلت" value={data.whatsapp.queue_failed}
-              tone={data.whatsapp.queue_failed > 0 ? 'negative' : 'neutral'} />
+        {/* ============ 💬 MESSAGES & COMMUNICATIONS (4 channels) ============ */}
+        <Section title="💬 الرسائل والاتصالات" subtitle="WhatsApp · Email · Push · رسالة اليوم · Agent-to-agent">
+          {/* 💌 WELCOME MESSAGES BANNER */}
+          <Link href="/admin/welcome-messages"
+            className="block bg-gradient-to-l from-[#1F6F5F] to-[#185547] text-white rounded-2xl p-4 mb-3 hover:shadow-lg transition-all group">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
+                  <Heart className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black tracking-[0.3em] uppercase text-white/80 mb-0.5">WELCOME FLOWS</p>
+                  <h3 className="text-base font-black">💌 الرسائل الترحيبية</h3>
+                  <p className="text-xs text-white/85">Email + WhatsApp + B2B onboarding</p>
+                </div>
+              </div>
+              <ChevronLeft className="w-5 h-5 -scale-x-100 group-hover:-translate-x-1 transition-transform hidden md:block" />
+            </div>
+          </Link>
+
+          {/* WA pipeline KPIs */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+            <SubKpi label="💪 محادثات WhatsApp" value={messages?.whatsapp.conversations_open || 0}
+              note={`${messages?.whatsapp.unanswered || 0} محتاجة رد`}
+              tone={(messages?.whatsapp.unanswered || 0) > 10 ? 'amber' : 'neutral'} />
+            <SubKpi label="✉️ إيميل اليوم" value={(messages?.email.admin_sent_today || 0) + (messages?.email.customer_sent_today || 0)}
+              note={`admin ${messages?.email.admin_sent_today || 0} + customer ${messages?.email.customer_sent_today || 0}`}
+              tone="positive" />
+            <SubKpi label="🔔 Push notifications" value={messages?.push.sent_today || 0}
+              note={`${messages?.push.subscribers || 0} مشترك`} />
+            <SubKpi label="🤖 رسايل بين Agents" value={messages?.agents.urgent || 0}
+              note={`${messages?.agents.unread || 0} غير مقروءة`}
+              tone={(messages?.agents.urgent || 0) > 0 ? 'amber' : 'neutral'} />
           </div>
 
+          {/* Alert bar for problems */}
+          {messages && (
+            messages.whatsapp.queue_failed > 0 ||
+            messages.whatsapp.policy_violations_recent > 0 ||
+            messages.email.admin_failed > 0 ||
+            messages.email.customer_failed > 0
+          ) && (
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-3 mb-3 text-xs space-y-1">
+              <p className="font-bold text-red-900 flex items-center gap-1.5">
+                <ShieldAlert className="w-3.5 h-3.5" /> تنبيهات
+              </p>
+              {messages.whatsapp.queue_failed > 0 && (
+                <p className="text-red-800">• {messages.whatsapp.queue_failed} رسالة WhatsApp فشلت في الطابور</p>
+              )}
+              {messages.whatsapp.policy_violations_recent > 0 && (
+                <p className="text-red-800">• {messages.whatsapp.policy_violations_recent} مخالفة سياسة WhatsApp في آخر أسبوع</p>
+              )}
+              {(messages.email.admin_failed > 0 || messages.email.customer_failed > 0) && (
+                <p className="text-red-800">• {messages.email.admin_failed + messages.email.customer_failed} إيميل فشل</p>
+              )}
+            </div>
+          )}
+
+          {/* Two columns: conversations + agent messages */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
+            {/* WhatsApp conversations */}
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="px-4 py-2.5 bg-[#FAFAF7] border-b border-gray-100 flex items-center justify-between">
+                <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280]">آخر محادثات WhatsApp</p>
+                <Link href="/admin/messages" className="text-[10px] font-bold text-[#1F6F5F] hover:underline">عرض الكل</Link>
+              </div>
+              {!messages?.recent_conversations.length ? (
+                <div className="p-8 text-center">
+                  <MessageSquare className="w-8 h-8 text-[#6B7280] opacity-30 mx-auto mb-2" />
+                  <p className="text-xs text-[#6B7280]">مفيش محادثات</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-50 max-h-96 overflow-y-auto">
+                  {messages.recent_conversations.map((c) => (
+                    <Link key={c.id} href={`/admin/messages?id=${c.id}`}
+                      className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-[#FAFAF7]/50 transition-colors">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                          c.needs_reply ? 'bg-amber-50 text-amber-600' : 'bg-[#1F6F5F]/10 text-[#1F6F5F]'
+                        }`}>
+                          <MessageSquare className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-[#1A2E26] truncate">
+                            {c.contact_name || c.contact_phone}
+                            {c.needs_reply && <span className="text-[9px] text-amber-600 mr-1.5">• محتاجة رد</span>}
+                          </p>
+                          <p className="text-[10px] text-[#6B7280] truncate">
+                            {c.contact_type || 'غير معروف'}{c.first_category && ` · ${c.first_category}`}
+                            {' · '}{c.message_count} رسالة
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-[#6B7280] flex-shrink-0 font-mono">
+                        {new Date(c.last_message_at).toLocaleString('ar-EG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Agent-to-agent messages */}
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="px-4 py-2.5 bg-[#FAFAF7] border-b border-gray-100 flex items-center justify-between">
+                <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280]">رسايل بين الـ Agents</p>
+                <Link href="/admin/agents" className="text-[10px] font-bold text-[#1F6F5F] hover:underline">عرض الكل</Link>
+              </div>
+              {!messages?.recent_agent_msgs.length ? (
+                <div className="p-8 text-center">
+                  <Bot className="w-8 h-8 text-[#6B7280] opacity-30 mx-auto mb-2" />
+                  <p className="text-xs text-[#6B7280]">مفيش رسايل agent-to-agent</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-50 max-h-96 overflow-y-auto">
+                  {messages.recent_agent_msgs.map((m) => (
+                    <div key={m.id} className="px-4 py-2.5">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className={`text-[9px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded ${
+                          m.priority === 'urgent' ? 'bg-red-50 text-red-700' :
+                          m.priority === 'high' ? 'bg-amber-50 text-amber-700' :
+                          'bg-[#FAFAF7] text-[#6B7280]'
+                        }`}>
+                          {m.priority}
+                        </span>
+                        <span className="text-[10px] text-[#1F6F5F] font-mono">
+                          {m.from_agent} → {m.to_agent}
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#1A2E26] line-clamp-2">{m.subject || '(بدون عنوان)'}</p>
+                      <p className="text-[10px] text-[#6B7280] mt-1 font-mono">
+                        {new Date(m.created_at).toLocaleString('ar-EG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* All messaging tools */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-            <ToolCard href="/admin/wa-review" icon={<MessageSquare />} title="مراجعة الرسائل" sub="supplier_leads قبل الإرسال"
-              badge={data.whatsapp.review_pending || undefined} />
-            <ToolCard href="/admin/messages" icon={<Inbox />} title="المحادثات" sub="WhatsApp conversations" />
+            <ToolCard href="/admin/messages" icon={<Inbox />} title="المحادثات" sub={`${messages?.whatsapp.conversations_open || 0} مفتوحة`}
+              badge={messages?.whatsapp.unanswered || undefined} />
+            <ToolCard href="/admin/wa-review" icon={<MessageSquare />} title="مراجعة WhatsApp" sub={messages?.whatsapp.review_pending ? `${messages.whatsapp.review_pending} في الانتظار` : 'كله متراجع'}
+              badge={messages?.whatsapp.review_pending || undefined} />
+            <ToolCard href="/admin/email-queue" icon={<Mail />} title="طابور الإيميل" sub={`${(messages?.email.admin_queued || 0) + (messages?.email.customer_queued || 0)} في الطابور`}
+              badge={(messages?.email.admin_failed || 0) + (messages?.email.customer_failed || 0) || undefined} />
+            <ToolCard href="/admin/welcome-messages" icon={<Heart />} title="رسائل ترحيبية" sub="Welcome flows" />
+            <ToolCard href="/admin/email-templates" icon={<ScrollText />} title="قوالب الإيميل" sub="Email templates" />
+            <ToolCard href="/admin/notifications" icon={<Bell />} title="إرسال Push" sub={`${messages?.push.subscribers || 0} مشترك`} />
+            <ToolCard href="/admin/daily-messages" icon={<Send />} title="رسالة اليوم" sub={`${messages?.daily.today || 0} اليوم · ${messages?.daily.total || 0} إجمالي`} />
             <ToolCard href="/admin/leads" icon={<Phone />} title="Cold Leads" sub={`${data.whatsapp.cold_leads_new} جديد`} />
             <ToolCard href="/admin/leads-feed" icon={<Rss />} title="Realtime Leads" sub="Live stream" />
           </div>
