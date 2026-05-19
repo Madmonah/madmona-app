@@ -100,6 +100,20 @@ type MessagesData = {
   }>
 }
 
+type PulseData = {
+  checked_at: string
+  overall_status: 'healthy' | 'warning' | 'critical'
+  unresolved_alerts: number
+  pipelines: {
+    publishing: { status: string; hours_since_last_publish: number; stuck_approved: number }
+    whatsapp:   { status: string; queue_stuck: number; failed_6h: number; unanswered: number }
+    email:      { status: string; queued_stuck: number }
+    bookings:   { status: string; pending_payment: number }
+    listings:   { status: string; drafts_abandoned: number }
+    leads:      { status: string; uncontacted: number }
+  }
+}
+
 type DashboardData = {
   b2b: {
     active_partners: number
@@ -162,6 +176,7 @@ export default function AdminDashboardV2() {
   const [stage, setStage] = useState<Stage>('loading')
   const [data, setData] = useState<DashboardData | null>(null)
   const [messages, setMessages] = useState<MessagesData | null>(null)
+  const [pulse, setPulse] = useState<PulseData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
@@ -171,11 +186,13 @@ export default function AdminDashboardV2() {
       if (!session?.user) { setStage('unauthenticated'); return }
 
       setRefreshing(true)
-      const [statsRes, msgsRes] = await Promise.all([
+      const [statsRes, msgsRes, pulseRes] = await Promise.all([
         // @ts-expect-error
         supabaseBrowser.rpc('get_admin_dashboard_v2'),
         // @ts-expect-error
         supabaseBrowser.rpc('get_admin_messages_summary'),
+        // @ts-expect-error
+        supabaseBrowser.rpc('get_system_pulse_status'),
       ])
       setRefreshing(false)
 
@@ -188,6 +205,7 @@ export default function AdminDashboardV2() {
       }
       setData(statsRes.data as DashboardData)
       if (msgsRes.data) setMessages(msgsRes.data as MessagesData)
+      if (pulseRes.data) setPulse(pulseRes.data as PulseData)
       setStage('ready')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'فشل التحميل')
@@ -300,6 +318,9 @@ export default function AdminDashboardV2() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-8 pb-12">
+
+        {/* ===== SYSTEM PULSE (Watchdog Bar) ===== */}
+        {pulse && <SystemPulseBar pulse={pulse} />}
 
         {/* ===== HERO KPIs ===== */}
         <section>
@@ -1006,6 +1027,82 @@ function ExternalCard({ href, icon, title, sub }: {
       <p className="text-sm font-bold text-[#1A2E26] leading-tight">{title}</p>
       <p className="text-[10px] text-[#6B7280] mt-0.5">{sub}</p>
     </a>
+  )
+}
+
+function SystemPulseBar({ pulse }: { pulse: PulseData }) {
+  const overall = pulse.overall_status
+  const overallBg =
+    overall === 'critical' ? 'from-red-600 to-red-700' :
+    overall === 'warning'  ? 'from-amber-500 to-amber-600' :
+                             'from-[#1F6F5F] to-[#185547]'
+  const overallLabel =
+    overall === 'critical' ? 'فيه مشكلة كبيرة' :
+    overall === 'warning'  ? 'فيه تنبيهات' :
+                             'كل حاجة شغّالة'
+
+  const pipes = [
+    { key: 'publishing', label: '📱 النشر',     value: pulse.pipelines.publishing.hours_since_last_publish > 0
+        ? `آخر نشر منذ ${pulse.pipelines.publishing.hours_since_last_publish}س` : '—',
+      status: pulse.pipelines.publishing.status, href: '/admin/agent-runs' },
+    { key: 'whatsapp',   label: '💬 WhatsApp',  value: `${pulse.pipelines.whatsapp.unanswered} بدون رد`,
+      status: pulse.pipelines.whatsapp.status, href: '/admin/messages' },
+    { key: 'email',      label: '✉️ الإيميل',    value: `${pulse.pipelines.email.queued_stuck} عالق`,
+      status: pulse.pipelines.email.status, href: '/admin/email-queue' },
+    { key: 'bookings',   label: '📅 الحجوزات',  value: `${pulse.pipelines.bookings.pending_payment} pending`,
+      status: pulse.pipelines.bookings.status, href: '/admin/marketplace-bookings' },
+    { key: 'listings',   label: '📦 الإعلانات', value: `${pulse.pipelines.listings.drafts_abandoned} مسودة`,
+      status: pulse.pipelines.listings.status, href: '/admin/listing-drafts' },
+    { key: 'leads',      label: '📞 Leads',      value: `${pulse.pipelines.leads.uncontacted} مش متواصل`,
+      status: pulse.pipelines.leads.status, href: '/admin/leads' },
+  ]
+
+  return (
+    <section>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#6B7280]">SYSTEM PULSE</p>
+          <h2 className="text-base md:text-lg font-black text-[#1A2E26]">نبض النظام</h2>
+        </div>
+        <Link href="/admin/alerts"
+          className={`bg-gradient-to-l ${overallBg} text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 hover:opacity-90 transition-opacity`}>
+          <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+          {overallLabel}
+          {pulse.unresolved_alerts > 0 && (
+            <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px]">{pulse.unresolved_alerts}</span>
+          )}
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+        {pipes.map((p) => (
+          <Link key={p.key} href={p.href}
+            className={`relative bg-white rounded-xl border p-3 hover:shadow-sm transition-all active:scale-[0.98] ${
+              p.status === 'critical' ? 'border-red-200' :
+              p.status === 'warning'  ? 'border-amber-200' :
+                                        'border-gray-100'
+            }`}>
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <p className="text-[10px] font-bold text-[#1A2E26] leading-tight">{p.label}</p>
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                p.status === 'critical' ? 'bg-red-500' :
+                p.status === 'warning'  ? 'bg-amber-500' :
+                                          'bg-[#1F6F5F]'
+              }`} />
+            </div>
+            <p className={`text-[11px] font-bold ${
+              p.status === 'critical' ? 'text-red-700' :
+              p.status === 'warning'  ? 'text-amber-700' :
+                                        'text-[#6B7280]'
+            }`}>{p.value}</p>
+          </Link>
+        ))}
+      </div>
+
+      <p className="text-[10px] text-[#6B7280] mt-2 font-mono">
+        تحديث تلقائي كل دقيقة · 6 watchdogs بـ تُ راقب · أي alert بـ يوصلك push + WhatsApp
+      </p>
+    </section>
   )
 }
 
