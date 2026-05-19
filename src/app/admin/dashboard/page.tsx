@@ -1,128 +1,166 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
-  ArrowRight, Loader2, Lock, Crown, Building2, Calendar,
-  TrendingUp, DollarSign, Users, Package, Eye, Star,
-  AlertCircle, FolderTree, ChevronLeft, UserCog, Wallet,
-  Settings, Layers, Bell, Image as ImageIcon, Phone,
-  ClipboardList, History, Briefcase, Bot, Sparkles, Target,
-  Megaphone, Video, BarChart3, Activity, Shield, ShieldAlert,
-  FlaskConical, MessageSquare, GitBranch, Brain, Lightbulb,
-  Compass, Newspaper, Handshake, FileBarChart, Network,
-  Rss, Zap, ScrollText, Mail, ExternalLink, Cloud, Database, Globe,
-  Workflow,
+  Loader2, Lock, AlertCircle, ArrowRight, ExternalLink, RefreshCw,
+  // B2B
+  Building2, Users, Wallet, TrendingUp, BadgePercent, Star,
+  Clock, MapPin, Heart, Receipt, ShieldCheck, QrCode, ShieldAlert,
+  // B2C
+  Package, Calendar, Phone, Eye, Rss, FolderTree,
+  // AI
+  Bot, Sparkles, Brain, GitBranch, Activity, Zap, Network,
+  // WA
+  MessageSquare, Send, Inbox,
+  // Marketing
+  Megaphone, Video, Image as ImageIcon, Newspaper, Bell, Target,
+  // Analytics
+  BarChart3, Compass, Lightbulb, ScrollText, FileBarChart,
+  // Ops
+  Shield, FlaskConical, Handshake, Workflow, ClipboardList,
+  // System
+  Database, Cloud, Globe, Mail, Settings, BookOpen,
+  // CTA
+  Plus, ChevronLeft, CheckCircle2, XCircle, Crown,
 } from 'lucide-react'
 
-// ============================================================================
-// /admin/dashboard — full admin hub with ALL admin routes
-// FAST VERSION: uses get_admin_dashboard_stats() RPC (1 query instead of 9)
-// ============================================================================
+/* ============================================================
+   /admin/dashboard — v2 (Phase B.10)
+   
+   Comprehensive Madmona admin hub, locked 5-color palette.
+   Sections: B2B Partners · B2C Marketplace · AI OS · WhatsApp ·
+             Marketing · Analytics · Operations · System · External
+   ============================================================ */
 
 type Stage = 'loading' | 'unauthenticated' | 'forbidden' | 'ready'
 
-interface DashboardData {
-  totalBookings: number
-  monthBookings: number
-  pendingBookings: number
-  confirmedBookings: number
-  completedBookings: number
-  cancelledBookings: number
-  totalCommission: number
-  monthCommission: number
-  totalGMV: number
-  monthGMV: number
-  approvedSuppliers: number
-  pendingSuppliers: number
-  publishedListings: number
-  draftListings: number
-  totalCustomers: number
-  totalReviews: number
-  averageRating: number
-  pushSubscribers: number
-  recentBookings: RecentBooking[]
-  topListings: TopListing[]
-}
-
-interface RecentBooking {
+type B2BPartner = {
   id: string
-  reference_code: string | null
-  total_amount: number
-  status: string
-  created_at: string
-  listing: { title: string } | null
-  supplier: { business_name: string } | null
-  customer: { full_name: string | null } | null
+  business_name: string
+  industry: string | null
+  contract_status: string
+  commission_pct: number
+  branches: number
+  employees: number
+  revenue_month: number
+  commission_month: number
+  avg_rating: number | null
 }
 
-interface TopListing {
-  id: string
-  title: string
-  slug: string
-  views_count: number
-  bookings_count: number
-  rating: number | null
+type DashboardData = {
+  b2b: {
+    active_partners: number
+    leads_ready: number
+    commission_today: number
+    commission_month: number
+    gmv_month: number
+    transactions_today: number
+    partners: B2BPartner[]
+  }
+  b2c: {
+    bookings_total: number
+    bookings_month: number
+    bookings_pending: number
+    gmv_month: number
+    commission_month: number
+    suppliers_approved: number
+    suppliers_pending: number
+    listings_published: number
+    listings_draft: number
+    total_customers: number
+    total_reviews: number
+    avg_rating: number
+    push_subscribers: number
+  }
+  ai: {
+    agents_total: number
+    agents_enabled: number
+    agents_healthy: number
+    agents_stale: number
+    alerts_unresolved: number
+    runs_today: number
+    runs_failed_today: number
+  }
+  whatsapp: {
+    queue_pending: number
+    queue_failed: number
+    review_pending: number
+    sent_today: number
+    cold_leads_total: number
+    cold_leads_new: number
+    cold_leads_contacted: number
+  }
+  recent_b2b_txns: Array<{
+    id: string; direction: 'in' | 'out'; amount_egp: number;
+    category_snapshot: string | null; description: string | null;
+    occurred_at: string; madmona_commission_amount: number | null;
+    business_name: string; branch_name: string | null;
+  }>
+  recent_ratings: Array<{
+    id: string; rating: number; comment: string | null;
+    customer_name_snapshot: string | null;
+    service_name_snapshot: string | null;
+    created_at: string;
+    business_name: string; branch_name: string | null;
+  }>
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  pending_payment: { label: 'بانتظار', color: 'bg-yellow-100 text-yellow-800' },
-  confirmed: { label: 'مؤكّد', color: 'bg-green-100 text-green-800' },
-  active: { label: 'جاري', color: 'bg-blue-100 text-blue-800' },
-  completed: { label: 'تمّ', color: 'bg-gray-100 text-gray-700' },
-  cancelled: { label: 'ملغي', color: 'bg-red-100 text-red-800' },
-  refunded: { label: 'مُسترد', color: 'bg-purple-100 text-purple-800' },
-}
-
-export default function AdminDashboardPage() {
+export default function AdminDashboardV2() {
   const [stage, setStage] = useState<Stage>('loading')
   const [data, setData] = useState<DashboardData | null>(null)
-  const [loadError, setLoadError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
+
+  async function load() {
+    try {
+      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      if (!session?.user) { setStage('unauthenticated'); return }
+
+      setRefreshing(true)
+      // @ts-expect-error
+      const { data: stats, error: rpcError } = await supabaseBrowser.rpc('get_admin_dashboard_v2')
+      setRefreshing(false)
+
+      if (rpcError) {
+        const msg = (rpcError.message || '').toLowerCase()
+        if (msg.includes('forbidden')) { setStage('forbidden'); return }
+        setError(rpcError.message)
+        setStage('ready')
+        return
+      }
+      setData(stats as DashboardData)
+      setStage('ready')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'فشل التحميل')
+      setStage('ready')
+      setRefreshing(false)
+    }
+  }
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        const { data: { session } } = await supabaseBrowser.auth.getSession()
-        if (!session?.user) { setStage('unauthenticated'); return }
-
-        // @ts-expect-error
-        const { data: stats, error } = await supabaseBrowser.rpc('get_admin_dashboard_stats')
-
-        if (error) {
-          const msg = (error.message || '').toLowerCase()
-          if (msg.includes('forbidden')) { setStage('forbidden'); return }
-          if (msg.includes('unauthenticated')) { setStage('unauthenticated'); return }
-          setLoadError(error.message || 'فشل تحميل البيانات')
-          setStage('ready')
-          return
-        }
-
-        setData(stats as DashboardData)
-        setStage('ready')
-      } catch (e) {
-        setLoadError(e instanceof Error ? e.message : 'حصلت مشكلة')
-        setStage('ready')
-      }
-    }
-    init()
+    load()
+    const id = setInterval(load, 60000)
+    return () => clearInterval(id)
   }, [])
 
   if (stage === 'loading') {
     return (
-      <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
+        <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" />
       </div>
     )
   }
 
   if (stage === 'unauthenticated') {
     return (
-      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
-        <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-3xl p-8 text-center max-w-sm">
           <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
-          <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
-          <Link href="/auth/login?redirect=/admin/dashboard" className="block bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold">
+          <h1 className="text-lg font-black text-[#1A2E26] mb-2">سجل دخول الأول</h1>
+          <Link href="/auth/login?redirect=/admin/dashboard"
+            className="block bg-[#1F6F5F] text-white py-3 rounded-xl font-bold mt-3">
             تسجيل دخول
           </Link>
         </div>
@@ -132,347 +170,576 @@ export default function AdminDashboardPage() {
 
   if (stage === 'forbidden') {
     return (
-      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
-        <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-3xl p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
-          <h1 className="font-bold mb-2">مش مسموح</h1>
-          <p className="text-sm text-gray-600 mb-4">الصفحة دي للأدمن فقط.</p>
-          <Link href="/account" className="inline-block bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold">
-            ارجع للحساب
-          </Link>
+          <h1 className="text-lg font-black text-[#1A2E26]">للأدمن فقط</h1>
         </div>
       </div>
     )
   }
 
-  if (loadError || !data) {
+  if (error || !data) {
     return (
-      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
-        <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white rounded-3xl p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
-          <h1 className="font-bold mb-2">حصلت مشكلة في التحميل</h1>
-          <p className="text-sm text-gray-600 mb-4">{loadError || 'مفيش بيانات'}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="inline-block bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold"
-          >
-            حاول تاني
-          </button>
+          <p className="text-sm text-[#6B7280] mb-4">{error || 'مفيش بيانات'}</p>
+          <button onClick={load} className="bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-bold">حاول تاني</button>
         </div>
       </div>
     )
   }
+
+  const aiHealthRatio = data.ai.agents_total > 0
+    ? Math.round((data.ai.agents_healthy / data.ai.agents_total) * 100) : 0
 
   return (
-    <div className="min-h-screen gradient-mesh" dir="rtl">
-      <header className="sticky top-0 z-40 glass border-b border-white/40">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Link href="/account" className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all">
-            <ArrowRight className="w-4 h-4 text-gray-700" />
-          </Link>
+    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+      {/* ===== HEADER ===== */}
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-30 backdrop-blur-md bg-white/95">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Link href="/account"
+              className="w-9 h-9 bg-[#FAFAF7] hover:bg-gray-100 rounded-xl flex items-center justify-center transition-colors">
+              <ArrowRight className="w-4 h-4 text-[#6B7280]" />
+            </Link>
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-0.5">
+                MADMONA · ADMIN
+              </p>
+              <h1 className="text-base md:text-lg font-black text-[#1A2E26] leading-none">
+                مركز التحكم
+              </h1>
+            </div>
+          </div>
+
           <div className="flex items-center gap-2">
-            <Crown className="w-5 h-5 text-[#2FA084]" />
-            <h1 className="text-lg font-black text-gray-900">Admin Dashboard</h1>
+            {/* AI Health pill */}
+            <div className="hidden md:flex items-center gap-1.5 bg-[#FAFAF7] rounded-full px-3 py-1.5">
+              <div className={`w-2 h-2 rounded-full ${
+                aiHealthRatio >= 90 ? 'bg-[#1F6F5F]' :
+                aiHealthRatio >= 70 ? 'bg-amber-500' : 'bg-red-500'
+              }`} />
+              <span className="text-[10px] font-bold text-[#1A2E26]">
+                AI: {data.ai.agents_healthy}/{data.ai.agents_total}
+              </span>
+            </div>
+
+            {data.ai.alerts_unresolved > 0 && (
+              <Link href="/admin/alerts"
+                className="px-2.5 py-1.5 rounded-full bg-red-50 text-red-700 text-[10px] font-bold flex items-center gap-1 hover:bg-red-100 transition-colors">
+                <Bell className="w-3 h-3" />
+                {data.ai.alerts_unresolved} تنبيه
+              </Link>
+            )}
+
+            <button onClick={load} disabled={refreshing}
+              className="w-9 h-9 bg-[#FAFAF7] hover:bg-gray-100 rounded-xl flex items-center justify-center transition-colors">
+              <RefreshCw className={`w-4 h-4 text-[#6B7280] ${refreshing ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6 space-y-8 pb-12">
-        {/* Big metrics */}
+      <main className="max-w-7xl mx-auto px-4 py-6 space-y-8 pb-12">
+
+        {/* ===== HERO KPIs ===== */}
         <section>
-          <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">الأرقام الكبرى</h2>
+          <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#6B7280] mb-3">
+            الأرقام اللي بـ تهم
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <MetricCard icon={<DollarSign className="w-4 h-4" />} label="عمولة Madmona (شهر)" value={`${Number(data.monthCommission).toLocaleString('ar-EG')} ج.م`} subtitle={`إجمالي: ${Number(data.totalCommission).toLocaleString('ar-EG')}`} accent="bg-[#1F6F5F]/10 text-[#1F6F5F]" />
-            <MetricCard icon={<TrendingUp className="w-4 h-4" />} label="GMV (شهر)" value={`${Number(data.monthGMV).toLocaleString('ar-EG')} ج.م`} subtitle={`إجمالي: ${Number(data.totalGMV).toLocaleString('ar-EG')}`} accent="bg-[#2FA084]/10 text-[#2FA084]" />
-            <MetricCard icon={<Calendar className="w-4 h-4" />} label="حجوزات الشهر" value={data.monthBookings.toString()} subtitle={`إجمالي: ${data.totalBookings}`} accent="bg-blue-100 text-blue-700" />
-            <MetricCard icon={<Users className="w-4 h-4" />} label="أجر مننا (عملاء)" value={data.totalCustomers.toString()} subtitle={`${data.approvedSuppliers} أجر معانا · ${data.pendingSuppliers} معلّق · ${data.pushSubscribers} 🔔`} accent="bg-purple-100 text-purple-700" />
+            <KpiCard
+              icon={<BadgePercent />}
+              label="عمولة مضمونة — الشهر"
+              value={`${Number(data.b2b.commission_month + data.b2c.commission_month).toLocaleString('ar-EG')} ج`}
+              note={`${data.b2b.commission_month.toLocaleString('ar-EG')} B2B + ${data.b2c.commission_month.toLocaleString('ar-EG')} B2C`}
+              primary
+            />
+            <KpiCard
+              icon={<Building2 />}
+              label="شركاء B2B"
+              value={data.b2b.active_partners}
+              note={`${data.b2b.leads_ready} lead جاهز للتحويل`}
+              tone="positive"
+            />
+            <KpiCard
+              icon={<Users />}
+              label="موردين B2C"
+              value={data.b2c.suppliers_approved}
+              note={data.b2c.suppliers_pending > 0 ? `+ ${data.b2c.suppliers_pending} في الانتظار` : 'كله متعمد'}
+              tone="neutral"
+            />
+            <KpiCard
+              icon={<Bot />}
+              label="نظام AI"
+              value={`${data.ai.agents_enabled}/${data.ai.agents_total}`}
+              note={data.ai.alerts_unresolved > 0 ? `⚠️ ${data.ai.alerts_unresolved} تنبيه` : 'كله شغال ✓'}
+              tone={data.ai.alerts_unresolved > 0 ? 'negative' : 'positive'}
+            />
           </div>
         </section>
 
-        {/* AI Assistant Big Banner — chat with all 46 agents */}
-        <Link href="/admin/ai-assistant" className="block bg-gradient-to-l from-[#2FA084] via-[#d4a017] to-[#2FA084] text-white rounded-3xl p-6 shadow-luxe hover:shadow-2xl hover:-translate-y-0.5 transition-all no-underline relative overflow-hidden">
-          <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/15 rounded-full blur-3xl" />
-          <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-[#1F6F5F]/30 rounded-full blur-3xl" />
-          <div className="relative flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
-                <Sparkles className="w-7 h-7" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black tracking-[0.3em] uppercase text-white/80 mb-1">CHAT · NATURAL LANGUAGE</p>
-                <h3 className="text-2xl font-black mb-1">المساعد الذكي</h3>
-                <p className="text-sm text-white/90">اومر الـ 46 agent بالعامية وهم ينفذوا</p>
-              </div>
-            </div>
-            <ArrowRight className="w-6 h-6 -scale-x-100 transition-transform hidden md:block" />
-          </div>
-        </Link>
+        {/* ===== QUICK ACTIONS (top of fold) ===== */}
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+          <QuickAction href="/admin/ai-assistant" icon={<Sparkles className="w-5 h-5" />}
+            title="المساعد الذكي" sub="اومر الـ agents بالعامية" accent />
+          <QuickAction href="/admin/business-partners" icon={<Building2 className="w-5 h-5" />}
+            title="شركاء B2B" sub={`${data.b2b.active_partners} نشط · ${data.b2b.leads_ready} lead`} />
+          <QuickAction href="/admin/wa-review" icon={<MessageSquare className="w-5 h-5" />}
+            title="مراجعة WhatsApp" sub={data.whatsapp.review_pending > 0 ? `${data.whatsapp.review_pending} في الانتظار` : 'كله متراجع'} 
+            badge={data.whatsapp.review_pending > 0 ? data.whatsapp.review_pending : undefined} />
+          <QuickAction href="/admin/ai-os" icon={<Bot className="w-5 h-5" />}
+            title="AI OS" sub={`${data.ai.agents_enabled} agent شغال`} />
+        </section>
 
-        {/* AI OS Big Banner */}
-        <Link href="/admin/ai-os" className="block bg-gradient-to-l from-[#1F6F5F] via-[#2d7a52] to-[#1F6F5F] text-white rounded-3xl p-6 shadow-luxe hover:shadow-2xl hover:-translate-y-0.5 transition-all no-underline relative overflow-hidden">
-          <div className="absolute -top-12 -left-12 w-40 h-40 bg-[#2FA084]/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-          <div className="relative flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">
-                <Bot className="w-7 h-7" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black tracking-[0.3em] uppercase text-white/70 mb-1">42 AGENTS · 8 TEAMS</p>
-                <h3 className="text-2xl font-black mb-1">AI OS · مركز التحكم</h3>
-                <p className="text-sm text-white/85">Sales · Marketing · Creative · Operations · Strategic · Support · Intelligence · Growth</p>
-              </div>
-            </div>
-            <ArrowRight className="w-6 h-6 -scale-x-100 group-hover:-translate-x-1 transition-transform hidden md:block" />
+        {/* ============ B2B SECTION ============ */}
+        <Section title="💼 شركاء B2B" subtitle="Phase B · مضمونة بـ تحضن نشاط الفرع كامل">
+          {/* B2B sub-KPIs */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <SubKpi label="عمولة اليوم" value={`${data.b2b.commission_today.toLocaleString('ar-EG')} ج`} />
+            <SubKpi label="GMV الشهر" value={`${data.b2b.gmv_month.toLocaleString('ar-EG')} ج`} />
+            <SubKpi label="معاملات اليوم" value={data.b2b.transactions_today} />
+            <SubKpi label="Leads جاهزة" value={data.b2b.leads_ready} />
           </div>
-        </Link>
 
-        {/* All admin tools by section */}
-        <section>
-          <div className="flex items-end justify-between mb-3">
-            <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest">أدوات الإدارة</h2>
-            {data.pendingSuppliers > 0 && (
-              <Link href="/admin/sup" className="text-xs bg-yellow-400 text-gray-900 px-2.5 py-1 rounded-full font-bold animate-pulse-soft">
-                {data.pendingSuppliers} أجر معانا يحتاج موافقة
-              </Link>
+          {/* Partner cards */}
+          {data.b2b.partners.length > 0 ? (
+            <div className="space-y-3 mb-4">
+              {data.b2b.partners.map((p) => <PartnerCard key={p.id} p={p} />)}
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-dashed border-gray-300 p-6 text-center mb-4">
+              <Building2 className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
+              <p className="text-sm text-[#6B7280]">لسه ما فيش شركاء — حوّل lead</p>
+            </div>
+          )}
+
+          {/* B2B tools */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ToolCard href="/admin/business-partners" icon={<Building2 />} title="كل الشركاء" sub="إدارة + leads" />
+            <ToolCard href="/admin/business-partners/new" icon={<Plus />} title="ضيف شريك جديد" sub="3-step wizard" />
+            <ToolCard href="/admin/leads" icon={<Phone />} title="Cold Leads" sub={`${data.whatsapp.cold_leads_total} موجود`} />
+            <ToolCard href="/admin/leads-feed" icon={<Rss />} title="Leads Feed" sub="Realtime stream" />
+          </div>
+        </Section>
+
+        {/* ============ B2C MARKETPLACE ============ */}
+        <Section title="🛍️ Marketplace (B2C)" subtitle="رنتال مفتوح للعملاء">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <SubKpi label="حجوزات الشهر" value={data.b2c.bookings_month}
+              note={`${data.b2c.bookings_total} إجمالي`} />
+            <SubKpi label="GMV الشهر" value={`${Number(data.b2c.gmv_month).toLocaleString('ar-EG')} ج`} />
+            <SubKpi label="إعلانات منشورة" value={data.b2c.listings_published}
+              note={data.b2c.listings_draft > 0 ? `${data.b2c.listings_draft} مسودة` : ''} />
+            <SubKpi label="عملاء + reviews" value={data.b2c.total_customers}
+              note={data.b2c.total_reviews > 0 ? `${data.b2c.avg_rating} ⭐` : ''} />
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ToolCard href="/admin/listings" icon={<Package />} title="الإعلانات" sub={`${data.b2c.listings_published} منشور`}
+              badge={data.b2c.listings_draft || undefined} />
+            <ToolCard href="/admin/sup" icon={<Users />} title="الموردين" sub={`${data.b2c.suppliers_approved} متعمد`}
+              badge={data.b2c.suppliers_pending || undefined} />
+            <ToolCard href="/admin/marketplace-bookings" icon={<Calendar />} title="الحجوزات" sub={`${data.b2c.bookings_pending} بانتظار`} />
+            <ToolCard href="/admin/categories" icon={<FolderTree />} title="الفئات" sub="Categories + attrs" />
+            <ToolCard href="/admin/payouts" icon={<Wallet />} title="المدفوعات" sub="Payouts" />
+            <ToolCard href="/admin/listing-performance" icon={<FileBarChart />} title="أداء الإعلانات" sub="Performance" />
+            <ToolCard href="/admin/notifications" icon={<Bell />} title="إشعارات Push" sub={`${data.b2c.push_subscribers} مشترك`} />
+            <ToolCard href="/" icon={<Eye />} title="معاينة الموقع" sub="الواجهة العامة" />
+          </div>
+        </Section>
+
+        {/* ============ AI OS ============ */}
+        <Section title="🤖 AI OS" subtitle="49 agent عبر 8 فرق · self-improving prompts">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <SubKpi label="Agents شغالين" value={`${data.ai.agents_enabled}/${data.ai.agents_total}`} />
+            <SubKpi label="Healthy" value={data.ai.agents_healthy} tone="positive" />
+            <SubKpi label="Stale/Warning" value={data.ai.agents_stale} tone={data.ai.agents_stale > 0 ? 'negative' : 'neutral'} />
+            <SubKpi label="Runs اليوم" value={data.ai.runs_today}
+              note={data.ai.runs_failed_today > 0 ? `${data.ai.runs_failed_today} فشل` : ''} />
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ToolCard href="/admin/ai-assistant" icon={<Sparkles />} title="المساعد الذكي" sub="Chat مباشر" />
+            <ToolCard href="/admin/ai-os" icon={<Bot />} title="AI OS Hub" sub="8 فرق منظمة" />
+            <ToolCard href="/admin/agents" icon={<Brain />} title="إدارة Agents" sub="enabled/disabled" />
+            <ToolCard href="/admin/agent-health" icon={<Activity />} title="صحة Agents" sub="Per-agent stats"
+              badge={data.ai.agents_stale > 0 ? data.ai.agents_stale : undefined} />
+            <ToolCard href="/admin/agent-runs" icon={<Workflow />} title="Runs Logs" sub="كل تشغيل" />
+            <ToolCard href="/admin/agent-network" icon={<Network />} title="Network Graph" sub="الـ collaborations" />
+            <ToolCard href="/admin/prompt-versions" icon={<GitBranch />} title="Prompts" sub="META improvements" />
+            <ToolCard href="/admin/alerts" icon={<Bell />} title="التنبيهات" sub={data.ai.alerts_unresolved > 0 ? `${data.ai.alerts_unresolved} unresolved` : 'كله نضيف'}
+              badge={data.ai.alerts_unresolved || undefined} />
+            <ToolCard href="/admin/capabilities" icon={<Zap />} title="Capabilities" sub="Tools agents يقدروا يستخدموا" />
+            <ToolCard href="/admin/pipelines" icon={<Workflow />} title="Pipelines" sub="Multi-agent workflows" />
+            <ToolCard href="/admin/policy-rules" icon={<ShieldCheck />} title="قواعد السياسة" sub="Policy enforcement" />
+            <ToolCard href="/admin/insights" icon={<Lightbulb />} title="Agent Insights" sub="رؤى الـ agents" />
+          </div>
+        </Section>
+
+        {/* ============ WHATSAPP ============ */}
+        <Section title="📱 WhatsApp Pipeline" subtitle="WABA + supplier acquisition + AI auto-responder">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <SubKpi label="مرسلة اليوم" value={data.whatsapp.sent_today} tone="positive" />
+            <SubKpi label="في الطابور" value={data.whatsapp.queue_pending} />
+            <SubKpi label="بانتظار المراجعة" value={data.whatsapp.review_pending}
+              tone={data.whatsapp.review_pending > 0 ? 'amber' : 'neutral'} />
+            <SubKpi label="فشلت" value={data.whatsapp.queue_failed}
+              tone={data.whatsapp.queue_failed > 0 ? 'negative' : 'neutral'} />
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ToolCard href="/admin/wa-review" icon={<MessageSquare />} title="مراجعة الرسائل" sub="supplier_leads قبل الإرسال"
+              badge={data.whatsapp.review_pending || undefined} />
+            <ToolCard href="/admin/messages" icon={<Inbox />} title="المحادثات" sub="WhatsApp conversations" />
+            <ToolCard href="/admin/leads" icon={<Phone />} title="Cold Leads" sub={`${data.whatsapp.cold_leads_new} جديد`} />
+            <ToolCard href="/admin/leads-feed" icon={<Rss />} title="Realtime Leads" sub="Live stream" />
+          </div>
+        </Section>
+
+        {/* ============ MARKETING & CONTENT ============ */}
+        <Section title="🎨 التسويق والمحتوى" subtitle="creative tier · Cosmos V4 hero · Reels v13">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ToolCard href="/admin/marketing-hq" icon={<Target />} title="Marketing HQ" sub="مركز التسويق" />
+            <ToolCard href="/admin/ad-builder" icon={<Sparkles />} title="مولد الإعلانات" sub="Ad Builder AI" />
+            <ToolCard href="/admin/ad-creatives" icon={<ImageIcon />} title="مكتبة الإعلانات" sub="Creatives" />
+            <ToolCard href="/admin/ad-review" icon={<Eye />} title="مراجعة إعلانات" sub="Before publishing" />
+            <ToolCard href="/admin/reels" icon={<Video />} title="الـ Reels" sub="فيديوهات قصيرة" />
+            <ToolCard href="/admin/social-packs" icon={<Megaphone />} title="Social Packs" sub="منشورات منظمة" />
+            <ToolCard href="/admin/social-groups" icon={<Users />} title="فيسبوك Groups" sub="عمل value-first" />
+            <ToolCard href="/admin/supplier-posts" icon={<Newspaper />} title="منشورات الموردين" sub="Supplier posts" />
+            <ToolCard href="/admin/news" icon={<Newspaper />} title="الأخبار" sub="News + RSS" />
+            <ToolCard href="/admin/daily-messages" icon={<Send />} title="رسالة اليوم" sub="Daily broadcasts" />
+            <ToolCard href="/admin/email-templates" icon={<Mail />} title="قوالب الإيميل" sub="Email templates" />
+            <ToolCard href="/admin/email-queue" icon={<Inbox />} title="طابور الإيميل" sub="Email queue" />
+            <ToolCard href="/admin/sponsorships" icon={<Crown />} title="الرعاية" sub="Sponsorships" />
+            <ToolCard href="/admin/site-settings" icon={<Settings />} title="إعدادات الموقع" sub="صور + سوشيال" />
+          </div>
+        </Section>
+
+        {/* ============ ANALYTICS & INTELLIGENCE ============ */}
+        <Section title="📊 التحليلات والذكاء التجاري" subtitle="kpis · forecasts · briefs · strategy">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ToolCard href="/admin/hq" icon={<Compass />} title="HQ · مركز القيادة" sub="Top-level overview" />
+            <ToolCard href="/admin/insights" icon={<Lightbulb />} title="Insights" sub="رؤى الـ system" />
+            <ToolCard href="/admin/funnel" icon={<TrendingUp />} title="Sales Funnel" sub="مسار التحويل" />
+            <ToolCard href="/admin/demand-forecast" icon={<Zap />} title="توقعات الطلب" sub="Demand Forecast" />
+            <ToolCard href="/admin/ceo-briefs" icon={<ScrollText />} title="CEO Briefs" sub="ملخصات يومية" />
+            <ToolCard href="/admin/strategy" icon={<Target />} title="Strategy" sub="الاستراتيجية" />
+            <ToolCard href="/admin/performance" icon={<Activity />} title="Performance" sub="System performance" />
+            <ToolCard href="/admin/command-center" icon={<Compass />} title="Command Center" sub="عرض شامل" />
+          </div>
+        </Section>
+
+        {/* ============ OPERATIONS & TRUST ============ */}
+        <Section title="🛡️ العمليات والأمان" subtitle="fraud · qc · partnerships · activity">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ToolCard href="/admin/activity" icon={<Activity />} title="نشاط الموقع" sub="Activity feed" />
+            <ToolCard href="/admin/fraud-alerts" icon={<ShieldAlert />} title="تنبيهات الاحتيال" sub="Fraud detection" />
+            <ToolCard href="/admin/qc-reports" icon={<FlaskConical />} title="تقارير الجودة" sub="QC Reports" />
+            <ToolCard href="/admin/collaborations" icon={<Network />} title="التعاونات" sub="Collaborations" />
+            <ToolCard href="/admin/partnerships" icon={<Handshake />} title="الشراكات" sub="Partnerships" />
+            <ToolCard href="/admin/listing-drafts" icon={<ClipboardList />} title="مسودات الإعلانات" sub="Drafts" />
+          </div>
+        </Section>
+
+        {/* ============ SYSTEM ADMIN ============ */}
+        <Section title="⚙️ النظام والإدارة" subtitle="runbook · workflows · email · system_runbook">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ToolCard href="/admin/runbook" icon={<BookOpen />} title="Runbook" sub="documentation + history" />
+            <ToolCard href="/admin/workflows" icon={<Workflow />} title="Workflows" sub="Automation flows" />
+            <ToolCard href="/admin/agent-runs" icon={<ClipboardList />} title="Agent Runs Log" sub="History" />
+            <ToolCard href="/admin/refresh-fb-token" icon={<RefreshCw />} title="تجديد FB Token" sub="Meta API" />
+          </div>
+        </Section>
+
+        {/* ============ EXTERNAL TOOLS ============ */}
+        <Section title="🌐 الأدوات الخارجية" subtitle="services we depend on">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ExternalCard href="https://vercel.com/dashboard" icon={<Cloud />} title="Vercel" sub="Deployments + logs" />
+            <ExternalCard href="https://supabase.com/dashboard/project/mjhflxpxunwycbiquoig" icon={<Database />} title="Supabase" sub="DB + Edge Functions" />
+            <ExternalCard href="https://dash.cloudflare.com" icon={<Globe />} title="Cloudflare" sub="DNS + CDN" />
+            <ExternalCard href="https://github.com/Madmonah/madmona-app" icon={<GitBranch />} title="GitHub" sub="Source code" />
+            <ExternalCard href="https://business.facebook.com" icon={<Megaphone />} title="Meta Business" sub="Ads + WhatsApp" />
+            <ExternalCard href="https://resend.com/emails" icon={<Mail />} title="Resend" sub="Email logs" />
+            <ExternalCard href="https://www.canva.com" icon={<ImageIcon />} title="Canva" sub="Designs" />
+            <ExternalCard href="https://console.anthropic.com" icon={<Sparkles />} title="Anthropic" sub="Claude API" />
+          </div>
+        </Section>
+
+        {/* ============ RECENT ACTIVITY ============ */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Recent B2B transactions */}
+          <div>
+            <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#6B7280] mb-3">
+              💼 آخر معاملات B2B
+            </h2>
+            {data.recent_b2b_txns.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-dashed border-gray-300 p-6 text-center">
+                <Receipt className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
+                <p className="text-sm text-[#6B7280]">لسه ما فيش معاملات B2B</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50">
+                {data.recent_b2b_txns.map((t) => (
+                  <div key={t.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                        t.direction === 'in' ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'bg-red-50 text-red-600'
+                      }`}>
+                        {t.direction === 'in' ? <TrendingUp className="w-4 h-4" /> : <Receipt className="w-4 h-4" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-[#1A2E26] truncate">
+                          {t.category_snapshot || 'معاملة'}
+                        </p>
+                        <p className="text-[10px] text-[#6B7280] truncate">
+                          {t.business_name}{t.branch_name && ` · ${t.branch_name}`}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-left flex-shrink-0">
+                      <p className={`text-sm font-black font-mono ${
+                        t.direction === 'in' ? 'text-[#1F6F5F]' : 'text-red-600'
+                      }`}>
+                        {t.direction === 'in' ? '+' : '−'}{Number(t.amount_egp).toLocaleString('ar-EG')}
+                      </p>
+                      {t.madmona_commission_amount && t.madmona_commission_amount > 0 && (
+                        <p className="text-[9px] text-[#1F6F5F]">+{t.madmona_commission_amount}ج</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
-          {/* 1. MARKETPLACE */}
-          <div className="mb-4">
-            <p className="text-[10px] font-bold text-[#1F6F5F] uppercase tracking-widest mb-2 px-1">Marketplace</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard href="/admin/listings" icon={<Package className="w-5 h-5" />} title="إدارة الخدمات" subtitle={`${data.publishedListings} منشور · ${data.draftListings} مسودة`} accent="bg-emerald-100 text-emerald-700" badge={data.draftListings > 0 ? data.draftListings : undefined} />
-              <ToolCard href="/admin/sup" icon={<Building2 className="w-5 h-5" />} title="أجر معانا (Suppliers)" subtitle={`${data.approvedSuppliers} معتمد · ${data.pendingSuppliers} معلّق`} accent="bg-[#1F6F5F]/10 text-[#1F6F5F]" badge={data.pendingSuppliers > 0 ? data.pendingSuppliers : undefined} />
-              <ToolCard href="/admin/marketplace-bookings" icon={<Calendar className="w-5 h-5" />} title="كل الحجوزات" subtitle={`${data.pendingBookings} بانتظار · ${data.confirmedBookings} مؤكّد`} accent="bg-blue-100 text-blue-700" />
-              <ToolCard href="/admin/categories" icon={<FolderTree className="w-5 h-5" />} title="الفئات والخصائص" subtitle="Categories + Attributes" accent="bg-purple-100 text-purple-700" />
-              <ToolCard href="/admin/payouts" icon={<Wallet className="w-5 h-5" />} title="المدفوعات" subtitle="حساب وإصدار التحويلات" accent="bg-green-100 text-green-700" />
-              <ToolCard href="/admin/listing-performance" icon={<FileBarChart className="w-5 h-5" />} title="أداء الإعلانات" subtitle="Performance per listing" accent="bg-teal-100 text-teal-700" />
-              <ToolCard href="/admin/leads" icon={<Phone className="w-5 h-5" />} title="العملاء المحتملين" subtitle="Leads من الفورمات" accent="bg-orange-100 text-orange-700" />
-              <ToolCard href="/admin/leads-feed" icon={<Rss className="w-5 h-5" />} title="Leads Feed" subtitle="Realtime leads stream" accent="bg-rose-100 text-rose-700" />
-            </div>
-          </div>
-
-          {/* 2. AI & AUTOMATION */}
-          <div className="mb-4">
-            <p className="text-[10px] font-bold text-purple-700 uppercase tracking-widest mb-2 px-1 flex items-center gap-1">
-              <Bot className="w-3 h-3" /> الذكاء الاصطناعي والأتمتة
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard href="/admin/ai-assistant" icon={<Sparkles className="w-5 h-5" />} title="المساعد الذكي" subtitle="اومر الـ agents بالعامية" accent="bg-gradient-to-br from-[#2FA084] to-[#1F6F5F] text-white" />
-              <ToolCard href="/admin/pipelines" icon={<Workflow className="w-5 h-5" />} title="Pipeline OS" subtitle="فريق الأجينتس المتناسق" accent="bg-gradient-to-br from-[#0F3324] to-[#1F6F5F] text-white" />
-              <ToolCard href="/admin/ai-os" icon={<Bot className="w-5 h-5" />} title="AI OS Hub" subtitle="42 agents · 8 teams" accent="bg-[#1F6F5F] text-white" />
-              <ToolCard href="/admin/agents" icon={<Brain className="w-5 h-5" />} title="إدارة الـ Agents" subtitle="تحكم في كل agent" accent="bg-purple-100 text-purple-700" />
-              <ToolCard href="/admin/prompt-versions" icon={<GitBranch className="w-5 h-5" />} title="نسخ الـ Prompts" subtitle="META agent self-improving" accent="bg-indigo-100 text-indigo-700" />
-              <ToolCard href="/admin/performance" icon={<Activity className="w-5 h-5" />} title="أداء الـ AI" subtitle="Performance metrics" accent="bg-violet-100 text-violet-700" />
-            </div>
-          </div>
-
-          {/* 2.5 EXTERNAL SERVICES — Resend, Vercel, Supabase, Cloudflare, GitHub */}
-          <div className="mb-4">
-            <p className="text-[10px] font-bold text-gray-700 uppercase tracking-widest mb-2 px-1 flex items-center gap-1">
-              <ExternalLink className="w-3 h-3" /> الخدمات الخارجية
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ExternalToolCard href="https://resend.com/emails" icon={<Mail className="w-5 h-5" />} title="Resend Emails" subtitle="سجل الإيميلات المرسلة" accent="bg-blue-100 text-blue-700" />
-              <ExternalToolCard href="https://vercel.com/dashboard" icon={<Cloud className="w-5 h-5" />} title="Vercel" subtitle="Deployments + Logs" accent="bg-black text-white" />
-              <ExternalToolCard href="https://supabase.com/dashboard/project/mjhflxpxunwycbiquoig" icon={<Database className="w-5 h-5" />} title="Supabase" subtitle="DB + Edge Functions" accent="bg-emerald-100 text-emerald-700" />
-              <ExternalToolCard href="https://dash.cloudflare.com" icon={<Globe className="w-5 h-5" />} title="Cloudflare" subtitle="DNS + CDN" accent="bg-orange-100 text-orange-700" />
-              <ExternalToolCard href="https://github.com/Madmonah/madmona-app" icon={<GitBranch className="w-5 h-5" />} title="GitHub Repo" subtitle="الكود + Commits" accent="bg-gray-900 text-white" />
-              <ExternalToolCard href="https://business.facebook.com" icon={<Megaphone className="w-5 h-5" />} title="Meta Business" subtitle="إعلانات + WhatsApp" accent="bg-blue-600 text-white" />
-              <ExternalToolCard href="https://www.canva.com" icon={<ImageIcon className="w-5 h-5" />} title="Canva" subtitle="تصاميم + قوالب" accent="bg-purple-600 text-white" />
-              <ExternalToolCard href="https://console.anthropic.com" icon={<Sparkles className="w-5 h-5" />} title="Anthropic Console" subtitle="Claude API usage" accent="bg-[#2FA084] text-white" />
-            </div>
-          </div>
-
-          {/* 3. MARKETING & CONTENT */}
-          <div className="mb-4">
-            <p className="text-[10px] font-bold text-[#2FA084] uppercase tracking-widest mb-2 px-1 flex items-center gap-1">
-              <Megaphone className="w-3 h-3" /> التسويق والمحتوى
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard href="/admin/marketing-hq" icon={<Target className="w-5 h-5" />} title="Marketing HQ" subtitle="مركز التسويق" accent="bg-[#2FA084]/10 text-[#2FA084]" />
-              <ToolCard href="/admin/news" icon={<Newspaper className="w-5 h-5" />} title="إدارة الأخبار" subtitle="Admin news + RSS" accent="bg-amber-100 text-amber-700" />
-              <ToolCard href="/admin/ad-builder" icon={<Sparkles className="w-5 h-5" />} title="مولد الإعلانات" subtitle="Ad Builder AI" accent="bg-pink-100 text-pink-700" />
-              <ToolCard href="/admin/ad-creatives" icon={<ImageIcon className="w-5 h-5" />} title="إعلاناتي" subtitle="Ad Creatives library" accent="bg-fuchsia-100 text-fuchsia-700" />
-              <ToolCard href="/admin/reels" icon={<Video className="w-5 h-5" />} title="الـ Reels" subtitle="فيديوهات قصيرة" accent="bg-rose-100 text-rose-700" />
-              <ToolCard href="/admin/site-settings" icon={<ImageIcon className="w-5 h-5" />} title="إعدادات الموقع" subtitle="صور + سوشيال ميديا" accent="bg-pink-100 text-pink-700" />
-              <ToolCard href="/admin/notifications" icon={<Bell className="w-5 h-5" />} title="إرسال إشعارات" subtitle={`${data.pushSubscribers} مفعّل الإشعارات`} accent="bg-blue-100 text-blue-700" />
-            </div>
-          </div>
-
-          {/* 4. ANALYTICS & INTELLIGENCE */}
-          <div className="mb-4">
-            <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest mb-2 px-1 flex items-center gap-1">
-              <BarChart3 className="w-3 h-3" /> التحليلات والذكاء التجاري
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard href="/admin/hq" icon={<Compass className="w-5 h-5" />} title="HQ · مركز القيادة" subtitle="Top-level overview" accent="bg-[#1F6F5F]/10 text-[#1F6F5F]" />
-              <ToolCard href="/admin/insights" icon={<Lightbulb className="w-5 h-5" />} title="Insights" subtitle="رؤى وتحليلات" accent="bg-yellow-100 text-yellow-700" />
-              <ToolCard href="/admin/funnel" icon={<TrendingUp className="w-5 h-5" />} title="Sales Funnel" subtitle="مسار التحويل" accent="bg-cyan-100 text-cyan-700" />
-              <ToolCard href="/admin/demand-forecast" icon={<Zap className="w-5 h-5" />} title="توقعات الطلب" subtitle="Demand Forecast AI" accent="bg-blue-100 text-blue-700" />
-              <ToolCard href="/admin/ceo-briefs" icon={<ScrollText className="w-5 h-5" />} title="CEO Briefs" subtitle="ملخصات يومية" accent="bg-slate-100 text-slate-700" />
-              <ToolCard href="/admin/strategy" icon={<Target className="w-5 h-5" />} title="Strategy" subtitle="الاستراتيجية" accent="bg-indigo-100 text-indigo-700" />
-            </div>
-          </div>
-
-          {/* 5. OPERATIONS & TRUST */}
-          <div className="mb-4">
-            <p className="text-[10px] font-bold text-orange-700 uppercase tracking-widest mb-2 px-1 flex items-center gap-1">
-              <Shield className="w-3 h-3" /> العمليات والأمان
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard href="/admin/activity" icon={<Activity className="w-5 h-5" />} title="نشاط الموقع" subtitle="Activity feed live" accent="bg-cyan-100 text-cyan-700" />
-              <ToolCard href="/admin/fraud-alerts" icon={<ShieldAlert className="w-5 h-5" />} title="تنبيهات الاحتيال" subtitle="Fraud detection" accent="bg-red-100 text-red-700" />
-              <ToolCard href="/admin/qc-reports" icon={<FlaskConical className="w-5 h-5" />} title="تقارير الجودة" subtitle="QC Reports" accent="bg-emerald-100 text-emerald-700" />
-              <ToolCard href="/admin/collaborations" icon={<Network className="w-5 h-5" />} title="التعاونات" subtitle="Collaborations" accent="bg-teal-100 text-teal-700" />
-              <ToolCard href="/admin/partnerships" icon={<Handshake className="w-5 h-5" />} title="الشراكات" subtitle="Partnerships" accent="bg-amber-100 text-amber-700" />
-            </div>
-          </div>
-
-          {/* 6. OUR LISTINGS (Madmona supplier acct) */}
-          <div className="mb-4">
-            <p className="text-[10px] font-bold text-[#2FA084] uppercase tracking-widest mb-2 px-1">إعلاناتنا (Madmona Coworking)</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard href="/supplier/marketplace" icon={<Settings className="w-5 h-5" />} title="لوحة أجر معانا" subtitle="إدارة إعلاناتنا" accent="bg-[#1F6F5F]/10 text-[#1F6F5F]" />
-              <ToolCard href="/supplier/marketplace/new" icon={<Package className="w-5 h-5" />} title="إضافة إعلان جديد" subtitle="مساحة، معدة، عربية..." accent="bg-blue-100 text-blue-700" />
-              <ToolCard href="/supplier/marketplace/reviews" icon={<Star className="w-5 h-5" />} title="التقييمات" subtitle={data.totalReviews > 0 ? `${data.totalReviews} تقييم · ${Number(data.averageRating).toFixed(1)} ⭐` : 'مفيش تقييمات'} accent="bg-yellow-100 text-yellow-700" />
-              <ToolCard href="/" icon={<Eye className="w-5 h-5" />} title="عرض الموقع" subtitle="شوف الموقع كما يراه أجر مننا" accent="bg-pink-100 text-pink-700" />
-            </div>
-          </div>
-
-          {/* 7. TEAM & ACCOUNT */}
-          <div className="mb-4">
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 px-1">فريق العمل والحساب</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard href="/supplier/team" icon={<UserCog className="w-5 h-5" />} title="إدارة الفريق" subtitle="موظفين بصلاحيات" accent="bg-orange-100 text-orange-700" />
-              <ToolCard href="/account" icon={<Layers className="w-5 h-5" />} title="حسابي" subtitle="الإعدادات الشخصية" accent="bg-gray-100 text-gray-700" />
-            </div>
-          </div>
-
-          {/* 8. LEGACY */}
+          {/* Recent ratings */}
           <div>
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 px-1">صفحات قديمة (Legacy)</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <ToolCard href="/admin/marketplace-suppliers" icon={<Building2 className="w-5 h-5" />} title="Suppliers (Old)" subtitle="نسخة قديمة → /admin/sup" accent="bg-gray-100 text-gray-600" />
-              <ToolCard href="/admin/suppliers" icon={<Briefcase className="w-5 h-5" />} title="أجر معانا (V1)" subtitle="Legacy suppliers" accent="bg-gray-100 text-gray-600" />
-              <ToolCard href="/admin/suppliers-v2" icon={<Briefcase className="w-5 h-5" />} title="أجر معانا (V2)" subtitle="Legacy suppliers v2" accent="bg-gray-100 text-gray-600" />
-              <ToolCard href="/admin/bookings" icon={<History className="w-5 h-5" />} title="حجوزات قديمة" subtitle="Legacy bookings" accent="bg-gray-100 text-gray-600" />
-              <ToolCard href="/admin/units" icon={<ClipboardList className="w-5 h-5" />} title="Units (قديم)" subtitle="نظام الوحدات القديم" accent="bg-gray-100 text-gray-600" />
-            </div>
-          </div>
-        </section>
-
-        {/* Booking distribution */}
-        <section>
-          <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">توزيع الحجوزات</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <StatusCard label="بانتظار" value={data.pendingBookings} color="text-yellow-700 bg-yellow-50" />
-            <StatusCard label="مؤكّد" value={data.confirmedBookings} color="text-green-700 bg-green-50" />
-            <StatusCard label="تمّ" value={data.completedBookings} color="text-gray-700 bg-gray-50" />
-            <StatusCard label="ملغي" value={data.cancelledBookings} color="text-red-700 bg-red-50" />
-            <StatusCard label="تقييم متوسط" value={data.averageRating > 0 ? `${Number(data.averageRating).toFixed(1)}` : '—'} color="text-[#2FA084] bg-[#2FA084]/10" suffix={data.totalReviews > 0 ? `(${data.totalReviews})` : ''} />
-          </div>
-        </section>
-
-        {/* Top listings + recent bookings */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {data.topListings.length > 0 && (
-            <div>
-              <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">الأكثر مشاهدة</h2>
-              <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
-                {data.topListings.map((listing, i) => (
-                  <Link key={listing.id} href={`/marketplace/${listing.slug}`} target="_blank" className="flex items-center gap-3 p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 no-underline">
-                    <span className="w-6 h-6 bg-[#1F6F5F]/10 text-[#1F6F5F] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">{i + 1}</span>
-                    <h4 className="flex-1 text-sm font-medium text-gray-900 truncate">{listing.title}</h4>
-                    <div className="flex items-center gap-3 text-xs text-gray-500 flex-shrink-0">
-                      <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {listing.views_count}</span>
-                      {listing.rating && Number(listing.rating) > 0 && (
-                        <span className="flex items-center gap-1"><Star className="w-3 h-3 fill-[#2FA084] text-[#2FA084]" />{Number(listing.rating).toFixed(1)}</span>
-                      )}
+            <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#6B7280] mb-3">
+              ⭐ آخر التقييمات
+            </h2>
+            {data.recent_ratings.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-dashed border-gray-300 p-6 text-center">
+                <Star className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
+                <p className="text-sm text-[#6B7280]">لسه ما فيش تقييمات</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50">
+                {data.recent_ratings.map((r) => (
+                  <div key={r.id} className="px-4 py-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5">
+                        {[1,2,3,4,5].map((n) => (
+                          <Star key={n} className={`w-3.5 h-3.5 ${
+                            n <= r.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200'
+                          }`} />
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-[#6B7280]">{r.business_name}</p>
                     </div>
-                  </Link>
+                    <p className="text-xs text-[#1A2E26]">
+                      {r.customer_name_snapshot || 'عميل'} · {r.service_name_snapshot || '—'}
+                    </p>
+                    {r.comment && (
+                      <p className="text-xs text-[#6B7280] mt-1 italic">"{r.comment}"</p>
+                    )}
+                  </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {data.recentBookings.length > 0 && (
-            <div>
-              <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">آخر الحجوزات</h2>
-              <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
-                {data.recentBookings.map(booking => {
-                  const status = STATUS_LABELS[booking.status] || STATUS_LABELS.pending_payment
-                  return (
-                    <Link key={booking.id} href={`/bookings/${booking.id}`} className="flex items-center gap-3 p-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 no-underline">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${status.color}`}>{status.label}</span>
-                          {booking.reference_code && (<span className="text-[10px] text-gray-400 font-mono">#{booking.reference_code}</span>)}
-                        </div>
-                        <p className="text-sm font-medium text-gray-900 truncate">{booking.listing?.title || 'Listing محذوف'}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{booking.customer?.full_name || 'أجر مننا'} · {booking.supplier?.business_name || 'أجر معانا'}</p>
-                      </div>
-                      <div className="text-left flex-shrink-0">
-                        <p className="text-sm font-bold text-[#1F6F5F]">{Number(booking.total_amount).toLocaleString('ar-EG')} <span className="text-xs font-normal">ج.م</span></p>
-                        <p className="text-[10px] text-gray-400 mt-0.5">{new Date(booking.created_at).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </section>
+
       </main>
     </div>
   )
 }
 
-function ToolCard({ href, icon, title, subtitle, accent, badge }: { href: string; icon: React.ReactNode; title: string; subtitle: string; accent: string; badge?: number }) {
+/* ============================================================
+   COMPONENTS
+   ============================================================ */
+function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: ReactNode }) {
   return (
-    <Link href={href} className="group block bg-white rounded-2xl shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all duration-300 p-4 no-underline relative">
-      {badge && badge > 0 && (
-        <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center">{badge}</span>
+    <section>
+      <div className="mb-3">
+        <h2 className="text-base md:text-lg font-black text-[#1A2E26]">{title}</h2>
+        {subtitle && <p className="text-[11px] text-[#6B7280] mt-0.5">{subtitle}</p>}
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function KpiCard({
+  icon, label, value, note, primary, tone,
+}: {
+  icon: ReactNode; label: string; value: string | number; note?: string;
+  primary?: boolean; tone?: 'positive' | 'negative' | 'neutral'
+}) {
+  const t = tone === 'positive' ? 'text-[#1F6F5F]' : tone === 'negative' ? 'text-red-600' : 'text-[#1A2E26]'
+  return (
+    <div className={`rounded-2xl p-4 border ${
+      primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'
+    }`}>
+      <div className={`flex items-center gap-2 mb-2 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>
+        <span className="w-4 h-4 inline-flex">{icon}</span>
+        <p className="text-[10px] font-bold tracking-wider uppercase">{label}</p>
+      </div>
+      <p className={`text-2xl md:text-3xl font-black ${primary ? 'text-white' : t}`}>{value}</p>
+      {note && <p className={`text-[10px] mt-1 ${primary ? 'text-white/70' : 'text-[#6B7280]'}`}>{note}</p>}
+    </div>
+  )
+}
+
+function SubKpi({ label, value, note, tone }: {
+  label: string; value: string | number; note?: string;
+  tone?: 'positive' | 'negative' | 'amber' | 'neutral'
+}) {
+  const t = tone === 'positive' ? 'text-[#1F6F5F]'
+    : tone === 'negative' ? 'text-red-600'
+    : tone === 'amber' ? 'text-amber-600'
+    : 'text-[#1A2E26]'
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-3">
+      <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1">{label}</p>
+      <p className={`text-xl font-black ${t}`}>{value}</p>
+      {note && <p className="text-[10px] text-[#6B7280] mt-0.5">{note}</p>}
+    </div>
+  )
+}
+
+function QuickAction({ href, icon, title, sub, accent, badge }: {
+  href: string; icon: ReactNode; title: string; sub: string; accent?: boolean; badge?: number
+}) {
+  return (
+    <Link href={href}
+      className={`relative rounded-2xl border p-4 transition-all hover:shadow-md active:scale-[0.98] ${
+        accent ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white hover:bg-[#185547]'
+               : 'bg-white border-gray-100 text-[#1A2E26] hover:border-[#1F6F5F]'
+      }`}>
+      {badge !== undefined && badge > 0 && (
+        <span className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
+          {badge}
+        </span>
       )}
-      <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3 ${accent}`}>{icon}</div>
-      <p className="font-bold text-gray-900 text-sm mb-1 leading-tight">{title}</p>
-      <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">{subtitle}</p>
-      <ChevronLeft className="absolute bottom-4 left-4 w-3.5 h-3.5 text-gray-300 group-hover:text-[#1F6F5F] group-hover:-translate-x-1 transition-all" />
+      <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-2.5 ${
+        accent ? 'bg-white/15 text-white' : 'bg-[#FAFAF7] text-[#1F6F5F]'
+      }`}>{icon}</div>
+      <p className={`text-sm font-black ${accent ? 'text-white' : 'text-[#1A2E26]'}`}>{title}</p>
+      <p className={`text-[11px] mt-0.5 ${accent ? 'text-white/80' : 'text-[#6B7280]'}`}>{sub}</p>
     </Link>
   )
 }
 
-function ExternalToolCard({ href, icon, title, subtitle, accent }: { href: string; icon: React.ReactNode; title: string; subtitle: string; accent: string }) {
+function ToolCard({ href, icon, title, sub, badge }: {
+  href: string; icon: ReactNode; title: string; sub: string; badge?: number
+}) {
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="group block bg-white rounded-2xl shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all duration-300 p-4 no-underline relative">
-      <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3 ${accent}`}>{icon}</div>
-      <p className="font-bold text-gray-900 text-sm mb-1 leading-tight">{title}</p>
-      <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">{subtitle}</p>
-      <ExternalLink className="absolute bottom-4 left-4 w-3.5 h-3.5 text-gray-300 group-hover:text-[#1F6F5F] transition-all" />
+    <Link href={href}
+      className="relative bg-white rounded-2xl border border-gray-100 hover:border-[#1F6F5F] hover:shadow-sm p-3.5 transition-all active:scale-[0.98] group">
+      {badge !== undefined && badge > 0 && (
+        <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
+          {badge}
+        </span>
+      )}
+      <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#FAFAF7] text-[#1F6F5F] mb-2 group-hover:bg-[#1F6F5F] group-hover:text-white transition-colors">
+        <span className="w-4 h-4 inline-flex">{icon}</span>
+      </div>
+      <p className="text-sm font-bold text-[#1A2E26] leading-tight">{title}</p>
+      <p className="text-[10px] text-[#6B7280] mt-0.5 line-clamp-2">{sub}</p>
+    </Link>
+  )
+}
+
+function ExternalCard({ href, icon, title, sub }: {
+  href: string; icon: ReactNode; title: string; sub: string
+}) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer"
+      className="relative bg-white rounded-2xl border border-gray-100 hover:border-[#1F6F5F] hover:shadow-sm p-3.5 transition-all group">
+      <ExternalLink className="absolute top-2 left-2 w-3 h-3 text-[#6B7280] group-hover:text-[#1F6F5F]" />
+      <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#FAFAF7] text-[#1F6F5F] mb-2">
+        <span className="w-4 h-4 inline-flex">{icon}</span>
+      </div>
+      <p className="text-sm font-bold text-[#1A2E26] leading-tight">{title}</p>
+      <p className="text-[10px] text-[#6B7280] mt-0.5">{sub}</p>
     </a>
   )
 }
 
-function MetricCard({ icon, label, value, subtitle, accent }: { icon: React.ReactNode; label: string; value: string; subtitle?: string; accent: string }) {
+function PartnerCard({ p }: { p: B2BPartner }) {
+  const statusColor =
+    p.contract_status === 'active' ? 'text-[#1F6F5F] bg-[#1F6F5F]/10' :
+    p.contract_status === 'signed' ? 'text-amber-700 bg-amber-50' :
+    p.contract_status === 'negotiating' ? 'text-[#6B7280] bg-[#FAFAF7]' :
+    'text-gray-600 bg-gray-50'
+
+  const statusLabel =
+    p.contract_status === 'active' ? 'نشط' :
+    p.contract_status === 'signed' ? 'موقّع' :
+    p.contract_status === 'negotiating' ? 'قيد التفاوض' :
+    p.contract_status
+
   return (
-    <div className="bg-white rounded-2xl shadow-soft p-4">
-      <div className={`inline-flex items-center justify-center w-7 h-7 rounded-lg mb-2 ${accent}`}>{icon}</div>
-      <p className="text-[11px] text-gray-500 mb-1 leading-tight">{label}</p>
-      <p className="text-lg sm:text-xl font-black text-gray-900 tabular">{value}</p>
-      {subtitle && (<p className="text-[10px] text-gray-400 mt-1 tabular">{subtitle}</p>)}
+    <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-[#1F6F5F] transition-colors">
+      <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-11 h-11 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] flex items-center justify-center flex-shrink-0">
+            <Building2 className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-base font-black text-[#1A2E26] truncate">{p.business_name}</h3>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColor}`}>
+                {statusLabel}
+              </span>
+              <span className="text-[10px] text-[#6B7280]">
+                {p.branches} فرع · {p.employees} موظف · عمولة {p.commission_pct}%
+              </span>
+              {p.avg_rating !== null && p.avg_rating > 0 && (
+                <span className="text-[10px] text-amber-600 flex items-center gap-0.5">
+                  <Star className="w-2.5 h-2.5 fill-amber-400" />
+                  {p.avg_rating}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="text-left">
+          <p className="text-[10px] text-[#6B7280]">إيراد الشهر</p>
+          <p className="text-base font-black font-mono text-[#1A2E26]">{Number(p.revenue_month).toLocaleString('ar-EG')}ج</p>
+          <p className="text-[10px] text-[#1F6F5F]">عمولة: {Number(p.commission_month).toLocaleString('ar-EG')}ج</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 md:grid-cols-7 gap-1.5 pt-3 border-t border-gray-50">
+        <PartnerLink href={`/admin/business-finance/${p.id}`} icon={<Wallet />} label="Finance" />
+        <PartnerLink href={`/admin/business-finance/${p.id}/operations`} icon={<Plus />} label="Operations" accent />
+        <PartnerLink href={`/admin/business-finance/${p.id}/team`} icon={<Users />} label="الفريق" />
+        <PartnerLink href={`/admin/business-finance/${p.id}/ratings`} icon={<Star />} label="التقييمات" />
+        <PartnerLink href={`/admin/business-finance/${p.id}/attendance`} icon={<ShieldCheck />} label="الحضور" />
+        <PartnerLink href={`/admin/business-finance/${p.id}/qr-posters`} icon={<QrCode />} label="QR" />
+        <PartnerLink href={`/admin/business-finance/${p.id}/settings`} icon={<Settings />} label="إعدادات" />
+      </div>
     </div>
   )
 }
 
-function StatusCard({ label, value, color, suffix }: { label: string; value: string | number; color: string; suffix?: string }) {
+function PartnerLink({ href, icon, label, accent }: {
+  href: string; icon: ReactNode; label: string; accent?: boolean
+}) {
   return (
-    <div className={`rounded-2xl p-3 ${color}`}>
-      <p className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-75">{label}</p>
-      <p className="text-xl font-black tabular">
-        {value}
-        {suffix && <span className="text-xs font-normal opacity-75 mr-1">{suffix}</span>}
-      </p>
-    </div>
+    <Link href={href}
+      className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors text-center ${
+        accent
+          ? 'bg-[#1F6F5F] text-white hover:bg-[#185547]'
+          : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-gray-100'
+      }`}>
+      <span className="w-4 h-4 inline-flex">{icon}</span>
+      <span className="text-[9px] font-bold">{label}</span>
+    </Link>
   )
 }
