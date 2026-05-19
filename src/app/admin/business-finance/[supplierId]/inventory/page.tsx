@@ -1,0 +1,322 @@
+'use client'
+
+import { useEffect, useState, useMemo } from 'react'
+import Link from 'next/link'
+import { createClient } from '@supabase/supabase-js'
+import {
+  Package, Search, ChevronLeft, Loader2, AlertTriangle, TrendingUp,
+  RefreshCw, Filter, DollarSign, Box, AlertCircle,
+} from 'lucide-react'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+type Product = {
+  id: string
+  name_ar: string
+  name_en: string | null
+  category: string
+  product_type: string
+  unit: string
+  current_stock: number
+  stock_unknown: boolean
+  reorder_threshold: number
+  cost_price_egp: number | null
+  selling_price_egp: number | null
+  recent_usage: number | null
+  margin_pct: number | null
+  stock_value: number | null
+}
+
+type Stats = {
+  total_products: number
+  low_stock_count: number
+  out_of_stock_count: number
+  total_inventory_value: number
+  categories: Record<string, number>
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  hair_color: 'صبغات',
+  bleach: 'تفتيح/اكسجين',
+  hair_treatment: 'علاجات شعر',
+  styling: 'تصفيف',
+  retail: 'بيع للعميل',
+  nails: 'أظافر',
+  spa: 'سبا',
+  tools: 'أدوات',
+  cleaning: 'تنظيف',
+  accessories: 'إكسسوارات',
+  general: 'عام',
+}
+
+const CATEGORY_COLORS: Record<string, string> = {
+  hair_color: 'bg-[#1F6F5F]/10 text-[#1F6F5F]',
+  bleach: 'bg-amber-50 text-amber-800',
+  hair_treatment: 'bg-blue-50 text-blue-800',
+  styling: 'bg-purple-50 text-purple-800',
+  retail: 'bg-[#1A2E26]/10 text-[#1A2E26]',
+  nails: 'bg-pink-50 text-pink-800',
+  spa: 'bg-emerald-50 text-emerald-800',
+  tools: 'bg-gray-100 text-gray-700',
+  cleaning: 'bg-cyan-50 text-cyan-800',
+  accessories: 'bg-orange-50 text-orange-800',
+  general: 'bg-gray-100 text-gray-600',
+}
+
+export default function InventoryPage({ params }: { params: { supplierId: string } }) {
+  const { supplierId } = params
+  const [supplier, setSupplier] = useState<{ business_name: string } | null>(null)
+  const [products, setProducts] = useState<Product[]>([])
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
+  const [lowStockOnly, setLowStockOnly] = useState(false)
+
+  async function load() {
+    setLoading(true)
+    // @ts-expect-error
+    const { data: sup } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
+    setSupplier(sup as any)
+
+    // @ts-expect-error
+    const { data } = await supabase.rpc('admin_list_inventory', {
+      p_supplier_id: supplierId,
+      p_filter: search || null,
+      p_category: categoryFilter,
+      p_low_stock_only: lowStockOnly,
+    })
+    if (data) {
+      setProducts((data.products || []) as Product[])
+      setStats(data.stats as Stats)
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId, categoryFilter, lowStockOnly])
+  useEffect(() => {
+    const t = setTimeout(() => load(), 400)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search])
+
+  const sortedCategories = useMemo(() => {
+    if (!stats?.categories) return []
+    return Object.entries(stats.categories).sort((a, b) => b[1] - a[1])
+  }, [stats])
+
+  if (!supplier && loading) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
+        <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2">
+            <ChevronLeft className="w-3.5 h-3.5" /> رجوع للـ finance
+          </Link>
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">B2B PARTNER · INVENTORY</p>
+              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">المخزون · {supplier?.business_name}</h1>
+              {stats && (
+                <p className="text-sm text-[#6B7280] mt-1">
+                  {stats.total_products} منتج · قيمة المخزون {Number(stats.total_inventory_value).toLocaleString()} ج
+                </p>
+              )}
+            </div>
+            <button onClick={load} className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2">
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> تحديث
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* Stats Cards */}
+        {stats && (
+          <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <StatCard label="إجمالي المنتجات" value={stats.total_products} icon={<Package className="w-4 h-4" />} />
+            <StatCard label="قيمة المخزون" value={`${Number(stats.total_inventory_value).toLocaleString()} ج`} icon={<DollarSign className="w-4 h-4" />} primary />
+            <StatCard label="مخزون قليل" value={stats.low_stock_count} icon={<AlertTriangle className="w-4 h-4" />} tone="warning" />
+            <StatCard label="نفد المخزون" value={stats.out_of_stock_count} icon={<AlertCircle className="w-4 h-4" />} tone="danger" />
+          </section>
+        )}
+
+        {/* Filters */}
+        <section className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
+          <div className="flex items-center gap-2 px-3 py-2 bg-[#FAFAF7] rounded-xl">
+            <Search className="w-4 h-4 text-[#6B7280]" />
+            <input
+              type="text"
+              placeholder="ابحث باسم المنتج..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 bg-transparent text-sm text-[#1A2E26] focus:outline-none placeholder-[#6B7280]"
+            />
+          </div>
+
+          {/* Category Pills */}
+          <div className="flex gap-2 flex-wrap items-center">
+            <Filter className="w-3.5 h-3.5 text-[#6B7280]" />
+            <button
+              onClick={() => setCategoryFilter(null)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
+                categoryFilter === null ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-gray-100'
+              }`}
+            >
+              الكل ({stats?.total_products ?? 0})
+            </button>
+            {sortedCategories.map(([cat, count]) => (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
+                  categoryFilter === cat ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-gray-100'
+                }`}
+              >
+                {CATEGORY_LABELS[cat] || cat} ({count})
+              </button>
+            ))}
+          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer text-sm">
+            <input
+              type="checkbox"
+              checked={lowStockOnly}
+              onChange={(e) => setLowStockOnly(e.target.checked)}
+              className="w-4 h-4 rounded accent-[#1F6F5F]"
+            />
+            <span className="text-[#1A2E26] font-medium">⚠️ المخزون القليل والنافد بس</span>
+          </label>
+        </section>
+
+        {/* Products list */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
+          </div>
+        ) : products.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center">
+            <Package className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
+            <p className="text-sm font-bold text-[#1A2E26]">مفيش منتجات</p>
+          </div>
+        ) : (
+          <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <div className="grid grid-cols-12 gap-3 px-4 py-3 bg-[#FAFAF7] border-b border-gray-100 text-[10px] font-bold tracking-wider uppercase text-[#6B7280]">
+              <div className="col-span-5">المنتج</div>
+              <div className="col-span-2 text-center">المخزون</div>
+              <div className="col-span-2 text-center">تكلفة / بيع</div>
+              <div className="col-span-2 text-center">قيمة المخزون</div>
+              <div className="col-span-1 text-center">الربح %</div>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {products.map((p) => <ProductRow key={p.id} p={p} />)}
+            </div>
+          </section>
+        )}
+      </main>
+    </div>
+  )
+}
+
+function ProductRow({ p }: { p: Product }) {
+  const catColor = CATEGORY_COLORS[p.category] || CATEGORY_COLORS.general
+  const catLabel = CATEGORY_LABELS[p.category] || p.category
+  const isLowStock = !p.stock_unknown && p.current_stock <= p.reorder_threshold && p.current_stock > 0
+  const isOutOfStock = !p.stock_unknown && p.current_stock === 0
+  
+  return (
+    <div className="grid grid-cols-12 gap-3 px-4 py-3 hover:bg-[#FAFAF7] transition-colors items-center text-sm">
+      <div className="col-span-5">
+        <div className="flex items-start gap-2">
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-[#1A2E26] leading-tight truncate">{p.name_ar}</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${catColor}`}>{catLabel}</span>
+              {p.product_type === 'retail' && (
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#1A2E26]/10 text-[#1A2E26]">🏷 بيع</span>
+              )}
+              {p.recent_usage && (
+                <span className="text-[10px] text-[#6B7280]">استهلاك أخير: {p.recent_usage}</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="col-span-2 text-center">
+        {p.stock_unknown ? (
+          <span className="text-[10px] font-bold text-[#6B7280] bg-gray-100 px-2 py-1 rounded">غير محدد</span>
+        ) : (
+          <div className="flex items-center justify-center gap-1.5">
+            <span className={`text-lg font-black ${
+              isOutOfStock ? 'text-red-600' :
+              isLowStock ? 'text-amber-700' :
+              'text-[#1A2E26]'
+            }`}>{p.current_stock}</span>
+            {isOutOfStock && <AlertCircle className="w-3.5 h-3.5 text-red-600" />}
+            {isLowStock && <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />}
+          </div>
+        )}
+      </div>
+
+      <div className="col-span-2 text-center">
+        <p className="text-xs text-[#6B7280]">{p.cost_price_egp ? Number(p.cost_price_egp).toLocaleString() : '—'} <span className="opacity-50">/</span> <span className="text-[#1A2E26] font-bold">{p.selling_price_egp ? Number(p.selling_price_egp).toLocaleString() : '—'} ج</span></p>
+      </div>
+
+      <div className="col-span-2 text-center">
+        {p.stock_value && p.stock_value > 0 ? (
+          <p className="text-sm font-black text-[#1F6F5F]">{Number(p.stock_value).toLocaleString()} ج</p>
+        ) : (
+          <span className="text-xs text-[#6B7280]">—</span>
+        )}
+      </div>
+
+      <div className="col-span-1 text-center">
+        {p.margin_pct !== null ? (
+          <span className={`text-xs font-bold ${
+            p.margin_pct < 0 ? 'text-red-600' :
+            p.margin_pct === 0 ? 'text-[#6B7280]' :
+            'text-[#1F6F5F]'
+          }`}>{p.margin_pct}%</span>
+        ) : (
+          <span className="text-xs text-[#6B7280]">—</span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function StatCard({
+  label, value, icon, tone, primary,
+}: {
+  label: string
+  value: number | string
+  icon: React.ReactNode
+  tone?: 'warning' | 'danger' | 'positive'
+  primary?: boolean
+}) {
+  const toneClass = 
+    tone === 'warning' ? 'text-amber-700' :
+    tone === 'danger' ? 'text-red-600' :
+    tone === 'positive' ? 'text-[#1F6F5F]' :
+    'text-[#1A2E26]'
+  return (
+    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'}`}>
+      <div className={`flex items-center gap-2 mb-1.5 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>
+        {icon}
+        <p className="text-[10px] font-bold tracking-wider uppercase">{label}</p>
+      </div>
+      <p className={`text-xl md:text-2xl font-black ${primary ? 'text-white' : toneClass}`}>{value}</p>
+    </div>
+  )
+}
