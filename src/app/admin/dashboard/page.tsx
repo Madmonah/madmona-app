@@ -669,6 +669,131 @@ export default function AdminDashboardV2() {
           </div>
         </Section>
 
+        {/* ============ 🏪 SUPPLIER PORTAL ============ */}
+        <Section title="🏪 لوحة المورد (Supplier Portal)" subtitle="صفحات المورد لإدارة إعلاناته وحجوزاته وفريقه">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ToolCard href="/supplier" icon={<Building2 />} title="الرئيسية" sub="/supplier landing" />
+            <ToolCard href="/supplier/dashboard" icon={<Compass />} title="لوحة المورد" sub="Supplier dashboard" />
+            <ToolCard href="/supplier/marketplace" icon={<Package />} title="إعلاناتي" sub="My listings" />
+            <ToolCard href="/supplier/marketplace/new" icon={<Plus />} title="إعلان جديد" sub="Add listing" />
+            <ToolCard href="/supplier/marketplace/bookings" icon={<Calendar />} title="حجوزاتي" sub="Supplier bookings" />
+            <ToolCard href="/supplier/marketplace/reviews" icon={<Star />} title="تقييماتي" sub="Customer reviews" />
+            <ToolCard href="/supplier/bookings" icon={<ClipboardList />} title="Legacy Bookings" sub="نسخة قديمة" />
+            <ToolCard href="/supplier/team" icon={<Users />} title="الفريق" sub="إدارة الموظفين" />
+            <ToolCard href="/supplier/register" icon={<Plus />} title="إنشاء مورد" sub="Supplier register" />
+            <ToolCard href="/supplier/signup" icon={<Plus />} title="تسجيل سريع" sub="Supplier signup" />
+            <ToolCard href="/supplier/login" icon={<Lock />} title="دخول المورد" sub="Supplier login" />
+            <ToolCard href="/list-your-asset" icon={<Sparkles />} title="ضيف ليستنج" sub="الصفحة التعريفية" />
+          </div>
+        </Section>
+
+        {/* ============ 👤 PUBLIC / CUSTOMER PAGES ============ */}
+        <Section title="👤 صفحات الموقع العامة" subtitle="اللي العميل والزائر بيشوفوه">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ToolCard href="/" icon={<Compass />} title="الصفحة الرئيسية" sub="/ home" />
+            <ToolCard href="/marketplace" icon={<Package />} title="الماركتبليس" sub="كل الإيجارات" />
+            <ToolCard href="/browse" icon={<Eye />} title="تصفح" sub="Browse" />
+            <ToolCard href="/add-listing" icon={<Plus />} title="إضافة إيجار" sub="Add listing wizard" />
+            <ToolCard href="/account" icon={<Users />} title="حسابي" sub="My account" />
+            <ToolCard href="/my-bookings" icon={<Calendar />} title="حجوزاتي" sub="My bookings" />
+            <ToolCard href="/welcome" icon={<Heart />} title="الترحيب" sub="/welcome" />
+            <ToolCard href="/launch" icon={<Sparkles />} title="الإطلاق" sub="/launch landing" />
+            <ToolCard href="/pulse" icon={<Activity />} title="Pulse" sub="النبض" />
+            <ToolCard href="/coworking" icon={<Building2 />} title="Coworking" sub="مساحة العمل" />
+            <ToolCard href="/halls" icon={<Crown />} title="القاعات" sub="Halls landing" />
+            <ToolCard href="/services" icon={<Star />} title="الخدمات" sub="Services landing" />
+            <ToolCard href="/spaces" icon={<MapPin />} title="المساحات" sub="Spaces landing" />
+            <ToolCard href="/about" icon={<BookOpen />} title="عن مضمونة" sub="About" />
+            <ToolCard href="/privacy" icon={<Shield />} title="الخصوصية" sub="Privacy" />
+            <ToolCard href="/terms" icon={<ScrollText />} title="الشروط" sub="Terms" />
+          </div>
+        </Section>
+
+        {/* ============ 📜 LEGACY PAGES ============ */}
+        <Section title="📜 صفحات قديمة (Legacy)" subtitle="نسخ سابقة مستخدمة للمرجعية">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ToolCard href="/admin/marketplace-suppliers" icon={<Building2 />} title="Suppliers (قديم)" sub="استخدم /admin/sup" />
+            <ToolCard href="/admin/suppliers" icon={<Building2 />} title="موردين V1" sub="Legacy v1" />
+            <ToolCard href="/admin/suppliers-v2" icon={<Building2 />} title="موردين V2" sub="Legacy v2" />
+            <ToolCard href="/admin/bookings" icon={<Calendar />} title="حجوزات (قديم)" sub="استخدم marketplace-bookings" />
+            <ToolCard href="/admin/units" icon={<Package />} title="Units (قديم)" sub="نظام الوحدات القديم" />
+          </div>
+        </Section>
+
+        {/* ============ 🗂️ MASTER INDEX (A-Z) ============ */}
+        <Section title="🗂️ فهرس كامل (أـي)" subtitle="كل صفحات الـ admin بترتيب أبجدي · لو فرضاً واحدة مفقودة فوق">
+          <div className="bg-white rounded-2xl border border-gray-100 p-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-1.5">
+              <CompactLink href="/admin/activity" label="activity" />
+              <CompactLink href="/admin/ad-builder" label="ad-builder" />
+              <CompactLink href="/admin/ad-creatives" label="ad-creatives" />
+              <CompactLink href="/admin/ad-review" label="ad-review" />
+              <CompactLink href="/admin/agent-health" label="agent-health" />
+              <CompactLink href="/admin/agent-network" label="agent-network" />
+              <CompactLink href="/admin/agent-runs" label="agent-runs" />
+              <CompactLink href="/admin/agents" label="agents" />
+              <CompactLink href="/admin/ai-assistant" label="ai-assistant" />
+              <CompactLink href="/admin/ai-os" label="ai-os" />
+              <CompactLink href="/admin/alerts" label="alerts" />
+              <CompactLink href="/admin/bookings" label="bookings (legacy)" muted />
+              <CompactLink href="/admin/business-finance" label="business-finance" />
+              <CompactLink href="/admin/business-partners" label="business-partners" />
+              <CompactLink href="/admin/business-partners/new" label="business-partners/new" />
+              <CompactLink href="/admin/capabilities" label="capabilities" />
+              <CompactLink href="/admin/categories" label="categories" />
+              <CompactLink href="/admin/ceo-briefs" label="ceo-briefs" />
+              <CompactLink href="/admin/collaborations" label="collaborations" />
+              <CompactLink href="/admin/command-center" label="command-center" />
+              <CompactLink href="/admin/daily-messages" label="daily-messages" />
+              <CompactLink href="/admin/dashboard" label="dashboard (أنت هنا)" muted />
+              <CompactLink href="/admin/demand-forecast" label="demand-forecast" />
+              <CompactLink href="/admin/email-queue" label="email-queue" />
+              <CompactLink href="/admin/email-templates" label="email-templates" />
+              <CompactLink href="/admin/fraud-alerts" label="fraud-alerts" />
+              <CompactLink href="/admin/funnel" label="funnel" />
+              <CompactLink href="/admin/hq" label="hq" />
+              <CompactLink href="/admin/insights" label="insights" />
+              <CompactLink href="/admin/leads" label="leads" />
+              <CompactLink href="/admin/leads-feed" label="leads-feed" />
+              <CompactLink href="/admin/listing-drafts" label="listing-drafts" />
+              <CompactLink href="/admin/listing-performance" label="listing-performance" />
+              <CompactLink href="/admin/listings" label="listings" />
+              <CompactLink href="/admin/marketing-hq" label="marketing-hq" />
+              <CompactLink href="/admin/marketplace-bookings" label="marketplace-bookings" />
+              <CompactLink href="/admin/marketplace-suppliers" label="marketplace-suppliers (legacy)" muted />
+              <CompactLink href="/admin/messages" label="messages" />
+              <CompactLink href="/admin/news" label="news" />
+              <CompactLink href="/admin/notifications" label="notifications" />
+              <CompactLink href="/admin/partnerships" label="partnerships" />
+              <CompactLink href="/admin/payouts" label="payouts" />
+              <CompactLink href="/admin/performance" label="performance" />
+              <CompactLink href="/admin/pipelines" label="pipelines" />
+              <CompactLink href="/admin/policy-rules" label="policy-rules" />
+              <CompactLink href="/admin/prompt-versions" label="prompt-versions" />
+              <CompactLink href="/admin/qc-reports" label="qc-reports" />
+              <CompactLink href="/admin/reels" label="reels" />
+              <CompactLink href="/admin/refresh-fb-token" label="refresh-fb-token" />
+              <CompactLink href="/admin/runbook" label="runbook" />
+              <CompactLink href="/admin/site-settings" label="site-settings" />
+              <CompactLink href="/admin/social-groups" label="social-groups" />
+              <CompactLink href="/admin/social-packs" label="social-packs" />
+              <CompactLink href="/admin/sponsorships" label="sponsorships" />
+              <CompactLink href="/admin/strategy" label="strategy" />
+              <CompactLink href="/admin/sup" label="sup" />
+              <CompactLink href="/admin/supplier-posts" label="supplier-posts" />
+              <CompactLink href="/admin/suppliers" label="suppliers (legacy v1)" muted />
+              <CompactLink href="/admin/suppliers-v2" label="suppliers-v2 (legacy v2)" muted />
+              <CompactLink href="/admin/units" label="units (legacy)" muted />
+              <CompactLink href="/admin/wa-review" label="wa-review" />
+              <CompactLink href="/admin/welcome-messages" label="welcome-messages" />
+              <CompactLink href="/admin/workflows" label="workflows" />
+            </div>
+            <p className="text-[10px] text-[#6B7280] mt-3 pt-3 border-t border-gray-100">
+              📊 {61} صفحة admin إجمالي · الرمادي = legacy
+            </p>
+          </div>
+        </Section>
+
         {/* ============ EXTERNAL TOOLS ============ */}
         <Section title="🌐 الأدوات الخارجية" subtitle="services we depend on">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
@@ -881,6 +1006,20 @@ function ExternalCard({ href, icon, title, sub }: {
       <p className="text-sm font-bold text-[#1A2E26] leading-tight">{title}</p>
       <p className="text-[10px] text-[#6B7280] mt-0.5">{sub}</p>
     </a>
+  )
+}
+
+function CompactLink({ href, label, muted }: { href: string; label: string; muted?: boolean }) {
+  return (
+    <Link href={href}
+      className={`flex items-center gap-1.5 text-xs font-mono py-1 px-2 rounded-md transition-colors ${
+        muted
+          ? 'text-[#6B7280] hover:bg-gray-50 hover:text-[#1A2E26]'
+          : 'text-[#1A2E26] hover:bg-[#1F6F5F]/5 hover:text-[#1F6F5F]'
+      }`}>
+      <ChevronLeft className="w-3 h-3 -scale-x-100 flex-shrink-0 opacity-40" />
+      <span className="truncate">{label}</span>
+    </Link>
   )
 }
 
