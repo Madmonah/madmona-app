@@ -1,7 +1,7 @@
-// Owner Portal — WhatsApp OTP sender
-// Validates phone against pre-provisioned admins (via owner_request_otp RPC),
-// then sends the 6-digit code to the owner's WhatsApp using Meta Cloud API.
-// Credentials are read from the whatsapp_config table (same source the rest of the system uses).
+// Unified Madmona Account — WhatsApp OTP sender (OPEN SIGNUP for any phone)
+// Calls madmona_request_otp (creates/greets account by phone), then sends the
+// 6-digit code to the user's WhatsApp via the approved utility template
+// madmona_admin_alert_v1. Credentials read from the whatsapp_config table.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { phone } = await req.json()
+    const { phone, full_name } = await req.json()
     if (!phone) {
       return new Response(JSON.stringify({ success: false, error: 'رقم مطلوب' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -26,8 +26,10 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    // 1) Validate + generate code (RPC checks phone is a pre-provisioned active admin)
-    const { data: otp, error: rpcErr } = await supabase.rpc('owner_request_otp', { p_phone: phone })
+    // 1) Generate code (open signup — works for any phone, greets by known name)
+    const { data: otp, error: rpcErr } = await supabase.rpc('madmona_request_otp', {
+      p_phone: phone, p_full_name: full_name ?? null,
+    })
     if (rpcErr) {
       return new Response(JSON.stringify({ success: false, error: rpcErr.message }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -39,10 +41,9 @@ Deno.serve(async (req) => {
       })
     }
 
-    // 2) Read WhatsApp credentials from whatsapp_config (same source as the rest of the system)
+    // 2) Read WhatsApp credentials from whatsapp_config
     const { data: cfgRows, error: cfgErr } = await supabase
-      .from('whatsapp_config')
-      .select('key, value')
+      .from('whatsapp_config').select('key, value')
       .in('key', ['access_token', 'phone_number_id'])
     if (cfgErr || !cfgRows) {
       return new Response(JSON.stringify({ success: false, error: 'تعذّر قراءة إعدادات واتساب' }), {
@@ -57,9 +58,7 @@ Deno.serve(async (req) => {
     const code: string = otp.code
     const to: string = otp.wa_to // normalized e.g. 201050130149
 
-    // 3) Send via WhatsApp using an approved UTILITY template (madmona_admin_alert_v1).
-    // WhatsApp blocks Authentication-category templates on this WABA, so we deliver the
-    // login code through the already-approved utility notification template (2 body vars).
+    // 3) Send code via approved UTILITY template (madmona_admin_alert_v1, 2 body vars)
     const waBody = {
       messaging_product: 'whatsapp',
       to,
@@ -71,8 +70,8 @@ Deno.serve(async (req) => {
           {
             type: 'body',
             parameters: [
-              { type: 'text', text: 'كود الدخول لبوابتك في مضمونة' },
-              { type: 'text', text: code + ' — صالح ٥ دقائق. لا تشاركه مع حد.' },
+              { type: 'text', text: 'كود الدخول لحسابك في مضمونة' },
+              { type: 'text', text: 'الكود هو ' + code + ' وصالح خمس دقائق' },
             ],
           },
         ],
@@ -95,9 +94,9 @@ Deno.serve(async (req) => {
       }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    return new Response(JSON.stringify({ success: true, phone: otp.phone }), {
-      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return new Response(JSON.stringify({
+      success: true, phone: otp.phone, known_name: otp.known_name ?? null,
+    }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (e) {
     return new Response(JSON.stringify({ success: false, error: String(e) }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
