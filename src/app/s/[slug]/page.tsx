@@ -22,6 +22,7 @@ export default function SalonLandingPage({ params }: { params: { slug: string } 
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [openCat, setOpenCat] = useState<string | null>(null)
+  const [logoOk, setLogoOk] = useState(true)
 
   useEffect(() => {
     (async () => {
@@ -42,16 +43,23 @@ export default function SalonLandingPage({ params }: { params: { slug: string } 
 
   const branches = data.branches || []
   const services = data.services || []
-  const phone = (data.contact_phone || '').replace(/[^0-9]/g, '')
+  // WhatsApp goes to Madmona's business line (AI auto-responder)
+  const WA = '201002229982'
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       {/* Hero */}
       <header className="bg-[#1F6F5F] text-white">
         <div className="max-w-2xl mx-auto px-4 py-10 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-white/15 grid place-items-center mx-auto mb-4">
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
+          {data.logo_url && logoOk ? (
+            <div className="w-20 h-20 rounded-2xl bg-white grid place-items-center mx-auto mb-4 overflow-hidden shadow-sm p-1">
+              <img src={data.logo_url} alt={data.business_name} className="w-full h-full object-contain rounded-xl" onError={() => setLogoOk(false)} />
+            </div>
+          ) : (
+            <div className="w-16 h-16 rounded-2xl bg-white/15 grid place-items-center mx-auto mb-4">
+              <Sparkles className="w-8 h-8 text-white" />
+            </div>
+          )}
           <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/70 mb-1">
             {data.industry === 'beauty_salon' ? 'صالون تجميل' : 'احجزي أونلاين'}
           </p>
@@ -61,11 +69,9 @@ export default function SalonLandingPage({ params }: { params: { slug: string } 
             <a href="#book" className="px-6 py-3 rounded-xl bg-white text-[#1F6F5F] font-black text-sm flex items-center gap-2">
               <Calendar className="w-4 h-4" /> احجزي موعدك
             </a>
-            {phone && (
-              <a href={`https://wa.me/${phone}`} target="_blank" rel="noopener" className="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm flex items-center gap-2">
-                <MessageCircle className="w-4 h-4" /> تواصلي
-              </a>
-            )}
+            <a href={`https://wa.me/${WA}`} target="_blank" rel="noopener" className="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm flex items-center gap-2">
+              <MessageCircle className="w-4 h-4" /> تواصلي
+            </a>
           </div>
         </div>
       </header>
