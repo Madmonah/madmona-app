@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   Loader2, LogOut, Store, Calendar, QrCode, Wallet, Clock, Briefcase,
   Heart, Plus, Search, Building2, ChevronLeft, ShieldCheck, CalendarCheck,
-  UserPlus, Check, X, Star, Gift, Coins,
+  UserPlus, Check, X, Star, Gift, Coins, ShoppingBag, Minus,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -27,6 +27,12 @@ export default function MadmonaHome() {
   const [tipMethod, setTipMethod] = useState<'instapay' | 'cash'>('instapay')
   const [tipBusy, setTipBusy] = useState(false)
   const [tipResult, setTipResult] = useState<any>(null)
+  const [products, setProducts] = useState<any[]>([])
+  const [cart, setCart] = useState<Record<string, number>>({})
+  const [storeMethod, setStoreMethod] = useState<'instapay' | 'cash'>('instapay')
+  const [orderBusy, setOrderBusy] = useState(false)
+  const [orderResult, setOrderResult] = useState<any>(null)
+  const [bookBranches, setBookBranches] = useState<any[]>([])
   const [joinReqs, setJoinReqs] = useState<Record<string, any[]>>({})
   const [busyReq, setBusyReq] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -65,6 +71,15 @@ export default function MadmonaHome() {
       // @ts-expect-error rpc typing
       const { data: tt } = await supabase.rpc('madmona_tip_targets', { p_token: token })
       if (tt?.ok && tt.targets?.length) setTipTargets(tt.targets)
+      // @ts-expect-error rpc typing
+      const { data: pd } = await supabase.rpc('madmona_list_products', { p_token: token })
+      if (pd?.ok && pd.products?.length) setProducts(pd.products)
+      // @ts-expect-error rpc typing
+      const { data: bi } = await supabase.rpc('madmona_booking_info', { p_token: token })
+      if (bi?.ok && bi.options?.length) {
+        const brs = bi.options.flatMap((o: any) => (o.branches || []).map((b: any) => ({ ...b, business: o.business_name })))
+        setBookBranches(brs)
+      }
     }
     if (data.is_admin) await loadJoinReqs(token, data.roles.admin || [])
     setLoading(false)
@@ -108,6 +123,28 @@ export default function MadmonaHome() {
     })
     if (data?.ok) { setTipResult(data); setTipEmp(''); setTipAmount(0) }
     setTipBusy(false)
+  }
+
+  function changeQty(pid: string, delta: number) {
+    setCart(prev => {
+      const q = (prev[pid] || 0) + delta
+      const next = { ...prev }
+      if (q <= 0) delete next[pid]; else next[pid] = q
+      return next
+    })
+  }
+
+  async function placeOrder() {
+    const items = Object.entries(cart).map(([product_id, qty]) => ({ product_id, qty }))
+    if (!items.length) return
+    const token = localStorage.getItem('madmona_token'); if (!token) return
+    setOrderBusy(true)
+    // @ts-expect-error rpc typing
+    const { data } = await supabase.rpc('madmona_create_product_order', {
+      p_token: token, p_items: items, p_method: storeMethod,
+    })
+    if (data?.ok) { setOrderResult(data); setCart({}) }
+    setOrderBusy(false)
   }
 
   async function logout() {
@@ -310,9 +347,21 @@ export default function MadmonaHome() {
                   ))}
                 </div>
               ) : <p className="text-xs text-[#6B7280] mb-3">مفيش حجوزات قادمة</p>}
-              <Link href="/marketplace" className="w-full py-2.5 rounded-xl bg-[#1F6F5F] text-white font-bold text-sm flex items-center justify-center gap-2">
-                <Calendar className="w-4 h-4" /> احجز خدمة جديدة
-              </Link>
+              {bookBranches.length > 0 ? (
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold text-[#6B7280]">احجز خدمة جديدة:</p>
+                  {bookBranches.map((b: any) => (
+                    <Link key={b.branch_id} href={`/book/${b.code}`} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-[#1F6F5F]/5 hover:bg-[#1F6F5F]/10 transition-colors">
+                      <span className="text-sm font-bold text-[#1A2E26] flex items-center gap-2"><Calendar className="w-4 h-4 text-[#1F6F5F]" /> {b.name}</span>
+                      <ChevronLeft className="w-4 h-4 text-[#6B7280]" />
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <Link href="/marketplace" className="w-full py-2.5 rounded-xl bg-[#1F6F5F] text-white font-bold text-sm flex items-center justify-center gap-2">
+                  <Calendar className="w-4 h-4" /> احجز خدمة جديدة
+                </Link>
+              )}
             </div>
           </section>
         )}
@@ -369,6 +418,74 @@ export default function MadmonaHome() {
                     <button onClick={sendTip} disabled={tipBusy || !tipEmp || !tipAmount} className="w-full py-2.5 rounded-xl bg-[#1F6F5F] text-white font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2">
                       {tipBusy ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري...</> : <><Gift className="w-4 h-4" /> ابعت البقشيش</>}
                     </button>
+                  </>
+                )}
+              </div>
+            </section>
+          )
+        })()}
+
+        {/* ===== PRODUCTS STORE ===== */}
+        {products.length > 0 && (() => {
+          const cartItems = Object.entries(cart)
+          const total = cartItems.reduce((sum, [pid, qty]) => {
+            const p = products.find((x: any) => x.product_id === pid)
+            return sum + (p ? p.price * qty : 0)
+          }, 0)
+          return (
+            <section>
+              <h2 className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1.5"><ShoppingBag className="w-3.5 h-3.5" /> منتجات للبيع</h2>
+              <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                {orderResult ? (
+                  <div className="text-center py-2">
+                    <div className="w-14 h-14 rounded-full bg-[#1F6F5F]/10 grid place-items-center mx-auto mb-3"><ShoppingBag className="w-7 h-7 text-[#1F6F5F]" /></div>
+                    <p className="font-black text-[#1A2E26] mb-1">تم استلام طلبك! 🛍️</p>
+                    <p className="text-sm text-[#6B7280] leading-relaxed">{orderResult.message}</p>
+                    {orderResult.instapay && (
+                      <div className="mt-3 bg-[#FAFAF7] rounded-xl p-3">
+                        <p className="text-[10px] text-[#6B7280] mb-1">رقم إنستاباي</p>
+                        <p className="font-mono font-black text-[#1F6F5F] text-lg" dir="ltr">{orderResult.instapay}</p>
+                      </div>
+                    )}
+                    <button onClick={() => setOrderResult(null)} className="mt-4 text-xs font-bold text-[#1F6F5F]">اطلب تاني</button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-2 max-h-72 overflow-y-auto mb-3">
+                      {products.map((p: any) => (
+                        <div key={p.product_id} className="flex items-center justify-between gap-2 border-b border-gray-50 pb-2 last:border-0">
+                          <div className="min-w-0">
+                            <p className="font-bold text-[#1A2E26] text-sm truncate">{p.name}</p>
+                            <p className="text-[11px] text-[#1F6F5F] font-bold">{Number(p.price).toLocaleString()} ج</p>
+                          </div>
+                          {cart[p.product_id] ? (
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <button onClick={() => changeQty(p.product_id, -1)} className="w-7 h-7 rounded-lg bg-gray-100 grid place-items-center"><Minus className="w-3.5 h-3.5" /></button>
+                              <span className="font-black text-sm w-5 text-center">{cart[p.product_id]}</span>
+                              <button onClick={() => changeQty(p.product_id, 1)} className="w-7 h-7 rounded-lg bg-[#1F6F5F] text-white grid place-items-center"><Plus className="w-3.5 h-3.5" /></button>
+                            </div>
+                          ) : (
+                            <button onClick={() => changeQty(p.product_id, 1)} className="px-3 py-1.5 rounded-lg bg-[#1F6F5F]/10 text-[#1F6F5F] text-xs font-bold flex-shrink-0">ضيف</button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {total > 0 && (
+                      <div className="border-t border-gray-100 pt-3">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-sm font-bold text-[#6B7280]">الإجمالي</span>
+                          <span className="text-lg font-black text-[#1A2E26]">{total.toLocaleString()} ج</span>
+                        </div>
+                        <div className="flex gap-2 mb-3">
+                          <button onClick={() => setStoreMethod('instapay')} className={`flex-1 py-2 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 ${storeMethod === 'instapay' ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' : 'bg-white text-[#1A2E26] border-gray-200'}`}><Coins className="w-4 h-4" /> إنستاباي</button>
+                          <button onClick={() => setStoreMethod('cash')} className={`flex-1 py-2 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 ${storeMethod === 'cash' ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' : 'bg-white text-[#1A2E26] border-gray-200'}`}><Wallet className="w-4 h-4" /> كاش في الفرع</button>
+                        </div>
+                        <button onClick={placeOrder} disabled={orderBusy} className="w-full py-2.5 rounded-xl bg-[#1F6F5F] text-white font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2">
+                          {orderBusy ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري...</> : <><ShoppingBag className="w-4 h-4" /> اطلب ({cartItems.length})</>}
+                        </button>
+                      </div>
+                    )}
                   </>
                 )}
               </div>

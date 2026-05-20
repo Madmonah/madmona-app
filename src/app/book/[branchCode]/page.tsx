@@ -59,6 +59,22 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
   }
 
   useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [branchCode])
+
+  // Pre-fill name + phone from the logged-in Madmona account (if any)
+  useEffect(() => {
+    (async () => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null
+      if (!token) return
+      // @ts-expect-error rpc typing
+      const { data } = await supabase.rpc('madmona_resolve', { p_token: token })
+      if (data?.authenticated) {
+        if (data.full_name) setCustomerName((prev) => prev || data.full_name)
+        if (data.phone) setCustomerPhone((prev) => prev || ('0' + String(data.phone).slice(-10)))
+      }
+    })()
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [])
+
   useEffect(() => { if (selectedDate) loadSlots(selectedDate) /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [selectedDate, selectedStylist])
 
   async function submitBooking() {
