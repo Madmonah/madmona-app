@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   ChevronLeft, Loader2, RefreshCw, Calculator, Play, CheckCircle2,
   DollarSign, Plus, X, Wallet, Calendar as CalendarIcon, Lock,
-  Pencil, Check, Search,
+  Pencil, Check, Search, History,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -136,6 +136,7 @@ function SalariesSection({ supplierId, employees, loading, onChanged }: any) {
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
   const [q, setQ] = useState('')
+  const [showHist, setShowHist] = useState(false)
 
   const filtered = (employees || []).filter((e: any) =>
     !q.trim() || (e.full_name || '').toLowerCase().includes(q.trim().toLowerCase()))
@@ -172,12 +173,17 @@ function SalariesSection({ supplierId, employees, loading, onChanged }: any) {
           <h3 className="text-sm font-bold tracking-wider uppercase text-[#6B7280]">المرتبات الأساسية</h3>
         </div>
         <div className="flex items-center gap-3">
+          <button onClick={() => setShowHist(true)} className="px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-[#1A2E26] text-xs font-bold flex items-center gap-1.5 hover:border-[#1F6F5F] transition-colors">
+            <History className="w-3.5 h-3.5 text-[#1F6F5F]" /> سجل التغييرات
+          </button>
           <div className="text-left">
             <p className="text-[10px] text-[#6B7280]">إجمالي شهري</p>
             <p className="font-black font-mono text-[#1A2E26]">{totalBase.toLocaleString()} ج</p>
           </div>
         </div>
       </div>
+
+      {showHist && <SalaryHistoryModal supplierId={supplierId} onClose={() => setShowHist(false)} />}
 
       {msg && (
         <div className={`px-4 py-2 text-xs font-bold ${msg.ok ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'bg-red-50 text-red-600'}`}>
@@ -234,6 +240,68 @@ function SalariesSection({ supplierId, employees, loading, onChanged }: any) {
         <p className="text-[10px] text-[#6B7280]">💡 أي تعديل بيتسجّل في سجل التغييرات (مين غيّر وامتى). التعديل متاح للمالك والإدارة بس.</p>
       </div>
     </section>
+  )
+}
+
+function SalaryHistoryModal({ supplierId, onClose }: any) {
+  const [hist, setHist] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    (async () => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null
+      if (!token) { setLoading(false); return }
+      // @ts-expect-error rpc typing
+      const { data } = await supabase.rpc('admin_list_salary_history', { p_token: token, p_supplier_id: supplierId })
+      setHist(data?.ok ? data.history : [])
+      setLoading(false)
+    })()
+  }, [supplierId])
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" dir="rtl">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-[#FAFAF7] rounded-t-3xl md:rounded-3xl w-full md:max-w-2xl md:mx-4 max-h-[85vh] flex flex-col shadow-2xl">
+        <header className="px-5 py-4 border-b border-gray-100 bg-white rounded-t-3xl flex items-center justify-between">
+          <h2 className="text-lg font-black text-[#1A2E26] flex items-center gap-2">
+            <History className="w-5 h-5 text-[#1F6F5F]" /> سجل تغييرات المرتبات
+          </h2>
+          <button onClick={onClose}><X className="w-5 h-5 text-[#6B7280]" /></button>
+        </header>
+        <div className="flex-1 overflow-y-auto p-4">
+          {loading ? (
+            <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin inline" /></div>
+          ) : hist.length === 0 ? (
+            <div className="py-12 text-center">
+              <History className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
+              <p className="text-sm font-bold text-[#1A2E26]">مفيش تغييرات لسه</p>
+              <p className="text-xs text-[#6B7280] mt-1">أي تعديل للمرتبات هيظهر هنا</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {hist.map((h: any, i: number) => {
+                const up = Number(h.new_salary) >= Number(h.old_salary || 0)
+                return (
+                  <div key={i} className="bg-white rounded-2xl border border-gray-100 p-3 flex items-center justify-between gap-3 flex-wrap">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-[#1A2E26]">{h.employee}</p>
+                      <p className="text-[10px] text-[#6B7280] mt-0.5">
+                        {h.changed_by} ({h.changed_by_role === 'platform_admin' ? 'أدمن مضمونة' : 'الإدارة'}) · {new Date(h.changed_at).toLocaleString('ar-EG', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 font-mono text-sm">
+                      <span className="text-[#6B7280] line-through">{Number(h.old_salary || 0).toLocaleString()}</span>
+                      <ChevronLeft className="w-3.5 h-3.5 text-[#6B7280]" />
+                      <span className={`font-black ${up ? 'text-[#1F6F5F]' : 'text-red-600'}`}>{Number(h.new_salary).toLocaleString()} ج</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
 

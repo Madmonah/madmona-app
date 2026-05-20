@@ -234,52 +234,25 @@ export default function MadmonaHome() {
         )}
 
         {/* ===== EMPLOYEE ===== */}
-        {employees.length > 0 && employees.map((emp: any) => (
-          <section key={emp.employee_id}>
-            <h2 className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5" /> شغلي في {emp.business_name}</h2>
-
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <div className="bg-[#1F6F5F] text-white rounded-2xl p-4">
-                <div className="flex items-center gap-1.5 text-white/90 mb-1"><Wallet className="w-4 h-4" /><p className="text-[10px] font-bold uppercase tracking-wider">عمولة الشهر</p></div>
-                <p className="text-2xl font-black">{Number(empSummary?.commission_this_month || 0).toLocaleString()} <span className="text-sm">ج</span></p>
-              </div>
-              <div className="bg-white border border-gray-100 rounded-2xl p-4">
-                <div className="flex items-center gap-1.5 text-[#6B7280] mb-1"><Clock className="w-4 h-4" /><p className="text-[10px] font-bold uppercase tracking-wider">مستحق لسه</p></div>
-                <p className="text-2xl font-black text-[#1A2E26]">{Number(empSummary?.commission_unpaid || 0).toLocaleString()} <span className="text-sm">ج</span></p>
-              </div>
-            </div>
-
-            {emp.branch_code && (
-              <Link href={`/clock/${emp.branch_code}`} className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center justify-between hover:border-[#1F6F5F] hover:shadow-md transition-all mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 grid place-items-center"><QrCode className="w-5 h-5 text-[#1F6F5F]" /></div>
-                  <div>
-                    <p className="font-black text-[#1A2E26]">حضور وانصراف</p>
-                    <p className="text-[11px] text-[#6B7280]">سجّل حضورك بالـ QR + اللوكيشن</p>
-                  </div>
-                </div>
-                <ChevronLeft className="w-5 h-5 text-[#6B7280]" />
-              </Link>
-            )}
-
-            <div className="bg-white rounded-2xl border border-gray-100 p-4">
-              <div className="flex items-center gap-1.5 mb-3"><CalendarCheck className="w-4 h-4 text-[#1F6F5F]" /><p className="text-sm font-black text-[#1A2E26]">مواعيدي النهاردة</p></div>
-              {empSummary?.today?.length > 0 ? (
-                <div className="space-y-2">
-                  {empSummary.today.map((t: any, i: number) => (
-                    <div key={i} className="flex items-center justify-between text-sm border-b border-gray-50 pb-2 last:border-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-[#1F6F5F]" dir="ltr">{t.time}</span>
-                        <span className="text-[#1A2E26]">{t.service}</span>
-                      </div>
-                      <span className="text-[11px] text-[#6B7280]">{t.customer}</span>
+        {employees.length > 0 && (
+          <section>
+            <h2 className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5" /> شغلي</h2>
+            <div className="space-y-2">
+              {employees.map((emp: any) => (
+                <Link key={emp.employee_id} href="/me" className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center justify-between hover:border-[#1F6F5F] hover:shadow-md transition-all">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 grid place-items-center"><Briefcase className="w-5 h-5 text-[#1F6F5F]" /></div>
+                    <div>
+                      <p className="font-black text-[#1A2E26]">{emp.business_name}</p>
+                      <p className="text-[11px] text-[#6B7280]">لوحة شغلي · حضور، تاسكات، تيبس، مواعيد</p>
                     </div>
-                  ))}
-                </div>
-              ) : <p className="text-xs text-[#6B7280]">مفيش مواعيد محجوزة ليك النهاردة</p>}
+                  </div>
+                  <ChevronLeft className="w-5 h-5 text-[#6B7280]" />
+                </Link>
+              ))}
             </div>
           </section>
-        ))}
+        )}
 
         {/* ===== PENDING REVIEWS ===== */}
         {pendingReviews.length > 0 && (
