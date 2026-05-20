@@ -1,0 +1,99 @@
+// Owner Portal — WhatsApp OTP sender
+// Validates phone against pre-provisioned admins (via owner_request_otp RPC),
+// then sends the 6-digit code to the owner's WhatsApp using Meta Cloud API.
+// Credentials are read from the whatsapp_config table (same source the rest of the system uses).
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+
+  try {
+    const { phone } = await req.json()
+    if (!phone) {
+      return new Response(JSON.stringify({ success: false, error: 'رقم مطلوب' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    )
+
+    // 1) Validate + generate code (RPC checks phone is a pre-provisioned active admin)
+    const { data: otp, error: rpcErr } = await supabase.rpc('owner_request_otp', { p_phone: phone })
+    if (rpcErr) {
+      return new Response(JSON.stringify({ success: false, error: rpcErr.message }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    if (!otp?.success) {
+      return new Response(JSON.stringify(otp), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // 2) Read WhatsApp credentials from whatsapp_config (same source as the rest of the system)
+    const { data: cfgRows, error: cfgErr } = await supabase
+      .from('whatsapp_config')
+      .select('key, value')
+      .in('key', ['access_token', 'phone_number_id'])
+    if (cfgErr || !cfgRows) {
+      return new Response(JSON.stringify({ success: false, error: 'تعذّر قراءة إعدادات واتساب' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const cfg: Record<string, string> = {}
+    for (const r of cfgRows) cfg[r.key] = r.value
+    const WA_TOKEN = cfg['access_token']
+    const WA_PHONE_ID = cfg['phone_number_id'] || '1084433138092430'
+
+    const code: string = otp.code
+    const to: string = otp.wa_to // normalized e.g. 201050130149
+
+    // 3) Send via WhatsApp authentication template
+    const waBody = {
+      messaging_product: 'whatsapp',
+      to,
+      type: 'template',
+      template: {
+        name: 'madmona_login_otp',
+        language: { code: 'ar' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', text: code }] },
+          { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: code }] },
+        ],
+      },
+    }
+
+    const waRes = await fetch(`https://graph.facebook.com/v21.0/${WA_PHONE_ID}/messages`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${WA_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(waBody),
+    })
+    const waJson = await waRes.json()
+
+    if (!waRes.ok) {
+      console.error('WhatsApp send failed:', JSON.stringify(waJson))
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'فشل إرسال الكود على واتساب. تأكد إن قالب madmona_login_otp متفعّل في Meta.',
+        wa_error: waJson?.error?.message || null,
+      }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    return new Response(JSON.stringify({ success: true, phone: otp.phone }), {
+      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  } catch (e) {
+    return new Response(JSON.stringify({ success: false, error: String(e) }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+})

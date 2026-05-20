@@ -22,14 +22,14 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
 
   async function init() {
     setLoading(true)
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
+    const token = localStorage.getItem('madmona_owner_token')
+    if (!token) {
       router.push('/owner/login')
       return
     }
-    // Verify access
+    // Verify access via session token
     // @ts-expect-error
-    const { data: acc } = await supabase.rpc('owner_check_access', { p_supplier_id: supplierId })
+    const { data: acc } = await supabase.rpc('owner_check_by_token', { p_token: token, p_supplier_id: supplierId })
     if (!acc?.allowed) {
       setDenied(true)
       setLoading(false)
@@ -50,7 +50,12 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
   useEffect(() => { init() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId])
 
   async function logout() {
-    await supabase.auth.signOut()
+    const token = localStorage.getItem('madmona_owner_token')
+    if (token) {
+      // @ts-expect-error
+      await supabase.rpc('owner_logout', { p_token: token })
+      localStorage.removeItem('madmona_owner_token')
+    }
     router.push('/owner/login')
   }
 

@@ -14,10 +14,10 @@ export default function OwnerSelectPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { router.push('/owner/login'); return }
+      const token = localStorage.getItem('madmona_owner_token')
+      if (!token) { router.push('/owner/login'); return }
       // @ts-expect-error
-      const { data } = await supabase.rpc('owner_resolve_access')
+      const { data } = await supabase.rpc('owner_resolve_by_token', { p_token: token })
       const acc = data?.access || []
       if (acc.length === 0) { router.push('/owner/login'); return }
       if (acc.length === 1) { router.push(`/owner/${acc[0].supplier_id}`); return }
@@ -28,7 +28,12 @@ export default function OwnerSelectPage() {
   }, [])
 
   async function logout() {
-    await supabase.auth.signOut()
+    const token = localStorage.getItem('madmona_owner_token')
+    if (token) {
+      // @ts-expect-error
+      await supabase.rpc('owner_logout', { p_token: token })
+      localStorage.removeItem('madmona_owner_token')
+    }
     router.push('/owner/login')
   }
 
