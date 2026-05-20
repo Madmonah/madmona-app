@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   Loader2, LogOut, Store, Calendar, QrCode, Wallet, Clock, Briefcase,
   Heart, Plus, Search, Building2, ChevronLeft, ShieldCheck, CalendarCheck,
-  UserPlus, Check, X, Star,
+  UserPlus, Check, X, Star, Gift, Coins,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -20,6 +20,13 @@ export default function MadmonaHome() {
   const [pendingReviews, setPendingReviews] = useState<any[]>([])
   const [ratings, setRatings] = useState<Record<string, { service: number; stylist: number; comment: string }>>({})
   const [busyReview, setBusyReview] = useState<string | null>(null)
+  const [tipTargets, setTipTargets] = useState<any[]>([])
+  const [tipBranch, setTipBranch] = useState<string>('')
+  const [tipEmp, setTipEmp] = useState<string>('')
+  const [tipAmount, setTipAmount] = useState<number>(0)
+  const [tipMethod, setTipMethod] = useState<'instapay' | 'cash'>('instapay')
+  const [tipBusy, setTipBusy] = useState(false)
+  const [tipResult, setTipResult] = useState<any>(null)
   const [joinReqs, setJoinReqs] = useState<Record<string, any[]>>({})
   const [busyReq, setBusyReq] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -55,6 +62,9 @@ export default function MadmonaHome() {
       // @ts-expect-error rpc typing
       const { data: pr } = await supabase.rpc('madmona_customer_pending_reviews', { p_token: token })
       if (pr?.ok && pr.pending?.length) setPendingReviews(pr.pending)
+      // @ts-expect-error rpc typing
+      const { data: tt } = await supabase.rpc('madmona_tip_targets', { p_token: token })
+      if (tt?.ok && tt.targets?.length) setTipTargets(tt.targets)
     }
     if (data.is_admin) await loadJoinReqs(token, data.roles.admin || [])
     setLoading(false)
@@ -86,6 +96,18 @@ export default function MadmonaHome() {
     })
     setPendingReviews(prev => prev.filter(p => p.booking_id !== bid))
     setBusyReview(null)
+  }
+
+  async function sendTip() {
+    if (!tipEmp || !tipAmount) return
+    const token = localStorage.getItem('madmona_token'); if (!token) return
+    setTipBusy(true)
+    // @ts-expect-error rpc typing
+    const { data } = await supabase.rpc('madmona_create_tip', {
+      p_token: token, p_employee_id: tipEmp, p_amount: tipAmount, p_method: tipMethod,
+    })
+    if (data?.ok) { setTipResult(data); setTipEmp(''); setTipAmount(0) }
+    setTipBusy(false)
   }
 
   async function logout() {
@@ -294,6 +316,65 @@ export default function MadmonaHome() {
             </div>
           </section>
         )}
+
+        {/* ===== TIPS ===== */}
+        {tipTargets.length > 0 && (() => {
+          const branches = tipTargets.flatMap((t: any) => (t.branches || []).map((b: any) => ({ ...b })))
+          const emps = branches.find((b: any) => b.branch_id === tipBranch)?.employees || []
+          return (
+            <section>
+              <h2 className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1.5"><Gift className="w-3.5 h-3.5" /> كرّم اللي خدمك (بقشيش)</h2>
+              <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                {tipResult ? (
+                  <div className="text-center py-2">
+                    <div className="w-14 h-14 rounded-full bg-[#1F6F5F]/10 grid place-items-center mx-auto mb-3"><Gift className="w-7 h-7 text-[#1F6F5F]" /></div>
+                    <p className="font-black text-[#1A2E26] mb-1">شكراً! 🎉 بقشيش {tipResult.amount} ج لـ {tipResult.employee}</p>
+                    <p className="text-sm text-[#6B7280] leading-relaxed">{tipResult.message}</p>
+                    {tipResult.instapay && (
+                      <div className="mt-3 bg-[#FAFAF7] rounded-xl p-3">
+                        <p className="text-[10px] text-[#6B7280] mb-1">رقم إنستاباي</p>
+                        <p className="font-mono font-black text-[#1F6F5F] text-lg" dir="ltr">{tipResult.instapay}</p>
+                      </div>
+                    )}
+                    <button onClick={() => setTipResult(null)} className="mt-4 text-xs font-bold text-[#1F6F5F]">بقشيش تاني</button>
+                  </div>
+                ) : (
+                  <>
+                    <select value={tipBranch} onChange={e => { setTipBranch(e.target.value); setTipEmp('') }} className="w-full px-3 py-3 rounded-xl bg-[#FAFAF7] text-sm mb-3">
+                      <option value="">اختار الفرع</option>
+                      {branches.map((b: any) => <option key={b.branch_id} value={b.branch_id}>{b.branch_name}</option>)}
+                    </select>
+
+                    {tipBranch && (
+                      <select value={tipEmp} onChange={e => setTipEmp(e.target.value)} className="w-full px-3 py-3 rounded-xl bg-[#FAFAF7] text-sm mb-3">
+                        <option value="">اختار الموظف</option>
+                        {emps.map((e: any) => <option key={e.employee_id} value={e.employee_id}>{e.name}{e.role_ar ? ' — ' + e.role_ar : ''}</option>)}
+                      </select>
+                    )}
+
+                    <p className="text-[11px] font-bold text-[#6B7280] mb-1.5">المبلغ</p>
+                    <div className="flex gap-2 mb-3">
+                      {[20, 50, 100].map(a => (
+                        <button key={a} onClick={() => setTipAmount(a)} className={`flex-1 py-2 rounded-xl font-bold text-sm border ${tipAmount === a ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' : 'bg-white text-[#1A2E26] border-gray-200'}`}>{a} ج</button>
+                      ))}
+                      <input type="number" value={tipAmount || ''} onChange={e => setTipAmount(Number(e.target.value))} placeholder="غير ده" className="w-20 px-2 py-2 rounded-xl bg-[#FAFAF7] text-sm text-center" dir="ltr" />
+                    </div>
+
+                    <p className="text-[11px] font-bold text-[#6B7280] mb-1.5">طريقة الدفع</p>
+                    <div className="flex gap-2 mb-4">
+                      <button onClick={() => setTipMethod('instapay')} className={`flex-1 py-2 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 ${tipMethod === 'instapay' ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' : 'bg-white text-[#1A2E26] border-gray-200'}`}><Coins className="w-4 h-4" /> إنستاباي</button>
+                      <button onClick={() => setTipMethod('cash')} className={`flex-1 py-2 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 ${tipMethod === 'cash' ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' : 'bg-white text-[#1A2E26] border-gray-200'}`}><Wallet className="w-4 h-4" /> كاش في الفرع</button>
+                    </div>
+
+                    <button onClick={sendTip} disabled={tipBusy || !tipEmp || !tipAmount} className="w-full py-2.5 rounded-xl bg-[#1F6F5F] text-white font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2">
+                      {tipBusy ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري...</> : <><Gift className="w-4 h-4" /> ابعت البقشيش</>}
+                    </button>
+                  </>
+                )}
+              </div>
+            </section>
+          )
+        })()}
 
         {/* ===== MARKETPLACE (everyone) ===== */}
         <section>
