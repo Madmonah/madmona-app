@@ -15,7 +15,10 @@ const TEMPLATES: Record<string, string> = {
   confirmation: Deno.env.get('WA_TEMPLATE_BOOKING_CONFIRM') || 'madmona_booking_confirm_v1',
   reminder_24h: Deno.env.get('WA_TEMPLATE_BOOKING_REMINDER') || 'madmona_booking_reminder_v1',
   reminder_2h: Deno.env.get('WA_TEMPLATE_BOOKING_REMINDER') || 'madmona_booking_reminder_v1',
+  followup: Deno.env.get('WA_TEMPLATE_BOOKING_FOLLOWUP') || 'madmona_booking_followup_v1',
 }
+
+const APP_BASE_URL = Deno.env.get('APP_BASE_URL') || 'https://madmonacairo.com'
 
 serve(async (req) => {
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 })
@@ -56,6 +59,25 @@ serve(async (req) => {
       const phone = notif.customer_phone.replace(/[^0-9]/g, '').replace(/^0/, '20')
       const templateName = TEMPLATES[notif.notification_type] || TEMPLATES.confirmation
 
+      // Build body params per notification type
+      let bodyParams: any[]
+      if (notif.notification_type === 'followup') {
+        // Review request: name, service, review link
+        bodyParams = [
+          { type: 'text', text: firstName },
+          { type: 'text', text: serviceName },
+          { type: 'text', text: `${APP_BASE_URL}/review/${notif.booking_id}` },
+        ]
+      } else {
+        bodyParams = [
+          { type: 'text', text: firstName },
+          { type: 'text', text: serviceName },
+          { type: 'text', text: dateStr },
+          { type: 'text', text: timeStr },
+          { type: 'text', text: businessName },
+        ]
+      }
+
       const waRes = await fetch(`https://graph.facebook.com/v18.0/${WA_PHONE_ID}/messages`, {
         method: 'POST',
         headers: {
@@ -69,16 +91,7 @@ serve(async (req) => {
           template: {
             name: templateName,
             language: { code: 'ar' },
-            components: [{
-              type: 'body',
-              parameters: [
-                { type: 'text', text: firstName },
-                { type: 'text', text: serviceName },
-                { type: 'text', text: dateStr },
-                { type: 'text', text: timeStr },
-                { type: 'text', text: businessName },
-              ],
-            }],
+            components: [{ type: 'body', parameters: bodyParams }],
           },
         }),
       })

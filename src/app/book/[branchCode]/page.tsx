@@ -15,7 +15,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   package: 'باقة', general: 'عام',
 }
 
-type Step = 'service' | 'datetime' | 'stylist' | 'info' | 'confirm' | 'done'
+type Step = 'service' | 'datetime' | 'stylist' | 'info' | 'confirm' | 'done' | 'waitlist' | 'waitlist_done'
 
 export default function PublicBookingPage({ params }: { params: { branchCode: string } }) {
   const { branchCode } = params
@@ -34,6 +34,8 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [bookingResult, setBookingResult] = useState<any>(null)
+  const [waitlistResult, setWaitlistResult] = useState<any>(null)
+  const [preferredTimeText, setPreferredTimeText] = useState('أي وقت')
 
   async function load() {
     setLoading(true)
@@ -77,6 +79,21 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
     setSubmitting(false)
   }
 
+  async function joinWaitlist() {
+    if (!selectedService || !customerName || !customerPhone) return
+    setSubmitting(true)
+    // @ts-expect-error
+    const { data: result, error } = await supabase.rpc('public_join_waitlist', {
+      p_branch_code: branchCode, p_service_id: selectedService.id,
+      p_customer_name: customerName, p_customer_phone: customerPhone,
+      p_preferred_date: selectedDate ? selectedDate.toISOString().slice(0, 10) : null,
+      p_preferred_time_text: preferredTimeText,
+    })
+    if (error || !result?.success) alert('خطأ: ' + (error?.message || result?.error || 'فشل'))
+    else { setWaitlistResult(result); setStep('waitlist_done') }
+    setSubmitting(false)
+  }
+
   if (loading) return <Loader />
   if (!data?.branch) return (
     <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
@@ -96,6 +113,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
   })
   const dateOptions: Date[] = []
   for (let i = 0; i < 14; i++) { const d = new Date(); d.setDate(d.getDate() + i); dateOptions.push(d) }
+  const allSlotsFull = selectedDate && bookingEnabled && !loadingSlots && slots.length > 0 && slots.every((s: any) => !s.available)
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
@@ -183,6 +201,50 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 )}
               </div>
             )}
+            {allSlotsFull && (
+              <div className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 rounded-2xl p-4 text-center">
+                <p className="text-sm font-bold text-[#1A2E26]">اليوم ده مليان بالكامل 😔</p>
+                <p className="text-xs text-[#6B7280] mt-1">سجّلي في قائمة الانتظار، ونتواصل معاكي أول ما يفضى مكان</p>
+                <button onClick={() => setStep('waitlist')} className="mt-3 px-5 py-2.5 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold">
+                  انضمي لقائمة الانتظار
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {step === 'waitlist' && (
+          <div className="space-y-4">
+            <BackBtn onClick={() => setStep('datetime')} />
+            <h2 className="text-lg font-black text-[#1A2E26]">قائمة الانتظار</h2>
+            <p className="text-sm text-[#6B7280]">سجّلي بياناتك، وأول ما يفضى مكان لـ <b>{selectedService?.name_ar}</b> هنكلمك.</p>
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
+              <Field label="الاسم *"><input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="اسمك الكامل" className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
+              <Field label="رقم الموبايل (واتساب) *"><input type="tel" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="01XXXXXXXXX" className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" dir="ltr" /></Field>
+              <Field label="الوقت المفضّل">
+                <div className="grid grid-cols-3 gap-2">
+                  {['صباحاً', 'بعد الظهر', 'مساءً', 'أي وقت'].map(t => (
+                    <button key={t} onClick={() => setPreferredTimeText(t)} className={`px-2 py-2 rounded-lg text-xs font-bold ${preferredTimeText === t ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'}`}>{t}</button>
+                  ))}
+                </div>
+              </Field>
+            </div>
+            <button onClick={joinWaitlist} disabled={submitting || !customerName || !customerPhone} className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black disabled:opacity-40 flex items-center justify-center gap-2">
+              {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري التسجيل...</> : <><Clock className="w-4 h-4" /> سجّليني في الانتظار</>}
+            </button>
+          </div>
+        )}
+
+        {step === 'waitlist_done' && waitlistResult && (
+          <div className="space-y-4 text-center py-8">
+            <div className="w-20 h-20 rounded-full bg-[#1F6F5F] grid place-items-center mx-auto"><Clock className="w-10 h-10 text-white" /></div>
+            <h2 className="text-2xl font-black text-[#1A2E26]">تم تسجيلك في الانتظار! ✋</h2>
+            <p className="text-sm text-[#6B7280]">ترتيبك رقم <b className="text-[#1F6F5F]">{waitlistResult.position}</b> في قائمة الانتظار. هنتواصل معاكي على واتساب أول ما يفضى مكان.</p>
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3 text-right">
+              <SummaryRow icon={<Scissors />} label="الخدمة" value={selectedService?.name_ar} />
+              <SummaryRow icon={<CalendarIcon />} label="اليوم المفضّل" value={selectedDate?.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' })} sub={preferredTimeText} />
+              <SummaryRow icon={<MapPin />} label="الفرع" value={branch?.name} />
+            </div>
           </div>
         )}
 
