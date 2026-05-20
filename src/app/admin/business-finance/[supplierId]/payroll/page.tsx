@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   ChevronLeft, Loader2, RefreshCw, Calculator, Play, CheckCircle2,
   DollarSign, Plus, X, Wallet, Calendar as CalendarIcon, Lock,
+  Pencil, Check, Search,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -72,6 +73,9 @@ export default function PayrollPage({ params }: { params: { supplierId: string }
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-5">
+        {/* Base salaries management */}
+        <SalariesSection supplierId={supplierId} employees={employees} loading={loading} onChanged={load} />
+
         {/* Runs list */}
         <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <div className="px-4 py-3 bg-[#FAFAF7] border-b border-gray-100">
@@ -123,6 +127,113 @@ export default function PayrollPage({ params }: { params: { supplierId: string }
         <AddAdvanceModal supplierId={supplierId} employees={employees} onClose={() => setShowAdvance(false)} onSaved={() => setShowAdvance(false)} />
       )}
     </div>
+  )
+}
+
+function SalariesSection({ supplierId, employees, loading, onChanged }: any) {
+  const [editId, setEditId] = useState<string | null>(null)
+  const [val, setVal] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
+  const [q, setQ] = useState('')
+
+  const filtered = (employees || []).filter((e: any) =>
+    !q.trim() || (e.full_name || '').toLowerCase().includes(q.trim().toLowerCase()))
+  const totalBase = (employees || []).reduce((s: number, e: any) => s + Number(e.salary_egp || 0), 0)
+
+  function startEdit(e: any) { setEditId(e.id); setVal(String(e.salary_egp || 0)); setMsg(null) }
+
+  async function save(empId: string) {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null
+    if (!token) { setMsg({ text: 'سجّل دخول الأول', ok: false }); return }
+    const newSalary = parseFloat(val)
+    if (isNaN(newSalary) || newSalary < 0) { setMsg({ text: 'مبلغ غير صالح', ok: false }); return }
+    setSaving(true)
+    // @ts-expect-error rpc typing
+    const { data } = await supabase.rpc('admin_set_employee_salary', {
+      p_token: token, p_employee_id: empId, p_new_salary: newSalary,
+    })
+    if (data?.ok) {
+      setMsg({ text: `✓ اتعدّل من ${Number(data.old_salary || 0).toLocaleString()} لـ ${Number(data.new_salary).toLocaleString()} ج`, ok: true })
+      setEditId(null)
+      onChanged()
+    } else {
+      setMsg({ text: data?.error || 'خطأ في التعديل', ok: false })
+    }
+    setSaving(false)
+    setTimeout(() => setMsg(null), 3500)
+  }
+
+  return (
+    <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+      <div className="px-4 py-3 bg-[#FAFAF7] border-b border-gray-100 flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <DollarSign className="w-4 h-4 text-[#1F6F5F]" />
+          <h3 className="text-sm font-bold tracking-wider uppercase text-[#6B7280]">المرتبات الأساسية</h3>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-left">
+            <p className="text-[10px] text-[#6B7280]">إجمالي شهري</p>
+            <p className="font-black font-mono text-[#1A2E26]">{totalBase.toLocaleString()} ج</p>
+          </div>
+        </div>
+      </div>
+
+      {msg && (
+        <div className={`px-4 py-2 text-xs font-bold ${msg.ok ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'bg-red-50 text-red-600'}`}>
+          {msg.text}
+        </div>
+      )}
+
+      <div className="px-4 py-2.5 border-b border-gray-100">
+        <div className="relative">
+          <Search className="w-4 h-4 text-[#6B7280] absolute right-3 top-1/2 -translate-y-1/2" />
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="دوّر على موظف بالاسم..."
+            className="w-full pr-9 pl-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" />
+        </div>
+      </div>
+
+      <div className="divide-y divide-gray-100 max-h-[480px] overflow-y-auto">
+        {loading ? (
+          <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin inline" /></div>
+        ) : filtered.length === 0 ? (
+          <div className="py-10 text-center text-sm text-[#6B7280]">مفيش موظفين</div>
+        ) : filtered.map((e: any) => (
+          <div key={e.id} className="px-4 py-3 flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-[#1A2E26] truncate">{e.full_name}</p>
+              <p className="text-[10px] text-[#6B7280]">{e.role_ar || '—'}</p>
+            </div>
+            {editId === e.id ? (
+              <div className="flex items-center gap-2">
+                <input type="number" value={val} onChange={ev => setVal(ev.target.value)} autoFocus
+                  onKeyDown={ev => { if (ev.key === 'Enter') save(e.id); if (ev.key === 'Escape') setEditId(null) }}
+                  className="w-28 px-3 py-1.5 rounded-lg bg-[#FAFAF7] text-sm font-mono text-left border border-[#1F6F5F]" />
+                <button onClick={() => save(e.id)} disabled={saving}
+                  className="p-1.5 rounded-lg bg-[#1F6F5F] text-white disabled:opacity-50" title="حفظ">
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                </button>
+                <button onClick={() => setEditId(null)} className="p-1.5 rounded-lg bg-[#FAFAF7] text-[#6B7280]" title="إلغاء">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <span className="font-black font-mono text-[#1A2E26] text-sm">{Number(e.salary_egp || 0).toLocaleString()} ج</span>
+                <button onClick={() => startEdit(e)}
+                  className="p-1.5 rounded-lg bg-[#FAFAF7] hover:bg-[#1F6F5F]/10 text-[#1F6F5F] transition-colors" title="تعديل المرتب">
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="px-4 py-2.5 bg-[#FAFAF7] border-t border-gray-100">
+        <p className="text-[10px] text-[#6B7280]">💡 أي تعديل بيتسجّل في سجل التغييرات (مين غيّر وامتى). التعديل متاح للمالك والإدارة بس.</p>
+      </div>
+    </section>
   )
 }
 
