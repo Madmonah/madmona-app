@@ -9,7 +9,7 @@ import {
   CheckCircle2, AlertCircle, BadgePercent, ChevronDown, Plus, Heart, Package,
   BarChart3, DollarSign, Clock, ShoppingCart, Truck, Gift,
   MessageCircle, FileText, Calculator, FileCheck, Scissors, UserX, Receipt,
-  CalendarClock, Download, ListChecks,
+  CalendarClock, Download, ListChecks, Link2,
 } from 'lucide-react'
 
 /* ============================================================
@@ -322,6 +322,7 @@ export default function BusinessFinancePage({
           </h2>
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
             <ModuleCard href={`/admin/business-finance/${supplierId}/confirmations`} icon={<CheckCircle2 />} label="التأكيدات" primary />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/links`} icon={<Link2 />} label="كل اللينكات" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/dashboard`} icon={<BarChart3 />} label="Dashboard" primary />
             <ModuleCard href={`/admin/business-finance/${supplierId}/team`} icon={<Users />} label="الفريق" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/branches`} icon={<Building2 />} label="الفروع" />
