@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   Loader2, LogOut, Store, Calendar, QrCode, Wallet, Clock, Briefcase,
   Heart, Plus, Search, Building2, ChevronLeft, ShieldCheck, CalendarCheck,
-  UserPlus, Check, X,
+  UserPlus, Check, X, Star,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -17,6 +17,9 @@ export default function MadmonaHome() {
   const [me, setMe] = useState<any>(null)
   const [empSummary, setEmpSummary] = useState<any>(null)
   const [custBookings, setCustBookings] = useState<any>(null)
+  const [pendingReviews, setPendingReviews] = useState<any[]>([])
+  const [ratings, setRatings] = useState<Record<string, { service: number; stylist: number; comment: string }>>({})
+  const [busyReview, setBusyReview] = useState<string | null>(null)
   const [joinReqs, setJoinReqs] = useState<Record<string, any[]>>({})
   const [busyReq, setBusyReq] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -49,6 +52,9 @@ export default function MadmonaHome() {
       // @ts-expect-error rpc typing
       const { data: cb } = await supabase.rpc('madmona_customer_bookings', { p_token: token })
       if (cb?.ok) setCustBookings(cb)
+      // @ts-expect-error rpc typing
+      const { data: pr } = await supabase.rpc('madmona_customer_pending_reviews', { p_token: token })
+      if (pr?.ok && pr.pending?.length) setPendingReviews(pr.pending)
     }
     if (data.is_admin) await loadJoinReqs(token, data.roles.admin || [])
     setLoading(false)
@@ -63,6 +69,23 @@ export default function MadmonaHome() {
     await supabase.rpc('admin_review_employee_join', { p_token: token, p_request_id: reqId, p_action: action })
     setJoinReqs(prev => ({ ...prev, [supplierId]: (prev[supplierId] || []).filter(r => r.id !== reqId) }))
     setBusyReq(null)
+  }
+
+  function setRate(bid: string, field: 'service' | 'stylist' | 'comment', val: any) {
+    setRatings(prev => ({ ...prev, [bid]: { service: 0, stylist: 0, comment: '', ...prev[bid], [field]: val } }))
+  }
+
+  async function submitReview(bid: string) {
+    const r = ratings[bid]
+    if (!r || !r.service) return
+    setBusyReview(bid)
+    // @ts-expect-error rpc typing
+    await supabase.rpc('public_submit_review', {
+      p_booking_id: bid, p_rating: r.service, p_comment: r.comment || null,
+      p_stylist_rating: r.stylist || null,
+    })
+    setPendingReviews(prev => prev.filter(p => p.booking_id !== bid))
+    setBusyReview(null)
   }
 
   async function logout() {
@@ -198,6 +221,54 @@ export default function MadmonaHome() {
             </div>
           </section>
         ))}
+
+        {/* ===== PENDING REVIEWS ===== */}
+        {pendingReviews.length > 0 && (
+          <section>
+            <h2 className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1.5"><Star className="w-3.5 h-3.5" /> قيّم زياراتك</h2>
+            <div className="space-y-3">
+              {pendingReviews.map((p: any) => {
+                const r = ratings[p.booking_id] || { service: 0, stylist: 0, comment: '' }
+                return (
+                  <div key={p.booking_id} className="bg-white rounded-2xl border border-gray-100 p-4">
+                    <div className="mb-3">
+                      <p className="font-black text-[#1A2E26]">{p.service}</p>
+                      <p className="text-[11px] text-[#6B7280]">{p.branch}{p.employee ? ' · ' + p.employee : ''} · {p.date}</p>
+                    </div>
+
+                    <p className="text-[11px] font-bold text-[#6B7280] mb-1">تقييم الخدمة</p>
+                    <div className="flex gap-1 mb-3" dir="ltr">
+                      {[1,2,3,4,5].map(n => (
+                        <button key={n} onClick={() => setRate(p.booking_id, 'service', n)}>
+                          <Star className={`w-7 h-7 ${n <= r.service ? 'fill-[#1F6F5F] text-[#1F6F5F]' : 'text-gray-300'}`} />
+                        </button>
+                      ))}
+                    </div>
+
+                    {p.employee && (
+                      <>
+                        <p className="text-[11px] font-bold text-[#6B7280] mb-1">تقييم {p.employee}</p>
+                        <div className="flex gap-1 mb-3" dir="ltr">
+                          {[1,2,3,4,5].map(n => (
+                            <button key={n} onClick={() => setRate(p.booking_id, 'stylist', n)}>
+                              <Star className={`w-6 h-6 ${n <= r.stylist ? 'fill-[#1F6F5F] text-[#1F6F5F]' : 'text-gray-300'}`} />
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    <textarea value={r.comment} onChange={e => setRate(p.booking_id, 'comment', e.target.value)} placeholder="رأيك يهمنا (اختياري)" rows={2} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm mb-3 resize-none" />
+
+                    <button onClick={() => submitReview(p.booking_id)} disabled={busyReview === p.booking_id || !r.service} className="w-full py-2.5 rounded-xl bg-[#1F6F5F] text-white font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2">
+                      {busyReview === p.booking_id ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري الإرسال...</> : <><Star className="w-4 h-4" /> ابعت تقييمك</>}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
 
         {/* ===== CUSTOMER ===== */}
         {me?.is_customer && (
