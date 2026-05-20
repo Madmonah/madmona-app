@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import {
   ChevronLeft, Loader2, Copy, Check, ExternalLink, Briefcase,
-  UserPlus, CalendarCheck, Crown, ShieldCheck, Store,
+  UserPlus, CalendarCheck, Crown, ShieldCheck, Store, Sparkles,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -100,6 +100,11 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
       title: 'تسجيل الموظفين الجدد', icon: <UserPlus className="w-4 h-4" />,
       desc: 'اللينك ده تبعته للموظفين عشان يسجّلوا أرقامهم',
       items: [{ label: `لينك انضمام موظفي ${supplier?.business_name || 'Elite'}`, path: `/join/${slug}`, share: true }],
+    },
+    {
+      title: 'واجهة العملاء (الصفحة الرئيسية)', icon: <Sparkles className="w-4 h-4" />,
+      desc: 'الصفحة اللي تبعتها لعملاء Elite — منها يحجزوا ويشوفوا الخدمات ويدخلوا حسابهم',
+      items: [{ label: `صفحة ${supplier?.business_name || 'Elite'} للعملاء`, path: `/s/${slug}`, share: true }],
     },
     {
       title: 'حجز العملاء (لكل فرع)', icon: <CalendarCheck className="w-4 h-4" />,
