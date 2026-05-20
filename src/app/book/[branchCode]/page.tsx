@@ -30,6 +30,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
   const [customerPhone, setCustomerPhone] = useState('')
   const [notes, setNotes] = useState('')
   const [slots, setSlots] = useState<any[]>([])
+  const [bookingEnabled, setBookingEnabled] = useState(true)
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [bookingResult, setBookingResult] = useState<any>(null)
@@ -51,6 +52,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
       p_stylist_id: selectedStylist?.id || null,
     })
     setSlots(result?.slots || [])
+    setBookingEnabled(result?.booking_enabled !== false)
     setLoadingSlots(false)
   }
 
@@ -163,7 +165,13 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 )
               })}
             </div>
-            {selectedDate && (
+            {selectedDate && !bookingEnabled && (
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center">
+                <p className="text-sm font-bold text-amber-800">الحجز الأونلاين مقفول حالياً</p>
+                <p className="text-xs text-amber-700 mt-1">برجاء التواصل مع الفرع مباشرة</p>
+              </div>
+            )}
+            {selectedDate && bookingEnabled && (
               <div className="bg-white rounded-2xl border border-gray-100 p-4">
                 <p className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mb-3">المواعيد المتاحة</p>
                 {loadingSlots ? <div className="py-6 text-center"><Loader2 className="w-5 h-5 text-[#1F6F5F] animate-spin inline" /></div> : (
