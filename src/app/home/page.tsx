@@ -399,9 +399,13 @@ export default function MadmonaHome() {
                     <p className="font-black text-[#1A2E26] mb-1">شكراً! 🎉 اكرامية {tipResult.amount} ج لـ {tipResult.employee}</p>
                     <p className="text-sm text-[#6B7280] leading-relaxed">{tipResult.message}</p>
                     {tipResult.instapay && (
-                      <div className="mt-3 bg-[#FAFAF7] rounded-xl p-3">
-                        <p className="text-[10px] text-[#6B7280] mb-1">رقم إنستاباي</p>
-                        <p className="font-mono font-black text-[#1F6F5F] text-lg" dir="ltr">{tipResult.instapay}</p>
+                      <div className="mt-3 bg-[#FAFAF7] rounded-xl p-3 text-right border border-[#1F6F5F]/15">
+                        <p className="text-[11px] font-bold text-[#6B7280] mb-2">حوّل على حساب مضمونة:</p>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">البنك</span><span className="font-bold text-[#1A2E26]">بنك مصر</span></div>
+                          <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">اسم الحساب</span><span className="font-bold text-[#1A2E26]">مضمونة</span></div>
+                          <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">رقم الحساب / إنستاباي</span><span className="font-mono font-black text-[#1F6F5F] select-all" dir="ltr">{tipResult.instapay}</span></div>
+                        </div>
                       </div>
                     )}
                     <button onClick={() => setTipResult(null)} className="mt-4 text-xs font-bold text-[#1F6F5F]">اكرامية تانية</button>
@@ -461,9 +465,13 @@ export default function MadmonaHome() {
                     <p className="font-black text-[#1A2E26] mb-1">تم استلام طلبك! 🛍️</p>
                     <p className="text-sm text-[#6B7280] leading-relaxed">{orderResult.message}</p>
                     {orderResult.instapay && (
-                      <div className="mt-3 bg-[#FAFAF7] rounded-xl p-3">
-                        <p className="text-[10px] text-[#6B7280] mb-1">رقم إنستاباي</p>
-                        <p className="font-mono font-black text-[#1F6F5F] text-lg" dir="ltr">{orderResult.instapay}</p>
+                      <div className="mt-3 bg-[#FAFAF7] rounded-xl p-3 text-right border border-[#1F6F5F]/15">
+                        <p className="text-[11px] font-bold text-[#6B7280] mb-2">حوّل على حساب مضمونة:</p>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">البنك</span><span className="font-bold text-[#1A2E26]">بنك مصر</span></div>
+                          <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">اسم الحساب</span><span className="font-bold text-[#1A2E26]">مضمونة</span></div>
+                          <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">رقم الحساب / إنستاباي</span><span className="font-mono font-black text-[#1F6F5F] select-all" dir="ltr">{orderResult.instapay}</span></div>
+                        </div>
                       </div>
                     )}
                     <button onClick={() => setOrderResult(null)} className="mt-4 text-xs font-bold text-[#1F6F5F]">اطلب تاني</button>

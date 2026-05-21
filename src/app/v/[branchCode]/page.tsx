@@ -347,7 +347,14 @@ function TipFlow({ branchCode, stylists, onBack }: any) {
     <SuccessCard onBack={onBack} icon={Heart} title="شكراً ليكي ❤️">
       <p className="text-sm text-[#6B7280] mb-3">سجّلنا اكرامية <b className="text-[#1F6F5F]">{fmt(finalAmount)} ج</b>{done.employee_name ? ` لـ ${done.employee_name}` : ''}.</p>
       {method === 'instapay' && done.payout_details
-        ? <div className="bg-[#FAFAF7] rounded-xl p-3 text-sm"><p className="text-[11px] text-[#6B7280] mb-1">حوّلي على إنستاباي مضمونة:</p><p className="font-mono font-black text-[#1A2E26] select-all" dir="ltr">{done.payout_details}</p></div>
+        ? <div className="bg-[#FAFAF7] rounded-2xl p-4 text-sm border border-[#1F6F5F]/15">
+            <p className="text-[11px] font-bold text-[#6B7280] mb-2">حوّلي على حساب مضمونة:</p>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">البنك</span><span className="font-bold text-[#1A2E26]">بنك مصر</span></div>
+              <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">اسم الحساب</span><span className="font-bold text-[#1A2E26]">مضمونة</span></div>
+              <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">رقم الحساب / إنستاباي</span><span className="font-mono font-black text-[#1F6F5F] select-all" dir="ltr">{done.payout_details}</span></div>
+            </div>
+          </div>
         : <p className="text-[12px] text-[#6B7280]">سلّميها في الكاشير أو للستايلست — واحنا سجّلناها في حسابهم.</p>}
     </SuccessCard>
   )
