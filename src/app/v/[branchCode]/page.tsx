@@ -55,7 +55,7 @@ export default function VisitHub({ params }: { params: { branchCode: string } })
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <Hero biz={biz} branchName={branch.name} tagline={tagline} authed={authed} name={profile?.name} gallery={branding?.gallery || []} />
+      <Hero biz={biz} branchName={branch.name} tagline={tagline} authed={authed} name={profile?.name} gallery={branding?.gallery || []} logo={branding?.logo_url} />
       <main className="max-w-md mx-auto px-4 -mt-7 pb-10">
         {authed
           ? <Hub branchCode={branchCode} info={info} branding={branding} router={router} />
@@ -67,7 +67,7 @@ export default function VisitHub({ params }: { params: { branchCode: string } })
 }
 
 /* ============================ HERO ============================ */
-function Hero({ biz, branchName, tagline, authed, name, gallery = [] }: any) {
+function Hero({ biz, branchName, tagline, authed, name, gallery = [], logo }: any) {
   const [idx, setIdx] = useState(0)
   useEffect(() => {
     if (gallery.length < 2) return
@@ -86,11 +86,17 @@ function Hero({ biz, branchName, tagline, authed, name, gallery = [] }: any) {
 
       <div className="relative max-w-md mx-auto px-5 pt-10 pb-14 text-center">
         <p className="text-[10px] font-bold tracking-[0.45em] uppercase text-white/55 mb-3">MADMONA</p>
-        <div className="inline-flex items-center gap-2 mb-1">
-          <Scissors className="w-5 h-5 text-white/80" />
-          <h1 className="text-[26px] leading-tight font-black tracking-tight drop-shadow-sm">{biz || branchName}</h1>
-        </div>
-        <p className="text-[13px] text-white/90">{branchName}</p>
+        {logo ? (
+          <div className="mx-auto mb-3 rounded-2xl overflow-hidden ring-1 ring-white/20 shadow-xl shadow-black/25 bg-[#14110f]" style={{ width: 'min(78%, 300px)' }}>
+            <img src={logo} alt={biz || branchName} className="w-full block" />
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-2 mb-1">
+            <Scissors className="w-5 h-5 text-white/80" />
+            <h1 className="text-[26px] leading-tight font-black tracking-tight drop-shadow-sm">{biz || branchName}</h1>
+          </div>
+        )}
+        <p className="text-[13px] text-white/90 font-bold">{branchName}</p>
         {tagline && <p className="text-[12px] text-white/70 mt-2.5 leading-relaxed max-w-xs mx-auto">{tagline}</p>}
         {authed && (
           <div className="mt-4 inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm rounded-full px-4 py-1.5 ring-1 ring-white/15">

@@ -23,6 +23,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
   const { branchCode } = params
   const { checking, authed, setAuthed, setProfile } = useMadmonaAuth()
   const [data, setData] = useState<any>(null)
+  const [logo, setLogo] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [step, setStep] = useState<Step>('service')
   const [selectedService, setSelectedService] = useState<any>(null)
@@ -47,6 +48,11 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
     // @ts-expect-error
     const { data: result } = await supabase.rpc('public_get_branch_info', { p_branch_code: branchCode })
     setData(result)
+    if (result?.supplier?.id) {
+      // @ts-expect-error
+      const { data: br } = await supabase.rpc('public_get_supplier_branding', { p_supplier_id: result.supplier.id })
+      if (br?.logo_url) setLogo(br.logo_url)
+    }
     setLoading(false)
   }
 
@@ -141,7 +147,13 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
       <header className="bg-[#1F6F5F] text-white">
         <div className="max-w-md mx-auto px-4 py-7 text-center">
           <p className="text-[10px] font-bold tracking-[0.35em] uppercase text-white/65 mb-1">MADMONA · ONLINE BOOKING</p>
-          <h1 className="text-xl font-black">{data.supplier?.business_name}</h1>
+          {logo ? (
+            <div className="mx-auto my-2 rounded-2xl overflow-hidden ring-1 ring-white/20 shadow-lg shadow-black/25 bg-[#14110f]" style={{ width: 'min(72%, 260px)' }}>
+              <img src={logo} alt={data.supplier?.business_name} className="w-full block" />
+            </div>
+          ) : (
+            <h1 className="text-xl font-black">{data.supplier?.business_name}</h1>
+          )}
           <p className="text-xs text-white/85 mt-1">{data.branch?.name}</p>
         </div>
       </header>
@@ -178,9 +190,17 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-[#1F6F5F] text-white">
         <div className="max-w-3xl mx-auto px-4 py-6">
-          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/80 mb-1">ONLINE BOOKING</p>
-          <h1 className="text-2xl md:text-3xl font-black">{supplier?.business_name}</h1>
-          <p className="text-sm text-white/90 mt-1 flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {branch?.name}</p>
+          {logo ? (
+            <div className="rounded-2xl overflow-hidden ring-1 ring-white/20 shadow-lg shadow-black/25 bg-[#14110f] inline-block" style={{ width: 'min(70%, 260px)' }}>
+              <img src={logo} alt={supplier?.business_name} className="w-full block" />
+            </div>
+          ) : (
+            <>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/80 mb-1">ONLINE BOOKING</p>
+              <h1 className="text-2xl md:text-3xl font-black">{supplier?.business_name}</h1>
+            </>
+          )}
+          <p className="text-sm text-white/90 mt-2 flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {branch?.name}</p>
           {step !== 'done' && (
             <div className="mt-4 flex gap-2 text-[10px] font-bold tracking-wider uppercase flex-wrap">
               <StepBadge label="الخدمة" active={step === 'service'} done={['stylist','datetime','extras','info','confirm'].includes(step)} />
