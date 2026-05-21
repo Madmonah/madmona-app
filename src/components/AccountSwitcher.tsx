@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { getSavedAccounts, removeSavedAccount, type SavedAccount } from '@/lib/saved-accounts'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 // ============================================================================
 // AccountSwitcher — switch between accounts WITHOUT going to browser settings
@@ -31,9 +32,9 @@ interface Props {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  admin: 'إدارة',
-  supplier: 'مورد',
-  customer: 'عميل',
+  admin: 'comp.as.role_admin',
+  supplier: 'comp.as.role_supplier',
+  customer: 'comp.as.role_customer',
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -49,6 +50,7 @@ const ROLE_ICONS: Record<string, React.ReactNode> = {
 }
 
 export default function AccountSwitcher({ currentPhone, currentLabel, currentRole }: Props) {
+  const { t } = useT()
   const router = useRouter()
   const [accounts, setAccounts] = useState<SavedAccount[]>([])
   const [switching, setSwitching] = useState<string | null>(null)
@@ -91,8 +93,8 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
           <Users className="w-5 h-5 text-[#1F6F5F]" />
         </div>
         <div className="flex-1 min-w-0">
-          <h2 className="font-black text-gray-900 text-base">تبديل الحساب</h2>
-          <p className="text-xs text-gray-500 mt-0.5">انتقل بين حساباتك بدون الخروج من الموقع</p>
+          <h2 className="font-black text-gray-900 text-base">{t('comp.as.title')}</h2>
+          <p className="text-xs text-gray-500 mt-0.5">{t('comp.as.sub')}</p>
         </div>
       </div>
 
@@ -104,11 +106,11 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-              <p className="font-bold text-sm text-gray-900 truncate">{currentLabel || 'الحساب الحالي'}</p>
+              <p className="font-bold text-sm text-gray-900 truncate">{currentLabel || t('comp.as.current_account')}</p>
               {currentRole && (
                 <span className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full ${ROLE_COLORS[currentRole] || 'bg-gray-100 text-gray-700'}`}>
                   {ROLE_ICONS[currentRole]}
-                  {ROLE_LABELS[currentRole] || currentRole}
+                  {ROLE_LABELS[currentRole] ? t(ROLE_LABELS[currentRole]) : currentRole}
                 </span>
               )}
             </div>
@@ -117,7 +119,7 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
             </p>
           </div>
           <span className="text-[10px] font-black text-[#1F6F5F] bg-white px-2 py-1 rounded-full whitespace-nowrap">
-            نشط الآن
+            {t('comp.as.active_now')}
           </span>
         </div>
       )}
@@ -126,7 +128,7 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
       {otherAccounts.length > 0 && (
         <div className="space-y-2 mb-3">
           <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 px-1 mb-2">
-            حسابات محفوظة ({otherAccounts.length})
+            {t('comp.as.saved_accounts', { n: otherAccounts.length })}
           </p>
           {otherAccounts.map((account) => {
             const isSwitching = switching === account.phone
@@ -147,7 +149,7 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
                     {account.role && (
                       <span className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full ${ROLE_COLORS[account.role] || 'bg-gray-100 text-gray-700'}`}>
                         {ROLE_ICONS[account.role]}
-                        {ROLE_LABELS[account.role] || account.role}
+                        {ROLE_LABELS[account.role] ? t(ROLE_LABELS[account.role]) : account.role}
                       </span>
                     )}
                   </div>
@@ -163,14 +165,14 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
                       onClick={() => handleRemove(account.phone)}
                       className="px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700"
                     >
-                      احذف
+                      {t('comp.as.delete')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setConfirmRemove(null)}
                       className="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-200"
                     >
-                      إلغاء
+                      {t('common.cancel')}
                     </button>
                   </div>
                 ) : (
@@ -188,7 +190,7 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
                         </>
                       ) : (
                         <>
-                          <span>دخول</span>
+                          <span>{t('auth.login_btn')}</span>
                           <ArrowRight className="w-3 h-3" />
                         </>
                       )}
@@ -198,7 +200,7 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
                       onClick={() => setConfirmRemove(account.phone)}
                       disabled={!!switching}
                       className="w-7 h-7 hover:bg-red-50 hover:text-red-600 text-gray-400 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50"
-                      title="احذف من القائمة"
+                      title={t('comp.as.remove_from_list')}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -224,7 +226,7 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
           className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-200 hover:border-[#1F6F5F] hover:bg-[#1F6F5F]/5 hover:text-[#1F6F5F] text-gray-600 rounded-2xl text-sm font-bold transition-all"
         >
           <Plus className="w-4 h-4" />
-          سجّل دخول بحساب آخر
+          {t('comp.as.login_another')}
         </button>
       ) : (
         <Link
@@ -232,13 +234,13 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
           className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-[#1F6F5F] text-white rounded-2xl text-sm font-bold no-underline hover:bg-[#1F6F5F]/90 transition-colors"
         >
           <Plus className="w-4 h-4" />
-          إضافة حساب
+          {t('comp.as.add_account')}
         </Link>
       )}
 
       {/* Help text */}
       <p className="text-[11px] text-gray-400 text-center mt-3 leading-relaxed">
-        💡 الحسابات بتتسجل تلقائياً لما تدخل أول مرة. هتحتاج كلمة السر بس.
+        {t('comp.as.help')}
       </p>
     </div>
   )

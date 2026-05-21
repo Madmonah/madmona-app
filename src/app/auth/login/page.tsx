@@ -9,8 +9,10 @@ import { saveAccount } from '@/lib/saved-accounts'
 import {
   ArrowRight, Phone, Lock, AlertCircle, Loader2, LogIn, Sparkles, KeyRound,
 } from 'lucide-react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 function LoginContent() {
+  const { t, dir } = useT()
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/account'
@@ -34,11 +36,11 @@ function LoginContent() {
 
     const normalized = normalizePhone(phone)
     if (!normalized) {
-      setError('رقم التليفون مش صحيح. اكتبه بالشكل ده: 01XXXXXXXXX')
+      setError(t('auth.err_phone'))
       return
     }
     if (password.length < 6) {
-      setError('كلمة السر قصيرة جداً (6 حروف على الأقل)')
+      setError(t('auth.err_password_short'))
       return
     }
 
@@ -53,11 +55,11 @@ function LoginContent() {
     if (signInErr) {
       console.error('[auth/login] sign in error:', signInErr)
       if (signInErr.message.includes('Invalid login credentials')) {
-        setError('الرقم أو كلمة السر غلط. تأكد منهم.')
+        setError(t('auth.err_invalid_creds'))
       } else if (signInErr.message.includes('Email not confirmed')) {
-        setError('الحساب مش متفعّل لسه. تواصل معانا على واتساب +201002229982 للتفعيل.')
+        setError(t('auth.err_not_confirmed'))
       } else {
-        setError(signInErr.message || 'حصل خطأ، جرّب تاني')
+        setError(signInErr.message || t('auth.err_generic'))
       }
       setSubmitting(false)
       return
@@ -89,7 +91,7 @@ function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen gradient-mesh flex flex-col relative overflow-hidden" dir="rtl">
+    <div className="min-h-screen gradient-mesh flex flex-col relative overflow-hidden" dir={dir}>
       {/* Decorative blobs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1F6F5F]/5 rounded-full blur-3xl animate-float pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#2FA084]/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
@@ -108,17 +110,17 @@ function LoginContent() {
           <div className="text-center mb-6">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/80 backdrop-blur rounded-full mb-4 shadow-soft">
               <Sparkles className="w-3 h-3 text-[#2FA084]" />
-              <span className="text-xs font-bold text-gray-700">مضمونة · Madmona</span>
+              <span className="text-xs font-bold text-gray-700">{t('common.brand')} · Madmona</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight tracking-tight">
               {prefilledPhone ? (
-                <>تبديل <span className="gradient-text-green">الحساب</span></>
+                <>{t('auth.switch_pre')} <span className="gradient-text-green">{t('auth.account_word')}</span></>
               ) : (
-                <>أهلاً <span className="gradient-text-green">بعودتك</span></>
+                <>{t('auth.welcome_pre')} <span className="gradient-text-green">{t('auth.welcome_emph')}</span></>
               )}
             </h1>
             <p className="text-sm text-gray-500 mt-2">
-              {prefilledPhone ? 'دخل كلمة السر للحساب ده' : 'سجّل دخولك بالرقم وكلمة السر'}
+              {prefilledPhone ? t('auth.sub_switch') : t('auth.sub_login')}
             </p>
           </div>
 
@@ -127,7 +129,7 @@ function LoginContent() {
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                   <Phone className="w-3.5 h-3.5 text-[#1F6F5F]" />
-                  رقم التليفون
+                  {t('auth.phone_label')}
                 </label>
                 <input
                   type="tel"
@@ -146,14 +148,14 @@ function LoginContent() {
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold text-gray-700 flex items-center gap-1.5 uppercase tracking-wider">
                     <Lock className="w-3.5 h-3.5 text-[#1F6F5F]" />
-                    كلمة السر
+                    {t('auth.password_label')}
                   </label>
                   <Link
                     href="/auth/forgot-password"
                     className="text-[11px] font-bold text-[#1F6F5F] hover:underline flex items-center gap-1"
                   >
                     <KeyRound className="w-3 h-3" />
-                    نسيتها؟
+                    {t('auth.forgot')}
                   </Link>
                 </div>
                 <input
@@ -185,37 +187,37 @@ function LoginContent() {
                 {submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>جاري الدخول...</span>
+                    <span>{t('auth.logging_in')}</span>
                   </>
                 ) : (
                   <>
                     <LogIn className="w-4 h-4" />
-                    دخول
+                    {t('auth.login_btn')}
                   </>
                 )}
               </button>
             </form>
 
             <div className="mt-7 pt-6 border-t border-gray-100 text-center">
-              <p className="text-sm text-gray-600 mb-2">لسه ما عندكش حساب؟</p>
+              <p className="text-sm text-gray-600 mb-2">{t('auth.no_account_yet')}</p>
               <Link
                 href={`/auth/signup${redirectTo !== '/account' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
                 className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold hover:gap-2 transition-all no-underline"
               >
-                اعمل حساب جديد
-                <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+                {t('auth.create_account')}
+                <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
               </Link>
             </div>
           </div>
 
           <p className="text-center text-xs text-gray-500 mt-6">
-            بالدخول، أنت توافق على{' '}
+            {t('auth.terms_pre')}{' '}
             <Link href="/terms" className="text-[#1F6F5F] font-semibold hover:underline">
-              الشروط والأحكام
+              {t('auth.terms_link')}
             </Link>
-            {' '}و{' '}
+            {' '}{t('auth.terms_and')}{' '}
             <Link href="/privacy" className="text-[#1F6F5F] font-semibold hover:underline">
-              سياسة الخصوصية
+              {t('auth.privacy_link')}
             </Link>
           </p>
         </div>

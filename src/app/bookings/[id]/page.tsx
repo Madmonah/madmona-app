@@ -9,6 +9,7 @@ import {
   MapPin, Image as ImageIcon, Building2, MessageCircle, Hash,
   CreditCard, X, AlertTriangle, Copy, Check,
 } from 'lucide-react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 // ============================================================================
 // /bookings/[id]
@@ -52,16 +53,17 @@ interface Booking {
   } | null
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-  pending_payment: { label: 'في انتظار الدفع', color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock },
-  confirmed: { label: 'مؤكد ✓', color: 'bg-green-100 text-green-800 border-green-200', icon: CheckCircle },
-  active: { label: 'نشط', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: CheckCircle },
-  completed: { label: 'تم الإكمال', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: CheckCircle },
-  cancelled: { label: 'ملغي', color: 'bg-red-100 text-red-800 border-red-200', icon: X },
-  refunded: { label: 'مسترد', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: AlertCircle },
+const STATUS_LABELS: Record<string, { labelKey: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
+  pending_payment: { labelKey: 'bstatus.pending_payment', color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock },
+  confirmed: { labelKey: 'bstatus.confirmed', color: 'bg-green-100 text-green-800 border-green-200', icon: CheckCircle },
+  active: { labelKey: 'bstatus.active', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: CheckCircle },
+  completed: { labelKey: 'bstatus.completed', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: CheckCircle },
+  cancelled: { labelKey: 'bstatus.cancelled', color: 'bg-red-100 text-red-800 border-red-200', icon: X },
+  refunded: { labelKey: 'bstatus.refunded', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: AlertCircle },
 }
 
 function BookingDetailContent() {
+  const { t, lang, dir } = useT()
   const params = useParams()
   const searchParams = useSearchParams()
   const bookingId = params?.id as string
@@ -82,7 +84,7 @@ function BookingDetailContent() {
     const load = async () => {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
       if (!session?.user) {
-        setError('سجّل دخول الأول')
+        setError(t('booking.login_first'))
         setLoading(false)
         return
       }
@@ -103,7 +105,7 @@ function BookingDetailContent() {
         .maybeSingle()
 
       if (fetchErr || !data) {
-        setError('الحجز ده مش موجود أو مش مصرحلك تشوفه')
+        setError(t('bdetail.not_found_or_unauthorized'))
         setLoading(false)
         return
       }
@@ -189,7 +191,7 @@ function BookingDetailContent() {
       .maybeSingle()
 
     if (updateErr) {
-      alert('فشل تحديث الحجز: ' + updateErr.message)
+      alert(t('bdetail.update_failed') + updateErr.message)
     } else {
       if (newStatus === 'confirmed') fireEmailNotification('confirmed')
       if (refreshed) setBooking(refreshed as Booking)
@@ -210,7 +212,7 @@ function BookingDetailContent() {
   const confirmCancel = () => {
     const role = cancelDialog.byRole
     const reason = cancelReasonInput.trim() ||
-      (role === 'supplier' ? 'تم الرفض من المورد' : 'تم الإلغاء من العميل')
+      (role === 'supplier' ? t('bdetail.reason_supplier_default') : t('bdetail.reason_customer_default'))
     closeCancelDialog()
     void updateBookingStatus('cancelled', reason)
   }
@@ -234,7 +236,7 @@ function BookingDetailContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir={dir}>
         <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
       </div>
     )
@@ -242,12 +244,12 @@ function BookingDetailContent() {
 
   if (error || !booking) {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir={dir}>
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-          <h1 className="font-bold mb-4">{error || 'الحجز مش موجود'}</h1>
+          <h1 className="font-bold mb-4">{error || t('bdetail.not_found')}</h1>
           <Link href="/" className="bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold">
-            الرئيسية
+            {t('bdetail.home')}
           </Link>
         </div>
       </div>
@@ -265,7 +267,7 @@ function BookingDetailContent() {
 
   const formatDateTime = (iso: string) => {
     const d = new Date(iso)
-    return d.toLocaleString('ar-EG', {
+    return d.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -275,7 +277,7 @@ function BookingDetailContent() {
   }
 
   const refCode = booking.reference_code || booking.id.slice(0, 8)
-  const totalFmt = Number(booking.total_amount).toLocaleString('ar-EG')
+  const totalFmt = Number(booking.total_amount).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')
   const paymentConfirmationMessage = encodeURIComponent(
 `السلام عليكم، أنا حوّلت مبلغ الحجز عبر InstaPay.
 
@@ -288,7 +290,7 @@ function BookingDetailContent() {
   const showPaymentBlock = isOwnerCustomer && booking.status === 'pending_payment'
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+    <div className="min-h-screen bg-[#FAFAF7]" dir={dir}>
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link
@@ -297,7 +299,7 @@ function BookingDetailContent() {
           >
             <ArrowRight className="w-5 h-5 text-gray-700" />
           </Link>
-          <h1 className="text-base font-bold text-gray-900">تفاصيل الحجز</h1>
+          <h1 className="text-base font-bold text-gray-900">{t('bdetail.title')}</h1>
           <div className="w-7" />
         </div>
       </header>
@@ -307,11 +309,11 @@ function BookingDetailContent() {
           <div className="mb-4 flex items-start gap-2 p-4 bg-green-50 border-2 border-green-200 rounded-xl text-sm text-green-900 animate-scale-in">
             <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-green-600" />
             <div className="flex-1">
-              <p className="font-bold mb-1">تم استلام طلب الحجز بنجاح! ✓</p>
+              <p className="font-bold mb-1">{t('bdetail.created_title')}</p>
               <p className="text-xs leading-relaxed">
                 {showPaymentBlock
-                  ? 'الخطوة التالية: حوّل المبلغ عبر InstaPay وابعتلنا screenshot على واتساب لتأكيد الحجز.'
-                  : 'هتوصلك تأكيد قريباً.'}
+                  ? t('bdetail.created_pay')
+                  : t('bdetail.created_soon')}
               </p>
             </div>
           </div>
@@ -319,7 +321,7 @@ function BookingDetailContent() {
 
         <div className={`flex items-center gap-2 p-3 rounded-xl border mb-4 ${status.color}`}>
           <StatusIcon className="w-5 h-5 flex-shrink-0" />
-          <span className="font-bold flex-1">{status.label}</span>
+          <span className="font-bold flex-1">{t(status.labelKey)}</span>
           {booking.reference_code && (
             <span className="text-xs flex items-center gap-1 opacity-80 tabular">
               <Hash className="w-3 h-3" /> {booking.reference_code}
@@ -332,20 +334,20 @@ function BookingDetailContent() {
             <div className="p-5">
               <div className="flex items-center gap-2 mb-1">
                 <CreditCard className="w-5 h-5" />
-                <h3 className="text-base font-black">ادفع عبر InstaPay</h3>
+                <h3 className="text-base font-black">{t('bdetail.pay_title')}</h3>
               </div>
-              <p className="text-xs text-white/80 mb-4">حوّل المبلغ من تطبيق البنك بتاعك على رقم الحساب التالي:</p>
+              <p className="text-xs text-white/80 mb-4">{t('bdetail.pay_sub')}</p>
 
               <div className="bg-white/10 backdrop-blur rounded-xl p-3 mb-3 border border-white/15">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">المبلغ المستحق</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">{t('bdetail.amount_due')}</p>
                 <p className="text-3xl font-black tabular leading-none">
                   {totalFmt}
-                  <span className="text-sm font-medium text-white/80 mr-1">ج.م</span>
+                  <span className="text-sm font-medium text-white/80 ms-1">{t('common.egp')}</span>
                 </p>
               </div>
 
               <div className="bg-white/10 backdrop-blur rounded-xl p-3 mb-3 border border-white/15">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">رقم الحساب — {INSTAPAY_BANK}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">{t('bdetail.account_number')} — {t('bdetail.bank')}</p>
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-base font-black tabular tracking-wider" dir="ltr">{INSTAPAY_ACCOUNT}</p>
                   <button
@@ -353,26 +355,26 @@ function BookingDetailContent() {
                     className="flex items-center gap-1 px-3 py-1.5 bg-white text-[#1F6F5F] rounded-lg text-xs font-bold hover:bg-gray-50 flex-shrink-0"
                   >
                     {copiedAccount ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                    {copiedAccount ? 'تم النسخ' : 'انسخ'}
+                    {copiedAccount ? t('bdetail.copied') : t('bdetail.copy')}
                   </button>
                 </div>
               </div>
 
               {booking.reference_code && (
                 <div className="bg-[#2FA084]/20 border border-[#2FA084]/40 backdrop-blur rounded-xl p-3 mb-4">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#FFD675] mb-0.5">مهم</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#FFD675] mb-0.5">{t('bdetail.important')}</p>
                   <p className="text-xs leading-relaxed">
-                    اكتب رقم الحجز <strong className="font-black tabular">{booking.reference_code}</strong> في خانة &ldquo;ملاحظات&rdquo; أو &ldquo;الغرض من التحويل&rdquo; عشان نحدّد الحجز بسرعة.
+                    {t('bdetail.ref_pre')} <strong className="font-black tabular">{booking.reference_code}</strong> {t('bdetail.ref_post')}
                   </p>
                 </div>
               )}
 
               <div className="space-y-2 mb-4">
-                <p className="text-xs font-bold text-white/90 mb-2">الخطوات:</p>
-                <PaymentStep num="1" text="افتح تطبيق البنك أو InstaPay" />
-                <PaymentStep num="2" text={`حوّل ${totalFmt} ج.م على الحساب اللي فوق`} />
-                <PaymentStep num="3" text="خد screenshot من إيصال التحويل" />
-                <PaymentStep num="4" text="ابعت الـscreenshot على واتساب لتأكيد الحجز" />
+                <p className="text-xs font-bold text-white/90 mb-2">{t('bdetail.steps_title')}</p>
+                <PaymentStep num="1" text={t('bdetail.step1')} />
+                <PaymentStep num="2" text={t('bdetail.step2', { amt: totalFmt })} />
+                <PaymentStep num="3" text={t('bdetail.step3')} />
+                <PaymentStep num="4" text={t('bdetail.step4')} />
               </div>
 
               <a
@@ -382,11 +384,11 @@ function BookingDetailContent() {
                 className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3.5 rounded-xl font-black hover:bg-[#1da851] no-underline transition-all hover:-translate-y-0.5"
               >
                 <MessageCircle className="w-5 h-5" />
-                ابعت إيصال الدفع على واتساب
+                {t('bdetail.send_receipt')}
               </a>
 
               <p className="text-[10px] text-white/60 text-center mt-3 leading-relaxed">
-                الحجز يتأكد بعد ما نستلم إيصال الدفع. الفترة دي محجوزة مؤقتاً لحد ما يجي حد آخر يأكد. ⏱️
+                {t('bdetail.pay_footer')}
               </p>
             </div>
           </div>
@@ -417,7 +419,7 @@ function BookingDetailContent() {
               {(booking.listing.district || booking.listing.city) && (
                 <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
-                  {[booking.listing.district, booking.listing.city].filter(Boolean).join(', ')}
+                  {[booking.listing.district, booking.listing.city].filter(Boolean).join(lang === 'ar' ? '، ' : ', ')}
                 </p>
               )}
             </div>
@@ -426,15 +428,15 @@ function BookingDetailContent() {
 
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
           <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-[#1F6F5F]" /> الموعد
+            <Calendar className="w-4 h-4 text-[#1F6F5F]" /> {t('bdetail.schedule')}
           </h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">من</span>
+              <span className="text-gray-600">{t('booking.from')}</span>
               <span className="font-medium">{formatDateTime(booking.start_at)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">إلى</span>
+              <span className="text-gray-600">{t('booking.to')}</span>
               <span className="font-medium">{formatDateTime(booking.end_at)}</span>
             </div>
           </div>
@@ -442,23 +444,23 @@ function BookingDetailContent() {
 
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
           <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <CreditCard className="w-4 h-4 text-[#1F6F5F]" /> السعر
+            <CreditCard className="w-4 h-4 text-[#1F6F5F]" /> {t('bdetail.price_title')}
           </h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">السعر الأساسي</span>
-              <span>{Number(booking.base_amount).toLocaleString('ar-EG')} {booking.currency}</span>
+              <span className="text-gray-600">{t('bdetail.base_price')}</span>
+              <span>{Number(booking.base_amount).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {booking.currency}</span>
             </div>
             <div className="flex justify-between font-bold pt-2 border-t border-gray-100 text-base">
-              <span>الإجمالي</span>
-              <span className="text-[#1F6F5F]">{Number(booking.total_amount).toLocaleString('ar-EG')} {booking.currency}</span>
+              <span>{t('booking.total')}</span>
+              <span className="text-[#1F6F5F]">{Number(booking.total_amount).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {booking.currency}</span>
             </div>
           </div>
         </div>
 
         {booking.customer_notes && (
           <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-            <h3 className="text-base font-bold text-gray-900 mb-2">ملاحظات العميل</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-2">{t('bdetail.customer_notes')}</h3>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">{booking.customer_notes}</p>
           </div>
         )}
@@ -466,7 +468,7 @@ function BookingDetailContent() {
         {booking.cancellation_reason && (
           <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
             <h3 className="text-sm font-bold text-red-900 mb-1 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4" /> سبب الإلغاء
+              <AlertTriangle className="w-4 h-4" /> {t('bdetail.cancel_reason_title')}
             </h3>
             <p className="text-sm text-red-800">{booking.cancellation_reason}</p>
           </div>
@@ -474,22 +476,22 @@ function BookingDetailContent() {
 
         {isOwnerSupplier && booking.status === 'pending_payment' && (
           <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-            <h3 className="text-base font-bold text-gray-900 mb-1">إجراءات المورد</h3>
-            <p className="text-xs text-gray-500 mb-3">أكّد الحجز بعد ما تستلم تأكيد الدفع على واتساب.</p>
+            <h3 className="text-base font-bold text-gray-900 mb-1">{t('bdetail.supplier_actions')}</h3>
+            <p className="text-xs text-gray-500 mb-3">{t('bdetail.supplier_actions_sub')}</p>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => updateBookingStatus('confirmed')}
                 disabled={actioning}
                 className="bg-[#1F6F5F] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50 flex items-center justify-center gap-1"
               >
-                <CheckCircle className="w-4 h-4" /> أكّد الحجز
+                <CheckCircle className="w-4 h-4" /> {t('bdetail.confirm_booking')}
               </button>
               <button
                 onClick={() => openCancelDialog('supplier')}
                 disabled={actioning}
                 className="bg-red-50 text-red-700 py-2.5 rounded-lg text-sm font-semibold hover:bg-red-100 disabled:opacity-50 flex items-center justify-center gap-1"
               >
-                <X className="w-4 h-4" /> ارفض
+                <X className="w-4 h-4" /> {t('bdetail.reject')}
               </button>
             </div>
           </div>
@@ -502,7 +504,7 @@ function BookingDetailContent() {
               disabled={actioning}
               className="w-full bg-[#1F6F5F] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50"
             >
-              <CheckCircle className="w-4 h-4 inline-block ml-1" /> اعتبره مكتمل
+              <CheckCircle className="w-4 h-4 inline-block ml-1" /> {t('bdetail.mark_completed')}
             </button>
           </div>
         )}
@@ -513,7 +515,7 @@ function BookingDetailContent() {
             disabled={actioning}
             className="w-full bg-red-50 text-red-700 py-2.5 rounded-lg text-sm font-semibold hover:bg-red-100 disabled:opacity-50 mb-4 flex items-center justify-center gap-1"
           >
-            <X className="w-4 h-4" /> ألغي الحجز
+            <X className="w-4 h-4" /> {t('bdetail.cancel_booking')}
           </button>
         )}
 
@@ -524,7 +526,7 @@ function BookingDetailContent() {
             rel="noopener noreferrer"
             className="block w-full bg-[#25D366] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1da851] text-center no-underline"
           >
-            <MessageCircle className="w-4 h-4 inline-block ml-1" /> تواصل مع المورد
+            <MessageCircle className="w-4 h-4 inline-block ml-1" /> {t('bdetail.contact_supplier')}
           </a>
         )}
       </main>
@@ -532,7 +534,7 @@ function BookingDetailContent() {
       {cancelDialog.open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          dir="rtl"
+          dir={dir}
           onClick={closeCancelDialog}
         >
           <div
@@ -542,19 +544,19 @@ function BookingDetailContent() {
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="w-5 h-5 text-red-600" />
               <h3 className="font-bold text-gray-900">
-                {cancelDialog.byRole === 'supplier' ? 'تأكيد رفض الحجز' : 'تأكيد إلغاء الحجز'}
+                {cancelDialog.byRole === 'supplier' ? t('bdetail.confirm_reject_title') : t('bdetail.confirm_cancel_title')}
               </h3>
             </div>
             <p className="text-sm text-gray-600 mb-3">
               {cancelDialog.byRole === 'supplier'
-                ? 'متأكد إنك عاوز ترفض الحجز ده؟'
-                : 'متأكد إنك عاوز تلغي الحجز ده؟'}
+                ? t('bdetail.confirm_reject_body')
+                : t('bdetail.confirm_cancel_body')}
             </p>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">السبب (اختياري)</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">{t('bdetail.reason_label')}</label>
             <textarea
               value={cancelReasonInput}
               onChange={(e) => setCancelReasonInput(e.target.value)}
-              placeholder={cancelDialog.byRole === 'supplier' ? 'مثال: المساحة محجوزة' : 'مثال: تغيرت خطتي'}
+              placeholder={cancelDialog.byRole === 'supplier' ? t('bdetail.reason_ph_supplier') : t('bdetail.reason_ph_customer')}
               rows={2}
               maxLength={300}
               className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 resize-none mb-4"
@@ -565,7 +567,7 @@ function BookingDetailContent() {
                 onClick={closeCancelDialog}
                 className="bg-gray-100 text-gray-700 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-200"
               >
-                تراجع
+                {t('bdetail.back')}
               </button>
               <button
                 onClick={confirmCancel}
@@ -573,7 +575,7 @@ function BookingDetailContent() {
                 className="bg-red-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-1"
               >
                 {actioning ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
-                {cancelDialog.byRole === 'supplier' ? 'ارفض الحجز' : 'ألغي الحجز'}
+                {cancelDialog.byRole === 'supplier' ? t('bdetail.reject_booking') : t('bdetail.cancel_booking')}
               </button>
             </div>
           </div>

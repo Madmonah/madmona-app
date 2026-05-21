@@ -8,6 +8,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 type Category = {
   id: string
@@ -21,15 +22,16 @@ type Category = {
 
 type TrackKey = 'rentals' | 'services' | 'hybrid'
 
-const TRACK_LABELS: Record<TrackKey, { label: string; emoji: string; sublabel: string }> = {
-  rentals:  { label: 'إيجار',   emoji: '🏠', sublabel: 'RENTALS'  },
-  services: { label: 'خدمات',  emoji: '🛎️', sublabel: 'SERVICES' },
-  hybrid:   { label: 'مناسبات', emoji: '💍', sublabel: 'EVENTS'   },
+const TRACK_LABELS: Record<TrackKey, { labelKey: string; emoji: string; sublabel: string }> = {
+  rentals:  { labelKey: 'tracktab.rentals',  emoji: '🏠', sublabel: 'RENTALS'  },
+  services: { labelKey: 'tracktab.services', emoji: '🛎️', sublabel: 'SERVICES' },
+  hybrid:   { labelKey: 'tracktab.hybrid',   emoji: '💍', sublabel: 'EVENTS'   },
 }
 
 const DEFAULT_FALLBACK = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&auto=format&fit=crop'
 
 export default function CategoryTrackTabs({ categories }: { categories: Category[] }) {
+  const { t, lang } = useT()
   const [active, setActive] = useState<TrackKey>('rentals')
 
   const grouped: Record<TrackKey, Category[]> = {
@@ -60,7 +62,7 @@ export default function CategoryTrackTabs({ categories }: { categories: Category
               }`}
             >
               <span className="text-base">{TRACK_LABELS[key].emoji}</span>
-              <span>{TRACK_LABELS[key].label}</span>
+              <span>{t(TRACK_LABELS[key].labelKey)}</span>
               <span
                 className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
                   isActive ? 'bg-white/20' : 'bg-gray-100'
@@ -76,7 +78,7 @@ export default function CategoryTrackTabs({ categories }: { categories: Category
       {/* Categories grid — square cards, all equal size */}
       {visible.length === 0 ? (
         <div className="text-center py-12 text-gray-400 text-sm">
-          مفيش فئات في الـ track ده
+          {t('tracktab.empty')}
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
@@ -102,7 +104,7 @@ export default function CategoryTrackTabs({ categories }: { categories: Category
                   {(cat.name_en || cat.slug).toUpperCase()}
                 </p>
                 <h3 className="font-black text-white leading-tight text-lg md:text-xl">
-                  {cat.name_ar}
+                  {lang === 'en' && cat.name_en ? cat.name_en : cat.name_ar}
                 </h3>
               </div>
               <div className="absolute top-4 left-4 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">

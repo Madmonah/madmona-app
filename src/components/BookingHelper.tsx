@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { MessageCircle, X, Phone, Check, Loader2 } from 'lucide-react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 // ============================================================================
 // BookingHelper — multi-purpose conversion-rescue widget
@@ -71,6 +72,7 @@ export default function BookingHelper({
   isAuthenticated,
   delayMs,
 }: Props) {
+  const { t, dir } = useT()
   const [visible, setVisible] = useState(false)
   const [stage, setStage] = useState<'prompt' | 'submitting' | 'success'>('prompt')
   const [phone, setPhone] = useState('')
@@ -124,7 +126,7 @@ export default function BookingHelper({
     const cleaned = phone.replace(/[^\d+]/g, '')
     const isValid = /^(\+?20)?01\d{9}$/.test(cleaned)
     if (!isValid) {
-      setError('رقم الموبايل لازم يكون 11 رقم ويبدأ بـ 01')
+      setError(t('comp.bh.err_phone'))
       return
     }
     setStage('submitting')
@@ -155,7 +157,7 @@ export default function BookingHelper({
       // Auto-dismiss after showing success for 4 seconds
       setTimeout(() => dismiss('submitted'), 4000)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'حصل خطأ، حاول تاني')
+      setError(e instanceof Error ? e.message : t('comp.bh.err_generic'))
       setStage('prompt')
     }
   }, [phone, name, listingId, listingTitle, listingSlug, dismiss])
@@ -185,7 +187,7 @@ export default function BookingHelper({
 
   return (
     <div
-      dir="rtl"
+      dir={dir}
       className="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 max-w-md mx-auto sm:mx-0 animate-slide-up"
       style={{ animation: 'slideUp 0.3s ease-out' }}
     >
@@ -202,12 +204,12 @@ export default function BookingHelper({
             <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
               <MessageCircle className="w-4 h-4" />
             </div>
-            <p className="text-sm font-bold truncate">مضمونة معاك</p>
+            <p className="text-sm font-bold truncate">{t('comp.bh.header')}</p>
           </div>
           <button
             onClick={() => dismiss('closed')}
             className="p-1 hover:bg-white/15 rounded-full transition-colors"
-            aria-label="إغلاق"
+            aria-label={t('comp.bh.close')}
           >
             <X className="w-4 h-4" />
           </button>
@@ -220,39 +222,39 @@ export default function BookingHelper({
               <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
                 <Check className="w-6 h-6 text-green-700" />
               </div>
-              <h3 className="font-bold text-[#1F6F5F] mb-1">تمام، خد بالك من تليفونك</h3>
-              <p className="text-xs text-gray-600">هنوصلك في أقل من ساعة على واتساب 🌿</p>
+              <h3 className="font-bold text-[#1F6F5F] mb-1">{t('comp.bh.success_title')}</h3>
+              <p className="text-xs text-gray-600">{t('comp.bh.success_sub')}</p>
             </div>
           ) : isAuthenticated ? (
             // Concierge mode for authenticated users (they have an account but maybe stuck)
             <>
-              <h3 className="font-bold text-gray-900 mb-1.5">في مشكلة في الحجز؟</h3>
+              <h3 className="font-bold text-gray-900 mb-1.5">{t('comp.bh.concierge_title')}</h3>
               <p className="text-xs text-gray-600 mb-3 leading-relaxed">
-                لو الفورم مش راضي يتقدم أو في أي حاجة مش واضحة، كلّمنا واتساب وهنخلّص الحجز معاك في دقايق.
+                {t('comp.bh.concierge_sub')}
               </p>
               <button
                 onClick={handleWhatsAppClick}
                 className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#25D366]/90 text-white font-bold py-2.5 px-4 rounded-xl transition-colors"
               >
                 <MessageCircle className="w-4 h-4" />
-                ابعت واتساب لمضمونة
+                {t('comp.bh.wa_send')}
               </button>
             </>
           ) : (
             // Phone-capture mode for anonymous visitors
             <>
-              <h3 className="font-bold text-gray-900 mb-1.5">سيب رقمك ونساعدك تحجز</h3>
+              <h3 className="font-bold text-gray-900 mb-1.5">{t('comp.bh.capture_title')}</h3>
               <p className="text-xs text-gray-600 mb-3 leading-relaxed">
                 {listingTitle
-                  ? `هنبعتلك تفاصيل "${listingTitle}" على واتساب ونرد على أي سؤال. مفيش حساب لازم.`
-                  : 'هنوصلك على واتساب ونساعدك تخلص الحجز في دقايق. مفيش حساب لازم.'}
+                  ? t('comp.bh.capture_sub_listing', { title: listingTitle })
+                  : t('comp.bh.capture_sub')}
               </p>
               <div className="space-y-2 mb-3">
                 <input
                   type="tel"
                   value={phone}
                   onChange={e => setPhone(e.target.value.replace(/[^\d+]/g, '').slice(0, 14))}
-                  placeholder="رقم الموبايل · 01x xxxx xxxx"
+                  placeholder={t('comp.bh.phone_ph')}
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
@@ -263,7 +265,7 @@ export default function BookingHelper({
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value.slice(0, 60))}
-                  placeholder="اسمك (اختياري)"
+                  placeholder={t('comp.bh.name_ph')}
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
                   autoComplete="name"
                 />
@@ -281,13 +283,13 @@ export default function BookingHelper({
                 ) : (
                   <Phone className="w-4 h-4" />
                 )}
-                <span>كلّموني على واتساب</span>
+                <span>{t('comp.bh.cta')}</span>
               </button>
               <button
                 onClick={handleWhatsAppClick}
                 className="w-full mt-2 text-xs text-[#1F6F5F] hover:underline"
               >
-                أو ابعت واتساب لمضمونة دلوقتي ←
+                {t('comp.bh.or_wa')}
               </button>
             </>
           )}

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { ArrowLeft, MapPin, Star, ImageIcon, Clock } from 'lucide-react'
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 // ============================================================
 // FeaturedListings — premium cinematic strip on home page.
@@ -19,12 +20,13 @@ interface Listing {
   district: string | null
   rating: number | null
   reviews_count: number
-  category: { name_ar: string; icon: string | null } | null
+  category: { name_ar: string; name_en?: string | null; icon: string | null } | null
   photos: { url: string; is_primary: boolean }[] | null
   pricing: { price: number | string; is_active: boolean }[] | null
 }
 
 export default function FeaturedListings() {
+  const { t, lang } = useT()
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -35,7 +37,7 @@ export default function FeaturedListings() {
         .from('listings')
         .select(`
           id, title, slug, city, district, rating, reviews_count,
-          category:categories(name_ar, icon),
+          category:categories(name_ar, name_en, icon),
           photos:listing_photos(url, is_primary),
           pricing:pricing_rules(price, is_active)
         `)
@@ -77,18 +79,18 @@ export default function FeaturedListings() {
     <section>
       <div className="flex items-end justify-between mb-8">
         <div>
-          <p className="text-xs font-bold text-[#2FA084] uppercase tracking-widest mb-2">معروض حالياً</p>
+          <p className="text-xs font-bold text-[#2FA084] uppercase tracking-widest mb-2">{t('comp.fl.eyebrow')}</p>
           <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight">
-            أحدث ما على
+            {t('comp.fl.title_pre')}
             <br />
-            <span className="gradient-text-green">المنصة</span>
+            <span className="gradient-text-green">{t('comp.fl.title_emph')}</span>
           </h2>
         </div>
         <Link
           href="/marketplace"
           className="hidden sm:inline-flex items-center gap-1.5 text-sm text-[#1F6F5F] font-bold hover:gap-2.5 transition-all no-underline"
         >
-          <span>تصفّح الكل</span>
+          <span>{t('comp.fl.browse_all')}</span>
           <ArrowLeft className="w-4 h-4" />
         </Link>
       </div>
@@ -134,7 +136,7 @@ export default function FeaturedListings() {
                 {isDemo && (
                   <div className="absolute top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-l from-amber-400 to-amber-300 text-amber-900 rounded-full text-[10px] font-black shadow-card border border-amber-500/30">
                     <Clock className="w-2.5 h-2.5" />
-                    قريباً · نموذج
+                    {t('comp.fl.coming_soon')}
                   </div>
                 )}
 
@@ -142,7 +144,7 @@ export default function FeaturedListings() {
                 {listing.category && (
                   <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold text-gray-800">
                     <span>{listing.category.icon}</span>
-                    <span>{listing.category.name_ar}</span>
+                    <span>{lang === 'en' && listing.category.name_en ? listing.category.name_en : listing.category.name_ar}</span>
                   </div>
                 )}
 
@@ -163,7 +165,7 @@ export default function FeaturedListings() {
                 {(listing.district || listing.city) && (
                   <p className="text-xs text-gray-500 flex items-center gap-1 mb-3">
                     <MapPin className="w-3 h-3" />
-                    {[listing.district, listing.city].filter(Boolean).join('، ')}
+                    {[listing.district, listing.city].filter(Boolean).join(lang === 'ar' ? '، ' : ', ')}
                   </p>
                 )}
 
@@ -171,18 +173,18 @@ export default function FeaturedListings() {
                   <div>
                     {startingPrice !== null ? (
                       <>
-                        <p className="text-[10px] text-gray-500 font-medium">يبدأ من</p>
+                        <p className="text-[10px] text-gray-500 font-medium">{t('market.starts_from')}</p>
                         <p className="text-xl font-black text-[#1F6F5F] leading-none mt-0.5 tabular">
-                          {startingPrice.toLocaleString('ar-EG')}
-                          <span className="text-xs font-medium text-gray-500 mr-1">ج.م</span>
+                          {startingPrice.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
+                          <span className="text-xs font-medium text-gray-500 ms-1">{t('common.egp')}</span>
                         </p>
                       </>
                     ) : (
-                      <p className="text-xs text-gray-400 font-medium">السعر عند الطلب</p>
+                      <p className="text-xs text-gray-400 font-medium">{t('market.price_on_request')}</p>
                     )}
                   </div>
                   <div className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold text-xs group-hover:gap-2 transition-all">
-                    <span>اعرف أكتر</span>
+                    <span>{t('comp.fl.learn_more')}</span>
                     <ArrowLeft className="w-3.5 h-3.5" />
                   </div>
                 </div>
@@ -197,7 +199,7 @@ export default function FeaturedListings() {
         href="/marketplace"
         className="sm:hidden mt-6 flex items-center justify-center gap-2 px-5 py-3 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-[#1F6F5F] no-underline"
       >
-        <span>تصفّح الكل</span>
+        <span>{t('comp.fl.browse_all')}</span>
         <ArrowLeft className="w-4 h-4" />
       </Link>
     </section>

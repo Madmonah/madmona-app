@@ -7,6 +7,7 @@ import {
   Calendar, Clock, MapPin, Loader2, ArrowRight, Lock,
   AlertCircle, ChevronLeft, Image as ImageIcon, Package,
 } from 'lucide-react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 // ============================================================================
 // /account/bookings
@@ -34,16 +35,17 @@ interface BookingSummary {
   } | null
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  pending_payment: { label: 'بانتظار الدفع', color: 'bg-yellow-100 text-yellow-800' },
-  confirmed: { label: 'مؤكّد', color: 'bg-green-100 text-green-800' },
-  active: { label: 'جاري', color: 'bg-blue-100 text-blue-800' },
-  completed: { label: 'تمّ', color: 'bg-gray-100 text-gray-700' },
-  cancelled: { label: 'ملغي', color: 'bg-red-100 text-red-800' },
-  refunded: { label: 'تم الاسترداد', color: 'bg-purple-100 text-purple-800' },
+const STATUS_LABELS: Record<string, { labelKey: string; color: string }> = {
+  pending_payment: { labelKey: 'bstatus.pending_payment', color: 'bg-yellow-100 text-yellow-800' },
+  confirmed: { labelKey: 'bstatus.confirmed', color: 'bg-green-100 text-green-800' },
+  active: { labelKey: 'bstatus.active', color: 'bg-blue-100 text-blue-800' },
+  completed: { labelKey: 'bstatus.completed', color: 'bg-gray-100 text-gray-700' },
+  cancelled: { labelKey: 'bstatus.cancelled', color: 'bg-red-100 text-red-800' },
+  refunded: { labelKey: 'bstatus.refunded', color: 'bg-purple-100 text-purple-800' },
 }
 
 export default function CustomerBookingsPage() {
+  const { t, lang, dir } = useT()
   const [stage, setStage] = useState<Stage>('loading')
   const [bookings, setBookings] = useState<BookingSummary[]>([])
 
@@ -76,7 +78,7 @@ export default function CustomerBookingsPage() {
 
   if (stage === 'loading') {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir={dir}>
         <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
       </div>
     )
@@ -84,15 +86,15 @@ export default function CustomerBookingsPage() {
 
   if (stage === 'unauthenticated') {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir={dir}>
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
-          <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
+          <h1 className="font-bold mb-4">{t('booking.login_first')}</h1>
           <Link
             href="/auth/login?redirect=/account/bookings"
             className="block bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold"
           >
-            تسجيل دخول
+            {t('auth.login.title')}
           </Link>
         </div>
       </div>
@@ -100,15 +102,15 @@ export default function CustomerBookingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+    <div className="min-h-screen bg-[#FAFAF7]" dir={dir}>
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
           <Link href="/account" className="p-1 hover:bg-gray-50 rounded-full">
             <ArrowRight className="w-5 h-5 text-gray-700" />
           </Link>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">حجوزاتي</h1>
-            <p className="text-xs text-gray-500">{bookings.length} حجز</p>
+            <h1 className="text-lg font-bold text-gray-900">{t('account.my_bookings')}</h1>
+            <p className="text-xs text-gray-500">{t('account.n_bookings', { n: bookings.length })}</p>
           </div>
         </div>
       </header>
@@ -117,13 +119,13 @@ export default function CustomerBookingsPage() {
         {bookings.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
             <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <h3 className="text-base font-semibold text-gray-700 mb-1">لسه ما حجزتش حاجة</h3>
-            <p className="text-sm text-gray-500 mb-6">تصفح الـmarketplace وابدأ احجز اللي تحبه</p>
+            <h3 className="text-base font-semibold text-gray-700 mb-1">{t('account.no_bookings')}</h3>
+            <p className="text-sm text-gray-500 mb-6">{t('account.bookings_empty_sub')}</p>
             <Link
               href="/marketplace"
               className="inline-flex items-center gap-1 bg-[#1F6F5F] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1F6F5F]/90"
             >
-              تصفح الـmarketplace
+              {t('listing.browse_marketplace')}
             </Link>
           </div>
         ) : (
@@ -170,10 +172,10 @@ export default function CustomerBookingsPage() {
                     <div className="flex-1 p-4">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <h3 className="font-bold text-gray-900 text-sm truncate flex-1">
-                          {booking.listing?.title || 'Listing محذوف'}
+                          {booking.listing?.title || t('account.listing_deleted')}
                         </h3>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${status.color}`}>
-                          {status.label}
+                          {t(status.labelKey)}
                         </span>
                       </div>
 
@@ -184,23 +186,23 @@ export default function CustomerBookingsPage() {
                       {booking.listing && (booking.listing.district || booking.listing.city) && (
                         <p className="text-xs text-gray-500 flex items-center gap-1 mb-1">
                           <MapPin className="w-3 h-3" />
-                          {[booking.listing.district, booking.listing.city].filter(Boolean).join(', ')}
+                          {[booking.listing.district, booking.listing.city].filter(Boolean).join(lang === 'ar' ? '، ' : ', ')}
                         </p>
                       )}
 
                       <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">
                         <Clock className="w-3 h-3" />
-                        {start.toLocaleDateString('ar-EG', { weekday: 'short', day: 'numeric', month: 'short' })}
+                        {start.toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
                         {' '}
-                        {start.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
+                        {start.toLocaleTimeString(lang === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
                         {' '}
-                        - {end.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
+                        - {end.toLocaleTimeString(lang === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
                       </p>
 
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
                         <span className="text-sm">
-                          <strong className="text-[#1F6F5F]">{Number(booking.total_amount).toLocaleString('ar-EG')}</strong>
-                          <span className="text-xs text-gray-500"> ج.م</span>
+                          <strong className="text-[#1F6F5F]">{Number(booking.total_amount).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</strong>
+                          <span className="text-xs text-gray-500"> {t('common.egp')}</span>
                         </span>
                         <ChevronLeft className="w-4 h-4 text-gray-400" />
                       </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Bell, BellOff, Loader2, CheckCircle, XCircle } from 'lucide-react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import {
   isPushSupported,
   getNotificationPermission,
@@ -20,9 +21,11 @@ import {
 type Status = 'loading' | 'unsupported' | 'denied' | 'idle' | 'subscribed'
 
 export default function PushNotificationCard() {
+  const { t } = useT()
   const [status, setStatus] = useState<Status>('loading')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [msgOk, setMsgOk] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -51,10 +54,12 @@ export default function PushNotificationCard() {
 
     if (result.ok) {
       setStatus('subscribed')
-      setMessage('تم تفعيل الإشعارات')
+      setMsgOk(true)
+      setMessage(t('comp.push.enabled_ok'))
       setTimeout(() => setMessage(null), 3000)
     } else {
-      setMessage(result.error || 'حصل خطأ')
+      setMsgOk(false)
+      setMessage(result.error || t('common.error'))
 
       // Re-check permission state
       const perm = getNotificationPermission()
@@ -71,10 +76,12 @@ export default function PushNotificationCard() {
     setBusy(false)
     if (result.ok) {
       setStatus('idle')
-      setMessage('تم إيقاف الإشعارات')
+      setMsgOk(true)
+      setMessage(t('comp.push.disabled_ok'))
       setTimeout(() => setMessage(null), 3000)
     } else {
-      setMessage(result.error || 'حصل خطأ')
+      setMsgOk(false)
+      setMessage(result.error || t('common.error'))
     }
   }
 
@@ -92,28 +99,28 @@ export default function PushNotificationCard() {
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-gray-900 text-sm">إشعارات فورية</h3>
+          <h3 className="font-bold text-gray-900 text-sm">{t('comp.push.title')}</h3>
           {status === 'subscribed' && (
             <p className="text-xs text-gray-500 mt-0.5">
-              مفعّلة. هتوصلك إشعارات بالحجوزات الجديدة على الفور.
+              {t('comp.push.subscribed_sub')}
             </p>
           )}
           {status === 'idle' && (
             <p className="text-xs text-gray-500 mt-0.5">
-              فعّل الإشعارات عشان توصلك تنبيهات بالحجوزات والتحديثات الفورية.
+              {t('comp.push.idle_sub')}
             </p>
           )}
           {status === 'denied' && (
             <p className="text-xs text-red-600 mt-0.5">
-              الإشعارات محظورة من إعدادات المتصفح. افتح إعدادات الموقع وافتحها يدوياً.
+              {t('comp.push.denied_sub')}
             </p>
           )}
 
           {message && (
             <div className={`mt-2 text-xs px-2 py-1 rounded-lg inline-flex items-center gap-1 ${
-              message.includes('تم') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+              msgOk ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
             }`}>
-              {message.includes('تم') ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+              {msgOk ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
               {message}
             </div>
           )}
@@ -126,7 +133,7 @@ export default function PushNotificationCard() {
                 className="text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-xl flex items-center gap-1.5 disabled:opacity-50"
               >
                 {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <BellOff className="w-3 h-3" />}
-                {busy ? 'جاري...' : 'إيقاف الإشعارات'}
+                {busy ? t('comp.push.busy') : t('comp.push.disable_btn')}
               </button>
             ) : status === 'idle' ? (
               <button
@@ -135,7 +142,7 @@ export default function PushNotificationCard() {
                 className="text-xs font-bold text-white bg-[#1F6F5F] hover:bg-[#1F6F5F]/90 px-4 py-2 rounded-xl flex items-center gap-1.5 disabled:opacity-50"
               >
                 {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <Bell className="w-3 h-3" />}
-                {busy ? 'جاري...' : 'فعّل الإشعارات'}
+                {busy ? t('comp.push.busy') : t('comp.push.enable_btn')}
               </button>
             ) : null}
           </div>

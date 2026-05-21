@@ -14,6 +14,7 @@ import BottomNav from '@/components/BottomNav'
 import PushNotificationCard from '@/components/PushNotificationCard'
 import AccountSwitcher from '@/components/AccountSwitcher'
 import WelcomeSupplierBanner from '@/components/WelcomeSupplierBanner'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 type Stage = 'loading' | 'unauthenticated' | 'ready'
 
@@ -31,6 +32,7 @@ interface Supplier {
 }
 
 export default function AccountPage() {
+  const { t, dir } = useT()
   const router = useRouter()
 
   const [stage, setStage] = useState<Stage>('loading')
@@ -92,7 +94,7 @@ export default function AccountPage() {
   }, [])
 
   const handleSignOut = async () => {
-    if (!confirm('متأكد إنك عايز تخرج؟')) return
+    if (!confirm(t('account.confirm_signout'))) return
     setSigningOut(true)
     await supabaseBrowser.auth.signOut()
     router.push('/')
@@ -109,11 +111,11 @@ export default function AccountPage() {
     if (!profile) return
     const trimmed = newName.trim()
     if (!trimmed) {
-      setNameError('الاسم مينفعش يبقى فاضي')
+      setNameError(t('account.err_name_empty'))
       return
     }
     if (trimmed.length > 100) {
-      setNameError('الاسم طويل جداً')
+      setNameError(t('account.err_name_long'))
       return
     }
     setSavingName(true)
@@ -126,7 +128,7 @@ export default function AccountPage() {
 
     setSavingName(false)
     if (error) {
-      setNameError('فشل الحفظ: ' + error.message)
+      setNameError(t('account.save_failed') + error.message)
       return
     }
     setProfile({ ...profile, full_name: trimmed })
@@ -135,7 +137,7 @@ export default function AccountPage() {
 
   if (stage === 'loading') {
     return (
-      <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen gradient-mesh flex items-center justify-center" dir={dir}>
         <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
       </div>
     )
@@ -143,24 +145,24 @@ export default function AccountPage() {
 
   if (stage === 'unauthenticated') {
     return (
-      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir={dir}>
         <div className="bg-white rounded-3xl shadow-luxe p-10 text-center max-w-sm animate-scale-in">
           <div className="w-16 h-16 bg-[#1F6F5F]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8 text-[#1F6F5F]" />
           </div>
-          <h1 className="font-black text-2xl mb-2">سجّل دخول الأول</h1>
-          <p className="text-sm text-gray-500 mb-5">ادخل عشان تشوف حسابك</p>
+          <h1 className="font-black text-2xl mb-2">{t('booking.login_first')}</h1>
+          <p className="text-sm text-gray-500 mb-5">{t('account.login_sub')}</p>
           <Link
             href="/auth/login?redirect=/account"
             className="block bg-[#1F6F5F] text-white py-3.5 rounded-2xl font-bold shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all mb-3"
           >
-            تسجيل دخول
+            {t('auth.login.title')}
           </Link>
           <Link
             href="/auth/signup?redirect=/account"
             className="block text-sm text-[#1F6F5F] font-bold hover:underline"
           >
-            مفيش حساب؟ اعمل حساب جديد
+            {t('auth.no_account')}
           </Link>
         </div>
       </div>
@@ -173,7 +175,7 @@ export default function AccountPage() {
   const isRejectedSupplier = supplier && ['rejected', 'suspended'].includes(supplier.kyc_status)
 
   return (
-    <div className="min-h-screen gradient-mesh pb-24 md:pb-12" dir="rtl">
+    <div className="min-h-screen gradient-mesh pb-24 md:pb-12" dir={dir}>
       <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#1F6F5F]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
 
       <header className="sticky top-0 z-40 glass border-b border-white/40">
@@ -184,7 +186,7 @@ export default function AccountPage() {
           >
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
-          <h1 className="text-lg font-black text-gray-900">حسابي</h1>
+          <h1 className="text-lg font-black text-gray-900">{t('nav.account')}</h1>
         </div>
       </header>
 
@@ -209,7 +211,7 @@ export default function AccountPage() {
                       maxLength={100}
                       autoFocus
                       className="w-full px-3 py-2 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
-                      placeholder="الاسم بالكامل"
+                      placeholder={t('auth.name_label')}
                     />
                     {nameError && <p className="text-xs text-red-600">{nameError}</p>}
                     <div className="flex gap-2">
@@ -219,14 +221,14 @@ export default function AccountPage() {
                         className="flex items-center gap-1 px-3 py-1.5 bg-[#1F6F5F] text-white rounded-lg text-xs font-bold disabled:opacity-50"
                       >
                         {savingName ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                        حفظ
+                        {t('common.save')}
                       </button>
                       <button
                         onClick={() => { setEditingName(false); setNameError(null) }}
                         className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium"
                       >
                         <X className="w-3 h-3" />
-                        إلغاء
+                        {t('common.cancel')}
                       </button>
                     </div>
                   </div>
@@ -234,7 +236,7 @@ export default function AccountPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <h2 className="font-black text-xl text-gray-900 truncate">
-                        {profile?.full_name || 'مستخدم'}
+                        {profile?.full_name || t('listing.guest')}
                       </h2>
                       <p className="text-xs text-gray-500 flex items-center gap-1 mt-1" dir="ltr">
                         <Phone className="w-3 h-3" />
@@ -244,7 +246,7 @@ export default function AccountPage() {
                     <button
                       onClick={startEditingName}
                       className="p-1.5 text-gray-400 hover:text-[#1F6F5F] hover:bg-gray-50 rounded-lg flex-shrink-0 transition-colors"
-                      title="تعديل الاسم"
+                      title={t('account.edit_name')}
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
@@ -253,7 +255,7 @@ export default function AccountPage() {
               </div>
               {isAdmin && !editingName && (
                 <span className="bg-gradient-to-r from-[#2FA084] to-[#d4a017] text-white text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 flex-shrink-0 shadow-soft">
-                  <Crown className="w-3 h-3" /> أدمن
+                  <Crown className="w-3 h-3" /> {t('account.admin_badge')}
                 </span>
               )}
             </div>
@@ -270,9 +272,9 @@ export default function AccountPage() {
                    <AlertCircle className="w-4 h-4" />}
                   <span className="font-bold">{supplier.business_name}</span>
                   <span className="text-xs opacity-75 mr-auto">
-                    {isApprovedSupplier ? 'أجر معانا موثّق' :
-                     isPendingSupplier ? 'قيد المراجعة' :
-                     'موقوف'}
+                    {isApprovedSupplier ? t('account.supplier_verified') :
+                     isPendingSupplier ? t('account.supplier_pending') :
+                     t('account.supplier_suspended')}
                   </span>
                 </div>
               </div>
@@ -297,30 +299,30 @@ export default function AccountPage() {
         {/* Customer section */}
         <div className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-100">
           <div className="px-6 py-3 border-b border-gray-100">
-            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">أجر مننا</p>
+            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('account.section_customer')}</p>
           </div>
           <SectionLink
             href="/account/bookings"
             icon={<Calendar className="w-5 h-5" />}
             iconBg="bg-blue-50 text-blue-600"
-            title="حجوزاتي"
-            subtitle={bookingsCount > 0 ? `${bookingsCount} حجز` : 'لسه ما حجزتش حاجة'}
+            title={t('account.my_bookings')}
+            subtitle={bookingsCount > 0 ? t('account.n_bookings', { n: bookingsCount }) : t('account.no_bookings')}
           />
           <div className="h-px bg-gray-100 mx-6" />
           <SectionLink
             href="/account/favorites"
             icon={<Heart className="w-5 h-5" />}
             iconBg="bg-red-50 text-red-500"
-            title="المفضلة"
-            subtitle={favoritesCount > 0 ? `${favoritesCount} listing` : 'مفيش حاجة محفوظة'}
+            title={t('nav.favorites')}
+            subtitle={favoritesCount > 0 ? t('account.n_favorites', { n: favoritesCount }) : t('account.no_favorites')}
           />
           <div className="h-px bg-gray-100 mx-6" />
           <SectionLink
             href="/marketplace"
             icon={<ShoppingBag className="w-5 h-5" />}
             iconBg="bg-purple-50 text-purple-600"
-            title="تصفّح الـMarketplace"
-            subtitle="دور على listings تحجزها"
+            title={t('listing.browse_marketplace')}
+            subtitle={t('account.browse_sub')}
           />
         </div>
 
@@ -333,14 +335,14 @@ export default function AccountPage() {
         {(isApprovedSupplier || isPendingSupplier || isRejectedSupplier) && (
           <div className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-200">
             <div className="px-6 py-3 border-b border-gray-100">
-              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">أجر معانا</p>
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('account.section_supplier')}</p>
             </div>
             <SectionLink
               href="/supplier/marketplace"
               icon={<Building2 className="w-5 h-5" />}
               iconBg="bg-[#1F6F5F]/10 text-[#1F6F5F]"
-              title="لوحة أجر معانا"
-              subtitle="listings + الحجوزات + الإيراد"
+              title={t('account.supplier_dashboard')}
+              subtitle={t('account.supplier_dashboard_sub')}
             />
           </div>
         )}
@@ -350,31 +352,31 @@ export default function AccountPage() {
           <div className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-300">
             <div className="px-6 py-3 border-b border-gray-100">
               <p className="text-[10px] font-black text-[#2FA084] uppercase tracking-widest flex items-center gap-1">
-                <Crown className="w-3 h-3" /> الإدارة
+                <Crown className="w-3 h-3" /> {t('account.admin_section')}
               </p>
             </div>
             <SectionLink
               href="/admin/dashboard"
               icon={<BarChart3 className="w-5 h-5" />}
               iconBg="bg-[#2FA084]/10 text-[#2FA084]"
-              title="لوحة الإحصائيات"
-              subtitle="الحجوزات + الإيراد + Top listings"
+              title={t('account.admin_stats')}
+              subtitle={t('account.admin_stats_sub')}
             />
             <div className="h-px bg-gray-100 mx-6" />
             <SectionLink
               href="/admin/marketplace-suppliers"
               icon={<Building2 className="w-5 h-5" />}
               iconBg="bg-[#2FA084]/10 text-[#2FA084]"
-              title="طلبات أجر معانا"
-              subtitle="موافقة/رفض أجر معانا الجدد"
+              title={t('account.admin_suppliers')}
+              subtitle={t('account.admin_suppliers_sub')}
             />
             <div className="h-px bg-gray-100 mx-6" />
             <SectionLink
               href="/admin/categories"
               icon={<FolderTree className="w-5 h-5" />}
               iconBg="bg-[#2FA084]/10 text-[#2FA084]"
-              title="إدارة الفئات"
-              subtitle="الفئات + الخصائص الديناميكية"
+              title={t('account.admin_categories')}
+              subtitle={t('account.admin_categories_sub')}
             />
           </div>
         )}
@@ -385,11 +387,11 @@ export default function AccountPage() {
           className="w-full bg-white border border-red-200 text-red-600 rounded-3xl p-4 hover:bg-red-50 transition-all disabled:opacity-50 flex items-center justify-center gap-2 font-bold animate-slide-up delay-400"
         >
           {signingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
-          {signingOut ? 'جاري الخروج...' : 'تسجيل خروج'}
+          {signingOut ? t('account.signing_out') : t('account.sign_out')}
         </button>
 
         <p className="text-xs text-center text-gray-400 pt-2">
-          خدمات مضمونة v1.0
+          {t('account.version')}
         </p>
       </main>
 

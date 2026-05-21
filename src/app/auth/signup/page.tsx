@@ -8,8 +8,10 @@ import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
 import {
   ArrowRight, Phone, Lock, User, Mail, AlertCircle, Loader2, UserPlus, CheckCircle, Sparkles, KeyRound, CreditCard,
 } from 'lucide-react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 function SignupContent() {
+  const { t, dir } = useT()
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/account'
@@ -42,25 +44,25 @@ function SignupContent() {
     setError(null)
 
     if (!fullName.trim()) {
-      setError('اكتب اسمك بالكامل')
+      setError(t('auth.err_name'))
       return
     }
     const normalized = normalizePhone(phone)
     if (!normalized) {
-      setError('رقم التليفون مش صحيح. اكتبه بالشكل ده: 01XXXXXXXXX')
+      setError(t('auth.err_phone'))
       return
     }
     const trimmedEmail = email.trim().toLowerCase()
     if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      setError('اكتب إيميل صحيح (محتاجينه عشان لو نسيت كلمة السر)')
+      setError(t('auth.err_email'))
       return
     }
     if (password.length < 6) {
-      setError('كلمة السر قصيرة جداً (6 حروف على الأقل)')
+      setError(t('auth.err_password_short'))
       return
     }
     if (password !== confirmPassword) {
-      setError('كلمتين السر مش متطابقتين')
+      setError(t('auth.err_password_mismatch'))
       return
     }
 
@@ -83,9 +85,9 @@ function SignupContent() {
     if (signUpErr) {
       console.error('[auth/signup] sign up error:', signUpErr)
       if (signUpErr.message.includes('already registered') || signUpErr.message.includes('User already')) {
-        setError('فيه حساب موجود بالرقم ده. سجّل دخول أو اعمل reset لكلمة السر.')
+        setError(t('auth.err_account_exists'))
       } else {
-        setError(signUpErr.message || 'حصل خطأ، جرّب تاني')
+        setError(signUpErr.message || t('auth.err_generic'))
       }
       setSubmitting(false)
       return
@@ -181,14 +183,14 @@ function SignupContent() {
 
   if (success) {
     return (
-      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir={dir}>
         <div className="w-full max-w-md bg-white rounded-3xl shadow-luxe p-10 text-center animate-scale-in">
           <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h1 className="text-2xl font-black mb-2">تم إنشاء الحساب</h1>
+          <h1 className="text-2xl font-black mb-2">{t('auth.success_title')}</h1>
           <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-            حسابك قيد التفعيل. تواصل معانا على الواتساب لتفعيل الحساب وتقدر تسجل دخول.
+            {t('auth.success_body')}
           </p>
           <a
             href="https://wa.me/201002229982?text=مرحباً، عملت حساب جديد ومحتاج تفعيله."
@@ -196,7 +198,7 @@ function SignupContent() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-[#25D366] text-white px-6 py-3.5 rounded-2xl font-bold shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline"
           >
-            تواصل واتساب
+            {t('auth.contact_whatsapp')}
           </a>
         </div>
       </div>
@@ -204,7 +206,7 @@ function SignupContent() {
   }
 
   return (
-    <div className="min-h-screen gradient-mesh flex flex-col relative overflow-hidden" dir="rtl">
+    <div className="min-h-screen gradient-mesh flex flex-col relative overflow-hidden" dir={dir}>
       {/* Decorative blobs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1F6F5F]/5 rounded-full blur-3xl animate-float pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#2FA084]/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
@@ -223,16 +225,16 @@ function SignupContent() {
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/80 backdrop-blur rounded-full mb-4 shadow-soft">
               <Sparkles className="w-3 h-3 text-[#2FA084]" />
               <span className="text-xs font-bold text-gray-700">
-                {fromListing ? 'أصلك متسجل ✓ خطوة واحدة لباقي العملية' : 'انضم لمضمونة'}
+                {fromListing ? t('auth.from_listing_badge') : t('auth.join_badge')}
               </span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight tracking-tight">
-              {fromListing ? (<>أكمل <span className="gradient-text-green">حسابك</span></>) : (<>ابدأ <span className="gradient-text-green">رحلتك</span></>)}
+              {fromListing ? (<>{t('auth.continue_pre')} <span className="gradient-text-green">{t('auth.continue_emph')}</span></>) : (<>{t('auth.start_pre')} <span className="gradient-text-green">{t('auth.start_emph')}</span></>)}
             </h1>
             <p className="text-sm text-gray-500 mt-2">
               {fromListing
-                ? 'الأصل اللي سجلته جاهز. اعمل حساب وفريقنا هينشره خلال 24 ساعة.'
-                : 'أنشئ حسابك وابدأ تحجز فوراً'}
+                ? t('auth.sub_from_listing')
+                : t('auth.sub_signup')}
             </p>
           </div>
 
@@ -241,13 +243,13 @@ function SignupContent() {
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                   <User className="w-3.5 h-3.5 text-[#1F6F5F]" />
-                  الاسم بالكامل
+                  {t('auth.name_label')}
                 </label>
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="محمد أحمد"
+                  placeholder={t('auth.name_placeholder')}
                   className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
                   required
                 />
@@ -256,7 +258,7 @@ function SignupContent() {
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                   <Phone className="w-3.5 h-3.5 text-[#1F6F5F]" />
-                  رقم التليفون
+                  {t('auth.phone_label')}
                 </label>
                 <input
                   type="tel"
@@ -274,10 +276,10 @@ function SignupContent() {
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                   <Mail className="w-3.5 h-3.5 text-[#1F6F5F]" />
-                  الإيميل
+                  {t('auth.email')}
                   <span className="text-[10px] font-normal text-gray-400 normal-case tracking-normal mr-auto flex items-center gap-1">
                     <KeyRound className="w-2.5 h-2.5" />
-                    لاسترجاع كلمة السر
+                    {t('auth.email_recovery_hint')}
                   </span>
                 </label>
                 <input
@@ -292,23 +294,23 @@ function SignupContent() {
                   required
                 />
                 <p className="text-[11px] text-gray-500 mt-1.5 leading-relaxed">
-                  💡 محتاجينه عشان نقدر نساعدك تستعيد كلمة السر لو نسيتها
+                  💡 {t('auth.email_help_text')}
                 </p>
               </div>
 
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                   <CreditCard className="w-3.5 h-3.5 text-[#1F6F5F]" />
-                  رقم البطاقة
+                  {t('auth.id_label')}
                   <span className="text-[10px] font-normal text-gray-400 normal-case tracking-normal mr-auto">
-                    (اختياري)
+                    {t('auth.optional')}
                   </span>
                 </label>
                 <input
                   type="text"
                   value={nationalId}
                   onChange={(e) => setNationalId(e.target.value.replace(/\D/g, '').slice(0, 14))}
-                  placeholder="14 رقم"
+                  placeholder={t('auth.id_placeholder')}
                   className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
@@ -316,20 +318,20 @@ function SignupContent() {
                   maxLength={14}
                 />
                 <p className="text-[11px] text-gray-500 mt-1.5 leading-relaxed">
-                  🔒 بيسرّع الحجز لو جيت تحجز حاجة محتاجة تحقق هوية (عربيات، عقارات، الخ). بياناتك محفوظة، بس صاحب الإعلان اللي بتحجز عنده بيشوفها.
+                  🔒 {t('auth.id_help_text')}
                 </p>
               </div>
 
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                   <Lock className="w-3.5 h-3.5 text-[#1F6F5F]" />
-                  كلمة السر
+                  {t('auth.password_label')}
                 </label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="6 حروف على الأقل"
+                  placeholder={t('auth.password_min_placeholder')}
                   className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
@@ -342,7 +344,7 @@ function SignupContent() {
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                   <Lock className="w-3.5 h-3.5 text-[#1F6F5F]" />
-                  أكّد كلمة السر
+                  {t('auth.confirm_password')}
                 </label>
                 <input
                   type="password"
@@ -373,37 +375,37 @@ function SignupContent() {
                 {submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>جاري الإنشاء...</span>
+                    <span>{t('auth.creating')}</span>
                   </>
                 ) : (
                   <>
                     <UserPlus className="w-4 h-4" />
-                    إنشاء الحساب
+                    {t('auth.create_btn')}
                   </>
                 )}
               </button>
             </form>
 
             <div className="mt-7 pt-6 border-t border-gray-100 text-center">
-              <p className="text-sm text-gray-600 mb-2">عندك حساب بالفعل؟</p>
+              <p className="text-sm text-gray-600 mb-2">{t('auth.have_account_q')}</p>
               <Link
                 href={`/auth/login${redirectTo !== '/account' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
                 className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold hover:gap-2 transition-all no-underline"
               >
-                سجّل دخولك
-                <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+                {t('auth.login_link')}
+                <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
               </Link>
             </div>
           </div>
 
           <p className="text-center text-xs text-gray-500 mt-6">
-            بالتسجيل، أنت توافق على{' '}
+            {t('auth.terms_signup_pre')}{' '}
             <Link href="/terms" className="text-[#1F6F5F] font-semibold hover:underline">
-              الشروط والأحكام
+              {t('auth.terms_link')}
             </Link>
-            {' '}و{' '}
+            {' '}{t('auth.terms_and')}{' '}
             <Link href="/privacy" className="text-[#1F6F5F] font-semibold hover:underline">
-              سياسة الخصوصية
+              {t('auth.privacy_link')}
             </Link>
           </p>
         </div>

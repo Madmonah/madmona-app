@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import BookingHelper from '@/components/BookingHelper'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 // ============================================================================
 // /marketplace/[slug]/book
@@ -68,11 +69,11 @@ interface PricingRule {
 }
 
 const PERIOD_LABELS: Record<string, string> = {
-  hourly: 'بالساعة',
-  daily: 'باليوم',
-  weekly: 'بالأسبوع',
-  monthly: 'بالشهر',
-  per_event: 'مرة واحدة',
+  hourly: 'common.per_hour',
+  daily: 'common.per_day',
+  weekly: 'common.per_week',
+  monthly: 'common.per_month',
+  per_event: 'common.per_event',
 }
 
 const PERIOD_MS: Record<string, number> = {
@@ -94,6 +95,7 @@ type Stage =
   | 'submitting'
 
 export default function BookingPage() {
+  const { t, lang, dir } = useT()
   const params = useParams()
   const router = useRouter()
   const slug = params?.slug as string
@@ -235,7 +237,7 @@ export default function BookingPage() {
     const start = new Date(startAt).getTime()
     const end = new Date(endAt).getTime()
     if (end <= start) {
-      return { periods: 0, baseAmount: 0, commission: 0, total: 0, supplierPayout: 0, valid: false, error: 'تاريخ النهاية لازم يكون بعد البداية' }
+      return { periods: 0, baseAmount: 0, commission: 0, total: 0, supplierPayout: 0, valid: false, error: t('book.err_end_after_start') }
     }
     let periods = 1
     if (selectedRule.period_type !== 'per_event') {
@@ -244,10 +246,10 @@ export default function BookingPage() {
       if (periods < 1) periods = 1
     }
     if (selectedRule.min_periods && periods < selectedRule.min_periods) {
-      return { periods, baseAmount: 0, commission: 0, total: 0, supplierPayout: 0, valid: false, error: `الحد الأدنى ${selectedRule.min_periods} فترة` }
+      return { periods, baseAmount: 0, commission: 0, total: 0, supplierPayout: 0, valid: false, error: t('book.err_min_periods', { n: selectedRule.min_periods }) }
     }
     if (selectedRule.max_periods && periods > selectedRule.max_periods) {
-      return { periods, baseAmount: 0, commission: 0, total: 0, supplierPayout: 0, valid: false, error: `الحد الأقصى ${selectedRule.max_periods} فترة` }
+      return { periods, baseAmount: 0, commission: 0, total: 0, supplierPayout: 0, valid: false, error: t('book.err_max_periods', { n: selectedRule.max_periods }) }
     }
 
     const price = Number(selectedRule.price)
@@ -286,7 +288,7 @@ export default function BookingPage() {
     if (!listing?.supplier || !selectedRule || !pricing.valid || !userId) return
     // Defense-in-depth: even if UI was bypassed, double-check before submit
     if (listing.supplier.kyc_status !== 'approved') {
-      setError('صاحب الإعلان ده لسه قيد التحقق من إدارة Madmona. الحجز هيتفعّل قريب.')
+      setError(t('book.err_supplier_review'))
       return
     }
     setError(null)
@@ -307,7 +309,7 @@ export default function BookingPage() {
       if (conflictErr) {
         console.warn('Conflict check failed, continuing:', conflictErr.message)
       } else if (conflictData === true) {
-        setError('الفترة دي محجوزة بالفعل. اختار وقت تاني.')
+        setError(t('book.err_slot_taken'))
         setStage('ready')
         return
       }
@@ -378,7 +380,7 @@ export default function BookingPage() {
       // instanceof Error, so the old code always fell through to the
       // generic message and hid the root cause.
       console.error('[booking] submit error:', e)
-      let msg = 'حصل خطأ، حاول تاني'
+      let msg = t('common.error')
       if (e && typeof e === 'object') {
         const err = e as { message?: string; details?: string; hint?: string; code?: string }
         const parts: string[] = []
@@ -395,7 +397,7 @@ export default function BookingPage() {
 
   if (stage === 'loading') {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir={dir}>
         <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
       </div>
     )
@@ -404,22 +406,22 @@ export default function BookingPage() {
   if (stage === 'unauthenticated') {
     return (
       <>
-        <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+        <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir={dir}>
           <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
             <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
-            <h1 className="font-bold mb-2">سجّل دخول الأول</h1>
-            <p className="text-sm text-gray-600 mb-6">عشان تحجز، لازم تسجّل دخول أو تعمل حساب جديد.</p>
+            <h1 className="font-bold mb-2">{t('booking.login_first')}</h1>
+            <p className="text-sm text-gray-600 mb-6">{t('booking.login_desc')}</p>
             <Link
               href={`/auth/login?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`}
               className="block w-full bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold mb-2"
             >
-              تسجيل دخول
+              {t('auth.login.title')}
             </Link>
             <Link
               href={`/auth/signup?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`}
               className="block w-full text-sm text-gray-600 hover:text-[#1F6F5F]"
             >
-              مفيش حساب؟ اعمل حساب جديد
+              {t('auth.no_account')}
             </Link>
           </div>
         </div>
@@ -437,12 +439,12 @@ export default function BookingPage() {
 
   if (stage === 'not-found' || !listing) {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir={dir}>
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-          <h1 className="font-bold mb-4">الـlisting ده مش موجود</h1>
+          <h1 className="font-bold mb-4">{t('listing.not_found_title')}</h1>
           <Link href="/marketplace" className="bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold">
-            تصفح
+            {t('book.browse')}
           </Link>
         </div>
       </div>
@@ -452,13 +454,13 @@ export default function BookingPage() {
   // PAUSED gate: listing exists but is temporarily unavailable
   if (stage === 'listing-paused' && listing) {
     return (
-      <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+      <div className="min-h-screen bg-[#FAFAF7]" dir={dir}>
         <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
           <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
             <Link href="/marketplace" className="p-1 hover:bg-gray-50 rounded-full">
               <ArrowRight className="w-5 h-5 text-gray-700" />
             </Link>
-            <h1 className="text-lg font-bold text-gray-900">احجز</h1>
+            <h1 className="text-lg font-bold text-gray-900">{t('booking.title')}</h1>
           </div>
         </header>
         <main className="max-w-xl mx-auto p-4 pt-12">
@@ -466,12 +468,12 @@ export default function BookingPage() {
             <div className="flex items-center justify-center w-14 h-14 rounded-full mx-auto mb-4 bg-amber-50">
               <Clock className="w-7 h-7 text-amber-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">الـlisting ده موقّف مؤقتاً</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">{t('book.paused_title')}</h2>
             <p className="text-sm text-gray-600 leading-relaxed mb-6">
-              صاحب الإعلان <strong className="text-gray-900">{listing.supplier?.business_name || ''}</strong> أوقف الـlisting ده مؤقتاً. هتلاقي listings تانية مشابهة في الـmarketplace.
+              {t('book.owner_word')} <strong className="text-gray-900">{listing.supplier?.business_name || ''}</strong> {t('book.paused_after_name')}
               <br />
               <span className="block mt-2 text-xs text-gray-500">
-                لو محتاج تتواصل مع صاحب الـlisting، كلّمنا واتساب وهنوصلك.
+                {t('book.paused_help')}
               </span>
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
@@ -482,13 +484,13 @@ export default function BookingPage() {
                 className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#25D366] text-white rounded-xl text-sm font-semibold no-underline hover:bg-[#25D366]/90"
               >
                 <MessageCircle className="w-4 h-4" />
-                اطلب مساعدة في الحجز
+                {t('book.help_booking')}
               </a>
               <Link
                 href="/marketplace"
                 className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#1F6F5F] text-white rounded-xl text-sm font-semibold hover:bg-[#1F6F5F]/90"
               >
-                تصفح listings تانية
+                {t('book.browse_other')}
               </Link>
             </div>
           </div>
@@ -502,13 +504,13 @@ export default function BookingPage() {
     const supplierStatus = listing.supplier?.kyc_status
     const isSuspended = supplierStatus === 'suspended' || supplierStatus === 'rejected'
     return (
-      <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+      <div className="min-h-screen bg-[#FAFAF7]" dir={dir}>
         <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
           <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
             <Link href={`/marketplace/${slug}`} className="p-1 hover:bg-gray-50 rounded-full">
               <ArrowRight className="w-5 h-5 text-gray-700" />
             </Link>
-            <h1 className="text-lg font-bold text-gray-900">احجز</h1>
+            <h1 className="text-lg font-bold text-gray-900">{t('booking.title')}</h1>
           </div>
         </header>
 
@@ -524,18 +526,17 @@ export default function BookingPage() {
               )}
             </div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">
-              {isSuspended ? 'الحجز مش متاح حالياً' : 'صاحب الإعلان قيد التحقق'}
+              {isSuspended ? t('book.supplier_unavailable_title') : t('book.supplier_review_title')}
             </h2>
             <p className="text-sm text-gray-600 leading-relaxed mb-6">
               {isSuspended ? (
-                <>الـlisting ده مش متاح للحجز دلوقتي. تقدر تتصفح ليستنجز تانية.</>
+                <>{t('book.suspended_body')}</>
               ) : (
                 <>
-                  صاحب الإعلان <strong className="text-gray-900">{listing.supplier?.business_name || ''}</strong> لسه بنوثق حسابه عند Madmona،
-                  وعشان أمانك الحجز هيتفتح بعد ما يخلص التحقق.
+                  {t('book.owner_word')} <strong className="text-gray-900">{listing.supplier?.business_name || ''}</strong> {t('book.review_after_name')}
                   <br />
                   <span className="block mt-2 text-xs text-gray-500">
-                    عادة بياخد أقل من ٢٤ ساعة. اعملنا حفظ في المفضلة وهنبعتلك إشعار لما الحجز يفتح.
+                    {t('book.review_eta')}
                   </span>
                 </>
               )}
@@ -545,13 +546,13 @@ export default function BookingPage() {
                 href={`/marketplace/${slug}`}
                 className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-200"
               >
-                ارجع للـlisting
+                {t('book.back_to_listing')}
               </Link>
               <Link
                 href="/marketplace"
                 className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#1F6F5F] text-white rounded-xl text-sm font-semibold hover:bg-[#1F6F5F]/90"
               >
-                تصفح ليستنجز تانية
+                {t('book.browse_other')}
               </Link>
             </div>
             {!isSuspended && (
@@ -562,7 +563,7 @@ export default function BookingPage() {
                 className="inline-flex items-center justify-center gap-1.5 mt-4 text-xs text-[#1F6F5F] hover:underline"
               >
                 <Clock className="w-3.5 h-3.5" />
-                اسأل Madmona عن صاحب الإعلان ده
+                {t('book.ask_about_owner')}
               </a>
             )}
           </div>
@@ -575,13 +576,13 @@ export default function BookingPage() {
   if (stage === 'demo-not-bookable' && listing) {
     const displayTitle = cleanListingTitle(listing.title)
     return (
-      <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+      <div className="min-h-screen bg-[#FAFAF7]" dir={dir}>
         <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
           <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
             <Link href={`/marketplace/${slug}`} className="p-1 hover:bg-gray-50 rounded-full">
               <ArrowRight className="w-5 h-5 text-gray-700" />
             </Link>
-            <h1 className="text-lg font-bold text-gray-900">احجز</h1>
+            <h1 className="text-lg font-bold text-gray-900">{t('booking.title')}</h1>
           </div>
         </header>
 
@@ -590,12 +591,12 @@ export default function BookingPage() {
             <div className="flex items-center justify-center w-14 h-14 rounded-full mx-auto mb-4 bg-amber-100">
               <Clock className="w-7 h-7 text-amber-700" />
             </div>
-            <h2 className="text-xl font-black text-amber-900 mb-2 text-center">الحجز مش مفعل للنماذج</h2>
+            <h2 className="text-xl font-black text-amber-900 mb-2 text-center">{t('listing.booking_disabled_demo')}</h2>
             <p className="text-sm text-gray-700 leading-relaxed mb-6 text-center">
-              “<strong>{displayTitle}</strong>” ده نموذج للعرض · متوفر قريباً. لسّه مفيش موردين حقيقيين في الفئة دي.
+              “<strong>{displayTitle}</strong>” {t('book.demo_body_1')}
               <br />
               <span className="block mt-2 text-xs text-gray-500">
-                لو حابب تتبلّغ لما يبقى متاح، كلّمنا واتساب وهنبعتلك إشعار أول ما نلاقي صاحب الإعلان في الفئة دي.
+                {t('book.demo_body_2')}
               </span>
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
@@ -606,13 +607,13 @@ export default function BookingPage() {
                 className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#25D366] text-white rounded-xl text-sm font-semibold no-underline hover:bg-[#25D366]/90"
               >
                 <MessageCircle className="w-4 h-4" />
-                بلّغني لما يبقى متاح
+                {t('listing.notify_available')}
               </a>
               <Link
                 href="/marketplace"
                 className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#1F6F5F] text-white rounded-xl text-sm font-semibold hover:bg-[#1F6F5F]/90"
               >
-                تصفح ليستنجز حقيقية
+                {t('book.browse_real')}
               </Link>
             </div>
           </div>
@@ -623,13 +624,13 @@ export default function BookingPage() {
 
   if (pricingRules.length === 0) {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir={dir}>
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
-          <h1 className="font-bold mb-2">مفيش أسعار للـlisting ده</h1>
-          <p className="text-sm text-gray-600 mb-4">للحجز، تواصل مباشرة مع صاحب الإعلان.</p>
+          <h1 className="font-bold mb-2">{t('book.no_pricing_title')}</h1>
+          <p className="text-sm text-gray-600 mb-4">{t('book.no_pricing_body')}</p>
           <Link href={`/marketplace/${slug}`} className="bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold inline-block">
-            ارجع للـlisting
+            {t('book.back_to_listing')}
           </Link>
         </div>
       </div>
@@ -641,13 +642,13 @@ export default function BookingPage() {
   const photoUrl = primary?.url
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+    <div className="min-h-screen bg-[#FAFAF7]" dir={dir}>
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link href={`/marketplace/${slug}`} className="p-1 hover:bg-gray-50 rounded-full">
             <ArrowRight className="w-5 h-5 text-gray-700" />
           </Link>
-          <h1 className="text-lg font-bold text-gray-900">احجز</h1>
+          <h1 className="text-lg font-bold text-gray-900">{t('booking.title')}</h1>
         </div>
       </header>
 
@@ -674,7 +675,7 @@ export default function BookingPage() {
             {(listing.district || listing.city) && (
               <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                 <MapPin className="w-3 h-3" />
-                {[listing.district, listing.city].filter(Boolean).join(', ')}
+                {[listing.district, listing.city].filter(Boolean).join(lang === 'ar' ? '، ' : ', ')}
               </p>
             )}
           </div>
@@ -682,7 +683,7 @@ export default function BookingPage() {
 
         {/* Pricing rule selection */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-          <h3 className="text-base font-bold text-gray-900 mb-3">طريقة التسعير</h3>
+          <h3 className="text-base font-bold text-gray-900 mb-3">{t('booking.pricing')}</h3>
           <div className="space-y-2">
             {pricingRules.map(rule => (
               <label
@@ -702,11 +703,11 @@ export default function BookingPage() {
                     className="w-4 h-4 text-[#1F6F5F]"
                   />
                   <span className="text-sm font-medium text-gray-900">
-                    {rule.label_ar || PERIOD_LABELS[rule.period_type] || rule.period_type}
+                    {rule.label_ar || (PERIOD_LABELS[rule.period_type] ? t(PERIOD_LABELS[rule.period_type]) : rule.period_type)}
                   </span>
                 </div>
                 <span className="font-bold text-[#1F6F5F]">
-                  {Number(rule.price).toLocaleString('ar-EG')} ج.م
+                  {Number(rule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}
                 </span>
               </label>
             ))}
@@ -717,9 +718,9 @@ export default function BookingPage() {
             Renders only when the supplier configured add-ons in the wizard. */}
         {availableAddons.length > 0 && (
           <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-            <h3 className="text-base font-bold text-gray-900 mb-1">✨ خدمات إضافية اختيارية</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-1">{t('book.addons_title')}</h3>
             <p className="text-xs text-gray-500 mb-3">
-              اختار اللي تحتاجه مع حجزك. التكلفة بتتضاف على الإجمالي.
+              {t('book.addons_sub')}
             </p>
             <div className="space-y-2">
               {availableAddons.map(addon => {
@@ -729,7 +730,7 @@ export default function BookingPage() {
                     key={addon.slug}
                     type="button"
                     onClick={() => toggleAddon(addon.slug)}
-                    className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-right ${
+                    className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-start ${
                       isSel
                         ? 'bg-[#1F6F5F]/5 border-[#1F6F5F]'
                         : 'bg-white border-gray-100 hover:border-gray-200'
@@ -745,7 +746,7 @@ export default function BookingPage() {
                       <span className="text-sm font-medium text-gray-900">{addon.name_ar}</span>
                     </div>
                     <span className={`font-bold text-sm ${isSel ? 'text-[#1F6F5F]' : 'text-gray-700'}`}>
-                      +{Number(addon.price_egp).toLocaleString('ar-EG')} ج.م
+                      +{Number(addon.price_egp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}
                     </span>
                   </button>
                 )
@@ -753,7 +754,7 @@ export default function BookingPage() {
             </div>
             {selectedAddons.length > 0 && (
               <p className="text-xs text-[#1F6F5F] font-semibold mt-3 text-center">
-                اخترت {selectedAddons.length} خدمة · إجمالي الإضافات: {addonsAmount.toLocaleString('ar-EG')} ج.م
+                {t('book.addons_summary', { n: selectedAddons.length, amt: addonsAmount.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US') })}
               </p>
             )}
           </div>
@@ -762,11 +763,11 @@ export default function BookingPage() {
         {/* Date/time picker */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
           <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-[#1F6F5F]" /> تاريخ الحجز
+            <Calendar className="w-4 h-4 text-[#1F6F5F]" /> {t('booking.date')}
           </h3>
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">من</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{t('booking.from')}</label>
               <input
                 type="datetime-local"
                 value={startAt}
@@ -776,7 +777,7 @@ export default function BookingPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">إلى</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{t('booking.to')}</label>
               <input
                 type="datetime-local"
                 value={endAt}
@@ -791,13 +792,13 @@ export default function BookingPage() {
 
         {/* Customer notes */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-          <h3 className="text-base font-bold text-gray-900 mb-3">ملاحظات إضافية (اختياري)</h3>
+          <h3 className="text-base font-bold text-gray-900 mb-3">{t('booking.notes')}</h3>
           <textarea
             value={customerNotes}
             onChange={e => setCustomerNotes(e.target.value)}
             rows={3}
             maxLength={500}
-            placeholder="أي طلبات خاصة أو معلومات تحتاج توصلها لصاحب الإعلان"
+            placeholder={t('book.notes_placeholder')}
             className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30"
           />
         </div>
@@ -810,20 +811,20 @@ export default function BookingPage() {
           <div className="bg-gradient-to-br from-[#2FA084]/5 to-amber-50 rounded-2xl border-2 border-[#2FA084]/30 p-4 mb-4">
             <h3 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-[#2FA084]" />
-              بطاقة مطلوبة (اختياري دلوقتي)
+              {t('book.id_title')}
             </h3>
             <p className="text-xs text-gray-700 leading-relaxed mb-3">
-              الـlisting ده محتاج رقم بطاقتك للتحقق. لو معاك الرقم دلوقتي، اكتبه — وده هيسرّع تأكيد الحجز. لو مش معاك دلوقتي، عادي اكمل الحجز وهنطلبها بعدين قبل ما يتأكد.
+              {t('book.id_desc')}
             </p>
             <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
               <CreditCard className="w-3.5 h-3.5 text-[#2FA084]" />
-              رقم البطاقة الشخصية
+              {t('book.id_label')}
             </label>
             <input
               type="text"
               value={providedNationalId}
               onChange={e => setProvidedNationalId(e.target.value.replace(/\D/g, '').slice(0, 14))}
-              placeholder="14 رقم — أو سيبها فاضية دلوقتي"
+              placeholder={t('book.id_placeholder')}
               maxLength={14}
               className="w-full px-4 py-2.5 border border-[#2FA084]/40 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2FA084]/30 focus:border-[#2FA084] bg-white"
               dir="ltr"
@@ -833,11 +834,11 @@ export default function BookingPage() {
             {userNationalId && (
               <p className="text-[11px] text-green-700 mt-1.5 flex items-center gap-1">
                 <CheckCircle className="w-3 h-3" />
-                رقم بطاقتك محفوظ عندنا. تقدر تعدله لو عاوز.
+                {t('book.id_saved')}
               </p>
             )}
             <p className="text-[10px] text-gray-500 mt-2 leading-relaxed">
-              🔒 بياناتك أمان. بتوصل لصاحب الإعلان بس، وبتتخزن مشفرة في النظام.
+              {t('book.id_secure')}
             </p>
           </div>
         )}
@@ -845,24 +846,24 @@ export default function BookingPage() {
         {/* Price breakdown */}
         {pricing.valid && selectedRule && (
           <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-            <h3 className="text-base font-bold text-gray-900 mb-3">ملخص الحجز</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-3">{t('book.summary_title')}</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  {Number(selectedRule.price).toLocaleString('ar-EG')} ج.م × {pricing.periods} {selectedRule.period_type === 'per_event' ? '' : PERIOD_LABELS[selectedRule.period_type]}
+                  {Number(selectedRule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')} × {pricing.periods} {selectedRule.period_type === 'per_event' ? '' : t(PERIOD_LABELS[selectedRule.period_type])}
                 </span>
-                <span>{pricing.baseAmount.toLocaleString('ar-EG')} ج.م</span>
+                <span>{pricing.baseAmount.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}</span>
               </div>
               {/* Phase Z: line item per selected add-on */}
               {selectedAddons.map(a => (
                 <div key={a.slug} className="flex justify-between text-xs text-gray-600">
                   <span>{a.emoji ? `${a.emoji} ` : ''}{a.name_ar}</span>
-                  <span>+{Number(a.price_egp).toLocaleString('ar-EG')} ج.م</span>
+                  <span>+{Number(a.price_egp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}</span>
                 </div>
               ))}
               <div className="flex justify-between font-bold pt-2 border-t border-gray-100 text-base">
-                <span>الإجمالي</span>
-                <span className="text-[#1F6F5F]">{pricing.total.toLocaleString('ar-EG')} ج.م</span>
+                <span>{t('booking.total')}</span>
+                <span className="text-[#1F6F5F]">{pricing.total.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}</span>
               </div>
             </div>
           </div>
@@ -889,23 +890,23 @@ export default function BookingPage() {
         >
           {stage === 'submitting' ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" /> جاري الإرسال...
+              <Loader2 className="w-5 h-5 animate-spin" /> {t('booking.submitting')}
             </>
           ) : listing.requires_id_verification ? (
             <>
-              <ShieldCheck className="w-5 h-5" /> إرسال طلب الحجز
+              <ShieldCheck className="w-5 h-5" /> {t('book.submit_id')}
             </>
           ) : (
             <>
-              <CheckCircle className="w-5 h-5" /> تأكيد الحجز
+              <CheckCircle className="w-5 h-5" /> {t('booking.confirm')}
             </>
           )}
         </button>
 
         <p className="text-xs text-center text-gray-500 mt-3">
           {listing.requires_id_verification
-            ? 'الحجز هيتأكد بعد ما صاحب الإعلان يراجع بياناتك ويوافق. هتوصلك إشعار لما تتأكد.'
-            : 'الحجز هيتأكد بعد ما صاحب الإعلان يوافق. هتقدر تتابع حالة الحجز من “حجوزاتي”.'}
+            ? t('book.footer_id')
+            : t('book.footer_normal')}
         </p>
       </main>
 
