@@ -372,6 +372,31 @@ export default function AdminDashboardV2() {
             title="AI OS" sub={`${data.ai.agents_enabled} agent شغال`} />
         </section>
 
+        {/* ============ COLLECTION ACCOUNT (InstaPay / Bank Misr) ============ */}
+        <Section title="💳 حساب التحصيل" subtitle="كل المدفوعات (إنستاباي / تحويل بنكي) بتروح على حساب مضمونة">
+          <div className="bg-[#1F6F5F] text-white rounded-2xl p-5 md:p-6 shadow-lg shadow-[#1F6F5F]/20 max-w-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <Wallet className="w-5 h-5" />
+              <p className="text-sm font-black">مضمونة · إنستاباي / تحويل بنكي</p>
+            </div>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between bg-white/10 rounded-xl px-4 py-3">
+                <span className="text-[12px] text-white/70">البنك</span>
+                <span className="font-bold">بنك مصر</span>
+              </div>
+              <div className="flex items-center justify-between bg-white/10 rounded-xl px-4 py-3">
+                <span className="text-[12px] text-white/70">اسم الحساب</span>
+                <span className="font-bold">مضمونة</span>
+              </div>
+              <div className="flex items-center justify-between bg-white/10 rounded-xl px-4 py-3">
+                <span className="text-[12px] text-white/70">رقم الحساب / إنستاباي</span>
+                <span className="font-mono font-black text-lg tracking-wide select-all" dir="ltr">5220001000009207</span>
+              </div>
+            </div>
+            <p className="text-[11px] text-white/70 mt-4 leading-relaxed">التيبس والمنتجات والحجوزات بتتحوّل على الحساب ده، وبعدين بتتسوّى مع الشركاء ناقص العمولة (١٠٪ أفراد / ٥٪ شركات).</p>
+          </div>
+        </Section>
+
         {/* ============ B2B SECTION ============ */}
         <Section title="💼 شركاء B2B" subtitle="Phase B · مضمونة بـ تحضن نشاط الفرع كامل">
           {/* B2B sub-KPIs */}
@@ -400,6 +425,26 @@ export default function AdminDashboardV2() {
             <ToolCard href="/admin/business-partners/new" icon={<Plus />} title="ضيف شريك جديد" sub="3-step wizard" />
             <ToolCard href="/admin/leads" icon={<Phone />} title="Cold Leads" sub={`${data.whatsapp.cold_leads_total} موجود`} />
             <ToolCard href="/admin/leads-feed" icon={<Rss />} title="Leads Feed" sub="Realtime stream" />
+          </div>
+        </Section>
+
+        {/* ============ ELITE PARTNER LINKS ============ */}
+        <Section title="💇‍♀️ Elite Beauty Salon & Spa" subtitle="كل لينكات إيليت — صفحات العملاء، الحجز، حضور الموظفين، والإدارة">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ToolCard href="/elite" icon={<Sparkles />} title="صفحة إيليت" sub="الهوم بيدج للعملاء" />
+            <ToolCard href="/admin/business-finance/93eaa8cf-1def-4101-bca6-8fa33450cdce" icon={<Wallet />} title="إدارة إيليت" sub="فاينانس · فريق · حضور · QR" />
+            <ToolCard href="/v/HQ" icon={<QrCode />} title="زيارة · مصر الجديدة" sub="/v/HQ" />
+            <ToolCard href="/v/GOLF" icon={<QrCode />} title="زيارة · الجولف" sub="/v/GOLF" />
+            <ToolCard href="/v/HIJAB" icon={<QrCode />} title="زيارة · المحجبات" sub="/v/HIJAB" />
+            <ToolCard href="/v/TAGAMOA" icon={<QrCode />} title="زيارة · التجمع" sub="/v/TAGAMOA" />
+            <ToolCard href="/book/HQ" icon={<Calendar />} title="حجز · مصر الجديدة" sub="/book/HQ" />
+            <ToolCard href="/book/GOLF" icon={<Calendar />} title="حجز · الجولف" sub="/book/GOLF" />
+            <ToolCard href="/book/HIJAB" icon={<Calendar />} title="حجز · المحجبات" sub="/book/HIJAB" />
+            <ToolCard href="/book/TAGAMOA" icon={<Calendar />} title="حجز · التجمع" sub="/book/TAGAMOA" />
+            <ToolCard href="/clock/HQ" icon={<Clock />} title="حضور · مصر الجديدة" sub="/clock/HQ" />
+            <ToolCard href="/clock/GOLF" icon={<Clock />} title="حضور · الجولف" sub="/clock/GOLF" />
+            <ToolCard href="/clock/HIJAB" icon={<Clock />} title="حضور · المحجبات" sub="/clock/HIJAB" />
+            <ToolCard href="/clock/TAGAMOA" icon={<Clock />} title="حضور · التجمع" sub="/clock/TAGAMOA" />
           </div>
         </Section>
 
