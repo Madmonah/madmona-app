@@ -244,7 +244,7 @@ export default function MadmonaHome() {
                     <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 grid place-items-center"><Briefcase className="w-5 h-5 text-[#1F6F5F]" /></div>
                     <div>
                       <p className="font-black text-[#1A2E26]">{emp.business_name}</p>
-                      <p className="text-[11px] text-[#6B7280]">لوحة شغلي · حضور، تاسكات، تيبس، مواعيد</p>
+                      <p className="text-[11px] text-[#6B7280]">لوحة شغلي · حضور، تاسكات، اكراميات، مواعيد</p>
                     </div>
                   </div>
                   <ChevronLeft className="w-5 h-5 text-[#6B7280]" />
@@ -345,12 +345,12 @@ export default function MadmonaHome() {
           const emps = branches.find((b: any) => b.branch_id === tipBranch)?.employees || []
           return (
             <section>
-              <h2 className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1.5"><Gift className="w-3.5 h-3.5" /> كرّم اللي خدمك (بقشيش)</h2>
+              <h2 className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1.5"><Gift className="w-3.5 h-3.5" /> كرّم اللي خدمك (اكرامية)</h2>
               <div className="bg-white rounded-2xl border border-gray-100 p-4">
                 {tipResult ? (
                   <div className="text-center py-2">
                     <div className="w-14 h-14 rounded-full bg-[#1F6F5F]/10 grid place-items-center mx-auto mb-3"><Gift className="w-7 h-7 text-[#1F6F5F]" /></div>
-                    <p className="font-black text-[#1A2E26] mb-1">شكراً! 🎉 بقشيش {tipResult.amount} ج لـ {tipResult.employee}</p>
+                    <p className="font-black text-[#1A2E26] mb-1">شكراً! 🎉 اكرامية {tipResult.amount} ج لـ {tipResult.employee}</p>
                     <p className="text-sm text-[#6B7280] leading-relaxed">{tipResult.message}</p>
                     {tipResult.instapay && (
                       <div className="mt-3 bg-[#FAFAF7] rounded-xl p-3">
@@ -358,7 +358,7 @@ export default function MadmonaHome() {
                         <p className="font-mono font-black text-[#1F6F5F] text-lg" dir="ltr">{tipResult.instapay}</p>
                       </div>
                     )}
-                    <button onClick={() => setTipResult(null)} className="mt-4 text-xs font-bold text-[#1F6F5F]">بقشيش تاني</button>
+                    <button onClick={() => setTipResult(null)} className="mt-4 text-xs font-bold text-[#1F6F5F]">اكرامية تانية</button>
                   </div>
                 ) : (
                   <>
@@ -389,7 +389,7 @@ export default function MadmonaHome() {
                     </div>
 
                     <button onClick={sendTip} disabled={tipBusy || !tipEmp || !tipAmount} className="w-full py-2.5 rounded-xl bg-[#1F6F5F] text-white font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2">
-                      {tipBusy ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري...</> : <><Gift className="w-4 h-4" /> ابعت البقشيش</>}
+                      {tipBusy ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري...</> : <><Gift className="w-4 h-4" /> ابعت الاكرامية</>}
                     </button>
                   </>
                 )}

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#1A2E26"/>
+      <stop offset="0.55" stop-color="#1F6F5F"/>
+      <stop offset="1" stop-color="#1A2E26"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg2)"/>
+  <!-- dotted texture -->
+  <g fill="#FFFFFF" fill-opacity="0.06">
+    <circle cx="120" cy="120" r="3"/><circle cx="220" cy="120" r="3"/><circle cx="320" cy="120" r="3"/><circle cx="420" cy="120" r="3"/>
+    <circle cx="120" cy="220" r="3"/><circle cx="220" cy="220" r="3"/><circle cx="320" cy="220" r="3"/>
+    <circle cx="120" cy="320" r="3"/><circle cx="220" cy="320" r="3"/>
+  </g>
+  <!-- elegant abstract bloom (petals) -->
+  <g transform="translate(1150 450)" fill="#FAFAF7">
+    <g fill-opacity="0.12">
+      <ellipse cx="0" cy="-150" rx="60" ry="150"/>
+      <ellipse cx="0" cy="150" rx="60" ry="150"/>
+      <ellipse cx="-150" cy="0" rx="150" ry="60"/>
+      <ellipse cx="150" cy="0" rx="150" ry="60"/>
+    </g>
+    <g fill-opacity="0.10" transform="rotate(45)">
+      <ellipse cx="0" cy="-150" rx="55" ry="140"/>
+      <ellipse cx="0" cy="150" rx="55" ry="140"/>
+      <ellipse cx="-150" cy="0" rx="140" ry="55"/>
+      <ellipse cx="150" cy="0" rx="140" ry="55"/>
+    </g>
+    <circle cx="0" cy="0" r="46" fill="#FFFFFF" fill-opacity="0.22"/>
+  </g>
+  <!-- ribbon -->
+  <path d="M-50 720 C 400 640, 800 820, 1250 700 S 1700 740 1700 740 L1700 900 L-50 900 Z" fill="#1F6F5F" fill-opacity="0.55"/>
+  <path d="M-50 770 C 400 700, 800 880, 1250 760 S 1700 800 1700 800 L1700 900 L-50 900 Z" fill="#FAFAF7" fill-opacity="0.06"/>
+</svg>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1F6F5F"/>
+      <stop offset="1" stop-color="#1A2E26"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.7" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#glow)"/>
+  <!-- flowing hair-like waves -->
+  <g fill="none" stroke="#FAFAF7" stroke-opacity="0.10" stroke-width="3">
+    <path d="M-50 250 C 350 120, 700 380, 1100 220 S 1700 260, 1700 260"/>
+    <path d="M-50 330 C 350 200, 700 470, 1100 300 S 1700 340, 1700 340"/>
+    <path d="M-50 410 C 350 280, 700 560, 1100 380 S 1700 420, 1700 420"/>
+    <path d="M-50 500 C 350 360, 700 650, 1100 470 S 1700 520, 1700 520"/>
+  </g>
+  <!-- soft orbs -->
+  <circle cx="1280" cy="220" r="220" fill="#FFFFFF" fill-opacity="0.05"/>
+  <circle cx="200" cy="760" r="300" fill="#1F6F5F" fill-opacity="0.45"/>
+  <!-- sparkles -->
+  <g fill="#FFFFFF">
+    <path d="M1120 600 l10 26 26 10 -26 10 -10 26 -10 -26 -26 -10 26 -10z" fill-opacity="0.55"/>
+    <path d="M980 700 l7 18 18 7 -18 7 -7 18 -7 -18 -18 -7 18 -7z" fill-opacity="0.4"/>
+    <path d="M1320 480 l6 15 15 6 -15 6 -6 15 -6 -15 -15 -6 15 -6z" fill-opacity="0.45"/>
+    <circle cx="240" cy="180" r="4" fill-opacity="0.5"/>
+    <circle cx="520" cy="120" r="3" fill-opacity="0.4"/>
+  </g>
+</svg>

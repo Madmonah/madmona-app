@@ -7,6 +7,7 @@ import {
   CheckCircle2, MapPin, Phone, Scissors, Sparkles, ArrowLeft,
   ShoppingBag, Plus, Minus, Check,
 } from 'lucide-react'
+import { useMadmonaAuth, AccountGate } from '@/components/AccountGate'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -20,6 +21,7 @@ type Step = 'service' | 'stylist' | 'datetime' | 'extras' | 'info' | 'confirm' |
 
 export default function PublicBookingPage({ params }: { params: { branchCode: string } }) {
   const { branchCode } = params
+  const { checking, authed, setAuthed, setProfile } = useMadmonaAuth()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [step, setStep] = useState<Step>('service')
@@ -127,10 +129,28 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
     setSubmitting(false)
   }
 
-  if (loading) return <Loader />
+  if (loading || checking) return <Loader />
   if (!data?.branch) return (
     <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
       <div className="text-center"><MapPin className="w-12 h-12 text-[#6B7280] opacity-30 mx-auto mb-2" /><p className="text-[#1A2E26] font-bold">فرع غير موجود</p></div>
+    </div>
+  )
+
+  if (!authed) return (
+    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+      <header className="bg-[#1F6F5F] text-white">
+        <div className="max-w-md mx-auto px-4 py-7 text-center">
+          <p className="text-[10px] font-bold tracking-[0.35em] uppercase text-white/65 mb-1">MADMONA · ONLINE BOOKING</p>
+          <h1 className="text-xl font-black">{data.supplier?.business_name}</h1>
+          <p className="text-xs text-white/85 mt-1">{data.branch?.name}</p>
+        </div>
+      </header>
+      <main className="max-w-md mx-auto px-4 py-6">
+        <AccountGate
+          onAuthed={(p) => { setAuthed(true); setProfile(p); if (p.name) setCustomerName((v) => v || p.name); if (p.phone) { const ph = p.phone; setCustomerPhone((v) => v || ph) } }}
+          subtitle="عشان نأكد حجزك ونتابع مواعيدك ونبعتلك تذكير — اعملي حسابك في ثانية على مضمونة بكود واتساب."
+        />
+      </main>
     </div>
   )
 
