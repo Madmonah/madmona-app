@@ -10,8 +10,11 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Menu, X, User, LogIn, Share2 } from 'lucide-react'
 import NotificationButton from './NotificationButton'
+import LanguageToggle from './LanguageToggle'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 export default function TopNav() {
+  const { t, dir } = useT()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -32,8 +35,8 @@ export default function TopNav() {
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
       try {
         await navigator.share({
-          title: 'مضمونة - منصة الإيجار',
-          text: 'مضمونة 🟢 — احنا بتوع الإيجار في مصر.',
+          title: t('nav.share_title'),
+          text: t('nav.share_text'),
           url: 'https://madmonacairo.com',
         })
       } catch {}
@@ -73,14 +76,15 @@ export default function TopNav() {
 
           {/* 2 primary tabs removed — they live in the home page body now */}
 
-          {/* Compact actions — notifications (enlarged) + menu */}
+          {/* Compact actions — language + notifications (enlarged) + menu */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            <LanguageToggle className="bg-white shadow-soft" />
             <NotificationButton variant="icon-only" />
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
               className="w-11 h-11 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-2xl flex items-center justify-center transition-all"
-              aria-label="القائمة"
+              aria-label={t('nav.menu')}
             >
               <Menu className="w-5 h-5 text-gray-700" />
             </button>
@@ -90,12 +94,12 @@ export default function TopNav() {
 
       {/* "More" drawer — minimal, just the secondary actions */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50" dir="rtl">
+        <div className="fixed inset-0 z-50" dir={dir}>
           <div
             className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm animate-fade-in"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute top-0 right-0 bottom-0 w-80 bg-white flex flex-col animate-slide-down">
+          <div className="absolute top-0 ltr:left-0 rtl:right-0 bottom-0 w-80 bg-white flex flex-col animate-slide-down">
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 bg-[#FAFAF7] rounded-2xl flex items-center justify-center overflow-hidden">
@@ -134,8 +138,8 @@ export default function TopNav() {
                   <User className="w-5 h-5 text-gray-700" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-gray-900">حسابي</p>
-                  <p className="text-xs text-gray-500 mt-0.5">حجوزاتي وليستنجاتي</p>
+                  <p className="font-bold text-gray-900">{t('nav.account')}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{t('nav.account_desc')}</p>
                 </div>
               </Link>
 
@@ -148,8 +152,8 @@ export default function TopNav() {
                   <LogIn className="w-5 h-5 text-[#1F6F5F]" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-gray-900">تسجيل الدخول</p>
-                  <p className="text-xs text-gray-500 mt-0.5">عندك حساب بالفعل</p>
+                  <p className="font-bold text-gray-900">{t('nav.login')}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{t('nav.login_desc')}</p>
                 </div>
               </Link>
 
@@ -162,8 +166,8 @@ export default function TopNav() {
                   <Share2 className="w-5 h-5 text-[#2FA084]" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-gray-900">شارك مضمونة</p>
-                  <p className="text-xs text-gray-500 mt-0.5">ابعت الموقع لأصحابك</p>
+                  <p className="font-bold text-gray-900">{t('nav.share')}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{t('nav.share_desc')}</p>
                 </div>
               </button>
             </nav>
@@ -175,7 +179,7 @@ export default function TopNav() {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3.5 rounded-2xl font-bold shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
               >
-                واتساب · رد فوري
+                {t('nav.whatsapp_cta')}
               </a>
             </div>
           </div>

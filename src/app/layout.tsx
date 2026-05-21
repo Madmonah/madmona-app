@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
-import { Tajawal } from 'next/font/google'
+import { Tajawal, Inter } from 'next/font/google'
+import { LanguageProvider } from '@/lib/i18n/LanguageProvider'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Suspense } from 'react'
@@ -23,6 +24,18 @@ const tajawal = Tajawal({
   display: 'swap',
   variable: '--font-tajawal',
 })
+
+// English/Latin face — used when the app is switched to English (LTR).
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
+  variable: '--font-inter',
+})
+
+// Runs before paint: reads the saved language and sets <html lang/dir>
+// so switching to English never flashes RTL first.
+const NO_FLASH_LANG = `(function(){try{var m=document.cookie.match(/(?:^|; )madmona_lang=(ar|en)/);var l=(localStorage.getItem('madmona_lang')||(m&&m[1])||'ar');var e=document.documentElement;e.lang=l;e.dir=(l==='en'?'ltr':'rtl');}catch(e){}})();`
 
 export const metadata: Metadata = {
   title: {
@@ -178,13 +191,15 @@ const websiteJsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" className={tajawal.variable}>
+    <html lang="ar" dir="rtl" className={`${tajawal.variable} ${inter.variable}`}>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: NO_FLASH_LANG }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
       </head>
       <body className={`${tajawal.className} bg-[#FAFAF7] text-gray-900 antialiased`}>
+        <LanguageProvider>
         {children}
         <ServiceWorkerRegister />
         <NotificationPrompt />
@@ -201,6 +216,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Suspense fallback={null}>
           <DailyMessageBanner />
         </Suspense>
+        </LanguageProvider>
       </body>
     </html>
   )

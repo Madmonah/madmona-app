@@ -14,6 +14,7 @@ import SocialLinks from '@/components/SocialLinks'
 import MUACampaignBanner from '@/components/MUACampaignBanner'
 import CategoryTrackTabs from '@/components/CategoryTrackTabs'
 import DailyMessageCard from '@/components/retention/DailyMessageCard'
+import T from '@/components/T'
 
 // ============================================================
 // Home page — Single brand: "خدمات مضمونة"
@@ -100,7 +101,7 @@ export default async function HomePage() {
   const HERO_IMAGE = settings.hero_image_url || DEFAULT_HERO_IMAGE
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7] text-right overflow-x-hidden pb-20 md:pb-0" dir="rtl">
+    <div className="min-h-screen bg-[#FAFAF7] overflow-x-hidden pb-20 md:pb-0">
       <TopNav />
       <MUACampaignBanner />
       <FinancialTicker />
@@ -119,7 +120,7 @@ export default async function HomePage() {
             >
               <span className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors" />
               <ShoppingBag className="w-4 h-4 md:w-5 md:h-5 relative" />
-              <span className="relative">أجر مننا</span>
+              <span className="relative"><T k="home.cta.rent_from_us" /></span>
             </Link>
             <Link
               href="/add-listing"
@@ -127,7 +128,7 @@ export default async function HomePage() {
             >
               <span className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors" />
               <Plus className="w-4 h-4 md:w-5 md:h-5 relative" strokeWidth={3} />
-              <span className="relative">إضافة ليستنج</span>
+              <span className="relative"><T k="nav.add_listing" /></span>
             </Link>
           </div>
         </div>
@@ -155,11 +156,11 @@ export default async function HomePage() {
                 </div>
                 <div>
                   <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F6F5F]">LIVE · EST. 2026</p>
-                  <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-tight">آخر الأخبار</h2>
+                  <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-tight"><T k="home.news.title" /></h2>
                 </div>
               </div>
               <p className="text-[11px] md:text-xs text-gray-500 max-w-md leading-relaxed">
-                أخبار لحظية من أفضل المصادر المصرية والعالمية · تتجدد كل ٣ دقايق
+                <T k="home.news.sub" />
               </p>
             </div>
             <CompactNewsTabs />
@@ -173,27 +174,27 @@ export default async function HomePage() {
               <div>
                 <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2FA084] mb-3">COLLECTIONS</p>
                 <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
-                  <span className="block">ابحث في</span>
-                  <span className="block italic font-light gradient-text-green">الخدمات والإيجارات</span>
+                  <span className="block"><T k="home.cats.title1" /></span>
+                  <span className="block italic font-light gradient-text-green"><T k="home.cats.title2" /></span>
                 </h2>
               </div>
               <Link href="/marketplace" className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-gray-900 hover:text-[#1F6F5F] transition-colors no-underline">
-                <span>شوف الكل</span>
-                <ArrowLeft className="w-4 h-4" />
+                <span><T k="home.see_all" /></span>
+                <ArrowLeft className="w-4 h-4 rtl:rotate-0 ltr:rotate-180" />
               </Link>
             </div>
 
             {rootCategories.length === 0 ? (
               <div className="text-center py-12 text-gray-400 text-sm">
-                لسه مفيش فئات. <Link href="/marketplace" className="text-[#1F6F5F] font-bold no-underline">شوف الكل</Link>
+                <T k="home.cats.empty" /> <Link href="/marketplace" className="text-[#1F6F5F] font-bold no-underline"><T k="home.see_all" /></Link>
               </div>
             ) : (
               <CategoryTrackTabs categories={rootCategories} />
             )}
 
             <Link href="/marketplace" className="md:hidden mt-6 inline-flex items-center gap-2 text-sm font-bold text-gray-900 no-underline">
-              <span>شوف الكل</span>
-              <ArrowLeft className="w-4 h-4" />
+              <span><T k="home.see_all" /></span>
+              <ArrowLeft className="w-4 h-4 rtl:rotate-0 ltr:rotate-180" />
             </Link>
           </div>
         </section>
@@ -204,8 +205,8 @@ export default async function HomePage() {
             <div className="mb-10 md:mb-14">
               <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2FA084] mb-3">FEATURED</p>
               <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
-                <span className="block">المختار</span>
-                <span className="block italic font-light gradient-text-green">بعناية</span>
+                <span className="block"><T k="home.featured.title1" /></span>
+                <span className="block italic font-light gradient-text-green"><T k="home.featured.title2" /></span>
               </h2>
             </div>
             <FeaturedListings />
@@ -218,15 +219,15 @@ export default async function HomePage() {
             <div className="text-center mb-14">
               <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2FA084] mb-3">THE PROCESS</p>
               <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
-                <span className="block">٣ خطوات،</span>
-                <span className="block italic font-light gradient-text-green">حجز مضمون</span>
+                <span className="block"><T k="home.how.title1" /></span>
+                <span className="block italic font-light gradient-text-green"><T k="home.how.title2" /></span>
               </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-              <Step num="01" title="استكشف" description="اتصفّح الخدمات أو ابحث في فئة معينة. شوف الأسعار والصور قبل أي قرار." icon={<Compass className="w-6 h-6" />} iconAccent="text-[#1F6F5F] bg-[#1F6F5F]/10" />
-              <Step num="02" title="احجز" description="اختار الوقت اللي يناسبك واحجز فوراً. تأكيد على واتساب من صاحب الإعلان مباشرة." icon={<Zap className="w-6 h-6" />} iconAccent="text-[#2FA084] bg-[#2FA084]/10" />
-              <Step num="03" title="استمتع" description="ادفع كاش أو InstaPay. مفيش هيدن فيز. ومتأمن إنك مش هتلاقي مفاجآت." icon={<ShieldCheck className="w-6 h-6" />} iconAccent="text-[#6FCF97] bg-[#6FCF97]/10" />
+              <Step num="01" title={<T k="home.how.s1.title" />} description={<T k="home.how.s1.desc" />} icon={<Compass className="w-6 h-6" />} iconAccent="text-[#1F6F5F] bg-[#1F6F5F]/10" />
+              <Step num="02" title={<T k="home.how.s2.title" />} description={<T k="home.how.s2.desc" />} icon={<Zap className="w-6 h-6" />} iconAccent="text-[#2FA084] bg-[#2FA084]/10" />
+              <Step num="03" title={<T k="home.how.s3.title" />} description={<T k="home.how.s3.desc" />} icon={<ShieldCheck className="w-6 h-6" />} iconAccent="text-[#6FCF97] bg-[#6FCF97]/10" />
             </div>
           </div>
         </section>
@@ -236,8 +237,8 @@ export default async function HomePage() {
           <div className="max-w-7xl mx-auto px-4">
             <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2FA084] mb-3 text-center">GET IN TOUCH</p>
             <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-[0.95] text-center mb-10">
-              تواصل
-              <span className="italic font-light gradient-text-green"> معانا</span>
+              <T k="home.contact.title1" />
+              <span className="italic font-light gradient-text-green"> <T k="home.contact.title2" /></span>
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-5xl mx-auto">
@@ -246,7 +247,7 @@ export default async function HomePage() {
                   <MessageCircle className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-gray-900">واتساب</p>
+                  <p className="font-bold text-gray-900"><T k="home.contact.whatsapp" /></p>
                   <p className="text-xs text-gray-500 mt-0.5" dir="ltr">+20 100 222 9982 · 24/7</p>
                 </div>
                 <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#25D366] group-hover:-translate-x-1 transition-all" />
@@ -257,8 +258,8 @@ export default async function HomePage() {
                   <MapPin className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-gray-900">٧ شارع سليمان عَزْمي</p>
-                  <p className="text-xs text-gray-500 mt-0.5">النزهة، مصر الجديدة · ٩ ص → ١١ م</p>
+                  <p className="font-bold text-gray-900"><T k="home.contact.address" /></p>
+                  <p className="text-xs text-gray-500 mt-0.5"><T k="home.contact.address_sub" /></p>
                 </div>
                 <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#1F6F5F] group-hover:-translate-x-1 transition-all" />
               </a>
@@ -269,8 +270,8 @@ export default async function HomePage() {
                   <Star className="w-6 h-6 text-white fill-white" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-gray-900">قيّمنا على جوجل</p>
-                  <p className="text-xs text-gray-500 mt-0.5">رأيك بيفرق معانا</p>
+                  <p className="font-bold text-gray-900"><T k="home.contact.rate" /></p>
+                  <p className="text-xs text-gray-500 mt-0.5"><T k="home.contact.rate_sub" /></p>
                 </div>
                 <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#FBBC04] group-hover:-translate-x-1 transition-all" />
               </a>
@@ -281,8 +282,8 @@ export default async function HomePage() {
         {/* FOOTER */}
         <footer className="py-12 md:py-16 border-t border-gray-200 bg-white">
           <div className="max-w-7xl mx-auto px-4 text-center">
-            <p className="font-black text-3xl gradient-text-green mb-2">مضمونة</p>
-            <p className="text-xs text-gray-500 mb-6 tracking-[0.2em] uppercase">Your service, guaranteed · احنا بتوع الإيجار</p>
+            <p className="font-black text-3xl gradient-text-green mb-2"><T k="common.brand" /></p>
+            <p className="text-xs text-gray-500 mb-6 tracking-[0.2em] uppercase"><T k="footer.tagline" /></p>
 
             {/* Social media icons (smart-hide if URL empty) */}
             <div className="mb-8">
@@ -290,17 +291,17 @@ export default async function HomePage() {
             </div>
 
             <div className="flex justify-center items-center gap-3 text-xs flex-wrap mb-6 px-4">
-              <Link href="/about" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors">عن مضمونة</Link>
+              <Link href="/about" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors"><T k="footer.about_link" /></Link>
               <span className="text-gray-300">·</span>
-              <Link href="/marketplace" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors">خدمات مضمونة</Link>
+              <Link href="/marketplace" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors"><T k="footer.services_link" /></Link>
               <span className="text-gray-300">·</span>
-              <Link href="/privacy" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors">الخصوصية</Link>
+              <Link href="/privacy" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors"><T k="footer.privacy" /></Link>
               <span className="text-gray-300">·</span>
-              <Link href="/terms" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors">الشروط</Link>
+              <Link href="/terms" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors"><T k="footer.terms" /></Link>
               <span className="text-gray-300">·</span>
-              <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors">واتساب</a>
+              <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors"><T k="footer.whatsapp" /></a>
             </div>
-            <p className="text-[10px] text-gray-400">© 2026 Madmona. جميع الحقوق محفوظة.</p>
+            <p className="text-[10px] text-gray-400"><T k="footer.copyright" /></p>
           </div>
         </footer>
       </main>
@@ -340,7 +341,7 @@ function CategoryCard({ href, image, label, sublabel, count, icon, className = '
   )
 }
 
-function Step({ num, title, description, icon, iconAccent }: { num: string; title: string; description: string; icon: React.ReactNode; iconAccent: string }) {
+function Step({ num, title, description, icon, iconAccent }: { num: string; title: React.ReactNode; description: React.ReactNode; icon: React.ReactNode; iconAccent: string }) {
   return (
     <div className="relative bg-white rounded-3xl p-6 md:p-8 shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-500 overflow-hidden">
       <div className="absolute top-4 left-6 text-7xl md:text-8xl font-black text-gray-100 leading-none -z-0 select-none">{num}</div>

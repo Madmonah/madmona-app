@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Compass, Heart, User } from 'lucide-react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 // ============================================================
 // BottomNav — mobile-only bottom navigation
@@ -11,18 +12,19 @@ import { Home, Compass, Heart, User } from 'lucide-react'
 // ============================================================
 
 export default function BottomNav() {
+  const { t, dir } = useT()
   const pathname = usePathname() || '/'
 
   const tabs = [
-    { href: '/', label: 'الرئيسية', icon: Home, match: (p: string) => p === '/' },
-    { href: '/marketplace', label: 'Marketplace', icon: Compass, match: (p: string) => p.startsWith('/marketplace') },
-    { href: '/account/favorites', label: 'المفضلة', icon: Heart, match: (p: string) => p.startsWith('/account/favorites') },
-    { href: '/account', label: 'حسابي', icon: User, match: (p: string) => p === '/account' || (p.startsWith('/account') && !p.startsWith('/account/favorites')) },
+    { href: '/', label: t('nav.home'), icon: Home, match: (p: string) => p === '/' },
+    { href: '/marketplace', label: t('nav.marketplace'), icon: Compass, match: (p: string) => p.startsWith('/marketplace') },
+    { href: '/account/favorites', label: t('nav.favorites'), icon: Heart, match: (p: string) => p.startsWith('/account/favorites') },
+    { href: '/account', label: t('nav.account'), icon: User, match: (p: string) => p === '/account' || (p.startsWith('/account') && !p.startsWith('/account/favorites')) },
   ]
 
   return (
     <nav
-      dir="rtl"
+      dir={dir}
       className="fixed bottom-0 inset-x-0 z-40 md:hidden glass border-t border-white/40 shadow-luxe"
     >
       <div className="grid grid-cols-4 max-w-md mx-auto">
@@ -40,7 +42,7 @@ export default function BottomNav() {
               <div className={`relative ${active ? 'scale-110' : ''} transition-transform`}>
                 <Icon className={`w-5 h-5 ${active ? 'fill-[#1F6F5F]/10' : ''}`} strokeWidth={active ? 2.5 : 2} />
                 {active && (
-                  <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#2FA084]" />
+                  <span className="absolute -top-1 ltr:-left-1 rtl:-right-1 w-1.5 h-1.5 rounded-full bg-[#2FA084]" />
                 )}
               </div>
               <span className={`text-[10px] ${active ? 'font-bold' : 'font-medium'}`}>
