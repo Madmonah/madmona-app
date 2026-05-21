@@ -1,0 +1,16 @@
+{
+  "name": "Elite Beauty Salon & Spa",
+  "short_name": "Elite",
+  "description": "احجزي في Elite — حجز فوري وأمان كامل، على منصّة مضمونة",
+  "start_url": "/elite",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAFAF7",
+  "theme_color": "#1F6F5F",
+  "icons": [
+    { "src": "/brand/elite-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/elite-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/elite-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

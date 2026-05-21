@@ -154,14 +154,10 @@ function Hub({ branchCode, info, branding, router }: any) {
 }
 
 function BookTab({ branchCode, router, setPanel, hasProducts }: any) {
-  const acts = [
-    { k: 'tip', icon: Gift, title: 'اكرامية للستايلست', sub: 'قدّري شغلهم', onClick: () => setPanel('tip') },
-    { k: 'rate', icon: Star, title: 'قيّمي زيارتك', sub: 'رأيك يفرق', onClick: () => setPanel('rate') },
-    ...(hasProducts ? [{ k: 'products', icon: ShoppingBag, title: 'المنتجات', sub: 'اللي بنبيعه', onClick: () => setPanel('products') }] : []),
-    { k: 'acc', icon: User, title: 'حسابي', sub: 'حجوزاتك وتقييماتك', onClick: () => router.push('/home') },
-  ]
+  const tile = 'bg-white border border-gray-100 rounded-2xl p-4 text-right active:scale-[0.98] transition-all hover:border-[#1F6F5F]/40 hover:shadow-md hover:shadow-[#1A2E26]/5'
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* PRIMARY: book */}
       <button onClick={() => router.push(`/book/${branchCode}`)}
         className="w-full bg-[#1F6F5F] text-white rounded-2xl p-5 flex items-center justify-between shadow-lg shadow-[#1F6F5F]/20 active:scale-[0.99] transition-transform">
         <div className="flex items-center gap-3 text-right">
@@ -173,14 +169,39 @@ function BookTab({ branchCode, router, setPanel, hasProducts }: any) {
         </div>
         <ChevronRight className="w-5 h-5 text-white/70" />
       </button>
+
+      {/* QUICK: products + account */}
       <div className="grid grid-cols-2 gap-3">
-        {acts.map((a: any) => (
-          <button key={a.k} onClick={a.onClick} className="bg-white border border-gray-100 rounded-2xl p-4 text-right active:scale-[0.98] transition-all hover:border-[#1F6F5F]/40 hover:shadow-md hover:shadow-[#1A2E26]/5">
-            <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center mb-2.5"><a.icon className="w-5 h-5" /></div>
-            <p className="font-black text-sm text-[#1A2E26]">{a.title}</p>
-            <p className="text-[11px] text-[#6B7280] mt-0.5">{a.sub}</p>
+        {hasProducts && (
+          <button onClick={() => setPanel('products')} className={tile}>
+            <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center mb-2.5"><ShoppingBag className="w-5 h-5" /></div>
+            <p className="font-black text-sm text-[#1A2E26]">المنتجات</p>
+            <p className="text-[11px] text-[#6B7280] mt-0.5">اللي بنبيعه</p>
           </button>
-        ))}
+        )}
+        <button onClick={() => router.push('/home')} className={tile}>
+          <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center mb-2.5"><User className="w-5 h-5" /></div>
+          <p className="font-black text-sm text-[#1A2E26]">حسابي</p>
+          <p className="text-[11px] text-[#6B7280] mt-0.5">حجوزاتك وتقييماتك</p>
+        </button>
+      </div>
+
+      {/* AFTER SERVICE: tip + rate */}
+      <div className="bg-[#1F6F5F]/[0.06] border border-[#1F6F5F]/15 rounded-2xl p-4">
+        <p className="text-[11px] font-black tracking-wider uppercase text-[#1F6F5F] mb-0.5 flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> بعد ما تخلّصي خدمتك</p>
+        <p className="text-[12px] text-[#6B7280] mb-3">كرّمي اللي خدمك وقوليلنا رأيك 👇</p>
+        <div className="grid grid-cols-2 gap-3">
+          <button onClick={() => setPanel('tip')} className={tile}>
+            <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center mb-2.5"><Gift className="w-5 h-5" /></div>
+            <p className="font-black text-sm text-[#1A2E26]">اكرامية للستايلست</p>
+            <p className="text-[11px] text-[#6B7280] mt-0.5">قدّري شغلهم</p>
+          </button>
+          <button onClick={() => setPanel('rate')} className={tile}>
+            <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center mb-2.5"><Star className="w-5 h-5" /></div>
+            <p className="font-black text-sm text-[#1A2E26]">قيّمي زيارتك</p>
+            <p className="text-[11px] text-[#6B7280] mt-0.5">رأيك يفرق</p>
+          </button>
+        </div>
       </div>
     </div>
   )
