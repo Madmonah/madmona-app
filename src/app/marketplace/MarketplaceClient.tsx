@@ -10,11 +10,13 @@ import {
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 interface Category {
   id: string
   parent_id: string | null
   name_ar: string
+  name_en?: string | null
   slug: string
   icon: string | null
   track?: 'rentals' | 'services' | 'hybrid' | null
@@ -31,7 +33,7 @@ interface Listing {
   status: string
   created_at: string
   requires_id_verification: boolean | null
-  category: { name_ar: string; icon: string | null; slug: string } | null
+  category: { name_ar: string; name_en: string | null; icon: string | null; slug: string } | null
   supplier: { kyc_status: string | null } | null
   photos: { url: string; is_primary: boolean }[] | null
   pricing: { price: number | string; is_active: boolean }[] | null
@@ -40,19 +42,19 @@ interface Listing {
 type SortOption = 'newest' | 'price_asc' | 'price_desc' | 'rating'
 
 const SORT_LABELS: Record<SortOption, string> = {
-  newest: 'الأحدث',
-  price_asc: 'السعر: من الأقل',
-  price_desc: 'السعر: من الأعلى',
-  rating: 'الأعلى تقييماً',
+  newest: 'market.sort_newest',
+  price_asc: 'market.sort_price_asc',
+  price_desc: 'market.sort_price_desc',
+  rating: 'market.sort_rating',
 }
 
 type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid'
 
 const TRACK_LABELS: Record<TrackTab, string> = {
-  all: 'الكل',
-  rentals: 'إيجار',
-  services: 'خدمات',
-  hybrid: 'هايبرد',
+  all: 'market.track_all',
+  rentals: 'market.track_rentals',
+  services: 'market.track_services',
+  hybrid: 'market.track_hybrid',
 }
 
 const TRACK_EMOJI: Record<TrackTab, string> = {
@@ -63,6 +65,7 @@ const TRACK_EMOJI: Record<TrackTab, string> = {
 }
 
 function MarketplaceBrowseContent() {
+  const { t, lang, dir } = useT()
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialCategorySlug = searchParams.get('category')
@@ -106,7 +109,7 @@ function MarketplaceBrowseContent() {
       // @ts-expect-error
       const { data } = await supabaseBrowser
         .from('categories')
-        .select('id, parent_id, name_ar, slug, icon, track, also_show_in')
+        .select('id, parent_id, name_ar, name_en, slug, icon, track, also_show_in')
         .eq('is_active', true)
         .order('display_order', { ascending: true })
       setAllCategories(data || [])
@@ -161,7 +164,7 @@ function MarketplaceBrowseContent() {
         .from('listings')
         .select(`
           id, title, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification,
-          category:categories(name_ar, icon, slug),
+          category:categories(name_ar, name_en, icon, slug),
           supplier:marketplace_suppliers(kyc_status),
           photos:listing_photos(url, is_primary),
           pricing:pricing_rules(price, is_active)
@@ -266,7 +269,12 @@ function MarketplaceBrowseContent() {
         return false
       })
     : []
-  const selectedCategoryName = allCategories.find(c => c.slug === selectedCategorySlug)?.name_ar
+  const selectedCategoryNameRaw = allCategories.find(c => c.slug === selectedCategorySlug)
+  const selectedCategoryName = selectedCategoryNameRaw
+    ? (lang === 'en' && selectedCategoryNameRaw.name_en ? selectedCategoryNameRaw.name_en : selectedCategoryNameRaw.name_ar)
+    : undefined
+  const catName = (c: { name_ar: string; name_en?: string | null }) =>
+    lang === 'en' && c.name_en ? c.name_en : c.name_ar
   const hasFilters = selectedCategorySlug || searchQuery || cityFilter || sortBy !== 'newest'
 
   const clearAllFilters = () => {
@@ -277,7 +285,7 @@ function MarketplaceBrowseContent() {
   }
 
   return (
-    <div className="min-h-screen gradient-mesh pb-20 md:pb-0" dir="rtl">
+    <div className="min-h-screen gradient-mesh pb-20 md:pb-0" dir={dir}>
       <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#1F6F5F]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
       <div className="fixed top-40 left-20 w-[300px] h-[300px] bg-[#2FA084]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
 
@@ -301,7 +309,7 @@ function MarketplaceBrowseContent() {
               <Link
                 href="/account"
                 className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all flex-shrink-0"
-                title="حسابي"
+                title={t('nav.account')}
               >
                 <User className="w-4 h-4 text-gray-700" />
               </Link>
@@ -311,7 +319,7 @@ function MarketplaceBrowseContent() {
                 className="inline-flex items-center gap-1 px-4 py-2 bg-[#1F6F5F] text-white rounded-full text-xs font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all flex-shrink-0"
               >
                 <LogIn className="w-3.5 h-3.5" />
-                دخول
+                {t('market.login')}
               </Link>
             ) : null}
           </div>
@@ -322,39 +330,39 @@ function MarketplaceBrowseContent() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="ابحث عن مساحة، عقار، عربية، معدات..."
+              placeholder={t('market.search_placeholder')}
               className="w-full pr-12 pl-4 py-3.5 bg-white/80 backdrop-blur border border-gray-100 rounded-2xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all shadow-soft"
             />
           </div>
 
           {/* Track tabs (hierarchy filter: all/rentals/services/hybrid) */}
           <div className="flex gap-2 mt-4 overflow-x-auto pb-1 -mx-4 px-4">
-            {(['all', 'rentals', 'services', 'hybrid'] as TrackTab[]).map(t => {
-              const count = t === 'all'
+            {(['all', 'rentals', 'services', 'hybrid'] as TrackTab[]).map(tab => {
+              const count = tab === 'all'
                 ? allRootCategories.length
-                : allRootCategories.filter(c => c.track === t).length
+                : allRootCategories.filter(c => c.track === tab).length
               return (
                 <button
-                  key={t}
+                  key={tab}
                   onClick={() => {
-                    setActiveTrack(t)
+                    setActiveTrack(tab)
                     // Clear category selection if it doesn't belong to the new track
                     if (selectedRootSlug) {
                       const stillVisible = allRootCategories.some(
-                        c => c.slug === selectedRootSlug && (t === 'all' || c.track === t)
+                        c => c.slug === selectedRootSlug && (tab === 'all' || c.track === tab)
                       )
                       if (!stillVisible) setSelectedCategorySlug(null)
                     }
                   }}
                   className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold border transition-all shadow-soft flex items-center gap-1.5 ${
-                    activeTrack === t
+                    activeTrack === tab
                       ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white shadow-elevated'
                       : 'bg-white border-gray-100 text-gray-700 hover:shadow-card'
                   }`}
                 >
-                  <span>{TRACK_EMOJI[t]}</span>
-                  <span>{TRACK_LABELS[t]}</span>
-                  <span className={`text-[10px] ${activeTrack === t ? 'opacity-80' : 'text-gray-400'}`}>
+                  <span>{TRACK_EMOJI[tab]}</span>
+                  <span>{t(TRACK_LABELS[tab])}</span>
+                  <span className={`text-[10px] ${activeTrack === tab ? 'opacity-80' : 'text-gray-400'}`}>
                     ({count})
                   </span>
                 </button>
@@ -366,7 +374,7 @@ function MarketplaceBrowseContent() {
             <CategoryPill
               active={!selectedCategorySlug}
               onClick={() => setSelectedCategorySlug(null)}
-              label="الكل"
+              label={t('market.track_all')}
               icon="✨"
             />
             {rootCategories.map(cat => (
@@ -374,7 +382,7 @@ function MarketplaceBrowseContent() {
                 key={cat.id}
                 active={selectedRootSlug === cat.slug}
                 onClick={() => setSelectedCategorySlug(cat.slug)}
-                label={cat.name_ar}
+                label={catName(cat)}
                 icon={cat.icon || ''}
               />
             ))}
@@ -391,7 +399,7 @@ function MarketplaceBrowseContent() {
                     : 'bg-white/80 text-gray-600 hover:bg-white border border-gray-100'
                 }`}
               >
-                كل الأقسام
+                {t('market.all_sections')}
               </button>
               {subCategories.map(sub => (
                 <button
@@ -404,7 +412,7 @@ function MarketplaceBrowseContent() {
                   }`}
                 >
                   {sub.icon && <span>{sub.icon}</span>}
-                  <span>{sub.name_ar}</span>
+                  <span>{catName(sub)}</span>
                 </button>
               ))}
             </div>
@@ -421,7 +429,7 @@ function MarketplaceBrowseContent() {
                 }`}
               >
                 <SlidersHorizontal className="w-3 h-3" />
-                <span>{SORT_LABELS[sortBy]}</span>
+                <span>{t(SORT_LABELS[sortBy])}</span>
                 <ChevronDown className={`w-3 h-3 transition-transform ${sortMenuOpen ? 'rotate-180' : ''}`} />
               </button>
               {sortMenuOpen && (
@@ -430,11 +438,11 @@ function MarketplaceBrowseContent() {
                     <button
                       key={option}
                       onClick={() => { setSortBy(option); setSortMenuOpen(false) }}
-                      className={`w-full text-right px-4 py-2.5 text-xs hover:bg-[#1F6F5F]/5 font-medium transition-colors ${
+                      className={`w-full text-start px-4 py-2.5 text-xs hover:bg-[#1F6F5F]/5 font-medium transition-colors ${
                         sortBy === option ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'text-gray-700'
                       }`}
                     >
-                      {SORT_LABELS[option]}
+                      {t(SORT_LABELS[option])}
                     </button>
                   ))}
                 </div>
@@ -452,24 +460,24 @@ function MarketplaceBrowseContent() {
                   }`}
                 >
                   <MapPin className="w-3 h-3" />
-                  <span>{cityFilter || 'كل المدن'}</span>
+                  <span>{cityFilter || t('market.all_cities')}</span>
                   <ChevronDown className={`w-3 h-3 transition-transform ${cityMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {cityMenuOpen && (
                   <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-2xl shadow-luxe border border-gray-100 z-50 overflow-hidden max-h-72 overflow-y-auto animate-scale-in">
                     <button
                       onClick={() => { setCityFilter(null); setCityMenuOpen(false) }}
-                      className={`w-full text-right px-4 py-2.5 text-xs hover:bg-[#1F6F5F]/5 font-medium transition-colors ${
+                      className={`w-full text-start px-4 py-2.5 text-xs hover:bg-[#1F6F5F]/5 font-medium transition-colors ${
                         !cityFilter ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'text-gray-700'
                       }`}
                     >
-                      كل المدن
+                      {t('market.all_cities')}
                     </button>
                     {cities.map(city => (
                       <button
                         key={city}
                         onClick={() => { setCityFilter(city); setCityMenuOpen(false) }}
-                        className={`w-full text-right px-4 py-2.5 text-xs hover:bg-[#1F6F5F]/5 font-medium transition-colors ${
+                        className={`w-full text-start px-4 py-2.5 text-xs hover:bg-[#1F6F5F]/5 font-medium transition-colors ${
                           cityFilter === city ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'text-gray-700'
                         }`}
                       >
@@ -487,7 +495,7 @@ function MarketplaceBrowseContent() {
                 className="flex items-center gap-1 px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-50 rounded-full transition-colors"
               >
                 <X className="w-3 h-3" />
-                مسح الفلاتر
+                {t('market.clear_filters')}
               </button>
             )}
           </div>
@@ -501,14 +509,14 @@ function MarketplaceBrowseContent() {
               <h2 className="text-2xl md:text-3xl font-black text-gray-900">
                 <span className="tabular">{filteredListings.length}</span>{' '}
                 <span className="font-semibold text-gray-500">
-                  {selectedCategoryName ? `في ${selectedCategoryName}` : 'نتيجة'}
+                  {selectedCategoryName ? t('market.in_category', { cat: selectedCategoryName }) : t('market.results_word')}
                 </span>
               </h2>
               {(searchQuery || cityFilter) && (
                 <p className="text-sm text-gray-500 mt-1">
-                  {searchQuery && <span>لـ &quot;<strong className="text-gray-700">{searchQuery}</strong>&quot;</span>}
+                  {searchQuery && <span>{t('market.for_query')} &quot;<strong className="text-gray-700">{searchQuery}</strong>&quot;</span>}
                   {searchQuery && cityFilter && <span> · </span>}
-                  {cityFilter && <span>في <strong className="text-gray-700">{cityFilter}</strong></span>}
+                  {cityFilter && <span>{t('market.in_city')} <strong className="text-gray-700">{cityFilter}</strong></span>}
                 </p>
               )}
             </div>
@@ -533,15 +541,15 @@ function MarketplaceBrowseContent() {
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center">
               <Search className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-xl font-black text-gray-900 mb-2">مفيش نتائج</h3>
-            <p className="text-sm text-gray-500 mb-6">جرّب بحث مختلف أو فلتر تاني</p>
+            <h3 className="text-xl font-black text-gray-900 mb-2">{t('market.no_results_title')}</h3>
+            <p className="text-sm text-gray-500 mb-6">{t('market.no_results_sub')}</p>
             {hasFilters && (
               <button
                 onClick={clearAllFilters}
                 className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#1F6F5F] text-white rounded-2xl text-sm font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
               >
                 <Sparkles className="w-4 h-4" />
-                مسح كل الفلاتر
+                {t('market.clear_all_filters')}
               </button>
             )}
           </div>
@@ -585,7 +593,7 @@ function MarketplaceBrowseContent() {
                     {isDemo && (
                       <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-l from-amber-400 to-amber-300 text-amber-900 rounded-full text-[10px] font-black shadow-card border border-amber-500/30">
                         <Clock className="w-2.5 h-2.5" />
-                        <span>قريباً · نموذج</span>
+                        <span>{t('market.demo_badge')}</span>
                       </div>
                     )}
 
@@ -593,7 +601,7 @@ function MarketplaceBrowseContent() {
                       onClick={(e) => toggleFavorite(e, listing.id)}
                       disabled={togglingFav === listing.id}
                       className="absolute top-3 left-3 w-9 h-9 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white shadow-card disabled:opacity-50 hover:scale-105 transition-all"
-                      title={isFav ? 'إزالة من المفضلة' : 'حفظ في المفضلة'}
+                      title={isFav ? t('market.remove_fav') : t('market.save_fav')}
                     >
                       {togglingFav === listing.id ? (
                         <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
@@ -605,7 +613,7 @@ function MarketplaceBrowseContent() {
                     {listing.category && (
                       <div className={`absolute ${isDemo ? 'bottom-12' : 'top-3'} right-3 inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold text-gray-800`}>
                         <span>{listing.category.icon}</span>
-                        <span>{listing.category.name_ar}</span>
+                        <span>{catName(listing.category)}</span>
                       </div>
                     )}
 
@@ -629,13 +637,13 @@ function MarketplaceBrowseContent() {
                         {listing.supplier?.kyc_status === 'approved' && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 border border-green-200 rounded-full text-[10px] font-bold text-green-700">
                             <CheckCircle className="w-2.5 h-2.5" />
-                            موثّق
+                            {t('market.verified')}
                           </span>
                         )}
                         {listing.requires_id_verification && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#2FA084]/10 border border-[#2FA084]/30 rounded-full text-[10px] font-bold text-[#2FA084]">
                             <ShieldCheck className="w-2.5 h-2.5" />
-                            بطاقة مطلوبة
+                            {t('market.id_required')}
                           </span>
                         )}
                       </div>
@@ -644,7 +652,7 @@ function MarketplaceBrowseContent() {
                     {(listing.district || listing.city) && (
                       <p className="text-xs text-gray-500 flex items-center gap-1 mb-3">
                         <MapPin className="w-3 h-3" />
-                        {[listing.district, listing.city].filter(Boolean).join('، ')}
+                        {[listing.district, listing.city].filter(Boolean).join(lang === 'ar' ? '، ' : ', ')}
                       </p>
                     )}
 
@@ -653,23 +661,23 @@ function MarketplaceBrowseContent() {
                         {isDemo ? (
                           <p className="text-[10px] text-amber-700 font-bold flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            متوفر قريباً
+                            {t('market.coming_soon')}
                           </p>
                         ) : startingPrice !== null ? (
                           <>
-                            <p className="text-[10px] text-gray-500 font-medium">يبدأ من</p>
+                            <p className="text-[10px] text-gray-500 font-medium">{t('market.starts_from')}</p>
                             <p className="text-xl font-black text-[#1F6F5F] leading-none mt-0.5 tabular">
-                              {startingPrice.toLocaleString('ar-EG')}
-                              <span className="text-xs font-medium text-gray-500 mr-1">ج.م</span>
+                              {startingPrice.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
+                              <span className="text-xs font-medium text-gray-500 ms-1">{t('common.egp')}</span>
                             </p>
                           </>
                         ) : (
-                          <p className="text-xs text-gray-400 font-medium">السعر عند الطلب</p>
+                          <p className="text-xs text-gray-400 font-medium">{t('market.price_on_request')}</p>
                         )}
                       </div>
                       <div className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold text-xs group-hover:gap-2 transition-all">
-                        <span>{isDemo ? 'عرض' : 'تفاصيل'}</span>
-                        <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+                        <span>{isDemo ? t('market.view_short') : t('market.details')}</span>
+                        <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
                       </div>
                     </div>
                   </div>
