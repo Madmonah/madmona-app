@@ -78,6 +78,17 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [])
 
+  // Preselect a service if arriving from the visit hub (?service=ID)
+  useEffect(() => {
+    if (!data?.services?.length || selectedService) return
+    const sid = new URLSearchParams(window.location.search).get('service')
+    if (sid) {
+      const svc = data.services.find((s: any) => s.id === sid)
+      if (svc) { setSelectedService(svc); setStep('stylist') }
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [data])
+
   useEffect(() => { if (selectedDate) loadSlots(selectedDate) /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [selectedDate, selectedStylist])
 
   async function submitBooking() {
