@@ -140,9 +140,9 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
           <p className="text-sm text-white/90 mt-1 flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {branch?.name}</p>
           {step !== 'done' && (
             <div className="mt-4 flex gap-2 text-[10px] font-bold tracking-wider uppercase flex-wrap">
-              <StepBadge label="الخدمة" active={step === 'service'} done={['datetime','stylist','info','confirm'].includes(step)} />
-              <StepBadge label="الموعد" active={step === 'datetime'} done={['stylist','info','confirm'].includes(step)} />
-              <StepBadge label="الستايليست" active={step === 'stylist'} done={['info','confirm'].includes(step)} />
+              <StepBadge label="الخدمة" active={step === 'service'} done={['stylist','datetime','info','confirm'].includes(step)} />
+              <StepBadge label="الستايليست" active={step === 'stylist'} done={['datetime','info','confirm'].includes(step)} />
+              <StepBadge label="الموعد" active={step === 'datetime'} done={['info','confirm'].includes(step)} />
               <StepBadge label="بياناتك" active={step === 'info'} done={step === 'confirm'} />
               <StepBadge label="تأكيد" active={step === 'confirm'} done={false} />
             </div>
@@ -166,7 +166,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 </div>
                 <div className="divide-y divide-gray-100">
                   {items.map((svc: any) => (
-                    <button key={svc.id} onClick={() => { setSelectedService(svc); setStep('datetime') }} className="w-full text-right px-4 py-3 flex items-center justify-between gap-3 hover:bg-[#FAFAF7]/50 transition-colors">
+                    <button key={svc.id} onClick={() => { setSelectedService(svc); setStep('stylist') }} className="w-full text-right px-4 py-3 flex items-center justify-between gap-3 hover:bg-[#FAFAF7]/50 transition-colors">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-[#1A2E26]">{svc.name_ar}</p>
                         {svc.description && <p className="text-[10px] text-[#6B7280] mt-0.5">{svc.description}</p>}
@@ -184,7 +184,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
 
         {step === 'datetime' && (
           <div className="space-y-4">
-            <BackBtn onClick={() => setStep('service')} />
+            <BackBtn onClick={() => setStep('stylist')} />
             <h2 className="text-lg font-black text-[#1A2E26]">اختاري التاريخ والوقت</h2>
             <div className="flex gap-2 overflow-x-auto pb-2">
               {dateOptions.map(d => {
@@ -211,7 +211,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 {loadingSlots ? <div className="py-6 text-center"><Loader2 className="w-5 h-5 text-[#1F6F5F] animate-spin inline" /></div> : (
                   <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
                     {slots.map((slot: any) => (
-                      <button key={slot.time} disabled={!slot.available} onClick={() => { setSelectedTime(slot.time); setStep('stylist') }} className={`px-3 py-2 rounded-lg text-sm font-bold transition-all ${!slot.available ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : selectedTime === slot.time ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-[#1F6F5F]/10'}`}>{slot.time.slice(0, 5)}</button>
+                      <button key={slot.time} disabled={!slot.available} onClick={() => { setSelectedTime(slot.time); setStep('info') }} className={`px-3 py-2 rounded-lg text-sm font-bold transition-all ${!slot.available ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : selectedTime === slot.time ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-[#1F6F5F]/10'}`}>{slot.time.slice(0, 5)}</button>
                     ))}
                   </div>
                 )}
@@ -266,9 +266,9 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
 
         {step === 'stylist' && (
           <div className="space-y-4">
-            <BackBtn onClick={() => setStep('datetime')} />
+            <BackBtn onClick={() => setStep('service')} />
             <h2 className="text-lg font-black text-[#1A2E26]">اختاري الستايليست (اختياري)</h2>
-            <button onClick={() => { setSelectedStylist(null); setStep('info') }} className="w-full bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 hover:border-[#1F6F5F] text-right transition-colors">
+            <button onClick={() => { setSelectedStylist(null); setStep('datetime') }} className="w-full bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 hover:border-[#1F6F5F] text-right transition-colors">
               <div className="w-12 h-12 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center"><Sparkles className="w-5 h-5" /></div>
               <div className="flex-1"><p className="text-sm font-black text-[#1A2E26]">أي ستايليست متاحة</p><p className="text-[10px] text-[#6B7280] mt-0.5">الفرع هـ يختار أفضل ستايليست متاح</p></div>
               <ChevronLeft className="w-4 h-4 text-[#6B7280]" />
@@ -276,7 +276,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
             <p className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mt-4">أو اختاري ستايليست محدد:</p>
             <div className="space-y-2">
               {stylists.map((s: any) => (
-                <button key={s.id} onClick={() => { setSelectedStylist(s); setStep('info') }} className="w-full bg-white rounded-2xl border border-gray-100 p-3 flex items-center gap-3 hover:border-[#1F6F5F] text-right transition-colors">
+                <button key={s.id} onClick={() => { setSelectedStylist(s); setStep('datetime') }} className="w-full bg-white rounded-2xl border border-gray-100 p-3 flex items-center gap-3 hover:border-[#1F6F5F] text-right transition-colors">
                   <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center font-black">{s.avatar_initial || s.full_name.charAt(0)}</div>
                   <div className="flex-1"><p className="text-sm font-bold text-[#1A2E26]">{s.full_name}</p><p className="text-[10px] text-[#6B7280] mt-0.5">{s.role_ar}</p></div>
                   <ChevronLeft className="w-4 h-4 text-[#6B7280]" />
@@ -288,7 +288,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
 
         {step === 'info' && (
           <div className="space-y-4">
-            <BackBtn onClick={() => setStep('stylist')} />
+            <BackBtn onClick={() => setStep('datetime')} />
             <h2 className="text-lg font-black text-[#1A2E26]">بياناتك للتواصل</h2>
             <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
               <Field label="الاسم *"><input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="اسمك الكامل" className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
