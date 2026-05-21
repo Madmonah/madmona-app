@@ -52,8 +52,8 @@ export default function SalonLandingPage({ params }: { params: { slug: string } 
       <header className="bg-[#1F6F5F] text-white">
         <div className="max-w-2xl mx-auto px-4 py-10 text-center">
           {data.logo_url && logoOk ? (
-            <div className="mx-auto mb-4 w-full max-w-[340px] rounded-2xl overflow-hidden shadow-md bg-black" style={{ aspectRatio: '1045 / 320' }}>
-              <img src={data.logo_url} alt={data.business_name} className="w-full h-full object-cover object-top" onError={() => setLogoOk(false)} />
+            <div className="mx-auto mb-4 w-full max-w-[300px] rounded-2xl overflow-hidden shadow-md bg-black" style={{ aspectRatio: '460 / 177' }}>
+              <img src={data.logo_url} alt={data.business_name} className="w-full h-full object-contain" onError={() => setLogoOk(false)} />
             </div>
           ) : (
             <div className="w-16 h-16 rounded-2xl bg-white/15 grid place-items-center mx-auto mb-4">
