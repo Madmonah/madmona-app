@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   Loader2, CalendarPlus, Gift, Star, ShoppingBag, User, MessageCircle,
   ChevronRight, Check, Sparkles, Heart, AlertCircle, Phone, Instagram,
-  Clock, Scissors,
+  Clock, Scissors, Store, Search, Plus,
 } from 'lucide-react'
 import { useMadmonaAuth, AccountGate } from '@/components/AccountGate'
 
@@ -126,7 +126,7 @@ function Hero({ biz, branchName, tagline, authed, name, gallery = [], logo }: an
 
 /* ============================ HUB (tabs) ============================ */
 function Hub({ branchCode, info, branding, router }: any) {
-  const [tab, setTab] = useState<'book' | 'services' | 'social'>('book')
+  const [tab, setTab] = useState<'book' | 'services' | 'social' | 'madmona'>('book')
   const [panel, setPanel] = useState<null | 'tip' | 'rate' | 'products'>(null)
   const stylists = info.stylists || []
   const services = info.services || []
@@ -141,6 +141,7 @@ function Hub({ branchCode, info, branding, router }: any) {
     { k: 'book', label: 'احجزي', icon: CalendarPlus },
     { k: 'services', label: 'الخدمات', icon: Scissors },
     { k: 'social', label: 'تواصل', icon: Instagram },
+    { k: 'madmona', label: 'مضمونة', icon: Store },
   ]
 
   return (
@@ -148,8 +149,8 @@ function Hub({ branchCode, info, branding, router }: any) {
       <div className="bg-white rounded-2xl border border-gray-100 p-1.5 flex gap-1 mb-4 shadow-[0_8px_24px_-14px_rgba(26,46,38,0.25)]">
         {tabs.map((t: any) => (
           <button key={t.k} onClick={() => setTab(t.k)}
-            className={`flex-1 py-2.5 rounded-xl text-[13px] font-black flex items-center justify-center gap-1.5 transition-all ${tab === t.k ? 'bg-[#1F6F5F] text-white shadow-md shadow-[#1F6F5F]/25' : 'text-[#6B7280] hover:text-[#1A2E26]'}`}>
-            <t.icon className="w-4 h-4" /> {t.label}
+            className={`flex-1 py-2.5 px-1 rounded-xl text-[12px] font-black flex items-center justify-center gap-1 transition-all ${tab === t.k ? 'bg-[#1F6F5F] text-white shadow-md shadow-[#1F6F5F]/25' : 'text-[#6B7280] hover:text-[#1A2E26]'}`}>
+            <t.icon className="w-3.5 h-3.5" /> {t.label}
           </button>
         ))}
       </div>
@@ -157,6 +158,7 @@ function Hub({ branchCode, info, branding, router }: any) {
       {tab === 'book' && <BookTab branchCode={branchCode} router={router} setPanel={setPanel} hasProducts={products.length > 0} />}
       {tab === 'services' && <ServicesTab services={services} branchCode={branchCode} router={router} />}
       {tab === 'social' && <SocialTab social={social} branch={info.branch.name} />}
+      {tab === 'madmona' && <MadmonaTab router={router} />}
     </div>
   )
 }
@@ -284,6 +286,39 @@ function SocialTab({ social, branch }: any) {
   )
 }
 
+/* ============================ MADMONA TAB ============================ */
+function MadmonaTab({ router }: any) {
+  const items = [
+    { icon: Search, title: 'دوّري على إيجار', sub: 'شقق، عربيات، كاميرات — أي حاجة', onClick: () => router.push('/marketplace') },
+    { icon: Plus, title: 'اعرضي حاجة للإيجار', sub: 'أجّري اللي عندك واكسبي', onClick: () => router.push('/add-listing') },
+    { icon: User, title: 'حسابي على مضمونة', sub: 'حجوزاتك وكل حاجة', onClick: () => router.push('/home') },
+  ]
+  return (
+    <div className="space-y-3">
+      <div className="bg-[#1F6F5F] text-white rounded-2xl p-5 text-center shadow-lg shadow-[#1F6F5F]/20">
+        <div className="inline-flex items-center gap-1.5 mb-1.5">
+          <span className="w-7 h-7 rounded-lg bg-white grid place-items-center text-[#1F6F5F] font-black">م</span>
+          <p className="font-black text-lg">مضمونة</p>
+        </div>
+        <p className="text-[13px] text-white/85 leading-relaxed">منصّة الإيجار — أجّري أو اعرضي أي حاجة، بضمان كامل ودفع آمن.</p>
+      </div>
+      {items.map((a: any, i: number) => (
+        <button key={i} onClick={a.onClick} className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between text-right active:scale-[0.99] transition-all hover:border-[#1F6F5F]/40 hover:shadow-md hover:shadow-[#1A2E26]/5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center"><a.icon className="w-5 h-5" /></div>
+            <div>
+              <p className="font-black text-sm text-[#1A2E26]">{a.title}</p>
+              <p className="text-[11px] text-[#6B7280] mt-0.5">{a.sub}</p>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-[#6B7280]" />
+        </button>
+      ))}
+      <p className="text-center text-[11px] text-[#6B7280]">اللي بتأجره مضمون · madmonacairo.com</p>
+    </div>
+  )
+}
+
 /* ============================ ACMRAMIA (tip) ============================ */
 function TipFlow({ branchCode, stylists, onBack }: any) {
   const [emp, setEmp] = useState<string | null>(null)
@@ -312,7 +347,7 @@ function TipFlow({ branchCode, stylists, onBack }: any) {
     <SuccessCard onBack={onBack} icon={Heart} title="شكراً ليكي ❤️">
       <p className="text-sm text-[#6B7280] mb-3">سجّلنا اكرامية <b className="text-[#1F6F5F]">{fmt(finalAmount)} ج</b>{done.employee_name ? ` لـ ${done.employee_name}` : ''}.</p>
       {method === 'instapay' && done.payout_details
-        ? <div className="bg-[#FAFAF7] rounded-xl p-3 text-sm"><p className="text-[11px] text-[#6B7280] mb-1">حوّلي على إنستاباي:</p><p className="font-mono font-black text-[#1A2E26] select-all" dir="ltr">{done.payout_details}</p></div>
+        ? <div className="bg-[#FAFAF7] rounded-xl p-3 text-sm"><p className="text-[11px] text-[#6B7280] mb-1">حوّلي على إنستاباي مضمونة:</p><p className="font-mono font-black text-[#1A2E26] select-all" dir="ltr">{done.payout_details}</p></div>
         : <p className="text-[12px] text-[#6B7280]">سلّميها في الكاشير أو للستايلست — واحنا سجّلناها في حسابهم.</p>}
     </SuccessCard>
   )
