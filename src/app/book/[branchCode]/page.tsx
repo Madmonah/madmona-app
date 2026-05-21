@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   ChevronLeft, Loader2, Calendar as CalendarIcon, Clock, User,
   CheckCircle2, MapPin, Phone, Scissors, Sparkles, ArrowLeft,
+  ShoppingBag, Plus, Minus, Check,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -15,7 +16,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   package: 'باقة', general: 'عام',
 }
 
-type Step = 'service' | 'datetime' | 'stylist' | 'info' | 'confirm' | 'done' | 'waitlist' | 'waitlist_done'
+type Step = 'service' | 'stylist' | 'datetime' | 'extras' | 'info' | 'confirm' | 'done' | 'waitlist' | 'waitlist_done'
 
 export default function PublicBookingPage({ params }: { params: { branchCode: string } }) {
   const { branchCode } = params
@@ -26,6 +27,8 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [selectedStylist, setSelectedStylist] = useState<any>(null)
+  const [addons, setAddons] = useState<any[]>([])
+  const [cart, setCart] = useState<Record<string, number>>({})
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
   const [notes, setNotes] = useState('')
@@ -83,12 +86,15 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
     const scheduled = new Date(selectedDate)
     const [h, m] = selectedTime.split(':')
     scheduled.setHours(parseInt(h), parseInt(m), 0, 0)
+    const _products = (data?.products || []).filter((p: any) => (cart[p.id] || 0) > 0).map((p: any) => ({ product_id: p.id, qty: cart[p.id] }))
     // @ts-expect-error
     const { data: result, error } = await supabase.rpc('public_create_booking', {
       p_branch_code: branchCode, p_service_id: selectedService.id,
       p_customer_name: customerName, p_customer_phone: customerPhone,
       p_scheduled_at: scheduled.toISOString(),
       p_stylist_id: selectedStylist?.id || null, p_notes: notes || null,
+      p_addon_service_ids: addons.map((a: any) => a.id),
+      p_products: _products,
     })
     if (error || !result?.success) alert('خطأ: ' + (error?.message || result?.error || 'فشل الحجز'))
     else { setBookingResult(result); setStep('done') }
@@ -119,7 +125,13 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
 
   const services = data.services || []
   const stylists = data.stylists || []
+  const products = data.products || []
   const supplier = data.supplier
+  const cartItems = products.filter((p: any) => (cart[p.id] || 0) > 0)
+  const addonsTotal = addons.reduce((s: number, a: any) => s + Number(a.price_egp || 0), 0)
+  const productsTotal = cartItems.reduce((s: number, p: any) => s + Number(p.selling_price_egp || 0) * cart[p.id], 0)
+  const servicesTotal = Number(selectedService?.price_egp || 0) + addonsTotal
+  const grandTotal = servicesTotal + productsTotal
   const branch = data.branch
   const servicesByCategory: Record<string, any[]> = {}
   services.forEach((s: any) => {
@@ -140,9 +152,10 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
           <p className="text-sm text-white/90 mt-1 flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {branch?.name}</p>
           {step !== 'done' && (
             <div className="mt-4 flex gap-2 text-[10px] font-bold tracking-wider uppercase flex-wrap">
-              <StepBadge label="الخدمة" active={step === 'service'} done={['stylist','datetime','info','confirm'].includes(step)} />
-              <StepBadge label="الستايليست" active={step === 'stylist'} done={['datetime','info','confirm'].includes(step)} />
-              <StepBadge label="الموعد" active={step === 'datetime'} done={['info','confirm'].includes(step)} />
+              <StepBadge label="الخدمة" active={step === 'service'} done={['stylist','datetime','extras','info','confirm'].includes(step)} />
+              <StepBadge label="الستايليست" active={step === 'stylist'} done={['datetime','extras','info','confirm'].includes(step)} />
+              <StepBadge label="الموعد" active={step === 'datetime'} done={['extras','info','confirm'].includes(step)} />
+              <StepBadge label="إضافات" active={step === 'extras'} done={['info','confirm'].includes(step)} />
               <StepBadge label="بياناتك" active={step === 'info'} done={step === 'confirm'} />
               <StepBadge label="تأكيد" active={step === 'confirm'} done={false} />
             </div>
@@ -211,7 +224,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 {loadingSlots ? <div className="py-6 text-center"><Loader2 className="w-5 h-5 text-[#1F6F5F] animate-spin inline" /></div> : (
                   <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
                     {slots.map((slot: any) => (
-                      <button key={slot.time} disabled={!slot.available} onClick={() => { setSelectedTime(slot.time); setStep('info') }} className={`px-3 py-2 rounded-lg text-sm font-bold transition-all ${!slot.available ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : selectedTime === slot.time ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-[#1F6F5F]/10'}`}>{slot.time.slice(0, 5)}</button>
+                      <button key={slot.time} disabled={!slot.available} onClick={() => { setSelectedTime(slot.time); setStep('extras') }} className={`px-3 py-2 rounded-lg text-sm font-bold transition-all ${!slot.available ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : selectedTime === slot.time ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-[#1F6F5F]/10'}`}>{slot.time.slice(0, 5)}</button>
                     ))}
                   </div>
                 )}
@@ -286,9 +299,65 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
           </div>
         )}
 
-        {step === 'info' && (
+        {step === 'extras' && (
           <div className="space-y-4">
             <BackBtn onClick={() => setStep('datetime')} />
+            <h2 className="text-lg font-black text-[#1A2E26]">عايزة تضيفي حاجة؟ <span className="text-[#6B7280] text-sm font-normal">(اختياري)</span></h2>
+            {services.filter((s: any) => s.id !== selectedService?.id).length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                <div className="px-4 py-2 bg-[#FAFAF7] border-b border-gray-100"><p className="text-xs font-bold tracking-wider uppercase text-[#6B7280]">خدمات إضافية</p></div>
+                <div className="divide-y divide-gray-100 max-h-72 overflow-y-auto">
+                  {services.filter((s: any) => s.id !== selectedService?.id).map((svc: any) => {
+                    const on = addons.some((a: any) => a.id === svc.id)
+                    return (
+                      <button key={svc.id} onClick={() => setAddons(on ? addons.filter((a: any) => a.id !== svc.id) : [...addons, svc])} className={`w-full text-right px-4 py-3 flex items-center justify-between gap-3 transition-colors ${on ? 'bg-[#1F6F5F]/5' : 'hover:bg-[#FAFAF7]/50'}`}>
+                        <div className={`w-6 h-6 rounded-md grid place-items-center flex-shrink-0 ${on ? 'bg-[#1F6F5F] text-white' : 'border border-gray-300 text-transparent'}`}><Check className="w-4 h-4" /></div>
+                        <div className="flex-1 min-w-0"><p className="text-sm font-bold text-[#1A2E26]">{svc.name_ar}</p><p className="text-[10px] text-[#6B7280] mt-0.5 flex items-center gap-1"><Clock className="w-3 h-3" /> {svc.duration_minutes} دقيقة</p></div>
+                        <p className="font-black font-mono text-[#1F6F5F] text-sm">{Number(svc.price_egp).toLocaleString()} ج</p>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            {products.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                <div className="px-4 py-2 bg-[#FAFAF7] border-b border-gray-100"><p className="text-xs font-bold tracking-wider uppercase text-[#6B7280]">منتجات تقدري تشتريها</p></div>
+                <div className="divide-y divide-gray-100 max-h-72 overflow-y-auto">
+                  {products.map((p: any) => {
+                    const qty = cart[p.id] || 0
+                    return (
+                      <div key={p.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                        <div className="flex-1 min-w-0"><p className="text-sm font-bold text-[#1A2E26]">{p.name_ar}</p><p className="font-black font-mono text-[#1F6F5F] text-sm mt-0.5">{Number(p.selling_price_egp).toLocaleString()} ج</p></div>
+                        {qty === 0 ? (
+                          <button onClick={() => setCart({ ...cart, [p.id]: 1 })} className="px-3 py-1.5 rounded-lg bg-[#1F6F5F]/10 text-[#1F6F5F] text-xs font-bold flex items-center gap-1"><Plus className="w-3.5 h-3.5" /> ضيفي</button>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => { const n = { ...cart }; if (qty <= 1) { delete n[p.id] } else { n[p.id] = qty - 1 }; setCart(n) }} className="w-7 h-7 rounded-lg bg-[#FAFAF7] grid place-items-center"><Minus className="w-3.5 h-3.5 text-[#1A2E26]" /></button>
+                            <span className="w-6 text-center font-black font-mono text-[#1A2E26]">{qty}</span>
+                            <button onClick={() => setCart({ ...cart, [p.id]: qty + 1 })} className="w-7 h-7 rounded-lg bg-[#1F6F5F] text-white grid place-items-center"><Plus className="w-3.5 h-3.5" /></button>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            {services.filter((s: any) => s.id !== selectedService?.id).length === 0 && products.length === 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center"><p className="text-sm text-[#6B7280]">مفيش إضافات متاحة حالياً</p></div>
+            )}
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center justify-between">
+              <span className="text-sm font-bold text-[#1A2E26]">الإجمالي المتوقع</span>
+              <span className="font-mono font-black text-xl text-[#1F6F5F]">{grandTotal.toLocaleString()} ج</span>
+            </div>
+            <button onClick={() => setStep('info')} className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black flex items-center justify-center gap-2">متابعة <ChevronLeft className="w-4 h-4" /></button>
+          </div>
+        )}
+
+        {step === 'info' && (
+          <div className="space-y-4">
+            <BackBtn onClick={() => setStep('extras')} />
             <h2 className="text-lg font-black text-[#1A2E26]">بياناتك للتواصل</h2>
             <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
               <Field label="الاسم *"><input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="اسمك الكامل" className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
@@ -305,13 +374,27 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
             <h2 className="text-lg font-black text-[#1A2E26]">تأكيد الحجز</h2>
             <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
               <SummaryRow icon={<Scissors />} label="الخدمة" value={selectedService?.name_ar} sub={`${selectedService?.duration_minutes} دقيقة`} />
+              {addons.map((a: any) => (
+                <SummaryRow key={a.id} icon={<Sparkles />} label="خدمة إضافية" value={a.name_ar} sub={`${a.duration_minutes} دقيقة · ${Number(a.price_egp).toLocaleString()} ج`} />
+              ))}
+              {cartItems.map((p: any) => (
+                <SummaryRow key={p.id} icon={<ShoppingBag />} label="منتج" value={`${p.name_ar} ×${cart[p.id]}`} sub={`${(Number(p.selling_price_egp) * cart[p.id]).toLocaleString()} ج`} />
+              ))}
               <SummaryRow icon={<CalendarIcon />} label="التاريخ" value={selectedDate?.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} />
               <SummaryRow icon={<Clock />} label="الوقت" value={selectedTime?.slice(0, 5)} />
               <SummaryRow icon={<User />} label="الستايليست" value={selectedStylist?.full_name || 'أي متاحة'} />
               <SummaryRow icon={<Phone />} label="بياناتك" value={customerName} sub={customerPhone} />
-              <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
-                <span className="text-sm font-bold text-[#1A2E26]">السعر الإجمالي</span>
-                <span className="font-mono font-black text-2xl text-[#1F6F5F]">{Number(selectedService?.price_egp || 0).toLocaleString()} ج</span>
+              <div className="pt-3 border-t border-gray-100 space-y-1">
+                {(addonsTotal > 0 || productsTotal > 0) && (
+                  <>
+                    <div className="flex justify-between text-xs text-[#6B7280]"><span>الخدمات</span><span className="font-mono">{servicesTotal.toLocaleString()} ج</span></div>
+                    {productsTotal > 0 && <div className="flex justify-between text-xs text-[#6B7280]"><span>المنتجات</span><span className="font-mono">{productsTotal.toLocaleString()} ج</span></div>}
+                  </>
+                )}
+                <div className="flex justify-between items-center pt-1">
+                  <span className="text-sm font-bold text-[#1A2E26]">السعر الإجمالي</span>
+                  <span className="font-mono font-black text-2xl text-[#1F6F5F]">{grandTotal.toLocaleString()} ج</span>
+                </div>
               </div>
             </div>
             <button onClick={submitBooking} disabled={submitting} className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black disabled:opacity-50 flex items-center justify-center gap-2">
