@@ -3,12 +3,25 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { supabaseBrowser } from '@/lib/supabase-browser'
 import { Loader2, ShieldAlert, LogIn, Lock } from 'lucide-react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 )
+
+// Madmona platform-admin (Supabase Auth) — lets an admin who opened these pages
+// from the Madmona dashboard through WITHOUT the owner WhatsApp login.
+async function isPlatformAdmin(): Promise<boolean> {
+  try {
+    const { data: { session } } = await supabaseBrowser.auth.getSession()
+    if (!session?.user) return false
+    // @ts-expect-error rpc typing
+    const { data: ok } = await supabaseBrowser.rpc('is_admin')
+    return ok === true
+  } catch { return false }
+}
 
 /* ============================================================
    Auth guard for /admin/business-finance/[supplierId]/*
@@ -30,14 +43,21 @@ export default function BusinessFinanceLayout({
   useEffect(() => {
     (async () => {
       const token = typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null
-      if (!token) { setState('no_session'); return }
-      // @ts-expect-error rpc typing
-      const { data } = await supabase.rpc('admin_check_finance_access', {
-        p_token: token, p_supplier_id: supplierId,
-      })
-      if (data?.allowed) setState('allowed')
-      else if (data?.reason === 'no_session') setState('no_session')
-      else setState('denied')
+      // 1) Owner/manager path (WhatsApp-OTP token) — e.g. Ahmed for Elite
+      if (token) {
+        // @ts-expect-error rpc typing
+        const { data } = await supabase.rpc('admin_check_finance_access', {
+          p_token: token, p_supplier_id: supplierId,
+        })
+        if (data?.allowed) { setState('allowed'); return }
+        // 2) Madmona platform-admin bypass (came from the dashboard)
+        if (await isPlatformAdmin()) { setState('allowed'); return }
+        setState(data?.reason === 'no_session' ? 'no_session' : 'denied')
+        return
+      }
+      // No owner token — still let a logged-in Madmona admin straight through
+      if (await isPlatformAdmin()) { setState('allowed'); return }
+      setState('no_session')
     })()
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [supplierId])
