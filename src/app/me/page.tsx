@@ -7,6 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   Loader2, ChevronRight, Wallet, Clock, Gift, CalendarCheck, ListChecks,
   MapPin, LogIn, LogOut, CheckCircle2, Circle, Coins, AlertCircle, Briefcase,
+  User, Check, Sparkles, ShoppingBag, Play,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -35,6 +36,8 @@ export default function MyDashboard() {
   const [clocking, setClocking] = useState(false)
   const [clockMsg, setClockMsg] = useState<{ text: string; ok: boolean } | null>(null)
   const [taskBusy, setTaskBusy] = useState<string | null>(null)
+  const [bookingBusy, setBookingBusy] = useState<string | null>(null)
+  const [prepBusy, setPrepBusy] = useState<string | null>(null)
 
   const token = () => (typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null)
 
@@ -78,6 +81,23 @@ export default function MyDashboard() {
     // @ts-expect-error rpc typing
     await supabase.rpc('madmona_employee_toggle_task', { p_token: token(), p_task_id: taskId, p_status: next })
     setTaskBusy(null)
+  }
+
+  async function updateBooking(bookingId: string, action: string) {
+    setBookingBusy(bookingId)
+    const newStatus = action === 'complete' ? 'completed' : 'in_progress'
+    setData((d: any) => ({ ...d, today: d.today.map((b: any) => b.booking_id === bookingId ? { ...b, status: newStatus } : b) }))
+    // @ts-expect-error rpc typing
+    await supabase.rpc('madmona_employee_update_booking', { p_token: token(), p_booking_id: bookingId, p_action: action })
+    setBookingBusy(null)
+  }
+
+  async function togglePrep(bookingId: string, key: string, done: boolean) {
+    setPrepBusy(bookingId + key)
+    setData((d: any) => ({ ...d, today: d.today.map((b: any) => b.booking_id === bookingId ? { ...b, prep_checklist: { ...(b.prep_checklist || {}), [key]: done } } : b) }))
+    // @ts-expect-error rpc typing
+    await supabase.rpc('madmona_employee_toggle_prep', { p_token: token(), p_booking_id: bookingId, p_key: key, p_done: done })
+    setPrepBusy(null)
   }
 
   if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div>
@@ -189,24 +209,23 @@ export default function MyDashboard() {
         </section>
 
         {/* ===== TODAY BOOKINGS ===== */}
-        <section className="bg-white rounded-2xl border border-gray-100 p-5">
-          <div className="flex items-center gap-1.5 mb-3"><CalendarCheck className="w-4 h-4 text-[#1F6F5F]" /><p className="text-sm font-black text-[#1A2E26]">مواعيدي النهاردة</p></div>
+        <section>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <div className="flex items-center gap-1.5"><CalendarCheck className="w-4 h-4 text-[#1F6F5F]" /><p className="text-sm font-black text-[#1A2E26]">مواعيدي النهاردة</p></div>
+            {data.today?.length > 0 && <span className="text-[11px] font-bold text-[#6B7280]">{data.today.filter((b: any) => b.status === 'completed').length}/{data.today.length} خلص</span>}
+          </div>
           {data.today?.length > 0 ? (
-            <div className="space-y-2">
-              {data.today.map((t: any, i: number) => (
-                <div key={i} className="flex items-center justify-between text-sm border-b border-gray-50 pb-2 last:border-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-[#1F6F5F]" dir="ltr">{t.time}</span>
-                    <span className="text-[#1A2E26]">{t.service}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-[#6B7280]">{t.customer}</span>
-                    <span className="px-2 py-0.5 rounded bg-[#FAFAF7] text-[#6B7280] text-[10px] font-bold">{STATUS_AR[t.status] || t.status}</span>
-                  </div>
-                </div>
+            <div className="space-y-3">
+              {data.today.map((b: any) => (
+                <BookingCard key={b.booking_id} b={b} onAction={updateBooking} onPrep={togglePrep} busy={bookingBusy} prepBusyKey={prepBusy} />
               ))}
             </div>
-          ) : <p className="text-xs text-[#6B7280]">مفيش مواعيد محجوزة ليك النهاردة</p>}
+          ) : (
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center">
+              <CalendarCheck className="w-8 h-8 text-[#6B7280] opacity-30 mx-auto mb-1" />
+              <p className="text-xs text-[#6B7280]">مفيش مواعيد محجوزة ليك النهاردة</p>
+            </div>
+          )}
         </section>
 
         {/* ===== DAILY TASKS ===== */}
@@ -242,6 +261,76 @@ export default function MyDashboard() {
           )}
         </section>
       </main>
+    </div>
+  )
+}
+
+function BookingCard({ b, onAction, onPrep, busy, prepBusyKey }: any) {
+  const extras = b.extra_services || []
+  const products = b.products || []
+  const chk = b.prep_checklist || {}
+  const prepItems = [
+    ...extras.map((e: any) => ({ key: 's:' + e.service_id, label: e.name, kind: 'service' })),
+    ...products.map((p: any) => ({ key: 'p:' + p.product_id, label: `${p.name} ×${p.qty}`, kind: 'product' })),
+  ]
+  const done = b.status === 'completed'
+  const running = b.status === 'in_progress'
+  return (
+    <div className={`rounded-2xl border p-4 transition-all ${done ? 'bg-[#1F6F5F]/5 border-[#1F6F5F]/30' : running ? 'border-[#1F6F5F] shadow-sm bg-white' : 'border-gray-100 bg-white'}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="px-2.5 py-1 rounded-lg bg-[#1F6F5F] text-white font-mono font-black text-sm" dir="ltr">{b.time}</div>
+          <div>
+            <p className="font-black text-[#1A2E26] text-sm">{b.service}</p>
+            <p className="text-[11px] text-[#6B7280] mt-0.5 flex items-center gap-2">
+              <span className="flex items-center gap-1"><User className="w-3 h-3" /> {b.customer}</span>
+              <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {b.duration} د</span>
+            </p>
+          </div>
+        </div>
+        <div className="text-left flex-shrink-0">
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${done ? 'bg-[#1F6F5F] text-white' : running ? 'bg-amber-100 text-amber-700' : 'bg-[#FAFAF7] text-[#6B7280]'}`}>{STATUS_AR[b.status] || b.status}</span>
+          <p className="font-mono font-black text-[#1F6F5F] text-sm mt-1">{fmt(b.price)} ج</p>
+        </div>
+      </div>
+
+      {prepItems.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280] mb-2">محتاج تجهّز</p>
+          <div className="space-y-1.5">
+            {prepItems.map((it: any) => {
+              const isDone = !!chk[it.key]
+              const isBusy = prepBusyKey === b.booking_id + it.key
+              return (
+                <button key={it.key} onClick={() => onPrep(b.booking_id, it.key, !isDone)} disabled={isBusy} className="w-full text-right flex items-center gap-2.5 group">
+                  {isBusy ? <Loader2 className="w-5 h-5 text-[#1F6F5F] animate-spin flex-shrink-0" />
+                    : <span className={`w-5 h-5 rounded-md grid place-items-center flex-shrink-0 transition-all ${isDone ? 'bg-[#1F6F5F] text-white' : 'border border-gray-300 text-transparent group-hover:border-[#1F6F5F]'}`}><Check className="w-3.5 h-3.5" /></span>}
+                  {it.kind === 'product' ? <ShoppingBag className="w-3.5 h-3.5 text-[#6B7280] flex-shrink-0" /> : <Sparkles className="w-3.5 h-3.5 text-[#6B7280] flex-shrink-0" />}
+                  <span className={`text-sm ${isDone ? 'text-[#6B7280] line-through' : 'text-[#1A2E26]'}`}>{it.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {b.notes && <p className="mt-2 text-[11px] text-[#6B7280] bg-[#FAFAF7] rounded-lg px-2.5 py-1.5">📝 {b.notes}</p>}
+
+      {!done ? (
+        <div className="mt-3">
+          {running ? (
+            <button onClick={() => onAction(b.booking_id, 'complete')} disabled={busy === b.booking_id} className="w-full py-2.5 rounded-xl bg-[#1F6F5F] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+              {busy === b.booking_id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} خلّصت الموعد
+            </button>
+          ) : (
+            <button onClick={() => onAction(b.booking_id, 'start')} disabled={busy === b.booking_id} className="w-full py-2.5 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] font-black text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+              {busy === b.booking_id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />} ابدأ الموعد
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="mt-3 text-center text-xs font-bold text-[#1F6F5F] flex items-center justify-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> اتعمل ✓</div>
+      )}
     </div>
   )
 }
