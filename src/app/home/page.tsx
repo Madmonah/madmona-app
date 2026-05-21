@@ -168,6 +168,20 @@ export default function MadmonaHome() {
     scheduled: 'محجوز', confirmed: 'مؤكد', in_progress: 'جاري', completed: 'تم', cancelled: 'ملغي', no_show: 'لم يحضر',
   }
 
+  const today: { title: string; time: string }[] = []
+  if (Array.isArray(empSummary?.today)) {
+    empSummary.today.forEach((bk: any) => today.push({
+      title: [bk.service, bk.customer].filter(Boolean).join(' — ') || 'موعد',
+      time: String(bk.time || '').slice(0, 5),
+    }))
+  }
+  if (today.length === 0 && Array.isArray(custBookings?.upcoming)) {
+    custBookings.upcoming.slice(0, 3).forEach((bk: any) => today.push({
+      title: [bk.service, bk.branch].filter(Boolean).join(' · ') || 'حجز',
+      time: String(bk.time || '').slice(0, 5),
+    }))
+  }
+
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       {/* ===== HERO HEADER ===== */}
@@ -186,7 +200,32 @@ export default function MadmonaHome() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 -mt-6 pb-12 space-y-7">
+      <main className="max-w-3xl mx-auto px-4 -mt-6 pb-12 space-y-7 relative z-10">
+
+        {/* ===== TODAY ===== */}
+        <section>
+          <div className="bg-[#1F6F5F] text-white rounded-2xl p-5 shadow-lg shadow-[#1F6F5F]/20 relative overflow-hidden">
+            <div className="absolute -top-10 -left-8 w-32 h-32 rounded-full bg-white/5" />
+            <div className="relative">
+              <div className="flex items-center justify-between mb-2.5">
+                <p className="text-[11px] font-black tracking-[0.2em] uppercase text-white/70">النهارده</p>
+                <span className="text-[11px] text-white/80">{new Date().toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+              </div>
+              {today.length > 0 ? (
+                <div className="space-y-1.5">
+                  {today.slice(0, 3).map((it, i) => (
+                    <div key={i} className="flex items-center justify-between bg-white/10 rounded-xl px-3 py-2.5">
+                      <span className="text-sm font-bold truncate ml-2">{it.title}</span>
+                      {it.time && <span className="text-[12px] font-mono text-white/90 flex-shrink-0" dir="ltr">{it.time}</span>}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-white/90">يومك فاضي 🌿 — تحب تحجز خدمة جديدة؟</p>
+              )}
+            </div>
+          </div>
+        </section>
 
         {/* ===== ADMIN / OWNER ===== */}
         {admins.length > 0 && (

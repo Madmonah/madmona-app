@@ -55,8 +55,16 @@ export default function VisitHub({ params }: { params: { branchCode: string } })
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+      <style>{`
+@keyframes mdFadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes mdFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes mdGlow{0%,100%{box-shadow:0 10px 26px -10px rgba(31,111,95,.55)}50%{box-shadow:0 16px 40px -8px rgba(31,111,95,.85)}}
+.md-fade{animation:mdFadeUp .6s ease both}
+.md-float{animation:mdFloat 4.5s ease-in-out infinite}
+.md-glow{animation:mdGlow 2.8s ease-in-out infinite}
+`}</style>
       <Hero biz={biz} branchName={branch.name} tagline={tagline} authed={authed} name={profile?.name} gallery={branding?.gallery || []} logo={branding?.logo_url} />
-      <main className="max-w-md mx-auto px-4 -mt-7 pb-10">
+      <main className="max-w-md mx-auto px-4 -mt-7 pb-10 relative z-10 md-fade">
         {authed
           ? <Hub branchCode={branchCode} info={info} branding={branding} router={router} />
           : <AccountGate onAuthed={(p) => { setAuthed(true); setProfile(p) }} subtitle="إنتي في الفرع؟ اعملي حسابك في ثانية وابدئي تحجزي وتقيّمي وتاخدي عروض — كود على واتساب وخلاص." />}
@@ -87,7 +95,7 @@ function Hero({ biz, branchName, tagline, authed, name, gallery = [], logo }: an
       <div className="relative max-w-md mx-auto px-5 pt-10 pb-14 text-center">
         <p className="text-[10px] font-bold tracking-[0.45em] uppercase text-white/55 mb-3">MADMONA</p>
         {logo ? (
-          <div className="mx-auto mb-3 rounded-2xl overflow-hidden ring-1 ring-white/20 shadow-xl shadow-black/25 bg-[#14110f]" style={{ width: 'min(78%, 300px)' }}>
+          <div className="mx-auto mb-3 rounded-2xl overflow-hidden ring-1 ring-white/20 shadow-xl shadow-black/25 bg-[#14110f] md-float" style={{ width: 'min(78%, 300px)' }}>
             <img src={logo} alt={biz || branchName} className="w-full block" />
           </div>
         ) : (
@@ -101,7 +109,7 @@ function Hero({ biz, branchName, tagline, authed, name, gallery = [], logo }: an
         {authed && (
           <div className="mt-4 inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm rounded-full px-4 py-1.5 ring-1 ring-white/15">
             <Sparkles className="w-3.5 h-3.5" />
-            <span className="text-[12px] font-bold">أهلاً {name || 'بيكي'} · إنتي في المكان الصح</span>
+            <span className="text-[12px] font-bold">أهلاً {name || 'بيكي'} · إنتي في المكان الصح ✨</span>
           </div>
         )}
         {gallery.length > 1 && (
@@ -159,7 +167,7 @@ function BookTab({ branchCode, router, setPanel, hasProducts }: any) {
     <div className="space-y-4">
       {/* PRIMARY: book */}
       <button onClick={() => router.push(`/book/${branchCode}`)}
-        className="w-full bg-[#1F6F5F] text-white rounded-2xl p-5 flex items-center justify-between shadow-lg shadow-[#1F6F5F]/20 active:scale-[0.99] transition-transform">
+        className="w-full bg-[#1F6F5F] text-white rounded-2xl p-5 flex items-center justify-between shadow-lg shadow-[#1F6F5F]/20 active:scale-[0.99] transition-transform md-glow">
         <div className="flex items-center gap-3 text-right">
           <div className="w-11 h-11 rounded-xl bg-white/15 grid place-items-center"><CalendarPlus className="w-6 h-6" /></div>
           <div>

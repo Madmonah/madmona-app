@@ -68,9 +68,17 @@ export default function EliteHome() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+      <style>{`
+@keyframes mdFadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes mdFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes mdGlow{0%,100%{box-shadow:0 10px 26px -10px rgba(31,111,95,.55)}50%{box-shadow:0 16px 40px -8px rgba(31,111,95,.85)}}
+.md-fade{animation:mdFadeUp .6s ease both}
+.md-float{animation:mdFloat 4.5s ease-in-out infinite}
+.md-glow{animation:mdGlow 2.8s ease-in-out infinite}
+`}</style>
       <Hero logo={logo} gallery={gallery} tagline={tagline} bizName={b?.business_name} />
 
-      <main className="max-w-md mx-auto px-4 -mt-8 pb-12 space-y-5">
+      <main className="max-w-md mx-auto px-4 -mt-8 pb-12 space-y-5 relative z-10 md-fade">
         {/* trust row */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_10px_30px_-18px_rgba(26,46,38,0.35)] p-3 flex items-center justify-around text-center">
           {[{ i: ShieldCheck, t: 'أمان كامل' }, { i: Clock, t: 'حجز فوري' }, { i: Star, t: 'خدمة احترافية' }].map((x, k) => (
@@ -86,7 +94,7 @@ export default function EliteHome() {
           <h2 className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> اختاري فرعك وابدئي</h2>
 
           <button onClick={nearest} disabled={geoBusy}
-            className="w-full bg-[#1F6F5F] text-white rounded-2xl p-4 flex items-center justify-between shadow-lg shadow-[#1F6F5F]/20 active:scale-[0.99] transition-transform disabled:opacity-70 mb-3">
+            className="w-full bg-[#1F6F5F] text-white rounded-2xl p-4 flex items-center justify-between shadow-lg shadow-[#1F6F5F]/20 active:scale-[0.99] transition-transform disabled:opacity-70 mb-3 md-glow">
             <div className="flex items-center gap-3 text-right">
               <div className="w-11 h-11 rounded-xl bg-white/15 grid place-items-center">
                 {geoBusy ? <Loader2 className="w-6 h-6 animate-spin" /> : <Navigation className="w-6 h-6" />}
@@ -190,7 +198,7 @@ function Hero({ logo, gallery = [], tagline, bizName }: any) {
       <div className="relative max-w-md mx-auto px-5 pt-12 pb-16 text-center">
         <p className="text-[10px] font-bold tracking-[0.45em] uppercase text-white/55 mb-4">MADMONA</p>
         {logo ? (
-          <div className="mx-auto mb-4 rounded-2xl overflow-hidden ring-1 ring-white/20 shadow-2xl shadow-black/30 bg-[#14110f]" style={{ width: 'min(82%, 320px)' }}>
+          <div className="mx-auto mb-4 rounded-2xl overflow-hidden ring-1 ring-white/20 shadow-2xl shadow-black/30 bg-[#14110f] md-float" style={{ width: 'min(82%, 320px)' }}>
             <img src={logo} alt={bizName} className="w-full block" />
           </div>
         ) : (
