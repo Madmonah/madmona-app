@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { supabaseBrowser } from '@/lib/supabase-browser'
 import { Loader2, MessageCircle, User, Phone, Check, ArrowLeft, ShieldCheck } from 'lucide-react'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -30,10 +31,28 @@ export function useMadmonaAuth() {
         if (data?.authenticated) {
           setAuthed(true)
           setProfile({ name: data.full_name || data.name || '', phone: data.phone ? '0' + String(data.phone).slice(-10) : undefined })
+          setChecking(false)
+          return
         } else if (typeof window !== 'undefined') {
           localStorage.removeItem('madmona_token')
         }
       }
+      // Admin bypass: a logged-in Madmona admin (Supabase Auth) skips the customer gate
+      try {
+        const { data: { session } } = await supabaseBrowser.auth.getSession()
+        if (session?.user) {
+          // @ts-expect-error rpc typing
+          const { data: ok } = await supabaseBrowser.rpc('is_admin')
+          if (ok === true) {
+            // @ts-expect-error rpc typing
+            const { data: prof } = await supabaseBrowser.from('profiles').select('full_name').eq('id', session.user.id).maybeSingle()
+            setAuthed(true)
+            setProfile({ name: prof?.full_name || 'مضمونة', phone: session.user.phone ? '0' + String(session.user.phone).slice(-10) : undefined })
+            setChecking(false)
+            return
+          }
+        }
+      } catch { /* ignore */ }
       setChecking(false)
     })()
   }, [])
