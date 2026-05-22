@@ -7,7 +7,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
 import { saveAccount } from '@/lib/saved-accounts'
 import {
-  ArrowRight, Phone, Lock, AlertCircle, Loader2, LogIn, Sparkles, KeyRound,
+  ArrowRight, Phone, Lock, AlertCircle, Loader2, LogIn, Sparkles, KeyRound, Briefcase, CheckCircle2,
 } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
 
@@ -22,6 +22,8 @@ function LoginContent() {
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [mode, setMode] = useState<'password' | 'pin'>('password')
+  const [pin, setPin] = useState('')
 
   // Auto-fill phone from query param when account switcher redirects here
   useEffect(() => {
@@ -90,6 +92,21 @@ function LoginContent() {
     router.refresh()
   }
 
+  // Employee login: phone + 4-digit PIN (same PIN used for clock-in) -> /me.
+  // Bypasses the 6-char password rule (that rule is only for customer accounts).
+  const employeeLogin = async () => {
+    setError(null)
+    const normalized = normalizePhone(phone)
+    if (!normalized) { setError(t('auth.err_phone')); return }
+    if (pin.length < 3) { setError('اكتب الـ PIN بتاعك'); return }
+    setSubmitting(true)
+    // @ts-expect-error rpc typing
+    const { data, error: err } = await supabaseBrowser.rpc('employee_login_phone_pin', { p_phone: normalized, p_pin: pin })
+    if (err || !data?.success) { setError(data?.error || err?.message || 'رقم التليفون أو الـPIN غلط'); setSubmitting(false); return }
+    localStorage.setItem('madmona_token', data.token)
+    router.push('/me')
+  }
+
   return (
     <div className="min-h-screen gradient-mesh flex flex-col relative overflow-hidden" dir={dir}>
       {/* Decorative blobs */}
@@ -125,7 +142,7 @@ function LoginContent() {
           </div>
 
           <div className="bg-white rounded-3xl shadow-luxe p-7 md:p-9">
-            <form onSubmit={handleSubmit} className="space-y-5">
+            {mode === 'password' && (<form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                   <Phone className="w-3.5 h-3.5 text-[#1F6F5F]" />
@@ -196,7 +213,37 @@ function LoginContent() {
                   </>
                 )}
               </button>
-            </form>
+            </form>)}
+
+            {mode === 'pin' && (
+              <div className="space-y-5">
+                <div>
+                  <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+                    <Phone className="w-3.5 h-3.5 text-[#1F6F5F]" /> رقم الموبايل
+                  </label>
+                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="01XXXXXXXXX" className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all" dir="ltr" style={{ textAlign: 'right' }} autoComplete="tel" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+                    <KeyRound className="w-3.5 h-3.5 text-[#1F6F5F]" /> الـ PIN <span className="lowercase font-normal tracking-normal">(الأربع أرقام بتاعت البصمة)</span>
+                  </label>
+                  <input type="password" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, ''))} onKeyDown={(e) => e.key === 'Enter' && employeeLogin()} placeholder="● ● ● ●" maxLength={6} className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-center text-2xl font-black tracking-[0.4em] focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all" dir="ltr" />
+                </div>
+                {error && (
+                  <div className="flex items-start gap-2 p-3.5 bg-red-50 border border-red-200 rounded-2xl text-sm text-red-800">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>{error}</span>
+                  </div>
+                )}
+                <button onClick={employeeLogin} disabled={submitting || !phone || pin.length < 3} className="w-full bg-[#1F6F5F] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:-translate-y-0.5 disabled:opacity-50 transition-all flex items-center justify-center gap-2">
+                  {submitting ? (<><Loader2 className="w-4 h-4 animate-spin" /> <span>جاري الدخول...</span></>) : (<><CheckCircle2 className="w-4 h-4" /> دخول لحسابي</>)}
+                </button>
+              </div>
+            )}
+
+            <button onClick={() => { setMode(mode === 'password' ? 'pin' : 'password'); setError(null); setPin('') }} className="w-full mt-4 py-3 rounded-2xl border border-[#1F6F5F]/25 text-[#1F6F5F] font-bold text-sm flex items-center justify-center gap-2">
+              <Briefcase className="w-4 h-4" /> {mode === 'password' ? 'أنا موظف — دخول بالـ PIN' : 'دخول عادي بالباسورد'}
+            </button>
 
             <div className="mt-7 pt-6 border-t border-gray-100 text-center">
               <p className="text-sm text-gray-600 mb-2">{t('auth.no_account_yet')}</p>
