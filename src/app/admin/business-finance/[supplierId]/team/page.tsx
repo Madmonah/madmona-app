@@ -180,6 +180,13 @@ export default function TeamOversightPage({
               إضافة موظفين Bulk
             </Link>
             <Link
+              href={`/admin/business-finance/${supplierId}/team/manage`}
+              className="px-4 py-2 rounded-xl bg-[#1A2E26] hover:opacity-90 text-sm font-bold text-white flex items-center gap-2 transition-colors"
+            >
+              <Users className="w-4 h-4" />
+              إدارة الأرقام والفروع
+            </Link>
+            <Link
               href={`/admin/business-finance/${supplierId}/customers`}
                 className="px-4 py-2 rounded-xl bg-[#1F6F5F] hover:opacity-90 text-sm font-bold text-white flex items-center gap-2 transition-colors"
               >
