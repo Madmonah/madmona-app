@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import {
   Loader2, Delete, LogIn, LogOut, MapPin, AlertCircle, CheckCircle2, Clock,
-  ClipboardList, Circle, ArrowRight,
+  ClipboardList, Circle, ArrowRight, Calendar, Coins, Gift,
 } from 'lucide-react'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -75,8 +75,19 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
     })
     setBusy(false); setPhase('idle')
     if (data?.ok) {
-      setResult(data); setPin('')
-      setTimeout(() => setResult(null), 7000)
+      if (data.action === 'clock_in') {
+        // after clock-in, auto-open the employee's personal page (status + tasks)
+        const usedPin = pin
+        // @ts-expect-error rpc typing
+        const { data: sv } = await supabase.rpc('employee_self_view_by_pin', {
+          p_branch_code: branchCode, p_phone_or_pin: usedPin,
+        })
+        if (sv?.ok) { setSelfPin(usedPin); setSelfView({ ...sv, justClockedIn: true }); setPin('') }
+        else { setResult(data); setPin(''); setTimeout(() => setResult(null), 7000) }
+      } else {
+        setResult(data); setPin('')
+        setTimeout(() => setResult(null), 7000)
+      }
     } else {
       setErr(data || { error: 'حصل خطأ، حاول تاني' }); setPin('')
     }
@@ -280,7 +291,46 @@ function SelfViewCard({ view, onToggle, onClose }: any) {
         <button onClick={onClose} className="text-[12px] font-bold text-[#1F6F5F] flex items-center gap-1 active:scale-95"><ArrowRight className="w-4 h-4" /> رجوع</button>
       </div>
 
+      {view.justClockedIn && (
+        <div className="mb-3 rounded-2xl bg-[#1F6F5F] text-white p-3 text-center">
+          <p className="text-[13px] font-black">✅ تم تسجيل حضورك — يوم موفّق 🌟</p>
+        </div>
+      )}
+
       {statusBox}
+
+      {/* earnings: commission + tips this month */}
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="rounded-2xl bg-[#FAFAF7] p-3 text-center">
+          <p className="text-[10px] text-[#6B7280] flex items-center justify-center gap-1"><Coins className="w-3.5 h-3.5" /> عمولة الشهر</p>
+          <p className="text-[15px] font-black text-[#1F6F5F] mt-0.5" dir="ltr">{Math.round(view.commission_this_month || 0).toLocaleString('en-US')} ج</p>
+          {view.commission_unpaid > 0 && <p className="text-[9px] text-[#6B7280] mt-0.5">منها {Math.round(view.commission_unpaid).toLocaleString('en-US')} لسه متدفعتش</p>}
+        </div>
+        <div className="rounded-2xl bg-[#FAFAF7] p-3 text-center">
+          <p className="text-[10px] text-[#6B7280] flex items-center justify-center gap-1"><Gift className="w-3.5 h-3.5" /> إكراميات الشهر</p>
+          <p className="text-[15px] font-black text-[#1F6F5F] mt-0.5" dir="ltr">{Math.round((view.tips?.month_total) || 0).toLocaleString('en-US')} ج</p>
+          {(view.tips?.pending_count || 0) > 0 && <p className="text-[9px] text-[#6B7280] mt-0.5">{view.tips.pending_count} في الانتظار</p>}
+        </div>
+      </div>
+
+      {/* today's appointments assigned to this employee */}
+      {Array.isArray(view.today) && view.today.length > 0 && (
+        <div className="mt-5">
+          <p className="text-[13px] font-black text-[#1A2E26] flex items-center gap-1.5 mb-3"><Calendar className="w-4 h-4 text-[#1F6F5F]" /> مواعيدك النهاردة</p>
+          <div className="space-y-2">
+            {view.today.map((b: any) => (
+              <div key={b.booking_id} className="rounded-2xl border border-gray-200 p-3 flex items-center gap-3">
+                <span className="font-mono font-black text-[#1F6F5F] text-[13px]" dir="ltr">{b.time}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-bold text-[#1A2E26] truncate">{b.customer || 'عميل'}</p>
+                  <p className="text-[11px] text-[#6B7280] truncate">{b.service}</p>
+                </div>
+                {b.price != null && <span className="text-[11px] text-[#6B7280] font-mono" dir="ltr">{b.price} ج</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mt-5 flex items-center justify-between">
         <p className="text-[13px] font-black text-[#1A2E26] flex items-center gap-1.5"><ClipboardList className="w-4 h-4 text-[#1F6F5F]" /> تاسكات النهاردة</p>

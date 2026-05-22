@@ -1,8 +1,9 @@
 -- =====================================================================
 -- Employee tasks + self-view (2026-05-22). LIVE-aligned, idempotent.
 -- (1) daily_tasks.source_booking_id + booking->task trigger (Source #2).
--- (2) PIN-based employee self-view + task completion (works for all
---     employees, no phone needed).
+-- (2) PIN-based employee self-view (full: attendance + tasks + today's
+--     appointments + tips + commission) + task completion. Works for all
+--     employees, no phone needed.
 -- (3) madmona_employee_summary updated for multi-session presence.
 -- AI task generation (Source #3) lives in the Next.js route
 -- /api/agents/generate-tasks (deployed via Vercel), not in the DB.
@@ -46,10 +47,12 @@ CREATE TRIGGER trg_booking_to_task
   ON public.branch_bookings
   FOR EACH ROW EXECUTE FUNCTION public.trg_create_task_from_booking();
 
--- (2) PIN-based employee self-view + task completion -------------------
+-- (2) PIN-based employee self-view (FULL) + task completion ------------
 CREATE OR REPLACE FUNCTION public.employee_self_view_by_pin(p_branch_code text, p_phone_or_pin text)
  RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER AS $function$
-DECLARE v_branch record; v_emp record; v_att record; v_tasks jsonb;
+DECLARE v_branch record; v_emp record; v_att record; v_tasks jsonb; v_today jsonb;
+        v_tips_month numeric; v_tips_pending int; v_tips_recent jsonb;
+        v_comm_month numeric; v_comm_unpaid numeric;
 BEGIN
   SELECT b.id AS branch_id, b.supplier_id, b.name AS branch_name, s.business_name
   INTO v_branch FROM supplier_branches b JOIN suppliers s ON s.id=b.supplier_id
@@ -67,10 +70,36 @@ BEGIN
     max(clock_out_at) AS last_out, COALESCE(sum(hours_worked),0) AS total_hours
   INTO v_att FROM attendance_logs WHERE employee_id=v_emp.id AND date=CURRENT_DATE;
 
+  SELECT jsonb_agg(jsonb_build_object(
+    'booking_id', b.id::text, 'time', to_char(b.scheduled_at AT TIME ZONE 'Africa/Cairo','HH24:MI'),
+    'customer', b.customer_name, 'service', COALESCE(sc.name_ar, b.service_name_snapshot, 'خدمة'),
+    'status', b.status, 'duration', b.duration_minutes, 'price', b.price_egp
+  ) ORDER BY b.scheduled_at)
+  INTO v_today FROM branch_bookings b
+  LEFT JOIN services_catalog sc ON sc.id = b.service_id
+  WHERE b.assigned_employee_id = v_emp.id AND b.scheduled_at::date = CURRENT_DATE
+    AND b.status NOT IN ('cancelled','no_show');
+
   SELECT jsonb_agg(jsonb_build_object('id',t.id::text,'title',t.title_ar,'description',t.description,
     'priority',t.priority,'status',t.status,'due_time',t.due_time)
     ORDER BY (t.status='completed'), t.priority DESC, t.created_at)
   INTO v_tasks FROM daily_tasks t WHERE t.employee_id=v_emp.id AND t.task_date=CURRENT_DATE;
+
+  SELECT COALESCE(SUM(amount_egp),0) INTO v_tips_month FROM tips
+  WHERE recipient_employee_id=v_emp.id AND COALESCE(status,'pending')='received'
+    AND received_at >= date_trunc('month', CURRENT_DATE);
+  SELECT COUNT(*) INTO v_tips_pending FROM tips
+  WHERE recipient_employee_id=v_emp.id AND COALESCE(status,'pending')='pending';
+  SELECT jsonb_agg(x) INTO v_tips_recent FROM (
+    SELECT jsonb_build_object('amount',amount_egp,'status',COALESCE(status,'pending'),
+      'customer',customer_name,'at',received_at) AS x
+    FROM tips WHERE recipient_employee_id=v_emp.id ORDER BY received_at DESC LIMIT 5
+  ) q;
+
+  SELECT COALESCE(SUM(commission_amount),0) INTO v_comm_month FROM commissions_log
+  WHERE employee_id=v_emp.id AND earned_at >= date_trunc('month', CURRENT_DATE);
+  SELECT COALESCE(SUM(commission_amount),0) INTO v_comm_unpaid FROM commissions_log
+  WHERE employee_id=v_emp.id AND paid_at IS NULL;
 
   RETURN jsonb_build_object('ok',true,
     'employee', jsonb_build_object('id',v_emp.id::text,'full_name',v_emp.full_name,'role_ar',v_emp.role_ar,'avatar_initial',v_emp.avatar_initial),
@@ -80,7 +109,11 @@ BEGIN
       'clock_in_at',CASE WHEN v_att.any_open THEN v_att.open_in ELSE v_att.last_in END,
       'clock_out_at',CASE WHEN v_att.any_open THEN NULL ELSE v_att.last_out END,
       'hours_worked',v_att.total_hours,'sessions',v_att.sessions) END,
-    'tasks', COALESCE(v_tasks,'[]'::jsonb));
+    'today', COALESCE(v_today,'[]'::jsonb),
+    'tasks', COALESCE(v_tasks,'[]'::jsonb),
+    'tips', jsonb_build_object('month_total',v_tips_month,'pending_count',v_tips_pending,'recent',COALESCE(v_tips_recent,'[]'::jsonb)),
+    'commission_this_month', v_comm_month,
+    'commission_unpaid', v_comm_unpaid);
 END; $function$;
 GRANT EXECUTE ON FUNCTION public.employee_self_view_by_pin(text,text) TO anon, authenticated;
 
@@ -134,7 +167,6 @@ BEGIN
   WHERE b.assigned_employee_id = v_emp.id AND b.scheduled_at::date = CURRENT_DATE
     AND b.status NOT IN ('cancelled','no_show');
 
-  -- MULTI-SESSION aware presence
   SELECT count(*) AS sessions, bool_or(clock_out_at IS NULL) AS any_open,
     max(clock_in_at) FILTER (WHERE clock_out_at IS NULL) AS open_in,
     (array_agg(clock_in_at ORDER BY clock_in_at DESC))[1] AS last_in,
