@@ -3,12 +3,15 @@
 /* Employee attendance via QR — /clock/[branchCode].
    Staff scan the branch QR, enter their PIN (or phone), and the page
    captures GPS and calls employee_clock_via_qr which geofences the
-   branch (anti-fraud) and toggles clock-in / clock-out. */
+   branch (anti-fraud) and toggles clock-in / clock-out.
+   Secondary action "تاسكاتي وحالتي" shows the employee their attendance
+   status + today's tasks (via employee_self_view_by_pin) without clocking. */
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import {
   Loader2, Delete, LogIn, LogOut, MapPin, AlertCircle, CheckCircle2, Clock,
+  ClipboardList, Circle, ArrowRight,
 } from 'lucide-react'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -25,6 +28,9 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
   const [phase, setPhase] = useState<'idle' | 'locating' | 'sending'>('idle')
   const [err, setErr] = useState<any>(null)
   const [result, setResult] = useState<any>(null)
+  const [selfView, setSelfView] = useState<any>(null)
+  const [selfPin, setSelfPin] = useState('')
+  const [selfBusy, setSelfBusy] = useState(false)
 
   useEffect(() => {
     (async () => {
@@ -76,6 +82,34 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
     }
   }
 
+  async function loadSelf() {
+    if (pin.length < 3 || selfBusy) return
+    setSelfBusy(true); setErr(null)
+    // @ts-expect-error rpc typing
+    const { data } = await supabase.rpc('employee_self_view_by_pin', {
+      p_branch_code: branchCode, p_phone_or_pin: pin,
+    })
+    setSelfBusy(false)
+    if (data?.ok) { setSelfPin(pin); setSelfView(data); setPin('') }
+    else { setErr(data || { error: 'حصل خطأ، حاول تاني' }) }
+  }
+
+  async function toggleTask(taskId: string, currentStatus: string) {
+    const next = currentStatus === 'completed' ? 'pending' : 'completed'
+    // optimistic update
+    setSelfView((v: any) => v ? { ...v, tasks: v.tasks.map((t: any) => t.id === taskId ? { ...t, status: next } : t) } : v)
+    // @ts-expect-error rpc typing
+    const { data } = await supabase.rpc('employee_complete_task_by_pin', {
+      p_branch_code: branchCode, p_phone_or_pin: selfPin, p_task_id: taskId, p_status: next,
+    })
+    if (!data?.ok) {
+      // revert on failure
+      setSelfView((v: any) => v ? { ...v, tasks: v.tasks.map((t: any) => t.id === taskId ? { ...t, status: currentStatus } : t) } : v)
+    }
+  }
+
+  function closeSelf() { setSelfView(null); setSelfPin('') }
+
   if (loading) return <div className="min-h-screen bg-[#1F6F5F] flex items-center justify-center"><Loader2 className="w-9 h-9 text-white animate-spin" /></div>
 
   if (!branch) return (
@@ -103,6 +137,8 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
       <main className="flex-1 max-w-sm mx-auto w-full px-5 -mt-4 pb-8">
         {result ? (
           <ResultCard result={result} onDone={() => setResult(null)} />
+        ) : selfView ? (
+          <SelfViewCard view={selfView} onToggle={toggleTask} onClose={closeSelf} />
         ) : (
           <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-[0_10px_40px_-12px_rgba(31,111,95,0.25)]">
             <p className="text-center text-sm font-bold text-[#1A2E26] mb-1">سجّل دخولك أو خروجك</p>
@@ -140,6 +176,13 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
               <MapPin className="w-3.5 h-3.5 text-[#1F6F5F]" />
               {phase === 'locating' ? 'بنتأكد إنك في الفرع...' : phase === 'sending' ? 'جاري التسجيل...' : 'بنتحقق من موقعك وقت التسجيل'}
             </div>
+
+            {/* secondary: view my tasks + status (no clocking) */}
+            <button onClick={loadSelf} disabled={selfBusy || pin.length < 3}
+              className="mt-4 w-full h-12 rounded-2xl border border-[#1F6F5F]/25 bg-white text-[#1F6F5F] font-bold text-[13px] flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-40">
+              {selfBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <ClipboardList className="w-4 h-4" />}
+              تاسكاتي وحالتي
+            </button>
           </div>
         )}
 
@@ -182,6 +225,92 @@ function ResultCard({ result, onDone }: any) {
       </div>
 
       <button onClick={onDone} className="w-full mt-5 py-3.5 rounded-2xl bg-[#1F6F5F] text-white font-black text-sm shadow-lg shadow-[#1F6F5F]/20">تمام</button>
+    </div>
+  )
+}
+
+function fmtTime(iso: string | null) {
+  if (!iso) return ''
+  try { return new Date(iso).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) } catch { return '' }
+}
+
+function SelfViewCard({ view, onToggle, onClose }: any) {
+  const emp = view.employee || {}
+  const att = view.attendance
+  const tasks: any[] = view.tasks || []
+  const done = tasks.filter((t) => t.status === 'completed').length
+
+  let statusBox
+  if (!att) {
+    statusBox = (
+      <div className="rounded-2xl bg-[#FAFAF7] p-4 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-[#6B7280]/15 grid place-items-center"><Clock className="w-5 h-5 text-[#6B7280]" /></div>
+        <div><p className="text-[13px] font-black text-[#1A2E26]">لسه مسجّلتش حضور النهاردة</p><p className="text-[11px] text-[#6B7280]">اقفل الكارت ده وسجّل دخولك</p></div>
+      </div>
+    )
+  } else if (att.present) {
+    statusBox = (
+      <div className="rounded-2xl bg-[#1F6F5F]/8 border border-[#1F6F5F]/15 p-4 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-[#1F6F5F] grid place-items-center"><LogIn className="w-5 h-5 text-white" /></div>
+        <div>
+          <p className="text-[13px] font-black text-[#1F6F5F]">🟢 إنت داخل دلوقتي</p>
+          <p className="text-[11px] text-[#6B7280]">من الساعة {fmtTime(att.clock_in_at)}{att.sessions > 1 ? ` · ${att.sessions} فترات` : ''}</p>
+        </div>
+      </div>
+    )
+  } else {
+    statusBox = (
+      <div className="rounded-2xl bg-[#1A2E26]/5 border border-[#1A2E26]/10 p-4 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-[#1A2E26] grid place-items-center"><LogOut className="w-5 h-5 text-white" /></div>
+        <div>
+          <p className="text-[13px] font-black text-[#1A2E26]">🔴 خارج دلوقتي</p>
+          <p className="text-[11px] text-[#6B7280]">آخر خروج {fmtTime(att.clock_out_at)}{att.hours_worked != null ? ` · إجمالي ${att.hours_worked} ساعة` : ''}{att.sessions > 1 ? ` · ${att.sessions} فترات` : ''}</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-[0_10px_40px_-12px_rgba(31,111,95,0.25)]">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-black text-[#1A2E26]">{emp.full_name || ''}</h2>
+          {emp.role_ar && <p className="text-[12px] text-[#6B7280]">{emp.role_ar}</p>}
+        </div>
+        <button onClick={onClose} className="text-[12px] font-bold text-[#1F6F5F] flex items-center gap-1 active:scale-95"><ArrowRight className="w-4 h-4" /> رجوع</button>
+      </div>
+
+      {statusBox}
+
+      <div className="mt-5 flex items-center justify-between">
+        <p className="text-[13px] font-black text-[#1A2E26] flex items-center gap-1.5"><ClipboardList className="w-4 h-4 text-[#1F6F5F]" /> تاسكات النهاردة</p>
+        <span className="text-[11px] text-[#6B7280] font-bold">{done}/{tasks.length} خلصت</span>
+      </div>
+
+      <div className="mt-3 space-y-2">
+        {tasks.length === 0 && (
+          <p className="text-center text-[12px] text-[#6B7280] py-6">مفيش تاسكات لسه النهاردة 👌</p>
+        )}
+        {tasks.map((t) => {
+          const isDone = t.status === 'completed'
+          const pColor = t.priority === 'high' ? 'bg-red-400' : t.priority === 'low' ? 'bg-gray-300' : 'bg-amber-400'
+          return (
+            <button key={t.id} onClick={() => onToggle(t.id, t.status)}
+              className={`w-full text-right rounded-2xl border p-3 flex items-start gap-3 transition-all active:scale-[0.99] ${isDone ? 'bg-[#FAFAF7] border-gray-100' : 'bg-white border-gray-200'}`}>
+              {isDone
+                ? <CheckCircle2 className="w-5 h-5 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
+                : <Circle className="w-5 h-5 text-[#6B7280] flex-shrink-0 mt-0.5" />}
+              <div className="flex-1 min-w-0">
+                <p className={`text-[13px] font-bold leading-snug ${isDone ? 'text-[#6B7280] line-through' : 'text-[#1A2E26]'}`}>{t.title}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  {!isDone && <span className={`w-1.5 h-1.5 rounded-full ${pColor}`} />}
+                  {t.due_time && <span className="text-[10px] text-[#6B7280] font-mono" dir="ltr">{String(t.due_time).slice(0,5)}</span>}
+                </div>
+              </div>
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
