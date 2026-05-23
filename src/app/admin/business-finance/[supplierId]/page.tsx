@@ -405,7 +405,7 @@ export default function BusinessFinancePage({
             <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
               <Eye className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
               <p className="text-sm text-[#6B7280]">مفيش حركات في الفترة دي</p>
-              <p className="text-xs text-[#6B7280] mt-1">الـ system جاهز — في انتظار أول transaction من Elite</p>
+              <p className="text-xs text-[#6B7280] mt-1">الـ system جاهز — في انتظار أول transaction من {supplier.business_name}</p>
             </div>
           ) : (
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
