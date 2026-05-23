@@ -93,6 +93,9 @@ export const metadata: Metadata = {
   },
   appleWebApp: { capable: true, title: 'مضمونة', statusBarStyle: 'default' },
   category: 'business',
+  other: {
+    'p:domain_verify': '17411bdfcac6fbb3fa1286d6074aa8a4',
+  },
 }
 
 export const viewport: Viewport = {
