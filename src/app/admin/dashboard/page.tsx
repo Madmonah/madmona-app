@@ -772,12 +772,6 @@ export default function AdminDashboardV2() {
             <ToolCard href="/add-listing" icon={<Plus />} title="إضافة إيجار" sub="Add listing wizard" />
             <ToolCard href="/account" icon={<Users />} title="حسابي" sub="My account" />
             <ToolCard href="/my-bookings" icon={<Calendar />} title="حجوزاتي" sub="My bookings" />
-            <ToolCard href="/welcome" icon={<Heart />} title="الترحيب" sub="/welcome" />
-            <ToolCard href="/launch" icon={<Sparkles />} title="الإطلاق" sub="/launch landing" />
-            <ToolCard href="/pulse" icon={<Activity />} title="Pulse" sub="النبض" />
-            <ToolCard href="/halls" icon={<Crown />} title="القاعات" sub="Halls landing" />
-            <ToolCard href="/services" icon={<Star />} title="الخدمات" sub="Services landing" />
-            <ToolCard href="/spaces" icon={<MapPin />} title="المساحات" sub="Spaces landing" />
             <ToolCard href="/about" icon={<BookOpen />} title="عن مضمونة" sub="About" />
             <ToolCard href="/privacy" icon={<Shield />} title="الخصوصية" sub="Privacy" />
             <ToolCard href="/terms" icon={<ScrollText />} title="الشروط" sub="Terms" />
