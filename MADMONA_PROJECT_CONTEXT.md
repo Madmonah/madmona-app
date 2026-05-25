@@ -1,6 +1,6 @@
 # MADMONA — PROJECT CONTEXT (Source of Truth)
 
-**Last updated:** May 13, 2026
+**Last updated:** May 24, 2026
 **Owner:** Mohamed (محمد) — owner of مضمونة (Madmona)
 **Purpose:** This file is the persistent context for ALL Claude chats in this project. Upload to "Project knowledge" and/or paste into "Project instructions" so every new chat starts with the full picture.
 
@@ -22,38 +22,46 @@
 ### Brand
 - **Name:** مضمونة (Madmona) — note the **ض** (NOT م د م و ن ة or any variant)
 - **Site:** madmonacairo.com
-- **Founded:** 2019
-- **Identity:** General **rental marketplace** for ANYTHING — chalets, apartments, cars, cameras, equipment, workspaces, printing services, weddings supplies, etc. The Heliopolis coworking lounge is ONE category, not the brand.
+- **Founded:** 2019 — **relaunching 2026**
+- **Identity:** GUARANTEED **rental + services marketplace** for everything that can be rented or hired (chalets, apartments, cars, cameras, equipment, halls, events + service verticals: religious, home, medical, beauty, education...). NOT a listings-only site. ⛔ **Coworking is CANCELLED PERMANENTLY (May 24 2026)** — not a category, not content, not an identity. The content gate auto-rejects any coworking content; the legacy "workspaces" RENTAL category (supplier listings) is a separate thing and stays.
 - **Slogan:** *"احنا بتوع الإيجار"*
 - **Brand promise:** *"بنستهدف أن آلاف يحققوا دخل ثابت"*
 - **Vision:** Biggest rental platform in Egypt and possibly the world.
+
+### Business Model (THE HEART — never forget)
+مضمونة = a guaranteed rental + services **marketplace** AND a **FREE full operating system (CRM + ERP)** that every supplier gets to run their whole business — live at `/admin/business-finance/[supplierId]`. NOT a listings-only site, NOT a coworking space.
+- **CRM:** customers, bookings, appointments, confirmations, reviews, WhatsApp, at-risk customers, waitlists.
+- **ERP:** team, attendance, shifts, payroll, expenses, branches, cash count, purchase orders, suppliers, promos, documents, reports, VAT, audit-log.
+- **How we make money:** commission on bookings ONLY — **10% individuals / 5% businesses**. Listing is FREE. CRM+ERP given FREE in exchange for commission (NOT a SaaS subscription). Add-ons 100% to the supplier; insurance separate from commission.
+- **Everything-platform roadmap:** (1) rentals + services [live], (2) products for sale (e-commerce), (3) restaurants/food — "rent, hire, buy, and eat — all guaranteed."
+- **Differentiator:** most rental platforms just take commission. Madmona = marketplace + transaction guarantee + a full management system (CRM+ERP) for the partner.
+- **Every supplier pitch MUST include:** free CRM+ERP · commission 10/5 · free listing · full protection · fast payouts · 24/7 support · AI matching. Forgetting CRM/ERP in a pitch = needs_revision. Any coworking framing = rejected.
 
 ### Three Core Marketing Pillars (in this exact order)
 1. حماية كاملة
 2. دفع مستحقات سريع
 3. دعم مستمر
 
-### Marketing Vocabulary
-- "مورد" → rebranded to **"أجر معانا"**
-- "عميل" → rebranded to **"أجر مننا"**
-- Target audience: Freelancers, remote workers, startups, small teams, university students, content creators
+### Marketing / UI Vocabulary (LOCKED May 12 2026)
+- Supplier CTA = **"ضيف الليستنج"** EVERYWHERE (app + marketing). ❌ "أجر معانا" is REMOVED — never use it.
+- "أجر مننا" kept ONLY as the Marketplace tab label in BottomNav.
+- Target audience: (a) suppliers — anyone, individual or business, with something to rent or a service to offer; (b) renters/customers across all categories. (The old freelancer/coworking-centric audience is retired with coworking.)
 
 ### Commission Model
 - **Individuals:** 10%
 - **Businesses:** 5%
 - Lowest in the Egyptian rental market
 
-### Brand Colors
-- Deep Green `#1F5F3F` — PRIMARY / BASE / BACKGROUND for ALL designs
-- White `#FFFFFF` — base text
-- Gold `#B8860B` — accent
-- Burnt Orange / Rust `#C2410C` — accent
-- Ivory `#FAF7F0` — high-contrast text
-- ❌ Mohamed dislikes bright/light orange
+### Brand Colors (LOCKED — match live site madmonacairo.com, May 23 2026)
+- Background: **cream `#FAFAF7`** + subtle gradient-mesh (green/teal tints)
+- Greens: `#1F6F5F` (primary), `#2d7a52`, `#2FA084`, `#6FCF97`
+- Text: `#0A0A0A`
+- **Gold accent + gradients ALLOWED** — gold→green `#d4a017` → `#2FA084` → `#1F6F5F` on CTAs (supersedes the old no-gold/no-gradient lock)
+- ❌ Old palette (deep green #1F5F3F, burnt orange/rust #C2410C, ivory #FAF7F0) is RETIRED
 
-### Design Style
-- Ultra-minimal luxury boutique (Aesop / Byredo aesthetic)
-- NO stock photos, NO clutter
+### Design Style (match live site madmonacairo.com)
+- Cream background + subtle green/teal gradient-mesh, glass white cards, soft shadows, rounded corners (20px cards / 999px pills)
+- Fonts: **Cairo** (Arabic) + **Inter** (Latin)
 - Real photos preferred over AI-generated visuals
 
 ### Logo
@@ -75,7 +83,7 @@
 - YouTube: `@Madmonacairo`
 - LinkedIn: `/in/madmona-cairo-a48a71406`
 - X: `@madmonacairo`
-- Threads: `@madmonacairo`
+- Threads: `@madmona.cairo` (with dot, linked to IG)
 
 ### Office / Contact
 - Address: ٧ شارع سليمان عَزْمي، النزهة، مصر الجديدة، القاهرة (Azmy with **ز**, NOT ظ)
@@ -83,11 +91,6 @@
 - Phone: +201002229982
 - Hours: **24/7** (changed May 2026)
 - Maps: https://share.google/QbWskGlQ49AUTJrTc
-
-### Real Meeting Room Features (do NOT fabricate)
-- Privacy, soundproofing, natural light, WiFi
-- Capacity: 8 people
-- ❌ NO projector screen — don't claim it exists
 
 ---
 
@@ -248,14 +251,10 @@ SELECT public.process_whatsapp_outbound_queue();
 - Token-based (no auth required initially)
 - Auto-claim via `MadmonaListingClaimer` in root layout
 
-### Categories (HARDCODED in `MAIN_CATEGORIES` in AddListingClient.tsx — ~150 lines)
-Top-level: `properties`, `vehicles`, `workspaces`, `tourism`, `weddings`, `media`, `recreation`, `marine`, `equipment`, **`printing`** (added May 13), `professionals`
-
-⚠️ Future category additions REQUIRE dual-write:
-1. DB row in `categories` table
-2. Hardcoded entry in `MAIN_CATEGORIES` array in AddListingClient.tsx
-3. Update `cold_leads_category_check` constraint
-4. Deploy
+### Categories (now FULLY DB-DRIVEN — May 16+ 2026)
+The wizard is DB-driven: `categories.track` IN ('rentals','services','hybrid'). ~27 mains → 6 groups; `/marketplace` shows 3 track tabs (TrackTab). Attributes wired via `AttributeFieldRenderer`. The old hardcoded `MAIN_CATEGORIES` array is retired.
+- "workspaces" stays a normal RENTAL category (supplier listings) — separate from the cancelled coworking identity; don't confuse the two.
+⚠️ Category changes go through the DB (`categories` table + `attributes`); no hardcoded-array dual-write needed.
 
 ### Supplier Pitch — REQUIRED elements (every outbound)
 1. Commission: 10% individuals / 5% businesses
@@ -311,9 +310,9 @@ auto-save + reaper + API gate + alerter
 
 ---
 
-## 9. AI OS
+## 9. AI OS (Phase Ω — LIVE)
 
-42 agents across 8 teams:
+~49 agents across 8 teams (76+ active crons):
 - Sales (10)
 - Marketing (10)
 - Creative (4)
@@ -333,6 +332,8 @@ auto-save + reaper + API gate + alerter
 - Listing photographer
 
 Admin hub: `/admin/ai-os`
+
+**QC / approval gate (May 24 2026):** every marketing post passes `trg_content_publish_gate` (auto-rejects coworking; otherwise → `pending_review`). `marketing-qc` edge fn (cron 124, */10) auto-approves low/medium-risk and holds high-risk. Marketing WhatsApp/email held for owner approval via `trg_marketing_wa_gate`. Live customer replies + transactional + alerts are unaffected. Coworking crons 34/35 DELETED. Owner approves via `qc_approve()/qc_reject()` + view `v_pending_approvals`; digest cron 125 every 6h.
 
 ---
 
