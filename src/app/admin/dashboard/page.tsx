@@ -317,6 +317,8 @@ export default function AdminDashboardV2() {
         </div>
       </header>
 
+      <SectionNav />
+
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-8 pb-12">
 
         {/* ===== SYSTEM PULSE (Watchdog Bar) ===== */}
@@ -966,6 +968,62 @@ export default function AdminDashboardV2() {
 /* ============================================================
    COMPONENTS
    ============================================================ */
+function SectionNav() {
+  const [items, setItems] = useState<{ id: string; label: string }[]>([])
+  const [active, setActive] = useState('')
+
+  useEffect(() => {
+    const main = document.querySelector('main')
+    if (!main) return
+    const secs = Array.from(main.querySelectorAll(':scope > section')) as HTMLElement[]
+    const list: { id: string; label: string }[] = []
+    secs.forEach((s, i) => {
+      const h = s.querySelector('h2')
+      const txt = h?.textContent?.trim()
+      if (!txt) return
+      const label = txt.length > 20 ? txt.slice(0, 20) + '…' : txt
+      if (!s.id) s.id = `dsec-${i}`
+      list.push({ id: s.id, label })
+    })
+    setItems(list)
+    const onScroll = () => {
+      const y = window.scrollY + 130
+      let cur = list[0]?.id || ''
+      for (const it of list) {
+        const el = document.getElementById(it.id)
+        if (el && el.offsetTop <= y) cur = it.id
+      }
+      setActive(cur)
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  function go(id: string) {
+    const el = document.getElementById(id)
+    if (el) window.scrollTo({ top: el.offsetTop - 110, behavior: 'smooth' })
+  }
+
+  if (items.length === 0) return null
+  return (
+    <div className="sticky top-14 z-20 border-b border-[#1F6F5F]/10 bg-white/70 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-4 py-2 flex items-center gap-1.5 overflow-x-auto whitespace-nowrap">
+        {items.map((it) => (
+          <button key={it.id} onClick={() => go(it.id)}
+            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${
+              active === it.id
+                ? 'bg-gradient-to-br from-[#D4A017] to-[#1F6F5F] text-white shadow-sm'
+                : 'bg-white text-[#6B7280] border border-black/5 hover:text-[#1A2E26] hover:border-[#1F6F5F]/30'
+            }`}>
+            {it.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: ReactNode }) {
   return (
     <section>
