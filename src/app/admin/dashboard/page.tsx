@@ -489,13 +489,12 @@ export default function AdminDashboardV2() {
             <ToolCard href="/admin/categories" icon={<FolderTree />} title="الفئات" sub="Categories + attrs" />
             <ToolCard href="/admin/payouts" icon={<Wallet />} title="المدفوعات" sub="Payouts" />
             <ToolCard href="/admin/listing-performance" icon={<FileBarChart />} title="أداء الإعلانات" sub="Performance" />
-            <ToolCard href="/admin/notifications" icon={<Bell />} title="إشعارات Push" sub={`${data.b2c.push_subscribers} مشترك`} />
             <ToolCard href="/" icon={<Eye />} title="معاينة الموقع" sub="الواجهة العامة" />
           </div>
         </Section>
 
         {/* ============ AI OS ============ */}
-        <Section title="🤖 AI OS" subtitle="49 agent عبر 8 فرق · self-improving prompts">
+        <Section title="🤖 AI OS" subtitle="8 فرق منظّمة · self-improving prompts">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
             <SubKpi label="Agents شغالين" value={`${data.ai.agents_enabled}/${data.ai.agents_total}`} />
             <SubKpi label="Healthy" value={data.ai.agents_healthy} tone="positive" />
@@ -690,12 +689,8 @@ export default function AdminDashboardV2() {
               badge={messages?.whatsapp.review_pending || undefined} />
             <ToolCard href="/admin/email-queue" icon={<Mail />} title="طابور الإيميل" sub={`${(messages?.email.admin_queued || 0) + (messages?.email.customer_queued || 0)} في الطابور`}
               badge={(messages?.email.admin_failed || 0) + (messages?.email.customer_failed || 0) || undefined} />
-            <ToolCard href="/admin/welcome-messages" icon={<Heart />} title="رسائل ترحيبية" sub="Welcome flows" />
             <ToolCard href="/admin/email-templates" icon={<ScrollText />} title="قوالب الإيميل" sub="Email templates" />
             <ToolCard href="/admin/notifications" icon={<Bell />} title="إرسال Push" sub={`${messages?.push.subscribers || 0} مشترك`} />
-            <ToolCard href="/admin/daily-messages" icon={<Send />} title="رسالة اليوم" sub={`${messages?.daily.today || 0} اليوم · ${messages?.daily.total || 0} إجمالي`} />
-            <ToolCard href="/admin/leads" icon={<Phone />} title="Cold Leads" sub={`${data.whatsapp.cold_leads_new} جديد`} />
-            <ToolCard href="/admin/leads-feed" icon={<Rss />} title="Realtime Leads" sub="Live stream" />
           </div>
         </Section>
 
@@ -711,9 +706,6 @@ export default function AdminDashboardV2() {
             <ToolCard href="/admin/social-groups" icon={<Users />} title="فيسبوك Groups" sub="عمل value-first" />
             <ToolCard href="/admin/supplier-posts" icon={<Newspaper />} title="منشورات الموردين" sub="Supplier posts" />
             <ToolCard href="/admin/news" icon={<Newspaper />} title="الأخبار" sub="News + RSS" />
-            <ToolCard href="/admin/daily-messages" icon={<Send />} title="رسالة اليوم" sub="Daily broadcasts" />
-            <ToolCard href="/admin/email-templates" icon={<Mail />} title="قوالب الإيميل" sub="Email templates" />
-            <ToolCard href="/admin/email-queue" icon={<Inbox />} title="طابور الإيميل" sub="Email queue" />
             <ToolCard href="/admin/sponsorships" icon={<Crown />} title="الرعاية" sub="Sponsorships" />
             <ToolCard href="/admin/site-settings" icon={<Settings />} title="إعدادات الموقع" sub="صور + سوشيال" />
           </div>
@@ -723,7 +715,6 @@ export default function AdminDashboardV2() {
         <Section title="📊 التحليلات والذكاء التجاري" subtitle="kpis · forecasts · briefs · strategy">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
             <ToolCard href="/admin/hq" icon={<Compass />} title="HQ · مركز القيادة" sub="Top-level overview" />
-            <ToolCard href="/admin/insights" icon={<Lightbulb />} title="Insights" sub="رؤى الـ system" />
             <ToolCard href="/admin/funnel" icon={<TrendingUp />} title="Sales Funnel" sub="مسار التحويل" />
             <ToolCard href="/admin/demand-forecast" icon={<Zap />} title="توقعات الطلب" sub="Demand Forecast" />
             <ToolCard href="/admin/ceo-briefs" icon={<ScrollText />} title="CEO Briefs" sub="ملخصات يومية" />
@@ -750,7 +741,6 @@ export default function AdminDashboardV2() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
             <ToolCard href="/admin/runbook" icon={<BookOpen />} title="Runbook" sub="documentation + history" />
             <ToolCard href="/admin/workflows" icon={<Workflow />} title="Workflows" sub="Automation flows" />
-            <ToolCard href="/admin/agent-runs" icon={<ClipboardList />} title="Agent Runs Log" sub="History" />
             <ToolCard href="/admin/refresh-fb-token" icon={<RefreshCw />} title="تجديد FB Token" sub="Meta API" />
           </div>
         </Section>
@@ -785,24 +775,12 @@ export default function AdminDashboardV2() {
             <ToolCard href="/welcome" icon={<Heart />} title="الترحيب" sub="/welcome" />
             <ToolCard href="/launch" icon={<Sparkles />} title="الإطلاق" sub="/launch landing" />
             <ToolCard href="/pulse" icon={<Activity />} title="Pulse" sub="النبض" />
-            <ToolCard href="/coworking" icon={<Building2 />} title="Coworking" sub="مساحة العمل" />
             <ToolCard href="/halls" icon={<Crown />} title="القاعات" sub="Halls landing" />
             <ToolCard href="/services" icon={<Star />} title="الخدمات" sub="Services landing" />
             <ToolCard href="/spaces" icon={<MapPin />} title="المساحات" sub="Spaces landing" />
             <ToolCard href="/about" icon={<BookOpen />} title="عن مضمونة" sub="About" />
             <ToolCard href="/privacy" icon={<Shield />} title="الخصوصية" sub="Privacy" />
             <ToolCard href="/terms" icon={<ScrollText />} title="الشروط" sub="Terms" />
-          </div>
-        </Section>
-
-        {/* ============ 📜 LEGACY PAGES ============ */}
-        <Section title="📜 صفحات قديمة (Legacy)" subtitle="نسخ سابقة مستخدمة للمرجعية">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-            <ToolCard href="/admin/marketplace-suppliers" icon={<Building2 />} title="Suppliers (قديم)" sub="استخدم /admin/sup" />
-            <ToolCard href="/admin/suppliers" icon={<Building2 />} title="موردين V1" sub="Legacy v1" />
-            <ToolCard href="/admin/suppliers-v2" icon={<Building2 />} title="موردين V2" sub="Legacy v2" />
-            <ToolCard href="/admin/bookings" icon={<Calendar />} title="حجوزات (قديم)" sub="استخدم marketplace-bookings" />
-            <ToolCard href="/admin/units" icon={<Package />} title="Units (قديم)" sub="نظام الوحدات القديم" />
           </div>
         </Section>
 
@@ -821,7 +799,6 @@ export default function AdminDashboardV2() {
               <CompactLink href="/admin/ai-assistant" label="ai-assistant" />
               <CompactLink href="/admin/ai-os" label="ai-os" />
               <CompactLink href="/admin/alerts" label="alerts" />
-              <CompactLink href="/admin/bookings" label="bookings (legacy)" muted />
               <CompactLink href="/admin/business-finance" label="business-finance" />
               <CompactLink href="/admin/business-partners" label="business-partners" />
               <CompactLink href="/admin/business-partners/new" label="business-partners/new" />
@@ -847,7 +824,6 @@ export default function AdminDashboardV2() {
               <CompactLink href="/admin/listings" label="listings" />
               <CompactLink href="/admin/marketing-hq" label="marketing-hq" />
               <CompactLink href="/admin/marketplace-bookings" label="marketplace-bookings" />
-              <CompactLink href="/admin/marketplace-suppliers" label="marketplace-suppliers (legacy)" muted />
               <CompactLink href="/admin/messages" label="messages" />
               <CompactLink href="/admin/news" label="news" />
               <CompactLink href="/admin/notifications" label="notifications" />
@@ -868,15 +844,12 @@ export default function AdminDashboardV2() {
               <CompactLink href="/admin/strategy" label="strategy" />
               <CompactLink href="/admin/sup" label="sup" />
               <CompactLink href="/admin/supplier-posts" label="supplier-posts" />
-              <CompactLink href="/admin/suppliers" label="suppliers (legacy v1)" muted />
-              <CompactLink href="/admin/suppliers-v2" label="suppliers-v2 (legacy v2)" muted />
-              <CompactLink href="/admin/units" label="units (legacy)" muted />
               <CompactLink href="/admin/wa-review" label="wa-review" />
               <CompactLink href="/admin/welcome-messages" label="welcome-messages" />
               <CompactLink href="/admin/workflows" label="workflows" />
             </div>
             <p className="text-[10px] text-[#6B7280] mt-3 pt-3 border-t border-gray-100">
-              📊 {61} صفحة admin إجمالي · الرمادي = legacy
+              📊 {59} صفحة admin
             </p>
           </div>
         </Section>
