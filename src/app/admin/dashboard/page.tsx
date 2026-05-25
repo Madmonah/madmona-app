@@ -361,6 +361,24 @@ export default function AdminDashboardV2() {
           </div>
         </section>
 
+        {/* ===== COMPANY OVERVIEW BANNER ===== */}
+        <Link href="/admin/company"
+          className="block bg-gradient-to-l from-[#D4A017] via-[#2FA084] to-[#1F6F5F] text-white rounded-2xl p-4 hover:shadow-lg transition-all group">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-black tracking-[0.3em] uppercase text-white/80 mb-0.5">MADMONA · COMPANY</p>
+                <h3 className="text-base font-black">🏢 مضمونة كشركة</h3>
+                <p className="text-xs text-white/85">الصورة المالية الكاملة · إيراد · مصاريف · صافي ربح · عملاء · موظفين</p>
+              </div>
+            </div>
+            <ChevronLeft className="w-5 h-5 -scale-x-100 group-hover:-translate-x-1 transition-transform hidden md:block" />
+          </div>
+        </Link>
+
         {/* ===== QUICK ACTIONS (top of fold) ===== */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
           <QuickAction href="/admin/ai-assistant" icon={<Sparkles className="w-5 h-5" />}
@@ -812,6 +830,7 @@ export default function AdminDashboardV2() {
               <CompactLink href="/admin/ceo-briefs" label="ceo-briefs" />
               <CompactLink href="/admin/collaborations" label="collaborations" />
               <CompactLink href="/admin/command-center" label="command-center" />
+              <CompactLink href="/admin/company" label="company ⭐" />
               <CompactLink href="/admin/daily-messages" label="daily-messages" />
               <CompactLink href="/admin/dashboard" label="dashboard (أنت هنا)" muted />
               <CompactLink href="/admin/demand-forecast" label="demand-forecast" />
