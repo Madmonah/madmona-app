@@ -270,9 +270,9 @@ export default function AdminDashboardV2() {
     ? Math.round((data.ai.agents_healthy / data.ai.agents_total) * 100) : 0
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+    <div className="min-h-screen text-[#1A2E26]" dir="rtl" style={{ background: 'radial-gradient(1100px 560px at 88% -8%, rgba(47,160,132,0.10), transparent 60%), radial-gradient(900px 480px at -5% 4%, rgba(31,111,95,0.09), transparent 55%), radial-gradient(800px 500px at 50% 118%, rgba(212,160,23,0.06), transparent 60%), #FAFAF7' }}>
       {/* ===== HEADER ===== */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-30 backdrop-blur-md bg-white/95">
+      <header className="sticky top-0 z-30 border-b border-[#1F6F5F]/10 bg-white/70 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link href="/account"
@@ -280,7 +280,7 @@ export default function AdminDashboardV2() {
               <ArrowRight className="w-4 h-4 text-[#6B7280]" />
             </Link>
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-0.5">
+              <p className="text-[10px] font-black tracking-[0.3em] uppercase mb-0.5 bg-gradient-to-r from-[#D4A017] to-[#1F6F5F] bg-clip-text text-transparent">
                 MADMONA · ADMIN
               </p>
               <h1 className="text-base md:text-lg font-black text-[#1A2E26] leading-none">
@@ -969,9 +969,12 @@ export default function AdminDashboardV2() {
 function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: ReactNode }) {
   return (
     <section>
-      <div className="mb-3">
-        <h2 className="text-base md:text-lg font-black text-[#1A2E26]">{title}</h2>
-        {subtitle && <p className="text-[11px] text-[#6B7280] mt-0.5">{subtitle}</p>}
+      <div className="mb-3 flex items-start gap-2.5">
+        <span className="mt-1 w-1 h-7 rounded-full bg-gradient-to-b from-[#D4A017] to-[#1F6F5F] flex-shrink-0" />
+        <div>
+          <h2 className="text-base md:text-lg font-black text-[#1A2E26]">{title}</h2>
+          {subtitle && <p className="text-[11px] text-[#6B7280] mt-0.5">{subtitle}</p>}
+        </div>
       </div>
       {children}
     </section>
@@ -986,8 +989,8 @@ function KpiCard({
 }) {
   const t = tone === 'positive' ? 'text-[#1F6F5F]' : tone === 'negative' ? 'text-red-600' : 'text-[#1A2E26]'
   return (
-    <div className={`rounded-2xl p-4 border ${
-      primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'
+    <div className={`rounded-2xl p-4 border transition-all ${
+      primary ? 'bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#1F6F5F] border-transparent text-white shadow-lg shadow-[#1F6F5F]/25' : 'bg-white border-black/5 shadow-sm shadow-black/[0.04] hover:shadow-md'
     }`}>
       <div className={`flex items-center gap-2 mb-2 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>
         <span className="w-4 h-4 inline-flex">{icon}</span>
@@ -1008,7 +1011,7 @@ function SubKpi({ label, value, note, tone }: {
     : tone === 'amber' ? 'text-amber-600'
     : 'text-[#1A2E26]'
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-3">
+    <div className="bg-white rounded-xl border border-black/5 shadow-sm shadow-black/[0.03] p-3">
       <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1">{label}</p>
       <p className={`text-xl font-black ${t}`}>{value}</p>
       {note && <p className="text-[10px] text-[#6B7280] mt-0.5">{note}</p>}
@@ -1021,9 +1024,9 @@ function QuickAction({ href, icon, title, sub, accent, badge }: {
 }) {
   return (
     <Link href={href}
-      className={`relative rounded-2xl border p-4 transition-all hover:shadow-md active:scale-[0.98] ${
-        accent ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white hover:bg-[#185547]'
-               : 'bg-white border-gray-100 text-[#1A2E26] hover:border-[#1F6F5F]'
+      className={`relative rounded-2xl border p-4 transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] ${
+        accent ? 'bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#1F6F5F] border-transparent text-white shadow-lg shadow-[#1F6F5F]/25'
+               : 'bg-white border-black/5 text-[#1A2E26] shadow-sm shadow-black/[0.04] hover:border-[#1F6F5F]/30'
       }`}>
       {badge !== undefined && badge > 0 && (
         <span className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
@@ -1044,13 +1047,13 @@ function ToolCard({ href, icon, title, sub, badge }: {
 }) {
   return (
     <Link href={href}
-      className="relative bg-white rounded-2xl border border-gray-100 hover:border-[#1F6F5F] hover:shadow-sm p-3.5 transition-all active:scale-[0.98] group">
+      className="relative bg-white rounded-2xl border border-black/5 shadow-sm shadow-black/[0.04] hover:border-[#1F6F5F]/30 hover:shadow-md hover:-translate-y-0.5 p-3.5 transition-all active:scale-[0.98] group">
       {badge !== undefined && badge > 0 && (
         <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
           {badge}
         </span>
       )}
-      <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#FAFAF7] text-[#1F6F5F] mb-2 group-hover:bg-[#1F6F5F] group-hover:text-white transition-colors">
+      <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] mb-2 group-hover:bg-gradient-to-br group-hover:from-[#2FA084] group-hover:to-[#1F6F5F] group-hover:text-white transition-colors">
         <span className="w-4 h-4 inline-flex">{icon}</span>
       </div>
       <p className="text-sm font-bold text-[#1A2E26] leading-tight">{title}</p>
@@ -1262,7 +1265,7 @@ function PartnerCard({ p }: { p: B2BPartner }) {
     p.contract_status
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:border-[#1F6F5F] transition-colors">
+    <div className="bg-white rounded-2xl border border-black/5 shadow-sm shadow-black/[0.04] p-4 hover:border-[#1F6F5F]/30 hover:shadow-md transition-all">
       <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-11 h-11 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] flex items-center justify-center flex-shrink-0">
@@ -1313,7 +1316,7 @@ function PartnerLink({ href, icon, label, accent }: {
     <Link href={href}
       className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors text-center ${
         accent
-          ? 'bg-[#1F6F5F] text-white hover:bg-[#185547]'
+          ? 'bg-gradient-to-br from-[#2FA084] to-[#1F6F5F] text-white hover:shadow-md'
           : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-gray-100'
       }`}>
       <span className="w-4 h-4 inline-flex">{icon}</span>
