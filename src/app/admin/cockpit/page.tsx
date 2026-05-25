@@ -1,9 +1,10 @@
 // src/app/admin/cockpit/page.tsx
 // =====================================================================
 // مضمونة — كوكبيت المالك (Owner Cockpit)
-// لوحة واحدة منظّمة: أرقام حيّة + روابط مجمّعة حسب الوظيفة.
-// الهدف: المالك ميتوهش وسط عشرات صفحات الأدمن — كل اللي بيستخدمه في مكان واحد.
+// لوحة واحدة منظّمة: أرقام حيّة + كل صفحات الأدمن (67) مجمّعة حسب الوظيفة.
+// الهدف: المالك ميتوهش — أهم الصفحات فوق كبيرة، والباقي مرتّب تحتها.
 // Server component — يقرأ مباشرة من Supabase (service role) زي qc-reports.
+// لإضافة/حذف صفحة: عدّل مصفوفة STAR (الأهم) أو GROUPS (الخريطة الكاملة).
 // =====================================================================
 
 import { supabase as supabaseAdmin } from '@/lib/supabase'
@@ -26,11 +27,9 @@ const C = {
 
 type Counts = {
   pendingApprovals: number
-  ccPending: number
   ccApproved: number
   ccScheduled: number
   ccPublished: number
-  ccNoPublisher: number
   ccPubToday: number
   waPending: number
   agentsOn: number
@@ -39,8 +38,8 @@ type Counts = {
 
 async function loadCounts(): Promise<Counts> {
   const c: Counts = {
-    pendingApprovals: 0, ccPending: 0, ccApproved: 0, ccScheduled: 0,
-    ccPublished: 0, ccNoPublisher: 0, ccPubToday: 0, waPending: 0,
+    pendingApprovals: 0, ccApproved: 0, ccScheduled: 0,
+    ccPublished: 0, ccPubToday: 0, waPending: 0,
     agentsOn: 0, agentsTotal: 0,
   }
 
@@ -49,20 +48,19 @@ async function loadCounts(): Promise<Counts> {
       .from('v_pending_approvals' as never)
       .select('*', { count: 'exact', head: true })
     c.pendingApprovals = count ?? 0
-  } catch { /* view may be empty */ }
+  } catch { /* view guard */ }
 
   try {
     const { data } = await supabaseAdmin.from('content_calendar').select('status, published_at')
     const rows = (data ?? []) as Array<{ status: string | null; published_at: string | null }>
     const today = new Date().toISOString().slice(0, 10)
     for (const r of rows) {
-      if (r.status === 'pending_review') c.ccPending++
-      else if (r.status === 'approved') c.ccApproved++
+      if (r.status === 'approved') c.ccApproved++
       else if (r.status === 'scheduled') c.ccScheduled++
       else if (r.status === 'published') {
         c.ccPublished++
         if ((r.published_at ?? '').slice(0, 10) === today) c.ccPubToday++
-      } else if (r.status === 'no_publisher') c.ccNoPublisher++
+      }
     }
   } catch { /* table guard */ }
 
@@ -84,40 +82,83 @@ async function loadCounts(): Promise<Counts> {
   return c
 }
 
-// ---- link groups (edit this array to add/remove routes) ----
-const GROUPS: Array<{
-  title: string
-  icon: string
-  links: Array<{ href: string; label: string; desc: string; badgeKey?: keyof Counts; badgeTone?: 'gold' | 'green' | 'gray' }>
-}> = [
+// ---- أهم الصفحات (اللي بتستخدمها يوميًا) ----
+const STAR: Array<{ href: string; emoji: string; label: string; desc: string; badgeKey?: keyof Counts }> = [
+  { href: '/admin/marketing-hq', emoji: '📣', label: 'مركز التسويق', desc: 'الحملات والمحتوى والجدولة' },
+  { href: '/admin/wa-review', emoji: '💬', label: 'مراجعة واتساب', desc: 'ردود AI للعملاء قبل الإرسال', badgeKey: 'waPending' },
+  { href: '/admin/leads', emoji: '🎯', label: 'الليدز', desc: 'العملاء والموردين المحتملين' },
+  { href: '/admin/suppliers', emoji: '🏷️', label: 'الموردين', desc: 'كل الموردين على المنصة' },
+  { href: '/admin/listings', emoji: '📦', label: 'الليستنجس', desc: 'كل المعروضات للإيجار' },
+  { href: '/admin/payouts', emoji: '💰', label: 'المدفوعات', desc: 'الفلوس والتحويلات' },
+  { href: '/admin/qc-reports', emoji: '✅', label: 'الجودة', desc: 'فحص المحتوى والإعلانات' },
+  { href: '/admin/ai-os', emoji: '🤖', label: 'نظام التشغيل', desc: 'الوكلاء والصحة والتنبيهات' },
+]
+
+// ---- الخريطة الكاملة (كل الـ67 صفحة) ----
+const GROUPS: Array<{ title: string; icon: string; links: Array<[string, string]> }> = [
   {
-    title: 'المراجعة والجودة',
-    icon: '✅',
-    links: [
-      { href: '/admin/approvals', label: 'موافقات المالك', desc: 'المحتوى عالي الخطورة (أوتوماتيك دلوقتي عبر المُعتمِد)', badgeKey: 'pendingApprovals', badgeTone: 'gold' },
-      { href: '/admin/qc-reports', label: 'تقارير الجودة', desc: 'فحص الـ QC للإعلانات الجديدة' },
+    title: 'التسويق والمحتوى', icon: '📣', links: [
+      ['/admin/marketing-hq', 'مركز التسويق'], ['/admin/ad-builder', 'منشئ الإعلانات'],
+      ['/admin/ad-creatives', 'كرياتيف الإعلانات'], ['/admin/social-packs', 'باقات السوشيال'],
+      ['/admin/social-groups', 'المجموعات'], ['/admin/reels', 'الريلز'],
+      ['/admin/supplier-posts', 'بوستات الموردين'], ['/admin/news', 'الأخبار'],
+      ['/admin/daily-messages', 'الرسائل اليومية'], ['/admin/welcome-messages', 'رسائل الترحيب'],
+      ['/admin/email-templates', 'قوالب الإيميل'], ['/admin/email-queue', 'طابور الإيميل'],
     ],
   },
   {
-    title: 'التسويق والمحتوى',
-    icon: '📣',
-    links: [
-      { href: '/admin/marketing-hq', label: 'مركز التسويق', desc: 'الحملات والمحتوى والجدولة' },
+    title: 'واتساب · عملاء · ليدز', icon: '💬', links: [
+      ['/admin/wa-review', 'مراجعة واتساب'], ['/admin/leads', 'الليدز'],
+      ['/admin/leads-feed', 'موجز الليدز'], ['/admin/messages', 'الرسائل'],
+      ['/admin/notifications', 'الإشعارات'], ['/admin/funnel', 'المسار (Funnel)'],
     ],
   },
   {
-    title: 'واتساب والعملاء',
-    icon: '💬',
-    links: [
-      { href: '/admin/wa-review', label: 'مراجعة ردود الواتساب', desc: 'ردود AI لـ leads بتستنى مراجعتك قبل الإرسال', badgeKey: 'waPending', badgeTone: 'gold' },
+    title: 'الموردين · الليستنجس · الحجوزات', icon: '🏷️', links: [
+      ['/admin/suppliers', 'الموردين'], ['/admin/suppliers-v2', 'الموردين v2'],
+      ['/admin/marketplace-suppliers', 'موردي السوق'], ['/admin/business-partners', 'شركاء الأعمال'],
+      ['/admin/partnerships', 'الشراكات'], ['/admin/collaborations', 'التعاونات'],
+      ['/admin/listings', 'الليستنجس'], ['/admin/listing-drafts', 'مسودّات الليستنج'],
+      ['/admin/listing-performance', 'أداء الليستنج'], ['/admin/units', 'الوحدات'],
+      ['/admin/categories', 'التصنيفات'], ['/admin/bookings', 'الحجوزات'],
+      ['/admin/marketplace-bookings', 'حجوزات السوق'],
     ],
   },
   {
-    title: 'الذكاء الاصطناعي والوكلاء',
-    icon: '🤖',
-    links: [
-      { href: '/admin/ai-os', label: 'نظام التشغيل (AI OS)', desc: 'الوكلاء، الصحة، التنبيهات' },
-      { href: '/admin/insights', label: 'الرؤى', desc: 'تحليلات وتوصيات النظام' },
+    title: 'الفلوس', icon: '💰', links: [
+      ['/admin/payouts', 'المدفوعات'], ['/admin/business-finance', 'ماليات الأعمال'],
+      ['/admin/sponsorships', 'الرعايات'],
+    ],
+  },
+  {
+    title: 'المراجعة والجودة', icon: '✅', links: [
+      ['/admin/qc-reports', 'تقارير الجودة'], ['/admin/ad-review', 'مراجعة الإعلانات'],
+      ['/admin/policy-rules', 'قواعد السياسة'], ['/admin/fraud-alerts', 'تنبيهات الاحتيال'],
+    ],
+  },
+  {
+    title: 'الذكاء الاصطناعي · الوكلاء', icon: '🤖', links: [
+      ['/admin/ai-os', 'نظام التشغيل AI'], ['/admin/agents', 'الوكلاء'],
+      ['/admin/agent-health', 'صحة الوكلاء'], ['/admin/agent-network', 'شبكة الوكلاء'],
+      ['/admin/agent-runs', 'تشغيلات الوكلاء'], ['/admin/capabilities', 'القدرات'],
+      ['/admin/prompt-versions', 'نسخ البرومبت'], ['/admin/pipelines', 'خطوط المعالجة'],
+      ['/admin/workflows', 'سير العمل'], ['/admin/ai-assistant', 'المساعد الذكي'],
+      ['/admin/command-center', 'غرفة القيادة'],
+    ],
+  },
+  {
+    title: 'التحليلات · القيادة', icon: '📊', links: [
+      ['/admin/dashboard', 'الداشبورد'], ['/admin/hq', 'المقر'],
+      ['/admin/ceo-briefs', 'ملخصات الإدارة'], ['/admin/strategy', 'الاستراتيجية'],
+      ['/admin/insights', 'الرؤى'], ['/admin/performance', 'الأداء'],
+      ['/admin/activity', 'النشاط'], ['/admin/alerts', 'التنبيهات'],
+      ['/admin/demand-forecast', 'توقّع الطلب'],
+    ],
+  },
+  {
+    title: 'التشغيل · الإعدادات', icon: '⚙️', links: [
+      ['/admin/runbook', 'دليل التشغيل'], ['/admin/site-settings', 'إعدادات الموقع'],
+      ['/admin/refresh-fb-token', 'تحديث توكن فيسبوك'], ['/admin/madmona', 'صفحة مضمونة'],
     ],
   },
 ]
@@ -127,7 +168,7 @@ const QUICK: Array<{ href: string; label: string; external?: boolean }> = [
   { href: '/add-listing', label: '➕ ضيف ليستنج' },
 ]
 
-function Kpi({ value, label, tone, hint }: { value: number | string; label: string; tone: 'green' | 'gold' | 'gray' | 'ok'; hint?: string }) {
+function Kpi({ value, label, tone, hint }: { value: number | string; label: string; tone: 'green' | 'gold' | 'gray'; hint?: string }) {
   const color = tone === 'gold' ? C.gold : tone === 'gray' ? C.gray : C.green
   return (
     <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 16, padding: '16px 18px', flex: '1 1 150px', minWidth: 150 }}>
@@ -144,7 +185,7 @@ export default async function CockpitPage() {
 
   return (
     <div dir="rtl" style={{ fontFamily: 'Cairo, Tahoma, sans-serif', background: C.cream, minHeight: '100vh', padding: 24 }}>
-      <div style={{ maxWidth: 1040, margin: '0 auto' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
         {/* Header */}
         <div style={{
@@ -155,7 +196,7 @@ export default async function CockpitPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
             <div>
               <h1 style={{ margin: 0, fontSize: 28, fontWeight: 900 }}>لوحة التحكم — مضمونة</h1>
-              <p style={{ margin: '4px 0 0', fontSize: 14, opacity: 0.92 }}>كل اللي بتحتاجه في مكان واحد. احنا بتوع الإيجار.</p>
+              <p style={{ margin: '4px 0 0', fontSize: 14, opacity: 0.92 }}>كل صفحات الإدارة في مكان واحد. احنا بتوع الإيجار.</p>
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {QUICK.map(q => (
@@ -184,13 +225,13 @@ export default async function CockpitPage() {
               النظام بيراجع المحتوى عالي الخطورة، يصلّح السليم وينشره، ويرجّع اللي فيه مشكلة للموظف المختص أوتوماتيك. كل 10 دقايق.
             </div>
           </div>
-          <a href="/admin/approvals" style={{ color: C.green, fontWeight: 800, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+          <a href="/admin/qc-reports" style={{ color: C.green, fontWeight: 800, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' }}>
             {ownerClear ? 'مفيش حاجة مستنياك ✓' : `${c.pendingApprovals} مستنيك ←`}
           </a>
         </div>
 
         {/* KPI strip */}
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 22 }}>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
           <Kpi value={c.pendingApprovals} label="مستني موافقتك" tone={c.pendingApprovals ? 'gold' : 'green'} hint={c.pendingApprovals ? 'محتاج قرارك' : 'كله تمام'} />
           <Kpi value={c.waPending} label="واتساب مستني رد" tone={c.waPending ? 'gold' : 'green'} hint="ردود AI للمراجعة" />
           <Kpi value={c.ccPublished} label="بوستات اتنشرت" tone="green" hint={`النهاردة: ${c.ccPubToday}`} />
@@ -198,46 +239,60 @@ export default async function CockpitPage() {
           <Kpi value={`${c.agentsOn}/${c.agentsTotal}`} label="وكلاء شغّالين" tone="green" />
         </div>
 
-        {/* Groups */}
+        {/* أهم الصفحات */}
+        <h2 style={{ fontSize: 18, fontWeight: 900, color: C.green, margin: '0 0 12px' }}>⭐ أهم الصفحات</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14, marginBottom: 30 }}>
+          {STAR.map(s => {
+            const badge = s.badgeKey ? (c[s.badgeKey] as number) : 0
+            return (
+              <a key={s.href} href={s.href}
+                style={{
+                  display: 'block', textDecoration: 'none', background: C.white,
+                  border: `1px solid ${C.line}`, borderRadius: 16, padding: '16px 18px',
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
+                }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 26 }}>{s.emoji}</span>
+                  {badge > 0 && (
+                    <span style={{ background: C.gold, color: C.white, fontSize: 12, fontWeight: 900, padding: '2px 9px', borderRadius: 999 }}>{badge}</span>
+                  )}
+                </div>
+                <div style={{ fontWeight: 900, color: C.ink, fontSize: 16, marginTop: 8 }}>{s.label}</div>
+                <div style={{ fontSize: 12, color: C.gray, marginTop: 3, lineHeight: 1.5 }}>{s.desc}</div>
+              </a>
+            )
+          })}
+        </div>
+
+        {/* الخريطة الكاملة */}
+        <h2 style={{ fontSize: 18, fontWeight: 900, color: C.green, margin: '0 0 12px' }}>🗺️ كل الصفحات</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
           {GROUPS.map(g => (
             <div key={g.title} style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 18, padding: 18 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <span style={{ fontSize: 20 }}>{g.icon}</span>
-                <h2 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: C.green }}>{g.title}</h2>
+                <span style={{ fontSize: 18 }}>{g.icon}</span>
+                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 900, color: C.green }}>{g.title}</h3>
               </div>
-              <div style={{ display: 'grid', gap: 10 }}>
-                {g.links.map(l => {
-                  const badge = l.badgeKey ? (c[l.badgeKey] as number) : null
-                  const showBadge = badge !== null && badge > 0
-                  return (
-                    <a key={l.href} href={l.href}
-                      style={{
-                        display: 'block', textDecoration: 'none', background: C.cream,
-                        border: `1px solid ${C.line}`, borderRadius: 12, padding: '12px 14px',
-                        transition: 'all .15s',
-                      }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontWeight: 800, color: C.ink, fontSize: 14.5 }}>{l.label}</span>
-                        {showBadge && (
-                          <span style={{ background: l.badgeTone === 'gold' ? C.gold : C.green, color: C.white, fontSize: 12, fontWeight: 900, padding: '2px 9px', borderRadius: 999 }}>
-                            {badge}
-                          </span>
-                        )}
-                      </div>
-                      <div style={{ fontSize: 12, color: C.gray, marginTop: 3, lineHeight: 1.5 }}>{l.desc}</div>
-                    </a>
-                  )
-                })}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {g.links.map(([href, label]) => (
+                  <a key={href} href={href}
+                    style={{
+                      textDecoration: 'none', background: C.cream, color: C.ink,
+                      border: `1px solid ${C.line}`, borderRadius: 999, padding: '6px 12px',
+                      fontSize: 13, fontWeight: 700,
+                    }}>
+                    {label}
+                  </a>
+                ))}
               </div>
             </div>
           ))}
         </div>
 
         {/* Footer note */}
-        <p style={{ textAlign: 'center', color: C.gray, fontSize: 12, marginTop: 24, lineHeight: 1.7 }}>
-          دي أهم الصفحات اللي بتستخدمها يوميًا، مجمّعة حسب الوظيفة. <br />
-          عايز تضيف صفحة تانية للوحة؟ عدّل مصفوفة <code style={{ background: '#eee', padding: '1px 5px', borderRadius: 4 }}>GROUPS</code> في أول الملف.
+        <p style={{ textAlign: 'center', color: C.gray, fontSize: 12, marginTop: 28, lineHeight: 1.7 }}>
+          أهم ٨ صفحات فوق، وكل الـ٦٧ صفحة متجمّعة تحت حسب الوظيفة. <br />
+          عايز تعدّل اللوحة؟ غيّر مصفوفة <code style={{ background: '#eee', padding: '1px 5px', borderRadius: 4 }}>STAR</code> أو <code style={{ background: '#eee', padding: '1px 5px', borderRadius: 4 }}>GROUPS</code> في أول الملف.
         </p>
       </div>
     </div>
