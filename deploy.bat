@@ -1,12 +1,12 @@
 @echo off
 echo ===============================================
-echo  Deploying: single-step list+signup form
+echo  Deploying: guest booking funnel fix (May 25 2026)
 echo ===============================================
 cd /d C:\madmona-app
 git add -A
-git commit -m "feat: combine asset listing + account creation in single form on /list-your-asset"
+git commit -m "fix(booking): guest checkout by phone + enum fix + flat pricing — unblock zero-bookings funnel"
 git push origin main
 echo.
-echo Pushed. Vercel will auto-deploy in ~2 minutes.
-echo Test URL: https://madmonacairo.com/list-your-asset
+echo Pushed. Vercel auto-deploys in ~2 minutes.
+echo TEST (incognito, NOT logged in): open a listing on https://madmonacairo.com/marketplace and book it.
 pause
