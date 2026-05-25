@@ -58,7 +58,7 @@ interface ListingAddon {
 
 interface PricingRule {
   id: string
-  period_type: 'hourly' | 'daily' | 'weekly' | 'monthly' | 'per_event'
+  period_type: 'hourly' | 'daily' | 'weekly' | 'monthly' | 'per_event' | 'per_service' | 'per_package'
   period_count: number
   price: number | string
   currency: string
@@ -105,6 +105,10 @@ export default function BookingPage() {
   const [pricingRules, setPricingRules] = useState<PricingRule[]>([])
   const [userId, setUserId] = useState<string | null>(null)
 
+  // Guest booking (no account): collected only when there is no session.
+  const [guestName, setGuestName] = useState('')
+  const [guestPhone, setGuestPhone] = useState('')
+
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null)
   const [startAt, setStartAt] = useState('')
   const [endAt, setEndAt] = useState('')
@@ -121,11 +125,11 @@ export default function BookingPage() {
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
-      if (!session?.user) {
-        setStage('unauthenticated')
-        return
-      }
-      setUserId(session.user.id)
+      // Guest booking enabled: do NOT wall anonymous users. Load the listing for
+      // everyone; capture userId only when a session exists. Anonymous visitors
+      // book with name + phone and can claim/link the booking to an account later.
+      const sessionUserId = session?.user?.id ?? null
+      if (sessionUserId) setUserId(sessionUserId)
 
       // Look up the listing WITHOUT filtering on status — we want to differentiate
       // between truly missing listings and ones that are paused/draft/etc, so we
@@ -186,19 +190,21 @@ export default function BookingPage() {
 
       // Load user's national_id if exists (for ID verification flow)
       // Column may not exist in all DBs (migration: ALTER TABLE profiles ADD COLUMN national_id TEXT;)
-      try {
-        // @ts-expect-error
-        const { data: profile } = await supabaseBrowser
-          .from('profiles')
-          .select('national_id')
-          .eq('id', session.user.id)
-          .maybeSingle()
-        if (profile?.national_id) {
-          setUserNationalId(profile.national_id)
-          setProvidedNationalId(profile.national_id)
+      if (sessionUserId) {
+        try {
+          // @ts-expect-error
+          const { data: profile } = await supabaseBrowser
+            .from('profiles')
+            .select('national_id')
+            .eq('id', sessionUserId)
+            .maybeSingle()
+          if (profile?.national_id) {
+            setUserNationalId(profile.national_id)
+            setProvidedNationalId(profile.national_id)
+          }
+        } catch {
+          // Column doesn't exist - silent fail
         }
-      } catch {
-        // Column doesn't exist - silent fail
       }
 
       setStage('ready')
@@ -240,7 +246,10 @@ export default function BookingPage() {
       return { periods: 0, baseAmount: 0, commission: 0, total: 0, supplierPayout: 0, valid: false, error: t('book.err_end_after_start') }
     }
     let periods = 1
-    if (selectedRule.period_type !== 'per_event') {
+    // Only duration-based types scale by time. per_event / per_service /
+    // per_package (and any other flat type) stay at 1 — previously these fell
+    // through to PERIOD_MS[undefined] and produced NaN amounts.
+    if (['hourly', 'daily', 'weekly', 'monthly'].includes(selectedRule.period_type)) {
       const ms = PERIOD_MS[selectedRule.period_type]
       periods = Math.ceil((end - start) / ms)
       if (periods < 1) periods = 1
@@ -285,11 +294,17 @@ export default function BookingPage() {
   }
 
   const handleSubmit = async () => {
-    if (!listing?.supplier || !selectedRule || !pricing.valid || !userId) return
+    if (!listing?.supplier || !selectedRule || !pricing.valid) return
     // Defense-in-depth: even if UI was bypassed, double-check before submit
     if (listing.supplier.kyc_status !== 'approved') {
       setError(t('book.err_supplier_review'))
       return
+    }
+    // Guest path (no account): require a name + a valid Egyptian mobile.
+    const isGuest = !userId
+    if (isGuest) {
+      if (!guestName.trim()) { setError('من فضلك اكتب اسمك'); return }
+      if (guestPhone.replace(/\D/g, '').length < 10) { setError('من فضلك اكتب رقم موبايل صحيح'); return }
     }
     setError(null)
     setStage('submitting')
@@ -314,6 +329,32 @@ export default function BookingPage() {
         return
       }
 
+      // ---- GUEST PATH: anonymous booking via SECURITY DEFINER RPC ----
+      // No account wall. Pricing is RE-COMPUTED server-side inside the RPC
+      // (client amounts are not trusted). Redirects to the public confirmation
+      // page using ?ref=<reference_code> as a capability token.
+      if (isGuest) {
+        // @ts-expect-error - rpc typing not generated
+        const { data: rpcData, error: rpcErr } = await supabaseBrowser.rpc('create_guest_booking', {
+          p_listing_id: listing.id,
+          p_pricing_rule_id: selectedRule.id,
+          p_start_at: startIso,
+          p_end_at: endIso,
+          p_guest_name: guestName.trim(),
+          p_guest_phone: guestPhone.replace(/\D/g, ''),
+          p_customer_notes: customerNotes.trim() || null,
+          p_addon_slugs: selectedAddons.map(a => a.slug),
+          p_guest_national_id:
+            listing.requires_id_verification && providedNationalId.trim().length >= 14
+              ? providedNationalId.trim()
+              : null,
+        })
+        if (rpcErr) throw rpcErr
+        const out = (rpcData ?? {}) as { booking_id?: string; reference_code?: string }
+        router.push(`/bookings/${out.booking_id}?created=1&ref=${encodeURIComponent(out.reference_code || '')}`)
+        return
+      }
+
       const commissionRate = Number(listing.supplier.commission_rate || 10)
 
       const insertData: Record<string, unknown> = {
@@ -330,7 +371,11 @@ export default function BookingPage() {
         total_amount: pricing.total,
         supplier_payout: pricing.supplierPayout,
         currency: selectedRule.currency || 'EGP',
-        status: listing.requires_id_verification ? 'pending_id_verification' : 'pending_payment',
+        // Always a valid mp_booking_status value. ID-verification state is tracked
+        // separately in id_verification_status. The enum has NO
+        // 'pending_id_verification' value, so inserting it used to throw
+        // (invalid enum) and silently killed every car / ID-required booking.
+        status: 'pending_payment',
         // Phase Z (May 18 2026): freeze the selected add-ons + sum at booking time
         selected_addons: selectedAddons,
         addons_amount: addonsAmount,
@@ -760,6 +805,40 @@ export default function BookingPage() {
           </div>
         )}
 
+        {/* Guest contact — anonymous visitors only (no account wall). Name + phone
+            are enough; the booking can be claimed/linked to an account later. */}
+        {!userId && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
+            <h3 className="text-base font-bold text-gray-900 mb-1">بياناتك للتواصل</h3>
+            <p className="text-xs text-gray-500 mb-3">مش لازم تعمل حساب — هنأكّد الحجز على رقمك على طول.</p>
+            <label className="block text-xs font-medium text-gray-700 mb-1">الاسم</label>
+            <input
+              type="text"
+              value={guestName}
+              onChange={e => setGuestName(e.target.value)}
+              placeholder="اكتب اسمك"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 mb-3"
+            />
+            <label className="block text-xs font-medium text-gray-700 mb-1">رقم الموبايل</label>
+            <input
+              type="tel"
+              inputMode="numeric"
+              value={guestPhone}
+              onChange={e => setGuestPhone(e.target.value.replace(/[^\d]/g, '').slice(0, 13))}
+              placeholder="01XXXXXXXXX"
+              dir="ltr"
+              style={{ textAlign: 'right' }}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30"
+            />
+            <p className="text-[11px] text-gray-500 mt-2">
+              عندك حساب؟{' '}
+              <Link href={`/auth/login?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`} className="text-[#1F6F5F] font-semibold">
+                سجّل دخول
+              </Link>
+            </p>
+          </div>
+        )}
+
         {/* Date/time picker */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
           <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -850,7 +929,7 @@ export default function BookingPage() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  {Number(selectedRule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')} × {pricing.periods} {selectedRule.period_type === 'per_event' ? '' : t(PERIOD_LABELS[selectedRule.period_type])}
+                  {Number(selectedRule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')} × {pricing.periods} {['hourly', 'daily', 'weekly', 'monthly'].includes(selectedRule.period_type) ? t(PERIOD_LABELS[selectedRule.period_type]) : ''}
                 </span>
                 <span>{pricing.baseAmount.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}</span>
               </div>
@@ -917,7 +996,7 @@ export default function BookingPage() {
         listingId={listing.id}
         listingTitle={listing.title}
         listingSlug={listing.slug}
-        isAuthenticated={true}
+        isAuthenticated={!!userId}
       />
     </div>
   )

@@ -76,69 +76,124 @@ function BookingDetailContent() {
   const [actioning, setActioning] = useState(false)
   const [isOwnerSupplier, setIsOwnerSupplier] = useState(false)
   const [isOwnerCustomer, setIsOwnerCustomer] = useState(false)
+  const [isGuestView, setIsGuestView] = useState(false)
   const [copiedAccount, setCopiedAccount] = useState(false)
   const [cancelDialog, setCancelDialog] = useState<{ open: boolean; byRole: 'supplier' | 'customer' | null }>({ open: false, byRole: null })
   const [cancelReasonInput, setCancelReasonInput] = useState('')
 
   useEffect(() => {
     const load = async () => {
+      const refParam = searchParams.get('ref')
       const { data: { session } } = await supabaseBrowser.auth.getSession()
-      if (!session?.user) {
-        setError(t('booking.login_first'))
-        setLoading(false)
-        return
-      }
-      setUserId(session.user.id)
 
-      // @ts-expect-error
-      const { data, error: fetchErr } = await supabaseBrowser
-        .from('marketplace_bookings')
-        .select(`
-          *,
-          listing:listings(title, slug, city, district, photos:listing_photos(url, is_primary)),
-          supplier:marketplace_suppliers(
-            business_name, profile_id,
-            profile:profiles!marketplace_suppliers_profile_id_fkey(phone)
-          )
-        `)
-        .eq('id', bookingId)
-        .maybeSingle()
-
-      if (fetchErr || !data) {
-        setError(t('bdetail.not_found_or_unauthorized'))
-        setLoading(false)
-        return
-      }
-
-      setBooking(data as Booking)
-      setIsOwnerCustomer(data.customer_id === session.user.id)
-
-      // Check ownership OR staff with can_manage_bookings
-      // @ts-expect-error
-      const { data: sup } = await supabaseBrowser
-        .from('marketplace_suppliers')
-        .select('id')
-        .eq('profile_id', session.user.id)
-        .eq('id', data.supplier_id)
-        .maybeSingle()
-
-      if (sup) {
-        setIsOwnerSupplier(true)
-      } else {
-        // Check staff
+      // ---- Authenticated read (owner customer / supplier / staff) via RLS ----
+      if (session?.user) {
+        setUserId(session.user.id)
         // @ts-expect-error
-        const { data: staff } = await supabaseBrowser
-          .from('supplier_staff')
-          .select('can_manage_bookings, supplier_id')
-          .eq('profile_id', session.user.id)
-          .eq('supplier_id', data.supplier_id)
-          .eq('is_active', true)
-          .eq('can_manage_bookings', true)
+        const { data } = await supabaseBrowser
+          .from('marketplace_bookings')
+          .select(`
+            *,
+            listing:listings(title, slug, city, district, photos:listing_photos(url, is_primary)),
+            supplier:marketplace_suppliers(
+              business_name, profile_id,
+              profile:profiles!marketplace_suppliers_profile_id_fkey(phone)
+            )
+          `)
+          .eq('id', bookingId)
           .maybeSingle()
 
-        if (staff) setIsOwnerSupplier(true)
+        if (data) {
+          setBooking(data as Booking)
+          setIsOwnerCustomer(data.customer_id === session.user.id)
+
+          // Check ownership OR staff with can_manage_bookings
+          // @ts-expect-error
+          const { data: sup } = await supabaseBrowser
+            .from('marketplace_suppliers')
+            .select('id')
+            .eq('profile_id', session.user.id)
+            .eq('id', data.supplier_id)
+            .maybeSingle()
+
+          if (sup) {
+            setIsOwnerSupplier(true)
+          } else {
+            // @ts-expect-error
+            const { data: staff } = await supabaseBrowser
+              .from('supplier_staff')
+              .select('can_manage_bookings, supplier_id')
+              .eq('profile_id', session.user.id)
+              .eq('supplier_id', data.supplier_id)
+              .eq('is_active', true)
+              .eq('can_manage_bookings', true)
+              .maybeSingle()
+
+            if (staff) setIsOwnerSupplier(true)
+          }
+
+          setLoading(false)
+          return
+        }
+        // RLS returned nothing for this user — fall through to the guest
+        // (capability-token) read below if a ?ref= was supplied.
       }
 
+      // ---- Guest read via reference_code capability token (?ref=) ----
+      if (refParam) {
+        // @ts-expect-error - rpc typing not generated
+        const { data: pub } = await supabaseBrowser.rpc('get_booking_public', {
+          p_booking_id: bookingId,
+          p_reference_code: refParam,
+        })
+        if (pub) {
+          const b = pub as {
+            id: string; reference_code: string | null; status: string
+            start_at: string; end_at: string
+            base_amount: number | string; total_amount: number | string; currency: string
+            customer_notes: string | null; cancellation_reason: string | null
+            listing: { title: string; slug: string; city: string | null; district: string | null; photo: string | null } | null
+            supplier: { business_name: string; phone: string | null } | null
+          }
+          const mapped: Booking = {
+            id: b.id,
+            reference_code: b.reference_code,
+            customer_id: '',
+            listing_id: '',
+            supplier_id: '',
+            start_at: b.start_at,
+            end_at: b.end_at,
+            base_amount: b.base_amount,
+            commission_amount: 0,
+            total_amount: b.total_amount,
+            currency: b.currency,
+            status: b.status,
+            customer_notes: b.customer_notes,
+            supplier_notes: null,
+            cancellation_reason: b.cancellation_reason,
+            confirmed_at: null,
+            cancelled_at: null,
+            created_at: '',
+            listing: b.listing
+              ? {
+                  title: b.listing.title, slug: b.listing.slug,
+                  city: b.listing.city, district: b.listing.district,
+                  photos: b.listing.photo ? [{ url: b.listing.photo, is_primary: true }] : [],
+                }
+              : null,
+            supplier: b.supplier
+              ? { business_name: b.supplier.business_name, profile: { phone: b.supplier.phone } }
+              : null,
+          }
+          setBooking(mapped)
+          setIsGuestView(true)
+          setLoading(false)
+          return
+        }
+      }
+
+      // ---- Nothing accessible ----
+      setError(session?.user ? t('bdetail.not_found_or_unauthorized') : t('booking.login_first'))
       setLoading(false)
     }
     load()
@@ -287,7 +342,7 @@ function BookingDetailContent() {
 
 ده screenshot من التحويل:`
   )
-  const showPaymentBlock = isOwnerCustomer && booking.status === 'pending_payment'
+  const showPaymentBlock = (isOwnerCustomer || isGuestView) && booking.status === 'pending_payment'
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir={dir}>

@@ -30,8 +30,8 @@ export default function AdminEntryPage() {
       const j = await r.json().catch(() => ({}))
       if (r.ok && j?.ok) {
         try { sessionStorage.setItem('madmona_admin_pw', pw) } catch { /* ignore */ }
-        const next = new URLSearchParams(window.location.search).get('next') || '/admin/cockpit'
-        window.location.href = next.startsWith('/admin') ? next : '/admin/cockpit'
+        const next = new URLSearchParams(window.location.search).get('next') || '/admin/dashboard'
+        window.location.href = next.startsWith('/admin') ? next : '/admin/dashboard'
       } else {
         setErr(j?.error || 'الباسورد غلط')
         setLoading(false)
