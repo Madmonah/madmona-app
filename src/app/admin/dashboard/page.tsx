@@ -361,24 +361,6 @@ export default function AdminDashboardV2() {
           </div>
         </section>
 
-        {/* ===== COMPANY OVERVIEW BANNER ===== */}
-        <Link href="/admin/company"
-          className="block bg-gradient-to-l from-[#D4A017] via-[#2FA084] to-[#1F6F5F] text-white rounded-2xl p-4 hover:shadow-lg transition-all group">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
-                <Building2 className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] font-black tracking-[0.3em] uppercase text-white/80 mb-0.5">MADMONA · COMPANY</p>
-                <h3 className="text-base font-black">🏢 مضمونة كشركة</h3>
-                <p className="text-xs text-white/85">الصورة المالية الكاملة · إيراد · مصاريف · صافي ربح · عملاء · موظفين</p>
-              </div>
-            </div>
-            <ChevronLeft className="w-5 h-5 -scale-x-100 group-hover:-translate-x-1 transition-transform hidden md:block" />
-          </div>
-        </Link>
-
         {/* ===== MADMONA · COMPANY & INTERNAL ===== */}
         <Section title="🏢 مضمونة الشركة" subtitle="صفحات مضمونة نفسها (الشركة + الإدارة) — منفصلة عن العملاء B2B">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
@@ -386,22 +368,8 @@ export default function AdminDashboardV2() {
             <ToolCard href="/admin/company" icon={<Building2 />} title="لوحة الشركة" sub="مضمونة كشركة · مالية + منتجات" />
             <ToolCard href="/admin/permissions" icon={<ShieldCheck />} title="صلاحيات الموظفين" sub="صلاحيات كل موظف" />
             <ToolCard href="/admin/hq" icon={<Compass />} title="HQ · مركز القيادة" sub="نظرة عامة عليا" />
-            <ToolCard href="/admin/ai-os" icon={<Bot />} title="AI OS" sub="فرق الـ agents" />
           </div>
         </Section>
-
-        {/* ===== QUICK ACTIONS (top of fold) ===== */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-          <QuickAction href="/admin/ai-assistant" icon={<Sparkles className="w-5 h-5" />}
-            title="المساعد الذكي" sub="اومر الـ agents بالعامية" accent />
-          <QuickAction href="/admin/business-partners" icon={<Building2 className="w-5 h-5" />}
-            title="شركاء B2B" sub={`${data.b2b.active_partners} نشط · ${data.b2b.leads_ready} lead`} />
-          <QuickAction href="/admin/messages" icon={<MessageSquare className="w-5 h-5" />}
-            title="المحادثات" sub={messages?.whatsapp.unanswered ? `${messages.whatsapp.unanswered} محتاجة رد` : 'كله مترد عليه'} 
-            badge={messages?.whatsapp.unanswered || undefined} />
-          <QuickAction href="/admin/ai-os" icon={<Bot className="w-5 h-5" />}
-            title="AI OS" sub={`${data.ai.agents_enabled} agent شغال`} />
-        </section>
 
         {/* ============ COLLECTION ACCOUNT (InstaPay / Bank Misr) ============ */}
         <Section title="💳 حساب التحصيل" subtitle="كل المدفوعات (إنستاباي / تحويل بنكي) بتروح على حساب مضمونة">
@@ -725,7 +693,6 @@ export default function AdminDashboardV2() {
         {/* ============ ANALYTICS & INTELLIGENCE ============ */}
         <Section title="📊 التحليلات والذكاء التجاري" subtitle="kpis · forecasts · briefs · strategy">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-            <ToolCard href="/admin/hq" icon={<Compass />} title="HQ · مركز القيادة" sub="Top-level overview" />
             <ToolCard href="/admin/funnel" icon={<TrendingUp />} title="Sales Funnel" sub="مسار التحويل" />
             <ToolCard href="/admin/demand-forecast" icon={<Zap />} title="توقعات الطلب" sub="Demand Forecast" />
             <ToolCard href="/admin/ceo-briefs" icon={<ScrollText />} title="CEO Briefs" sub="ملخصات يومية" />
@@ -753,7 +720,6 @@ export default function AdminDashboardV2() {
             <ToolCard href="/admin/runbook" icon={<BookOpen />} title="Runbook" sub="documentation + history" />
             <ToolCard href="/admin/workflows" icon={<Workflow />} title="Workflows" sub="Automation flows" />
             <ToolCard href="/admin/refresh-fb-token" icon={<RefreshCw />} title="تجديد FB Token" sub="Meta API" />
-            <ToolCard href="/admin/permissions" icon={<ShieldCheck />} title="صلاحيات الموظفين" sub="صلاحيات كل موظف · مضمونة + عملاء" />
           </div>
         </Section>
 
