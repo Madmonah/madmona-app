@@ -565,6 +565,12 @@ export default function TeamOversightPage({
             </div>
             <div className="flex items-center gap-2">
               <Link
+                href="/admin/custody"
+                className="px-3 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2"
+              >
+                <ShieldCheck className="w-4 h-4" /> العهدة
+              </Link>
+              <Link
                 href="/admin/flow-tasks"
                 className="px-3 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2"
               >
