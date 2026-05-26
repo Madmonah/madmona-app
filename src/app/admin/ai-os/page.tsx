@@ -45,6 +45,13 @@ export default async function AIOSPage() {
 
   const agents = (agentsRaw ?? []) as Agent[]
 
+  // Owner-as-brain command snapshot (cold-start model, May 26 2026)
+  const { data: snap } = await (supabaseAdmin as any).rpc('get_ai_os_snapshot')
+  const sm = (snap ?? {}) as any
+  const cmdCounts = sm.counts ?? {}
+  const cmdAct = sm.activity_2h ?? {}
+  const cmdAlerts = ((sm.recent_alerts ?? []) as any[]).filter(a => !a.resolved_at).slice(0, 6)
+
   // One hour ago for "failed in last hour" alarm
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
 
@@ -120,7 +127,7 @@ export default async function AIOSPage() {
             🤖 Madmona AI Operating System
           </h1>
           <p style={{ color: '#666', marginTop: 6, fontSize: 13, textAlign: 'center' }}>
-            {agents.length} agent عبر {teamCount} فرق · {activeAgents} نشط · 24/7
+            🧠 انت العقل · {activeAgents} نشط · {agents.length - activeAgents} في إجازة · مرحلة جمع العرض
           </p>
 
           {/* Quick actions */}
@@ -136,6 +143,74 @@ export default async function AIOSPage() {
             <a href="/admin/agent-runs" style={navLinkStyle}>🔁 Agent Runs</a>
           </div>
         </header>
+
+        {/* COMMAND VIEW — owner-as-brain (cold-start, May 26 2026) */}
+        <section style={{
+          background: 'linear-gradient(135deg, #1F6F5F 0%, #2FA084 100%)',
+          color: '#FAFAF7', borderRadius: 16, padding: 20, marginBottom: 20,
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 'bold' }}>🧠 انت العقل — مرحلة جمع العرض</div>
+              <div style={{ fontSize: 12, opacity: 0.9, marginTop: 4, maxWidth: 640 }}>
+                {sm.top_priority ?? 'تركيز على ملء جانب العرض. الـ agents بتنفّذ وترفعلك، مش بتقرر.'}
+              </div>
+            </div>
+            <span style={{ fontSize: 11, opacity: 0.85 }}>
+              آخر تحديث: {sm.generated_at ? new Date(sm.generated_at).toLocaleString('ar-EG') : '—'}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 14 }}>
+            {[
+              ['نشط', cmdCounts.agents_active, '#6FCF97'],
+              ['في إجازة', cmdCounts.agents_paused, 'rgba(255,255,255,.75)'],
+              ['Crons شغّالة', cmdCounts.crons_active, '#fff'],
+              ['إجمالي leads', cmdAct.tot_leads, '#fff'],
+              ['إجمالي ليستنجس', cmdAct.tot_listings, '#fff'],
+            ].map(([l, v, col], i) => (
+              <div key={i} style={{ background: 'rgba(0,0,0,.18)', borderRadius: 10, padding: '8px 14px', minWidth: 92, textAlign: 'center' }}>
+                <div style={{ fontSize: 22, fontWeight: 'bold', color: col as string }}>{(v ?? 0) as number}</div>
+                <div style={{ fontSize: 11, opacity: 0.85 }}>{l as string}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, opacity: 0.95 }}>📊 آخر ساعتين (بيوصلك تقرير كل ساعتين)</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: 8 }}>
+              {[
+                ['مؤجرين جدد', cmdAct.new_suppliers],
+                ['ليستنجس جديدة', cmdAct.new_listings],
+                ['Leads جديدة', cmdAct.new_leads],
+                ['اتكلّمنا معاها', cmdAct.contacted],
+                ['واتساب اتبعت', cmdAct.wa_sent],
+                ['حجوزات', cmdAct.bookings],
+                ['نشاط agents', cmdAct.runs],
+                ['تنبيهات', cmdAct.alerts],
+              ].map(([l, v], i) => (
+                <div key={i} style={{ background: 'rgba(255,255,255,.12)', borderRadius: 8, padding: '8px 6px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 18, fontWeight: 'bold' }}>{(v ?? 0) as number}</div>
+                  <div style={{ fontSize: 10, opacity: 0.85 }}>{l as string}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {cmdAlerts.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, opacity: 0.95 }}>🔔 تنبيهات مفتوحة</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {cmdAlerts.map((a: any, i: number) => (
+                  <div key={i} style={{ background: 'rgba(0,0,0,.18)', borderRadius: 8, padding: '6px 10px', fontSize: 11, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                    <span>⚠️ {a.agent_name} — {a.reason}</span>
+                    <span style={{ opacity: 0.7, whiteSpace: 'nowrap' }}>{a.fired_at ? new Date(a.fired_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
 
         {/* ATTENTION ZONE — only renders banners that have count > 0 */}
         <section style={{ marginBottom: 24 }}>
@@ -225,9 +300,9 @@ export default async function AIOSPage() {
           background: '#1F6F5F', color: '#FAF7F0',
           padding: 24, borderRadius: 16, marginTop: 32, textAlign: 'center',
         }}>
-          <h3 style={{ margin: '0 0 8px' }}>🚀 الـ AI OS بيشتغل دلوقتي</h3>
+          <h3 style={{ margin: '0 0 8px' }}>🧠 انت العقل — النظام بينفّذ ويرفعلك</h3>
           <p style={{ margin: 0, opacity: 0.9, fontSize: 14 }}>
-            {activeAgents}/{agents.length} agents نشطة · {teamCount} فرق · بدون تدخل
+            {activeAgents} نشط · {agents.length - activeAgents} في إجازة · تقرير كل ساعتين
           </p>
         </div>
 
