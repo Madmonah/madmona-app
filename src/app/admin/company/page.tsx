@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   Building2, TrendingUp, Wallet, CircleDollarSign, Users, Store, ClipboardList,
   Bot, UserCog, Truck, RefreshCw, Loader2, ChevronLeft,
+  LayoutGrid, Globe, ShoppingCart, ExternalLink,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -39,6 +40,9 @@ export default function CompanyOverviewPage() {
   const teams: any[] = data?.employees_by_team || []
   const revenue: any[] = data?.revenue_by_source || []
   const expenses: any[] = data?.expenses_by_category || []
+  const proc = data?.procurement || {}
+  const recentPOs: any[] = data?.recent_purchase_orders || []
+  const vendorsList: any[] = data?.vendors_list || []
   const maxLead = Math.max(1, ...leads.map(l => Number(l.count)))
   const maxTeam = Math.max(1, ...teams.map(t => Number(t.runs)))
 
@@ -66,6 +70,7 @@ export default function CompanyOverviewPage() {
               <div>
                 <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-0.5">MADMONA · COMPANY</p>
                 <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">مضمونة كشركة</h1>
+                <p className="text-xs text-[#6B7280] mt-1 max-w-md leading-relaxed">شركة تكنولوجيا — بنبني أنظمة إدارة أعمال (CRM/ERP) ومواقع، وبنشغّل منصّة مضمونة. ده مركز الشركة، مش إدارة الأبليكيشن.</p>
               </div>
             </div>
             <button onClick={load} className="p-2.5 rounded-xl bg-white border border-gray-100 text-[#1A2E26] shadow-sm">
@@ -76,6 +81,33 @@ export default function CompanyOverviewPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-7 pb-16">
+
+        {/* ===== Company products / systems ===== */}
+        <Section title="منتجات الشركة وأنظمتها" subtitle="إيه اللي شركة مضمونة بتبنيه وبتشغّله">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Link href="/admin/dashboard" className="group rounded-3xl p-5 bg-white border border-gray-100 shadow-sm hover:border-[#1F6F5F]/30 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 text-[#1F6F5F]"><LayoutGrid className="w-4 h-4" /><p className="text-[11px] font-bold tracking-wider uppercase text-[#6B7280]">المنتج الأساسي</p></div>
+                <ExternalLink className="w-3.5 h-3.5 text-[#6B7280] group-hover:text-[#1F6F5F]" />
+              </div>
+              <p className="text-lg font-black text-[#1A2E26]">منصّة مضمونة (الأبليكيشن)</p>
+              <p className="text-[11px] text-[#6B7280] mt-1">ماركتبليس التأجير والخدمات · إدارة الأبليكيشن من هنا</p>
+            </Link>
+            <div className="rounded-3xl p-5 bg-white border border-gray-100 shadow-sm">
+              <div className="flex items-center gap-2 text-[#1F6F5F] mb-2"><Bot className="w-4 h-4" /><p className="text-[11px] font-bold tracking-wider uppercase text-[#6B7280]">أنظمة بنقدّمها</p></div>
+              <p className="text-lg font-black text-[#1A2E26]">CRM / ERP للموردين</p>
+              <p className="text-[11px] text-[#6B7280] mt-1">حجوزات · فريق · مخزون · ماليات — مجاناً لكل مورّد</p>
+            </div>
+            <a href="https://madmonacairo.com" target="_blank" rel="noopener noreferrer" className="group rounded-3xl p-5 bg-white border border-gray-100 shadow-sm hover:border-[#1F6F5F]/30 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 text-[#1F6F5F]"><Globe className="w-4 h-4" /><p className="text-[11px] font-bold tracking-wider uppercase text-[#6B7280]">الموقع</p></div>
+                <ExternalLink className="w-3.5 h-3.5 text-[#6B7280] group-hover:text-[#1F6F5F]" />
+              </div>
+              <p className="text-lg font-black text-[#1A2E26]">madmonacairo.com</p>
+              <p className="text-[11px] text-[#6B7280] mt-1">الموقع الرسمي للشركة والمنصّة</p>
+            </a>
+          </div>
+        </Section>
 
         {/* ===== P&L ===== */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -92,7 +124,7 @@ export default function CompanyOverviewPage() {
         </section>
 
         {/* ===== Customers ===== */}
-        <Section title="العملاء" subtitle="الجهتين اللي مضمونة بتخدمهم">
+        <Section title="العملاء" subtitle="عملاء الأبليكيشن — الجهتين اللي المنصّة بتخدمهم">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
             <Stat icon={Users} label="مؤجّرين" value={fmt(o?.renters)} hint="عملاء التطبيق" />
             <Stat icon={Store} label="مضيفين مسجّلين" value={fmt(o?.registered_listers)} hint="بيزنس معتمد" />
@@ -143,6 +175,36 @@ export default function CompanyOverviewPage() {
               </div>
             </div>
           )}
+        </Section>
+
+        {/* ===== Procurement & vendors ===== */}
+        <Section title="التوريدات والموردين" subtitle="مشتريات شركة مضمونة من موردينها الخاصين">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <Stat icon={ShoppingCart} label="أوامر توريد" value={fmt(proc.po_count)} hint={`${fmt(proc.received_count)} مستلمة · ${fmt(proc.pending_count)} قيد التنفيذ`} />
+            <Stat icon={Wallet} label="إجمالي التوريدات" value={`${fmt(proc.total_egp)} ج`} />
+            <Stat icon={CircleDollarSign} label="مدفوع" value={`${fmt(proc.paid_egp)} ج`} />
+            <Stat icon={Truck} label="متبقّي للموردين" value={`${fmt(proc.outstanding_egp)} ج`} />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#6B7280] px-4 pt-4 pb-2">آخر أوامر التوريد</h4>
+              {recentPOs.length === 0 ? <Empty text="مفيش توريدات مسجّلة لسه" /> : recentPOs.map((p, i) => (
+                <div key={i} className="flex items-center justify-between px-4 py-3 border-b border-gray-50 last:border-0">
+                  <div><p className="text-sm font-bold text-[#1A2E26]">{p.vendor || 'مورّد'}</p><p className="text-[11px] text-[#6B7280]">{p.po_number || '—'} · {p.status}</p></div>
+                  <p className="text-sm font-black font-mono text-[#1F6F5F]">{fmt(p.total)} ج</p>
+                </div>
+              ))}
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#6B7280] px-4 pt-4 pb-2">الموردين</h4>
+              {vendorsList.length === 0 ? <Empty text="مفيش موردين مسجّلين لسه" /> : vendorsList.map((v, i) => (
+                <div key={i} className="flex items-center justify-between px-4 py-3 border-b border-gray-50 last:border-0">
+                  <div><p className="text-sm font-bold text-[#1A2E26]">{v.name}</p>{v.category && <p className="text-[11px] text-[#6B7280]">{v.category}</p>}</div>
+                  <p className="text-sm font-black font-mono text-[#1A2E26]">{fmt(v.total_purchased)} ج</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </Section>
 
         {/* ===== Revenue by source ===== */}
