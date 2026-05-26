@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import {
   Loader2, LogOut, TrendingUp, Users, Calendar, Package, DollarSign,
-  Building2, BarChart3, Heart, Scissors, Clock, AlertCircle, ShieldCheck,
+  Building2, BarChart3, Heart, Sparkles, CheckCircle2, Clock, AlertCircle, ShieldCheck,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -84,7 +84,7 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
     { href: 'customers', icon: <Heart />, label: 'العملاء', roles: ['owner','manager'] },
     { href: 'team', icon: <Users />, label: 'الفريق', roles: ['owner','manager'] },
     { href: 'inventory', icon: <Package />, label: 'المخزون', roles: ['owner','manager'] },
-    { href: 'services-catalog', icon: <Scissors />, label: 'الخدمات', roles: ['owner','manager'] },
+    { href: 'services-catalog', icon: <Sparkles />, label: 'الخدمات', roles: ['owner','manager'] },
     { href: 'expenses', icon: <DollarSign />, label: 'المصاريف', roles: ['owner','accountant'] },
     { href: 'shifts', icon: <Clock />, label: 'مواعيد العمل', roles: ['owner','manager'] },
     { href: 'reports', icon: <BarChart3 />, label: 'تصدير', roles: ['owner','accountant'] },
@@ -94,9 +94,16 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
   const ROLE_LABELS: Record<string, string> = { owner: 'المالك', manager: 'مدير', accountant: 'محاسب', viewer: 'مشاهدة' }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <header className="bg-[#1F6F5F] text-white">
-        <div className="max-w-6xl mx-auto px-4 py-5">
+    <div className="relative min-h-screen bg-[#FAFAF7] text-[#1A2E26] overflow-x-hidden" dir="rtl">
+      <div className="pointer-events-none fixed inset-0 -z-10" style={{
+        background:
+          'radial-gradient(60% 50% at 88% -6%, rgba(47,160,132,0.12), transparent 60%),' +
+          'radial-gradient(52% 46% at 6% 6%, rgba(31,111,95,0.10), transparent 60%),' +
+          'radial-gradient(42% 40% at 50% 116%, rgba(212,160,23,0.07), transparent 60%)',
+      }} />
+      <header className="relative overflow-hidden text-white bg-gradient-to-l from-[#D4A017] via-[#2FA084] to-[#1F6F5F]">
+        <div className="absolute -top-10 -left-10 w-44 h-44 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative max-w-6xl mx-auto px-4 py-5">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/70 mb-1">بوابة الشركاء · مضمونة</p>
@@ -117,7 +124,7 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
         <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <OwnerStat icon={<TrendingUp />} label="إيراد آخر 30 يوم" value={`${Number(revenue.total || 0).toLocaleString()} ج`} primary />
           <OwnerStat icon={<Calendar />} label="حجوزات" value={revenue.bookings_count || 0} />
-          <OwnerStat icon={<Scissors />} label="خدمات مكتملة" value={revenue.completed_count || 0} />
+          <OwnerStat icon={<CheckCircle2 />} label="خدمات مكتملة" value={revenue.completed_count || 0} />
           <OwnerStat icon={<DollarSign />} label="مصاريف" value={`${Number(kpis?.expenses?.total || 0).toLocaleString()} ج`} />
         </section>
 
@@ -129,9 +136,9 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
               <Link
                 key={m.href}
                 href={`/admin/business-finance/${supplierId}/${m.href}`}
-                className="bg-white rounded-2xl p-4 border border-gray-100 flex flex-col items-center gap-2 hover:shadow-md hover:border-[#1F6F5F] hover:-translate-y-0.5 transition-all"
+                className="group bg-white rounded-2xl p-4 border border-black/5 shadow-sm shadow-black/[0.04] flex flex-col items-center gap-2 hover:shadow-md hover:border-[#1F6F5F]/30 hover:-translate-y-0.5 transition-all"
               >
-                <div className="w-6 h-6 text-[#1F6F5F]">{m.icon}</div>
+                <div className="w-11 h-11 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-[#2FA084] group-hover:to-[#1F6F5F] group-hover:text-white transition-colors"><div className="w-5 h-5">{m.icon}</div></div>
                 <span className="text-xs font-bold text-[#1A2E26] text-center">{m.label}</span>
               </Link>
             ))}
@@ -179,7 +186,7 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
 
 function OwnerStat({ icon, label, value, primary }: any) {
   return (
-    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'}`}>
+    <div className={`rounded-2xl p-4 border transition-all ${primary ? 'bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#1F6F5F] border-transparent text-white shadow-lg shadow-[#1F6F5F]/25' : 'bg-white border-black/5 shadow-sm shadow-black/[0.04]'}`}>
       <div className={`flex items-center gap-2 mb-1.5 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>
         <div className="w-4 h-4">{icon}</div>
         <p className="text-[10px] font-bold tracking-wider uppercase">{label}</p>
