@@ -382,6 +382,7 @@ export default function AdminDashboardV2() {
         {/* ===== MADMONA · COMPANY & INTERNAL ===== */}
         <Section title="🏢 مضمونة الشركة" subtitle="صفحات مضمونة نفسها (الشركة + الإدارة) — منفصلة عن العملاء B2B">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ToolCard href="/admin/business-finance/c8b7b9d7-6178-4d0c-abdf-66f34b628e9d" icon={<Wallet />} title="إدارة مضمونة الكاملة" sub="فاينانس · فريق · حضور · مخزون · مرتبات · ٢٦ موديول" />
             <ToolCard href="/admin/company" icon={<Building2 />} title="لوحة الشركة" sub="مضمونة كشركة · مالية + منتجات" />
             <ToolCard href="/admin/permissions" icon={<ShieldCheck />} title="صلاحيات الموظفين" sub="صلاحيات كل موظف" />
             <ToolCard href="/admin/hq" icon={<Compass />} title="HQ · مركز القيادة" sub="نظرة عامة عليا" />

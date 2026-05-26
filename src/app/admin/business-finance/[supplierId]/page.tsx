@@ -32,6 +32,9 @@ const PALETTE = {
   white: '#FFFFFF',
 }
 
+// Madmona itself = the platform/company, NOT a B2B client.
+const MADMONA_ID = 'c8b7b9d7-6178-4d0c-abdf-66f34b628e9d'
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -90,6 +93,7 @@ export default function BusinessFinancePage({
   params: { supplierId: string }
 }) {
   const { supplierId } = params
+  const isMadmona = supplierId === MADMONA_ID
   const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [branches, setBranches] = useState<Branch[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -242,7 +246,7 @@ export default function BusinessFinancePage({
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F]">
-                  B2B PARTNER · FINANCE
+                  {isMadmona ? 'مضمونة · الإدارة الداخلية' : 'B2B PARTNER · FINANCE'}
                 </p>
                 <ContractBadge status={supplier.contract_status} />
               </div>
@@ -436,7 +440,8 @@ export default function BusinessFinancePage({
           )}
         </section>
 
-        {/* Footer: contract terms */}
+        {/* Footer: contract terms — hidden for Madmona (it's the platform, not a partner) */}
+        {!isMadmona && (
         <section className="bg-white rounded-2xl border border-gray-100 p-5">
           <h3 className="text-sm font-bold text-[#1A2E26] mb-3 flex items-center gap-2">
             <BadgePercent className="w-4 h-4 text-[#1F6F5F]" />
@@ -453,6 +458,7 @@ export default function BusinessFinancePage({
             Madmona بـ تاخد بس extra commission من الـ bookings اللي تيجي عن طريقها (مفيش رسوم شهرية أو setup fee).
           </p>
         </section>
+        )}
       </main>
     </div>
   )
