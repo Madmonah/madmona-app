@@ -64,6 +64,27 @@ type Task = {
   is_auto_generated: boolean
 }
 
+type AiAgent = {
+  agent_name: string
+  display_name: string | null
+  team: string
+  enabled: boolean
+  status: string | null
+  task: string | null
+  n_tasks: number
+}
+
+const AI_TEAM_META: Record<string, { label: string }> = {
+  sales: { label: '💰 المبيعات' },
+  operations: { label: '💼 العمليات' },
+  marketing: { label: '📣 الماركتنج' },
+  creative: { label: '🎨 الإبداع' },
+  intelligence: { label: '📊 الذكاء' },
+  strategic: { label: '🧠 الاستراتيجية' },
+  growth: { label: '🤝 النمو' },
+  support: { label: '🛠️ الدعم' },
+}
+
 export default function TeamOversightPage({
   params,
 }: {
@@ -77,6 +98,7 @@ export default function TeamOversightPage({
   const [generating, setGenerating] = useState(false)
   const [message, setMessage] = useState('')
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
+  const [aiAgents, setAiAgents] = useState<AiAgent[]>([])
 
   async function loadAll() {
     setLoading(true)
@@ -96,6 +118,11 @@ export default function TeamOversightPage({
     const { data: emp } = await supabase.from('v_business_team_oversight')
       .select('*').eq('supplier_id', supplierId)
     setEmployees((emp || []) as Employee[])
+
+    // AI workforce structure (org هيكل + tasks)
+    // @ts-expect-error
+    const { data: ai } = await supabase.rpc('get_agents_structure')
+    setAiAgents((ai || []) as AiAgent[])
 
     setLoading(false)
   }
@@ -138,6 +165,19 @@ export default function TeamOversightPage({
     const completionPct = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
     return { totalEmployees, totalTasks, completedTasks, completionPct }
   }, [employees])
+
+  const aiByTeam = useMemo(() => {
+    const map = new Map<string, AiAgent[]>()
+    for (const a of aiAgents) {
+      if (!map.has(a.team)) map.set(a.team, [])
+      map.get(a.team)!.push(a)
+    }
+    for (const arr of map.values()) arr.sort((x, y) => Number(y.enabled) - Number(x.enabled))
+    return [...map.entries()].sort(
+      (a, b) => b[1].filter((x) => x.enabled).length - a[1].filter((x) => x.enabled).length
+    )
+  }, [aiAgents])
+  const aiActive = useMemo(() => aiAgents.filter((a) => a.enabled).length, [aiAgents])
 
   if (loading && !supplier) {
     return (
@@ -285,6 +325,52 @@ export default function TeamOversightPage({
               })}
             </div>
           </div>
+        </section>
+
+        {/* AI WORKFORCE هيكل */}
+        <section className="bg-white rounded-3xl border border-gray-100 p-5 md:p-7">
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-5">
+            <h2 className="text-sm font-bold tracking-wider uppercase text-[#6B7280]">
+              🤖 موظفين الـ AI — الهيكل الكامل
+            </h2>
+            <span className="text-xs font-bold text-[#6B7280]">
+              {aiActive} شغّال · {aiAgents.length - aiActive} في إجازة
+            </span>
+          </div>
+
+          {/* Brain node — العقل */}
+          <div
+            className="rounded-2xl p-4 mb-5 text-white flex items-center gap-3"
+            style={{ background: 'linear-gradient(135deg,#D4A017 0%,#2FA084 55%,#1F6F5F 100%)' }}
+          >
+            <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-white/20 flex-shrink-0 text-xl">🧠</div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-black text-base">محمد — العقل</h3>
+              <p className="text-xs text-white/85">بيدّي الأوامر · الـ agents بتنفّذ وترفعله</p>
+            </div>
+          </div>
+
+          {aiByTeam.length === 0 ? (
+            <p className="text-xs text-[#6B7280] text-center py-6">جاري التحميل…</p>
+          ) : (
+            <div className="space-y-5">
+              {aiByTeam.map(([team, list]) => {
+                const meta = AI_TEAM_META[team] || { label: team }
+                const act = list.filter((a) => a.enabled).length
+                return (
+                  <div key={team}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-black text-[#1A2E26]">{meta.label}</span>
+                      <span className="text-[10px] text-[#6B7280]">{act}/{list.length} شغّال</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                      {list.map((a) => <AgentChip key={a.agent_name} a={a} />)}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </section>
 
         {/* Stats */}
@@ -826,5 +912,29 @@ function Badge({ children }: { children: ReactNode }) {
     <span className="px-2.5 py-1 rounded-md bg-white/15 text-white text-[10px] font-bold tracking-wider">
       {children}
     </span>
+  )
+}
+
+function AgentChip({ a }: { a: AiAgent }) {
+  const on = a.enabled
+  const subtitle = a.task && a.task !== a.display_name ? a.task : a.agent_name
+  return (
+    <div className={`rounded-2xl border p-3 flex items-start gap-3 transition-all ${
+      on ? 'bg-white border-[#1F6F5F]/30' : 'bg-[#FAFAF7] border-gray-100 opacity-70'
+    }`}>
+      <div className={`inline-grid place-items-center w-9 h-9 rounded-lg flex-shrink-0 text-sm ${
+        on ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'bg-gray-100 text-[#6B7280]'
+      }`}>🤖</div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5">
+          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${on ? 'bg-[#1F6F5F]' : 'bg-gray-300'}`} />
+          <h4 className="text-sm font-black text-[#1A2E26] leading-tight truncate">{a.display_name || a.agent_name}</h4>
+        </div>
+        <p className="text-[10px] text-[#6B7280] mt-0.5 truncate" dir="ltr">{subtitle}</p>
+      </div>
+      <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold flex-shrink-0 ${
+        on ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'bg-gray-100 text-[#6B7280]'
+      }`}>{on ? 'شغّال' : 'إجازة'}</span>
+    </div>
   )
 }
