@@ -742,6 +742,7 @@ export default function AdminDashboardV2() {
             <ToolCard href="/admin/runbook" icon={<BookOpen />} title="Runbook" sub="documentation + history" />
             <ToolCard href="/admin/workflows" icon={<Workflow />} title="Workflows" sub="Automation flows" />
             <ToolCard href="/admin/refresh-fb-token" icon={<RefreshCw />} title="تجديد FB Token" sub="Meta API" />
+            <ToolCard href="/admin/permissions" icon={<ShieldCheck />} title="صلاحيات الموظفين" sub="صلاحيات كل موظف · مضمونة + عملاء" />
           </div>
         </Section>
 
@@ -824,6 +825,7 @@ export default function AdminDashboardV2() {
               <CompactLink href="/admin/partnerships" label="partnerships" />
               <CompactLink href="/admin/payouts" label="payouts" />
               <CompactLink href="/admin/performance" label="performance" />
+              <CompactLink href="/admin/permissions" label="permissions ⭐" />
               <CompactLink href="/admin/pipelines" label="pipelines" />
               <CompactLink href="/admin/policy-rules" label="policy-rules" />
               <CompactLink href="/admin/prompt-versions" label="prompt-versions" />
@@ -843,7 +845,7 @@ export default function AdminDashboardV2() {
               <CompactLink href="/admin/workflows" label="workflows" />
             </div>
             <p className="text-[10px] text-[#6B7280] mt-3 pt-3 border-t border-gray-100">
-              📊 {59} صفحة admin
+              📊 {60} صفحة admin
             </p>
           </div>
         </Section>
