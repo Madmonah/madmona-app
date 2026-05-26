@@ -43,12 +43,13 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
   if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div>
 
   const baseAdmin = `/admin/business-finance/${supplierId}`
-  const slug = supplier?.join_slug || 'elite'
+  const slug = supplier?.join_slug || supplierId
+  const name = supplier?.business_name || 'النشاط'
 
   const groups: Group[] = [
     {
       title: 'لوحة الإدارة والمالية', icon: <ShieldCheck className="w-4 h-4" />,
-      desc: 'محمية بتسجيل دخول — ليك ولأحمد بس',
+      desc: 'محمية بتسجيل دخول — للأدمن وصاحب النشاط بس',
       items: [
         { label: 'اللوحة الرئيسية', path: baseAdmin },
         { label: 'التأكيدات (تيبس + طلبات + موظفين)', path: `${baseAdmin}/confirmations` },
@@ -85,8 +86,8 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
     },
     {
       title: 'بوابة المالك', icon: <Crown className="w-4 h-4" />,
-      desc: 'لأحمد — نظرة عامة على شغله',
-      items: [{ label: 'بوابة مالك Elite', path: `/owner/${supplierId}` }],
+      desc: `لصاحب ${name} — نظرة عامة على الشغل`,
+      items: [{ label: `بوابة مالك ${name}`, path: `/owner/${supplierId}` }],
     },
     {
       title: 'لوحة الموظفين', icon: <Briefcase className="w-4 h-4" />,
@@ -99,12 +100,12 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
     {
       title: 'تسجيل الموظفين الجدد', icon: <UserPlus className="w-4 h-4" />,
       desc: 'اللينك ده تبعته للموظفين عشان يسجّلوا أرقامهم',
-      items: [{ label: `لينك انضمام موظفي ${supplier?.business_name || 'Elite'}`, path: `/join/${slug}`, share: true }],
+      items: [{ label: `لينك انضمام موظفي ${name}`, path: `/join/${slug}`, share: true }],
     },
     {
       title: 'واجهة العملاء (الصفحة الرئيسية)', icon: <Sparkles className="w-4 h-4" />,
-      desc: 'الصفحة اللي تبعتها لعملاء Elite — منها يحجزوا ويشوفوا الخدمات ويدخلوا حسابهم',
-      items: [{ label: `صفحة ${supplier?.business_name || 'Elite'} للعملاء`, path: `/s/${slug}`, share: true }],
+      desc: `الصفحة اللي تبعتها لعملاء ${name} — منها يحجزوا ويشوفوا الخدمات ويدخلوا حسابهم`,
+      items: [{ label: `صفحة ${name} للعملاء`, path: `/s/${slug}`, share: true }],
     },
     {
       title: 'حجز العملاء (لكل فرع)', icon: <CalendarCheck className="w-4 h-4" />,
@@ -128,7 +129,7 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">ALL LINKS</p>
-          <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">كل لينكات {supplier?.business_name || 'Elite'}</h1>
+          <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">كل لينكات {name}</h1>
           <p className="text-sm text-[#6B7280] mt-1">دوس على أي لينك يفتح، أو انسخه بزرار النسخ</p>
         </div>
       </header>
@@ -171,7 +172,7 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
           </section>
         ))}
 
-        <p className="text-center text-[10px] text-[#6B7280]">madmonacairo.com · {supplier?.business_name || 'Elite'}</p>
+        <p className="text-center text-[10px] text-[#6B7280]">madmonacairo.com · {name}</p>
       </main>
     </div>
   )
