@@ -9,6 +9,7 @@ import {
   TrendingUp, Sparkles, AlertCircle, Clock, LogIn, LogOut, Star, QrCode, ShieldCheck,
   Heart, Calendar, UserPlus, Power, Pause, Pencil, Trash2, Save, Settings2,
   Workflow, Play, ArrowUp, ArrowDown,
+  Search, Mail,
 } from 'lucide-react'
 
 /* ============================================================
@@ -75,7 +76,20 @@ type AiAgent = {
   n_tasks: number
 }
 
-type FlowStep = { agent: string; note?: string }
+type StepType = 'agent' | 'ai' | 'choice' | 'email' | 'drive'
+type FlowStep = {
+  type?: StepType
+  agent?: string
+  prompt?: string
+  output_key?: string
+  options_key?: string
+  to?: string[]
+  cc?: string[]
+  subject?: string
+  body?: string
+  drive_title?: string
+  note?: string
+}
 type Flow = {
   id: string
   name: string
@@ -90,6 +104,19 @@ type Flow = {
   } | null
 }
 
+type RosterPerson = {
+  employee_id?: string
+  name: string
+  email: string | null
+  phone?: string | null
+  has_email?: boolean
+  role_ar?: string | null
+}
+type Roster = {
+  owner: { name: string; email: string | null; has_email: boolean; always_cc: string[] }
+  employees: RosterPerson[]
+}
+
 const AI_TEAM_META: Record<string, { label: string }> = {
   sales: { label: '💰 المبيعات' },
   operations: { label: '💼 العمليات' },
@@ -99,6 +126,24 @@ const AI_TEAM_META: Record<string, { label: string }> = {
   strategic: { label: '🧠 الاستراتيجية' },
   growth: { label: '🤝 النمو' },
   support: { label: '🛠️ الدعم' },
+}
+
+const STEP_TYPE_META: Record<StepType, { label: string; icon: string; chip: string }> = {
+  agent: { label: 'موظف AI', icon: '🤖', chip: 'bg-[#1F6F5F]/10 text-[#1F6F5F]' },
+  ai: { label: 'مهمة AI', icon: '🧠', chip: 'bg-[#2FA084]/12 text-[#1F6F5F]' },
+  choice: { label: 'قرارك إنت', icon: '⏸', chip: 'bg-[#D4A017]/15 text-[#8a6a0a]' },
+  email: { label: 'إيميل', icon: '📧', chip: 'bg-purple-50 text-purple-700' },
+  drive: { label: 'حفظ Drive', icon: '💾', chip: 'bg-gray-100 text-[#6B7280]' },
+}
+function stepType(s: FlowStep): StepType { return (s.type || (s.agent ? 'agent' : 'agent')) as StepType }
+function stepLabel(s: FlowStep, nameOf?: (an: string) => string): string {
+  const t = stepType(s)
+  if (t === 'agent') return nameOf ? nameOf(s.agent || '') : (s.agent || 'agent')
+  if (t === 'ai') return s.output_key || 'مهمة AI'
+  if (t === 'choice') return s.output_key || 'قرارك'
+  if (t === 'email') return s.subject || 'إيميل'
+  if (t === 'drive') return s.drive_title || 'Drive'
+  return 'step'
 }
 
 export default function TeamOversightPage({
@@ -120,6 +165,11 @@ export default function TeamOversightPage({
   const [builderFlow, setBuilderFlow] = useState<Flow | 'new' | null>(null)
   const [runningFlow, setRunningFlow] = useState<string | null>(null)
   const [flowMsg, setFlowMsg] = useState('')
+  const [roster, setRoster] = useState<Roster | null>(null)
+  const [agentSearch, setAgentSearch] = useState('')
+  const [commsOpen, setCommsOpen] = useState(false)
+  const [choiceModal, setChoiceModal] = useState<{ run_id: string; flow_name: string; options: Array<{ id?: string; label?: string }>; output_key: string } | null>(null)
+  const [resuming, setResuming] = useState(false)
 
   async function toggleAgent(agent_name: string, active: boolean) {
     setAiAgents((prev) => prev.map((a) =>
@@ -141,13 +191,36 @@ export default function TeamOversightPage({
   }
   async function runFlow(id: string) {
     setRunningFlow(id); setFlowMsg('')
+    const fname = flows.find((f) => f.id === id)?.name || 'flow'
     const r = await flowCall({ action: 'run', id })
     setRunningFlow(null)
     if (r?.error) { setFlowMsg(`❌ ${r.error}`) }
-    else {
+    else if (r?.status === 'awaiting_owner') {
+      setChoiceModal({ run_id: r.run_id, flow_name: fname, options: r.options || [], output_key: r.output_key || 'choice' })
+      setFlowMsg('⏸ الـ flow مستنّي قرارك')
+    } else {
       const res = (r?.results || []) as Array<{ success: boolean }>
       const ok = res.filter((x) => x.success).length
       setFlowMsg(`✅ خلص: ${ok}/${res.length} نجح`)
+    }
+    setTimeout(() => setFlowMsg(''), 6000)
+    await loadAll()
+  }
+  async function resumeFlow(run_id: string, choice: unknown) {
+    setResuming(true)
+    const r = await flowCall({ action: 'resume', run_id, choice })
+    setResuming(false)
+    if (r?.status === 'awaiting_owner') {
+      setChoiceModal((cm) => cm ? { ...cm, run_id: r.run_id, options: r.options || [], output_key: r.output_key || 'choice' } : cm)
+      setFlowMsg('⏸ فيه قرار تاني مستنّيك')
+    } else {
+      setChoiceModal(null)
+      if (r?.error) setFlowMsg(`❌ ${r.error}`)
+      else {
+        const res = (r?.results || []) as Array<{ success: boolean }>
+        const ok = res.filter((x) => x.success).length
+        setFlowMsg(`✅ كمّل: ${ok}/${res.length} نجح`)
+      }
     }
     setTimeout(() => setFlowMsg(''), 6000)
     await loadAll()
@@ -189,6 +262,11 @@ export default function TeamOversightPage({
     // @ts-expect-error
     const { data: fl } = await supabase.rpc('get_flows')
     setFlows((fl || []) as Flow[])
+
+    // Comms roster (owner + human employees, for email handoffs)
+    // @ts-expect-error
+    const { data: rs } = await supabase.rpc('get_comms_roster')
+    setRoster((rs || null) as Roster | null)
 
     setLoading(false)
   }
@@ -233,8 +311,16 @@ export default function TeamOversightPage({
   }, [employees])
 
   const aiByTeam = useMemo(() => {
+    const q = agentSearch.trim().toLowerCase()
+    const src = q
+      ? aiAgents.filter((a) =>
+          (a.display_name || '').toLowerCase().includes(q) ||
+          a.agent_name.toLowerCase().includes(q) ||
+          a.team.toLowerCase().includes(q) ||
+          (a.task || '').toLowerCase().includes(q))
+      : aiAgents
     const map = new Map<string, AiAgent[]>()
-    for (const a of aiAgents) {
+    for (const a of src) {
       if (!map.has(a.team)) map.set(a.team, [])
       map.get(a.team)!.push(a)
     }
@@ -242,7 +328,7 @@ export default function TeamOversightPage({
     return [...map.entries()].sort(
       (a, b) => b[1].filter((x) => x.enabled).length - a[1].filter((x) => x.enabled).length
     )
-  }, [aiAgents])
+  }, [aiAgents, agentSearch])
   const aiActive = useMemo(() => aiAgents.filter((a) => a.enabled).length, [aiAgents])
 
   if (loading && !supplier) {
@@ -404,6 +490,22 @@ export default function TeamOversightPage({
             </span>
           </div>
 
+          {/* Search */}
+          <div className="relative mb-4">
+            <Search className="w-4 h-4 text-[#6B7280] absolute right-3 top-1/2 -translate-y-1/2" />
+            <input
+              value={agentSearch}
+              onChange={(e) => setAgentSearch(e.target.value)}
+              placeholder="دوّر على موظف AI… (اسم / فريق / شغلانة)"
+              className="w-full pr-9 pl-9 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+            />
+            {agentSearch && (
+              <button onClick={() => setAgentSearch('')} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#1A2E26]">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
           {/* Brain node — العقل */}
           <div
             className="rounded-2xl p-4 mb-5 text-white flex items-center gap-3"
@@ -455,12 +557,20 @@ export default function TeamOversightPage({
               </h2>
               <p className="text-xs text-[#6B7280] mt-1">رتّب كذا agent ورا بعض في flow واحد وشغّله بضغطة</p>
             </div>
-            <button
-              onClick={() => setBuilderFlow('new')}
-              className="px-4 py-2 rounded-xl bg-[#1F6F5F] hover:opacity-90 text-sm font-bold text-white flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" /> flow جديد
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCommsOpen(true)}
+                className="px-3 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2"
+              >
+                <Mail className="w-4 h-4" /> إيميلات الفريق
+              </button>
+              <button
+                onClick={() => setBuilderFlow('new')}
+                className="px-4 py-2 rounded-xl bg-[#1F6F5F] hover:opacity-90 text-sm font-bold text-white flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" /> flow جديد
+              </button>
+            </div>
           </div>
 
           {flowMsg && (
@@ -593,8 +703,28 @@ export default function TeamOversightPage({
         <FlowBuilder
           flow={builderFlow === 'new' ? null : builderFlow}
           agents={aiAgents}
+          roster={roster}
           onClose={() => setBuilderFlow(null)}
           onSaved={async () => { setBuilderFlow(null); await loadAll() }}
+        />
+      )}
+
+      {/* Owner choice (flow paused) */}
+      {choiceModal && (
+        <ChoiceModal
+          data={choiceModal}
+          resuming={resuming}
+          onPick={(choice) => resumeFlow(choiceModal.run_id, choice)}
+          onClose={() => setChoiceModal(null)}
+        />
+      )}
+
+      {/* Team emails settings */}
+      {commsOpen && (
+        <CommsModal
+          roster={roster}
+          onClose={() => setCommsOpen(false)}
+          onSaved={async () => { await loadAll() }}
         />
       )}
     </div>
@@ -1325,12 +1455,17 @@ function FlowCard({ f, running, onRun, onToggle, onEdit, onDelete }: {
         <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold flex-shrink-0 ${lrColor}`}>{lrLabel}</span>
       </div>
       <div className="flex items-center flex-wrap gap-1 mb-3">
-        {f.steps.slice(0, 6).map((s, i) => (
-          <span key={i} className="inline-flex items-center gap-1">
-            {i > 0 && <span className="text-[#6B7280]">→</span>}
-            <span className="px-2 py-0.5 rounded-md bg-[#1F6F5F]/5 text-[#1F6F5F] text-[9px] font-bold" dir="ltr">{s.agent}</span>
-          </span>
-        ))}
+        {f.steps.slice(0, 6).map((s, i) => {
+          const t = stepType(s); const m = STEP_TYPE_META[t]
+          return (
+            <span key={i} className="inline-flex items-center gap-1">
+              {i > 0 && <span className="text-[#6B7280]">→</span>}
+              <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold inline-flex items-center gap-1 ${m.chip}`}>
+                <span>{m.icon}</span><span className="truncate max-w-[90px]" dir="auto">{stepLabel(s)}</span>
+              </span>
+            </span>
+          )
+        })}
         {f.steps.length > 6 && <span className="text-[9px] text-[#6B7280]">+{f.steps.length - 6}</span>}
         {f.steps.length === 0 && <span className="text-[10px] text-[#6B7280]">مفيش خطوات</span>}
       </div>
@@ -1348,15 +1483,16 @@ function FlowCard({ f, running, onRun, onToggle, onEdit, onDelete }: {
   )
 }
 
-function FlowBuilder({ flow, agents, onClose, onSaved }: {
+function FlowBuilder({ flow, agents, roster, onClose, onSaved }: {
   flow: Flow | null
   agents: AiAgent[]
+  roster: Roster | null
   onClose: () => void
   onSaved: () => void
 }) {
   const [name, setName] = useState(flow?.name || '')
   const [desc, setDesc] = useState(flow?.description || '')
-  const [steps, setSteps] = useState<FlowStep[]>(flow?.steps?.length ? flow.steps : [])
+  const [steps, setSteps] = useState<FlowStep[]>(flow?.steps?.length ? flow.steps.map((s) => ({ ...s, type: stepType(s) })) : [])
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
 
@@ -1366,7 +1502,21 @@ function FlowBuilder({ flow, agents, onClose, onSaved }: {
       (a.display_name || a.agent_name).localeCompare(b.display_name || b.agent_name)),
   [agents])
 
-  function addStep() { setSteps((s) => [...s, { agent: agentOptions[0]?.agent_name || '', note: '' }]) }
+  const people = useMemo(() => {
+    const list: { name: string; email: string | null; tag?: string }[] = []
+    if (roster?.owner) list.push({ name: `${roster.owner.name} (إنت)`, email: roster.owner.email, tag: 'الأونر' })
+    for (const e of roster?.employees || []) list.push({ name: e.name, email: e.email, tag: e.role_ar || '' })
+    return list
+  }, [roster])
+
+  function defaultStep(t: StepType): FlowStep {
+    if (t === 'agent') return { type: 'agent', agent: agentOptions[0]?.agent_name || '' }
+    if (t === 'ai') return { type: 'ai', prompt: '', output_key: `ai_${steps.length + 1}` }
+    if (t === 'choice') return { type: 'choice', prompt: '', output_key: 'choice' }
+    if (t === 'email') return { type: 'email', subject: '', body: '', to: [], cc: [] }
+    return { type: 'drive', drive_title: '' }
+  }
+  function addStep(t: StepType) { setSteps((s) => [...s, defaultStep(t)]) }
   function removeStep(i: number) { setSteps((s) => s.filter((_, idx) => idx !== i)) }
   function move(i: number, dir: -1 | 1) {
     setSteps((s) => {
@@ -1378,12 +1528,33 @@ function FlowBuilder({ flow, agents, onClose, onSaved }: {
   function setStep(i: number, patch: Partial<FlowStep>) {
     setSteps((s) => s.map((st, idx) => idx === i ? { ...st, ...patch } : st))
   }
+  function toggleEmail(i: number, field: 'to' | 'cc', email: string) {
+    setSteps((s) => s.map((st, idx) => {
+      if (idx !== i) return st
+      const arr = new Set([...(st[field] || [])])
+      if (arr.has(email)) arr.delete(email); else arr.add(email)
+      return { ...st, [field]: [...arr] }
+    }))
+  }
   const nameOf = (an: string) => agents.find((a) => a.agent_name === an)?.display_name || an
+
+  function cleanForSave(): FlowStep[] {
+    const out: FlowStep[] = []
+    steps.forEach((s, i) => {
+      const t = stepType(s)
+      if (t === 'agent' && s.agent) out.push({ type: 'agent', agent: s.agent, output_key: s.output_key || undefined })
+      else if (t === 'ai' && (s.prompt || '').trim()) out.push({ type: 'ai', prompt: s.prompt, output_key: (s.output_key || `ai_${i + 1}`).trim() })
+      else if (t === 'choice' && ((s.prompt || '').trim() || s.options_key)) out.push({ type: 'choice', prompt: s.prompt || undefined, options_key: s.options_key || undefined, output_key: (s.output_key || 'choice').trim() })
+      else if (t === 'email' && (s.subject || '').trim() && ((s.to || []).length || (s.cc || []).length)) out.push({ type: 'email', subject: s.subject, body: s.body || '', to: s.to || [], cc: s.cc || [] })
+      else if (t === 'drive') out.push({ type: 'drive', drive_title: (s.drive_title || '').trim() || 'مخرجات' })
+    })
+    return out
+  }
 
   async function save() {
     if (!name.trim()) { setErr('اكتب اسم الـ flow'); return }
-    const clean = steps.filter((s) => s.agent)
-    if (clean.length === 0) { setErr('ضيف خطوة واحدة على الأقل'); return }
+    const clean = cleanForSave()
+    if (clean.length === 0) { setErr('ضيف خطوة صالحة واحدة على الأقل'); return }
     setSaving(true); setErr('')
     const body = flow
       ? { action: 'update', id: flow.id, name, description: desc, steps: clean }
@@ -1396,6 +1567,8 @@ function FlowBuilder({ flow, agents, onClose, onSaved }: {
     onSaved()
   }
 
+  const inputCls = 'w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]'
+
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" dir="rtl">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
@@ -1404,7 +1577,7 @@ function FlowBuilder({ flow, agents, onClose, onSaved }: {
           <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] flex-shrink-0"><Workflow className="w-5 h-5" /></div>
           <div className="flex-1 min-w-0">
             <h2 className="text-base md:text-lg font-black text-[#1A2E26]">{flow ? 'تعديل flow' : 'flow جديد'}</h2>
-            <p className="text-xs text-[#6B7280]">رتّب الـ agents اللي يشتغلوا ورا بعض</p>
+            <p className="text-xs text-[#6B7280]">رتّب الخطوات: موظف AI · مهمة AI · قرارك · إيميل · حفظ</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-[#FAFAF7] text-[#6B7280] hover:text-[#1A2E26]"><X className="w-5 h-5" /></button>
         </header>
@@ -1412,7 +1585,7 @@ function FlowBuilder({ flow, agents, onClose, onSaved }: {
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           <div>
             <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1 block">اسم الـ flow</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="مثلاً: دورة جمع المؤجرين"
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="مثلاً: محرّك محتوى الماركتنج"
               className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-white text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]" />
           </div>
           <div>
@@ -1424,39 +1597,111 @@ function FlowBuilder({ flow, agents, onClose, onSaved }: {
           <div>
             <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-2 block">الخطوات (بالترتيب)</label>
             <div className="space-y-2">
-              {steps.map((s, i) => (
-                <div key={i} className="bg-white rounded-2xl border border-gray-100 p-2.5 flex items-center gap-2">
-                  <span className="inline-grid place-items-center w-6 h-6 rounded-lg bg-[#1F6F5F]/10 text-[#1F6F5F] text-[10px] font-black flex-shrink-0">{i + 1}</span>
-                  <select value={s.agent} onChange={(e) => setStep(i, { agent: e.target.value })}
-                    className="flex-1 min-w-0 px-2 py-1.5 text-sm rounded-lg border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]">
-                    {agentOptions.map((a) => (
-                      <option key={a.agent_name} value={a.agent_name}>{(AI_TEAM_META[a.team]?.label || a.team)} · {a.display_name || a.agent_name}</option>
-                    ))}
-                  </select>
-                  <div className="flex flex-col flex-shrink-0">
-                    <button onClick={() => move(i, -1)} disabled={i === 0} className="p-0.5 text-[#6B7280] hover:text-[#1A2E26] disabled:opacity-30"><ArrowUp className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => move(i, 1)} disabled={i === steps.length - 1} className="p-0.5 text-[#6B7280] hover:text-[#1A2E26] disabled:opacity-30"><ArrowDown className="w-3.5 h-3.5" /></button>
+              {steps.map((s, i) => {
+                const t = stepType(s); const m = STEP_TYPE_META[t]
+                return (
+                  <div key={i} className="bg-white rounded-2xl border border-gray-100 p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-grid place-items-center w-6 h-6 rounded-lg bg-[#1F6F5F]/10 text-[#1F6F5F] text-[10px] font-black flex-shrink-0">{i + 1}</span>
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold inline-flex items-center gap-1 ${m.chip}`}><span>{m.icon}</span>{m.label}</span>
+                      <div className="flex-1" />
+                      <div className="flex flex-col flex-shrink-0">
+                        <button onClick={() => move(i, -1)} disabled={i === 0} className="p-0.5 text-[#6B7280] hover:text-[#1A2E26] disabled:opacity-30"><ArrowUp className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => move(i, 1)} disabled={i === steps.length - 1} className="p-0.5 text-[#6B7280] hover:text-[#1A2E26] disabled:opacity-30"><ArrowDown className="w-3.5 h-3.5" /></button>
+                      </div>
+                      <button onClick={() => removeStep(i)} className="p-1 text-[#6B7280] hover:text-red-600 flex-shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
+                    </div>
+
+                    {t === 'agent' && (
+                      <select value={s.agent || ''} onChange={(e) => setStep(i, { agent: e.target.value })} className={inputCls}>
+                        {agentOptions.map((a) => (
+                          <option key={a.agent_name} value={a.agent_name}>{(AI_TEAM_META[a.team]?.label || a.team)} · {a.display_name || a.agent_name}</option>
+                        ))}
+                      </select>
+                    )}
+
+                    {t === 'ai' && (<>
+                      <textarea value={s.prompt || ''} onChange={(e) => setStep(i, { prompt: e.target.value })} rows={2} placeholder="المهمة… مثلاً: حلّل الـ algorithm الأنسب لكل منصة للموضوع {{chosen_topic}}" className={`${inputCls} resize-none`} />
+                      <input value={s.output_key || ''} onChange={(e) => setStep(i, { output_key: e.target.value })} placeholder="اسم الناتج (مثلاً: algorithm)" dir="ltr" className={`${inputCls} font-mono text-xs`} />
+                    </>)}
+
+                    {t === 'choice' && (<>
+                      <textarea value={s.prompt || ''} onChange={(e) => setStep(i, { prompt: e.target.value })} rows={2} placeholder="التعليمات اللي تطلّع الاختيارات… مثلاً: هاتلي أعلى ٥ مواضيع trend في مصر والعالم" className={`${inputCls} resize-none`} />
+                      <input value={s.output_key || ''} onChange={(e) => setStep(i, { output_key: e.target.value })} placeholder="اسم اختيارك (مثلاً: chosen_topic)" dir="ltr" className={`${inputCls} font-mono text-xs`} />
+                      <p className="text-[10px] text-[#6B7280]">⏸ الـ flow هيقف هنا ويستنّى اختيارك قبل ما يكمّل</p>
+                    </>)}
+
+                    {t === 'email' && (<>
+                      <input value={s.subject || ''} onChange={(e) => setStep(i, { subject: e.target.value })} placeholder="عنوان الإيميل (يقبل {{chosen_topic}})" className={inputCls} />
+                      <textarea value={s.body || ''} onChange={(e) => setStep(i, { body: e.target.value })} rows={3} placeholder="نص الإيميل… تقدر تحط {{algorithm}} أو {{keywords}} وهيتعوّضوا بالناتج" className={`${inputCls} resize-none`} />
+                      <div>
+                        <p className="text-[10px] font-bold text-[#6B7280] mb-1">لمين (TO)</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {people.length === 0 && <span className="text-[10px] text-[#6B7280]">حمّل الفريق…</span>}
+                          {people.map((p, k) => {
+                            const sel = !!p.email && (s.to || []).includes(p.email)
+                            return (
+                              <button key={k} disabled={!p.email} onClick={() => p.email && toggleEmail(i, 'to', p.email)}
+                                title={p.email || 'محتاج إيميل'}
+                                className={`px-2 py-1 rounded-lg text-[10px] font-bold border ${!p.email ? 'opacity-40 border-gray-200 text-[#6B7280]' : sel ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' : 'bg-white border-gray-200 text-[#1A2E26] hover:border-[#1F6F5F]'}`}>
+                                {p.name}{!p.email && ' ⚠'}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold text-[#6B7280] mb-1">نسخة (CC)</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {people.map((p, k) => {
+                            const sel = !!p.email && (s.cc || []).includes(p.email)
+                            return (
+                              <button key={k} disabled={!p.email} onClick={() => p.email && toggleEmail(i, 'cc', p.email)}
+                                title={p.email || 'محتاج إيميل'}
+                                className={`px-2 py-1 rounded-lg text-[10px] font-bold border ${!p.email ? 'opacity-40 border-gray-200 text-[#6B7280]' : sel ? 'bg-[#2FA084] text-white border-[#2FA084]' : 'bg-white border-gray-200 text-[#1A2E26] hover:border-[#2FA084]'}`}>
+                                {p.name}{!p.email && ' ⚠'}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                      {people.some((p) => !p.email) && <p className="text-[10px] text-[#D4A017]">⚠ فيه ناس مفيش ليها إيميل — ضيفه من "إيميلات الفريق"</p>}
+                    </>)}
+
+                    {t === 'drive' && (
+                      <input value={s.drive_title || ''} onChange={(e) => setStep(i, { drive_title: e.target.value })} placeholder="اسم الملف اللي هيتحفظ (مثلاً: خطة نشر {{chosen_topic}})" className={inputCls} />
+                    )}
                   </div>
-                  <button onClick={() => removeStep(i)} className="p-1 text-[#6B7280] hover:text-red-600 flex-shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
-                </div>
-              ))}
+                )
+              })}
             </div>
-            <button onClick={addStep}
-              className="mt-2 w-full p-2.5 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#1F6F5F] text-[#6B7280] hover:text-[#1F6F5F] text-sm font-bold flex items-center justify-center gap-2">
-              <Plus className="w-4 h-4" /> ضيف خطوة
-            </button>
+
+            <div className="mt-2 grid grid-cols-2 md:grid-cols-5 gap-1.5">
+              {(['agent', 'ai', 'choice', 'email', 'drive'] as StepType[]).map((t) => {
+                const m = STEP_TYPE_META[t]
+                return (
+                  <button key={t} onClick={() => addStep(t)}
+                    className="p-2 rounded-xl border-2 border-dashed border-gray-300 hover:border-[#1F6F5F] text-[#6B7280] hover:text-[#1F6F5F] text-[11px] font-bold flex items-center justify-center gap-1">
+                    <span>{m.icon}</span> {m.label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
-          {steps.filter((s) => s.agent).length > 0 && (
+          {steps.length > 0 && (
             <div className="bg-[#1F6F5F]/5 rounded-2xl p-3">
               <p className="text-[10px] font-bold text-[#6B7280] mb-1">المعاينة</p>
               <div className="flex items-center flex-wrap gap-1">
-                {steps.filter((s) => s.agent).map((s, i) => (
-                  <span key={i} className="inline-flex items-center gap-1">
-                    {i > 0 && <span className="text-[#6B7280]">→</span>}
-                    <span className="px-2 py-0.5 rounded-md bg-white text-[#1A2E26] text-[10px] font-bold">{nameOf(s.agent)}</span>
-                  </span>
-                ))}
+                {steps.map((s, i) => {
+                  const t = stepType(s); const m = STEP_TYPE_META[t]
+                  return (
+                    <span key={i} className="inline-flex items-center gap-1">
+                      {i > 0 && <span className="text-[#6B7280]">→</span>}
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold inline-flex items-center gap-1 ${m.chip}`}><span>{m.icon}</span>{stepLabel(s, nameOf)}</span>
+                    </span>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -1471,6 +1716,136 @@ function FlowBuilder({ flow, agents, onClose, onSaved }: {
             <Save className="w-4 h-4" /> {saving ? 'جاري الحفظ…' : (flow ? 'احفظ التعديلات' : 'اعمل الـ flow')}
           </button>
         </footer>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   CHOICE MODAL — وقفة "قرارك إنت"
+   ============================================================ */
+function ChoiceModal({ data, resuming, onPick, onClose }: {
+  data: { run_id: string; flow_name: string; options: Array<{ id?: string; label?: string }>; output_key: string }
+  resuming: boolean
+  onPick: (choice: string) => void
+  onClose: () => void
+}) {
+  const [custom, setCustom] = useState('')
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center" dir="rtl">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={resuming ? undefined : onClose} />
+      <div className="relative bg-[#FAFAF7] rounded-t-3xl md:rounded-3xl w-full md:max-w-lg md:mx-4 max-h-[90vh] flex flex-col shadow-2xl">
+        <header className="px-5 py-4 border-b border-gray-100 bg-white rounded-t-3xl flex items-center gap-3">
+          <div className="inline-grid place-items-center w-11 h-11 rounded-xl flex-shrink-0 text-lg" style={{ background: '#D4A017', color: '#fff' }}>⏸</div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base md:text-lg font-black text-[#1A2E26]">قرارك مطلوب</h2>
+            <p className="text-xs text-[#6B7280] truncate">{data.flow_name} · اختار عشان يكمّل</p>
+          </div>
+          {!resuming && <button onClick={onClose} className="p-2 rounded-lg hover:bg-[#FAFAF7] text-[#6B7280] hover:text-[#1A2E26]"><X className="w-5 h-5" /></button>}
+        </header>
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {data.options.length === 0 && <p className="text-xs text-[#6B7280] text-center py-3">مفيش اختيارات جاهزة — اكتب اختيارك تحت</p>}
+          {data.options.map((o, k) => {
+            const label = o?.label ?? JSON.stringify(o)
+            return (
+              <button key={k} disabled={resuming} onClick={() => onPick(label)}
+                className="w-full text-right p-3 rounded-2xl border border-gray-200 bg-white hover:border-[#1F6F5F] hover:shadow-sm text-sm font-bold text-[#1A2E26] disabled:opacity-50 flex items-center gap-2">
+                <span className="inline-grid place-items-center w-6 h-6 rounded-lg bg-[#1F6F5F]/10 text-[#1F6F5F] text-[11px] font-black flex-shrink-0">{k + 1}</span>
+                <span className="flex-1">{label}</span>
+              </button>
+            )
+          })}
+          <div className="pt-2 flex items-center gap-2">
+            <input value={custom} onChange={(e) => setCustom(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && custom.trim()) onPick(custom.trim()) }}
+              placeholder="أو اكتب اختيارك…" disabled={resuming}
+              className="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-200 bg-white text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]" />
+            <button onClick={() => custom.trim() && onPick(custom.trim())} disabled={resuming || !custom.trim()}
+              className="px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold disabled:opacity-50 flex items-center gap-1.5">
+              {resuming ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />} كمّل
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   COMMS MODAL — إيميلات الفريق (للـ handoff)
+   ============================================================ */
+function CommsModal({ roster, onClose, onSaved }: {
+  roster: Roster | null
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const [ownerEmail, setOwnerEmail] = useState(roster?.owner.email || '')
+  const [ownerName, setOwnerName] = useState(roster?.owner.name || '')
+  const [alwaysCc, setAlwaysCc] = useState((roster?.owner.always_cc || []).join(', '))
+  const [emps, setEmps] = useState<Record<string, string>>(() => {
+    const m: Record<string, string> = {}
+    for (const e of roster?.employees || []) if (e.employee_id) m[e.employee_id] = e.email || ''
+    return m
+  })
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg] = useState('')
+
+  async function saveOwner() {
+    setSaving(true)
+    // @ts-expect-error rpc untyped
+    await supabase.rpc('set_comms_settings', {
+      p_owner_email: ownerEmail.trim() || null,
+      p_owner_name: ownerName.trim() || null,
+      p_always_cc: alwaysCc.split(',').map((x) => x.trim()).filter(Boolean),
+    })
+    setMsg('اتسجّل ✓'); setTimeout(() => setMsg(''), 2000)
+    setSaving(false); onSaved()
+  }
+  async function saveEmp(id: string) {
+    setSaving(true)
+    // @ts-expect-error rpc untyped
+    await supabase.rpc('set_employee_email', { p_employee_id: id, p_email: (emps[id] || '').trim() || null })
+    setMsg('اتسجّل ✓'); setTimeout(() => setMsg(''), 2000)
+    setSaving(false); onSaved()
+  }
+
+  const inputCls = 'w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]'
+  return (
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" dir="rtl">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-[#FAFAF7] rounded-t-3xl md:rounded-3xl w-full md:max-w-lg md:mx-4 max-h-[90vh] flex flex-col shadow-2xl">
+        <header className="px-5 py-4 border-b border-gray-100 bg-white rounded-t-3xl flex items-center gap-3">
+          <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-purple-50 text-purple-700 flex-shrink-0"><Mail className="w-5 h-5" /></div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base md:text-lg font-black text-[#1A2E26]">إيميلات الفريق</h2>
+            <p className="text-xs text-[#6B7280]">عشان الـ handoff والـ CC يشتغلوا في الـ flows</p>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-[#FAFAF7] text-[#6B7280] hover:text-[#1A2E26]"><X className="w-5 h-5" /></button>
+        </header>
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
+            <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280]">الأونر (إنت)</p>
+            <input value={ownerName} onChange={(e) => setOwnerName(e.target.value)} placeholder="اسمك" className={inputCls} />
+            <input value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} placeholder="إيميلك (reply-to)" dir="ltr" className={inputCls} />
+            <input value={alwaysCc} onChange={(e) => setAlwaysCc(e.target.value)} placeholder="CC دايماً (مفصولين بفاصلة)" dir="ltr" className={inputCls} />
+            <button onClick={saveOwner} disabled={saving} className="w-full py-2 rounded-xl bg-[#1A2E26] text-white text-sm font-bold flex items-center justify-center gap-1.5 disabled:opacity-50"><Save className="w-4 h-4" /> احفظ</button>
+          </div>
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
+            <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280]">الموظفين</p>
+            {(roster?.employees || []).length === 0 && <p className="text-xs text-[#6B7280]">مفيش موظفين</p>}
+            {(roster?.employees || []).map((e) => (
+              <div key={e.employee_id} className="flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-[#1A2E26] truncate">{e.name}</p>
+                  {e.role_ar && <p className="text-[10px] text-[#6B7280]">{e.role_ar}</p>}
+                </div>
+                <input value={emps[e.employee_id || ''] || ''} onChange={(ev) => setEmps((m) => ({ ...m, [e.employee_id || '']: ev.target.value }))}
+                  placeholder="إيميل" dir="ltr" className="w-40 px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]" />
+                <button onClick={() => saveEmp(e.employee_id || '')} disabled={saving} className="px-2.5 py-1.5 rounded-lg bg-[#1F6F5F] text-white text-xs font-bold disabled:opacity-50"><Save className="w-3.5 h-3.5" /></button>
+              </div>
+            ))}
+          </div>
+          {msg && <p className="text-xs font-bold text-[#1F6F5F] text-center">{msg}</p>}
+        </div>
       </div>
     </div>
   )
