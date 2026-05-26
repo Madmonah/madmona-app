@@ -9,7 +9,7 @@
 //   MADMONA_FROM_EMAIL     — default "noreply@madmonacairo.com" (must be verified in Resend)
 //   MADMONA_ADMIN_FROM_EMAIL — default "alerts@madmonacairo.com"
 //
-// Phase Ω.7 (May 18 2026)
+// Phase Ω.7 (May 18 2026) — CC + reply_to + from_label support added May 26 2026
 // ============================================================================
 
 // @ts-ignore Deno-specific import
@@ -39,6 +39,7 @@ async function sendViaResend(args: {
   html?: string | null
   text?: string | null
   reply_to?: string | null
+  cc?: string[] | null
 }): Promise<{ ok: boolean; message_id?: string; error?: string; response?: any }> {
   if (!RESEND_API_KEY) {
     return { ok: false, error: 'RESEND_API_KEY not configured in Supabase secrets' }
@@ -52,6 +53,7 @@ async function sendViaResend(args: {
   if (args.html) payload.html = args.html
   if (args.text) payload.text = args.text
   if (args.reply_to) payload.reply_to = args.reply_to
+  if (args.cc && Array.isArray(args.cc) && args.cc.length > 0) payload.cc = args.cc
 
   // Always include a text body so non-HTML clients don't break
   if (!payload.html && !payload.text) {
@@ -108,6 +110,7 @@ async function drainCustomer(limit = 20) {
       html: row.body_html,
       text: row.body_text,
       reply_to: row.reply_to,
+      cc: row.cc,
     })
 
     if (r.ok) {
@@ -169,11 +172,13 @@ async function drainAdmin(limit = 20) {
 
   for (const row of rows) {
     const r = await sendViaResend({
-      from: `Madmona Alerts <${FROM_ADMIN}>`,
+      from: row.from_label ? `${row.from_label} <${FROM_ADMIN}>` : `Madmona Alerts <${FROM_ADMIN}>`,
       to: row.to_email,
       subject: row.subject,
       html: row.body_html,
       text: row.body_text,
+      reply_to: row.reply_to,
+      cc: row.cc,
     })
 
     if (r.ok) {
