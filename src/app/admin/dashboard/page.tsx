@@ -379,6 +379,16 @@ export default function AdminDashboardV2() {
           </div>
         </Link>
 
+        {/* ===== MADMONA · COMPANY & INTERNAL ===== */}
+        <Section title="🏢 مضمونة الشركة" subtitle="صفحات مضمونة نفسها (الشركة + الإدارة) — منفصلة عن العملاء B2B">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <ToolCard href="/admin/company" icon={<Building2 />} title="لوحة الشركة" sub="مضمونة كشركة · مالية + منتجات" />
+            <ToolCard href="/admin/permissions" icon={<ShieldCheck />} title="صلاحيات الموظفين" sub="صلاحيات كل موظف" />
+            <ToolCard href="/admin/hq" icon={<Compass />} title="HQ · مركز القيادة" sub="نظرة عامة عليا" />
+            <ToolCard href="/admin/ai-os" icon={<Bot />} title="AI OS" sub="فرق الـ agents" />
+          </div>
+        </Section>
+
         {/* ===== QUICK ACTIONS (top of fold) ===== */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
           <QuickAction href="/admin/ai-assistant" icon={<Sparkles className="w-5 h-5" />}
