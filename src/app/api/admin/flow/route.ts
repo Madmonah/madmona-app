@@ -106,7 +106,7 @@ function cleanSteps(raw: unknown): Step[] {
     } else if (type === 'email') {
       const subject = String(r.subject || '').trim()
       const to = asArr(r.to), cc = asArr(r.cc)
-      if (!subject || (to.length === 0 && cc.length === 0)) continue
+      if (!subject) continue
       out.push({ type, subject, body: r.body ? String(r.body) : '', to, cc, note: r.note ? String(r.note) : undefined })
     } else if (type === 'drive') {
       out.push({ type, drive_title: r.drive_title ? String(r.drive_title) : 'Madmona artifact', output_key: r.output_key ? String(r.output_key) : undefined, note: r.note ? String(r.note) : undefined })
