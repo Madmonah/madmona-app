@@ -8,7 +8,7 @@ import {
   ArrowDownCircle, ArrowUpCircle, Loader2, RefreshCw, Eye,
   CheckCircle2, AlertCircle, BadgePercent, ChevronDown, Plus, Heart, Package,
   BarChart3, DollarSign, Clock, ShoppingCart, Truck, Gift,
-  MessageCircle, FileText, Calculator, FileCheck, Scissors, UserX, Receipt,
+  MessageCircle, FileText, Calculator, FileCheck, Tag, Workflow, UserX, Receipt,
   CalendarClock, Download, ListChecks, Link2,
 } from 'lucide-react'
 
@@ -331,8 +331,8 @@ export default function BusinessFinancePage({
             <ModuleCard href={`/admin/business-finance/${supplierId}/bookings`} icon={<CalendarClock />} label="إدارة الحجوزات" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/waitlist`} icon={<ListChecks />} label="قائمة الانتظار" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/inventory`} icon={<Package />} label="المخزون" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/services-catalog`} icon={<Scissors />} label="قائمة الخدمات" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/services`} icon={<Scissors />} label="ربط خدمة-منتج" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/services-catalog`} icon={<Tag />} label="قائمة الخدمات" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/services`} icon={<Workflow />} label="ربط خدمة-منتج" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/expenses`} icon={<DollarSign />} label="المصاريف" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/attendance`} icon={<Clock />} label="الحضور" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/cash-recon`} icon={<Wallet />} label="جرد الكاش" />
