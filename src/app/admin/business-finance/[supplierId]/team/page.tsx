@@ -25,6 +25,10 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// الـ AI agents + الـ Flows دول تيم مضمونة الداخلي — يظهروا بس على أكونت مضمونة نفسها،
+// مش على أي مورّد تاني زي Elite. (لاحقاً ممكن نعمل تيم AI خاص بكل مورّد)
+const MADMONA_SUPPLIER_ID = 'c8b7b9d7-6178-4d0c-abdf-66f34b628e9d'
+
 type Supplier = {
   id: string
   business_name: string
@@ -152,6 +156,7 @@ export default function TeamOversightPage({
   params: { supplierId: string }
 }) {
   const { supplierId } = params
+  const isMadmona = supplierId === MADMONA_SUPPLIER_ID
   const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [branches, setBranches] = useState<Branch[]>([])
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -253,20 +258,20 @@ export default function TeamOversightPage({
       .select('*').eq('supplier_id', supplierId)
     setEmployees((emp || []) as Employee[])
 
-    // AI workforce structure (org هيكل + tasks)
-    // @ts-expect-error
-    const { data: ai } = await supabase.rpc('get_agents_structure')
-    setAiAgents((ai || []) as AiAgent[])
-
-    // Agent flows (pipelines)
-    // @ts-expect-error
-    const { data: fl } = await supabase.rpc('get_flows')
-    setFlows((fl || []) as Flow[])
-
-    // Comms roster (owner + human employees, for email handoffs)
-    // @ts-expect-error
-    const { data: rs } = await supabase.rpc('get_comms_roster')
-    setRoster((rs || null) as Roster | null)
+    // الـ AI workforce + flows + comms روستر = تيم مضمونة الداخلي بس
+    if (supplierId === MADMONA_SUPPLIER_ID) {
+      // @ts-expect-error
+      const { data: ai } = await supabase.rpc('get_agents_structure')
+      setAiAgents((ai || []) as AiAgent[])
+      // @ts-expect-error
+      const { data: fl } = await supabase.rpc('get_flows')
+      setFlows((fl || []) as Flow[])
+      // @ts-expect-error
+      const { data: rs } = await supabase.rpc('get_comms_roster')
+      setRoster((rs || null) as Roster | null)
+    } else {
+      setAiAgents([]); setFlows([]); setRoster(null)
+    }
 
     setLoading(false)
   }
@@ -479,7 +484,8 @@ export default function TeamOversightPage({
           </div>
         </section>
 
-        {/* AI WORKFORCE هيكل */}
+        {isMadmona && (<>
+        {/* AI WORKFORCE هيكل (تيم مضمونة الداخلي — مش بيظهر لأي مورّد تاني) */}
         <section className="bg-white rounded-3xl border border-gray-100 p-5 md:p-7">
           <div className="flex items-center justify-between flex-wrap gap-2 mb-5">
             <h2 className="text-sm font-bold tracking-wider uppercase text-[#6B7280]">
@@ -558,6 +564,12 @@ export default function TeamOversightPage({
               <p className="text-xs text-[#6B7280] mt-1">رتّب كذا agent ورا بعض في flow واحد وشغّله بضغطة</p>
             </div>
             <div className="flex items-center gap-2">
+              <Link
+                href="/admin/flow-tasks"
+                className="px-3 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2"
+              >
+                <ListChecks className="w-4 h-4" /> المهام
+              </Link>
               <button
                 onClick={() => setCommsOpen(true)}
                 className="px-3 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2"
@@ -599,6 +611,7 @@ export default function TeamOversightPage({
             </div>
           )}
         </section>
+        </>)}
 
         {/* Stats */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-3">

@@ -144,6 +144,57 @@ async function commsDefaults(): Promise<{ ownerEmail: string | null; alwaysCc: s
   return { ownerEmail: d?.owner_email || null, alwaysCc: Array.isArray(d?.always_cc) ? d!.always_cc! : [] }
 }
 
+// ---- تحويل محتوى الإيميل لـ tasks بخطوات (flow_tasks) ----
+// بناخد نص الإيميل ونسأل Claude يقسّمه لمهام تنفيذية واضحة، كل مهمة بخطوات checklist
+async function tasksFromEmailBody(subject: string, bodyText: string): Promise<Array<{ title: string; steps: string[] }>> {
+  if (!bodyText.trim()) return []
+  try {
+    const text = await callClaude({
+      systemPrompt:
+        'إنت منسّق عمليات في مضمونة. بتاخد محتوى رسالة شغل وبتحوّله لقائمة مهام تنفيذية واضحة، ' +
+        'كل مهمة مقسّمة لخطوات صغيرة قابلة للتنفيذ والتشطيب. ' +
+        'رجّع JSON array بس بالشكل ده من غير أي كلام تاني: ' +
+        '[{"title":"عنوان المهمة","steps":["خطوة 1","خطوة 2"]}]. ' +
+        'أقصى 6 مهام، وكل مهمة من 2 ل 6 خطوات. لو المحتوى مفيهوش شغل قابل للتنفيذ رجّع [].',
+      userMessage: `العنوان: ${subject}\n\nالمحتوى:\n${bodyText.slice(0, 6000)}`,
+      maxTokens: 1400, temperature: 0.4,
+    })
+    const m = text.match(/\[[\s\S]*\]/)
+    if (!m) return []
+    const arr = JSON.parse(m[0]) as Array<{ title?: string; steps?: unknown }>
+    return arr
+      .filter((x) => x && typeof x.title === 'string' && x.title.trim())
+      .map((x) => ({
+        title: String(x.title).trim(),
+        steps: Array.isArray(x.steps) ? x.steps.map((s) => String(s).trim()).filter(Boolean) : [],
+      }))
+      .slice(0, 6)
+  } catch {
+    return []
+  }
+}
+
+// تسجيل المهام المتولّدة في flow_tasks (service-role بيتخطّى الـ RLS)
+async function insertFlowTasks(
+  runId: string, flowName: string, assigneeEmail: string | null,
+  tasks: Array<{ title: string; steps: string[] }>,
+): Promise<number> {
+  if (!tasks.length) return 0
+  const rows = tasks.map((tk) => ({
+    pipeline_run_id: runId,
+    flow_name: flowName,
+    title: tk.title,
+    assignee_email: assigneeEmail,
+    status: 'pending',
+    priority: 'medium',
+    source: 'email',
+    steps: tk.steps.map((tx, k) => ({ id: `st_${k + 1}`, text: tx, done: false })),
+  }))
+  // @ts-expect-error untyped
+  const { error } = await supabaseAdmin.from('flow_tasks').insert(rows as never)
+  return error ? 0 : rows.length
+}
+
 // --- step_run logging ---
 async function startStep(runId: string, i: number, s: Step): Promise<string | undefined> {
   // @ts-expect-error untyped
@@ -253,8 +304,16 @@ async function executeFrom(
             body_html: html, body_text: text, reply_to: comms.ownerEmail,
             from_label: 'Madmona', source: 'flow', status: 'pending', scheduled_at: new Date().toISOString(),
           })
-          await endStep(stepId, t0, error ? 'failed' : 'completed', { to: toEmail, cc }, error?.message)
-          results.push({ index: i, type: s.type, label: labelFor(s), success: !error, error: error?.message })
+          // حوّل محتوى الإيميل لـ tasks بخطوات في الأدمن بانل (flow_tasks)
+          let tasksCreated = 0
+          if (!error) {
+            try {
+              const genTasks = await tasksFromEmailBody(subject, bodyText)
+              tasksCreated = await insertFlowTasks(runId, pipelineName, toEmail, genTasks)
+            } catch { /* مايكسرش خطوة الإيميل */ }
+          }
+          await endStep(stepId, t0, error ? 'failed' : 'completed', { to: toEmail, cc, tasks_created: tasksCreated }, error?.message)
+          results.push({ index: i, type: s.type, label: labelFor(s), success: !error, error: error?.message, note: tasksCreated ? `${tasksCreated} مهمة بخطوات اتعملت` : undefined })
         }
       }
 

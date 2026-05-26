@@ -150,6 +150,10 @@ export default function BookingPage() {
         return
       }
       const listingData = l as ListingForBooking
+      // تسجيل الـ ID اتأجّل لمرحلة تحويل الفلوس (محمد، ٢٦ مايو ٢٠٢٦):
+      // بنقفل التحقق من الهوية وقت الحجز خالص — مفروض مايظهرش في فلو الأكونت/الحجز دلوقتي.
+      // هنرجّعه في مرحلة الدفع/التحويل. (الكود سايبو زي ما هو عشان نفعّله بسهولة)
+      listingData.requires_id_verification = false
       setListing(listingData)
 
       // PAUSED gate: listing exists but owner temporarily disabled it.
