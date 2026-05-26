@@ -7,7 +7,7 @@ import {
   Users, Crown, Building2, ListChecks, ChevronLeft, Loader2,
   CheckCircle2, Circle, X, RefreshCw, Plus,
   TrendingUp, Sparkles, AlertCircle, Clock, LogIn, LogOut, Star, QrCode, ShieldCheck,
-  Heart, Calendar, UserPlus,
+  Heart, Calendar, UserPlus, Power, Pause, Pencil, Trash2, Save, Settings2,
 } from 'lucide-react'
 
 /* ============================================================
@@ -99,6 +99,18 @@ export default function TeamOversightPage({
   const [message, setMessage] = useState('')
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
   const [aiAgents, setAiAgents] = useState<AiAgent[]>([])
+  const [selectedAgent, setSelectedAgent] = useState<string | null>(null)
+
+  async function toggleAgent(agent_name: string, active: boolean) {
+    setAiAgents((prev) => prev.map((a) =>
+      a.agent_name === agent_name ? { ...a, enabled: active, status: active ? 'active' : 'on_leave' } : a))
+    await fetch('/api/admin/agent-flow', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'toggle', agent_name, active }),
+    })
+    await loadAll()
+  }
 
   async function loadAll() {
     setLoading(true)
@@ -364,7 +376,14 @@ export default function TeamOversightPage({
                       <span className="text-[10px] text-[#6B7280]">{act}/{list.length} شغّال</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                      {list.map((a) => <AgentChip key={a.agent_name} a={a} />)}
+                      {list.map((a) => (
+                        <AgentChip
+                          key={a.agent_name}
+                          a={a}
+                          onToggle={toggleAgent}
+                          onOpen={() => setSelectedAgent(a.agent_name)}
+                        />
+                      ))}
                     </div>
                   </div>
                 )
@@ -459,6 +478,15 @@ export default function TeamOversightPage({
           supplierName={supplier.business_name}
           onClose={() => setSelectedEmployee(null)}
           onRefresh={loadAll}
+        />
+      )}
+
+      {/* Agent flow modal — تعديل شغل موظف الـ AI */}
+      {selectedAgent && (
+        <AgentModal
+          agentName={selectedAgent}
+          onClose={() => setSelectedAgent(null)}
+          onChanged={loadAll}
         />
       )}
     </div>
@@ -915,26 +943,249 @@ function Badge({ children }: { children: ReactNode }) {
   )
 }
 
-function AgentChip({ a }: { a: AiAgent }) {
+function AgentChip({ a, onToggle, onOpen }: {
+  a: AiAgent
+  onToggle: (agent_name: string, active: boolean) => void
+  onOpen: () => void
+}) {
   const on = a.enabled
   const subtitle = a.task && a.task !== a.display_name ? a.task : a.agent_name
   return (
-    <div className={`rounded-2xl border p-3 flex items-start gap-3 transition-all ${
+    <div className={`rounded-2xl border p-3 flex items-start gap-2.5 transition-all ${
       on ? 'bg-white border-[#1F6F5F]/30' : 'bg-[#FAFAF7] border-gray-100 opacity-70'
     }`}>
-      <div className={`inline-grid place-items-center w-9 h-9 rounded-lg flex-shrink-0 text-sm ${
-        on ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'bg-gray-100 text-[#6B7280]'
-      }`}>🤖</div>
-      <div className="flex-1 min-w-0">
+      <button
+        onClick={onOpen}
+        title="تعديل شغل الموظف"
+        className={`inline-grid place-items-center w-9 h-9 rounded-lg flex-shrink-0 text-sm transition-transform active:scale-90 ${
+          on ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'bg-gray-100 text-[#6B7280]'
+        }`}
+      >🤖</button>
+      <button onClick={onOpen} className="flex-1 min-w-0 text-right">
         <div className="flex items-center gap-1.5">
           <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${on ? 'bg-[#1F6F5F]' : 'bg-gray-300'}`} />
           <h4 className="text-sm font-black text-[#1A2E26] leading-tight truncate">{a.display_name || a.agent_name}</h4>
         </div>
         <p className="text-[10px] text-[#6B7280] mt-0.5 truncate" dir="ltr">{subtitle}</p>
+      </button>
+      <div className="flex flex-col items-stretch gap-1 flex-shrink-0">
+        <button
+          onClick={() => onToggle(a.agent_name, !on)}
+          title={on ? 'نوّم الـ agent' : 'شغّل الـ agent'}
+          className={`px-2 py-1 rounded-lg text-[9px] font-bold flex items-center justify-center gap-1 transition-colors ${
+            on
+              ? 'bg-[#1F6F5F]/10 text-[#1F6F5F] hover:bg-red-50 hover:text-red-600'
+              : 'bg-[#1F6F5F] text-white hover:opacity-90'
+          }`}
+        >
+          {on ? <Pause className="w-3 h-3" /> : <Power className="w-3 h-3" />}
+          {on ? 'نوّم' : 'شغّل'}
+        </button>
+        <button
+          onClick={onOpen}
+          title="تعديل الشغل"
+          className="px-2 py-1 rounded-lg text-[9px] font-bold text-[#6B7280] hover:text-[#1A2E26] hover:bg-gray-100 flex items-center justify-center gap-1 transition-colors"
+        >
+          <Pencil className="w-3 h-3" />
+          تعديل
+        </button>
       </div>
-      <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold flex-shrink-0 ${
-        on ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'bg-gray-100 text-[#6B7280]'
-      }`}>{on ? 'شغّال' : 'إجازة'}</span>
+    </div>
+  )
+}
+
+/* ============================================================
+   AGENT MODAL — تعديل شغل موظف الـ AI
+   (تشغيل/تنويم + المعاد + الوصف + التاسكات)
+   ============================================================ */
+type AgentTask = { id: string; title_ar: string; priority: string | null; active: boolean }
+type AgentDetail = {
+  agent_name: string
+  display_name: string | null
+  team: string
+  enabled: boolean
+  status: string | null
+  description: string | null
+  schedule_cron: string | null
+  employee_id: string | null
+  run_count: number
+  success_count: number
+  error_count: number
+  tasks: AgentTask[]
+}
+
+function AgentModal({ agentName, onClose, onChanged }: {
+  agentName: string
+  onClose: () => void
+  onChanged: () => void
+}) {
+  const [d, setD] = useState<AgentDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [desc, setDesc] = useState('')
+  const [cron, setCron] = useState('')
+  const [newTask, setNewTask] = useState('')
+  const [msg, setMsg] = useState('')
+
+  async function load() {
+    setLoading(true)
+    // @ts-expect-error rpc untyped
+    const { data } = await supabase.rpc('get_agent_detail', { p_agent_name: agentName })
+    const det = data as AgentDetail | null
+    setD(det)
+    setDesc(det?.description || '')
+    setCron(det?.schedule_cron || '')
+    setLoading(false)
+  }
+  useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [agentName])
+
+  async function call(body: Record<string, unknown>) {
+    const r = await fetch('/api/admin/agent-flow', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    return r.ok
+  }
+
+  async function toggle() {
+    if (!d) return
+    setSaving(true)
+    await call({ action: 'toggle', agent_name: d.agent_name, active: !d.enabled })
+    await load(); onChanged(); setSaving(false)
+  }
+  async function saveMeta() {
+    if (!d) return
+    setSaving(true)
+    await call({ action: 'update_meta', agent_name: d.agent_name, description: desc, schedule_cron: cron })
+    setMsg('اتسجّل ✓'); setTimeout(() => setMsg(''), 2000)
+    await load(); onChanged(); setSaving(false)
+  }
+  async function addTask() {
+    if (!d || !newTask.trim()) return
+    setSaving(true)
+    await call({ action: 'add_task', agent_name: d.agent_name, title_ar: newTask.trim() })
+    setNewTask('')
+    await load(); onChanged(); setSaving(false)
+  }
+  async function toggleTask(t: AgentTask) {
+    setSaving(true)
+    await call({ action: 'update_task', task_id: t.id, active: !t.active })
+    await load(); onChanged(); setSaving(false)
+  }
+  async function delTask(t: AgentTask) {
+    if (!confirm('تحذف المهمة دي؟')) return
+    setSaving(true)
+    await call({ action: 'delete_task', task_id: t.id })
+    await load(); onChanged(); setSaving(false)
+  }
+
+  const on = d?.enabled
+  return (
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" dir="rtl">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-[#FAFAF7] rounded-t-3xl md:rounded-3xl w-full md:max-w-xl md:mx-4 max-h-[90vh] flex flex-col shadow-2xl">
+        <header className="px-5 py-4 border-b border-gray-100 bg-white rounded-t-3xl flex items-center gap-3">
+          <div className={`inline-grid place-items-center w-11 h-11 rounded-xl flex-shrink-0 text-lg ${
+            on ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'bg-gray-100 text-[#6B7280]'
+          }`}>🤖</div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base md:text-lg font-black text-[#1A2E26] truncate">{d?.display_name || agentName}</h2>
+            <p className="text-xs text-[#6B7280] truncate" dir="ltr">{agentName}</p>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-[#FAFAF7] text-[#6B7280] hover:text-[#1A2E26]">
+            <X className="w-5 h-5" />
+          </button>
+        </header>
+
+        {loading || !d ? (
+          <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" /></div>
+        ) : (
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Status + counters */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold text-[#1A2E26]">{on ? 'شغّال دلوقتي' : 'في إجازة'}</p>
+                <p className="text-[10px] text-[#6B7280] mt-0.5">
+                  {d.run_count} تشغيلة · {d.success_count} نجاح · {d.error_count} غلط
+                </p>
+              </div>
+              <button
+                onClick={toggle} disabled={saving}
+                className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 disabled:opacity-50 ${
+                  on ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-[#1F6F5F] text-white hover:opacity-90'
+                }`}
+              >
+                {on ? <Pause className="w-4 h-4" /> : <Power className="w-4 h-4" />}
+                {on ? 'نوّم' : 'شغّل'}
+              </button>
+            </div>
+
+            {/* Schedule + description */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
+              <div>
+                <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] flex items-center gap-1 mb-1">
+                  <Clock className="w-3 h-3" /> المعاد (cron)
+                </label>
+                <input
+                  type="text" value={cron} onChange={(e) => setCron(e.target.value)} dir="ltr"
+                  placeholder="@daily / @hourly / 0 6 * * *"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F] font-mono"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] flex items-center gap-1 mb-1">
+                  <Settings2 className="w-3 h-3" /> شغله / الوصف
+                </label>
+                <textarea
+                  value={desc} onChange={(e) => setDesc(e.target.value)} rows={2}
+                  placeholder="بيعمل إيه الموظف ده…"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F] resize-none"
+                />
+              </div>
+              <button
+                onClick={saveMeta} disabled={saving}
+                className="w-full py-2 rounded-xl bg-[#1A2E26] text-white text-sm font-bold flex items-center justify-center gap-1.5 disabled:opacity-50 hover:opacity-90"
+              >
+                <Save className="w-4 h-4" /> {saving ? 'جاري الحفظ…' : 'احفظ التعديلات'}{msg && <span className="text-[#6FCF97]"> · {msg}</span>}
+              </button>
+            </div>
+
+            {/* Tasks */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
+              <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] flex items-center gap-1 mb-1">
+                <ListChecks className="w-3 h-3" /> مهام الموظف
+              </p>
+              {d.tasks.length === 0 ? (
+                <p className="text-xs text-[#6B7280] py-2 text-center">مفيش مهام محددة</p>
+              ) : d.tasks.map((t) => (
+                <div key={t.id} className={`flex items-center gap-2 rounded-xl border p-2.5 ${
+                  t.active ? 'border-gray-100' : 'border-gray-100 opacity-50'
+                }`}>
+                  <button onClick={() => toggleTask(t)} className="flex-shrink-0 active:scale-90 transition-transform">
+                    {t.active ? <CheckCircle2 className="w-5 h-5 text-[#1F6F5F]" /> : <Circle className="w-5 h-5 text-gray-300" />}
+                  </button>
+                  <span className={`flex-1 text-sm ${t.active ? 'text-[#1A2E26] font-medium' : 'text-[#6B7280] line-through'}`}>{t.title_ar}</span>
+                  <button onClick={() => delTask(t)} className="text-[#6B7280] hover:text-red-600 p-1 flex-shrink-0">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="text" value={newTask} onChange={(e) => setNewTask(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') addTask() }}
+                  placeholder="مهمة جديدة…"
+                  className="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+                />
+                <button onClick={addTask} disabled={!newTask.trim() || saving}
+                  className="px-3 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold disabled:opacity-50 flex items-center gap-1">
+                  <Plus className="w-4 h-4" /> اضف
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
