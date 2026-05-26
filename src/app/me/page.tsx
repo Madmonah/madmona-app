@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   Loader2, ChevronRight, Wallet, Clock, Gift, CalendarCheck, ListChecks,
   MapPin, LogIn, LogOut, CheckCircle2, Circle, Coins, AlertCircle, Briefcase,
-  User, Check, Sparkles, ShoppingBag, Play,
+  User, Check, Sparkles, ShoppingBag, Play, Bell,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -38,6 +38,8 @@ export default function MyDashboard() {
   const [taskBusy, setTaskBusy] = useState<string | null>(null)
   const [bookingBusy, setBookingBusy] = useState<string | null>(null)
   const [prepBusy, setPrepBusy] = useState<string | null>(null)
+  const [notifs, setNotifs] = useState<any[]>([])
+  const [unread, setUnread] = useState(0)
 
   const token = () => (typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null)
 
@@ -48,6 +50,9 @@ export default function MyDashboard() {
     const { data: s } = await supabase.rpc('madmona_employee_summary', { p_token: t })
     if (!s?.ok) { setNotEmployee(true); setLoading(false); return }
     setData(s)
+    // @ts-expect-error rpc typing
+    const { data: n } = await supabase.rpc('madmona_employee_notifications', { p_token: t })
+    if (n?.ok) { setNotifs(n.notifications || []); setUnread(n.unread_count || 0) }
     setLoading(false)
   }, [router])
 
@@ -100,6 +105,13 @@ export default function MyDashboard() {
     setPrepBusy(null)
   }
 
+  async function markAllRead() {
+    setUnread(0)
+    setNotifs((ns) => ns.map((n) => ({ ...n, read: true })))
+    // @ts-expect-error rpc typing
+    await supabase.rpc('madmona_employee_mark_notifications_read', { p_token: token() })
+  }
+
   if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div>
 
   if (notEmployee) return (
@@ -135,6 +147,34 @@ export default function MyDashboard() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+
+        {/* ===== NOTIFICATIONS ===== */}
+        {notifs.length > 0 && (
+          <section className="bg-white rounded-2xl border border-gray-100 p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-1.5">
+                <Bell className="w-4 h-4 text-[#1F6F5F]" />
+                <p className="text-sm font-black text-[#1A2E26]">الإشعارات</p>
+                {unread > 0 && <span className="text-[10px] font-black bg-[#1F6F5F] text-white rounded-full min-w-[18px] text-center px-1.5 py-0.5">{fmt(unread)}</span>}
+              </div>
+              {unread > 0 && <button onClick={markAllRead} className="text-[11px] font-bold text-[#1F6F5F]">تعليم الكل كمقروء</button>}
+            </div>
+            <div className="space-y-2">
+              {notifs.map((n: any) => (
+                <div key={n.id} className={`p-3 rounded-xl border ${n.read ? 'bg-white border-gray-100' : 'bg-[#1F6F5F]/5 border-[#1F6F5F]/30'}`}>
+                  <div className="flex items-start gap-2.5">
+                    {!n.read && <span className="w-2 h-2 rounded-full bg-[#1F6F5F] flex-shrink-0 mt-1.5" />}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-[#1A2E26]">{n.title}</p>
+                      {n.body && <p className="text-[13px] text-[#1A2E26] mt-0.5">{n.body}</p>}
+                      <p className="text-[10px] text-[#6B7280] mt-1" dir="ltr">{new Date(n.created_at).toLocaleString('ar-EG', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* ===== ATTENDANCE (QR + location) ===== */}
         <section className="bg-white rounded-2xl border border-gray-100 p-5">
