@@ -23,6 +23,9 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// الإكرامية (tip) ميزة خاصة بالصالونات بس — تظهر للـ industries دي فقط
+const SALON_INDUSTRIES = ['beauty_salon', 'salon', 'beauty', 'spa', 'barber', 'nails']
+
 type Branch = { id: string; name: string; code: string | null }
 type Employee = { id: string; full_name: string; role_ar: string; branch_id: string | null }
 type Service = { id: string; name_ar: string; price_egp: number; duration_minutes: number; category: string | null }
@@ -56,9 +59,8 @@ export default function OperationsHub({
   params: { supplierId: string }
 }) {
   const { supplierId } = params
-  const ELITE_ID = '93eaa8cf-1def-4101-bca6-8fa33450cdce'
-  const isElite = supplierId === ELITE_ID
   const [supplierName, setSupplierName] = useState('')
+  const [industry, setIndustry] = useState('')
   const [branches, setBranches] = useState<Branch[]>([])
   const [employees, setEmployees] = useState<Employee[]>([])
   const [services, setServices] = useState<Service[]>([])
@@ -75,7 +77,7 @@ export default function OperationsHub({
     setLoading(true)
     const [sup, br, emp, sv, it, bl, vd, tx, sm] = await Promise.all([
       // @ts-expect-error
-      supabase.from('suppliers').select('business_name').eq('id', supplierId).single(),
+      supabase.from('suppliers').select('business_name, industry').eq('id', supplierId).single(),
       // @ts-expect-error
       supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).eq('status', 'active').order('code'),
       // @ts-expect-error
@@ -94,6 +96,7 @@ export default function OperationsHub({
       supabase.rpc('admin_get_operations_summary', { p_supplier_id: supplierId }),
     ])
     setSupplierName((sup.data as any)?.business_name || '')
+    setIndustry((sup.data as any)?.industry || '')
     setBranches((br.data || []) as Branch[])
     setEmployees((emp.data || []) as Employee[])
     setServices((sv.data || []) as Service[])
@@ -131,6 +134,8 @@ export default function OperationsHub({
     )
   }
 
+  const isSalon = SALON_INDUSTRIES.includes(industry)
+
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
@@ -166,7 +171,7 @@ export default function OperationsHub({
             icon={<TrendingUp className="w-4 h-4" />} primary />
           <KPI label="مصروفات" value={`${(summary?.today?.expenses || 0).toLocaleString('ar-EG')} ج`}
             icon={<TrendingDown className="w-4 h-4" />} tone="negative" />
-          {isElite && (
+          {isSalon && (
             <KPI label="إكراميات" value={`${(summary?.today?.tips || 0).toLocaleString('ar-EG')} ج`}
               icon={<Heart className="w-4 h-4" />} tone="amber" />
           )}
@@ -183,7 +188,7 @@ export default function OperationsHub({
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
             <ActionCard icon={<CalendarPlus />} label="حجز فوري" sub="عميل في الفرع" onClick={() => setModal('walk_in_booking')} accent />
-            {isElite && <ActionCard icon={<Heart />} label="إكرامية" sub="tip للموظف" onClick={() => setModal('tip')} />}
+            {isSalon && <ActionCard icon={<Heart />} label="إكرامية" sub="tip للموظف" onClick={() => setModal('tip')} />}
             <ActionCard icon={<ArrowDownCircle />} label="سحب كاش" sub="من خزينة الفرع" onClick={() => setModal('withdrawal')} />
             <ActionCard icon={<HandCoins />} label="سلفة موظف" sub="advance" onClick={() => setModal('advance')} />
             <ActionCard icon={<Zap />} label="دفع فاتورة" sub="كهرباء/إنترنت/إيجار" onClick={() => setModal('bill_pay')} />
@@ -252,7 +257,7 @@ export default function OperationsHub({
           supplierId={supplierId} branches={branches} services={services} employees={employees}
           onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
       )}
-      {modal === 'tip' && isElite && (
+      {modal === 'tip' && isSalon && (
         <TipModal supplierId={supplierId} branches={branches} employees={employees}
           onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
       )}
@@ -282,7 +287,7 @@ export default function OperationsHub({
           onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
       )}
       {modal === 'pay_salary' && (
-        <PaySalaryModal employees={employees} isElite={isElite}
+        <PaySalaryModal employees={employees} isElite={isSalon}
           onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
       )}
       {modal === 'add_service' && (
