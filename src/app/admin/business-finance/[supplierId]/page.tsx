@@ -10,7 +10,7 @@ import {
   BarChart3, DollarSign, Clock, ShoppingCart, Truck, Gift,
   MessageCircle, FileText, Calculator, FileCheck, Tag, Workflow, UserX, Receipt,
   CalendarClock, Download, ListChecks, Link2, ShieldCheck, ClipboardList,
-  FolderKanban, ScrollText,
+  FolderKanban, ScrollText, Table2, GitBranchPlus, HardHat,
 } from 'lucide-react'
 
 /* ============================================================
@@ -255,7 +255,7 @@ export default function BusinessFinancePage({
                 {supplier.business_name}
               </h1>
               <p className="text-sm text-[#6B7280] mt-1">
-                {supplier.industry === 'beauty_salon' ? 'صالون تجميل' : supplier.industry || ''} ·{' '}
+                {supplier.industry === 'beauty_salon' ? 'صالون تجميل' : supplier.industry === 'contracting' ? 'مقاولات · فئة أولى' : supplier.industry || ''} ·{' '}
                 {branches.length} فروع · {supplier.contact_phone}
               </p>
             </div>
@@ -336,6 +336,10 @@ export default function BusinessFinancePage({
               <>
                 <ModuleCard href={`/admin/business-finance/${supplierId}/projects`} icon={<FolderKanban />} label="المشاريع" primary />
                 <ModuleCard href={`/admin/business-finance/${supplierId}/payment-certificates`} icon={<ScrollText />} label="المستخلصات" primary />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/boq`} icon={<Table2 />} label="جدول الكميات" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/variation-orders`} icon={<GitBranchPlus />} label="أوامر التغيير" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/guarantees`} icon={<ShieldCheck />} label="خطابات الضمان" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/subcontractors`} icon={<HardHat />} label="مقاولي الباطن" />
               </>
             )}
             <ModuleCard href={`/admin/business-finance/${supplierId}/branches`} icon={<Building2 />} label="الفروع" />

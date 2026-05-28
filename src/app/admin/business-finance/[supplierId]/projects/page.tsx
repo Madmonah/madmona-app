@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import {
   FolderKanban, ChevronLeft, Loader2, Plus, X, RefreshCw,
-  Building2, MapPin, ScrollText, Pencil, Trash2, Wallet, Layers,
+  Building2, MapPin, Pencil, Trash2, Wallet, Layers,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -195,10 +195,10 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
 
                   <div className="mt-auto flex items-center gap-2">
                     <Link
-                      href={`/admin/business-finance/${supplierId}/payment-certificates?project=${p.id}`}
+                      href={`/admin/business-finance/${supplierId}/projects/${p.id}`}
                       className="flex-1 px-3 py-2 rounded-xl bg-[#1F6F5F] text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:shadow-md transition-shadow"
                     >
-                      <ScrollText className="w-3.5 h-3.5" /> المستخلصات
+                      <Layers className="w-3.5 h-3.5" /> تفاصيل المشروع
                     </Link>
                     <button onClick={() => openEdit(p)} className="p-2 rounded-xl bg-[#FAFAF7] text-[#1A2E26] hover:bg-gray-100" title="تعديل"><Pencil className="w-3.5 h-3.5" /></button>
                     <button onClick={() => remove(p)} className="p-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100" title="حذف"><Trash2 className="w-3.5 h-3.5" /></button>
