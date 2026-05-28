@@ -45,6 +45,14 @@ export default function BoqPage({ params }: { params: { supplierId: string } }) 
 
   const project = useMemo(() => projects.find((p) => p.id === projectId), [projects, projectId])
   const total = items.reduce((s, i) => s + num(i.amount), 0)
+  const totalExecuted = items.reduce((s, i) => s + num(i.executed_qty) * num(i.unit_price), 0)
+  const execPct = total > 0 ? (totalExecuted / total) * 100 : 0
+
+  function setExec(id: string, val: string) { setItems((prev) => prev.map((x) => x.id === id ? { ...x, executed_qty: val } : x)) }
+  async function saveExec(it: any) {
+    // @ts-expect-error
+    await supabase.from('bz_boq_items').update({ executed_qty: num(it.executed_qty) }).eq('id', it.id)
+  }
 
   async function save() {
     if (!project) return
@@ -94,10 +102,16 @@ export default function BoqPage({ params }: { params: { supplierId: string } }) 
           <Empty supplierId={supplierId} />
         ) : (
           <>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <Stat label="عدد البنود" value={String(items.length)} />
               <Stat label="إجمالي الجدول" value={`${money0(total)} ج`} primary />
-              <Stat label="قيمة التعاقد" value={`${money0(project.contract_value)} ج`} />
+              <Stat label="قيمة المنفّذ" value={`${money0(totalExecuted)} ج`} />
+              <Stat label="نسبة التنفيذ" value={`${execPct.toFixed(1)}%`} />
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-[#6B7280]">نسبة تنفيذ الأعمال (بالقيمة)</span><span className="text-lg font-black text-[#1F6F5F]">{execPct.toFixed(1)}%</span></div>
+              <div className="h-3 rounded-full bg-gray-100 overflow-hidden"><div className="h-full bg-gradient-to-l from-[#2FA084] to-[#1F6F5F] rounded-full transition-all" style={{ width: `${Math.min(execPct, 100)}%` }} /></div>
             </div>
 
             {items.length === 0 ? (
@@ -106,28 +120,39 @@ export default function BoqPage({ params }: { params: { supplierId: string } }) 
               <div className="bg-white rounded-2xl border border-gray-100 overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-[#FAFAF7] border-b border-gray-100 text-right">
-                    <tr><Th>كود</Th><Th>البند</Th><Th>الوحدة</Th><Th className="text-left">الكمية</Th><Th className="text-left">سعر الوحدة</Th><Th className="text-left">الإجمالي</Th><Th></Th></tr>
+                    <tr><Th>كود</Th><Th>البند</Th><Th>الوحدة</Th><Th className="text-left">الكمية</Th><Th className="text-left">سعر الوحدة</Th><Th className="text-left">الإجمالي</Th><Th className="text-center">منفّذ (كمية)</Th><Th className="text-left">نسبة</Th><Th className="text-left">قيمة منفّذة</Th><Th></Th></tr>
                   </thead>
                   <tbody>
-                    {items.map((it) => (
-                      <tr key={it.id} className="border-b border-gray-50 hover:bg-[#FAFAF7]/50">
-                        <td className="px-3 py-2.5 text-xs text-[#6B7280] font-mono">{it.item_no || '—'}</td>
-                        <td className="px-3 py-2.5">
-                          <p className="text-[#1A2E26] font-bold">{it.description}</p>
-                          {it.section && <p className="text-[10px] text-[#6B7280]">{it.section}</p>}
-                        </td>
-                        <td className="px-3 py-2.5 text-xs text-[#6B7280]">{it.unit || '—'}</td>
-                        <td className="px-3 py-2.5 text-left font-mono text-[#1A2E26]">{money0(it.quantity)}</td>
-                        <td className="px-3 py-2.5 text-left font-mono text-[#6B7280]">{money0(it.unit_price)}</td>
-                        <td className="px-3 py-2.5 text-left font-mono font-black text-[#1F6F5F]">{money0(it.amount)}</td>
-                        <td className="px-3 py-2.5"><button onClick={() => remove(it)} className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100"><Trash2 className="w-3.5 h-3.5" /></button></td>
-                      </tr>
-                    ))}
+                    {items.map((it) => {
+                      const qty = num(it.quantity)
+                      const exQ = num(it.executed_qty)
+                      const itemPct = qty > 0 ? (exQ / qty) * 100 : 0
+                      const exVal = exQ * num(it.unit_price)
+                      return (
+                        <tr key={it.id} className="border-b border-gray-50 hover:bg-[#FAFAF7]/50">
+                          <td className="px-3 py-2.5 text-xs text-[#6B7280] font-mono">{it.item_no || '—'}</td>
+                          <td className="px-3 py-2.5">
+                            <p className="text-[#1A2E26] font-bold">{it.description}</p>
+                            {it.section && <p className="text-[10px] text-[#6B7280]">{it.section}</p>}
+                          </td>
+                          <td className="px-3 py-2.5 text-xs text-[#6B7280]">{it.unit || '—'}</td>
+                          <td className="px-3 py-2.5 text-left font-mono text-[#1A2E26]">{money0(it.quantity)}</td>
+                          <td className="px-3 py-2.5 text-left font-mono text-[#6B7280]">{money0(it.unit_price)}</td>
+                          <td className="px-3 py-2.5 text-left font-mono font-black text-[#1F6F5F]">{money0(it.amount)}</td>
+                          <td className="px-3 py-2.5 text-center"><input type="number" value={it.executed_qty ?? ''} onChange={(e) => setExec(it.id, e.target.value)} onBlur={() => saveExec(it)} className="w-20 px-2 py-1 rounded-lg border border-gray-200 text-xs text-center font-mono focus:outline-none focus:border-[#1F6F5F]" /></td>
+                          <td className="px-3 py-2.5 text-left font-mono text-xs font-bold" ><span className={itemPct >= 100 ? 'text-[#1F6F5F]' : 'text-[#6B7280]'}>{itemPct.toFixed(0)}%</span></td>
+                          <td className="px-3 py-2.5 text-left font-mono text-[#2FA084]">{money0(exVal)}</td>
+                          <td className="px-3 py-2.5"><button onClick={() => remove(it)} className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100"><Trash2 className="w-3.5 h-3.5" /></button></td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                   <tfoot>
                     <tr className="bg-[#FAFAF7] border-t-2 border-[#1F6F5F]/20">
                       <td colSpan={5} className="px-3 py-3 text-left font-black text-[#1A2E26]">الإجمالي</td>
-                      <td className="px-3 py-3 text-left font-mono font-black text-[#1F6F5F]">{money0(total)} ج</td>
+                      <td className="px-3 py-3 text-left font-mono font-black text-[#1F6F5F]">{money0(total)}</td>
+                      <td colSpan={2} className="px-3 py-3 text-left font-black text-[#1A2E26]">المنفّذ ({execPct.toFixed(1)}%)</td>
+                      <td className="px-3 py-3 text-left font-mono font-black text-[#2FA084]">{money0(totalExecuted)}</td>
                       <td></td>
                     </tr>
                   </tfoot>

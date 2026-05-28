@@ -12,6 +12,7 @@ import {
   CalendarClock, Download, ListChecks, Link2, ShieldCheck, ClipboardList,
   FolderKanban, ScrollText, Table2, GitBranchPlus, HardHat,
   Briefcase, Coins, HandCoins, Wrench,
+  Banknote, Gavel, CalendarRange, PackageOpen, ClipboardCheck, Fuel, FileBadge,
 } from 'lucide-react'
 
 /* ============================================================
@@ -345,6 +346,16 @@ export default function BusinessFinancePage({
                 <ModuleCard href={`/admin/business-finance/${supplierId}/custody-projects`} icon={<Coins />} label="العُهد" />
                 <ModuleCard href={`/admin/business-finance/${supplierId}/advances`} icon={<HandCoins />} label="السُّلف" />
                 <ModuleCard href={`/admin/business-finance/${supplierId}/equipment`} icon={<Wrench />} label="المعدات" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/pnl`} icon={<BarChart3 />} label="ربحية المشاريع" primary />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/expenses-projects`} icon={<Receipt />} label="مصروفات المشاريع" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/collections`} icon={<Banknote />} label="التحصيل" primary />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/tenders`} icon={<Gavel />} label="المناقصات" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/milestones`} icon={<CalendarRange />} label="الجدول الزمني" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/daily-reports`} icon={<ClipboardList />} label="يومية الموقع" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/material-requests`} icon={<PackageOpen />} label="طلبات المواد" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/inspections`} icon={<ClipboardCheck />} label="الفحص والاستلام" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/equipment-logs`} icon={<Fuel />} label="صيانة المعدات" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/company-docs`} icon={<FileBadge />} label="سجلات الشركة" />
               </>
             )}
             <ModuleCard href={`/admin/business-finance/${supplierId}/branches`} icon={<Building2 />} label="الفروع" />
