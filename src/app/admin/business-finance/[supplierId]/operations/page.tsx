@@ -56,6 +56,8 @@ export default function OperationsHub({
   params: { supplierId: string }
 }) {
   const { supplierId } = params
+  const ELITE_ID = '93eaa8cf-1def-4101-bca6-8fa33450cdce'
+  const isElite = supplierId === ELITE_ID
   const [supplierName, setSupplierName] = useState('')
   const [branches, setBranches] = useState<Branch[]>([])
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -164,8 +166,10 @@ export default function OperationsHub({
             icon={<TrendingUp className="w-4 h-4" />} primary />
           <KPI label="مصروفات" value={`${(summary?.today?.expenses || 0).toLocaleString('ar-EG')} ج`}
             icon={<TrendingDown className="w-4 h-4" />} tone="negative" />
-          <KPI label="إكراميات" value={`${(summary?.today?.tips || 0).toLocaleString('ar-EG')} ج`}
-            icon={<Heart className="w-4 h-4" />} tone="amber" />
+          {isElite && (
+            <KPI label="إكراميات" value={`${(summary?.today?.tips || 0).toLocaleString('ar-EG')} ج`}
+              icon={<Heart className="w-4 h-4" />} tone="amber" />
+          )}
           <KPI label="حجوزات" value={summary?.today?.bookings || 0}
             icon={<CalendarPlus className="w-4 h-4" />} tone="neutral" />
           <KPI label="معاملات" value={summary?.today?.transactions || 0}
@@ -179,7 +183,7 @@ export default function OperationsHub({
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
             <ActionCard icon={<CalendarPlus />} label="حجز فوري" sub="عميل في الفرع" onClick={() => setModal('walk_in_booking')} accent />
-            <ActionCard icon={<Heart />} label="إكرامية" sub="tip للموظف" onClick={() => setModal('tip')} />
+            {isElite && <ActionCard icon={<Heart />} label="إكرامية" sub="tip للموظف" onClick={() => setModal('tip')} />}
             <ActionCard icon={<ArrowDownCircle />} label="سحب كاش" sub="من خزينة الفرع" onClick={() => setModal('withdrawal')} />
             <ActionCard icon={<HandCoins />} label="سلفة موظف" sub="advance" onClick={() => setModal('advance')} />
             <ActionCard icon={<Zap />} label="دفع فاتورة" sub="كهرباء/إنترنت/إيجار" onClick={() => setModal('bill_pay')} />
@@ -248,7 +252,7 @@ export default function OperationsHub({
           supplierId={supplierId} branches={branches} services={services} employees={employees}
           onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
       )}
-      {modal === 'tip' && (
+      {modal === 'tip' && isElite && (
         <TipModal supplierId={supplierId} branches={branches} employees={employees}
           onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
       )}
@@ -278,7 +282,7 @@ export default function OperationsHub({
           onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
       )}
       {modal === 'pay_salary' && (
-        <PaySalaryModal employees={employees}
+        <PaySalaryModal employees={employees} isElite={isElite}
           onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
       )}
       {modal === 'add_service' && (
@@ -743,7 +747,7 @@ function ConsumptionModal({ supplierId, items, branches, onClose, onSaved }: any
 /* ============================================================
    MODAL: Pay salary
    ============================================================ */
-function PaySalaryModal({ employees, onClose, onSaved }: any) {
+function PaySalaryModal({ employees, isElite, onClose, onSaved }: any) {
   const [employeeId, setEmployeeId] = useState('')
   const [period, setPeriod] = useState(new Date().toISOString().slice(0, 7))
   const [baseSalary, setBaseSalary] = useState(0)
@@ -776,7 +780,7 @@ function PaySalaryModal({ employees, onClose, onSaved }: any) {
           <p className="font-bold text-[#1A2E26] mb-2">✅ تم الصرف</p>
           <p className="flex justify-between"><span>المرتب الأساسي:</span><span className="font-mono">{baseSalary}ج</span></p>
           <p className="flex justify-between"><span>عمولة من الخدمات:</span><span className="font-mono text-[#1F6F5F]">+{result.commission_calc}ج</span></p>
-          <p className="flex justify-between"><span>حصة الإكراميات:</span><span className="font-mono text-amber-600">+{result.tips_share}ج</span></p>
+          {isElite && <p className="flex justify-between"><span>حصة الإكراميات:</span><span className="font-mono text-amber-600">+{result.tips_share}ج</span></p>}
           <p className="flex justify-between"><span>السلف المخصومة:</span><span className="font-mono text-red-600">−{advancesDeducted}ج</span></p>
           <p className="flex justify-between font-black text-base pt-2 border-t border-current/10 mt-2">
             <span>الصافي:</span><span className="font-mono text-[#1F6F5F]">{result.net_paid}ج</span>
@@ -798,7 +802,7 @@ function PaySalaryModal({ employees, onClose, onSaved }: any) {
           </div>
           <Field label="خصومات أخرى"><input type="number" value={deductions || ''} onChange={(e) => setDeductions(Number(e.target.value))} className={`${INPUT} font-mono`} /></Field>
           <div className="bg-[#FAFAF7] rounded-xl p-3 text-[11px] text-[#6B7280]">
-            ⓘ العمولة من الخدمات + حصة الإكراميات بـ تتحسب تلقائي من الـ DB
+            ⓘ العمولة من الخدمات {isElite ? '+ حصة الإكراميات ' : ''}بـ تتحسب تلقائي من الـ DB
           </div>
           <SubmitButton onClick={submit} loading={submitting} disabled={!employeeId || baseSalary <= 0} />
         </>

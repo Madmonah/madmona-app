@@ -7,6 +7,7 @@ import {
   ChevronLeft, Loader2, RefreshCw, Building2, MapPin, User, Table2, ScrollText,
   GitBranchPlus, ShieldCheck, HardHat, FileText, Plus, X, Trash2, ExternalLink, TrendingUp,
   Briefcase, Coins, HandCoins, Wrench,
+  Receipt, Banknote, CalendarRange, ClipboardList, PackageOpen, ClipboardCheck,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -29,7 +30,7 @@ const docLabel = (t: string) => DOC_TYPES.find((d) => d.value === t)?.label || '
 export default function ProjectDetailPage({ params }: { params: { supplierId: string; projectId: string } }) {
   const { supplierId, projectId } = params
   const [project, setProject] = useState<any>(null)
-  const [agg, setAgg] = useState({ boq: 0, voApproved: 0, certNet: 0, certCount: 0, certPayable: 0, guarActive: 0, guarSum: 0, subContract: 0, subPaid: 0, asgCount: 0, asgAllowance: 0, cusOutstanding: 0, advOutstanding: 0, eqCount: 0 })
+  const [agg, setAgg] = useState({ boq: 0, voApproved: 0, certNet: 0, certGross: 0, certCount: 0, certPayable: 0, guarActive: 0, guarSum: 0, subContract: 0, subPaid: 0, asgCount: 0, asgAllowance: 0, cusOutstanding: 0, advOutstanding: 0, eqCount: 0, expenses: 0, collected: 0, equipCost: 0, mileCount: 0, mileProgress: 0, drCount: 0, mrCount: 0, inspCount: 0 })
   const [docs, setDocs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showDoc, setShowDoc] = useState(false)
@@ -47,7 +48,7 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
     // @ts-expect-error
     const { data: vos } = await supabase.from('bz_variation_orders').select('amount, status').eq('project_id', projectId)
     // @ts-expect-error
-    const { data: certs } = await supabase.from('bz_payment_certificates').select('net_cumulative, net_payable, seq').eq('project_id', projectId).order('seq', { ascending: false })
+    const { data: certs } = await supabase.from('bz_payment_certificates').select('net_cumulative, gross_cumulative, net_payable, seq').eq('project_id', projectId).order('seq', { ascending: false })
     // @ts-expect-error
     const { data: guars } = await supabase.from('bz_guarantees').select('amount, status').eq('project_id', projectId)
     // @ts-expect-error
@@ -62,6 +63,27 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
     const { data: eq } = await supabase.from('bz_equipment').select('id').eq('project_id', projectId)
     // @ts-expect-error
     const { data: dlist } = await supabase.from('bz_project_documents').select('*').eq('project_id', projectId).order('created_at', { ascending: false })
+    // @ts-expect-error
+    const { data: exp } = await supabase.from('bz_expenses').select('amount').eq('project_id', projectId)
+    // @ts-expect-error
+    const { data: cols } = await supabase.from('bz_collections').select('amount').eq('project_id', projectId)
+    // @ts-expect-error
+    const { data: miles } = await supabase.from('bz_milestones').select('weight_pct, status').eq('project_id', projectId)
+    // @ts-expect-error
+    const { data: dreports } = await supabase.from('bz_daily_reports').select('id').eq('project_id', projectId)
+    // @ts-expect-error
+    const { data: mreqs } = await supabase.from('bz_material_requests').select('id').eq('project_id', projectId)
+    // @ts-expect-error
+    const { data: insps } = await supabase.from('bz_inspections').select('id').eq('project_id', projectId)
+    const eqIds = (eq || []).map((e: any) => e.id)
+    let equipCost = 0
+    if (eqIds.length > 0) {
+      // @ts-expect-error
+      const { data: eqlogs } = await supabase.from('bz_equipment_logs').select('cost').in('equipment_id', eqIds)
+      equipCost = (eqlogs || []).reduce((s: number, l: any) => s + num(l.cost), 0)
+    }
+    const mileTotalW = (miles || []).reduce((s: number, m: any) => s + num(m.weight_pct), 0)
+    const mileDoneW = (miles || []).filter((m: any) => m.status === 'done').reduce((s: number, m: any) => s + num(m.weight_pct), 0)
 
     setAgg({
       boq: (boq || []).reduce((s: number, i: any) => s + num(i.amount), 0),
@@ -78,6 +100,15 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
       cusOutstanding: (cus || []).filter((c: any) => c.status === 'open').reduce((s: number, c: any) => s + (num(c.amount) - num(c.settled_amount)), 0),
       advOutstanding: (adv || []).filter((a: any) => a.status === 'open').reduce((s: number, a: any) => s + (num(a.amount) - num(a.repaid_amount)), 0),
       eqCount: (eq || []).length,
+      certGross: (certs || [])[0] ? num((certs || [])[0].gross_cumulative) : 0,
+      expenses: (exp || []).reduce((s: number, x: any) => s + num(x.amount), 0),
+      collected: (cols || []).reduce((s: number, x: any) => s + num(x.amount), 0),
+      equipCost,
+      mileCount: (miles || []).length,
+      mileProgress: mileTotalW > 0 ? (mileDoneW / mileTotalW) * 100 : 0,
+      drCount: (dreports || []).length,
+      mrCount: (mreqs || []).length,
+      inspCount: (insps || []).length,
     })
     setDocs(dlist || [])
     setLoading(false)
@@ -111,6 +142,9 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
   const progress = adjustedValue > 0 ? Math.min(100, (agg.certNet / adjustedValue) * 100) : num(project.progress_pct)
   const st = STATUS_LABELS[project.status] || STATUS_LABELS.planned
   const q = `?project=${projectId}`
+  const revenue = agg.certGross
+  const projCost = agg.expenses + agg.subPaid + agg.equipCost
+  const projProfit = revenue - projCost
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
@@ -156,6 +190,13 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
             </div>
             <div className="h-3 rounded-full bg-gray-100 overflow-hidden"><div className="h-full bg-gradient-to-l from-[#2FA084] to-[#1F6F5F] rounded-full transition-all" style={{ width: `${progress}%` }} /></div>
           </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
+            <Stat label="الإيراد (أعمال منفّذة)" value={`${money0(revenue)} ج`} />
+            <Stat label="تكاليف المشروع (مصروفات+باطن+معدات)" value={`${money0(projCost)} ج`} />
+            <Stat label="صافي ربح تقديري" value={`${money0(projProfit)} ج`} primary />
+            <Stat label="المحصّل من العميل" value={`${money0(agg.collected)} ج`} />
+          </div>
         </section>
 
         {/* ===== موديولات المشروع ===== */}
@@ -171,6 +212,12 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
             <ModLink href={`/admin/business-finance/${supplierId}/custody-projects`} icon={<Coins />} label="العُهد" hint={`${money0(agg.cusOutstanding)} ج متبقّي`} />
             <ModLink href={`/admin/business-finance/${supplierId}/advances`} icon={<HandCoins />} label="السُّلف" hint={`${money0(agg.advOutstanding)} ج مستحق`} />
             <ModLink href={`/admin/business-finance/${supplierId}/equipment`} icon={<Wrench />} label="المعدات" hint={`${agg.eqCount} معدة`} />
+            <ModLink href={`/admin/business-finance/${supplierId}/expenses-projects${q}`} icon={<Receipt />} label="مصروفات المشروع" hint={`${money0(agg.expenses)} ج`} />
+            <ModLink href={`/admin/business-finance/${supplierId}/collections${q}`} icon={<Banknote />} label="التحصيل" hint={`${money0(agg.collected)} ج محصّل`} />
+            <ModLink href={`/admin/business-finance/${supplierId}/milestones${q}`} icon={<CalendarRange />} label="الجدول الزمني" hint={`${agg.mileProgress.toFixed(0)}% إنجاز`} />
+            <ModLink href={`/admin/business-finance/${supplierId}/daily-reports${q}`} icon={<ClipboardList />} label="يومية الموقع" hint={`${agg.drCount} يومية`} />
+            <ModLink href={`/admin/business-finance/${supplierId}/material-requests${q}`} icon={<PackageOpen />} label="طلبات المواد" hint={`${agg.mrCount} طلب`} />
+            <ModLink href={`/admin/business-finance/${supplierId}/inspections${q}`} icon={<ClipboardCheck />} label="الفحص والاستلام" hint={`${agg.inspCount} محضر`} />
           </div>
         </section>
 
