@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   ChevronLeft, Loader2, RefreshCw, Building2, MapPin, User, Table2, ScrollText,
   GitBranchPlus, ShieldCheck, HardHat, FileText, Plus, X, Trash2, ExternalLink, TrendingUp,
+  Briefcase, Coins, HandCoins, Wrench,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -28,7 +29,7 @@ const docLabel = (t: string) => DOC_TYPES.find((d) => d.value === t)?.label || '
 export default function ProjectDetailPage({ params }: { params: { supplierId: string; projectId: string } }) {
   const { supplierId, projectId } = params
   const [project, setProject] = useState<any>(null)
-  const [agg, setAgg] = useState({ boq: 0, voApproved: 0, certNet: 0, certCount: 0, certPayable: 0, guarActive: 0, guarSum: 0, subContract: 0, subPaid: 0 })
+  const [agg, setAgg] = useState({ boq: 0, voApproved: 0, certNet: 0, certCount: 0, certPayable: 0, guarActive: 0, guarSum: 0, subContract: 0, subPaid: 0, asgCount: 0, asgAllowance: 0, cusOutstanding: 0, advOutstanding: 0, eqCount: 0 })
   const [docs, setDocs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showDoc, setShowDoc] = useState(false)
@@ -52,6 +53,14 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
     // @ts-expect-error
     const { data: subs } = await supabase.from('bz_subcontractors').select('contract_value, paid_to_date').eq('project_id', projectId)
     // @ts-expect-error
+    const { data: asg } = await supabase.from('bz_assignments').select('allowance_amount').eq('project_id', projectId)
+    // @ts-expect-error
+    const { data: cus } = await supabase.from('bz_custody').select('amount, settled_amount, status').eq('project_id', projectId)
+    // @ts-expect-error
+    const { data: adv } = await supabase.from('bz_advances').select('amount, repaid_amount, status').eq('project_id', projectId)
+    // @ts-expect-error
+    const { data: eq } = await supabase.from('bz_equipment').select('id').eq('project_id', projectId)
+    // @ts-expect-error
     const { data: dlist } = await supabase.from('bz_project_documents').select('*').eq('project_id', projectId).order('created_at', { ascending: false })
 
     setAgg({
@@ -64,6 +73,11 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
       guarSum: (guars || []).filter((g: any) => g.status === 'active').reduce((s: number, g: any) => s + num(g.amount), 0),
       subContract: (subs || []).reduce((s: number, x: any) => s + num(x.contract_value), 0),
       subPaid: (subs || []).reduce((s: number, x: any) => s + num(x.paid_to_date), 0),
+      asgCount: (asg || []).length,
+      asgAllowance: (asg || []).reduce((s: number, a: any) => s + num(a.allowance_amount), 0),
+      cusOutstanding: (cus || []).filter((c: any) => c.status === 'open').reduce((s: number, c: any) => s + (num(c.amount) - num(c.settled_amount)), 0),
+      advOutstanding: (adv || []).filter((a: any) => a.status === 'open').reduce((s: number, a: any) => s + (num(a.amount) - num(a.repaid_amount)), 0),
+      eqCount: (eq || []).length,
     })
     setDocs(dlist || [])
     setLoading(false)
@@ -153,6 +167,10 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
             <ModLink href={`/admin/business-finance/${supplierId}/variation-orders${q}`} icon={<GitBranchPlus />} label="أوامر التغيير" hint={`${money0(agg.voApproved)} ج`} />
             <ModLink href={`/admin/business-finance/${supplierId}/guarantees`} icon={<ShieldCheck />} label="خطابات الضمان" hint={`${agg.guarActive} ساري`} />
             <ModLink href={`/admin/business-finance/${supplierId}/subcontractors${q}`} icon={<HardHat />} label="مقاولي الباطن" hint={`${money0(agg.subContract)} ج`} />
+            <ModLink href={`/admin/business-finance/${supplierId}/assignments`} icon={<Briefcase />} label="المأموريات" hint={`${agg.asgCount} مأمورية`} />
+            <ModLink href={`/admin/business-finance/${supplierId}/custody-projects`} icon={<Coins />} label="العُهد" hint={`${money0(agg.cusOutstanding)} ج متبقّي`} />
+            <ModLink href={`/admin/business-finance/${supplierId}/advances`} icon={<HandCoins />} label="السُّلف" hint={`${money0(agg.advOutstanding)} ج مستحق`} />
+            <ModLink href={`/admin/business-finance/${supplierId}/equipment`} icon={<Wrench />} label="المعدات" hint={`${agg.eqCount} معدة`} />
           </div>
         </section>
 

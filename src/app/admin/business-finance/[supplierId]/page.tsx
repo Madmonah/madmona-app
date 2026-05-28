@@ -11,6 +11,7 @@ import {
   MessageCircle, FileText, Calculator, FileCheck, Tag, Workflow, UserX, Receipt,
   CalendarClock, Download, ListChecks, Link2, ShieldCheck, ClipboardList,
   FolderKanban, ScrollText, Table2, GitBranchPlus, HardHat,
+  Briefcase, Coins, HandCoins, Wrench,
 } from 'lucide-react'
 
 /* ============================================================
@@ -340,6 +341,10 @@ export default function BusinessFinancePage({
                 <ModuleCard href={`/admin/business-finance/${supplierId}/variation-orders`} icon={<GitBranchPlus />} label="أوامر التغيير" />
                 <ModuleCard href={`/admin/business-finance/${supplierId}/guarantees`} icon={<ShieldCheck />} label="خطابات الضمان" />
                 <ModuleCard href={`/admin/business-finance/${supplierId}/subcontractors`} icon={<HardHat />} label="مقاولي الباطن" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/assignments`} icon={<Briefcase />} label="المأموريات" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/custody-projects`} icon={<Coins />} label="العُهد" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/advances`} icon={<HandCoins />} label="السُّلف" />
+                <ModuleCard href={`/admin/business-finance/${supplierId}/equipment`} icon={<Wrench />} label="المعدات" />
               </>
             )}
             <ModuleCard href={`/admin/business-finance/${supplierId}/branches`} icon={<Building2 />} label="الفروع" />
