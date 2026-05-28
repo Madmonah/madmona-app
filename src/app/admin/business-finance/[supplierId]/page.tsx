@@ -10,6 +10,7 @@ import {
   BarChart3, DollarSign, Clock, ShoppingCart, Truck, Gift,
   MessageCircle, FileText, Calculator, FileCheck, Tag, Workflow, UserX, Receipt,
   CalendarClock, Download, ListChecks, Link2, ShieldCheck, ClipboardList,
+  FolderKanban, ScrollText,
 } from 'lucide-react'
 
 /* ============================================================
@@ -331,6 +332,8 @@ export default function BusinessFinancePage({
             <ModuleCard href={`/admin/business-finance/${supplierId}/team`} icon={<Users />} label="الفريق" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/custody`} icon={<ShieldCheck />} label="العهدة" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/flow-tasks`} icon={<ClipboardList />} label="المهام" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/projects`} icon={<FolderKanban />} label="المشاريع" primary />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/payment-certificates`} icon={<ScrollText />} label="المستخلصات" primary />
             <ModuleCard href={`/admin/business-finance/${supplierId}/branches`} icon={<Building2 />} label="الفروع" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/customers`} icon={<Heart />} label="العملاء" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/appointments`} icon={<Calendar />} label="المواعيد" />
