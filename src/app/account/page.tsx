@@ -39,6 +39,7 @@ export default function AccountPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [bookingsCount, setBookingsCount] = useState(0)
+  const [ordersCount, setOrdersCount] = useState(0)
   const [favoritesCount, setFavoritesCount] = useState(0)
   const [signingOut, setSigningOut] = useState(false)
 
@@ -80,6 +81,14 @@ export default function AccountPage() {
         .eq('customer_id', session.user.id)
 
       setBookingsCount(bCount || 0)
+
+      // @ts-expect-error
+      const { count: oCount } = await supabaseBrowser
+        .from('marketplace_orders')
+        .select('id', { count: 'exact', head: true })
+        .eq('customer_id', session.user.id)
+
+      setOrdersCount(oCount || 0)
 
       // @ts-expect-error
       const { count: fCount } = await supabaseBrowser
@@ -307,6 +316,14 @@ export default function AccountPage() {
             iconBg="bg-blue-50 text-blue-600"
             title={t('account.my_bookings')}
             subtitle={bookingsCount > 0 ? t('account.n_bookings', { n: bookingsCount }) : t('account.no_bookings')}
+          />
+          <div className="h-px bg-gray-100 mx-6" />
+          <SectionLink
+            href="/account/orders"
+            icon={<ShoppingBag className="w-5 h-5" />}
+            iconBg="bg-orange-50 text-orange-600"
+            title="أوردراتي"
+            subtitle={ordersCount > 0 ? `${ordersCount} أوردر` : 'لسه ما طلبتش حاجة'}
           />
           <div className="h-px bg-gray-100 mx-6" />
           <SectionLink
