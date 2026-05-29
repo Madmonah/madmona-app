@@ -10,7 +10,7 @@ import {
   Plus, Building2, Edit2, Trash2, Eye, EyeOff, AlertCircle,
   Loader2, ArrowRight, CheckCircle, Clock, Lock, MapPin,
   Image as ImageIcon, ExternalLink, Calendar, TrendingUp,
-  DollarSign, Bell, Copy, Crown, Users,
+  DollarSign, Bell, Copy, Crown, Users, ShoppingBag, ChefHat,
 } from 'lucide-react'
 
 // ============================================================================
@@ -68,7 +68,7 @@ interface ListingSummary {
   bookings_count: number
   views_count: number
   created_at: string
-  category: { name_ar: string; icon: string | null } | null
+  category: { name_ar: string; icon: string | null; track: string | null } | null
   photos: { url: string; is_primary: boolean }[] | null
   pricing: { price: number | string; period_type: string; is_active: boolean }[] | null
 }
@@ -237,7 +237,7 @@ function SupplierMarketplaceContent() {
       .from('listings')
       .select(`
         id, title, slug, city, district, status, bookings_count, views_count, created_at,
-        category:categories(name_ar, icon),
+        category:categories(name_ar, icon, track),
         photos:listing_photos(url, is_primary),
         pricing:pricing_rules(price, period_type, is_active)
       `)
@@ -472,10 +472,17 @@ function SupplierMarketplaceContent() {
               <p className="text-xs text-gray-500">لوحة أجر معانا</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {access.canManageBookings && (
-              <Link href="/supplier/marketplace/bookings" className="text-xs font-bold text-[#1F6F5F] hover:underline px-2">
+              <Link href="/supplier/marketplace/bookings" className="text-xs font-bold text-[#1F6F5F] hover:bg-[#1F6F5F]/10 px-2 py-1 rounded-lg flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" />
                 الحجوزات
+              </Link>
+            )}
+            {access.canManageBookings && (
+              <Link href="/supplier/marketplace/orders" className="text-xs font-bold text-[#1F6F5F] hover:bg-[#1F6F5F]/10 px-2 py-1 rounded-lg flex items-center gap-1">
+                <ShoppingBag className="w-3.5 h-3.5" />
+                الأوردرز
               </Link>
             )}
             {access.isOwner && access.canManageTeam && (
@@ -710,6 +717,15 @@ function SupplierMarketplaceContent() {
                               <Copy className="w-3.5 h-3.5" />
                             )}
                           </button>
+                        )}
+                        {access.canManageListings && listing.category?.track === 'restaurants' && (
+                          <Link
+                            href={`/supplier/marketplace/${listing.id}/menu`}
+                            className="p-1.5 text-orange-600 hover:bg-orange-50 rounded"
+                            title="إدارة المنيو"
+                          >
+                            <ChefHat className="w-3.5 h-3.5" />
+                          </Link>
                         )}
                         {access.canManageListings && (
                           <Link
