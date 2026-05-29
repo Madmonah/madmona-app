@@ -639,6 +639,30 @@ const ar: Dict = {
   'auth.name': 'الاسم',
   'auth.no_account': 'مفيش حساب؟ اعمل حساب جديد',
   'auth.have_account': 'عندك حساب؟ سجّل دخول',
+
+  // ---- orders (restaurants + products) ----
+  'order.menu_empty': 'المنيو فاضي حالياً',
+  'order.menu_empty_sub': 'هيتم إضافة الأصناف قريباً',
+  'order.menu_section_general': 'المنيو',
+  'order.items': 'صنف',
+  'order.add': 'ضيف',
+  'order.added': 'اتضاف',
+  'order.price': 'السعر',
+  'order.quantity': 'الكمية',
+  'order.total': 'الإجمالي',
+  'order.add_to_cart': 'ضيف للسلة',
+  'order.add_more': 'ضيف كمان',
+  'order.buy_now': 'اشتري دلوقتي',
+  'order.in_cart': 'في السلة',
+  'order.view_cart': 'شوف السلة',
+  'order.cart_total': 'إجمالي السلة',
+  'order.checkout_now': 'اعمل أوردر',
+  'order.cross_supplier_title': 'سلة من مورد تاني',
+  'order.cross_supplier_msg_1': 'عندك صنفات في السلة من',
+  'order.cross_supplier_msg_2': 'لو ضفت',
+  'order.cross_supplier_msg_3': 'دلوقتي، السلة هتتمسح وتبدأ من جديد.',
+  'order.keep_current': 'سيب السلة',
+  'order.clear_and_add': 'امسح وضيف',
 }
 
 const en: Dict = {
@@ -1257,6 +1281,30 @@ const en: Dict = {
   'auth.name': 'Name',
   'auth.no_account': "No account? Create one",
   'auth.have_account': 'Have an account? Log in',
+
+  // ---- orders (restaurants + products) ----
+  'order.menu_empty': 'Menu is currently empty',
+  'order.menu_empty_sub': 'Items will be added soon',
+  'order.menu_section_general': 'Menu',
+  'order.items': 'items',
+  'order.add': 'Add',
+  'order.added': 'Added',
+  'order.price': 'Price',
+  'order.quantity': 'Quantity',
+  'order.total': 'Total',
+  'order.add_to_cart': 'Add to cart',
+  'order.add_more': 'Add more',
+  'order.buy_now': 'Buy now',
+  'order.in_cart': 'In cart',
+  'order.view_cart': 'View cart',
+  'order.cart_total': 'Cart total',
+  'order.checkout_now': 'Checkout',
+  'order.cross_supplier_title': 'Cart from another supplier',
+  'order.cross_supplier_msg_1': 'You have items in cart from',
+  'order.cross_supplier_msg_2': 'If you add',
+  'order.cross_supplier_msg_3': 'now, the cart will be cleared and restarted.',
+  'order.keep_current': 'Keep cart',
+  'order.clear_and_add': 'Clear & add',
 }
 
 export const translations: Record<Lang, Dict> = { ar, en }

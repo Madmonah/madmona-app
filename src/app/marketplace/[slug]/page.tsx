@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { RestaurantMenu, ProductBuyBox, CartCheckoutBar, type MenuItem } from '@/components/OrderActions'
 
 // ============================================================================
 // /marketplace/[slug]
@@ -37,7 +38,7 @@ interface ListingDetail {
   views_count: number
   status: string
   requires_id_verification: boolean | null
-  category: { name_ar: string; name_en?: string | null; icon: string | null } | null
+  category: { name_ar: string; name_en?: string | null; icon: string | null; track: string | null } | null
   supplier: {
     id: string
     business_name: string
@@ -113,6 +114,7 @@ export default function ListingDetailPage() {
   const [togglingFav, setTogglingFav] = useState(false)
   const [shareSuccess, setShareSuccess] = useState(false)
   const [activeTab, setActiveTab] = useState<'details' | 'location' | 'reviews'>('details')
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
 
   useEffect(() => {
     let resolvedListingId: string | null = null
@@ -128,7 +130,7 @@ export default function ListingDetailPage() {
           .from('listings')
           .select(`
             *,
-            category:categories(name_ar, name_en, icon),
+            category:categories(name_ar, name_en, icon, track),
             supplier:marketplace_suppliers(
               id, business_name, kyc_status,
               profile:profiles!marketplace_suppliers_profile_id_fkey(phone, full_name)
@@ -207,6 +209,19 @@ export default function ListingDetailPage() {
 
         if (results[4]) {
           setIsFavorite(!!results[4].data)
+        }
+
+        // Restaurant menu items (only when track === 'restaurants')
+        const trackForMenu = (l as { category?: { track?: string | null } | null }).category?.track
+        if (trackForMenu === 'restaurants') {
+          // @ts-expect-error
+          const { data: mi } = await supabaseBrowser
+            .from('restaurant_menu_items')
+            .select('*')
+            .eq('listing_id', l.id)
+            .eq('is_available', true)
+            .order('display_order', { ascending: true })
+          setMenuItems((mi || []) as MenuItem[])
         }
       } catch (e) {
         console.error('[listing/detail] load error:', e)
@@ -312,6 +327,10 @@ export default function ListingDetailPage() {
 
   const isDemo = isDemoListing(listing.title)
   const displayTitle = cleanListingTitle(listing.title)
+  const track = listing.category?.track ?? null
+  const isRestaurant = track === 'restaurants'
+  const isProduct = track === 'products'
+  const isOrderable = isRestaurant || isProduct
   const currentPhoto = sortedPhotos[photoIndex]
   const phone = listing.supplier?.profile?.phone || ''
   const phoneClean = phone.replace(/\D/g, '')
@@ -531,6 +550,24 @@ export default function ListingDetailPage() {
               </div>
             </section>
 
+            {isRestaurant && listing.supplier && (
+              <RestaurantMenu
+                listing={{ id: listing.id, title: displayTitle }}
+                supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
+                menuItems={menuItems}
+              />
+            )}
+
+            {isProduct && listing.supplier && (
+              <div className="lg:hidden">
+                <ProductBuyBox
+                  listing={{ id: listing.id, title: displayTitle }}
+                  supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
+                  price={pricing[0]?.price ? Number(pricing[0].price) : 0}
+                />
+              </div>
+            )}
+
             {/* Tabs */}
             <section className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-100">
               <div className="flex border-b border-gray-100 px-2 pt-2">
@@ -712,7 +749,8 @@ export default function ListingDetailPage() {
           {/* Sticky sidebar (desktop only) */}
           <aside className="hidden lg:block">
             <div className="sticky top-24 space-y-4 animate-slide-up delay-200">
-              {/* Booking widget */}
+              {/* Booking widget (rentals/services/hybrid only) */}
+              {!isOrderable && (
               <div className="bg-white rounded-3xl shadow-card p-6">
                 {startingPrice !== null ? (
                   <>
@@ -765,6 +803,15 @@ export default function ListingDetailPage() {
                   <span>{t('listing.guaranteed_note')}</span>
                 </div>
               </div>
+              )}
+
+              {isProduct && listing.supplier && (
+                <ProductBuyBox
+                  listing={{ id: listing.id, title: displayTitle }}
+                  supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
+                  price={pricing[0]?.price ? Number(pricing[0].price) : 0}
+                />
+              )}
 
               {/* Supplier card */}
               {listing.supplier && (
@@ -788,7 +835,8 @@ export default function ListingDetailPage() {
         </div>
       </main>
 
-      {/* Sticky bottom CTA (mobile only) */}
+      {/* Sticky bottom CTA (mobile only) - rentals/services/hybrid */}
+      {!isOrderable && (
       <div className="fixed bottom-0 inset-x-0 glass border-t border-white/40 z-50 lg:hidden shadow-luxe">
         <div className="max-w-6xl mx-auto p-3 flex items-center gap-2">
           <div className="flex-1">
@@ -843,6 +891,11 @@ export default function ListingDetailPage() {
           )}
         </div>
       </div>
+      )}
+
+      {isOrderable && listing.supplier && (
+        <CartCheckoutBar supplierId={listing.supplier.id} />
+      )}
     </div>
   )
 }
