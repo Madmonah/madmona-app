@@ -643,6 +643,21 @@ function StepCategory({
   const [activeTrack, setActiveTrack] = useState<TrackTab>('all');
   const main = categories.find((m) => m.slug === selectedMain);
 
+  // FIX (May 29 2026): handle clicks on a main category. If the main has
+  // subs, drill into the sub-list (existing behaviour). If it has NO subs
+  // (true for the new "restaurants" + "products" categories that are
+  // themselves leaves — e.g. "برجر وسندوتشات", "إلكترونيات،"), submit
+  // the slug immediately so the wizard advances to Step 2. Without this,
+  // the user lands in an empty sub-view and the wizard appears frozen.
+  // Mohamed: "el aksam el gdeda lsa msh byet3mlaha add listing sare3".
+  const handleMainClick = (c: MainCategory) => {
+    if (c.subs.length === 0) {
+      onSelect(c.slug);
+    } else {
+      setSelectedMain(c.slug);
+    }
+  };
+
   // Phase G+ (May 18 2026): when parent signals "reset", jump back to the
   // mains list so the user can pick a totally different category.
   useEffect(() => {
@@ -722,12 +737,16 @@ function StepCategory({
                   <button
                     key={c.slug}
                     type="button"
-                    onClick={() => setSelectedMain(c.slug)}
+                    onClick={() => handleMainClick(c)}
                     className="p-5 rounded-2xl border text-right transition-all bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300"
                   >
                     <div className="text-3xl mb-2">{c.emoji}</div>
                     <div className="font-semibold">{c.name_ar}</div>
-                    <div className="text-[10px] text-gray-500 mt-1">{c.subs.length} نوع</div>
+                    {c.subs.length > 0 ? (
+                      <div className="text-[10px] text-gray-500 mt-1">{c.subs.length} نوع</div>
+                    ) : (
+                      <div className="text-[10px] text-[#1F6F5F] mt-1 font-medium">دوس لتختار ←</div>
+                    )}
                   </button>
                 ))}
               </div>
@@ -748,12 +767,16 @@ function StepCategory({
                       <button
                         key={c.slug}
                         type="button"
-                        onClick={() => setSelectedMain(c.slug)}
+                        onClick={() => handleMainClick(c)}
                         className="p-5 rounded-2xl border text-right transition-all bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300"
                       >
                         <div className="text-3xl mb-2">{c.emoji}</div>
                         <div className="font-semibold">{c.name_ar}</div>
-                        <div className="text-[10px] text-gray-500 mt-1">{c.subs.length} نوع</div>
+                        {c.subs.length > 0 ? (
+                          <div className="text-[10px] text-gray-500 mt-1">{c.subs.length} نوع</div>
+                        ) : (
+                          <div className="text-[10px] text-[#1F6F5F] mt-1 font-medium">دوس لتختار ←</div>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -1308,7 +1331,7 @@ function StepPricing({
   const periodLabel: Record<string, string> = {
     hourly: 'ساعة', daily: 'يوم', weekly: 'أسبوع', monthly: 'شهر',
     per_service: 'الخدمة', per_session: 'الجلسة', per_package: 'الباكدج',
-    per_event: 'الحدث', per_visit: 'الزيارة',
+    per_event: 'الحدث', per_visit: 'الزيارة', per_unit: 'الوحدة',
   };
 
   // Phase E: read category-specific pricing periods from DB. Beauty keeps its
