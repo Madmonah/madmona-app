@@ -37,7 +37,7 @@ export type MainCategory = {
   slug: string;
   name_ar: string;
   emoji: string;
-  track?: 'rentals' | 'services' | 'hybrid' | null;
+  track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | null;
   subs: SubCategory[];
   // Phase G (May 18 2026): group metadata for visual grouping in StepCategory.
   // When null, the wizard falls back to flat rendering (zero-regression).
@@ -92,7 +92,7 @@ function getCategoryWizardMeta(
 function getCategoryTrack(
   categorySlug: string | undefined | null,
   categories: MainCategory[],
-): 'rentals' | 'services' | 'hybrid' | null {
+): 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | null {
   if (!categorySlug) return null;
   const asMain = categories.find((m) => m.slug === categorySlug);
   if (asMain) return asMain.track ?? null;
@@ -111,6 +111,31 @@ function getCategoryTrack(
 // attribute_schema. The wizard's StepPricing reads these and renders a
 // beauty-specific UI when the selected category is beauty or a beauty sub.
 // ============================================================================
+// MENU ITEMS + PRODUCT DETAILS TYPES (May 29 2026)
+// Restaurants store an array of menu items in draft.attributes.menu_items.
+// On submission, these become restaurant_menu_items rows.
+// Products use additional fields in draft.attributes for condition/brand/etc;
+// the main selling price still lives in draft.price (so existing pricing
+// validation — "price > 0" — still works).
+export type MenuItem = {
+  name_ar: string;
+  price: number;
+  description_ar?: string;
+  photo_url?: string;
+  is_available: boolean;
+};
+
+export type ProductCondition = 'new' | 'used_like_new' | 'used_good' | 'refurbished';
+
+export type ProductDetails = {
+  stock_quantity: number;
+  condition: ProductCondition;
+  brand?: string;
+  model?: string;
+  shipping_available: boolean;
+  shipping_cost?: number;
+};
+
 export type AddonSuggestion = {
   slug: string;
   name_ar: string;
@@ -176,7 +201,11 @@ interface DraftPayload {
   utm_source?: string;
   utm_medium?: string;
   utm_campaign?: string;
-  attributes?: Record<string, unknown> & { addons?: Addon[] };
+  attributes?: Record<string, unknown> & {
+    addons?: Addon[];
+    menu_items?: MenuItem[];
+    product_details?: ProductDetails;
+  };
 }
 
 // Treat "(جاري التحرير)" as no real title so it doesn't show up in form fields
@@ -1294,6 +1323,340 @@ function validateBasics(_patch: Partial<DraftPayload>, _setErrors: (e: Record<st
 }
 
 // =================================================
+// STEP 3a — MENU BUILDER (restaurants track, May 29 2026)
+// For restaurants/food categories — the user adds multiple menu items
+// instead of setting a single listing-level price. Items are saved to
+// draft.attributes.menu_items as a jsonb array. On submission (Step 5),
+// the claim flow turns these into restaurant_menu_items rows.
+//
+// Validation: at least one item with non-empty name AND price > 0.
+// We also set draft.price = first item's price + price_period = 'per_unit'
+// so existing flows that read draft.price (e.g. preview, search filters)
+// still have a sensible default.
+// =================================================
+function MenuBuilderStep({
+  draft,
+  categories,
+  onSubmit,
+  onBack,
+  saving,
+}: {
+  draft: DraftPayload;
+  categories: MainCategory[];
+  onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
+  onBack: () => void;
+  saving: boolean;
+}) {
+  const initialItems = (draft.attributes?.menu_items as MenuItem[] | undefined) || [];
+  const [items, setItems] = useState<MenuItem[]>(
+    initialItems.length > 0
+      ? initialItems
+      : [{ name_ar: '', price: 0, description_ar: '', is_available: true }],
+  );
+  const [error, setError] = useState<string>('');
+
+  function updateItem(idx: number, patch: Partial<MenuItem>) {
+    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
+  }
+  function removeItem(idx: number) {
+    setItems((prev) => prev.filter((_, i) => i !== idx));
+  }
+  function addItem() {
+    setItems((prev) => [
+      ...prev,
+      { name_ar: '', price: 0, description_ar: '', is_available: true },
+    ]);
+  }
+
+  function handleSubmit() {
+    const valid = items.filter((it) => it.name_ar.trim().length > 0 && it.price > 0);
+    if (valid.length === 0) {
+      setError('لازم تضيف صنف واحد على الأقل بـ اسم وسعر');
+      return;
+    }
+    setError('');
+    const existing = (draft.attributes || {}) as Record<string, unknown>;
+    onSubmit({
+      attributes: { ...existing, menu_items: valid },
+      // listing-level price = cheapest item (acts as "starting from" price in cards)
+      price: Math.min(...valid.map((it) => it.price)),
+      price_period: 'per_unit',
+    });
+  }
+
+  return (
+    <section>
+      <h2 className="text-lg font-semibold mb-1">🍽️ أضف الأصناف</h2>
+      <p className="text-sm text-gray-500 mb-1">ضيف أصناف المنيو اللي بتقدمها</p>
+      <p className="text-xs text-[#1F6F5F] mb-5 font-medium">
+        💡 ابدأ بـ 5 أصناف على الأقل عشان العميل يلاقي ليه اختيارات
+      </p>
+
+      <div className="space-y-4">
+        {items.map((item, idx) => (
+          <div
+            key={idx}
+            className="rounded-2xl border border-[#E5E5E0] bg-white p-4"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-bold text-[#1F6F5F]">
+                صنف #{idx + 1}
+              </span>
+              {items.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeItem(idx)}
+                  className="text-xs text-red-600 hover:text-red-700 font-semibold"
+                >
+                  حذف ✕
+                </button>
+              )}
+            </div>
+
+            <Field label="اسم الصنف" required>
+              <input
+                type="text"
+                value={item.name_ar}
+                onChange={(e) => updateItem(idx, { name_ar: e.target.value })}
+                placeholder="مثلاً: برجر كلاسيك"
+                className={inputCls}
+              />
+            </Field>
+
+            <Field label="السعر بالجنيه" required>
+              <input
+                type="number"
+                value={item.price || ''}
+                onChange={(e) =>
+                  updateItem(idx, { price: Number(e.target.value) || 0 })
+                }
+                placeholder="80"
+                className={inputCls}
+              />
+            </Field>
+
+            <Field label="وصف قصير (اختياري)">
+              <input
+                type="text"
+                value={item.description_ar || ''}
+                onChange={(e) =>
+                  updateItem(idx, { description_ar: e.target.value || undefined })
+                }
+                placeholder="لحم 150ج + جبنة + خس + صوص خاص"
+                className={inputCls}
+              />
+            </Field>
+
+            <label className="mt-1 flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={item.is_available}
+                onChange={(e) =>
+                  updateItem(idx, { is_available: e.target.checked })
+                }
+                className="w-4 h-4 accent-[#1F6F5F]"
+              />
+              <span>متاح حالياً</span>
+            </label>
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        onClick={addItem}
+        className="mt-4 w-full py-3 rounded-xl border-2 border-dashed border-[#1F6F5F]/40 text-[#1F6F5F] text-sm font-bold hover:bg-[#1F6F5F]/5 transition-colors"
+      >
+        + أضف صنف جديد
+      </button>
+
+      {error && (
+        <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      <Nav onBack={onBack} onNext={handleSubmit} saving={saving} />
+    </section>
+  );
+}
+
+// =================================================
+// STEP 3b — PRODUCT DETAILS (products track, May 29 2026)
+// For shop/products categories — collects price + stock + condition +
+// brand/model + shipping. Stored in draft.price (listing price) +
+// draft.attributes.product_details (everything else). On submission, the
+// claim flow can promote these to listing_values rows or keep them in the
+// listing's metadata payload — depending on the consumer.
+// =================================================
+function ProductDetailsStep({
+  draft,
+  categories,
+  onSubmit,
+  onBack,
+  saving,
+}: {
+  draft: DraftPayload;
+  categories: MainCategory[];
+  onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
+  onBack: () => void;
+  saving: boolean;
+}) {
+  const existingDetails = (draft.attributes?.product_details as ProductDetails | undefined);
+  const [price, setPrice] = useState<number | ''>(draft.price ?? '');
+  const [stockQty, setStockQty] = useState<number>(existingDetails?.stock_quantity ?? 1);
+  const [condition, setCondition] = useState<ProductCondition>(
+    existingDetails?.condition ?? 'new',
+  );
+  const [brand, setBrand] = useState<string>(existingDetails?.brand || '');
+  const [model, setModel] = useState<string>(existingDetails?.model || '');
+  const [shippingAvailable, setShippingAvailable] = useState<boolean>(
+    existingDetails?.shipping_available ?? true,
+  );
+  const [shippingCost, setShippingCost] = useState<number | ''>(
+    existingDetails?.shipping_cost ?? '',
+  );
+  const [error, setError] = useState<string>('');
+
+  const conditionOptions: { key: ProductCondition; label_ar: string }[] = [
+    { key: 'new', label_ar: 'جديد بالكرتونة' },
+    { key: 'used_like_new', label_ar: 'مستعمل (مثل الجديد)' },
+    { key: 'used_good', label_ar: 'مستعمل (حالة جيدة)' },
+    { key: 'refurbished', label_ar: 'Refurbished' },
+  ];
+
+  function handleSubmit() {
+    if (!price || Number(price) <= 0) {
+      setError('حط سعر صحيح');
+      return;
+    }
+    if (!stockQty || stockQty < 1) {
+      setError('الكمية لازم تكون 1 على الأقل');
+      return;
+    }
+    setError('');
+    const productDetails: ProductDetails = {
+      stock_quantity: Number(stockQty),
+      condition,
+      brand: brand.trim() || undefined,
+      model: model.trim() || undefined,
+      shipping_available: shippingAvailable,
+      shipping_cost:
+        shippingAvailable && shippingCost !== ''
+          ? Number(shippingCost)
+          : undefined,
+    };
+    const existing = (draft.attributes || {}) as Record<string, unknown>;
+    onSubmit({
+      price: Number(price),
+      price_period: 'per_unit',
+      attributes: { ...existing, product_details: productDetails },
+    });
+  }
+
+  return (
+    <section>
+      <h2 className="text-lg font-semibold mb-1">🛍️ تفاصيل المنتج والسعر</h2>
+      <p className="text-sm text-gray-500 mb-5">سعر، كمية، وحالة المنتج</p>
+
+      <Field label="السعر بالجنيه" required>
+        <input
+          type="number"
+          value={price}
+          onChange={(e) =>
+            setPrice(e.target.value === '' ? '' : Number(e.target.value))
+          }
+          placeholder="مثلاً: 12000"
+          className={inputCls}
+        />
+      </Field>
+
+      <Field label="الكمية المتوفرة" required>
+        <input
+          type="number"
+          value={stockQty}
+          onChange={(e) => setStockQty(Number(e.target.value) || 1)}
+          placeholder="1"
+          className={inputCls}
+        />
+      </Field>
+
+      <Field label="حالة المنتج" required>
+        <div className="grid grid-cols-2 gap-2">
+          {conditionOptions.map((opt) => (
+            <button
+              key={opt.key}
+              type="button"
+              onClick={() => setCondition(opt.key)}
+              className={`py-2.5 rounded-xl border text-sm transition-all ${
+                condition === opt.key
+                  ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white font-semibold'
+                  : 'bg-white border-[#E5E5E0]'
+              }`}
+            >
+              {opt.label_ar}
+            </button>
+          ))}
+        </div>
+      </Field>
+
+      <Field label="الماركة (اختياري)">
+        <input
+          type="text"
+          value={brand}
+          onChange={(e) => setBrand(e.target.value)}
+          placeholder="مثلاً: Samsung, Apple, Toshiba"
+          className={inputCls}
+        />
+      </Field>
+
+      <Field label="الموديل (اختياري)">
+        <input
+          type="text"
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+          placeholder="مثلاً: Galaxy S23, iPhone 15"
+          className={inputCls}
+        />
+      </Field>
+
+      <div className="mt-4 mb-3 p-4 rounded-xl bg-[#F5F4F0] border border-[#E5E5E0]">
+        <label className="flex items-center gap-2 text-sm font-semibold mb-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={shippingAvailable}
+            onChange={(e) => setShippingAvailable(e.target.checked)}
+            className="w-4 h-4 accent-[#1F6F5F]"
+          />
+          🚚 بشحن للعميل
+        </label>
+        {shippingAvailable && (
+          <Field label="سعر الشحن بالجنيه (اختياري)">
+            <input
+              type="number"
+              value={shippingCost}
+              onChange={(e) =>
+                setShippingCost(e.target.value === '' ? '' : Number(e.target.value))
+              }
+              placeholder="مثلاً: 50 (اتركها فاضية لو مجاني)"
+              className={inputCls}
+            />
+          </Field>
+        )}
+      </div>
+
+      {error && (
+        <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      <Nav onBack={onBack} onNext={handleSubmit} saving={saving} />
+    </section>
+  );
+}
+
+// =================================================
 // STEP 3 — PRICING
 // =================================================
 function StepPricing({
@@ -1313,6 +1676,34 @@ function StepPricing({
   saving: boolean;
   beautySchemas: Record<string, BeautySchema>;
 }) {
+  // EARLY BRANCH (May 29 2026): restaurants + products tracks use
+  // dedicated step components, not the rental/service pricing UI.
+  // Each child owns its own state, validation, and produces a final
+  // patch with menu_items / product_details inside draft.attributes.
+  const trackForBranch = getCategoryTrack(draft.category_slug, categories);
+  if (trackForBranch === 'restaurants') {
+    return (
+      <MenuBuilderStep
+        draft={draft}
+        categories={categories}
+        onSubmit={onSubmit}
+        onBack={onBack}
+        saving={saving}
+      />
+    );
+  }
+  if (trackForBranch === 'products') {
+    return (
+      <ProductDetailsStep
+        draft={draft}
+        categories={categories}
+        onSubmit={onSubmit}
+        onBack={onBack}
+        saving={saving}
+      />
+    );
+  }
+
   const isBeauty = isBeautyCategory(draft.category_slug);
   const schema = isBeauty && draft.category_slug ? beautySchemas[draft.category_slug] : undefined;
   const suggestedAddons = schema?.suggested_addons || [];
