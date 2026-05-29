@@ -19,7 +19,7 @@ interface Category {
   name_en?: string | null
   slug: string
   icon: string | null
-  track?: 'rentals' | 'services' | 'hybrid' | null
+  track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | null
 }
 
 interface Listing {
@@ -48,13 +48,15 @@ const SORT_LABELS: Record<SortOption, string> = {
   rating: 'market.sort_rating',
 }
 
-type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid'
+type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products'
 
 const TRACK_LABELS: Record<TrackTab, string> = {
   all: 'market.track_all',
   rentals: 'market.track_rentals',
   services: 'market.track_services',
   hybrid: 'market.track_hybrid',
+  restaurants: 'market.track_restaurants',
+  products: 'market.track_products',
 }
 
 const TRACK_EMOJI: Record<TrackTab, string> = {
@@ -62,6 +64,8 @@ const TRACK_EMOJI: Record<TrackTab, string> = {
   rentals: '🏠',
   services: '🛠️',
   hybrid: '💒',
+  restaurants: '🍽️',
+  products: '🛍️',
 }
 
 function MarketplaceBrowseContent() {
@@ -337,7 +341,7 @@ function MarketplaceBrowseContent() {
 
           {/* Track tabs (hierarchy filter: all/rentals/services/hybrid) */}
           <div className="flex gap-2 mt-4 overflow-x-auto pb-1 -mx-4 px-4">
-            {(['all', 'rentals', 'services', 'hybrid'] as TrackTab[]).map(tab => {
+            {(['all', 'rentals', 'services', 'hybrid', 'restaurants', 'products'] as TrackTab[]).map(tab => {
               const count = tab === 'all'
                 ? allRootCategories.length
                 : allRootCategories.filter(c => c.track === tab).length

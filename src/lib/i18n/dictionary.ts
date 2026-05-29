@@ -536,6 +536,8 @@ const ar: Dict = {
   'tracktab.rentals': 'إيجار',
   'tracktab.services': 'خدمات',
   'tracktab.hybrid': 'مناسبات',
+  'tracktab.restaurants': 'مطاعم',
+  'tracktab.products': 'منتجات',
   'tracktab.empty': 'مفيش فئات في الـ track ده',
   // NotificationButton
   'comp.nb.enabled_ok': 'تم تفعيل الإشعارات',
@@ -1152,6 +1154,8 @@ const en: Dict = {
   'tracktab.rentals': 'Rentals',
   'tracktab.services': 'Services',
   'tracktab.hybrid': 'Events',
+  'tracktab.restaurants': 'Restaurants',
+  'tracktab.products': 'Products',
   'tracktab.empty': 'No categories in this track',
   // NotificationButton
   'comp.nb.enabled_ok': 'Notifications enabled',

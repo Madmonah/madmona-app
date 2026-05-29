@@ -20,12 +20,14 @@ type Category = {
   track: string | null
 }
 
-type TrackKey = 'rentals' | 'services' | 'hybrid'
+type TrackKey = 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products'
 
 const TRACK_LABELS: Record<TrackKey, { labelKey: string; emoji: string; sublabel: string }> = {
   rentals:  { labelKey: 'tracktab.rentals',  emoji: '🏠', sublabel: 'RENTALS'  },
   services: { labelKey: 'tracktab.services', emoji: '🛎️', sublabel: 'SERVICES' },
   hybrid:   { labelKey: 'tracktab.hybrid',   emoji: '💍', sublabel: 'EVENTS'   },
+  restaurants: { labelKey: 'tracktab.restaurants', emoji: '🍽️', sublabel: 'RESTAURANTS' },
+  products: { labelKey: 'tracktab.products', emoji: '🛍️', sublabel: 'PRODUCTS' },
 }
 
 const DEFAULT_FALLBACK = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&auto=format&fit=crop'
@@ -38,6 +40,8 @@ export default function CategoryTrackTabs({ categories }: { categories: Category
     rentals:  categories.filter(c => c.track === 'rentals'),
     services: categories.filter(c => c.track === 'services'),
     hybrid:   categories.filter(c => c.track === 'hybrid'),
+    restaurants: categories.filter(c => c.track === 'restaurants'),
+    products: categories.filter(c => c.track === 'products'),
   }
 
   const visible = grouped[active]
