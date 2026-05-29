@@ -116,12 +116,14 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
   }
 
-  // Call set_order_status RPC
+  // Call set_order_status RPC.
+  // NOTE: the DB function param is `p_reason` (not `p_cancellation_reason`).
+  // Pre-deploy bug discovered May 29 2026 — Supabase RPCs match by named arg.
   // @ts-expect-error
   const { error: rpcError } = await supabase.rpc('set_order_status', {
     p_order_id: id,
     p_new_status: targetStatus,
-    p_cancellation_reason: reasonForCancel,
+    p_reason: reasonForCancel,
   })
 
   if (rpcError) {

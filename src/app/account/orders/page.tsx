@@ -58,21 +58,16 @@ export default function CustomerOrdersPage() {
         return
       }
 
-      // Best-effort: link any guest orders by this user's phone to their profile.
-      // @ts-expect-error
-      const { data: profile } = await supabaseBrowser
-        .from('profiles')
-        .select('phone')
-        .eq('id', session.user.id)
-        .maybeSingle()
-
-      if (profile?.phone) {
-        try {
-          // @ts-expect-error
-          await supabaseBrowser.rpc('link_guest_orders_to_profile', { p_phone: profile.phone })
-        } catch {
-          // Non-fatal — function may not exist yet in some envs
-        }
+      // Best-effort: link any guest orders by this user's profile_id.
+      // DB function signature: link_guest_orders_to_profile(p_profile_id uuid)
+      // It matches guest orders by phone internally against the profile record.
+      try {
+        // @ts-expect-error
+        await supabaseBrowser.rpc('link_guest_orders_to_profile', {
+          p_profile_id: session.user.id,
+        })
+      } catch {
+        // Non-fatal — function may not exist yet in some envs
       }
 
       // @ts-expect-error

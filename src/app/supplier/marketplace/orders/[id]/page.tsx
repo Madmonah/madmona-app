@@ -180,11 +180,12 @@ export default function SupplierOrderDetailPage() {
     setError(null)
     setUpdating(true)
     try {
+      // NOTE: DB function param is `p_reason` (not `p_cancellation_reason`).
       // @ts-expect-error
       const { error: rpcError } = await supabaseBrowser.rpc('set_order_status', {
         p_order_id: order.id,
         p_new_status: next,
-        p_cancellation_reason: null,
+        p_reason: null,
       })
       if (rpcError) {
         setError(rpcError.message || 'حصل خطأ')
@@ -204,11 +205,12 @@ export default function SupplierOrderDetailPage() {
     setError(null)
     setUpdating(true)
     try {
+      // NOTE: DB function param is `p_reason` (not `p_cancellation_reason`).
       // @ts-expect-error
       const { error: rpcError } = await supabaseBrowser.rpc('set_order_status', {
         p_order_id: order.id,
         p_new_status: 'cancelled',
-        p_cancellation_reason: cancelReason.trim(),
+        p_reason: cancelReason.trim(),
       })
       if (rpcError) {
         setError(rpcError.message || 'حصل خطأ')
