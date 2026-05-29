@@ -568,6 +568,10 @@ function AddListingPageInner({
               if (t) next();
             }}
             onBack={back}
+            onChangeCategory={() => {
+              setResetCategoryView((n) => n + 1);
+              setStep(1);
+            }}
             saving={saving}
           />
         )}
@@ -630,13 +634,15 @@ function AddListingPageInner({
 // May 17 2026: Added track tabs (الكل/إيجار/خدمات/هايبرد) above the mains
 // grid so 27 categories don't overwhelm the user. Same DB, cleaner UX.
 // =================================================
-type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid';
+type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products';
 
 const TRACK_LABELS: Record<TrackTab, string> = {
   all: 'الكل',
   rentals: 'إيجار',
   services: 'خدمات',
   hybrid: 'هايبرد',
+  restaurants: 'مطاعم',
+  products: 'منتجات',
 };
 
 const TRACK_EMOJI: Record<TrackTab, string> = {
@@ -644,6 +650,8 @@ const TRACK_EMOJI: Record<TrackTab, string> = {
   rentals: '🏠',
   services: '🛠️',
   hybrid: '💒',
+  restaurants: '🍔',
+  products: '🛍️',
 };
 
 function StepCategory({
@@ -709,7 +717,7 @@ function StepCategory({
 
         {/* Track tabs */}
         <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-5 px-5">
-          {(['all', 'rentals', 'services', 'hybrid'] as TrackTab[]).map((t) => {
+          {(['all', 'rentals', 'services', 'hybrid', 'restaurants', 'products'] as TrackTab[]).map((t) => {
             const count = t === 'all'
               ? categories.length
               : categories.filter((c) => c.track === t).length;
@@ -1339,12 +1347,14 @@ function MenuBuilderStep({
   categories,
   onSubmit,
   onBack,
+  onChangeCategory,
   saving,
 }: {
   draft: DraftPayload;
   categories: MainCategory[];
   onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
   onBack: () => void;
+  onChangeCategory: () => void;
   saving: boolean;
 }) {
   const initialItems = (draft.attributes?.menu_items as MenuItem[] | undefined) || [];
@@ -1386,6 +1396,7 @@ function MenuBuilderStep({
 
   return (
     <section>
+      <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
       <h2 className="text-lg font-semibold mb-1">🍽️ أضف الأصناف</h2>
       <p className="text-sm text-gray-500 mb-1">ضيف أصناف المنيو اللي بتقدمها</p>
       <p className="text-xs text-[#1F6F5F] mb-5 font-medium">
@@ -1494,12 +1505,14 @@ function ProductDetailsStep({
   categories,
   onSubmit,
   onBack,
+  onChangeCategory,
   saving,
 }: {
   draft: DraftPayload;
   categories: MainCategory[];
   onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
   onBack: () => void;
+  onChangeCategory: () => void;
   saving: boolean;
 }) {
   const existingDetails = (draft.attributes?.product_details as ProductDetails | undefined);
@@ -1556,6 +1569,7 @@ function ProductDetailsStep({
 
   return (
     <section>
+      <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
       <h2 className="text-lg font-semibold mb-1">🛍️ تفاصيل المنتج والسعر</h2>
       <p className="text-sm text-gray-500 mb-5">سعر، كمية، وحالة المنتج</p>
 
@@ -1665,6 +1679,7 @@ function StepPricing({
   categories,
   onSubmit,
   onBack,
+  onChangeCategory,
   saving,
   beautySchemas,
 }: {
@@ -1673,6 +1688,7 @@ function StepPricing({
   categories: MainCategory[];
   onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
   onBack: () => void;
+  onChangeCategory: () => void;
   saving: boolean;
   beautySchemas: Record<string, BeautySchema>;
 }) {
@@ -1688,6 +1704,7 @@ function StepPricing({
         categories={categories}
         onSubmit={onSubmit}
         onBack={onBack}
+        onChangeCategory={onChangeCategory}
         saving={saving}
       />
     );
@@ -1699,6 +1716,7 @@ function StepPricing({
         categories={categories}
         onSubmit={onSubmit}
         onBack={onBack}
+        onChangeCategory={onChangeCategory}
         saving={saving}
       />
     );
@@ -1844,6 +1862,7 @@ function StepPricing({
 
   return (
     <section>
+      <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
       <h2 className="text-lg font-semibold mb-1">
         {isRentalCopy ? 'السعر' : (isHybrid ? 'سعر الفعالية' : 'سعر الخدمة')}
       </h2>
