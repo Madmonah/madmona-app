@@ -215,6 +215,14 @@ function AddListingPageInner({
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // FIX (May 29 2026): pendingResume banner — was bouncing users straight
+  // into Step N from localStorage with no chance to start fresh. Now we
+  // detect a saved draft, but stay on Step 1 and show a banner letting
+  // the user choose: resume where they left off, or start a new listing.
+  // Mohamed's complaint: "msh sha3'al bardo, fa7'ar el page byraga3ni l
+  // mokawalat we mfish category picker".
+  const [pendingResume, setPendingResume] = useState<{ step: Step; categorySlug?: string } | null>(null);
+
   // Phase G+ (May 18 2026): tracks "تغيير الفئة" clicks. When this changes,
   // StepCategory resets to mains view (instead of resuming at the sub-list of
   // the previously selected main — which was the bug Mohamed reported:
@@ -315,13 +323,29 @@ function AddListingPageInner({
         // user's last completed step.
         // CRITICAL FIX (May 13 2026): rewind logic now applies to step 5 too.
         // Old chain used `else if` so step 5 returning without data fell through.
+        //
+        // FIX (May 29 2026): instead of jumping the user into the resumed
+        // step silently, store it in pendingResume and stay on Step 1.
+        // A banner in Step 1 then lets the user explicitly choose to
+        // resume or to start fresh (which clears the draft + token).
+        // EXCEPT when the user is following a ?token=... resume link
+        // (urlToken truthy) — in that case, do the silent resume because
+        // they explicitly clicked a "continue" link.
         if (typeof d.current_step === 'number' && d.current_step >= 1 && d.current_step <= 5) {
           let resumeStep = d.current_step as Step;
           // Cascade rewind — each check independent so step 5 with no title still goes back to step 2.
           if (resumeStep >= 4 && (!d.price || d.price <= 0)) resumeStep = 3;
           if (resumeStep >= 3 && (!d.title || d.title === PLACEHOLDER_TITLE || !d.city)) resumeStep = 2;
           if (resumeStep >= 2 && !d.category_slug) resumeStep = 1;
-          setStep(resumeStep);
+          if (urlToken) {
+            // Explicit resume link — honor it.
+            setStep(resumeStep);
+          } else if (resumeStep >= 2) {
+            // Auto-resumed from localStorage. Stay on Step 1 and surface
+            // the banner so the user can decide. Step 1 doesn't need a
+            // banner (nothing meaningful to resume).
+            setPendingResume({ step: resumeStep, categorySlug: d.category_slug || undefined });
+          }
         }
       } catch (e) {
         // Network glitch — proceed with empty draft, persist() will reconnect
@@ -385,6 +409,25 @@ function AddListingPageInner({
     if (step > 1) setStep((s) => (s - 1) as Step);
   }
 
+  // FIX (May 29 2026): resume/discard handlers for the pendingResume banner.
+  function resumeDraft() {
+    if (!pendingResume) return;
+    setStep(pendingResume.step);
+    setPendingResume(null);
+  }
+  function discardDraft() {
+    // Clear local resume state + DB-linked token so a fresh wizard starts.
+    if (typeof window !== 'undefined') {
+      try { window.localStorage.removeItem('madmona_draft_token'); } catch {}
+    }
+    setToken(null);
+    setDraft({ source: 'whatsapp_link' });
+    setPendingResume(null);
+    setStep(1);
+    setErrors({});
+    setResetCategoryView((n) => n + 1);
+  }
+
   const progress = (step / 5) * 100;
 
   return (
@@ -427,6 +470,20 @@ function AddListingPageInner({
           <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm">
             {errors.form}
           </div>
+        )}
+
+        {/* FIX (May 29 2026): saved-draft resume banner. Only shows on Step 1
+            when the user landed on /add-listing without a ?token (i.e. fresh
+            navigation) but localStorage still had a token from a previous
+            session. Lets them explicitly resume or start fresh. */}
+        {pendingResume && step === 1 && (
+          <ResumeDraftBanner
+            pendingStep={pendingResume.step}
+            categorySlug={pendingResume.categorySlug}
+            categories={dbExtraCategories}
+            onResume={resumeDraft}
+            onDiscard={discardDraft}
+          />
         )}
 
         {step === 1 && (
@@ -1906,6 +1963,87 @@ function Nav({ onBack, onNext, saving, nextLabel }: {
       <button type="button" onClick={onNext} disabled={saving} className={btnPrimary}>
         {saving ? '...' : (nextLabel || 'كمل →')}
       </button>
+    </div>
+  );
+}
+
+// =================================================
+// RESUME DRAFT BANNER (May 29 2026)
+//
+// Shown at the top of Step 1 when a saved draft was detected in localStorage
+// (i.e. user previously started a listing and came back). Gives the user
+// two clear actions: continue the saved draft, or discard it and start a
+// fresh listing in a different category.
+//
+// Before this banner existed, the wizard would silently jump to whichever
+// step the user had reached, hiding the category picker. Users who came
+// back to add a DIFFERENT listing got stuck inside the previous category's
+// form ("msh sha3'al, fa7'ar el page byraga3ni l mokawalat we mfish category
+// picker").
+// =================================================
+function ResumeDraftBanner({
+  pendingStep,
+  categorySlug,
+  categories,
+  onResume,
+  onDiscard,
+}: {
+  pendingStep: Step;
+  categorySlug?: string;
+  categories: MainCategory[];
+  onResume: () => void;
+  onDiscard: () => void;
+}) {
+  // Resolve a friendly display name for the in-progress category.
+  let display: { emoji: string; name: string } | null = null;
+  if (categorySlug) {
+    const main = categories.find((m) => m.slug === categorySlug);
+    if (main) {
+      display = { emoji: main.emoji, name: main.name_ar };
+    } else {
+      for (const m of categories) {
+        const s = m.subs.find((x) => x.slug === categorySlug);
+        if (s) {
+          display = { emoji: s.emoji, name: `${m.name_ar} · ${s.name_ar}` };
+          break;
+        }
+      }
+    }
+  }
+
+  return (
+    <div className="mb-6 p-4 rounded-2xl bg-gradient-to-bl from-emerald-50 to-amber-50 border border-emerald-200">
+      <div className="flex items-start gap-3 mb-3">
+        <div className="text-2xl leading-none flex-shrink-0">💾</div>
+        <div className="min-w-0 flex-1">
+          <div className="font-semibold text-sm text-[#1F6F5F]">لقينالك مسودة محفوظة</div>
+          {display && (
+            <div className="flex items-center gap-2 mt-1.5 text-sm">
+              <span className="text-lg leading-none">{display.emoji}</span>
+              <span className="font-medium truncate">{display.name}</span>
+            </div>
+          )}
+          <div className="text-xs text-gray-600 mt-1">
+            وصلت لخطوة {pendingStep} من 5 — تقدر تكمل من فين وقفت، أو تبدأ ليستنج جديد،
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={onResume}
+          className="py-2.5 px-3 rounded-xl bg-[#1F6F5F] text-white text-sm font-semibold hover:bg-[#1F6F5F]/90 transition-all"
+        >
+          → كمل من فين وقفت
+        </button>
+        <button
+          type="button"
+          onClick={onDiscard}
+          className="py-2.5 px-3 rounded-xl bg-white border border-[#E5E5E0] text-sm font-medium text-gray-700 hover:bg-[#F5F4F0] transition-all"
+        >
+          ✨ ابدأ ليستنج جديد
+        </button>
+      </div>
     </div>
   );
 }
