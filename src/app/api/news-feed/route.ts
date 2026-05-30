@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store'
 export const runtime = 'nodejs'
 
-type NewsCategory = 'economy' | 'real_estate' | 'automotive' | 'business' | 'tourism' | 'fashion' | 'tech'
+type NewsCategory = 'madmona' | 'economy' | 'real_estate' | 'automotive' | 'business' | 'tourism' | 'fashion' | 'tech'
 
 interface NewsItem {
   title: string
@@ -41,6 +41,7 @@ interface NewsSource {
 // ============================================================================
 
 const CATEGORY_LABELS_AR: Record<NewsCategory, string> = {
+  madmona: 'آخر أخبار مضمونة',
   economy: 'اقتصاد',
   real_estate: 'عقارات',
   automotive: 'سيارات',
@@ -51,6 +52,8 @@ const CATEGORY_LABELS_AR: Record<NewsCategory, string> = {
 }
 
 const CATEGORY_ICONS: Record<NewsCategory, string> = {
+  madmona:
+    '<circle cx="0" cy="0" r="45" stroke="#2FA084" stroke-width="6" fill="none"/><path d="M -20 -5 L -5 10 L 25 -20" stroke="#2FA084" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
   economy:
     '<path d="M -50 30 L -15 -10 L 15 12 L 50 -35" stroke="#2FA084" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="-35" r="6" fill="#2FA084"/><path d="M -50 45 L 50 45" stroke="#2FA084" stroke-width="3" fill="none" opacity="0.5"/>',
   real_estate:
@@ -80,6 +83,10 @@ function makeFallbackSVG(category: NewsCategory): string {
 // ============================================================================
 
 const CATEGORY_KEYWORDS: Record<NewsCategory, { must?: string[]; exclude?: string[] }> = {
+  madmona: {
+    // No keywords — 'madmona' is admin-curated only (no RSS sources).
+    // The fetchAdminNews function returns all rows where category='madmona'.
+  },
   economy: {
     must: ['اقتصاد', 'بورصة', 'دولار', 'جنيه', 'سعر', 'تضخم', 'استثمار', 'بنك', 'عملة', 'صادرات', 'واردات', 'سهم', 'أسهم', 'أسعار', 'سوق', 'ديون', 'money', 'price', 'stock', 'bank', 'invest', 'economy', 'GDP', 'إجمالي', 'أرباح', 'خسائر', 'مالية', 'الميزانية', 'صندوق النقد'],
   },
@@ -453,7 +460,7 @@ function noCacheHeaders(): HeadersInit {
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const categoryParam = (url.searchParams.get('category') || 'economy').toLowerCase()
-  const validCategories: NewsCategory[] = ['economy', 'real_estate', 'automotive', 'business', 'tourism', 'fashion', 'tech']
+  const validCategories: NewsCategory[] = ['madmona', 'economy', 'real_estate', 'automotive', 'business', 'tourism', 'fashion', 'tech']
   const category = validCategories.includes(categoryParam as NewsCategory)
     ? (categoryParam as NewsCategory)
     : 'economy'

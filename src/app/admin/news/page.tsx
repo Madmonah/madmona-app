@@ -7,7 +7,7 @@ import {
   ArrowRight, Loader2, Lock, AlertCircle, Newspaper, Pin, PinOff,
   Eye, EyeOff, Trash2, Edit3, Save, CheckCircle, X, ShieldAlert,
   Plus, Filter, Image as ImageIcon, Upload, Link as LinkIcon,
-  DollarSign, Home, Car, Briefcase, Plane, Sparkles, Camera,
+  DollarSign, Home, Car, Briefcase, Plane, Sparkles, Camera, ShieldCheck,
 } from 'lucide-react'
 
 // ============================================================================
@@ -17,7 +17,7 @@ import {
 
 type Stage = 'loading' | 'unauthenticated' | 'forbidden' | 'ready'
 
-type Category = 'economy' | 'real_estate' | 'automotive' | 'business' | 'tourism' | 'fashion' | 'tech'
+type Category = 'madmona' | 'economy' | 'real_estate' | 'automotive' | 'business' | 'tourism' | 'fashion' | 'tech'
 
 interface AdminNewsRow {
   id: string
@@ -34,6 +34,7 @@ interface AdminNewsRow {
 }
 
 const CATEGORIES: { id: Category; label: string; icon: React.ElementType; accent: string }[] = [
+  { id: 'madmona',     label: 'أخبار مضمونة', icon: ShieldCheck, accent: '#1F6F5F' },
   { id: 'economy',     label: 'اقتصاد',      icon: DollarSign, accent: '#10b981' },
   { id: 'real_estate', label: 'عقارات',      icon: Home,       accent: '#1F6F5F' },
   { id: 'automotive',  label: 'سيارات',      icon: Car,        accent: '#3b82f6' },
@@ -47,8 +48,8 @@ const EMPTY_FORM = {
   title: '',
   link: '',
   image_url: '',
-  category: 'economy' as Category,
-  source_label: 'Madmona',
+  category: 'madmona' as Category,
+  source_label: 'مضمونة',
   is_pinned: false,
   is_published: true,
 }

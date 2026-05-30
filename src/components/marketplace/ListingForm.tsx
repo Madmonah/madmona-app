@@ -6,7 +6,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ChevronLeft, ChevronRight, Check, X, Plus, Upload, Trash2, Star,
   Loader2, AlertCircle, Tag, MapPin, DollarSign, Image as ImageIcon,
-  FolderTree, Info, ShieldCheck,
+  FolderTree, Info, ShieldCheck, MessageCircle, Phone, KeyRound,
 } from 'lucide-react'
 
 // ============================================================================
@@ -215,6 +215,38 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
   const [attributes, setAttributes] = useState<Attribute[]>([])
   const [loadingAttrs, setLoadingAttrs] = useState(false)
 
+  // ========================================
+  // OTP / WhatsApp verification (Task 4)
+  // ========================================
+  const [showOTP, setShowOTP] = useState(false)
+  const [otpStep, setOtpStep] = useState<'phone' | 'code' | 'success'>('phone')
+  const [otpPhone, setOtpPhone] = useState('')
+  const [otpCode, setOtpCode] = useState('')
+  const [otpSending, setOtpSending] = useState(false)
+  const [otpVerifying, setOtpVerifying] = useState(false)
+  const [otpError, setOtpError] = useState<string | null>(null)
+  const [otpDraftListingId, setOtpDraftListingId] = useState<string | null>(null)
+  const [savedPayloadAfterOTP, setSavedPayloadAfterOTP] = useState<any>(null)
+
+  // Prefill phone from user profile on mount
+  useEffect(() => {
+    const loadPhone = async () => {
+      const { data: { user } } = await supabaseBrowser.auth.getUser()
+      if (!user) return
+      // @ts-expect-error
+      const { data: profile } = await supabaseBrowser
+        .from('profiles')
+        .select('phone')
+        .eq('id', user.id)
+        .maybeSingle()
+      if (profile?.phone) {
+        setOtpPhone(profile.phone)
+      }
+    }
+    loadPhone()
+  }, [])
+
+
   // Load categories
   useEffect(() => {
     const load = async () => {
@@ -381,6 +413,285 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       ...f,
       pricing: f.pricing.map((p, i) => (i === idx ? { ...p, ...patch } : p)),
     }))
+  }
+
+  // ========================================
+  // OTP gate (Task 4) — wraps publish with WA verification
+  // Exempt: 4 internal supplier IDs (admin/Madmona/Madmona-internal/بيلرز)
+  // Skip OTP if already verified in last 30 days OR if editing already-published
+  // ========================================
+  const EXEMPT_SUPPLIERS = [
+    '147cd904-c8d7-4234-86d4-388b5e1f5694',
+    '7310f6ef-e474-4ef8-8b8a-388b5e1f5694',
+    'c8b7b9d7-0000-0000-0000-000000000000',
+    '69ccb608-151d-46e0-9bc4-9b023cab529e',
+  ]
+
+  const handlePublishClick = async () => {
+    setOtpError(null)
+
+    // Exempt internal suppliers — publish directly
+    if (EXEMPT_SUPPLIERS.includes(supplierId)) {
+      return handleSubmit(false)
+    }
+
+    // Editing an already-published listing? No OTP needed (already verified).
+    if (isEditing && initialData?.status === 'published') {
+      return handleSubmit(false)
+    }
+
+    // Check if phone is already verified in last 30 days
+    if (otpPhone) {
+      try {
+        // @ts-expect-error
+        const { data: alreadyVerified } = await supabaseBrowser.rpc('is_phone_verified', {
+          p_phone: otpPhone,
+        })
+        if (alreadyVerified === true) {
+          // Skip OTP modal — just publish (server will set phone_verified_at via trigger logic)
+          return publishVerifiedListing()
+        }
+      } catch (e) {
+        // RPC error — fall through to OTP modal
+      }
+    }
+
+    // Save as draft first (this ALWAYS works — no publish gate)
+    setSubmitting(true)
+    setError(null)
+    try {
+      const draftId = await persistListingAsDraft()
+      setOtpDraftListingId(draftId)
+      setShowOTP(true)
+      setOtpStep('phone')
+      setSubmitting(false)
+    } catch (e: any) {
+      setError(e?.message || 'فشل حفظ المسودة، حاول تاني')
+      setSubmitting(false)
+    }
+  }
+
+  // Helper: save listing as draft + photos/attrs/pricing, return listingId
+  const persistListingAsDraft = async (): Promise<string> => {
+    const slug = isEditing
+      ? undefined
+      : `listing-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
+
+    const listingPayload: any = {
+      supplier_id: supplierId,
+      category_id: form.category_id,
+      title: form.title.trim(),
+      description: form.description.trim() || null,
+      city: form.city.trim() || null,
+      district: form.district.trim() || null,
+      address: form.address.trim() || null,
+      status: 'draft',
+    }
+    if (form.requires_id_verification) listingPayload.requires_id_verification = true
+    if (slug) listingPayload.slug = slug
+    if (form.min_booking_hours !== null) listingPayload.min_booking_hours = form.min_booking_hours
+    if (form.max_booking_hours !== null) listingPayload.max_booking_hours = form.max_booking_hours
+
+    let listingId = existingId
+
+    if (isEditing) {
+      // @ts-expect-error
+      const { error: updateErr } = await supabaseBrowser
+        .from('listings')
+        .update(listingPayload)
+        .eq('id', existingId)
+      if (updateErr) throw updateErr
+    } else {
+      // @ts-expect-error
+      const { data: newListing, error: insertErr } = await supabaseBrowser
+        .from('listings')
+        .insert(listingPayload)
+        .select('id')
+        .single()
+      if (insertErr) throw insertErr
+      listingId = newListing.id
+    }
+
+    if (!listingId) throw new Error('فشل إنشاء الليستنج')
+
+    // Upload photos
+    const photosToInsert: any[] = []
+    for (let i = 0; i < form.photos.length; i++) {
+      const photo = form.photos[i]
+      let photoUrl = photo.url
+      let storagePath: string | null = photo.storage_path || null
+      if (photo.file) {
+        const ext = (photo.file.name.split('.').pop() || 'jpg').toLowerCase()
+        const path = `${userId}/${listingId}/${Date.now()}-${i}.${ext}`
+        const { error: uploadErr } = await supabaseBrowser.storage
+          .from('listing-photos')
+          .upload(path, photo.file, { cacheControl: '3600', upsert: false })
+        if (uploadErr) throw new Error(`فشل رفع صورة ${i + 1}: ${uploadErr.message}`)
+        const { data: { publicUrl } } = supabaseBrowser.storage
+          .from('listing-photos')
+          .getPublicUrl(path)
+        photoUrl = publicUrl
+        storagePath = path
+      }
+      photosToInsert.push({
+        listing_id: listingId,
+        url: photoUrl,
+        storage_path: storagePath,
+        caption: photo.caption || null,
+        is_primary: photo.is_primary,
+        display_order: i,
+      })
+    }
+    if (isEditing) {
+      // @ts-expect-error
+      await supabaseBrowser.from('listing_photos').delete().eq('listing_id', listingId)
+    }
+    if (photosToInsert.length > 0) {
+      // @ts-expect-error
+      const { error: photosErr } = await supabaseBrowser.from('listing_photos').insert(photosToInsert)
+      if (photosErr) throw photosErr
+    }
+
+    // Save attribute values
+    if (isEditing) {
+      // @ts-expect-error
+      await supabaseBrowser.from('listing_values').delete().eq('listing_id', listingId)
+    }
+    const valuesToInsert: any[] = []
+    for (const attr of attributes) {
+      const v = form.attributeValues[attr.field_key]
+      if (v !== undefined && v !== '' && v !== null) {
+        valuesToInsert.push({ listing_id: listingId, attribute_id: attr.id, value: v })
+      }
+    }
+    if (valuesToInsert.length > 0) {
+      // @ts-expect-error
+      await supabaseBrowser.from('listing_values').insert(valuesToInsert)
+    }
+
+    // Save pricing rules
+    if (isEditing) {
+      // @ts-expect-error
+      await supabaseBrowser.from('pricing_rules').delete().eq('listing_id', listingId)
+    }
+    const pricingToInsert = form.pricing
+      .filter(p => p.is_active && parseFloat(p.price) > 0)
+      .map((p, idx) => {
+        const row: any = {
+          listing_id: listingId,
+          period_type: p.period_type,
+          period_count: 1,
+          price: parseFloat(p.price),
+          currency: 'EGP',
+          is_active: true,
+          display_order: idx,
+        }
+        if (p.min_periods !== null && p.min_periods !== undefined) row.min_periods = p.min_periods
+        return row
+      })
+    if (pricingToInsert.length > 0) {
+      // @ts-expect-error
+      await supabaseBrowser.from('pricing_rules').insert(pricingToInsert)
+    }
+
+    return listingId
+  }
+
+  // Helper: publish a listing where phone is already verified (skip OTP)
+  const publishVerifiedListing = async () => {
+    setSubmitting(true)
+    setError(null)
+    try {
+      // Persist as draft first to make sure all rows exist
+      const listingId = await persistListingAsDraft()
+      // Flip to published — set contact_phone + phone_verified_at
+      // @ts-expect-error
+      const { error: pubErr } = await supabaseBrowser
+        .from('listings')
+        .update({
+          status: 'published',
+          published_at: new Date().toISOString(),
+          contact_phone: otpPhone,
+          phone_verified_at: new Date().toISOString(),
+        })
+        .eq('id', listingId)
+      if (pubErr) throw pubErr
+      router.push(redirectAfterSubmit || '/supplier/marketplace?success=1')
+    } catch (e: any) {
+      setError(e?.message || 'فشل النشر، حاول تاني')
+      setSubmitting(false)
+    }
+  }
+
+  const sendOTP = async () => {
+    setOtpError(null)
+    if (!otpPhone || otpPhone.length < 11) {
+      setOtpError('اكتب رقم واتساب صحيح (11 رقم، يبدأ بـ 01)')
+      return
+    }
+    setOtpSending(true)
+    try {
+      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/madmona-otp`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token || ''}`,
+          },
+          body: JSON.stringify({ phone: otpPhone, listing_id: otpDraftListingId }),
+        }
+      )
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(body.error || body.message || 'فشل إرسال الكود')
+      setOtpStep('code')
+    } catch (e: any) {
+      setOtpError(e?.message || 'فشل إرسال الكود')
+    } finally {
+      setOtpSending(false)
+    }
+  }
+
+  const verifyOTP = async () => {
+    setOtpError(null)
+    if (!otpCode || otpCode.length !== 6) {
+      setOtpError('اكتب الكود الـ 6 أرقام')
+      return
+    }
+    setOtpVerifying(true)
+    try {
+      // Call verify_phone_otp RPC — it sets contact_phone + phone_verified_at on the listing
+      // @ts-expect-error
+      const { data: verifyResult, error: verifyErr } = await supabaseBrowser.rpc(
+        'verify_phone_otp',
+        {
+          p_phone: otpPhone,
+          p_code: otpCode,
+          p_listing_id: otpDraftListingId,
+        }
+      )
+      if (verifyErr) throw verifyErr
+      if (!verifyResult || verifyResult.verified !== true) {
+        throw new Error(verifyResult?.error || 'الكود غلط')
+      }
+      // Now update status to 'published' — trigger will pass
+      // @ts-expect-error
+      const { error: pubErr } = await supabaseBrowser
+        .from('listings')
+        .update({ status: 'published', published_at: new Date().toISOString() })
+        .eq('id', otpDraftListingId)
+      if (pubErr) throw pubErr
+      setOtpStep('success')
+      setTimeout(() => {
+        setShowOTP(false)
+        router.push(redirectAfterSubmit || '/supplier/marketplace?success=1')
+      }, 1500)
+    } catch (e: any) {
+      setOtpError(e?.message || 'فشل التحقق من الكود')
+    } finally {
+      setOtpVerifying(false)
+    }
   }
 
   const handleSubmit = async (saveAsDraft = false) => {
