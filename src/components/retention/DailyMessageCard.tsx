@@ -124,18 +124,18 @@ export default function DailyMessageCard() {
     <div
       className={`my-4 relative rounded-2xl ${style.bg} ${style.border} border-2 p-5 transition-all hover:shadow-md`}
     >
-      {/* Dismiss button (×) */}
+      {/* Dismiss button (×) — bigger + more visible (Mohamed request, May 30 2026) */}
       <button
         type="button"
         onClick={handleDismiss}
-        className="absolute top-3 left-3 w-7 h-7 rounded-full bg-white/70 hover:bg-white text-gray-500 hover:text-gray-700 flex items-center justify-center text-lg leading-none transition-colors"
+        className="absolute top-3 left-3 w-10 h-10 rounded-full bg-white/90 hover:bg-white active:scale-95 text-gray-700 hover:text-gray-900 flex items-center justify-center text-2xl font-bold leading-none transition-all shadow-sm z-10"
         aria-label="إخفاء"
       >
         ×
       </button>
 
       {/* Body */}
-      <div className="flex items-start gap-3 pe-8">
+      <div className="flex items-start gap-3 pe-12">
         {message.image_url ? (
           <img
             src={message.image_url}
