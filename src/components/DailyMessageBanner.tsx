@@ -77,6 +77,16 @@ export default function DailyMessageBanner() {
         // Fade-in delay (better UX, doesn't compete with page load)
         setTimeout(() => mounted && setShow(true), 800)
 
+        // Auto-hide after 10s (Mohamed request — May 30 2026: "تظهر 10 ثواني وتختفي")
+        setTimeout(() => {
+          if (!mounted) return
+          setShow(false)
+          setTimeout(() => mounted && setMessage(null), 250)
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem(SESSION_KEY, msg.id)
+          }
+        }, 10800)
+
         if (msg.is_authenticated) {
           // @ts-expect-error
           await supabaseBrowser.rpc('mark_daily_message_action', {
@@ -149,13 +159,13 @@ export default function DailyMessageBanner() {
         <div className="absolute -top-12 -left-12 w-32 h-32 bg-white/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-white/5 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Dismiss button */}
+        {/* Dismiss button — bigger + more visible (Mohamed request, May 30 2026) */}
         <button
           onClick={dismiss}
           aria-label="إخفاء"
-          className="absolute top-2 left-2 w-7 h-7 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors backdrop-blur-sm"
+          className="absolute top-2 left-2 w-10 h-10 rounded-full bg-white/25 hover:bg-white/40 active:scale-95 flex items-center justify-center transition-all backdrop-blur-sm shadow-md z-10"
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="w-5 h-5" strokeWidth={2.5} />
         </button>
 
         <div className="relative flex items-start gap-3 pr-1">
@@ -164,7 +174,7 @@ export default function DailyMessageBanner() {
             {icon}
           </div>
 
-          <div className="flex-1 min-w-0 pl-6">
+          <div className="flex-1 min-w-0 pl-12">
             <h3 className="text-sm font-black mb-1 leading-tight">{message.title}</h3>
             <p className="text-xs text-white/90 leading-relaxed line-clamp-3">{message.body}</p>
 
