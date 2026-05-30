@@ -38,6 +38,13 @@ interface ListingDetail {
   views_count: number
   status: string
   requires_id_verification: boolean | null
+  // Phase 4 product fields (May 29 2026)
+  stock_quantity: number | null
+  product_condition: string | null
+  brand: string | null
+  model_name: string | null
+  shipping_available: boolean | null
+  shipping_cost: number | string | null
   category: { name_ar: string; name_en?: string | null; icon: string | null; track: string | null } | null
   supplier: {
     id: string
@@ -549,6 +556,66 @@ export default function ListingDetailPage() {
                 )}
               </div>
             </section>
+
+            {/* Phase 4 (May 29 2026): product specs block — condition, brand, model, stock, shipping */}
+            {isProduct && (
+              <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up delay-50">
+                <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-[#2FA084]" />
+                  تفاصيل المنتج
+                </h2>
+
+                {listing.product_condition && (() => {
+                  const conditionMap: Record<string, { label: string; bg: string; text: string }> = {
+                    new: { label: 'جديد بالكرتونة', bg: 'bg-green-50 border-green-300', text: 'text-green-800' },
+                    used_like_new: { label: 'مستعمل (مثل الجديد)', bg: 'bg-blue-50 border-blue-300', text: 'text-blue-800' },
+                    used_good: { label: 'مستعمل (حالة جيدة)', bg: 'bg-amber-50 border-amber-300', text: 'text-amber-800' },
+                    refurbished: { label: 'Refurbished', bg: 'bg-purple-50 border-purple-300', text: 'text-purple-800' },
+                  }
+                  const c = conditionMap[listing.product_condition!] || { label: listing.product_condition, bg: 'bg-gray-50 border-gray-300', text: 'text-gray-800' }
+                  return (
+                    <div className="mb-4">
+                      <span className={`inline-flex items-center px-3 py-1.5 rounded-full border text-xs font-bold ${c.bg} ${c.text}`}>
+                        {c.label}
+                      </span>
+                    </div>
+                  )
+                })()}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {listing.brand && (
+                    <div className="flex items-center justify-between p-3 bg-[#FAFAF7] rounded-xl">
+                      <span className="text-xs font-medium text-gray-500">الماركة</span>
+                      <span className="text-sm font-bold text-gray-900">{listing.brand}</span>
+                    </div>
+                  )}
+                  {listing.model_name && (
+                    <div className="flex items-center justify-between p-3 bg-[#FAFAF7] rounded-xl">
+                      <span className="text-xs font-medium text-gray-500">الموديل</span>
+                      <span className="text-sm font-bold text-gray-900">{listing.model_name}</span>
+                    </div>
+                  )}
+                  {listing.stock_quantity !== null && listing.stock_quantity !== undefined && (
+                    <div className="flex items-center justify-between p-3 bg-[#FAFAF7] rounded-xl">
+                      <span className="text-xs font-medium text-gray-500">المتاح</span>
+                      <span className={`text-sm font-bold ${listing.stock_quantity > 0 ? 'text-[#1F6F5F]' : 'text-red-600'}`}>
+                        {listing.stock_quantity > 0 ? `${listing.stock_quantity} قطعة` : 'نفد المخزون'}
+                      </span>
+                    </div>
+                  )}
+                  {listing.shipping_available !== null && (
+                    <div className="flex items-center justify-between p-3 bg-[#FAFAF7] rounded-xl">
+                      <span className="text-xs font-medium text-gray-500">التوصيل</span>
+                      <span className="text-sm font-bold text-gray-900">
+                        {listing.shipping_available
+                          ? (listing.shipping_cost ? `متاح · ${Number(listing.shipping_cost)} ج` : 'متاح')
+                          : 'استلام من المحل فقط'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
 
             {isRestaurant && listing.supplier && (
               <RestaurantMenu
