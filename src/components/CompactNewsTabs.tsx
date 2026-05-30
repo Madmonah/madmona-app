@@ -205,140 +205,36 @@ export default function CompactNewsTabs() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-          {/* LEFT: Big featured news (rotating) */}
-          <a
-            href={featured.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="relative block aspect-[16/10] lg:aspect-auto lg:min-h-[400px] overflow-hidden no-underline group"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              key={`${featured.link}-${featuredIndex}`}
-              src={featured.image}
-              alt={featured.title}
-              className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ${
-                imgLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
-              } group-hover:scale-110`}
-              onLoad={() => setImgLoaded(true)}
-              onError={() => setImgLoaded(true)}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
-
-            {/* Top: counter + Egypt flag */}
-            <div className="absolute top-4 left-4 flex items-center gap-2">
-              <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
-                {featured.isEgyptian && <span className="leading-none">🇪🇬</span>}
-                <span>{featuredIndex + 1} / {tabItems.length}</span>
-              </div>
-            </div>
-
-            {/* Top: Active category badge */}
-            <div
-              className="absolute top-4 right-4 flex items-center gap-1.5 backdrop-blur-md text-white text-[10px] font-black tracking-widest uppercase px-3 py-1.5 rounded-full"
-              style={{ backgroundColor: `${activeTabConfig.accent}cc` }}
+        <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {tabItems.slice(0, 8).map((item, i) => (
+            <a
+              key={`${activeTab}-${item.link}-${i}`}
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group block no-underline"
             >
-              <activeTabConfig.icon className="w-3 h-3" />
-              {activeTabConfig.label}
-            </div>
-
-            {/* Side controls */}
-            {tabItems.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={(e) => { e.preventDefault(); handlePrevious() }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/15 hover:bg-white/35 backdrop-blur-md text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-                  aria-label="السابق"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => { e.preventDefault(); handleNext() }}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/15 hover:bg-white/35 backdrop-blur-md text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-                  aria-label="التالي"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => { e.preventDefault(); setPaused(p => !p) }}
-                  className="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-white/15 hover:bg-white/35 backdrop-blur-md text-white flex items-center justify-center transition-all"
-                  aria-label={paused ? 'تشغيل' : 'إيقاف'}
-                >
-                  {paused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
-                </button>
-              </>
-            )}
-
-            {/* Bottom: title + source */}
-            <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
-              <div className={`inline-flex items-center gap-1 text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full mb-3 ${
-                featured.isEgyptian
-                  ? 'bg-[#2FA084] text-white'
-                  : 'bg-white/95 text-gray-900'
-              }`}>
-                {featured.isEgyptian && <MapPin className="w-2.5 h-2.5" />}
-                {featured.source}
+              <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100 mb-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                />
+                {item.isEgyptian && (
+                  <div className="absolute top-1.5 right-1.5 text-[10px] leading-none bg-black/60 backdrop-blur-md text-white px-1.5 py-0.5 rounded">🇪🇬</div>
+                )}
               </div>
-              <h3 className="text-base md:text-xl font-black text-white leading-snug line-clamp-3 drop-shadow-lg mb-3" dir="rtl">
-                {featured.title}
-              </h3>
-
-              {/* Progress dots */}
-              <div className="flex gap-1">
-                {Array.from({ length: Math.min(tabItems.length, 8) }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-0.5 w-6 rounded-full transition-all duration-500 ${
-                      i === Math.min(featuredIndex, 7) ? 'bg-white' : 'bg-white/30'
-                    }`}
-                  />
-                ))}
+              <h4 className="text-xs md:text-sm font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-[#1F6F5F] transition-colors">
+                {item.title}
+              </h4>
+              <div className="flex items-center justify-between gap-2 mt-1.5">
+                <span className="text-[10px] text-gray-500 truncate">{item.source}</span>
+                <span className="text-[9px] text-gray-400 flex-shrink-0">{formatTime(item.pubDate)}</span>
               </div>
-            </div>
-          </a>
-
-          {/* RIGHT: 4 smaller cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 lg:grid-rows-4 divide-y divide-gray-100 lg:divide-y border-t lg:border-t-0 lg:border-r border-gray-100">
-            {sideItems.map((item, i) => (
-              <a
-                key={`${activeTab}-${item.link}-${i}`}
-                href={item.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-stretch gap-3 p-3 hover:bg-gray-50 transition-colors no-underline border-b lg:border-b-0 sm:border-b-0 sm:[&:nth-child(1)]:border-r sm:[&:nth-child(2)]:border-r-0 lg:[&:nth-child(1)]:border-r-0 lg:[&:nth-child(2)]:border-r-0"
-              >
-                <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                  {item.isEgyptian && (
-                    <div className="absolute top-1 right-1 text-xs leading-none bg-black/40 px-1 rounded">🇪🇬</div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-                  <h4 className="text-xs sm:text-sm font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-[#1F6F5F] transition-colors">
-                    {item.title}
-                  </h4>
-                  <div className="flex items-center justify-between gap-2 mt-1.5">
-                    <span className="text-[10px] text-gray-500 truncate">{item.source}</span>
-                    <span className="text-[9px] text-gray-400 flex-shrink-0">{formatTime(item.pubDate)}</span>
-                  </div>
-                </div>
-              </a>
-            ))}
-            {/* Fill empty space if fewer than 4 side items */}
-            {Array.from({ length: Math.max(0, 4 - sideItems.length) }).map((_, i) => (
-              <div key={`empty-${i}`} className="hidden lg:block" />
-            ))}
-          </div>
+            </a>
+          ))}
         </div>
       )}
 

@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { supabaseBrowser } from '@/lib/supabase-browser';
 
 // ============================================================================
 // Madmona "Add Listing First" — public, no-auth multi-step form
@@ -969,6 +970,31 @@ function StepBasics({
   const [city, setCity] = useState(draft.city || '');
   const [district, setDistrict] = useState(draft.district || '');
 
+  // Mohamed May 30 2026: districts dropdown for top 3 governorates (Cairo/Giza/Alex)
+  type District = { id: string; name_ar: string; name_en: string | null; slug: string; sort_order: number };
+  const [districtsList, setDistrictsList] = useState<District[]>([]);
+  const [loadingDistricts, setLoadingDistricts] = useState(false);
+
+  useEffect(() => {
+    if (!city) { setDistrictsList([]); return; }
+    let cancelled = false;
+    setLoadingDistricts(true);
+    (async () => {
+      try {
+        // @ts-expect-error — RPC types not auto-generated yet
+        const { data, error } = await supabaseBrowser.rpc('get_districts_by_governorate', { p_governorate: city });
+        if (cancelled) return;
+        if (error || !Array.isArray(data)) { setDistrictsList([]); return; }
+        setDistrictsList(data as District[]);
+      } catch {
+        if (!cancelled) setDistrictsList([]);
+      } finally {
+        if (!cancelled) setLoadingDistricts(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [city]);
+
   // Phase E (May 18 2026): use category-specific placeholders from DB.
   // Fallback to original hardcoded values when meta is null (e.g. new categories
   // not yet filled, or DB read failure).
@@ -1093,13 +1119,26 @@ function StepBasics({
       </Field>
 
       <Field label="الحي/المنطقة بالظبط" error={errors.district}>
-        <input
-          type="text"
-          value={district}
-          onChange={(e) => setDistrict(e.target.value)}
-          placeholder={districtPh}
-          className={inputCls}
-        />
+        {districtsList.length > 0 ? (
+          <select
+            value={district}
+            onChange={(e) => setDistrict(e.target.value)}
+            className={inputCls}
+          >
+            <option value="">اختار الحي</option>
+            {districtsList.map((d) => (
+              <option key={d.id} value={d.name_ar}>{d.name_ar}</option>
+            ))}
+          </select>
+        ) : (
+          <input
+            type="text"
+            value={district}
+            onChange={(e) => setDistrict(e.target.value)}
+            placeholder={loadingDistricts ? 'جاري تحميل الأحياء...' : districtPh}
+            className={inputCls}
+          />
+        )}
       </Field>
 
       {/* Phase F (May 18 2026): category-specific attributes section.
@@ -1345,6 +1384,7 @@ function validateBasics(_patch: Partial<DraftPayload>, _setErrors: (e: Record<st
 function MenuBuilderStep({
   draft,
   categories,
+  token,
   onSubmit,
   onBack,
   onChangeCategory,
@@ -1352,6 +1392,7 @@ function MenuBuilderStep({
 }: {
   draft: DraftPayload;
   categories: MainCategory[];
+  token: string | null;
   onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
   onBack: () => void;
   onChangeCategory: () => void;
@@ -1364,6 +1405,8 @@ function MenuBuilderStep({
       : [{ name_ar: '', price: 0, description_ar: '', is_available: true }],
   );
   const [error, setError] = useState<string>('');
+  // Mohamed May 30 2026: photo upload per menu item
+  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
 
   function updateItem(idx: number, patch: Partial<MenuItem>) {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
@@ -1376,6 +1419,29 @@ function MenuBuilderStep({
       ...prev,
       { name_ar: '', price: 0, description_ar: '', is_available: true },
     ]);
+  }
+
+  async function handlePhotoUpload(idx: number, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingIdx(idx);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      if (token) fd.append('token', token);
+      const res = await fetch('/api/listing-drafts/upload', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (json.url) {
+        updateItem(idx, { photo_url: json.url });
+      } else {
+        setError('تعذر تحميل الصورة، حاول تاني');
+      }
+    } catch {
+      setError('خطأ في الاتصال');
+    } finally {
+      setUploadingIdx(null);
+      e.target.value = ''; // allow same-file re-upload
+    }
   }
 
   function handleSubmit() {
@@ -1432,6 +1498,47 @@ function MenuBuilderStep({
                 placeholder="مثلاً: برجر كلاسيك"
                 className={inputCls}
               />
+            </Field>
+
+            {/* Mohamed May 30 2026: photo upload per menu item */}
+            <Field label="صورة الصنف (اختياري)">
+              <div className="flex items-center gap-3">
+                {item.photo_url ? (
+                  <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-[#E5E5E0] flex-shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={item.photo_url} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => updateItem(idx, { photo_url: undefined })}
+                      className="absolute top-0 left-0 w-6 h-6 bg-red-600 text-white text-xs font-bold flex items-center justify-center rounded-br-lg hover:bg-red-700"
+                      aria-label="حذف الصورة"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <label className={`w-20 h-20 rounded-xl border-2 border-dashed border-[#1F6F5F]/40 flex flex-col items-center justify-center cursor-pointer hover:bg-[#1F6F5F]/5 transition-colors flex-shrink-0 ${uploadingIdx === idx ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handlePhotoUpload(idx, e)}
+                      className="sr-only"
+                      disabled={uploadingIdx === idx}
+                    />
+                    {uploadingIdx === idx ? (
+                      <span className="text-[10px] text-gray-500">جاري...</span>
+                    ) : (
+                      <>
+                        <span className="text-2xl text-[#1F6F5F]">📷</span>
+                        <span className="text-[10px] text-[#1F6F5F] font-bold mt-0.5">صورة</span>
+                      </>
+                    )}
+                  </label>
+                )}
+                <p className="text-[11px] text-gray-500 flex-1">
+                  صورة صنف حلوة = أوردرات أكتر 📈
+                </p>
+              </div>
             </Field>
 
             <Field label="السعر بالجنيه" required>
@@ -1677,6 +1784,7 @@ function StepPricing({
   draft,
   errors,
   categories,
+  token,
   onSubmit,
   onBack,
   onChangeCategory,
@@ -1686,6 +1794,7 @@ function StepPricing({
   draft: DraftPayload;
   errors: Record<string, string>;
   categories: MainCategory[];
+  token: string | null;
   onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
   onBack: () => void;
   onChangeCategory: () => void;
@@ -1702,6 +1811,7 @@ function StepPricing({
       <MenuBuilderStep
         draft={draft}
         categories={categories}
+        token={token}
         onSubmit={onSubmit}
         onBack={onBack}
         onChangeCategory={onChangeCategory}
