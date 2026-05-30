@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, MapPin, Phone, User, MessageCircle, Loader2,
-  AlertCircle, CheckCircle, CreditCard, Banknote, ChevronLeft, ShoppingBag,
+  AlertCircle, CheckCircle, CreditCard, ChevronLeft, ShoppingBag,
 } from 'lucide-react'
 import {
   useCart, cartSubtotal, clearCart, buildOrderItemsPayload,
@@ -19,7 +19,7 @@ import {
 // then redirects to /order/[ref] on success.
 // ============================================================================
 
-type PaymentMethod = 'instapay' | 'cod'
+type PaymentMethod = 'instapay'
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -343,62 +343,23 @@ export default function CheckoutPage() {
           </div>
         </section>
 
-        {/* Payment method */}
+        {/* Payment method — Mohamed May 30 2026: Madmona payment is the only option (no more COD) */}
         <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-300">
           <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
             <CreditCard className="w-4 h-4 text-[#1F6F5F]" />
             طريقة الدفع
           </h2>
-          <div className="space-y-2">
-            <button
-              type="button"
-              onClick={() => setPayment('instapay')}
-              className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all ${
-                payment === 'instapay'
-                  ? 'border-[#1F6F5F] bg-[#1F6F5F]/5'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                payment === 'instapay' ? 'bg-[#1F6F5F] text-white' : 'bg-gray-100 text-gray-500'
-              }`}>
-                <CreditCard className="w-5 h-5" />
-              </div>
-              <div className="flex-1 text-right">
-                <p className="font-bold text-sm text-gray-900">InstaPay</p>
-                <p className="text-[11px] text-gray-500">
-                  هتحوّل على حساب مضمونة وتبعت إيصال على واتساب
-                </p>
-              </div>
-              {payment === 'instapay' && (
-                <CheckCircle className="w-5 h-5 text-[#1F6F5F]" />
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setPayment('cod')}
-              className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all ${
-                payment === 'cod'
-                  ? 'border-[#1F6F5F] bg-[#1F6F5F]/5'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                payment === 'cod' ? 'bg-[#1F6F5F] text-white' : 'bg-gray-100 text-gray-500'
-              }`}>
-                <Banknote className="w-5 h-5" />
-              </div>
-              <div className="flex-1 text-right">
-                <p className="font-bold text-sm text-gray-900">كاش عند الاستلام</p>
-                <p className="text-[11px] text-gray-500">
-                  هتدفع للمندوب وقت ما يوصلك
-                </p>
-              </div>
-              {payment === 'cod' && (
-                <CheckCircle className="w-5 h-5 text-[#1F6F5F]" />
-              )}
-            </button>
+          <div className="flex items-center gap-3 p-4 rounded-2xl border-2 border-[#1F6F5F] bg-[#1F6F5F]/5">
+            <div className="w-10 h-10 rounded-xl bg-[#1F6F5F] text-white flex items-center justify-center flex-shrink-0">
+              <CreditCard className="w-5 h-5" />
+            </div>
+            <div className="flex-1 text-right">
+              <p className="font-bold text-sm text-gray-900">InstaPay — على حساب مضمونة</p>
+              <p className="text-[11px] text-gray-500">
+                تحويل على InstaPay بتاع مضمونة ، وفلوسك محمية لحد ما يوصلك الأوردر سليم
+              </p>
+            </div>
+            <CheckCircle className="w-5 h-5 text-[#1F6F5F]" />
           </div>
         </section>
 

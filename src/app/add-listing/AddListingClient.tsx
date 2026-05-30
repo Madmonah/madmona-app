@@ -558,6 +558,7 @@ function AddListingPageInner({
             draft={draft}
             errors={errors}
             categories={dbExtraCategories}
+            token={token}
             beautySchemas={beautySchemas}
             onSubmit={async (patch) => {
               if (!patch.price || patch.price <= 0) {
