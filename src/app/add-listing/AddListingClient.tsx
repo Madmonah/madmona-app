@@ -137,6 +137,40 @@ export type ProductDetails = {
   shipping_cost?: number;
 };
 
+// WHOLESALE TIERS (May 30 2026 — Task 5)
+// Suppliers can offer bulk-pricing units (e.g. "دستة 12 = 216 جنيه" =
+// 18ج/وحدة). Saved to draft.attributes.wholesale_tiers and mapped to
+// listings.wholesale_tiers jsonb on publish.
+export type WholesaleTier = {
+  unit: string;            // e.g. "دستة", "كرتونة", "شيكارة"
+  qty: number;             // e.g. 12
+  price_per_unit: number;  // e.g. 18 (جنيه/وحدة)
+  total?: number;          // computed: qty * price_per_unit
+};
+
+// MEDICAL/CLINIC SLUGS — Task 6 (May 30 2026)
+// Categories that can opt-in to accepting health insurance partners.
+// The wizard renders an extra section in StepPricing for these slugs.
+const MEDICAL_SLUGS = new Set([
+  'medical-clinics',
+  'medical-consultants',
+  'physiotherapy',
+  'properties-clinics',
+]);
+function isMedicalCategory(
+  slug: string | null | undefined,
+  categories: MainCategory[],
+): boolean {
+  if (!slug) return false;
+  if (MEDICAL_SLUGS.has(slug)) return true;
+  for (const main of categories) {
+    if (MEDICAL_SLUGS.has(main.slug) && main.subs.some((s) => s.slug === slug)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export type AddonSuggestion = {
   slug: string;
   name_ar: string;
@@ -206,6 +240,10 @@ interface DraftPayload {
     addons?: Addon[];
     menu_items?: MenuItem[];
     product_details?: ProductDetails;
+    wholesale_tiers?: WholesaleTier[];
+    accepts_insurance?: boolean;
+    insurance_partners?: string[];
+    insurance_deposit_pct?: number;
   };
 }
 
@@ -1169,6 +1207,87 @@ function StepBasics({
         </div>
       )}
 
+      {/* ─── INSURANCE ACCEPTANCE (Task 6 — May 30 2026) ───
+          Only renders for medical-clinics / medical-consultants /
+          physiotherapy / properties-clinics (or their subs). */}
+      {isMedical && (
+        <div className="mt-6 mb-3 p-4 rounded-xl bg-gradient-to-bl from-emerald-50 to-amber-50 border border-emerald-200">
+          <label className="flex items-start gap-2 text-sm font-semibold mb-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={acceptsInsurance}
+              onChange={(e) => setAcceptsInsurance(e.target.checked)}
+              className="w-4 h-4 mt-0.5 accent-[#1F6F5F]"
+            />
+            <div>
+              🏥 بتقبل تأمين صحي؟
+              <p className="text-[11px] text-gray-600 font-normal mt-0.5">
+                لو بتقبل تأمين، حدد شركات التأمين اللي بتتعامل معاها.
+              </p>
+            </div>
+          </label>
+
+          {acceptsInsurance && (
+            <div className="mt-3 space-y-3">
+              {insurancePartners.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {insurancePartners.map((p) => (
+                    <span
+                      key={p}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#1F6F5F]/30 text-xs font-medium"
+                    >
+                      🏥 {p}
+                      <button
+                        type="button"
+                        onClick={() => removePartner(p)}
+                        className="text-red-500 font-bold hover:text-red-700"
+                        aria-label={`إزالة ${p}`}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newPartner}
+                  onChange={(e) => setNewPartner(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addPartner();
+                    }
+                  }}
+                  placeholder="مثلاً: مديلسرفيس، اللجنة، صحتك..."
+                  className={inputCls + ' text-sm flex-1'}
+                />
+                <button
+                  type="button"
+                  onClick={addPartner}
+                  disabled={!newPartner.trim()}
+                  className="py-2.5 px-4 rounded-xl bg-[#1F6F5F] text-white text-sm font-semibold disabled:opacity-50 whitespace-nowrap"
+                >
+                  + إضافة
+                </button>
+              </div>
+
+              <div className="p-3 rounded-xl bg-white border border-[#E5E5E0] text-xs text-gray-700">
+                <div className="font-semibold text-[#1F6F5F] mb-1">💳 رسم الحجز للتأمينيين</div>
+                <p>
+                  عند حجز عميل بتأمين صحي، بنأخد <strong>5%</strong> رسم خدمة من سعر الكشف (من العميل عبر انستاباي) لتأكيد الحجز.
+                </p>
+                <p className="text-[11px] text-red-700 mt-1.5 font-bold">
+                  ⚠️ الرسم ده غير قابل للاسترداد (حتى لو التأمين رفض التغطية).
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <Nav onBack={onBack} onNext={handleNext} saving={saving} />
     </section>
   );
@@ -1624,6 +1743,7 @@ function ProductDetailsStep({
   saving: boolean;
 }) {
   const existingDetails = (draft.attributes?.product_details as ProductDetails | undefined);
+  const existingWholesale = (draft.attributes?.wholesale_tiers as WholesaleTier[] | undefined) || [];
   const [price, setPrice] = useState<number | ''>(draft.price ?? '');
   const [stockQty, setStockQty] = useState<number>(existingDetails?.stock_quantity ?? 1);
   const [condition, setCondition] = useState<ProductCondition>(
@@ -1638,6 +1758,22 @@ function ProductDetailsStep({
     existingDetails?.shipping_cost ?? '',
   );
   const [error, setError] = useState<string>('');
+
+  // Task 5 (May 30 2026): wholesale tiers (optional bulk-pricing).
+  const [hasWholesale, setHasWholesale] = useState<boolean>(existingWholesale.length > 0);
+  const [wholesaleTiers, setWholesaleTiers] = useState<WholesaleTier[]>(
+    existingWholesale.length > 0 ? existingWholesale : []
+  );
+
+  function addTier() {
+    setWholesaleTiers((prev) => [...prev, { unit: 'دستة', qty: 12, price_per_unit: 0 }]);
+  }
+  function removeTier(idx: number) {
+    setWholesaleTiers((prev) => prev.filter((_, i) => i !== idx));
+  }
+  function updateTier(idx: number, patch: Partial<WholesaleTier>) {
+    setWholesaleTiers((prev) => prev.map((t, i) => (i === idx ? { ...t, ...patch } : t)));
+  }
 
   const conditionOptions: { key: ProductCondition; label_ar: string }[] = [
     { key: 'new', label_ar: 'جديد بالكرتونة' },
@@ -1655,6 +1791,21 @@ function ProductDetailsStep({
       setError('الكمية لازم تكون 1 على الأقل');
       return;
     }
+    // Validate wholesale tiers if enabled — require unit+qty+price for each
+    let finalWholesale: WholesaleTier[] = [];
+    if (hasWholesale) {
+      const valid = wholesaleTiers.filter(
+        (t) => t.unit.trim().length > 0 && t.qty > 0 && t.price_per_unit > 0
+      );
+      if (wholesaleTiers.length > 0 && valid.length === 0) {
+        setError('اكمل بيانات أسعار الجملة أو الغيها');
+        return;
+      }
+      finalWholesale = valid.map((t) => ({
+        ...t,
+        total: t.qty * t.price_per_unit,
+      }));
+    }
     setError('');
     const productDetails: ProductDetails = {
       stock_quantity: Number(stockQty),
@@ -1671,7 +1822,11 @@ function ProductDetailsStep({
     onSubmit({
       price: Number(price),
       price_period: 'per_unit',
-      attributes: { ...existing, product_details: productDetails },
+      attributes: {
+        ...existing,
+        product_details: productDetails,
+        wholesale_tiers: finalWholesale,
+      },
     });
   }
 
@@ -1767,6 +1922,104 @@ function ProductDetailsStep({
         )}
       </div>
 
+      {/* ─── WHOLESALE PRICING (Task 5 — May 30 2026) ─── */}
+      <div className="mt-4 mb-3 p-4 rounded-xl bg-[#F5F4F0] border border-[#E5E5E0]">
+        <label className="flex items-start gap-2 text-sm font-semibold mb-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={hasWholesale}
+            onChange={(e) => {
+              setHasWholesale(e.target.checked);
+              if (e.target.checked && wholesaleTiers.length === 0) {
+                addTier();
+              }
+            }}
+            className="w-4 h-4 mt-0.5 accent-[#1F6F5F]"
+          />
+          <div>
+            📦 بتبيع جملة؟ (أسعار خاصة للكميات)
+            <p className="text-[11px] text-gray-500 font-normal mt-0.5">
+              مثلاً: دستة (12 قطعة) بـ 18 جنيه للقطعة = 216 جنيه
+            </p>
+          </div>
+        </label>
+
+        {hasWholesale && (
+          <div className="space-y-3 mt-3">
+            {wholesaleTiers.map((tier, idx) => {
+              const total = (tier.qty || 0) * (tier.price_per_unit || 0);
+              return (
+                <div
+                  key={idx}
+                  className="rounded-xl bg-white border border-[#E5E5E0] p-3"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-[#1F6F5F]">
+                      سعر جملة #{idx + 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeTier(idx)}
+                      className="text-xs text-red-600 hover:text-red-700 font-semibold"
+                    >
+                      حذف ✕
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-[11px] text-gray-600 mb-1">الوحدة</label>
+                      <input
+                        type="text"
+                        value={tier.unit}
+                        onChange={(e) => updateTier(idx, { unit: e.target.value })}
+                        placeholder="دستة"
+                        className={inputCls + ' text-sm py-2'}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-gray-600 mb-1">العدد</label>
+                      <input
+                        type="number"
+                        value={tier.qty || ''}
+                        onChange={(e) =>
+                          updateTier(idx, { qty: Number(e.target.value) || 0 })
+                        }
+                        placeholder="12"
+                        className={inputCls + ' text-sm py-2'}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-gray-600 mb-1">سعر القطعة</label>
+                      <input
+                        type="number"
+                        value={tier.price_per_unit || ''}
+                        onChange={(e) =>
+                          updateTier(idx, { price_per_unit: Number(e.target.value) || 0 })
+                        }
+                        placeholder="18"
+                        className={inputCls + ' text-sm py-2'}
+                      />
+                    </div>
+                  </div>
+                  {total > 0 && (
+                    <div className="text-xs text-[#1F6F5F] font-semibold mt-2">
+                      الإجمالي: {total.toLocaleString('ar-EG')} جنيه
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            <button
+              type="button"
+              onClick={addTier}
+              className="w-full py-2.5 rounded-xl border-2 border-dashed border-[#1F6F5F]/40 text-[#1F6F5F] text-sm font-bold hover:bg-[#1F6F5F]/5 transition-colors"
+            >
+              + إضافة سعر جملة
+            </button>
+          </div>
+        )}
+      </div>
+
       {error && (
         <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
           {error}
@@ -1843,6 +2096,9 @@ function StepPricing({
   const track = getCategoryTrack(draft.category_slug, categories);
   const isRentalCopy = track === 'rentals';
   const isHybrid = track === 'hybrid';
+  // Task 6 (May 30 2026): medical-clinics + related categories show an extra
+  // insurance-acceptance section in the pricing step.
+  const isMedical = isMedicalCategory(draft.category_slug, categories);
   const showAddons = !isRentalCopy;          // services + hybrid + beauty
   const showCustomAddonBuilder = showAddons && !isBeauty;
 
@@ -1896,6 +2152,33 @@ function StepPricing({
 
   const [enabledAddons, setEnabledAddons] = useState<Set<string>>(initialEnabled);
   const [addonPrices, setAddonPrices] = useState<Record<string, number>>(initialPrices);
+
+  // ─── INSURANCE STATE (Task 6, May 30 2026) ───
+  // Only relevant for medical-clinics + related categories.
+  // Saved to draft.attributes.accepts_insurance / insurance_partners /
+  // insurance_deposit_pct, then mapped to listings columns on publish.
+  const [acceptsInsurance, setAcceptsInsurance] = useState<boolean>(
+    !!draft.attributes?.accepts_insurance
+  );
+  const initialPartners = (draft.attributes?.insurance_partners as string[] | undefined) || [];
+  const [insurancePartners, setInsurancePartners] = useState<string[]>(initialPartners);
+  const [newPartner, setNewPartner] = useState<string>('');
+  const [insuranceDepositPct] = useState<number>(
+    (draft.attributes?.insurance_deposit_pct as number | undefined) ?? 5
+  );
+
+  function addPartner() {
+    const trimmed = newPartner.trim();
+    if (!trimmed || insurancePartners.includes(trimmed)) {
+      setNewPartner('');
+      return;
+    }
+    setInsurancePartners((prev) => [...prev, trimmed]);
+    setNewPartner('');
+  }
+  function removePartner(name: string) {
+    setInsurancePartners((prev) => prev.filter((p) => p !== name));
+  }
 
   function toggleAddon(slug: string) {
     setEnabledAddons((prev) => {
@@ -1962,12 +2245,21 @@ function StepPricing({
       price: Number(price),
       price_period: period,
     };
+    const baseAttrs = (draft.attributes || {}) as Record<string, unknown>;
+    const newAttrs: Record<string, unknown> = { ...baseAttrs };
+
     if (showAddons) {
-      patch.attributes = {
-        ...(draft.attributes || {}),
-        addons: isBeauty ? buildAddonsPatch() : buildCustomAddonsPatch(),
-      };
+      newAttrs.addons = isBeauty ? buildAddonsPatch() : buildCustomAddonsPatch();
     }
+
+    // Task 6: persist insurance fields for medical categories
+    if (isMedical) {
+      newAttrs.accepts_insurance = acceptsInsurance;
+      newAttrs.insurance_partners = acceptsInsurance ? insurancePartners : [];
+      newAttrs.insurance_deposit_pct = acceptsInsurance ? insuranceDepositPct : null;
+    }
+
+    patch.attributes = newAttrs;
     onSubmit(patch);
   }
 
@@ -2364,11 +2656,111 @@ function StepContact({
   const [accountType, setAccountType] = useState<'individual' | 'business'>(draft.account_type || 'individual');
   const [businessName, setBusinessName] = useState(draft.business_name || '');
 
+  // ─── OTP VERIFICATION (May 30 2026 — Task 4) ─────────────────────
+  // User must verify their WhatsApp number via 6-digit code before publish.
+  // Server trigger trg_enforce_listing_publish_requirements blocks publish
+  // without phone_verified_at; wizard mirrors that gate client-side.
+  // Flow: send OTP → user receives WA message → types 6-digit code → verify.
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpAttemptsLeft, setOtpAttemptsLeft] = useState<number | null>(null);
+
+  function isValidPhone(p: string): boolean {
+    return /^(\+?2)?01\d{9}$/.test(p.replace(/\s/g, ''));
+  }
+
+  function handlePhoneChange(newPhone: string) {
+    setPhone(newPhone);
+    // Reset OTP state when phone changes — the previous code/verification
+    // is for the old number and must be invalidated.
+    if (otpSent || otpVerified) {
+      setOtpSent(false);
+      setOtpVerified(false);
+      setOtpCode('');
+      setOtpError('');
+      setOtpAttemptsLeft(null);
+    }
+  }
+
+  async function sendOtp() {
+    if (!isValidPhone(phone)) {
+      setOtpError('رقم تليفون مش صحيح (لازم 11 رقم)');
+      return;
+    }
+    setOtpSending(true);
+    setOtpError('');
+    try {
+      const res = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        setOtpError(data.message || 'مش قادر يبعت الكود، حاول تاني');
+      } else {
+        setOtpSent(true);
+        setOtpError('');
+      }
+    } catch {
+      setOtpError('مشكلة في الشبكة، حاول تاني');
+    } finally {
+      setOtpSending(false);
+    }
+  }
+
+  async function verifyOtp() {
+    if (!/^\d{6}$/.test(otpCode)) {
+      setOtpError('الكود لازم يكون 6 أرقام');
+      return;
+    }
+    setOtpVerifying(true);
+    setOtpError('');
+    try {
+      const res = await fetch('/api/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, code: otpCode }),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        setOtpError(data.message || 'الكود غلط');
+        if (typeof data.attempts_left === 'number') {
+          setOtpAttemptsLeft(data.attempts_left);
+        }
+      } else {
+        setOtpVerified(true);
+        setOtpError('');
+      }
+    } catch {
+      setOtpError('مشكلة في الشبكة، حاول تاني');
+    } finally {
+      setOtpVerifying(false);
+    }
+  }
+
+  function handleFinalSubmit() {
+    if (!otpVerified) {
+      setOtpError('لازم تتأكد من رقم الواتس اب الأول');
+      return;
+    }
+    onSubmit({
+      contact_name: name,
+      contact_phone: phone,
+      account_type: accountType,
+      business_name: accountType === 'business' ? businessName : undefined,
+    });
+  }
+
   return (
     <section>
       <h2 className="text-lg font-semibold mb-1">بياناتك</h2>
       <p className="text-sm text-gray-500 mb-6">
-        آخر خطوة. هنبعتلك تأكيد على الواتس اب.
+        آخر خطوة. هنبعتلك كود تأكيد على الواتس اب.
       </p>
 
       <Field label="اسمك" error={errors.contact_name} required>
@@ -2386,11 +2778,84 @@ function StepContact({
           type="tel"
           dir="ltr"
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(e) => handlePhoneChange(e.target.value)}
           placeholder="01XXXXXXXXX"
           className={inputCls + ' text-left'}
+          disabled={otpVerified}
         />
       </Field>
+
+      {/* ─── OTP VERIFICATION UI ─── */}
+      {!otpVerified ? (
+        <div className="mb-4 p-4 rounded-xl bg-white border border-[#E5E5E0]">
+          {!otpSent ? (
+            <>
+              <p className="text-sm text-gray-700 mb-3">
+                📱 هنبعت كود تأكيد على الواتس اب عشان نتأكد إن الرقم بتاعك
+              </p>
+              <button
+                type="button"
+                onClick={sendOtp}
+                disabled={otpSending || !isValidPhone(phone)}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#25D366] text-white font-semibold disabled:opacity-50 transition-all"
+              >
+                {otpSending ? 'بنبعت...' : '📲 إبعتلي كود على الواتس اب'}
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-gray-700 mb-3">
+                ✅ بعتنالك كود من 6 أرقام على <span dir="ltr" className="font-mono">{phone}</span>
+              </p>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="\d{6}"
+                  maxLength={6}
+                  dir="ltr"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                  placeholder="000000"
+                  className={inputCls + ' text-center text-lg tracking-widest font-mono flex-1'}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={verifyOtp}
+                  disabled={otpVerifying || otpCode.length !== 6}
+                  className="py-2.5 px-4 rounded-xl bg-[#1F6F5F] text-white font-semibold disabled:opacity-50 whitespace-nowrap"
+                >
+                  {otpVerifying ? '...' : 'تأكيد'}
+                </button>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <button
+                  type="button"
+                  onClick={sendOtp}
+                  disabled={otpSending}
+                  className="text-[#1F6F5F] underline disabled:opacity-50"
+                >
+                  ابعت كود تاني
+                </button>
+                {otpAttemptsLeft !== null && (
+                  <span className="text-gray-500">
+                    باقي {otpAttemptsLeft} محاولات
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+          {otpError && (
+            <div className="text-xs text-red-600 mt-2">{otpError}</div>
+          )}
+        </div>
+      ) : (
+        <div className="mb-4 p-4 rounded-xl bg-green-50 border border-green-200 text-sm text-green-800 flex items-center gap-2">
+          <span className="text-lg">✅</span>
+          <span>رقم الواتس اب اتأكد — تقدر تكمل</span>
+        </div>
+      )}
 
       <Field label="إنت" required>
         <div className="grid grid-cols-2 gap-3">
@@ -2439,14 +2904,9 @@ function StepContact({
 
       <Nav
         onBack={onBack}
-        onNext={() => onSubmit({
-          contact_name: name,
-          contact_phone: phone,
-          account_type: accountType,
-          business_name: accountType === 'business' ? businessName : undefined,
-        })}
+        onNext={handleFinalSubmit}
         saving={saving}
-        nextLabel="ابعت الليستنج 🚀"
+        nextLabel={otpVerified ? 'ابعت الليستنج 🚀' : '🔒 محتاج تأكيد الرقم الأول'}
       />
     </section>
   );
