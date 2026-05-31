@@ -186,13 +186,15 @@ export default function AdminDashboardV2() {
       if (!session?.user) { setStage('unauthenticated'); return }
 
       setRefreshing(true)
-      const [statsRes, msgsRes, pulseRes] = await Promise.all([
+      const [statsRes, msgsRes, pulseRes, chartsRes] = await Promise.all([
         // @ts-expect-error
         supabaseBrowser.rpc('get_admin_dashboard_v2'),
         // @ts-expect-error
         supabaseBrowser.rpc('get_admin_messages_summary'),
         // @ts-expect-error
         supabaseBrowser.rpc('get_system_pulse_status'),
+        // @ts-expect-error
+        supabaseBrowser.rpc('get_admin_dashboard_charts'),
       ])
       setRefreshing(false)
 
