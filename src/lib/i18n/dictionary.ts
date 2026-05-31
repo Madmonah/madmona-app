@@ -26,7 +26,7 @@ type Dict = Record<string, string>
 const ar: Dict = {
   // ---- common ----
   'common.brand': 'مضمونة',
-  'common.slogan': 'احنا بتوع الإيجار',
+  'common.slogan': 'معاملاتك مضمونة',
   'common.tagline': 'اللي بتأجره مضمون',
   'common.loading': 'جاري التحميل...',
   'common.search': 'دور على اللي محتاجه',
@@ -74,15 +74,15 @@ const ar: Dict = {
   'nav.share_desc': 'ابعت الموقع لأصحابك',
   'nav.whatsapp_cta': 'واتساب · رد فوري',
   'nav.share_title': 'مضمونة - منصة الإيجار',
-  'nav.share_text': 'مضمونة 🟢 — احنا بتوع الإيجار في مصر.',
+  'nav.share_text': 'مضمونة 🟢 — معاملاتك مضمونة في مصر.',
 
   // ---- home / hero ----
-  'home.hero.eyebrow': 'منصة التأجير الأولى في مصر',
-  'home.hero.title': 'احنا بتوع الإيجار',
-  'home.hero.subtitle': 'منصة واحدة لتأجير كل ما يمكن تأجيره — شقق، شاليهات، عربيات، كاميرات، معدات، ومساحات عمل.',
+  'home.hero.eyebrow': 'السوق المصري المضمون',
+  'home.hero.title': 'معاملاتك مضمونة',
+  'home.hero.subtitle': 'سوق مصري واحد: أجّر، اشتري، واحجز خدمات ومطاعم وبيوتي — كله بحماية كاملة ودفع سريع.',
   'home.hero.cta_browse': 'اتفرّج على السوق',
   'home.hero.cta_list': 'ضيف الليستنج بتاعك',
-  'home.hero.search_placeholder': 'دور على شاليه، عربية، كاميرا...',
+  'home.hero.search_placeholder': 'دوّر على شاليه، عربية، منتج، مطعم، أو خدمة...',
 
   // ---- home / pillars ----
   'home.pillars.title': 'ليه مضمونة',
@@ -138,7 +138,7 @@ const ar: Dict = {
   'home.contact.address_sub': 'النزهة، مصر الجديدة · ٢٤/٧',
   'home.contact.rate': 'قيّمنا على جوجل',
   'home.contact.rate_sub': 'رأيك بيفرق معانا',
-  'footer.tagline': 'احنا بتوع الإيجار · اللي بتأجره مضمون',
+  'footer.tagline': 'معاملاتك مضمونة · أجّر · اشتري · احجز',
   'footer.about_link': 'عن مضمونة',
   'footer.services_link': 'خدمات مضمونة',
   'footer.privacy': 'الخصوصية',
