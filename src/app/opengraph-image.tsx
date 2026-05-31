@@ -12,7 +12,7 @@ export const size = {
   height: 630,
 }
 
-export const alt = 'مضمونة - منصة إيجار كل حاجة في مصر'
+export const alt = 'مضمونة - سوق مصر المضمون'
 
 export default function OpenGraphImage() {
   return new ImageResponse(
@@ -82,7 +82,7 @@ export default function OpenGraphImage() {
             display: 'flex',
           }}
         >
-          احنا بتوع الإيجار
+          معاملاتك مضمونة
         </div>
 
         <div
@@ -93,7 +93,7 @@ export default function OpenGraphImage() {
             display: 'flex',
           }}
         >
-          شاليهات · عربيات · قاعات · كاميرات · مساحات شغل
+          أجّر · اشتري · خدمات · مطاعم · بيوتي
         </div>
 
         {/* Bottom location strip */}

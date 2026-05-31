@@ -54,7 +54,7 @@ export default function WelcomePage() {
 
       {/* Footer slogan */}
       <footer className="text-center py-6 text-xs text-[#6B7280]">
-        <span className="font-bold tracking-wider">احنا بتوع الإيجار</span> · madmonacairo.com
+        <span className="font-bold tracking-wider">معاملاتك مضمونة</span> · madmonacairo.com
       </footer>
     </div>
   )
@@ -75,9 +75,9 @@ function PathPicker({ onPick }: { onPick: (p: Path) => void }) {
           أهلاً بيك في مضمونة
         </h1>
         <p className="text-base md:text-xl text-[#6B7280] max-w-2xl mx-auto leading-relaxed">
-          منصة الإيجار الأولى في مصر — <span className="text-[#1A2E26] font-bold">كل ما يمكن تأجيره</span> في مكان واحد.
+          سوق مصر المضمون — <span className="text-[#1A2E26] font-bold">كل ما تأجره أو تشتريه أو تحجزه</span> في مكان واحد.
           <br className="hidden md:block" />
-          من أول شقة وعربية لحد كاميرا ومعدات.
+          من تأجير وبيع وشراء لخدمات ومطاعم وبيوتي.
         </p>
       </div>
 
@@ -113,7 +113,7 @@ function PathPicker({ onPick }: { onPick: (p: Path) => void }) {
       {/* Slogan + trust line */}
       <div className="mt-10 md:mt-14 text-center">
         <p className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight mb-2">
-          احنا بتوع الإيجار
+          معاملاتك مضمونة
         </p>
         <p className="text-sm text-[#6B7280]">
           منصة مصرية · أمان كامل · دعم على مدار الساعة

@@ -18,7 +18,7 @@ interface Props {
 
 const SHARE_URL = 'https://madmonacairo.com'
 const SHARE_TITLE = 'مضمونة - منصة حجز الخدمات'
-const SHARE_TEXT = 'شوف خدمات مضمونة 🟢 - منصة مصرية بتجمع كل اللي يتأجر من موردين معتمدين، بضمان كامل. عقارات، مركبات، معدات، فعاليات، ومساحات عمل.'
+const SHARE_TEXT = 'شوف مضمونة 🟢 — سوق مصري مضمون بيجمع كل اللي تأجره وتشتريه وتحجزه من موردين موثوقين، بحماية كاملة. أجّر · اشتري · خدمات · مطاعم · بيوتي. معاملاتك مضمونة.'
 
 export default function ShareAppButton({ variant = 'default', className = '' }: Props) {
   const [modalOpen, setModalOpen] = useState(false)
@@ -116,7 +116,7 @@ export default function ShareAppButton({ variant = 'default', className = '' }: 
       <button
         type="button"
         onClick={handleClick}
-        className={`flex items-center justify-center gap-2 bg-[#2FA084] hover:bg-[#a07509] text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all ${className}`}
+        className={`flex items-center justify-center gap-2 bg-[#2FA084] hover:bg-[#1F6F5F] text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all ${className}`}
       >
         <Share2 className="w-4 h-4" />
         <span>شارك الموقع</span>

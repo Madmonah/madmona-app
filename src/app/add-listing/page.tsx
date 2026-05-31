@@ -136,7 +136,7 @@ function StaticPageFallback() {
       </main>
 
       <footer className="px-5 pb-8 mt-4 max-w-2xl mx-auto text-center text-xs text-[#FAF7F0]/50">
-        مضمونة — احنا بتوع الإيجار
+        مضمونة — معاملاتك مضمونة
       </footer>
     </div>
   );

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'مضمونة | احنا بتوع الإيجار',
-  description: 'منصة الإيجار الأكبر في مصر — شقق، سيارات، كاميرات، معدات. مع حماية كاملة ودفع سريع.',
+  title: 'مضمونة | معاملاتك مضمونة',
+  description: 'سوق مصر المضمون — أجّر، اشتري، واحجز خدمات ومطاعم وبيوتي من موردين موثوقين. حماية كاملة ودفع سريع.',
   robots: {
     index: false,
     follow: false,

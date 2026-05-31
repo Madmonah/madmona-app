@@ -97,7 +97,7 @@ export default function MadmonaLoginPage() {
             <span className="text-3xl font-black text-[#1F6F5F]">م</span>
           </div>
           <h1 className="text-2xl font-black text-white">مضمونة</h1>
-          <p className="text-sm text-white/80 mt-1">احنا بتوع الإيجار</p>
+          <p className="text-sm text-white/80 mt-1">معاملاتك مضمونة</p>
         </div>
 
         <div className="bg-white rounded-3xl p-6 shadow-2xl">

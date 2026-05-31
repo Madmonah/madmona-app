@@ -156,7 +156,7 @@ export default function JoinPage({ params }: { params: { code: string } }) {
           )}
         </div>
 
-        <p className="text-center text-[10px] text-white/60 mt-6">madmonacairo.com · احنا بتوع الإيجار</p>
+        <p className="text-center text-[10px] text-white/60 mt-6">madmonacairo.com · معاملاتك مضمونة</p>
       </div>
     </div>
   )

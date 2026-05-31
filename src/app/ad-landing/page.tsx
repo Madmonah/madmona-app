@@ -13,7 +13,6 @@ const CATEGORIES = [
   { id: 'apartments', label: 'شقق وعقارات', icon: '🏠' },
   { id: 'cars', label: 'سيارات', icon: '🚗' },
   { id: 'cameras', label: 'كاميرات ومعدات تصوير', icon: '📷' },
-  { id: 'coworking', label: 'مساحة عمل/كوورك', icon: '💼' },
   { id: 'event', label: 'معدات فعاليات', icon: '🎉' },
   { id: 'other', label: 'حاجة تانية', icon: '💡' },
 ]
@@ -108,7 +107,7 @@ function AdLandingForm() {
             📱 كلمنا واتساب دلوقتي
           </a>
           <p style={{ color: '#999', fontSize: '13px', marginTop: '32px' }}>
-            احنا بتوع الإيجار 🤝
+            معاملاتك مضمونة 🤝
           </p>
         </div>
       </div>
@@ -151,7 +150,7 @@ function AdLandingForm() {
           fontWeight: 'bold',
           marginBottom: '32px',
         }}>
-          احنا بتوع الإيجار 🤝
+          معاملاتك مضمونة 🤝
         </p>
 
         <div style={{

@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     template: '%s | مضمونة',
   },
   description:
-    'مضمونة - منصة إيجار كل حاجة في مصر. شاليهات، عربيات، منتجات، مطاعم، وخدمات. حماية كاملة على كل صفقة، دفع مستحقات سريع، ودعم ٢٤/٧. معاملاتك مضمونة.',
+    'مضمونة - سوق مصر المضمون. أجّر، اشتري، واحجز خدمات ومطاعم وبيوتي من موردين موثوقين. حماية كاملة على كل صفقة، دفع مستحقات سريع، ودعم ٢٤/٧. معاملاتك مضمونة.',
   keywords: [
     'مضمونة', 'madmona', 'معاملاتك مضمونة',
     'إيجار', 'تأجير', 'rental', 'rental Egypt', 'marketplace',
@@ -62,9 +62,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   alternates: { canonical: SITE_URL },
   openGraph: {
-    title: 'مضمونة | احنا بتوع الإيجار',
+    title: 'مضمونة | معاملاتك مضمونة',
     description:
-      'منصة إيجار كل حاجة في مصر — شاليهات، عربيات، قاعات، كاميرات، ومساحات شغل. حماية كاملة + دفع سريع + دعم ٢٤/٧.',
+      'سوق مصر المضمون — أجّر، اشتري، واحجز خدمات ومطاعم وبيوتي من موردين موثوقين. حماية كاملة + دفع سريع + دعم ٢٤/٧.',
     url: SITE_URL,
     siteName: 'مضمونة',
     locale: 'ar_EG',
@@ -74,14 +74,14 @@ export const metadata: Metadata = {
         url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'مضمونة - منصة إيجار كل حاجة في مصر',
+        alt: 'مضمونة - سوق مصر المضمون',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'مضمونة | احنا بتوع الإيجار',
-    description: 'منصة إيجار كل حاجة في مصر — شاليهات، عربيات، قاعات، كاميرات.',
+    title: 'مضمونة | معاملاتك مضمونة',
+    description: 'سوق مصر المضمون — أجّر، اشتري، واحجز خدمات ومطاعم وبيوتي. حماية كاملة.',
     images: ['/opengraph-image'],
     site: '@madmonacairo',
     creator: '@madmonacairo',
@@ -112,7 +112,7 @@ const businessJsonLd = {
   name: 'مضمونة',
   alternateName: 'Madmona',
   description:
-    'منصة إيجار كل حاجة في مصر — شاليهات، عربيات، قاعات، كاميرات، ومساحات شغل. حماية كاملة، دفع سريع، ودعم ٢٤/٧.',
+    'سوق مصر المضمون — أجّر، اشتري، واحجز خدمات ومطاعم وبيوتي من موردين موثوقين. حماية كاملة، دفع سريع، ودعم ٢٤/٧.',
   slogan: 'معاملاتك مضمونة',
   url: SITE_URL,
   telephone: '+201002229982',
@@ -182,7 +182,7 @@ const websiteJsonLd = {
   url: SITE_URL,
   name: 'Madmona',
   alternateName: 'مضمونة',
-  description: 'منصة إيجار كل حاجة في مصر — شاليهات، عربيات، قاعات، كاميرات، ومساحات شغل.',
+  description: 'سوق مصر المضمون — أجّر، اشتري، واحجز خدمات ومطاعم وبيوتي من موردين موثوقين.',
   inLanguage: 'ar-EG',
   publisher: { '@id': `${SITE_URL}/#organization` },
   potentialAction: {

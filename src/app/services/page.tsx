@@ -22,7 +22,7 @@ export const metadata = {
 }
 
 const RENTAL_CATEGORIES = [
-  { slug: 'workspaces', icon: Building2, name: 'مساحات عمل', desc: 'Coworking ومكاتب وقاعات اجتماعات بالساعة أو اليوم — مناسبة للشغل والمذاكرة والميتنجز.' },
+  { slug: 'workspaces', icon: Building2, name: 'مساحات عمل', desc: 'مكاتب وقاعات اجتماعات بالساعة أو اليوم — مناسبة للشغل والميتنجز.' },
   { slug: 'properties', icon: Home, name: 'عقارات للإيجار', desc: 'شقق وفيلات وشاليهات في القاهرة، الساحل، السخنة، ومدن مصر — للإيجار اليومي أو الشهري.' },
   { slug: 'vehicles', icon: Car, name: 'مركبات ونقل', desc: 'عربيات بسائق أو بدون، موتوسيكلات، أوتوبيسات سياحية، ونقل خاص لكل المناسبات.' },
   { slug: 'media', icon: Camera, name: 'معدات ميديا', desc: 'كاميرات، عدسات، إضاءة، مايكروفونات، ومعدات تصوير احترافية للفيديو والفوتوغرافيا.' },
@@ -74,8 +74,8 @@ export default function ServicesPage() {
               <span className="block italic font-light gradient-text-green mt-2">في مكان واحد</span>
             </h1>
             <p className="text-base md:text-lg text-gray-600 mt-6 max-w-2xl mx-auto leading-relaxed">
-              مضمونة منصة مصرية بتجمع كل خدمات التأجير في مصر — من الـCoworking للعقارات للعربيات،
-              مع نظام حجز فوري، أخبار لحظية، ودعم ٢٤/٧.
+              مضمونة سوق مصري مضمون بيجمع كل اللي تأجره وتشتريه وتحجزه — عقارات، عربيات، معدات،
+              خدمات، ومطاعم، مع نظام حجز فوري، أخبار لحظية، ودعم ٢٤/٧.
             </p>
 
             {/* Quick CTA */}

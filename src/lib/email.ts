@@ -176,7 +176,7 @@ export function welcomeEmail(args: {
   const subject = 'أهلاً بيك في Madmona Marketplace'
   const text = `أهلاً ${args.customerName}،
 
-أهلاً بيك في Madmona Marketplace — منصة حجز كل ما يمكن تأجيره في مصر.
+أهلاً بيك في مضمونة — سوقك المصري المضمون. أجّر، اشتري، واحجز خدمات ومطاعم وبيوتي من موردين موثوقين.
 
 ابدأ الاستكشاف: ${args.marketplaceUrl}
 `
@@ -185,8 +185,8 @@ export function welcomeEmail(args: {
     body: `
       <p style="margin: 0 0 16px;">أهلاً <strong>${escapeHtml(args.customerName)}</strong>،</p>
       <p style="margin: 0 0 16px; line-height: 1.7;">
-        Madmona Marketplace منصة حجز مصرية لكل ما يمكن تأجيره — مساحات عمل،
-        عقارات، مركبات، معدات، فعاليات. كل حاجة من موردين معتمدين بضمان كامل.
+        مضمونة سوقك المصري المضمون — أجّر، اشتري، واحجز خدمات ومطاعم وبيوتي
+        من موردين موثوقين، بحماية كاملة على كل صفقة ودفع مستحقات سريع.
       </p>
       <p style="margin: 0 0 16px;">ابدأ بتصفح الـMarketplace.</p>
     `,

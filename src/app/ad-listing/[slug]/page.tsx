@@ -95,7 +95,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!data?.listing) return { title: 'الإعلان مش موجود' }
   return {
     title: `${data.listing.title} | مضمونة`,
-    description: data.listing.description?.slice(0, 160) ?? 'احنا بتوع الإيجار',
+    description: data.listing.description?.slice(0, 160) ?? 'معاملاتك مضمونة',
     robots: { index: false, follow: false },
   }
 }
@@ -240,7 +240,7 @@ export default async function AdListingPage({ params }: { params: Promise<{ slug
           textAlign: 'center',
           fontSize: 13,
         }}>
-          🤝 احنا بتوع الإيجار — منصة مضمونة لكل اللي بتأجره
+          🤝 معاملاتك مضمونة — سوق مصري مضمون لكل اللي تأجره وتشتريه
         </div>
       </div>
 
