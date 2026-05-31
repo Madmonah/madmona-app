@@ -597,7 +597,7 @@ const ar: Dict = {
   'about.hours': 'يومياً ٩ ص → ١١ م',
   'about.cta_title': 'جاهز تجرب؟',
   'about.cta_sub': 'يومك الأول مجاناً في مساحاتنا — بدون التزام.',
-  'about.footer_tagline': 'Your space, guaranteed · مساحتك اللي بتخصك',
+  'about.footer_tagline': 'معاملاتك مضمونة',
   // ---- coworking landing ----
   'cowork.exclusive': 'عرض حصري',
   'cowork.h1_line1': 'مساحة عملك',
@@ -1239,7 +1239,7 @@ const en: Dict = {
   'about.hours': 'Daily 9 AM → 11 PM',
   'about.cta_title': 'Ready to try?',
   'about.cta_sub': 'Your first day free in our spaces — no commitment.',
-  'about.footer_tagline': 'Your space, guaranteed',
+  'about.footer_tagline': 'Your deals, guaranteed',
   // ---- coworking landing ----
   'cowork.exclusive': 'Exclusive offer',
   'cowork.h1_line1': 'Your workspace',

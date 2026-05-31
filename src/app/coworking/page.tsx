@@ -1,10 +1,6 @@
-import CoworkingContent from '@/components/CoworkingContent'
+import { redirect } from 'next/navigation'
 
-export const metadata = {
-  title: 'كوورك مضمونة - خصم 50% للطلاب | مضمونة',
-  description: 'مساحة عمل ومذاكرة في قلب هليوبوليس. خصم 50% للطلاب الثانوية العامة (Indoor 60ج، Outdoor 32.5ج). للمحترفين 120ج/يوم.',
-}
-
+// الكو-وركينج اتلغى نهائيًا — أي لينك قديم يحوّل على الصفحة الرئيسية.
 export default function CoworkingPage() {
-  return <CoworkingContent />
+  redirect('/')
 }

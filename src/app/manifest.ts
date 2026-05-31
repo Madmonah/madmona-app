@@ -5,9 +5,9 @@ import type { MetadataRoute } from 'next'
 // chrome). Scoped to the root domain.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'مضمونة - احنا بتوع الإيجار',
+    name: 'مضمونة - معاملاتك مضمونة',
     short_name: 'مضمونة',
-    description: 'منصة إيجار كل حاجة في مصر — شاليهات، عربيات، قاعات، كاميرات، ومساحات شغل.',
+    description: 'سوقك المصري المضمون — أجّر، اشتري، واحجز خدمات ومطاعم وبيوتي. معاملاتك مضمونة.',
     start_url: '/',
     display: 'standalone',
     background_color: '#FAFAF7',
