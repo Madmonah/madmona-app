@@ -135,6 +135,11 @@ export type ProductDetails = {
   model?: string;
   shipping_available: boolean;
   shipping_cost?: number;
+  // Task 8 (May 30 2026): made-to-order (تحت التصنيع)
+  availability_type?: 'ready' | 'made_to_order';
+  made_to_order_lead_days?: number;
+  made_to_order_deposit_pct?: number;
+  made_to_order_customizable?: boolean;
 };
 
 // WHOLESALE TIERS (May 30 2026 — Task 5)
@@ -1207,86 +1212,6 @@ function StepBasics({
         </div>
       )}
 
-      {/* ─── INSURANCE ACCEPTANCE (Task 6 — May 30 2026) ───
-          Only renders for medical-clinics / medical-consultants /
-          physiotherapy / properties-clinics (or their subs). */}
-      {isMedical && (
-        <div className="mt-6 mb-3 p-4 rounded-xl bg-gradient-to-bl from-emerald-50 to-amber-50 border border-emerald-200">
-          <label className="flex items-start gap-2 text-sm font-semibold mb-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={acceptsInsurance}
-              onChange={(e) => setAcceptsInsurance(e.target.checked)}
-              className="w-4 h-4 mt-0.5 accent-[#1F6F5F]"
-            />
-            <div>
-              🏥 بتقبل تأمين صحي؟
-              <p className="text-[11px] text-gray-600 font-normal mt-0.5">
-                لو بتقبل تأمين، حدد شركات التأمين اللي بتتعامل معاها.
-              </p>
-            </div>
-          </label>
-
-          {acceptsInsurance && (
-            <div className="mt-3 space-y-3">
-              {insurancePartners.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {insurancePartners.map((p) => (
-                    <span
-                      key={p}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#1F6F5F]/30 text-xs font-medium"
-                    >
-                      🏥 {p}
-                      <button
-                        type="button"
-                        onClick={() => removePartner(p)}
-                        className="text-red-500 font-bold hover:text-red-700"
-                        aria-label={`إزالة ${p}`}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newPartner}
-                  onChange={(e) => setNewPartner(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      addPartner();
-                    }
-                  }}
-                  placeholder="مثلاً: مديلسرفيس، اللجنة، صحتك..."
-                  className={inputCls + ' text-sm flex-1'}
-                />
-                <button
-                  type="button"
-                  onClick={addPartner}
-                  disabled={!newPartner.trim()}
-                  className="py-2.5 px-4 rounded-xl bg-[#1F6F5F] text-white text-sm font-semibold disabled:opacity-50 whitespace-nowrap"
-                >
-                  + إضافة
-                </button>
-              </div>
-
-              <div className="p-3 rounded-xl bg-white border border-[#E5E5E0] text-xs text-gray-700">
-                <div className="font-semibold text-[#1F6F5F] mb-1">💳 رسم الحجز للتأمينيين</div>
-                <p>
-                  عند حجز عميل بتأمين صحي، بنأخد <strong>5%</strong> رسم خدمة من سعر الكشف (من العميل عبر انستاباي) لتأكيد الحجز.
-                </p>
-                <p className="text-[11px] text-red-700 mt-1.5 font-bold">
-                  ⚠️ الرسم ده غير قابل للاسترداد (حتى لو التأمين رفض التغطية).
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       <Nav onBack={onBack} onNext={handleNext} saving={saving} />
     </section>
@@ -1765,6 +1690,25 @@ function ProductDetailsStep({
     existingWholesale.length > 0 ? existingWholesale : []
   );
 
+  // Task 8 (May 30 2026): made-to-order (تحت التصنيع). Availability axis
+  // SEPARATE from condition. lead-time (required), seller-set deposit %
+  // (optional), customizable flag (optional). Buyer is fully refunded if the
+  // seller misses the agreed delivery date (enforced downstream in the
+  // order/refund flow). Stored in product_details; DB column mapping in
+  // claim_listing_draft is a pending backend follow-up.
+  const [availabilityType, setAvailabilityType] = useState<'ready' | 'made_to_order'>(
+    existingDetails?.availability_type ?? 'ready'
+  );
+  const [leadDays, setLeadDays] = useState<number | ''>(
+    existingDetails?.made_to_order_lead_days ?? ''
+  );
+  const [depositPct, setDepositPct] = useState<number | ''>(
+    existingDetails?.made_to_order_deposit_pct ?? ''
+  );
+  const [customizable, setCustomizable] = useState<boolean>(
+    existingDetails?.made_to_order_customizable ?? false
+  );
+
   function addTier() {
     setWholesaleTiers((prev) => [...prev, { unit: 'دستة', qty: 12, price_per_unit: 0 }]);
   }
@@ -1787,9 +1731,19 @@ function ProductDetailsStep({
       setError('حط سعر صحيح');
       return;
     }
-    if (!stockQty || stockQty < 1) {
+    if (availabilityType === 'ready' && (!stockQty || stockQty < 1)) {
       setError('الكمية لازم تكون 1 على الأقل');
       return;
+    }
+    if (availabilityType === 'made_to_order') {
+      if (!leadDays || Number(leadDays) < 1) {
+        setError('حدد مدة التجهيز بالأيام (يوم واحد على الأقل)');
+        return;
+      }
+      if (depositPct !== '' && (Number(depositPct) < 0 || Number(depositPct) > 100)) {
+        setError('نسبة العربون لازم تكون بين 0 و 100');
+        return;
+      }
     }
     // Validate wholesale tiers if enabled — require unit+qty+price for each
     let finalWholesale: WholesaleTier[] = [];
@@ -1808,7 +1762,7 @@ function ProductDetailsStep({
     }
     setError('');
     const productDetails: ProductDetails = {
-      stock_quantity: Number(stockQty),
+      stock_quantity: availabilityType === 'made_to_order' ? 0 : Number(stockQty),
       condition,
       brand: brand.trim() || undefined,
       model: model.trim() || undefined,
@@ -1817,6 +1771,15 @@ function ProductDetailsStep({
         shippingAvailable && shippingCost !== ''
           ? Number(shippingCost)
           : undefined,
+      availability_type: availabilityType,
+      made_to_order_lead_days:
+        availabilityType === 'made_to_order' ? Number(leadDays) : undefined,
+      made_to_order_deposit_pct:
+        availabilityType === 'made_to_order' && depositPct !== ''
+          ? Number(depositPct)
+          : undefined,
+      made_to_order_customizable:
+        availabilityType === 'made_to_order' ? customizable : undefined,
     };
     const existing = (draft.attributes || {}) as Record<string, unknown>;
     onSubmit({
@@ -1848,15 +1811,101 @@ function ProductDetailsStep({
         />
       </Field>
 
-      <Field label="الكمية المتوفرة" required>
-        <input
-          type="number"
-          value={stockQty}
-          onChange={(e) => setStockQty(Number(e.target.value) || 1)}
-          placeholder="1"
-          className={inputCls}
-        />
+      {/* ─── AVAILABILITY: ready vs made-to-order (Task 8 — May 30 2026) ─── */}
+      <Field label="نوع التوفّر" required>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setAvailabilityType('ready')}
+            className={`py-2.5 rounded-xl border text-sm transition-all ${
+              availabilityType === 'ready'
+                ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white font-semibold'
+                : 'bg-white border-[#E5E5E0]'
+            }`}
+          >
+            📦 متوفر / جاهز
+          </button>
+          <button
+            type="button"
+            onClick={() => setAvailabilityType('made_to_order')}
+            className={`py-2.5 rounded-xl border text-sm transition-all ${
+              availabilityType === 'made_to_order'
+                ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white font-semibold'
+                : 'bg-white border-[#E5E5E0]'
+            }`}
+          >
+            🛠️ تحت التصنيع
+          </button>
+        </div>
       </Field>
+
+      {availabilityType === 'made_to_order' && (
+        <div className="mt-1 mb-3 p-4 rounded-xl bg-gradient-to-bl from-amber-50 to-emerald-50 border border-amber-200 space-y-3">
+          <Field label="مدة التجهيز بالأيام" required>
+            <div className="relative">
+              <input
+                type="number"
+                value={leadDays}
+                onChange={(e) =>
+                  setLeadDays(e.target.value === '' ? '' : Number(e.target.value))
+                }
+                placeholder="مثلاً: 7"
+                className={inputCls + ' pl-14'}
+              />
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                يوم
+              </span>
+            </div>
+          </Field>
+
+          <Field label="عربون مقدّم (% من السعر) — اختياري">
+            <div className="relative">
+              <input
+                type="number"
+                value={depositPct}
+                onChange={(e) =>
+                  setDepositPct(e.target.value === '' ? '' : Number(e.target.value))
+                }
+                placeholder="مثلاً: 30"
+                className={inputCls + ' pl-10'}
+              />
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                %
+              </span>
+            </div>
+          </Field>
+
+          <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <input
+              type="checkbox"
+              checked={customizable}
+              onChange={(e) => setCustomizable(e.target.checked)}
+              className="w-4 h-4 accent-[#1F6F5F]"
+            />
+            <span>✏️ بيتفصّل حسب طلب العميل (قابل للتخصيص)</span>
+          </label>
+
+          <div className="p-3 rounded-xl bg-white border border-[#E5E5E0] text-xs text-gray-700">
+            <div className="font-semibold text-[#1F6F5F] mb-1">🛡️ حماية المشتري</div>
+            <p>
+              لو معدّتش مدة التجهيز ومسلّمتش في الميعاد المتفق عليه، العميل بياخد
+              <strong> فلوسه كاملة</strong> رجوع (العربون وأي مبلغ مدفوع).
+            </p>
+          </div>
+        </div>
+      )}
+
+      {availabilityType === 'ready' && (
+        <Field label="الكمية المتوفرة" required>
+          <input
+            type="number"
+            value={stockQty}
+            onChange={(e) => setStockQty(Number(e.target.value) || 1)}
+            placeholder="1"
+            className={inputCls}
+          />
+        </Field>
+      )}
 
       <Field label="حالة المنتج" required>
         <div className="grid grid-cols-2 gap-2">
@@ -2484,6 +2533,87 @@ function StepPricing({
             <p className="text-[11px] text-gray-500 text-center mt-3">
               اختياري — تقدر تتخطاها لو الخدمة سعر واحد بدون إضافات
             </p>
+          )}
+        </div>
+      )}
+
+      {/* ─── INSURANCE ACCEPTANCE (Task 6 — May 30 2026) ───
+          Only renders for medical-clinics / medical-consultants /
+          physiotherapy / properties-clinics (or their subs). */}
+      {isMedical && (
+        <div className="mt-6 mb-3 p-4 rounded-xl bg-gradient-to-bl from-emerald-50 to-amber-50 border border-emerald-200">
+          <label className="flex items-start gap-2 text-sm font-semibold mb-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={acceptsInsurance}
+              onChange={(e) => setAcceptsInsurance(e.target.checked)}
+              className="w-4 h-4 mt-0.5 accent-[#1F6F5F]"
+            />
+            <div>
+              🏥 بتقبل تأمين صحي؟
+              <p className="text-[11px] text-gray-600 font-normal mt-0.5">
+                لو بتقبل تأمين، حدد شركات التأمين اللي بتتعامل معاها.
+              </p>
+            </div>
+          </label>
+
+          {acceptsInsurance && (
+            <div className="mt-3 space-y-3">
+              {insurancePartners.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {insurancePartners.map((p) => (
+                    <span
+                      key={p}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#1F6F5F]/30 text-xs font-medium"
+                    >
+                      🏥 {p}
+                      <button
+                        type="button"
+                        onClick={() => removePartner(p)}
+                        className="text-red-500 font-bold hover:text-red-700"
+                        aria-label={`إزالة ${p}`}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newPartner}
+                  onChange={(e) => setNewPartner(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addPartner();
+                    }
+                  }}
+                  placeholder="مثلاً: مديلسرفيس، اللجنة، صحتك..."
+                  className={inputCls + ' text-sm flex-1'}
+                />
+                <button
+                  type="button"
+                  onClick={addPartner}
+                  disabled={!newPartner.trim()}
+                  className="py-2.5 px-4 rounded-xl bg-[#1F6F5F] text-white text-sm font-semibold disabled:opacity-50 whitespace-nowrap"
+                >
+                  + إضافة
+                </button>
+              </div>
+
+              <div className="p-3 rounded-xl bg-white border border-[#E5E5E0] text-xs text-gray-700">
+                <div className="font-semibold text-[#1F6F5F] mb-1">💳 رسم الحجز للتأمينيين</div>
+                <p>
+                  عند حجز عميل بتأمين صحي، بنأخد <strong>5%</strong> رسم خدمة من سعر الكشف (من العميل عبر انستاباي) لتأكيد الحجز.
+                </p>
+                <p className="text-[11px] text-red-700 mt-1.5 font-bold">
+                  ⚠️ الرسم ده غير قابل للاسترداد — بيضمن جدية حجز العميل (مش بيترجع حتى لو العميل مجاش).
+                </p>
+              </div>
+            </div>
           )}
         </div>
       )}
