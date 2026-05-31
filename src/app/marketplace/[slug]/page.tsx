@@ -45,6 +45,7 @@ interface ListingDetail {
   model_name: string | null
   shipping_available: boolean | null
   shipping_cost: number | string | null
+  branches: { name?: string; city?: string; address?: string; phone?: string }[] | null
   category: { name_ar: string; name_en?: string | null; icon: string | null; track: string | null } | null
   supplier: {
     id: string
@@ -613,6 +614,35 @@ export default function ListingDetailPage() {
                       </span>
                     </div>
                   )}
+                </div>
+              </section>
+            )}
+
+            {Array.isArray(listing.branches) && listing.branches.length > 0 && (
+              <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up delay-50">
+                <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-[#2FA084]" />
+                  فروعنا
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {listing.branches.map((b, i) => (
+                    <div key={i} className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
+                      <div className="flex items-center gap-2 mb-1">
+                        <MapPin className="w-3.5 h-3.5 text-[#1F6F5F] flex-shrink-0" />
+                        <span className="text-sm font-bold text-gray-900">{b.name || `فرع ${i + 1}`}</span>
+                      </div>
+                      {(b.address || b.city) && (
+                        <div className="text-xs text-gray-500 leading-relaxed pr-5">
+                          {[b.address, b.city].filter(Boolean).join(' · ')}
+                        </div>
+                      )}
+                      {b.phone && (
+                        <a href={`tel:${b.phone}`} className="inline-block mt-2 pr-5 text-xs font-semibold text-[#1F6F5F] hover:underline" dir="ltr">
+                          {b.phone}
+                        </a>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </section>
             )}

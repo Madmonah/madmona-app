@@ -249,6 +249,7 @@ interface DraftPayload {
     accepts_insurance?: boolean;
     insurance_partners?: string[];
     insurance_deposit_pct?: number;
+    branches?: { name?: string; city?: string; address?: string; phone?: string }[];
   };
 }
 
@@ -1014,6 +1015,19 @@ function StepBasics({
   const [city, setCity] = useState(draft.city || '');
   const [district, setDistrict] = useState(draft.district || '');
 
+  // Mohamed May 31 2026: multi-branch — one listing can cover several branches
+  type Branch = { name?: string; city?: string; address?: string; phone?: string };
+  const [branches, setBranches] = useState<Branch[]>(() => {
+    const b = (draft.attributes as { branches?: unknown } | undefined)?.branches;
+    return Array.isArray(b) ? (b as Branch[]) : [];
+  });
+  const addBranch = () =>
+    setBranches((p) => [...p, { name: '', city: '', address: '', phone: '' }]);
+  const updateBranch = (i: number, key: keyof Branch, val: string) =>
+    setBranches((p) => p.map((b, idx) => (idx === i ? { ...b, [key]: val } : b)));
+  const removeBranch = (i: number) =>
+    setBranches((p) => p.filter((_, idx) => idx !== i));
+
   // Mohamed May 30 2026: districts dropdown for top 3 governorates (Cairo/Giza/Alex)
   type District = { id: string; name_ar: string; name_en: string | null; slug: string; sort_order: number };
   const [districtsList, setDistrictsList] = useState<District[]>([]);
@@ -1056,7 +1070,7 @@ function StepBasics({
     const init = (draft.attributes || {}) as Record<string, unknown>;
     const rest: Record<string, unknown> = {};
     for (const k of Object.keys(init)) {
-      if (k !== 'addons') rest[k] = init[k];
+      if (k !== 'addons' && k !== 'branches') rest[k] = init[k];
     }
     return rest;
   });
@@ -1118,6 +1132,16 @@ function StepBasics({
     const existingAddons = (draft.attributes as { addons?: unknown } | undefined)?.addons;
     const finalAttrs: Record<string, unknown> = { ...attrValues };
     if (existingAddons !== undefined) finalAttrs.addons = existingAddons;
+
+    const cleanBranches = branches
+      .map((b) => ({
+        name: (b.name || '').trim(),
+        city: (b.city || '').trim(),
+        address: (b.address || '').trim(),
+        phone: (b.phone || '').trim(),
+      }))
+      .filter((b) => b.name || b.address || b.phone);
+    if (cleanBranches.length > 0) finalAttrs.branches = cleanBranches;
 
     onSubmit({ title, description, city, district, attributes: finalAttrs });
   }
@@ -1212,6 +1236,70 @@ function StepBasics({
         </div>
       )}
 
+
+      {/* Multi-branch repeater (May 31 2026): one listing, multiple branches */}
+      <div className="mt-8 pt-6 border-t border-[#E5E5E0]">
+        <h3 className="text-base font-semibold mb-1">عندك أكتر من فرع؟ (اختياري)</h3>
+        <p className="text-xs text-gray-500 mb-4">
+          ضيف فروعك هنا بدل ما تعمل إعلان لكل فرع لوحده — هتظهر كلها في نفس الإعلان.
+        </p>
+
+        {branches.map((b, i) => (
+          <div key={i} className="mb-4 p-4 rounded-xl bg-[#F5F4F0] border border-[#E5E5E0]">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-bold text-[#1F6F5F]">فرع {i + 1}</span>
+              <button
+                type="button"
+                onClick={() => removeBranch(i)}
+                className="text-xs font-semibold text-red-600 hover:text-red-700"
+              >
+                حذف
+              </button>
+            </div>
+            <input
+              type="text"
+              value={b.name || ''}
+              onChange={(e) => updateBranch(i, 'name', e.target.value)}
+              placeholder="اسم الفرع (مثلاً: فرع مدينة نصر)"
+              className={`${inputCls} mb-2`}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+              <select
+                value={b.city || ''}
+                onChange={(e) => updateBranch(i, 'city', e.target.value)}
+                className={inputCls}
+              >
+                <option value="">المحافظة</option>
+                {CITIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <input
+                type="tel"
+                value={b.phone || ''}
+                onChange={(e) => updateBranch(i, 'phone', e.target.value)}
+                placeholder="تليفون الفرع (اختياري)"
+                className={inputCls}
+              />
+            </div>
+            <input
+              type="text"
+              value={b.address || ''}
+              onChange={(e) => updateBranch(i, 'address', e.target.value)}
+              placeholder="العنوان بالتفصيل"
+              className={inputCls}
+            />
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={addBranch}
+          className="w-full py-2.5 rounded-xl border-2 border-dashed border-[#2FA084] text-[#1F6F5F] text-sm font-semibold hover:bg-[#F0FAF7] transition"
+        >
+          + ضيف فرع
+        </button>
+      </div>
 
       <Nav onBack={onBack} onNext={handleNext} saving={saving} />
     </section>
