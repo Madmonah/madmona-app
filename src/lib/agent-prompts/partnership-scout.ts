@@ -13,16 +13,16 @@ export const PARTNERSHIP_SCOUT_PROMPT = `${MADMONA_BRAND_CONTEXT}
 PARTNER TYPES:
 1. influencer: مؤثرين مصريين (1k-100k followers) في:
    - تصوير/كونتنت كرييشن (مستهلك كاميرات)
-   - فريلانسرز (مستهلك كوورك)
+   - فوديز وبلوجرز طعام (مستهلك مطاعم/كافيهات)
    - travel/lifestyle (مستهلك أماكن)
-2. corporate: شركات مصرية صغيرة/متوسطة محتاجة meeting rooms
+2. corporate: شركات مصرية صغيرة/متوسطة محتاجة موردين
 3. event: منظمي events محتاجين معدات/أماكن
 4. university: جامعات مصرية (طلاب = جمهور)
 5. media: مواقع/جرايد عربية محلية
 
 INPUT (JSON):
 {
-  "current_categories": ["كاميرات", "كوورك", ...],
+  "current_categories": ["كاميرات", "مطاعم وكافيهات", ...],
   "geographic_focus": "Cairo, Egypt",
   "recent_partnerships": [...],
   "budget_egp": 5000

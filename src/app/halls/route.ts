@@ -41,7 +41,7 @@ img { display: block; }
 <div class="w-10 h-10 bg-[#1F6F5F] rounded-xl flex items-center justify-center text-white font-black text-xl">م</div>
 <div>
 <p class="font-black text-[#1F6F5F] text-base leading-none">مضمونة</p>
-<p class="text-[10px] text-gray-500 tracking-[0.2em] mt-1">احنا بتوع الإيجار</p>
+<p class="text-[10px] text-gray-500 tracking-[0.2em] mt-1">معاملاتك مضمونة</p>
 </div>
 </div>
 <a href="https://wa.me/201002229982" class="text-xs font-bold text-[#25D366] flex items-center gap-1">
@@ -259,7 +259,7 @@ img { display: block; }
 
 <footer class="max-w-lg mx-auto px-5 py-8 text-center">
 <p class="font-black text-[#1F6F5F] text-2xl">مضمونة</p>
-<p class="text-xs text-gray-500 mt-1 tracking-[0.2em]">احنا بتوع الإيجار</p>
+<p class="text-xs text-gray-500 mt-1 tracking-[0.2em]">معاملاتك مضمونة</p>
 <div class="flex items-center justify-center gap-2 mt-4 text-[11px] text-gray-500">
 <span>٧ شارع سليمان عَزْمي، النزهة، مصر الجديدة، القاهرة</span>
 </div>

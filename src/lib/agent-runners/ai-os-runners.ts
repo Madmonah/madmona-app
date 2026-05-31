@@ -156,7 +156,7 @@ export async function runReelScriptWriter(args?: { listingId?: string }): Promis
 export async function runCarouselDesigner(args?: { topic?: string }): Promise<Record<string, unknown>> {
   const topics = [
     '5 حاجات لازم تعرفها قبل ما تأجر كاميرا',
-    'إزاي تختار أفضل مساحة كوورك',
+    'إزاي تختار مطعم أو كافيه مناسب لمناسبتك',
     'الفرق بين الإيجار اليومي والشهري',
     'علامات إعلان إيجار محترم vs نصب',
   ]

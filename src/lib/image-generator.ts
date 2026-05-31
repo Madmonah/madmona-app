@@ -86,7 +86,7 @@ function buildPhotoBackedSVG(params: GenerateImageParams & { photoUrl: string })
   <!-- Bottom CTA strip -->
   <rect x="0" y="${H - 140}" width="${W}" height="140" fill="${COLORS.green}" opacity="0.95"/>
   <text x="${W/2}" y="${H - 80}" font-family="Tahoma, Arial" font-size="40" font-weight="bold" fill="${COLORS.ivory}" text-anchor="middle" direction="rtl">
-    احنا بتوع الإيجار
+    معاملاتك مضمونة
   </text>
   <text x="${W/2}" y="${H - 35}" font-family="Tahoma, Arial" font-size="20" fill="${COLORS.gold}" text-anchor="middle" letter-spacing="3">
     MADMONACAIRO.COM
@@ -151,7 +151,7 @@ function buildPostSVG(params: GenerateImageParams): string {
   <!-- Bottom slogan -->
   <rect x="0" y="${H - 120}" width="${W}" height="120" fill="${COLORS.gold}" opacity="0.15"/>
   <text x="${W/2}" y="${H - 70}" font-family="Tahoma, Arial" font-size="42" font-weight="bold" fill="${COLORS.gold}" text-anchor="middle" direction="rtl">
-    احنا بتوع الإيجار
+    معاملاتك مضمونة
   </text>
   <text x="${W/2}" y="${H - 30}" font-family="Tahoma, Arial" font-size="22" fill="${COLORS.ivory}" text-anchor="middle" opacity="0.7">
     madmonacairo.com

@@ -28,7 +28,7 @@ export async function runWhatsappBroadcasterReal(): Promise<Record<string, unkno
     userMessage: JSON.stringify({
       audience_segment: 'active_customers',
       audience_size: 50,
-      trending_categories: ['كاميرات', 'كوورك', 'سيارات'],
+      trending_categories: ['كاميرات', 'مطاعم وكافيهات', 'سيارات'],
     }),
     maxTokens: 1024,
     temperature: 0.7,
@@ -179,7 +179,7 @@ export async function runSupplierOnboardingReal(): Promise<Record<string, unknow
 
 محتاج مساعدة؟ رد على الرسالة دي وأنا معاك.
 
-احنا بتوع الإيجار 🤝`
+معاملاتك مضمونة 🤝`
 
     try {
       const result = await sendText({
@@ -385,7 +385,7 @@ export async function runColdLeadsOutreachReal(): Promise<Record<string, unknown
 
 تحبوا نتحدث؟ ابعتولنا "نعم" نبدأ.
 
-احنا بتوع الإيجار 🤝
+معاملاتك مضمونة 🤝
 01002229982`
 
     try {

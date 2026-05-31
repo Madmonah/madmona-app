@@ -37,7 +37,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   apartments: 'شقق وعقارات',
   cars: 'سيارات',
   cameras: 'كاميرات ومعدات تصوير',
-  coworking: 'مساحة عمل/كوورك',
+  restaurants: 'مطاعم وكافيهات',
   event: 'معدات فعاليات',
   other: 'حاجة تانية',
 }
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
 
 ابعتلي أي سؤال وأنا هرد فوراً 💬
 
-— احنا بتوع الإيجار 🤝`
+— معاملاتك مضمونة 🤝`
 
         const convId = await upsertConversation({
           phone,

@@ -356,7 +356,7 @@ export async function runPartnershipScout(): Promise<Record<string, unknown>> {
   const text = await callClaude({
     systemPrompt: PARTNERSHIP_SCOUT_PROMPT,
     userMessage: JSON.stringify({
-      current_categories: ['كاميرات', 'كوورك', 'شقق', 'سيارات', 'معدات تصوير'],
+      current_categories: ['كاميرات', 'مطاعم وكافيهات', 'شقق', 'سيارات', 'معدات تصوير'],
       geographic_focus: 'Cairo, Egypt',
       budget_egp: 5000,
       our_audience: 'فريلانسرز، صناع محتوى، شركات صغيرة',

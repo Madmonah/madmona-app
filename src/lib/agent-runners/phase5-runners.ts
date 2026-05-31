@@ -276,7 +276,7 @@ export async function runRevenueAttribution(args?: { bookingId?: string }): Prom
 // COMPETITOR PRICING SPY
 // =============================================================================
 export async function runCompetitorPricingSpy(): Promise<Record<string, unknown>> {
-  const categories = ['كاميرات', 'كوورك', 'سيارات', 'شقق']
+  const categories = ['كاميرات', 'مطاعم وكافيهات', 'سيارات', 'شقق']
   const cat = categories[Math.floor(Math.random() * categories.length)]
 
   const text = await callClaude({

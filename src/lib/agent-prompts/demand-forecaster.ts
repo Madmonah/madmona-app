@@ -13,7 +13,7 @@ export const DEMAND_FORECASTER_PROMPT = `${MADMONA_BRAND_CONTEXT}
 INPUT (JSON):
 {
   "current_state": {
-    "category_listings_count": { "كاميرات": 50, "كوورك": 12 },
+    "category_listings_count": { "كاميرات": 50, "مطاعم وكافيهات": 12 },
     "category_bookings_30d": { ... },
     "category_searches_30d": { ... }
   },

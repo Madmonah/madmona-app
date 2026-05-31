@@ -25,14 +25,14 @@ DESIGN RULES PER SLIDE:
 INPUT (JSON):
 {
   "topic": "الموضوع الرئيسي",
-  "category": "كاميرات | شقق | كوورك | عام",
+  "category": "كاميرات | شقق | مطاعم وكافيهات | عام",
   "goal": "educate | promote | engage | convert"
 }
 
 OUTPUT (JSON only):
 {
   "title": "اسم الـ carousel للـ admin",
-  "topic_pillar": "Marketplace | Coworking | Brand | Education",
+  "topic_pillar": "Marketplace | Restaurants | Brand | Education",
   "slides": [
     {
       "slide_number": 1,

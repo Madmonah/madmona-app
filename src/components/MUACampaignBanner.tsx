@@ -168,7 +168,7 @@ function MUABannerInner() {
         </div>
 
         <p className="text-center mt-3 text-[10px] text-white/60 tracking-wider">
-          أو اتفرّجي حر في الموقع 👇 احنا بتوع الإيجار
+          أو اتفرّجي حر في الموقع 👇 معاملاتك مضمونة
         </p>
       </div>
 

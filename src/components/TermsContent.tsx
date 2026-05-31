@@ -48,11 +48,9 @@ export default function TermsContent() {
               </Section>
 
               <Section title="1. Definition of the service">
-                <p>The Madmona platform offers two services:</p>
-                <ul>
-                  <li><strong>Madmona Spaces:</strong> booking the coworking spaces owned by Madmona in Heliopolis</li>
-                  <li><strong>Madmona Marketplace:</strong> a digital marketplace connecting customers with verified suppliers to book properties, vehicles, equipment, and event spaces</li>
-                </ul>
+                <p>
+                  Madmona is a guaranteed digital marketplace that connects customers with verified suppliers across Egypt. The platform covers rentals (properties, vehicles, equipment, halls, workspaces), buying and selling, services (beauty, professional, event organization), restaurants and cafes, and more — all with full protection on every transaction, fast payouts to suppliers, and 24/7 support.
+                </p>
               </Section>
 
               <Section title="2. Registration and account">
@@ -148,12 +146,8 @@ export default function TermsContent() {
 
               <Section title="١. تعريف الخدمة">
                 <p>
-                  منصة مضمونة بتوفّر خدمتين:
+                  مضمونة هي سوق رقمي مضمون بيربط العملاء بموردين معتمدين في مصر. المنصة بتغطي إيجار (عقارات، مركبات، معدات، قاعات، مساحات شغل)، بيع وشراء، خدمات (بيوتي، مهنية، تنظيم فعاليات)، مطاعم وكافيهات وأكتر — كله بحماية كاملة على كل صفقة، دفع مستحقات سريع للموردين، ودعم على مدار الساعة.
                 </p>
-                <ul>
-                  <li><strong>مضمونة Spaces:</strong> حجز مساحات العمل المملوكة لمضمونة في مصر الجديدة</li>
-                  <li><strong>Madmona Marketplace:</strong> سوق رقمي يربط العملاء بموردين معتمدين لحجز عقارات، مركبات، معدات، ومساحات تنظيم فعاليات</li>
-                </ul>
               </Section>
 
               <Section title="٢. التسجيل والحساب">

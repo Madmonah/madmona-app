@@ -109,7 +109,7 @@ async function runSupplierHunter(): Promise<Record<string, unknown>> {
   const text = await callClaude({
     systemPrompt: SUPPLIER_HUNTER_PROMPT,
     userMessage: JSON.stringify({
-      current_categories: ['كاميرات', 'شقق', 'سيارات', 'كوورك'],
+      current_categories: ['كاميرات', 'شقق', 'سيارات', 'مطاعم وكافيهات'],
       our_supplier_count: 6, our_listing_count: 212,
     }),
     maxTokens: 1500, temperature: 0.7,
@@ -166,7 +166,7 @@ async function runWhatsappBroadcaster(): Promise<Record<string, unknown>> {
     systemPrompt: WHATSAPP_BROADCASTER_PROMPT,
     userMessage: JSON.stringify({
       audience_segment: 'active_customers', audience_size: 100,
-      trending_categories: ['كاميرات', 'كوورك'],
+      trending_categories: ['كاميرات', 'مطاعم وكافيهات'],
     }),
     maxTokens: 1024, temperature: 0.7,
   })
