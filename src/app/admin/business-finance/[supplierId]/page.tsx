@@ -46,6 +46,7 @@ const supabase = createClient(
 type Supplier = {
   id: string
   business_name: string
+  logo_url: string | null
   industry: string | null
   business_type: string
   contract_status: string
@@ -112,7 +113,7 @@ export default function BusinessFinancePage({
     // @ts-expect-error
     const { data: sup } = await supabase
       .from('suppliers')
-      .select('id, business_name, industry, business_type, contract_status, commission_rate, commission_extra_rate, contact_phone')
+      .select('id, business_name, logo_url, industry, business_type, contract_status, commission_rate, commission_extra_rate, contact_phone')
       .eq('id', supplierId)
       .single()
     setSupplier(sup as Supplier)
@@ -246,20 +247,29 @@ export default function BusinessFinancePage({
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F]">
-                  {isMadmona ? 'مضمونة · الإدارة الداخلية' : 'B2B PARTNER · FINANCE'}
+            <div className="flex items-center gap-3">
+              {supplier.logo_url && (
+                <img
+                  src={supplier.logo_url}
+                  alt={supplier.business_name}
+                  className="w-12 h-12 md:w-14 md:h-14 rounded-2xl object-cover border border-gray-100 shadow-sm shrink-0"
+                />
+              )}
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F]">
+                    {isMadmona ? 'مضمونة · الإدارة الداخلية' : 'لوحة الإدارة · مضمونة'}
+                  </p>
+                  <ContractBadge status={supplier.contract_status} />
+                </div>
+                <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">
+                  {supplier.business_name}
+                </h1>
+                <p className="text-sm text-[#6B7280] mt-1">
+                  {supplier.industry === 'beauty_salon' ? 'صالون تجميل' : supplier.industry === 'contracting' ? 'مقاولات · فئة أولى' : supplier.industry || ''} ·{' '}
+                  {branches.length} فروع · {supplier.contact_phone}
                 </p>
-                <ContractBadge status={supplier.contract_status} />
               </div>
-              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">
-                {supplier.business_name}
-              </h1>
-              <p className="text-sm text-[#6B7280] mt-1">
-                {supplier.industry === 'beauty_salon' ? 'صالون تجميل' : supplier.industry === 'contracting' ? 'مقاولات · فئة أولى' : supplier.industry || ''} ·{' '}
-                {branches.length} فروع · {supplier.contact_phone}
-              </p>
             </div>
             <button
               onClick={loadAll}
