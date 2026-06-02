@@ -37,6 +37,9 @@ const inter = Inter({
 // so switching to English never flashes RTL first.
 const NO_FLASH_LANG = `(function(){try{var m=document.cookie.match(/(?:^|; )madmona_lang=(ar|en)/);var l=(localStorage.getItem('madmona_lang')||(m&&m[1])||'ar');var e=document.documentElement;e.lang=l;e.dir=(l==='en'?'ltr':'rtl');}catch(e){}})();`
 
+// Metricool web analytics tracker (brand hash) — loads be.js then registers the page view.
+const METRICOOL_TRACKER = `function loadScript(a){var b=document.getElementsByTagName("head")[0],c=document.createElement("script");c.type="text/javascript",c.src="https://tracker.metricool.com/resources/be.js",c.onreadystatechange=a,c.onload=a,b.appendChild(c)}loadScript(function(){beTracker.t({hash:"c9accfe580e3aaee641686f8f516bdcd"})});`
+
 export const metadata: Metadata = {
   title: {
     default: 'مضمونة | معاملاتك مضمونة — تأجير · بيع · خدمات · مطاعم · بيوتي',
@@ -200,6 +203,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
+        <script dangerouslySetInnerHTML={{ __html: METRICOOL_TRACKER }} />
       </head>
       <body className={`${tajawal.className} bg-[#FAFAF7] text-gray-900 antialiased`}>
         <LanguageProvider>
