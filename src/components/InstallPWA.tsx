@@ -108,15 +108,15 @@ export default function InstallPWA() {
           <Smartphone className="w-5 h-5 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-white text-sm leading-tight">حمّل تطبيق مضمونة</p>
-          <p className="text-white/80 text-xs mt-0.5">احجز أسرع · يشتغل أوفلاين · بدون متجر تطبيقات</p>
+          <p className="font-bold text-white text-sm leading-tight">حمّل تطبيق مضمونة · Install Madmona</p>
+          <p className="text-white/80 text-xs mt-0.5">احجز أسرع · يشتغل أوفلاين · Faster booking, works offline</p>
         </div>
         <button
           onClick={handleInstall}
           className="bg-white text-[#1F6F5F] px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-white/90 flex-shrink-0"
         >
           <Download className="w-3.5 h-3.5" />
-          تثبيت
+          تثبيت · Install
         </button>
         <button
           onClick={handleDismiss}
@@ -142,29 +142,29 @@ export default function InstallPWA() {
                 <Smartphone className="w-5 h-5 text-[#1F6F5F]" />
               </div>
               <div>
-                <p className="font-bold text-gray-900">تثبيت على الآيفون</p>
-                <p className="text-xs text-gray-500">٣ خطوات بسيطة</p>
+                <p className="font-bold text-gray-900">تثبيت على الآيفون · Install on iPhone</p>
+                <p className="text-xs text-gray-500">٣ خطوات · 3 easy steps</p>
               </div>
             </div>
             <ol className="space-y-3 text-sm text-gray-700 mb-5">
               <li className="flex gap-3">
                 <span className="w-6 h-6 rounded-full bg-[#1F6F5F]/10 text-[#1F6F5F] flex items-center justify-center text-xs font-bold flex-shrink-0">١</span>
-                <span>اضغط زرار المشاركة <span className="inline-block px-1.5 py-0.5 bg-gray-100 rounded text-xs">⬆︎</span> أسفل الشاشة</span>
+                <span>اضغط زرار المشاركة <span className="inline-block px-1.5 py-0.5 bg-gray-100 rounded text-xs">⬆︎</span> · Tap the Share button</span>
               </li>
               <li className="flex gap-3">
                 <span className="w-6 h-6 rounded-full bg-[#1F6F5F]/10 text-[#1F6F5F] flex items-center justify-center text-xs font-bold flex-shrink-0">٢</span>
-                <span>اختر &quot;إضافة إلى الشاشة الرئيسية&quot;</span>
+                <span>اختر &quot;إضافة إلى الشاشة الرئيسية&quot; · Add to Home Screen</span>
               </li>
               <li className="flex gap-3">
                 <span className="w-6 h-6 rounded-full bg-[#1F6F5F]/10 text-[#1F6F5F] flex items-center justify-center text-xs font-bold flex-shrink-0">٣</span>
-                <span>اضغط &quot;إضافة&quot; — التطبيق هيظهر زي أي تطبيق عادي</span>
+                <span>اضغط &quot;إضافة&quot; · Tap Add — done!</span>
               </li>
             </ol>
             <button
               onClick={() => setShowIOSTip(false)}
               className="w-full bg-[#1F6F5F] text-white py-3 rounded-xl font-bold"
             >
-              تمام
+              تمام · Got it
             </button>
           </div>
         </div>

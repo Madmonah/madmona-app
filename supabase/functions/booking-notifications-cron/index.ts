@@ -61,6 +61,9 @@ serve(async (req) => {
       const cairoHour = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Africa/Cairo', hour: 'numeric', hour12: false }).format(new Date()))
       const greeting = (cairoHour >= 5 && cairoHour < 12) ? 'صباح الخير' : 'مساء الخير'
       const hello = `${greeting} يا ${firstName}`
+      // English date/time for the bilingual (AR+EN) confirm template (v2)
+      const dateEn = scheduledAt.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+      const timeEn = scheduledAt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true })
 
       const phone = notif.customer_phone.replace(/[^0-9]/g, '').replace(/^0/, '20')
       const templateName = TEMPLATES[notif.notification_type] || TEMPLATES.confirmation
@@ -73,6 +76,17 @@ serve(async (req) => {
           { type: 'text', text: hello },
           { type: 'text', text: serviceName },
           { type: 'text', text: `${APP_BASE_URL}/review/${notif.booking_id}` },
+        ]
+      } else if (templateName.endsWith('v2')) {
+        // Bilingual (AR + EN) confirmation template — 6 params:
+        // {{1}} greeting · {{2}} name · {{3}} service · {{4}} date · {{5}} time · {{6}} business
+        bodyParams = [
+          { type: 'text', text: greeting },
+          { type: 'text', text: firstName },
+          { type: 'text', text: serviceName },
+          { type: 'text', text: `${dateStr} · ${dateEn}` },
+          { type: 'text', text: `${timeStr} · ${timeEn}` },
+          { type: 'text', text: businessName },
         ]
       } else {
         bodyParams = [

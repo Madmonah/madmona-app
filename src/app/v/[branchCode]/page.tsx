@@ -9,6 +9,7 @@ import {
   Clock, Scissors, Store, Search, Plus,
 } from 'lucide-react'
 import { useMadmonaAuth, AccountGate } from '@/components/AccountGate'
+import InstallPWA from '@/components/InstallPWA'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -65,6 +66,7 @@ export default function VisitHub({ params }: { params: { branchCode: string } })
 `}</style>
       <Hero biz={biz} branchName={branch.name} tagline={tagline} authed={authed} name={profile?.name} gallery={branding?.gallery || []} logo={branding?.logo_url} />
       <main className="max-w-md mx-auto px-4 -mt-7 pb-10 relative z-10 md-fade">
+        <InstallPWA />
         {authed
           ? <Hub branchCode={branchCode} info={info} branding={branding} router={router} />
           : <AccountGate onAuthed={(p) => { setAuthed(true); setProfile(p) }} subtitle="إنتي في الفرع؟ اعملي حسابك في ثانية وابدئي تحجزي وتقيّمي وتاخدي عروض — كود على واتساب وخلاص." />}
