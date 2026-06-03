@@ -13,6 +13,7 @@ import { playNotificationSound, showBrowserNotification, requestNotificationPerm
 import {
   Loader2, Delete, LogIn, LogOut, MapPin, AlertCircle, CheckCircle2, Clock,
   ClipboardList, Circle, ArrowRight, Calendar, Coins, Gift,
+  CalendarDays, Wallet, Send, X,
 } from 'lucide-react'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -168,6 +169,32 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
 
   function closeSelf() { setSelfView(null); setSelfPin('') }
 
+  async function refreshSelfNow() {
+    // @ts-expect-error rpc typing
+    const { data } = await supabase.rpc('employee_self_view_by_pin', { p_branch_code: branchCode, p_phone_or_pin: selfPin })
+    if (data?.ok) setSelfView((prev: any) => prev ? { ...data, justClockedIn: prev.justClockedIn } : data)
+  }
+
+  async function submitLeave(p: any) {
+    // @ts-expect-error rpc typing
+    const { data } = await supabase.rpc('employee_request_leave_by_pin', {
+      p_branch_code: branchCode, p_phone_or_pin: selfPin,
+      p_leave_type: p.type, p_start_date: p.start, p_end_date: p.end, p_reason: p.reason || null,
+    })
+    if (data?.ok) await refreshSelfNow()
+    return data
+  }
+
+  async function submitAdvance(p: any) {
+    // @ts-expect-error rpc typing
+    const { data } = await supabase.rpc('employee_request_advance_by_pin', {
+      p_branch_code: branchCode, p_phone_or_pin: selfPin,
+      p_amount: p.amount, p_reason: p.reason || null,
+    })
+    if (data?.ok) await refreshSelfNow()
+    return data
+  }
+
   if (loading) return <div className="min-h-screen bg-[#1F6F5F] flex items-center justify-center"><Loader2 className="w-9 h-9 text-white animate-spin" /></div>
 
   if (!branch) return (
@@ -196,7 +223,7 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
         {result ? (
           <ResultCard result={result} onDone={() => setResult(null)} />
         ) : selfView ? (
-          <SelfViewCard view={selfView} onToggle={toggleTask} onClose={closeSelf} liveBanner={liveBanner} />
+          <SelfViewCard view={selfView} onToggle={toggleTask} onClose={closeSelf} liveBanner={liveBanner} onSubmitLeave={submitLeave} onSubmitAdvance={submitAdvance} />
         ) : (
           <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-[0_10px_40px_-12px_rgba(31,111,95,0.25)]">
             <p className="text-center text-sm font-bold text-[#1A2E26] mb-1">سجّل دخولك أو خروجك</p>
@@ -292,11 +319,48 @@ function fmtTime(iso: string | null) {
   try { return new Date(iso).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) } catch { return '' }
 }
 
-function SelfViewCard({ view, onToggle, onClose, liveBanner }: any) {
+function SelfViewCard({ view, onToggle, onClose, liveBanner, onSubmitLeave, onSubmitAdvance }: any) {
   const emp = view.employee || {}
   const att = view.attendance
   const tasks: any[] = view.tasks || []
   const done = tasks.filter((t) => t.status === 'completed').length
+  const bal = view.leave_balance || {}
+  const reqList = view.requests || { leave: [], advances: [] }
+  const today = new Date().toISOString().slice(0, 10)
+  const [form, setForm] = useState<null | 'leave' | 'advance'>(null)
+  const [lvType, setLvType] = useState('annual')
+  const [lvStart, setLvStart] = useState('')
+  const [lvEnd, setLvEnd] = useState('')
+  const [lvReason, setLvReason] = useState('')
+  const [advAmount, setAdvAmount] = useState('')
+  const [advReason, setAdvReason] = useState('')
+  const [reqBusy, setReqBusy] = useState(false)
+  const [reqMsg, setReqMsg] = useState<null | { ok: boolean; text: string }>(null)
+  const leaveTypeAr = (t: string) => t === 'annual' ? 'سنوية' : t === 'casual' ? 'عارضة' : t === 'sick' ? 'مرضية' : t
+  const statusChip = (s: string) => {
+    const m: any = { pending: ['معلّق', 'bg-amber-100 text-amber-700'], requested: ['معلّق', 'bg-amber-100 text-amber-700'], approved: ['اتقبل', 'bg-green-100 text-green-700'], granted: ['اتقبل', 'bg-green-100 text-green-700'], rejected: ['اترفض', 'bg-red-100 text-red-700'] }
+    const [t, c] = m[s] || [s, 'bg-gray-100 text-gray-600']
+    return <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${c}`}>{t}</span>
+  }
+  async function doLeave() {
+    if (reqBusy) return
+    if (!lvStart || !lvEnd) { setReqMsg({ ok: false, text: 'اختار تاريخ البداية والنهاية' }); return }
+    setReqBusy(true); setReqMsg(null)
+    const r = await onSubmitLeave({ type: lvType, start: lvStart, end: lvEnd, reason: lvReason })
+    setReqBusy(false)
+    if (r?.ok) { setReqMsg({ ok: true, text: `الطلب اتبعت ✅ (${r.days} يوم)` }); setForm(null); setLvStart(''); setLvEnd(''); setLvReason('') }
+    else setReqMsg({ ok: false, text: r?.error || 'حصل خطأ' })
+  }
+  async function doAdvance() {
+    if (reqBusy) return
+    const amt = Number(advAmount)
+    if (!amt || amt <= 0) { setReqMsg({ ok: false, text: 'اكتب مبلغ صحيح' }); return }
+    setReqBusy(true); setReqMsg(null)
+    const r = await onSubmitAdvance({ amount: amt, reason: advReason })
+    setReqBusy(false)
+    if (r?.ok) { setReqMsg({ ok: true, text: 'طلب السلفة اتبعت ✅' }); setForm(null); setAdvAmount(''); setAdvReason('') }
+    else setReqMsg({ ok: false, text: r?.error || 'حصل خطأ' })
+  }
 
   let statusBox
   if (!att) {
@@ -414,6 +478,85 @@ function SelfViewCard({ view, onToggle, onClose, liveBanner }: any) {
             </button>
           )
         })}
+      </div>
+
+      {/* ===== leave + advance self-service requests ===== */}
+      <div className="mt-6 border-t border-gray-100 pt-4">
+        <p className="text-[13px] font-black text-[#1A2E26] flex items-center gap-1.5 mb-3"><Send className="w-4 h-4 text-[#1F6F5F]" /> طلباتي</p>
+
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="rounded-2xl bg-[#FAFAF7] p-3 text-center">
+            <p className="text-[10px] text-[#6B7280]">رصيد الإجازة السنوية</p>
+            <p className="text-[15px] font-black text-[#1F6F5F] mt-0.5" dir="ltr">{Math.max(0, (bal.annual_total || 0) - (bal.annual_used || 0))}<span className="text-[10px] text-[#6B7280]"> / {bal.annual_total || 0}</span></p>
+          </div>
+          <div className="rounded-2xl bg-[#FAFAF7] p-3 text-center">
+            <p className="text-[10px] text-[#6B7280]">رصيد العارضة</p>
+            <p className="text-[15px] font-black text-[#1F6F5F] mt-0.5" dir="ltr">{Math.max(0, (bal.casual_total || 0) - (bal.casual_used || 0))}<span className="text-[10px] text-[#6B7280]"> / {bal.casual_total || 0}</span></p>
+          </div>
+        </div>
+
+        {!form && (
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={() => { setForm('leave'); setReqMsg(null) }} className="h-12 rounded-2xl bg-[#1F6F5F]/10 text-[#1F6F5F] font-bold text-[13px] flex items-center justify-center gap-2 active:scale-95 transition-all"><CalendarDays className="w-4 h-4" /> اطلب إجازة</button>
+            <button onClick={() => { setForm('advance'); setReqMsg(null) }} className="h-12 rounded-2xl bg-[#1F6F5F]/10 text-[#1F6F5F] font-bold text-[13px] flex items-center justify-center gap-2 active:scale-95 transition-all"><Wallet className="w-4 h-4" /> اطلب سلفة</button>
+          </div>
+        )}
+
+        {form === 'leave' && (
+          <div className="rounded-2xl border border-[#1F6F5F]/20 p-3 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <p className="text-[13px] font-black text-[#1A2E26]">طلب إجازة</p>
+              <button onClick={() => setForm(null)} className="text-[#6B7280] active:scale-90"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[['annual', 'سنوية'], ['casual', 'عارضة'], ['sick', 'مرضية']].map(([v, l]) => (
+                <button key={v} onClick={() => setLvType(v)} className={`h-9 rounded-xl text-[12px] font-bold transition-all ${lvType === v ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#6B7280]'}`}>{l}</button>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="text-[11px] text-[#6B7280]">من<input type="date" value={lvStart} min={today} onChange={(e) => setLvStart(e.target.value)} className="w-full mt-1 h-10 rounded-xl border border-gray-200 px-2 text-[13px]" dir="ltr" /></label>
+              <label className="text-[11px] text-[#6B7280]">لـ<input type="date" value={lvEnd} min={lvStart || today} onChange={(e) => setLvEnd(e.target.value)} className="w-full mt-1 h-10 rounded-xl border border-gray-200 px-2 text-[13px]" dir="ltr" /></label>
+            </div>
+            <input value={lvReason} onChange={(e) => setLvReason(e.target.value)} placeholder="السبب (اختياري)" className="w-full h-10 rounded-xl border border-gray-200 px-3 text-[13px]" />
+            <button onClick={doLeave} disabled={reqBusy} className="w-full h-11 rounded-2xl bg-[#1F6F5F] text-white font-black text-[13px] flex items-center justify-center gap-2 disabled:opacity-50">{reqBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} ابعت الطلب</button>
+          </div>
+        )}
+
+        {form === 'advance' && (
+          <div className="rounded-2xl border border-[#1F6F5F]/20 p-3 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <p className="text-[13px] font-black text-[#1A2E26]">طلب سلفة</p>
+              <button onClick={() => setForm(null)} className="text-[#6B7280] active:scale-90"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="relative">
+              <input type="number" inputMode="numeric" value={advAmount} onChange={(e) => setAdvAmount(e.target.value)} placeholder="المبلغ المطلوب" className="w-full h-11 rounded-xl border border-gray-200 px-3 text-[15px] font-bold" dir="ltr" />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] text-[#6B7280]">ج</span>
+            </div>
+            <input value={advReason} onChange={(e) => setAdvReason(e.target.value)} placeholder="السبب (اختياري)" className="w-full h-10 rounded-xl border border-gray-200 px-3 text-[13px]" />
+            <button onClick={doAdvance} disabled={reqBusy} className="w-full h-11 rounded-2xl bg-[#1F6F5F] text-white font-black text-[13px] flex items-center justify-center gap-2 disabled:opacity-50">{reqBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} ابعت الطلب</button>
+          </div>
+        )}
+
+        {reqMsg && (
+          <p className={`mt-2 text-[12px] font-bold text-center ${reqMsg.ok ? 'text-[#1F6F5F]' : 'text-red-600'}`}>{reqMsg.text}</p>
+        )}
+
+        {(reqList.leave.length > 0 || reqList.advances.length > 0) && (
+          <div className="mt-3 space-y-1.5">
+            {reqList.leave.map((r: any) => (
+              <div key={r.id} className="flex items-center justify-between rounded-xl bg-[#FAFAF7] px-3 py-2">
+                <span className="text-[12px] text-[#1A2E26] flex items-center gap-1.5"><CalendarDays className="w-3.5 h-3.5 text-[#1F6F5F]" /> إجازة {leaveTypeAr(r.type)} · {r.days} يوم</span>
+                {statusChip(r.status)}
+              </div>
+            ))}
+            {reqList.advances.map((r: any) => (
+              <div key={r.id} className="flex items-center justify-between rounded-xl bg-[#FAFAF7] px-3 py-2">
+                <span className="text-[12px] text-[#1A2E26] flex items-center gap-1.5"><Wallet className="w-3.5 h-3.5 text-[#1F6F5F]" /> سلفة {Math.round(r.amount || 0).toLocaleString('en-US')} ج</span>
+                {statusChip(r.status)}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
