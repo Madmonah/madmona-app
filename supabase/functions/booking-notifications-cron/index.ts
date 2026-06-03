@@ -56,21 +56,27 @@ serve(async (req) => {
       const timeStr = scheduledAt.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
       const firstName = (notif.customer_name || '').split(' ')[0] || 'عميلتنا'
 
+      // Time-based Arabic greeting (Cairo time) — replaces the old fixed "يا مدير" prefix.
+      // Folded into the existing first parameter so the template param count stays the same.
+      const cairoHour = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Africa/Cairo', hour: 'numeric', hour12: false }).format(new Date()))
+      const greeting = (cairoHour >= 5 && cairoHour < 12) ? 'صباح الخير' : 'مساء الخير'
+      const hello = `${greeting} يا ${firstName}`
+
       const phone = notif.customer_phone.replace(/[^0-9]/g, '').replace(/^0/, '20')
       const templateName = TEMPLATES[notif.notification_type] || TEMPLATES.confirmation
 
       // Build body params per notification type
       let bodyParams: any[]
       if (notif.notification_type === 'followup') {
-        // Review request: name, service, review link
+        // Review request: greeting+name, service, review link
         bodyParams = [
-          { type: 'text', text: firstName },
+          { type: 'text', text: hello },
           { type: 'text', text: serviceName },
           { type: 'text', text: `${APP_BASE_URL}/review/${notif.booking_id}` },
         ]
       } else {
         bodyParams = [
-          { type: 'text', text: firstName },
+          { type: 'text', text: hello },
           { type: 'text', text: serviceName },
           { type: 'text', text: dateStr },
           { type: 'text', text: timeStr },
