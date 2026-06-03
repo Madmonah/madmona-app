@@ -149,6 +149,8 @@ const businessJsonLd = {
     'https://www.linkedin.com/in/madmona-cairo-a48a71406',
     'https://x.com/madmonacairo',
     'https://www.threads.net/@madmona.cairo',
+    'https://www.pinterest.com/madmonaCairo',
+    'https://bsky.app/profile/madmonacairo.bsky.social',
   ],
 }
 
@@ -175,6 +177,8 @@ const organizationJsonLd = {
     'https://www.linkedin.com/in/madmona-cairo-a48a71406',
     'https://x.com/madmonacairo',
     'https://www.threads.net/@madmona.cairo',
+    'https://www.pinterest.com/madmonaCairo',
+    'https://bsky.app/profile/madmonacairo.bsky.social',
   ],
 }
 
