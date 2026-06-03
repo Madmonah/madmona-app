@@ -342,6 +342,7 @@ export default function BusinessFinancePage({
             <ModuleCard href={`/admin/business-finance/${supplierId}/links`} icon={<Link2 />} label="كل اللينكات" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/dashboard`} icon={<BarChart3 />} label="Dashboard" primary />
             <ModuleCard href={`/admin/business-finance/${supplierId}/team`} icon={<Users />} label="الفريق" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/requests`} icon={<ClipboardCheck />} label="طلبات الموظفين" primary />
             <ModuleCard href={`/admin/business-finance/${supplierId}/custody`} icon={<ShieldCheck />} label="العهدة" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/flow-tasks`} icon={<ClipboardList />} label="المهام" />
             {supplier.industry === 'contracting' && (
