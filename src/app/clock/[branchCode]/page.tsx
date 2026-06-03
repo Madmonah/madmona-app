@@ -7,8 +7,9 @@
    Secondary action "تاسكاتي وحالتي" shows the employee their attendance
    status + today's tasks (via employee_self_view_by_pin) without clocking. */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { playNotificationSound, showBrowserNotification, requestNotificationPermission } from '@/lib/notification-sound'
 import {
   Loader2, Delete, LogIn, LogOut, MapPin, AlertCircle, CheckCircle2, Clock,
   ClipboardList, Circle, ArrowRight, Calendar, Coins, Gift,
@@ -46,6 +47,52 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
     })()
   }, [branchCode])
 
+  // ── Live updates: while the employee has their tasks/status card open,
+  //    poll their self-view every 20s and chime + banner on any NEW task or booking.
+  const seenRef = useRef<Set<string>>(new Set())
+  const [liveBanner, setLiveBanner] = useState<string | null>(null)
+  const idsOf = (v: any) => {
+    const s = new Set<string>()
+    ;(v?.tasks || []).forEach((t: any) => s.add('task:' + t.id))
+    ;(v?.today || []).forEach((b: any) => s.add('book:' + b.booking_id))
+    return s
+  }
+  useEffect(() => {
+    if (!selfView || !selfPin) return
+    // seed baseline silently so existing items don't fire on first poll
+    seenRef.current = idsOf(selfView)
+    let stopped = false
+    const tick = async () => {
+      if (typeof document !== 'undefined' && document.hidden) return
+      // @ts-expect-error rpc typing
+      const { data } = await supabase.rpc('employee_self_view_by_pin', {
+        p_branch_code: branchCode, p_phone_or_pin: selfPin,
+      })
+      if (stopped || !data?.ok) return
+      const incoming = idsOf(data)
+      const fresh: string[] = []
+      incoming.forEach((id) => { if (!seenRef.current.has(id)) fresh.push(id) })
+      seenRef.current = incoming
+      setSelfView((prev: any) => prev ? { ...data, justClockedIn: prev.justClockedIn } : prev)
+      if (fresh.length > 0) {
+        const nTasks = fresh.filter((x) => x.startsWith('task:')).length
+        const nBook = fresh.filter((x) => x.startsWith('book:')).length
+        const msg = nBook > 0 && nTasks > 0
+          ? 'وصلك حجز وتاسك جديد'
+          : nBook > 0
+            ? (nBook > 1 ? `وصلك ${nBook} حجوزات جديدة` : 'وصلك حجز جديد')
+            : (nTasks > 1 ? `وصلك ${nTasks} تاسكات جديدة` : 'وصلك تاسك جديد')
+        playNotificationSound()
+        setLiveBanner(msg)
+        showBrowserNotification('مضمونة', msg).catch(() => {})
+        setTimeout(() => setLiveBanner(null), 6000)
+      }
+    }
+    const iv = setInterval(tick, 20000)
+    return () => { stopped = true; clearInterval(iv) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [!!selfView, selfPin, branchCode])
+
   function press(d: string) { if (pin.length < 11) setPin(pin + d); setErr(null) }
   function back() { setPin(pin.slice(0, -1)); setErr(null) }
 
@@ -82,7 +129,7 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
         const { data: sv } = await supabase.rpc('employee_self_view_by_pin', {
           p_branch_code: branchCode, p_phone_or_pin: usedPin,
         })
-        if (sv?.ok) { setSelfPin(usedPin); setSelfView({ ...sv, justClockedIn: true }); setPin('') }
+        if (sv?.ok) { requestNotificationPermission().catch(() => {}); setSelfPin(usedPin); setSelfView({ ...sv, justClockedIn: true }); setPin('') }
         else { setResult(data); setPin(''); setTimeout(() => setResult(null), 7000) }
       } else {
         setResult(data); setPin('')
@@ -101,7 +148,7 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
       p_branch_code: branchCode, p_phone_or_pin: pin,
     })
     setSelfBusy(false)
-    if (data?.ok) { setSelfPin(pin); setSelfView(data); setPin('') }
+    if (data?.ok) { requestNotificationPermission().catch(() => {}); setSelfPin(pin); setSelfView(data); setPin('') }
     else { setErr(data || { error: 'حصل خطأ، حاول تاني' }) }
   }
 
@@ -149,7 +196,7 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
         {result ? (
           <ResultCard result={result} onDone={() => setResult(null)} />
         ) : selfView ? (
-          <SelfViewCard view={selfView} onToggle={toggleTask} onClose={closeSelf} />
+          <SelfViewCard view={selfView} onToggle={toggleTask} onClose={closeSelf} liveBanner={liveBanner} />
         ) : (
           <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-[0_10px_40px_-12px_rgba(31,111,95,0.25)]">
             <p className="text-center text-sm font-bold text-[#1A2E26] mb-1">سجّل دخولك أو خروجك</p>
@@ -245,7 +292,7 @@ function fmtTime(iso: string | null) {
   try { return new Date(iso).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) } catch { return '' }
 }
 
-function SelfViewCard({ view, onToggle, onClose }: any) {
+function SelfViewCard({ view, onToggle, onClose, liveBanner }: any) {
   const emp = view.employee || {}
   const att = view.attendance
   const tasks: any[] = view.tasks || []
@@ -290,6 +337,13 @@ function SelfViewCard({ view, onToggle, onClose }: any) {
         </div>
         <button onClick={onClose} className="text-[12px] font-bold text-[#1F6F5F] flex items-center gap-1 active:scale-95"><ArrowRight className="w-4 h-4" /> رجوع</button>
       </div>
+
+      {liveBanner && (
+        <div className="mb-3 rounded-2xl bg-amber-400 text-[#1A2E26] p-3 text-center flex items-center justify-center gap-2 animate-pulse">
+          <ClipboardList className="w-4 h-4" />
+          <p className="text-[13px] font-black">🔔 {liveBanner}</p>
+        </div>
+      )}
 
       {view.justClockedIn && (
         <div className="mb-3 rounded-2xl bg-[#1F6F5F] text-white p-3 text-center">
