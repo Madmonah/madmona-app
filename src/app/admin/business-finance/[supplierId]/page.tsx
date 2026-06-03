@@ -13,6 +13,7 @@ import {
   FolderKanban, ScrollText, Table2, GitBranchPlus, HardHat,
   Briefcase, Coins, HandCoins, Wrench,
   Banknote, Gavel, CalendarRange, PackageOpen, ClipboardCheck, Fuel, FileBadge,
+  Smartphone,
 } from 'lucide-react'
 
 /* ============================================================
@@ -379,6 +380,7 @@ export default function BusinessFinancePage({
             <ModuleCard href={`/admin/business-finance/${supplierId}/services`} icon={<Workflow />} label="ربط خدمة-منتج" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/expenses`} icon={<DollarSign />} label="المصاريف" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/attendance`} icon={<Clock />} label="الحضور" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/attendance-devices`} icon={<Smartphone />} label="أجهزة البصم" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/cash-recon`} icon={<Wallet />} label="جرد الكاش" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/payroll`} icon={<Calculator />} label="المرتبات" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/purchase-orders`} icon={<ShoppingCart />} label="طلبات شراء" />

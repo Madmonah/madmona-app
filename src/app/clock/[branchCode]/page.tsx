@@ -20,6 +20,16 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const supabase = createClient(SUPABASE_URL, ANON)
 
+// Stable per-device id (anti buddy-punch). One phone = one employee for clocking.
+function getDeviceId(): string {
+  if (typeof window === 'undefined') return ''
+  try {
+    let id = localStorage.getItem('madmona_device_id')
+    if (!id) { id = (window.crypto?.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2))); localStorage.setItem('madmona_device_id', id) }
+    return id
+  } catch { return '' }
+}
+
 export default function ClockPage({ params }: { params: { branchCode: string } }) {
   const { branchCode } = params
   const [branch, setBranch] = useState<any>(null)
@@ -120,6 +130,8 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
       p_lat: pos?.lat ?? null,
       p_lng: pos?.lng ?? null,
       p_accuracy_m: pos?.acc ?? null,
+      p_device_id: getDeviceId(),
+      p_device_label: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 80) : null,
     })
     setBusy(false); setPhase('idle')
     if (data?.ok) {
