@@ -230,7 +230,7 @@ function BookTab({ branchCode, router, setPanel, hasProducts }: any) {
 }
 
 function ServicesTab({ services, branchCode, router }: any) {
-  const { t } = useT()
+  const { t, lang } = useT()
   if (!services.length) return <p className="text-center text-sm text-[#6B7280] py-6">{t('visit.no_services')}</p>
   return (
     <div className="space-y-2.5">
@@ -238,7 +238,7 @@ function ServicesTab({ services, branchCode, router }: any) {
         <button key={s.id} onClick={() => router.push(`/book/${branchCode}?service=${s.id}`)}
           className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between text-start active:scale-[0.99] transition-all hover:border-[#1F6F5F]/40 hover:shadow-md hover:shadow-[#1A2E26]/5">
           <div>
-            <p className="font-black text-sm text-[#1A2E26]">{s.name_ar}</p>
+            <p className="font-black text-sm text-[#1A2E26]">{lang === 'en' && s.name_en ? s.name_en : s.name_ar}</p>
             <p className="text-[11px] text-[#6B7280] mt-0.5 flex items-center gap-2">
               {s.duration_minutes ? <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {s.duration_minutes} {t('visit.min')}</span> : null}
             </p>
@@ -458,7 +458,7 @@ function RateFlow({ branchCode, stylists, onBack }: any) {
 
 /* ============================ PRODUCTS ============================ */
 function Products({ products, onBack, branch }: any) {
-  const { t } = useT()
+  const { t, lang } = useT()
   return (
     <Sheet title={t('visit.products')} onBack={onBack}>
       <div className="space-y-2 mb-4">
@@ -467,7 +467,7 @@ function Products({ products, onBack, branch }: any) {
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-lg bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center"><ShoppingBag className="w-4 h-4" /></div>
               <div>
-                <p className="font-bold text-sm text-[#1A2E26]">{p.name_ar}</p>
+                <p className="font-bold text-sm text-[#1A2E26]">{lang === 'en' && p.name_en ? p.name_en : p.name_ar}</p>
                 {p.unit && <p className="text-[10px] text-[#6B7280]">{p.unit}</p>}
               </div>
             </div>
