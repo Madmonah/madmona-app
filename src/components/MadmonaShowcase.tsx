@@ -163,7 +163,7 @@ const CSS = `
 .mdm-cats{padding:64px 0 72px}
 .mdm-h2{text-align:center;font-weight:900;font-size:clamp(26px,4vw,40px);color:var(--green);margin:0 0 36px}
 .mdm-grid{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;align-items:center;max-width:1200px;margin:0 auto;padding:8px 20px}
-.mdm-tile{position:relative;flex:0 0 auto;width:clamp(150px,42vw,240px);height:clamp(200px,56vw,300px);border-radius:24px;overflow:hidden;text-decoration:none;box-shadow:0 14px 40px rgba(20,58,51,.12);display:block;animation:mdmTileFade 8s ease-in-out infinite both;transition:box-shadow .3s ease}
+.mdm-tile{position:relative;flex:0 0 auto;width:clamp(150px,42vw,240px);height:clamp(200px,56vw,300px);border-radius:24px;overflow:hidden;text-decoration:none;box-shadow:0 14px 40px rgba(20,58,51,.12);display:block;transition:box-shadow .3s ease,transform .3s ease;opacity:1}
 .mdm-grid:hover .mdm-tile{animation-play-state:paused}
 .mdm-tile:hover{box-shadow:0 26px 60px rgba(20,58,51,.28)}
 .mdm-tile img{width:100%;height:100%;object-fit:cover;display:block}
