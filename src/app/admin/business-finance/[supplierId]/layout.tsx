@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { supabaseBrowser } from '@/lib/supabase-browser'
-import { Loader2, ShieldAlert, LogIn, Lock } from 'lucide-react'
+import { Loader2, ShieldAlert, LogIn, Lock, Eye } from 'lucide-react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -39,6 +39,8 @@ export default function BusinessFinanceLayout({
 }) {
   const { supplierId } = params
   const [state, setState] = useState<'checking' | 'allowed' | 'no_session' | 'denied'>('checking')
+  const [readonly, setReadonly] = useState(false)
+  const [blockedToast, setBlockedToast] = useState(false)
 
   useEffect(() => {
     (async () => {
@@ -49,7 +51,7 @@ export default function BusinessFinanceLayout({
         const { data } = await supabase.rpc('admin_check_finance_access', {
           p_token: token, p_supplier_id: supplierId,
         })
-        if (data?.allowed) { setState('allowed'); return }
+        if (data?.allowed) { setReadonly(data.readonly === true); setState('allowed'); return }
         // 2) Madmona platform-admin bypass (came from the dashboard)
         if (await isPlatformAdmin()) { setState('allowed'); return }
         setState(data?.reason === 'no_session' ? 'no_session' : 'denied')
@@ -62,6 +64,47 @@ export default function BusinessFinanceLayout({
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [supplierId])
 
+  // ── View-only mode: block every write at the network layer so NO edit gets
+  //    through anywhere in the dashboard (covers all ~50 tabs from one place).
+  //    Blocks admin_* mutation RPCs + any direct table write; reads pass through.
+  useEffect(() => {
+    if (state !== 'allowed' || !readonly || typeof window === 'undefined') return
+    const orig = window.fetch
+    const isWrite = (url: string, method: string) => {
+      try {
+        if (!/\/rest\/v1\//.test(url)) return false
+        const m = (method || 'GET').toUpperCase()
+        const rpc = url.match(/\/rest\/v1\/rpc\/([a-z0-9_]+)/i)
+        if (rpc) {
+          const fn = rpc[1].toLowerCase()
+          if (fn.startsWith('admin_')) return !/^admin_(get_|list_|check_|dashboard_|drafts_)/.test(fn)
+          return false
+        }
+        return !(m === 'GET' || m === 'HEAD')
+      } catch { return false }
+    }
+    window.fetch = function (input: any, init?: any) {
+      const url = typeof input === 'string' ? input : (input?.url ?? '')
+      const method = init?.method ?? (typeof input === 'object' ? input?.method : 'GET')
+      if (isWrite(url, method)) {
+        try { window.dispatchEvent(new CustomEvent('madmona-readonly-blocked')) } catch {}
+        return Promise.resolve(new Response(
+          JSON.stringify({ message: 'وضع العرض فقط — غير مسموح بالتعديل', code: 'readonly_mode' }),
+          { status: 403, headers: { 'Content-Type': 'application/json' } },
+        ))
+      }
+      return orig(input as any, init)
+    }
+    return () => { window.fetch = orig }
+  }, [state, readonly])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const h = () => { setBlockedToast(true); setTimeout(() => setBlockedToast(false), 2600) }
+    window.addEventListener('madmona-readonly-blocked', h)
+    return () => window.removeEventListener('madmona-readonly-blocked', h)
+  }, [])
+
   if (state === 'checking') {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
@@ -70,7 +113,22 @@ export default function BusinessFinanceLayout({
     )
   }
 
-  if (state === 'allowed') return <>{children}</>
+  if (state === 'allowed') {
+    if (!readonly) return <>{children}</>
+    return (
+      <div>
+        <div className="sticky top-0 z-50 bg-amber-400 text-[#1A2E26] text-center text-[12px] font-black py-2 px-3 flex items-center justify-center gap-2">
+          <Eye className="w-4 h-4" /> وضع العرض فقط — مسموح تتفرّج، التعديل مقفول
+        </div>
+        {children}
+        {blockedToast && (
+          <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] bg-[#1A2E26] text-white text-[13px] font-bold px-4 py-2.5 rounded-2xl shadow-lg">
+            🔒 التعديل مقفول — وضع العرض فقط
+          </div>
+        )}
+      </div>
+    )
+  }
 
   // Gate screen (no session or not authorized)
   return (
