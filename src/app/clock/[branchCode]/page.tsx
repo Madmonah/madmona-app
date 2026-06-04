@@ -43,6 +43,7 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
   const [selfView, setSelfView] = useState<any>(null)
   const [selfPin, setSelfPin] = useState('')
   const [selfBusy, setSelfBusy] = useState(false)
+  const [clockedPin, setClockedPin] = useState<string | null>(null)
 
   useEffect(() => {
     (async () => {
@@ -104,6 +105,35 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [!!selfView, selfPin, branchCode])
 
+  // ── Auto-checkout heartbeat (geo_auto branches): while clocked in, the phone sends
+  //    its location every 45s. Leaving the branch geofence → server auto clocks-out.
+  //    If the connection drops / the page closes, the server's offline cron closes it.
+  useEffect(() => {
+    if (!clockedPin || branch?.attendance_mode !== 'geo_auto') return
+    let stopped = false
+    const beat = async () => {
+      if (typeof document !== 'undefined' && document.hidden) return
+      const pos = await getPos()
+      // @ts-expect-error rpc typing
+      const { data } = await supabase.rpc('employee_geo_heartbeat', {
+        p_branch_code: branchCode, p_phone_or_pin: clockedPin,
+        p_lat: pos?.lat ?? null, p_lng: pos?.lng ?? null, p_accuracy_m: pos?.acc ?? null,
+      })
+      if (stopped || !data) return
+      if (data.action === 'clock_out') {
+        const emp = selfView?.employee || {}
+        setClockedPin(null); setSelfView(null); setSelfPin('')
+        setResult({ action: 'clock_out', timestamp: new Date().toISOString(), hours_worked: data.hours_worked ?? null, employee: emp, auto: true, reason: data.reason })
+      } else if (data.action === 'not_clocked_in') {
+        setClockedPin(null)
+      }
+    }
+    beat()
+    const iv = setInterval(beat, 45000)
+    return () => { stopped = true; clearInterval(iv) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clockedPin, branchCode, branch?.attendance_mode])
+
   function press(d: string) { if (pin.length < 11) setPin(pin + d); setErr(null) }
   function back() { setPin(pin.slice(0, -1)); setErr(null) }
 
@@ -135,15 +165,17 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
     })
     setBusy(false); setPhase('idle')
     if (data?.ok) {
-      if (data.action === 'clock_in') {
-        // after clock-in, auto-open the employee's personal page (status + tasks)
+      if (data.action === 'clock_in' || data.action === 'already_in') {
+        // after clock-in (or re-scan on auto-checkout branches), open the personal page
         const usedPin = pin
         // @ts-expect-error rpc typing
         const { data: sv } = await supabase.rpc('employee_self_view_by_pin', {
           p_branch_code: branchCode, p_phone_or_pin: usedPin,
         })
-        if (sv?.ok) { requestNotificationPermission().catch(() => {}); setSelfPin(usedPin); setSelfView({ ...sv, justClockedIn: true }); setPin('') }
+        if (sv?.ok) { requestNotificationPermission().catch(() => {}); setSelfPin(usedPin); setSelfView({ ...sv, justClockedIn: data.action === 'clock_in' }); setPin('') }
         else { setResult(data); setPin(''); setTimeout(() => setResult(null), 7000) }
+        // start the location heartbeat on auto-checkout branches
+        if (branch?.attendance_mode === 'geo_auto') setClockedPin(usedPin)
       } else {
         setResult(data); setPin('')
         setTimeout(() => setResult(null), 7000)
@@ -271,7 +303,7 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
 
             <div className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-[#6B7280]">
               <MapPin className="w-3.5 h-3.5 text-[#1F6F5F]" />
-              {phase === 'locating' ? 'بنتأكد إنك في الفرع...' : phase === 'sending' ? 'جاري التسجيل...' : 'بنتحقق من موقعك وقت التسجيل'}
+              {phase === 'locating' ? 'بنتأكد إنك في الفرع...' : phase === 'sending' ? 'جاري التسجيل...' : (branch?.attendance_mode === 'geo_auto' ? 'الخروج بيتسجّل أوتوماتيك لما تسيب الفرع' : 'بنتحقق من موقعك وقت التسجيل')}
             </div>
 
             {/* secondary: view my tasks + status (no clocking) */}
@@ -298,7 +330,8 @@ function ResultCard({ result, onDone }: any) {
       <div className={`w-20 h-20 rounded-2xl grid place-items-center mx-auto mb-4 ${isIn ? 'bg-[#1F6F5F]' : 'bg-[#1A2E26]'} text-white`}>
         {isIn ? <LogIn className="w-10 h-10" /> : <LogOut className="w-10 h-10" />}
       </div>
-      <p className="text-[13px] font-bold text-[#1F6F5F] mb-1">{isIn ? 'تم تسجيل الحضور ✅' : 'تم تسجيل الانصراف 👋'}</p>
+      <p className="text-[13px] font-bold text-[#1F6F5F] mb-1">{isIn ? 'تم تسجيل الحضور ✅' : (result.auto ? 'تم تسجيل خروجك تلقائياً 👋' : 'تم تسجيل الانصراف 👋')}</p>
+      {!isIn && result.auto && <p className="text-[11px] text-[#6B7280] mb-1">{result.reason === 'left_location' ? 'السبب: خرجت من مكان الفرع' : 'السبب: انقطع الاتصال'}</p>}
       <h2 className="text-2xl font-black text-[#1A2E26]">{emp.full_name || ''}</h2>
       {emp.role_ar && <p className="text-[12px] text-[#6B7280] mt-0.5">{emp.role_ar}</p>}
 
