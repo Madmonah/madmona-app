@@ -15,6 +15,7 @@ import MUACampaignBanner from '@/components/MUACampaignBanner'
 import CategoryTrackTabs from '@/components/CategoryTrackTabs'
 import DailyMessageCard from '@/components/retention/DailyMessageCard'
 import T from '@/components/T'
+import MadmonaShowcase from '@/components/MadmonaShowcase'
 
 // ============================================================
 // Home page — Single brand: "خدمات مضمونة"
@@ -107,6 +108,9 @@ export default async function HomePage() {
       <FinancialTicker />
 
       <main className="relative">
+        {/* قسم الواجهة المتحرك — Hero + ماركيه المجالات + عدّادات */}
+        <MadmonaShowcase />
+
         <div className="max-w-7xl mx-auto px-4 pt-4">
           <InstallPWA />
         </div>
