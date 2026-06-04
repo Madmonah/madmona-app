@@ -11,14 +11,14 @@ const IMG = 'https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/a
 const LP = 'https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/listing-photos';
 
 const GROUPS = [
-  { slug: 'properties', name: 'عقارات', emoji: '🏠' },
-  { slug: 'vehicles', name: 'مركبات', emoji: '🚗' },
-  { slug: 'services', name: 'خدمات', emoji: '🛠️' },
-  { slug: 'equipment', name: 'معدات', emoji: '🎬' },
-  { slug: 'events', name: 'فعاليات ومناسبات', emoji: '💒' },
-  { slug: 'tourism', name: 'سياحة وتجارب', emoji: '🏖️' },
-  { slug: 'food', name: 'مطاعم ومأكولات', emoji: '🍽️' },
-  { slug: 'shop', name: 'منتجات للبيع', emoji: '🛍️' },
+  { slug: 'properties', real: 'properties-residential', name: 'عقارات', emoji: '🏠' },
+  { slug: 'vehicles', real: 'vehicles', name: 'مركبات', emoji: '🚗' },
+  { slug: 'services', real: 'consultations', name: 'خدمات', emoji: '🛠️' },
+  { slug: 'equipment', real: 'equipment', name: 'معدات', emoji: '🎬' },
+  { slug: 'events', real: 'weddings', name: 'فعاليات ومناسبات', emoji: '💒' },
+  { slug: 'tourism', real: 'tourism', name: 'سياحة وتجارب', emoji: '🏖️' },
+  { slug: 'food', real: 'food-pizza', name: 'مطاعم ومأكولات', emoji: '🍽️' },
+  { slug: 'shop', real: 'shop-fashion', name: 'منتجات للبيع', emoji: '🛍️' },
 ];
 
 // صور حقيقية من ليستنجز فعلية (تظهر بوضوح خلف الـhero)
@@ -117,7 +117,7 @@ export default function MadmonaShowcase() {
           {GROUPS.map((g, i) => (
             <a className="mdm-tile" key={g.slug} href="/marketplace" style={{ animationDelay: `${i * 0.8}s` }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`${IMG}/${g.slug}-v1.jpg`} alt={g.name} loading="lazy" />
+              <img src={`${IMG}/real/${g.real}.jpg`} alt={g.name} loading="lazy" />
               <span className="mdm-tile-shade" />
               <span className="mdm-tile-emoji">{g.emoji}</span>
               <span className="mdm-tile-name">{g.name}</span>
