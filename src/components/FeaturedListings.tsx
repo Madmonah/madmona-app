@@ -8,8 +8,9 @@ import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import { useT } from '@/lib/i18n/LanguageProvider'
 
 // ============================================================
-// FeaturedListings — premium cinematic strip on home page.
-// Loads top 3 published marketplace listings with hover lift + image zoom.
+// FeaturedListings — "المختار بعناية"
+// يختار ليستنجز من فئات مختلفة (round-robin) وبس اللي عندهم صورة،
+// ويلفّ بينهم أوتوماتيك كل ٥ ثواني (٣ في المرة).
 // ============================================================
 
 interface Listing {
@@ -25,14 +26,18 @@ interface Listing {
   pricing: { price: number | string; is_active: boolean }[] | null
 }
 
+const VISIBLE = 3
+const ROTATE_MS = 5000
+
 export default function FeaturedListings() {
   const { t, lang } = useT()
-  const [listings, setListings] = useState<Listing[]>([])
+  const [pool, setPool] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
+  const [start, setStart] = useState(0)
 
   useEffect(() => {
     const load = async () => {
-      // @ts-expect-error
+      // @ts-expect-error supabase types
       const { data } = await supabaseBrowser
         .from('listings')
         .select(`
@@ -42,17 +47,47 @@ export default function FeaturedListings() {
           pricing:pricing_rules(price, is_active)
         `)
         .eq('status', 'published')
-        .not('title', 'ilike', 'DEMO%')  // <-- exclude DEMOs from homepage featured
+        .not('title', 'ilike', 'DEMO%')
         .order('views_count', { ascending: false })
-        .limit(3)
+        .limit(48)
 
-      setListings((data || []) as Listing[])
+      const rows = ((data || []) as Listing[])
+        // بس اللي عندهم صورة فعلاً
+        .filter(l => (l.photos || []).some(p => p?.url))
+
+      // round-robin بين الفئات علشان يبدّل بينها
+      const byCat = new Map<string, Listing[]>()
+      for (const l of rows) {
+        const key = l.category?.name_ar || 'أخرى'
+        if (!byCat.has(key)) byCat.set(key, [])
+        byCat.get(key)!.push(l)
+      }
+      const buckets = Array.from(byCat.values())
+      const diverse: Listing[] = []
+      let added = true
+      while (added) {
+        added = false
+        for (const b of buckets) {
+          const next = b.shift()
+          if (next) { diverse.push(next); added = true }
+        }
+      }
+
+      setPool(diverse)
       setLoading(false)
     }
     load()
   }, [])
 
-  // Loading skeleton
+  // لفّ أوتوماتيك
+  useEffect(() => {
+    if (pool.length <= VISIBLE) return
+    const t = setInterval(() => {
+      setStart(prev => (prev + VISIBLE) % pool.length)
+    }, ROTATE_MS)
+    return () => clearInterval(t)
+  }, [pool])
+
   if (loading) {
     return (
       <section>
@@ -72,8 +107,12 @@ export default function FeaturedListings() {
     )
   }
 
-  // Hide section entirely if empty
-  if (listings.length === 0) return null
+  if (pool.length === 0) return null
+
+  // النافذة الظاهرة (٣) مع الالتفاف
+  const visible = Array.from({ length: Math.min(VISIBLE, pool.length) }).map(
+    (_, i) => pool[(start + i) % pool.length]
+  )
 
   return (
     <section>
@@ -96,7 +135,7 @@ export default function FeaturedListings() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {listings.map((listing, i) => {
+        {visible.map((listing, i) => {
           const photos = listing.photos || []
           const primary = photos.find(p => p.is_primary) || photos[0]
           const photoUrl = primary?.url
@@ -110,7 +149,7 @@ export default function FeaturedListings() {
 
           return (
             <Link
-              key={listing.id}
+              key={`${listing.id}-${start}-${i}`}
               href={`/marketplace/${listing.slug}`}
               className="group block bg-white rounded-3xl overflow-hidden shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-500 no-underline animate-slide-up"
               style={{ animationDelay: `${i * 100}ms` }}
@@ -132,7 +171,6 @@ export default function FeaturedListings() {
                   </div>
                 )}
 
-                {/* Coming Soon badge for any DEMO that slips through */}
                 {isDemo && (
                   <div className="absolute top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-l from-amber-400 to-amber-300 text-amber-900 rounded-full text-[10px] font-black shadow-card border border-amber-500/30">
                     <Clock className="w-2.5 h-2.5" />
@@ -140,7 +178,6 @@ export default function FeaturedListings() {
                   </div>
                 )}
 
-                {/* Category chip overlay */}
                 {listing.category && (
                   <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold text-gray-800">
                     <span>{listing.category.icon}</span>
@@ -148,7 +185,6 @@ export default function FeaturedListings() {
                   </div>
                 )}
 
-                {/* Rating overlay */}
                 {listing.rating && Number(listing.rating) > 0 && (
                   <div className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold text-gray-800">
                     <Star className="w-3 h-3 fill-[#2FA084] text-[#2FA084]" />
@@ -194,7 +230,6 @@ export default function FeaturedListings() {
         })}
       </div>
 
-      {/* Mobile see all link */}
       <Link
         href="/marketplace"
         className="sm:hidden mt-6 flex items-center justify-center gap-2 px-5 py-3 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-[#1F6F5F] no-underline"

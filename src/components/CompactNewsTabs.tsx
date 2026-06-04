@@ -68,6 +68,7 @@ export default function CompactNewsTabs() {
   const [featuredIndex, setFeaturedIndex] = useState(0)
   const [paused, setPaused] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
+  const [autoRotate, setAutoRotate] = useState(true)
 
   const fetchingRef = useRef<Set<Tab>>(new Set())
 
@@ -120,6 +121,16 @@ export default function CompactNewsTabs() {
     return () => clearInterval(t)
   }, [items, activeTab, paused])
 
+  // تبديل التابات أوتوماتيك (حركة) — يوقف لو المستخدم اختار تاب بنفسه
+  useEffect(() => {
+    if (!autoRotate) return
+    const ids = TABS.map(tt => tt.id)
+    const tt = setInterval(() => {
+      setActiveTab(prev => ids[(ids.indexOf(prev) + 1) % ids.length])
+    }, 8000)
+    return () => clearInterval(tt)
+  }, [autoRotate])
+
   const tabItems = items[activeTab]
   const featured = tabItems[featuredIndex]
   // Side cards: next 4 items after featured (wrapping around)
@@ -170,7 +181,7 @@ export default function CompactNewsTabs() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => { setAutoRotate(false); setActiveTab(tab.id) }}
               className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                 isActive
                   ? 'bg-white text-gray-900 shadow-card'

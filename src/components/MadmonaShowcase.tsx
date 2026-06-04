@@ -5,7 +5,7 @@
  * CSS بس — مفيش أي مكتبة. RTL + ألوان البراند. صور البراند اللايف من Storage.
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const IMG = 'https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/ads/categories';
 
@@ -20,8 +20,21 @@ const GROUPS = [
   { slug: 'shop', name: 'منتجات للبيع', emoji: '🛍️' },
 ];
 
+const HERO_PHOTOS = [
+  `${IMG}/food-v1.jpg`,
+  `${IMG}/properties-v1.jpg`,
+  `${IMG}/tourism-v1.jpg`,
+  `${IMG}/services-v1.jpg`,
+];
+
 export default function MadmonaShowcase() {
   const rootRef = useRef<HTMLDivElement>(null);
+  const [heroIdx, setHeroIdx] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setHeroIdx((i) => (i + 1) % HERO_PHOTOS.length), 4000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -62,6 +75,13 @@ export default function MadmonaShowcase() {
       <style>{CSS}</style>
 
       <section className="mdm-hero">
+        <div className="mdm-hero-bg">
+          {HERO_PHOTOS.map((src, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={src} src={src} alt="" className={`mdm-hero-photo${i === heroIdx ? ' on' : ''}`} />
+          ))}
+        </div>
+        <div className="mdm-hero-overlay" />
         <span className="mdm-blob mdm-blob1" />
         <span className="mdm-blob mdm-blob2" />
         <div className="mdm-hero-in">
@@ -116,7 +136,11 @@ const CSS = `
 .mdm-showcase *{box-sizing:border-box}
 .mdm-reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
 .mdm-reveal.mdm-in{opacity:1;transform:none}
-.mdm-hero{position:relative;padding:84px 20px 72px;text-align:center;background:linear-gradient(135deg,#143A33 0%,var(--green) 55%,var(--green2) 100%);overflow:hidden}
+.mdm-hero{position:relative;padding:84px 20px 72px;text-align:center;background:#143A33;overflow:hidden}
+.mdm-hero-bg{position:absolute;inset:0;z-index:0}
+.mdm-hero-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease;transform:scale(1.05)}
+.mdm-hero-photo.on{opacity:.45}
+.mdm-hero-overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(135deg,rgba(20,58,51,.92) 0%,rgba(31,111,95,.82) 55%,rgba(47,160,132,.80) 100%)}
 .mdm-hero-in{position:relative;z-index:2;max-width:920px;margin:0 auto}
 .mdm-blob{position:absolute;border-radius:50%;filter:blur(90px);z-index:1}
 .mdm-blob1{width:520px;height:520px;background:var(--green3);opacity:.40;top:-160px;inset-inline-end:-120px;animation:mdmFloat 9s ease-in-out infinite}
