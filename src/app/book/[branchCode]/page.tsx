@@ -175,6 +175,8 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
   const productsTotal = cartItems.reduce((s: number, p: any) => s + Number(p.selling_price_egp || 0) * cart[p.id], 0)
   const servicesTotal = Number(selectedService?.price_egp || 0) + addonsTotal
   const grandTotal = servicesTotal + productsTotal
+  const isClinic = supplier?.industry === 'polyclinic' || supplier?.industry === 'clinic'
+  const jadeyaDeposit = isClinic ? Math.round(servicesTotal * 0.05) : 0
   const branch = data.branch
   const servicesByCategory: Record<string, any[]> = {}
   services.forEach((s: any) => {
@@ -446,6 +448,17 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                   <span className="text-sm font-bold text-[#1A2E26]">السعر الإجمالي</span>
                   <span className="font-mono font-black text-2xl text-[#1F6F5F]">{grandTotal.toLocaleString()} ج</span>
                 </div>
+                {isClinic && jadeyaDeposit > 0 && (
+                  <div className="mt-3 rounded-xl bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 p-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-[#1A2E26]">عربون جدية (٥٪ غير مسترد)</span>
+                      <span className="font-mono font-black text-[#1F6F5F]">{jadeyaDeposit.toLocaleString()} ج</span>
+                    </div>
+                    <p className="text-[10px] text-[#6B7280] mt-1 leading-relaxed">
+                      لتأكيد حجزك، حوّل العربون على حساب مضمونة — InstaPay: <b className="text-[#1A2E26] font-mono" dir="ltr">5220001000009207</b> (بنك مصر). غير مسترد عند عدم الحضور، ويتخصم من قيمة الكشف وقت حضورك.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
             <button onClick={submitBooking} disabled={submitting} className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black disabled:opacity-50 flex items-center justify-center gap-2">
@@ -468,6 +481,17 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 <span className="text-sm font-bold">السعر</span>
                 <span className="font-mono font-black text-[#1F6F5F]">{Number(bookingResult.price).toLocaleString()} ج</span>
               </div>
+              {bookingResult.deposit_required && (
+                <div className="pt-3 border-t border-gray-100 text-right">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold text-[#1A2E26]">عربون الجدية (٥٪)</span>
+                    <span className="font-mono font-black text-[#1F6F5F]">{Number(bookingResult.deposit_egp).toLocaleString()} ج</span>
+                  </div>
+                  <p className="text-[11px] text-[#6B7280] mt-1 leading-relaxed">
+                    حوّل العربون لتأكيد الحجز على حساب مضمونة — InstaPay: <b className="text-[#1A2E26] font-mono" dir="ltr">5220001000009207</b> (بنك مصر). غير مسترد عند عدم الحضور.
+                  </p>
+                </div>
+              )}
             </div>
             <a href={`https://wa.me/${supplier?.contact_phone?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`السلام عليكم، أنا ${customerName}، حجزت ${bookingResult.service_name} ${selectedDate?.toLocaleDateString('ar-EG')} الساعة ${selectedTime?.slice(0, 5)}`)}`} target="_blank" rel="noopener" className="block w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black">تواصل واتساب مع الفرع</a>
           </div>
