@@ -801,7 +801,19 @@ export default function AdminDashboardV2() {
               <CompactLink href="/admin/messages" label="messages" />
               <CompactLink href="/admin/news" label="news" />
               <CompactLink href="/admin/notifications" label="notifications" />
+              <CompactLink href="/admin/outreach-leads" label="outreach-leads ⭐ NEW" />
               <CompactLink href="/admin/partnerships" label="partnerships" />
+              <CompactLink href="/admin/marketplace-suppliers" label="marketplace-suppliers" />
+              <CompactLink href="/admin/marketplace-orders" label="marketplace-orders" />
+              <CompactLink href="/admin/custody" label="custody" />
+              <CompactLink href="/admin/flow-tasks" label="flow-tasks" />
+              <CompactLink href="/admin/madmona" label="madmona" />
+              <CompactLink href="/admin/suppliers" label="suppliers" />
+              <CompactLink href="/admin/suppliers-v2" label="suppliers-v2" />
+              <CompactLink href="/admin/units" label="units" />
+              <CompactLink href="/admin/bookings" label="bookings" />
+              <CompactLink href="/admin/cockpit" label="cockpit" />
+              <CompactLink href="/admin/agent-extras" label="agent-extras" />
               <CompactLink href="/admin/payouts" label="payouts" />
               <CompactLink href="/admin/performance" label="performance" />
               <CompactLink href="/admin/permissions" label="permissions ⭐" />
@@ -824,7 +836,7 @@ export default function AdminDashboardV2() {
               <CompactLink href="/admin/workflows" label="workflows" />
             </div>
             <p className="text-[10px] text-[#6B7280] mt-3 pt-3 border-t border-gray-100">
-              📊 {60} صفحة admin
+              📊 73 صفحة admin
             </p>
           </div>
         </Section>
@@ -1126,8 +1138,8 @@ function SystemPulseBar({ pulse }: { pulse: PulseData }) {
       status: pulse.pipelines.bookings.status, href: '/admin/marketplace-bookings' },
     { key: 'listings',   label: '📦 الإعلانات', value: `${pulse.pipelines.listings.drafts_abandoned} مسودة`,
       status: pulse.pipelines.listings.status, href: '/admin/listing-drafts' },
-    { key: 'leads',      label: '📞 Leads',      value: `${pulse.pipelines.leads.uncontacted} مش متواصل`,
-      status: pulse.pipelines.leads.status, href: '/admin/leads' },
+    { key: 'leads',      label: '📞 Outreach',   value: `${pulse.pipelines.leads.uncontacted} مش متواصل`,
+      status: pulse.pipelines.leads.status, href: '/admin/outreach-leads' },
   ]
 
   return (

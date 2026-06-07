@@ -217,8 +217,8 @@ export default function CompactNewsTabs() {
           </button>
         </div>
       ) : (
-        <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {tabItems.slice(0, 8).map((item, i) => (
+        <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+          {tabItems.slice(0, 4).map((item, i) => (
             <a
               key={`${activeTab}-${item.link}-${i}`}
               href={item.link}

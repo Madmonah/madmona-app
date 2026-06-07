@@ -55,6 +55,8 @@ export default function CareersPage() {
   const [position, setPosition] = useState('')
   const [city, setCity] = useState('')
   const [experience, setExperience] = useState<string>('')
+  const [lastSalary, setLastSalary] = useState<string>('')
+  const [expectedSalary, setExpectedSalary] = useState<string>('')
   const [whyJoin, setWhyJoin] = useState('')
   const [cvUrl, setCvUrl] = useState('')
 
@@ -75,6 +77,10 @@ export default function CareersPage() {
       setError('من فضلك اختار الوظيفة اللي بتقدم عليها')
       return
     }
+    if (!expectedSalary || parseInt(expectedSalary, 10) < 1000) {
+      setError('من فضلك اكتب الراتب المتوقع (1000 جنيه على الأقل)')
+      return
+    }
 
     setSubmitting(true)
     try {
@@ -88,6 +94,8 @@ export default function CareersPage() {
         p_experience_years: experience ? parseInt(experience, 10) : null,
         p_why_join: whyJoin.trim() || null,
         p_cv_url: cvUrl.trim() || null,
+        p_last_salary_egp: lastSalary ? parseInt(lastSalary, 10) : null,
+        p_expected_salary_egp: expectedSalary ? parseInt(expectedSalary, 10) : null,
       })
 
       if (rpcErr) throw rpcErr
@@ -370,6 +378,51 @@ export default function CareersPage() {
                 <option value="3">٣ - ٥ سنين</option>
                 <option value="6">٥ سنين أو أكتر</option>
               </select>
+            </div>
+
+            {/* Salary expectations */}
+            <div className="bg-gradient-to-br from-amber-50 to-emerald-50 border border-amber-100 rounded-2xl p-5 space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 text-amber-700">💰</span>
+                <h3 className="font-bold text-[#0A0A0A]">المرتب</h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-[#0A0A0A] mb-2">
+                    آخر راتب استلمته (جنيه)
+                  </label>
+                  <input
+                    type="number"
+                    value={lastSalary}
+                    onChange={(e) => setLastSalary(e.target.value)}
+                    placeholder="مثلاً: 5000"
+                    min="0"
+                    max="500000"
+                    step="100"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1F6F5F] focus:border-transparent bg-white"
+                    dir="ltr"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">سيبها فاضية لو إنت Fresh</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-[#0A0A0A] mb-2">
+                    الراتب المتوقع (جنيه) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={expectedSalary}
+                    onChange={(e) => setExpectedSalary(e.target.value)}
+                    placeholder="مثلاً: 8000"
+                    min="1000"
+                    max="500000"
+                    step="100"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1F6F5F] focus:border-transparent bg-white"
+                    dir="ltr"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">إيه الرقم اللي تحب نتفق عليه؟</p>
+                </div>
+              </div>
             </div>
 
             {/* Why join */}

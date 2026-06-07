@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
-import InstallPWA from '@/components/InstallPWA'
+import DownloadAppBig from '@/components/DownloadAppBig'
 import FeaturedListings from '@/components/FeaturedListings'
 import FinancialTicker from '@/components/FinancialTicker'
 import CompactNewsTabs from '@/components/CompactNewsTabs'
@@ -93,10 +93,39 @@ async function getSiteSettings(): Promise<Record<string, string>> {
   }
 }
 
+async function getSiteStats(): Promise<{ listings: number; categories: number; suppliers: number; cities: number }> {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const [listingsR, categoriesR, suppliersR, citiesR] = await Promise.all([
+      // @ts-expect-error
+      supabase.from('listings').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+      // @ts-expect-error
+      supabase.from('categories').select('id', { count: 'exact', head: true }).eq('is_active', true).is('parent_id', null),
+      // @ts-expect-error
+      supabase.from('marketplace_suppliers').select('id', { count: 'exact', head: true }).eq('kyc_status', 'approved'),
+      // @ts-expect-error
+      supabase.from('listings').select('city').eq('status', 'published').not('city', 'is', null),
+    ])
+    const uniqCities = new Set((citiesR.data || []).map((r: { city: string }) => r.city)).size
+    return {
+      listings: listingsR.count || 0,
+      categories: categoriesR.count || 0,
+      suppliers: suppliersR.count || 0,
+      cities: uniqCities,
+    }
+  } catch (e) {
+    return { listings: 0, categories: 0, suppliers: 0, cities: 0 }
+  }
+}
+
 export default async function HomePage() {
-  const [settings, rootCategories] = await Promise.all([
+  const [settings, rootCategories, stats] = await Promise.all([
     getSiteSettings(),
     getRootCategories(),
+    getSiteStats(),
   ])
 
   const HERO_IMAGE = settings.hero_image_url || DEFAULT_HERO_IMAGE
@@ -108,33 +137,12 @@ export default async function HomePage() {
       <FinancialTicker />
 
       <main className="relative">
-        {/* قسم الواجهة المتحرك — Hero + ماركيه المجالات + عدّادات */}
-        <MadmonaShowcase />
+        {/* قسم الواجهة المتحرك — Hero + 5 chips + counters */}
+        <MadmonaShowcase stats={stats} />
 
-        <div className="max-w-7xl mx-auto px-4 pt-4">
-          <InstallPWA />
-        </div>
-
-        {/* 🎯 Primary CTAs — above news (the only place these tabs live now) */}
-        <div className="max-w-7xl mx-auto px-4 pt-4">
-          <div className="grid grid-cols-2 gap-2.5 md:gap-3">
-            <Link
-              href="/marketplace"
-              className="group relative flex items-center justify-center gap-2 py-3.5 md:py-5 bg-gradient-to-l from-[#1F6F5F] to-[#2a7a52] text-white text-sm md:text-base font-black rounded-2xl shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-300 no-underline overflow-hidden"
-            >
-              <span className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors" />
-              <ShoppingBag className="w-4 h-4 md:w-5 md:h-5 relative" />
-              <span className="relative"><T k="home.cta.rent_from_us" /></span>
-            </Link>
-            <Link
-              href="/add-listing"
-              className="group relative flex items-center justify-center gap-2 py-3.5 md:py-5 bg-gradient-to-l from-[#2FA084] to-[#d4a017] text-white text-sm md:text-base font-black rounded-2xl shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-300 no-underline overflow-hidden"
-            >
-              <span className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors" />
-              <Plus className="w-4 h-4 md:w-5 md:h-5 relative" strokeWidth={3} />
-              <span className="relative"><T k="nav.add_listing" /></span>
-            </Link>
-          </div>
+        {/* 📥 ZAR واحد كبير لتحميل التطبيق — استبدل الـ dual CTAs المكررة */}
+        <div className="max-w-7xl mx-auto px-4 pt-6">
+          <DownloadAppBig />
         </div>
 
         {/* 📅 Daily message card — retention feature (Phase X, May 18 2026).

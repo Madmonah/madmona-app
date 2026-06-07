@@ -8,7 +8,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, User, LogIn, Share2 } from 'lucide-react'
+import { Menu, X, User, LogIn, Share2, Briefcase, Plus } from 'lucide-react'
 import NotificationButton from './NotificationButton'
 import LanguageToggle from './LanguageToggle'
 import { useT } from '@/lib/i18n/LanguageProvider'
@@ -140,6 +140,34 @@ export default function TopNav() {
                 <div className="flex-1">
                   <p className="font-bold text-gray-900">{t('nav.account')}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{t('nav.account_desc')}</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/add-listing"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline group transition-colors"
+              >
+                <div className="w-10 h-10 rounded-xl bg-[#d4a017]/10 flex items-center justify-center flex-shrink-0">
+                  <Plus className="w-5 h-5 text-[#d4a017]" strokeWidth={3} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-gray-900">ضيف الليستنج</p>
+                  <p className="text-xs text-gray-500 mt-0.5">ابدأ تبيع أو تؤجّر على مضمونة</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/careers"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline group transition-colors"
+              >
+                <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 flex items-center justify-center flex-shrink-0">
+                  <Briefcase className="w-5 h-5 text-[#1F6F5F]" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-gray-900">التوظيف</p>
+                  <p className="text-xs text-gray-500 mt-0.5">تقدّم لفرص العمل في مضمونة</p>
                 </div>
               </Link>
 

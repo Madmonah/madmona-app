@@ -13,6 +13,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { ActionHub } from '@/components/admin/ActionHub'
+import { AgentDirectives } from '@/components/admin/AgentDirectives'
+import { QuickHub } from '@/components/admin/QuickHub'
 
 type Stage = 'loading' | 'unauthenticated' | 'ready'
 
@@ -210,7 +213,7 @@ export default function AdminOverview() {
     if ((Number(ai.alerts_unresolved) || 0) > 0) a.push({ tone: 'green', title: `${count(ai.alerts_unresolved)} تنبيه AI غير محلول`, sub: 'من نظام الـ AI OS — راجعه.', href: '/admin/alerts' })
     if ((Number(b2c.listings_draft) || 0) > 0) a.push({ tone: 'ink', title: `${count(b2c.listings_draft)} ليستنج في المسودات`, sub: 'محتاجة مراجعة أو تأكيد رقم (OTP).', href: '/admin/listing-drafts' })
     if ((Number(b2c.suppliers_pending) || 0) > 0) a.push({ tone: 'green', title: `${count(b2c.suppliers_pending)} مورّد بانتظار التفعيل`, sub: 'راجع طلبات الانضمام.', href: '/admin/marketplace-suppliers' })
-    if ((Number(wa.cold_leads_new) || 0) > 0) a.push({ tone: 'gold', title: `${count(wa.cold_leads_new)} lead جديد`, sub: 'جاهزين للتواصل عبر واتساب.', href: '/admin/leads' })
+    if ((Number(wa.cold_leads_new) || 0) > 0) a.push({ tone: 'gold', title: `${count(wa.cold_leads_new)} lead جديد`, sub: 'جاهزين للتواصل عبر واتساب.', href: '/admin/outreach-leads' })
     if ((Number(wa.queue_failed) || 0) > 0) a.push({ tone: 'ink', title: `${count(wa.queue_failed)} رسالة واتساب فشلت`, sub: 'في طابور الإرسال.', href: '/admin/wa-review' })
     return a.slice(0, 4)
   }, [b2c, ai, wa])
@@ -255,39 +258,108 @@ export default function AdminOverview() {
             <div><h1>مضمونة</h1><p>سوق الإيجار والخدمات</p></div>
           </div>
 
-          <nav>
+          <nav className="side-scroll">
             <div className="nav-group">
-              <div className="lbl">الرئيسية</div>
-              <Link className="nav-item active" href="/admin/dashboard">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></svg>
-                نظرة عامة
-              </Link>
-              <Link className="nav-item" href="/admin/overview">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3" /><path d="M3 12h3M18 12h3M12 3v3M12 18v3" /></svg>
-                كل الأدوات (Hub)
-              </Link>
+              <div className="lbl">🏠 الرئيسية</div>
+              <Link className="nav-item active" href="/admin/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></svg>نظرة عامة</Link>
+              <Link className="nav-item" href="/admin/overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="5" cy="5" r="1.6" /><circle cx="12" cy="5" r="1.6" /><circle cx="19" cy="5" r="1.6" /><circle cx="5" cy="12" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="19" cy="12" r="1.6" /><circle cx="5" cy="19" r="1.6" /><circle cx="12" cy="19" r="1.6" /><circle cx="19" cy="19" r="1.6" /></svg>كل الأدوات (Hub)</Link>
+              <Link className="nav-item" href="/admin/cockpit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>Cockpit</Link>
+              <Link className="nav-item" href="/admin/command-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12h6l3-9 3 18 3-9h3" /></svg>Command Center</Link>
+              <Link className="nav-item" href="/admin/hq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01" /></svg>HQ</Link>
+              <Link className="nav-item" href="/admin/ceo-briefs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" /></svg>CEO Briefs</Link>
+              <Link className="nav-item" href="/admin/strategy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg>Strategy</Link>
             </div>
 
             <div className="nav-group">
-              <div className="lbl">السوق</div>
+              <div className="lbl">🛒 السوق والليستنجز</div>
               <Link className="nav-item" href="/admin/listings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M8 4v5" /></svg>الليستنجز</Link>
-              <Link className="nav-item" href="/admin/marketplace-bookings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="15" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>الحجوزات</Link>
-              <Link className="nav-item" href="/admin/categories"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l1-5h16l1 5" /><path d="M4 9v10a1 1 0 001 1h14a1 1 0 001-1V9" /></svg>الموديولز</Link>
+              <Link className="nav-item" href="/admin/listing-drafts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path d="M14 2v6h6" /></svg>مسودات الليستنجز</Link>
+              <Link className="nav-item" href="/admin/listing-performance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18" /><path d="M7 14l4-4 4 4 6-6" /></svg>أداء الليستنجز</Link>
+              <Link className="nav-item" href="/admin/marketplace-bookings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="15" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>حجوزات الماركتبليس</Link>
+              <Link className="nav-item" href="/admin/marketplace-orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><path d="M3 6h18M16 10a4 4 0 01-8 0" /></svg>طلبات الماركتبليس</Link>
+              <Link className="nav-item" href="/admin/bookings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>الحجوزات</Link>
+              <Link className="nav-item" href="/admin/marketplace-suppliers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" /></svg>موردي الماركتبليس</Link>
+              <Link className="nav-item" href="/admin/suppliers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7" /></svg>الموردين</Link>
+              <Link className="nav-item" href="/admin/suppliers-v2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="7" r="4" /><circle cx="17" cy="7" r="3" /><path d="M2 21c0-4 3-6 7-6s7 2 7 6" /></svg>موردين v2</Link>
+              <Link className="nav-item" href="/admin/supplier-posts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M8 10h8M8 14h5" /></svg>بوستات الموردين</Link>
+              <Link className="nav-item" href="/admin/units"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>الوحدات</Link>
+              <Link className="nav-item" href="/admin/categories"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l1-5h16l1 5" /><path d="M4 9v10a1 1 0 001 1h14a1 1 0 001-1V9" /></svg>الفئات / الموديولز</Link>
             </div>
 
             <div className="nav-group">
-              <div className="lbl">العمليات</div>
-              <Link className="nav-item" href="/admin/marketplace-suppliers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7" /></svg>الموردين</Link>
+              <div className="lbl">💰 المالية والعمليات</div>
               <Link className="nav-item" href="/admin/payouts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20M6 15h4" /></svg>المستحقات</Link>
               <Link className="nav-item" href="/admin/custody"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7l9-4 9 4-9 4-9-4z" /><path d="M3 7v7l9 4 9-4V7" /></svg>العهدة</Link>
               <Link className="nav-item" href="/admin/business-finance/c8b7b9d7-6178-4d0c-abdf-66f34b628e9d"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="8" r="3.2" /><path d="M2.5 20c0-3.3 2.9-5.5 6.5-5.5S15.5 16.7 15.5 20" /></svg>الفريق والحضور</Link>
+              <Link className="nav-item" href="/admin/business-partners"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>شركاء B2B</Link>
+              <Link className="nav-item" href="/admin/partnerships"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 16l4 4M20 16l-4 4M2 12l5 5L19 5" /></svg>الشراكات</Link>
+              <Link className="nav-item" href="/admin/sponsorships"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" /></svg>الرعاية</Link>
+              <Link className="nav-item" href="/admin/collaborations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M17 3.13a4 4 0 010 7.75" /></svg>التعاون</Link>
+              <Link className="nav-item" href="/admin/madmona"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" /></svg>مضمونة (الشركة)</Link>
+              <Link className="nav-item" href="/admin/careers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2M3 13h18" /></svg>طلبات التوظيف</Link>
+              <Link className="nav-item" href="/admin/flow-tasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>Flow Tasks</Link>
+              <Link className="nav-item" href="/admin/company"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01" /></svg>Company</Link>
             </div>
 
             <div className="nav-group">
-              <div className="lbl">الأنظمة</div>
-              <Link className="nav-item" href="/admin/ai-os"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="3" /><path d="M9 9h6v6H9z" /></svg>الـ AI OS</Link>
-              <Link className="nav-item" href="/admin/messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.5 8.5 0 01-12.6 7.4L3 21l2.1-5.4A8.5 8.5 0 1121 11.5z" /></svg>واتساب</Link>
+              <div className="lbl">📲 الليدز والتواصل</div>
+              <Link className="nav-item" href="/admin/outreach-leads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /><circle cx="12" cy="12" r="4" /></svg>Outreach Leads</Link>
+              <Link className="nav-item" href="/admin/leads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>Leads</Link>
+              <Link className="nav-item" href="/admin/leads-feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 11a9 9 0 019 9M4 4a16 16 0 0116 16" /><circle cx="5" cy="19" r="1" /></svg>Leads Feed</Link>
+              <Link className="nav-item" href="/admin/funnel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18l-7 8v6l-4 2v-8z" /></svg>Funnel</Link>
+              <Link className="nav-item" href="/admin/messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.5 8.5 0 01-12.6 7.4L3 21l2.1-5.4A8.5 8.5 0 1121 11.5z" /></svg>المحادثات</Link>
+              <Link className="nav-item" href="/admin/wa-review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" /></svg>مراجعة WA</Link>
+            </div>
+
+            <div className="nav-group">
+              <div className="lbl">🎨 المحتوى والإعلانات</div>
               <Link className="nav-item" href="/admin/marketing-hq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8M12 17v4" /></svg>مركز المحتوى</Link>
+              <Link className="nav-item" href="/admin/social-packs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>Social Packs</Link>
+              <Link className="nav-item" href="/admin/social-groups"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3" /><circle cx="19" cy="5" r="2" /><circle cx="5" cy="5" r="2" /><circle cx="19" cy="19" r="2" /><circle cx="5" cy="19" r="2" /></svg>Social Groups</Link>
+              <Link className="nav-item" href="/admin/reels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 3v18M15 3v18" /></svg>Reels</Link>
+              <Link className="nav-item" href="/admin/ad-builder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M12 8v8M8 12h8" /></svg>Ad Builder</Link>
+              <Link className="nav-item" href="/admin/ad-creatives"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><path d="M16 8l-8 8M8 8l8 8" /></svg>Ad Creatives</Link>
+              <Link className="nav-item" href="/admin/ad-review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><path d="M9 12l2 2 4-4" /></svg>Ad Review</Link>
+              <Link className="nav-item" href="/admin/news"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 22h16a2 2 0 002-2V4a2 2 0 00-2-2H8a2 2 0 00-2 2v16a2 2 0 01-2 2zM18 14h-8M15 18h-5M10 6h8v4h-8z" /></svg>أخبار</Link>
+              <Link className="nav-item" href="/admin/daily-messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>رسائل يومية</Link>
+              <Link className="nav-item" href="/admin/welcome-messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 18l3-3 3 3 4-4 4 4 4-4" /><path d="M3 6h18" /></svg>رسائل ترحيب</Link>
+              <Link className="nav-item" href="/admin/email-queue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1 0 2 1 2 2v12c0 1-1 2-2 2H4c-1 0-2-1-2-2V6c0-1 1-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>Email Queue</Link>
+              <Link className="nav-item" href="/admin/email-templates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M4 8h16M8 4v16" /></svg>Email Templates</Link>
+            </div>
+
+            <div className="nav-group">
+              <div className="lbl">🤖 الـ AI OS</div>
+              <Link className="nav-item" href="/admin/ai-os"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="3" /><path d="M9 9h6v6H9z" /></svg>AI OS</Link>
+              <Link className="nav-item" href="/admin/ai-assistant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><path d="M8 9h.01M16 9h.01M8 15c1 1 2 2 4 2s3-1 4-2" /></svg>المساعد الذكي</Link>
+              <Link className="nav-item" href="/admin/agents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="7" r="4" /><path d="M3 21v-2a7 7 0 0118 0v2" /></svg>Agents</Link>
+              <Link className="nav-item" href="/admin/agent-runs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><polyline points="10 8 16 12 10 16 10 8" /></svg>Agent Runs</Link>
+              <Link className="nav-item" href="/admin/agent-health"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>Agent Health</Link>
+              <Link className="nav-item" href="/admin/agent-network"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="2" /><circle cx="5" cy="6" r="2" /><circle cx="19" cy="6" r="2" /><circle cx="5" cy="18" r="2" /><circle cx="19" cy="18" r="2" /><path d="M7 7l3 3M17 7l-3 3M7 17l3-3M17 17l-3-3" /></svg>شبكة Agents</Link>
+              <Link className="nav-item" href="/admin/workflows"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="6" height="6" /><rect x="15" y="3" width="6" height="6" /><rect x="3" y="15" width="6" height="6" /><rect x="15" y="15" width="6" height="6" /><path d="M9 6h6M9 18h6M6 9v6M18 9v6" /></svg>Workflows</Link>
+              <Link className="nav-item" href="/admin/pipelines"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12h6m6 0h6" /><circle cx="12" cy="12" r="3" /></svg>Pipelines</Link>
+              <Link className="nav-item" href="/admin/capabilities"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z" /></svg>Capabilities</Link>
+              <Link className="nav-item" href="/admin/prompt-versions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v16H4z" /><path d="M8 8h8M8 12h6M8 16h4" /></svg>Prompts</Link>
+              <Link className="nav-item" href="/admin/policy-rules"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>Policy Rules</Link>
+              <Link className="nav-item" href="/admin/qc-reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4" /><rect x="3" y="4" width="18" height="16" rx="2" /></svg>QC Reports</Link>
+            </div>
+
+            <div className="nav-group">
+              <div className="lbl">📊 المراقبة والذكاء</div>
+              <Link className="nav-item" href="/admin/insights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>Insights</Link>
+              <Link className="nav-item" href="/admin/demand-forecast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18" /><path d="M7 17l4-8 4 4 6-6" /></svg>توقعات الطلب</Link>
+              <Link className="nav-item" href="/admin/performance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18" /><path d="M7 12l3-3 4 4 6-6" /></svg>الأداء</Link>
+              <Link className="nav-item" href="/admin/activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>النشاط</Link>
+              <Link className="nav-item" href="/admin/alerts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.3 3.9l-8 14A2 2 0 004 21h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z" /><path d="M12 9v4M12 17h.01" /></svg>تنبيهات</Link>
+              <Link className="nav-item" href="/admin/notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 01-3.4 0" /></svg>الإشعارات</Link>
+              <Link className="nav-item" href="/admin/fraud-alerts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2L4 6v6c0 5 4 9 8 10 4-1 8-5 8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>تنبيهات الاحتيال</Link>
+            </div>
+
+            <div className="nav-group">
+              <div className="lbl">⚙️ الإعدادات والأنظمة</div>
+              <Link className="nav-item" href="/admin/site-settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 008.91 19a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 005 8.91a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" /></svg>إعدادات الموقع</Link>
+              <Link className="nav-item" href="/admin/permissions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg>الصلاحيات</Link>
+              <Link className="nav-item" href="/admin/runbook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v16H4z" /><path d="M4 9h16M9 4v16" /></svg>System Runbook</Link>
+              <Link className="nav-item" href="/admin/refresh-fb-token"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 11-3-6.7L21 8" /><path d="M21 3v5h-5" /></svg>تجديد FB Token</Link>
             </div>
           </nav>
 
@@ -319,6 +391,15 @@ export default function AdminOverview() {
           </header>
 
           <div className="wrap">
+
+            {/* Quick Hub — 8 cards لكل مركز تحكم (التوظيف بيبان هنا) */}
+            <QuickHub />
+
+            {/* Agent Directives — توجيهات الـ AI agents من Mohamed */}
+            <AgentDirectives />
+
+            {/* Action Hub — كل المهام المعلّقة في مكان واحد */}
+            <ActionHub />
 
             {/* greeting */}
             <div className="greet reveal">
@@ -650,14 +731,19 @@ const styles = `
 .side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;
   background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(248,248,244,.7));
   backdrop-filter:blur(14px);border-inline-start:1px solid var(--line-2);padding:24px 16px 16px}
+.side-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding-inline-end:4px;scrollbar-width:thin;scrollbar-color:rgba(31,111,95,.18) transparent}
+.side-scroll::-webkit-scrollbar{width:6px}
+.side-scroll::-webkit-scrollbar-track{background:transparent}
+.side-scroll::-webkit-scrollbar-thumb{background:rgba(31,111,95,.18);border-radius:99px}
+.side-scroll::-webkit-scrollbar-thumb:hover{background:rgba(31,111,95,.32)}
 .brand{display:flex;align-items:center;gap:11px;padding:4px 8px 20px}
 .brand .mark{width:38px;height:38px;border-radius:12px;background:var(--grad-cta);display:grid;place-items:center;color:#fff;font-weight:900;font-size:20px;box-shadow:0 8px 18px -8px rgba(31,111,95,.6)}
 .brand h1{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0}
 .brand p{font-size:10.5px;color:var(--ink-mute);font-weight:600;margin:1px 0 0}
 .nav-group{margin:12px 0 4px}
 .nav-group .lbl{font-size:10px;font-weight:700;color:var(--ink-mute);letter-spacing:.1em;padding:0 12px 7px}
-.nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px;color:var(--ink-soft);font-weight:600;font-size:13.5px;position:relative;transition:.18s;margin-bottom:2px}
-.nav-item svg{width:18px;height:18px;stroke-width:1.7;opacity:.8;flex:none}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:11px;color:var(--ink-soft);font-weight:600;font-size:13px;position:relative;transition:.18s;margin-bottom:1px}
+.nav-item svg{width:17px;height:17px;stroke-width:1.7;opacity:.8;flex:none}
 .nav-item:hover{background:rgba(31,111,95,.06);color:var(--green-deep)}
 .nav-item.active{background:var(--green-fog);color:var(--green-deep);box-shadow:inset 0 0 0 1px rgba(31,111,95,.1)}
 .nav-item.active::before{content:"";position:absolute;inset-inline-end:-16px;top:50%;transform:translateY(-50%);width:4px;height:22px;border-radius:4px;background:var(--grad-cta)}

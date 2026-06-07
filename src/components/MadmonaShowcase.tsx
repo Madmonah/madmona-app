@@ -1,72 +1,121 @@
 'use client';
 
 /**
- * مضمونة — قسم الواجهة المتحرك (Hero بصور حقيقية + فئات تتلاشى وتسلّم لبعض + عدّادات)
- * CSS بس — مفيش أي مكتبة. RTL + ألوان البراند.
+ * مضمونة — VK-style Hero (v4 — 6 Jun 2026)
+ *
+ * مرجع Mohamed: vk.com — أيقونات كتيرة متحركة في الخلفية
+ * + 5 chips كبيرة بألوان لكل مجال
+ * كل حاجة بتروح /add-listing (نمو السوق = إضافة موردين)
+ *
+ * المجالات الـ 5:
+ *  - إيجار · خدمات · مطاعم · بيع وشرا · مناسبات
  */
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
-const IMG = 'https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/ads/categories';
-const LP = 'https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/listing-photos';
+type Stats = {
+  listings: number;
+  categories: number;
+  suppliers: number;
+  cities: number;
+};
 
-const GROUPS = [
-  { slug: 'properties', real: 'properties-residential', name: 'عقارات', emoji: '🏠' },
-  { slug: 'vehicles', real: 'vehicles', name: 'مركبات', emoji: '🚗' },
-  { slug: 'services', real: 'consultations', name: 'خدمات', emoji: '🛠️' },
-  { slug: 'equipment', real: 'equipment', name: 'معدات', emoji: '🎬' },
-  { slug: 'events', real: 'weddings', name: 'فعاليات ومناسبات', emoji: '💒' },
-  { slug: 'tourism', real: 'tourism', name: 'سياحة وتجارب', emoji: '🏖️' },
-  { slug: 'food', real: 'food-pizza', name: 'مطاعم ومأكولات', emoji: '🍽️' },
-  { slug: 'shop', real: 'shop-fashion', name: 'منتجات للبيع', emoji: '🛍️' },
+const DEFAULT_STATS: Stats = { listings: 0, categories: 0, suppliers: 0, cities: 0 };
+
+// 5 المجالات الكبيرة المتحركة
+const VK_CATEGORIES = [
+  { emoji: '🏠', name: 'إيجار', sub: 'عقارات · مركبات · معدات', accent: '#1F6F5F', bg: '#E7F1ED' },
+  { emoji: '🛠️', name: 'خدمات', sub: 'صيانة · جمال · استشارات', accent: '#D4A017', bg: '#FAEFD1' },
+  { emoji: '🍽️', name: 'مطاعم', sub: 'دلفري · سفرة · حلويات', accent: '#E26D5C', bg: '#FAE1CB' },
+  { emoji: '🛍️', name: 'بيع وشرا', sub: 'منتجات · أزياء · بيت', accent: '#3D7BB6', bg: '#D9E7F4' },
+  { emoji: '💍', name: 'مناسبات', sub: 'أعراس · قاعات · تصوير', accent: '#C75D8A', bg: '#F4DCE5' },
 ];
 
-// صور حقيقية من ليستنجز فعلية (تظهر بوضوح خلف الـhero)
-const HERO_PHOTOS = [
-  `${LP}/73d7d206-e492-4e73-adfe-67ad5fcce6e2/bbeaf634-ca5b-4d8c-842d-54a4e248b601/1778441027410-0.jpeg`,
-  `${LP}/21016941-5f8b-45d8-a6ef-3b4b8697be8b/cb4ea932-4092-4b24-8da0-c7f27328edbf/1778500079802-0.jpg`,
-  `${LP}/1d49706f-d460-42f8-bb2a-da795bbbd88c/8177689b-75d8-4568-b2b9-5ab106a4edec/1778528588413-0.jpeg`,
-  `${LP}/5ef52c59-4669-4391-a7fc-685e2f7e2e4e/ca59940f-deb1-4de3-ba31-482d696e41be/1778182677960-0.jpg`,
+// أيقونات خلفية متحركة (VK-style decorations) — بالسرعة الهادئة
+const BG_EMOJIS = [
+  { e: '🏠', t: '8%', l: '4%', s: 32, d: '0s', dur: '10s' },
+  { e: '🚗', t: '14%', r: '6%', s: 36, d: '1.5s', dur: '11s' },
+  { e: '🛠️', t: '32%', l: '2%', s: 28, d: '3s', dur: '9s' },
+  { e: '🍽️', t: '48%', r: '3%', s: 34, d: '0.8s', dur: '11s' },
+  { e: '💍', t: '60%', l: '6%', s: 30, d: '2.5s', dur: '12s' },
+  { e: '✨', t: '12%', r: '18%', s: 24, d: '4.5s', dur: '8s' },
+  { e: '🎨', t: '72%', r: '10%', s: 28, d: '1.2s', dur: '10s' },
+  { e: '⚡', t: '42%', r: '22%', s: 26, d: '3.8s', dur: '9s' },
+  { e: '💎', t: '22%', l: '20%', s: 24, d: '1.8s', dur: '11s' },
+  { e: '🎯', t: '64%', l: '16%', s: 26, d: '0.5s', dur: '9s' },
+  { e: '🛍️', t: '80%', l: '32%', s: 28, d: '2.8s', dur: '10s' },
+  { e: '📱', t: '6%', l: '38%', s: 24, d: '3.5s', dur: '9s' },
+  { e: '🎬', t: '52%', l: '36%', s: 26, d: '5.5s', dur: '12s' },
+  { e: '🏖️', t: '88%', r: '24%', s: 30, d: '1s', dur: '11s' },
+  { e: '🎉', t: '24%', l: '50%', s: 26, d: '6s', dur: '9s' },
+  { e: '🚀', t: '76%', l: '4%', s: 28, d: '4.2s', dur: '11s' },
 ];
 
-export default function MadmonaShowcase() {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const [heroIdx, setHeroIdx] = useState(0);
+// Arabic-Indic numerals
+function toArabic(n: number): string {
+  return n.toString().replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[+d]);
+}
+
+function useCountUp(target: number, duration = 1400) {
+  const [value, setValue] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const started = useRef(false);
 
   useEffect(() => {
-    const t = setInterval(() => setHeroIdx((i) => (i + 1) % HERO_PHOTOS.length), 4000);
-    return () => clearInterval(t);
-  }, []);
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && !started.current) {
+          started.current = true;
+          const start = performance.now();
+          const tick = (now: number) => {
+            const p = Math.min(1, (now - start) / duration);
+            const eased = 1 - Math.pow(1 - p, 3);
+            setValue(Math.round(target * eased));
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [target, duration]);
+
+  return { value, ref };
+}
+
+function StatPill({ href, num, label }: { href: string; num: number; label: string }) {
+  const { value, ref } = useCountUp(num);
+  return (
+    <Link href={href} className="mdm-stat-pill" prefetch={false}>
+      <span ref={ref} className="mdm-stat-pill-num">{toArabic(value)}</span>
+      <span className="mdm-stat-pill-cap">{label}</span>
+    </Link>
+  );
+}
+
+export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Stats }) {
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
     const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('mdm-in');
-            if (e.target.classList.contains('mdm-stat')) {
-              const el = e.target as HTMLElement;
-              const to = Number(el.dataset.to || '0');
-              const suffix = el.dataset.suffix || '';
-              const numEl = el.querySelector('.mdm-stat-num') as HTMLElement;
-              const dur = 1400; const start = performance.now();
-              const tick = (now: number) => {
-                const p = Math.min(1, (now - start) / dur);
-                const eased = 1 - Math.pow(1 - p, 3);
-                if (numEl) numEl.textContent = Math.round(to * eased).toString() + suffix;
-                if (p < 1) requestAnimationFrame(tick);
-              };
-              requestAnimationFrame(tick);
-            }
-            io.unobserve(e.target);
-          }
-        });
-      },
-      { threshold: 0.25 }
+      (entries) => entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('mdm-in');
+          io.unobserve(e.target);
+        }
+      }),
+      { threshold: 0.15 }
     );
-    root.querySelectorAll('.mdm-reveal, .mdm-stat').forEach((n) => io.observe(n));
+    root.querySelectorAll('.mdm-reveal').forEach((n) => io.observe(n));
     return () => io.disconnect();
   }, []);
 
@@ -74,55 +123,96 @@ export default function MadmonaShowcase() {
     <div className="mdm-showcase" ref={rootRef} dir="rtl">
       <style>{CSS}</style>
 
+      {/* ============ HERO ============ */}
       <section className="mdm-hero">
-        <div className="mdm-hero-bg">
-          {HERO_PHOTOS.map((src, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={src} src={src} alt="" className={`mdm-hero-photo${i === heroIdx ? ' on' : ''}`} />
+        {/* أيقونات خلفية متحركة (VK-style stickers) */}
+        <div className="mdm-bg-emojis" aria-hidden>
+          {BG_EMOJIS.map((e, i) => (
+            <span
+              key={i}
+              className="mdm-bg-emoji"
+              style={{
+                top: e.t,
+                left: e.l,
+                right: e.r,
+                fontSize: `${e.s}px`,
+                animationDelay: e.d,
+                animationDuration: e.dur,
+              }}
+            >
+              {e.e}
+            </span>
           ))}
         </div>
-        <div className="mdm-hero-overlay" />
-        <span className="mdm-blob mdm-blob1" />
-        <span className="mdm-blob mdm-blob2" />
-        <div className="mdm-hero-in">
-          <div className="mdm-logo mdm-reveal">
-            <span className="mdm-dot" />
-            <span className="mdm-wm">مضمونة</span>
-          </div>
-          <h1 className="mdm-h1 mdm-reveal">معاملاتك مضمونة</h1>
-          <p className="mdm-sub mdm-reveal">
-            أكبر سوق مضمون في مصر — إيجار، بيع وشرا، خدمات، ومطاعم. بحماية كاملة، ودفع مستحقات سريع، ودعم على مدار الساعة.
-          </p>
-          <div className="mdm-cta mdm-reveal">
-            <a className="mdm-btn mdm-btn-gold" href="/add-listing">ضيف الليستنج</a>
-            <a className="mdm-btn mdm-btn-ghost" href="/marketplace">اتصفّح المجالات</a>
-          </div>
-          <div className="mdm-stats">
-            <div className="mdm-stat" data-to="100" data-suffix="٪">
-              <div className="mdm-stat-num">0</div><div className="mdm-stat-label">حماية كاملة</div>
-            </div>
-            <div className="mdm-stat" data-to="24" data-suffix="/7">
-              <div className="mdm-stat-num">0</div><div className="mdm-stat-label">دعم مستمر</div>
-            </div>
-            <div className="mdm-stat" data-to="8" data-suffix="">
-              <div className="mdm-stat-num">0</div><div className="mdm-stat-label">مجالات مضمونة</div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <section className="mdm-cats mdm-reveal">
-        <h2 className="mdm-h2">اتصفّح كل المجالات</h2>
-        <div className="mdm-grid">
-          {GROUPS.map((g, i) => (
-            <a className="mdm-tile" key={g.slug} href="/marketplace" style={{ animationDelay: `${i * 0.8}s` }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`${IMG}/real/${g.real}.jpg`} alt={g.name} loading="lazy" />
-              <span className="mdm-tile-shade" />
-              <span className="mdm-tile-emoji">{g.emoji}</span>
-              <span className="mdm-tile-name">{g.name}</span>
-            </a>
-          ))}
+        <div className="mdm-paper-grain" aria-hidden />
+
+        <div className="mdm-hero-in">
+          {/* Kicker */}
+          <Link href="/about" className="mdm-kicker mdm-reveal" prefetch={false}>
+            <span className="mdm-kicker-dot" />
+            <span>EST. ٢٠٢٦ · القاهرة</span>
+            <span className="mdm-kicker-dot" />
+          </Link>
+
+          {/* Headline */}
+          <Link href="/add-listing" className="mdm-h1-link mdm-reveal" prefetch={false}>
+            <h1 className="mdm-h1">
+              <span className="mdm-h1-line">معاملاتك</span>
+              <span className="mdm-h1-em">مضمونة.</span>
+            </h1>
+          </Link>
+
+          {/* Sublabel */}
+          <p className="mdm-sub mdm-reveal">
+            احنا عندنا — اختار مجالك وضيف ليستنجك دلوقتي:
+          </p>
+
+          {/* ============ 5 BIG VK-STYLE CATEGORY CHIPS ============ */}
+          <div className="mdm-vk-grid mdm-reveal">
+            {VK_CATEGORIES.map((c, i) => (
+              <Link
+                key={c.name}
+                href="/add-listing"
+                prefetch={false}
+                className="mdm-vk-chip"
+                style={
+                  {
+                    '--accent': c.accent,
+                    '--bg': c.bg,
+                    '--delay': `${i * 0.25}s`,
+                  } as React.CSSProperties
+                }
+              >
+                <span className="mdm-vk-emoji">{c.emoji}</span>
+                <div className="mdm-vk-name">{c.name}</div>
+                <div className="mdm-vk-sub">{c.sub}</div>
+                <span className="mdm-vk-add">
+                  <span>ضيف</span>
+                  <ArrowLeft size={12} />
+                </span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Stats inline at bottom — clickable مع counters */}
+          <div className="mdm-stats-row mdm-reveal">
+            <StatPill href="/add-listing" num={stats.listings} label="ليستنج" />
+            <StatPill href="/add-listing" num={stats.categories} label="مجال" />
+            <StatPill href="/add-listing" num={stats.suppliers} label="مورد" />
+            <StatPill href="/add-listing" num={stats.cities} label="مدينة" />
+          </div>
+
+          {/* Primary CTAs */}
+          <div className="mdm-hero-actions mdm-reveal">
+            <Link href="/add-listing" className="mdm-pill mdm-pill-primary" prefetch={false}>
+              ضيف ليستنجك مجاناً
+              <ArrowLeft size={14} />
+            </Link>
+            <Link href="/marketplace" className="mdm-pill mdm-pill-ghost" prefetch={false}>
+              اتصفّح السوق
+            </Link>
+          </div>
         </div>
       </section>
     </div>
@@ -130,46 +220,209 @@ export default function MadmonaShowcase() {
 }
 
 const CSS = `
-.mdm-showcase{--cream:#FAFAF7;--green:#1F6F5F;--green2:#2FA084;--green3:#6FCF97;--ink:#0A0A0A;--gold:#d4a017;font-family:'Cairo','Inter',sans-serif;background:var(--cream);color:var(--ink);overflow:hidden}
+.mdm-showcase{
+  --cream:#FAFAF7; --paper:#F3F1EA; --ink:#0A0A0A; --green:#1F6F5F; --green2:#2FA084;
+  --muted:#7C8A84; --gold:#D4A017; --border:#E5DFD3;
+  font-family:'Cairo','Inter',system-ui,sans-serif;
+  background:var(--cream); color:var(--ink); overflow:hidden;
+}
 .mdm-showcase *{box-sizing:border-box}
-.mdm-reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.mdm-showcase a{text-decoration:none;color:inherit}
+
+.mdm-reveal{opacity:0;transform:translateY(20px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
 .mdm-reveal.mdm-in{opacity:1;transform:none}
-.mdm-hero{position:relative;padding:84px 20px 72px;text-align:center;background:#143A33;overflow:hidden}
-.mdm-hero-bg{position:absolute;inset:0;z-index:0}
-.mdm-hero-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.4s ease;transform:scale(1.06)}
-.mdm-hero-photo.on{opacity:.72}
-.mdm-hero-overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(135deg,rgba(15,40,35,.70) 0%,rgba(31,111,95,.52) 50%,rgba(47,160,132,.55) 100%)}
-.mdm-hero-in{position:relative;z-index:2;max-width:920px;margin:0 auto}
-.mdm-blob{position:absolute;border-radius:50%;filter:blur(90px);z-index:1}
-.mdm-blob1{width:520px;height:520px;background:var(--green3);opacity:.30;top:-160px;inset-inline-end:-120px;animation:mdmFloat 9s ease-in-out infinite}
-.mdm-blob2{width:440px;height:440px;background:var(--gold);opacity:.18;bottom:-180px;inset-inline-start:-120px;animation:mdmFloat 11s ease-in-out infinite reverse}
-@keyframes mdmFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,28px)}}
-.mdm-logo{display:inline-flex;align-items:center;gap:12px;margin-bottom:18px}
-.mdm-dot{width:18px;height:18px;border-radius:50%;background:linear-gradient(120deg,var(--gold),var(--green2),var(--green));box-shadow:0 0 0 7px rgba(255,255,255,.10)}
-.mdm-wm{font-weight:900;font-size:38px;color:#fff;line-height:1;text-shadow:0 2px 18px rgba(0,0,0,.45)}
-.mdm-h1{font-weight:900;font-size:clamp(40px,7vw,76px);color:#fff;margin:6px 0 14px;line-height:1.05;letter-spacing:-1px;text-shadow:0 4px 26px rgba(0,0,0,.45)}
-.mdm-sub{font-size:clamp(16px,2.4vw,21px);color:#f3fffa;opacity:.96;max-width:680px;margin:0 auto 28px;line-height:1.7;text-shadow:0 2px 14px rgba(0,0,0,.40)}
-.mdm-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.mdm-btn{padding:15px 34px;border-radius:999px;font-weight:800;font-size:17px;text-decoration:none;display:inline-block;transition:transform .2s ease,box-shadow .2s ease}
-.mdm-btn-gold{color:#fff;background:linear-gradient(120deg,var(--gold),var(--green2),var(--green));box-shadow:0 12px 34px rgba(212,160,23,.35)}
-.mdm-btn-gold:hover{transform:translateY(-3px);box-shadow:0 18px 44px rgba(212,160,23,.45)}
-.mdm-btn-ghost{color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.40)}
-.mdm-btn-ghost:hover{transform:translateY(-3px);background:rgba(255,255,255,.26)}
-.mdm-stats{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:46px}
-.mdm-stat{opacity:0;transform:translateY(24px) scale(.96);transition:all .6s cubic-bezier(.2,.7,.2,1);min-width:150px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.22);border-radius:20px;padding:22px 26px;backdrop-filter:blur(4px)}
-.mdm-stat.mdm-in{opacity:1;transform:none}
-.mdm-stat-num{font-weight:900;font-size:46px;color:#fff;line-height:1}
-.mdm-stat-label{font-size:15px;color:#eafdf6;margin-top:6px}
-.mdm-cats{padding:64px 0 72px}
-.mdm-h2{text-align:center;font-weight:900;font-size:clamp(26px,4vw,40px);color:var(--green);margin:0 0 36px}
-.mdm-grid{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;align-items:center;max-width:1200px;margin:0 auto;padding:8px 20px}
-.mdm-tile{position:relative;flex:0 0 auto;width:clamp(150px,42vw,240px);height:clamp(200px,56vw,300px);border-radius:24px;overflow:hidden;text-decoration:none;box-shadow:0 14px 40px rgba(20,58,51,.12);display:block;transition:box-shadow .3s ease,transform .3s ease;opacity:1}
-.mdm-grid:hover .mdm-tile{animation-play-state:paused}
-.mdm-tile:hover{box-shadow:0 26px 60px rgba(20,58,51,.28)}
-.mdm-tile img{width:100%;height:100%;object-fit:cover;display:block}
-.mdm-tile-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,58,51,.05) 30%,rgba(20,58,51,.78) 100%)}
-.mdm-tile-emoji{position:absolute;top:16px;inset-inline-end:16px;font-size:32px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
-.mdm-tile-name{position:absolute;bottom:18px;inset-inline-start:0;inset-inline-end:0;text-align:center;color:#fff;font-weight:800;font-size:22px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
-@keyframes mdmTileFade{0%{opacity:.10;transform:translateY(16px) scale(.94)}9%{opacity:1;transform:translateY(0) scale(1)}48%{opacity:1;transform:translateY(0) scale(1)}60%{opacity:.10;transform:translateY(-14px) scale(.95)}100%{opacity:.10;transform:translateY(-14px) scale(.95)}}
-@media (prefers-reduced-motion: reduce){.mdm-blob{animation:none}.mdm-reveal{opacity:1;transform:none}.mdm-stat{opacity:1;transform:none}.mdm-tile{animation:none;opacity:1}.mdm-hero-photo.on{opacity:.72}}
+
+/* ============ HERO ============ */
+.mdm-hero{
+  position:relative; background:var(--cream);
+  padding:56px 24px 72px; text-align:center;
+  overflow:hidden; min-height:680px;
+}
+.mdm-paper-grain{
+  position:absolute; inset:0; pointer-events:none; opacity:.25; mix-blend-mode:multiply;
+  background:
+    radial-gradient(circle at 18% 28%, rgba(212,160,23,.06) 0, transparent 38%),
+    radial-gradient(circle at 82% 12%, rgba(31,111,95,.06) 0, transparent 42%),
+    radial-gradient(circle at 50% 95%, rgba(31,111,95,.04) 0, transparent 50%);
+}
+
+/* === أيقونات خلفية متحركة (VK stickers) === */
+.mdm-bg-emojis{position:absolute;inset:0;pointer-events:none;z-index:1}
+.mdm-bg-emoji{
+  position:absolute;
+  opacity:.16;
+  animation-name:mdmBgFloat;
+  animation-iteration-count:infinite;
+  animation-timing-function:ease-in-out;
+  filter:saturate(.85);
+  user-select:none;
+  will-change:transform;
+}
+@keyframes mdmBgFloat{
+  0%,100%{transform:translateY(0) translateX(0) rotate(0)}
+  25%{transform:translateY(-10px) translateX(4px) rotate(5deg)}
+  50%{transform:translateY(-2px) translateX(-6px) rotate(-3deg)}
+  75%{transform:translateY(8px) translateX(2px) rotate(2deg)}
+}
+
+.mdm-hero-in{position:relative;z-index:2;max-width:960px;margin:0 auto}
+
+/* Kicker */
+.mdm-kicker{display:inline-flex;align-items:center;gap:10px;font-size:10.5px;font-weight:700;letter-spacing:.32em;color:var(--muted);text-transform:uppercase;margin-bottom:22px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.7);backdrop-filter:blur(8px);transition:.2s}
+.mdm-kicker:hover{background:#fff;color:var(--ink);box-shadow:0 4px 12px rgba(20,40,34,.08)}
+.mdm-kicker-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);transition:.3s;animation:mdmPulse 4.2s ease-in-out infinite}
+@keyframes mdmPulse{0%,100%{box-shadow:0 0 0 0 rgba(212,160,23,.5)}50%{box-shadow:0 0 0 6px rgba(212,160,23,0)}}
+
+/* Headline */
+.mdm-h1-link{display:block}
+.mdm-h1{margin:0 0 16px;line-height:.95;letter-spacing:-2px;font-weight:300;color:var(--ink);transition:.3s}
+.mdm-h1-link:hover .mdm-h1{transform:translateY(-2px)}
+.mdm-h1-line{display:block;font-size:clamp(38px,7vw,72px);font-weight:300;letter-spacing:-2px}
+.mdm-h1-em{
+  display:block;font-size:clamp(46px,9vw,96px);font-weight:900;font-style:italic;
+  background:linear-gradient(118deg,#1F6F5F 0%, #2FA084 50%, #D4A017 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  margin-top:-6px;background-size:200% auto;animation:mdmShimmer 6s ease-in-out infinite alternate;
+}
+@keyframes mdmShimmer{from{background-position:0% center}to{background-position:100% center}}
+
+.mdm-sub{font-size:clamp(15px,2vw,18px);color:var(--muted);max-width:540px;margin:0 auto 36px;line-height:1.65;font-weight:600}
+
+/* ============ 5 BIG VK CHIPS ============ */
+.mdm-vk-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:16px;
+  max-width:920px;
+  margin:0 auto 36px;
+}
+@media(max-width:880px){.mdm-vk-grid{grid-template-columns:repeat(3,1fr);gap:12px}}
+@media(max-width:560px){.mdm-vk-grid{grid-template-columns:repeat(2,1fr);gap:10px}}
+
+.mdm-vk-chip{
+  position:relative;
+  background:#fff;
+  border:2px solid transparent;
+  border-radius:24px;
+  padding:24px 12px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition:transform .35s cubic-bezier(.2,.7,.6,1.4), box-shadow .35s, border-color .25s, background .25s;
+  box-shadow:0 4px 16px rgba(20,40,34,.06);
+  overflow:hidden;
+  animation:mdmChipBob 7s ease-in-out infinite;
+  animation-delay:var(--delay,0s);
+  will-change:transform;
+}
+@keyframes mdmChipBob{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+}
+.mdm-vk-chip::before{
+  content:""; position:absolute; inset:0; z-index:0;
+  background:linear-gradient(180deg, var(--bg, transparent) 0%, transparent 60%);
+  opacity:.55; transition:opacity .3s;
+}
+.mdm-vk-chip:hover{
+  transform:translateY(-10px) scale(1.04);
+  border-color:var(--accent);
+  box-shadow:0 18px 40px -8px var(--accent);
+  animation-play-state:paused;
+}
+.mdm-vk-chip:hover::before{opacity:1}
+
+.mdm-vk-emoji{
+  display:block; position:relative; z-index:1;
+  font-size:clamp(40px, 6vw, 56px); line-height:1;
+  margin-bottom:8px;
+  animation:mdmEmojiWobble 5.5s ease-in-out infinite;
+  animation-delay:var(--delay,0s);
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.10));
+  transition:transform .3s;
+}
+@keyframes mdmEmojiWobble{
+  0%,100%{transform:rotate(-2deg) scale(1)}
+  50%{transform:rotate(2deg) scale(1.04)}
+}
+.mdm-vk-chip:hover .mdm-vk-emoji{transform:rotate(0) scale(1.18)}
+
+.mdm-vk-name{
+  position:relative; z-index:1;
+  font-size:clamp(16px, 2.2vw, 22px);
+  font-weight:900;
+  color:var(--ink);
+  letter-spacing:-.5px;
+  line-height:1.1;
+  margin-bottom:4px;
+}
+.mdm-vk-sub{
+  position:relative; z-index:1;
+  font-size:11px;
+  font-weight:600;
+  color:var(--muted);
+  letter-spacing:-.01em;
+  line-height:1.35;
+  margin-bottom:12px;
+}
+.mdm-vk-add{
+  position:relative; z-index:1;
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:11px; font-weight:800;
+  padding:5px 10px; border-radius:999px;
+  background:var(--accent); color:#fff;
+  letter-spacing:.05em;
+  opacity:.85;
+  transition:.2s;
+}
+.mdm-vk-chip:hover .mdm-vk-add{
+  opacity:1; transform:scale(1.05);
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
+}
+
+/* === Stats row === */
+.mdm-stats-row{
+  display:flex; align-items:center; justify-content:center;
+  gap:8px; flex-wrap:wrap; margin-bottom:28px;
+}
+.mdm-stat-pill{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 18px; border-radius:999px;
+  background:rgba(255,255,255,.85); backdrop-filter:blur(8px);
+  border:1px solid var(--border);
+  transition:.25s; cursor:pointer;
+}
+.mdm-stat-pill:hover{
+  background:#fff; transform:translateY(-3px);
+  border-color:var(--green); box-shadow:0 8px 20px rgba(31,111,95,.15);
+}
+.mdm-stat-pill-num{font-size:18px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1}
+.mdm-stat-pill-cap{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.05em}
+.mdm-stat-pill:hover .mdm-stat-pill-num{color:var(--green)}
+
+/* === CTA Pills === */
+.mdm-hero-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.mdm-pill{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:999px;font-size:14.5px;font-weight:800;letter-spacing:-.01em;transition:.25s;cursor:pointer;border:1.5px solid transparent}
+.mdm-pill-primary{
+  background:linear-gradient(118deg, #1F6F5F 0%, #2FA084 55%, #D4A017 100%);
+  color:#fff;
+  box-shadow:0 6px 18px rgba(31,111,95,.32);
+  position:relative;
+  overflow:hidden;
+}
+.mdm-pill-primary::before{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(118deg, #D4A017 0%, #2FA084 50%, #1F6F5F 100%);
+  opacity:0; transition:opacity .35s;
+}
+.mdm-pill-primary > *{position:relative; z-index:1}
+.mdm-pill-primary:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(31,111,95,.42)}
+.mdm-pill-primary:hover::before{opacity:1}
+.mdm-pill-ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
+.mdm-pill-ghost:hover{background:var(--ink);color:var(--cream);transform:translateY(-3px)}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .mdm-reveal{opacity:1;transform:none}
+  .mdm-bg-emoji,.mdm-vk-chip,.mdm-vk-emoji,.mdm-h1-em,.mdm-kicker-dot{animation:none}
+}
 `;
