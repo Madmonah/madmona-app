@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { Menu, X, User, LogIn, Share2, Briefcase, Plus } from 'lucide-react'
 import NotificationButton from './NotificationButton'
 import LanguageToggle from './LanguageToggle'
+import CartButton from './CartButton'
 import { useT } from '@/lib/i18n/LanguageProvider'
 
 export default function TopNav() {
@@ -80,6 +81,7 @@ export default function TopNav() {
           <div className="flex items-center gap-2 flex-shrink-0">
             <LanguageToggle className="bg-white shadow-soft" />
             <NotificationButton variant="icon-only" />
+            <CartButton className="w-11 h-11 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-2xl" />
             <button
               type="button"
               onClick={() => setMobileOpen(true)}

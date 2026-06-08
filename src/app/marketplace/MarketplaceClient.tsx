@@ -9,6 +9,7 @@ import {
   ChevronDown, X, SlidersHorizontal, Sparkles, ShieldCheck, CheckCircle, Clock,
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
+import CartButton from '@/components/CartButton'
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import { useT } from '@/lib/i18n/LanguageProvider'
 
@@ -117,6 +118,13 @@ function MarketplaceBrowseContent() {
         .eq('is_active', true)
         .order('display_order', { ascending: true })
       setAllCategories(data || [])
+      // Auto-activate the track tab matching an incoming ?category= slug
+      // (so clicking a homepage category opens its specific track tab, not 'all')
+      if (initialCategorySlug && data) {
+        const cat = (data as Category[]).find(c => c.slug === initialCategorySlug)
+        const root = cat?.parent_id ? (data as Category[]).find(c => c.id === cat.parent_id) : cat
+        if (root?.track) setActiveTrack(root.track as TrackTab)
+      }
     }
     load()
   }, [])
@@ -309,6 +317,8 @@ function MarketplaceBrowseContent() {
               </div>
             </div>
 
+            <div className="flex items-center gap-2 flex-shrink-0">
+            <CartButton className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full" iconClass="w-4 h-4" />
             {isAuthed === true ? (
               <Link
                 href="/account"
@@ -326,6 +336,7 @@ function MarketplaceBrowseContent() {
                 {t('market.login')}
               </Link>
             ) : null}
+            </div>
           </div>
 
           <div className="relative">
