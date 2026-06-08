@@ -35,6 +35,7 @@ type PaymentConfig = {
   qr_image_url: string;
   iban: string;
   swift: string;
+  wallets?: { key: string; label: string; number: string }[];
 };
 
 export default function InstaPayPaymentBox({
@@ -81,7 +82,7 @@ export default function InstaPayPaymentBox({
 
   if (!config || !config.enabled) return null;
 
-  const hasNothing = !config.account_number && !config.ipa && !config.payment_link;
+  const hasNothing = !config.account_number && !config.ipa && !config.payment_link && !(config.wallets && config.wallets.length);
   if (hasNothing) return null;
 
   return (
@@ -218,6 +219,34 @@ export default function InstaPayPaymentBox({
           </div>
         )}
       </div>
+
+      {/* Mobile wallets (Vodafone Cash, Orange Cash, e& Cash, WE Pay...) */}
+      {config.wallets && config.wallets.length > 0 && (
+        <div className="mt-3 space-y-3">
+          {config.wallets.map((w) => (
+            <div
+              key={w.key}
+              className="flex items-start justify-between gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="text-[11px] text-gray-500 mb-0.5 flex items-center gap-1">
+                  📱 {w.label}
+                </div>
+                <div className="text-sm font-mono font-bold text-gray-900 tracking-wide" dir="ltr">
+                  {w.number}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => copyToClipboard(w.number, `wallet_${w.key}`)}
+                className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white border border-[#1F6F5F]/30 text-xs font-bold text-[#1F6F5F] hover:bg-[#1F6F5F]/5"
+              >
+                {copiedField === `wallet_${w.key}` ? '✓ اتنسخ' : 'انسخ'}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* How-to + confirmation footnote */}
       <div className="mt-4 pt-3 border-t border-gray-100 text-[11px] text-gray-500 leading-relaxed space-y-1.5">

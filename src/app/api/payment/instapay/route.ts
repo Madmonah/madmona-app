@@ -39,6 +39,7 @@ export async function GET(_req: NextRequest) {
         'payment_bank_name',
         'payment_iban',
         'payment_swift',
+        'payment_wallets',
       ]);
 
     if (error) {
@@ -51,6 +52,22 @@ export async function GET(_req: NextRequest) {
       settings[row.key] = row.value || '';
     });
 
+    // Parse mobile-wallet list (Vodafone Cash, Orange Cash, e& Cash, WE Pay...)
+    // Only expose wallets that are enabled AND have a number filled in.
+    type Wallet = { key: string; label: string; number: string; enabled?: boolean };
+    let wallets: { key: string; label: string; number: string }[] = [];
+    try {
+      const raw = settings['payment_wallets'];
+      if (raw) {
+        const parsed = JSON.parse(raw) as Wallet[];
+        wallets = (parsed || [])
+          .filter((w) => w && w.enabled && w.number && String(w.number).trim())
+          .map((w) => ({ key: w.key, label: w.label, number: String(w.number).trim() }));
+      }
+    } catch (e) {
+      console.error('payment/instapay: bad payment_wallets JSON:', e);
+    }
+
     return NextResponse.json({
       success: true,
       enabled: settings['instapay_enabled'] === 'true',
@@ -62,6 +79,7 @@ export async function GET(_req: NextRequest) {
       qr_image_url: settings['instapay_qr_image_url'] || '',
       iban: settings['payment_iban'] || '',
       swift: settings['payment_swift'] || '',
+      wallets,
     });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'unknown';
