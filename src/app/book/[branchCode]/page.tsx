@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   ChevronLeft, Loader2, Calendar as CalendarIcon, Clock, User,
   CheckCircle2, MapPin, Phone, Scissors, Sparkles, ArrowLeft,
-  ShoppingBag, Plus, Minus, Check,
+  ShoppingBag, Plus, Minus, Check, ShieldCheck,
 } from 'lucide-react'
 import { useMadmonaAuth, AccountGate } from '@/components/AccountGate'
 
@@ -15,6 +15,15 @@ const CATEGORY_LABELS: Record<string, string> = {
   hair_cut: 'قص شعر', hair_color: 'صبغة', hair_treatment: 'علاج شعر',
   styling: 'سشوار / تسريحة', makeup: 'مكياج', nails: 'أظافر', skin: 'بشرة',
   package: 'باقة', general: 'عام',
+}
+
+// brand gradients (match the /s storefront)
+const G_CTA = 'linear-gradient(100deg,#d4a017 0%,#2FA084 55%,#1F6F5F 100%)'
+const G_HERO = 'linear-gradient(120deg,#1d6253 0%,#2FA084 100%)'
+
+const STEP_ORDER = ['service', 'stylist', 'datetime', 'extras', 'info', 'confirm']
+const STEP_LABELS: Record<string, string> = {
+  service: 'الخدمة', stylist: 'الستايليست', datetime: 'الموعد', extras: 'إضافات', info: 'بياناتك', confirm: 'تأكيد',
 }
 
 type Step = 'service' | 'stylist' | 'datetime' | 'extras' | 'info' | 'confirm' | 'done' | 'waitlist' | 'waitlist_done'
@@ -144,17 +153,17 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
 
   if (!authed) return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <header className="bg-[#1F6F5F] text-white">
-        <div className="max-w-md mx-auto px-4 py-7 text-center">
-          <p className="text-[10px] font-bold tracking-[0.35em] uppercase text-white/65 mb-1">MADMONA · ONLINE BOOKING</p>
+      <header className="text-white" style={{ backgroundImage: G_HERO }}>
+        <div className="max-w-md mx-auto px-4 py-8 text-center">
+          <p className="text-[10px] font-bold tracking-[0.35em] uppercase text-white/70 mb-1">MADMONA · ONLINE BOOKING</p>
           {logo ? (
-            <div className="mx-auto my-2 rounded-2xl overflow-hidden ring-1 ring-white/20 shadow-lg shadow-black/25 bg-[#14110f]" style={{ width: 'min(72%, 260px)' }}>
+            <div className="mx-auto my-2 rounded-2xl overflow-hidden ring-1 ring-white/25 bg-black/25 backdrop-blur-sm" style={{ width: 'min(64%, 220px)' }}>
               <img src={logo} alt={data.supplier?.business_name} className="w-full block" />
             </div>
           ) : (
             <h1 className="text-xl font-black">{data.supplier?.business_name}</h1>
           )}
-          <p className="text-xs text-white/85 mt-1">{data.branch?.name}</p>
+          <p className="text-xs text-white/90 mt-1 flex items-center justify-center gap-1"><MapPin className="w-3.5 h-3.5" /> {data.branch?.name}</p>
         </div>
       </header>
       <main className="max-w-md mx-auto px-4 py-6">
@@ -190,10 +199,10 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <header className="bg-[#1F6F5F] text-white">
-        <div className="max-w-3xl mx-auto px-4 py-6">
+      <header className="text-white" style={{ backgroundImage: G_HERO }}>
+        <div className="max-w-3xl mx-auto px-4 py-7">
           {logo ? (
-            <div className="rounded-2xl overflow-hidden ring-1 ring-white/20 shadow-lg shadow-black/25 bg-[#14110f] inline-block" style={{ width: 'min(70%, 260px)' }}>
+            <div className="rounded-2xl overflow-hidden ring-1 ring-white/25 bg-black/25 backdrop-blur-sm inline-block" style={{ width: 'min(58%, 220px)' }}>
               <img src={logo} alt={supplier?.business_name} className="w-full block" />
             </div>
           ) : (
@@ -203,16 +212,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
             </>
           )}
           <p className="text-sm text-white/90 mt-2 flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {branch?.name}</p>
-          {step !== 'done' && (
-            <div className="mt-4 flex gap-2 text-[10px] font-bold tracking-wider uppercase flex-wrap">
-              <StepBadge label="الخدمة" active={step === 'service'} done={['stylist','datetime','extras','info','confirm'].includes(step)} />
-              <StepBadge label="الستايليست" active={step === 'stylist'} done={['datetime','extras','info','confirm'].includes(step)} />
-              <StepBadge label="الموعد" active={step === 'datetime'} done={['extras','info','confirm'].includes(step)} />
-              <StepBadge label="إضافات" active={step === 'extras'} done={['info','confirm'].includes(step)} />
-              <StepBadge label="بياناتك" active={step === 'info'} done={step === 'confirm'} />
-              <StepBadge label="تأكيد" active={step === 'confirm'} done={false} />
-            </div>
-          )}
+          {STEP_ORDER.includes(step) && <StepBar step={step} />}
         </div>
       </header>
 
@@ -221,12 +221,12 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
           <div className="space-y-4">
             <h2 className="text-lg font-black text-[#1A2E26]">اختاري الخدمة</h2>
             {services.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
                 <Scissors className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
                 <p className="text-sm font-bold text-[#1A2E26]">مفيش خدمات متاحة</p>
               </div>
             ) : Object.entries(servicesByCategory).map(([cat, items]) => (
-              <div key={cat} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div key={cat} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-4 py-2 bg-[#FAFAF7] border-b border-gray-100">
                   <p className="text-xs font-bold tracking-wider uppercase text-[#6B7280]">{CATEGORY_LABELS[cat] || cat}</p>
                 </div>
@@ -257,7 +257,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 const isSelected = selectedDate?.toDateString() === d.toDateString()
                 const isToday = new Date().toDateString() === d.toDateString()
                 return (
-                  <button key={d.toISOString()} onClick={() => { setSelectedDate(d); setSelectedTime(null) }} className={`flex-shrink-0 px-3 py-2 rounded-xl text-center min-w-[60px] transition-all ${isSelected ? 'bg-[#1F6F5F] text-white' : 'bg-white text-[#1A2E26] border border-gray-100 hover:border-[#1F6F5F]'}`}>
+                  <button key={d.toISOString()} onClick={() => { setSelectedDate(d); setSelectedTime(null) }} className={`flex-shrink-0 px-3 py-2 rounded-xl text-center min-w-[60px] transition-all ${isSelected ? 'bg-[#1F6F5F] text-white shadow-sm' : 'bg-white text-[#1A2E26] border border-gray-100 hover:border-[#1F6F5F]'}`}>
                     <p className={`text-[10px] font-bold ${isSelected ? 'text-white/80' : 'text-[#6B7280]'}`}>{isToday ? 'النهاردة' : d.toLocaleDateString('ar-EG', { weekday: 'short' })}</p>
                     <p className="text-lg font-black font-mono">{d.getDate()}</p>
                     <p className="text-[10px]">{d.toLocaleDateString('ar-EG', { month: 'short' })}</p>
@@ -272,7 +272,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
               </div>
             )}
             {selectedDate && bookingEnabled && (
-              <div className="bg-white rounded-2xl border border-gray-100 p-4">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                 <p className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mb-3">المواعيد المتاحة</p>
                 {loadingSlots ? <div className="py-6 text-center"><Loader2 className="w-5 h-5 text-[#1F6F5F] animate-spin inline" /></div> : (
                   <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
@@ -300,7 +300,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
             <BackBtn onClick={() => setStep('datetime')} />
             <h2 className="text-lg font-black text-[#1A2E26]">قائمة الانتظار</h2>
             <p className="text-sm text-[#6B7280]">سجّلي بياناتك، وأول ما يفضى مكان لـ <b>{selectedService?.name_ar}</b> هنكلمك.</p>
-            <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
               <Field label="الاسم *"><input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="اسمك الكامل" className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
               <Field label="رقم الموبايل (واتساب) *"><input type="tel" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="01XXXXXXXXX" className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" dir="ltr" /></Field>
               <Field label="الوقت المفضّل">
@@ -311,7 +311,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 </div>
               </Field>
             </div>
-            <button onClick={joinWaitlist} disabled={submitting || !customerName || !customerPhone} className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black disabled:opacity-40 flex items-center justify-center gap-2">
+            <button onClick={joinWaitlist} disabled={submitting || !customerName || !customerPhone} className="w-full py-3.5 rounded-2xl text-white font-black disabled:opacity-40 flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: G_CTA }}>
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري التسجيل...</> : <><Clock className="w-4 h-4" /> سجّليني في الانتظار</>}
             </button>
           </div>
@@ -319,10 +319,10 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
 
         {step === 'waitlist_done' && waitlistResult && (
           <div className="space-y-4 text-center py-8">
-            <div className="w-20 h-20 rounded-full bg-[#1F6F5F] grid place-items-center mx-auto"><Clock className="w-10 h-10 text-white" /></div>
+            <div className="w-20 h-20 rounded-full grid place-items-center mx-auto shadow-lg" style={{ backgroundImage: G_CTA }}><Clock className="w-10 h-10 text-white" /></div>
             <h2 className="text-2xl font-black text-[#1A2E26]">تم تسجيلك في الانتظار! ✋</h2>
             <p className="text-sm text-[#6B7280]">ترتيبك رقم <b className="text-[#1F6F5F]">{waitlistResult.position}</b> في قائمة الانتظار. هنتواصل معاكي على واتساب أول ما يفضى مكان.</p>
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3 text-right">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3 text-right">
               <SummaryRow icon={<Scissors />} label="الخدمة" value={selectedService?.name_ar} />
               <SummaryRow icon={<CalendarIcon />} label="اليوم المفضّل" value={selectedDate?.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' })} sub={preferredTimeText} />
               <SummaryRow icon={<MapPin />} label="الفرع" value={branch?.name} />
@@ -334,7 +334,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
           <div className="space-y-4">
             <BackBtn onClick={() => setStep('service')} />
             <h2 className="text-lg font-black text-[#1A2E26]">اختاري الستايليست (اختياري)</h2>
-            <button onClick={() => { setSelectedStylist(null); setStep('datetime') }} className="w-full bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 hover:border-[#1F6F5F] text-right transition-colors">
+            <button onClick={() => { setSelectedStylist(null); setStep('datetime') }} className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 hover:border-[#1F6F5F] text-right transition-colors">
               <div className="w-12 h-12 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center"><Sparkles className="w-5 h-5" /></div>
               <div className="flex-1"><p className="text-sm font-black text-[#1A2E26]">أي ستايليست متاحة</p><p className="text-[10px] text-[#6B7280] mt-0.5">الفرع هـ يختار أفضل ستايليست متاح</p></div>
               <ChevronLeft className="w-4 h-4 text-[#6B7280]" />
@@ -342,8 +342,12 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
             <p className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mt-4">أو اختاري ستايليست محدد:</p>
             <div className="space-y-2">
               {stylists.map((s: any) => (
-                <button key={s.id} onClick={() => { setSelectedStylist(s); setStep('datetime') }} className="w-full bg-white rounded-2xl border border-gray-100 p-3 flex items-center gap-3 hover:border-[#1F6F5F] text-right transition-colors">
-                  <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center font-black">{s.avatar_initial || s.full_name.charAt(0)}</div>
+                <button key={s.id} onClick={() => { setSelectedStylist(s); setStep('datetime') }} className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex items-center gap-3 hover:border-[#1F6F5F] text-right transition-colors">
+                  {s.photo_url ? (
+                    <img src={s.photo_url} alt={s.full_name} className="w-12 h-12 rounded-xl object-cover ring-1 ring-[#1F6F5F]/15" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl text-white grid place-items-center font-black text-lg" style={{ backgroundImage: G_HERO }}>{s.avatar_initial || s.full_name.charAt(0)}</div>
+                  )}
                   <div className="flex-1"><p className="text-sm font-bold text-[#1A2E26]">{s.full_name}</p><p className="text-[10px] text-[#6B7280] mt-0.5">{s.role_ar}</p></div>
                   <ChevronLeft className="w-4 h-4 text-[#6B7280]" />
                 </button>
@@ -357,7 +361,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
             <BackBtn onClick={() => setStep('datetime')} />
             <h2 className="text-lg font-black text-[#1A2E26]">عايزة تضيفي حاجة؟ <span className="text-[#6B7280] text-sm font-normal">(اختياري)</span></h2>
             {services.filter((s: any) => s.id !== selectedService?.id).length > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-4 py-2 bg-[#FAFAF7] border-b border-gray-100"><p className="text-xs font-bold tracking-wider uppercase text-[#6B7280]">خدمات إضافية</p></div>
                 <div className="divide-y divide-gray-100 max-h-72 overflow-y-auto">
                   {services.filter((s: any) => s.id !== selectedService?.id).map((svc: any) => {
@@ -374,7 +378,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
               </div>
             )}
             {products.length > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-4 py-2 bg-[#FAFAF7] border-b border-gray-100"><p className="text-xs font-bold tracking-wider uppercase text-[#6B7280]">منتجات تقدري تشتريها</p></div>
                 <div className="divide-y divide-gray-100 max-h-72 overflow-y-auto">
                   {products.map((p: any) => {
@@ -398,13 +402,13 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
               </div>
             )}
             {services.filter((s: any) => s.id !== selectedService?.id).length === 0 && products.length === 0 && (
-              <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center"><p className="text-sm text-[#6B7280]">مفيش إضافات متاحة حالياً</p></div>
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center"><p className="text-sm text-[#6B7280]">مفيش إضافات متاحة حالياً</p></div>
             )}
-            <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center justify-between">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-between">
               <span className="text-sm font-bold text-[#1A2E26]">الإجمالي المتوقع</span>
               <span className="font-mono font-black text-xl text-[#1F6F5F]">{grandTotal.toLocaleString()} ج</span>
             </div>
-            <button onClick={() => setStep('info')} className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black flex items-center justify-center gap-2">متابعة <ChevronLeft className="w-4 h-4" /></button>
+            <button onClick={() => setStep('info')} className="w-full py-3.5 rounded-2xl text-white font-black flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: G_CTA }}>متابعة <ChevronLeft className="w-4 h-4" /></button>
           </div>
         )}
 
@@ -412,12 +416,12 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
           <div className="space-y-4">
             <BackBtn onClick={() => setStep('extras')} />
             <h2 className="text-lg font-black text-[#1A2E26]">بياناتك للتواصل</h2>
-            <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
               <Field label="الاسم *"><input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="اسمك الكامل" className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
               <Field label="رقم الموبايل (واتساب) *"><input type="tel" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="01XXXXXXXXX" className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" dir="ltr" /></Field>
               <Field label="ملاحظات (اختياري)"><textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="مثل: تركيبة صبغة، طلبات خاصة..." className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
             </div>
-            <button onClick={() => setStep('confirm')} disabled={!customerName || !customerPhone} className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black disabled:opacity-40 flex items-center justify-center gap-2">متابعة <ChevronLeft className="w-4 h-4" /></button>
+            <button onClick={() => setStep('confirm')} disabled={!customerName || !customerPhone} className="w-full py-3.5 rounded-2xl text-white font-black disabled:opacity-40 flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: G_CTA }}>متابعة <ChevronLeft className="w-4 h-4" /></button>
           </div>
         )}
 
@@ -425,7 +429,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
           <div className="space-y-4">
             <BackBtn onClick={() => setStep('info')} />
             <h2 className="text-lg font-black text-[#1A2E26]">تأكيد الحجز</h2>
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
               <SummaryRow icon={<Scissors />} label="الخدمة" value={selectedService?.name_ar} sub={`${selectedService?.duration_minutes} دقيقة`} />
               {addons.map((a: any) => (
                 <SummaryRow key={a.id} icon={<Sparkles />} label="خدمة إضافية" value={a.name_ar} sub={`${a.duration_minutes} دقيقة · ${Number(a.price_egp).toLocaleString()} ج`} />
@@ -446,7 +450,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 )}
                 <div className="flex justify-between items-center pt-1">
                   <span className="text-sm font-bold text-[#1A2E26]">السعر الإجمالي</span>
-                  <span className="font-mono font-black text-2xl text-[#1F6F5F]">{grandTotal.toLocaleString()} ج</span>
+                  <span className="font-mono font-black text-2xl text-transparent bg-clip-text" style={{ backgroundImage: G_CTA }}>{grandTotal.toLocaleString()} ج</span>
                 </div>
                 {isClinic && jadeyaDeposit > 0 && (
                   <div className="mt-3 rounded-xl bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 p-3">
@@ -461,7 +465,11 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 )}
               </div>
             </div>
-            <button onClick={submitBooking} disabled={submitting} className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black disabled:opacity-50 flex items-center justify-center gap-2">
+            <div className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 rounded-2xl p-3 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-[#1F6F5F] flex-shrink-0" />
+              <p className="text-[11px] text-[#6B7280] leading-relaxed">حجزك <b className="text-[#1A2E26]">مضمون عن طريق مضمونة</b> — هيوصلك تأكيد على واتساب فورًا.</p>
+            </div>
+            <button onClick={submitBooking} disabled={submitting} className="w-full py-3.5 rounded-2xl text-white font-black disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: G_CTA }}>
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري التأكيد...</> : <><CheckCircle2 className="w-4 h-4" /> أكدي الحجز</>}
             </button>
             <p className="text-[10px] text-center text-[#6B7280]">بالتأكيد أنتي بتوافقي على شروط الخدمة وسياسة الخصوصية</p>
@@ -470,10 +478,10 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
 
         {step === 'done' && bookingResult && (
           <div className="space-y-4 text-center py-8">
-            <div className="w-20 h-20 rounded-full bg-[#1F6F5F] grid place-items-center mx-auto"><CheckCircle2 className="w-10 h-10 text-white" /></div>
+            <div className="w-20 h-20 rounded-full grid place-items-center mx-auto shadow-lg" style={{ backgroundImage: G_CTA }}><CheckCircle2 className="w-10 h-10 text-white" /></div>
             <h2 className="text-2xl font-black text-[#1A2E26]">تم تأكيد حجزك! 🎉</h2>
             <p className="text-sm text-[#6B7280]">هنبعتلك رسالة واتساب بتفاصيل الحجز قريب</p>
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3 text-right">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3 text-right">
               <SummaryRow icon={<Scissors />} label="الخدمة" value={bookingResult.service_name} />
               <SummaryRow icon={<CalendarIcon />} label="التاريخ والوقت" value={selectedDate?.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' })} sub={selectedTime?.slice(0, 5)} />
               <SummaryRow icon={<MapPin />} label="الفرع" value={branch?.name} />
@@ -493,7 +501,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 </div>
               )}
             </div>
-            <a href={`https://wa.me/${supplier?.contact_phone?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`السلام عليكم، أنا ${customerName}، حجزت ${bookingResult.service_name} ${selectedDate?.toLocaleDateString('ar-EG')} الساعة ${selectedTime?.slice(0, 5)}`)}`} target="_blank" rel="noopener" className="block w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black">تواصل واتساب مع الفرع</a>
+            <a href={`https://wa.me/${supplier?.contact_phone?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`السلام عليكم، أنا ${customerName}، حجزت ${bookingResult.service_name} ${selectedDate?.toLocaleDateString('ar-EG')} الساعة ${selectedTime?.slice(0, 5)}`)}`} target="_blank" rel="noopener" className="block w-full py-3.5 rounded-2xl text-white font-black shadow-lg" style={{ backgroundImage: G_CTA }}>تواصل واتساب مع الفرع</a>
           </div>
         )}
       </main>
@@ -501,8 +509,20 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
   )
 }
 
-function StepBadge({ label, active, done }: { label: string; active?: boolean; done?: boolean }) {
-  return <span className={`px-2 py-0.5 rounded ${active ? 'bg-white text-[#1F6F5F]' : done ? 'bg-white/30 text-white' : 'bg-white/10 text-white/60'}`}>{label}</span>
+function StepBar({ step }: { step: string }) {
+  const idx = STEP_ORDER.indexOf(step)
+  return (
+    <div className="mt-4">
+      <div className="flex gap-1.5">
+        {STEP_ORDER.map((s, i) => (
+          <div key={s} className="flex-1 h-1.5 rounded-full" style={{ background: i < idx ? '#ffffff' : i === idx ? '#d4a017' : 'rgba(255,255,255,.25)' }} />
+        ))}
+      </div>
+      <div className="flex justify-between mt-1.5 text-[9px] font-bold text-white/85">
+        {STEP_ORDER.map((s) => <span key={s}>{STEP_LABELS[s]}</span>)}
+      </div>
+    </div>
+  )
 }
 function BackBtn({ onClick }: { onClick: () => void }) {
   return <button onClick={onClick} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1"><ArrowLeft className="w-3.5 h-3.5" /> ارجع</button>
