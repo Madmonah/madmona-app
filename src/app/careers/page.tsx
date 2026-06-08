@@ -26,6 +26,26 @@ const POSITIONS = [
   { value: 'حاجة تانية', label: 'حاجة تانية', icon: '✨', desc: 'مهارة تشوف إنها تفيدنا' },
 ]
 
+// Platform service verticals — people offer these by the hour / per service.
+// Mirrors the real marketplace service-track categories; each links to its
+// marketplace section. (Added 8 Jun 2026 — Mohamed: link careers to marketplace.)
+const SERVICE_VERTICALS = [
+  { name: 'خدمات منزلية وصيانة', slug: 'home-services', icon: '🔧', eg: 'سباك، كهربائي، نجار، نقاش، نظافة، تكييف، نقل عفش', pay: 'بالساعة / بالمهمة' },
+  { name: 'تجميل وعناية', slug: 'beauty', icon: '💄', eg: 'مكياج، كوافير، منيكير، عناية بشرة، مساج', pay: 'بالجلسة' },
+  { name: 'عناية بالأطفال', slug: 'childcare', icon: '👶', eg: 'بيبي سيتر، مربية، مدرّس أطفال، ترفيه', pay: 'بالساعة / باليوم' },
+  { name: 'تعليم وكورسات', slug: 'education-courses', icon: '📚', eg: 'مدرّسين، لغات، موسيقى، يوغا، رقص', pay: 'بالحصة / بالكورس' },
+  { name: 'خدمات احترافية', slug: 'professionals', icon: '💼', eg: 'مصممين، مترجمين، محاسبين، محامين، مهندسين', pay: 'بالمشروع' },
+  { name: 'خدمات سيارات', slug: 'auto-services', icon: '🚗', eg: 'ميكانيكي، كهربائي سيارات، غسيل، سواق', pay: 'بالخدمة' },
+  { name: 'تصوير ومناسبات', slug: 'events-photography', icon: '📸', eg: 'مصوّرين، DJ، منظمي أفراح، فيديو سينمائي', pay: 'باليوم / بالمناسبة' },
+  { name: 'طبخ وكاترينج', slug: 'food-catering', icon: '👨‍🍳', eg: 'شيف بيت، كاترينج، حلويات، باريستا', pay: 'بالطلب / بالمناسبة' },
+  { name: 'مقاولات وتشطيبات', slug: 'contractors', icon: '👷', eg: 'مقاول عام، تشطيب، حمامات سباحة، لاندسكيب', pay: 'بالمشروع' },
+  { name: 'استشارات وخدمات شخصية', slug: 'consultations', icon: '🌟', eg: 'مدرب رياضي، تغذية، معالج نفسي، Life Coach', pay: 'بالجلسة' },
+  { name: 'خدمات طبية وتمريض', slug: 'medical-clinics', icon: '🩺', eg: 'أطباء بمختلف التخصصات، تمريض منزلي', pay: 'بالكشف / بالزيارة' },
+  { name: 'خدمات الحيوانات الأليفة', slug: 'pet-services', icon: '🐾', eg: 'بيت سيتر، مشاية كلاب، بيطري، تنظيف', pay: 'بالزيارة' },
+  { name: 'طباعة', slug: 'printing', icon: '🖨️', eg: 'رقمية، أوفست، UV، بنر، طباعة 3D', pay: 'بالأوردر' },
+  { name: 'خدمات دينية', slug: 'religious-services', icon: '📿', eg: 'مأذون، قارئ قرآن، منشد، حج وعمرة', pay: 'بالمناسبة' },
+]
+
 const PILLARS = [
   {
     icon: Rocket,
@@ -235,30 +255,83 @@ export default function CareersPage() {
       <section className="bg-white border-y border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-16">
           <h2 className="text-3xl font-black text-center text-[#0A0A0A] mb-4">
-            الوظائف المفتوحة
+            الوظائف والفرص المفتوحة
           </h2>
           <p className="text-center text-gray-600 mb-12">
-            مش لاقي وظيفتك؟ اختار &quot;حاجة تانية&quot; وقولنا انت بتعمل إيه.
+            اشتغل معانا بدوام كامل في الشركة، أو قدّم خدمتك على المنصة بالساعة أو بالخدمة.
           </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {POSITIONS.map((p) => (
-              <button
-                key={p.value}
-                onClick={() => {
-                  setPosition(p.value)
-                  document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth' })
-                }}
-                className={`text-right p-5 rounded-2xl border-2 transition-all hover:shadow-md ${
-                  position === p.value
-                    ? 'border-[#1F6F5F] bg-emerald-50'
-                    : 'border-gray-100 bg-white hover:border-emerald-200'
-                }`}
-              >
-                <div className="text-3xl mb-2">{p.icon}</div>
-                <div className="font-bold text-[#0A0A0A] mb-1">{p.label}</div>
-                <div className="text-sm text-gray-500 leading-relaxed">{p.desc}</div>
-              </button>
-            ))}
+
+          {/* Group 1 — full-time company jobs */}
+          <div className="mb-14">
+            <div className="flex items-center gap-2 mb-5">
+              <span className="text-2xl">🏢</span>
+              <h3 className="text-xl md:text-2xl font-black text-[#0A0A0A]">وظائف بدوام كامل — في فريق مضمونة</h3>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {POSITIONS.map((p) => (
+                <button
+                  key={p.value}
+                  onClick={() => {
+                    setPosition(p.value)
+                    document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                  className={`text-right p-5 rounded-2xl border-2 transition-all hover:shadow-md ${
+                    position === p.value
+                      ? 'border-[#1F6F5F] bg-emerald-50'
+                      : 'border-gray-100 bg-white hover:border-emerald-200'
+                  }`}
+                >
+                  <div className="text-3xl mb-2">{p.icon}</div>
+                  <div className="font-bold text-[#0A0A0A] mb-1">{p.label}</div>
+                  <div className="text-sm text-gray-500 leading-relaxed">{p.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Group 2 — platform service providers (hourly / per service) */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">🤝</span>
+              <h3 className="text-xl md:text-2xl font-black text-[#0A0A0A]">قدّم خدمتك على المنصة — بالساعة أو بالخدمة</h3>
+            </div>
+            <p className="text-sm text-gray-500 mb-6">
+              عندك مهنة؟ اشتغل لحسابك على مضمونة. اختار مجالك وقدّم، أو شوف القسم في الماركتبليس.
+            </p>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {SERVICE_VERTICALS.map((s) => (
+                <div
+                  key={s.slug}
+                  className={`p-5 rounded-2xl border-2 transition-all ${
+                    position === s.name ? 'border-[#1F6F5F] bg-emerald-50' : 'border-gray-100 bg-white hover:border-emerald-200 hover:shadow-md'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <span className="text-3xl">{s.icon}</span>
+                    <span className="text-[10px] font-bold text-[#1F6F5F] bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full whitespace-nowrap">{s.pay}</span>
+                  </div>
+                  <div className="font-bold text-[#0A0A0A] mb-1">{s.name}</div>
+                  <div className="text-xs text-gray-500 leading-relaxed mb-4">{s.eg}</div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setPosition(s.name)
+                        document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth' })
+                      }}
+                      className="flex-1 bg-[#1F6F5F] text-white text-xs font-bold py-2.5 rounded-xl hover:bg-[#185a4f] transition-colors"
+                    >
+                      قدّم دلوقتي
+                    </button>
+                    <Link
+                      href={`/marketplace?category=${s.slug}`}
+                      className="text-xs font-bold text-[#1F6F5F] px-3 py-2.5 rounded-xl border border-gray-200 hover:border-[#1F6F5F] no-underline whitespace-nowrap transition-colors"
+                    >
+                      شوف القسم ←
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -324,9 +397,16 @@ export default function CareersPage() {
                 required
               >
                 <option value="">-- اختار وظيفة --</option>
-                {POSITIONS.map((p) => (
-                  <option key={p.value} value={p.value}>{p.icon} {p.label}</option>
-                ))}
+                <optgroup label="بدوام كامل — في مضمونة">
+                  {POSITIONS.map((p) => (
+                    <option key={p.value} value={p.value}>{p.icon} {p.label}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="بالساعة / بالخدمة — على المنصة">
+                  {SERVICE_VERTICALS.map((s) => (
+                    <option key={s.slug} value={s.name}>{s.icon} {s.name}</option>
+                  ))}
+                </optgroup>
               </select>
             </div>
 

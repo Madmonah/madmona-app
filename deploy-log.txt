@@ -1,19 +1,17 @@
 Retrieving project…
 Deploying madmonaadmin-1699s-projects/project-ew64j
-Uploading [--------------------] (0.0B/88.1KB)
-Uploading [=====---------------] (25.5KB/88.1KB)
-Uploading [=============-------] (58.9KB/88.1KB)
-Uploading [================----] (71.9KB/88.1KB)
-Uploading [====================] (88.1KB/88.1KB)
-Inspect: https://vercel.com/madmonaadmin-1699s-projects/project-ew64j/AVLE2SC872xae5TguPoobM6pRPV1 [5s]
-Production: https://project-ew64j-hmdtmtwk3-madmonaadmin-1699s-projects.vercel.app [5s]
-https://project-ew64j-hmdtmtwk3-madmonaadmin-1699s-projects.vercel.appBuilding...
+Uploading [--------------------] (0.0B/29.1KB)
+Uploading [===========---------] (16.0KB/29.1KB)
+Uploading [====================] (29.1KB/29.1KB)
+Inspect: https://vercel.com/madmonaadmin-1699s-projects/project-ew64j/2kxqrBfnZf3GqsLocD8BdcYY2E7H [4s]
+Production: https://project-ew64j-fbztzwx4t-madmonaadmin-1699s-projects.vercel.app [4s]
+https://project-ew64j-fbztzwx4t-madmonaadmin-1699s-projects.vercel.appBuilding...
+Building...
 Building: Running build in Washington, D.C., USA (East) – iad1
 Building: Build machine configuration: 4 cores, 8 GB
 Building: Retrieving list of deployment files...
-Building: Retrieving list of deployment files...
 Building: Downloading 883 deployment files...
-Building: Restored build cache from previous deployment (DvREKoYmCY28qVmQSdwiMsQQUKHL)
+Building: Restored build cache from previous deployment (F6uL3TPLmWkWgLnAwbn1Pnsxxssn)
 Building: Running "vercel build"
 Building: Vercel CLI 54.9.0
 Building: Running "install" command: `npm install`...
@@ -73,7 +71,7 @@ Building: ├ ƒ /add-listing                                                 16
 Building: ├ ○ /add-listing/success                                         1.39 kB        88.9 kB
 Building: ├ ○ /admin                                                       279 B          87.8 kB
 Building: ├ ○ /admin-entry                                                 1.64 kB        89.2 kB
-Building: ├ ƒ /admin/activity                                              279 B          87.8 kB
+Building: ├ ƒ /admin/activity                                              281 B          87.8 kB
 Building: ├ ƒ /admin/ad-builder                                            2.41 kB        89.9 kB
 Building: ├ ƒ /admin/ad-creatives                                          279 B          87.8 kB
 Building: ├ ○ /admin/ad-review                                             4.98 kB         152 kB
@@ -156,14 +154,14 @@ Building: ├ ○ /admin/company                                               1
 Building: ├ ○ /admin/custody                                               279 B          87.8 kB
 Building: ├ ○ /admin/daily-messages                                        7.15 kB         163 kB
 Building: ├ ○ /admin/dashboard                                             24.5 kB         183 kB
-Building: ├ ƒ /admin/demand-forecast                                       280 B          87.8 kB
+Building: ├ ƒ /admin/demand-forecast                                       278 B          87.8 kB
 Building: ├ ○ /admin/email-queue                                           5.2 kB          161 kB
 Building: ├ ○ /admin/email-templates                                       5.08 kB         160 kB
 Building: ├ ○ /admin/flow-tasks                                            279 B          87.8 kB
 Building: ├ ƒ /admin/fraud-alerts                                          279 B          87.8 kB
 Building: ├ ƒ /admin/funnel                                                279 B          87.8 kB
 Building: ├ ƒ /admin/hq                                                    10.8 kB        98.3 kB
-Building: ├ ƒ /admin/insights                                              279 B          87.8 kB
+Building: ├ ƒ /admin/insights                                              278 B          87.8 kB
 Building: ├ ○ /admin/leads                                                 3.82 kB        91.3 kB
 Building: ├ ƒ /admin/leads-feed                                            279 B          87.8 kB
 Building: ├ ○ /admin/listing-drafts                                        3.08 kB        90.6 kB
@@ -196,7 +194,7 @@ Building: ├ ○ /admin/social-packs                                          2
 Building: ├ ƒ /admin/social-packs/[id]                                     3.43 kB        99.7 kB
 Building: ├ ƒ /admin/sponsorships                                          183 B          96.4 kB
 Building: ├ ƒ /admin/src/app/admin/cockpit                                 279 B          87.8 kB
-Building: ├ ƒ /admin/strategy                                              280 B          87.8 kB
+Building: ├ ƒ /admin/strategy                                              279 B          87.8 kB
 Building: ├ ○ /admin/sup                                                   2.19 kB         149 kB
 Building: ├ ○ /admin/supplier-posts                                        3.45 kB        99.7 kB
 Building: ├ ○ /admin/suppliers                                             279 B          87.8 kB
@@ -206,7 +204,7 @@ Building: ├ ƒ /admin/units/[id]/edit                                       1.
 Building: ├ ○ /admin/units/new                                             1.36 kB         163 kB
 Building: ├ ○ /admin/wa-review                                             2.7 kB         90.2 kB
 Building: ├ ○ /admin/welcome-messages                                      7.88 kB         163 kB
-Building: ├ ƒ /admin/workflows                                             279 B          87.8 kB
+Building: ├ ƒ /admin/workflows                                             280 B          87.8 kB
 Building: ├ ƒ /api/admin-entry                                             0 B                0 B
 Building: ├ ƒ /api/admin/agent-flow                                        0 B                0 B
 Building: ├ ƒ /api/admin/agent-toggle                                      0 B                0 B
@@ -299,7 +297,7 @@ Building: ├ ○ /book                                                        2
 Building: ├ ƒ /book/[branchCode]                                           10.6 kB         181 kB
 Building: ├ ƒ /bookings/[id]                                               6.89 kB         186 kB
 Building: ├ ○ /browse                                                      279 B          87.8 kB
-Building: ├ ○ /careers                                                     7.05 kB         162 kB
+Building: ├ ○ /careers                                                     8.42 kB         164 kB
 Building: ├ ○ /cart                                                        4.72 kB         101 kB
 Building: ├ ○ /checkout                                                    6.09 kB         162 kB
 Building: ├ ƒ /claim/[token]                                               2.7 kB          149 kB
@@ -344,7 +342,7 @@ Building: ├ ○ /robots.txt                                                  0
 Building: ├ ƒ /s/[slug]                                                    6.06 kB         161 kB
 Building: ├ ○ /services                                                    2.68 kB         187 kB
 Building: ├ ○ /sitemap.xml                                                 0 B                0 B
-Building: ├ ○ /spaces                                                      279 B          87.8 kB
+Building: ├ ○ /spaces                                                      281 B          87.8 kB
 Building: ├ ƒ /spaces/[id]                                                 279 B          87.8 kB
 Building: ├ ○ /spaces/indoor                                               279 B          87.8 kB
 Building: ├ ○ /supplier                                                    279 B          87.8 kB
@@ -374,16 +372,14 @@ Building: └ other shared chunks (total)                                  1.97 
 Building: ƒ Middleware                                                     26.8 kB
 Building: ○  (Static)   prerendered as static content
 Building: ƒ  (Dynamic)  server-rendered on demand
-Building: Traced Next.js server files in: 25.005ms
-Building: Created all serverless functions in: 435.773ms
-Building: Collected static files (public/, static/, .next/static): 30.973ms
+Building: Traced Next.js server files in: 26.433ms
+Building: Created all serverless functions in: 381.421ms
+Building: Collected static files (public/, static/, .next/static): 31.87ms
 Building: Build Completed in /vercel/output [1m]
 Building: Deploying outputs...
 Building: Deployment completed
 Building: Creating build cache...
-Building: Created build cache: 9s
-Building: Uploading build cache [166.82 MB]
-[2K[1A[2K[GProduction: https://project-ew64j-hmdtmtwk3-madmonaadmin-1699s-projects.vercel.app [2m]
+[2K[1A[2K[GProduction: https://project-ew64j-fbztzwx4t-madmonaadmin-1699s-projects.vercel.app [2m]
 Completing...
 Aliased: https://www.madmonacairo.com [2m]
 > Tip: Run `npx plugins add vercel/vercel-plugin` to enhance your agent experience
