@@ -9,6 +9,7 @@ import {
   ArrowRight, Phone, Lock, User, Mail, AlertCircle, Loader2, UserPlus, CheckCircle, Sparkles, KeyRound, CreditCard,
 } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { GoogleSignInButton } from '@/components/GoogleSignInButton'
 
 function SignupContent() {
   const { t, dir } = useT()
@@ -385,6 +386,14 @@ function SignupContent() {
                 )}
               </button>
             </form>
+
+            {/* Social signup */}
+            <div className="my-5 flex items-center gap-3">
+              <div className="h-px bg-gray-100 flex-1" />
+              <span className="text-[11px] text-gray-400 font-bold">أو</span>
+              <div className="h-px bg-gray-100 flex-1" />
+            </div>
+            <GoogleSignInButton redirectTo={finalRedirect} label="سجّل بـ Google" />
 
             <div className="mt-7 pt-6 border-t border-gray-100 text-center">
               <p className="text-sm text-gray-600 mb-2">{t('auth.have_account_q')}</p>
