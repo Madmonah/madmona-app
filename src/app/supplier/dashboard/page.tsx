@@ -65,6 +65,42 @@ function isBeauty(industry: string) {
 function showsPractitioner(industry: string) {
   return isMedical(industry) || isBeauty(industry)
 }
+function isRestaurant(industry: string) {
+  return ['restaurant','cafe','bakery','cloud_kitchen'].includes(industry)
+}
+function isCommercial(industry: string) {
+  return ['commercial','retail','store','shop','products','trading','ecommerce'].includes(industry)
+}
+
+// نفس تاب "الخدمات" بيحمل حاجات مختلفة حسب المجال:
+// صالون/عيادة = خدمات · مطعم = أصناف منيو · شركة تجارية = منتجات
+interface ItemCfg {
+  tab: string; noun: string; addBtn: string; empty: string;
+  catLabel: string; catPlaceholder: string; namePlaceholder: string;
+  stepTitle: string; statLabel: string; modalNew: string; modalEdit: string;
+  showDuration: boolean; showProvider: boolean;
+}
+function itemCfg(industry: string): ItemCfg {
+  if (isRestaurant(industry)) return {
+    tab: 'المنيو', noun: 'صنف', addBtn: '+ ضيف صنف', empty: 'لسه مفيش أصناف في المنيو.',
+    catLabel: 'القسم', catPlaceholder: 'مشويات / بيتزا / حلويات', namePlaceholder: 'فراخ مشوية',
+    stepTitle: 'ضيف أصناف المنيو', statLabel: 'أصناف', modalNew: 'صنف جديد', modalEdit: 'تعديل صنف',
+    showDuration: false, showProvider: false,
+  }
+  if (isCommercial(industry)) return {
+    tab: 'المنتجات', noun: 'منتج', addBtn: '+ ضيف منتج', empty: 'لسه مفيش منتجات.',
+    catLabel: 'فئة المنتج', catPlaceholder: 'إلكترونيات / ملابس', namePlaceholder: 'اسم المنتج',
+    stepTitle: 'ضيف منتجاتك', statLabel: 'منتجات', modalNew: 'منتج جديد', modalEdit: 'تعديل منتج',
+    showDuration: false, showProvider: false,
+  }
+  return {
+    tab: 'الخدمات', noun: 'خدمة', addBtn: '+ ضيف خدمة', empty: 'لسه مفيش خدمات.',
+    catLabel: 'التصنيف', catPlaceholder: isMedical(industry) ? 'كشف' : 'مكياج', namePlaceholder: isMedical(industry) ? 'كشف باطنة' : 'مكياج عرايس',
+    stepTitle: isMedical(industry) ? 'ضيف خدماتك (كشف، تحاليل، إلخ)' : 'ضيف خدماتك', statLabel: 'خدمات',
+    modalNew: 'خدمة جديدة', modalEdit: 'تعديل خدمة',
+    showDuration: true, showProvider: true,
+  }
+}
 
 export default function SupplierDashboardPage() {
   return (
@@ -157,6 +193,7 @@ function SupplierDashboardInner() {
 
   const { supplier, branches, employees, services, stats } = data
   const industryLabel = INDUSTRY_LABELS[supplier.industry] || supplier.industry
+  const item = itemCfg(supplier.industry)
 
   return (
     <div className="sd" dir="rtl">
@@ -188,7 +225,7 @@ function SupplierDashboardInner() {
         <button className={`sd-tab ${activeTab==='team'?'on':''}`} onClick={()=>setActiveTab('team')}>
           {isMedical(supplier.industry) ? 'الأطباء' : isBeauty(supplier.industry) ? 'الفريق' : 'الموظفين'} ({employees.length})
         </button>
-        <button className={`sd-tab ${activeTab==='services'?'on':''}`} onClick={()=>setActiveTab('services')}>الخدمات ({services.length})</button>
+        <button className={`sd-tab ${activeTab==='services'?'on':''}`} onClick={()=>setActiveTab('services')}>{item.tab} ({services.length})</button>
         <button className={`sd-tab ${activeTab==='media'?'on':''}`} onClick={()=>setActiveTab('media')}>الصور</button>
         <button className={`sd-tab ${activeTab==='settings'?'on':''}`} onClick={()=>setActiveTab('settings')}>الإعدادات</button>
       </nav>
@@ -201,14 +238,14 @@ function SupplierDashboardInner() {
               <StatCard label="إيرادات (٣٠ يوم)" value={`${stats.revenue_30d.toLocaleString('ar-EG')} ج`} />
               <StatCard label="فروع" value={stats.active_branches.toString()} />
               <StatCard label="فريق" value={stats.active_employees.toString()} />
-              <StatCard label="خدمات" value={stats.active_services.toString()} />
+              <StatCard label={item.statLabel} value={stats.active_services.toString()} />
             </div>
 
             <div className="sd-getstarted">
               <h2>خطوات ابتدائية</h2>
               <Step done={branches.length>0} num={1} title="ضيف فروعك" onClick={()=>{setActiveTab('branches'); setEditingBranch('new')}} />
               <Step done={employees.length>0} num={2} title={isMedical(supplier.industry)?'ضيف الأطباء':'ضيف فريقك'} onClick={()=>{setActiveTab('team'); setEditingEmployee('new')}} />
-              <Step done={services.length>0} num={3} title={isMedical(supplier.industry)?'ضيف خدماتك (كشف، تحاليل، إلخ)':'ضيف خدماتك'} onClick={()=>{setActiveTab('services'); setEditingService('new')}} />
+              <Step done={services.length>0} num={3} title={item.stepTitle} onClick={()=>{setActiveTab('services'); setEditingService('new')}} />
               <Step done={!!supplier.logo_url && !!supplier.description_ar} num={4} title="جهّز بياناتك العامة (شعار + وصف)" onClick={()=>setActiveTab('settings')} />
             </div>
 
@@ -285,11 +322,11 @@ function SupplierDashboardInner() {
         {activeTab==='services' && (
           <section>
             <div className="sd-section-head">
-              <h2>الخدمات</h2>
-              <button onClick={()=>setEditingService('new')} className="sd-btn sd-btn-primary">+ ضيف خدمة</button>
+              <h2>{item.tab}</h2>
+              <button onClick={()=>setEditingService('new')} className="sd-btn sd-btn-primary">{item.addBtn}</button>
             </div>
             {services.length===0 ? (
-              <div className="sd-empty"><p>لسه مفيش خدمات.</p></div>
+              <div className="sd-empty"><p>{item.empty}</p></div>
             ) : (
               <div className="sd-list">
                 {services.map(s => (
@@ -298,8 +335,8 @@ function SupplierDashboardInner() {
                       <h3>{s.name_ar}</h3>
                       <div className="sd-row-meta">
                         <span className="sd-price">{s.price_egp} ج</span>
-                        {s.duration_minutes && <span>{s.duration_minutes} د</span>}
-                        {s.provider_name && <span>{s.provider_name}</span>}
+                        {item.showDuration && !!s.duration_minutes && <span>{s.duration_minutes} د</span>}
+                        {item.showProvider && s.provider_name && <span>{s.provider_name}</span>}
                         {s.category && <span>{s.category}</span>}
                       </div>
                       {s.description && <p className="sd-desc">{s.description}</p>}
@@ -553,6 +590,7 @@ function ServiceModal({ supplier, employees, initial, onClose, onSaved }: {
     provider_employee_id: initial?.provider_employee_id || '',
   })
   const [saving, setSaving] = useState(false)
+  const cfg = itemCfg(supplier.industry)
 
   async function handleSave() {
     setSaving(true)
@@ -563,7 +601,7 @@ function ServiceModal({ supplier, employees, initial, onClose, onSaved }: {
         p_name_ar: form.name_ar, p_name_en: form.name_en,
         p_category: form.category,
         p_price_egp: parseInt(form.price_egp),
-        p_duration_minutes: parseInt(form.duration_minutes || '30'),
+        p_duration_minutes: cfg.showDuration ? parseInt(form.duration_minutes || '30') : 0,
         p_description: form.description,
         p_provider_employee_id: form.provider_employee_id || null,
       })
@@ -574,7 +612,7 @@ function ServiceModal({ supplier, employees, initial, onClose, onSaved }: {
   }
 
   async function handleDelete() {
-    if (!initial || !confirm('متأكد تمسح الخدمة دي؟')) return
+    if (!initial || !confirm(`متأكد تمسح ${cfg.noun}؟`)) return
     setSaving(true)
     try {
       const sb = supabaseBrowser as any
@@ -586,20 +624,26 @@ function ServiceModal({ supplier, employees, initial, onClose, onSaved }: {
   }
 
   return (
-    <Modal title={initial ? 'تعديل خدمة' : 'خدمة جديدة'} onClose={onClose}>
+    <Modal title={initial ? cfg.modalEdit : cfg.modalNew} onClose={onClose}>
       <div className="sd-form">
-        <Field label="اسم الخدمة *"><input type="text" value={form.name_ar} onChange={e=>setForm({...form,name_ar:e.target.value})} placeholder={isMedical(supplier.industry)?'كشف باطنة':'مكياج عرايس'} /></Field>
-        <div className="sd-form-row">
+        <Field label={`اسم ${cfg.noun} *`}><input type="text" value={form.name_ar} onChange={e=>setForm({...form,name_ar:e.target.value})} placeholder={cfg.namePlaceholder} /></Field>
+        {cfg.showDuration ? (
+          <div className="sd-form-row">
+            <Field label="السعر (ج) *"><input type="number" value={form.price_egp} onChange={e=>setForm({...form,price_egp:e.target.value})} /></Field>
+            <Field label="المدة (دقيقة)"><input type="number" value={form.duration_minutes} onChange={e=>setForm({...form,duration_minutes:e.target.value})} /></Field>
+          </div>
+        ) : (
           <Field label="السعر (ج) *"><input type="number" value={form.price_egp} onChange={e=>setForm({...form,price_egp:e.target.value})} /></Field>
-          <Field label="المدة (دقيقة)"><input type="number" value={form.duration_minutes} onChange={e=>setForm({...form,duration_minutes:e.target.value})} /></Field>
-        </div>
-        <Field label="التصنيف"><input type="text" value={form.category} onChange={e=>setForm({...form,category:e.target.value})} placeholder={isMedical(supplier.industry)?'كشف':'مكياج'} /></Field>
-        <Field label="مقدم الخدمة">
-          <select value={form.provider_employee_id} onChange={e=>setForm({...form,provider_employee_id:e.target.value})}>
-            <option value="">— اختار —</option>
-            {employees.map(e => <option key={e.id} value={e.id}>{e.full_name}</option>)}
-          </select>
-        </Field>
+        )}
+        <Field label={cfg.catLabel}><input type="text" value={form.category} onChange={e=>setForm({...form,category:e.target.value})} placeholder={cfg.catPlaceholder} /></Field>
+        {cfg.showProvider && (
+          <Field label="مقدم الخدمة">
+            <select value={form.provider_employee_id} onChange={e=>setForm({...form,provider_employee_id:e.target.value})}>
+              <option value="">— اختار —</option>
+              {employees.map(e => <option key={e.id} value={e.id}>{e.full_name}</option>)}
+            </select>
+          </Field>
+        )}
         <Field label="وصف"><textarea value={form.description} onChange={e=>setForm({...form,description:e.target.value})} rows={3} /></Field>
       </div>
       <div className="sd-modal-actions">
