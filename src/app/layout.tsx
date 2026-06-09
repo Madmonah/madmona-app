@@ -98,6 +98,7 @@ export const metadata: Metadata = {
   category: 'business',
   other: {
     'p:domain_verify': '17411bdfcac6fbb3fa1286d6074aa8a4',
+    'facebook-domain-verification': 't7trqm1upwaaju0pn7ejmvyx6497qv',
   },
 }
 
@@ -138,7 +139,7 @@ const businessJsonLd = {
   ],
   priceRange: 'EGP',
   areaServed: { '@type': 'Country', name: 'Egypt' },
-  foundingDate: '2019',
+  foundingDate: '2026-05-01',
   image: `${SITE_URL}/opengraph-image`,
   logo: `${SITE_URL}/madmona-logo.png`,
   sameAs: [
