@@ -6,20 +6,11 @@ import { createClient } from '@supabase/supabase-js'
 import {
   Loader2, MapPin, Calendar, ChevronLeft, Scissors, Clock, Sparkles, User,
   ChevronDown, MessageCircle, ShieldCheck, Image as ImageIcon, Crown, Wind,
-  Brush, Hand, Flower2, Building2,
+  Brush, Hand, Flower2, Building2, Stethoscope, Utensils, Briefcase,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-const CATEGORY_LABELS: Record<string, string> = {
-  hair_cut: 'قص شعر', hair_color: 'صبغة', hair_treatment: 'علاج شعر', styling: 'سشوار / تسريحة', hair: 'شعر وصبغة',
-  makeup: 'مكياج', bridal: 'عرايس', nails: 'منيكير وبديكير', skin: 'بشرة', spa: 'سبا ومساج',
-  package: 'باقات', waxing: 'إزالة شعر', general: 'عام', عام: 'عام',
-}
-const CATEGORY_ICONS: Record<string, any> = {
-  bridal: Crown, hair: Wind, hair_cut: Scissors, hair_color: Wind, hair_treatment: Wind,
-  styling: Wind, makeup: Brush, nails: Hand, skin: Sparkles, spa: Flower2, package: Crown,
-}
 const fmt = (n: any) => Number(n || 0).toLocaleString('ar-EG')
 
 // brand gradients (gold->green CTA, green cover fallback, soft tint tile)
@@ -31,7 +22,111 @@ const G_SOFT = 'linear-gradient(135deg,rgba(31,111,95,.10),rgba(212,160,23,.13))
 const galUrl = (g: any) => (typeof g === 'string' ? g : g?.url || '')
 const galCap = (g: any) => (typeof g === 'string' ? '' : g?.caption || '')
 
-export default function SalonLandingPage({ params }: { params: { slug: string } }) {
+/* ============================================================
+ * VERTICAL-AWARE STOREFRONT  (page created 7 Jun 2026 — vertical-aware 9 Jun 2026)
+ * نفس الصفحة بتخدم كل المجالات: صالون / عيادة / مطعم / عام.
+ * بتتفرّع حسب suppliers.industry — الـ RPC public_salon_landing عام (بيشتغل لأي مورّد).
+ * الدرس: المطعم/العيادة ماينفعش ياخدوا صيغة الصالون ("احجزي/ستايليست/مقص").
+ * ============================================================ */
+
+interface VerticalCfg {
+  kicker: string
+  heroCta: string
+  heroCtaIcon: any
+  waCta: string
+  bookChip: string
+  unitWord: string
+  galleryHeading: string
+  galleryTiles: string[]
+  branchesHeading: string
+  branchCta: string
+  servicesHeading: string
+  servicesIcon: any
+  teamHeading: string
+  accountSub: string
+  coverBadge: string
+  catLabels: Record<string, string>
+  catIcons: Record<string, any>
+}
+
+// salon-specific category maps (used only by the beauty_salon preset)
+const SALON_CAT_LABELS: Record<string, string> = {
+  hair_cut: 'قص شعر', hair_color: 'صبغة', hair_treatment: 'علاج شعر', styling: 'سشوار / تسريحة', hair: 'شعر وصبغة',
+  makeup: 'مكياج', bridal: 'عرايس', nails: 'منيكير وبديكير', skin: 'بشرة', spa: 'سبا ومساج',
+  package: 'باقات', waxing: 'إزالة شعر', general: 'عام', عام: 'عام',
+}
+const SALON_CAT_ICONS: Record<string, any> = {
+  bridal: Crown, hair: Wind, hair_cut: Scissors, hair_color: Wind, hair_treatment: Wind,
+  styling: Wind, makeup: Brush, nails: Hand, skin: Sparkles, spa: Flower2, package: Crown,
+}
+
+const VERTICALS: Record<string, VerticalCfg> = {
+  // صالون تجميل — صيغة مؤنثة (Elite وأمثالها)
+  beauty_salon: {
+    kicker: 'صالون تجميل وسبا',
+    heroCta: 'احجزي موعدك', heroCtaIcon: Calendar, waCta: 'تواصلي',
+    bookChip: 'حجز فوري', unitWord: 'خدمة',
+    galleryHeading: 'معرض الصالون',
+    galleryTiles: ['الريسبشن', 'الشغل', 'السبا', 'المكان'],
+    branchesHeading: 'احجزي في أقرب فرع ليكي', branchCta: 'احجزي',
+    servicesHeading: 'الخدمات والأسعار', servicesIcon: Scissors,
+    teamHeading: 'فريقنا',
+    accountSub: 'شوفي حجوزاتك، قيّمي، وكرّمي اللي خدمك',
+    coverBadge: 'صورة غلاف الصالون',
+    catLabels: SALON_CAT_LABELS, catIcons: SALON_CAT_ICONS,
+  },
+  // عيادة / مركز طبي — صيغة محايدة
+  polyclinic: {
+    kicker: 'عيادة ومركز طبي',
+    heroCta: 'احجز كشف', heroCtaIcon: Calendar, waCta: 'تواصل معنا',
+    bookChip: 'حجز فوري', unitWord: 'خدمة',
+    galleryHeading: 'صور العيادة',
+    galleryTiles: ['الاستقبال', 'العيادة', 'الانتظار', 'المكان'],
+    branchesHeading: 'احجز في أقرب فرع ليك', branchCta: 'احجز',
+    servicesHeading: 'التخصصات والأسعار', servicesIcon: Stethoscope,
+    teamHeading: 'الأطباء',
+    accountSub: 'شوف حجوزاتك، قيّم، وتابع كشوفاتك',
+    coverBadge: 'صورة غلاف العيادة',
+    catLabels: { general: 'عام', عام: 'عام' }, catIcons: {},
+  },
+  // مطعم — صيغة محايدة (منيو + حجز ترابيزة)
+  restaurant: {
+    kicker: 'مطعم',
+    heroCta: 'احجز ترابيزة', heroCtaIcon: Calendar, waCta: 'اطلب دلفري',
+    bookChip: 'حجز فوري', unitWord: 'صنف',
+    galleryHeading: 'صور من المطعم',
+    galleryTiles: ['المكان', 'من جوه', 'الأطباق', 'الأجواء'],
+    branchesHeading: 'احجز في أقرب فرع ليك', branchCta: 'احجز',
+    servicesHeading: 'المنيو والأسعار', servicesIcon: Utensils,
+    teamHeading: 'الشيف والفريق',
+    accountSub: 'شوف حجوزاتك وطلباتك وقيّم تجربتك',
+    coverBadge: 'صورة غلاف المطعم',
+    catLabels: { general: 'عام', عام: 'عام' }, catIcons: {},
+  },
+  // أي مجال تاني (مقاولات / تكنولوجيا / غير محدد) — محايد عام
+  default: {
+    kicker: 'احجز أونلاين',
+    heroCta: 'احجز الآن', heroCtaIcon: Calendar, waCta: 'تواصل معنا',
+    bookChip: 'حجز فوري', unitWord: 'خدمة',
+    galleryHeading: 'صور',
+    galleryTiles: ['المكان', 'من جوه', 'تفاصيل', 'أجواء'],
+    branchesHeading: 'احجز في أقرب فرع ليك', branchCta: 'احجز',
+    servicesHeading: 'الخدمات والأسعار', servicesIcon: Briefcase,
+    teamHeading: 'الفريق',
+    accountSub: 'شوف حجوزاتك وقيّم تجربتك',
+    coverBadge: 'صورة الغلاف',
+    catLabels: { general: 'عام', عام: 'عام' }, catIcons: {},
+  },
+}
+
+function getVertical(industry: string | null | undefined): VerticalCfg {
+  if (industry === 'beauty_salon') return VERTICALS.beauty_salon
+  if (industry === 'polyclinic' || industry === 'clinic') return VERTICALS.polyclinic
+  if (industry === 'restaurant' || industry === 'restaurants') return VERTICALS.restaurant
+  return VERTICALS.default
+}
+
+export default function StorefrontPage({ params }: { params: { slug: string } }) {
   const { slug } = params
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -55,6 +150,11 @@ export default function SalonLandingPage({ params }: { params: { slug: string } 
     </div>
   )
 
+  // اختيار صيغة المجال حسب نوع المورّد
+  const v = getVertical(data.industry)
+  const HeroCtaIcon = v.heroCtaIcon
+  const ServicesIcon = v.servicesIcon
+
   const branches: any[] = data.branches || []
   const services: any[] = data.services || []
   const team: any[] = data.team || []
@@ -67,7 +167,7 @@ export default function SalonLandingPage({ params }: { params: { slug: string } 
   // generated placeholder tiles used until real photos are uploaded
   const galleryTiles = gallery.length
     ? gallery.map((g, i) => ({ url: galUrl(g), cap: galCap(g) || `صورة ${i + 1}` }))
-    : [{ url: '', cap: 'الريسبشن' }, { url: '', cap: 'الشغل' }, { url: '', cap: 'السبا' }, { url: '', cap: 'المكان' }]
+    : v.galleryTiles.map((cap) => ({ url: '', cap }))
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
@@ -76,7 +176,7 @@ export default function SalonLandingPage({ params }: { params: { slug: string } 
       <header className="relative text-white overflow-hidden">
         <div className="absolute inset-0" style={{ backgroundImage: cover ? `url(${cover})` : G_COVER, backgroundSize: 'cover', backgroundPosition: 'center' }} />
         <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(180deg,rgba(8,26,21,.18) 0%,rgba(8,26,21,.10) 35%,rgba(8,26,21,.80) 100%)' }} />
-        {!cover && <span className="absolute top-3 right-3 z-10 text-[10px] font-bold text-white/85 bg-black/30 px-2.5 py-1 rounded-full">صورة غلاف الصالون</span>}
+        {!cover && <span className="absolute top-3 right-3 z-10 text-[10px] font-bold text-white/85 bg-black/30 px-2.5 py-1 rounded-full">{v.coverBadge}</span>}
 
         <div className="relative z-10 max-w-2xl mx-auto px-5 pt-10 pb-7 min-h-[330px] flex flex-col justify-end">
           {data.logo_url && logoOk ? (
@@ -86,22 +186,22 @@ export default function SalonLandingPage({ params }: { params: { slug: string } 
           ) : (
             <div className="mb-3 w-14 h-14 rounded-2xl bg-white/15 ring-1 ring-white/25 grid place-items-center backdrop-blur-sm"><Sparkles className="w-7 h-7 text-white" /></div>
           )}
-          <p className="text-[11px] font-bold tracking-[0.22em] text-white/80 mb-1">{data.industry === 'beauty_salon' ? 'صالون تجميل وسبا' : 'احجزي أونلاين'}</p>
+          <p className="text-[11px] font-bold tracking-[0.22em] text-white/80 mb-1">{v.kicker}</p>
           <h1 className="text-3xl md:text-4xl font-black leading-tight mb-2">{data.business_name}</h1>
           <p className="text-sm text-white/90 flex items-center gap-1.5"><MapPin className="w-4 h-4" /> {loc}</p>
 
           <div className="flex flex-wrap gap-2 mt-3.5">
-            {[`${fmt(branches.length)} فروع`, `${fmt(data.service_count)} خدمة`, 'حجز فوري'].map((s) => (
+            {[`${fmt(branches.length)} فروع`, `${fmt(data.service_count)} ${v.unitWord}`, v.bookChip].map((s) => (
               <span key={s} className="text-xs font-bold bg-white/14 ring-1 ring-white/25 px-3 py-1.5 rounded-full">{s}</span>
             ))}
           </div>
 
           <div className="flex gap-2.5 mt-4">
             <a href="#book" className="flex-[1.4] h-12 rounded-2xl text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: G_CTA }}>
-              <Calendar className="w-4 h-4" /> احجزي موعدك
+              <HeroCtaIcon className="w-4 h-4" /> {v.heroCta}
             </a>
             <a href={`https://wa.me/${WA}`} target="_blank" rel="noopener" className="flex-1 h-12 rounded-2xl bg-white/14 ring-1 ring-white/28 text-white font-bold text-sm flex items-center justify-center gap-2">
-              <MessageCircle className="w-4 h-4" /> تواصلي
+              <MessageCircle className="w-4 h-4" /> {v.waCta}
             </a>
           </div>
         </div>
@@ -117,7 +217,7 @@ export default function SalonLandingPage({ params }: { params: { slug: string } 
 
         {/* gallery */}
         <section>
-          <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5"><ImageIcon className="w-4 h-4 text-[#1F6F5F]" /> معرض الصالون</h2>
+          <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5"><ImageIcon className="w-4 h-4 text-[#1F6F5F]" /> {v.galleryHeading}</h2>
           <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-4 px-4" style={{ scrollbarWidth: 'none' }}>
             {galleryTiles.map((t, i) => (
               <div key={i} className="relative flex-shrink-0 w-[140px] h-[104px] rounded-2xl overflow-hidden ring-1 ring-black/5">
@@ -137,7 +237,7 @@ export default function SalonLandingPage({ params }: { params: { slug: string } 
         {/* team */}
         {team.length > 0 && (
           <section>
-            <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5"><Sparkles className="w-4 h-4 text-[#1F6F5F]" /> فريقنا</h2>
+            <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5"><Sparkles className="w-4 h-4 text-[#1F6F5F]" /> {v.teamHeading}</h2>
             <div className="flex gap-3.5 overflow-x-auto pb-1 -mx-4 px-4" style={{ scrollbarWidth: 'none' }}>
               {team.map((m: any) => (
                 <div key={m.id} className="flex-shrink-0 w-[76px] text-center">
@@ -158,7 +258,7 @@ export default function SalonLandingPage({ params }: { params: { slug: string } 
 
         {/* branches → book */}
         <section id="book">
-          <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5"><MapPin className="w-4 h-4 text-[#1F6F5F]" /> احجزي في أقرب فرع ليكي</h2>
+          <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5"><MapPin className="w-4 h-4 text-[#1F6F5F]" /> {v.branchesHeading}</h2>
           <div className="space-y-2.5">
             {branches.map((b: any) => (
               <Link key={b.id} href={`/book/${b.code}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-2.5 flex items-center gap-3 hover:border-[#1F6F5F] hover:shadow-md transition-all">
@@ -173,26 +273,26 @@ export default function SalonLandingPage({ params }: { params: { slug: string } 
                   <p className="font-black text-[#1A2E26] truncate">{b.name}</p>
                   {(b.address || b.district) && <p className="text-[11px] text-[#6B7280] truncate flex items-center gap-1"><MapPin className="w-3 h-3" /> {b.address || b.district}</p>}
                 </div>
-                <span className="text-[#1F6F5F] font-bold text-sm flex items-center gap-0.5 flex-shrink-0">احجزي <ChevronLeft className="w-4 h-4" /></span>
+                <span className="text-[#1F6F5F] font-bold text-sm flex items-center gap-0.5 flex-shrink-0">{v.branchCta} <ChevronLeft className="w-4 h-4" /></span>
               </Link>
             ))}
           </div>
         </section>
 
-        {/* services menu */}
+        {/* services / menu */}
         {services.length > 0 && (
           <section>
-            <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5"><Scissors className="w-4 h-4 text-[#1F6F5F]" /> الخدمات والأسعار</h2>
+            <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5"><ServicesIcon className="w-4 h-4 text-[#1F6F5F]" /> {v.servicesHeading}</h2>
             <div className="space-y-2.5">
               {services.map((cat: any) => {
                 const isOpen = openCat === cat.category
-                const Icon = CATEGORY_ICONS[cat.category] || Sparkles
+                const Icon = v.catIcons[cat.category] || v.servicesIcon
                 return (
                   <div key={cat.category} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <button onClick={() => setOpenCat(isOpen ? null : cat.category)} className="w-full px-3.5 py-3 flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl grid place-items-center flex-shrink-0" style={{ backgroundImage: G_SOFT }}><Icon className="w-5 h-5 text-[#1F6F5F]" /></div>
-                      <span className="font-black text-[#1A2E26] text-sm flex-1 text-right">{CATEGORY_LABELS[cat.category] || cat.category}</span>
-                      <span className="text-[10px] font-bold text-[#6B7280]">{fmt(cat.items.length)} خدمة</span>
+                      <span className="font-black text-[#1A2E26] text-sm flex-1 text-right">{v.catLabels[cat.category] || cat.category}</span>
+                      <span className="text-[10px] font-bold text-[#6B7280]">{fmt(cat.items.length)} {v.unitWord}</span>
                       <ChevronDown className={`w-4 h-4 text-[#6B7280] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {isOpen && (
@@ -221,7 +321,7 @@ export default function SalonLandingPage({ params }: { params: { slug: string } 
             <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 grid place-items-center"><User className="w-5 h-5 text-[#1F6F5F]" /></div>
             <div>
               <p className="font-black text-[#1A2E26]">حسابك على مضمونة</p>
-              <p className="text-[11px] text-[#6B7280]">شوفي حجوزاتك، قيّمي، وكرّمي اللي خدمك</p>
+              <p className="text-[11px] text-[#6B7280]">{v.accountSub}</p>
             </div>
           </div>
           <ChevronLeft className="w-5 h-5 text-[#6B7280]" />
