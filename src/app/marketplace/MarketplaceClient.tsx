@@ -74,10 +74,15 @@ function MarketplaceBrowseContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialCategorySlug = searchParams.get('category')
+  const initialTrack = searchParams.get('track')
 
   const [allCategories, setAllCategories] = useState<Category[]>([])
   const allRootCategories = allCategories.filter(c => c.parent_id === null)
-  const [activeTrack, setActiveTrack] = useState<TrackTab>('all')
+  const [activeTrack, setActiveTrack] = useState<TrackTab>(
+    (['rentals', 'services', 'hybrid', 'restaurants', 'products'].includes(initialTrack || '')
+      ? initialTrack
+      : 'all') as TrackTab
+  )
   const rootCategories = activeTrack === 'all'
     ? allRootCategories
     : allRootCategories.filter(c => c.track === activeTrack)
@@ -169,6 +174,24 @@ function MarketplaceBrowseContent() {
             ]
           }
         }
+      } else if (activeTrack !== 'all') {
+        // Vertical/track selected (e.g. from a homepage chip) with no specific
+        // category — filter listings to every category in that track.
+        // @ts-expect-error
+        const { data: trackRoots } = await supabaseBrowser
+          .from('categories')
+          .select('id')
+          .eq('track', activeTrack)
+        const rootIds = (trackRoots || []).map((c: { id: string }) => c.id)
+        if (rootIds.length > 0) {
+          // @ts-expect-error
+          const { data: childCats } = await supabaseBrowser
+            .from('categories')
+            .select('id')
+            .in('parent_id', rootIds)
+          const childIds = (childCats || []).map((c: { id: string }) => c.id)
+          categoryIds = [...rootIds, ...childIds]
+        }
       }
 
       // @ts-expect-error
@@ -202,7 +225,7 @@ function MarketplaceBrowseContent() {
       setLoading(false)
     }
     load()
-  }, [selectedCategorySlug, searchQuery, sortBy])
+  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack])
 
   const toggleFavorite = async (e: MouseEvent, listingId: string) => {
     e.preventDefault()
