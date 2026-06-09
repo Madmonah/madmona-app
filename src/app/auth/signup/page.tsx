@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
 import {
-  ArrowRight, Phone, Lock, User, Mail, AlertCircle, Loader2, UserPlus, CheckCircle, Sparkles, KeyRound, CreditCard,
+  ArrowRight, Phone, Lock, User, Mail, AlertCircle, Loader2, UserPlus, CheckCircle, Sparkles, KeyRound,
 } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { GoogleSignInButton, FacebookSignInButton } from '@/components/GoogleSignInButton'
@@ -32,7 +32,6 @@ function SignupContent() {
   const [fullName, setFullName] = useState(prefilledName)
   const [phone, setPhone] = useState(prefilledPhone)
   const [email, setEmail] = useState(prefilledEmail)
-  const [nationalId, setNationalId] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
@@ -78,7 +77,6 @@ function SignupContent() {
           phone: normalized,
           full_name: fullName.trim(),
           recovery_email: trimmedEmail,
-          ...(nationalId.trim() ? { national_id: nationalId.trim() } : {}),
         },
       },
     })
@@ -94,19 +92,16 @@ function SignupContent() {
       return
     }
 
-    // Save recovery email + optional national_id on the profile (best-effort)
+    // Save recovery email on the profile (best-effort).
+    // NOTE: National ID is intentionally NOT collected at signup. We only ask
+    // for it later, after the customer completes a request, and only if the
+    // supplier requires it (e.g. at payout or tax-invoice time).
     if (data?.user?.id) {
       try {
-        const profileUpdate: Record<string, unknown> = { email: trimmedEmail }
-        // Save national_id if provided. Column may not exist in all DBs - migration:
-        //   ALTER TABLE profiles ADD COLUMN national_id TEXT;
-        if (nationalId.trim()) {
-          profileUpdate.national_id = nationalId.trim()
-        }
         // @ts-expect-error
         await supabaseBrowser
           .from('profiles')
-          .update(profileUpdate)
+          .update({ email: trimmedEmail })
           .eq('id', data.user.id)
       } catch (e) {
         console.warn('[auth/signup] could not update profile:', e)
@@ -296,30 +291,6 @@ function SignupContent() {
                 />
                 <p className="text-[11px] text-gray-500 mt-1.5 leading-relaxed">
                   💡 {t('auth.email_help_text')}
-                </p>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                  <CreditCard className="w-3.5 h-3.5 text-[#1F6F5F]" />
-                  {t('auth.id_label')}
-                  <span className="text-[10px] font-normal text-gray-400 normal-case tracking-normal mr-auto">
-                    {t('auth.optional')}
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  value={nationalId}
-                  onChange={(e) => setNationalId(e.target.value.replace(/\D/g, '').slice(0, 14))}
-                  placeholder={t('auth.id_placeholder')}
-                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
-                  dir="ltr"
-                  style={{ textAlign: 'right' }}
-                  inputMode="numeric"
-                  maxLength={14}
-                />
-                <p className="text-[11px] text-gray-500 mt-1.5 leading-relaxed">
-                  🔒 {t('auth.id_help_text')}
                 </p>
               </div>
 

@@ -5,7 +5,7 @@
  *
  * مرجع Mohamed: vk.com — أيقونات كتيرة متحركة في الخلفية
  * + 5 chips كبيرة بألوان لكل مجال
- * كل حاجة بتروح /add-listing (نمو السوق = إضافة موردين)
+ * الـ chip بيفتح الماركت مفلتر بالمجال (browse) + زرار "ضيف" جواه يروح /add-listing
  *
  * المجالات الـ 5:
  *  - إيجار · خدمات · مطاعم · بيع وشرا · مناسبات
@@ -13,6 +13,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 
 type Stats = {
@@ -26,11 +27,11 @@ const DEFAULT_STATS: Stats = { listings: 0, categories: 0, suppliers: 0, cities:
 
 // 5 المجالات الكبيرة المتحركة
 const VK_CATEGORIES = [
-  { emoji: '🏠', name: 'إيجار', sub: 'عقارات · مركبات · معدات', accent: '#1F6F5F', bg: '#E7F1ED' },
-  { emoji: '🛠️', name: 'خدمات', sub: 'صيانة · جمال · استشارات', accent: '#D4A017', bg: '#FAEFD1' },
-  { emoji: '🍽️', name: 'مطاعم', sub: 'دلفري · سفرة · حلويات', accent: '#E26D5C', bg: '#FAE1CB' },
-  { emoji: '🛍️', name: 'بيع وشرا', sub: 'منتجات · أزياء · بيت', accent: '#3D7BB6', bg: '#D9E7F4' },
-  { emoji: '💍', name: 'مناسبات', sub: 'أعراس · قاعات · تصوير', accent: '#C75D8A', bg: '#F4DCE5' },
+  { emoji: '🏠', name: 'إيجار', sub: 'عقارات · مركبات · معدات', accent: '#1F6F5F', bg: '#E7F1ED', track: 'rentals' },
+  { emoji: '🛠️', name: 'خدمات', sub: 'صيانة · جمال · استشارات', accent: '#D4A017', bg: '#FAEFD1', track: 'services' },
+  { emoji: '🍽️', name: 'مطاعم', sub: 'دلفري · سفرة · حلويات', accent: '#E26D5C', bg: '#FAE1CB', track: 'restaurants' },
+  { emoji: '🛍️', name: 'بيع وشرا', sub: 'منتجات · أزياء · بيت', accent: '#3D7BB6', bg: '#D9E7F4', track: 'products' },
+  { emoji: '💍', name: 'مناسبات', sub: 'أعراس · قاعات · تصوير', accent: '#C75D8A', bg: '#F4DCE5', track: 'hybrid' },
 ];
 
 // أيقونات خلفية متحركة (VK-style decorations) — بالسرعة الهادئة
@@ -101,6 +102,7 @@ function StatPill({ href, num, label }: { href: string; num: number; label: stri
 }
 
 export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Stats }) {
+  const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -173,7 +175,7 @@ export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Sta
             {VK_CATEGORIES.map((c, i) => (
               <Link
                 key={c.name}
-                href="/add-listing"
+                href={`/marketplace?track=${c.track}`}
                 prefetch={false}
                 className="mdm-vk-chip"
                 style={
@@ -187,7 +189,23 @@ export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Sta
                 <span className="mdm-vk-emoji">{c.emoji}</span>
                 <div className="mdm-vk-name">{c.name}</div>
                 <div className="mdm-vk-sub">{c.sub}</div>
-                <span className="mdm-vk-add">
+                <span
+                  role="button"
+                  tabIndex={0}
+                  className="mdm-vk-add"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    router.push('/add-listing');
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      router.push('/add-listing');
+                    }
+                  }}
+                >
                   <span>ضيف</span>
                   <ArrowLeft size={12} />
                 </span>
