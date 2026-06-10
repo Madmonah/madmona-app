@@ -27,7 +27,7 @@ const ar: Dict = {
   // ---- common ----
   'common.brand': 'مضمونة',
   'common.slogan': 'معاملاتك مضمونة',
-  'common.tagline': 'اللي بتأجره مضمون',
+  'common.tagline': 'كل معاملة مضمونة',
   'common.loading': 'جاري التحميل...',
   'common.search': 'دور على اللي محتاجه',
   'common.search_short': 'بحث',
@@ -147,7 +147,7 @@ const ar: Dict = {
   'footer.copyright': '© 2026 مضمونة. جميع الحقوق محفوظة.',
 
   // ---- footer ----
-  'footer.about': 'سوق مصري مضمون للتأجير والبيع والخدمات والمطاعم والبيوتي، تأسس ٢٠١٩.',
+  'footer.about': 'سوق مصري مضمون للتأجير والبيع والخدمات والمطاعم والبيوتي — منصة جديدة بتنمو بسرعة، اتلانشت مايو ٢٠٢٦.',
   'footer.quick_links': 'روابط سريعة',
   'footer.contact': 'تواصل',
   'footer.follow': 'تابعنا',
@@ -574,7 +574,7 @@ const ar: Dict = {
   'about.hero_emph': 'بضمان كامل',
   'about.hero_sub': 'مضمونة سوق مصري مضمون بيجمع التأجير والبيع والخدمات والمطاعم والبيوتي في مكان واحد — كله من موردين موثوقين بحماية كاملة على كل صفقة.',
   'about.story_title': 'القصة',
-  'about.story_p1': 'بدأت مضمونة سنة ٢٠١٩ في مصر الجديدة بفكرة واحدة: إن أي معاملة تأجير أو بيع في مصر تبقى مضمونة للطرفين — بحماية كاملة وثقة حقيقية.',
+  'about.story_p1': 'بدأت مضمونة في مصر الجديدة بفكرة واحدة: إن أي معاملة تأجير أو بيع في مصر تبقى مضمونة للطرفين — بحماية كاملة وثقة حقيقية.',
   'about.story_p2': 'كبرنا من فكرة الضمان دي لسوق كامل — شاليهات، شقق، عربيات، معدات، منتجات، خدمات، مطاعم، وبيوتي. كله في مكان واحد، بنفس مستوى الضمان والثقة.',
   'about.story_p3': 'النهاردة مضمونة منصة شاملة بتربط العملاء بموردين موثوقين بنراجع مستنداتهم، وبضمان كامل على كل معاملة.',
   'about.offer_title': 'إيه اللي بنقدمه',
@@ -873,7 +873,7 @@ const en: Dict = {
   'footer.copyright': '© 2026 Madmona. All rights reserved.',
 
   // ---- footer ----
-  'footer.about': "Egypt's guaranteed marketplace for rentals, sales, services, restaurants, and beauty. Founded 2019.",
+  'footer.about': "Egypt's guaranteed marketplace for rentals, sales, services, restaurants, and beauty. A new platform, launched May 2026 and growing fast.",
   'footer.quick_links': 'Quick links',
   'footer.contact': 'Contact',
   'footer.follow': 'Follow us',
@@ -1300,7 +1300,7 @@ const en: Dict = {
   'about.hero_emph': 'fully guaranteed',
   'about.hero_sub': 'Madmona is a guaranteed Egyptian marketplace bringing rentals, sales, services, restaurants, and beauty into one place — all from trusted suppliers with full protection on every deal.',
   'about.story_title': 'The story',
-  'about.story_p1': 'Madmona started in 2019 in Heliopolis with one idea: that every rental or sale in Egypt should be guaranteed for both sides — with full protection and real trust.',
+  'about.story_p1': 'Madmona started in Heliopolis with one idea: that every rental or sale in Egypt should be guaranteed for both sides — with full protection and real trust.',
   'about.story_p2': 'We grew that idea of a guarantee into a full marketplace — chalets, apartments, cars, equipment, products, services, restaurants, and beauty. All in one place, with the same trust and protection.',
   'about.story_p3': 'Today Madmona is a complete marketplace connecting customers with trusted, document-verified suppliers — with full protection on every transaction.',
   'about.offer_title': 'What we offer',

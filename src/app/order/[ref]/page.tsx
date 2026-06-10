@@ -197,10 +197,12 @@ export default function OrderTrackingPage() {
   // Current step index in flow (-1 if cancelled/refunded)
   const currentIdx = isCancelled ? -1 : STATUS_FLOW.indexOf(order.status)
 
-  const instapayNumber = '5220001000009207'
+  // Bank Misr InstaPay (5220001000009207) hidden until approval. Using handle + Vodafone Cash for now.
+  const instapayHandle = 'madmonacairo@instapay.com'
+  const vodafoneCash = '01026222337'
   const madmonaPhone = '201002229982'
   const waEvidenceMessage = encodeURIComponent(
-    `السلام عليكم، أنا حوّلت فلوس أوردر رقم ${order.reference_code} على InstaPay. ده الإيصال:`
+    `السلام عليكم، أنا حوّلت فلوس أوردر رقم ${order.reference_code} (InstaPay/فودافون كاش). ده الإيصال:`
   )
 
   return (
@@ -325,22 +327,39 @@ export default function OrderTrackingPage() {
                 خطوات الدفع
               </h3>
               <p className="text-xs text-amber-800">
-                حوّل المبلغ على حساب InstaPay اللي تحت، وبعدين ابعت إيصال على واتساب مضمونة
+                حوّل المبلغ على InstaPay أو فودافون كاش اللي تحت، وبعدين ابعت إيصال على واتساب مضمونة
               </p>
             </div>
             <div className="p-5 space-y-3">
+              {/* InstaPay address */}
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
                 <div>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">رقم InstaPay</p>
-                  <p className="text-lg font-black text-gray-900 tabular" dir="ltr">{instapayNumber}</p>
-                  <p className="text-[11px] text-gray-500">بنك مصر · مضمونة</p>
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">InstaPay</p>
+                  <p className="text-lg font-black text-gray-900" dir="ltr">{instapayHandle}</p>
+                  <p className="text-[11px] text-gray-500">مضمونة</p>
                 </div>
                 <button
-                  onClick={() => copyToClipboard(instapayNumber, 'instapay')}
+                  onClick={() => copyToClipboard(instapayHandle, 'instapay')}
                   className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:border-[#1F6F5F] hover:text-[#1F6F5F] transition-all"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   {copySuccess === 'instapay' ? '✓ متنسخ' : 'انسخ'}
+                </button>
+              </div>
+
+              {/* Vodafone Cash */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">فودافون كاش</p>
+                  <p className="text-lg font-black text-gray-900 tabular" dir="ltr">{vodafoneCash}</p>
+                  <p className="text-[11px] text-gray-500">محفظة · مضمونة</p>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(vodafoneCash, 'vodafone')}
+                  className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:border-[#1F6F5F] hover:text-[#1F6F5F] transition-all"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  {copySuccess === 'vodafone' ? '✓ متنسخ' : 'انسخ'}
                 </button>
               </div>
 

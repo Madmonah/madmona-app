@@ -12,6 +12,9 @@ import {
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { GoogleSignInButton, FacebookSignInButton } from '@/components/GoogleSignInButton'
 
+// Facebook login hidden until Meta Business Verification completes (re-enable: set to true)
+const SHOW_FACEBOOK_LOGIN = false
+
 function LoginContent() {
   const { t, dir } = useT()
   const router = useRouter()
@@ -234,8 +237,12 @@ function LoginContent() {
               <div className="h-px bg-gray-100 flex-1" />
             </div>
             <GoogleSignInButton redirectTo={redirectTo} label="سجّل دخول بـ Google" />
-            <div className="h-3" />
-            <FacebookSignInButton redirectTo={redirectTo} label="سجّل دخول بـ Facebook" />
+            {SHOW_FACEBOOK_LOGIN && (
+              <>
+                <div className="h-3" />
+                <FacebookSignInButton redirectTo={redirectTo} label="سجّل دخول بـ Facebook" />
+              </>
+            )}
 
             <div className="mt-7 pt-6 border-t border-gray-100 text-center">
               <p className="text-sm text-gray-600 mb-2">{t('auth.no_account_yet')}</p>

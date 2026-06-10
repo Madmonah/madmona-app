@@ -370,7 +370,7 @@ export default function CheckoutPage() {
                 <CreditCard className="w-5 h-5" />
               </div>
               <div className="flex-1">
-                <p className="font-bold text-sm text-gray-900">InstaPay / محفظة — على حساب مضمونة</p>
+                <p className="font-bold text-sm text-gray-900">InstaPay / فودافون كاش — على حساب مضمونة</p>
                 <p className="text-[11px] text-gray-500">
                   تحويل على مضمونة، وفلوسك محمية لحد ما يوصلك الأوردر سليم
                 </p>

@@ -518,7 +518,7 @@ function AddListingPageInner({
           </a>
         </div>
         <h1 className="text-xl font-semibold mt-5 max-w-2xl mx-auto">
-          أَجِّر معانا — أضف ليستنجك في 60 ثانية
+          ضيف ليستنجك في 60 ثانية
         </h1>
         <p className="text-sm text-gray-600 mt-1 max-w-2xl mx-auto">
           خطوة واحدة من 5 — مش لازم تعمل حساب دلوقتي
