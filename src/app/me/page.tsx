@@ -148,6 +148,20 @@ export default function MyDashboard() {
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
 
+        {/* ===== MANAGER ENTRY (admin / branch_manager only) ===== */}
+        {data.is_manager && (
+          <Link href="/me/team" className="flex items-center justify-between bg-[#1F6F5F] text-white rounded-2xl p-4 active:scale-[0.99] transition-all">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/15 grid place-items-center"><Briefcase className="w-5 h-5" /></div>
+              <div>
+                <p className="text-sm font-black">إدارة الموظفين والحضور</p>
+                <p className="text-[11px] text-white/80">تابع حضور الفريق وعدّل بياناتهم</p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 rotate-180" />
+          </Link>
+        )}
+
         {/* ===== NOTIFICATIONS ===== */}
         {notifs.length > 0 && (
           <section className="bg-white rounded-2xl border border-gray-100 p-5">
