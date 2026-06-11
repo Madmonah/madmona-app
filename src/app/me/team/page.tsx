@@ -5,7 +5,8 @@
    (gated server-side by madmona_mgr_* RPCs via the madmona token).
    Lets a manager: review + fix attendance, and add/edit basic employee data
    (name / phone / branch / role label) + weekly shifts.
-   NEVER exposes salaries or PINs. Scope: admin = whole supplier, branch_manager = own branch. */
+   Salaries shown/editable ONLY to managers with the 'salaries' permission; PINs never exposed.
+   Scope: admin = whole supplier, branch_manager = own branch. */
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
@@ -13,7 +14,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import {
   Loader2, ArrowRight, Users, CalendarClock, Search, Plus, Pencil, X,
-  MinusCircle, CheckCircle2, CalendarDays, Save,
+  MinusCircle, CheckCircle2, CalendarDays, Save, Wallet,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -87,7 +88,7 @@ export default function ManagerConsole() {
       <main className="max-w-2xl mx-auto px-4 py-6">
         {tab === 'attendance'
           ? <AttendanceTab />
-          : <EmployeesTab branches={branches} scope={mgr?.scope} employees={employees} reload={loadEmployees} />}
+          : <EmployeesTab branches={branches} scope={mgr?.scope} employees={employees} reload={loadEmployees} canViewSalary={mgr?.can_view_salary} canEditSalary={mgr?.can_edit_salary} />}
       </main>
     </div>
   )
@@ -197,7 +198,7 @@ function AttendanceRow({ r, date, open, onOpen, onSaved }: any) {
 }
 
 /* ───────────────────────── EMPLOYEES ───────────────────────── */
-function EmployeesTab({ branches, scope, employees, reload }: any) {
+function EmployeesTab({ branches, scope, employees, reload, canViewSalary, canEditSalary }: any) {
   const [q, setQ] = useState('')
   const [form, setForm] = useState<any | null>(null)
   const [shiftFor, setShiftFor] = useState<any | null>(null)
@@ -224,6 +225,7 @@ function EmployeesTab({ branches, scope, employees, reload }: any) {
               <div className="min-w-0">
                 <p className="text-[13px] font-bold text-[#1A2E26] truncate">{e.full_name}</p>
                 <p className="text-[11px] text-[#6B7280] truncate">{e.role_ar || '—'} · {e.branch || 'بدون فرع'}{e.phone ? ` · ${e.phone}` : ''}</p>
+                {canViewSalary && e.salary != null && <p className="text-[11px] font-bold text-[#1F6F5F] truncate flex items-center gap-1"><Wallet className="w-3 h-3" /> {Number(e.salary).toLocaleString('en-US')} ج</p>}
               </div>
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -235,18 +237,19 @@ function EmployeesTab({ branches, scope, employees, reload }: any) {
         {filtered.length === 0 && <p className="text-center text-[12px] text-[#6B7280] py-8">مفيش موظفين بالبحث ده</p>}
       </div>
 
-      {form && <EmployeeModal employee={form} branches={branches} scope={scope} onClose={() => setForm(null)} onSaved={() => { setForm(null); reload() }} />}
+      {form && <EmployeeModal employee={form} branches={branches} scope={scope} canViewSalary={canViewSalary} canEditSalary={canEditSalary} onClose={() => setForm(null)} onSaved={() => { setForm(null); reload() }} />}
       {shiftFor && <ShiftModal employee={shiftFor} onClose={() => setShiftFor(null)} />}
     </div>
   )
 }
 
-function EmployeeModal({ employee, branches, scope, onClose, onSaved }: any) {
+function EmployeeModal({ employee, branches, scope, canViewSalary, canEditSalary, onClose, onSaved }: any) {
   const isNew = !employee.id
   const [name, setName] = useState(employee.full_name || '')
   const [phone, setPhone] = useState(employee.phone || '')
   const [branchId, setBranchId] = useState(employee.branch_id || (branches[0]?.id ?? ''))
   const [roleAr, setRoleAr] = useState(employee.role_ar || '')
+  const [salary, setSalary] = useState(employee.salary != null ? String(employee.salary) : '')
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
 
@@ -258,6 +261,7 @@ function EmployeeModal({ employee, branches, scope, onClose, onSaved }: any) {
       p_token: token(), p_employee_id: employee.id ?? null,
       p_full_name: name, p_phone: phone || null,
       p_branch_id: scope === 'branch' ? null : (branchId || null), p_role_ar: roleAr || null,
+      p_salary_egp: canEditSalary ? (salary.trim() === '' ? null : Number(salary)) : null,
     })
     setBusy(false)
     if (data?.ok) onSaved(); else setErr(data?.error || 'حصل خطأ')
@@ -280,6 +284,14 @@ function EmployeeModal({ employee, branches, scope, onClose, onSaved }: any) {
                 <option value="">— بدون فرع —</option>
                 {branches.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
+            </label>
+          )}
+          {canViewSalary && (
+            <label className="block text-[12px] font-bold text-[#6B7280]">المرتب الشهري (جنيه)
+              <input type="number" inputMode="numeric" value={salary} onChange={(e) => setSalary(e.target.value)}
+                disabled={!canEditSalary} placeholder="0"
+                className="w-full mt-1 h-11 rounded-xl border border-gray-200 px-3 text-[14px] disabled:bg-[#FAFAF7] disabled:text-[#6B7280]" dir="ltr" />
+              {!canEditSalary && <span className="text-[10px] text-[#6B7280]">للعرض بس</span>}
             </label>
           )}
           {err && <p className="text-[12px] text-red-600 font-bold">{err}</p>}
