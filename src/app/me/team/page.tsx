@@ -14,7 +14,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import {
   Loader2, ArrowRight, Users, CalendarClock, Search, Plus, Pencil, X,
-  MinusCircle, CheckCircle2, CalendarDays, Save, Wallet,
+  MinusCircle, CheckCircle2, CalendarDays, Save, Wallet, KeyRound,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -88,7 +88,7 @@ export default function ManagerConsole() {
       <main className="max-w-2xl mx-auto px-4 py-6">
         {tab === 'attendance'
           ? <AttendanceTab />
-          : <EmployeesTab branches={branches} scope={mgr?.scope} employees={employees} reload={loadEmployees} canViewSalary={mgr?.can_view_salary} canEditSalary={mgr?.can_edit_salary} />}
+          : <EmployeesTab branches={branches} scope={mgr?.scope} employees={employees} reload={loadEmployees} canViewSalary={mgr?.can_view_salary} canEditSalary={mgr?.can_edit_salary} canViewPin={mgr?.can_view_pin} />}
       </main>
     </div>
   )
@@ -198,7 +198,7 @@ function AttendanceRow({ r, date, open, onOpen, onSaved }: any) {
 }
 
 /* ───────────────────────── EMPLOYEES ───────────────────────── */
-function EmployeesTab({ branches, scope, employees, reload, canViewSalary, canEditSalary }: any) {
+function EmployeesTab({ branches, scope, employees, reload, canViewSalary, canEditSalary, canViewPin }: any) {
   const [q, setQ] = useState('')
   const [form, setForm] = useState<any | null>(null)
   const [shiftFor, setShiftFor] = useState<any | null>(null)
@@ -226,6 +226,7 @@ function EmployeesTab({ branches, scope, employees, reload, canViewSalary, canEd
                 <p className="text-[13px] font-bold text-[#1A2E26] truncate">{e.full_name}</p>
                 <p className="text-[11px] text-[#6B7280] truncate">{e.role_ar || '—'} · {e.branch || 'بدون فرع'}{e.phone ? ` · ${e.phone}` : ''}</p>
                 {canViewSalary && e.salary != null && <p className="text-[11px] font-bold text-[#1F6F5F] truncate flex items-center gap-1"><Wallet className="w-3 h-3" /> {Number(e.salary).toLocaleString('en-US')} ج</p>}
+                {canViewPin && e.pin && <p className="text-[11px] font-mono font-bold text-[#1A2E26] truncate flex items-center gap-1"><KeyRound className="w-3 h-3" /> PIN {e.pin}</p>}
               </div>
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -237,13 +238,13 @@ function EmployeesTab({ branches, scope, employees, reload, canViewSalary, canEd
         {filtered.length === 0 && <p className="text-center text-[12px] text-[#6B7280] py-8">مفيش موظفين بالبحث ده</p>}
       </div>
 
-      {form && <EmployeeModal employee={form} branches={branches} scope={scope} canViewSalary={canViewSalary} canEditSalary={canEditSalary} onClose={() => setForm(null)} onSaved={() => { setForm(null); reload() }} />}
+      {form && <EmployeeModal employee={form} branches={branches} scope={scope} canViewSalary={canViewSalary} canEditSalary={canEditSalary} canViewPin={canViewPin} onClose={() => setForm(null)} onSaved={() => { setForm(null); reload() }} />}
       {shiftFor && <ShiftModal employee={shiftFor} onClose={() => setShiftFor(null)} />}
     </div>
   )
 }
 
-function EmployeeModal({ employee, branches, scope, canViewSalary, canEditSalary, onClose, onSaved }: any) {
+function EmployeeModal({ employee, branches, scope, canViewSalary, canEditSalary, canViewPin, onClose, onSaved }: any) {
   const isNew = !employee.id
   const [name, setName] = useState(employee.full_name || '')
   const [phone, setPhone] = useState(employee.phone || '')
@@ -294,8 +295,14 @@ function EmployeeModal({ employee, branches, scope, canViewSalary, canEditSalary
               {!canEditSalary && <span className="text-[10px] text-[#6B7280]">للعرض بس</span>}
             </label>
           )}
+          {canViewPin && !isNew && employee.pin && (
+            <label className="block text-[12px] font-bold text-[#6B7280]">كود الدخول (PIN)
+              <input value={employee.pin} readOnly
+                className="w-full mt-1 h-11 rounded-xl border border-gray-200 px-3 text-[14px] font-mono bg-[#FAFAF7] text-[#1A2E26]" dir="ltr" />
+            </label>
+          )}
           {err && <p className="text-[12px] text-red-600 font-bold">{err}</p>}
-          {isNew && <p className="text-[11px] text-[#6B7280]">هيتعمل للموظف كود PIN أوتوماتيك للدخول — تقدر تشوفه من لوحة الإدارة.</p>}
+          {isNew && <p className="text-[11px] text-[#6B7280]">هيتعمل للموظف كود PIN أوتوماتيك للدخول{canViewPin ? ' — هيظهر في القايمة بعد الحفظ.' : ' — تقدر تشوفه من لوحة الإدارة.'}</p>}
           <button onClick={save} disabled={busy} className="w-full h-12 rounded-2xl bg-[#1F6F5F] text-white font-black text-[14px] flex items-center justify-center gap-2 disabled:opacity-50">
             {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} {isNew ? 'ضيف الموظف' : 'حفظ التعديلات'}
           </button>
