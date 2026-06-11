@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabase-browser';
+import { trackEvent } from '@/components/AnalyticsTracker';
 
 // ============================================================================
 // Madmona "Add Listing First" — public, no-auth multi-step form
@@ -502,6 +503,39 @@ function AddListingPageInner({
     setResetCategoryView((n) => n + 1);
   }
 
+  // ──────────────────────────────────────────────────────────────
+  // FIX (Jun 11 2026): funnel instrumentation + back-button trap.
+  // Leak 1: the mobile/browser BACK button ejected users out of the
+  //   single-URL wizard to the homepage, losing all their progress.
+  // Leak 2: zero per-step tracking, so drop-off was invisible.
+  // ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    trackEvent({
+      event_type: 'wizard_step_view',
+      category: draft.category_slug,
+      metadata: { step, category_slug: draft.category_slug ?? null },
+    });
+  }, [step, draft.category_slug]);
+
+  const stepRef = useRef(step);
+  useEffect(() => { stepRef.current = step; }, [step]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.history.pushState({ wizardGuard: true }, '');
+    const onPop = () => {
+      const s = stepRef.current;
+      if (s > 1) {
+        setStep((cur) => (cur > 1 ? ((cur - 1) as Step) : cur));
+        setErrors({});
+        // re-arm so the next back press is also captured
+        window.history.pushState({ wizardGuard: true }, '');
+      }
+      // on step 1 we let the pop through so the user can leave the wizard
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
   const progress = (step / 5) * 100;
 
   return (
@@ -513,9 +547,16 @@ function AddListingPageInner({
             <div className="text-2xl font-bold tracking-tight">مضمونة</div>
             <span className="text-xs text-[#1F6F5F] uppercase tracking-widest">MADMONA</span>
           </div>
-          <a href="/" className="text-xs text-gray-600 hover:text-[#1A2E26]">
+          <button
+            type="button"
+            onClick={() => {
+              if (step > 1 && !window.confirm('متأكد إنك عايز تسيب الليستنج؟ اللي كتبته محفوظ وتقدر تكمّله بعدين.')) return;
+              window.location.href = '/';
+            }}
+            className="text-xs text-gray-600 hover:text-[#1A2E26]"
+          >
             ← الرئيسية
-          </a>
+          </button>
         </div>
         <h1 className="text-xl font-semibold mt-5 max-w-2xl mx-auto">
           ضيف ليستنجك في 60 ثانية
@@ -655,6 +696,11 @@ function AddListingPageInner({
               if (!ok) return;
               const t = await persist({ ...patch, status: 'submitted' });
               if (t) {
+                trackEvent({
+                  event_type: 'wizard_submit',
+                  category: draft.category_slug,
+                  metadata: { category_slug: draft.category_slug ?? null },
+                });
                 // NOTE: we do NOT clear localStorage here. That used to cause
                 // duplicate drafts on accidental return visits. The success
                 // page now clears it after a short delay (or on signup).
@@ -669,7 +715,7 @@ function AddListingPageInner({
 
       {/* Footer */}
       <footer className="px-5 pb-8 mt-4 max-w-2xl mx-auto text-center text-xs text-gray-500">
-        🛡 حماية كاملة • 💰 دفع سريع • 📞 دعم 24/7 • عمولة 10% (5% للشركات)
+        ✅ الإضافة والنشر مجانًا • 🛡 حماية كاملة • 💰 دفع سريع • 📞 دعم 24/7
       </footer>
     </div>
   );
@@ -758,8 +804,8 @@ function StepCategory({
   if (!main) {
     return (
       <section>
-        <h2 className="text-lg font-semibold mb-1">إيه اللي عايز تأجره؟</h2>
-        <p className="text-sm text-gray-500 mb-5">اختار التصنيف الرئيسي</p>
+        <h2 className="text-lg font-semibold mb-1">إيه اللي عايز تضيفه؟</h2>
+        <p className="text-sm text-gray-500 mb-5">اختار النوع وابدأ — الإضافة مجانية وبتاخد دقيقة</p>
 
         {/* Track tabs */}
         <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-5 px-5">

@@ -26,7 +26,8 @@ interface TrackEventBody {
 
 const VALID_EVENT_TYPES = new Set([
   'page_view', 'listing_view', 'search', 'cart_add', 'checkout_start',
-  'checkout_complete', 'phone_click', 'whatsapp_click', 'signup_start', 'signup_complete'
+  'checkout_complete', 'phone_click', 'whatsapp_click', 'signup_start', 'signup_complete',
+  'wizard_step_view', 'wizard_submit'
 ])
 
 export async function POST(request: NextRequest) {
