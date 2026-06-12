@@ -1788,6 +1788,56 @@ function MenuBuilderStep({
 // claim flow can promote these to listing_values rows or keep them in the
 // listing's metadata payload — depending on the consumer.
 // =================================================
+// ============================================================================
+// PRODUCT FIELD PROFILES (Jun 12 2026 — every field must match the activity
+// type). The products track spans very different activities: retail goods,
+// consumables, fresh produce, vehicles-for-sale, property-for-sale. Each
+// shows ONLY the fields that make sense for it. Default = full retail.
+// ============================================================================
+type ProductFieldProfile = {
+  showStock: boolean;
+  showCondition: boolean;
+  conditionMode: 'full' | 'new_used';
+  showMadeToOrder: boolean;
+  showBrand: boolean;
+  showModel: boolean;
+  showShipping: boolean;
+  showWholesale: boolean;
+};
+const PROFILE_RETAIL: ProductFieldProfile = {
+  showStock: true, showCondition: true, conditionMode: 'full',
+  showMadeToOrder: true, showBrand: true, showModel: true,
+  showShipping: true, showWholesale: true,
+};
+const PROFILE_CONSUMABLE: ProductFieldProfile = {
+  showStock: true, showCondition: false, conditionMode: 'full',
+  showMadeToOrder: false, showBrand: true, showModel: false,
+  showShipping: true, showWholesale: true,
+};
+const PROFILE_FRESH: ProductFieldProfile = {
+  showStock: true, showCondition: false, conditionMode: 'full',
+  showMadeToOrder: false, showBrand: false, showModel: false,
+  showShipping: true, showWholesale: true,
+};
+const PROFILE_VEHICLE: ProductFieldProfile = {
+  showStock: false, showCondition: true, conditionMode: 'new_used',
+  showMadeToOrder: false, showBrand: true, showModel: true,
+  showShipping: false, showWholesale: false,
+};
+const PROFILE_PROPERTY: ProductFieldProfile = {
+  showStock: false, showCondition: false, conditionMode: 'full',
+  showMadeToOrder: false, showBrand: false, showModel: false,
+  showShipping: false, showWholesale: false,
+};
+function getProductFieldProfile(slug: string | null | undefined): ProductFieldProfile {
+  if (!slug) return PROFILE_RETAIL;
+  if (slug === 'shop-pharmacy' || slug === 'shop-supermarket') return PROFILE_CONSUMABLE;
+  if (slug === 'shop-produce') return PROFILE_FRESH;
+  if (slug.startsWith('sale-vehicles')) return PROFILE_VEHICLE;
+  if (slug.startsWith('sale-properties') || slug.startsWith('sale-property') || slug.startsWith('sale-tourism')) return PROFILE_PROPERTY;
+  return PROFILE_RETAIL;
+}
+
 function ProductDetailsStep({
   draft,
   categories,
@@ -1805,6 +1855,8 @@ function ProductDetailsStep({
 }) {
   const existingDetails = (draft.attributes?.product_details as ProductDetails | undefined);
   const existingWholesale = (draft.attributes?.wholesale_tiers as WholesaleTier[] | undefined) || [];
+  // Jun 12 2026: pick the field set that matches THIS activity type.
+  const profile = getProductFieldProfile(draft.category_slug);
   const [price, setPrice] = useState<number | ''>(draft.price ?? '');
   const [stockQty, setStockQty] = useState<number>(existingDetails?.stock_quantity ?? 1);
   const [condition, setCondition] = useState<ProductCondition>(
@@ -1813,7 +1865,7 @@ function ProductDetailsStep({
   const [brand, setBrand] = useState<string>(existingDetails?.brand || '');
   const [model, setModel] = useState<string>(existingDetails?.model || '');
   const [shippingAvailable, setShippingAvailable] = useState<boolean>(
-    existingDetails?.shipping_available ?? true,
+    profile.showShipping ? (existingDetails?.shipping_available ?? true) : false,
   );
   const [shippingCost, setShippingCost] = useState<number | ''>(
     existingDetails?.shipping_cost ?? '',
@@ -1833,7 +1885,7 @@ function ProductDetailsStep({
   // order/refund flow). Stored in product_details; DB column mapping in
   // claim_listing_draft is a pending backend follow-up.
   const [availabilityType, setAvailabilityType] = useState<'ready' | 'made_to_order'>(
-    existingDetails?.availability_type ?? 'ready'
+    profile.showMadeToOrder ? (existingDetails?.availability_type ?? 'ready') : 'ready'
   );
   const [leadDays, setLeadDays] = useState<number | ''>(
     existingDetails?.made_to_order_lead_days ?? ''
@@ -1855,12 +1907,18 @@ function ProductDetailsStep({
     setWholesaleTiers((prev) => prev.map((t, i) => (i === idx ? { ...t, ...patch } : t)));
   }
 
-  const conditionOptions: { key: ProductCondition; label_ar: string }[] = [
-    { key: 'new', label_ar: 'جديد بالكرتونة' },
-    { key: 'used_like_new', label_ar: 'مستعمل (مثل الجديد)' },
-    { key: 'used_good', label_ar: 'مستعمل (حالة جيدة)' },
-    { key: 'refurbished', label_ar: 'Refurbished' },
-  ];
+  const conditionOptions: { key: ProductCondition; label_ar: string }[] =
+    profile.conditionMode === 'new_used'
+      ? [
+          { key: 'new', label_ar: 'جديدة' },
+          { key: 'used_good', label_ar: 'مستعملة' },
+        ]
+      : [
+          { key: 'new', label_ar: 'جديد بالكرتونة' },
+          { key: 'used_like_new', label_ar: 'مستعمل (مثل الجديد)' },
+          { key: 'used_good', label_ar: 'مستعمل (حالة جيدة)' },
+          { key: 'refurbished', label_ar: 'Refurbished' },
+        ];
 
   function handleSubmit() {
     if (!price || Number(price) <= 0) {
@@ -1932,8 +1990,10 @@ function ProductDetailsStep({
   return (
     <section>
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
-      <h2 className="text-lg font-semibold mb-1">🛍️ تفاصيل المنتج والسعر</h2>
-      <p className="text-sm text-gray-500 mb-5">سعر، كمية، وحالة المنتج</p>
+      <h2 className="text-lg font-semibold mb-1">
+        {profile === PROFILE_PROPERTY ? '💰 سعر البيع' : profile === PROFILE_VEHICLE ? '🚗 السعر والتفاصيل' : '🛍️ تفاصيل المنتج والسعر'}
+      </h2>
+      <p className="text-sm text-gray-500 mb-5">حدد السعر والتفاصيل المناسبة لنوع النشاط</p>
 
       <Field label="السعر بالجنيه" required>
         <input
@@ -1948,6 +2008,7 @@ function ProductDetailsStep({
       </Field>
 
       {/* ─── AVAILABILITY: ready vs made-to-order (Task 8 — May 30 2026) ─── */}
+      {profile.showMadeToOrder && (
       <Field label="نوع التوفّر" required>
         <div className="grid grid-cols-2 gap-2">
           <button
@@ -1974,6 +2035,7 @@ function ProductDetailsStep({
           </button>
         </div>
       </Field>
+      )}
 
       {availabilityType === 'made_to_order' && (
         <div className="mt-1 mb-3 p-4 rounded-xl bg-gradient-to-bl from-amber-50 to-emerald-50 border border-amber-200 space-y-3">
@@ -2031,7 +2093,7 @@ function ProductDetailsStep({
         </div>
       )}
 
-      {availabilityType === 'ready' && (
+      {profile.showStock && availabilityType === 'ready' && (
         <Field label="الكمية المتوفرة" required>
           <input
             type="number"
@@ -2043,7 +2105,8 @@ function ProductDetailsStep({
         </Field>
       )}
 
-      <Field label="حالة المنتج" required>
+      {profile.showCondition && (
+      <Field label={profile === PROFILE_VEHICLE ? 'حالة العربية' : 'حالة المنتج'} required>
         <div className="grid grid-cols-2 gap-2">
           {conditionOptions.map((opt) => (
             <button
@@ -2061,27 +2124,33 @@ function ProductDetailsStep({
           ))}
         </div>
       </Field>
+      )}
 
+      {profile.showBrand && (
       <Field label="الماركة (اختياري)">
         <input
           type="text"
           value={brand}
           onChange={(e) => setBrand(e.target.value)}
-          placeholder="مثلاً: Samsung, Apple, Toshiba"
+          placeholder={profile === PROFILE_VEHICLE ? 'مثلاً: تويوتا، هيونداي، مرسيدس' : 'مثلاً: Samsung, Apple, Toshiba'}
           className={inputCls}
         />
       </Field>
+      )}
 
-      <Field label="الموديل (اختياري)">
+      {profile.showModel && (
+      <Field label={profile === PROFILE_VEHICLE ? 'الموديل / سنة الصنع (اختياري)' : 'الموديل (اختياري)'}>
         <input
           type="text"
           value={model}
           onChange={(e) => setModel(e.target.value)}
-          placeholder="مثلاً: Galaxy S23, iPhone 15"
+          placeholder={profile === PROFILE_VEHICLE ? 'مثلاً: كورولا 2021' : 'مثلاً: Galaxy S23, iPhone 15'}
           className={inputCls}
         />
       </Field>
+      )}
 
+      {profile.showShipping && (
       <div className="mt-4 mb-3 p-4 rounded-xl bg-[#F5F4F0] border border-[#E5E5E0]">
         <label className="flex items-center gap-2 text-sm font-semibold mb-2 cursor-pointer">
           <input
@@ -2106,8 +2175,10 @@ function ProductDetailsStep({
           </Field>
         )}
       </div>
+      )}
 
       {/* ─── WHOLESALE PRICING (Task 5 — May 30 2026) ─── */}
+      {profile.showWholesale && (
       <div className="mt-4 mb-3 p-4 rounded-xl bg-[#F5F4F0] border border-[#E5E5E0]">
         <label className="flex items-start gap-2 text-sm font-semibold mb-2 cursor-pointer">
           <input
@@ -2204,6 +2275,7 @@ function ProductDetailsStep({
           </div>
         )}
       </div>
+      )}
 
       {error && (
         <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
