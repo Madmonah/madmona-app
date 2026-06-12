@@ -69,6 +69,29 @@ const TRACK_EMOJI: Record<TrackTab, string> = {
   products: '🛍️',
 }
 
+// Per-vertical colours — same identity as the homepage hero/tabs.
+const TRACK_ACCENT: Record<TrackTab, { accent: string; bg: string }> = {
+  all:         { accent: '#1F6F5F', bg: '#E7F1ED' },
+  products:    { accent: '#3D7BB6', bg: '#D9E7F4' },
+  rentals:     { accent: '#1F6F5F', bg: '#E7F1ED' },
+  services:    { accent: '#D4A017', bg: '#FAEFD1' },
+  restaurants: { accent: '#E26D5C', bg: '#FAE1CB' },
+  hybrid:      { accent: '#1F6F5F', bg: '#E7F1ED' },
+}
+
+// Tab order: الكل + بيع · إيجار · خدمات · مطاعم (مناسبات مدمجة في الإيجار)
+const TRACK_TAB_ORDER: TrackTab[] = ['all', 'products', 'rentals', 'services', 'restaurants']
+
+// Vertical names — identical to the homepage hero (الكل + بيع · إيجار · خدمات · مطاعم).
+const TRACK_NAME: Record<TrackTab, { ar: string; en: string }> = {
+  all:         { ar: 'الكل',    en: 'All' },
+  products:    { ar: 'بيع',     en: 'Buy' },
+  rentals:     { ar: 'إيجار',   en: 'Rent' },
+  services:    { ar: 'خدمات',   en: 'Services' },
+  restaurants: { ar: 'مطاعم',   en: 'Restaurants' },
+  hybrid:      { ar: 'مناسبات', en: 'Events' },
+}
+
 function MarketplaceBrowseContent() {
   const { t, lang, dir } = useT()
   const router = useRouter()
@@ -80,9 +103,11 @@ function MarketplaceBrowseContent() {
   const [allCategories, setAllCategories] = useState<Category[]>([])
   const allRootCategories = allCategories.filter(c => c.parent_id === null)
   const [activeTrack, setActiveTrack] = useState<TrackTab>(
-    (['rentals', 'services', 'hybrid', 'restaurants', 'products'].includes(initialTrack || '')
-      ? initialTrack
-      : 'all') as TrackTab
+    (initialTrack === 'hybrid'
+      ? 'rentals'
+      : (['rentals', 'services', 'restaurants', 'products'].includes(initialTrack || '')
+          ? initialTrack
+          : 'all')) as TrackTab
   )
   const rootCategories = activeTrack === 'all'
     ? allRootCategories
@@ -377,35 +402,41 @@ function MarketplaceBrowseContent() {
             />
           </div>
 
-          {/* Track tabs (hierarchy filter: all/rentals/services/hybrid) */}
+          {/* Track tabs — الكل + بيع · إيجار · خدمات · مطاعم (colour per vertical, matching the hero) */}
           <div className="flex gap-2 mt-4 overflow-x-auto pb-1 -mx-4 px-4">
-            {(['all', 'rentals', 'services', 'hybrid', 'restaurants', 'products'] as TrackTab[]).map(tab => {
+            {TRACK_TAB_ORDER.map(tab => {
               const count = tab === 'all'
                 ? allRootCategories.length
-                : allRootCategories.filter(c => c.track === tab).length
+                : allRootCategories.filter(c => c.track === tab || (tab === 'rentals' && c.track === 'hybrid')).length
+              const isActive = activeTrack === tab || (tab === 'rentals' && activeTrack === 'hybrid')
+              const col = TRACK_ACCENT[tab]
               return (
                 <button
                   key={tab}
                   onClick={() => {
                     setActiveTrack(tab)
-                    // Clear category selection if it doesn't belong to the new track
                     if (selectedRootSlug) {
                       const stillVisible = allRootCategories.some(
-                        c => c.slug === selectedRootSlug && (tab === 'all' || c.track === tab)
+                        c => c.slug === selectedRootSlug && (tab === 'all' || c.track === tab || (tab === 'rentals' && c.track === 'hybrid'))
                       )
                       if (!stillVisible) setSelectedCategorySlug(null)
                     }
                   }}
-                  className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold border transition-all shadow-soft flex items-center gap-1.5 ${
-                    activeTrack === tab
-                      ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white shadow-elevated'
-                      : 'bg-white border-gray-100 text-gray-700 hover:shadow-card'
-                  }`}
+                  style={{
+                    background: isActive ? col.accent : '#fff',
+                    borderColor: isActive ? col.accent : '#F0ECE3',
+                    color: isActive ? '#fff' : '#374151',
+                    boxShadow: isActive ? `0 8px 20px -6px ${col.accent}` : undefined,
+                  }}
+                  className="flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all shadow-soft flex items-center gap-1.5 hover:-translate-y-0.5"
                 >
                   <span>{TRACK_EMOJI[tab]}</span>
-                  <span>{t(TRACK_LABELS[tab])}</span>
-                  <span className={`text-[10px] ${activeTrack === tab ? 'opacity-80' : 'text-gray-400'}`}>
-                    ({count})
+                  <span>{lang === 'en' ? TRACK_NAME[tab].en : TRACK_NAME[tab].ar}</span>
+                  <span
+                    className="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
+                    style={{ background: isActive ? 'rgba(255,255,255,.22)' : col.bg, color: isActive ? '#fff' : col.accent }}
+                  >
+                    {count}
                   </span>
                 </button>
               )

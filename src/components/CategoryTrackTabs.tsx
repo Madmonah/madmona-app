@@ -20,57 +20,58 @@ type Category = {
   track: string | null
 }
 
-type TrackKey = 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products'
+// 4 verticals — same identity & order as the homepage hero (بيع · إيجار · خدمات · مطاعم).
+// مناسبات (hybrid/events) is merged into إيجار per the new structure.
+type VKey = 'products' | 'rentals' | 'services' | 'restaurants'
 
-const TRACK_LABELS: Record<TrackKey, { labelKey: string; emoji: string; sublabel: string }> = {
-  rentals:  { labelKey: 'tracktab.rentals',  emoji: '🏠', sublabel: 'RENTALS'  },
-  services: { labelKey: 'tracktab.services', emoji: '🛎️', sublabel: 'SERVICES' },
-  hybrid:   { labelKey: 'tracktab.hybrid',   emoji: '💍', sublabel: 'EVENTS'   },
-  restaurants: { labelKey: 'tracktab.restaurants', emoji: '🍽️', sublabel: 'RESTAURANTS' },
-  products: { labelKey: 'tracktab.products', emoji: '🛍️', sublabel: 'PRODUCTS' },
-}
+const VERTICALS: { key: VKey; ar: string; en: string; emoji: string; accent: string; bg: string; tracks: string[] }[] = [
+  { key: 'products',    ar: 'بيع',   en: 'Buy',         emoji: '🛍️', accent: '#3D7BB6', bg: '#D9E7F4', tracks: ['products'] },
+  { key: 'rentals',     ar: 'إيجار', en: 'Rent',        emoji: '🏠', accent: '#1F6F5F', bg: '#E7F1ED', tracks: ['rentals', 'hybrid'] },
+  { key: 'services',    ar: 'خدمات', en: 'Services',    emoji: '🛠️', accent: '#D4A017', bg: '#FAEFD1', tracks: ['services'] },
+  { key: 'restaurants', ar: 'مطاعم', en: 'Restaurants', emoji: '🍽️', accent: '#E26D5C', bg: '#FAE1CB', tracks: ['restaurants'] },
+]
 
 const DEFAULT_FALLBACK = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&auto=format&fit=crop'
 
 export default function CategoryTrackTabs({ categories }: { categories: Category[] }) {
   const { t, lang } = useT()
-  const [active, setActive] = useState<TrackKey>('rentals')
 
-  const grouped: Record<TrackKey, Category[]> = {
-    rentals:  categories.filter(c => c.track === 'rentals'),
-    services: categories.filter(c => c.track === 'services'),
-    hybrid:   categories.filter(c => c.track === 'hybrid'),
-    restaurants: categories.filter(c => c.track === 'restaurants'),
-    products: categories.filter(c => c.track === 'products'),
-  }
+  const groupOf = (tracks: string[]) => categories.filter(c => tracks.includes(c.track || ''))
+  const firstNonEmpty = VERTICALS.find(v => groupOf(v.tracks).length > 0)?.key || 'products'
+  const [active, setActive] = useState<VKey>(firstNonEmpty)
 
-  const visible = grouped[active]
+  const activeVertical = VERTICALS.find(v => v.key === active) || VERTICALS[0]
+  const visible = groupOf(activeVertical.tracks)
 
   return (
     <div>
-      {/* Tab switcher */}
-      <div className="flex gap-2 mb-6 md:mb-8 overflow-x-auto pb-1 -mx-1 px-1">
-        {(Object.keys(TRACK_LABELS) as TrackKey[]).map(key => {
-          const isActive = active === key
-          const count = grouped[key].length
+      {/* Tab switcher — colourful pills matching the hero verticals */}
+      <div className="flex gap-2.5 mb-6 md:mb-8 overflow-x-auto pb-1 -mx-1 px-1">
+        {VERTICALS.map(v => {
+          const count = groupOf(v.tracks).length
           if (count === 0) return null
+          const isActive = active === v.key
           return (
             <button
-              key={key}
-              onClick={() => setActive(key)}
+              key={v.key}
+              onClick={() => setActive(v.key)}
               type="button"
-              className={`flex-shrink-0 inline-flex items-center gap-2 px-5 py-3 rounded-full text-sm font-bold transition-all border-2 ${
-                isActive
-                  ? 'bg-[#1F6F5F] text-white border-[#1F6F5F] shadow-soft'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-[#1F6F5F]'
-              }`}
+              style={{
+                background: isActive ? v.accent : '#fff',
+                borderColor: isActive ? v.accent : '#E5DFD3',
+                color: isActive ? '#fff' : '#1A1A1A',
+                boxShadow: isActive ? `0 8px 22px -6px ${v.accent}` : undefined,
+              }}
+              className="flex-shrink-0 inline-flex items-center gap-2 px-5 py-3 rounded-full text-sm font-extrabold transition-all border-2 hover:-translate-y-0.5"
             >
-              <span className="text-base">{TRACK_LABELS[key].emoji}</span>
-              <span>{t(TRACK_LABELS[key].labelKey)}</span>
+              <span className="text-base leading-none">{v.emoji}</span>
+              <span>{lang === 'en' ? v.en : v.ar}</span>
               <span
-                className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                  isActive ? 'bg-white/20' : 'bg-gray-100'
-                }`}
+                className="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
+                style={{
+                  background: isActive ? 'rgba(255,255,255,.22)' : v.bg,
+                  color: isActive ? '#fff' : v.accent,
+                }}
               >
                 {count}
               </span>
