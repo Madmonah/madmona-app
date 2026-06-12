@@ -4,11 +4,11 @@
  * مضمونة — VK-style Hero (v4 — 6 Jun 2026)
  *
  * مرجع Mohamed: vk.com — أيقونات كتيرة متحركة في الخلفية
- * + 5 chips كبيرة بألوان لكل مجال
+ * + 4 chips كبيرة بألوان لكل مجال
  * الـ chip بيفتح الماركت مفلتر بالمجال (browse) + زرار "ضيف" جواه يروح /add-listing
  *
- * المجالات الـ 5:
- *  - إيجار · خدمات · مطاعم · بيع وشرا · مناسبات
+ * المجالات الـ 4 (المناسبات اتحطت جوه الإيجار):
+ *  - بيع · إيجار · خدمات · مطاعم
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -25,13 +25,12 @@ type Stats = {
 
 const DEFAULT_STATS: Stats = { listings: 0, categories: 0, suppliers: 0, cities: 0 };
 
-// 5 المجالات الكبيرة المتحركة
+// 4 المجالات الكبيرة المتحركة (الترتيب: بيع · إيجار · خدمات · مطاعم — المناسبات جوه الإيجار)
 const VK_CATEGORIES = [
-  { emoji: '🏠', name: 'إيجار', sub: 'عقارات · مركبات · معدات', accent: '#1F6F5F', bg: '#E7F1ED', track: 'rentals' },
+  { emoji: '🛍️', name: 'بيع', sub: 'عقارات · عربيات · منتجات', accent: '#3D7BB6', bg: '#D9E7F4', track: 'products' },
+  { emoji: '🏠', name: 'إيجار', sub: 'عقارات · عربيات · مناسبات · معدات', accent: '#1F6F5F', bg: '#E7F1ED', track: 'rentals' },
   { emoji: '🛠️', name: 'خدمات', sub: 'صيانة · جمال · استشارات', accent: '#D4A017', bg: '#FAEFD1', track: 'services' },
   { emoji: '🍽️', name: 'مطاعم', sub: 'دلفري · سفرة · حلويات', accent: '#E26D5C', bg: '#FAE1CB', track: 'restaurants' },
-  { emoji: '🛍️', name: 'بيع وشرا', sub: 'منتجات · أزياء · بيت', accent: '#3D7BB6', bg: '#D9E7F4', track: 'products' },
-  { emoji: '💍', name: 'مناسبات', sub: 'أعراس · قاعات · تصوير', accent: '#C75D8A', bg: '#F4DCE5', track: 'hybrid' },
 ];
 
 // أيقونات خلفية متحركة (VK-style decorations) — بالسرعة الهادئة
@@ -104,6 +103,7 @@ function StatPill({ href, num, label }: { href: string; num: number; label: stri
 export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Stats }) {
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
+  const [q, setQ] = useState('');
 
   useEffect(() => {
     const root = rootRef.current;
@@ -169,6 +169,31 @@ export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Sta
           <p className="mdm-sub mdm-reveal">
             احنا عندنا — اختار مجالك وضيف ليستنجك دلوقتي:
           </p>
+
+          {/* ============ تبويب البحث (Search) ============ */}
+          <form
+            className="mdm-search mdm-reveal"
+            role="search"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const term = q.trim();
+              router.push(term ? `/marketplace?q=${encodeURIComponent(term)}` : '/marketplace');
+            }}
+          >
+            <span className="mdm-search-ico" aria-hidden>🔍</span>
+            <input
+              type="search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="دوّر على أي حاجة… شقة · عربية · خدمة · مطعم"
+              className="mdm-search-input"
+              aria-label="بحث في مضمونة"
+            />
+            <button type="submit" className="mdm-search-btn">
+              بحث
+              <ArrowLeft size={14} />
+            </button>
+          </form>
 
           {/* ============ 5 BIG VK-STYLE CATEGORY CHIPS ============ */}
           <div className="mdm-vk-grid mdm-reveal">
@@ -306,16 +331,46 @@ const CSS = `
 
 .mdm-sub{font-size:clamp(15px,2vw,18px);color:var(--muted);max-width:540px;margin:0 auto 36px;line-height:1.65;font-weight:600}
 
+/* ============ SEARCH BAR (تبويب البحث) ============ */
+.mdm-search{
+  display:flex; align-items:center; gap:8px;
+  max-width:600px; margin:-8px auto 32px;
+  background:#fff; border:2px solid var(--border);
+  border-radius:999px; padding:6px 6px 6px 18px;
+  box-shadow:0 4px 16px rgba(20,40,34,.06);
+  transition:border-color .25s, box-shadow .25s;
+}
+.mdm-search:focus-within{border-color:var(--green); box-shadow:0 8px 24px rgba(31,111,95,.14)}
+.mdm-search-ico{font-size:18px; line-height:1; opacity:.7; flex-shrink:0}
+.mdm-search-input{
+  flex:1; border:none; outline:none; background:transparent;
+  font-family:inherit; font-size:15px; font-weight:600; color:var(--ink);
+  padding:8px 0; min-width:0; text-align:right;
+}
+.mdm-search-input::placeholder{color:var(--muted); font-weight:500}
+.mdm-search-btn{
+  display:inline-flex; align-items:center; gap:6px; flex-shrink:0;
+  padding:10px 20px; border:none; border-radius:999px; cursor:pointer;
+  font-family:inherit; font-size:14px; font-weight:800; color:#fff;
+  background:linear-gradient(118deg,#1F6F5F 0%, #2FA084 55%, #D4A017 100%);
+  box-shadow:0 4px 12px rgba(31,111,95,.28); transition:.25s;
+}
+.mdm-search-btn:hover{transform:translateY(-2px); box-shadow:0 8px 20px rgba(31,111,95,.36)}
+@media(max-width:560px){
+  .mdm-search{padding:5px 5px 5px 14px; margin:-4px auto 26px}
+  .mdm-search-btn{padding:9px 14px; font-size:13px}
+  .mdm-search-input{font-size:14px}
+}
+
 /* ============ 5 BIG VK CHIPS ============ */
 .mdm-vk-grid{
   display:grid;
-  grid-template-columns:repeat(5,1fr);
+  grid-template-columns:repeat(4,1fr);
   gap:16px;
-  max-width:920px;
+  max-width:760px;
   margin:0 auto 36px;
 }
-@media(max-width:880px){.mdm-vk-grid{grid-template-columns:repeat(3,1fr);gap:12px}}
-@media(max-width:560px){.mdm-vk-grid{grid-template-columns:repeat(2,1fr);gap:10px}}
+@media(max-width:760px){.mdm-vk-grid{grid-template-columns:repeat(2,1fr);gap:12px}}
 
 .mdm-vk-chip{
   position:relative;

@@ -769,7 +769,9 @@ function StepCategory({
   }, [value, categories]);
 
   const [selectedMain, setSelectedMain] = useState<string | null>(startingMainSlug);
-  const [activeTrack, setActiveTrack] = useState<TrackTab>('all');
+  // Mohamed (Jun 12 2026): يفتح على مجال (مش "الكل") عشان صفحة 1 ماتبقاش زحمة
+  // كل التصنيفات مرة واحدة. الديفولت = إيجار (rentals).
+  const [activeTrack, setActiveTrack] = useState<TrackTab>('rentals');
   const main = categories.find((m) => m.slug === selectedMain);
 
   // FIX (May 29 2026): handle clicks on a main category. If the main has

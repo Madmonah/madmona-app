@@ -75,6 +75,7 @@ function MarketplaceBrowseContent() {
   const searchParams = useSearchParams()
   const initialCategorySlug = searchParams.get('category')
   const initialTrack = searchParams.get('track')
+  const initialQuery = searchParams.get('q') || ''
 
   const [allCategories, setAllCategories] = useState<Category[]>([])
   const allRootCategories = allCategories.filter(c => c.parent_id === null)
@@ -85,10 +86,10 @@ function MarketplaceBrowseContent() {
   )
   const rootCategories = activeTrack === 'all'
     ? allRootCategories
-    : allRootCategories.filter(c => c.track === activeTrack)
+    : allRootCategories.filter(c => c.track === activeTrack || (activeTrack === 'rentals' && c.track === 'hybrid'))
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState(initialQuery)
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(initialCategorySlug)
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [cityFilter, setCityFilter] = useState<string | null>(null)
@@ -177,11 +178,14 @@ function MarketplaceBrowseContent() {
       } else if (activeTrack !== 'all') {
         // Vertical/track selected (e.g. from a homepage chip) with no specific
         // category — filter listings to every category in that track.
+        // Mohamed (Jun 12 2026): المناسبات (hybrid) اتحطت جوه الإيجار (rentals)،
+        // فتصفح الإيجار بيورّي المناسبات كمان.
+        const tracksToMatch = activeTrack === 'rentals' ? ['rentals', 'hybrid'] : [activeTrack];
         // @ts-expect-error
         const { data: trackRoots } = await supabaseBrowser
           .from('categories')
           .select('id')
-          .eq('track', activeTrack)
+          .in('track', tracksToMatch)
         const rootIds = (trackRoots || []).map((c: { id: string }) => c.id)
         if (rootIds.length > 0) {
           // @ts-expect-error
