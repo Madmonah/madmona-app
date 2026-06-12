@@ -272,8 +272,8 @@ const CSS = `
 .mdm-showcase *{box-sizing:border-box}
 .mdm-showcase a{text-decoration:none;color:inherit}
 
-.mdm-reveal{opacity:0;transform:translateY(20px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
-.mdm-reveal.mdm-in{opacity:1;transform:none}
+.mdm-reveal{opacity:1;transform:translateY(14px);transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+.mdm-reveal.mdm-in{transform:none}
 
 /* ============ HERO ============ */
 .mdm-hero{
@@ -492,6 +492,13 @@ const CSS = `
 .mdm-pill-primary:hover::before{opacity:1}
 .mdm-pill-ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
 .mdm-pill-ghost:hover{background:var(--ink);color:var(--cream);transform:translateY(-3px)}
+
+/* Cut continuous decorative animations on mobile (INP + battery win) */
+@media (max-width:760px){
+  .mdm-bg-emoji{animation:none}
+  .mdm-vk-chip{animation:none}
+  .mdm-vk-emoji{animation:none}
+}
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce){

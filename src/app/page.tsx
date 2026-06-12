@@ -99,22 +99,14 @@ async function getSiteStats(): Promise<{ listings: number; categories: number; s
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
-    const [listingsR, categoriesR, suppliersR, citiesR] = await Promise.all([
-      // @ts-expect-error
-      supabase.from('listings').select('id', { count: 'exact', head: true }).eq('status', 'published'),
-      // @ts-expect-error
-      supabase.from('categories').select('id', { count: 'exact', head: true }).eq('is_active', true).is('parent_id', null),
-      // @ts-expect-error
-      supabase.from('marketplace_suppliers').select('id', { count: 'exact', head: true }).eq('kyc_status', 'approved'),
-      // @ts-expect-error
-      supabase.from('listings').select('city').eq('status', 'published').not('city', 'is', null),
-    ])
-    const uniqCities = new Set((citiesR.data || []).map((r: { city: string }) => r.city)).size
+    // @ts-expect-error untyped rpc
+    const { data } = await supabase.rpc('home_stats')
+    const s = (data || {}) as { listings?: number; categories?: number; suppliers?: number; cities?: number }
     return {
-      listings: listingsR.count || 0,
-      categories: categoriesR.count || 0,
-      suppliers: suppliersR.count || 0,
-      cities: uniqCities,
+      listings: s.listings || 0,
+      categories: s.categories || 0,
+      suppliers: s.suppliers || 0,
+      cities: s.cities || 0,
     }
   } catch (e) {
     return { listings: 0, categories: 0, suppliers: 0, cities: 0 }
