@@ -2289,6 +2289,200 @@ function ProductDetailsStep({
 }
 
 // =================================================
+// STEP 3c — CATALOG BUILDER (shops / consumables, Jun 12 2026)
+// pharmacy/supermarket/shops = like the restaurant menu: add many products,
+// grouped in sections; pharmacy ALSO picks insurance partners (supermarket
+// has no medical insurance — Mohamed Jun 12).
+// Saved to draft.attributes.catalog_sections (+ insurance). Backend mapping
+// catalog->product rows = follow-up.
+// =================================================
+type CatalogItem = { name_ar: string; price: number; description_ar?: string; photo_url?: string; is_available: boolean; };
+type CatalogSection = { name_ar: string; items: CatalogItem[]; };
+
+function CatalogBuilderStep({
+  draft, categories, token, onSubmit, onBack, onChangeCategory, saving,
+}: {
+  draft: DraftPayload;
+  categories: MainCategory[];
+  token: string | null;
+  onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
+  onBack: () => void;
+  onChangeCategory: () => void;
+  saving: boolean;
+}) {
+  const slug = draft.category_slug;
+  const showInsurance = slug === 'shop-pharmacy';
+  const emptyItem = (): CatalogItem => ({ name_ar: '', price: 0, description_ar: '', is_available: true });
+  const existingSections = draft.attributes?.catalog_sections as CatalogSection[] | undefined;
+  const [sections, setSections] = useState<CatalogSection[]>(
+    existingSections && existingSections.length > 0 ? existingSections : [{ name_ar: '', items: [emptyItem()] }],
+  );
+  const [error, setError] = useState('');
+  const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const [acceptsInsurance, setAcceptsInsurance] = useState<boolean>(!!draft.attributes?.accepts_insurance);
+  const [insurancePartners, setInsurancePartners] = useState<string[]>((draft.attributes?.insurance_partners as string[] | undefined) || []);
+  const [newPartner, setNewPartner] = useState('');
+
+  function addSection() { setSections((p) => [...p, { name_ar: '', items: [emptyItem()] }]); }
+  function removeSection(si: number) { setSections((p) => (p.length > 1 ? p.filter((_, i) => i !== si) : p)); }
+  function updateSectionName(si: number, name: string) { setSections((p) => p.map((s, i) => (i === si ? { ...s, name_ar: name } : s))); }
+  function addItem(si: number) { setSections((p) => p.map((s, i) => (i === si ? { ...s, items: [...s.items, emptyItem()] } : s))); }
+  function removeItem(si: number, ii: number) { setSections((p) => p.map((s, i) => (i === si ? { ...s, items: s.items.filter((_, j) => j !== ii) } : s))); }
+  function updateItem(si: number, ii: number, patch: Partial<CatalogItem>) { setSections((p) => p.map((s, i) => (i === si ? { ...s, items: s.items.map((it, j) => (j === ii ? { ...it, ...patch } : it)) } : s))); }
+
+  async function handlePhotoUpload(si: number, ii: number, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const key = `${si}-${ii}`;
+    setUploadingKey(key);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      if (token) fd.append('token', token);
+      const res = await fetch('/api/listing-drafts/upload', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (json.url) updateItem(si, ii, { photo_url: json.url });
+      else setError('تعذر تحميل الصورة، حاول تاني');
+    } catch { setError('خطأ في الاتصال'); }
+    finally { setUploadingKey(null); e.target.value = ''; }
+  }
+
+  function addPartner() {
+    const t = newPartner.trim();
+    if (!t || insurancePartners.includes(t)) { setNewPartner(''); return; }
+    setInsurancePartners((p) => [...p, t]);
+    setNewPartner('');
+  }
+  function removePartner(name: string) { setInsurancePartners((p) => p.filter((x) => x !== name)); }
+
+  function handleSubmit() {
+    const clean = sections
+      .map((s) => ({ name_ar: (s.name_ar || '').trim(), items: s.items.filter((it) => it.name_ar.trim().length > 0 && it.price > 0) }))
+      .filter((s) => s.items.length > 0);
+    const allItems = clean.flatMap((s) => s.items);
+    if (allItems.length === 0) { setError('ضيف منتج واحد على الأقل بـ اسم وسعر'); return; }
+    setError('');
+    const existing = (draft.attributes || {}) as Record<string, unknown>;
+    const attrs: Record<string, unknown> = { ...existing, catalog_sections: clean };
+    if (showInsurance) { attrs.accepts_insurance = acceptsInsurance; attrs.insurance_partners = acceptsInsurance ? insurancePartners : []; }
+    onSubmit({ attributes: attrs, price: Math.min(...allItems.map((it) => it.price)), price_period: 'per_unit' });
+  }
+
+  const totalProducts = sections.reduce((n, s) => n + s.items.filter((it) => it.name_ar.trim() && it.price > 0).length, 0);
+
+  return (
+    <section>
+      <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
+      <h2 className='text-lg font-semibold mb-1'>🛒 أضف منتجاتك</h2>
+      <p className='text-sm text-gray-500 mb-1'>قسّم منتجاتك لأقسام (مثلاً: جبن، ألبان، معلبات) وضيف تحت كل قسم اللي بتبيعه</p>
+      <p className='text-xs text-[#1F6F5F] mb-5 font-medium'>💡 كل ما تضيف منتجات أكتر، العميل يلاقي اللي بيدوّر عليه أسرع</p>
+
+      <div className='space-y-5'>
+        {sections.map((section, si) => (
+          <div key={si} className='rounded-2xl border border-[#E5E5E0] bg-[#FAFAF7] p-4'>
+            <div className='flex items-center gap-2 mb-3'>
+              <span className='text-lg flex-shrink-0'>📂</span>
+              <input
+                type='text'
+                value={section.name_ar}
+                onChange={(e) => updateSectionName(si, e.target.value)}
+                placeholder={`اسم القسم (مثلاً: ${si === 0 ? 'جبن' : si === 1 ? 'ألبان' : 'معلبات'})`}
+                className={inputCls + ' font-semibold'}
+              />
+              {sections.length > 1 && (
+                <button type='button' onClick={() => removeSection(si)} className='flex-shrink-0 text-xs text-red-600 hover:text-red-700 font-semibold whitespace-nowrap'>حذف القسم</button>
+              )}
+            </div>
+
+            <div className='space-y-3'>
+              {section.items.map((item, ii) => {
+                const key = `${si}-${ii}`;
+                return (
+                  <div key={ii} className='rounded-xl border border-[#E5E5E0] bg-white p-3'>
+                    <div className='flex items-center justify-between mb-2'>
+                      <span className='text-xs font-bold text-[#1F6F5F]'>منتج #{ii + 1}</span>
+                      {section.items.length > 1 && (
+                        <button type='button' onClick={() => removeItem(si, ii)} className='text-xs text-red-600 hover:text-red-700 font-semibold'>حذف ✕</button>
+                      )}
+                    </div>
+                    <div className='flex gap-3'>
+                      {item.photo_url ? (
+                        <div className='relative w-16 h-16 rounded-xl overflow-hidden border border-[#E5E5E0] flex-shrink-0'>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={item.photo_url} alt='' className='w-full h-full object-cover' />
+                          <button type='button' onClick={() => updateItem(si, ii, { photo_url: undefined })} className='absolute top-0 left-0 w-5 h-5 bg-red-600 text-white text-[10px] font-bold flex items-center justify-center rounded-br-lg' aria-label='حذف الصورة'>×</button>
+                        </div>
+                      ) : (
+                        <label className={`w-16 h-16 rounded-xl border-2 border-dashed border-[#1F6F5F]/40 flex flex-col items-center justify-center cursor-pointer hover:bg-[#1F6F5F]/5 flex-shrink-0 ${uploadingKey === key ? 'opacity-50 pointer-events-none' : ''}`}>
+                          <input type='file' accept='image/*' onChange={(e) => handlePhotoUpload(si, ii, e)} className='sr-only' disabled={uploadingKey === key} />
+                          {uploadingKey === key ? (<span className='text-[9px] text-gray-500'>جاري...</span>) : (<span className='text-xl text-[#1F6F5F]'>📷</span>)}
+                        </label>
+                      )}
+                      <div className='flex-1 min-w-0 space-y-2'>
+                        <input type='text' value={item.name_ar} onChange={(e) => updateItem(si, ii, { name_ar: e.target.value })} placeholder='اسم المنتج (مثلاً: جبنة بيضا 1ك)' className={inputCls + ' py-2 text-sm'} />
+                        <div className='flex gap-2'>
+                          <div className='relative flex-1'>
+                            <input type='number' value={item.price || ''} onChange={(e) => updateItem(si, ii, { price: Number(e.target.value) || 0 })} placeholder='السعر' className={inputCls + ' py-2 text-sm pl-10'} />
+                            <span className='absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-500'>ج.م</span>
+                          </div>
+                          <label className='flex items-center gap-1.5 text-xs cursor-pointer whitespace-nowrap px-2'>
+                            <input type='checkbox' checked={item.is_available} onChange={(e) => updateItem(si, ii, { is_available: e.target.checked })} className='w-4 h-4 accent-[#1F6F5F]' />
+                            متاح
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <button type='button' onClick={() => addItem(si)} className='mt-3 w-full py-2 rounded-xl border-2 border-dashed border-[#1F6F5F]/40 text-[#1F6F5F] text-xs font-bold hover:bg-[#1F6F5F]/5 transition-colors'>+ ضيف منتج في «{section.name_ar.trim() || 'القسم ده'}»</button>
+          </div>
+        ))}
+      </div>
+
+      <button type='button' onClick={addSection} className='mt-4 w-full py-3 rounded-xl border-2 border-dashed border-[#2FA084] text-[#1F6F5F] text-sm font-bold hover:bg-[#F0FAF7] transition-colors'>+ ضيف قسم جديد</button>
+
+      {showInsurance && (
+        <div className='mt-6 p-4 rounded-xl bg-gradient-to-bl from-emerald-50 to-amber-50 border border-emerald-200'>
+          <label className='flex items-start gap-2 text-sm font-semibold mb-2 cursor-pointer'>
+            <input type='checkbox' checked={acceptsInsurance} onChange={(e) => setAcceptsInsurance(e.target.checked)} className='w-4 h-4 mt-0.5 accent-[#1F6F5F]' />
+            <div>
+              🏥 بتقبل تأمين طبي؟
+              <p className='text-[11px] text-gray-600 font-normal mt-0.5'>حدد شركات التأمين اللي بتتعامل معاها عشان تظهر لعملائها.</p>
+            </div>
+          </label>
+          {acceptsInsurance && (
+            <div className='mt-3 space-y-3'>
+              {insurancePartners.length > 0 && (
+                <div className='flex flex-wrap gap-1.5'>
+                  {insurancePartners.map((p) => (
+                    <span key={p} className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#1F6F5F]/30 text-xs font-medium'>
+                      🏥 {p}
+                      <button type='button' onClick={() => removePartner(p)} className='text-red-500 font-bold hover:text-red-700' aria-label={`إزالة ${p}`}>×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className='flex gap-2'>
+                <input type='text' value={newPartner} onChange={(e) => setNewPartner(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addPartner(); } }} placeholder='مثلاً: مديكير، أكسا، صحتك...' className={inputCls + ' text-sm flex-1'} />
+                <button type='button' onClick={addPartner} disabled={!newPartner.trim()} className='py-2.5 px-4 rounded-xl bg-[#1F6F5F] text-white text-sm font-semibold disabled:opacity-50 whitespace-nowrap'>+ إضافة</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {error && (<div className='mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700'>{error}</div>)}
+
+      {totalProducts > 0 && (<div className='mt-4 text-xs text-center text-[#1F6F5F] font-semibold'>✓ {totalProducts} منتج جاهز</div>)}
+      <Nav onBack={onBack} onNext={handleSubmit} saving={saving} />
+    </section>
+  );
+}
+
+// =================================================
 // STEP 3 — PRICING
 // =================================================
 function StepPricing({
@@ -2331,6 +2525,22 @@ function StepPricing({
     );
   }
   if (trackForBranch === 'products') {
+    // Jun 12 2026: shops (shop-*) = multi-product catalog (زي منيو المطعم),
+    // متقسّم أقسام (+ تأمين للصيدلية/السوبرماركت). البيع الفردي
+    // (عربيات/عقارات, sale-*) يفضل على فورم المنتج الواحد.
+    if (draft.category_slug?.startsWith('shop-')) {
+      return (
+        <CatalogBuilderStep
+          draft={draft}
+          categories={categories}
+          token={token}
+          onSubmit={onSubmit}
+          onBack={onBack}
+          onChangeCategory={onChangeCategory}
+          saving={saving}
+        />
+      );
+    }
     return (
       <ProductDetailsStep
         draft={draft}
