@@ -13,8 +13,8 @@ export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
 export const metadata = {
-  title: 'تصفح الإيجارات — مضمونة',
-  description: 'تصفح آلاف العقارات والعربيات والمعدات للإيجار في مصر على مضمونة. حماية كاملة، دفع آمن، دعم 24/7.',
+  title: 'تصفّح السوق — مضمونة · بيع · إيجار · خدمات · مطاعم',
+  description: 'اتصفّح آلاف العروض المضمونة في مصر على مضمونة — بيع وإيجار وخدمات ومطاعم. حماية كاملة، دفع آمن، دعم 24/7.',
 };
 
 const CATEGORY_PREVIEW = [

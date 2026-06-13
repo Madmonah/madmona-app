@@ -31,17 +31,14 @@ export const metadata = {
 };
 
 const SAMPLE_CATEGORIES = [
-  { emoji: '🏠', label: 'عقارات للإيجار' },
-  { emoji: '🚗', label: 'مركبات ونقل' },
-  { emoji: '🏢', label: 'مساحات عمل' },
-  { emoji: '🏝️', label: 'السياحة' },
+  { emoji: '🛍️', label: 'منتجات للبيع' },
+  { emoji: '🏠', label: 'عقارات' },
+  { emoji: '🚗', label: 'مركبات' },
+  { emoji: '🍔', label: 'مطاعم وكافيهات' },
+  { emoji: '🛠️', label: 'خدمات منزلية' },
   { emoji: '💄', label: 'تجميل' },
-  { emoji: '💒', label: 'أعراس وتجهيزات' },
-  { emoji: '📷', label: 'معدات ميديا' },
-  { emoji: '🎯', label: 'ترفيه ورياضة' },
-  { emoji: '⛵', label: 'مركبات بحرية' },
-  { emoji: '🚜', label: 'معدات ثقيلة' },
-  { emoji: '👨‍💼', label: 'خدمات احترافية' },
+  { emoji: '🎓', label: 'تعليم وكورسات' },
+  { emoji: '🏛️', label: 'قاعات ومناسبات' },
 ];
 
 /**
@@ -86,7 +83,7 @@ function StaticPageFallback() {
       </header>
 
       <main className="px-5 pb-8 max-w-2xl mx-auto">
-        <h2 className="text-lg font-bold mb-4">إيه اللي عايز تأجره؟ — اختار التصنيف الرئيسي</h2>
+        <h2 className="text-lg font-bold mb-4">إيه اللي عايز تضيفه؟ — اختار التصنيف</h2>
 
         <div className="grid grid-cols-2 gap-3" aria-hidden>
           {SAMPLE_CATEGORIES.map((c, i) => (

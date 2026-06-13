@@ -739,11 +739,11 @@ const TRACK_LABELS: Record<TrackTab, string> = {
 
 const TRACK_EMOJI: Record<TrackTab, string> = {
   all: '✨',
-  rentals: '🏠',
+  rentals: '🔑',
   services: '🛠️',
   hybrid: '💒',
   restaurants: '🍔',
-  products: '🛍️',
+  products: '🏷️',
 };
 
 function StepCategory({
@@ -811,7 +811,7 @@ function StepCategory({
 
         {/* Track tabs */}
         <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-5 px-5">
-          {(['all', 'rentals', 'services', 'hybrid', 'restaurants', 'products'] as TrackTab[]).map((t) => {
+          {(['all', 'rentals', 'services', 'restaurants', 'products'] as TrackTab[]).map((t) => {
             const count = t === 'all'
               ? categories.length
               : categories.filter((c) => c.track === t).length;

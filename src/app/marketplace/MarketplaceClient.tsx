@@ -66,11 +66,11 @@ const TRACK_LABELS: Record<TrackTab, string> = {
 
 const TRACK_EMOJI: Record<TrackTab, string> = {
   all: '✨',
-  rentals: '🏠',
+  rentals: '🔑',
   services: '🛠️',
   hybrid: '💒',
   restaurants: '🍽️',
-  products: '🛍️',
+  products: '🏷️',
 }
 
 // Per-vertical colours — same identity as the homepage hero/tabs.
