@@ -1070,6 +1070,23 @@ function StepBasics({
   const [showExtras, setShowExtras] = useState(false);
   const isSaleProduct = !!draft.category_slug?.startsWith('sale-');
 
+  // Mohamed (Jun 13 2026): فرد افتراضيًا (عمولة 10٪). checklist «شركة؟» فوق →
+  // شركة (5٪) + بيفتح إضافة الفروع. أنشطة متأكدين إنها شركات = شركة افتراضيًا.
+  // عدّل SURE_COMPANY_TRACKS لو عايز تضيف أنشطة تانية تتعامل كشركة أوتوماتيك.
+  const SURE_COMPANY_TRACKS = ['restaurants'];
+  const slugTrack: string | null = (() => {
+    const s = draft.category_slug;
+    if (!s) return null;
+    const m = categories.find((c) => c.slug === s);
+    if (m) return m.track ?? null;
+    const parent = categories.find((c) => c.subs?.some((x) => x.slug === s));
+    return parent?.track ?? null;
+  })();
+  const [accountType, setAccountType] = useState<'individual' | 'business'>(
+    draft.account_type || (slugTrack && SURE_COMPANY_TRACKS.includes(slugTrack) ? 'business' : 'individual')
+  );
+  const isBusiness = accountType === 'business';
+
   // Mohamed May 31 2026: multi-branch — one listing can cover several branches
   type Branch = { name?: string; city?: string; address?: string; phone?: string };
   const [branches, setBranches] = useState<Branch[]>(() => {
@@ -1196,9 +1213,9 @@ function StepBasics({
         phone: (b.phone || '').trim(),
       }))
       .filter((b) => b.name || b.address || b.phone);
-    if (cleanBranches.length > 0) finalAttrs.branches = cleanBranches;
+    if (isBusiness && cleanBranches.length > 0) finalAttrs.branches = cleanBranches;
 
-    onSubmit({ title, description, city, district, attributes: finalAttrs });
+    onSubmit({ title, description, city, district, attributes: finalAttrs, account_type: accountType });
   }
 
   return (
@@ -1207,6 +1224,24 @@ function StepBasics({
       <p className="text-sm text-gray-500 mb-6">عنوان ومكان وبس — الباقي اختياري</p>
 
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
+
+      {/* Mohamed (Jun 13 2026): فرد افتراضي · checklist «شركة؟» فوق → يفتح الفروع + عمولة 5٪ */}
+      <div className="mb-5 p-3 rounded-xl bg-white border border-[#E5E5E0]">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={isBusiness}
+            onChange={(e) => setAccountType(e.target.checked ? 'business' : 'individual')}
+            className="mt-1 w-4 h-4 accent-[#1F6F5F]"
+          />
+          <span className="text-sm">
+            <span className="font-semibold">بسجّل كشركة</span>
+            <span className="block text-xs text-gray-500 mt-0.5">
+              لو عندك سجل تجاري أو أكتر من فرع. العمولة: أفراد ١٠٪ · شركات ٥٪ — حسب النشاط.
+            </span>
+          </span>
+        </label>
+      </div>
 
       <Field label="عنوان الإعلان" error={errors.title} required>
         <input
@@ -1311,7 +1346,7 @@ function StepBasics({
       {/* Multi-branch repeater (May 31 2026): one listing, multiple branches.
           Jun 13 2026: inside the optional expander + hidden for one-off
           individual sales (sale-*) where branches make no sense. */}
-      {showExtras && !isSaleProduct && (
+      {isBusiness && !isSaleProduct && (
       <div className="mt-8 pt-6 border-t border-[#E5E5E0]">
         <h3 className="text-base font-semibold mb-1">عندك أكتر من فرع؟ (اختياري)</h3>
         <p className="text-xs text-gray-500 mb-4">
