@@ -382,7 +382,7 @@ function MarketplaceBrowseContent() {
       <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#1F6F5F]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
       <div className="fixed top-40 left-20 w-[300px] h-[300px] bg-[#2FA084]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
 
-      <header className="sticky top-0 z-40 glass border-b border-white/40">
+      <header className="relative z-40 glass border-b border-white/40">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-3 min-w-0">
@@ -491,7 +491,7 @@ function MarketplaceBrowseContent() {
                       <span>{g.name_ar}</span>
                     </div>
                   )}
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
                     {g.cats.map(cat => (
                       <CategoryPill
                         key={cat.id}
