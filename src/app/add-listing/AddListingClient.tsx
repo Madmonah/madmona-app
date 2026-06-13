@@ -1063,6 +1063,13 @@ function StepBasics({
   const [city, setCity] = useState(draft.city || '');
   const [district, setDistrict] = useState(draft.district || '');
 
+  // Jun 13 2026 "drop listing": Step 2 = essentials only (title + city).
+  // Description/district/branches live behind an optional expander so the
+  // form looks short and fast. Branches make no sense for one-off individual
+  // sales (a used car / an apartment), so they're hidden for sale-* entirely.
+  const [showExtras, setShowExtras] = useState(false);
+  const isSaleProduct = !!draft.category_slug?.startsWith('sale-');
+
   // Mohamed May 31 2026: multi-branch — one listing can cover several branches
   type Branch = { name?: string; city?: string; address?: string; phone?: string };
   const [branches, setBranches] = useState<Branch[]>(() => {
@@ -1197,7 +1204,7 @@ function StepBasics({
   return (
     <section>
       <h2 className="text-lg font-semibold mb-1">معلومات أساسية</h2>
-      <p className="text-sm text-gray-500 mb-6">وصف قصير، مكان، وفينك</p>
+      <p className="text-sm text-gray-500 mb-6">عنوان ومكان وبس — الباقي اختياري</p>
 
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
 
@@ -1207,16 +1214,6 @@ function StepBasics({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={titlePh}
-          className={inputCls}
-        />
-      </Field>
-
-      <Field label="وصف مختصر" error={errors.description}>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={3}
-          placeholder={descPh}
           className={inputCls}
         />
       </Field>
@@ -1234,28 +1231,54 @@ function StepBasics({
         </select>
       </Field>
 
-      <Field label="الحي/المنطقة بالظبط" error={errors.district}>
-        {districtsList.length > 0 ? (
-          <select
-            value={district}
-            onChange={(e) => setDistrict(e.target.value)}
-            className={inputCls}
-          >
-            <option value="">اختار الحي</option>
-            {districtsList.map((d) => (
-              <option key={d.id} value={d.name_ar}>{d.name_ar}</option>
-            ))}
-          </select>
-        ) : (
-          <input
-            type="text"
-            value={district}
-            onChange={(e) => setDistrict(e.target.value)}
-            placeholder={loadingDistricts ? 'جاري تحميل الأحياء...' : districtPh}
-            className={inputCls}
-          />
-        )}
-      </Field>
+      {/* Jun 13 2026 "drop listing": optional details tucked behind a toggle
+          so Step 2 looks like just title + city. */}
+      {!showExtras && (
+        <button
+          type="button"
+          onClick={() => setShowExtras(true)}
+          className="w-full mb-4 py-3 rounded-xl border border-dashed border-[#1F6F5F]/40 text-sm font-semibold text-[#1F6F5F] hover:bg-[#1F6F5F]/5 transition-colors"
+        >
+          + وصف وتفاصيل المكان (اختياري)
+        </button>
+      )}
+
+      {showExtras && (
+        <>
+          <Field label="وصف مختصر" error={errors.description}>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              placeholder={descPh}
+              className={inputCls}
+            />
+          </Field>
+
+          <Field label="الحي/المنطقة بالظبط" error={errors.district}>
+            {districtsList.length > 0 ? (
+              <select
+                value={district}
+                onChange={(e) => setDistrict(e.target.value)}
+                className={inputCls}
+              >
+                <option value="">اختار الحي</option>
+                {districtsList.map((d) => (
+                  <option key={d.id} value={d.name_ar}>{d.name_ar}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={district}
+                onChange={(e) => setDistrict(e.target.value)}
+                placeholder={loadingDistricts ? 'جاري تحميل الأحياء...' : districtPh}
+                className={inputCls}
+              />
+            )}
+          </Field>
+        </>
+      )}
 
       {/* Phase F (May 18 2026): category-specific attributes section.
           Lazy-fetched per category. Required attrs validated on Next click.
@@ -1285,7 +1308,10 @@ function StepBasics({
       )}
 
 
-      {/* Multi-branch repeater (May 31 2026): one listing, multiple branches */}
+      {/* Multi-branch repeater (May 31 2026): one listing, multiple branches.
+          Jun 13 2026: inside the optional expander + hidden for one-off
+          individual sales (sale-*) where branches make no sense. */}
+      {showExtras && !isSaleProduct && (
       <div className="mt-8 pt-6 border-t border-[#E5E5E0]">
         <h3 className="text-base font-semibold mb-1">عندك أكتر من فرع؟ (اختياري)</h3>
         <p className="text-xs text-gray-500 mb-4">
@@ -1348,6 +1374,7 @@ function StepBasics({
           + ضيف فرع
         </button>
       </div>
+      )}
 
       <Nav onBack={onBack} onNext={handleNext} saving={saving} />
     </section>
