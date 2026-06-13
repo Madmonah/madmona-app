@@ -21,6 +21,10 @@ interface Category {
   slug: string
   icon: string | null
   track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | null
+  group_slug?: string | null
+  group_name_ar?: string | null
+  group_emoji?: string | null
+  group_display_order?: number | null
 }
 
 interface Listing {
@@ -112,6 +116,31 @@ function MarketplaceBrowseContent() {
   const rootCategories = activeTrack === 'all'
     ? allRootCategories
     : allRootCategories.filter(c => c.track === activeTrack || (activeTrack === 'rentals' && c.track === 'hybrid'))
+
+  // Group the visible root categories by their DB group_* metadata (Jun 2026).
+  // Every track now carries group_slug/group_name_ar/group_emoji so the strip
+  // renders tidy labeled clusters (e.g. خدمات → طبية وتجميل · منزلية · …)
+  // instead of one flat wall of pills. Falls back to a single unnamed bucket.
+  const rootGroups = (() => {
+    const map = new Map<string, { slug: string; name_ar: string; emoji: string; order: number; cats: Category[] }>()
+    for (const c of rootCategories) {
+      const key = c.group_slug || '__ungrouped'
+      if (!map.has(key)) {
+        map.set(key, {
+          slug: key,
+          name_ar: c.group_name_ar || '',
+          emoji: c.group_emoji || '',
+          order: c.group_display_order ?? 999,
+          cats: [],
+        })
+      }
+      map.get(key)!.cats.push(c)
+    }
+    return Array.from(map.values()).sort((a, b) => a.order - b.order)
+  })()
+  // Group headings show only inside a specific track that has >1 group.
+  // The "الكل" view stays a flat strip (groups would collide across tracks).
+  const showGroupHeadings = activeTrack !== 'all' && rootGroups.length > 1
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState(initialQuery)
@@ -145,7 +174,7 @@ function MarketplaceBrowseContent() {
       // @ts-expect-error
       const { data } = await supabaseBrowser
         .from('categories')
-        .select('id, parent_id, name_ar, name_en, slug, icon, track, also_show_in')
+        .select('id, parent_id, name_ar, name_en, slug, icon, track, also_show_in, group_slug, group_name_ar, group_emoji, group_display_order')
         .eq('is_active', true)
         .order('display_order', { ascending: true })
       setAllCategories(data || [])
@@ -443,23 +472,58 @@ function MarketplaceBrowseContent() {
             })}
           </div>
 
-          <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
-            <CategoryPill
-              active={!selectedCategorySlug}
-              onClick={() => setSelectedCategorySlug(null)}
-              label={t('market.track_all')}
-              icon="✨"
-            />
-            {rootCategories.map(cat => (
+          {showGroupHeadings ? (
+            <div className="mt-2 space-y-2">
+              {/* reset pill: show everything in the active track */}
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
+                <CategoryPill
+                  active={!selectedCategorySlug}
+                  onClick={() => setSelectedCategorySlug(null)}
+                  label={t('market.track_all')}
+                  icon="✨"
+                />
+              </div>
+              {rootGroups.map(g => (
+                <div key={g.slug}>
+                  {g.name_ar && (
+                    <div className="flex items-center gap-1.5 px-0.5 mb-1 text-[11px] font-bold text-gray-500">
+                      {g.emoji && <span>{g.emoji}</span>}
+                      <span>{g.name_ar}</span>
+                    </div>
+                  )}
+                  <div className="flex gap-2 flex-wrap">
+                    {g.cats.map(cat => (
+                      <CategoryPill
+                        key={cat.id}
+                        active={selectedRootSlug === cat.slug}
+                        onClick={() => setSelectedCategorySlug(cat.slug)}
+                        label={catName(cat)}
+                        icon={cat.icon || ''}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
               <CategoryPill
-                key={cat.id}
-                active={selectedRootSlug === cat.slug}
-                onClick={() => setSelectedCategorySlug(cat.slug)}
-                label={catName(cat)}
-                icon={cat.icon || ''}
+                active={!selectedCategorySlug}
+                onClick={() => setSelectedCategorySlug(null)}
+                label={t('market.track_all')}
+                icon="✨"
               />
-            ))}
-          </div>
+              {rootCategories.map(cat => (
+                <CategoryPill
+                  key={cat.id}
+                  active={selectedRootSlug === cat.slug}
+                  onClick={() => setSelectedCategorySlug(cat.slug)}
+                  label={catName(cat)}
+                  icon={cat.icon || ''}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Subcategory pills (visible when a root category is selected) */}
           {subCategories.length > 0 && (
