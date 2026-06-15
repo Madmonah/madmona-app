@@ -263,6 +263,7 @@ function MarketplaceBrowseContent() {
           pricing:pricing_rules(price, is_active)
         `)
         .eq('status', 'published')
+        .eq('is_directory', false)
         .limit(60)
 
       if (sortBy === 'rating') {

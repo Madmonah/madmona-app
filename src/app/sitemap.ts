@@ -78,7 +78,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .from('listings')
         .select('slug, updated_at')
         .eq('status', 'published')
-        .limit(2000),
+        .limit(50000),
       // @ts-expect-error
       supabase
         .from('categories')

@@ -39,6 +39,9 @@ interface ListingDetail {
   views_count: number
   status: string
   requires_id_verification: boolean | null
+  is_directory: boolean | null
+  directory_source: string | null
+  contact_phone: string | null
   // Phase 4 product fields (May 29 2026)
   stock_quantity: number | null
   product_condition: string | null
@@ -335,16 +338,23 @@ export default function ListingDetailPage() {
   })
 
   const isDemo = isDemoListing(listing.title)
+  const isDirectory = !!listing.is_directory
   const displayTitle = cleanListingTitle(listing.title)
   const track = listing.category?.track ?? null
   const isRestaurant = track === 'restaurants'
   const isProduct = track === 'products'
-  const isOrderable = isRestaurant || isProduct
+  // directory listings are reference-only: no buy / cart / booking / menu
+  const isOrderable = (isRestaurant || isProduct) && !isDirectory
   const currentPhoto = sortedPhotos[photoIndex]
-  const phone = listing.supplier?.profile?.phone || ''
+  const phone = isDirectory
+    ? (listing.contact_phone || '')
+    : (listing.supplier?.profile?.phone || '')
   const phoneClean = phone.replace(/\D/g, '')
+  const claimMessage = encodeURIComponent(
+    `عايز أستلم نشاطي "${displayTitle}" على Madmona.\nاللينك: https://madmonacairo.com/marketplace/${listing.slug}`
+  )
   const startingPrice = pricing.length > 0 ? Number(pricing[0].price) : null
-  const canBook = pricing.length > 0 && !isDemo  // <-- DEMOs can NOT be booked
+  const canBook = pricing.length > 0 && !isDemo && !isDirectory  // DEMOs & directory entries can NOT be booked
   const hasMap = listing.latitude !== null && listing.longitude !== null
 
   const whatsappMessage = encodeURIComponent(
@@ -523,7 +533,13 @@ export default function ListingDetailPage() {
 
               {/* Trust badges row */}
               <div className="flex flex-wrap items-center gap-2 mb-4">
-                {listing.supplier?.kyc_status === 'approved' && (
+                {isDirectory && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-full text-xs font-bold text-gray-600">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    غير موثّق · من دليل مصر
+                  </span>
+                )}
+                {!isDirectory && listing.supplier?.kyc_status === 'approved' && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full text-xs font-bold text-green-700">
                     <CheckCircle className="w-3.5 h-3.5" />
                     {t('listing.supplier_verified')}
@@ -561,7 +577,7 @@ export default function ListingDetailPage() {
             </section>
 
             {/* Phase 4 (May 29 2026): product specs block — condition, brand, model, stock, shipping */}
-            {isProduct && (
+            {isProduct && !isDirectory && (
               <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up delay-50">
                 <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
                   <Tag className="w-4 h-4 text-[#2FA084]" />
@@ -649,7 +665,7 @@ export default function ListingDetailPage() {
               </section>
             )}
 
-            {isRestaurant && listing.supplier && (
+            {isRestaurant && !isDirectory && listing.supplier && (
               <RestaurantMenu
                 listing={{ id: listing.id, title: displayTitle }}
                 supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
@@ -657,7 +673,7 @@ export default function ListingDetailPage() {
               />
             )}
 
-            {isProduct && listing.supplier && (
+            {isProduct && !isDirectory && listing.supplier && (
               <div className="lg:hidden">
                 <ProductBuyBox
                   listing={{ id: listing.id, title: displayTitle }}
@@ -897,14 +913,30 @@ export default function ListingDetailPage() {
                   )}
                 </div>
 
-                <div className="mt-5 pt-5 border-t border-gray-100 flex items-center gap-2 text-xs text-gray-500">
-                  <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                  <span>{t('listing.guaranteed_note')}</span>
-                </div>
+                {!isDirectory ? (
+                  <div className="mt-5 pt-5 border-t border-gray-100 flex items-center gap-2 text-xs text-gray-500">
+                    <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                    <span>{t('listing.guaranteed_note')}</span>
+                  </div>
+                ) : (
+                  <div className="mt-5 pt-5 border-t border-gray-100 space-y-3">
+                    <a
+                      href={`https://wa.me/201002229982?text=${claimMessage}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 bg-[#1F6F5F] text-white py-2.5 rounded-2xl font-bold text-xs no-underline w-full"
+                    >
+                      هو ده نشاطك؟ استلمه
+                    </a>
+                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                      بيانات أولية من مصدر عام — لسه مش موثّقة من Madmona.<br />© OpenStreetMap contributors
+                    </p>
+                  </div>
+                )}
               </div>
               )}
 
-              {isProduct && listing.supplier && (
+              {isProduct && !isDirectory && listing.supplier && (
                 <ProductBuyBox
                   listing={{ id: listing.id, title: displayTitle }}
                   supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
@@ -913,7 +945,7 @@ export default function ListingDetailPage() {
               )}
 
               {/* Supplier card */}
-              {listing.supplier && (
+              {!isDirectory && listing.supplier && (
                 <div className="bg-white rounded-3xl shadow-soft p-6">
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">{t('listing.owner_label')}</p>
                   <div className="flex items-center gap-3 mb-4">
