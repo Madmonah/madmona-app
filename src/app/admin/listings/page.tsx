@@ -1,594 +1,422 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+// ============================================================================
+// /admin/listings — إدارة الليستنجز الموحّدة (مدمجة)
+// ----------------------------------------------------------------------------
+// مبنية على RPCs آمنة بـ pagination على السيرفر:
+//   admin_listings_facets / admin_listings_search / admin_bulk_set_status
+//   (كلها مقفولة على is_admin()). بتشيل كل الليستنج — حقيقي + دليل مصر (8000+).
+// فلاتر (نوع/حالة/تصنيف/مدينة/رقم/استلام/بحث) + نشر بالجملة + لكل صف:
+//   معاينة · تغيير حالة · تعديل · حذف/أرشفة.
+// ============================================================================
+
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
-  ArrowRight, Loader2, Lock, AlertCircle, Search, Filter,
-  Edit2, Trash2, Eye, EyeOff, Building2, MapPin, Image as ImageIcon,
-  CheckCircle, TrendingUp, ShieldAlert, Archive, Plus,
+  ArrowRight, Loader2, Lock, ShieldAlert, Plus, Eye, Edit2, Trash2,
+  SlidersHorizontal, Archive, CheckCircle, AlertCircle, Building2,
 } from 'lucide-react'
 
-// ============================================================================
-// /admin/listings — Master listings management for admin.
-// View, edit, delete, change status of ANY listing across ALL suppliers.
-// "Create new" button takes admin to /supplier/marketplace/new where the
-// admin bypass picks a supplier and creates the listing.
-// ============================================================================
+const supabase = supabaseBrowser as any
 
 type Stage = 'loading' | 'unauthenticated' | 'forbidden' | 'ready'
+const PAGE = 50
 
-interface AdminListing {
-  id: string
-  title: string
-  slug: string
-  city: string | null
-  district: string | null
-  status: 'draft' | 'pending_review' | 'published' | 'paused' | 'rejected'
-  bookings_count: number
-  views_count: number
-  created_at: string
-  supplier_id: string
-  supplier_name: string
-  category_name: string | null
-  primary_photo_url: string | null
+const C = {
+  bg: '#FAFAF7', card: '#ffffff', ink: '#16241f', sub: '#5b6b64',
+  green: '#1F6F5F', green2: '#2FA084', line: '#e7e9e5',
+  chip: '#eef4f1', danger: '#b3261e', warn: '#9a6b00', gold: '#d4a017',
 }
 
-const STATUS_OPTIONS = [
-  { value: 'draft', label: 'مسودة', color: 'bg-gray-100 text-gray-700', dot: 'bg-gray-400' },
-  { value: 'pending_review', label: 'قيد المراجعة', color: 'bg-yellow-100 text-yellow-800', dot: 'bg-yellow-500' },
-  { value: 'published', label: 'منشور', color: 'bg-green-100 text-green-800', dot: 'bg-green-500' },
-  { value: 'paused', label: 'موقوف', color: 'bg-orange-100 text-orange-800', dot: 'bg-orange-500' },
-  { value: 'rejected', label: 'مؤرشف', color: 'bg-red-100 text-red-800', dot: 'bg-red-500' },
-] as const
+const STATUS_LABEL: Record<string, string> = {
+  draft: 'مسودة', pending_review: 'مراجعة', published: 'منشور',
+  paused: 'موقوف', rejected: 'مرفوض',
+}
+const STATUS_COLOR: Record<string, string> = {
+  draft: '#5b6b64', pending_review: '#9a6b00', published: '#1F6F5F',
+  paused: '#b3261e', rejected: '#8a1c16',
+}
+const STATUS_ORDER = ['published', 'draft', 'paused', 'pending_review', 'rejected']
+
+type Row = {
+  id: string; title: string; slug: string; status: string
+  is_directory: boolean; directory_source: string | null
+  category: string | null; city: string | null; district: string | null
+  phone: string | null; phone_verified: boolean; unclaimed: boolean
+  created_at: string; published_at: string | null
+}
+type Facets = {
+  total: number
+  by_tier: { real: number; directory: number }
+  by_status: Record<string, number>
+  cities: string[]
+  categories: { id: string; name: string }[]
+}
 
 export default function AdminListingsPage() {
-  const router = useRouter()
   const [stage, setStage] = useState<Stage>('loading')
-  const [listings, setListings] = useState<AdminListing[]>([])
-  const [filtered, setFiltered] = useState<AdminListing[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | AdminListing['status']>('all')
 
-  const [deleting, setDeleting] = useState<AdminListing | null>(null)
-  const [statusChanging, setStatusChanging] = useState<AdminListing | null>(null)
-  const [actionBusy, setActionBusy] = useState(false)
-  const [actionMsg, setActionMsg] = useState<string | null>(null)
+  const [facets, setFacets] = useState<Facets | null>(null)
+  const [tier, setTier] = useState('all')
+  const [status, setStatus] = useState('all')
+  const [category, setCategory] = useState('')
+  const [city, setCity] = useState('')
+  const [hasPhone, setHasPhone] = useState('all')
+  const [claimed, setClaimed] = useState('all')
+  const [search, setSearch] = useState('')
+  const [debounced, setDebounced] = useState('')
+  const [offset, setOffset] = useState(0)
 
-  useEffect(() => { init() }, [])
+  const [rows, setRows] = useState<Row[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+  const [sel, setSel] = useState<Record<string, boolean>>({})
+  const [busy, setBusy] = useState(false)
+  const [flash, setFlash] = useState<string | null>(null)
 
+  const [statusChanging, setStatusChanging] = useState<Row | null>(null)
+  const [deleting, setDeleting] = useState<Row | null>(null)
+
+  // ---- guard ----
   useEffect(() => {
-    let f = listings
-    if (statusFilter !== 'all') {
-      f = f.filter(l => l.status === statusFilter)
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase()
-      f = f.filter(l =>
-        l.title.toLowerCase().includes(q) ||
-        l.supplier_name.toLowerCase().includes(q) ||
-        (l.city && l.city.toLowerCase().includes(q))
-      )
-    }
-    setFiltered(f)
-  }, [listings, searchQuery, statusFilter])
+    (async () => {
+      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      if (!session?.user) { setStage('unauthenticated'); return }
+      const { data: prof } = await supabaseBrowser
+        .from('profiles').select('role').eq('id', session.user.id).maybeSingle()
+      if ((prof as any)?.role !== 'admin') { setStage('forbidden'); return }
+      setStage('ready')
+    })()
+  }, [])
 
-  const init = async () => {
-    const { data: { session } } = await supabaseBrowser.auth.getSession()
-    if (!session?.user) { setStage('unauthenticated'); return }
+  // debounce search
+  useEffect(() => {
+    const t = setTimeout(() => { setDebounced(search); setOffset(0) }, 350)
+    return () => clearTimeout(t)
+  }, [search])
+  useEffect(() => { setOffset(0) }, [tier, status, category, city, hasPhone, claimed])
 
-    // @ts-expect-error
-    const { data: prof } = await supabaseBrowser
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .maybeSingle()
+  const loadFacets = useCallback(async () => {
+    const { data, error } = await supabase.rpc('admin_listings_facets')
+    if (error) { setErr(error.message); return }
+    setFacets(data as Facets)
+  }, [])
 
-    if (prof?.role !== 'admin') { setStage('forbidden'); return }
-
-    await loadListings()
-    setStage('ready')
-  }
-
-  const loadListings = async () => {
-    // @ts-expect-error
-    const { data, error } = await supabaseBrowser
-      .from('listings')
-      .select(`
-        id, title, slug, city, district, status,
-        bookings_count, views_count, created_at, supplier_id,
-        supplier:marketplace_suppliers!supplier_id ( business_name ),
-        category:categories!category_id ( name_ar ),
-        photos:listing_photos ( url, is_primary )
-      `)
-      // Directory-tier listings (OSM bulk import) are managed in /admin/manage
-      // with server-side pagination. Excluding them here keeps this client-side
-      // full-load page fast and avoids the empty-state on heavy/timed-out queries.
-      .eq('is_directory', false)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('Failed to load listings', error)
-      return
-    }
-
-    type RawRow = {
-      id: string
-      title: string
-      slug: string
-      city: string | null
-      district: string | null
-      status: AdminListing['status']
-      bookings_count: number
-      views_count: number
-      created_at: string
-      supplier_id: string
-      supplier: { business_name: string } | null
-      category: { name_ar: string } | null
-      photos: { url: string; is_primary: boolean }[] | null
-    }
-
-    const enriched: AdminListing[] = ((data || []) as RawRow[]).map(row => {
-      const primary = row.photos?.find(p => p.is_primary) || row.photos?.[0]
-      return {
-        id: row.id,
-        title: row.title,
-        slug: row.slug,
-        city: row.city,
-        district: row.district,
-        status: row.status,
-        bookings_count: row.bookings_count || 0,
-        views_count: row.views_count || 0,
-        created_at: row.created_at,
-        supplier_id: row.supplier_id,
-        supplier_name: row.supplier?.business_name || 'مورد محذوف',
-        category_name: row.category?.name_ar || null,
-        primary_photo_url: primary?.url || null,
-      }
+  const load = useCallback(async () => {
+    setLoading(true); setErr(null)
+    const { data, error } = await supabase.rpc('admin_listings_search', {
+      p_tier: tier, p_status: status,
+      p_category: category || null, p_city: city || null,
+      p_has_phone: hasPhone, p_claimed: claimed,
+      p_search: debounced || null, p_limit: PAGE, p_offset: offset,
     })
+    setLoading(false)
+    if (error) { setErr(error.message); setRows([]); setTotal(0); return }
+    setRows(((data as any)?.rows || []) as Row[])
+    setTotal((data as any)?.total || 0)
+    setSel({})
+  }, [tier, status, category, city, hasPhone, claimed, debounced, offset])
 
-    setListings(enriched)
+  useEffect(() => { if (stage === 'ready') { loadFacets() } }, [stage, loadFacets])
+  useEffect(() => { if (stage === 'ready') { load() } }, [stage, load])
+
+  const selectedIds = useMemo(() => Object.keys(sel).filter((k) => sel[k]), [sel])
+  const allChecked = rows.length > 0 && rows.every((r) => sel[r.id])
+
+  function toggleAll() {
+    if (allChecked) { setSel({}); return }
+    const m: Record<string, boolean> = {}
+    rows.forEach((r) => { m[r.id] = true })
+    setSel(m)
   }
 
-  const handleDelete = async () => {
-    if (!deleting) return
-    setActionBusy(true)
-    setActionMsg(null)
+  async function setStatusBulk(ids: string[], newStatus: string, confirmMsg?: string) {
+    if (ids.length === 0) return
+    if (confirmMsg && !confirm(confirmMsg)) return
+    setBusy(true); setFlash(null)
+    const { data, error } = await supabase.rpc('admin_bulk_set_status', { p_ids: ids, p_status: newStatus })
+    setBusy(false)
+    if (error) { setFlash('خطأ: ' + error.message); return }
+    const u = (data as any)?.updated || 0
+    const f = ((data as any)?.failed || []).length
+    setFlash(`تم تحديث ${u}${f ? ` · فشل ${f} (غالباً نشاط حقيقي محتاج صورة/توثيق رقم)` : ''}`)
+    setStatusChanging(null)
+    await load(); await loadFacets()
+  }
 
+  async function handleDelete() {
+    if (!deleting) return
+    setBusy(true); setFlash(null)
     try {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
       const accessToken = session?.access_token || ''
-
       const res = await fetch(`/api/admin/listings/${deleting.id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
       })
-
       const result = await res.json()
-
+      setBusy(false)
       if (!res.ok || result.error) {
-        const errMsg = result.message || result.error || 'فشل الحذف'
-        setActionMsg('فشل الحذف: ' + errMsg)
-        setActionBusy(false)
+        setFlash('فشل الحذف: ' + (result.message || result.error || 'خطأ'))
         return
       }
-
-      if (result.type === 'soft_delete') {
-        setListings(prev => prev.map(l =>
-          l.id === deleting.id ? { ...l, status: 'rejected' as const } : l
-        ))
-        setActionMsg(`✅ ${result.message}`)
-      } else {
-        setListings(prev => prev.filter(l => l.id !== deleting.id))
-        setActionMsg(`✅ ${result.message}`)
-      }
-
+      setFlash(`✅ ${result.message || 'تم'}`)
       setDeleting(null)
-      setTimeout(() => setActionMsg(null), 5000)
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'unknown'
-      setActionMsg('حصل خطأ في الاتصال: ' + msg)
+      await load(); await loadFacets()
+    } catch (e) {
+      setBusy(false)
+      setFlash('خطأ في الاتصال: ' + (e instanceof Error ? e.message : 'unknown'))
     }
-    setActionBusy(false)
   }
 
-  const handleStatusChange = async (newStatus: AdminListing['status']) => {
-    if (!statusChanging) return
-    setActionBusy(true)
-    setActionMsg(null)
+  const pageNo = Math.floor(offset / PAGE) + 1
+  const pages = Math.max(1, Math.ceil(total / PAGE))
 
-    try {
-      // @ts-expect-error
-      const { error } = await supabaseBrowser
-        .from('listings')
-        .update({ status: newStatus })
-        .eq('id', statusChanging.id)
-
-      if (error) {
-        setActionMsg('فشل التحديث: ' + error.message)
-        setActionBusy(false)
-        return
-      }
-
-      setListings(prev => prev.map(l =>
-        l.id === statusChanging.id ? { ...l, status: newStatus } : l
-      ))
-      setStatusChanging(null)
-      setActionMsg('تم تحديث الحالة بنجاح')
-      setTimeout(() => setActionMsg(null), 3000)
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'unknown'
-      setActionMsg('حصل خطأ: ' + msg)
-    }
-    setActionBusy(false)
+  // ---- styles ----
+  const sChip = (active: boolean): React.CSSProperties => ({
+    padding: '6px 12px', borderRadius: 999, cursor: 'pointer',
+    border: `1px solid ${active ? C.green : C.line}`,
+    background: active ? C.green : C.card, color: active ? '#fff' : C.ink,
+    fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap',
+  })
+  const sSelect: React.CSSProperties = {
+    padding: '8px 10px', borderRadius: 12, border: `1px solid ${C.line}`,
+    background: C.card, color: C.ink, fontSize: 13, minWidth: 130,
   }
+  const sBtn = (bg: string): React.CSSProperties => ({
+    padding: '8px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
+    background: bg, color: '#fff', fontSize: 13, fontWeight: 700,
+    opacity: busy || selectedIds.length === 0 ? 0.5 : 1,
+  })
+  const badge = (bg: string): React.CSSProperties => ({
+    display: 'inline-block', padding: '2px 8px', borderRadius: 999,
+    fontSize: 11, fontWeight: 700, background: bg + '22', color: bg,
+  })
+  const iconBtn = (bg: string, fg: string): React.CSSProperties => ({
+    width: 32, height: 32, borderRadius: 10, border: 'none', cursor: 'pointer',
+    background: bg, color: fg, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  })
 
+  // ---- guard screens ----
   if (stage === 'loading') {
-    return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
-      </div>
-    )
+    return <div style={{ minHeight: '100vh', background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Loader2 className="animate-spin" style={{ width: 28, height: 28, color: C.green }} />
+    </div>
   }
-
   if (stage === 'unauthenticated') {
-    return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
-        <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
-          <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
-          <Link href="/auth/login?redirect=/admin/listings" className="block bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold">
-            دخول
-          </Link>
-        </div>
+    return <div dir="rtl" style={{ minHeight: '100vh', background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ background: '#fff', borderRadius: 24, padding: 32, textAlign: 'center', maxWidth: 360 }}>
+        <Lock style={{ width: 32, height: 32, color: C.green, margin: '0 auto 12px' }} />
+        <h1 style={{ fontWeight: 800, marginBottom: 16 }}>سجّل دخول الأول</h1>
+        <Link href="/auth/login?redirect=/admin/listings" style={{ display: 'block', background: C.green, color: '#fff', padding: 12, borderRadius: 12, fontWeight: 700, textDecoration: 'none' }}>دخول</Link>
       </div>
-    )
+    </div>
   }
-
   if (stage === 'forbidden') {
-    return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
-        <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
-          <ShieldAlert className="w-8 h-8 text-red-500 mx-auto mb-3" />
-          <h1 className="font-bold mb-2">مش مسموح</h1>
-          <p className="text-sm text-gray-600 mb-4">الصفحة دي للأدمن فقط.</p>
-          <Link href="/account" className="inline-block bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold">
-            ارجع للحساب
-          </Link>
-        </div>
+    return <div dir="rtl" style={{ minHeight: '100vh', background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ background: '#fff', borderRadius: 24, padding: 32, textAlign: 'center', maxWidth: 360 }}>
+        <ShieldAlert style={{ width: 32, height: 32, color: C.danger, margin: '0 auto 12px' }} />
+        <h1 style={{ fontWeight: 800 }}>للأدمن فقط</h1>
       </div>
-    )
+    </div>
   }
-
-  const totalCount = listings.length
-  const publishedCount = listings.filter(l => l.status === 'published').length
-  const pendingCount = listings.filter(l => l.status === 'pending_review').length
-  const draftCount = listings.filter(l => l.status === 'draft').length
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7] pb-20" dir="rtl">
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Link
-            href="/admin/dashboard"
-            className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all"
-          >
-            <ArrowRight className="w-4 h-4 text-gray-700" />
+    <div dir="rtl" style={{ minHeight: '100vh', background: C.bg, color: C.ink, fontFamily: 'Cairo, Inter, system-ui, sans-serif' }}>
+      {/* header */}
+      <header style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.line}` }}>
+        <div style={{ maxWidth: 1180, margin: '0 auto', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Link href="/admin/dashboard" style={{ width: 36, height: 36, borderRadius: 999, background: '#fff', border: `1px solid ${C.line}`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            <ArrowRight style={{ width: 16, height: 16, color: C.sub }} />
           </Link>
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Building2 className="w-5 h-5 text-[#1F6F5F] flex-shrink-0" />
-            <h1 className="text-lg font-black text-gray-900 truncate">إدارة الخدمات</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+            <Building2 style={{ width: 20, height: 20, color: C.green }} />
+            <h1 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>إدارة الليستنجز</h1>
           </div>
-
-          {/* + Create New Listing button */}
-          <Link
-            href="/supplier/marketplace/new"
-            className="inline-flex items-center gap-1.5 bg-[#1F6F5F] text-white px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline flex-shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">أضف خدمة</span>
-            <span className="sm:hidden">أضف</span>
+          <Link href="/supplier/marketplace/new" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.green, color: '#fff', padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
+            <Plus style={{ width: 16, height: 16 }} /> أضف خدمة
           </Link>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard label="الإجمالي" value={totalCount} color="text-[#1F6F5F]" bg="bg-[#1F6F5F]/10" icon={<Building2 className="w-4 h-4" />} />
-          <StatCard label="منشورة" value={publishedCount} color="text-green-700" bg="bg-green-100" icon={<CheckCircle className="w-4 h-4" />} />
-          <StatCard label="قيد المراجعة" value={pendingCount} color="text-yellow-700" bg="bg-yellow-100" icon={<TrendingUp className="w-4 h-4" />} />
-          <StatCard label="مسودة" value={draftCount} color="text-gray-700" bg="bg-gray-100" icon={<EyeOff className="w-4 h-4" />} />
-        </div>
+      <div style={{ maxWidth: 1180, margin: '0 auto', padding: '16px' }}>
+        <p style={{ color: C.sub, margin: '0 0 14px', fontSize: 13 }}>
+          كل الليستنج — حقيقي أو دليل مصر — فلتر، وانشر/أوقف/أخفي بالجملة، أو اتحكم في كل صف.
+        </p>
 
-        <div className="bg-white rounded-2xl shadow-soft p-4">
-          <div className="flex flex-col md:flex-row gap-3">
-            <div className="flex-1 relative">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ابحث بالعنوان، اسم المورد، أو المدينة..."
-                className="w-full pr-10 pl-3 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
-              />
-            </div>
-            <div className="flex gap-2 overflow-x-auto">
-              <FilterChip active={statusFilter === 'all'} onClick={() => setStatusFilter('all')} label="الكل" />
-              {STATUS_OPTIONS.map(opt => (
-                <FilterChip
-                  key={opt.value}
-                  active={statusFilter === opt.value}
-                  onClick={() => setStatusFilter(opt.value as AdminListing['status'])}
-                  label={opt.label}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {actionMsg && (
-          <div className={`p-3 rounded-2xl border flex items-start gap-2 ${
-            actionMsg.includes('✅') || actionMsg.includes('بنجاح')
-              ? 'bg-green-50 border-green-200 text-green-900'
-              : 'bg-red-50 border-red-200 text-red-900'
-          }`}>
-            {(actionMsg.includes('✅') || actionMsg.includes('بنجاح'))
-              ? <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-              : <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
-            <p className="text-sm leading-relaxed">{actionMsg}</p>
-          </div>
-        )}
-
-        {filtered.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-soft p-12 text-center">
-            <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 mb-4">
-              {listings.length === 0 ? 'مفيش خدمات لسه. ابدأ بإضافة أول خدمة.' : 'مفيش خدمات تطابق البحث'}
-            </p>
-            {listings.length === 0 && (
-              <Link
-                href="/supplier/marketplace/new"
-                className="inline-flex items-center gap-2 bg-[#1F6F5F] text-white px-5 py-3 rounded-xl text-sm font-bold shadow-soft hover:shadow-elevated transition-all no-underline"
-              >
-                <Plus className="w-4 h-4" />
-                أضف أول خدمة
-              </Link>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {filtered.map(listing => (
-              <ListingRow
-                key={listing.id}
-                listing={listing}
-                onDelete={() => setDeleting(listing)}
-                onChangeStatus={() => setStatusChanging(listing)}
-              />
+        {/* summary */}
+        {facets && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
+            <span style={badge(C.green)}>الكل {facets.total}</span>
+            <span style={badge(C.green2)}>حقيقي {facets.by_tier.real}</span>
+            <span style={badge(C.gold)}>دليل {facets.by_tier.directory}</span>
+            {Object.entries(facets.by_status).map(([s, n]) => (
+              <span key={s} style={badge(STATUS_COLOR[s] || C.sub)}>{STATUS_LABEL[s] || s} {n}</span>
             ))}
           </div>
         )}
-      </main>
 
-      {/* Delete modal */}
-      {deleting && (
-        <Modal onClose={() => !actionBusy && setDeleting(null)}>
-          <div className="text-center mb-4">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 ${
-              deleting.bookings_count > 0 ? 'bg-orange-100' : 'bg-red-100'
-            }`}>
-              {deleting.bookings_count > 0
-                ? <Archive className="w-7 h-7 text-orange-600" />
-                : <Trash2 className="w-7 h-7 text-red-600" />}
-            </div>
-            <h2 className="text-xl font-black text-gray-900 mb-2">
-              {deleting.bookings_count > 0 ? 'أرشفة الخدمة' : 'تأكيد الحذف'}
-            </h2>
-            <p className="text-sm text-gray-600 mb-2">
-              &quot;{deleting.title}&quot;
-            </p>
-
-            {deleting.bookings_count > 0 ? (
-              <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-right mt-3">
-                <p className="text-xs text-orange-900 leading-relaxed">
-                  <span className="font-bold">⚠️ الخدمة دي عندها {deleting.bookings_count} حجز.</span>
-                  <br />
-                  مش هنحذفها نهائياً عشان نحافظ على تاريخ الحجوزات. هنخفيها من الموقع (status = مؤرشف) ومش هتظهر للعملاء تاني.
-                </p>
-              </div>
-            ) : (
-              <p className="text-xs text-red-600 mt-2 font-bold">
-                ⚠️ ده هيحذف الخدمة وكل بياناتها (صور، أسعار، إلخ) نهائياً!
-              </p>
-            )}
+        {/* filters */}
+        <div style={{ background: C.card, border: `1px solid ${C.line}`, borderRadius: 18, padding: 14, marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: 12, color: C.sub, marginInlineEnd: 4 }}>النوع:</span>
+            {[['all', 'الكل'], ['real', 'حقيقي'], ['directory', 'دليل']].map(([v, l]) => (
+              <button key={v} style={sChip(tier === v)} onClick={() => setTier(v)}>{l}</button>
+            ))}
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setDeleting(null)}
-              disabled={actionBusy}
-              className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl disabled:opacity-50 transition-colors"
-            >
-              إلغاء
-            </button>
-            <button
-              onClick={handleDelete}
-              disabled={actionBusy}
-              className={`flex-1 py-3 text-white font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-colors ${
-                deleting.bookings_count > 0
-                  ? 'bg-orange-600 hover:bg-orange-700'
-                  : 'bg-red-600 hover:bg-red-700'
-              }`}
-            >
-              {actionBusy
-                ? <Loader2 className="w-4 h-4 animate-spin" />
-                : (deleting.bookings_count > 0
-                    ? <Archive className="w-4 h-4" />
-                    : <Trash2 className="w-4 h-4" />)
-              }
-              {actionBusy
-                ? 'جاري التنفيذ...'
-                : (deleting.bookings_count > 0 ? 'أرشف الخدمة' : 'احذف نهائياً')}
-            </button>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: 12, color: C.sub, marginInlineEnd: 4 }}>الحالة:</span>
+            <button style={sChip(status === 'all')} onClick={() => setStatus('all')}>الكل</button>
+            {STATUS_ORDER.map((s) => (
+              <button key={s} style={sChip(status === s)} onClick={() => setStatus(s)}>{STATUS_LABEL[s]}</button>
+            ))}
           </div>
-        </Modal>
-      )}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+            <select style={sSelect} value={category} onChange={(e) => setCategory(e.target.value)}>
+              <option value="">كل التصنيفات</option>
+              {facets?.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <select style={sSelect} value={city} onChange={(e) => setCity(e.target.value)}>
+              <option value="">كل المدن</option>
+              {facets?.cities.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select style={sSelect} value={hasPhone} onChange={(e) => setHasPhone(e.target.value)}>
+              <option value="all">رقم: الكل</option>
+              <option value="yes">معاه رقم</option>
+              <option value="no">من غير رقم</option>
+            </select>
+            <select style={sSelect} value={claimed} onChange={(e) => setClaimed(e.target.value)}>
+              <option value="all">الاستلام: الكل</option>
+              <option value="unclaimed">متستلمش</option>
+              <option value="claimed">متستلم</option>
+            </select>
+            <input style={{ ...sSelect, minWidth: 200, flex: 1 }} placeholder="ابحث بالاسم / الرقم / المدينة…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+        </div>
 
+        {/* bulk bar */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10, position: 'sticky', top: 64, zIndex: 5, background: C.bg, padding: '6px 0' }}>
+          <span style={{ fontSize: 13, color: C.sub }}>محدّد: <b>{selectedIds.length}</b></span>
+          <button style={sBtn(C.green)} disabled={busy || !selectedIds.length} onClick={() => setStatusBulk(selectedIds, 'published', `هتنشر ${selectedIds.length} نشاط. تمام؟`)}>انشر</button>
+          <button style={sBtn(C.danger)} disabled={busy || !selectedIds.length} onClick={() => setStatusBulk(selectedIds, 'paused', `هتوقف ${selectedIds.length} نشاط. تمام؟`)}>أوقف</button>
+          <button style={sBtn(C.sub)} disabled={busy || !selectedIds.length} onClick={() => setStatusBulk(selectedIds, 'draft', `هتخفي ${selectedIds.length} نشاط (مسودة). تمام؟`)}>إخفاء</button>
+          <button style={sBtn('#8a1c16')} disabled={busy || !selectedIds.length} onClick={() => setStatusBulk(selectedIds, 'rejected', `هترفض ${selectedIds.length} نشاط. تمام؟`)}>ارفض</button>
+          {flash && <span style={{ fontSize: 13, color: flash.startsWith('خطأ') || flash.startsWith('فشل') ? C.danger : C.green, marginInlineStart: 8 }}>{flash}</span>}
+        </div>
+
+        {err && (
+          <div style={{ background: '#fdecea', color: C.danger, padding: 12, borderRadius: 12, marginBottom: 12, fontSize: 13 }}>
+            {err.includes('admin only') ? 'الصفحة دي للأدمن بس — اتأكد إنك داخل بحساب الأدمن.' : 'خطأ: ' + err}
+          </div>
+        )}
+
+        {/* table */}
+        <div style={{ background: C.card, border: `1px solid ${C.line}`, borderRadius: 18, overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: C.chip, textAlign: 'right' }}>
+                  <th style={{ padding: 10, width: 36 }}><input type="checkbox" checked={allChecked} onChange={toggleAll} /></th>
+                  <th style={{ padding: 10 }}>النشاط</th>
+                  <th style={{ padding: 10 }}>النوع</th>
+                  <th style={{ padding: 10 }}>الحالة</th>
+                  <th style={{ padding: 10 }}>التصنيف</th>
+                  <th style={{ padding: 10 }}>المدينة</th>
+                  <th style={{ padding: 10 }}>الرقم</th>
+                  <th style={{ padding: 10 }}>الاستلام</th>
+                  <th style={{ padding: 10 }}>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading && <tr><td colSpan={9} style={{ padding: 24, textAlign: 'center', color: C.sub }}>…بحمّل</td></tr>}
+                {!loading && rows.length === 0 && <tr><td colSpan={9} style={{ padding: 24, textAlign: 'center', color: C.sub }}>مفيش نتايج بالفلاتر دي</td></tr>}
+                {!loading && rows.map((r) => (
+                  <tr key={r.id} style={{ borderTop: `1px solid ${C.line}` }}>
+                    <td style={{ padding: 10 }}>
+                      <input type="checkbox" checked={!!sel[r.id]} onChange={(e) => setSel((s) => ({ ...s, [r.id]: e.target.checked }))} />
+                    </td>
+                    <td style={{ padding: 10, maxWidth: 260 }}>
+                      <a href={`/marketplace/${r.slug}`} target="_blank" rel="noreferrer" style={{ color: C.green, fontWeight: 700, textDecoration: 'none' }}>{r.title}</a>
+                    </td>
+                    <td style={{ padding: 10 }}><span style={badge(r.is_directory ? C.gold : C.green2)}>{r.is_directory ? 'دليل' : 'حقيقي'}</span></td>
+                    <td style={{ padding: 10 }}><span style={badge(STATUS_COLOR[r.status] || C.sub)}>{STATUS_LABEL[r.status] || r.status}</span></td>
+                    <td style={{ padding: 10, color: C.sub }}>{r.category || '—'}</td>
+                    <td style={{ padding: 10, color: C.sub }}>{r.city || '—'}</td>
+                    <td style={{ padding: 10, color: C.sub, direction: 'ltr', textAlign: 'right' }}>{r.phone || '—'}{r.phone && r.phone_verified ? ' ✓' : ''}</td>
+                    <td style={{ padding: 10 }}><span style={badge(r.unclaimed ? C.warn : C.green)}>{r.unclaimed ? 'متستلمش' : 'متستلم'}</span></td>
+                    <td style={{ padding: 10 }}>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <a href={`/marketplace/${r.slug}`} target="_blank" rel="noreferrer" title="معاينة" style={iconBtn('#f1f5f3', C.sub)}><Eye style={{ width: 15, height: 15 }} /></a>
+                        <button title="تغيير الحالة" style={iconBtn('#eaf1ff', '#2456c8')} onClick={() => setStatusChanging(r)}><SlidersHorizontal style={{ width: 15, height: 15 }} /></button>
+                        <Link href={`/supplier/marketplace/${r.id}/edit`} title="تعديل" style={iconBtn(C.green + '1a', C.green)}><Edit2 style={{ width: 15, height: 15 }} /></Link>
+                        <button title="حذف / أرشفة" style={iconBtn('#fdecea', C.danger)} onClick={() => setDeleting(r)}><Trash2 style={{ width: 15, height: 15 }} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* pagination */}
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', justifyContent: 'center', marginTop: 14 }}>
+          <button style={sChip(false)} disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - PAGE))}>السابق</button>
+          <span style={{ fontSize: 13, color: C.sub }}>صفحة {pageNo} / {pages} · إجمالي {total}</span>
+          <button style={sChip(false)} disabled={pageNo >= pages} onClick={() => setOffset(offset + PAGE)}>التالي</button>
+        </div>
+      </div>
+
+      {/* status modal */}
       {statusChanging && (
-        <Modal onClose={() => !actionBusy && setStatusChanging(null)}>
-          <div className="mb-4">
-            <h2 className="text-xl font-black text-gray-900 mb-1">تغيير حالة الخدمة</h2>
-            <p className="text-sm text-gray-600">&quot;{statusChanging.title}&quot;</p>
-          </div>
-          <div className="space-y-2">
-            {STATUS_OPTIONS.map(opt => {
-              const isCurrent = opt.value === statusChanging.status
+        <Modal onClose={() => !busy && setStatusChanging(null)}>
+          <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 4px' }}>تغيير حالة النشاط</h2>
+          <p style={{ fontSize: 13, color: C.sub, margin: '0 0 14px' }}>«{statusChanging.title}»</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {STATUS_ORDER.map((s) => {
+              const isCur = s === statusChanging.status
               return (
-                <button
-                  key={opt.value}
-                  onClick={() => !isCurrent && handleStatusChange(opt.value as AdminListing['status'])}
-                  disabled={actionBusy || isCurrent}
-                  className={`w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all ${
-                    isCurrent
-                      ? 'border-[#1F6F5F] bg-[#1F6F5F]/5 cursor-default'
-                      : 'border-gray-100 hover:border-[#1F6F5F]/30 bg-white'
-                  } disabled:opacity-50`}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2.5 h-2.5 rounded-full ${opt.dot}`} />
-                    <span className="font-bold text-sm">{opt.label}</span>
-                  </div>
-                  {isCurrent && <span className="text-xs text-[#1F6F5F] font-bold">الحالة الحالية</span>}
+                <button key={s} disabled={busy || isCur} onClick={() => setStatusBulk([statusChanging.id], s)}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 12, borderRadius: 12, cursor: isCur ? 'default' : 'pointer', border: `2px solid ${isCur ? C.green : C.line}`, background: isCur ? C.green + '0d' : '#fff', opacity: busy ? 0.5 : 1 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 10, height: 10, borderRadius: 999, background: STATUS_COLOR[s] }} />
+                    <b style={{ fontSize: 13 }}>{STATUS_LABEL[s]}</b>
+                  </span>
+                  {isCur && <span style={{ fontSize: 11, color: C.green, fontWeight: 700 }}>الحالة الحالية</span>}
                 </button>
               )
             })}
           </div>
-          <button
-            onClick={() => setStatusChanging(null)}
-            disabled={actionBusy}
-            className="w-full mt-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 font-bold disabled:opacity-50"
-          >
-            إلغاء
-          </button>
+          <button onClick={() => setStatusChanging(null)} disabled={busy} style={{ width: '100%', marginTop: 14, padding: 10, fontSize: 13, color: C.sub, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}>إلغاء</button>
         </Modal>
       )}
-    </div>
-  )
-}
 
-function StatCard({ label, value, color, bg, icon }: {
-  label: string; value: number; color: string; bg: string; icon: React.ReactNode
-}) {
-  return (
-    <div className="bg-white rounded-2xl shadow-soft p-4">
-      <div className={`inline-flex items-center justify-center w-7 h-7 rounded-lg mb-2 ${bg} ${color}`}>
-        {icon}
-      </div>
-      <p className="text-[11px] text-gray-500 mb-1">{label}</p>
-      <p className="text-xl font-black text-gray-900 tabular">{value}</p>
-    </div>
-  )
-}
-
-function FilterChip({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-        active
-          ? 'bg-[#1F6F5F] text-white'
-          : 'bg-[#FAFAF7] text-gray-600 hover:bg-gray-100'
-      }`}
-    >
-      {label}
-    </button>
-  )
-}
-
-function ListingRow({ listing, onDelete, onChangeStatus }: {
-  listing: AdminListing
-  onDelete: () => void
-  onChangeStatus: () => void
-}) {
-  const statusOpt = STATUS_OPTIONS.find(o => o.value === listing.status)
-
-  return (
-    <div className="bg-white rounded-2xl shadow-soft p-3 flex items-center gap-3 hover:shadow-card transition-shadow">
-      <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden">
-        {listing.primary_photo_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={listing.primary_photo_url} alt={listing.title} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <ImageIcon className="w-5 h-5 text-gray-300" />
+      {/* delete modal */}
+      {deleting && (
+        <Modal onClose={() => !busy && setDeleting(null)}>
+          <div style={{ textAlign: 'center', marginBottom: 16 }}>
+            <div style={{ width: 56, height: 56, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', background: '#fdecea' }}>
+              <Trash2 style={{ width: 26, height: 26, color: C.danger }} />
+            </div>
+            <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 6px' }}>حذف النشاط</h2>
+            <p style={{ fontSize: 13, color: C.sub, margin: '0 0 8px' }}>«{deleting.title}»</p>
+            <div style={{ background: '#fff7e6', border: '1px solid #f3e0b3', borderRadius: 12, padding: 12, textAlign: 'right' }}>
+              <p style={{ fontSize: 12, color: C.warn, margin: 0, lineHeight: 1.7 }}>
+                لو النشاط عليه حجوزات هيتأرشف بس (مش هيتحذف نهائيًا للحفاظ على التاريخ). غير كده هيتحذف نهائيًا.
+              </p>
+            </div>
           </div>
-        )}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-sm text-gray-900 truncate mb-1">{listing.title}</h3>
-        <div className="flex items-center gap-2 flex-wrap text-[11px] text-gray-500">
-          {statusOpt && (
-            <span className={`px-1.5 py-0.5 rounded-full font-bold ${statusOpt.color}`}>
-              {statusOpt.label}
-            </span>
-          )}
-          <span className="inline-flex items-center gap-1 truncate">
-            <Building2 className="w-3 h-3 flex-shrink-0" />
-            <span className="truncate">{listing.supplier_name}</span>
-          </span>
-          {listing.city && (
-            <span className="inline-flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              {listing.city}
-            </span>
-          )}
-          {listing.bookings_count > 0 && (
-            <span className="font-bold text-[#1F6F5F]">
-              {listing.bookings_count} حجز
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-1 flex-shrink-0">
-        <a
-          href={`/marketplace/${listing.slug}`}
-          target="_blank"
-          rel="noreferrer"
-          className="w-9 h-9 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-600 flex items-center justify-center transition-colors"
-          title="معاينة"
-        >
-          <Eye className="w-4 h-4" />
-        </a>
-        <button
-          onClick={onChangeStatus}
-          className="w-9 h-9 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 flex items-center justify-center transition-colors"
-          title="تغيير الحالة"
-        >
-          <Filter className="w-4 h-4" />
-        </button>
-        <Link
-          href={`/supplier/marketplace/${listing.id}/edit`}
-          className="w-9 h-9 rounded-xl bg-[#1F6F5F]/10 hover:bg-[#1F6F5F]/20 text-[#1F6F5F] flex items-center justify-center transition-colors"
-          title="تعديل"
-        >
-          <Edit2 className="w-4 h-4" />
-        </Link>
-        <button
-          onClick={onDelete}
-          className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
-            listing.bookings_count > 0
-              ? 'bg-orange-50 hover:bg-orange-100 text-orange-600'
-              : 'bg-red-50 hover:bg-red-100 text-red-600'
-          }`}
-          title={listing.bookings_count > 0 ? 'أرشفة (عندها حجوزات)' : 'حذف'}
-        >
-          {listing.bookings_count > 0 ? <Archive className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
-        </button>
-      </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => setDeleting(null)} disabled={busy} style={{ flex: 1, padding: 12, background: '#f1f1f1', color: C.ink, fontWeight: 700, borderRadius: 12, border: 'none', cursor: 'pointer', opacity: busy ? 0.5 : 1 }}>إلغاء</button>
+            <button onClick={handleDelete} disabled={busy} style={{ flex: 1, padding: 12, background: C.danger, color: '#fff', fontWeight: 700, borderRadius: 12, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: busy ? 0.5 : 1 }}>
+              {busy ? <Loader2 className="animate-spin" style={{ width: 16, height: 16 }} /> : <Archive style={{ width: 16, height: 16 }} />}
+              {busy ? 'بنفّذ…' : 'احذف / أرشف'}
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }
@@ -596,9 +424,9 @@ function ListingRow({ listing, onDelete, onChangeStatus }: {
 function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
     <>
-      <div className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center p-4 pointer-events-none">
-        <div className="bg-white rounded-3xl shadow-2xl p-6 max-w-md w-full pointer-events-auto" dir="rtl">
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(3px)' }} />
+      <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, pointerEvents: 'none' }}>
+        <div dir="rtl" style={{ background: '#fff', borderRadius: 24, padding: 24, maxWidth: 420, width: '100%', pointerEvents: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}>
           {children}
         </div>
       </div>

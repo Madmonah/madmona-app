@@ -462,7 +462,7 @@ export default function AdminDashboardV2() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-            <ToolCard href="/admin/listings" icon={<Package />} title="الإعلانات" sub={`${data.b2c.listings_published} منشور`}
+            <ToolCard href="/admin/listings" icon={<Package />} title="إدارة الليستنجز" sub="فلتر · نشر بالجملة · حقيقي + دليل مصر"
               badge={data.b2c.listings_draft || undefined} />
             <ToolCard href="/admin/sup" icon={<Users />} title="الموردين" sub={`${data.b2c.suppliers_approved} متعمد`}
               badge={data.b2c.suppliers_pending || undefined} />
@@ -795,7 +795,7 @@ export default function AdminDashboardV2() {
               <CompactLink href="/admin/leads-feed" label="leads-feed" />
               <CompactLink href="/admin/listing-drafts" label="listing-drafts" />
               <CompactLink href="/admin/listing-performance" label="listing-performance" />
-              <CompactLink href="/admin/listings" label="listings" />
+              <CompactLink href="/admin/listings" label="listings ⭐ فلتر + دليل" />
               <CompactLink href="/admin/marketing-hq" label="marketing-hq" />
               <CompactLink href="/admin/marketplace-bookings" label="marketplace-bookings" />
               <CompactLink href="/admin/messages" label="messages" />
