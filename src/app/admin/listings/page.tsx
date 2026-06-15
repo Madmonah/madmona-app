@@ -102,6 +102,10 @@ export default function AdminListingsPage() {
         category:categories!category_id ( name_ar ),
         photos:listing_photos ( url, is_primary )
       `)
+      // Directory-tier listings (OSM bulk import) are managed in /admin/manage
+      // with server-side pagination. Excluding them here keeps this client-side
+      // full-load page fast and avoids the empty-state on heavy/timed-out queries.
+      .eq('is_directory', false)
       .order('created_at', { ascending: false })
 
     if (error) {
