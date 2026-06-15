@@ -14,6 +14,7 @@ import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { RestaurantMenu, ProductBuyBox, CartCheckoutBar, type MenuItem } from '@/components/OrderActions'
 import CartButton from '@/components/CartButton'
+import ListQuoteOrderBox from '@/components/ListQuoteOrderBox'
 
 // ============================================================================
 // /marketplace/[slug]
@@ -50,7 +51,7 @@ interface ListingDetail {
   shipping_available: boolean | null
   shipping_cost: number | string | null
   branches: { name?: string; city?: string; address?: string; phone?: string }[] | null
-  category: { name_ar: string; name_en?: string | null; icon: string | null; track: string | null } | null
+  category: { name_ar: string; name_en?: string | null; icon: string | null; track: string | null; order_mode?: string | null } | null
   supplier: {
     id: string
     business_name: string
@@ -142,7 +143,7 @@ export default function ListingDetailPage() {
           .from('listings')
           .select(`
             *,
-            category:categories(name_ar, name_en, icon, track),
+            category:categories(name_ar, name_en, icon, track, order_mode),
             supplier:marketplace_suppliers(
               id, business_name, kyc_status,
               profile:profiles!marketplace_suppliers_profile_id_fkey(phone, full_name)
@@ -343,6 +344,7 @@ export default function ListingDetailPage() {
   const track = listing.category?.track ?? null
   const isRestaurant = track === 'restaurants'
   const isProduct = track === 'products'
+  const isListQuote = (listing.category?.order_mode === 'list_quote') && !isDirectory
   // directory listings are reference-only: no buy / cart / booking / menu
   const isOrderable = (isRestaurant || isProduct) && !isDirectory
   const currentPhoto = sortedPhotos[photoIndex]
@@ -673,13 +675,19 @@ export default function ListingDetailPage() {
               />
             )}
 
-            {isProduct && !isDirectory && listing.supplier && (
+            {isProduct && !isDirectory && !isListQuote && listing.supplier && (
               <div className="lg:hidden">
                 <ProductBuyBox
                   listing={{ id: listing.id, title: displayTitle }}
                   supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
                   price={pricing[0]?.price ? Number(pricing[0].price) : 0}
                 />
+              </div>
+            )}
+
+            {isListQuote && listing.supplier && (
+              <div className="lg:hidden">
+                <ListQuoteOrderBox supplierId={listing.supplier.id} listingId={listing.id} listingTitle={displayTitle} />
               </div>
             )}
 
@@ -936,12 +944,16 @@ export default function ListingDetailPage() {
               </div>
               )}
 
-              {isProduct && !isDirectory && listing.supplier && (
+              {isProduct && !isDirectory && !isListQuote && listing.supplier && (
                 <ProductBuyBox
                   listing={{ id: listing.id, title: displayTitle }}
                   supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
                   price={pricing[0]?.price ? Number(pricing[0].price) : 0}
                 />
+              )}
+
+              {isListQuote && listing.supplier && (
+                <ListQuoteOrderBox supplierId={listing.supplier.id} listingId={listing.id} listingTitle={displayTitle} />
               )}
 
               {/* Supplier card */}
@@ -1024,7 +1036,7 @@ export default function ListingDetailPage() {
       </div>
       )}
 
-      {isOrderable && listing.supplier && (
+      {isOrderable && !isListQuote && listing.supplier && (
         <CartCheckoutBar supplierId={listing.supplier.id} />
       )}
     </div>

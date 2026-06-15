@@ -15,7 +15,7 @@ import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Loader2, Lock, ShieldAlert, Plus, Eye, Edit2, Trash2,
-  SlidersHorizontal, Archive, CheckCircle, AlertCircle, Building2,
+  SlidersHorizontal, Archive, Building2,
 } from 'lucide-react'
 
 const supabase = supabaseBrowser as any

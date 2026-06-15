@@ -374,6 +374,7 @@ export default function BusinessFinancePage({
             <ModuleCard href={`/admin/business-finance/${supplierId}/customers`} icon={<Heart />} label="العملاء" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/appointments`} icon={<Calendar />} label="المواعيد" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/bookings`} icon={<CalendarClock />} label="إدارة الحجوزات" />
+            <ModuleCard href={`/admin/business-finance/${supplierId}/quote-orders`} icon={<ShoppingCart />} label="طلبات التسعير" primary />
             <ModuleCard href={`/admin/business-finance/${supplierId}/waitlist`} icon={<ListChecks />} label="قائمة الانتظار" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/inventory`} icon={<Package />} label="المخزون" />
             <ModuleCard href={`/admin/business-finance/${supplierId}/services-catalog`} icon={<Tag />} label="قائمة الخدمات" />
