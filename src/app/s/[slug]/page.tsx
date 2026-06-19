@@ -172,6 +172,16 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
 
+      {/* ===== MADMONA CO-BRAND TOP BAR ===== */}
+      <div className="bg-white border-b border-[#1F6F5F]/10">
+        <div className="max-w-2xl mx-auto px-4 h-11 flex items-center justify-between">
+          <a href="https://madmonacairo.com" className="flex items-center gap-1.5">
+            <img src="https://res.cloudinary.com/duxfgqioc/image/upload/madmona/logo-official.png" alt="مضمونة" className="h-5 w-auto object-contain" />
+          </a>
+          <span className="text-[10px] font-bold text-[#1F6F5F] tracking-wide">معاملاتك مضمونة</span>
+        </div>
+      </div>
+
       {/* ===== COVER HERO ===== */}
       <header className="relative text-white overflow-hidden">
         <div className="absolute inset-0" style={{ backgroundImage: cover ? `url(${cover})` : G_COVER, backgroundSize: 'cover', backgroundPosition: 'center' }} />

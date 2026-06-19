@@ -101,7 +101,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
     const sid = new URLSearchParams(window.location.search).get('service')
     if (sid) {
       const svc = data.services.find((s: any) => s.id === sid)
-      if (svc) { setSelectedService(svc); setStep('stylist') }
+      if (svc) { setSelectedService(svc); setStep((data.stylists?.length || 0) > 0 ? 'stylist' : 'datetime') }
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [data])
@@ -212,7 +212,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
             </>
           )}
           <p className="text-sm text-white/90 mt-2 flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {branch?.name}</p>
-          {STEP_ORDER.includes(step) && <StepBar step={step} />}
+          {STEP_ORDER.includes(step) && <StepBar step={step} steps={stylists.length > 0 ? STEP_ORDER : STEP_ORDER.filter(s => s !== 'stylist')} />}
         </div>
       </header>
 
@@ -232,7 +232,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 </div>
                 <div className="divide-y divide-gray-100">
                   {items.map((svc: any) => (
-                    <button key={svc.id} onClick={() => { setSelectedService(svc); setStep('stylist') }} className="w-full text-right px-4 py-3 flex items-center justify-between gap-3 hover:bg-[#FAFAF7]/50 transition-colors">
+                    <button key={svc.id} onClick={() => { setSelectedService(svc); setStep(stylists.length > 0 ? 'stylist' : 'datetime') }} className="w-full text-right px-4 py-3 flex items-center justify-between gap-3 hover:bg-[#FAFAF7]/50 transition-colors">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-[#1A2E26]">{svc.name_ar}</p>
                         {svc.description && <p className="text-[10px] text-[#6B7280] mt-0.5">{svc.description}</p>}
@@ -250,7 +250,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
 
         {step === 'datetime' && (
           <div className="space-y-4">
-            <BackBtn onClick={() => setStep('stylist')} />
+            <BackBtn onClick={() => setStep(stylists.length > 0 ? 'stylist' : 'service')} />
             <h2 className="text-lg font-black text-[#1A2E26]">اختاري التاريخ والوقت</h2>
             <div className="flex gap-2 overflow-x-auto pb-2">
               {dateOptions.map(d => {
@@ -439,7 +439,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
               ))}
               <SummaryRow icon={<CalendarIcon />} label="التاريخ" value={selectedDate?.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} />
               <SummaryRow icon={<Clock />} label="الوقت" value={selectedTime?.slice(0, 5)} />
-              <SummaryRow icon={<User />} label="الستايليست" value={selectedStylist?.full_name || 'أي متاحة'} />
+              {stylists.length > 0 && <SummaryRow icon={<User />} label="الستايليست" value={selectedStylist?.full_name || 'أي متاحة'} />}
               <SummaryRow icon={<Phone />} label="بياناتك" value={customerName} sub={customerPhone} />
               <div className="pt-3 border-t border-gray-100 space-y-1">
                 {(addonsTotal > 0 || productsTotal > 0) && (
@@ -509,17 +509,17 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
   )
 }
 
-function StepBar({ step }: { step: string }) {
-  const idx = STEP_ORDER.indexOf(step)
+function StepBar({ step, steps = STEP_ORDER }: { step: string; steps?: string[] }) {
+  const idx = steps.indexOf(step)
   return (
     <div className="mt-4">
       <div className="flex gap-1.5">
-        {STEP_ORDER.map((s, i) => (
+        {steps.map((s, i) => (
           <div key={s} className="flex-1 h-1.5 rounded-full" style={{ background: i < idx ? '#ffffff' : i === idx ? '#d4a017' : 'rgba(255,255,255,.25)' }} />
         ))}
       </div>
       <div className="flex justify-between mt-1.5 text-[9px] font-bold text-white/85">
-        {STEP_ORDER.map((s) => <span key={s}>{STEP_LABELS[s]}</span>)}
+        {steps.map((s) => <span key={s}>{STEP_LABELS[s]}</span>)}
       </div>
     </div>
   )
