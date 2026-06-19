@@ -1,6 +1,6 @@
 import {
   Instagram, Facebook, Linkedin, Youtube, Twitter,
-  Music2, AtSign, Twitch, MapPin,
+  Music2, AtSign, Twitch, MapPin, Send,
 } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 
@@ -32,6 +32,13 @@ const SOCIAL_LINKS: SocialLink[] = [
     icon: <Facebook className="w-4 h-4 md:w-5 md:h-5" />,
     bgColor: 'bg-[#1877F2]',
     hoverColor: 'hover:bg-[#0d65d9]',
+  },
+  {
+    key: 'social_telegram_url',
+    label: 'Telegram',
+    icon: <Send className="w-4 h-4 md:w-5 md:h-5" />,
+    bgColor: 'bg-[#229ED9]',
+    hoverColor: 'hover:bg-[#1c8ac2]',
   },
   {
     key: 'social_tiktok_url',

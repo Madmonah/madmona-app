@@ -14,6 +14,7 @@ import {
   Briefcase, Coins, HandCoins, Wrench,
   Banknote, Gavel, CalendarRange, PackageOpen, ClipboardCheck, Fuel, FileBadge,
   Smartphone,
+  Car, Ship, BadgeCheck,
 } from 'lucide-react'
 
 /* ============================================================
@@ -43,6 +44,85 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
+
+/* ============================================================
+   MODULE REGISTRY — single source of truth for back-office tabs.
+   Each module declares which verticals it belongs to:
+     'core'         -> shown to every client (shared Business OS)
+     'beauty_salon' -> Elite
+     'polyclinic'   -> Polyclinic
+     'restaurant'   -> CityMart
+     'contracting'  -> Pillars
+   Render = filter(core OR supplier.industry). Adding a client/
+   vertical is now a data change, not a JSX change.
+   (Phase 2: move this to a `supplier_modules` table = per-client toggles.)
+   ============================================================ */
+type VKey = 'core' | 'beauty_salon' | 'polyclinic' | 'restaurant' | 'contracting' | 'vehicle_agency'
+const MODULE_REGISTRY: { href: string; Icon: any; label: string; primary?: boolean; v: VKey[] }[] = [
+  // Shared core (every client)
+  { href: 'confirmations',      Icon: CheckCircle2,   label: 'التأكيدات',        primary: true, v: ['core'] },
+  { href: 'links',              Icon: Link2,          label: 'كل اللينكات',                     v: ['core'] },
+  { href: 'dashboard',          Icon: BarChart3,      label: 'Dashboard',        primary: true, v: ['core'] },
+  { href: 'team',               Icon: Users,          label: 'الفريق',                          v: ['core'] },
+  { href: 'requests',           Icon: ClipboardCheck, label: 'طلبات الموظفين',   primary: true, v: ['core'] },
+  { href: 'custody',            Icon: ShieldCheck,    label: 'العهدة',                          v: ['core'] },
+  { href: 'flow-tasks',         Icon: ClipboardList,  label: 'المهام',                          v: ['core'] },
+  { href: 'branches',           Icon: Building2,      label: 'الفروع',                          v: ['core'] },
+  { href: 'customers',          Icon: Heart,          label: 'العملاء',                         v: ['core'] },
+  { href: 'expenses',           Icon: DollarSign,     label: 'المصاريف',                        v: ['core'] },
+  { href: 'attendance',         Icon: Clock,          label: 'الحضور',                          v: ['core'] },
+  { href: 'attendance-devices', Icon: Smartphone,     label: 'أجهزة البصم',                     v: ['core'] },
+  { href: 'cash-recon',         Icon: Wallet,         label: 'جرد الكاش',                       v: ['core'] },
+  { href: 'payroll',            Icon: Calculator,     label: 'المرتبات',                        v: ['core'] },
+  { href: 'documents',          Icon: FileCheck,      label: 'المستندات',                       v: ['core'] },
+  { href: 'audit-log',          Icon: FileText,       label: 'سجل التعديلات',                   v: ['core'] },
+  { href: 'at-risk',            Icon: UserX,          label: 'عملاء في خطر',                    v: ['core'] },
+  { href: 'reports',            Icon: Download,       label: 'تصدير تقارير',                    v: ['core'] },
+  { href: 'vat-report',         Icon: Receipt,        label: 'VAT Report',                      v: ['core'] },
+  { href: 'whatsapp-campaigns', Icon: MessageCircle,  label: 'WhatsApp',                        v: ['core'] },
+  { href: 'promotions',         Icon: Gift,           label: 'العروض',                          v: ['core'] },
+  // Procurement — shared (salon BOM + restaurant + contracting + clinic supplies)
+  { href: 'inventory',          Icon: Package,        label: 'المخزون',                         v: ['core'] },
+  { href: 'vendors',            Icon: Truck,          label: 'الموردين',                        v: ['core'] },
+  { href: 'purchase-orders',    Icon: ShoppingCart,   label: 'طلبات شراء',                      v: ['core'] },
+  // Salon / spa (Elite)
+  { href: 'bookings',           Icon: CalendarClock,  label: 'إدارة الحجوزات',                  v: ['beauty_salon'] },
+  { href: 'services-catalog',   Icon: Tag,            label: 'قائمة الخدمات',                   v: ['beauty_salon'] },
+  { href: 'services',           Icon: Workflow,       label: 'ربط خدمة-منتج',                   v: ['beauty_salon'] },
+  // Salon + clinic (rostering / waitlist)
+  { href: 'shifts',             Icon: CalendarClock,  label: 'مواعيد العمل',                    v: ['beauty_salon', 'polyclinic'] },
+  { href: 'waitlist',           Icon: ListChecks,     label: 'قائمة الانتظار',                  v: ['beauty_salon', 'polyclinic'] },
+  // Clinic (Polyclinic)
+  { href: 'appointments',       Icon: Calendar,       label: 'المواعيد',                        v: ['polyclinic'] },
+  // Restaurant / market (CityMart)
+  { href: 'quote-orders',       Icon: ShoppingCart,   label: 'طلبات التسعير',    primary: true, v: ['restaurant'] },
+  // Vehicle trading agency (motorcycles + cars)
+  { href: 'showroom',           Icon: Car,            label: 'المعرض',           primary: true, v: ['vehicle_agency'] },
+  { href: 'import',             Icon: Ship,           label: 'الاستيراد',        primary: true, v: ['vehicle_agency'] },
+  { href: 'workshop',           Icon: Wrench,         label: 'الورشة',                          v: ['vehicle_agency'] },
+  { href: 'brands',             Icon: BadgeCheck,     label: 'التوكيلات',                       v: ['vehicle_agency'] },
+  // Contracting (Pillars)
+  { href: 'projects',             Icon: FolderKanban,  label: 'المشاريع',         primary: true, v: ['contracting'] },
+  { href: 'payment-certificates', Icon: ScrollText,    label: 'المستخلصات',       primary: true, v: ['contracting'] },
+  { href: 'boq',                  Icon: Table2,        label: 'جدول الكميات',                    v: ['contracting'] },
+  { href: 'variation-orders',     Icon: GitBranchPlus, label: 'أوامر التغيير',                   v: ['contracting'] },
+  { href: 'guarantees',           Icon: ShieldCheck,   label: 'خطابات الضمان',                   v: ['contracting'] },
+  { href: 'subcontractors',       Icon: HardHat,       label: 'مقاولي الباطن',                   v: ['contracting'] },
+  { href: 'assignments',          Icon: Briefcase,     label: 'المأموريات',                      v: ['contracting'] },
+  { href: 'custody-projects',     Icon: Coins,         label: 'العُهد',                          v: ['contracting'] },
+  { href: 'advances',             Icon: HandCoins,     label: 'السُّلف',                         v: ['contracting'] },
+  { href: 'equipment',            Icon: Wrench,        label: 'المعدات',                         v: ['contracting'] },
+  { href: 'pnl',                  Icon: BarChart3,     label: 'ربحية المشاريع',   primary: true, v: ['contracting'] },
+  { href: 'expenses-projects',    Icon: Receipt,       label: 'مصروفات المشاريع',                v: ['contracting'] },
+  { href: 'collections',          Icon: Banknote,      label: 'التحصيل',          primary: true, v: ['contracting'] },
+  { href: 'tenders',              Icon: Gavel,         label: 'المناقصات',                       v: ['contracting'] },
+  { href: 'milestones',           Icon: CalendarRange, label: 'الجدول الزمني',                   v: ['contracting'] },
+  { href: 'daily-reports',        Icon: ClipboardList, label: 'يومية الموقع',                    v: ['contracting'] },
+  { href: 'material-requests',    Icon: PackageOpen,   label: 'طلبات المواد',                    v: ['contracting'] },
+  { href: 'inspections',          Icon: ClipboardCheck,label: 'الفحص والاستلام',                 v: ['contracting'] },
+  { href: 'equipment-logs',       Icon: Fuel,          label: 'صيانة المعدات',                   v: ['contracting'] },
+  { href: 'company-docs',         Icon: FileBadge,     label: 'سجلات الشركة',                    v: ['contracting'] },
+]
 
 type Supplier = {
   id: string
@@ -267,7 +347,7 @@ export default function BusinessFinancePage({
                   {supplier.business_name}
                 </h1>
                 <p className="text-sm text-[#6B7280] mt-1">
-                  {supplier.industry === 'beauty_salon' ? 'صالون تجميل' : supplier.industry === 'contracting' ? 'مقاولات · فئة أولى' : supplier.industry || ''} ·{' '}
+                  {supplier.industry === 'beauty_salon' ? 'صالون تجميل' : supplier.industry === 'contracting' ? 'مقاولات · فئة أولى' : supplier.industry === 'vehicle_agency' ? 'توكيلات مركبات' : supplier.industry || ''} ·{' '}
                   {branches.length} فروع · {supplier.contact_phone}
                 </p>
               </div>
@@ -339,61 +419,20 @@ export default function BusinessFinancePage({
             🎛️ الوحدات
           </h2>
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
-            <ModuleCard href={`/admin/business-finance/${supplierId}/confirmations`} icon={<CheckCircle2 />} label="التأكيدات" primary />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/links`} icon={<Link2 />} label="كل اللينكات" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/dashboard`} icon={<BarChart3 />} label="Dashboard" primary />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/team`} icon={<Users />} label="الفريق" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/requests`} icon={<ClipboardCheck />} label="طلبات الموظفين" primary />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/custody`} icon={<ShieldCheck />} label="العهدة" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/flow-tasks`} icon={<ClipboardList />} label="المهام" />
-            {supplier.industry === 'contracting' && (
-              <>
-                <ModuleCard href={`/admin/business-finance/${supplierId}/projects`} icon={<FolderKanban />} label="المشاريع" primary />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/payment-certificates`} icon={<ScrollText />} label="المستخلصات" primary />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/boq`} icon={<Table2 />} label="جدول الكميات" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/variation-orders`} icon={<GitBranchPlus />} label="أوامر التغيير" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/guarantees`} icon={<ShieldCheck />} label="خطابات الضمان" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/subcontractors`} icon={<HardHat />} label="مقاولي الباطن" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/assignments`} icon={<Briefcase />} label="المأموريات" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/custody-projects`} icon={<Coins />} label="العُهد" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/advances`} icon={<HandCoins />} label="السُّلف" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/equipment`} icon={<Wrench />} label="المعدات" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/pnl`} icon={<BarChart3 />} label="ربحية المشاريع" primary />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/expenses-projects`} icon={<Receipt />} label="مصروفات المشاريع" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/collections`} icon={<Banknote />} label="التحصيل" primary />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/tenders`} icon={<Gavel />} label="المناقصات" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/milestones`} icon={<CalendarRange />} label="الجدول الزمني" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/daily-reports`} icon={<ClipboardList />} label="يومية الموقع" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/material-requests`} icon={<PackageOpen />} label="طلبات المواد" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/inspections`} icon={<ClipboardCheck />} label="الفحص والاستلام" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/equipment-logs`} icon={<Fuel />} label="صيانة المعدات" />
-                <ModuleCard href={`/admin/business-finance/${supplierId}/company-docs`} icon={<FileBadge />} label="سجلات الشركة" />
-              </>
-            )}
-            <ModuleCard href={`/admin/business-finance/${supplierId}/branches`} icon={<Building2 />} label="الفروع" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/customers`} icon={<Heart />} label="العملاء" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/appointments`} icon={<Calendar />} label="المواعيد" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/bookings`} icon={<CalendarClock />} label="إدارة الحجوزات" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/quote-orders`} icon={<ShoppingCart />} label="طلبات التسعير" primary />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/waitlist`} icon={<ListChecks />} label="قائمة الانتظار" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/inventory`} icon={<Package />} label="المخزون" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/services-catalog`} icon={<Tag />} label="قائمة الخدمات" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/services`} icon={<Workflow />} label="ربط خدمة-منتج" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/expenses`} icon={<DollarSign />} label="المصاريف" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/attendance`} icon={<Clock />} label="الحضور" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/attendance-devices`} icon={<Smartphone />} label="أجهزة البصم" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/cash-recon`} icon={<Wallet />} label="جرد الكاش" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/payroll`} icon={<Calculator />} label="المرتبات" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/purchase-orders`} icon={<ShoppingCart />} label="طلبات شراء" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/vendors`} icon={<Truck />} label="الموردين" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/promotions`} icon={<Gift />} label="العروض" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/whatsapp-campaigns`} icon={<MessageCircle />} label="WhatsApp" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/documents`} icon={<FileCheck />} label="المستندات" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/audit-log`} icon={<FileText />} label="سجل التعديلات" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/at-risk`} icon={<UserX />} label="عملاء في خطر" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/shifts`} icon={<CalendarClock />} label="مواعيد العمل" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/reports`} icon={<Download />} label="تصدير تقارير" />
-            <ModuleCard href={`/admin/business-finance/${supplierId}/vat-report`} icon={<Receipt />} label="VAT Report" />
+            {MODULE_REGISTRY
+              .filter((m) => m.v.includes('core') || m.v.includes((supplier.industry || '') as VKey))
+              .map((m) => {
+                const Icon = m.Icon
+                return (
+                  <ModuleCard
+                    key={m.href}
+                    href={`/admin/business-finance/${supplierId}/${m.href}`}
+                    icon={<Icon />}
+                    label={m.label}
+                    primary={m.primary}
+                  />
+                )
+              })}
           </div>
         </section>
 

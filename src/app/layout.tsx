@@ -11,6 +11,7 @@ import MetaPixel from '@/components/analytics/MetaPixel'
 import AnalyticsTracker from '@/components/AnalyticsTracker'
 import MadmonaListingClaimer from '@/components/MadmonaListingClaimer'
 import DailyMessageBanner from '@/components/DailyMessageBanner'
+import TelegramBotFab from '@/components/TelegramBotFab'
 import './globals.css'
 
 // Madmona root layout — Arabic typography (Tajawal), brand metadata,
@@ -228,6 +229,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Suspense fallback={null}>
           <DailyMessageBanner />
         </Suspense>
+        <TelegramBotFab />
         </LanguageProvider>
       </body>
     </html>
