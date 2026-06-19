@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   ChevronLeft, Loader2, Calendar as CalendarIcon, Clock, User,
   CheckCircle2, MapPin, Phone, Scissors, Sparkles, ArrowLeft,
-  ShoppingBag, Plus, Minus, Check, ShieldCheck,
+  ShoppingBag, Plus, Minus, Check, ShieldCheck, Wrench, Tag,
 } from 'lucide-react'
 import { useMadmonaAuth, AccountGate } from '@/components/AccountGate'
 
@@ -169,7 +169,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
       <main className="max-w-md mx-auto px-4 py-6">
         <AccountGate
           onAuthed={(p) => { setAuthed(true); setProfile(p); if (p.name) setCustomerName((v) => v || p.name); if (p.phone) { const ph = p.phone; setCustomerPhone((v) => v || ph) } }}
-          subtitle="عشان نأكد حجزك ونتابع مواعيدك ونبعتلك تذكير — اعملي حسابك في ثانية على مضمونة بكود واتساب."
+          subtitle={data.supplier?.industry === 'beauty_salon' ? "عشان نأكد حجزك ونتابع مواعيدك ونبعتلك تذكير — اعملي حسابك في ثانية على مضمونة بكود واتساب." : "عشان نأكد حجزك ونتابع مواعيدك ونبعتلك تذكير — اعمل حسابك في ثانية على مضمونة بكود واتساب."}
         />
       </main>
     </div>
@@ -179,6 +179,12 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
   const stylists = data.stylists || []
   const products = data.products || []
   const supplier = data.supplier
+  // Vertical-aware tone: only beauty salons get feminine copy + scissors.
+  // Everything else (vehicle agency / clinic / restaurant / default) stays neutral & business-appropriate.
+  const fem = supplier?.industry === 'beauty_salon'
+  const ServiceIcon = supplier?.industry === 'beauty_salon' ? Scissors
+    : supplier?.industry === 'vehicle_agency' ? Wrench
+    : Tag
   const cartItems = products.filter((p: any) => (cart[p.id] || 0) > 0)
   const addonsTotal = addons.reduce((s: number, a: any) => s + Number(a.price_egp || 0), 0)
   const productsTotal = cartItems.reduce((s: number, p: any) => s + Number(p.selling_price_egp || 0) * cart[p.id], 0)
@@ -219,10 +225,10 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
       <main className="max-w-3xl mx-auto px-4 py-6">
         {step === 'service' && (
           <div className="space-y-4">
-            <h2 className="text-lg font-black text-[#1A2E26]">اختاري الخدمة</h2>
+            <h2 className="text-lg font-black text-[#1A2E26]">{fem ? 'اختاري الخدمة' : 'اختار الخدمة'}</h2>
             {services.length === 0 ? (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                <Scissors className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
+                <ServiceIcon className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
                 <p className="text-sm font-bold text-[#1A2E26]">مفيش خدمات متاحة</p>
               </div>
             ) : Object.entries(servicesByCategory).map(([cat, items]) => (
@@ -251,7 +257,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
         {step === 'datetime' && (
           <div className="space-y-4">
             <BackBtn onClick={() => setStep(stylists.length > 0 ? 'stylist' : 'service')} />
-            <h2 className="text-lg font-black text-[#1A2E26]">اختاري التاريخ والوقت</h2>
+            <h2 className="text-lg font-black text-[#1A2E26]">{fem ? 'اختاري التاريخ والوقت' : 'اختار التاريخ والوقت'}</h2>
             <div className="flex gap-2 overflow-x-auto pb-2">
               {dateOptions.map(d => {
                 const isSelected = selectedDate?.toDateString() === d.toDateString()
@@ -286,9 +292,9 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
             {allSlotsFull && (
               <div className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 rounded-2xl p-4 text-center">
                 <p className="text-sm font-bold text-[#1A2E26]">اليوم ده مليان بالكامل 😔</p>
-                <p className="text-xs text-[#6B7280] mt-1">سجّلي في قائمة الانتظار، ونتواصل معاكي أول ما يفضى مكان</p>
+                <p className="text-xs text-[#6B7280] mt-1">{fem ? 'سجّلي في قائمة الانتظار، ونتواصل معاكي أول ما يفضى مكان' : 'سجّل في قائمة الانتظار، ونتواصل معاك أول ما يفضى مكان'}</p>
                 <button onClick={() => setStep('waitlist')} className="mt-3 px-5 py-2.5 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold">
-                  انضمي لقائمة الانتظار
+                  {fem ? 'انضمي لقائمة الانتظار' : 'انضم لقائمة الانتظار'}
                 </button>
               </div>
             )}
@@ -299,7 +305,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
           <div className="space-y-4">
             <BackBtn onClick={() => setStep('datetime')} />
             <h2 className="text-lg font-black text-[#1A2E26]">قائمة الانتظار</h2>
-            <p className="text-sm text-[#6B7280]">سجّلي بياناتك، وأول ما يفضى مكان لـ <b>{selectedService?.name_ar}</b> هنكلمك.</p>
+            <p className="text-sm text-[#6B7280]">{fem ? 'سجّلي بياناتك،' : 'سجّل بياناتك،'} وأول ما يفضى مكان لـ <b>{selectedService?.name_ar}</b> هنكلمك.</p>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
               <Field label="الاسم *"><input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="اسمك الكامل" className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
               <Field label="رقم الموبايل (واتساب) *"><input type="tel" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="01XXXXXXXXX" className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" dir="ltr" /></Field>
@@ -312,7 +318,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
               </Field>
             </div>
             <button onClick={joinWaitlist} disabled={submitting || !customerName || !customerPhone} className="w-full py-3.5 rounded-2xl text-white font-black disabled:opacity-40 flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: G_CTA }}>
-              {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري التسجيل...</> : <><Clock className="w-4 h-4" /> سجّليني في الانتظار</>}
+              {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري التسجيل...</> : <><Clock className="w-4 h-4" /> {fem ? 'سجّليني في الانتظار' : 'سجّلني في الانتظار'}</>}
             </button>
           </div>
         )}
@@ -321,9 +327,9 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
           <div className="space-y-4 text-center py-8">
             <div className="w-20 h-20 rounded-full grid place-items-center mx-auto shadow-lg" style={{ backgroundImage: G_CTA }}><Clock className="w-10 h-10 text-white" /></div>
             <h2 className="text-2xl font-black text-[#1A2E26]">تم تسجيلك في الانتظار! ✋</h2>
-            <p className="text-sm text-[#6B7280]">ترتيبك رقم <b className="text-[#1F6F5F]">{waitlistResult.position}</b> في قائمة الانتظار. هنتواصل معاكي على واتساب أول ما يفضى مكان.</p>
+            <p className="text-sm text-[#6B7280]">ترتيبك رقم <b className="text-[#1F6F5F]">{waitlistResult.position}</b> في قائمة الانتظار. {fem ? 'هنتواصل معاكي' : 'هنتواصل معاك'} على واتساب أول ما يفضى مكان.</p>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3 text-right">
-              <SummaryRow icon={<Scissors />} label="الخدمة" value={selectedService?.name_ar} />
+              <SummaryRow icon={<ServiceIcon />} label="الخدمة" value={selectedService?.name_ar} />
               <SummaryRow icon={<CalendarIcon />} label="اليوم المفضّل" value={selectedDate?.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' })} sub={preferredTimeText} />
               <SummaryRow icon={<MapPin />} label="الفرع" value={branch?.name} />
             </div>
@@ -359,7 +365,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
         {step === 'extras' && (
           <div className="space-y-4">
             <BackBtn onClick={() => setStep('datetime')} />
-            <h2 className="text-lg font-black text-[#1A2E26]">عايزة تضيفي حاجة؟ <span className="text-[#6B7280] text-sm font-normal">(اختياري)</span></h2>
+            <h2 className="text-lg font-black text-[#1A2E26]">{fem ? 'عايزة تضيفي حاجة؟' : 'تحب تضيف حاجة؟'} <span className="text-[#6B7280] text-sm font-normal">(اختياري)</span></h2>
             {services.filter((s: any) => s.id !== selectedService?.id).length > 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-4 py-2 bg-[#FAFAF7] border-b border-gray-100"><p className="text-xs font-bold tracking-wider uppercase text-[#6B7280]">خدمات إضافية</p></div>
@@ -430,7 +436,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
             <BackBtn onClick={() => setStep('info')} />
             <h2 className="text-lg font-black text-[#1A2E26]">تأكيد الحجز</h2>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
-              <SummaryRow icon={<Scissors />} label="الخدمة" value={selectedService?.name_ar} sub={`${selectedService?.duration_minutes} دقيقة`} />
+              <SummaryRow icon={<ServiceIcon />} label="الخدمة" value={selectedService?.name_ar} sub={`${selectedService?.duration_minutes} دقيقة`} />
               {addons.map((a: any) => (
                 <SummaryRow key={a.id} icon={<Sparkles />} label="خدمة إضافية" value={a.name_ar} sub={`${a.duration_minutes} دقيقة · ${Number(a.price_egp).toLocaleString()} ج`} />
               ))}
@@ -470,9 +476,9 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
               <p className="text-[11px] text-[#6B7280] leading-relaxed">حجزك <b className="text-[#1A2E26]">مضمون عن طريق مضمونة</b> — هيوصلك تأكيد على واتساب فورًا.</p>
             </div>
             <button onClick={submitBooking} disabled={submitting} className="w-full py-3.5 rounded-2xl text-white font-black disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: G_CTA }}>
-              {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري التأكيد...</> : <><CheckCircle2 className="w-4 h-4" /> أكدي الحجز</>}
+              {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري التأكيد...</> : <><CheckCircle2 className="w-4 h-4" /> {fem ? 'أكدي الحجز' : 'أكّد الحجز'}</>}
             </button>
-            <p className="text-[10px] text-center text-[#6B7280]">بالتأكيد أنتي بتوافقي على شروط الخدمة وسياسة الخصوصية</p>
+            <p className="text-[10px] text-center text-[#6B7280]">{fem ? 'بالتأكيد أنتي بتوافقي على شروط الخدمة وسياسة الخصوصية' : 'بالتأكيد أنت بتوافق على شروط الخدمة وسياسة الخصوصية'}</p>
           </div>
         )}
 
@@ -482,7 +488,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
             <h2 className="text-2xl font-black text-[#1A2E26]">تم تأكيد حجزك! 🎉</h2>
             <p className="text-sm text-[#6B7280]">هنبعتلك رسالة واتساب بتفاصيل الحجز قريب</p>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3 text-right">
-              <SummaryRow icon={<Scissors />} label="الخدمة" value={bookingResult.service_name} />
+              <SummaryRow icon={<ServiceIcon />} label="الخدمة" value={bookingResult.service_name} />
               <SummaryRow icon={<CalendarIcon />} label="التاريخ والوقت" value={selectedDate?.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' })} sub={selectedTime?.slice(0, 5)} />
               <SummaryRow icon={<MapPin />} label="الفرع" value={branch?.name} />
               <div className="pt-3 border-t border-gray-100 flex justify-between">
