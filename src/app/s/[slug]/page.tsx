@@ -145,7 +145,7 @@ const VERTICALS: Record<string, VerticalCfg> = {
   },
   // توكيلات / جراجات المركبات — موتوسيكلات وعربيات (بيع / صيانة / إكسسوارات)
   vehicle_agency: {
-    kicker: 'صيانة وخدمات المركبات',
+    kicker: 'صيانة وخدمات الموتوسيكلات',
     heroCta: 'احجز ميعاد', heroCtaIcon: Calendar, waCta: 'كلّمنا',
     bookChip: 'حجز فوري', unitWord: 'خدمة',
     galleryHeading: 'صور من المكان',

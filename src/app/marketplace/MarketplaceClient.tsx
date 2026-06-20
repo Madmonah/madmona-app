@@ -39,7 +39,7 @@ interface Listing {
   created_at: string
   requires_id_verification: boolean | null
   category: { name_ar: string; name_en: string | null; icon: string | null; slug: string } | null
-  supplier: { kyc_status: string | null } | null
+  supplier: { business_name?: string | null; logo_url?: string | null; kyc_status: string | null } | null
   photos: { url: string; is_primary: boolean }[] | null
   pricing: { price: number | string; is_active: boolean }[] | null
 }
@@ -260,7 +260,7 @@ function MarketplaceBrowseContent() {
         .select(`
           id, title, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification,
           category:categories(name_ar, name_en, icon, slug),
-          supplier:marketplace_suppliers(kyc_status),
+          supplier:marketplace_suppliers(business_name, logo_url, kyc_status),
           photos:listing_photos(url, is_primary),
           pricing:pricing_rules(price, is_active)
         `)
@@ -375,6 +375,9 @@ function MarketplaceBrowseContent() {
   const catName = (c: { name_ar: string; name_en?: string | null }) =>
     lang === 'en' && c.name_en ? c.name_en : c.name_ar
   const hasFilters = selectedCategorySlug || searchQuery || cityFilter || sortBy !== 'newest'
+  // عرض متجر محدد (/marketplace?supplier=...) — بانر باسم التاجر + تصنيفاته
+  const supplierInfo: any = supplierFilter ? (listings.find(l => (l.supplier as any)?.business_name)?.supplier || null) : null
+  const supplierCatNames = supplierFilter ? (Array.from(new Set(listings.map(l => l.category?.name_ar).filter(Boolean))) as string[]) : []
 
   const clearAllFilters = () => {
     setSelectedCategorySlug(null)
@@ -646,6 +649,13 @@ function MarketplaceBrowseContent() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8 relative">
+        {supplierFilter && (
+          <div className="mb-6 rounded-3xl bg-white shadow-soft border border-gray-100 p-5">
+            <p className="text-[11px] font-bold text-[#2FA084] uppercase tracking-widest">منتجات التاجر · مضمون عن طريق مضمونة</p>
+            <h2 className="text-xl md:text-2xl font-black text-gray-900">{supplierInfo?.business_name || 'المتجر'}</h2>
+            <p className="text-sm text-gray-500 mt-1">{supplierCatNames.length ? supplierCatNames.join(' · ') : 'موتوسيكلات · قطع غيار · إكسسوارات'}</p>
+          </div>
+        )}
         {!loading && (
           <div className="mb-6 flex items-end justify-between flex-wrap gap-2">
             <div>
