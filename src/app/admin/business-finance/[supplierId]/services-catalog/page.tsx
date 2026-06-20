@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
-import { ChevronLeft, Loader2, RefreshCw, Plus, X, Scissors, Edit2, Trash2, Save, Clock, Percent } from 'lucide-react'
+import { ChevronLeft, Loader2, RefreshCw, Plus, X, Scissors, Edit2, Trash2, Save, Clock, Percent, Wrench, Tag } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-const CATEGORIES = [
+const SALON_CATEGORIES = [
   { value: 'hair_cut', label: 'قص شعر' },
   { value: 'hair_color', label: 'صبغة' },
   { value: 'hair_treatment', label: 'علاج شعر' },
@@ -18,6 +18,25 @@ const CATEGORIES = [
   { value: 'package', label: 'باقة' },
   { value: 'general', label: 'عام' },
 ]
+const VEHICLE_CATEGORIES = [
+  { value: 'صيانة', label: 'صيانة' },
+  { value: 'كهرباء', label: 'كهرباء' },
+  { value: 'فرامل', label: 'فرامل' },
+  { value: 'إطارات', label: 'إطارات' },
+  { value: 'تجهيز', label: 'تجهيز وغسيل' },
+  { value: 'فحص', label: 'فحص وتشخيص' },
+  { value: 'عام', label: 'عام' },
+]
+const GENERIC_CATEGORIES = [
+  { value: 'عام', label: 'عام' },
+  { value: 'صيانة', label: 'صيانة' },
+  { value: 'دعم', label: 'دعم' },
+]
+function catsFor(industry?: string) {
+  if (industry === 'beauty_salon') return SALON_CATEGORIES
+  if (industry === 'vehicle_agency') return VEHICLE_CATEGORIES
+  return GENERIC_CATEGORIES
+}
 
 export default function ServicesCatalogPage({ params }: { params: { supplierId: string } }) {
   const { supplierId } = params
@@ -30,7 +49,7 @@ export default function ServicesCatalogPage({ params }: { params: { supplierId: 
   async function load() {
     setLoading(true)
     // @ts-expect-error
-    const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
+    const { data: s } = await supabase.from('suppliers').select('business_name, industry').eq('id', supplierId).single()
     setSupplier(s)
     // @ts-expect-error
     const { data: svc } = await supabase.from('services_catalog')
@@ -53,6 +72,9 @@ export default function ServicesCatalogPage({ params }: { params: { supplierId: 
   useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId])
 
   if (!supplier) return <Loader />
+
+  const cats = catsFor(supplier?.industry)
+  const EmptyIcon = supplier?.industry === 'vehicle_agency' ? Wrench : supplier?.industry === 'beauty_salon' ? Scissors : Tag
 
   // Group by category
   const grouped: Record<string, any[]> = {}
@@ -87,15 +109,15 @@ export default function ServicesCatalogPage({ params }: { params: { supplierId: 
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-5">
         <section className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 rounded-2xl p-4 text-xs text-[#1A2E26]">
-          <p className="font-bold mb-1">💡 الخدمات اللي بـ تدخل هنا:</p>
-          <p>هـ تظهر تلقائياً للعملاء في الـ Booking Widget على الفرع، وهـ تتسجل عمولات الستايليست بناءً على النسبة المحددة هنا.</p>
+          <p className="font-bold mb-1">💡 الخدمات اللي بتدخل هنا:</p>
+          <p>هتظهر تلقائياً للعملاء في صفحة الحجز على الفرع، وتتسجل عمولة الموظف حسب النسبة المحددة هنا.</p>
         </section>
 
         {loading ? (
           <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin inline" /></div>
         ) : services.length === 0 ? (
           <div className="py-12 text-center bg-white rounded-2xl border border-gray-100">
-            <Scissors className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
+            <EmptyIcon className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
             <p className="text-sm font-bold text-[#1A2E26]">مفيش خدمات لسه</p>
             <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold">أضف أول خدمة</button>
           </div>
@@ -104,7 +126,7 @@ export default function ServicesCatalogPage({ params }: { params: { supplierId: 
             <section key={cat} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
               <div className="px-5 py-3 bg-[#FAFAF7] border-b border-gray-100">
                 <h3 className="text-sm font-bold tracking-wider uppercase text-[#6B7280]">
-                  {CATEGORIES.find(c => c.value === cat)?.label || cat} · {items.length}
+                  {cats.find(c => c.value === cat)?.label || cat} · {items.length}
                 </h3>
               </div>
               <div className="divide-y divide-gray-100">
@@ -138,17 +160,18 @@ export default function ServicesCatalogPage({ params }: { params: { supplierId: 
         )}
       </main>
 
-      {showAdd && <ServiceModal supplierId={supplierId} onClose={() => setShowAdd(false)} onSaved={() => { setShowAdd(false); load() }} />}
-      {editingService && <ServiceModal supplierId={supplierId} service={editingService} onClose={() => setEditingService(null)} onSaved={() => { setEditingService(null); load() }} />}
+      {showAdd && <ServiceModal supplierId={supplierId} categories={cats} onClose={() => setShowAdd(false)} onSaved={() => { setShowAdd(false); load() }} />}
+      {editingService && <ServiceModal supplierId={supplierId} categories={cats} service={editingService} onClose={() => setEditingService(null)} onSaved={() => { setEditingService(null); load() }} />}
     </div>
   )
 }
 
-function ServiceModal({ supplierId, service, onClose, onSaved }: any) {
+function ServiceModal({ supplierId, service, categories, onClose, onSaved }: any) {
   const isEdit = !!service
+  const cats = categories || []
   const [form, setForm] = useState({
     name_ar: service?.name_ar || '',
-    category: service?.category || 'hair_cut',
+    category: service?.category || (cats[0]?.value || 'عام'),
     price_egp: service?.price_egp?.toString() || '',
     duration_minutes: service?.duration_minutes?.toString() || '60',
     performer_commission_pct: service?.performer_commission_pct?.toString() || '0',
@@ -195,11 +218,11 @@ function ServiceModal({ supplierId, service, onClose, onSaved }: any) {
         </header>
         <div className="p-5 space-y-3">
           <Field label="اسم الخدمة *">
-            <input type="text" value={form.name_ar} onChange={e => setForm({ ...form, name_ar: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" placeholder="مثلاً: صبغة شعر كاملة" />
+            <input type="text" value={form.name_ar} onChange={e => setForm({ ...form, name_ar: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" placeholder="اسم الخدمة" />
           </Field>
           <Field label="الفئة">
             <div className="grid grid-cols-3 gap-1.5">
-              {CATEGORIES.map(c => (
+              {cats.map((c: any) => (
                 <button key={c.value} onClick={() => setForm({ ...form, category: c.value })} className={`px-2 py-1.5 rounded-lg text-xs font-bold ${
                   form.category === c.value ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
                 }`}>{c.label}</button>
@@ -214,7 +237,7 @@ function ServiceModal({ supplierId, service, onClose, onSaved }: any) {
               <input type="number" value={form.duration_minutes} onChange={e => setForm({ ...form, duration_minutes: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" />
             </Field>
           </div>
-          <Field label="عمولة الستايليست (%)">
+          <Field label="عمولة الموظف (%)">
             <input type="number" value={form.performer_commission_pct} onChange={e => setForm({ ...form, performer_commission_pct: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" placeholder="0-100" />
           </Field>
           <Field label="وصف الخدمة (اختياري)">

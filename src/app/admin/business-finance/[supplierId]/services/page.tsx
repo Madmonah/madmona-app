@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
-import { ChevronLeft, Loader2, RefreshCw, Scissors, Package, Plus, X, Trash2, Save } from 'lucide-react'
+import { ChevronLeft, Loader2, RefreshCw, Scissors, Package, Plus, X, Trash2, Save, Wrench, Tag } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -17,7 +17,7 @@ export default function ServicesPage({ params }: { params: { supplierId: string 
   async function load() {
     setLoading(true)
     // @ts-expect-error
-    const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
+    const { data: s } = await supabase.from('suppliers').select('business_name, industry').eq('id', supplierId).single()
     setSupplier(s)
     // @ts-expect-error
     const { data: svc } = await supabase.from('services_catalog').select('id, name_ar, price_egp, duration_minutes, performer_commission_pct').eq('supplier_id', supplierId).order('name_ar')
@@ -28,6 +28,8 @@ export default function ServicesPage({ params }: { params: { supplierId: string 
   useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId])
 
   if (!supplier) return <Loader />
+
+  const SvcIcon = supplier?.industry === 'vehicle_agency' ? Wrench : supplier?.industry === 'beauty_salon' ? Scissors : Tag
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
@@ -50,7 +52,7 @@ export default function ServicesPage({ params }: { params: { supplierId: string 
       <main className="max-w-7xl mx-auto px-4 py-6">
         <section className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 rounded-2xl p-4 text-xs text-[#1A2E26] mb-5">
           <p className="font-bold mb-1">💡 إيه الفايدة من ربط الخدمات بمنتجات؟</p>
-          <p>لما حد يحجز خدمة (مثلاً صبغة شعر) وتتمارك "completed"، المنتجات المرتبطة بيها (بودرة، اكسجين، قفازات) بـ تتخصم تلقائياً من المخزون.</p>
+          <p>لما حد يحجز خدمة وتتمارك "completed"، القطع المرتبطة بيها بتتخصم تلقائياً من المخزون.</p>
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -58,13 +60,13 @@ export default function ServicesPage({ params }: { params: { supplierId: string 
             <div className="col-span-3 py-12 text-center"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin inline" /></div>
           ) : services.length === 0 ? (
             <div className="col-span-3 py-12 text-center bg-white rounded-2xl border border-gray-100">
-              <Scissors className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
+              <SvcIcon className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
               <p className="text-sm font-bold text-[#1A2E26]">مفيش خدمات</p>
             </div>
           ) : services.map(s => (
             <button key={s.id} onClick={() => setSelectedService(s)} className="bg-white rounded-2xl border border-gray-100 p-4 text-right hover:shadow-md hover:border-[#1F6F5F] transition-all">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-9 h-9 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center"><Scissors className="w-4 h-4" /></div>
+                <div className="w-9 h-9 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center"><SvcIcon className="w-4 h-4" /></div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-black text-[#1A2E26] truncate">{s.name_ar}</h3>
                   <p className="text-[10px] text-[#6B7280]">{s.duration_minutes} دقيقة</p>
@@ -99,7 +101,7 @@ function ServiceMappingModal({ supplierId, service, onClose }: any) {
   async function load() {
     setLoading(true)
     // @ts-expect-error
-    const { data: prods } = await supabase.from('inventory_products').select('id, name_ar, current_stock, unit_cost_egp').eq('supplier_id', supplierId).order('name_ar')
+    const { data: prods } = await supabase.from('inventory_products').select('id, name_ar, current_stock, cost_price_egp').eq('supplier_id', supplierId).order('name_ar')
     setProducts(prods || [])
     // @ts-expect-error
     const { data } = await supabase.rpc('admin_list_service_products', { p_service_id: service.id })

@@ -14,7 +14,7 @@ import {
   Briefcase, Coins, HandCoins, Wrench,
   Banknote, Gavel, CalendarRange, PackageOpen, ClipboardCheck, Fuel, FileBadge,
   Smartphone,
-  Car, Ship, BadgeCheck,
+  Car, Ship, BadgeCheck, Store,
 } from 'lucide-react'
 
 /* ============================================================
@@ -86,9 +86,9 @@ const MODULE_REGISTRY: { href: string; Icon: any; label: string; primary?: boole
   { href: 'vendors',            Icon: Truck,          label: 'الموردين',                        v: ['core'] },
   { href: 'purchase-orders',    Icon: ShoppingCart,   label: 'طلبات شراء',                      v: ['core'] },
   // Salon / spa (Elite)
-  { href: 'bookings',           Icon: CalendarClock,  label: 'إدارة الحجوزات',                  v: ['beauty_salon'] },
-  { href: 'services-catalog',   Icon: Tag,            label: 'قائمة الخدمات',                   v: ['beauty_salon'] },
-  { href: 'services',           Icon: Workflow,       label: 'ربط خدمة-منتج',                   v: ['beauty_salon'] },
+  { href: 'bookings',           Icon: CalendarClock,  label: 'إدارة الحجوزات',                  v: ['beauty_salon', 'vehicle_agency'] },
+  { href: 'services-catalog',   Icon: Tag,            label: 'قائمة الخدمات',                   v: ['beauty_salon', 'vehicle_agency'] },
+  { href: 'services',           Icon: Workflow,       label: 'ربط خدمة-منتج',                   v: ['beauty_salon', 'vehicle_agency'] },
   // Salon + clinic (rostering / waitlist)
   { href: 'shifts',             Icon: CalendarClock,  label: 'مواعيد العمل',                    v: ['beauty_salon', 'polyclinic'] },
   { href: 'waitlist',           Icon: ListChecks,     label: 'قائمة الانتظار',                  v: ['beauty_salon', 'polyclinic'] },
@@ -101,6 +101,7 @@ const MODULE_REGISTRY: { href: string; Icon: any; label: string; primary?: boole
   { href: 'import',             Icon: Ship,           label: 'الاستيراد',        primary: true, v: ['vehicle_agency'] },
   { href: 'workshop',           Icon: Wrench,         label: 'الورشة',                          v: ['vehicle_agency'] },
   { href: 'brands',             Icon: BadgeCheck,     label: 'التوكيلات',                       v: ['vehicle_agency'] },
+  { href: 'catalog',            Icon: Store,          label: 'الكتالوج',         primary: true, v: ['vehicle_agency'] },
   // Contracting (Pillars)
   { href: 'projects',             Icon: FolderKanban,  label: 'المشاريع',         primary: true, v: ['contracting'] },
   { href: 'payment-certificates', Icon: ScrollText,    label: 'المستخلصات',       primary: true, v: ['contracting'] },

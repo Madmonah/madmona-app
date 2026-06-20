@@ -50,6 +50,15 @@ const CATEGORY_LABELS: Record<string, string> = {
   cleaning: 'تنظيف',
   accessories: 'إكسسوارات',
   general: 'عام',
+  spare_parts: 'قطع غيار',
+  lubricants: 'زيوت وشحوم',
+  tires: 'إطارات / كاوتش',
+  vehicle: 'مركبات',
+  equipment: 'معدات',
+  supplies: 'مستلزمات',
+  office: 'مكتب',
+  electronics: 'إلكترونيات',
+  other: 'أخرى',
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -64,6 +73,15 @@ const CATEGORY_COLORS: Record<string, string> = {
   cleaning: 'bg-cyan-50 text-cyan-800',
   accessories: 'bg-orange-50 text-orange-800',
   general: 'bg-gray-100 text-gray-600',
+  spare_parts: 'bg-[#1F6F5F]/10 text-[#1F6F5F]',
+  lubricants: 'bg-amber-50 text-amber-800',
+  tires: 'bg-gray-100 text-gray-700',
+  vehicle: 'bg-[#1A2E26]/10 text-[#1A2E26]',
+  equipment: 'bg-blue-50 text-blue-800',
+  supplies: 'bg-purple-50 text-purple-800',
+  office: 'bg-gray-100 text-gray-600',
+  electronics: 'bg-cyan-50 text-cyan-800',
+  other: 'bg-gray-100 text-gray-600',
 }
 
 export default function InventoryPage({ params }: { params: { supplierId: string } }) {
