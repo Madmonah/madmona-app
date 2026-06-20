@@ -7,7 +7,7 @@ import { ChevronLeft, Loader2, Plus, Trash2, RefreshCw, ImageIcon } from 'lucide
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-type Cat = { id: string; name_ar: string }
+type Cat = { id: string; name_ar: string; group_name_ar?: string | null }
 type Item = {
   id: string
   title: string
@@ -33,14 +33,8 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
     const { data: s } = await supabase.from('suppliers').select('business_name, contact_phone').eq('id', supplierId).single()
     setSupplier(s)
     // @ts-expect-error rpc typing
-    const { data: c } = await supabase
-      .from('categories')
-      .select('id, name_ar, track, is_active')
-      .order('name_ar', { ascending: true })
-    const list = (Array.isArray(c) ? c : []).filter(
-      (x: any) => x && x.name_ar && (x.is_active !== false) && (!x.track || ['products', 'services', 'rentals'].includes(x.track))
-    )
-    setCats(list.map((x: any) => ({ id: x.id, name_ar: x.name_ar })))
+    const { data: c } = await supabase.rpc('admin_supplier_catalog_categories', { p_supplier_id: supplierId })
+    setCats(Array.isArray(c) ? (c as Cat[]) : [])
     // @ts-expect-error rpc typing
     const { data: l } = await supabase.rpc('admin_supplier_list_listings', { p_supplier_id: supplierId })
     setItems(Array.isArray(l) ? (l as Item[]) : [])
@@ -102,7 +96,7 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
           <Field label="الفئة *">
             <select value={form.category_id} onChange={e => setForm({ ...form, category_id: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm">
               <option value="">اختر الفئة</option>
-              {cats.map(c => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
+              {cats.map(c => <option key={c.id} value={c.id}>{c.group_name_ar ? `${c.name_ar} — ${c.group_name_ar}` : c.name_ar}</option>)}
             </select>
           </Field>
           <label className="flex items-center gap-2 cursor-pointer">
