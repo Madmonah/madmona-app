@@ -187,6 +187,7 @@ export default function BusinessFinancePage({
   const [loading, setLoading] = useState(true)
   const [activeBranch, setActiveBranch] = useState<string>('all')
   const [activePeriod, setActivePeriod] = useState<'today' | 'week' | 'month' | 'all'>('today')
+  const [modOverrides, setModOverrides] = useState<Record<string, any>>({})
 
   async function loadAll() {
     setLoading(true)
@@ -234,6 +235,13 @@ export default function BusinessFinancePage({
       .order('business_date', { ascending: false })
       .limit(120)  // 30 days × 4 branches
     setSummaries((sums || []) as DailySummary[])
+
+    // Per-supplier module overrides (supplier_modules table) — empty = registry defaults
+    // @ts-expect-error
+    const { data: mods } = await supabase.rpc('admin_supplier_modules', { p_supplier_id: supplierId })
+    const omap: Record<string, any> = {}
+    ;(Array.isArray(mods) ? mods : []).forEach((r: any) => { omap[r.module_href] = r })
+    setModOverrides(omap)
 
     setLoading(false)
   }
@@ -303,6 +311,28 @@ export default function BusinessFinancePage({
       }
     })
   }, [branches, summaries])
+
+  // Effective module tiles = MODULE_REGISTRY filtered by core/industry, then overridden by supplier_modules (toggle/reorder/rename/promote). Empty overrides = defaults.
+  const visibleModules = useMemo(() => {
+    const industry = (supplier?.industry || '') as VKey
+    const baseVisible = (m: { v: VKey[] }) => m.v.includes('core') || m.v.includes(industry)
+    return MODULE_REGISTRY
+      .map((m, idx) => {
+        const o = modOverrides[m.href]
+        const shown = o ? o.enabled !== false : baseVisible(m)
+        const order = (o && o.display_order != null) ? o.display_order : 1000 + idx
+        return {
+          href: m.href,
+          Icon: m.Icon,
+          label: (o && o.label_override) ? o.label_override : m.label,
+          primary: (o && o.is_primary != null) ? o.is_primary : m.primary,
+          order,
+          shown,
+        }
+      })
+      .filter((m) => m.shown)
+      .sort((a, b) => a.order - b.order)
+  }, [supplier, modOverrides])
 
   if (loading && !supplier) {
     return (
@@ -420,9 +450,7 @@ export default function BusinessFinancePage({
             🎛️ الوحدات
           </h2>
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
-            {MODULE_REGISTRY
-              .filter((m) => m.v.includes('core') || m.v.includes((supplier.industry || '') as VKey))
-              .map((m) => {
+            {visibleModules.map((m) => {
                 const Icon = m.Icon
                 return (
                   <ModuleCard

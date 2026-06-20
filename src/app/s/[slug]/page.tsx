@@ -7,6 +7,7 @@ import {
   Loader2, MapPin, Calendar, ChevronLeft, Scissors, Clock, Sparkles, User,
   ChevronDown, MessageCircle, ShieldCheck, Image as ImageIcon, Crown, Wind,
   Brush, Hand, Flower2, Building2, Stethoscope, Utensils, Briefcase,
+  Wrench, Car,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -103,6 +104,21 @@ const VERTICALS: Record<string, VerticalCfg> = {
     coverBadge: 'صورة غلاف المطعم',
     catLabels: { general: 'عام', عام: 'عام' }, catIcons: {},
   },
+  // توكيلات / جراجات المركبات — موتوسيكلات وعربيات (بيع / صيانة / إكسسوارات)
+  vehicle_agency: {
+    kicker: 'صيانة وخدمات المركبات',
+    heroCta: 'احجز ميعاد', heroCtaIcon: Calendar, waCta: 'كلّمنا',
+    bookChip: 'حجز فوري', unitWord: 'خدمة',
+    galleryHeading: 'صور من المكان',
+    galleryTiles: ['الجراج', 'الورشة', 'الشغل', 'المكان'],
+    branchesHeading: 'احجز في أقرب فرع ليك', branchCta: 'احجز',
+    servicesHeading: 'الخدمات والأسعار', servicesIcon: Wrench,
+    teamHeading: 'الفنيين',
+    accountSub: 'شوف حجوزاتك وقيّم الخدمة',
+    coverBadge: 'صورة غلاف المكان',
+    catLabels: { 'صيانة': 'صيانة وإصلاح', 'تجهيز': 'تجهيز وتلميع', 'بيع': 'بيع مركبات', general: 'عام', 'عام': 'عام' },
+    catIcons: { 'صيانة': Wrench, 'تجهيز': Sparkles, 'بيع': Car },
+  },
   // أي مجال تاني (مقاولات / تكنولوجيا / غير محدد) — محايد عام
   default: {
     kicker: 'احجز أونلاين',
@@ -123,6 +139,7 @@ function getVertical(industry: string | null | undefined): VerticalCfg {
   if (industry === 'beauty_salon') return VERTICALS.beauty_salon
   if (industry === 'polyclinic' || industry === 'clinic') return VERTICALS.polyclinic
   if (industry === 'restaurant' || industry === 'restaurants') return VERTICALS.restaurant
+  if (industry === 'vehicle_agency' || industry === 'auto') return VERTICALS.vehicle_agency
   return VERTICALS.default
 }
 
