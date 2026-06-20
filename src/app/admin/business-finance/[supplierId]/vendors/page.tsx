@@ -7,15 +7,44 @@ import { ChevronLeft, Loader2, RefreshCw, Plus, X, Truck, Phone, Mail } from 'lu
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-const CATEGORIES = [
-  { value: 'hair_products', label: 'منتجات شعر' },
-  { value: 'cosmetics', label: 'مستحضرات تجميل' },
-  { value: 'equipment', label: 'معدات' },
-  { value: 'consumables', label: 'مستهلكات' },
-  { value: 'utilities', label: 'مرافق' },
-  { value: 'services', label: 'خدمات' },
-  { value: 'general', label: 'عام' },
-]
+// فئات الموردين حسب نوع النشاط (موتوسيكلات لسعداوي، صالون لإيليت، عام للباقي)
+const VENDOR_CATEGORIES: Record<string, { value: string; label: string }[]> = {
+  vehicle_agency: [
+    { value: 'oem_manufacturer', label: 'مصنّع / وكيل خارجي' },
+    { value: 'motorcycles', label: 'موتوسيكلات' },
+    { value: 'spare_parts', label: 'قطع غيار' },
+    { value: 'accessories', label: 'إكسسوارات' },
+    { value: 'tyres', label: 'إطارات' },
+    { value: 'oils_lubricants', label: 'زيوت ومواد تشغيل' },
+    { value: 'freight', label: 'شحن وملاحة' },
+    { value: 'customs_broker', label: 'تخليص جمركي' },
+    { value: 'bank_finance', label: 'بنك / تمويل (L/C)' },
+    { value: 'services', label: 'خدمات' },
+    { value: 'general', label: 'عام' },
+  ],
+  beauty_salon: [
+    { value: 'hair_products', label: 'منتجات شعر' },
+    { value: 'cosmetics', label: 'مستحضرات تجميل' },
+    { value: 'equipment', label: 'معدات' },
+    { value: 'consumables', label: 'مستهلكات' },
+    { value: 'utilities', label: 'مرافق' },
+    { value: 'services', label: 'خدمات' },
+    { value: 'general', label: 'عام' },
+  ],
+  default: [
+    { value: 'goods', label: 'بضاعة' },
+    { value: 'equipment', label: 'معدات' },
+    { value: 'consumables', label: 'مستهلكات' },
+    { value: 'utilities', label: 'مرافق' },
+    { value: 'services', label: 'خدمات' },
+    { value: 'general', label: 'عام' },
+  ],
+}
+function vendorCats(industry: string | null | undefined) {
+  if (industry === 'vehicle_agency' || industry === 'auto') return VENDOR_CATEGORIES.vehicle_agency
+  if (industry === 'beauty_salon') return VENDOR_CATEGORIES.beauty_salon
+  return VENDOR_CATEGORIES.default
+}
 
 export default function VendorsPage({ params }: { params: { supplierId: string } }) {
   const { supplierId } = params
@@ -27,7 +56,7 @@ export default function VendorsPage({ params }: { params: { supplierId: string }
   async function load() {
     setLoading(true)
     // @ts-expect-error
-    const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
+    const { data: s } = await supabase.from('suppliers').select('business_name, industry').eq('id', supplierId).single()
     setSupplier(s)
     // @ts-expect-error
     const { data: list } = await supabase.rpc('admin_list_vendors', { p_supplier_id: supplierId })
@@ -38,6 +67,7 @@ export default function VendorsPage({ params }: { params: { supplierId: string }
   useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId])
 
   if (!supplier) return <Loader />
+  const cats = vendorCats(supplier?.industry)
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
@@ -80,7 +110,7 @@ export default function VendorsPage({ params }: { params: { supplierId: string }
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-black text-[#1A2E26] truncate">{v.name}</h3>
                   <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-[#FAFAF7] text-[#1A2E26]">
-                    {CATEGORIES.find(c => c.value === v.category)?.label || v.category}
+                    {cats.find((c: any) => c.value === v.category)?.label || v.category}
                   </span>
                 </div>
                 {v.is_active === false && <span className="text-[10px] text-red-600 font-bold">غير نشط</span>}
@@ -105,13 +135,13 @@ export default function VendorsPage({ params }: { params: { supplierId: string }
       </main>
 
       {showAdd && (
-        <AddVendorModal supplierId={supplierId} onClose={() => setShowAdd(false)} onSaved={() => { setShowAdd(false); load() }} />
+        <AddVendorModal supplierId={supplierId} cats={cats} onClose={() => setShowAdd(false)} onSaved={() => { setShowAdd(false); load() }} />
       )}
     </div>
   )
 }
 
-function AddVendorModal({ supplierId, onClose, onSaved }: any) {
+function AddVendorModal({ supplierId, cats, onClose, onSaved }: any) {
   const [form, setForm] = useState({ name: '', phone: '', email: '', category: 'general', notes: '' })
   const [saving, setSaving] = useState(false)
   async function save() {
@@ -140,7 +170,7 @@ function AddVendorModal({ supplierId, onClose, onSaved }: any) {
           <Field label="اسم المورد *"><input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
           <Field label="الفئة">
             <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm">
-              {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+              {cats.map((c: any) => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
           </Field>
           <Field label="موبايل"><input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" /></Field>
