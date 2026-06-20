@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import {
   ChevronLeft, Loader2, Calendar as CalendarIcon, Clock, User,
@@ -8,6 +8,7 @@ import {
   ShoppingBag, Plus, Minus, Check, ShieldCheck, Wrench, Tag,
 } from 'lucide-react'
 import { useMadmonaAuth, AccountGate } from '@/components/AccountGate'
+import { getThemeKey, THEMES } from '@/lib/storefrontTheme'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -16,10 +17,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   styling: 'سشوار / تسريحة', makeup: 'مكياج', nails: 'أظافر', skin: 'بشرة',
   package: 'باقة', general: 'عام',
 }
-
-// brand gradients (match the /s storefront)
-const G_CTA = 'linear-gradient(100deg,#d4a017 0%,#2FA084 55%,#1F6F5F 100%)'
-const G_HERO = 'linear-gradient(120deg,#1d6253 0%,#2FA084 100%)'
 
 const STEP_ORDER = ['service', 'stylist', 'datetime', 'extras', 'info', 'confirm']
 const STEP_LABELS: Record<string, string> = {
@@ -145,15 +142,28 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
   }
 
   if (loading || checking) return <Loader />
+
+  // ===== per-merchant theme (sa3dawy = dark/red, others = default) =====
+  const themeKey = getThemeKey({ supplierId: data?.supplier?.id, industry: data?.supplier?.industry })
+  const t = THEMES[themeKey]
+  const themeVars = {
+    '--accent': t.accent,
+    '--accent-soft': t.accentSoft,
+    '--accent-line': t.accentLine,
+    '--g-cta': t.gCta,
+    '--g-hero': t.gHero,
+    '--step-active': t.stepActive,
+  } as CSSProperties
+
   if (!data?.branch) return (
-    <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl" style={themeVars}>
       <div className="text-center"><MapPin className="w-12 h-12 text-[#6B7280] opacity-30 mx-auto mb-2" /><p className="text-[#1A2E26] font-bold">فرع غير موجود</p></div>
     </div>
   )
 
   if (!authed) return (
-    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <header className="text-white" style={{ backgroundImage: G_HERO }}>
+    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl" style={themeVars}>
+      <header className="text-white" style={{ backgroundImage: 'var(--g-hero)' }}>
         <div className="max-w-md mx-auto px-4 py-8 text-center">
           <p className="text-[10px] font-bold tracking-[0.35em] uppercase text-white/70 mb-1">MADMONA · ONLINE BOOKING</p>
           {logo ? (
@@ -204,8 +214,8 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
   const allSlotsFull = selectedDate && bookingEnabled && !loadingSlots && slots.length > 0 && slots.every((s: any) => !s.available)
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <header className="text-white" style={{ backgroundImage: G_HERO }}>
+    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl" style={themeVars}>
+      <header className="text-white" style={{ backgroundImage: 'var(--g-hero)' }}>
         <div className="max-w-3xl mx-auto px-4 py-7">
           {logo ? (
             <div className="rounded-2xl overflow-hidden ring-1 ring-white/25 bg-black/25 backdrop-blur-sm inline-block" style={{ width: 'min(58%, 220px)' }}>
@@ -244,7 +254,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                         {svc.description && <p className="text-[10px] text-[#6B7280] mt-0.5">{svc.description}</p>}
                         <p className="text-[10px] text-[#6B7280] mt-1 flex items-center gap-1"><Clock className="w-3 h-3" /> {svc.duration_minutes} دقيقة</p>
                       </div>
-                      <div className="text-left"><p className="font-black font-mono text-[#1F6F5F]">{Number(svc.price_egp).toLocaleString()} ج</p></div>
+                      <div className="text-left"><p className="font-black font-mono text-[var(--accent)]">{Number(svc.price_egp).toLocaleString()} ج</p></div>
                       <ChevronLeft className="w-4 h-4 text-[#6B7280]" />
                     </button>
                   ))}
@@ -263,7 +273,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 const isSelected = selectedDate?.toDateString() === d.toDateString()
                 const isToday = new Date().toDateString() === d.toDateString()
                 return (
-                  <button key={d.toISOString()} onClick={() => { setSelectedDate(d); setSelectedTime(null) }} className={`flex-shrink-0 px-3 py-2 rounded-xl text-center min-w-[60px] transition-all ${isSelected ? 'bg-[#1F6F5F] text-white shadow-sm' : 'bg-white text-[#1A2E26] border border-gray-100 hover:border-[#1F6F5F]'}`}>
+                  <button key={d.toISOString()} onClick={() => { setSelectedDate(d); setSelectedTime(null) }} className={`flex-shrink-0 px-3 py-2 rounded-xl text-center min-w-[60px] transition-all ${isSelected ? 'bg-[var(--accent)] text-white shadow-sm' : 'bg-white text-[#1A2E26] border border-gray-100 hover:border-[var(--accent)]'}`}>
                     <p className={`text-[10px] font-bold ${isSelected ? 'text-white/80' : 'text-[#6B7280]'}`}>{isToday ? 'النهاردة' : d.toLocaleDateString('ar-EG', { weekday: 'short' })}</p>
                     <p className="text-lg font-black font-mono">{d.getDate()}</p>
                     <p className="text-[10px]">{d.toLocaleDateString('ar-EG', { month: 'short' })}</p>
@@ -280,20 +290,20 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
             {selectedDate && bookingEnabled && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                 <p className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mb-3">المواعيد المتاحة</p>
-                {loadingSlots ? <div className="py-6 text-center"><Loader2 className="w-5 h-5 text-[#1F6F5F] animate-spin inline" /></div> : (
+                {loadingSlots ? <div className="py-6 text-center"><Loader2 className="w-5 h-5 text-[var(--accent)] animate-spin inline" /></div> : (
                   <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
                     {slots.map((slot: any) => (
-                      <button key={slot.time} disabled={!slot.available} onClick={() => { setSelectedTime(slot.time); setStep('extras') }} className={`px-3 py-2 rounded-lg text-sm font-bold transition-all ${!slot.available ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : selectedTime === slot.time ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-[#1F6F5F]/10'}`}>{slot.time.slice(0, 5)}</button>
+                      <button key={slot.time} disabled={!slot.available} onClick={() => { setSelectedTime(slot.time); setStep('extras') }} className={`px-3 py-2 rounded-lg text-sm font-bold transition-all ${!slot.available ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : selectedTime === slot.time ? 'bg-[var(--accent)] text-white' : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-[var(--accent-soft)]'}`}>{slot.time.slice(0, 5)}</button>
                     ))}
                   </div>
                 )}
               </div>
             )}
             {allSlotsFull && (
-              <div className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 rounded-2xl p-4 text-center">
+              <div className="bg-[var(--accent-soft)] border border-[var(--accent-line)] rounded-2xl p-4 text-center">
                 <p className="text-sm font-bold text-[#1A2E26]">اليوم ده مليان بالكامل 😔</p>
                 <p className="text-xs text-[#6B7280] mt-1">{fem ? 'سجّلي في قائمة الانتظار، ونتواصل معاكي أول ما يفضى مكان' : 'سجّل في قائمة الانتظار، ونتواصل معاك أول ما يفضى مكان'}</p>
-                <button onClick={() => setStep('waitlist')} className="mt-3 px-5 py-2.5 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold">
+                <button onClick={() => setStep('waitlist')} className="mt-3 px-5 py-2.5 rounded-xl bg-[var(--accent)] text-white text-sm font-bold">
                   {fem ? 'انضمي لقائمة الانتظار' : 'انضم لقائمة الانتظار'}
                 </button>
               </div>
@@ -311,13 +321,13 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
               <Field label="رقم الموبايل (واتساب) *"><input type="tel" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="01XXXXXXXXX" className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" dir="ltr" /></Field>
               <Field label="الوقت المفضّل">
                 <div className="grid grid-cols-3 gap-2">
-                  {['صباحاً', 'بعد الظهر', 'مساءً', 'أي وقت'].map(t => (
-                    <button key={t} onClick={() => setPreferredTimeText(t)} className={`px-2 py-2 rounded-lg text-xs font-bold ${preferredTimeText === t ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'}`}>{t}</button>
+                  {['صباحاً', 'بعد الظهر', 'مساءً', 'أي وقت'].map(tt => (
+                    <button key={tt} onClick={() => setPreferredTimeText(tt)} className={`px-2 py-2 rounded-lg text-xs font-bold ${preferredTimeText === tt ? 'bg-[var(--accent)] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'}`}>{tt}</button>
                   ))}
                 </div>
               </Field>
             </div>
-            <button onClick={joinWaitlist} disabled={submitting || !customerName || !customerPhone} className="w-full py-3.5 rounded-2xl text-white font-black disabled:opacity-40 flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: G_CTA }}>
+            <button onClick={joinWaitlist} disabled={submitting || !customerName || !customerPhone} className="w-full py-3.5 rounded-2xl text-white font-black disabled:opacity-40 flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: 'var(--g-cta)' }}>
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري التسجيل...</> : <><Clock className="w-4 h-4" /> {fem ? 'سجّليني في الانتظار' : 'سجّلني في الانتظار'}</>}
             </button>
           </div>
@@ -325,9 +335,9 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
 
         {step === 'waitlist_done' && waitlistResult && (
           <div className="space-y-4 text-center py-8">
-            <div className="w-20 h-20 rounded-full grid place-items-center mx-auto shadow-lg" style={{ backgroundImage: G_CTA }}><Clock className="w-10 h-10 text-white" /></div>
+            <div className="w-20 h-20 rounded-full grid place-items-center mx-auto shadow-lg" style={{ backgroundImage: 'var(--g-cta)' }}><Clock className="w-10 h-10 text-white" /></div>
             <h2 className="text-2xl font-black text-[#1A2E26]">تم تسجيلك في الانتظار! ✋</h2>
-            <p className="text-sm text-[#6B7280]">ترتيبك رقم <b className="text-[#1F6F5F]">{waitlistResult.position}</b> في قائمة الانتظار. {fem ? 'هنتواصل معاكي' : 'هنتواصل معاك'} على واتساب أول ما يفضى مكان.</p>
+            <p className="text-sm text-[#6B7280]">ترتيبك رقم <b className="text-[var(--accent)]">{waitlistResult.position}</b> في قائمة الانتظار. {fem ? 'هنتواصل معاكي' : 'هنتواصل معاك'} على واتساب أول ما يفضى مكان.</p>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3 text-right">
               <SummaryRow icon={<ServiceIcon />} label="الخدمة" value={selectedService?.name_ar} />
               <SummaryRow icon={<CalendarIcon />} label="اليوم المفضّل" value={selectedDate?.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' })} sub={preferredTimeText} />
@@ -340,19 +350,19 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
           <div className="space-y-4">
             <BackBtn onClick={() => setStep('service')} />
             <h2 className="text-lg font-black text-[#1A2E26]">اختاري الستايليست (اختياري)</h2>
-            <button onClick={() => { setSelectedStylist(null); setStep('datetime') }} className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 hover:border-[#1F6F5F] text-right transition-colors">
-              <div className="w-12 h-12 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center"><Sparkles className="w-5 h-5" /></div>
+            <button onClick={() => { setSelectedStylist(null); setStep('datetime') }} className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 hover:border-[var(--accent)] text-right transition-colors">
+              <div className="w-12 h-12 rounded-xl bg-[var(--accent-soft)] text-[var(--accent)] grid place-items-center"><Sparkles className="w-5 h-5" /></div>
               <div className="flex-1"><p className="text-sm font-black text-[#1A2E26]">أي ستايليست متاحة</p><p className="text-[10px] text-[#6B7280] mt-0.5">الفرع هـ يختار أفضل ستايليست متاح</p></div>
               <ChevronLeft className="w-4 h-4 text-[#6B7280]" />
             </button>
             <p className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mt-4">أو اختاري ستايليست محدد:</p>
             <div className="space-y-2">
               {stylists.map((s: any) => (
-                <button key={s.id} onClick={() => { setSelectedStylist(s); setStep('datetime') }} className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex items-center gap-3 hover:border-[#1F6F5F] text-right transition-colors">
+                <button key={s.id} onClick={() => { setSelectedStylist(s); setStep('datetime') }} className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex items-center gap-3 hover:border-[var(--accent)] text-right transition-colors">
                   {s.photo_url ? (
-                    <img src={s.photo_url} alt={s.full_name} className="w-12 h-12 rounded-xl object-cover ring-1 ring-[#1F6F5F]/15" />
+                    <img src={s.photo_url} alt={s.full_name} className="w-12 h-12 rounded-xl object-cover ring-1 ring-[var(--accent-line)]" />
                   ) : (
-                    <div className="w-12 h-12 rounded-xl text-white grid place-items-center font-black text-lg" style={{ backgroundImage: G_HERO }}>{s.avatar_initial || s.full_name.charAt(0)}</div>
+                    <div className="w-12 h-12 rounded-xl text-white grid place-items-center font-black text-lg" style={{ backgroundImage: 'var(--g-hero)' }}>{s.avatar_initial || s.full_name.charAt(0)}</div>
                   )}
                   <div className="flex-1"><p className="text-sm font-bold text-[#1A2E26]">{s.full_name}</p><p className="text-[10px] text-[#6B7280] mt-0.5">{s.role_ar}</p></div>
                   <ChevronLeft className="w-4 h-4 text-[#6B7280]" />
@@ -373,10 +383,10 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                   {services.filter((s: any) => s.id !== selectedService?.id).map((svc: any) => {
                     const on = addons.some((a: any) => a.id === svc.id)
                     return (
-                      <button key={svc.id} onClick={() => setAddons(on ? addons.filter((a: any) => a.id !== svc.id) : [...addons, svc])} className={`w-full text-right px-4 py-3 flex items-center justify-between gap-3 transition-colors ${on ? 'bg-[#1F6F5F]/5' : 'hover:bg-[#FAFAF7]/50'}`}>
-                        <div className={`w-6 h-6 rounded-md grid place-items-center flex-shrink-0 ${on ? 'bg-[#1F6F5F] text-white' : 'border border-gray-300 text-transparent'}`}><Check className="w-4 h-4" /></div>
+                      <button key={svc.id} onClick={() => setAddons(on ? addons.filter((a: any) => a.id !== svc.id) : [...addons, svc])} className={`w-full text-right px-4 py-3 flex items-center justify-between gap-3 transition-colors ${on ? 'bg-[var(--accent-soft)]' : 'hover:bg-[#FAFAF7]/50'}`}>
+                        <div className={`w-6 h-6 rounded-md grid place-items-center flex-shrink-0 ${on ? 'bg-[var(--accent)] text-white' : 'border border-gray-300 text-transparent'}`}><Check className="w-4 h-4" /></div>
                         <div className="flex-1 min-w-0"><p className="text-sm font-bold text-[#1A2E26]">{svc.name_ar}</p><p className="text-[10px] text-[#6B7280] mt-0.5 flex items-center gap-1"><Clock className="w-3 h-3" /> {svc.duration_minutes} دقيقة</p></div>
-                        <p className="font-black font-mono text-[#1F6F5F] text-sm">{Number(svc.price_egp).toLocaleString()} ج</p>
+                        <p className="font-black font-mono text-[var(--accent)] text-sm">{Number(svc.price_egp).toLocaleString()} ج</p>
                       </button>
                     )
                   })}
@@ -391,14 +401,14 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                     const qty = cart[p.id] || 0
                     return (
                       <div key={p.id} className="px-4 py-3 flex items-center justify-between gap-3">
-                        <div className="flex-1 min-w-0"><p className="text-sm font-bold text-[#1A2E26]">{p.name_ar}</p><p className="font-black font-mono text-[#1F6F5F] text-sm mt-0.5">{Number(p.selling_price_egp).toLocaleString()} ج</p></div>
+                        <div className="flex-1 min-w-0"><p className="text-sm font-bold text-[#1A2E26]">{p.name_ar}</p><p className="font-black font-mono text-[var(--accent)] text-sm mt-0.5">{Number(p.selling_price_egp).toLocaleString()} ج</p></div>
                         {qty === 0 ? (
-                          <button onClick={() => setCart({ ...cart, [p.id]: 1 })} className="px-3 py-1.5 rounded-lg bg-[#1F6F5F]/10 text-[#1F6F5F] text-xs font-bold flex items-center gap-1"><Plus className="w-3.5 h-3.5" /> ضيفي</button>
+                          <button onClick={() => setCart({ ...cart, [p.id]: 1 })} className="px-3 py-1.5 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] text-xs font-bold flex items-center gap-1"><Plus className="w-3.5 h-3.5" /> ضيفي</button>
                         ) : (
                           <div className="flex items-center gap-2">
                             <button onClick={() => { const n = { ...cart }; if (qty <= 1) { delete n[p.id] } else { n[p.id] = qty - 1 }; setCart(n) }} className="w-7 h-7 rounded-lg bg-[#FAFAF7] grid place-items-center"><Minus className="w-3.5 h-3.5 text-[#1A2E26]" /></button>
                             <span className="w-6 text-center font-black font-mono text-[#1A2E26]">{qty}</span>
-                            <button onClick={() => setCart({ ...cart, [p.id]: qty + 1 })} className="w-7 h-7 rounded-lg bg-[#1F6F5F] text-white grid place-items-center"><Plus className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => setCart({ ...cart, [p.id]: qty + 1 })} className="w-7 h-7 rounded-lg bg-[var(--accent)] text-white grid place-items-center"><Plus className="w-3.5 h-3.5" /></button>
                           </div>
                         )}
                       </div>
@@ -412,9 +422,9 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
             )}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-between">
               <span className="text-sm font-bold text-[#1A2E26]">الإجمالي المتوقع</span>
-              <span className="font-mono font-black text-xl text-[#1F6F5F]">{grandTotal.toLocaleString()} ج</span>
+              <span className="font-mono font-black text-xl text-[var(--accent)]">{grandTotal.toLocaleString()} ج</span>
             </div>
-            <button onClick={() => setStep('info')} className="w-full py-3.5 rounded-2xl text-white font-black flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: G_CTA }}>متابعة <ChevronLeft className="w-4 h-4" /></button>
+            <button onClick={() => setStep('info')} className="w-full py-3.5 rounded-2xl text-white font-black flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: 'var(--g-cta)' }}>متابعة <ChevronLeft className="w-4 h-4" /></button>
           </div>
         )}
 
@@ -427,7 +437,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
               <Field label="رقم الموبايل (واتساب) *"><input type="tel" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="01XXXXXXXXX" className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" dir="ltr" /></Field>
               <Field label="ملاحظات (اختياري)"><textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="مثل: تركيبة صبغة، طلبات خاصة..." className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
             </div>
-            <button onClick={() => setStep('confirm')} disabled={!customerName || !customerPhone} className="w-full py-3.5 rounded-2xl text-white font-black disabled:opacity-40 flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: G_CTA }}>متابعة <ChevronLeft className="w-4 h-4" /></button>
+            <button onClick={() => setStep('confirm')} disabled={!customerName || !customerPhone} className="w-full py-3.5 rounded-2xl text-white font-black disabled:opacity-40 flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: 'var(--g-cta)' }}>متابعة <ChevronLeft className="w-4 h-4" /></button>
           </div>
         )}
 
@@ -456,13 +466,13 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 )}
                 <div className="flex justify-between items-center pt-1">
                   <span className="text-sm font-bold text-[#1A2E26]">السعر الإجمالي</span>
-                  <span className="font-mono font-black text-2xl text-transparent bg-clip-text" style={{ backgroundImage: G_CTA }}>{grandTotal.toLocaleString()} ج</span>
+                  <span className="font-mono font-black text-2xl text-transparent bg-clip-text" style={{ backgroundImage: 'var(--g-cta)' }}>{grandTotal.toLocaleString()} ج</span>
                 </div>
                 {isClinic && jadeyaDeposit > 0 && (
-                  <div className="mt-3 rounded-xl bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 p-3">
+                  <div className="mt-3 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent-line)] p-3">
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-bold text-[#1A2E26]">عربون جدية (٥٪ غير مسترد)</span>
-                      <span className="font-mono font-black text-[#1F6F5F]">{jadeyaDeposit.toLocaleString()} ج</span>
+                      <span className="font-mono font-black text-[var(--accent)]">{jadeyaDeposit.toLocaleString()} ج</span>
                     </div>
                     <p className="text-[10px] text-[#6B7280] mt-1 leading-relaxed">
                       لتأكيد حجزك، حوّل العربون على حساب مضمونة — InstaPay: <b className="text-[#1A2E26] font-mono" dir="ltr">5220001000009207</b> (بنك مصر). غير مسترد عند عدم الحضور، ويتخصم من قيمة الكشف وقت حضورك.
@@ -471,11 +481,11 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 )}
               </div>
             </div>
-            <div className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 rounded-2xl p-3 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#1F6F5F] flex-shrink-0" />
+            <div className="bg-[var(--accent-soft)] border border-[var(--accent-line)] rounded-2xl p-3 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-[var(--accent)] flex-shrink-0" />
               <p className="text-[11px] text-[#6B7280] leading-relaxed">حجزك <b className="text-[#1A2E26]">مضمون عن طريق مضمونة</b> — هيوصلك تأكيد على واتساب فورًا.</p>
             </div>
-            <button onClick={submitBooking} disabled={submitting} className="w-full py-3.5 rounded-2xl text-white font-black disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: G_CTA }}>
+            <button onClick={submitBooking} disabled={submitting} className="w-full py-3.5 rounded-2xl text-white font-black disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: 'var(--g-cta)' }}>
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري التأكيد...</> : <><CheckCircle2 className="w-4 h-4" /> {fem ? 'أكدي الحجز' : 'أكّد الحجز'}</>}
             </button>
             <p className="text-[10px] text-center text-[#6B7280]">{fem ? 'بالتأكيد أنتي بتوافقي على شروط الخدمة وسياسة الخصوصية' : 'بالتأكيد أنت بتوافق على شروط الخدمة وسياسة الخصوصية'}</p>
@@ -484,7 +494,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
 
         {step === 'done' && bookingResult && (
           <div className="space-y-4 text-center py-8">
-            <div className="w-20 h-20 rounded-full grid place-items-center mx-auto shadow-lg" style={{ backgroundImage: G_CTA }}><CheckCircle2 className="w-10 h-10 text-white" /></div>
+            <div className="w-20 h-20 rounded-full grid place-items-center mx-auto shadow-lg" style={{ backgroundImage: 'var(--g-cta)' }}><CheckCircle2 className="w-10 h-10 text-white" /></div>
             <h2 className="text-2xl font-black text-[#1A2E26]">تم تأكيد حجزك! 🎉</h2>
             <p className="text-sm text-[#6B7280]">هنبعتلك رسالة واتساب بتفاصيل الحجز قريب</p>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3 text-right">
@@ -493,13 +503,13 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
               <SummaryRow icon={<MapPin />} label="الفرع" value={branch?.name} />
               <div className="pt-3 border-t border-gray-100 flex justify-between">
                 <span className="text-sm font-bold">السعر</span>
-                <span className="font-mono font-black text-[#1F6F5F]">{Number(bookingResult.price).toLocaleString()} ج</span>
+                <span className="font-mono font-black text-[var(--accent)]">{Number(bookingResult.price).toLocaleString()} ج</span>
               </div>
               {bookingResult.deposit_required && (
                 <div className="pt-3 border-t border-gray-100 text-right">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-bold text-[#1A2E26]">عربون الجدية (٥٪)</span>
-                    <span className="font-mono font-black text-[#1F6F5F]">{Number(bookingResult.deposit_egp).toLocaleString()} ج</span>
+                    <span className="font-mono font-black text-[var(--accent)]">{Number(bookingResult.deposit_egp).toLocaleString()} ج</span>
                   </div>
                   <p className="text-[11px] text-[#6B7280] mt-1 leading-relaxed">
                     حوّل العربون لتأكيد الحجز على حساب مضمونة — InstaPay: <b className="text-[#1A2E26] font-mono" dir="ltr">5220001000009207</b> (بنك مصر). غير مسترد عند عدم الحضور.
@@ -507,7 +517,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                 </div>
               )}
             </div>
-            <a href={`https://wa.me/${supplier?.contact_phone?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`السلام عليكم، أنا ${customerName}، حجزت ${bookingResult.service_name} ${selectedDate?.toLocaleDateString('ar-EG')} الساعة ${selectedTime?.slice(0, 5)}`)}`} target="_blank" rel="noopener" className="block w-full py-3.5 rounded-2xl text-white font-black shadow-lg" style={{ backgroundImage: G_CTA }}>تواصل واتساب مع الفرع</a>
+            <a href={`https://wa.me/${supplier?.contact_phone?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`السلام عليكم، أنا ${customerName}، حجزت ${bookingResult.service_name} ${selectedDate?.toLocaleDateString('ar-EG')} الساعة ${selectedTime?.slice(0, 5)}`)}`} target="_blank" rel="noopener" className="block w-full py-3.5 rounded-2xl text-white font-black shadow-lg" style={{ backgroundImage: 'var(--g-cta)' }}>تواصل واتساب مع الفرع</a>
           </div>
         )}
       </main>
@@ -521,7 +531,7 @@ function StepBar({ step, steps = STEP_ORDER }: { step: string; steps?: string[] 
     <div className="mt-4">
       <div className="flex gap-1.5">
         {steps.map((s, i) => (
-          <div key={s} className="flex-1 h-1.5 rounded-full" style={{ background: i < idx ? '#ffffff' : i === idx ? '#d4a017' : 'rgba(255,255,255,.25)' }} />
+          <div key={s} className="flex-1 h-1.5 rounded-full" style={{ background: i < idx ? '#ffffff' : i === idx ? 'var(--step-active)' : 'rgba(255,255,255,.25)' }} />
         ))}
       </div>
       <div className="flex justify-between mt-1.5 text-[9px] font-bold text-white/85">
@@ -531,10 +541,10 @@ function StepBar({ step, steps = STEP_ORDER }: { step: string; steps?: string[] 
   )
 }
 function BackBtn({ onClick }: { onClick: () => void }) {
-  return <button onClick={onClick} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1"><ArrowLeft className="w-3.5 h-3.5" /> ارجع</button>
+  return <button onClick={onClick} className="text-xs font-bold text-[#6B7280] hover:text-[var(--accent)] flex items-center gap-1"><ArrowLeft className="w-3.5 h-3.5" /> ارجع</button>
 }
 function SummaryRow({ icon, label, value, sub }: any) {
-  return <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-[#FAFAF7] grid place-items-center text-[#1F6F5F]"><div className="w-4 h-4">{icon}</div></div><div className="flex-1 min-w-0"><p className="text-[10px] font-bold uppercase text-[#6B7280]">{label}</p><p className="text-sm font-bold text-[#1A2E26]">{value}</p>{sub && <p className="text-[10px] text-[#6B7280] mt-0.5">{sub}</p>}</div></div>
+  return <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-[#FAFAF7] grid place-items-center text-[var(--accent)]"><div className="w-4 h-4">{icon}</div></div><div className="flex-1 min-w-0"><p className="text-[10px] font-bold uppercase text-[#6B7280]">{label}</p><p className="text-sm font-bold text-[#1A2E26]">{value}</p>{sub && <p className="text-[10px] text-[#6B7280] mt-0.5">{sub}</p>}</div></div>
 }
 function Field({ label, children }: any) { return <div><label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">{label}</label>{children}</div> }
 function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div> }
