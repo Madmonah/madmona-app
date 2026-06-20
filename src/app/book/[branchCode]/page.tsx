@@ -395,7 +395,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
             )}
             {products.length > 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-4 py-2 bg-[#FAFAF7] border-b border-gray-100"><p className="text-xs font-bold tracking-wider uppercase text-[#6B7280]">منتجات تقدري تشتريها</p></div>
+                <div className="px-4 py-2 bg-[#FAFAF7] border-b border-gray-100"><p className="text-xs font-bold tracking-wider uppercase text-[#6B7280]">{fem ? 'منتجات تقدري تشتريها' : 'منتجات تقدر تشتريها'}</p></div>
                 <div className="divide-y divide-gray-100 max-h-72 overflow-y-auto">
                   {products.map((p: any) => {
                     const qty = cart[p.id] || 0
@@ -403,7 +403,7 @@ export default function PublicBookingPage({ params }: { params: { branchCode: st
                       <div key={p.id} className="px-4 py-3 flex items-center justify-between gap-3">
                         <div className="flex-1 min-w-0"><p className="text-sm font-bold text-[#1A2E26]">{p.name_ar}</p><p className="font-black font-mono text-[var(--accent)] text-sm mt-0.5">{Number(p.selling_price_egp).toLocaleString()} ج</p></div>
                         {qty === 0 ? (
-                          <button onClick={() => setCart({ ...cart, [p.id]: 1 })} className="px-3 py-1.5 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] text-xs font-bold flex items-center gap-1"><Plus className="w-3.5 h-3.5" /> ضيفي</button>
+                          <button onClick={() => setCart({ ...cart, [p.id]: 1 })} className="px-3 py-1.5 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] text-xs font-bold flex items-center gap-1"><Plus className="w-3.5 h-3.5" /> {fem ? 'ضيفي' : 'ضيف'}</button>
                         ) : (
                           <div className="flex items-center gap-2">
                             <button onClick={() => { const n = { ...cart }; if (qty <= 1) { delete n[p.id] } else { n[p.id] = qty - 1 }; setCart(n) }} className="w-7 h-7 rounded-lg bg-[#FAFAF7] grid place-items-center"><Minus className="w-3.5 h-3.5 text-[#1A2E26]" /></button>

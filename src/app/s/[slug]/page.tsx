@@ -7,7 +7,7 @@ import {
   Loader2, MapPin, Calendar, ChevronLeft, Scissors, Clock, Sparkles, User,
   ChevronDown, MessageCircle, ShieldCheck, Image as ImageIcon, Crown, Wind,
   Brush, Hand, Flower2, Building2, Stethoscope, Utensils, Briefcase,
-  Wrench, Car,
+  Wrench, Car, ShoppingBag,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -290,6 +290,18 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
           <div className="w-9 h-9 rounded-xl grid place-items-center flex-shrink-0" style={{ background: t.trustIcoBg }}><ShieldCheck className="w-5 h-5" style={{ color: t.trustIco }} /></div>
           <p className="text-[11.5px] leading-relaxed" style={{ color: t.trustText }}>الحجز والدفع <b style={{ color: t.trustStrong }}>مؤمّن عن طريق مضمونة</b> — تأكيد على واتساب وتقييم بعد الزيارة.</p>
         </div>
+
+        {/* products → marketplace (filtered to this merchant) */}
+        {data.product_count > 0 && (
+          <Link href={`/marketplace?supplier=${data.supplier_id}`} className="rounded-2xl shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all" style={{ backgroundImage: t.gSoft, border: `1px solid ${t.trustBorder}` }}>
+            <div className="w-11 h-11 rounded-xl grid place-items-center flex-shrink-0" style={{ background: t.accentSoft }}><ShoppingBag className="w-5 h-5" style={{ color: t.accent }} /></div>
+            <div className="min-w-0 flex-1">
+              <p className="font-black text-[#1A2E26]">{data.industry === 'vehicle_agency' ? 'قطع غيار وإكسسوارات' : 'المنتجات'}</p>
+              <p className="text-[11px] text-[#6B7280]">{fmt(data.product_count)} منتج للبيع · مضمون عن طريق مضمونة</p>
+            </div>
+            <span className="font-bold text-sm flex items-center gap-0.5 flex-shrink-0" style={{ color: t.accent }}>تسوّق <ChevronLeft className="w-4 h-4" /></span>
+          </Link>
+        )}
 
         {/* gallery */}
         <section>

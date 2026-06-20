@@ -103,6 +103,7 @@ function MarketplaceBrowseContent() {
   const initialCategorySlug = searchParams.get('category')
   const initialTrack = searchParams.get('track')
   const initialQuery = searchParams.get('q') || ''
+  const initialSupplier = searchParams.get('supplier')
 
   const [allCategories, setAllCategories] = useState<Category[]>([])
   const allRootCategories = allCategories.filter(c => c.parent_id === null)
@@ -145,6 +146,7 @@ function MarketplaceBrowseContent() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState(initialQuery)
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(initialCategorySlug)
+  const [supplierFilter] = useState<string | null>(initialSupplier)
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [cityFilter, setCityFilter] = useState<string | null>(null)
   const [sortMenuOpen, setSortMenuOpen] = useState(false)
@@ -278,13 +280,16 @@ function MarketplaceBrowseContent() {
       if (searchQuery.trim()) {
         query = query.ilike('title', `%${searchQuery.trim()}%`)
       }
+      if (supplierFilter) {
+        query = query.eq('supplier_id', supplierFilter)
+      }
 
       const { data } = await query
       setListings((data || []) as Listing[])
       setLoading(false)
     }
     load()
-  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack])
+  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter])
 
   const toggleFavorite = async (e: MouseEvent, listingId: string) => {
     e.preventDefault()
