@@ -15,6 +15,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   Loader2, ArrowRight, Users, CalendarClock, Search, Plus, Pencil, X,
   MinusCircle, CheckCircle2, CalendarDays, Save, Wallet, KeyRound,
+  Boxes, Package2, Link2, Trash2,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -32,10 +33,17 @@ export default function ManagerConsole() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [denied, setDenied] = useState(false)
-  const [tab, setTab] = useState<'attendance' | 'employees'>('attendance')
+  const [tab, setTab] = useState<'attendance' | 'employees' | 'bom'>('attendance')
   const [mgr, setMgr] = useState<any>(null)
   const [branches, setBranches] = useState<any[]>([])
   const [employees, setEmployees] = useState<any[]>([])
+  const [bom, setBom] = useState<any>(null)   // { can_edit, services, products }; null = no BOM access
+
+  const loadBom = useCallback(async () => {
+    // @ts-expect-error rpc typing
+    const { data } = await supabase.rpc('madmona_mgr_bom', { p_token: token() })
+    setBom(data?.ok ? data : null)
+  }, [])
 
   const loadEmployees = useCallback(async () => {
     // @ts-expect-error rpc typing
@@ -48,8 +56,8 @@ export default function ManagerConsole() {
   useEffect(() => {
     const t = token()
     if (!t) { router.push('/login'); return }
-    ;(async () => { const ok = await loadEmployees(); setLoading(false); if (!ok) setTimeout(() => router.push('/me'), 1800) })()
-  }, [router, loadEmployees])
+    ;(async () => { const ok = await loadEmployees(); if (ok) await loadBom(); setLoading(false); if (!ok) setTimeout(() => router.push('/me'), 1800) })()
+  }, [router, loadEmployees, loadBom])
 
   if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div>
 
@@ -82,13 +90,18 @@ export default function ManagerConsole() {
           <button onClick={() => setTab('employees')} className={`flex-1 py-3 text-sm font-black border-b-2 transition-all flex items-center justify-center gap-1.5 ${tab === 'employees' ? 'border-white text-white' : 'border-transparent text-white/60'}`}>
             <Users className="w-4 h-4" /> الموظفين
           </button>
+          {bom && (
+            <button onClick={() => setTab('bom')} className={`flex-1 py-3 text-sm font-black border-b-2 transition-all flex items-center justify-center gap-1.5 ${tab === 'bom' ? 'border-white text-white' : 'border-transparent text-white/60'}`}>
+              <Link2 className="w-4 h-4" /> الخدمات والمنتجات
+            </button>
+          )}
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6">
-        {tab === 'attendance'
-          ? <AttendanceTab />
-          : <EmployeesTab branches={branches} scope={mgr?.scope} employees={employees} reload={loadEmployees} canViewSalary={mgr?.can_view_salary} canEditSalary={mgr?.can_edit_salary} canViewPin={mgr?.can_view_pin} />}
+        {tab === 'attendance' && <AttendanceTab />}
+        {tab === 'employees' && <EmployeesTab branches={branches} scope={mgr?.scope} employees={employees} reload={loadEmployees} canViewSalary={mgr?.can_view_salary} canEditSalary={mgr?.can_edit_salary} canViewPin={mgr?.can_view_pin} />}
+        {tab === 'bom' && <BomTab bom={bom} reload={loadBom} />}
       </main>
     </div>
   )
@@ -373,6 +386,162 @@ function ShiftModal({ employee, onClose }: any) {
             </button>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+/* ────────── SERVICES <-> PRODUCTS (BOM) ────────── */
+function BomTab({ bom, reload }: any) {
+  const [q, setQ] = useState('')
+  const [openId, setOpenId] = useState<string | null>(null)
+  const [addFor, setAddFor] = useState<any | null>(null)
+  const [busyKey, setBusyKey] = useState<string | null>(null)
+
+  const services = (bom?.services || []) as any[]
+  const products = (bom?.products || []) as any[]
+  const canEdit = !!bom?.can_edit
+  const filtered = services.filter((s) => !q || (s.name_ar || '').includes(q))
+
+  async function unlink(serviceId: string, productId: string) {
+    setBusyKey(serviceId + productId)
+    // @ts-expect-error rpc typing
+    const { data } = await supabase.rpc('madmona_mgr_unlink_product', { p_token: token(), p_service_id: serviceId, p_product_id: productId })
+    setBusyKey(null)
+    if (data?.ok) reload()
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-white rounded-2xl border border-gray-100 p-4">
+        <p className="text-[13px] font-bold text-[#1A2E26]">ربط الخدمات بالمنتجات</p>
+        <p className="text-[11px] text-[#6B7280] mt-0.5">حدّد كل خدمة بتستهلك أنهي منتجات وبكميات قد إيه — عشان المخزون ينخصم أوتوماتيك مع كل حجز.</p>
+      </div>
+
+      <div className="relative">
+        <Search className="w-4 h-4 text-[#6B7280] absolute right-3 top-1/2 -translate-y-1/2" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="دوّر على خدمة"
+          className="w-full h-11 rounded-xl border border-gray-200 pr-9 pl-3 text-[14px]" />
+      </div>
+
+      <div className="space-y-2">
+        {filtered.map((s) => {
+          const linked = (s.products || []) as any[]
+          const open = openId === s.id
+          return (
+            <div key={s.id} className={`rounded-2xl border bg-white transition-all ${open ? 'border-[#1F6F5F]' : 'border-gray-100'}`}>
+              <button onClick={() => setOpenId(open ? null : s.id)} className="w-full p-3.5 flex items-center justify-between text-right">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-[#1F6F5F]/10 grid place-items-center text-[#1F6F5F] flex-shrink-0"><Boxes className="w-4 h-4" /></div>
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-bold text-[#1A2E26] truncate">{s.name_ar}</p>
+                    <p className="text-[11px] text-[#6B7280] truncate">{linked.length ? `${linked.length} منتج مربوط` : 'مفيش منتجات مربوطة'}{s.price_egp != null ? ` · ${Number(s.price_egp).toLocaleString('en-US')} ج` : ''}</p>
+                  </div>
+                </div>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#FAFAF7] text-[#6B7280] flex-shrink-0">{linked.length}</span>
+              </button>
+
+              {open && (
+                <div className="px-3.5 pb-3.5 pt-1 border-t border-gray-100 space-y-2">
+                  {linked.length === 0 && <p className="text-[12px] text-[#6B7280] py-2">لسه مفيش منتجات مربوطة. اضغط «أضف منتج».</p>}
+                  {linked.map((p) => (
+                    <div key={p.product_id} className="flex items-center justify-between gap-2 rounded-xl bg-[#FAFAF7] px-3 py-2">
+                      <div className="min-w-0">
+                        <p className="text-[12px] font-bold text-[#1A2E26] truncate flex items-center gap-1"><Package2 className="w-3 h-3 text-[#6B7280]" /> {p.name_ar}
+                          {p.is_optional && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">اختياري</span>}
+                        </p>
+                        <p className="text-[11px] text-[#6B7280]">{Number(p.quantity)} {p.unit || ''}</p>
+                      </div>
+                      {canEdit && (
+                        <button onClick={() => unlink(s.id, p.product_id)} disabled={busyKey === s.id + p.product_id}
+                          className="h-8 w-8 rounded-lg bg-white grid place-items-center text-red-500 disabled:opacity-50 flex-shrink-0">
+                          {busyKey === s.id + p.product_id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {canEdit && (
+                    <button onClick={() => setAddFor(s)} className="w-full h-10 rounded-xl bg-[#1F6F5F]/8 text-[#1F6F5F] font-black text-[13px] flex items-center justify-center gap-1.5">
+                      <Plus className="w-4 h-4" /> أضف منتج
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })}
+        {filtered.length === 0 && <p className="text-center text-[12px] text-[#6B7280] py-8">مفيش خدمات بالبحث ده</p>}
+      </div>
+
+      {addFor && <AddProductModal service={addFor} products={products} onClose={() => setAddFor(null)} onSaved={() => { setAddFor(null); reload() }} />}
+    </div>
+  )
+}
+
+function AddProductModal({ service, products, onClose, onSaved }: any) {
+  const [q, setQ] = useState('')
+  const [productId, setProductId] = useState('')
+  const [qty, setQty] = useState('1')
+  const [optional, setOptional] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+
+  const linkedIds = new Set((service.products || []).map((p: any) => p.product_id))
+  const filtered = (products as any[]).filter((p) => !linkedIds.has(p.id) && (!q || (p.name_ar || '').includes(q)))
+
+  async function save() {
+    if (!productId) { setErr('اختار منتج الأول'); return }
+    const n = Number(qty)
+    if (!n || n <= 0) { setErr('اكتب كمية صح'); return }
+    setBusy(true); setErr('')
+    // @ts-expect-error rpc typing
+    const { data } = await supabase.rpc('madmona_mgr_link_product', {
+      p_token: token(), p_service_id: service.id, p_product_id: productId, p_quantity: n, p_is_optional: optional,
+    })
+    setBusy(false)
+    if (data?.ok) onSaved(); else setErr(data?.error || 'حصل خطأ')
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" dir="rtl" onClick={onClose}>
+      <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <div><h3 className="text-lg font-black text-[#1A2E26]">أضف منتج</h3><p className="text-[11px] text-[#6B7280]">للخدمة: {service.name_ar}</p></div>
+          <button onClick={onClose} className="text-[#6B7280]"><X className="w-5 h-5" /></button>
+        </div>
+
+        <div className="relative mb-2">
+          <Search className="w-4 h-4 text-[#6B7280] absolute right-3 top-1/2 -translate-y-1/2" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="دوّر على منتج"
+            className="w-full h-11 rounded-xl border border-gray-200 pr-9 pl-3 text-[14px]" />
+        </div>
+
+        <div className="max-h-48 overflow-y-auto space-y-1 mb-3">
+          {filtered.slice(0, 80).map((p) => (
+            <button key={p.id} onClick={() => setProductId(p.id)}
+              className={`w-full text-right px-3 py-2 rounded-xl border text-[13px] font-bold flex items-center justify-between ${productId === p.id ? 'border-[#1F6F5F] bg-[#1F6F5F]/5 text-[#1F6F5F]' : 'border-gray-200 text-[#1A2E26]'}`}>
+              <span className="truncate">{p.name_ar}</span>
+              <span className="text-[10px] text-[#6B7280] flex-shrink-0">{p.unit || ''}</span>
+            </button>
+          ))}
+          {filtered.length === 0 && <p className="text-center text-[12px] text-[#6B7280] py-4">مفيش منتجات متاحة</p>}
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <label className="text-[11px] text-[#6B7280]">الكمية المستهلكة
+            <input type="number" inputMode="decimal" value={qty} onChange={(e) => setQty(e.target.value)}
+              className="w-full mt-1 h-11 rounded-xl border border-gray-200 px-3 text-[14px]" dir="ltr" />
+          </label>
+          <button onClick={() => setOptional(!optional)} type="button"
+            className={`mt-5 h-11 rounded-xl font-bold text-[12px] ${optional ? 'bg-amber-100 text-amber-700' : 'bg-[#FAFAF7] text-[#6B7280]'}`}>
+            {optional ? 'اختياري ✓' : 'اختياري؟'}
+          </button>
+        </div>
+
+        {err && <p className="text-[12px] text-red-600 font-bold mt-2">{err}</p>}
+        <button onClick={save} disabled={busy || !productId} className="w-full h-12 mt-3 rounded-2xl bg-[#1F6F5F] text-white font-black text-[14px] flex items-center justify-center gap-2 disabled:opacity-50">
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />} اربط المنتج
+        </button>
       </div>
     </div>
   )
