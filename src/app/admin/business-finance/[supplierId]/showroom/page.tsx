@@ -31,7 +31,7 @@ export default function ShowroomPage({ params }: { params: { supplierId: string 
   async function load() {
     setLoading(true)
     // @ts-expect-error
-    const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
+    const { data: s } = await supabase.from('suppliers').select('business_name, theme').eq('id', supplierId).single()
     setSupplier(s)
     // @ts-expect-error
     const { data: list } = await supabase.rpc('admin_list_vehicle_units', { p_supplier_id: supplierId })
@@ -49,6 +49,7 @@ export default function ShowroomPage({ params }: { params: { supplierId: string 
 
   if (!supplier) return <Loader />
 
+  const accent = supplier?.theme?.accent || '#1F6F5F'
   const counts = units.reduce((a: any, u: any) => { a[u.status] = (a[u.status] || 0) + 1; return a }, {})
   const shown = filter === 'all' ? units : units.filter((u) => u.status === filter)
 
@@ -61,19 +62,20 @@ export default function ShowroomPage({ params }: { params: { supplierId: string 
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">VEHICLE AGENCY · SHOWROOM</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase mb-1" style={{ color: accent }}>VEHICLE AGENCY · SHOWROOM</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">المعرض · {supplier?.business_name}</h1>
               <p className="text-sm text-[#6B7280] mt-1">{units.length} وحدة</p>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={() => setAddOpen(true)} className="px-3 py-2 rounded-xl bg-[#1F6F5F] text-white text-xs font-bold flex items-center gap-1"><Plus className="w-4 h-4" /> ضيف للمعرض</button>
+              <button onClick={() => setAddOpen(true)} className="px-3 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-1" style={{ backgroundColor: accent }}><Plus className="w-4 h-4" /> ضيف للمعرض</button>
               <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7]"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
             </div>
           </div>
           <div className="flex items-center gap-1 mt-3 flex-wrap">
             {['all', 'in_transit', 'in_stock', 'reserved', 'sold'].map((f) => (
               <button key={f} onClick={() => setFilter(f)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filter === f ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#6B7280]'}`}>
+                className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                style={filter === f ? { backgroundColor: accent, color: '#fff' } : { backgroundColor: '#FAFAF7', color: '#6B7280' }}>
                 {f === 'all' ? `الكل (${units.length})` : `${STATUS[f].label} (${counts[f] || 0})`}
               </button>
             ))}
@@ -84,7 +86,7 @@ export default function ShowroomPage({ params }: { params: { supplierId: string 
       <main className="max-w-7xl mx-auto px-4 py-6">
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {loading ? (
-            <div className="col-span-3 py-12 text-center"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin inline" /></div>
+            <div className="col-span-3 py-12 text-center"><Loader2 className="w-6 h-6 animate-spin inline" style={{ color: accent }} /></div>
           ) : shown.length === 0 ? (
             <div className="col-span-3 py-12 text-center bg-white rounded-2xl border border-gray-100">
               <Car className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
@@ -110,7 +112,7 @@ export default function ShowroomPage({ params }: { params: { supplierId: string 
                 <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
                   <div>
                     <p className="text-[9px] text-[#6B7280] uppercase">سعر البيع</p>
-                    <p className="text-sm font-mono font-black text-[#1F6F5F]">{u.sale_price_egp ? `${Number(u.sale_price_egp).toLocaleString('ar-EG')} ج` : '—'}</p>
+                    <p className="text-sm font-mono font-black" style={{ color: accent }}>{u.sale_price_egp ? `${Number(u.sale_price_egp).toLocaleString('ar-EG')} ج` : '—'}</p>
                   </div>
                   {u.customer_name && (
                     <div className="text-left">
@@ -123,7 +125,7 @@ export default function ShowroomPage({ params }: { params: { supplierId: string 
                   <div className="mt-3 flex items-center gap-1.5">
                     {u.status !== 'in_stock' && <button onClick={() => setStatus(u.id, 'in_stock')} className="flex-1 py-1.5 rounded-lg bg-[#FAFAF7] text-[11px] font-bold text-[#1A2E26]">للمعرض</button>}
                     {u.status !== 'reserved' && <button onClick={() => setStatus(u.id, 'reserved')} className="flex-1 py-1.5 rounded-lg bg-[#FAFAF7] text-[11px] font-bold text-[#1A2E26]">احجز</button>}
-                    <button onClick={() => setSellUnit(u)} className="flex-1 py-1.5 rounded-lg bg-[#1F6F5F] text-[11px] font-bold text-white">بيع</button>
+                    <button onClick={() => setSellUnit(u)} className="flex-1 py-1.5 rounded-lg text-[11px] font-bold text-white" style={{ backgroundColor: accent }}>بيع</button>
                   </div>
                 )}
               </div>
@@ -132,13 +134,13 @@ export default function ShowroomPage({ params }: { params: { supplierId: string 
         </section>
       </main>
 
-      {sellUnit && <SellModal unit={sellUnit} onClose={() => setSellUnit(null)} onSaved={() => { setSellUnit(null); load() }} />}
-      {addOpen && <AddModal supplierId={supplierId} onClose={() => setAddOpen(false)} onSaved={() => { setAddOpen(false); load() }} />}
+      {sellUnit && <SellModal unit={sellUnit} accent={accent} onClose={() => setSellUnit(null)} onSaved={() => { setSellUnit(null); load() }} />}
+      {addOpen && <AddModal supplierId={supplierId} accent={accent} onClose={() => setAddOpen(false)} onSaved={() => { setAddOpen(false); load() }} />}
     </div>
   )
 }
 
-function SellModal({ unit, onClose, onSaved }: any) {
+function SellModal({ unit, accent = '#1F6F5F', onClose, onSaved }: any) {
   const [form, setForm] = useState({ sale_price_egp: unit.sale_price_egp || '', customer_name: '', customer_phone: '' })
   const [saving, setSaving] = useState(false)
   async function save() {
@@ -166,14 +168,14 @@ function SellModal({ unit, onClose, onSaved }: any) {
           <Field label="سعر البيع (ج) *"><input type="number" value={form.sale_price_egp} onChange={e => setForm({ ...form, sale_price_egp: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" /></Field>
           <Field label="اسم العميل"><input type="text" value={form.customer_name} onChange={e => setForm({ ...form, customer_name: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
           <Field label="موبايل العميل"><input type="tel" value={form.customer_phone} onChange={e => setForm({ ...form, customer_phone: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" /></Field>
-          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black text-sm disabled:opacity-50">{saving ? 'جاري الحفظ...' : 'أكّد البيع'}</button>
+          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl text-white font-black text-sm disabled:opacity-50" style={{ backgroundColor: accent }}>{saving ? 'جاري الحفظ...' : 'أكّد البيع'}</button>
         </div>
       </div>
     </div>
   )
 }
 
-function AddModal({ supplierId, onClose, onSaved }: any) {
+function AddModal({ supplierId, accent = '#1F6F5F', onClose, onSaved }: any) {
   const [form, setForm] = useState({ vehicle_type: 'motorcycle', brand: '', model: '', model_year: '', color: '', sale_price_egp: '', chassis_no: '', engine_no: '', image_url: '' })
   const [saving, setSaving] = useState(false)
   async function save() {
@@ -233,7 +235,7 @@ function AddModal({ supplierId, onClose, onSaved }: any) {
             <Field label="رقم الموتور"><input type="text" value={form.engine_no} onChange={e => setForm({ ...form, engine_no: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" /></Field>
           </div>
           <Field label="رابط الصورة — لو حطيتها الوحدة هتتنشر على الموقع كمان"><input type="url" dir="ltr" value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
-          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black text-sm disabled:opacity-50">{saving ? 'جاري الحفظ...' : 'ضيف للمعرض'}</button>
+          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl text-white font-black text-sm disabled:opacity-50" style={{ backgroundColor: accent }}>{saving ? 'جاري الحفظ...' : 'ضيف للمعرض'}</button>
         </div>
       </div>
     </div>

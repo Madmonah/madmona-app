@@ -84,6 +84,19 @@ const PERIOD_MS: Record<string, number> = {
   per_event: 0,
 }
 
+// Flat (single-appointment) pricing types — these are NOT duration ranges.
+// A salon service / package / event is booked for ONE time slot, so the
+// customer shouldn't be asked for an end time. We auto-derive a 60-min slot
+// so the existing conflict-check + insert (which need start/end) keep working.
+const FLAT_PERIOD_TYPES = ['per_service', 'per_package', 'per_event']
+function addMinutesLocal(localStr: string, mins: number): string {
+  const d = new Date(localStr)
+  if (isNaN(d.getTime())) return localStr
+  d.setMinutes(d.getMinutes() + mins)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 type Stage =
   | 'loading'
   | 'unauthenticated'
@@ -218,6 +231,7 @@ export default function BookingPage() {
   }, [slug])
 
   const selectedRule = pricingRules.find(r => r.id === selectedRuleId) || null
+  const isFlatRule = !!selectedRule && FLAT_PERIOD_TYPES.includes(selectedRule.period_type)
 
   // Phase Z (May 18 2026): available add-ons + selected list + addons amount.
   const availableAddons: ListingAddon[] = Array.isArray(listing?.available_addons)
@@ -846,31 +860,45 @@ export default function BookingPage() {
         {/* Date/time picker */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
           <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-[#1F6F5F]" /> {t('booking.date')}
+            <Calendar className="w-4 h-4 text-[#1F6F5F]" /> {isFlatRule ? 'ميعاد الحجز' : t('booking.date')}
           </h3>
-          <div className="space-y-3">
+          {isFlatRule ? (
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">{t('booking.from')}</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">اليوم والساعة</label>
               <input
                 type="datetime-local"
                 value={startAt}
-                onChange={e => setStartAt(e.target.value)}
+                onChange={e => { const v = e.target.value; setStartAt(v); setEndAt(v ? addMinutesLocal(v, 60) : '') }}
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30"
                 required
               />
+              <p className="text-[11px] text-gray-500 mt-2">اختار اليوم والساعة اللي يناسبك، والمكان هيأكدلك الميعاد.</p>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">{t('booking.to')}</label>
-              <input
-                type="datetime-local"
-                value={endAt}
-                onChange={e => setEndAt(e.target.value)}
-                min={startAt}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30"
-                required
-              />
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">{t('booking.from')}</label>
+                <input
+                  type="datetime-local"
+                  value={startAt}
+                  onChange={e => setStartAt(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">{t('booking.to')}</label>
+                <input
+                  type="datetime-local"
+                  value={endAt}
+                  onChange={e => setEndAt(e.target.value)}
+                  min={startAt}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30"
+                  required
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Customer notes */}
@@ -933,7 +961,9 @@ export default function BookingPage() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  {Number(selectedRule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')} × {pricing.periods} {['hourly', 'daily', 'weekly', 'monthly'].includes(selectedRule.period_type) ? t(PERIOD_LABELS[selectedRule.period_type]) : ''}
+                  {isFlatRule
+                    ? (selectedRule.label_ar || (PERIOD_LABELS[selectedRule.period_type] ? t(PERIOD_LABELS[selectedRule.period_type]) : ''))
+                    : `${Number(selectedRule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} ${t('common.egp')} × ${pricing.periods} ${['hourly', 'daily', 'weekly', 'monthly'].includes(selectedRule.period_type) ? t(PERIOD_LABELS[selectedRule.period_type]) : ''}`}
                 </span>
                 <span>{pricing.baseAmount.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}</span>
               </div>

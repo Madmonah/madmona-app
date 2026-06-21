@@ -72,3 +72,18 @@ export function getThemeKey(opts: { supplierId?: string | null; slug?: string | 
 export function getTheme(opts: { supplierId?: string | null; slug?: string | null; industry?: string | null }): Theme {
   return THEMES[getThemeKey(opts)]
 }
+
+/* ============================================================
+ * resolveTheme — الأفضل: يقرا الثيم من عمود suppliers.theme (dynamic بالكامل).
+ * لو فيه ثيم في الـDB بندمجه فوق الافتراضي (أي مفتاح ناقص = فولباك).
+ * لو مفيش، بنرجع للـmap القديم (THEME_BY_SUPPLIER_ID/SLUG).
+ * ============================================================ */
+export function resolveTheme(
+  dbTheme: Partial<Theme> | null | undefined,
+  fallback: { supplierId?: string | null; slug?: string | null; industry?: string | null },
+): Theme {
+  if (dbTheme && typeof dbTheme === 'object' && (dbTheme as Partial<Theme>).accent) {
+    return { ...THEMES.default, ...dbTheme } as Theme
+  }
+  return getTheme(fallback)
+}

@@ -21,13 +21,22 @@ const supabase = createClient(
 
 const INDUSTRIES = [
   { value: 'beauty_salon', label: 'صالون تجميل / Beauty Salon' },
-  { value: 'gym', label: 'جيم / Fitness' },
+  { value: 'vehicle_agency', label: 'تجاري / معارض (زي سعداوي)' },
+  { value: 'contracting', label: 'مقاولات / Contracting' },
   { value: 'restaurant', label: 'مطعم / Restaurant' },
   { value: 'clinic', label: 'عيادة / Clinic' },
+  { value: 'gym', label: 'جيم / Fitness' },
   { value: 'spa', label: 'سبا / Spa' },
   { value: 'retail_shop', label: 'محل تجزئة / Retail' },
   { value: 'other', label: 'تاني / Other' },
 ]
+
+// لون افتراضي لكل نشاط (داينمك — يتغيّر لكل عميل)
+const INDUSTRY_ACCENT: Record<string, string> = {
+  vehicle_agency: '#E4002B', contracting: '#B45309', beauty_salon: '#B91C7B',
+  spa: '#B91C7B', clinic: '#0E7490', restaurant: '#C2410C', gym: '#1F6F5F',
+  retail_shop: '#1F6F5F', other: '#1F6F5F',
+}
 
 const CITIES = ['القاهرة', 'الجيزة', 'الإسكندرية', 'الساحل الشمالي', 'الغردقة', 'شرم الشيخ']
 
@@ -49,6 +58,8 @@ export default function NewBusinessPartnerPage() {
   // Step 1: Business info
   const [businessName, setBusinessName] = useState('')
   const [industry, setIndustry] = useState('beauty_salon')
+  const [slug, setSlug] = useState('')
+  const [accent, setAccent] = useState('#B91C7B')
   const [contactName, setContactName] = useState('')
   const [contactPhone, setContactPhone] = useState('')
   const [contactEmail, setContactEmail] = useState('')
@@ -99,6 +110,8 @@ export default function NewBusinessPartnerPage() {
         district: district.trim() || null,
         address: address.trim() || null,
         industry,
+        slug: slug.trim().toLowerCase() || null,
+        accent,
         contract_status: contractStatus,
         commission_rate: commissionRate,
         commission_extra_rate: commissionExtraRate,
@@ -184,7 +197,7 @@ export default function NewBusinessPartnerPage() {
             <Field label="نوع النشاط" required>
               <select
                 value={industry}
-                onChange={(e) => setIndustry(e.target.value)}
+                onChange={(e) => { setIndustry(e.target.value); setAccent(INDUSTRY_ACCENT[e.target.value] || '#1F6F5F') }}
                 className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
               >
                 {INDUSTRIES.map((i) => (
@@ -192,9 +205,34 @@ export default function NewBusinessPartnerPage() {
                 ))}
               </select>
               <p className="text-[11px] text-[#6B7280] mt-1.5">
-                ⓘ بناءً على النوع، السيستم بـ يجهز categories + role templates مخصصة
+                ⓘ بناءً على النوع، بيتظبط الستورفرونت + الداشبورد المناسبين
               </p>
             </Field>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Field label="لينك الستورفرونت (slug)">
+                <div className="flex items-center gap-1 px-3 py-3 rounded-xl bg-white border border-gray-200" dir="ltr">
+                  <span className="text-[11px] text-gray-400 whitespace-nowrap">/s/</span>
+                  <input
+                    type="text"
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value.toLowerCase())}
+                    placeholder="elite-salon"
+                    className="flex-1 text-sm font-mono outline-none min-w-0 bg-transparent"
+                    dir="ltr"
+                  />
+                </div>
+                <p className="text-[11px] text-[#6B7280] mt-1.5">لو سِبته فاضي، السيستم يعمل لينك أوتوماتيك</p>
+              </Field>
+              <Field label="لون البراند (داينمك)">
+                <div className="flex items-center gap-2">
+                  <input type="color" value={accent} onChange={(e) => setAccent(e.target.value)}
+                    className="w-12 h-[46px] rounded-xl border border-gray-200 cursor-pointer p-0.5" />
+                  <input value={accent} onChange={(e) => setAccent(e.target.value)} dir="ltr"
+                    className="flex-1 px-3 py-3 rounded-xl bg-white border border-gray-200 text-sm font-mono" />
+                </div>
+              </Field>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Field label="اسم المسؤول">

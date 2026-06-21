@@ -158,7 +158,22 @@ const VERTICALS: Record<string, VerticalCfg> = {
     catLabels: { 'صيانة': 'صيانة وإصلاح', 'تجهيز': 'تجهيز وتلميع', 'بيع': 'بيع مركبات', general: 'عام', 'عام': 'عام' },
     catIcons: { 'صيانة': Wrench, 'تجهيز': Sparkles, 'بيع': Car },
   },
-  // أي مجال تاني (مقاولات / تكنولوجيا / غير محدد) — محايد عام
+  // مقاولات وتشطيبات — طلب عرض سعر بدل الحجز
+  contracting: {
+    kicker: 'مقاولات وتشطيبات',
+    heroCta: 'اطلب عرض سعر', heroCtaIcon: Briefcase, waCta: 'كلّمنا',
+    bookChip: 'عرض سعر مجاني', unitWord: 'خدمة',
+    galleryHeading: 'معرض أعمالنا',
+    galleryTiles: ['مشاريع', 'تشطيبات', 'تنفيذ', 'تسليم'],
+    branchesHeading: 'مكاتبنا', branchCta: 'تواصل',
+    servicesHeading: 'خدماتنا والأسعار', servicesIcon: Building2,
+    teamHeading: 'الفريق',
+    accountSub: 'تابع عروض الأسعار والمشاريع',
+    coverBadge: 'صورة من أعمالنا',
+    catLabels: { general: 'عام', عام: 'عام' }, catIcons: {},
+  },
+
+  // أي مجال تاني (تكنولوجيا / غير محدد) — محايد عام
   default: {
     kicker: 'احجز أونلاين',
     heroCta: 'احجز الآن', heroCtaIcon: Calendar, waCta: 'تواصل معنا',
@@ -179,14 +194,12 @@ function getVertical(industry: string | null | undefined): VerticalCfg {
   if (industry === 'polyclinic' || industry === 'clinic') return VERTICALS.polyclinic
   if (industry === 'restaurant' || industry === 'restaurants') return VERTICALS.restaurant
   if (industry === 'vehicle_agency' || industry === 'auto') return VERTICALS.vehicle_agency
+  if (industry === 'contracting' || industry === 'construction') return VERTICALS.contracting
   return VERTICALS.default
 }
 
 export default function StorefrontPage({ params }: { params: { slug: string } }) {
   const { slug } = params
-  const themeKey: ThemeKey = THEME_BY_SLUG[slug] || 'default'
-  const t = THEMES[themeKey]
-  const dk = themeKey === 'dark'
 
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -201,6 +214,13 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
       setLoading(false)
     })()
   }, [slug])
+
+  // PER-MERCHANT THEME — data-driven (suppliers.theme → RPC) with legacy map / default fallback.
+  // إضافة عميل جديد بثيم = صف في الداتا (admin_provision_storefront)، مفيش كود.
+  const dbTheme = (data?.theme as Theme | undefined) || undefined
+  const fallbackKey: ThemeKey = THEME_BY_SLUG[slug] || 'default'
+  const t: Theme = dbTheme || THEMES[fallbackKey]
+  const dk = dbTheme ? Boolean((dbTheme as any).dark) : fallbackKey === 'dark'
 
   if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: t.pageBg }}><Loader2 className="w-8 h-8 animate-spin" style={{ color: t.accent }} /></div>
 

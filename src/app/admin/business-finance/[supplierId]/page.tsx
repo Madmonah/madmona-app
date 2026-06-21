@@ -14,7 +14,7 @@ import {
   Briefcase, Coins, HandCoins, Wrench,
   Banknote, Gavel, CalendarRange, PackageOpen, ClipboardCheck, Fuel, FileBadge,
   Smartphone,
-  Car, Ship, BadgeCheck, Store,
+  Car, Ship, BadgeCheck, Store, UtensilsCrossed,
 } from 'lucide-react'
 
 /* ============================================================
@@ -58,6 +58,16 @@ const supabase = createClient(
    (Phase 2: move this to a `supplier_modules` table = per-client toggles.)
    ============================================================ */
 type VKey = 'core' | 'beauty_salon' | 'polyclinic' | 'restaurant' | 'contracting' | 'vehicle_agency'
+
+// نطابق نشاط الـsupplier (industry) على مجموعة الموديولز الصح — عشان spa تاخد
+// موديولز الصالون، clinic تاخد موديولز العيادة، والمرادفات تتظبط.
+const VERTICAL_ALIAS: Record<string, VKey> = {
+  beauty_salon: 'beauty_salon', spa: 'beauty_salon',
+  polyclinic: 'polyclinic', clinic: 'polyclinic',
+  restaurant: 'restaurant',
+  vehicle_agency: 'vehicle_agency', auto: 'vehicle_agency',
+  contracting: 'contracting', construction: 'contracting',
+}
 const MODULE_REGISTRY: { href: string; Icon: any; label: string; primary?: boolean; v: VKey[] }[] = [
   // Shared core (every client)
   { href: 'confirmations',      Icon: CheckCircle2,   label: 'التأكيدات',        primary: true, v: ['core'] },
@@ -95,6 +105,7 @@ const MODULE_REGISTRY: { href: string; Icon: any; label: string; primary?: boole
   // Clinic (Polyclinic)
   { href: 'appointments',       Icon: Calendar,       label: 'المواعيد',                        v: ['polyclinic'] },
   // Restaurant / market (CityMart)
+  { href: 'services-catalog',   Icon: UtensilsCrossed, label: 'المنيو',          primary: true, v: ['restaurant'] },
   { href: 'quote-orders',       Icon: ShoppingCart,   label: 'طلبات التسعير',    primary: true, v: ['restaurant'] },
   // Vehicle trading agency (motorcycles + cars)
   { href: 'showroom',           Icon: Car,            label: 'المعرض',           primary: true, v: ['vehicle_agency'] },
@@ -135,6 +146,7 @@ type Supplier = {
   commission_rate: number | null
   commission_extra_rate: number | null
   contact_phone: string | null
+  theme: { accent?: string; accent2?: string; dark?: boolean } | null
 }
 
 type Branch = {
@@ -196,7 +208,7 @@ export default function BusinessFinancePage({
     // @ts-expect-error
     const { data: sup } = await supabase
       .from('suppliers')
-      .select('id, business_name, logo_url, industry, business_type, contract_status, commission_rate, commission_extra_rate, contact_phone')
+      .select('id, business_name, logo_url, industry, business_type, contract_status, commission_rate, commission_extra_rate, contact_phone, theme')
       .eq('id', supplierId)
       .single()
     setSupplier(sup as Supplier)
@@ -314,7 +326,7 @@ export default function BusinessFinancePage({
 
   // Effective module tiles = MODULE_REGISTRY filtered by core/industry, then overridden by supplier_modules (toggle/reorder/rename/promote). Empty overrides = defaults.
   const visibleModules = useMemo(() => {
-    const industry = (supplier?.industry || '') as VKey
+    const industry = (VERTICAL_ALIAS[(supplier?.industry || '').toLowerCase()] || '') as VKey
     const baseVisible = (m: { v: VKey[] }) => m.v.includes('core') || m.v.includes(industry)
     return MODULE_REGISTRY
       .map((m, idx) => {
@@ -326,6 +338,7 @@ export default function BusinessFinancePage({
           Icon: m.Icon,
           label: (o && o.label_override) ? o.label_override : m.label,
           primary: (o && o.is_primary != null) ? o.is_primary : m.primary,
+          isCore: m.v.includes('core'),
           order,
           shown,
         }
@@ -333,6 +346,12 @@ export default function BusinessFinancePage({
       .filter((m) => m.shown)
       .sort((a, b) => a.order - b.order)
   }, [supplier, modOverrides])
+
+  // لون البراند بتاع الـbusiness (من suppliers.theme) + اسم النشاط للتجميع.
+  const accent = supplier?.theme?.accent || PALETTE.green
+  const vertLabel = ({ beauty_salon: 'الصالون', spa: 'السبا', vehicle_agency: 'المعرض', contracting: 'المقاولات', restaurant: 'المطعم', clinic: 'العيادة', polyclinic: 'العيادة', gym: 'الجيم', retail_shop: 'المحل' } as Record<string, string>)[supplier?.industry || ''] || 'النشاط'
+  const vertModules = useMemo(() => visibleModules.filter((m) => !m.isCore), [visibleModules])
+  const coreModules = useMemo(() => visibleModules.filter((m) => m.isCore), [visibleModules])
 
   if (loading && !supplier) {
     return (
@@ -369,7 +388,7 @@ export default function BusinessFinancePage({
               )}
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F]">
+                  <p className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: accent }}>
                     {isMadmona ? 'مضمونة · الإدارة الداخلية' : 'لوحة الإدارة · مضمونة'}
                   </p>
                   <ContractBadge status={supplier.contract_status} />
@@ -378,7 +397,7 @@ export default function BusinessFinancePage({
                   {supplier.business_name}
                 </h1>
                 <p className="text-sm text-[#6B7280] mt-1">
-                  {supplier.industry === 'beauty_salon' ? 'صالون تجميل' : supplier.industry === 'contracting' ? 'مقاولات · فئة أولى' : supplier.industry === 'vehicle_agency' ? 'توكيلات مركبات' : supplier.industry || ''} ·{' '}
+                  {(({ beauty_salon: 'صالون تجميل', spa: 'سبا', vehicle_agency: 'توكيلات مركبات', contracting: 'مقاولات · فئة أولى', restaurant: 'مطعم', clinic: 'عيادة', polyclinic: 'بوليكلينك', gym: 'جيم', retail_shop: 'محل تجزئة' } as Record<string, string>)[supplier.industry || ''] || supplier.industry || '')} ·{' '}
                   {branches.length} فروع · {supplier.contact_phone}
                 </p>
               </div>
@@ -392,7 +411,8 @@ export default function BusinessFinancePage({
             </button>
             <Link
               href={`/admin/business-finance/${supplierId}/operations`}
-              className="px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold flex items-center gap-2 hover:shadow-md transition-shadow"
+              className="px-4 py-2 rounded-xl text-white text-sm font-bold flex items-center gap-2 hover:shadow-md transition-shadow"
+              style={{ backgroundColor: accent }}
             >
               <Plus className="w-4 h-4" />
               سجّل عملية
@@ -429,10 +449,9 @@ export default function BusinessFinancePage({
                   key={p}
                   onClick={() => setActivePeriod(p)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    activePeriod === p
-                      ? 'bg-[#1F6F5F] text-white shadow-sm'
-                      : 'text-[#6B7280] hover:text-[#1A2E26]'
+                    activePeriod === p ? 'text-white shadow-sm' : 'text-[#6B7280] hover:text-[#1A2E26]'
                   }`}
+                  style={activePeriod === p ? { backgroundColor: accent } : undefined}
                 >
                   {p === 'today' ? 'اليوم' : p === 'week' ? 'الأسبوع' : p === 'month' ? 'الشهر' : 'الكل'}
                 </button>
@@ -444,13 +463,15 @@ export default function BusinessFinancePage({
 
       {/* Body */}
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* MODULES GRID - all 14 admin modules */}
-        <section>
-          <h2 className="text-sm font-bold tracking-wider uppercase text-[#6B7280] mb-3">
-            🎛️ الوحدات
-          </h2>
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
-            {visibleModules.map((m) => {
+        {/* MODULES — مجمّعة: وحدات النشاط (بلون البراند) ثم الإدارة العامة */}
+        {vertModules.length > 0 && (
+          <section>
+            <h2 className="text-sm font-black tracking-wider uppercase mb-3 flex items-center gap-2" style={{ color: accent }}>
+              <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ backgroundColor: accent }} />
+              وحدات {vertLabel}
+            </h2>
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+              {vertModules.map((m) => {
                 const Icon = m.Icon
                 return (
                   <ModuleCard
@@ -459,9 +480,32 @@ export default function BusinessFinancePage({
                     icon={<Icon />}
                     label={m.label}
                     primary={m.primary}
+                    accent={accent}
                   />
                 )
               })}
+            </div>
+          </section>
+        )}
+        <section>
+          <h2 className="text-sm font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-2">
+            <span className="inline-block w-2.5 h-2.5 rounded-full bg-gray-300" />
+            الإدارة العامة
+          </h2>
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+            {coreModules.map((m) => {
+              const Icon = m.Icon
+              return (
+                <ModuleCard
+                  key={m.href}
+                  href={`/admin/business-finance/${supplierId}/${m.href}`}
+                  icon={<Icon />}
+                  label={m.label}
+                  primary={m.primary}
+                  accent={accent}
+                />
+              )
+            })}
           </div>
         </section>
 
@@ -472,12 +516,14 @@ export default function BusinessFinancePage({
             label="إجمالي داخل"
             amount={stats.totalIn}
             tone="positive"
+            accent={accent}
           />
           <StatCard
             icon={<ArrowUpCircle className="w-5 h-5" />}
             label="إجمالي خارج"
             amount={stats.totalOut}
             tone="negative"
+            accent={accent}
           />
           <StatCard
             icon={<Wallet className="w-5 h-5" />}
@@ -485,6 +531,7 @@ export default function BusinessFinancePage({
             amount={stats.net}
             tone={stats.net >= 0 ? 'positive' : 'negative'}
             primary
+            accent={accent}
           />
           <StatCard
             icon={<BadgePercent className="w-5 h-5" />}
@@ -596,7 +643,7 @@ function ContractBadge({ status }: { status: string }) {
 }
 
 function StatCard({
-  icon, label, amount, tone, primary, note,
+  icon, label, amount, tone, primary, note, accent = '#1F6F5F',
 }: {
   icon: ReactNode
   label: string
@@ -604,22 +651,24 @@ function StatCard({
   tone: 'positive' | 'negative' | 'madmona' | 'neutral'
   primary?: boolean
   note?: string
+  accent?: string
 }) {
-  const toneClass =
-    tone === 'positive' ? 'text-[#1F6F5F]' :
-    tone === 'negative' ? 'text-red-600' :
-    tone === 'madmona' ? 'text-[#1F6F5F]' :
-    'text-[#1A2E26]'
+  // الفلوس بتفضل بلونها الدلالي (أخضر داخل / أحمر خارج)؛ لون البراند
+  // بيتستخدم بس في خلفية الكارد الرئيسي عشان الدخل مايظهرش بلون خسارة.
+  const valueColor =
+    primary ? '#FFFFFF' :
+    tone === 'negative' ? '#DC2626' :
+    tone === 'neutral' ? '#1A2E26' :
+    '#1F6F5F'
 
   return (
-    <div className={`rounded-2xl p-4 md:p-5 border transition-shadow ${
-      primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100 hover:shadow-sm'
-    }`}>
+    <div className={`rounded-2xl p-4 md:p-5 border transition-shadow ${primary ? '' : 'bg-white border-gray-100 hover:shadow-sm'}`}
+      style={primary ? { backgroundColor: accent, borderColor: accent } : undefined}>
       <div className={`flex items-center gap-2 mb-2 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>
         {icon}
         <p className="text-[10px] font-bold tracking-wider uppercase">{label}</p>
       </div>
-      <p className={`text-2xl md:text-3xl font-black tracking-tight ${primary ? 'text-white' : toneClass}`}>
+      <p className="text-2xl md:text-3xl font-black tracking-tight" style={{ color: valueColor }}>
         {amount.toLocaleString('ar-EG')}
         <span className={`text-sm font-medium ml-1 ${primary ? 'text-white/70' : 'text-[#6B7280]'}`}>ج</span>
       </p>
@@ -742,17 +791,16 @@ function KV({ label, value }: { label: string; value: string }) {
   )
 }
 
-function ModuleCard({ href, icon, label, primary }: { href: string; icon: ReactNode; label: string; primary?: boolean }) {
+function ModuleCard({ href, icon, label, primary, accent = '#1F6F5F' }: { href: string; icon: ReactNode; label: string; primary?: boolean; accent?: string }) {
   return (
     <Link
       href={href}
-      className={`rounded-2xl p-3 border flex flex-col items-center gap-1.5 transition-all hover:shadow-md hover:-translate-y-0.5 ${
-        primary
-          ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
-          : 'bg-white border-gray-100 text-[#1A2E26] hover:border-[#1F6F5F]'
-      }`}
+      className="rounded-2xl p-3 border flex flex-col items-center gap-1.5 transition-all hover:shadow-md hover:-translate-y-0.5"
+      style={primary
+        ? { backgroundColor: accent, borderColor: accent, color: '#FFFFFF' }
+        : { backgroundColor: '#FFFFFF', borderColor: '#F0F0EC', color: '#1A2E26' }}
     >
-      <div className="w-5 h-5">{icon}</div>
+      <div className="w-5 h-5" style={{ color: primary ? '#FFFFFF' : accent }}>{icon}</div>
       <span className="text-[11px] font-bold text-center leading-tight">{label}</span>
     </Link>
   )
