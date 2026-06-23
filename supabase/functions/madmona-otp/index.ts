@@ -1,7 +1,6 @@
 // Unified Madmona Account — WhatsApp OTP sender (OPEN SIGNUP for any phone)
-// Calls madmona_request_otp (creates/greets account by phone), then sends the
-// 6-digit code to the user's WhatsApp via the approved utility template
-// madmona_admin_alert_v1. Credentials read from the whatsapp_config table.
+// v4 (2026-06-04): verify_jwt=false to unblock anonymous signups.
+// Rate limit (3 codes / 10 min per phone) enforced inside madmona_request_otp RPC.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -26,7 +25,8 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    // 1) Generate code (open signup — works for any phone, greets by known name)
+    // 1) Generate code (open signup — works for any phone, greets by known name).
+    // Per-phone rate limit (3 / 10 min) lives inside madmona_request_otp RPC.
     const { data: otp, error: rpcErr } = await supabase.rpc('madmona_request_otp', {
       p_phone: phone, p_full_name: full_name ?? null,
     })

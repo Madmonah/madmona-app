@@ -41,3 +41,4 @@ REMOVE_LISTING.bat
 *.tsbuildinfo
 next-env.d.ts
 .tmp-palette-backup/ 
+.env*
