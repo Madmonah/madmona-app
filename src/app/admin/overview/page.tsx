@@ -438,10 +438,6 @@ export default function AdminDashboardV2() {
             <ToolCard href="/v/GOLF" icon={<QrCode />} title="زيارة · الجولف" sub="/v/GOLF" />
             <ToolCard href="/v/HIJAB" icon={<QrCode />} title="زيارة · المحجبات" sub="/v/HIJAB" />
             <ToolCard href="/v/TAGAMOA" icon={<QrCode />} title="زيارة · التجمع" sub="/v/TAGAMOA" />
-            <ToolCard href="/book/HQ" icon={<Calendar />} title="حجز · مصر الجديدة" sub="/book/HQ" />
-            <ToolCard href="/book/GOLF" icon={<Calendar />} title="حجز · الجولف" sub="/book/GOLF" />
-            <ToolCard href="/book/HIJAB" icon={<Calendar />} title="حجز · المحجبات" sub="/book/HIJAB" />
-            <ToolCard href="/book/TAGAMOA" icon={<Calendar />} title="حجز · التجمع" sub="/book/TAGAMOA" />
             <ToolCard href="/clock/HQ" icon={<Clock />} title="حضور · مصر الجديدة" sub="/clock/HQ" />
             <ToolCard href="/clock/GOLF" icon={<Clock />} title="حضور · الجولف" sub="/clock/GOLF" />
             <ToolCard href="/clock/HIJAB" icon={<Clock />} title="حضور · المحجبات" sub="/clock/HIJAB" />
@@ -751,7 +747,6 @@ export default function AdminDashboardV2() {
             <ToolCard href="/browse" icon={<Eye />} title="تصفح" sub="Browse" />
             <ToolCard href="/add-listing" icon={<Plus />} title="إضافة إيجار" sub="Add listing wizard" />
             <ToolCard href="/account" icon={<Users />} title="حسابي" sub="My account" />
-            <ToolCard href="/my-bookings" icon={<Calendar />} title="حجوزاتي" sub="My bookings" />
             <ToolCard href="/about" icon={<BookOpen />} title="عن مضمونة" sub="About" />
             <ToolCard href="/privacy" icon={<Shield />} title="الخصوصية" sub="Privacy" />
             <ToolCard href="/terms" icon={<ScrollText />} title="الشروط" sub="Terms" />
