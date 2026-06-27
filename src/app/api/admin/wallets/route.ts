@@ -3,7 +3,7 @@
 // POST → إجراءات الأدمن: adjust (تعديل رصيد) | grant_credit | process_withdrawal
 import { NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
-import { verifyAdmin, type AuthedUser } from '@/lib/wallet'
+import { verifyAdmin, type AuthedUser } from '@/lib/wallet-server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

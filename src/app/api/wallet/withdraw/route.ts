@@ -2,7 +2,8 @@
 // POST → طلب سحب رصيد (كاش فقط). بيحجز المبلغ فورًا لحد ما الأدمن يراجع.
 import { NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
-import { verifyUser, WITHDRAW_METHODS } from '@/lib/wallet'
+import { verifyUser } from '@/lib/wallet-server'
+import { WITHDRAW_METHODS } from '@/lib/wallet'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

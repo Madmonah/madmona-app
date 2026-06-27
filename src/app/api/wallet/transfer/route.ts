@@ -2,7 +2,7 @@
 // POST → تحويل رصيد لمستخدم تاني عن طريق رقم الموبايل.
 import { NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
-import { verifyUser } from '@/lib/wallet'
+import { verifyUser } from '@/lib/wallet-server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

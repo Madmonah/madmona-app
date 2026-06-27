@@ -1,9 +1,10 @@
 // src/lib/wallet.ts
 // =====================================================================
-// المحفظة الإلكترونية — أنواع وأدوات مشتركة (سيرفر + كلاينت)
+// المحفظة الإلكترونية — أنواع وأدوات عرض آمنة للـ client و الـ server.
+// ⚠️ مفيش أي استيراد لـ service-role (سيرفر) هنا — عشان الصفحات الـ client
+//    تقدر تستورد منه من غير ما يتحمّل كود سيرفر في المتصفح.
+//    كود المصادقة السيرفر موجود في wallet-server.ts
 // =====================================================================
-import { createClient } from '@supabase/supabase-js'
-import { supabase as supabaseAdmin } from '@/lib/supabase'
 
 // ---------- Types ----------
 export type WalletStatus = 'active' | 'frozen' | 'closed'
@@ -59,7 +60,9 @@ export interface WalletWithdrawal {
   created_at: string
 }
 
-// ---------- Display helpers ----------
+export interface AuthedUser { id: string; role: string | null }
+
+// ---------- Display helpers (client-safe) ----------
 export const WITHDRAW_METHODS: Record<string, string> = {
   bank_transfer: 'تحويل بنكي',
   instapay: 'إنستاباي',
@@ -86,44 +89,4 @@ export function formatMoney(n: number, currency = 'EGP'): string {
     maximumFractionDigits: 2,
   })
   return `${v} ${currency === 'EGP' ? 'ج.م' : currency}`
-}
-
-// ---------- Server-side auth helper (Bearer token → profile) ----------
-// Mirrors the pattern used across /api routes: anon client to validate the
-// access token, then service-role client for the actual data work.
-export interface AuthedUser { id: string; role: string | null }
-
-export async function verifyUser(
-  authHeader: string | null,
-): Promise<{ ok: boolean; user?: AuthedUser; reason?: string }> {
-  try {
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return { ok: false, reason: 'no_token' }
-    }
-    const token = authHeader.replace('Bearer ', '')
-    const sb = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    )
-    const { data: { user } } = await sb.auth.getUser(token)
-    if (!user) return { ok: false, reason: 'not_authenticated' }
-
-    // @ts-ignore new schema not in generated types
-    const { data: profile } = await supabaseAdmin
-      .from('profiles').select('role').eq('id', user.id).maybeSingle()
-
-    return { ok: true, user: { id: user.id, role: (profile as { role?: string } | null)?.role ?? null } }
-  } catch (e) {
-    console.error('[wallet/verifyUser] error:', e)
-    return { ok: false, reason: 'auth_error' }
-  }
-}
-
-export async function verifyAdmin(
-  authHeader: string | null,
-): Promise<{ ok: boolean; user?: AuthedUser; reason?: string }> {
-  const res = await verifyUser(authHeader)
-  if (!res.ok) return res
-  if (res.user?.role !== 'admin') return { ok: false, reason: 'not_admin' }
-  return res
 }
