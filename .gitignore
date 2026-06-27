@@ -42,3 +42,9 @@ REMOVE_LISTING.bat
 next-env.d.ts
 .tmp-palette-backup/ 
 .env*
+
+# secrets / local env (added 2026-06-27)
+.env.local
+.env*.local
+.vercel
+

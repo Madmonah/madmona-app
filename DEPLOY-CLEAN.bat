@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-cd /d C:\madmona-app
+cd /d E:\madmona-app
 echo ============================================================
 echo    MADMONA - DEPLOY (local files only - no setup - no git)
 echo ============================================================

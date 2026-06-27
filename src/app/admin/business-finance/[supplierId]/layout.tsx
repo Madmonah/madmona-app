@@ -23,6 +23,17 @@ async function isPlatformAdmin(): Promise<boolean> {
   } catch { return false }
 }
 
+// Trial-open access: a business still under negotiation (contract_status='negotiating')
+// with ERP enabled is openable by ANYONE who has the link — no login required.
+// This lets sales share a live trial link. Contracted/real suppliers stay gated.
+async function isTrialOpenSupplier(supplierId: string): Promise<boolean> {
+  try {
+    // @ts-expect-error rpc typing
+    const { data } = await supabase.rpc('is_trial_open_supplier', { p_supplier_id: supplierId })
+    return data === true
+  } catch { return false }
+}
+
 /* ============================================================
    Auth guard for /admin/business-finance/[supplierId]/*
    Only a Madmona platform admin OR the owner/manager of this
@@ -54,11 +65,15 @@ export default function BusinessFinanceLayout({
         if (data?.allowed) { setReadonly(data.readonly === true); setState('allowed'); return }
         // 2) Madmona platform-admin bypass (came from the dashboard)
         if (await isPlatformAdmin()) { setState('allowed'); return }
+        // 3) Trial-open business (negotiating + ERP) — open to anyone with the link
+        if (await isTrialOpenSupplier(supplierId)) { setState('allowed'); return }
         setState(data?.reason === 'no_session' ? 'no_session' : 'denied')
         return
       }
       // No owner token — still let a logged-in Madmona admin straight through
       if (await isPlatformAdmin()) { setState('allowed'); return }
+      // Trial-open business — open to anyone with the link, no login needed
+      if (await isTrialOpenSupplier(supplierId)) { setState('allowed'); return }
       setState('no_session')
     })()
     /* eslint-disable-next-line react-hooks/exhaustive-deps */

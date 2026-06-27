@@ -1,0 +1,11 @@
+.env
+CairoVF.ttf
+genie.png
+ffmpeg.exe
+*.ttf
+_post_*.png
+_*.png
+_*.py
+*.mp4
+test_reel.mp4
+out.png

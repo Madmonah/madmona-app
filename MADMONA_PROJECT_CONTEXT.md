@@ -1,6 +1,6 @@
 # MADMONA — PROJECT CONTEXT (Source of Truth)
 
-**Last updated:** May 24, 2026
+**Last updated:** June 25, 2026
 **Owner:** Mohamed (محمد) — owner of مضمونة (Madmona)
 **Purpose:** This file is the persistent context for ALL Claude chats in this project. Upload to "Project knowledge" and/or paste into "Project instructions" so every new chat starts with the full picture.
 
@@ -22,9 +22,9 @@
 ### Brand
 - **Name:** مضمونة (Madmona) — note the **ض** (NOT م د م و ن ة or any variant)
 - **Site:** madmonacairo.com
-- **Founded:** 2019 — **relaunching 2026**
+- **Founded:** 2019 · **Launched: 2026** (اتفاق 25 يونيو 2026: نقول "launched 2026" مش "relaunching")
 - **Identity:** GUARANTEED **rental + services marketplace** for everything that can be rented or hired (chalets, apartments, cars, cameras, equipment, halls, events + service verticals: religious, home, medical, beauty, education...). NOT a listings-only site. ⛔ **Coworking is CANCELLED PERMANENTLY (May 24 2026)** — not a category, not content, not an identity. The content gate auto-rejects any coworking content; the legacy "workspaces" RENTAL category (supplier listings) is a separate thing and stays.
-- **Slogan:** *"احنا بتوع الإيجار"*
+- **Slogan:** ⛔ تم إزالة *"احنا بتوع الإيجار"* (اتفاق 25 يونيو 2026) — لا تُستخدم في أي محتوى أو هاشتاج بعد الآن.
 - **Brand promise:** *"بنستهدف أن آلاف يحققوا دخل ثابت"*
 - **Vision:** Biggest rental platform in Egypt and possibly the world.
 
@@ -100,7 +100,7 @@
 - **Backend:** Supabase (Postgres + Edge Functions + Storage + Auth)
 - **DNS:** Cloudflare
 - **Repo:** github.com/Madmonah/madmona-app
-- **Local:** C:\madmona-app
+- **Local:** E:\madmona-app  ⚠️ (اتنقل من C:\ لـ E:\ — يونيو 2026. `C:\madmona-app` مبقاش موجود. كل المسارات لازم تكون E:\)
 - **Supabase project ID:** `mjhflxpxunwycbiquoig`
 - **Supabase URL:** `https://mjhflxpxunwycbiquoig.supabase.co`
 
@@ -120,8 +120,9 @@
 ⚠️ **NEVER use `git push` for deploys.** That path is dead. Don't debug git push timeouts.
 
 ### Process
-1. **One-time setup:** `C:\madmona-app\SETUP.bat` (already done)
-2. **Every deploy:** `C:\madmona-app\DEPLOY.bat` — runs `vercel deploy --prod --yes` directly via CLI
+1. ⚠️ **المشروع على `E:\madmona-app`** (مش C:). كل ملفات الـ.bat لسه بتقول `cd /d C:\madmona-app` — **بايظة ومحتاجة تتصلّح لـ E:**.
+2. **مفيش ملف اسمه `DEPLOY.bat`.** أنضف ملف ديبلوي = `DEPLOY-CLEAN.bat` (بيشغّل `vercel --prod --yes`) بس مساره غلط (C:).
+3. **الديبلوي الصح:** من جوّه `E:\madmona-app` شغّل `vercel --prod --yes` مباشرة.
 
 ### Git = code backup only, NOT a deploy pipeline.
 

@@ -1,0 +1,7 @@
+{ "format": "reel", "scenes": [
+  { "template":"hook", "theme":"light", "kicker":"القاهرة · EST. 2026", "title":"معاملاتك", "accent":"مضمونة", "duration":3.6 },
+  { "template":"statement", "theme":"green", "kicker":"سوق مصر المضمون", "lines":["كل اللي محتاجه","في مكان واحد"], "sub":"تأجير · بيع · خدمات · مطاعم · بيوتي", "duration":4.2 },
+  { "template":"chips", "theme":"light", "kicker":"اختار مجالك", "items":[["عقارات","green"],["عربيات","gold"],["خدمات","line"],["مطاعم","gold"],["بيوتي","green"],["شاليهات","line"]], "sub":"٦٠+ فئة", "duration":4.0 },
+  { "template":"checklist", "theme":"dark", "kicker":"ليه مضمونة؟", "rows":["موردين موثّقين","حماية كاملة على كل صفقة","دفع آمن — كاش أو إنستاباي","دعم واتساب ٢٤/٧"], "duration":4.4 },
+  { "template":"cta", "theme":"green", "kicker":"ابدأ دلوقتي · مجاناً", "title":"هنشغل مصر", "pill":"ضيف ليستنجك مجاناً", "lines":["madmonacairo.com","واتساب 0100 222 9982"], "duration":4.2 }
+] }
