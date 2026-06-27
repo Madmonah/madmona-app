@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, MapPin, Phone, User, MessageCircle, Loader2,
-  AlertCircle, CheckCircle, CreditCard, ChevronLeft, ShoppingBag, Banknote,
+  AlertCircle, CheckCircle, CreditCard, ChevronLeft, ShoppingBag, Banknote, Wallet,
 } from 'lucide-react'
 import {
   useCart, cartSubtotal, clearCart, buildOrderItemsPayload,
@@ -19,7 +19,7 @@ import {
 // then redirects to /order/[ref] on success.
 // ============================================================================
 
-type PaymentMethod = 'instapay' | 'cod'
+type PaymentMethod = 'instapay' | 'cod' | 'wallet'
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -38,6 +38,9 @@ export default function CheckoutPage() {
   const [district, setDistrict] = useState('')
   const [notes, setNotes] = useState('')
   const [payment, setPayment] = useState<PaymentMethod>('instapay')
+  // Wallet (authenticated users only): balance + access token for /api/wallet/pay-order
+  const [walletBalance, setWalletBalance] = useState<number | null>(null)
+  const [accessToken, setAccessToken] = useState<string>('')
   // COD (cash on delivery) is offered for restaurant (food) orders only.
   const codAllowed = cart.order_type === 'food'
   // Safety: if cart type changes away from food, force back to instapay.
@@ -53,6 +56,13 @@ export default function CheckoutPage() {
   // will be added later via supplier dashboard config.
   const deliveryFee = 0
   const total = subtotal + deliveryFee
+
+  // If wallet becomes unavailable or insufficient for the total, fall back to instapay.
+  useEffect(() => {
+    if (payment === 'wallet' && (walletBalance === null || walletBalance < total)) {
+      setPayment('instapay')
+    }
+  }, [payment, walletBalance, total])
 
   // Load auth + profile
   useEffect(() => {
@@ -73,6 +83,16 @@ export default function CheckoutPage() {
             setName(profile.full_name || '')
             setPhone(profile.phone || '')
           }
+          // Load wallet balance (cash + credit) for the "pay from wallet" option
+          try {
+            setAccessToken(session.access_token)
+            const wRes = await fetch('/api/wallet', { headers: { Authorization: `Bearer ${session.access_token}` } })
+            if (wRes.ok) {
+              const wJson = await wRes.json()
+              const bal = Number(wJson.wallet?.balance_cash || 0) + Number(wJson.wallet?.balance_credit || 0)
+              setWalletBalance(bal)
+            }
+          } catch { /* wallet optional */ }
         } else {
           setIsAuthed(false)
         }
@@ -165,6 +185,29 @@ export default function CheckoutPage() {
         setError('الأوردر اتعمل لكن مفيش reference. كلّمنا على واتساب.')
         setSubmitting(false)
         return
+      }
+
+      // Wallet payment: charge the order from the wallet (atomic, server-side).
+      if (payment === 'wallet') {
+        try {
+          const payRes = await fetch('/api/wallet/pay-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+            body: JSON.stringify({ order_id: result.order_id }),
+          })
+          if (!payRes.ok) {
+            const pj = await payRes.json().catch(() => ({}))
+            const msg = pj.error === 'insufficient_funds'
+              ? 'الرصيد مش كافٍ. الأوردر اتعمل وتقدر تدفعه بطريقة تانية من صفحة الأوردر.'
+              : 'تعذّر الدفع من المحفظة. الأوردر اتعمل وتقدر تدفعه من صفحة الأوردر.'
+            clearCart()
+            setError(msg)
+            router.replace(`/order/${result.reference_code}?id=${result.order_id}`)
+            return
+          }
+        } catch (e) {
+          console.error('[checkout] wallet pay error:', e)
+        }
       }
 
       // Clear cart and redirect to tracking page
@@ -356,6 +399,34 @@ export default function CheckoutPage() {
             طريقة الدفع
           </h2>
           <div className="space-y-3">
+            {/* Wallet option — authenticated users only */}
+            {isAuthed && walletBalance !== null && (
+              <button
+                type="button"
+                disabled={walletBalance < total}
+                onClick={() => walletBalance >= total && setPayment('wallet')}
+                className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-right transition-all ${
+                  walletBalance < total
+                    ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                    : payment === 'wallet'
+                      ? 'border-[#1F6F5F] bg-[#1F6F5F]/5'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0">
+                  <Wallet className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-sm text-gray-900">الدفع من المحفظة</p>
+                  <p className="text-[11px] text-gray-500">
+                    رصيدك الحالي: {walletBalance.toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ج.م
+                    {walletBalance < total ? ' — رصيد غير كافٍ' : ' — خصم فوري'}
+                  </p>
+                </div>
+                {payment === 'wallet' && <CheckCircle className="w-5 h-5 text-[#1F6F5F] flex-shrink-0" />}
+              </button>
+            )}
+
             {/* InstaPay option */}
             <button
               type="button"

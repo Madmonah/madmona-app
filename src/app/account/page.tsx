@@ -8,7 +8,7 @@ import {
   ArrowRight, Calendar, Building2, ShoppingBag,
   LogOut, Loader2, Lock, User, Phone, Crown, ChevronLeft,
   CheckCircle, Clock, AlertCircle, FolderTree, Edit2, Check, X, Heart,
-  BarChart3, Sparkles,
+  BarChart3, Sparkles, Wallet,
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import PushNotificationCard from '@/components/PushNotificationCard'
@@ -324,6 +324,14 @@ export default function AccountPage() {
             iconBg="bg-orange-50 text-orange-600"
             title="أوردراتي"
             subtitle={ordersCount > 0 ? `${ordersCount} أوردر` : 'لسه ما طلبتش حاجة'}
+          />
+          <div className="h-px bg-gray-100 mx-6" />
+          <SectionLink
+            href="/account/wallet"
+            icon={<Wallet className="w-5 h-5" />}
+            iconBg="bg-emerald-50 text-emerald-600"
+            title="محفظتي"
+            subtitle="الرصيد، الشحن، التحويل والسحب"
           />
           <div className="h-px bg-gray-100 mx-6" />
           <SectionLink
