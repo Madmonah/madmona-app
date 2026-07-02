@@ -80,6 +80,7 @@ const MODULE_REGISTRY: { href: string; Icon: any; label: string; primary?: boole
   { href: 'branches',           Icon: Building2,      label: 'الفروع',                          v: ['core'] },
   { href: 'customers',          Icon: Heart,          label: 'العملاء',                         v: ['core'] },
   { href: 'expenses',           Icon: DollarSign,     label: 'المصاريف',                        v: ['core'] },
+  { href: 'accounting',         Icon: Calculator,     label: 'الحسابات والقيود', primary: true, v: ['core'] },
   { href: 'attendance',         Icon: Clock,          label: 'الحضور',                          v: ['core'] },
   { href: 'attendance-devices', Icon: Smartphone,     label: 'أجهزة البصم',                     v: ['core'] },
   { href: 'cash-recon',         Icon: Wallet,         label: 'جرد الكاش',                       v: ['core'] },
