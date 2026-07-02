@@ -5,8 +5,9 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import {
   Package, Search, ChevronLeft, Loader2, AlertTriangle, TrendingUp,
-  RefreshCw, Filter, DollarSign, Box, AlertCircle,
+  RefreshCw, Filter, DollarSign, Box, AlertCircle, FileSpreadsheet, Upload, X,
 } from 'lucide-react'
+import * as XLSX from 'xlsx'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -93,6 +94,7 @@ export default function InventoryPage({ params }: { params: { supplierId: string
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
   const [lowStockOnly, setLowStockOnly] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -151,9 +153,14 @@ export default function InventoryPage({ params }: { params: { supplierId: string
                 </p>
               )}
             </div>
-            <button onClick={load} className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2">
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> تحديث
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setImportOpen(true)} className="px-4 py-2 rounded-xl bg-[#1F6F5F] hover:bg-[#1A5D4F] text-sm font-bold text-white flex items-center gap-2">
+                <FileSpreadsheet className="w-4 h-4" /> استيراد Excel
+              </button>
+              <button onClick={load} className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2">
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> تحديث
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -242,6 +249,138 @@ export default function InventoryPage({ params }: { params: { supplierId: string
           </section>
         )}
       </main>
+
+      {importOpen && (
+        <ImportModal
+          supplierId={supplierId}
+          onClose={() => setImportOpen(false)}
+          onDone={() => { setImportOpen(false); load() }}
+        />
+      )}
+    </div>
+  )
+}
+
+/* ============ استيراد Excel للمخزون ============ */
+const IMPORT_FIELDS: { key: string; label: string; aliases: string[] }[] = [
+  { key: 'name_ar',           label: 'اسم المنتج *',   aliases: ['name_ar', 'name', 'اسم المنتج', 'الاسم', 'المنتج', 'product'] },
+  { key: 'sku',               label: 'SKU / الكود',    aliases: ['sku', 'code', 'الكود', 'كود', 'باركود', 'barcode'] },
+  { key: 'category',          label: 'التصنيف',        aliases: ['category', 'التصنيف', 'الفئة', 'القسم'] },
+  { key: 'unit',              label: 'الوحدة',         aliases: ['unit', 'الوحدة', 'وحدة'] },
+  { key: 'current_stock',     label: 'الكمية بالمخزن', aliases: ['current_stock', 'stock', 'qty', 'quantity', 'المخزون', 'الكمية', 'الرصيد'] },
+  { key: 'reorder_threshold', label: 'حد إعادة الطلب', aliases: ['reorder_threshold', 'reorder', 'حد الطلب', 'حد اعادة الطلب', 'الحد الأدنى'] },
+  { key: 'cost_price_egp',    label: 'سعر التكلفة',    aliases: ['cost_price_egp', 'cost', 'التكلفة', 'سعر التكلفة', 'سعر الشراء'] },
+  { key: 'selling_price_egp', label: 'سعر البيع',      aliases: ['selling_price_egp', 'price', 'selling_price', 'سعر البيع', 'السعر'] },
+  { key: 'notes',             label: 'ملاحظات',        aliases: ['notes', 'ملاحظات', 'ملاحظة'] },
+]
+
+function ImportModal({ supplierId, onClose, onDone }: { supplierId: string; onClose: () => void; onDone: () => void }) {
+  const [rows, setRows] = useState<Record<string, any>[]>([])
+  const [headers, setHeaders] = useState<string[]>([])
+  const [mapping, setMapping] = useState<Record<string, string>>({})
+  const [fileName, setFileName] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [result, setResult] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const norm = (s: string) => String(s || '').trim().toLowerCase().replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه')
+
+  async function onFile(file: File) {
+    setError(null); setResult(null)
+    const buf = await file.arrayBuffer()
+    const wb = XLSX.read(buf)
+    const ws = wb.Sheets[wb.SheetNames[0]]
+    const json: Record<string, any>[] = XLSX.utils.sheet_to_json(ws, { defval: null })
+    if (!json.length) { setError('الشيت فاضي'); return }
+    const hs = Object.keys(json[0])
+    const m: Record<string, string> = {}
+    for (const fld of IMPORT_FIELDS) {
+      const hit = hs.find(h => fld.aliases.some(a => norm(a) === norm(h)))
+      if (hit) m[fld.key] = hit
+    }
+    setFileName(file.name); setHeaders(hs); setRows(json); setMapping(m)
+  }
+
+  async function doImport() {
+    if (!mapping.name_ar) { setError('لازم تحدد عمود "اسم المنتج"'); return }
+    setBusy(true); setError(null)
+    try {
+      const payload = rows.map(r => {
+        const o: Record<string, any> = {}
+        for (const fld of IMPORT_FIELDS) {
+          const h = mapping[fld.key]
+          if (h && r[h] !== null && r[h] !== undefined) o[fld.key] = String(r[h])
+        }
+        return o
+      }).filter(o => o.name_ar)
+      let inserted = 0, updated = 0, skipped = 0
+      for (let i = 0; i < payload.length; i += 500) {
+        // @ts-expect-error
+        const { data, error: e } = await supabase.rpc('admin_import_inventory', {
+          p_supplier_id: supplierId, p_rows: payload.slice(i, i + 500),
+        })
+        if (e) throw new Error(e.message)
+        inserted += Number(data?.inserted || 0); updated += Number(data?.updated || 0); skipped += Number(data?.skipped || 0)
+      }
+      setResult(`✅ تم: ${inserted} منتج جديد · ${updated} اتحدّث · ${skipped} اتخطى`)
+      setTimeout(onDone, 1800)
+    } catch (e: any) {
+      setError(e?.message === 'not allowed' ? 'مفيش صلاحية للاستيراد' : (e?.message || 'حصل خطأ في الاستيراد'))
+    } finally { setBusy(false) }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6" dir="rtl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-black text-[#1A2E26] flex items-center gap-2">
+            <FileSpreadsheet className="w-5 h-5 text-[#1F6F5F]" /> استيراد مخزون من Excel
+          </h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-4 h-4" /></button>
+        </div>
+
+        <p className="text-xs text-[#6B7280] mb-4">
+          ارفع شيت (.xlsx / .csv) فيه عمود اسم المنتج على الأقل — الأعمدة بتتقري تلقائي، وتقدر تظبط الماب يدوي.
+          المنتج الموجود بنفس الاسم/الـ SKU بيتحدّث، والجديد بيتضاف.
+        </p>
+
+        <input
+          type="file" accept=".xlsx,.xls,.csv"
+          className="w-full text-sm mb-4 file:ml-3 file:px-4 file:py-2 file:rounded-xl file:border-0 file:bg-[#1F6F5F] file:text-white file:font-bold file:cursor-pointer"
+          onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+        />
+
+        {rows.length > 0 && (
+          <>
+            <p className="text-sm font-bold text-[#1A2E26] mb-2">📄 {fileName} — {rows.length} صف</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+              {IMPORT_FIELDS.map((fld) => (
+                <label key={fld.key} className="flex items-center justify-between gap-2 text-xs bg-[#FAFAF7] rounded-xl px-3 py-2">
+                  <span className="font-bold text-[#1A2E26]">{fld.label}</span>
+                  <select
+                    value={mapping[fld.key] || ''}
+                    onChange={(e) => setMapping((m) => ({ ...m, [fld.key]: e.target.value }))}
+                    className="bg-white border border-gray-200 rounded-lg px-2 py-1 text-xs max-w-[50%]"
+                  >
+                    <option value="">— تجاهل —</option>
+                    {headers.map((h) => <option key={h} value={h}>{h}</option>)}
+                  </select>
+                </label>
+              ))}
+            </div>
+            <button
+              onClick={doImport} disabled={busy}
+              className="w-full py-3 rounded-xl bg-[#1F6F5F] hover:bg-[#1A5D4F] text-white font-bold flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+              {busy ? 'جاري الاستيراد…' : `استيراد ${rows.length} صف`}
+            </button>
+          </>
+        )}
+
+        {result && <p className="mt-3 text-sm font-bold text-[#1F6F5F]">{result}</p>}
+        {error && <p className="mt-3 text-sm font-bold text-red-600">{error}</p>}
+      </div>
     </div>
   )
 }
