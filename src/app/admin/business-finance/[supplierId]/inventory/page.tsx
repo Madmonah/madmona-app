@@ -27,6 +27,7 @@ type Product = {
   cost_price_egp: number | null
   selling_price_egp: number | null
   recent_usage: number | null
+  photo_url: string | null
   margin_pct: number | null
   stock_value: number | null
 }
@@ -271,6 +272,7 @@ const IMPORT_FIELDS: { key: string; label: string; aliases: string[] }[] = [
   { key: 'reorder_threshold', label: 'حد إعادة الطلب', aliases: ['reorder_threshold', 'reorder', 'حد الطلب', 'حد اعادة الطلب', 'الحد الأدنى'] },
   { key: 'cost_price_egp',    label: 'سعر التكلفة',    aliases: ['cost_price_egp', 'cost', 'التكلفة', 'سعر التكلفة', 'سعر الشراء'] },
   { key: 'selling_price_egp', label: 'سعر البيع',      aliases: ['selling_price_egp', 'price', 'selling_price', 'سعر البيع', 'السعر'] },
+  { key: 'photo_url',         label: 'رابط الصورة',    aliases: ['photo', 'photo_url', 'image', 'img', 'الصورة', 'صورة', 'رابط الصورة', 'لينك الصورة'] },
   { key: 'notes',             label: 'ملاحظات',        aliases: ['notes', 'ملاحظات', 'ملاحظة'] },
 ]
 
@@ -395,6 +397,10 @@ function ProductRow({ p }: { p: Product }) {
     <div className="grid grid-cols-12 gap-3 px-4 py-3 hover:bg-[#FAFAF7] transition-colors items-center text-sm">
       <div className="col-span-5">
         <div className="flex items-start gap-2">
+          {p.photo_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={p.photo_url} alt="" className="w-10 h-10 rounded-lg object-cover border border-gray-100 flex-shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+          )}
           <div className="flex-1 min-w-0">
             <p className="font-bold text-[#1A2E26] leading-tight truncate">{p.name_ar}</p>
             <div className="flex items-center gap-1.5 mt-1">

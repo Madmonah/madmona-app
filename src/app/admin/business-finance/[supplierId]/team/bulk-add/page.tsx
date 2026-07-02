@@ -7,8 +7,9 @@ import { createClient } from '@supabase/supabase-js'
 import {
   Users, ChevronLeft, Loader2, Plus, Trash2, CheckCircle2,
   ClipboardPaste, Type, AlertCircle, Building2, ArrowDownToLine,
-  Sparkles,
+  Sparkles, FileSpreadsheet,
 } from 'lucide-react'
+import * as XLSX from 'xlsx'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,6 +29,8 @@ type Row = {
   role: string
   role_ar: string
   notes: string
+  photo: string
+  phone: string
 }
 
 const ROLE_PRESETS = [
@@ -110,7 +113,7 @@ export default function BulkAddEmployeesPage({
   const [branches, setBranches] = useState<Branch[]>([])
   const [selectedBranch, setSelectedBranch] = useState<string>('')
   
-  const [mode, setMode] = useState<'paste' | 'manual'>('paste')
+  const [mode, setMode] = useState<'paste' | 'manual' | 'excel'>('paste')
   const [pasteText, setPasteText] = useState('')
   const [rows, setRows] = useState<Row[]>([])
   const [submitting, setSubmitting] = useState(false)
@@ -147,12 +150,61 @@ export default function BulkAddEmployeesPage({
         role: roleInfo.role,
         role_ar: roleInfo.role_ar,
         notes: '',
+        photo: '',
+        phone: '',
       }
     })
     setRows(newRows)
     setMode('manual') // switch to manual mode to review
   }
-  
+
+  // Excel mode: parse xlsx/csv — بيقرا الاسم والمرتب والوظيفة والصورة والتليفون تلقائي
+  const [excelError, setExcelError] = useState<string | null>(null)
+  const [excelFileName, setExcelFileName] = useState('')
+  async function onExcelFile(file: File) {
+    setExcelError(null)
+    try {
+      const buf = await file.arrayBuffer()
+      const wb = XLSX.read(buf)
+      const ws = wb.Sheets[wb.SheetNames[0]]
+      const json: Record<string, any>[] = XLSX.utils.sheet_to_json(ws, { defval: null })
+      if (!json.length) { setExcelError('الشيت فاضي'); return }
+      const normH = (s: string) => String(s || '').trim().toLowerCase().replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه')
+      const headers = Object.keys(json[0])
+      const findCol = (aliases: string[]) => headers.find(h => aliases.some(a => normH(a) === normH(h))) || null
+      const cName   = findCol(['name', 'full_name', 'الاسم', 'اسم الموظف', 'الموظف', 'اسم'])
+      const cSalary = findCol(['salary', 'salary_egp', 'المرتب', 'الراتب', 'مرتب'])
+      const cRole   = findCol(['role', 'role_ar', 'الوظيفة', 'المسمى', 'الدور', 'المسمى الوظيفي'])
+      const cPhoto  = findCol(['photo', 'photo_url', 'image', 'img', 'الصورة', 'صورة', 'رابط الصورة', 'لينك الصورة'])
+      const cPhone  = findCol(['phone', 'mobile', 'تليفون', 'موبايل', 'رقم', 'الرقم', 'واتساب'])
+      const cNotes  = findCol(['notes', 'ملاحظات', 'ملاحظة'])
+      if (!cName) { setExcelError('مش لاقي عمود الاسم في الشيت — سمّيه "الاسم" أو "name"'); return }
+      const newRows: Row[] = json
+        .filter(r => String(r[cName] || '').trim())
+        .map((r, i) => {
+          const salaryNum = cSalary ? (normalizeNumber(String(r[cSalary] ?? '')) || 0) : 0
+          const inferred = inferRole(salaryNum)
+          const roleTxt = cRole ? String(r[cRole] || '').trim() : ''
+          const preset = roleTxt ? ROLE_PRESETS.find(pr => normH(pr.label_ar) === normH(roleTxt) || normH(pr.en) === normH(roleTxt)) : null
+          return {
+            id: `${Date.now()}-x${i}`,
+            name: String(r[cName]).trim(),
+            salary: salaryNum ? String(salaryNum) : '',
+            role: preset ? preset.value : inferred.role,
+            role_ar: preset ? preset.label_ar : (roleTxt || inferred.role_ar),
+            notes: cNotes ? String(r[cNotes] || '').trim() : '',
+            photo: cPhoto ? String(r[cPhoto] || '').trim() : '',
+            phone: cPhone ? String(r[cPhone] || '').trim() : '',
+          }
+        })
+      setExcelFileName(file.name)
+      setRows(newRows)
+      setMode('manual') // review
+    } catch (e: any) {
+      setExcelError(e?.message || 'مش قادر أقرا الملف')
+    }
+  }
+
   // Manual mode: add empty row
   function addRow() {
     setRows(prev => [...prev, {
@@ -162,6 +214,8 @@ export default function BulkAddEmployeesPage({
       role: 'hair_stylist',
       role_ar: 'Stylist',
       notes: '',
+      photo: '',
+      phone: '',
     }])
   }
   
@@ -183,6 +237,8 @@ export default function BulkAddEmployeesPage({
         role: 'hair_stylist',
         role_ar: 'Stylist',
         notes: '',
+        photo: '',
+        phone: '',
       })))
     }
     setMode('manual')
@@ -208,7 +264,11 @@ export default function BulkAddEmployeesPage({
       role: r.role,
       role_ar: r.role_ar,
       salary_egp: r.salary ? normalizeNumber(r.salary) : null,
-      metadata: r.notes ? { notes: r.notes } : {},
+      metadata: {
+        ...(r.notes ? { notes: r.notes } : {}),
+        ...(r.photo ? { photo_url: r.photo } : {}),
+        ...(r.phone ? { phone: r.phone } : {}),
+      },
     }))
     
     // @ts-expect-error
@@ -263,7 +323,7 @@ export default function BulkAddEmployeesPage({
                 إضافة موظفين Bulk · {supplier.business_name}
               </h1>
               <p className="text-sm text-[#6B7280] mt-1">
-                الصق ليستة موظفين من النوتس أو الصورة، ولا أضفهم يدوي صف صف
+                الصق ليستة، أو ارفع شيت Excel (بالصور)، أو أضفهم يدوي صف صف
               </p>
             </div>
           </div>
@@ -380,7 +440,44 @@ export default function BulkAddEmployeesPage({
               <Type className="w-4 h-4" />
               إدخال يدوي
             </button>
+            <button
+              onClick={() => setMode('excel')}
+              className={`flex-1 px-4 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 ${
+                mode === 'excel'
+                  ? 'bg-[#1F6F5F]/5 text-[#1F6F5F] border-b-2 border-[#1F6F5F]'
+                  : 'text-[#6B7280] hover:text-[#1A2E26]'
+              }`}
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              شيت Excel
+            </button>
           </div>
+
+          {/* EXCEL MODE */}
+          {mode === 'excel' && (
+            <div className="p-4 space-y-3">
+              <div className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 rounded-xl p-3 text-xs text-[#1A2E26]">
+                <div className="flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold mb-1">ارفع شيت (.xlsx / .csv) والأعمدة بتتقري تلقائي:</p>
+                    <ul className="space-y-0.5 list-disc mr-4 text-[#6B7280]">
+                      <li><b>الاسم</b> (إجباري) · المرتب · الوظيفة</li>
+                      <li><b>الصورة</b> (رابط صورة الموظف) · تليفون · ملاحظات</li>
+                      <li>عربي أو إنجليزي في أسماء الأعمدة — الاتنين شغالين</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <input
+                type="file" accept=".xlsx,.xls,.csv"
+                className="w-full text-sm file:ml-3 file:px-4 file:py-2 file:rounded-xl file:border-0 file:bg-[#1F6F5F] file:text-white file:font-bold file:cursor-pointer"
+                onChange={(e) => e.target.files?.[0] && onExcelFile(e.target.files[0])}
+              />
+              {excelFileName && <p className="text-xs text-[#6B7280]">📄 {excelFileName}</p>}
+              {excelError && <p className="text-xs font-bold text-red-600">{excelError}</p>}
+            </div>
+          )}
           
           {/* PASTE MODE */}
           {mode === 'paste' && (
@@ -453,13 +550,19 @@ export default function BulkAddEmployeesPage({
                           <tr key={row.id} className="border-t border-gray-100">
                             <td className="py-2 pl-2 text-xs text-[#6B7280] font-mono">{idx + 1}</td>
                             <td className="py-2 pl-2">
-                              <input
-                                type="text"
-                                value={row.name}
-                                onChange={e => updateRow(row.id, { name: e.target.value })}
-                                placeholder="اسم الموظف"
-                                className="w-full px-2 py-1.5 rounded-lg bg-[#FAFAF7] border border-transparent hover:border-gray-200 focus:border-[#1F6F5F] focus:outline-none text-sm text-[#1A2E26] placeholder-[#6B7280]"
-                              />
+                              <div className="flex items-center gap-2">
+                                {row.photo && (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={row.photo} alt="" className="w-8 h-8 rounded-full object-cover border border-gray-200 flex-shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                                )}
+                                <input
+                                  type="text"
+                                  value={row.name}
+                                  onChange={e => updateRow(row.id, { name: e.target.value })}
+                                  placeholder="اسم الموظف"
+                                  className="w-full px-2 py-1.5 rounded-lg bg-[#FAFAF7] border border-transparent hover:border-gray-200 focus:border-[#1F6F5F] focus:outline-none text-sm text-[#1A2E26] placeholder-[#6B7280]"
+                                />
+                              </div>
                             </td>
                             <td className="py-2 pl-2">
                               <input
