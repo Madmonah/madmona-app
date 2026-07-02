@@ -167,7 +167,7 @@ export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Sta
 
           {/* Sublabel */}
           <p className="mdm-sub mdm-reveal">
-            احنا عندنا — اختار مجالك وضيف ليستنجك دلوقتي:
+            احنا عندنا — اختار مجالك وضيف منتجك دلوقتي:
           </p>
 
           {/* ============ تبويب البحث (Search) ============ */}
@@ -240,7 +240,7 @@ export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Sta
 
           {/* Stats inline at bottom — clickable مع counters */}
           <div className="mdm-stats-row mdm-reveal">
-            <StatPill href="/add-listing" num={stats.listings} label="ليستنج" />
+            <StatPill href="/add-listing" num={stats.listings} label="منتج" />
             <StatPill href="/add-listing" num={stats.categories} label="مجال" />
             <StatPill href="/add-listing" num={stats.suppliers} label="مورد" />
             <StatPill href="/add-listing" num={stats.cities} label="مدينة" />
@@ -249,7 +249,7 @@ export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Sta
           {/* Primary CTAs */}
           <div className="mdm-hero-actions mdm-reveal">
             <Link href="/add-listing" className="mdm-pill mdm-pill-primary" prefetch={false}>
-              ضيف ليستنجك مجاناً
+              ضيف منتجك مجاناً
               <ArrowLeft size={14} />
             </Link>
             <Link href="/marketplace" className="mdm-pill mdm-pill-ghost" prefetch={false}>

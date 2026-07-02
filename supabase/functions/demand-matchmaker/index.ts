@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
 
       // رسالة الأوتريتش — من غير بيانات العميل، من غير طلب اسم/إيميل، اللينك madmonacairo.com بس
       for (const c of top) {
-        const msg = `أهلاً 👋 معاك فريق مضمونة — منصة المعاملات المضمونة.\n\nعندنا عميل جاهز دلوقتي بيدور على: ${String(d.requested_item).slice(0, 120)}\n\nلو الخدمة/المنتج ده متاح عندك، ضيف الليستنج بتاعك في دقايق على:\n${SITE}/add-listing\n\nسجّل مرة واحدة وحط كل التفاصيل (صور وأسعار ومواصفات) — وفريقنا هيوصّلك بالعميل فوراً. معاملاتك مضمونة ✅`
+        const msg = `أهلاً 👋 معاك فريق مضمونة — منصة المعاملات المضمونة.\n\nعندنا عميل جاهز دلوقتي بيدور على: ${String(d.requested_item).slice(0, 120)}\n\nلو الخدمة/المنتج ده متاح عندك، ضيف المنتج بتاعك في دقايق على:\n${SITE}/add-listing\n\nسجّل مرة واحدة وحط كل التفاصيل (صور وأسعار ومواصفات) — وفريقنا هيوصّلك بالعميل فوراً. معاملاتك مضمونة ✅`
         await sb.from('whatsapp_outbound_queue').insert({
           recipient_phone: c.phone.startsWith('+') ? c.phone : '+' + digitsTail(c.phone).padStart(12, '2'),
           recipient_name: c.name,

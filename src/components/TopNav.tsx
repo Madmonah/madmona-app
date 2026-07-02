@@ -2,7 +2,7 @@
 
 // ============================================================================
 // TopNav — ultra-minimal: logo + notifications + menu.
-// Primary CTAs ("أجر مننا" / "إضافة ليستنج") moved to the body of the home page
+// Primary CTAs ("أجر مننا" / "إضافة منتج") moved to the body of the home page
 // so the header stays clean and boutique-luxe (May 13 2026 — Mohamed request).
 // ============================================================================
 
@@ -154,7 +154,7 @@ export default function TopNav() {
                   <Plus className="w-5 h-5 text-[#d4a017]" strokeWidth={3} />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-gray-900">ضيف الليستنج</p>
+                  <p className="font-bold text-gray-900">ضيف المنتج</p>
                   <p className="text-xs text-gray-500 mt-0.5">ابدأ تبيع أو تؤجّر على مضمونة</p>
                 </div>
               </Link>

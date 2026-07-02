@@ -68,19 +68,19 @@ export default function TermsContent() {
                   <li>The prices shown are the final prices the customer pays (no hidden fees)</li>
                   <li>A booking is confirmed after the supplier approves it via WhatsApp</li>
                   <li>The booking is binding on both parties once confirmed</li>
-                  <li>Cancellation is allowed according to each listing&apos;s policy (shown on the listing page)</li>
+                  <li>Cancellation is allowed according to each product&apos;s policy (shown on the product page)</li>
                   <li>Payment is made by cash or InstaPay directly to the supplier on arrival</li>
                 </ul>
               </Section>
 
-              <Section title="4. Suppliers and listings">
+              <Section title="4. Suppliers and products">
                 <ul>
                   <li>Any individual or company can apply to become a supplier, subject to approval by the platform&apos;s management</li>
                   <li>The supplier is responsible for the accuracy of the information and photos shown</li>
-                  <li>The supplier commits to providing the service as described in the listing</li>
+                  <li>The supplier commits to providing the service as described in the product page</li>
                   <li>The supplier commits to responding to customers within a reasonable time (24 hours maximum)</li>
                   <li>Madmona takes a transparent commission on every booking (stated in the registration agreement)</li>
-                  <li>Madmona reserves the right to hide or remove any listing that violates the terms or receives repeated complaints</li>
+                  <li>Madmona reserves the right to hide or remove any product that violates the terms or receives repeated complaints</li>
                 </ul>
               </Section>
 
@@ -165,19 +165,19 @@ export default function TermsContent() {
                   <li>الأسعار المعروضة هي الأسعار النهائية اللي يدفعها العميل (مفيش رسوم خفية)</li>
                   <li>تأكيد الحجز يتم بعد موافقة المورد عبر الواتساب</li>
                   <li>الحجز ملزم للطرفين بمجرد التأكيد</li>
-                  <li>الإلغاء مسموح حسب سياسة كل listing (موضحة على صفحة الـlisting)</li>
+                  <li>الإلغاء مسموح حسب سياسة كل منتج (موضحة على صفحة المنتج)</li>
                   <li>الدفع يتم كاش أو InstaPay مباشرة للمورد عند الوصول</li>
                 </ul>
               </Section>
 
-              <Section title="٤. الموردين والـlistings">
+              <Section title="٤. الموردين والمنتجات">
                 <ul>
                   <li>أي شخص أو شركة يقدر يتقدم ليبقى مورد، شرط الموافقة من إدارة المنصة</li>
                   <li>المورد مسؤول عن دقة المعلومات والصور المعروضة</li>
-                  <li>المورد ملتزم بتقديم الخدمة كما هي موصوفة في الـlisting</li>
+                  <li>المورد ملتزم بتقديم الخدمة كما هي موصوفة في المنتج</li>
                   <li>المورد ملتزم بالرد على العملاء خلال وقت معقول (٢٤ ساعة كحد أقصى)</li>
                   <li>منصة مضمونة بتاخد عمولة شفافة من كل حجز (موضحة في عقد التسجيل)</li>
-                  <li>مضمونة تحتفظ بحق إخفاء أو إزالة أي listing يخالف الشروط أو يتلقى شكاوى متكررة</li>
+                  <li>مضمونة تحتفظ بحق إخفاء أو إزالة أي منتج يخالف الشروط أو يتلقى شكاوى متكررة</li>
                 </ul>
               </Section>
 

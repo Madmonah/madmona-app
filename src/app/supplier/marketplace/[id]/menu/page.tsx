@@ -236,13 +236,13 @@ export default function SupplierMenuPage() {
     return <ErrorBlock title="سجل دخول الأول" subtitle="محتاج تسجل دخول كمورد عشان تدير المنيو" href="/auth/login" hrefLabel="سجل دخول" />
   }
   if (stage === 'not-found') {
-    return <ErrorBlock title="الليستنج مش لاقيه" subtitle="" href="/supplier/marketplace" hrefLabel="رجوع للوحة المورد" />
+    return <ErrorBlock title="المنتج مش لاقيه" subtitle="" href="/supplier/marketplace" hrefLabel="رجوع للوحة المورد" />
   }
   if (stage === 'not-restaurant') {
-    return <ErrorBlock title="ده مش ليستنج مطعم" subtitle="إدارة المنيو متاحة فقط للمطاعم (track=restaurants)" href="/supplier/marketplace" hrefLabel="رجوع للوحة المورد" />
+    return <ErrorBlock title="ده مش منتج مطعم" subtitle="إدارة المنيو متاحة فقط للمطاعم (track=restaurants)" href="/supplier/marketplace" hrefLabel="رجوع للوحة المورد" />
   }
   if (stage === 'no-permission') {
-    return <ErrorBlock title="مفيش صلاحية" subtitle="مش مالك أو فريق الليستنج ده" href="/supplier/marketplace" hrefLabel="رجوع" />
+    return <ErrorBlock title="مفيش صلاحية" subtitle="مش مالك أو فريق المنتج ده" href="/supplier/marketplace" hrefLabel="رجوع" />
   }
 
   return (

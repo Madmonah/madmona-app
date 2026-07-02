@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({
       ok: true,
       listings: [],
-      suggested_reply: `للأسف مفيش ${category || 'ليستنج'} متوفر دلوقتي${city ? ' في ' + city : ''}. بص تقدر تتفرج على كل اللي عندنا هنا: ${SITE_URL}/marketplace${canonicalCat ? '?category=' + canonicalCat : ''}\n\nلو عاوز حد معين أنا هنا أساعدك 🙌`,
+      suggested_reply: `للأسف مفيش ${category || 'منتج'} متوفر دلوقتي${city ? ' في ' + city : ''}. بص تقدر تتفرج على كل اللي عندنا هنا: ${SITE_URL}/marketplace${canonicalCat ? '?category=' + canonicalCat : ''}\n\nلو عاوز حد معين أنا هنا أساعدك 🙌`,
       query_received: { category, city, budget_max, query },
     }, null, 2), { headers: { 'Content-Type': 'application/json' } })
   }
@@ -124,7 +124,7 @@ Reply with plain Arabic text only.`
   if (!suggestedReply) {
     const top = listings[0] as Record<string, unknown>
     suggestedReply = `أهلاً 👋
-لقيتلك ليستنجات جاهزة:
+لقيتلك منتجات جاهزة:
 \n${listings.slice(0, 3).map((l: Record<string, unknown>, i: number) =>
       `${i + 1}️⃣ ${l.title} · ${l.city}\n${SITE_URL}/marketplace/${(l.categories as { slug: string }).slug}/${l.slug}`
     ).join('\n\n')}

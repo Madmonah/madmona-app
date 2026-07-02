@@ -323,7 +323,7 @@ export default function NewBusinessPartnerPage() {
                 className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F] font-mono"
               />
               <p className="text-[11px] text-[#6B7280] mt-1.5">
-                ⓘ 10% للأفراد، 5% للشركات الكبيرة، 0% أثناء التفاوض
+                ⓘ 10% موحدة على الكل، 0% أثناء التفاوض
               </p>
             </Field>
 

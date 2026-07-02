@@ -66,7 +66,7 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
   }
 
   async function removeListing(id: string) {
-    if (!confirm('متأكد تمسح الليستنج ده؟')) return
+    if (!confirm('متأكد تمسح المنتج ده؟')) return
     // @ts-expect-error rpc typing
     await supabase.rpc('admin_supplier_delete_listing', { p_listing_id: id })
     load()
@@ -83,7 +83,7 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
           </Link>
           <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">CATALOG</p>
           <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">الكتالوج · {supplier?.business_name || ''}</h1>
-          <p className="text-sm text-[#6B7280] mt-1">{items.length} listing · ضيف منتج / موتوسيكل / قطعة على المعرض</p>
+          <p className="text-sm text-[#6B7280] mt-1">{items.length} منتج · ضيف منتج / موتوسيكل / قطعة على المعرض</p>
         </div>
       </header>
 
@@ -119,13 +119,13 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
 
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-black text-[#1A2E26]">الليستنجز ({items.length})</h2>
+            <h2 className="text-sm font-black text-[#1A2E26]">المنتجات ({items.length})</h2>
             <button onClick={load} className="p-2 rounded-xl bg-white border border-gray-100"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
           </div>
           {loading ? (
             <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin inline" /></div>
           ) : items.length === 0 ? (
-            <div className="py-12 text-center bg-white rounded-2xl border border-gray-100"><p className="text-sm text-[#6B7280]">مفيش ليستنجز لسه</p></div>
+            <div className="py-12 text-center bg-white rounded-2xl border border-gray-100"><p className="text-sm text-[#6B7280]">مفيش منتجات لسه</p></div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {items.map((u) => (

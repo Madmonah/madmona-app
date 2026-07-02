@@ -72,7 +72,7 @@ export async function POST(request: Request) {
       address: addressClean,
       district: districtClean,
       description_ar: descriptionClean,
-      commission_rate: 20.0, // default — admin can adjust later
+      commission_rate: 10.0, // default — عمولة موحدة 10% (Jul 3 2026)
       status: 'pending',
     })
     .select('id')

@@ -135,7 +135,7 @@ async function toolCreatePost(topic: string, instructions?: string): Promise<str
     headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: MODEL, max_tokens: 1500,
-      system: 'إنت content marketer لمنصة مضمونة (بالضاد دايماً). السلوجان «معاملاتك مضمونة». ممنوع: 2019، أكبر منصة، أجر معانا (الصح: ضيف الليستنج)، coworking، أي لينك wa.me. اللينك الوحيد المسموح madmonacairo.com. عامية مصرية. ولّد بوست Instagram عن الموضوع المطلوب.',
+      system: 'إنت content marketer لمنصة مضمونة (بالضاد دايماً). السلوجان «معاملاتك مضمونة». ممنوع: 2019، أكبر منصة، أجر معانا (الصح: ضيف المنتج)، coworking، أي لينك wa.me. اللينك الوحيد المسموح madmonacairo.com. عامية مصرية. ولّد بوست Instagram عن الموضوع المطلوب.',
       tools: [{
         name: 'submit_post', description: 'post',
         input_schema: { type: 'object', properties: { title: { type: 'string' }, body: { type: 'string' }, hashtags: { type: 'array', items: { type: 'string' } }, cta: { type: 'string' }, design_brief: { type: 'string' } }, required: ['title', 'body', 'hashtags', 'cta', 'design_brief'] }
@@ -215,7 +215,7 @@ async function runAdminAgent(text: string, history: string, adminPhone: string):
 8) send_whatsapp — إرسال رسالة لأي رقم.
 9) set_config — تعديل إعدادات محددة.
 
-📌 ثوابت البراند (في أي محتوى/تصميم/رسالة): مضمونة بالضاد · «معاملاتك مضمونة» · اتلانشت مايو 2026 (ممنوع 2019) · «ضيف الليستنج» · ممنوع coworking و wa.me · العمولة: أفراد 10٪ / شركات 5٪ / مطاعم مجاناً لفترة محدودة / أمانة: بيع عربيات/عقارات 2٪+1٪، إيجار طويل = شهر + نص شهر.
+📌 ثوابت البراند (في أي محتوى/تصميم/رسالة): مضمونة بالضاد · «معاملاتك مضمونة» · اتلانشت مايو 2026 (ممنوع 2019) · «ضيف المنتج» · ممنوع coworking و wa.me · العمولة: 10٪ موحدة على الكل / مطاعم مجاناً لفترة محدودة / أمانة: بيع عربيات/عقارات 2٪+1٪، إيجار طويل = شهر + نص شهر.
 
 📋 قواعد: افهم القصد مش الحروف · نفذ الأول لو فيه تفسير معقول (محمد بيحب التنفيذ مش الأسئلة) · الأوامر المركبة خطوة خطوة · «مساعدة» = اعرض قدراتك بأمثلة · الرد النهائي مختصر بأرقام واضحة + اقتراح الخطوة التالية في سطر.
 
@@ -228,7 +228,7 @@ ${history}
     { name: 'run_agent', description: 'Run one of the enabled AI agents by name.', input_schema: { type: 'object', properties: { agent: { type: 'string' } }, required: ['agent'] } },
     { name: 'publish_now', description: 'Push all approved posts to Metricool for immediate publish.', input_schema: { type: 'object', properties: {} } },
     { name: 'create_post', description: 'Generate and save a new Instagram post about a topic (goes through QC).', input_schema: { type: 'object', properties: { topic: { type: 'string' }, instructions: { type: 'string' } }, required: ['topic'] } },
-    { name: 'create_design', description: 'Generate a Madmona-branded design and send it to Mohamed on WhatsApp as an image immediately. Use for صمم/تصميم/بوستر/صورة requests and for revisions.', input_schema: { type: 'object', properties: { headline: { type: 'string', description: 'العنوان الرئيسي بالعربي' }, subtext: { type: 'string', description: 'سطور تفصيلية قصيرة' }, cta: { type: 'string', description: 'نص زر الـ CTA — الافتراضي ضيف الليستنج دلوقتي' }, style: { type: 'string', enum: ['dark', 'light'] }, format: { type: 'string', enum: ['post', 'square', 'story'] } }, required: ['headline'] } },
+    { name: 'create_design', description: 'Generate a Madmona-branded design and send it to Mohamed on WhatsApp as an image immediately. Use for صمم/تصميم/بوستر/صورة requests and for revisions.', input_schema: { type: 'object', properties: { headline: { type: 'string', description: 'العنوان الرئيسي بالعربي' }, subtext: { type: 'string', description: 'سطور تفصيلية قصيرة' }, cta: { type: 'string', description: 'نص زر الـ CTA — الافتراضي ضيف المنتج دلوقتي' }, style: { type: 'string', enum: ['dark', 'light'] }, format: { type: 'string', enum: ['post', 'square', 'story'] } }, required: ['headline'] } },
     { name: 'qc_decision', description: 'Approve or reject a pending content item. Get id+kind from v_pending_approvals first.', input_schema: { type: 'object', properties: { kind: { type: 'string', enum: ['post', 'wa'] }, id: { type: 'string' }, decision: { type: 'string', enum: ['approve', 'reject'] }, reason: { type: 'string' } }, required: ['kind', 'id', 'decision'] } },
     { name: 'call_function', description: `Invoke a whitelisted edge function: ${FN_WHITELIST.join(', ')}`, input_schema: { type: 'object', properties: { name: { type: 'string' }, payload: { type: 'object' } }, required: ['name'] } },
     { name: 'send_whatsapp', description: 'Send a WhatsApp text message to a specific phone number on behalf of Mohamed.', input_schema: { type: 'object', properties: { phone: { type: 'string' }, message: { type: 'string' } }, required: ['phone', 'message'] } },

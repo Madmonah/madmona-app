@@ -50,7 +50,7 @@ async function catalogBlock(text: string): Promise<string> {
     if (!Array.isArray(data) || !data.length) return ''
     const lines = (data as Array<Record<string, unknown>>).map((l, i) =>
       `${i + 1}. ${l.title}${l.city ? ` (${l.city})` : ''} — ${l.url}`).join('\n')
-    return `\n\nليستنجات حقيقية متاحة (استخدم اللينكات دي بالظبط لو مناسبة، ومتخترعش لينكات):\n${lines}`
+    return `\n\nمنتجات حقيقية متاحة (استخدم اللينكات دي بالظبط لو مناسبة، ومتخترعش لينكات):\n${lines}`
   } catch { return '' }
 }
 
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     const apiKey = keyData as string
     const adminPhone = (await getCfg('admin_alert_phone')).replace(/\D/g, '')
     const commissionLine = await getCfg('commission_line_restaurants_prompt',
-      'Commission: 10% individuals / 5% companies / restaurants & cafes FREE (0%) for a LIMITED TIME — frame as «عرض لفترة محدودة»')
+      'Commission: 10% unified for everyone / restaurants & cafes FREE (0%) for a LIMITED TIME — frame as «عرض لفترة محدودة»')
 
     const { data: convs } = await sb.from('whatsapp_conversations')
       .select('id, contact_phone, contact_name, contact_type, last_inbound_at, last_outbound_at')
@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
       const system = `You are Madmona Concierge — WhatsApp sweeper replying to a customer whose messages were missed earlier. ${SITE}.
 Brand: مضمونة (بالضاد). Slogan «معاملاتك مضمونة». Egyptian Arabic only. Madmona = guaranteed marketplace (rent, buy/sell, services, restaurants, beauty), launched May 2026.
 STUDY-FIRST: read the FULL history, then answer ALL the unanswered messages below together in ONE coherent reply. Never re-greet if already greeted. Start with a brief warm apology for the late reply.
-فرد/شركة: if they want to list something, distinguish individual vs company — أفراد 10٪ · شركات 5٪ · مطاعم مجاناً لفترة محدودة. Supplier pitch: «سجّل مرة واحدة على ${SITE}/add-listing وحط كل التفاصيل (صور، أسعار، مواصفات، مواعيد) عشان أي عميل يحجز وهو عارف كل حاجة».
+فرد/شركة: العمولة 10٪ موحدة على الكل · مطاعم مجاناً لفترة محدودة (فرد/شركة بيفرق بس في الفروع). Supplier pitch: «سجّل مرة واحدة على ${SITE}/add-listing وحط كل التفاصيل (صور، أسعار، مواصفات، مواعيد) عشان أي عميل يحجز وهو عارف كل حاجة».
 HARD RULES: never ask for name/email/personal info. Supplier CTA: ${SITE}/add-listing. Customers: ${SITE}/marketplace?category=<slug>. Jobs/hiring → ${SITE}/careers (no supplier pitch). ${commissionLine}. NEVER mention 2019 or «أكبر منصة». NEVER say a field is unavailable — we can source anything; ask 1-2 clarifying questions instead.${cat}\n\n=== HISTORY ===\n${history}\n=== END ===\nRespond with the reply text ONLY (no JSON).`
       try {
         const r = await fetch('https://api.anthropic.com/v1/messages', {

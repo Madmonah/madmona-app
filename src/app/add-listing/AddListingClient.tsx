@@ -550,7 +550,7 @@ function AddListingPageInner({
           <button
             type="button"
             onClick={() => {
-              if (step > 1 && !window.confirm('متأكد إنك عايز تسيب الليستنج؟ اللي كتبته محفوظ وتقدر تكمّله بعدين.')) return;
+              if (step > 1 && !window.confirm('متأكد إنك عايز تسيب المنتج؟ اللي كتبته محفوظ وتقدر تكمّله بعدين.')) return;
               window.location.href = '/';
             }}
             className="text-xs text-gray-600 hover:text-[#1A2E26]"
@@ -559,7 +559,7 @@ function AddListingPageInner({
           </button>
         </div>
         <h1 className="text-xl font-semibold mt-5 max-w-2xl mx-auto">
-          ضيف ليستنجك في 60 ثانية
+          ضيف منتجك في 60 ثانية
         </h1>
         <p className="text-sm text-gray-600 mt-1 max-w-2xl mx-auto">
           خطوة واحدة من 5 — مش لازم تعمل حساب دلوقتي
@@ -1070,8 +1070,8 @@ function StepBasics({
   const [showExtras, setShowExtras] = useState(false);
   const isSaleProduct = !!draft.category_slug?.startsWith('sale-');
 
-  // Mohamed (Jun 13 2026): فرد افتراضيًا (عمولة 10٪). checklist «شركة؟» فوق →
-  // شركة (5٪) + بيفتح إضافة الفروع. أنشطة متأكدين إنها شركات = شركة افتراضيًا.
+  // Mohamed (Jul 3 2026): العمولة ثابتة 10٪ على الكل (أفراد وشركات).
+  // checklist «شركة؟» بقى لإضافة الفروع بس. أنشطة متأكدين إنها شركات = شركة افتراضيًا.
   // عدّل SURE_COMPANY_TRACKS لو عايز تضيف أنشطة تانية تتعامل كشركة أوتوماتيك.
   const SURE_COMPANY_TRACKS = ['restaurants'];
   const slugTrack: string | null = (() => {
@@ -1225,7 +1225,7 @@ function StepBasics({
 
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
 
-      {/* Mohamed (Jun 13 2026): فرد افتراضي · checklist «شركة؟» فوق → يفتح الفروع + عمولة 5٪ */}
+      {/* Mohamed (Jul 3 2026): checklist «شركة؟» بيفتح إضافة الفروع بس — العمولة ثابتة 10٪ للكل */}
       <div className="mb-5 p-3 rounded-xl bg-white border border-[#E5E5E0]">
         <label className="flex items-start gap-3 cursor-pointer">
           <input
@@ -1237,7 +1237,7 @@ function StepBasics({
           <span className="text-sm">
             <span className="font-semibold">بسجّل كشركة</span>
             <span className="block text-xs text-gray-500 mt-0.5">
-              لو عندك سجل تجاري أو أكتر من فرع. العمولة: أفراد ١٠٪ · شركات ٥٪ — حسب النشاط.
+              لو عندك سجل تجاري أو أكتر من فرع — بيفتحلك إضافة الفروع. العمولة ثابتة ١٠٪ على الكل.
             </span>
           </span>
         </label>
@@ -2857,9 +2857,7 @@ function StepPricing({
         <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
           💰 لو حد أجره أسبوع كامل = <strong>{Number(price) * 7} جنيه</strong>
           <br />
-          • نصيب حضرتك (فرد، 10% عمولة): <strong>{Math.round(Number(price) * 7 * 0.9)} جنيه</strong>
-          <br />
-          • نصيب حضرتك (شركة، 5% عمولة): <strong>{Math.round(Number(price) * 7 * 0.95)} جنيه</strong>
+          • نصيب حضرتك (بعد عمولة 10%): <strong>{Math.round(Number(price) * 7 * 0.9)} جنيه</strong>
         </div>
       )}
 
@@ -2870,9 +2868,7 @@ function StepPricing({
         <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
           💰 من كل {periodLabel[period] || period}:
           <br />
-          • نصيب حضرتك (فرد، 10% عمولة): <strong>{Math.round(Number(price) * 0.9)} جنيه</strong>
-          <br />
-          • نصيب حضرتك (شركة، 5% عمولة): <strong>{Math.round(Number(price) * 0.95)} جنيه</strong>
+          • نصيب حضرتك (بعد عمولة 10%): <strong>{Math.round(Number(price) * 0.9)} جنيه</strong>
         </div>
       )}
 
@@ -3263,7 +3259,9 @@ function StepContact({
 }) {
   const [name, setName] = useState(draft.contact_name || '');
   const [phone, setPhone] = useState(draft.contact_phone || '');
-  const [accountType, setAccountType] = useState<'individual' | 'business'>(draft.account_type || 'individual');
+  // Mohamed (Jul 3 2026): مبنسألش تاني فرد/شركة هنا — بيتحدد من checklist «بسجّل كشركة»
+  // في خطوة المعلومات الأساسية (للفروع بس). العمولة ثابتة 10٪ على الكل.
+  const accountType: 'individual' | 'business' = draft.account_type || 'individual';
   const [businessName, setBusinessName] = useState(draft.business_name || '');
 
   // ─── OTP VERIFICATION (May 30 2026 — Task 4) ─────────────────────
@@ -3467,35 +3465,6 @@ function StepContact({
         </div>
       )}
 
-      <Field label="إنت" required>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => setAccountType('individual')}
-            className={`p-4 rounded-xl border text-right transition-all ${
-              accountType === 'individual'
-                ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
-                : 'bg-white border-[#E5E5E0]'
-            }`}
-          >
-            <div className="font-semibold">فرد</div>
-            <div className={`text-xs mt-1 ${accountType === 'individual' ? 'text-white/70' : 'text-gray-500'}`}>عمولة 10%</div>
-          </button>
-          <button
-            type="button"
-            onClick={() => setAccountType('business')}
-            className={`p-4 rounded-xl border text-right transition-all ${
-              accountType === 'business'
-                ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
-                : 'bg-white border-[#E5E5E0]'
-            }`}
-          >
-            <div className="font-semibold">شركة</div>
-            <div className={`text-xs mt-1 ${accountType === 'business' ? 'text-white/70' : 'text-gray-500'}`}>عمولة 5%</div>
-          </button>
-        </div>
-      </Field>
-
       {accountType === 'business' && (
         <Field label="اسم الشركة" error={errors.business_name} required>
           <input
@@ -3509,14 +3478,14 @@ function StepContact({
       )}
 
       <div className="mt-6 p-4 rounded-xl bg-white border border-[#E5E5E0] text-xs text-gray-600">
-        ✅ بكدا حضرتك سجلت الليستنج — هنبعتلك تأكيد على الواتس اب وتقدر تكمل تسجيل حسابك (دقيقة واحدة).
+        ✅ بكدا حضرتك سجلت المنتج — هنبعتلك تأكيد على الواتس اب وتقدر تكمل تسجيل حسابك (دقيقة واحدة).
       </div>
 
       <Nav
         onBack={onBack}
         onNext={handleFinalSubmit}
         saving={saving}
-        nextLabel={otpVerified ? 'ابعت الليستنج 🚀' : '🔒 محتاج تأكيد الرقم الأول'}
+        nextLabel={otpVerified ? 'ابعت المنتج 🚀' : '🔒 محتاج تأكيد الرقم الأول'}
       />
     </section>
   );
@@ -3638,7 +3607,7 @@ function ResumeDraftBanner({
             </div>
           )}
           <div className="text-xs text-gray-600 mt-1">
-            وصلت لخطوة {pendingStep} من 5 — تقدر تكمل من فين وقفت، أو تبدأ ليستنج جديد،
+            وصلت لخطوة {pendingStep} من 5 — تقدر تكمل من فين وقفت، أو تبدأ منتج جديد،
           </div>
         </div>
       </div>
@@ -3655,7 +3624,7 @@ function ResumeDraftBanner({
           onClick={onDiscard}
           className="py-2.5 px-3 rounded-xl bg-white border border-[#E5E5E0] text-sm font-medium text-gray-700 hover:bg-[#F5F4F0] transition-all"
         >
-          ✨ ابدأ ليستنج جديد
+          ✨ ابدأ منتج جديد
         </button>
       </div>
     </div>

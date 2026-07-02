@@ -207,9 +207,9 @@ export default function NewListingPage() {
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-2xl border p-8 text-center max-w-md">
           <Lock className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
-          <h1 className="font-bold mb-2">مفيش صلاحية لإضافة listings</h1>
+          <h1 className="font-bold mb-2">مفيش صلاحية لإضافة منتجات</h1>
           <p className="text-sm text-gray-600 mb-6">
-            صلاحية &ldquo;إدارة الـlistings&rdquo; مش مفعّلة في حسابك. كلّم مدير الفريق لو محتاج تتفعّلك.
+            صلاحية &ldquo;إدارة المنتجات&rdquo; مش مفعّلة في حسابك. كلّم مدير الفريق لو محتاج تتفعّلك.
           </p>
           <Link
             href="/supplier/marketplace"
@@ -278,7 +278,7 @@ export default function NewListingPage() {
               <ArrowRight className="w-4 h-4 text-gray-600" />
             </Link>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">listing جديد</h1>
+              <h1 className="text-lg font-bold text-gray-900">منتج جديد</h1>
               <p className="text-xs text-gray-500">إنت في وضع الإدارة</p>
             </div>
           </div>
@@ -290,8 +290,8 @@ export default function NewListingPage() {
             <div className="text-sm text-purple-900">
               <p className="font-bold mb-1">وضع الإدارة (Admin Mode)</p>
               <p className="text-xs leading-relaxed text-purple-800/90">
-                إنت بتنشر listing بصلاحيات admin. اختار أجر معانا اللي هيتسجل تحته الـlisting.
-                الـlisting هيظهر في خدمات مضمونة (/marketplace) فوراً بعد النشر.
+                إنت بتنشر listing بصلاحيات admin. اختار أجر معانا اللي هيتسجل تحته المنتج.
+                المنتج هيظهر في خدمات مضمونة (/marketplace) فوراً بعد النشر.
               </p>
             </div>
           </div>
@@ -352,7 +352,7 @@ export default function NewListingPage() {
                 disabled={!selectedSupplierId}
                 className="w-full bg-[#1F6F5F] text-white py-3.5 rounded-xl font-bold shadow-soft hover:shadow-elevated hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
               >
-                ابدأ إنشاء الـlisting
+                ابدأ إنشاء المنتج
                 <ArrowRight className="w-4 h-4 rotate-180" />
               </button>
             </div>
@@ -382,8 +382,8 @@ export default function NewListingPage() {
             <ArrowRight className="w-4 h-4 text-gray-600" />
           </Link>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">listing جديد</h1>
-            <p className="text-xs text-gray-500">املا الـ5 خطوات لنشر الـlisting</p>
+            <h1 className="text-lg font-bold text-gray-900">منتج جديد</h1>
+            <p className="text-xs text-gray-500">املا الـ5 خطوات لنشر المنتج</p>
           </div>
         </div>
       </header>
@@ -393,7 +393,7 @@ export default function NewListingPage() {
           <div className="max-w-2xl mx-auto mb-4 p-3 bg-purple-50 border border-purple-200 rounded-xl text-xs text-purple-900 flex items-start gap-2">
             <ShieldCheck className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <span>
-              <strong>وضع الإدارة:</strong> الـlisting هيتسجل تحت{' '}
+              <strong>وضع الإدارة:</strong> المنتج هيتسجل تحت{' '}
               <strong>{selectedSupplier.business_name}</strong>. بعد النشر، يظهر في خدمات مضمونة فوراً.
             </span>
           </div>
@@ -401,14 +401,14 @@ export default function NewListingPage() {
         {isStaff && (
           <div className="max-w-2xl mx-auto mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-start gap-2">
             <Users className="w-4 h-4 flex-shrink-0 mt-0.5" />
-            <span>إنت بتنشر بصفتك &ldquo;{roleLabel || 'موظف'}&rdquo; — الـlisting هيتسجل باسم الـsupplier.</span>
+            <span>إنت بتنشر بصفتك &ldquo;{roleLabel || 'موظف'}&rdquo; — المنتج هيتسجل باسم الـsupplier.</span>
           </div>
         )}
         {showPendingNotice && (
           <div className="max-w-2xl mx-auto mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-xs text-yellow-900 flex items-start gap-2">
             <Clock className="w-4 h-4 flex-shrink-0 mt-0.5 text-yellow-700" />
             <span>
-              <strong>حسابك تحت المراجعة:</strong> تقدر تضيف الـlisting وتنشره عادي. الموافقة النهائية على الحساب بتيجي قبل أول حجز يقدر زبون يعمله عندك.
+              <strong>حسابك تحت المراجعة:</strong> تقدر تضيف المنتج وتنشره عادي. الموافقة النهائية على الحساب بتيجي قبل أول حجز يقدر زبون يعمله عندك.
             </span>
           </div>
         )}

@@ -32,7 +32,7 @@ function ListingSuccessPageInner() {
     <div dir="rtl" lang="ar" className="min-h-screen bg-[#1F6F5F] text-[#FAF7F0] flex items-center justify-center px-5">
       <div className="max-w-lg w-full text-center">
         <div className="text-6xl mb-4">🎉</div>
-        <h1 className="text-2xl font-bold mb-2">تم استلام الليستنج!</h1>
+        <h1 className="text-2xl font-bold mb-2">تم استلام المنتج!</h1>
         <p className="text-[#FAF7F0]/70 mb-6">
           {draft?.title ? <>"{draft.title}"</> : 'إعلانك'} وصلنا — فريقنا هيراجعه ويتواصل معاك خلال ساعات قليلة على الواتس اب.
         </p>
@@ -43,7 +43,7 @@ function ListingSuccessPageInner() {
             <li>✅ تتحكم في إعلانك (تعدل، توقف، تنشر)</li>
             <li>✅ تستقبل طلبات الإيجار</li>
             <li>✅ تتابع مستحقاتك</li>
-            <li>✅ تضيف ليستنجات تانية</li>
+            <li>✅ تضيف منتجات تانية</li>
           </ul>
         </div>
 

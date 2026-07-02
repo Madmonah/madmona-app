@@ -267,9 +267,9 @@ export default function EditListingPage() {
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-2xl border p-8 text-center max-w-md">
           <Lock className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
-          <h1 className="font-bold mb-2">مفيش صلاحية لتعديل listings</h1>
+          <h1 className="font-bold mb-2">مفيش صلاحية لتعديل منتجات</h1>
           <p className="text-sm text-gray-600 mb-6">
-            صلاحية &ldquo;إدارة الـlistings&rdquo; مش مفعّلة. كلّم مدير الفريق.
+            صلاحية &ldquo;إدارة المنتجات&rdquo; مش مفعّلة. كلّم مدير الفريق.
           </p>
           <Link
             href="/supplier/marketplace"
@@ -288,7 +288,7 @@ export default function EditListingPage() {
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-red-600 mx-auto mb-3" />
           <h1 className="font-bold mb-4">
-            {stage === 'not-found' ? 'الـlisting ده مش موجود' : 'مش مصرحلك'}
+            {stage === 'not-found' ? 'المنتج ده مش موجود' : 'مش مصرحلك'}
           </h1>
           <Link
             href={mode === 'admin' ? '/admin/listings' : '/supplier/marketplace'}
@@ -312,7 +312,7 @@ export default function EditListingPage() {
             <ArrowRight className="w-4 h-4 text-gray-600" />
           </Link>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">تعديل listing</h1>
+            <h1 className="text-lg font-bold text-gray-900">تعديل منتج</h1>
             <p className="text-xs text-gray-500">{initialData?.title}</p>
           </div>
         </div>

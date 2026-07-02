@@ -167,7 +167,7 @@ export default async function AIOSPage() {
               ['في إجازة', cmdCounts.agents_paused, 'rgba(255,255,255,.75)'],
               ['Crons شغّالة', cmdCounts.crons_active, '#fff'],
               ['إجمالي leads', cmdAct.tot_leads, '#fff'],
-              ['إجمالي ليستنجس', cmdAct.tot_listings, '#fff'],
+              ['إجمالي منتجات', cmdAct.tot_listings, '#fff'],
             ].map(([l, v, col], i) => (
               <div key={i} style={{ background: 'rgba(0,0,0,.18)', borderRadius: 10, padding: '8px 14px', minWidth: 92, textAlign: 'center' }}>
                 <div style={{ fontSize: 22, fontWeight: 'bold', color: col as string }}>{(v ?? 0) as number}</div>
@@ -181,7 +181,7 @@ export default async function AIOSPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: 8 }}>
               {[
                 ['مؤجرين جدد', cmdAct.new_suppliers],
-                ['ليستنجس جديدة', cmdAct.new_listings],
+                ['منتجات جديدة', cmdAct.new_listings],
                 ['Leads جديدة', cmdAct.new_leads],
                 ['اتكلّمنا معاها', cmdAct.contacted],
                 ['واتساب اتبعت', cmdAct.wa_sent],

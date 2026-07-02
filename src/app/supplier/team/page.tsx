@@ -49,8 +49,8 @@ interface StaffMember {
 // Granular permissions checklist
 const PERMISSIONS = [
   { key: 'can_view',              label: 'الدخول للوحة',          desc: 'يقدر يدخل لوحة التحكم ويشوف البيانات' },
-  { key: 'can_manage_listings',   label: 'إدارة الـlistings',      desc: 'إنشاء وتعديل ونسخ الـlistings' },
-  { key: 'can_publish_listings',  label: 'نشر/إيقاف listings',    desc: 'يخلّي الـlisting يظهر للعملاء أو يوقفه' },
+  { key: 'can_manage_listings',   label: 'إدارة المنتجات',      desc: 'إنشاء وتعديل ونسخ المنتجات' },
+  { key: 'can_publish_listings',  label: 'نشر/إيقاف listings',    desc: 'يخلّي المنتج يظهر للعملاء أو يوقفه' },
   { key: 'can_delete_listings',   label: 'حذف listings',           desc: 'حذف نهائي — لا تراجع' },
   { key: 'can_manage_bookings',   label: 'إدارة الحجوزات',         desc: 'تأكيد ورفض الحجوزات' },
   { key: 'can_complete_bookings', label: 'إنهاء الحجوزات',         desc: 'يعتبر الحجز مكتمل' },
@@ -211,7 +211,7 @@ export default function TeamManagementPage() {
                 <Users className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-base font-black text-gray-900 mb-1">مفيش موظفين لسه</h3>
-              <p className="text-sm text-gray-500 mb-4">ادعو حد يساعدك في إدارة الـlistings والحجوزات.</p>
+              <p className="text-sm text-gray-500 mb-4">ادعو حد يساعدك في إدارة المنتجات والحجوزات.</p>
             </div>
           ) : (
             staff.map(member => (

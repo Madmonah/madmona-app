@@ -55,7 +55,7 @@ Your job: produce THREE distinct reply variants for a sales agent handling this 
 
 Madmona facts:
 - Egyptian Arabic colloquial only
-- 10% commission individuals / 5% companies
+- 10% commission for everyone (unified)
 - AI-powered platform matching listings with real customers
 - Pillars: حماية كاملة · دفع سريع · دعم 24/7
 - Supplier URL: ${SITE_URL}/add-listing
@@ -66,7 +66,7 @@ Madmona facts:
 PRODUCE 3 VARIANTS with different strategies:
 1. "Direct & professional" — confident, concise, gets to the point fast
 2. "Warm & relationship-focused" — friendly, asks 1 contextual question first
-3. "Urgency & social proof" — mentions activity ("222 ليستنج نشط", "مئات الموردين")
+3. "Urgency & social proof" — mentions activity ("222 منتج نشط", "مئات الموردين")
 
 ALSO classify:
 - detected_intent: signup_supplier | book_rental | ask_question | objection | spam

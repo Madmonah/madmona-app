@@ -228,7 +228,7 @@ export default function SupplierRegisterPage() {
                 )}
                 {existing.kyc_status === 'approved' && (
                   <p className="text-sm">
-                    تم الموافقة على حسابك. ابدأ ضيف الـlistings بتاعتك.
+                    تم الموافقة على حسابك. ابدأ ضيف المنتجات بتاعتك.
                   </p>
                 )}
                 {existing.kyc_status === 'rejected' && existing.kyc_rejection_reason && (
@@ -286,7 +286,7 @@ export default function SupplierRegisterPage() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">تم تسجيل حسابك ✅</h1>
             <p className="text-sm text-gray-700 mb-2 font-semibold">
-              دلوقتي الخطوة الأهم: ضيف أول listing (إعلان)
+              دلوقتي الخطوة الأهم: ضيف أول منتج (إعلان)
             </p>
             <p className="text-xs text-gray-500 mb-6">
               حسابك لوحده مابيظهرش للعملاء — لازم تضيف إعلان واحد على الأقل عشان تستقبل حجوزات.

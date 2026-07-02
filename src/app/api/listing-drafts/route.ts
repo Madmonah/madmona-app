@@ -234,7 +234,7 @@ export async function PATCH(req: NextRequest) {
         recipient_phone: recipPhone,
         recipient_name: recipName,
         message:
-          'استلمنا ليستنجك في *مضمونة* 🎉\n\n' +
+          'استلمنا منتجك في *مضمونة* 🎉\n\n' +
           'فريقنا هيراجعه ويتواصل معاك خلال ساعات قليلة.\n\n' +
           'الخطوة التالية: أنشئ حسابك في دقيقة عشان تتحكم في إعلانك:\n' +
           `🔗 https://madmonacairo.com/signup?token=${token}\n\n` +

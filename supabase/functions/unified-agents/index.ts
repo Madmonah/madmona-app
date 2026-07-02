@@ -19,10 +19,10 @@ const sb = () => createClient(SUPABASE_URL, SERVICE_KEY)
 const BRAND_SYSTEM = `قواعد براند مضمونة — صارمة وغير قابلة للكسر:
 - الاسم: مضمونة (بالضاد دايماً — عمراً مدمونة/مظمونة/مذمونة). بالإنجليزي: Madmona.
 - السلوجان: «معاملاتك مضمونة».
-- ممنوع نهائياً: «من 2019»، «أكبر منصة»، «أجر معانا» (الصح: «ضيف الليستنج»)، أي محتوى coworking.
+- ممنوع نهائياً: «من 2019»، «أكبر منصة»، «أجر معانا» (الصح: «ضيف المنتج»)، أي محتوى coworking.
 - المنصة: ماركت بليس مصري مضمون اتلانش مايو 2026 وبينمو بسرعة غير طبيعية — إيجار، بيع وشرا، خدمات، مطاعم، بيوتي.
 - اللهجة: مصري عامي 100%.
-- الركايز: حماية كاملة · دفع مستحقات سريع · دعم مستمر. العمولة: أفراد 10% / شركات 5% (مطاعم حالياً 0%).
+- الركايز: حماية كاملة · دفع مستحقات سريع · دعم مستمر. العمولة: 10% موحدة على الكل (مطاعم حالياً 0%).
 - لينك العملاء: ${WA_CUSTOMER} — لينك الموردين: ${SITE}/add-listing — في الـ outreach يستخدم madmonacairo.com فقط.
 - الماسكوتات الرسمية: المارد (البطل، مذكر دايماً)، زيزو، ميرو، الحاج مضمون، تيتا نوسة.`
 
@@ -32,7 +32,7 @@ function enforceBrand(text: string): string {
     .replace(/مدمون[ةه]/g, 'مضمونة').replace(/مظمون[ةه]/g, 'مضمونة')
     .replace(/مذمون[ةه]/g, 'مضمونة').replace(/متمون[ةه]/g, 'مضمونة')
     .replace(/Madmoonah?/gi, 'Madmona')
-    .replace(/أجر معانا/g, 'ضيف الليستنج')
+    .replace(/أجر معانا/g, 'ضيف المنتج')
 }
 
 const HARD_VIOLATIONS: Array<[RegExp, string]> = [
@@ -260,7 +260,7 @@ async function runSalesEngine(): Promise<Record<string, unknown>> {
     let queued = 0
     for (const lead of hotLeads.slice(0, 8)) {
       if (!lead.phone) continue
-      const body = `السلام عليكم 👋\n\nمن فريق مضمونة (madmonacairo.com) — منصة جديدة اتلانشت مايو 2026 وبتنمو بسرعة غير طبيعية.\nشفنا ${lead.business_name} وحابين نعرض عليكم الانضمام:\n✅ حماية كاملة\n✅ دفع مستحقات سريع\n✅ دعم مستمر\nالعمولة: أفراد 10% / شركات 5% — وبنستخدم ذكاء اصطناعي يربط ليستنجك بعملاء جاهزين.\n\nضيف الليستنج من: madmonacairo.com\n\nمعاملاتك مضمونة`
+      const body = `السلام عليكم 👋\n\nمن فريق مضمونة (madmonacairo.com) — منصة جديدة اتلانشت مايو 2026 وبتنمو بسرعة غير طبيعية.\nشفنا ${lead.business_name} وحابين نعرض عليكم الانضمام:\n✅ حماية كاملة\n✅ دفع مستحقات سريع\n✅ دعم مستمر\nالعمولة: 10% موحدة على الكل — وبنستخدم ذكاء اصطناعي يربط منتجك بعملاء جاهزين.\n\nضيف المنتج من: madmonacairo.com\n\nمعاملاتك مضمونة`
       const ok = await queueWA(lead.phone, body, 'sales-engine', 'hot_lead_outreach_v1', { lead_id: lead.id })
       if (ok) {
         queued++
@@ -284,7 +284,7 @@ async function runSalesEngine(): Promise<Record<string, unknown>> {
       if (dup && dup.length) continue
       const name = s.profiles.full_name ?? 'صديقنا'
       const ok = await queueWA(s.profiles.phone,
-        `أهلاً ${name} 👋\n\nشكراً إنك سجلت ${s.business_name} على مضمونة.\nفاضل خطوة واحدة لتفعيل حسابك:\n1️⃣ ارفع البطاقة + السجل التجاري\n2️⃣ ضيف الليستنج الأول\n\nmadmonacairo.com\n\nمحتاج مساعدة؟ رد علينا — معاملاتك مضمونة`,
+        `أهلاً ${name} 👋\n\nشكراً إنك سجلت ${s.business_name} على مضمونة.\nفاضل خطوة واحدة لتفعيل حسابك:\n1️⃣ ارفع البطاقة + السجل التجاري\n2️⃣ ضيف المنتج الأول\n\nmadmonacairo.com\n\nمحتاج مساعدة؟ رد علينا — معاملاتك مضمونة`,
         'sales-engine', 'kyc_nudge_v2', { supplier_id: s.id })
       if (ok) nudged++
     }

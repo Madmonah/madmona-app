@@ -124,7 +124,7 @@ const GROUPS: Array<{
 
 const QUICK: Array<{ href: string; label: string; external?: boolean }> = [
   { href: 'https://madmonacairo.com', label: '🌐 الموقع', external: true },
-  { href: '/add-listing', label: '➕ ضيف ليستنج' },
+  { href: '/add-listing', label: '➕ ضيف منتج' },
 ]
 
 function Kpi({ value, label, tone, hint }: { value: number | string; label: string; tone: 'green' | 'gold' | 'gray' | 'ok'; hint?: string }) {

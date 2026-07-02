@@ -199,7 +199,7 @@ export function ActionHub() {
       <div className="ah-section">
         <div className="ah-stats">
           <div className="ah-stat"><div className="ah-stat-num">{data.suppliers_summary.total}</div><div className="ah-stat-lbl">موردين</div></div>
-          <div className="ah-stat"><div className="ah-stat-num">{data.listings_summary.published}</div><div className="ah-stat-lbl">listing منشور</div></div>
+          <div className="ah-stat"><div className="ah-stat-num">{data.listings_summary.published}</div><div className="ah-stat-lbl">منتج منشور</div></div>
           <div className="ah-stat"><div className="ah-stat-num">{data.listings_summary.drafts}</div><div className="ah-stat-lbl">مسودات</div></div>
           <div className="ah-stat"><div className="ah-stat-num">{data.bookings_summary_7d.total}</div><div className="ah-stat-lbl">حجوزات (7 أيام)</div></div>
           <div className="ah-stat"><div className="ah-stat-num">{data.wa_queue.sent_24h}</div><div className="ah-stat-lbl">WA اتبعت (24س)</div></div>

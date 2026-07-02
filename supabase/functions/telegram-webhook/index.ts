@@ -200,7 +200,7 @@ async function fetchCatalogBlock(text: string): Promise<string> {
       const loc = [l.city, l.district].filter(Boolean).join(' - ')
       return `${i + 1}. ${l.title}${loc ? ` (${loc})` : ''} — ${price}\n   ${l.url}`
     }).join('\n')
-    return `\n\n=== ليستنجات حقيقية متاحة دلوقتي ===\nلو مناسب للعميل اعرض 1-3 منها بالسعر واللينك بالظبط. متخترعش لينكات.\n${lines}\n=== نهاية ===`
+    return `\n\n=== منتجات حقيقية متاحة دلوقتي ===\nلو مناسب للعميل اعرض 1-3 منها بالسعر واللينك بالظبط. متخترعش لينكات.\n${lines}\n=== نهاية ===`
   } catch { return '' }
 }
 

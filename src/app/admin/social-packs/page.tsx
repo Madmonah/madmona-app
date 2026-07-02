@@ -122,9 +122,9 @@ export default function SocialPacksAdmin() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">حزم السوشيال للـ Listings</h1>
+            <h1 className="text-2xl font-bold text-gray-900">حزم السوشيال للمنتجات</h1>
             <p className="text-sm text-gray-600 mt-1">
-              لكل listing منشور: تصميمات، ريلز script، 3 نسخ بوست، قائمة جروبات فيسبوك للنشر
+              لكل منتج منشور: تصميمات، ريلز script، 3 نسخ بوست، قائمة جروبات فيسبوك للنشر
             </p>
           </div>
           <button
@@ -190,7 +190,7 @@ export default function SocialPacksAdmin() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="text-right px-4 py-3 font-bold text-gray-700">Listing</th>
+                    <th className="text-right px-4 py-3 font-bold text-gray-700">المنتج</th>
                     <th className="text-right px-4 py-3 font-bold text-gray-700">التصنيف</th>
                     <th className="text-right px-4 py-3 font-bold text-gray-700">الحالة</th>
                     <th className="text-right px-4 py-3 font-bold text-gray-700">الـ Hook</th>

@@ -1,11 +1,11 @@
 'use client'
 
 // ============================================================================
-// /admin/listings — إدارة الليستنجز الموحّدة (مدمجة)
+// /admin/listings — إدارة المنتجات الموحّدة (مدمجة)
 // ----------------------------------------------------------------------------
 // مبنية على RPCs آمنة بـ pagination على السيرفر:
 //   admin_listings_facets / admin_listings_search / admin_bulk_set_status
-//   (كلها مقفولة على is_admin()). بتشيل كل الليستنج — حقيقي + دليل مصر (8000+).
+//   (كلها مقفولة على is_admin()). بتشيل كل المنتج — حقيقي + دليل مصر (8000+).
 // فلاتر (نوع/حالة/تصنيف/مدينة/رقم/استلام/بحث) + نشر بالجملة + لكل صف:
 //   معاينة · تغيير حالة · تعديل · حذف/أرشفة.
 // ============================================================================
@@ -233,7 +233,7 @@ export default function AdminListingsPage() {
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
             <Building2 style={{ width: 20, height: 20, color: C.green }} />
-            <h1 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>إدارة الليستنجز</h1>
+            <h1 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>إدارة المنتجات</h1>
           </div>
           <Link href="/supplier/marketplace/new" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.green, color: '#fff', padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
             <Plus style={{ width: 16, height: 16 }} /> أضف خدمة
@@ -243,7 +243,7 @@ export default function AdminListingsPage() {
 
       <div style={{ maxWidth: 1180, margin: '0 auto', padding: '16px' }}>
         <p style={{ color: C.sub, margin: '0 0 14px', fontSize: 13 }}>
-          كل الليستنج — حقيقي أو دليل مصر — فلتر، وانشر/أوقف/أخفي بالجملة، أو اتحكم في كل صف.
+          كل المنتج — حقيقي أو دليل مصر — فلتر، وانشر/أوقف/أخفي بالجملة، أو اتحكم في كل صف.
         </p>
 
         {/* summary */}

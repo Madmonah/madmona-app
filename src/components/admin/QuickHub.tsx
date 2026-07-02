@@ -64,7 +64,7 @@ export function QuickHub() {
   }, [])
 
   const tiles: Tile[] = [
-    { emoji: '🛒', label: 'السوق والليستنجز', sub: 'ليستنجز · حجوزات · فئات', href: '/admin/listings', accent: 'green', count: c.listings_published, countLabel: 'منشور' },
+    { emoji: '🛒', label: 'السوق والمنتجات', sub: 'منتجات · حجوزات · فئات', href: '/admin/listings', accent: 'green', count: c.listings_published, countLabel: 'منشور' },
     { emoji: '💰', label: 'المالية والعهدة', sub: 'مستحقات · مدفوعات · شركاء', href: '/admin/payouts', accent: 'gold', count: c.pending_payouts_count, countLabel: 'بانتظار الدفع' },
     { emoji: '👥', label: 'الموردين والشركاء', sub: 'KYC · شراكات · B2B', href: '/admin/marketplace-suppliers', accent: 'teal', count: c.suppliers_active, countLabel: 'نشط' },
     { emoji: '📲', label: 'الليدز والتواصل', sub: 'Outreach · WhatsApp · funnel', href: '/admin/outreach-leads', accent: 'blue', count: c.new_leads_today, countLabel: 'lead جديد' },

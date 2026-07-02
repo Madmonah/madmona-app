@@ -3,7 +3,7 @@
 /**
  * DownloadAppBig — Big single "Download App" CTA (6 Jun 2026)
  *
- * يستبدل الـ dual CTAs المكررة (أجر مننا + إضافة ليستنج) بزر واحد ضخم
+ * يستبدل الـ dual CTAs المكررة (أجر مننا + إضافة منتج) بزر واحد ضخم
  * لتحميل التطبيق. يدعم:
  *   - Android Chrome/Edge → native install prompt
  *   - iOS Safari → instructions modal

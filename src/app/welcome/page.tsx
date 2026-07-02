@@ -100,11 +100,11 @@ function PathPicker({ onPick }: { onPick: (p: Path) => void }) {
           title="عندي حاجة عاوز أأجرها"
           subtitle="حوّل اللي عندك لدخل ثابت"
           benefits={[
-            'ضيف الليستنج في 3 دقايق',
+            'ضيف المنتج في 3 دقايق',
             'AI يلاقيلك زبون مناسب',
             'دفع سريع · حماية كاملة',
           ]}
-          cta="ضيف ليستنج"
+          cta="ضيف منتج"
           accent
           onClick={() => onPick('supplier')}
         />
@@ -185,7 +185,7 @@ function SupplierFlow({
   const steps = [
     {
       icon: <Wand2 className="w-7 h-7" />,
-      title: 'ضيف الليستنج في 3 دقايق',
+      title: 'ضيف المنتج في 3 دقايق',
       desc: 'الـ wizard بيمشيك خطوة بخطوة — صور، تفاصيل، سعر. AI يساعدك تكتب وصف يجذب الزباين.',
       bullets: [
         '27 فئة مختلفة (شقق، عربيات، مكاتب، معدات، كاميرات)',
@@ -196,7 +196,7 @@ function SupplierFlow({
     {
       icon: <Sparkles className="w-7 h-7" />,
       title: 'AI يلاقيلك الزبون المناسب',
-      desc: 'مش بس بتـ list — بـ نسوّق ليستنجك تلقائي على ٥ منصات. والـ AI matching بيلاقي الزبون المهتم.',
+      desc: 'مش بس بتـ list — بـ نسوّق منتجك تلقائي على ٥ منصات. والـ AI matching بيلاقي الزبون المهتم.',
       bullets: [
         'نشر تلقائي على Instagram · Facebook · TikTok وأكتر',
         'AI matching بيوصلك للزبون المناسب',
@@ -220,7 +220,7 @@ function SupplierFlow({
     <FlowFrame
       onBack={onBack}
       accent="مضيّف"
-      title="ضيف الليستنج · اربح دخل ثابت"
+      title="ضيف المنتج · اربح دخل ثابت"
       stepIndex={step}
       stepCount={3}
     >
@@ -239,7 +239,7 @@ function SupplierFlow({
       <div className="mt-6 p-4 rounded-2xl bg-white border border-gray-200 flex items-start gap-3">
         <BadgePercent className="w-5 h-5 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
         <div className="text-sm text-[#1A2E26] leading-relaxed">
-          <span className="font-bold">العمولة شفافة:</span> 10% للأفراد · 5% للشركات. مفيش رسوم خفية، مفيش اشتراك شهري.
+          <span className="font-bold">العمولة شفافة:</span> 10% ثابتة على الكل. مفيش رسوم خفية، مفيش اشتراك شهري.
           <span className="text-[#6B7280]"> بنكسب لما تكسب أنت.</span>
         </div>
       </div>
@@ -267,7 +267,7 @@ function SupplierFlow({
             href="/list-your-asset"
             className="px-6 py-3 rounded-xl bg-[#1F6F5F] text-white font-bold text-sm hover:shadow-md transition-shadow flex items-center gap-2"
           >
-            ابدأ ضيف ليستنج
+            ابدأ ضيف منتج
             <ArrowLeft className="w-4 h-4" />
           </Link>
         )}

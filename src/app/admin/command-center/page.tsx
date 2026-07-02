@@ -284,7 +284,7 @@ export default function CommandCenterPage() {
                       <th className="px-4 py-2 text-right">الاسم</th>
                       <th className="px-4 py-2 text-right">التليفون</th>
                       <th className="px-4 py-2 text-right">سياق الالتقاط</th>
-                      <th className="px-4 py-2 text-right">الـlisting</th>
+                      <th className="px-4 py-2 text-right">المنتج</th>
                       <th className="px-4 py-2 text-right">Action</th>
                     </tr>
                   </thead>

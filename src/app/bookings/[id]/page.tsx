@@ -338,7 +338,7 @@ function BookingDetailContent() {
 
 رقم الحجز: ${refCode}
 المبلغ: ${totalFmt} ج.م
-الـlisting: ${booking.listing?.title || ''}
+المنتج: ${booking.listing?.title || ''}
 
 ده screenshot من التحويل:`
   )

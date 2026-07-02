@@ -211,7 +211,7 @@ export default function AdminOverview() {
     const a: { tone: string; title: string; sub: string; href: string }[] = []
     if ((Number(b2c.bookings_pending) || 0) > 0) a.push({ tone: 'gold', title: `${count(b2c.bookings_pending)} حجز بانتظار الدفع`, sub: 'راجع الحجوزات وتابع التحصيل.', href: '/admin/marketplace-bookings' })
     if ((Number(ai.alerts_unresolved) || 0) > 0) a.push({ tone: 'green', title: `${count(ai.alerts_unresolved)} تنبيه AI غير محلول`, sub: 'من نظام الـ AI OS — راجعه.', href: '/admin/alerts' })
-    if ((Number(b2c.listings_draft) || 0) > 0) a.push({ tone: 'ink', title: `${count(b2c.listings_draft)} ليستنج في المسودات`, sub: 'محتاجة مراجعة أو تأكيد رقم (OTP).', href: '/admin/listing-drafts' })
+    if ((Number(b2c.listings_draft) || 0) > 0) a.push({ tone: 'ink', title: `${count(b2c.listings_draft)} منتج في المسودات`, sub: 'محتاجة مراجعة أو تأكيد رقم (OTP).', href: '/admin/listing-drafts' })
     if ((Number(b2c.suppliers_pending) || 0) > 0) a.push({ tone: 'green', title: `${count(b2c.suppliers_pending)} مورّد بانتظار التفعيل`, sub: 'راجع طلبات الانضمام.', href: '/admin/marketplace-suppliers' })
     if ((Number(wa.cold_leads_new) || 0) > 0) a.push({ tone: 'gold', title: `${count(wa.cold_leads_new)} lead جديد`, sub: 'جاهزين للتواصل عبر واتساب.', href: '/admin/outreach-leads' })
     if ((Number(wa.queue_failed) || 0) > 0) a.push({ tone: 'ink', title: `${count(wa.queue_failed)} رسالة واتساب فشلت`, sub: 'في طابور الإرسال.', href: '/admin/wa-review' })
@@ -271,10 +271,10 @@ export default function AdminOverview() {
             </div>
 
             <div className="nav-group">
-              <div className="lbl">🛒 السوق والليستنجز</div>
-              <Link className="nav-item" href="/admin/listings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M8 4v5" /></svg>الليستنجز</Link>
-              <Link className="nav-item" href="/admin/listing-drafts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path d="M14 2v6h6" /></svg>مسودات الليستنجز</Link>
-              <Link className="nav-item" href="/admin/listing-performance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18" /><path d="M7 14l4-4 4 4 6-6" /></svg>أداء الليستنجز</Link>
+              <div className="lbl">🛒 السوق والمنتجات</div>
+              <Link className="nav-item" href="/admin/listings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M8 4v5" /></svg>المنتجات</Link>
+              <Link className="nav-item" href="/admin/listing-drafts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path d="M14 2v6h6" /></svg>مسودات المنتجات</Link>
+              <Link className="nav-item" href="/admin/listing-performance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18" /><path d="M7 14l4-4 4 4 6-6" /></svg>أداء المنتجات</Link>
               <Link className="nav-item" href="/admin/marketplace-bookings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="15" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>حجوزات الماركتبليس</Link>
               <Link className="nav-item" href="/admin/marketplace-orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><path d="M3 6h18M16 10a4 4 0 01-8 0" /></svg>طلبات الماركتبليس</Link>
               <Link className="nav-item" href="/admin/bookings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>الحجوزات</Link>
@@ -363,7 +363,7 @@ export default function AdminOverview() {
             </div>
           </nav>
 
-          <Link className="cta" href="/add-listing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14" /></svg>ضيف ليستنج</Link>
+          <Link className="cta" href="/add-listing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14" /></svg>ضيف منتج</Link>
 
           <div className="profile">
             <div className="av">م</div>
@@ -455,9 +455,9 @@ export default function AdminOverview() {
                   <div><h4>بوابة الشركات</h4><p>{count(b2b.active_partners || 0)} شركة شريكة · كل اللي شركتك محتاجاه</p></div>
                 </div>
                 <div className="feats">
-                  <span className="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18M3 12h18M3 18h12" /></svg>عمولة 5% للشركات</span>
+                  <span className="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18M3 12h18M3 18h12" /></svg>عمولة موحدة 10%</span>
                   <span className="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="14" rx="2" /><path d="M3 9h18" /></svg>CRM + ERP مجاني</span>
-                  <span className="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14" /></svg>إضافة ليستنج مجانية</span>
+                  <span className="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14" /></svg>إضافة منتج مجانية</span>
                 </div>
                 <Link className="goto" href="/admin/business-partners">افتح البوابة<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 6l-6 6 6 6" /></svg></Link>
               </div>
@@ -473,7 +473,7 @@ export default function AdminOverview() {
                   icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="13" rx="2" /><circle cx="12" cy="12.5" r="3" /></svg>} />
                 <Kpi label="الموردين النشطين" mv={{ v: count(b2c.suppliers_approved || 0), s: '' }} note={(b2c.suppliers_pending || 0) > 0 ? `+${count(b2c.suppliers_pending)} في الانتظار` : 'الكل مفعّل'}
                   icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7" /></svg>} />
-                <Kpi label="ليستنجز منشورة" mv={{ v: count(b2c.listings_published || 0), s: '' }} note={(b2c.listings_draft || 0) > 0 ? `${count(b2c.listings_draft)} مسودة` : 'مفيش مسودات'}
+                <Kpi label="منتجات منشورة" mv={{ v: count(b2c.listings_published || 0), s: '' }} note={(b2c.listings_draft || 0) > 0 ? `${count(b2c.listings_draft)} مسودة` : 'مفيش مسودات'}
                   icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M8 4v5" /></svg>} />
                 <Kpi label="الحجوزات (الشهر)" mv={{ v: count(b2c.bookings_month || 0), s: '' }} delta={bkDelta} spark={sparkPoints(bkSeries)} sparkColor="#2FA084"
                   icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="15" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>} />
@@ -509,18 +509,18 @@ export default function AdminOverview() {
             {/* modules */}
             <section className="sec reveal" style={{ animationDelay: '.2s' }}>
               <div className="sec-head">
-                <div><div className="kicker">قطاعات السوق</div><h3>الموديولز {demo ? '' : '· ليستنجز منشورة'}</h3></div>
+                <div><div className="kicker">قطاعات السوق</div><h3>الموديولز {demo ? '' : '· منتجات منشورة'}</h3></div>
                 <Link className="more" href="/admin/categories">إدارة الموديولز<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 6l-6 6 6 6" /></svg></Link>
               </div>
               {modules.length === 0 ? (
-                <div className="card" style={{ padding: 22, textAlign: 'center', color: 'var(--ink-mute)', fontWeight: 600 }}>لسه مفيش ليستنجز منشورة لعرضها هنا.</div>
+                <div className="card" style={{ padding: 22, textAlign: 'center', color: 'var(--ink-mute)', fontWeight: 600 }}>لسه مفيش منتجات منشورة لعرضها هنا.</div>
               ) : (
                 <div className="mods">
                   {modules.map((mo) => (
                     <Link key={mo.slug} href={`/marketplace?category=${mo.slug}`} className="card hover mod">
                       <div className="em">{emojiFor(mo.slug, mo.name_ar)}</div>
                       <div className="nm">{mo.name_ar}</div>
-                      <div className="st"><b style={{ fontFamily: NUM }}>{count(mo.cnt)}</b><span>ليستنج</span></div>
+                      <div className="st"><b style={{ fontFamily: NUM }}>{count(mo.cnt)}</b><span>منتج</span></div>
                     </Link>
                   ))}
                 </div>

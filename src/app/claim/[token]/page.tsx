@@ -107,7 +107,7 @@ export default function ClaimPage() {
                     ✅ حماية كاملة للمعاملات<br />
                     💸 تحويل مستحقاتك بسرعة<br />
                     🤖 مطابقة ذكية بالـAI توصّلك عملاء<br />
-                    🕐 دعم ٢٤/٧ — عمولة بسيطة ٥٪ للأنشطة
+                    🕐 دعم ٢٤/٧ — عمولة بسيطة ١٠٪ ثابتة
                   </div>
                 </div>
                 <button onClick={handleClaim} disabled={claiming} style={{ ...goldBtn, width: '100%', border: 'none', cursor: 'pointer', opacity: claiming ? 0.6 : 1 }}>

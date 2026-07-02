@@ -512,7 +512,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       listingId = newListing.id
     }
 
-    if (!listingId) throw new Error('فشل إنشاء الليستنج')
+    if (!listingId) throw new Error('فشل إنشاء المنتج')
 
     // Upload photos
     const photosToInsert: any[] = []
@@ -891,7 +891,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
               <FolderTree className="w-5 h-5 text-[#1F6F5F]" /> اختار الفئة
             </h2>
-            <p className="text-sm text-gray-500 mb-4">إيه نوع الـlisting اللي بتضيفه؟</p>
+            <p className="text-sm text-gray-500 mb-4">إيه نوع المنتج اللي بتضيفه؟</p>
 
             {loadingCategories ? (
               <div className="text-center py-12"><Loader2 className="w-6 h-6 text-gray-400 animate-spin mx-auto" /></div>
@@ -954,7 +954,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
               <Info className="w-5 h-5 text-[#1F6F5F]" /> المعلومات الأساسية
             </h2>
-            <p className="text-sm text-gray-500 mb-4">عرّف الـlisting بشكل واضح</p>
+            <p className="text-sm text-gray-500 mb-4">عرّف المنتج بشكل واضح</p>
 
             <div className="space-y-3">
               <div>
@@ -977,7 +977,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                   rows={4}
                   maxLength={2000}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
-                  placeholder="وصف تفصيلي يساعد العميل يفهم الـlisting"
+                  placeholder="وصف تفصيلي يساعد العميل يفهم المنتج"
                 />
               </div>
 
@@ -1289,7 +1289,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                 className="px-5 py-2 bg-[#1F6F5F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50 flex items-center gap-1"
               >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                {submitting ? 'جاري النشر...' : (isEditing ? 'حفظ التعديلات' : 'نشر الـlisting')}
+                {submitting ? 'جاري النشر...' : (isEditing ? 'حفظ التعديلات' : 'نشر المنتج')}
               </button>
             </div>
           )}

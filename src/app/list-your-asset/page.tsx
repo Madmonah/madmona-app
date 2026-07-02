@@ -9,7 +9,7 @@
 import { redirect } from 'next/navigation';
 
 export const metadata = {
-  title: 'إضافة ليستنج — مضمونة',
+  title: 'إضافة منتج — مضمونة',
   description: 'أضف عقارك أو سيارتك أو معداتك على مضمونة في 5 خطوات.',
 };
 

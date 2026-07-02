@@ -394,7 +394,7 @@ export default function AdminDashboardV2() {
                 <span className="font-mono font-black text-lg tracking-wide select-all" dir="ltr">5220001000009207</span>
               </div>
             </div>
-            <p className="text-[11px] text-white/70 mt-4 leading-relaxed">التيبس والمنتجات والحجوزات بتتحوّل على الحساب ده، وبعدين بتتسوّى مع الشركاء ناقص العمولة (١٠٪ أفراد / ٥٪ شركات).</p>
+            <p className="text-[11px] text-white/70 mt-4 leading-relaxed">التيبس والمنتجات والحجوزات بتتحوّل على الحساب ده، وبعدين بتتسوّى مع الشركاء ناقص العمولة (١٠٪ موحدة على الكل).</p>
           </div>
         </Section>
 
@@ -458,7 +458,7 @@ export default function AdminDashboardV2() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-            <ToolCard href="/admin/listings" icon={<Package />} title="إدارة الليستنجز" sub="فلتر · نشر بالجملة · حقيقي + دليل مصر"
+            <ToolCard href="/admin/listings" icon={<Package />} title="إدارة المنتجات" sub="فلتر · نشر بالجملة · حقيقي + دليل مصر"
               badge={data.b2c.listings_draft || undefined} />
             <ToolCard href="/admin/sup" icon={<Users />} title="الموردين" sub={`${data.b2c.suppliers_approved} متعمد`}
               badge={data.b2c.suppliers_pending || undefined} />
@@ -735,7 +735,7 @@ export default function AdminDashboardV2() {
             <ToolCard href="/supplier/register" icon={<Plus />} title="إنشاء مورد" sub="Supplier register" />
             <ToolCard href="/supplier/signup" icon={<Plus />} title="تسجيل سريع" sub="Supplier signup" />
             <ToolCard href="/supplier/login" icon={<Lock />} title="دخول المورد" sub="Supplier login" />
-            <ToolCard href="/list-your-asset" icon={<Sparkles />} title="ضيف ليستنج" sub="الصفحة التعريفية" />
+            <ToolCard href="/list-your-asset" icon={<Sparkles />} title="ضيف منتج" sub="الصفحة التعريفية" />
           </div>
         </Section>
 

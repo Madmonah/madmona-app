@@ -74,7 +74,7 @@ Deno.serve(async (_req) => {
       skipped_same_phone += dups.length
 
       if (!primary) continue
-      const displayName = primary.business_name || primary.contact_name || 'صاحب الليستنج'
+      const displayName = primary.business_name || primary.contact_name || 'صاحب المنتج'
 
       const { error: insErr } = await sb.from('whatsapp_outbound_queue').insert({
         recipient_phone: phone,

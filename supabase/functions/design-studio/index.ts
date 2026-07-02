@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}))
     const headline = sanitize(String(body.headline || 'مضمونة'))
     const subtext = sanitize(String(body.subtext || ''))
-    const cta = sanitize(String(body.cta ?? 'ضيف الليستنج دلوقتي'))
+    const cta = sanitize(String(body.cta ?? 'ضيف المنتج دلوقتي'))
     const style = body.style === 'light' ? 'light' : 'dark'
     const format = ['story', 'square', 'post'].includes(body.format) ? body.format : 'post'
     const mascot = body.mascot === 'none' ? 'none' : (MASCOTS.includes(body.mascot) ? body.mascot : 'genie')

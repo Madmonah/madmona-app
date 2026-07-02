@@ -802,7 +802,7 @@ function IntelligenceTab({ fraud, demand, pricing, qc }: { fraud: Array<Record<s
           {qc.length === 0 ? <Empty msg="مفيش QC" /> :
             qc.map((r, i) => (
               <div key={i} style={card(r.pass_status === 'pass' ? '#28a745' : '#6FCF97')}>
-                <strong>Listing: {String(r.listing_id).slice(0, 8)}</strong>
+                <strong>منتج: {String(r.listing_id).slice(0, 8)}</strong>
                 <span style={{ background: Number(r.overall_score) >= 80 ? '#28a745' : '#6FCF97', color: '#fff', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 'bold', float: 'left' }}>{String(r.overall_score)}/100</span>
               </div>
             ))}
@@ -851,7 +851,7 @@ function GrowthTab({ partnerships, customerSuccess, photoBriefs, leadsRecent }: 
           {photoBriefs.length === 0 ? <Empty msg="مفيش photo briefs" /> :
             photoBriefs.map((p, i) => (
               <div key={i} style={card('#10B981')}>
-                <strong style={{ fontSize: 12 }}>Listing: {String(p.listing_id).slice(0, 8)}</strong>
+                <strong style={{ fontSize: 12 }}>منتج: {String(p.listing_id).slice(0, 8)}</strong>
               </div>
             ))}
         </div>

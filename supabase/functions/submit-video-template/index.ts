@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
     // STEP 3: create template with video header
     const buttons: Array<Record<string, unknown>> = [];
     if (body.button_url) {
-      buttons.push({ type: "URL", text: body.button_url_text || "أضف ليستنجك", url: body.button_url });
+      buttons.push({ type: "URL", text: body.button_url_text || "أضف منتجك", url: body.button_url });
     }
     if (body.button_phone) {
       buttons.push({ type: "PHONE_NUMBER", text: body.button_phone_text || "كلمنا", phone_number: body.button_phone });

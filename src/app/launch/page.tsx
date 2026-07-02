@@ -147,7 +147,7 @@ export default function LaunchPage() {
       icon: <Zap className="w-5 h-5" />,
       color: 'bg-blue-100 text-blue-700',
       title: 'Early Access',
-      desc: 'ادخل قبل الجمهور العام واختار أحسن الـlistings',
+      desc: 'ادخل قبل الجمهور العام واختار أحسن المنتجات',
     },
     {
       icon: <Phone className="w-5 h-5" />,
@@ -187,7 +187,7 @@ export default function LaunchPage() {
       icon: <Phone className="w-5 h-5" />,
       color: 'bg-green-100 text-green-700',
       title: 'Onboarding شخصي',
-      desc: 'فريقنا بيساعدك تعمل أول listing وتجيب أول حجز',
+      desc: 'فريقنا بيساعدك تعمل أول منتج وتجيب أول حجز',
     },
   ]
 
@@ -244,7 +244,7 @@ export default function LaunchPage() {
         {/* Categories */}
         <section className="mb-12">
           <p className="text-center text-xs font-black tracking-widest uppercase text-[#2FA084] mb-6">
-            ٦ فئات · مئات الـlistings
+            ٦ فئات · مئات المنتجات
           </p>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4 max-w-3xl mx-auto">
             {CATEGORIES.map((cat, i) => (
