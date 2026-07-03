@@ -11,7 +11,7 @@ const supabase = createClient(
 )
 
 const BUCKET = 'content-images'
-const KINDS = ['cover', 'gallery', 'branch', 'employee']
+const KINDS = ['cover', 'gallery', 'branch', 'employee', 'inventory']
 
 // POST /api/supplier/upload-media
 // FormData: { file, supplierId, kind }

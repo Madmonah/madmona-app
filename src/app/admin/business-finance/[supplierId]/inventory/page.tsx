@@ -8,6 +8,7 @@ import {
   RefreshCw, Filter, DollarSign, Box, AlertCircle, FileSpreadsheet, Upload, X,
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
+import { extractRowImages, uploadExtractedImage } from '@/lib/xlsxImages'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,6 +29,9 @@ type Product = {
   selling_price_egp: number | null
   recent_usage: number | null
   photo_url: string | null
+  base_unit: string | null
+  units_per_pack: number | null
+  warehouse_name: string | null
   margin_pct: number | null
   stock_value: number | null
 }
@@ -272,6 +276,9 @@ const IMPORT_FIELDS: { key: string; label: string; aliases: string[] }[] = [
   { key: 'reorder_threshold', label: 'حد إعادة الطلب', aliases: ['reorder_threshold', 'reorder', 'حد الطلب', 'حد اعادة الطلب', 'الحد الأدنى'] },
   { key: 'cost_price_egp',    label: 'سعر التكلفة',    aliases: ['cost_price_egp', 'cost', 'التكلفة', 'سعر التكلفة', 'سعر الشراء'] },
   { key: 'selling_price_egp', label: 'سعر البيع',      aliases: ['selling_price_egp', 'price', 'selling_price', 'سعر البيع', 'السعر'] },
+  { key: 'base_unit',         label: 'وحدة التقسيم',   aliases: ['base_unit', 'وحدة التقسيم', 'الوحدة الأساسية', 'الوحدة الاساسية', 'وحدة فرعية', 'تقسيم'] },
+  { key: 'units_per_pack',    label: 'معامل التحويل',  aliases: ['units_per_pack', 'factor', 'معامل التحويل', 'التحويل', 'معامل', 'كام وحدة'] },
+  { key: 'warehouse',         label: 'المخزن',         aliases: ['warehouse', 'المخزن', 'مخزن', 'المستودع', 'الفرع', 'branch', 'store'] },
   { key: 'photo_url',         label: 'رابط الصورة',    aliases: ['photo', 'photo_url', 'image', 'img', 'الصورة', 'صورة', 'رابط الصورة', 'لينك الصورة'] },
   { key: 'notes',             label: 'ملاحظات',        aliases: ['notes', 'ملاحظات', 'ملاحظة'] },
 ]
@@ -284,22 +291,38 @@ function ImportModal({ supplierId, onClose, onDone }: { supplierId: string; onCl
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [progress, setProgress] = useState<string | null>(null)
+  const [rowImages, setRowImages] = useState<Map<number, Blob>>(new Map())
 
   const norm = (s: string) => String(s || '').trim().toLowerCase().replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه')
 
+  // تحويلات معروفة تلقائي: طن→كجم ١٠٠٠ · كجم→جم ١٠٠٠ · لتر→مل ١٠٠٠
+  function autoConversion(unit: string): { base: string; factor: number } | null {
+    const u = norm(unit)
+    if (['طن', 'ton', 'tonne'].includes(u)) return { base: 'كجم', factor: 1000 }
+    if (['كجم', 'كيلو', 'كيلوجرام', 'kg'].includes(u)) return { base: 'جم', factor: 1000 }
+    if (['لتر', 'liter', 'litre', 'l'].includes(u)) return { base: 'مل', factor: 1000 }
+    if (['كرتونه', 'كرتونة', 'كرتون', 'carton', 'box'].includes(u)) return { base: 'قطعة', factor: 12 }
+    return null
+  }
+
   async function onFile(file: File) {
-    setError(null); setResult(null)
+    setError(null); setResult(null); setProgress('بقرا الشيت…')
     const buf = await file.arrayBuffer()
     const wb = XLSX.read(buf)
     const ws = wb.Sheets[wb.SheetNames[0]]
     const json: Record<string, any>[] = XLSX.utils.sheet_to_json(ws, { defval: null })
-    if (!json.length) { setError('الشيت فاضي'); return }
+    if (!json.length) { setError('الشيت فاضي'); setProgress(null); return }
     const hs = Object.keys(json[0])
     const m: Record<string, string> = {}
     for (const fld of IMPORT_FIELDS) {
       const hit = hs.find(h => fld.aliases.some(a => norm(a) === norm(h)))
       if (hit) m[fld.key] = hit
     }
+    // الصور المدفونة جوه الشيت نفسه
+    const imgs = await extractRowImages(buf)
+    setRowImages(imgs)
+    setProgress(imgs.size > 0 ? `لقيت ${imgs.size} صورة مدفونة في الشيت ✓` : null)
     setFileName(file.name); setHeaders(hs); setRows(json); setMapping(m)
   }
 
@@ -307,14 +330,33 @@ function ImportModal({ supplierId, onClose, onDone }: { supplierId: string; onCl
     if (!mapping.name_ar) { setError('لازم تحدد عمود "اسم المنتج"'); return }
     setBusy(true); setError(null)
     try {
-      const payload = rows.map(r => {
+      const payload: Record<string, any>[] = []
+      for (let idx = 0; idx < rows.length; idx++) {
+        const r = rows[idx]
         const o: Record<string, any> = {}
         for (const fld of IMPORT_FIELDS) {
           const h = mapping[fld.key]
           if (h && r[h] !== null && r[h] !== undefined) o[fld.key] = String(r[h])
         }
-        return o
-      }).filter(o => o.name_ar)
+        if (!o.name_ar) continue
+        // تحويل تلقائي للوحدات المعروفة لو مش متحددة في الشيت
+        if (o.unit && (!o.base_unit || !o.units_per_pack)) {
+          const auto = autoConversion(o.unit)
+          if (auto) {
+            if (!o.base_unit) o.base_unit = auto.base
+            if (!o.units_per_pack) o.units_per_pack = String(auto.factor)
+          }
+        }
+        // الصورة المدفونة في نفس الصف (لو مفيش لينك صورة في الشيت)
+        const img = rowImages.get(idx + 1)
+        if (!o.photo_url && img) {
+          setProgress(`بترفع صورة ${o.name_ar}…`)
+          const url = await uploadExtractedImage(img, supplierId, 'inventory', o.name_ar)
+          if (url) o.photo_url = url
+        }
+        payload.push(o)
+      }
+      setProgress(null)
       let inserted = 0, updated = 0, skipped = 0
       for (let i = 0; i < payload.length; i += 500) {
         // @ts-expect-error
@@ -344,6 +386,9 @@ function ImportModal({ supplierId, onClose, onDone }: { supplierId: string; onCl
         <p className="text-xs text-[#6B7280] mb-4">
           ارفع شيت (.xlsx / .csv) فيه عمود اسم المنتج على الأقل — الأعمدة بتتقري تلقائي، وتقدر تظبط الماب يدوي.
           المنتج الموجود بنفس الاسم/الـ SKU بيتحدّث، والجديد بيتضاف.
+          <br />📸 <b>الصور المدفونة جوه الشيت بتتقري تلقائي</b> وبتترفع مع كل صنف.
+          ⚖️ الوحدات المعروفة بتتحول لوحدها (طن → كجم · كجم → جم · لتر → مل) أو حدد "وحدة التقسيم" و"معامل التحويل" في الشيت.
+          🏬 عمود "المخزن": اكتب "رئيسي" أو اسم الفرع.
         </p>
 
         <input
@@ -380,6 +425,7 @@ function ImportModal({ supplierId, onClose, onDone }: { supplierId: string; onCl
           </>
         )}
 
+        {progress && <p className="mt-3 text-xs font-bold text-[#6B7280] flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" /> {progress}</p>}
         {result && <p className="mt-3 text-sm font-bold text-[#1F6F5F]">{result}</p>}
         {error && <p className="mt-3 text-sm font-bold text-red-600">{error}</p>}
       </div>
@@ -403,8 +449,12 @@ function ProductRow({ p }: { p: Product }) {
           )}
           <div className="flex-1 min-w-0">
             <p className="font-bold text-[#1A2E26] leading-tight truncate">{p.name_ar}</p>
-            <div className="flex items-center gap-1.5 mt-1">
+            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
               <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${catColor}`}>{catLabel}</span>
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-gray-100 text-gray-600">🏬 {p.warehouse_name || 'المخزن الرئيسي'}</span>
+              {p.base_unit && p.units_per_pack && (
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700">⚖️ 1 {p.unit} = {Number(p.units_per_pack).toLocaleString()} {p.base_unit}</span>
+              )}
               {p.product_type === 'retail' && (
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#1A2E26]/10 text-[#1A2E26]">🏷 بيع</span>
               )}
@@ -420,14 +470,20 @@ function ProductRow({ p }: { p: Product }) {
         {p.stock_unknown ? (
           <span className="text-[10px] font-bold text-[#6B7280] bg-gray-100 px-2 py-1 rounded">غير محدد</span>
         ) : (
-          <div className="flex items-center justify-center gap-1.5">
-            <span className={`text-lg font-black ${
-              isOutOfStock ? 'text-red-600' :
-              isLowStock ? 'text-amber-700' :
-              'text-[#1A2E26]'
-            }`}>{p.current_stock}</span>
-            {isOutOfStock && <AlertCircle className="w-3.5 h-3.5 text-red-600" />}
-            {isLowStock && <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />}
+          <div>
+            <div className="flex items-center justify-center gap-1.5">
+              <span className={`text-lg font-black ${
+                isOutOfStock ? 'text-red-600' :
+                isLowStock ? 'text-amber-700' :
+                'text-[#1A2E26]'
+              }`}>{p.current_stock}</span>
+              <span className="text-[10px] text-[#6B7280]">{p.unit !== 'piece' ? p.unit : ''}</span>
+              {isOutOfStock && <AlertCircle className="w-3.5 h-3.5 text-red-600" />}
+              {isLowStock && <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />}
+            </div>
+            {p.base_unit && p.units_per_pack && p.current_stock > 0 && (
+              <p className="text-[10px] text-blue-700 font-bold mt-0.5">= {(p.current_stock * Number(p.units_per_pack)).toLocaleString()} {p.base_unit}</p>
+            )}
           </div>
         )}
       </div>

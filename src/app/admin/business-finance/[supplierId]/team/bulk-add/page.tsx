@@ -10,6 +10,7 @@ import {
   Sparkles, FileSpreadsheet,
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
+import { extractRowImages, uploadExtractedImage } from '@/lib/xlsxImages'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -161,6 +162,7 @@ export default function BulkAddEmployeesPage({
   // Excel mode: parse xlsx/csv — بيقرا الاسم والمرتب والوظيفة والصورة والتليفون تلقائي
   const [excelError, setExcelError] = useState<string | null>(null)
   const [excelFileName, setExcelFileName] = useState('')
+  const [excelBusy, setExcelBusy] = useState<string | null>(null)
   async function onExcelFile(file: File) {
     setExcelError(null)
     try {
@@ -169,6 +171,8 @@ export default function BulkAddEmployeesPage({
       const ws = wb.Sheets[wb.SheetNames[0]]
       const json: Record<string, any>[] = XLSX.utils.sheet_to_json(ws, { defval: null })
       if (!json.length) { setExcelError('الشيت فاضي'); return }
+      // الصور المدفونة جوه الشيت — بتترفع وتتربط بالموظف حسب الصف
+      const embedded = await extractRowImages(buf)
       const normH = (s: string) => String(s || '').trim().toLowerCase().replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه')
       const headers = Object.keys(json[0])
       const findCol = (aliases: string[]) => headers.find(h => aliases.some(a => normH(a) === normH(h))) || null
@@ -180,8 +184,10 @@ export default function BulkAddEmployeesPage({
       const cNotes  = findCol(['notes', 'ملاحظات', 'ملاحظة'])
       if (!cName) { setExcelError('مش لاقي عمود الاسم في الشيت — سمّيه "الاسم" أو "name"'); return }
       const newRows: Row[] = json
-        .filter(r => String(r[cName] || '').trim())
-        .map((r, i) => {
+        .map((r, origIdx) => ({ r, origIdx }))
+        .filter(({ r }) => String(r[cName] || '').trim())
+        .map(({ r, origIdx }, i) => {
+          void i
           const salaryNum = cSalary ? (normalizeNumber(String(r[cSalary] ?? '')) || 0) : 0
           const inferred = inferRole(salaryNum)
           const roleTxt = cRole ? String(r[cRole] || '').trim() : ''
@@ -195,8 +201,22 @@ export default function BulkAddEmployeesPage({
             notes: cNotes ? String(r[cNotes] || '').trim() : '',
             photo: cPhoto ? String(r[cPhoto] || '').trim() : '',
             phone: cPhone ? String(r[cPhone] || '').trim() : '',
-          }
+            _sheetRow: origIdx + 1,
+          } as Row & { _sheetRow: number }
         })
+      // ارفع الصور المدفونة للموظفين اللي ملهمش لينك صورة
+      if (embedded.size > 0) {
+        for (let i = 0; i < newRows.length; i++) {
+          const nr = newRows[i] as Row & { _sheetRow?: number }
+          if (nr.photo) continue
+          const img = embedded.get(nr._sheetRow ?? -1)
+          if (!img) continue
+          setExcelBusy(`بترفع صورة ${nr.name}… (${i + 1}/${newRows.length})`)
+          const url = await uploadExtractedImage(img, supplierId, 'employee', nr.name)
+          if (url) nr.photo = url
+        }
+        setExcelBusy(null)
+      }
       setExcelFileName(file.name)
       setRows(newRows)
       setMode('manual') // review
@@ -463,7 +483,7 @@ export default function BulkAddEmployeesPage({
                     <p className="font-bold mb-1">ارفع شيت (.xlsx / .csv) والأعمدة بتتقري تلقائي:</p>
                     <ul className="space-y-0.5 list-disc mr-4 text-[#6B7280]">
                       <li><b>الاسم</b> (إجباري) · المرتب · الوظيفة</li>
-                      <li><b>الصورة</b> (رابط صورة الموظف) · تليفون · ملاحظات</li>
+                      <li><b>الصور</b>: مدفونة جوه الشيت (بتتقري تلقائي 📸) أو عمود برابط الصورة · تليفون · ملاحظات</li>
                       <li>عربي أو إنجليزي في أسماء الأعمدة — الاتنين شغالين</li>
                     </ul>
                   </div>
@@ -474,6 +494,7 @@ export default function BulkAddEmployeesPage({
                 className="w-full text-sm file:ml-3 file:px-4 file:py-2 file:rounded-xl file:border-0 file:bg-[#1F6F5F] file:text-white file:font-bold file:cursor-pointer"
                 onChange={(e) => e.target.files?.[0] && onExcelFile(e.target.files[0])}
               />
+              {excelBusy && <p className="text-xs font-bold text-[#1F6F5F] flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" /> {excelBusy}</p>}
               {excelFileName && <p className="text-xs text-[#6B7280]">📄 {excelFileName}</p>}
               {excelError && <p className="text-xs font-bold text-red-600">{excelError}</p>}
             </div>
