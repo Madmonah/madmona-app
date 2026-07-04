@@ -57,85 +57,31 @@ const supabase = createClient(
    vertical is now a data change, not a JSX change.
    (Phase 2: move this to a `supplier_modules` table = per-client toggles.)
    ============================================================ */
-type VKey = 'core' | 'beauty_salon' | 'polyclinic' | 'restaurant' | 'contracting' | 'vehicle_agency'
-
-// نطابق نشاط الـsupplier (industry) على مجموعة الموديولز الصح — عشان spa تاخد
-// موديولز الصالون، clinic تاخد موديولز العيادة، والمرادفات تتظبط.
-const VERTICAL_ALIAS: Record<string, VKey> = {
-  beauty_salon: 'beauty_salon', spa: 'beauty_salon',
-  polyclinic: 'polyclinic', clinic: 'polyclinic',
-  restaurant: 'restaurant',
-  vehicle_agency: 'vehicle_agency', auto: 'vehicle_agency',
-  contracting: 'contracting', construction: 'contracting',
+// ⬇️ مصدر واحد لقائمة الموديولات — من src/lib/erpModules.ts (نفس اللي يستخدمه تبويب الإعدادات)
+import { MODULE_DEFS, VERTICAL_ALIAS, type VKey } from '@/lib/erpModules'
+// الأيقونات تفضل هنا (بيانات الموديولات نفسها في src/lib/erpModules.ts)
+const ICON_MAP: Record<string, any> = {
+  confirmations: CheckCircle2, links: Link2, dashboard: BarChart3, team: Users,
+  requests: ClipboardCheck, custody: ShieldCheck, 'flow-tasks': ClipboardList,
+  branches: Building2, customers: Heart, expenses: DollarSign, accounting: Calculator,
+  attendance: Clock, 'attendance-devices': Smartphone, 'cash-recon': Wallet, payroll: Calculator,
+  documents: FileCheck, 'audit-log': FileText, 'at-risk': UserX, reports: Download,
+  'vat-report': Receipt, 'whatsapp-campaigns': MessageCircle, promotions: Gift,
+  inventory: Package, vendors: Truck, 'purchase-orders': ShoppingCart,
+  bookings: CalendarClock, 'services-catalog': Tag, services: Workflow,
+  shifts: CalendarClock, waitlist: ListChecks, appointments: Calendar,
+  'quote-orders': ShoppingCart, showroom: Car, import: Ship, workshop: Wrench,
+  brands: BadgeCheck, catalog: Store, projects: FolderKanban,
+  'payment-certificates': ScrollText, boq: Table2, 'variation-orders': GitBranchPlus,
+  guarantees: ShieldCheck, subcontractors: HardHat, assignments: Briefcase,
+  'custody-projects': Coins, advances: HandCoins, equipment: Wrench, pnl: BarChart3,
+  'expenses-projects': Receipt, collections: Banknote, tenders: Gavel,
+  milestones: CalendarRange, 'daily-reports': ClipboardList, 'material-requests': PackageOpen,
+  inspections: ClipboardCheck, 'equipment-logs': Fuel, 'company-docs': FileBadge,
 }
-const MODULE_REGISTRY: { href: string; Icon: any; label: string; primary?: boolean; v: VKey[] }[] = [
-  // Shared core (every client)
-  { href: 'confirmations',      Icon: CheckCircle2,   label: 'التأكيدات',        primary: true, v: ['core'] },
-  { href: 'links',              Icon: Link2,          label: 'كل اللينكات',                     v: ['core'] },
-  { href: 'dashboard',          Icon: BarChart3,      label: 'Dashboard',        primary: true, v: ['core'] },
-  { href: 'team',               Icon: Users,          label: 'الفريق',                          v: ['core'] },
-  { href: 'requests',           Icon: ClipboardCheck, label: 'طلبات الموظفين',   primary: true, v: ['core'] },
-  { href: 'custody',            Icon: ShieldCheck,    label: 'العهدة',                          v: ['core'] },
-  { href: 'flow-tasks',         Icon: ClipboardList,  label: 'المهام',                          v: ['core'] },
-  { href: 'branches',           Icon: Building2,      label: 'الفروع',                          v: ['core'] },
-  { href: 'customers',          Icon: Heart,          label: 'العملاء',                         v: ['core'] },
-  { href: 'expenses',           Icon: DollarSign,     label: 'المصاريف',                        v: ['core'] },
-  { href: 'accounting',         Icon: Calculator,     label: 'الحسابات والقيود', primary: true, v: ['core'] },
-  { href: 'attendance',         Icon: Clock,          label: 'الحضور',                          v: ['core'] },
-  { href: 'attendance-devices', Icon: Smartphone,     label: 'أجهزة البصم',                     v: ['core'] },
-  { href: 'cash-recon',         Icon: Wallet,         label: 'جرد الكاش',                       v: ['core'] },
-  { href: 'payroll',            Icon: Calculator,     label: 'المرتبات',                        v: ['core'] },
-  { href: 'documents',          Icon: FileCheck,      label: 'المستندات',                       v: ['core'] },
-  { href: 'audit-log',          Icon: FileText,       label: 'سجل التعديلات',                   v: ['core'] },
-  { href: 'at-risk',            Icon: UserX,          label: 'عملاء في خطر',                    v: ['core'] },
-  { href: 'reports',            Icon: Download,       label: 'تصدير تقارير',                    v: ['core'] },
-  { href: 'vat-report',         Icon: Receipt,        label: 'VAT Report',                      v: ['core'] },
-  { href: 'whatsapp-campaigns', Icon: MessageCircle,  label: 'WhatsApp',                        v: ['core'] },
-  { href: 'promotions',         Icon: Gift,           label: 'العروض',                          v: ['core'] },
-  // Procurement — shared (salon BOM + restaurant + contracting + clinic supplies)
-  { href: 'inventory',          Icon: Package,        label: 'المخزون',                         v: ['core'] },
-  { href: 'vendors',            Icon: Truck,          label: 'الموردين',                        v: ['core'] },
-  { href: 'purchase-orders',    Icon: ShoppingCart,   label: 'طلبات شراء',                      v: ['core'] },
-  // Salon / spa (Elite)
-  { href: 'bookings',           Icon: CalendarClock,  label: 'إدارة الحجوزات',                  v: ['beauty_salon', 'vehicle_agency'] },
-  { href: 'services-catalog',   Icon: Tag,            label: 'قائمة الخدمات',                   v: ['beauty_salon', 'vehicle_agency'] },
-  { href: 'services',           Icon: Workflow,       label: 'ربط خدمة-منتج',                   v: ['beauty_salon', 'vehicle_agency'] },
-  // Salon + clinic (rostering / waitlist)
-  { href: 'shifts',             Icon: CalendarClock,  label: 'مواعيد العمل',                    v: ['beauty_salon', 'polyclinic'] },
-  { href: 'waitlist',           Icon: ListChecks,     label: 'قائمة الانتظار',                  v: ['beauty_salon', 'polyclinic'] },
-  // Clinic (Polyclinic)
-  { href: 'appointments',       Icon: Calendar,       label: 'المواعيد',                        v: ['polyclinic'] },
-  // Restaurant / market (CityMart)
-  { href: 'services-catalog',   Icon: UtensilsCrossed, label: 'المنيو',          primary: true, v: ['restaurant'] },
-  { href: 'quote-orders',       Icon: ShoppingCart,   label: 'طلبات التسعير',    primary: true, v: ['restaurant'] },
-  // Vehicle trading agency (motorcycles + cars)
-  { href: 'showroom',           Icon: Car,            label: 'المعرض',           primary: true, v: ['vehicle_agency'] },
-  { href: 'import',             Icon: Ship,           label: 'الاستيراد',        primary: true, v: ['vehicle_agency'] },
-  { href: 'workshop',           Icon: Wrench,         label: 'الورشة',                          v: ['vehicle_agency'] },
-  { href: 'brands',             Icon: BadgeCheck,     label: 'التوكيلات',                       v: ['vehicle_agency'] },
-  { href: 'catalog',            Icon: Store,          label: 'الكتالوج',         primary: true, v: ['vehicle_agency'] },
-  // Contracting (Pillars)
-  { href: 'projects',             Icon: FolderKanban,  label: 'المشاريع',         primary: true, v: ['contracting'] },
-  { href: 'payment-certificates', Icon: ScrollText,    label: 'المستخلصات',       primary: true, v: ['contracting'] },
-  { href: 'boq',                  Icon: Table2,        label: 'جدول الكميات',                    v: ['contracting'] },
-  { href: 'variation-orders',     Icon: GitBranchPlus, label: 'أوامر التغيير',                   v: ['contracting'] },
-  { href: 'guarantees',           Icon: ShieldCheck,   label: 'خطابات الضمان',                   v: ['contracting'] },
-  { href: 'subcontractors',       Icon: HardHat,       label: 'مقاولي الباطن',                   v: ['contracting'] },
-  { href: 'assignments',          Icon: Briefcase,     label: 'المأموريات',                      v: ['contracting'] },
-  { href: 'custody-projects',     Icon: Coins,         label: 'العُهد',                          v: ['contracting'] },
-  { href: 'advances',             Icon: HandCoins,     label: 'السُّلف',                         v: ['contracting'] },
-  { href: 'equipment',            Icon: Wrench,        label: 'المعدات',                         v: ['contracting'] },
-  { href: 'pnl',                  Icon: BarChart3,     label: 'ربحية المشاريع',   primary: true, v: ['contracting'] },
-  { href: 'expenses-projects',    Icon: Receipt,       label: 'مصروفات المشاريع',                v: ['contracting'] },
-  { href: 'collections',          Icon: Banknote,      label: 'التحصيل',          primary: true, v: ['contracting'] },
-  { href: 'tenders',              Icon: Gavel,         label: 'المناقصات',                       v: ['contracting'] },
-  { href: 'milestones',           Icon: CalendarRange, label: 'الجدول الزمني',                   v: ['contracting'] },
-  { href: 'daily-reports',        Icon: ClipboardList, label: 'يومية الموقع',                    v: ['contracting'] },
-  { href: 'material-requests',    Icon: PackageOpen,   label: 'طلبات المواد',                    v: ['contracting'] },
-  { href: 'inspections',          Icon: ClipboardCheck,label: 'الفحص والاستلام',                 v: ['contracting'] },
-  { href: 'equipment-logs',       Icon: Fuel,          label: 'صيانة المعدات',                   v: ['contracting'] },
-  { href: 'company-docs',         Icon: FileBadge,     label: 'سجلات الشركة',                    v: ['contracting'] },
-]
+
+const MODULE_REGISTRY: { href: string; Icon: any; label: string; primary?: boolean; v: VKey[] }[] =
+  MODULE_DEFS.map((m) => ({ href: m.href, Icon: ICON_MAP[m.href] || FileText, label: m.label, primary: m.primary, v: m.v }))
 
 type Supplier = {
   id: string
