@@ -202,13 +202,21 @@ export default function BusinessPartnersIndexPage() {
                 {totals.partners} شريك · {totals.branches} فرع · {totals.employees} موظف
               </p>
             </div>
-            <Link
-              href="/admin/business-partners/new"
-              className="px-5 py-2.5 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold flex items-center gap-2 hover:shadow-md transition-shadow"
-            >
-              <Plus className="w-4 h-4" />
-              اضف يدوي
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/admin/subscriptions"
+                className="px-5 py-2.5 rounded-xl bg-[#FAFAF7] border border-gray-200 text-[#1A2E26] text-sm font-bold flex items-center gap-2 hover:shadow-md transition-shadow"
+              >
+                💳 الاشتراكات
+              </Link>
+              <Link
+                href="/admin/business-partners/new"
+                className="px-5 py-2.5 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold flex items-center gap-2 hover:shadow-md transition-shadow"
+              >
+                <Plus className="w-4 h-4" />
+                اضف يدوي
+              </Link>
+            </div>
           </div>
         </div>
 
