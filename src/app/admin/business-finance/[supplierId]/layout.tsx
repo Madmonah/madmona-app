@@ -49,7 +49,7 @@ export default function BusinessFinanceLayout({
   params: { supplierId: string }
 }) {
   const { supplierId } = params
-  const [state, setState] = useState<'checking' | 'allowed' | 'no_session' | 'denied'>('checking')
+  const [state, setState] = useState<'checking' | 'allowed' | 'no_session' | 'denied' | 'suspended'>('checking')
   const [readonly, setReadonly] = useState(false)
   const [blockedToast, setBlockedToast] = useState(false)
 
@@ -67,7 +67,7 @@ export default function BusinessFinanceLayout({
         if (await isPlatformAdmin()) { setState('allowed'); return }
         // 3) Trial-open business (negotiating + ERP) — open to anyone with the link
         if (await isTrialOpenSupplier(supplierId)) { setState('allowed'); return }
-        setState(data?.reason === 'no_session' ? 'no_session' : 'denied')
+        setState(data?.reason === 'suspended' ? 'suspended' : data?.reason === 'no_session' ? 'no_session' : 'denied')
         return
       }
       // No owner token — still let a logged-in Madmona admin straight through
@@ -141,6 +141,30 @@ export default function BusinessFinanceLayout({
             🔒 التعديل مقفول — وضع العرض فقط
           </div>
         )}
+      </div>
+    )
+  }
+
+  // Suspended account (unpaid subscription) — show a payment/lock screen
+  if (state === 'suspended') {
+    return (
+      <div className="min-h-screen bg-[#7c2d12] flex items-center justify-center p-4" dir="rtl">
+        <div className="w-full max-w-md text-center">
+          <div className="w-16 h-16 rounded-2xl bg-white grid place-items-center mx-auto mb-4">
+            <Lock className="w-7 h-7 text-[#7c2d12]" />
+          </div>
+          <div className="bg-white rounded-3xl p-8 shadow-2xl">
+            <ShieldAlert className="w-12 h-12 text-amber-500 mx-auto mb-3" />
+            <h1 className="text-xl font-black text-[#1A2E26] mb-2">الحساب موقوف مؤقتاً</h1>
+            <p className="text-sm text-[#6B7280] mb-6 leading-relaxed">
+              تم إيقاف الوصول للوحة الإدارة بسبب اشتراك متأخر. برجاء سداد الاشتراك لإعادة التفعيل فوراً.
+            </p>
+            <a href="https://wa.me/201002229982" className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black text-sm flex items-center justify-center gap-2">
+              تواصل مع مضمونة للسداد
+            </a>
+          </div>
+          <p className="text-center text-[10px] text-white/60 mt-6">madmonacairo.com · الاشتراكات</p>
+        </div>
       </div>
     )
   }
