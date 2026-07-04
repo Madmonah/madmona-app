@@ -8,6 +8,7 @@ import {
   Building2, Users, BadgePercent, AlertCircle, Check, Sparkles,
   MapPin, Navigation, ShieldCheck,
 } from 'lucide-react'
+import { modulesForIndustry } from '@/lib/erpModules'
 
 /* ============================================================
    /admin/business-finance/[supplierId]/settings
@@ -73,7 +74,7 @@ export default function SettingsPage({
   const [employees, setEmployees] = useState<Employee[]>([])
   const [roles, setRoles] = useState<RoleTemplate[]>([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'general' | 'branches' | 'employees' | 'commission'>('general')
+  const [tab, setTab] = useState<'general' | 'branches' | 'employees' | 'commission' | 'modules'>('general')
   const [toast, setToast] = useState('')
 
   async function loadAll() {
@@ -147,6 +148,7 @@ export default function SettingsPage({
               { key: 'branches', label: `الفروع (${branches.length})` },
               { key: 'employees', label: `الموظفين (${employees.length})` },
               { key: 'commission', label: 'العمولة' },
+              { key: 'modules', label: 'الموديولات' },
             ].map((t) => (
               <button
                 key={t.key}
@@ -193,6 +195,9 @@ export default function SettingsPage({
         )}
         {tab === 'commission' && (
           <CommissionTab supplier={supplier} onSaved={() => { loadAll(); showToast('تم تحديث العمولة') }} />
+        )}
+        {tab === 'modules' && (
+          <ModulesTab supplier={supplier} supplierId={supplierId} />
         )}
       </main>
     </div>
@@ -812,6 +817,74 @@ function CommissionTab({ supplier, onSaved }: { supplier: Supplier; onSaved: () 
         </div>
 
         <SaveButton onClick={save} loading={saving} />
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   MODULES TAB — فتح/قفل تبويبات اللوحة لكل بيزنس
+   ============================================================ */
+function ModulesTab({ supplier, supplierId }: { supplier: Supplier; supplierId: string }) {
+  const mods = modulesForIndustry(supplier.industry)
+  const [overrides, setOverrides] = useState<Record<string, { enabled: boolean }>>({})
+  const [loading, setLoading] = useState(true)
+  const [busy, setBusy] = useState<string | null>(null)
+
+  async function load() {
+    setLoading(true)
+    // @ts-expect-error
+    const { data } = await supabase.from('supplier_modules').select('module_href, enabled').eq('supplier_id', supplierId)
+    const map: Record<string, { enabled: boolean }> = {}
+    ;(data || []).forEach((r: any) => { map[r.module_href] = { enabled: r.enabled } })
+    setOverrides(map)
+    setLoading(false)
+  }
+  useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId])
+
+  const isOn = (href: string) => { const o = overrides[href]; return o ? o.enabled !== false : true }
+
+  async function toggle(href: string) {
+    const next = !isOn(href)
+    setBusy(href)
+    // @ts-expect-error
+    await supabase.rpc('admin_set_supplier_module', { p_supplier_id: supplierId, p_module_href: href, p_enabled: next })
+    setOverrides((prev) => ({ ...prev, [href]: { enabled: next } }))
+    setBusy(null)
+  }
+
+  if (loading) {
+    return <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin inline" /></div>
+  }
+
+  const onCount = mods.filter((m) => isOn(m.href)).length
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-[#1F6F5F]/5 rounded-2xl p-4 border border-[#1F6F5F]/20 text-sm text-[#1A2E26]">
+        افتح أو اقفل أي تبويب لـ <b>{supplier.business_name}</b>. المقفول بيختفي من لوحته على طول.
+        <span className="text-[#6B7280]"> ({onCount} من {mods.length} مفتوح)</span>
+      </div>
+      <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50">
+        {mods.map((m) => {
+          const on = isOn(m.href)
+          return (
+            <div key={m.href} className="flex items-center justify-between gap-3 px-4 py-3">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-[#1A2E26]">{m.label}{m.primary ? ' ⭐' : ''}</p>
+                <p className="text-[11px] text-[#6B7280] font-mono">{m.href}</p>
+              </div>
+              <button
+                onClick={() => toggle(m.href)}
+                disabled={busy === m.href}
+                className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 disabled:opacity-50 ${on ? 'bg-[#1F6F5F]' : 'bg-gray-300'}`}
+                title={on ? 'مفتوح' : 'مقفول'}
+              >
+                <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${on ? 'right-0.5' : 'left-0.5'}`} />
+              </button>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
