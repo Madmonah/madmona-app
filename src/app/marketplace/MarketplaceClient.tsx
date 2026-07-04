@@ -21,6 +21,7 @@ interface Category {
   slug: string
   icon: string | null
   track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | null
+  also_show_in?: string[] | null
   group_slug?: string | null
   group_name_ar?: string | null
   group_emoji?: string | null
@@ -106,6 +107,8 @@ function MarketplaceBrowseContent() {
   const initialSupplier = searchParams.get('supplier')
 
   const [allCategories, setAllCategories] = useState<Category[]>([])
+  // Jul 2026: per-category published-listing counts → empty sections lock with "قريباً"
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number> | null>(null)
   const allRootCategories = allCategories.filter(c => c.parent_id === null)
   const [activeTrack, setActiveTrack] = useState<TrackTab>(
     (initialTrack === 'hybrid'
@@ -142,6 +145,25 @@ function MarketplaceBrowseContent() {
   // Group headings show only inside a specific track that has >1 group.
   // The "الكل" view stays a flat strip (groups would collide across tracks).
   const showGroupHeadings = activeTrack !== 'all' && rootGroups.length > 1
+
+  // Jul 2026 (Mohamed): any section with zero published listings is locked and
+  // labeled "قريباً". A root section counts its own listings + its children +
+  // categories cross-listed into it (also_show_in). Until counts load, nothing locks.
+  const categoryHasData = (cat: Category): boolean => {
+    if (!categoryCounts) return true
+    if ((categoryCounts[cat.id] || 0) > 0) return true
+    if (cat.parent_id === null) {
+      return allCategories.some(c =>
+        (c.parent_id === cat.id ||
+          (Array.isArray(c.also_show_in) && c.also_show_in.includes(cat.id))) &&
+        (categoryCounts[c.id] || 0) > 0
+      )
+    }
+    return false
+  }
+  // Locked pills sink to the end of each strip so live sections come first.
+  const sortByData = (cats: Category[]) =>
+    [...cats].sort((a, b) => Number(!categoryHasData(a)) - Number(!categoryHasData(b)))
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState(initialQuery)
@@ -186,6 +208,18 @@ function MarketplaceBrowseContent() {
         const cat = (data as Category[]).find(c => c.slug === initialCategorySlug)
         const root = cat?.parent_id ? (data as Category[]).find(c => c.id === cat.parent_id) : cat
         if (root?.track) setActiveTrack(root.track as TrackTab)
+      }
+
+      // Published-listing counts per category (RPC) — sections with zero data
+      // render locked with a "قريباً / Coming soon" badge.
+      // @ts-expect-error - RPC type
+      const { data: counts } = await supabaseBrowser.rpc('get_marketplace_category_counts')
+      if (counts) {
+        const map: Record<string, number> = {}
+        for (const row of counts as { category_id: string; listing_count: number }[]) {
+          map[row.category_id] = Number(row.listing_count)
+        }
+        setCategoryCounts(map)
       }
     }
     load()
@@ -374,6 +408,7 @@ function MarketplaceBrowseContent() {
     : undefined
   const catName = (c: { name_ar: string; name_en?: string | null }) =>
     lang === 'en' && c.name_en ? c.name_en : c.name_ar
+  const comingSoonLabel = lang === 'en' ? 'Coming soon' : 'قريباً'
   const hasFilters = selectedCategorySlug || searchQuery || cityFilter || sortBy !== 'newest'
   // عرض متجر محدد (/marketplace?supplier=...) — بانر باسم التاجر + تصنيفاته
   const supplierInfo: any = supplierFilter ? (listings.find(l => (l.supplier as any)?.business_name)?.supplier || null) : null
@@ -501,13 +536,14 @@ function MarketplaceBrowseContent() {
                     </div>
                   )}
                   <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
-                    {g.cats.map(cat => (
+                    {sortByData(g.cats).map(cat => (
                       <CategoryPill
                         key={cat.id}
                         active={selectedRootSlug === cat.slug}
                         onClick={() => setSelectedCategorySlug(cat.slug)}
                         label={catName(cat)}
                         icon={cat.icon || ''}
+                        comingSoon={categoryHasData(cat) ? undefined : comingSoonLabel}
                       />
                     ))}
                   </div>
@@ -522,13 +558,14 @@ function MarketplaceBrowseContent() {
                 label={t('market.track_all')}
                 icon="✨"
               />
-              {rootCategories.map(cat => (
+              {sortByData(rootCategories).map(cat => (
                 <CategoryPill
                   key={cat.id}
                   active={selectedRootSlug === cat.slug}
                   onClick={() => setSelectedCategorySlug(cat.slug)}
                   label={catName(cat)}
                   icon={cat.icon || ''}
+                  comingSoon={categoryHasData(cat) ? undefined : comingSoonLabel}
                 />
               ))}
             </div>
@@ -547,20 +584,32 @@ function MarketplaceBrowseContent() {
               >
                 {t('market.all_sections')}
               </button>
-              {subCategories.map(sub => (
-                <button
-                  key={sub.id}
-                  onClick={() => setSelectedCategorySlug(sub.slug)}
-                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all flex items-center gap-1 ${
-                    selectedCategorySlug === sub.slug
-                      ? 'bg-[#2FA084] text-white shadow-soft'
-                      : 'bg-white/80 text-gray-700 hover:bg-white border border-gray-100'
-                  }`}
-                >
-                  {sub.icon && <span>{sub.icon}</span>}
-                  <span>{catName(sub)}</span>
-                </button>
-              ))}
+              {sortByData(subCategories).map(sub => {
+                const locked = !categoryHasData(sub)
+                return (
+                  <button
+                    key={sub.id}
+                    onClick={() => { if (!locked) setSelectedCategorySlug(sub.slug) }}
+                    disabled={locked}
+                    title={locked ? comingSoonLabel : undefined}
+                    className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all flex items-center gap-1 ${
+                      locked
+                        ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed select-none'
+                        : selectedCategorySlug === sub.slug
+                          ? 'bg-[#2FA084] text-white shadow-soft'
+                          : 'bg-white/80 text-gray-700 hover:bg-white border border-gray-100'
+                    }`}
+                  >
+                    {sub.icon && <span className={locked ? 'opacity-50' : ''}>{sub.icon}</span>}
+                    <span className={locked ? 'opacity-70' : ''}>{catName(sub)}</span>
+                    {locked && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 leading-none whitespace-nowrap">
+                        🔒 {comingSoonLabel}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           )}
 
@@ -847,13 +896,30 @@ function MarketplaceBrowseContent() {
 }
 
 function CategoryPill({
-  active, onClick, label, icon,
+  active, onClick, label, icon, comingSoon,
 }: {
   active: boolean
   onClick: () => void
   label: string
   icon: string
+  /** When set, the section has no data yet: pill locks and shows this label. */
+  comingSoon?: string
 }) {
+  if (comingSoon) {
+    return (
+      <button
+        disabled
+        title={comingSoon}
+        className="flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed select-none"
+      >
+        <span className="opacity-50">{icon}</span>
+        <span className="opacity-70">{label}</span>
+        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 leading-none whitespace-nowrap">
+          🔒 {comingSoon}
+        </span>
+      </button>
+    )
+  }
   return (
     <button
       onClick={onClick}
