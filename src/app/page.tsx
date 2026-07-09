@@ -16,6 +16,8 @@ import CategoryTrackTabs from '@/components/CategoryTrackTabs'
 import DailyMessageCard from '@/components/retention/DailyMessageCard'
 import T from '@/components/T'
 import MadmonaShowcase from '@/components/MadmonaShowcase'
+import WorldCupHomeSection from '@/components/WorldCupHomeSection'
+import PropertyMarketHomeSection from '@/components/PropertyMarketHomeSection'
 
 // ============================================================
 // Home page — Single brand: "خدمات مضمونة"
@@ -137,6 +139,11 @@ export default async function HomePage() {
           <DownloadAppBig />
         </div>
 
+        {/* ⚽ World Cup 2026 live section — full match details (Jul 5 2026) */}
+        <div className="max-w-7xl mx-auto px-4 pt-4">
+          <WorldCupHomeSection />
+        </div>
+
         {/* 📅 Daily message card — retention feature (Phase X, May 18 2026).
             Renders a tappable card with greeting/tip/announcement.
             Hides itself if no message available or user dismissed it.
@@ -170,6 +177,10 @@ export default async function HomePage() {
             <CompactNewsTabs />
           </div>
         </section>
+
+        {/* 📊 بورصة عقارات مضمونة — أسعار العاصمة والتجمع لايف (Jul 9 2026).
+            Server component بيقرأ property_market_items وبيخفي نفسه لو مفيش داتا. */}
+        <PropertyMarketHomeSection />
 
         {/* CATEGORIES */}
         <section className="py-16 md:py-24 bg-white">

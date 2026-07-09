@@ -1,13 +1,15 @@
-// olx-scraper v2 — comprehensive: all major cities, all rental categories
+// olx-scraper v3 — comprehensive: all major cities, rentals + FOR-SALE properties
+// v3 (9 Jul 2026): + for-sale apartments/villas/chalets URLs (categories *_sale)
+//   عشان تاب «فرص معروضة 🔥 — للبيع» في بورصة العقارات يتملي بإعلانات بيع حقيقية.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-// 28 URLs across all rental categories + cities
+// 36 URLs across rental + sale categories + cities
 const CATEGORIES = [
-  // APARTMENTS — 11 cities
+  // APARTMENTS FOR RENT — 11 cities
   { url: "https://www.olx.com.eg/properties/apartments-duplex-for-rent/cairo/", category: "apartments", default_loc: "القاهرة" },
   { url: "https://www.olx.com.eg/properties/apartments-duplex-for-rent/giza/", category: "apartments", default_loc: "الجيزة" },
   { url: "https://www.olx.com.eg/properties/apartments-duplex-for-rent/alexandria/", category: "apartments", default_loc: "الإسكندرية" },
@@ -19,7 +21,7 @@ const CATEGORIES = [
   { url: "https://www.olx.com.eg/properties/apartments-duplex-for-rent/port-said/", category: "apartments", default_loc: "بورسعيد" },
   { url: "https://www.olx.com.eg/properties/apartments-duplex-for-rent/suez/", category: "apartments", default_loc: "السويس" },
   { url: "https://www.olx.com.eg/properties/apartments-duplex-for-rent/ismailia/", category: "apartments", default_loc: "الإسماعيلية" },
-  // VILLAS — 4 cities
+  // VILLAS FOR RENT — 4 cities
   { url: "https://www.olx.com.eg/properties/houses-villas-for-rent/cairo/", category: "villas", default_loc: "القاهرة" },
   { url: "https://www.olx.com.eg/properties/houses-villas-for-rent/giza/", category: "villas", default_loc: "الجيزة" },
   { url: "https://www.olx.com.eg/properties/houses-villas-for-rent/alexandria/", category: "villas", default_loc: "الإسكندرية" },
@@ -41,9 +43,18 @@ const CATEGORIES = [
   { url: "https://www.olx.com.eg/properties/office-commercial-for-rent/cairo/", category: "workspaces", default_loc: "القاهرة" },
   { url: "https://www.olx.com.eg/properties/office-commercial-for-rent/giza/", category: "workspaces", default_loc: "الجيزة" },
   { url: "https://www.olx.com.eg/properties/office-commercial-for-rent/alexandria/", category: "workspaces", default_loc: "الإسكندرية" },
+  // 🏷️ APARTMENTS FOR SALE — v3 (5 areas عالية الطلب)
+  { url: "https://www.olx.com.eg/properties/apartments-duplex-for-sale/cairo/", category: "apartments_sale", default_loc: "القاهرة" },
+  { url: "https://www.olx.com.eg/properties/apartments-duplex-for-sale/giza/", category: "apartments_sale", default_loc: "الجيزة" },
+  { url: "https://www.olx.com.eg/properties/apartments-duplex-for-sale/alexandria/", category: "apartments_sale", default_loc: "الإسكندرية" },
+  // 🏷️ VILLAS FOR SALE
+  { url: "https://www.olx.com.eg/properties/houses-villas-for-sale/cairo/", category: "villas_sale", default_loc: "القاهرة" },
+  // 🏷️ CHALETS / VACATION FOR SALE (الساحل والعين السخنة)
+  { url: "https://www.olx.com.eg/properties/vacation-homes-for-sale/matrouh/", category: "chalets_sale", default_loc: "الساحل الشمالي" },
+  { url: "https://www.olx.com.eg/properties/vacation-homes-for-sale/suez/", category: "chalets_sale", default_loc: "العين السخنة" },
 ];
 
-const LOCATIONS = ["مدينتي", "مدينة نصر", "التجمع", "الرحاب", "القاهرة الجديدة", "الشيخ زايد", "المعادي", "6 أكتوبر", "أكتوبر", "الشروق", "مارينا", "العين السخنة", "الغردقة", "الإسكندرية", "الساحل الشمالي", "هليوبوليس", "مصر الجديدة", "الزمالك", "شرم الشيخ", "دهب", "في لبان", "رأس سدر", "جمصة", "دون تاون"];
+const LOCATIONS = ["مدينتي", "مدينة نصر", "التجمع", "الرحاب", "القاهرة الجديدة", "الشيخ زايد", "المعادي", "6 أكتوبر", "أكتوبر", "الشروق", "مارينا", "العين السخنة", "الغردقة", "الإسكندرية", "الساحل الشمالي", "هليوبوليس", "مصر الجديدة", "الزمالك", "شرم الشيخ", "دهب", "في لبان", "رأس سدر", "جمصة", "دون تاون", "العاصمة الإدارية", "راس الحكمة"];
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
 function extractLeads(html: string, categoryInfo: typeof CATEGORIES[0]) {
@@ -70,7 +81,8 @@ function extractLeads(html: string, categoryInfo: typeof CATEGORIES[0]) {
     if (desc.length > 20) {
       const labelMap: Record<string, string> = {
         apartments: "شقة", chalets: "شاليه", villas: "فيلا",
-        cars: "سيارة", workspaces: "مكتب", equipment: "معدات"
+        cars: "سيارة", workspaces: "مكتب", equipment: "معدات",
+        apartments_sale: "شقة للبيع", villas_sale: "فيلا للبيع", chalets_sale: "شاليه للبيع",
       };
       leads.push({
         business_name: `${labelMap[categoryInfo.category] || "إعلان"} - ${location}`,

@@ -456,7 +456,7 @@ export default function AdminOverview() {
                 </div>
                 <div className="feats">
                   <span className="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18M3 12h18M3 18h12" /></svg>عمولة موحدة 10%</span>
-                  <span className="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="14" rx="2" /><path d="M3 9h18" /></svg>CRM + ERP مجاني</span>
+                  <span className="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="14" rx="2" /><path d="M3 9h18" /></svg>CRM + ERP باشتراك شهري</span>
                   <span className="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14" /></svg>إضافة منتج مجانية</span>
                 </div>
                 <Link className="goto" href="/admin/business-partners">افتح البوابة<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 6l-6 6 6 6" /></svg></Link>

@@ -20,6 +20,14 @@ import {
 } from '@/lib/cart'
 
 // ---------- shared types ----------
+export type MenuItemSize = {
+  id: string
+  name_ar: string
+  price: number
+  display_order?: number
+  is_available?: boolean
+}
+
 export type MenuItem = {
   id: string
   name_ar: string
@@ -29,6 +37,23 @@ export type MenuItem = {
   price: number
   photo_url?: string | null
   category?: string | null
+  is_available: boolean
+  display_order?: number
+  sizes?: MenuItemSize[]
+}
+
+export type MartProduct = {
+  id: string
+  name_ar: string
+  name_en?: string | null
+  description_ar?: string | null
+  price: number
+  compare_at_price?: number | null
+  unit?: string | null
+  brand?: string | null
+  category?: string | null
+  photo_url?: string | null
+  in_stock: boolean
   is_available: boolean
   display_order?: number
 }
@@ -51,7 +76,7 @@ export function RestaurantMenu({
   const { t, lang } = useT()
   const cart = useCart()
   const [pendingId, setPendingId] = useState<string | null>(null)
-  const [crossWarn, setCrossWarn] = useState<MenuItem | null>(null)
+  const [crossWarn, setCrossWarn] = useState<{ mi: MenuItem; size: MenuItemSize | null } | null>(null)
 
   const available = menuItems.filter((mi) => mi.is_available)
 
@@ -78,26 +103,32 @@ export function RestaurantMenu({
   // Stable order: respect first-seen order in array
   const orderedCats = Array.from(grouped.keys())
 
-  function attemptAdd(mi: MenuItem) {
+  function buildFoodItem(mi: MenuItem, size: MenuItemSize | null) {
+    return {
+      key: size ? `${mi.id}:${size.id}` : mi.id,
+      listing_id: listing.id,
+      menu_item_id: mi.id,
+      size_id: size?.id ?? null,
+      size_name: size?.name_ar ?? null,
+      name: size ? `${mi.name_ar} (${size.name_ar})` : mi.name_ar,
+      photo_url: mi.photo_url ?? null,
+      unit_price: size ? size.price : mi.price,
+    }
+  }
+
+  function attemptAdd(mi: MenuItem, size: MenuItemSize | null = null) {
     const result = addToCart({
       supplier_id: supplier.id,
       supplier_name: supplier.business_name,
       order_type: 'food',
       primary_listing_id: listing.id,
-      item: {
-        key: mi.id,
-        listing_id: listing.id,
-        menu_item_id: mi.id,
-        name: mi.name_ar,
-        photo_url: mi.photo_url ?? null,
-        unit_price: mi.price,
-      },
+      item: buildFoodItem(mi, size),
     })
     if (!result.ok) {
-      setCrossWarn(mi)
+      setCrossWarn({ mi, size })
       return
     }
-    setPendingId(mi.id)
+    setPendingId(size ? `${mi.id}:${size.id}` : mi.id)
     setTimeout(() => setPendingId(null), 800)
   }
 
@@ -108,14 +139,7 @@ export function RestaurantMenu({
       supplier_name: supplier.business_name,
       order_type: 'food',
       primary_listing_id: listing.id,
-      item: {
-        key: crossWarn.id,
-        listing_id: listing.id,
-        menu_item_id: crossWarn.id,
-        name: crossWarn.name_ar,
-        photo_url: crossWarn.photo_url ?? null,
-        unit_price: crossWarn.price,
-      },
+      item: buildFoodItem(crossWarn.mi, crossWarn.size),
       force: true,
     })
     setCrossWarn(null)
@@ -140,7 +164,9 @@ export function RestaurantMenu({
             </div>
             <div className="divide-y divide-gray-50">
               {items.map((mi) => {
-                const inCart = cart.items.find((it) => it.menu_item_id === mi.id)
+                const sizes = (mi.sizes || []).filter((s) => s.is_available !== false)
+                const hasSizes = sizes.length > 0
+                const inCart = cart.items.find((it) => it.menu_item_id === mi.id && !it.size_id)
                 const qty = inCart?.quantity ?? 0
                 const name =
                   lang === 'en' && mi.name_en ? mi.name_en : mi.name_ar
@@ -148,6 +174,7 @@ export function RestaurantMenu({
                   lang === 'en' && mi.description_en
                     ? mi.description_en
                     : mi.description_ar
+                const minSize = hasSizes ? Math.min(...sizes.map((s) => s.price)) : mi.price
                 return (
                   <div
                     key={mi.id}
@@ -173,32 +200,241 @@ export function RestaurantMenu({
                         </p>
                       )}
                       <p className="text-sm font-black text-[#1F6F5F] mt-2 tabular">
-                        {mi.price.toLocaleString(
+                        {hasSizes && (
+                          <span className="text-xs font-normal text-gray-500">
+                            {lang === 'en' ? 'from ' : 'يبدأ من '}
+                          </span>
+                        )}
+                        {minSize.toLocaleString(
                           lang === 'ar' ? 'ar-EG' : 'en-US',
                         )}{' '}
                         <span className="text-xs font-normal text-gray-500">
                           {t('common.egp')}
                         </span>
                       </p>
+
+                      {/* sizes selector */}
+                      {hasSizes && (
+                        <div className="mt-2.5 space-y-1.5">
+                          {sizes.map((sz) => {
+                            const line = cart.items.find(
+                              (it) => it.key === `${mi.id}:${sz.id}`,
+                            )
+                            const szQty = line?.quantity ?? 0
+                            return (
+                              <div
+                                key={sz.id}
+                                className="flex items-center justify-between gap-2 bg-[#FAFAF7] rounded-xl px-3 py-1.5"
+                              >
+                                <span className="text-xs font-bold text-gray-700">
+                                  {sz.name_ar}
+                                  <span className="text-[#1F6F5F] font-black mr-2 tabular">
+                                    {' '}{sz.price.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
+                                  </span>
+                                </span>
+                                {szQty > 0 ? (
+                                  <QtyStepper
+                                    qty={szQty}
+                                    onDec={() => setItemQuantity(`${mi.id}:${sz.id}`, szQty - 1)}
+                                    onInc={() => setItemQuantity(`${mi.id}:${sz.id}`, szQty + 1)}
+                                  />
+                                ) : (
+                                  <button
+                                    onClick={() => attemptAdd(mi, sz)}
+                                    className="bg-[#1F6F5F] text-white w-7 h-7 rounded-lg flex items-center justify-center shadow-soft hover:shadow-card transition-all flex-shrink-0"
+                                    aria-label={`${t('order.add')} ${sz.name_ar}`}
+                                  >
+                                    {pendingId === `${mi.id}:${sz.id}` ? (
+                                      <Check className="w-3.5 h-3.5" />
+                                    ) : (
+                                      <Plus className="w-3.5 h-3.5" />
+                                    )}
+                                  </button>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                    {!hasSizes && (
+                      <div className="flex-shrink-0 self-center">
+                        {qty > 0 ? (
+                          <QtyStepper
+                            qty={qty}
+                            onDec={() => setItemQuantity(mi.id, qty - 1)}
+                            onInc={() => setItemQuantity(mi.id, qty + 1)}
+                          />
+                        ) : (
+                          <button
+                            onClick={() => attemptAdd(mi)}
+                            className="bg-[#1F6F5F] text-white px-3 py-2 rounded-xl text-xs font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all flex items-center gap-1"
+                          >
+                            {pendingId === mi.id ? (
+                              <Check className="w-3.5 h-3.5" />
+                            ) : (
+                              <Plus className="w-3.5 h-3.5" />
+                            )}
+                            {pendingId === mi.id ? t('order.added') : t('order.add')}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )
+      })}
+
+      {crossWarn && (
+        <CrossSupplierModal
+          existingCart={cart}
+          incomingName={crossWarn.mi.name_ar}
+          onConfirm={forceAdd}
+          onCancel={() => setCrossWarn(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+// ============================================================
+// 1.5) MartProductsCatalog — products list under one listing
+//      (mart_products) — works like RestaurantMenu but order_type=product
+// ============================================================
+export function MartProductsCatalog({
+  listing,
+  supplier,
+  products,
+}: {
+  listing: Listing
+  supplier: Supplier
+  products: MartProduct[]
+}) {
+  const { t, lang } = useT()
+  const cart = useCart()
+  const [pendingId, setPendingId] = useState<string | null>(null)
+  const [crossWarn, setCrossWarn] = useState<MartProduct | null>(null)
+
+  const available = products.filter((p) => p.is_available)
+  if (available.length === 0) return null
+
+  const grouped = new Map<string, MartProduct[]>()
+  for (const p of available) {
+    const cat = (p.category || '').trim() || '__general__'
+    const arr = grouped.get(cat) || []
+    arr.push(p)
+    grouped.set(cat, arr)
+  }
+  const orderedCats = Array.from(grouped.keys())
+
+  function buildItem(p: MartProduct) {
+    return {
+      key: p.id,
+      listing_id: listing.id,
+      mart_product_id: p.id,
+      name: p.name_ar,
+      photo_url: p.photo_url ?? null,
+      unit_price: p.price,
+    }
+  }
+
+  function attemptAdd(p: MartProduct) {
+    const result = addToCart({
+      supplier_id: supplier.id,
+      supplier_name: supplier.business_name,
+      order_type: 'product',
+      primary_listing_id: listing.id,
+      item: buildItem(p),
+    })
+    if (!result.ok) {
+      setCrossWarn(p)
+      return
+    }
+    setPendingId(p.id)
+    setTimeout(() => setPendingId(null), 800)
+  }
+
+  function forceAdd() {
+    if (!crossWarn) return
+    addToCart({
+      supplier_id: supplier.id,
+      supplier_name: supplier.business_name,
+      order_type: 'product',
+      primary_listing_id: listing.id,
+      item: buildItem(crossWarn),
+      force: true,
+    })
+    setCrossWarn(null)
+  }
+
+  return (
+    <div className="space-y-4">
+      {orderedCats.map((cat) => {
+        const items = grouped.get(cat) || []
+        const catLabel = cat === '__general__' ? (lang === 'en' ? 'Products' : 'المنتجات') : cat
+        return (
+          <section key={cat} className="bg-white rounded-3xl shadow-soft overflow-hidden">
+            <div className="px-5 pt-5 pb-3 border-b border-gray-50">
+              <h3 className="text-sm font-black text-gray-900">{catLabel}</h3>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
+                {items.length} {t('order.items')}
+              </p>
+            </div>
+            <div className="divide-y divide-gray-50">
+              {items.map((p) => {
+                const line = cart.items.find((it) => it.key === p.id)
+                const qty = line?.quantity ?? 0
+                const name = lang === 'en' && p.name_en ? p.name_en : p.name_ar
+                const oos = !p.in_stock
+                return (
+                  <div key={p.id} className="flex items-start gap-3 p-4 hover:bg-gray-50/50 transition">
+                    {p.photo_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.photo_url} alt={name} className="w-20 h-20 rounded-xl object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 flex-shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-gray-900 leading-tight">{name}</p>
+                      {(p.brand || p.unit) && (
+                        <p className="text-[10px] font-bold text-gray-400 mt-0.5">
+                          {[p.brand, p.unit].filter(Boolean).join(' · ')}
+                        </p>
+                      )}
+                      {p.description_ar && (
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">{p.description_ar}</p>
+                      )}
+                      <p className="text-sm font-black text-[#1F6F5F] mt-2 tabular">
+                        {p.price.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}{' '}
+                        <span className="text-xs font-normal text-gray-500">{t('common.egp')}</span>
+                        {p.compare_at_price && p.compare_at_price > p.price && (
+                          <span className="text-xs text-gray-400 line-through mr-2 tabular">
+                            {p.compare_at_price.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
+                          </span>
+                        )}
+                      </p>
                     </div>
                     <div className="flex-shrink-0 self-center">
-                      {qty > 0 ? (
+                      {oos ? (
+                        <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2.5 py-1.5 rounded-lg">
+                          {lang === 'en' ? 'Out of stock' : 'غير متوفر'}
+                        </span>
+                      ) : qty > 0 ? (
                         <QtyStepper
                           qty={qty}
-                          onDec={() => setItemQuantity(mi.id, qty - 1)}
-                          onInc={() => setItemQuantity(mi.id, qty + 1)}
+                          onDec={() => setItemQuantity(p.id, qty - 1)}
+                          onInc={() => setItemQuantity(p.id, qty + 1)}
                         />
                       ) : (
                         <button
-                          onClick={() => attemptAdd(mi)}
+                          onClick={() => attemptAdd(p)}
                           className="bg-[#1F6F5F] text-white px-3 py-2 rounded-xl text-xs font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all flex items-center gap-1"
                         >
-                          {pendingId === mi.id ? (
-                            <Check className="w-3.5 h-3.5" />
-                          ) : (
-                            <Plus className="w-3.5 h-3.5" />
-                          )}
-                          {pendingId === mi.id ? t('order.added') : t('order.add')}
+                          {pendingId === p.id ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                          {pendingId === p.id ? t('order.added') : t('order.add')}
                         </button>
                       )}
                     </div>

@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import { useT } from '@/lib/i18n/LanguageProvider'
-import { RestaurantMenu, ProductBuyBox, CartCheckoutBar, type MenuItem } from '@/components/OrderActions'
+import { RestaurantMenu, MartProductsCatalog, ProductBuyBox, CartCheckoutBar, type MenuItem, type MartProduct } from '@/components/OrderActions'
 import CartButton from '@/components/CartButton'
 import ListQuoteOrderBox from '@/components/ListQuoteOrderBox'
 
@@ -128,6 +128,7 @@ export default function ListingDetailPage() {
   const [shareSuccess, setShareSuccess] = useState(false)
   const [activeTab, setActiveTab] = useState<'details' | 'location' | 'reviews'>('details')
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+  const [martProducts, setMartProducts] = useState<MartProduct[]>([])
 
   useEffect(() => {
     let resolvedListingId: string | null = null
@@ -224,7 +225,7 @@ export default function ListingDetailPage() {
           setIsFavorite(!!results[4].data)
         }
 
-        // Restaurant menu items (only when track === 'restaurants')
+        // Restaurant menu items (only when track === 'restaurants') + sizes
         const trackForMenu = (l as { category?: { track?: string | null } | null }).category?.track
         if (trackForMenu === 'restaurants') {
           // @ts-expect-error
@@ -234,7 +235,37 @@ export default function ListingDetailPage() {
             .eq('listing_id', l.id)
             .eq('is_available', true)
             .order('display_order', { ascending: true })
-          setMenuItems((mi || []) as MenuItem[])
+          const itemsArr = (mi || []) as MenuItem[]
+          if (itemsArr.length > 0) {
+            // @ts-expect-error
+            const { data: szs } = await supabaseBrowser
+              .from('restaurant_menu_item_sizes')
+              .select('id, menu_item_id, name_ar, price, display_order, is_available')
+              .in('menu_item_id', itemsArr.map((x) => x.id))
+              .eq('is_available', true)
+              .order('display_order', { ascending: true })
+            const szMap = new Map<string, { id: string; name_ar: string; price: number; display_order: number; is_available: boolean }[]>()
+            for (const s of (szs || []) as { id: string; menu_item_id: string; name_ar: string; price: number; display_order: number; is_available: boolean }[]) {
+              const arr = szMap.get(s.menu_item_id) || []
+              arr.push(s)
+              szMap.set(s.menu_item_id, arr)
+            }
+            setMenuItems(itemsArr.map((x) => ({ ...x, price: Number(x.price), sizes: (szMap.get(x.id) || []).map((s) => ({ ...s, price: Number(s.price) })) })))
+          } else {
+            setMenuItems(itemsArr)
+          }
+        }
+
+        // Supplier products catalog (mart_products) — any non-restaurant listing
+        if (trackForMenu !== 'restaurants') {
+          // @ts-expect-error
+          const { data: mp } = await supabaseBrowser
+            .from('mart_products')
+            .select('id, name_ar, name_en, description_ar, price, compare_at_price, unit, brand, category, photo_url, in_stock, is_available, display_order')
+            .eq('listing_id', l.id)
+            .eq('is_available', true)
+            .order('display_order', { ascending: true })
+          setMartProducts(((mp || []) as MartProduct[]).map((p) => ({ ...p, price: Number(p.price), compare_at_price: p.compare_at_price != null ? Number(p.compare_at_price) : null })))
         }
       } catch (e) {
         console.error('[listing/detail] load error:', e)
@@ -672,6 +703,14 @@ export default function ListingDetailPage() {
                 listing={{ id: listing.id, title: displayTitle }}
                 supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
                 menuItems={menuItems}
+              />
+            )}
+
+            {!isRestaurant && !isDirectory && listing.supplier && martProducts.length > 0 && (
+              <MartProductsCatalog
+                listing={{ id: listing.id, title: displayTitle }}
+                supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
+                products={martProducts}
               />
             )}
 

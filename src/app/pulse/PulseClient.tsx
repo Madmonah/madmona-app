@@ -118,6 +118,19 @@ export default function PulseClient() {
       <PulseHeader streak={feed?.streak ?? null} />
 
       <main className="px-5 py-6 max-w-3xl mx-auto space-y-6 pb-24">
+        {/* 0. World Cup 2026 live scores banner */}
+        <Link
+          href="/world-cup"
+          className="flex items-center gap-3 bg-gradient-to-l from-[#1F6F5F] to-[#2FA084] text-white rounded-2xl px-4 py-3.5 shadow-card hover:shadow-luxe hover:-translate-y-0.5 transition-all"
+        >
+          <span className="text-2xl">⚽</span>
+          <span className="flex-1">
+            <span className="block text-sm font-black">نتايج كأس العالم 2026 لايف</span>
+            <span className="block text-[11px] font-bold text-white/80 mt-0.5">ماتشات النهارده + النتايج لحظة بلحظة 🔴</span>
+          </span>
+          <span className="bg-white/15 text-[10px] font-black px-2.5 py-1 rounded-full animate-pulse">LIVE</span>
+        </Link>
+
         {/* 1. Daily Drop — primary FOMO mechanic */}
         {loading ? <SkeletonCard h="h-64" /> : (
           feed?.drop ? <DailyDropHero drop={feed.drop} /> : <NoDropToday />

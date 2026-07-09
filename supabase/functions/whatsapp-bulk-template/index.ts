@@ -1,4 +1,9 @@
-// whatsapp-bulk-template v2 — use x-agent-secret header (Authorization is for Supabase JWT)
+// whatsapp-bulk-template v4 (2026-07-06) — 🛡️ TEMPLATE-AUDIENCE GUARD:
+// every recipient is checked against template_audience_rules (check_template_audience RPC)
+// BEFORE sending — sector templates can never reach the wrong sector again.
+// Incident 6 Jul: restaurant template went to cars/apartments leads via revive. Never again.
+// v3 (2026-07-05) — per-recipient params: body.recipients = [{ phone, param1?, template_name? }]
+// (A/B + per-name). Legacy body.phones + single param1 still fully supported.
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
 const CORS = {
@@ -14,6 +19,8 @@ function normalizePhone(raw: string): string {
   return digits
 }
 
+type Recipient = { phone: string; param1?: string; template_name?: string }
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405 })
@@ -26,15 +33,21 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json()
-    const phones: string[] = body.phones || []
-    const templateName: string = body.template_name || 'partnership_intro_v2'
+    const defaultTemplate: string = body.template_name || 'partnership_intro_v2'
     const languageCode: string = body.language_code || 'ar'
-    const param1: string = body.param1 || 'حضرتك'
+    const defaultParam1: string = body.param1 || 'حضرتك'
     const agentName: string = body.agent_name || 'bulk-supplier-outreach'
     const dryRun: boolean = !!body.dry_run
 
-    if (!Array.isArray(phones) || phones.length === 0) {
-      return new Response(JSON.stringify({ error: 'phones array required' }), { status: 400, headers: { 'Content-Type': 'application/json', ...CORS } })
+    // Unified recipients list: new shape first, legacy phones[] fallback.
+    let recipients: Recipient[] = []
+    if (Array.isArray(body.recipients) && body.recipients.length > 0) {
+      recipients = body.recipients.filter((r: Recipient) => r && r.phone)
+    } else if (Array.isArray(body.phones) && body.phones.length > 0) {
+      recipients = body.phones.map((p: string) => ({ phone: p }))
+    }
+    if (recipients.length === 0) {
+      return new Response(JSON.stringify({ error: 'recipients or phones array required' }), { status: 400, headers: { 'Content-Type': 'application/json', ...CORS } })
     }
 
     const sb = createClient(
@@ -51,16 +64,42 @@ Deno.serve(async (req) => {
     }
 
     if (dryRun) {
-      return new Response(JSON.stringify({ dry_run: true, would_send: phones.length, template: templateName, param1 }), { headers: { 'Content-Type': 'application/json', ...CORS } })
+      return new Response(JSON.stringify({ dry_run: true, would_send: recipients.length, template: defaultTemplate }), { headers: { 'Content-Type': 'application/json', ...CORS } })
     }
 
-    const results: Array<{ phone: string; ok: boolean; wa_id?: string; error?: string }> = []
-    for (const rawPhone of phones) {
-      const phone = normalizePhone(rawPhone)
+    let blockedCount = 0
+    const results: Array<{ phone: string; ok: boolean; wa_id?: string; template?: string; error?: string }> = []
+    for (const rec of recipients) {
+      const phone = normalizePhone(rec.phone)
+      const templateName = rec.template_name || defaultTemplate
+      const param1 = (rec.param1 || '').trim() || defaultParam1
       if (!phone) {
-        results.push({ phone: rawPhone, ok: false, error: 'invalid phone' })
+        results.push({ phone: rec.phone, ok: false, error: 'invalid phone' })
         continue
       }
+
+      // 🛡️ AUDIENCE GUARD — hard data-layer check before ANY send.
+      // Rules live in template_audience_rules; unknown templates default to 'all'.
+      try {
+        const { data: gate } = await sb.rpc('check_template_audience', { p_phone: phone, p_template: templateName })
+        const g = gate as { allowed?: boolean; reason?: string } | null
+        if (g && g.allowed === false) {
+          blockedCount++
+          results.push({ phone, ok: false, template: templateName, error: 'blocked_by_audience_guard: ' + (g.reason || '') })
+          try {
+            await sb.from('whatsapp_policy_violations').insert({
+              attempted_recipient: '+' + phone,
+              attempted_message: `[template: ${templateName} | param1: ${param1}]`,
+              agent_name: agentName,
+              campaign: 'bulk_template',
+              violation_type: 'template_audience_mismatch',
+              matched_pattern: g.reason || 'audience_rule'
+            })
+          } catch (_e) { /* audit best-effort */ }
+          continue
+        }
+      } catch (_e) { /* guard RPC unavailable → generic templates pass (default rule = all) */ }
+
       try {
         const r = await fetch(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
           method: 'POST',
@@ -123,13 +162,12 @@ Deno.serve(async (req) => {
               metadata: { bulk_send: true, template_name: templateName }
             })
           }
-          // Update cold_leads.contact_count + last_contacted
           await sb.from('cold_leads').update({
             last_contacted: new Date().toISOString(),
             status: 'contacted'
           }).eq('phone', fullPhone)
         }
-        results.push({ phone, ok, wa_id: waId, error: err })
+        results.push({ phone, ok, wa_id: waId, template: templateName, error: err })
       } catch (e) {
         results.push({ phone, ok: false, error: e instanceof Error ? e.message : 'unknown' })
       }
@@ -138,10 +176,12 @@ Deno.serve(async (req) => {
 
     const okCount = results.filter(r => r.ok).length
     return new Response(JSON.stringify({
-      total: phones.length,
+      total: recipients.length,
       sent: okCount,
-      failed: phones.length - okCount,
+      failed: recipients.length - okCount,
+      blocked_by_guard: blockedCount,
       results: results.slice(0, 10),
+      sent_phones: results.filter(r => r.ok).map(r => r.phone),
       first_errors: results.filter(r => !r.ok).slice(0, 5).map(r => r.error)
     }, null, 2), { headers: { 'Content-Type': 'application/json', ...CORS } })
   } catch (err) {

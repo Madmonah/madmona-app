@@ -1,6 +1,8 @@
-// Madmona Quick Signup Edge Function v2
+// Madmona Quick Signup Edge Function v4
 // 3 fields only: phone + name + email → creates supplier account + magic link
 // v2: Force redirect to production URL (workaround for Supabase Site URL config)
+// v4 (4 Jul 2026): New warm welcome messages — unified 10% commission + B2B subscription
+// v5 (4 Jul 2026): CRM/ERP is NOT free — monthly subscription (بالاتفاق). Commission separate from subscription.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -102,7 +104,7 @@ Deno.serve(async (req) => {
         await admin.from("whatsapp_outbound_queue").insert({
           recipient_phone: existingByEmail.phone,
           recipient_name: existingByEmail.full_name || cleanName,
-          message: `أهلاً ${existingByEmail.full_name || cleanName}! 👋\n\nأنت معاك حساب على مضمونة بالفعل. اتفضل سجل دخول من اللينك ده:\n\n${link}\n\n— Madmona`,
+          message: `أهلاً ${existingByEmail.full_name || cleanName}! 👋\n\nإنت أصلاً واحد مننا — عندك حساب على مضمونة. 😄\nاضغط اللينك ده وهتدخل على طول من غير باسورد:\n\n${link}\n\nولو واقف معاك أي حاجة، رد على الرسالة دي وهنساعدك فورًا 🤝\n\n— مضمونة · معاملاتك مضمونة 💚`,
           status: "pending",
           agent_name: "quick-signup",
           campaign: "existing_user_login_link",
@@ -140,7 +142,7 @@ Deno.serve(async (req) => {
         await admin.from("whatsapp_outbound_queue").insert({
           recipient_phone: normPhone,
           recipient_name: existingByPhone.full_name || cleanName,
-          message: `أهلاً ${existingByPhone.full_name || cleanName}! 👋\n\nالرقم ده مسجل بالفعل بإيميل ${existingByPhone.email}. اتفضل لينك الدخول:\n\n${link}\n\n— Madmona`,
+          message: `أهلاً ${existingByPhone.full_name || cleanName}! 👋\n\nرقمك ده متسجل عندنا قبل كده بإيميل ${existingByPhone.email} — يعني إنت من أهل البيت. 😄\nاضغط اللينك وهتدخل حسابك على طول:\n\n${link}\n\nمحتاج تغيّر أي بيانات؟ رد على الرسالة دي وإحنا معاك 🤝\n\n— مضمونة · معاملاتك مضمونة 💚`,
           status: "pending",
           agent_name: "quick-signup",
           campaign: "existing_user_login_link",
@@ -216,9 +218,15 @@ Deno.serve(async (req) => {
         recipient_name: cleanName,
         message:
           `أهلاً ${cleanName}! 🎉\n\n` +
-          `حسابك على مضمونة جاهز. اضغط دلوقتي وابدأ تنشر إعلاناتك:\n\n` +
+          `نوّرت مضمونة — حسابك اتعمل وجاهز.\n` +
+          `اضغط اللينك ده وهتدخل على طول من غير باسورد:\n\n` +
           `${magicLink}\n\n` +
-          `لو احتجت أي حاجة، رد على الرسالة دي 🤝\n\n— Madmona`,
+          `جوه هتنشر إعلانك في دقايق (صور + سعر + مواعيد)، وتاخد معاه:\n` +
+          `🛡️ حماية كاملة لكل معاملة — حقك محفوظ\n` +
+          `💰 عمولة موحدة 10% بس على الصفقة الناجحة — النشر ببلاش، ومتدفعش غير لما تكسب\n` +
+          `⚡ مستحقاتك بتوصلك بسرعة + دعم مستمر 24/7\n\n` +
+          `⭐ وعايز تدير شغلك كله من مكان واحد (عملاء، حجوزات، فلوس، فريق، فروع)؟ في نظام إدارة متكامل CRM + ERP باشتراك شهري بالاتفاق — اسألنا عليه.\n\n` +
+          `أي سؤال؟ رد على الرسالة دي وهنساعدك فورًا 🤝\n\n— مضمونة · معاملاتك مضمونة 💚`,
         status: "pending",
         agent_name: "quick-signup",
         campaign: "magic_link_welcome",

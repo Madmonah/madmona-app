@@ -10,6 +10,8 @@ import GoogleAnalytics from '@/components/analytics/GoogleAnalytics'
 import MetaPixel from '@/components/analytics/MetaPixel'
 import AnalyticsTracker from '@/components/AnalyticsTracker'
 import MadmonaListingClaimer from '@/components/MadmonaListingClaimer'
+import ReferralCapture from '@/components/ReferralCapture'
+import AutoResubscribe from '@/components/AutoResubscribe'
 import DailyMessageBanner from '@/components/DailyMessageBanner'
 import TelegramBotFab from '@/components/TelegramBotFab'
 import './globals.css'
@@ -225,6 +227,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Suspense>
         <Suspense fallback={null}>
           <MadmonaListingClaimer />
+        </Suspense>
+        <Suspense fallback={null}>
+          <ReferralCapture />
+        </Suspense>
+        <Suspense fallback={null}>
+          <AutoResubscribe />
         </Suspense>
         <Suspense fallback={null}>
           <DailyMessageBanner />

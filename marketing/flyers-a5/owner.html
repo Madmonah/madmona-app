@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1748px; height:2480px; font-family:'Cairo', sans-serif; color:#0A0A0A; background:#FAFAF7; overflow:hidden; position:relative; }
+  .mesh { position:absolute; inset:0;
+    background:
+      radial-gradient(900px 700px at 88% 6%, rgba(47,160,132,.14), transparent 60%),
+      radial-gradient(800px 600px at 8% 30%, rgba(31,111,95,.10), transparent 60%),
+      radial-gradient(900px 700px at 90% 78%, rgba(212,160,23,.10), transparent 60%),
+      #FAFAF7; }
+  .wrap { position:relative; height:100%; padding:80px 90px 70px; display:flex; flex-direction:column; }
+
+  .topbar { display:flex; align-items:center; justify-content:space-between; }
+  .brand { display:flex; align-items:center; gap:22px; }
+  .brand .reallogo { width:190px; height:190px; object-fit:contain; border-radius:34px; box-shadow:0 12px 30px rgba(31,111,95,.18); background:#fff; }
+  .pill { background:#fff; border:3px solid rgba(31,111,95,.15); border-radius:999px; padding:18px 38px; font-size:28px; font-weight:800; color:#1F6F5F; box-shadow:0 8px 24px rgba(0,0,0,.05); }
+
+  .hero { display:flex; align-items:center; gap:40px; margin-top:70px; }
+  .hero-txt { flex:1; }
+  .kicker { display:inline-block; background:linear-gradient(90deg,#d4a017,#2FA084); color:#fff; font-size:30px; font-weight:900; padding:12px 34px; border-radius:999px; margin-bottom:28px; }
+  h1 { font-size:118px; font-weight:900; line-height:1.12; color:#0A0A0A; }
+  h1 .grn { color:#1F6F5F; }
+  .sub { margin-top:22px; font-size:44px; font-weight:800; color:#2d7a52; }
+  .mascot { width:520px; height:520px; object-fit:contain; border-radius:60px; border:3px solid rgba(31,111,95,.10); box-shadow:0 24px 48px rgba(31,111,95,.22); background:#fff; }
+
+  .cards { margin-top:64px; display:grid; grid-template-columns:1fr 1fr; gap:28px; }
+  .card { background:rgba(255,255,255,.92); border-radius:26px; padding:34px 38px; display:flex; align-items:center; gap:26px; box-shadow:0 10px 28px rgba(15,60,50,.07); border:2px solid rgba(31,111,95,.08); }
+  .card .ico { width:86px; height:86px; border-radius:22px; background:#1F6F5F0F; display:flex; align-items:center; justify-content:center; font-size:46px; flex:0 0 auto; }
+  .card b { font-size:37px; font-weight:900; color:#0A0A0A; line-height:1.35; }
+  .card span { display:block; font-size:26px; font-weight:700; color:#5a6b64; margin-top:2px; }
+
+  .cta { margin-top:auto; background:#fff; border-radius:36px; padding:44px 50px; display:flex; align-items:center; gap:44px; box-shadow:0 18px 50px rgba(15,60,50,.12); border:2px solid rgba(31,111,95,.10); }
+  .cta .btncol { flex:1; }
+  .btn { display:block; text-align:center; background:linear-gradient(90deg,#d4a017,#2FA084 55%,#1F6F5F); color:#fff; font-size:56px; font-weight:900; padding:34px 20px; border-radius:24px; box-shadow:0 14px 34px rgba(31,111,95,.30); }
+  .link { margin-top:24px; font-size:36px; font-weight:900; color:#1F6F5F; text-align:center; direction:ltr; }
+  .wa { margin-top:8px; font-size:32px; font-weight:800; color:#0A0A0A; text-align:center; }
+  .wa b { color:#1F6F5F; direction:ltr; unicode-bidi:embed; }
+  .qrbox { background:#FAFAF7; border:3px solid rgba(31,111,95,.15); border-radius:26px; padding:22px; text-align:center; flex:0 0 auto; }
+  .qrbox img { width:260px; height:260px; display:block; }
+  .qrbox p { font-size:24px; font-weight:800; color:#1F6F5F; margin-top:10px; }
+
+  .footer { margin-top:36px; display:flex; align-items:center; justify-content:space-between; font-size:26px; font-weight:800; color:#5a6b64; }
+  .footer .dot { color:#d4a017; }
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <img class="reallogo" src="madmona-logo.png" alt="مضمونة MADMONA">
+    </div>
+    <div class="pill">🍕 قسم المطاعم — انضم دلوقتي</div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-txt">
+      <span class="kicker">لأصحاب المطاعم والكافيهات</span>
+      <h1>سجّل مطعمك في <span class="grn">مضمونة</span></h1>
+      <p class="sub">منيو أونلاين بالصور والأحجام + أوردرات على الواتساب</p>
+    </div>
+    <img class="mascot" src="https://res.cloudinary.com/duxfgqioc/image/upload/madmona/mascots/genie.png" alt="المارد">
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="ico">🛡️</div><div><b>حماية كاملة</b><span>كل أوردر مضمون — منصة موثوقة</span></div></div>
+    <div class="card"><div class="ico">⚡</div><div><b>دفع مستحقات سريع</b><span>فلوسك توصلك بسرعة وبانتظام</span></div></div>
+    <div class="card"><div class="ico">🤝</div><div><b>دعم مستمر 24/7</b><span>فريق كامل معاك في أي وقت</span></div></div>
+    <div class="card"><div class="ico">✅</div><div><b>التسجيل مجاني 100%</b><span>من غير أي رسوم إدراج</span></div></div>
+    <div class="card"><div class="ico">💰</div><div><b>عمولة موحدة 10%</b><span>على الأوردر الناجح بس — أقل عمولة في السوق</span></div></div>
+    <div class="card"><div class="ico">📊</div><div><b>نظام إدارة كامل CRM+ERP</b><span>متاح باشتراك شهري بالاتفاق</span></div></div>
+  </div>
+
+  <div class="cta">
+    <div class="btncol">
+      <div class="btn">ضيف الليستنج دلوقتي 🚀</div>
+      <p class="link">madmonacairo.com/add-listing</p>
+      <p class="wa">🧞 كلّم المارد على واتساب: <b>01002229982</b></p>
+    </div>
+    <div class="qrbox">
+      <img src="data:image/png;base64,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" alt="QR">
+      <p>امسح وسجّل في دقيقة</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>مضمونة — تأجير • خدمات • أكل، كله مضمون</span>
+    <span>madmonacairo.com <span class="dot">•</span> واتساب 01002229982</span>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,433 @@
+﻿node.exe : Vercel CLI 54.14.5 (Node.js 24.18.0)
+At C:\Users\solutions\AppData\Roaming\npm\vercel.ps1:24 char:5
++     & "node$exe"  "$basedir/node_modules/vercel/dist/vc.js" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Vercel CLI 54.14.5 (Node.js 24.18.0):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Retrieving projectΓÇª
+Deploying madmonaadmin-1699s-projects/project-ew64j
+  Inspect         https://vercel.com/madmonaadmin-1699s-projects/project-ew64j/HJKtT4T3g6yDkvhwr9sLyVQDF9Bd
+  Production      https://project-ew64j-bucycnnw0-madmonaadmin-1699s-projects.vercel.app
+BuildingΓÇª
+BuildingΓÇª
+Running build in Washington, D.C., USA (East) ΓÇô iad1
+Build machine configuration: 4 cores, 8 GB
+Retrieving list of deployment files...
+Downloading 774 deployment files...
+Restored build cache from previous deployment (64poKFFKquqeuryqdY6sHmLpHFgJ)
+Running "vercel build"
+Vercel CLI 54.19.0
+Running "install" command: `npm install`...
+up to date, audited 495 packages in 12s
+171 packages are looking for funding
+run `npm fund` for details
+10 vulnerabilities (3 moderate, 7 high)
+To address issues that do not require attention, run:
+npm audit fix
+To address all issues possible (including breaking changes), run:
+npm audit fix --force
+Some issues need review, and may require choosing
+a different dependency.
+Run `npm audit` for details.
+Detected Next.js version: 14.2.34
+Running "npm run build"
+> madmona-app@1.0.0 build
+> next build
+Γû▓ Next.js 14.2.34
+Creating an optimized production build ...
+Γ£ô Compiled successfully
+Skipping validation of types
+Skipping linting
+Collecting page data ...
+ΓÜá Using edge runtime on a page currently disables static generation for that page
+Generating static pages (0/205) ...
+attributes GET exception: B [Error]: Dynamic server usage: Route /api/listing-drafts/attributes couldn't be rendered 
+statically because it used `request.url`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+at V (/vercel/path0/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:21778)
+at Object.get (/vercel/path0/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:29465)
+at p (/vercel/path0/.next/server/app/api/listing-drafts/attributes/route.js:1:663)
+at /vercel/path0/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:38417
+at /vercel/path0/node_modules/next/dist/server/lib/trace/tracer.js:140:36
+at NoopContextManager.with (/vercel/path0/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:7062)
+at ContextAPI.with (/vercel/path0/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:518)
+at NoopTracer.startActiveSpan (/vercel/path0/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:18093)
+at ProxyTracer.startActiveSpan (/vercel/path0/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:18854)
+at /vercel/path0/node_modules/next/dist/server/lib/trace/tracer.js:122:103 {
+description: "Route /api/listing-drafts/attributes couldn't be rendered statically because it used `request.url`. See 
+more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+digest: 'DYNAMIC_SERVER_USAGE'
+}
+Generating static pages (51/205)
+Generating static pages (102/205)
+Generating static pages (153/205)
+Γ£ô Generating static pages (205/205)
+Finalizing page optimization ...
+Collecting build traces ...
+Route (app)                                                      Size     First Load JS
+Γöî Γùï /                                                            22.7 kB         211 kB
+Γö£ Γùï /_not-found                                                  279 B          87.9 kB
+Γö£ Γùï /about                                                       4.18 kB         189 kB
+Γö£ Γùï /account                                                     10.9 kB         193 kB
+Γö£ Γùï /account/bookings                                            3.28 kB         182 kB
+Γö£ ╞Æ /account/bookings/[id]                                       7.04 kB         186 kB
+Γö£ Γùï /account/favorites                                           3.33 kB         182 kB
+Γö£ Γùï /account/orders                                              3.78 kB         159 kB
+Γö£ Γùï /account/wallet                                              5.96 kB         191 kB
+Γö£ Γùï /account/wallet/history                                      3.94 kB         183 kB
+Γö£ Γùï /ad-landing                                                  4.52 kB        94.6 kB
+Γö£ ╞Æ /ad-listing/[slug]                                           3.52 kB        93.6 kB
+Γö£ ╞Æ /add-listing                                                 26.2 kB         313 kB
+Γö£ Γùï /add-listing/success                                         1.6 kB         89.2 kB
+Γö£ Γùï /admin                                                       279 B          87.9 kB
+Γö£ Γùï /admin-entry                                                 1.64 kB        89.2 kB
+Γö£ ╞Æ /admin/activity                                              279 B          87.9 kB
+Γö£ ╞Æ /admin/ad-builder                                            2.41 kB          90 kB
+Γö£ ╞Æ /admin/ad-creatives                                          279 B          87.9 kB
+Γö£ Γùï /admin/ad-review                                             4.98 kB         152 kB
+Γö£ Γùï /admin/agent-health                                          5.24 kB         161 kB
+Γö£ ∩┐╜∩┐╜ /admin/agent-network                                         279 B          87.9 kB
+Γö£ ╞Æ /admin/agent-runs                                            279 B          87.9 kB
+Γö£ ╞Æ /admin/agents                                                279 B          87.9 kB
+Γö£ Γùï /admin/ai-assistant                                          4.77 kB         101 kB
+Γö£ ╞Æ /admin/ai-os                                                 2.03 kB         149 kB
+Γö£ ╞Æ /admin/alerts                                                279 B          87.9 kB
+Γö£ Γùï /admin/bookings                                              280 B          87.9 kB
+Γö£ Γùï /admin/business-finance                                      280 B          87.9 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]                         12.8 kB         168 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/accounting              279 B          87.9 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/advances                4.76 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/appointments            5.68 kB         161 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/assignments             4.63 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/at-risk                 4.42 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/attendance              3.95 kB         159 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/attendance-devices      3.33 kB         159 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/audit-log               3.37 kB         159 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/bookings                5.56 kB         161 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/boq                     5.19 kB         161 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/branches                4.61 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/brands                  3.6 kB          159 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/cash-recon              4.41 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/catalog                 4 kB            159 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/collections             4.64 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/company-docs            5.12 kB         161 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/confirmations           4.24 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/custody                 4.47 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/custody-projects        4.76 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/customers               4.88 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/customers/[customerId]  5.89 kB         161 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/daily-reports           4.67 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/dashboard               4.56 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/documents               5.13 kB         161 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/equipment               4.92 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/equipment-logs          4.79 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/expenses                4.48 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/expenses-projects       4.69 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/flow-tasks              3.31 kB         159 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/guarantees              4.91 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/import                  6.9 kB          162 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/inspections             4.68 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/inventory               9.02 kB         304 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/links                   4.88 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/material-requests       4.76 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/milestones              5.25 kB         161 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/operations              10.9 kB         166 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/payment-certificates    6.52 kB         162 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/payroll                 7.33 kB         163 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/pnl                     3.56 kB         159 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/projects                5.49 kB         161 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/projects/[projectId]    8.35 kB         164 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/promotions              4.18 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/purchase-orders         5.16 kB         161 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/qr-posters              3.11 kB         172 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/quote-orders            4.96 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/ratings                 3.87 kB         159 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/reports                 5.01 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/requests                3.58 kB         159 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/services                4.61 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/services-catalog        6.06 kB         162 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/settings                9.89 kB         165 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/shifts                  4.19 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/showroom                5.12 kB         161 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/subcontractors          5.22 kB         161 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/team                    17.3 kB         173 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/team/bulk-add           9.03 kB         304 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/team/manage             4.85 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/tenders                 4.86 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/variation-orders        4.88 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/vat-report              4.06 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/vendors                 4.42 kB         160 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/waitlist                5.09 kB         161 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/whatsapp-campaigns      3.02 kB         158 kB
+Γö£ ╞Æ /admin/business-finance/[supplierId]/workshop                3.05 kB         159 kB
+Γö£ Γùï /admin/business-partners                                     6.38 kB         162 kB
+Γö£ Γùï /admin/business-partners/new                                 6.3 kB          162 kB
+Γö£ ╞Æ /admin/capabilities                                          279 B          87.9 kB
+Γö£ Γùï /admin/careers                                               2.44 kB          90 kB
+Γö£ Γùï /admin/categories                                            7.48 kB         104 kB
+Γö£ ╞Æ /admin/ceo-briefs                                            278 B          87.8 kB
+Γö£ Γùï /admin/cockpit                                               280 B          87.9 kB
+Γö£ ╞Æ /admin/collaborations                                        1.84 kB        89.4 kB
+Γö£ Γùï /admin/command-center                                        9.21 kB         165 kB
+Γö£ Γùï /admin/company                                               12.6 kB         168 kB
+Γö£ Γùï /admin/custody                                               279 B          87.9 kB
+Γö£ Γùï /admin/daily-messages                                        7.15 kB         163 kB
+Γö£ Γùï /admin/dashboard                                             24.5 kB         183 kB
+Γö£ ╞Æ /admin/demand-forecast                                       280 B          87.9 kB
+Γö£ Γùï /admin/email-queue                                           5.2 kB          161 kB
+Γö£ Γùï /admin/email-templates                                       5.08 kB         161 kB
+Γö£ Γùï /admin/flow-tasks                                            279 B          87.9 kB
+Γö£ ╞Æ /admin/fraud-alerts                                          280 B          87.9 kB
+Γö£ ╞Æ /admin/funnel                                                279 B          87.9 kB
+Γö£ ╞Æ /admin/hq                                                    10.8 kB        98.4 kB
+Γö£ ╞Æ /admin/insights                                              279 B          87.9 kB
+Γö£ Γùï /admin/leads                                                 3.82 kB        91.4 kB
+Γö£ ╞Æ /admin/leads-feed                                            278 B          87.8 kB
+Γö£ Γùï /admin/listing-drafts                                        3.08 kB        90.6 kB
+Γö£ ╞Æ /admin/listing-performance                                   280 B          87.9 kB
+Γö£ Γùï /admin/listings                                              7.17 kB         163 kB
+Γö£ Γùï /admin/madmona                                               279 B          87.9 kB
+Γö£ Γùï /admin/manage                                                279 B          87.9 kB
+Γö£ Γùï /admin/marid                                                 4.17 kB        91.7 kB
+Γö£ ╞Æ /admin/marketing-hq                                          280 B          87.9 kB
+Γö£ Γùï /admin/marketplace-bookings                                  4.83 kB         101 kB
+Γö£ Γùï /admin/marketplace-orders                                    6.42 kB         103 kB
+Γö£ Γùï /admin/marketplace-suppliers                                 279 B          87.9 kB
+Γö£ ╞Æ /admin/messages                                              278 B          87.8 kB
+Γö£ Γùï /admin/news                                                  8.46 kB         164 kB
+Γö£ Γùï /admin/notifications                                         6.96 kB         162 kB
+Γö£ Γùï /admin/onboard                                               279 B          87.9 kB
+Γö£ Γùï /admin/outreach-leads                                        2.93 kB        90.5 kB
+Γö£ Γùï /admin/overview                                              19 kB           174 kB
+Γö£ ╞Æ /admin/partnerships                                          280 B          87.9 kB
+Γö£ Γùï /admin/payouts                                               3.94 kB         100 kB
+Γö£ ╞Æ /admin/performance                                           279 B          87.9 kB
+Γö£ Γùï /admin/permissions                                           6.08 kB         162 kB
+Γö£ Γùï /admin/pipelines                                             7.74 kB         104 kB
+Γö£ ╞Æ /admin/policy-rules                                          279 B          87.9 kB
+Γö£ ╞Æ /admin/prompt-versions                                       1.07 kB        88.6 kB
+Γö£ ╞Æ /admin/qc-reports                                            280 B          87.9 kB
+Γö£ ╞Æ /admin/reels                                                 1.97 kB        89.5 kB
+Γö£ Γùï /admin/refresh-fb-token                                      2.18 kB        98.5 kB
+Γö£ ╞Æ /admin/runbook                                               279 B          87.9 kB
+Γö£ Γùï /admin/site-settings                                         9.26 kB         165 kB
+Γö£ Γùï /admin/social-groups                                         3.29 kB        99.6 kB
+Γö£ Γùï /admin/social-packs                                          2.52 kB        98.8 kB
+Γö£ ╞Æ /admin/social-packs/[id]                                     3.43 kB        99.7 kB
+Γö£ ╞Æ /admin/sponsorships                                          183 B          96.5 kB
+Γö£ ╞Æ /admin/src/app/admin/cockpit                                 280 B          87.9 kB
+Γö£ ╞Æ /admin/strategy                                              279 B          87.9 kB
+Γö£ Γùï /admin/subscriptions                                         3.27 kB         159 kB
+Γö£ Γùï /admin/sup                                                   2.19 kB         149 kB
+Γö£ Γùï /admin/supplier-posts                                        3.45 kB        99.7 kB
+Γö£ Γùï /admin/suppliers                                             280 B          87.9 kB
+Γö£ Γùï /admin/suppliers-v2                                          279 B          87.9 kB
+Γö£ Γùï /admin/units                                                 279 B          87.9 kB
+Γö£ ╞Æ /admin/units/[id]/edit                                       1.8 kB          164 kB
+Γö£ Γùï /admin/units/new                                             1.36 kB         163 kB
+Γö£ Γùï /admin/wa-review                                             2.7 kB         90.3 kB
+Γö£ Γùï /admin/wallets                                               4.54 kB         107 kB
+Γö£ Γùï /admin/welcome-messages                                      7.88 kB         163 kB
+Γö£ ╞Æ /admin/workflows                                             280 B          87.9 kB
+Γö£ ╞Æ /api/admin-entry                                             0 B                0 B
+Γö£ ╞Æ /api/admin/agent-flow                                        0 B                0 B
+Γö£ ╞Æ /api/admin/agent-toggle                                      0 B                0 B
+Γö£ ╞Æ /api/admin/ai-assistant                                      0 B                0 B
+Γö£ ╞Æ /api/admin/attributes/[id]                                   0 B                0 B
+Γö£ ╞Æ /api/admin/blocks                                            0 B                0 B
+Γö£ ╞Æ /api/admin/bookings                                          0 B                0 B
+Γö£ ╞Æ /api/admin/buffer-check                                      0 B                0 B
+Γö£ ╞Æ /api/admin/buffer-diagnostic                                 0 B                0 B
+Γö£ ╞Æ /api/admin/careers                                           0 B                0 B
+Γö£ ╞Æ /api/admin/categories                                        0 B                0 B
+Γö£ ╞Æ /api/admin/categories/[id]                                   0 B                0 B
+Γö£ ╞Æ /api/admin/categories/[id]/attributes                        0 B                0 B
+Γö£ ╞Æ /api/admin/flow                                              0 B                0 B
+Γö£ ╞Æ /api/admin/insight-action                                    0 B                0 B
+Γö£ ╞Æ /api/admin/leads                                             0 B                0 B
+Γö£ ╞Æ /api/admin/listing-drafts                                    0 B                0 B
+Γö£ ╞Æ /api/admin/listing-drafts/nudge                              0 B                0 B
+Γö£ ╞Æ /api/admin/listing-drafts/reject                             0 B                0 B
+Γö£ ╞Æ /api/admin/listings/[id]                                     0 B                0 B
+Γö£ ╞Æ /api/admin/marid                                             0 B                0 B
+Γö£ ╞Æ /api/admin/marketplace-orders                                0 B                0 B
+Γö£ ╞Æ /api/admin/marketplace-suppliers                             0 B                0 B
+Γö£ ╞Æ /api/admin/meta                                              0 B                0 B
+Γö£ ╞Æ /api/admin/outreach-leads                                    0 B                0 B
+Γö£ ╞Æ /api/admin/pipelines                                         0 B                0 B
+Γö£ ╞Æ /api/admin/pipelines/runs/[id]                               0 B                0 B
+Γö£ ╞Æ /api/admin/pipelines/trigger                                 0 B                0 B
+Γö£ ╞Æ /api/admin/prompt-version-action                             0 B                0 B
+Γö£ ╞Æ /api/admin/social-groups                                     0 B                0 B
+Γö£ ╞Æ /api/admin/social-groups/[id]                                0 B                0 B
+Γö£ ╞Æ /api/admin/social-packs                                      0 B                0 B
+Γö£ ╞Æ /api/admin/social-packs/[id]                                 0 B                0 B
+Γö£ ╞Æ /api/admin/social-packs/[id]/groups/[gid]                    0 B                0 B
+Γö£ ╞Æ /api/admin/stats                                             0 B                0 B
+Γö£ ╞Æ /api/admin/supplier-action                                   0 B                0 B
+Γö£ ╞Æ /api/admin/supplier-posts                                    0 B                0 B
+Γö£ ╞Æ /api/admin/supplier-posts/[id]/shares                        0 B                0 B
+Γö£ ╞Æ /api/admin/suppliers                                         0 B                0 B
+Γö£ ╞Æ /api/admin/unit-bookings                                     0 B                0 B
+Γö£ ╞Æ /api/admin/units                                             0 B                0 B
+Γö£ ╞Æ /api/admin/units/[id]                                        0 B                0 B
+Γö£ ╞Æ /api/admin/wa-review                                         0 B                0 B
+Γö£ ╞Æ /api/admin/wa-review/send                                    0 B                0 B
+Γö£ ╞Æ /api/admin/wa-review/skip                                    0 B                0 B
+Γö£ ╞Æ /api/admin/wallets                                           0 B                0 B
+Γö£ ╞Æ /api/agents/content-marketing                                0 B                0 B
+Γö£ ╞Æ /api/agents/daily-report                                     0 B                0 B
+Γö£ ╞Æ /api/agents/drain                                            0 B                0 B
+Γö£ ╞Æ /api/agents/email-content-digest                             0 B                0 B
+Γö£ ╞Æ /api/agents/generate-tasks                                   0 B                0 B
+Γö£ ╞Æ /api/agents/run-buffer-now                                   0 B                0 B
+Γö£ ╞Æ /api/agents/scheduler                                        0 B                0 B
+Γö£ ╞Æ /api/agents/signup-concierge                                 0 B                0 B
+Γö£ ╞Æ /api/agents/supplier-outreach                                0 B                0 B
+Γö£ ╞Æ /api/auth/complete-phone                                     0 B                0 B
+Γö£ ╞Æ /api/auth/forgot-password                                    0 B                0 B
+Γö£ ╞Æ /api/auth/reset-password                                     0 B                0 B
+Γö£ ╞Æ /api/bookings/notify                                         0 B                0 B
+Γö£ ╞Æ /api/cron/render-reels                                       0 B                0 B
+Γö£ ╞Æ /api/daily-messages                                          0 B                0 B
+Γö£ ╞Æ /api/economic-news                                           0 B                0 B
+Γö£ ╞Æ /api/events/track                                            0 B                0 B
+Γö£ ╞Æ /api/financial-data                                          0 B                0 B
+Γö£ ╞Æ /api/leads/capture                                           0 B                0 B
+Γö£ ╞Æ /api/listing-drafts                                          0 B                0 B
+Γö£ ╞Æ /api/listing-drafts/attributes                               0 B                0 B
+Γö£ ╞Æ /api/listing-drafts/bulk                                     0 B                0 B
+Γö£ ╞Æ /api/listing-drafts/claim                                    0 B                0 B
+Γö£ ╞Æ /api/listing-drafts/claim-by-phone                           0 B                0 B
+Γö£ ╞Æ /api/listing-drafts/upload                                   0 B                0 B
+Γö£ ╞Æ /api/news-feed                                               0 B                0 B
+Γö£ ╞Æ /api/og/reel-scene                                           0 B                0 B
+Γö£ ╞Æ /api/otp/send                                                0 B                0 B
+Γö£ ╞Æ /api/otp/verify                                              0 B                0 B
+Γö£ Γùï /api/payment/instapay                                        0 B                0 B
+Γö£ ╞Æ /api/push/process-queue                                      0 B                0 B
+Γö£ ╞Æ /api/push/subscribe                                          0 B                0 B
+Γö£ ╞Æ /api/push/unsubscribe                                        0 B                0 B
+Γö£ ╞Æ /api/supplier/upload-media                                   0 B                0 B
+Γö£ ╞Æ /api/suppliers/signup                                        0 B                0 B
+Γö£ ╞Æ /api/wallet                                                  0 B                0 B
+Γö£ ╞Æ /api/wallet/pay                                              0 B                0 B
+Γö£ ╞Æ /api/wallet/pay-order                                        0 B                0 B
+Γö£ ╞Æ /api/wallet/topup                                            0 B                0 B
+Γö£ ╞Æ /api/wallet/transactions                                     0 B                0 B
+Γö£ ╞Æ /api/wallet/transfer                                         0 B                0 B
+Γö£ ╞Æ /api/wallet/withdraw                                         0 B                0 B
+Γö£ ╞Æ /api/whatsapp/webhook                                        0 B                0 B
+Γö£ ╞Æ /api/world-cup                                               0 B                0 B
+Γö£ ╞Æ /apple-icon                                                  0 B                0 B
+Γö£ ╞Æ /at/[branchCode]                                             5.52 kB         152 kB
+Γö£ ╞Æ /at/[branchCode]/rate/[bookingId]                            2.62 kB         149 kB
+Γö£ Γùï /auth                                                        515 B          88.1 kB
+Γö£ Γùï /auth/callback                                               2.29 kB         149 kB
+Γö£ Γùï /auth/complete-phone                                         4.4 kB          151 kB
+Γö£ Γùï /auth/forgot-password                                        3.88 kB         100 kB
+Γö£ Γùï /auth/login                                                  5.83 kB         185 kB
+Γö£ Γùï /auth/reset-password                                         4.62 kB         101 kB
+Γö£ Γùï /auth/signup                                                 6.25 kB         185 kB
+Γö£ Γùï /book                                                        279 B          87.9 kB
+Γö£ ╞Æ /bookings/[id]                                               6.89 kB         186 kB
+Γö£ Γùï /browse                                                      279 B          87.9 kB
+Γö£ Γùï /careers                                                     8.42 kB         164 kB
+Γö£ Γùï /cart                                                        4.8 kB          101 kB
+Γö£ Γùï /checkout                                                    7.12 kB         163 kB
+Γö£ ╞Æ /claim/[token]                                               2.7 kB          149 kB
+Γö£ ╞Æ /clinic/[slug]                                               5.99 kB         153 kB
+Γö£ ╞Æ /clock/[branchCode]                                          9.46 kB         156 kB
+Γö£ Γùï /coworking                                                   279 B          87.9 kB
+Γö£ ╞Æ /demo/clinic/[slug]                                          6.32 kB         162 kB
+Γö£ Γùï /elite                                                       5.01 kB         152 kB
+Γö£ Γùï /halls                                                       0 B                0 B
+Γö£ Γùï /home                                                        8.55 kB         164 kB
+Γö£ ╞Æ /icon                                                        0 B                0 B
+Γö£ ╞Æ /icon-192.png                                                0 B                0 B
+Γö£ ╞Æ /icon-512.png                                                0 B                0 B
+Γö£ ╞Æ /icon-maskable-192.png                                       0 B                0 B
+Γö£ ╞Æ /icon-maskable-512.png                                       0 B                0 B
+Γö£ ╞Æ /join/[code]                                                 4.17 kB         151 kB
+Γö£ Γùï /launch                                                      7.28 kB         192 kB
+Γö£ Γùï /list-your-asset                                             279 B          87.9 kB
+Γö£ ╞Æ /list-your-asset/opengraph-image                             0 B                0 B
+Γö£ Γùï /login                                                       5.23 kB         152 kB
+Γö£ Γùï /manifest.webmanifest                                        0 B                0 B
+Γö£ ╞Æ /marketplace                                                 10.6 kB         190 kB
+Γö£ ╞Æ /marketplace/[slug]                                          16.9 kB         196 kB
+Γö£ ╞Æ /marketplace/[slug]/book                                     10.1 kB         192 kB
+Γö£ Γùï /me                                                          7.42 kB         163 kB
+Γö£ Γùï /me/team                                                     8.91 kB         164 kB
+Γö£ Γùï /my-orders                                                   280 B          87.9 kB
+Γö£ ╞Æ /opengraph-image                                             0 B                0 B
+Γö£ ╞Æ /order/[ref]                                                 7.19 kB         163 kB
+Γö£ ╞Æ /owner/[supplierId]                                          5.31 kB         161 kB
+Γö£ Γùï /owner/login                                                 3.63 kB         150 kB
+Γö£ Γùï /owner/select                                                2.33 kB         149 kB
+Γö£ Γùï /privacy                                                     6.07 kB         191 kB
+Γö£ ╞Æ /pulse                                                       6.17 kB         162 kB
+Γö£ ╞Æ /qr/[branchCode]                                             1.87 kB         158 kB
+Γö£ Γùï /reserve/indoor-coworking                                    280 B          87.9 kB
+Γö£ Γùï /reserve/meeting-room                                        279 B          87.9 kB
+Γö£ Γùï /reserve/outdoor-garden                                      279 B          87.9 kB
+Γö£ Γùï /reserve/private-office                                      279 B          87.9 kB
+Γö£ ╞Æ /review/[bookingId]                                          3.38 kB         150 kB
+Γö£ Γùï /robots.txt                                                  0 B                0 B
+Γö£ ╞Æ /s/[slug]                                                    8.46 kB         164 kB
+Γö£ Γùï /services                                                    2.68 kB         187 kB
+Γö£ Γùï /sitemap.xml                                                 0 B                0 B
+Γö£ Γùï /supplier                                                    279 B          87.9 kB
+Γö£ Γùï /supplier/bookings                                           3.97 kB         159 kB
+Γö£ Γùï /supplier/dashboard                                          12.8 kB         172 kB
+Γö£ Γùï /supplier/erp/accounting                                     5.71 kB         292 kB
+Γö£ Γùï /supplier/login                                              3.21 kB        99.5 kB
+Γö£ Γùï /supplier/marketplace                                        9.57 kB         165 kB
+Γö£ ╞Æ /supplier/marketplace/[id]/edit                              2.12 kB         167 kB
+Γö£ ╞Æ /supplier/marketplace/[id]/menu                              6.05 kB         309 kB
+Γö£ ╞Æ /supplier/marketplace/[id]/products                          5.9 kB          308 kB
+Γö£ Γùï /supplier/marketplace/bookings                               6.33 kB         162 kB
+Γö£ ╞Æ /supplier/marketplace/bookings/[id]                          6.56 kB         162 kB
+Γö£ Γùï /supplier/marketplace/bulk-products                          4.3 kB          307 kB
+Γö£ Γùï /supplier/marketplace/new                                    3.58 kB         168 kB
+Γö£ Γùï /supplier/marketplace/orders                                 4.44 kB         160 kB
+Γö£ ╞Æ /supplier/marketplace/orders/[id]                            7.63 kB         163 kB
+Γö£ Γùï /supplier/marketplace/reviews                                5.23 kB         161 kB
+Γö£ Γùï /supplier/register                                           6.02 kB         161 kB
+Γö£ Γùï /supplier/signup                                             4.16 kB         100 kB
+Γö£ Γùï /supplier/team                                               7.69 kB         163 kB
+Γö£ Γùï /suspended                                                   279 B          87.9 kB
+Γö£ Γùï /terms                                                       6.7 kB          191 kB
+Γö£ Γùï /v                                                           2.85 kB         150 kB
+Γö£ ╞Æ /v/[branchCode]                                              11.3 kB         182 kB
+Γö£ Γùï /welcome                                                     5.95 kB         102 kB
+Γöö ╞Æ /world-cup                                                   4.79 kB         101 kB
++ First Load JS shared by all                                    87.6 kB
+Γö£ chunks/2117-8ba6d1c4e649c86c.js                              31.9 kB
+Γö£ chunks/fd9d1056-6f56f3862dd7410f.js                          53.6 kB
+Γöö other shared chunks (total)                                  2.03 kB
+╞Æ Middleware                                                     27.4 kB
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+Traced Next.js server files in: 38.871ms
+Created all serverless functions in: 495.291ms
+Collected static files (public/, static/, .next/static): 35.833ms
+Build Completed in /vercel/output [48s]
+Deploying outputs...
+Deployment completed
+Creating build cache...
+[2K[1A[2K[G  Production      https://project-ew64j-bucycnnw0-madmonaadmin-1699s-projects.vercel.app
+CompletingΓÇª
+Γû▓ Aliased         https://www.madmonacairo.com
+
+Γ£ô Ready in 1m
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö
+ÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+Update available! v54.14.5 Γë½ v54.18.0
+Changelog: https://github.com/vercel/vercel/releases/tag/vercel%4054.18.0
+Run `npm i -g vercel@latest` to update.
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö
+ÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+https://project-ew64j-bucycnnw0-madmonaadmin-1699s-projects.vercel.app

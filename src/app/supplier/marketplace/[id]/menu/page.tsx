@@ -6,8 +6,9 @@ import { useParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Loader2, AlertCircle, Plus, Edit3, Trash2, ToggleLeft, ToggleRight,
-  ChefHat, Image as ImageIcon, X, CheckCircle, GripVertical,
+  ChefHat, Image as ImageIcon, X, CheckCircle, GripVertical, FileSpreadsheet,
 } from 'lucide-react'
+import ExcelImportModal from '@/components/supplier/ExcelImportModal'
 
 // ============================================================================
 // /supplier/marketplace/[id]/menu
@@ -25,6 +26,15 @@ interface ListingMin {
   track: string | null
 }
 
+interface MenuItemSize {
+  id: string
+  menu_item_id: string
+  name_ar: string
+  price: number
+  display_order: number
+  is_available: boolean
+}
+
 interface MenuItem {
   id: string
   listing_id: string
@@ -38,7 +48,10 @@ interface MenuItem {
   photo_url: string | null
   is_available: boolean
   display_order: number
+  sizes?: MenuItemSize[]
 }
+
+interface FormSize { name_ar: string; price: string }
 
 interface FormState {
   id: string | null
@@ -49,12 +62,16 @@ interface FormState {
   category: string
   photo_url: string
   is_available: boolean
+  sizes: FormSize[]
 }
 
 const EMPTY_FORM: FormState = {
   id: null, name_ar: '', name_en: '', description_ar: '',
   price: '', category: '', photo_url: '', is_available: true,
+  sizes: [],
 }
+
+const SIZE_PRESETS = ['صغير', 'وسط', 'كبير']
 
 export default function SupplierMenuPage() {
   const router = useRouter()
@@ -66,6 +83,7 @@ export default function SupplierMenuPage() {
   const [items, setItems] = useState<MenuItem[]>([])
 
   const [showForm, setShowForm] = useState(false)
+  const [showImport, setShowImport] = useState(false)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
@@ -133,7 +151,24 @@ export default function SupplierMenuPage() {
       .eq('listing_id', lid)
       .order('display_order', { ascending: true })
       .order('created_at', { ascending: true })
-    setItems((data || []) as MenuItem[])
+    const arr = (data || []) as MenuItem[]
+    if (arr.length > 0) {
+      // @ts-expect-error
+      const { data: szs } = await supabaseBrowser
+        .from('restaurant_menu_item_sizes')
+        .select('*')
+        .in('menu_item_id', arr.map((x) => x.id))
+        .order('display_order', { ascending: true })
+      const map = new Map<string, MenuItemSize[]>()
+      for (const s of (szs || []) as MenuItemSize[]) {
+        const a = map.get(s.menu_item_id) || []
+        a.push({ ...s, price: Number(s.price) })
+        map.set(s.menu_item_id, a)
+      }
+      setItems(arr.map((x) => ({ ...x, price: Number(x.price), sizes: map.get(x.id) || [] })))
+    } else {
+      setItems(arr)
+    }
   }
 
   const openNew = () => {
@@ -152,6 +187,7 @@ export default function SupplierMenuPage() {
       category: it.category || '',
       photo_url: it.photo_url || '',
       is_available: it.is_available,
+      sizes: (it.sizes || []).map((s) => ({ name_ar: s.name_ar, price: String(s.price) })),
     })
     setFormError(null)
     setShowForm(true)
@@ -160,8 +196,20 @@ export default function SupplierMenuPage() {
   const save = async () => {
     setFormError(null)
     if (!form.name_ar.trim()) { setFormError('اسم الصنف مطلوب'); return }
-    const priceNum = Number(form.price)
-    if (!Number.isFinite(priceNum) || priceNum < 0) { setFormError('السعر لازم رقم صحيح'); return }
+
+    // sizes: keep only complete rows
+    const cleanSizes = form.sizes
+      .map((s) => ({ name_ar: s.name_ar.trim(), price: Number(s.price) }))
+      .filter((s) => s.name_ar && Number.isFinite(s.price) && s.price >= 0)
+    const hasSizes = cleanSizes.length > 0
+
+    // base price: manual, or auto = cheapest size
+    let priceNum = Number(form.price)
+    if (hasSizes) priceNum = Math.min(...cleanSizes.map((s) => s.price))
+    if (!Number.isFinite(priceNum) || priceNum < 0) {
+      setFormError(hasSizes ? 'اكتب سعر صحيح لكل حجم' : 'السعر لازم رقم صحيح')
+      return
+    }
 
     setSaving(true)
     try {
@@ -176,6 +224,7 @@ export default function SupplierMenuPage() {
         is_available: form.is_available,
       }
 
+      let itemId = form.id
       if (form.id) {
         // @ts-expect-error
         const { error } = await supabaseBrowser
@@ -187,10 +236,32 @@ export default function SupplierMenuPage() {
         // assign next display_order
         const nextOrder = items.length === 0 ? 1 : Math.max(...items.map(i => i.display_order)) + 1
         // @ts-expect-error
-        const { error } = await supabaseBrowser
+        const { data: inserted, error } = await supabaseBrowser
           .from('restaurant_menu_items')
           .insert({ ...payload, display_order: nextOrder })
+          .select('id')
+          .single()
         if (error) throw error
+        itemId = (inserted as { id: string } | null)?.id ?? null
+      }
+
+      // sizes: full replace
+      if (itemId) {
+        // @ts-expect-error
+        await supabaseBrowser.from('restaurant_menu_item_sizes').delete().eq('menu_item_id', itemId)
+        if (hasSizes) {
+          // @ts-expect-error
+          const { error: szErr } = await supabaseBrowser
+            .from('restaurant_menu_item_sizes')
+            .insert(cleanSizes.map((s, i) => ({
+              menu_item_id: itemId,
+              name_ar: s.name_ar,
+              price: s.price,
+              display_order: i + 1,
+              is_available: true,
+            })))
+          if (szErr) throw szErr
+        }
       }
 
       setShowForm(false)
@@ -257,6 +328,14 @@ export default function SupplierMenuPage() {
             <h1 className="text-sm font-bold text-gray-700 truncate">{listing?.title}</h1>
           </div>
           <button
+            onClick={() => setShowImport(true)}
+            className="inline-flex items-center gap-1.5 bg-white border border-[#1F6F5F]/30 text-[#1F6F5F] px-3 py-2 rounded-xl font-bold text-xs shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
+            title="استيراد المنيو من ملف Excel"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            Excel
+          </button>
+          <button
             onClick={openNew}
             className="inline-flex items-center gap-1.5 bg-[#1F6F5F] text-white px-4 py-2 rounded-xl font-bold text-xs shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
           >
@@ -313,9 +392,19 @@ export default function SupplierMenuPage() {
                     {it.description_ar && (
                       <p className="text-xs text-gray-500 line-clamp-1">{it.description_ar}</p>
                     )}
-                    <p className="text-sm font-black text-[#1F6F5F] tabular mt-1">
-                      {it.price.toLocaleString('ar-EG')} <span className="text-[10px] font-medium text-gray-500">ج.م</span>
-                    </p>
+                    {(it.sizes && it.sizes.length > 0) ? (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {it.sizes.map((s) => (
+                          <span key={s.id} className="text-[10px] font-black bg-[#1F6F5F]/8 text-[#1F6F5F] px-2 py-0.5 rounded-full tabular">
+                            {s.name_ar} {s.price.toLocaleString('ar-EG')}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm font-black text-[#1F6F5F] tabular mt-1">
+                        {it.price.toLocaleString('ar-EG')} <span className="text-[10px] font-medium text-gray-500">ج.م</span>
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-1 self-center flex-shrink-0">
                     <button
@@ -369,7 +458,79 @@ export default function SupplierMenuPage() {
 
             <div className="p-5 space-y-3">
               <Field label="اسم الصنف *" value={form.name_ar} onChange={(v) => setForm({ ...form, name_ar: v })} placeholder="مثلا: كبدة إسكندراني" />
-              <Field label="السعر (ج.م) *" value={form.price} onChange={(v) => setForm({ ...form, price: v.replace(/[^\d.]/g, '') })} placeholder="85" type="tel" />
+
+              {/* ===== الأحجام ===== */}
+              <div className="bg-gray-50 rounded-2xl p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-gray-700">الأحجام (اختياري)</span>
+                  {form.sizes.length === 0 && (
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setForm({ ...form, sizes: SIZE_PRESETS.map((n) => ({ name_ar: n, price: '' })) })}
+                        className="text-[10px] font-black text-[#1F6F5F] bg-[#1F6F5F]/10 px-2.5 py-1 rounded-full"
+                      >
+                        صغير/وسط/كبير
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setForm({ ...form, sizes: [{ name_ar: '', price: '' }] })}
+                        className="text-[10px] font-black text-gray-600 bg-gray-200 px-2.5 py-1 rounded-full"
+                      >
+                        + حجم مخصص
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {form.sizes.length > 0 && (
+                  <>
+                    {form.sizes.map((s, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <input
+                          value={s.name_ar}
+                          onChange={(e) => {
+                            const next = [...form.sizes]; next[i] = { ...next[i], name_ar: e.target.value }
+                            setForm({ ...form, sizes: next })
+                          }}
+                          placeholder="اسم الحجم (صغير)"
+                          className="flex-1 px-3 py-2 rounded-xl border border-gray-200 focus:border-[#1F6F5F] outline-none text-xs font-bold"
+                        />
+                        <input
+                          value={s.price}
+                          onChange={(e) => {
+                            const next = [...form.sizes]; next[i] = { ...next[i], price: e.target.value.replace(/[^\d.]/g, '') }
+                            setForm({ ...form, sizes: next })
+                          }}
+                          placeholder="السعر"
+                          type="tel"
+                          dir="ltr"
+                          className="w-20 px-3 py-2 rounded-xl border border-gray-200 focus:border-[#1F6F5F] outline-none text-xs font-bold text-center tabular"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setForm({ ...form, sizes: form.sizes.filter((_, j) => j !== i) })}
+                          className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center flex-shrink-0"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, sizes: [...form.sizes, { name_ar: '', price: '' }] })}
+                      className="text-[11px] font-black text-[#1F6F5F] flex items-center gap-1"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> ضيف حجم
+                    </button>
+                    <p className="text-[10px] text-gray-400 font-bold">العميل هيختار الحجم والسعر بيتحسب تلقائياً — مش محتاج تكتب سعر أساسي.</p>
+                  </>
+                )}
+              </div>
+
+              {form.sizes.length === 0 && (
+                <Field label="السعر (ج.م) *" value={form.price} onChange={(v) => setForm({ ...form, price: v.replace(/[^\d.]/g, '') })} placeholder="85" type="tel" />
+              )}
               <Field label="القسم (اختياري)" value={form.category} onChange={(v) => setForm({ ...form, category: v })} placeholder="الأطباق الرئيسية / الفطار / المشروبات" />
               <Field label="الوصف (اختياري)" value={form.description_ar} onChange={(v) => setForm({ ...form, description_ar: v })} placeholder="مكوّنات + ملاحظات تساعد العميل" multiline />
               <Field label="لينك صورة (اختياري)" value={form.photo_url} onChange={(v) => setForm({ ...form, photo_url: v })} placeholder="https://..." dir="ltr" />
@@ -415,6 +576,16 @@ export default function SupplierMenuPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Excel import */}
+      {showImport && (
+        <ExcelImportModal
+          mode="menu"
+          listingId={listingId}
+          onClose={() => setShowImport(false)}
+          onDone={() => loadItems(listingId)}
+        />
       )}
 
       {/* Delete confirm */}

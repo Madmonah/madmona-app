@@ -1,4 +1,15 @@
-// whatsapp-webhook v34 (19 Jun 2026) — 🔐 INBOUND REVERSE-OTP:
+// whatsapp-webhook v40 (6 Jul 2026) — «سوّق واكسب» + DEMAND ALERTS:
+//  • unmet_demand → instant owner WhatsApp alert (كل طلب عميل بيوصل لمحمد فورًا).
+//  • Share-proof intake: referred user sends screenshot + «شير» → referrals.status=share_submitted + owner alert («اعتماد شير <رقم>»).
+//  • «كودي/سوق واكسب» fast-path: replies with the user's referral code + share link (deterministic).
+//  • Brain knows the referral program (50ج credit / سقف عمولة الأوردر / شرط الشير).
+// v39 (5 Jul 2026) — 🧞 THE MARID BRAIN:
+//  • Persona renamed to «المارد» — self-aware (knows its powers + full platform
+//    capabilities: Excel bulk, menu sizes, ERP sync, CRM+ERP paid sub, World Cup page).
+//  • MULTI-PRODUCT INTAKE: supplier text lists «اسم = سعر» → listing_drafts[] (≤8).
+//  • 🔥 HOT-LEAD ALERT: marid-contacted lead replies → instant owner WhatsApp + marid_notifications.
+//  • Commission fixed everywhere: unified 10% (0% offer REMOVED from prompt + fallbacks).
+// v34 (19 Jun 2026) — 🔐 INBOUND REVERSE-OTP:
 //  Customer sends a MADxxxxx confirmation code to OUR number -> we verify their phone
 //  (wa_confirm_inbound_verification). Sidesteps Meta 24h-window / template problems.
 //  Handler runs BEFORE restaurant parsers & AI, on the very first text pass.
@@ -10,7 +21,7 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const CLAUDE_MODEL = 'claude-sonnet-4-6'
 const SITE_URL = 'https://madmonacairo.com'
-const DEBOUNCE_MS = 25000
+const DEBOUNCE_MS = 8000 // v41 (6 Jul): كان 25000 — المارد كان بيرد براحة أوي؛ 8 ثواني كفاية لتجميع الرسايل المتتالية
 const MAX_BATCH = 12
 
 const LISTABLE_SLUGS = 'properties-residential|properties-commercial|properties-industrial|properties-tourism|sale-properties-residential|sale-properties-commercial|sale-properties-industrial|sale-properties-tourism|vehicles|sale-vehicles|marine|workspaces|halls|weddings|equipment|tech-equipment|media|tourism|recreation|fashion-rental|shop-electronics|shop-fashion|shop-home|shop-appliances|shop-auto|shop-beauty|shop-sports|shop-baby|shop-books|shop-misc|home-services|contractors|auto-services|beauty|medical-clinics|consultations|professionals|printing|education-courses|events-photography|food-catering|childcare|pet-services|religious-services'
@@ -408,7 +419,7 @@ async function handleRestaurantReply(
     .eq('id', orderId).single()
   if (!order) return false
 
-  const commissionLine = await getCfg('commission_line_restaurants', 'عمولة مضمونة على المطاعم = 0٪ — عرض لفترة محدودة.')
+  const commissionLine = await getCfg('commission_line_restaurants', 'عمولة مضمونة الموحدة = 10٪ من قيمة الطلب.')
   let restaurantAck = ''
   let customerMsg = ''
   if (command === 'قبول') {
@@ -552,7 +563,7 @@ async function handleRestaurantPriceEdit(
       price_edit_updates: updates.map(u => ({ name: u.name, old: u.old_price, new: u.new_price }))
     }
   }).eq('id', queueRow.id)
-  const commissionLine = await getCfg('commission_line_restaurants', 'عمولة مضمونة على المطاعم = 0٪ — عرض لفترة محدودة.')
+  const commissionLine = await getCfg('commission_line_restaurants', 'عمولة مضمونة الموحدة = 10٪ من قيمة الطلب.')
   const updatesTxt = updates.map(u => `• ${u.name}: ${u.old_price} ← ${u.new_price} ج`).join('\n')
   const restaurantAck =
     `تم تحديث الأسعار وتأكيد الطلب ${ref} ✅\n${updatesTxt}\n` +
@@ -713,7 +724,9 @@ type ListingDraft = { title?: string; description?: string; category_slug?: stri
 type AIResult = {
   intent: string; lead_type: string; supplier_kind?: 'individual' | 'company' | null;
   category: string | null; reply: string; unmet_demand?: boolean; requested_item?: string | null;
+  erp_interest?: boolean
   listing_draft?: ListingDraft
+  listing_drafts?: Array<NonNullable<ListingDraft>> | null
 }
 
 async function generateReply(
@@ -725,13 +738,13 @@ async function generateReply(
   const apiKey = await getAnthropicKey()
   const adInfo = adContext?.headline ? `\nIMPORTANT: User came from a Meta ad: "${adContext.headline}"` : ''
   const firstReplyBanner = isFirstReply
-    ? `\n\n✨ FIRST REPLY ONLY — open with ONE short line explaining what مضمونة is: «منصة معاملات مضمونة — بيع وشراء، إيجار، خدمات، ومطاعم من مزوّدين موثوقين بحماية كاملة». Mention AI matching in one clean line. Close with «معاملاتك مضمونة» if natural.`
+    ? `\n\n✨ FIRST REPLY ONLY — open warm and personal (زي ما تكون بترحّب بضيف في بيتك): «أهلاً بيك في مضمونة 💚» then ONE warm line explaining what مضمونة is: «السوق المصري اللي كل معاملة فيه مضمونة — تأجّر، تشتري، تحجز خدمات، وتطلب أكل من ناس موثوقين، وفلوسك محمية لحد ما تستلم». If they look like a SUPPLIER add one line: «والتسجيل والنشر ببلاش، وعمولتنا موحدة 10% على الصفقة الناجحة بس» — and if relevant mention: «ولو حابب تدير شغلك كله من مكان واحد، في نظام إدارة متكامل (CRM+ERP) باشتراك شهري بالاتفاق». Mention AI matching in one clean line. Close with «معاملاتك مضمونة» if natural.`
     : `\n\n⛔ NOT the first reply — NEVER re-greet, NEVER re-introduce the platform, NEVER repeat what you already said in HISTORY.`
   let catalogBlock = ''
   try { catalogBlock = buildCatalogBlock(await fetchCatalogForText(inboundText)) } catch (_e) { catalogBlock = '' }
-  const commissionLine = await getCfg('commission_line_restaurants_prompt', 'Commission: 10% unified for everyone / restaurants & cafes FREE (0%) for a LIMITED TIME — always frame as «عرض لفترة محدودة», never as permanent')
+  const commissionLine = await getCfg('commission_line_restaurants_prompt', 'Commission: UNIFIED 10% for EVERYONE — فرد وشركة نفس النسبة. NEVER mention 0% or free commission or any limited-time offer.')
   const imageRule = image ? `\n\n🖼️ IMAGE ATTACHED: the customer sent a photo — LOOK at it carefully and respond about what you actually SEE (car model/condition, apartment, menu, product...). Mention concrete visual details so they know you really saw it.\n⚡ INSTANT LISTING: if this is a SUPPLIER showing an asset they want to list/sell/rent → BUILD the listing yourself: fill "listing_draft" with a catchy Arabic title (≤60 chars), a professional 2-3 sentence Arabic description based on what you SEE + what they SAID, the best category_slug, price_egp if they mentioned one (else null), and period (hourly|daily|weekly|monthly|sale). In the reply, tell them excitedly that you already prepared their listing and the team will publish it right away — «من غير ما تكتب ولا حرف». If price is missing, ask for it in the same reply.` : ''
-  const system = `You are Madmona Concierge — WhatsApp responder for ${SITE_URL}.\nBrand: مضمونة (with ض). Slogan: "معاملاتك مضمونة". Egyptian Arabic only.\nMadmona is a full GUARANTEED Egyptian marketplace: rent, buy/sell, services, restaurants, and beauty.\n\n🧠 STUDY-FIRST RULE: Read the FULL history below BEFORE writing. Your single reply must address ALL unanswered points together, in order, in ONE coherent message. Never answer message-by-message. Never repeat yourself.\n\n👤/🏢 SUPPLIER SEPARATION RULE: for supplier_lead, figure out فرد vs شركة. Commission: 10٪ موحدة على الكل · مطاعم مجاناً لفترة محدودة (فرد/شركة بيفرق بس في الفروع). Set "supplier_kind".\n\n📝 ONE-TIME-SETUP PITCH (للموردين): «سجّل وتعب معانا مرة واحدة» — register once at ${SITE_URL}/add-listing with EVERY detail (صور، أسعار، مواصفات، مواعيد، عنوان) so customers book directly من غير أسئلة.\n\nHARD RULES:\n- Never ask for name/email/personal info via WhatsApp\n- Supplier URLs: ${SITE_URL}/add-listing · Customer URLs: ${SITE_URL}/marketplace?category=<slug>\n- ${commissionLine}\n- Pillars: حماية كاملة · دفع سريع · دعم 24/7\n- NEVER claim the platform existed before May 2026. NEVER "من 2019" or "أكبر منصة".\n- FULL-COVERAGE RULE: NEVER say a field is unavailable — we can source ANYTHING. If not in catalog: confirm enthusiastically, ask 1-2 clarifying questions, promise team follow-up, set "unmet_demand": true + "requested_item".\n- JOB APPLICANTS: hiring/CV messages → intent "job_application", direct to ${SITE_URL}/careers.${adInfo}${firstReplyBanner}${imageRule}\n\nCategory slugs (for category): properties|vehicles|workspaces|equipment|media|weddings|tourism|recreation|marine\nlisting_draft category_slug MUST be one of: ${LISTABLE_SLUGS}${catalogBlock}\n\n=== HISTORY (اقرأها كلها قبل ما ترد) ===\n${fullHistory}\n=== END ===\n\nRespond ONLY with JSON:\n{\"intent\":\"signup_supplier|book_rental|ask_question|job_application|spam_or_other\",\"lead_type\":\"supplier_lead|customer_lead|unknown\",\"supplier_kind\":\"individual|company|null\",\"category\":\"...|null\",\"unmet_demand\":true,\"requested_item\":\"...|null\",\"listing_draft\":{\"title\":\"...\",\"description\":\"...\",\"category_slug\":\"...\",\"price_egp\":1234,\"period\":\"daily\"}|null,\"reply\":\"...\"}`
+  const system = `You are المارد 🧞 (The Genie) — Madmona's official AI assistant on WhatsApp for ${SITE_URL}.\nBrand: مضمونة (with ض). Slogan: "معاملاتك مضمونة". Egyptian Arabic only. Your name is «المارد» — never call yourself bot/assistant/concierge.\n\n🧞 SELF-AWARENESS: if asked who you are / what you can do (مين انت، بتعمل ايه، ايه خدماتك، مساعدة...), introduce yourself proudly in 1 line: «أنا المارد 🧞 — مساعد مضمونة الشخصي، تحت أمرك ٢٤ ساعة» then list your powers briefly:\n١) أسجّلك على المنصة وأجهّز إعلانك بنفسي من الشات — من غير فورمات\n٢) أضيف منتجاتك: ابعتلي قايمة «اسم = سعر» أو صور منتجاتك وأنا أجهزها\n٣) أرشحلك أماكن ومنتجات حقيقية من المنصة على ذوقك وميزانيتك\n٤) أرد على أي سؤال عن مضمونة (عمولة، تسجيل، طلبات، اشتراكات)\n٥) أوصلك بفريق مضمونة لو محتاج حد يكلمك\n\n🏪 PLATFORM KNOWLEDGE (accurate — only claim these): Madmona is Egypt's GUARANTEED marketplace: إيجار · بيع وشراء · خدمات · مطاعم وأكل · بيوتي · أثاث منزلي ومكتبي. الفلوس محمية للطرفين لحد الاستلام. الطلب أونلاين ومنيو المطاعم بأحجام (صغير/وسط/كبير). التسجيل ببلاش من ${SITE_URL}/add-listing (٥ خطوات بسيطة) وفيه رفع Excel يضيف لحد ٢٠٠ صنف أو إعلان مرة واحدة. المورد ليه لوحة تحكم (منيو/منتجات/طلبات) ومزامنة مخزون تلقائية لمشتركي نظام الإدارة. نظام CRM+ERP متكامل باشتراك شهري مدفوع بالاتفاق. عمولة موحدة 10٪ على الصفقة الناجحة بس — التسجيل والعرض ببلاش. برنامج «سوّق واكسب»: عن كل أكونت جديد بينضم بكود إحالتك بتكسب 50 جنيه رصيد في محفظتك (بشرط الأكونت الجديد يعمل شير لصفحة مضمونة ويبعتلي الإثبات هنا)، والرصيد بيتستخدم كخصم على الطلبات بحد أقصى عمولة مضمونة في الطلب — اللي عايز كوده يبعتلي «كودي». فيه صفحة نتايج كأس العالم لايف: ${SITE_URL}/world-cup (اطلب أكل الماتش من عندنا 😉).\n\n🧠 STUDY-FIRST RULE: Read the FULL history below BEFORE writing. Your single reply must address ALL unanswered points together, in order, in ONE coherent message. Never answer message-by-message. Never repeat yourself.\n\n👤/🏢 SUPPLIER SEPARATION RULE: for supplier_lead, figure out فرد vs شركة. العمولة موحدة 10٪ على الكل — فرد وشركة نفس النسبة (الفرق بس في الحجم/الفروع). Set "supplier_kind".\n\n📝 ONE-TIME-SETUP PITCH (للموردين): «سجّل وتعب معانا مرة واحدة» — register once at ${SITE_URL}/add-listing with EVERY detail (صور، أسعار، مواصفات، مواعيد، عنوان) so customers book directly من غير أسئلة. لو عنده أصناف كتير: اقترح رفع Excel من نفس الصفحة، أو يبعتهملك هنا وإنت تجهزهم.\n\n⚡ MULTI-PRODUCT INTAKE (text): if a SUPPLIER sends a list of products/items in text (lines like «اسم = سعر» or «اسم - سعر» or numbered items), BUILD them yourself: fill "listing_drafts" (array, max 8) — each with catchy Arabic title (≤60 chars), short professional description, best category_slug, price_egp (null if missing), period (hourly|daily|weekly|monthly|sale). Tell them happily you prepared N items and the team will publish right away. If more than 8 items or they mention a big catalog → also point to Excel upload at ${SITE_URL}/add-listing.\n\n🎯 RECOMMEND RULE: if the customer asks for suggestions (رشح، اقترح، فين ألاقي، عايز آكل، محتاج، دلني...), use ONLY the real catalog items below — present 2-3 with name + price + link. NEVER invent listings, prices, or links.\n\n💼 ERP PITCH RULE (نظام الإدارة): Madmona has a FULL business management system (CRM+ERP) — مخزون بيتزامن أوتوماتيك مع متجرك على مضمونة، فواتير وحسابات، مرتبات وحضور موظفين بالـQR، مصروفات ومشاريع، تقارير وأرباح — كله من مكان واحد. It is a PAID monthly subscription (السعر بالاتفاق مع الفريق). ACTIVELY pitch it in ONE line when a supplier: has many products/branches, asks about إدارة/مخزون/حسابات/موظفين/فواتير, or complains about تنظيم شغله. If they show ANY interest in it (عايز أعرف أكتر، بكام، ماشي...) → set "erp_interest": true so the team calls them — and tell them فريق مضمونة هيكلمهم يظبطوا الاشتراك والسعر. NEVER promise a price or say it is free.\n\nHARD RULES:\n- Never ask for name/email/personal info via WhatsApp\n- Supplier URLs: ${SITE_URL}/add-listing · Customer URLs: ${SITE_URL}/marketplace?category=<slug>\n- ${commissionLine}\n- Pillars: حماية كاملة · دفع سريع · دعم 24/7\n- NEVER claim the platform existed before May 2026. NEVER "من 2019" or "أكبر منصة".\n- CRM+ERP is a PAID monthly subscription — NEVER say it's free.\n- FULL-COVERAGE RULE: NEVER say a field is unavailable — we can source ANYTHING. If not in catalog: confirm enthusiastically, ask 1-2 clarifying questions, promise team follow-up, set "unmet_demand": true + "requested_item".\n- HUMAN HANDOFF: if they insist on a person (عايز أكلم حد، اتصلوا بيا), confirm warmly فريق مضمونة هيتواصل معاهم قريب — the team sees this conversation.\n- JOB APPLICANTS: hiring/CV messages → intent "job_application", direct to ${SITE_URL}/careers.${adInfo}${firstReplyBanner}${imageRule}\n\nCategory slugs (for category): properties|vehicles|workspaces|equipment|media|weddings|tourism|recreation|marine\nlisting_draft category_slug MUST be one of: ${LISTABLE_SLUGS}${catalogBlock}\n\n=== HISTORY (اقرأها كلها قبل ما ترد) ===\n${fullHistory}\n=== END ===\n\nRespond ONLY with JSON:\n{\"intent\":\"signup_supplier|book_rental|ask_question|job_application|spam_or_other\",\"lead_type\":\"supplier_lead|customer_lead|unknown\",\"supplier_kind\":\"individual|company|null\",\"category\":\"...|null\",\"unmet_demand\":true,\"requested_item\":\"...|null\",\"erp_interest\":false,\"listing_draft\":{\"title\":\"...\",\"description\":\"...\",\"category_slug\":\"...\",\"price_egp\":1234,\"period\":\"daily\"}|null,\"listing_drafts\":[{\"title\":\"...\",\"description\":\"...\",\"category_slug\":\"...\",\"price_egp\":1234,\"period\":\"sale\"}]|null,\"reply\":\"...\"}`
   const userText = `Unanswered inbound message(s) from ${contactPhone}${contactName ? ' (' + contactName + ')' : ''} — reply to ALL of them in ONE message:\n\"${inboundText}\"`
   const userContent: Array<Record<string, unknown>> = []
   if (image) userContent.push({ type: 'image', source: { type: 'base64', media_type: image.mime, data: image.b64 } })
@@ -795,7 +808,64 @@ async function logUnmetDemand(fullPhone: string, contactName: string | null, con
       status: 'new',
       notes: combinedText.slice(0, 500)
     })
+    // 🚨 تنبيه فوري للمالك — أي طلب عميل غير ملبى = فرصة ديل
+    try {
+      const { data: cfgRows } = await sb().from('whatsapp_config').select('value').eq('key', 'admin_alert_phone').maybeSingle()
+      const adminPhone = ((cfgRows as { value?: string } | null)?.value || '201002229982').replace(/^\+/, '')
+      await sendWhatsAppText(adminPhone,
+        `🎯 طلب عميل جديد (فرصة ديل)!\n📋 ${String(ai.requested_item).slice(0, 200)}\n🏷️ ${ai.category || 'غير محدد'}\n📞 ${fullPhone}${contactName ? ' (' + contactName + ')' : ''}\n\nالطلب اتسجل في قايمة الطلبات — دوّر على مورد واقفل الديل، والعميل مستني.`)
+    } catch (_e) { /* alert best-effort */ }
   } catch (err) { console.error('[unmet-demand-log] error:', err) }
+}
+
+// 🔥 HOT LEAD — a phone the Marid contacted just replied → alert the owner instantly.
+async function alertHotLeadIfMarid(fullPhone: string, contactName: string | null, text: string, convId: string): Promise<void> {
+  try {
+    const digits = normalizePhone(fullPhone)
+    if (!digits || digits.length < 10) return
+    const tail = digits.slice(-10)
+
+    // Was this phone contacted by the Marid? (restaurant_leads OR marid outreach_log ≤ 14d)
+    let leadId: string | null = null
+    let leadName: string | null = null
+    const { data: lead } = await sb().from('restaurant_leads')
+      .select('id, name, status, phone')
+      .in('status', ['contacted', 'replied'])
+      .like('phone', `%${tail}`)
+      .limit(1).maybeSingle()
+    if (lead) { leadId = (lead as { id: string }).id; leadName = (lead as { name?: string }).name || null }
+    if (!leadId) {
+      const { data: touched } = await sb().from('outreach_log').select('id')
+        .eq('agent_name', 'marid-restaurant-agent')
+        .like('phone', `%${tail}`)
+        .gte('created_at', new Date(Date.now() - 14 * 86400_000).toISOString())
+        .limit(1).maybeSingle()
+      if (!touched) return
+    }
+
+    // Throttle: one hot-lead alert per phone per 24h
+    const { data: recentAlert } = await sb().from('marid_notifications').select('id')
+      .eq('kind', 'hot_lead').eq('phone', fullPhone)
+      .gte('created_at', new Date(Date.now() - 24 * 3600_000).toISOString())
+      .limit(1).maybeSingle()
+    if (recentAlert) return
+
+    if (leadId) await sb().from('restaurant_leads').update({ status: 'replied' }).eq('id', leadId)
+
+    const title = `🔥 ليد سخن رد على المارد${leadName ? ': ' + leadName : ''}`
+    const body = `${contactName ? contactName + ' — ' : ''}${fullPhone}\nقال: «${(text || '').slice(0, 200)}»`
+    await sb().from('marid_notifications').insert({
+      kind: 'hot_lead', title, body, phone: fullPhone,
+      ref_table: leadId ? 'restaurant_leads' : 'outreach_log', ref_id: leadId,
+    })
+
+    const adminPhone = await getCfg('admin_alert_phone', '')
+    if (adminPhone) {
+      await sendWhatsAppText(adminPhone.replace(/^\+/, ''),
+        `${title}\n${body}\nكمل المحادثة: madmonacairo.com/admin/wa-review`)
+    }
+    void convId
+  } catch (err) { console.error('[hot-lead-alert] error:', err) }
 }
 
 async function logJobApplicant(fullPhone: string, contactName: string | null, combinedText: string): Promise<void> {
@@ -856,6 +926,31 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
   let adminMusicName = ''
   const audMeta = message.audio as { id?: string; voice?: boolean } | undefined
   const docMeta = message.document as { id?: string; filename?: string; mime_type?: string; caption?: string } | undefined
+  // ==== «سوّق واكسب» — مسارات حتمية قبل الذكاء ====
+  if (!isAdminChannel && text) {
+    const tnorm = text.trim()
+    // (أ) طلب الكود: «كودي» / «كود الاحالة» / «سوق واكسب»
+    if (/^(كودي|كود الاحاله|كود الإحالة|كود الاحالة|سوق واكسب|سوّق واكسب)$/i.test(tnorm.replace(/[؟!.]/g, '').trim())) {
+      try {
+        const digits10 = normalizePhone(fromPhone).slice(-10)
+        const { data: prof } = await sb().from('profiles').select('id, full_name, phone').like('phone', `%${digits10}`).limit(1).maybeSingle()
+        if (!prof) {
+          await sendWhatsAppText(fromPhone, 'عشان تاخد كود «سوّق واكسب» بتاعك، لازم يكون عندك حساب على مضمونة الأول 😄\nسجّل في دقيقة من هنا:\nmadmonacairo.com/add-listing\nوبعدها ابعتلي «كودي» وأنا أجهزهولك فورًا 🧞')
+        } else {
+          const { data: codeRes } = await sb().rpc('get_or_create_referral_code', { p_owner_profile_id: (prof as { id: string }).id, p_owner_phone: (prof as { phone?: string }).phone || fromPhone, p_owner_type: 'customer' })
+          const c = codeRes as { ok?: boolean; code?: string; share_url?: string } | null
+          if (c?.code) {
+            await sendWhatsAppText(fromPhone,
+              `🧞 كود «سوّق واكسب» بتاعك: *${c.code}*\n\n🔗 لينكك الخاص:\n${c.share_url || 'https://www.madmonacairo.com/?ref=' + c.code}\n\nإزاي تكسب:\n1️⃣ ابعت اللينك لأي حد — أول ما يعمل حساب بيه\n2️⃣ يعمل شير لصفحة مضمونة على فيسبوك ويبعتلي سكرين شوت هنا مع كلمة «شير»\n3️⃣ بعد المراجعة: *+50 جنيه رصيد* في محفظتك عن كل أكونت 💰\n\nالرصيد بتستخدمه خصم على طلباتك (بحد أقصى عمولة مضمونة في الطلب). التفاصيل: madmonacairo.com/terms\n— معاملاتك مضمونة 💚`)
+          } else {
+            await sendWhatsAppText(fromPhone, 'حصلت مشكلة صغيرة في تجهيز الكود — جرب تاني بعد دقيقة 🙏')
+          }
+        }
+        return
+      } catch (e) { console.error('[referral-code-path] error:', e) }
+    }
+  }
+
   const isAdminMusic = isAdminChannel && (
     (msgType === 'audio' && audMeta?.id && audMeta?.voice === false) ||
     (msgType === 'document' && docMeta?.id && /audio|mpeg|mp3|m4a|aac|wav|ogg/i.test(String(docMeta?.mime_type || '')))
@@ -910,6 +1005,28 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
   }
   const inboundMeta: Record<string, unknown> = adData ? { has_ad_referral: true } : {}
   if (inboundImageUrl) inboundMeta.image_url = inboundImageUrl
+
+  // ==== «سوّق واكسب» (ب): استقبال إثبات الشير — بعد تجهيز الصورة ====
+  if (!isAdminChannel && inboundImageUrl) {
+    try {
+      const tnorm = (text || '').trim()
+      const hasShareWord = /شير|مشاركه|مشاركة|share/i.test(tnorm)
+      const digits10 = normalizePhone(fromPhone).slice(-10)
+      const { data: pend } = await sb().from('referrals').select('id, status')
+        .eq('status', 'pending').like('referred_phone', `%${digits10}`)
+        .order('created_at', { ascending: true }).limit(1).maybeSingle()
+      // يدخل المسار فقط لو: كلمة شير موجودة، أو عنده إحالة معلقة والرسالة صورة من غير كلام منتجات
+      if (pend && (hasShareWord || tnorm.length < 15)) {
+        const r = pend as { id: string }
+        await sb().from('referrals').update({ status: 'share_submitted', metadata: { share_proof_url: inboundImageUrl, submitted_at: new Date().toISOString() } }).eq('id', r.id)
+        const { data: cfgRow } = await sb().from('whatsapp_config').select('value').eq('key', 'admin_alert_phone').maybeSingle()
+        const adminPhone = ((cfgRow as { value?: string } | null)?.value || '201002229982').replace(/^\+/, '')
+        await sendWhatsAppText(adminPhone, `🖼️ إثبات شير جديد وصل!\n📞 من: ${fullPhone}\n🔗 الصورة: ${inboundImageUrl}\n\nللاعتماد رد بـ:\nاعتماد شير ${normalizePhone(fromPhone)}\nللرفض:\nرفض شير ${normalizePhone(fromPhone)}`)
+        await sendWhatsAppText(fromPhone, 'وصل إثبات المشاركة 🙌\nجاري المراجعة خلال 48 ساعة، وأول ما يتعتمد — الـ 50 جنيه بينزلوا في محفظة اللي دعاك (وهيوصله إشعار).\nشكرًا إنك جزء من مضمونة 💚')
+        return
+      }
+    } catch (e) { console.error('[share-proof-path] error:', e) }
+  }
   const { data: insertedMsg } = await sb().from('whatsapp_messages').insert({
     conversation_id: convId, direction: 'inbound', wa_message_id: waMsgId,
     body: storedBody, message_type: msgType === 'text' ? 'text' : msgType,
@@ -951,6 +1068,9 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
     return
   }
   if (!text) return
+
+  // 🔥 HOT LEAD ALERT — marid-contacted lead replied → ping the owner (never blocks the flow)
+  try { await alertHotLeadIfMarid(fullPhone, contactName, text, convId) } catch (_e) { /* non-fatal */ }
 
   // 🔐 INBOUND REVERSE-OTP — did they send a MADxxxxx confirmation code? Handle first.
   try {
@@ -1091,7 +1211,35 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
     if (ai.listing_draft && ai.listing_draft.title && ai.lead_type === 'supplier_lead') {
       await saveInstantListingDraft(fullPhone, contactName, convId, ai.listing_draft, combinedText)
     }
+    // ⚡ multi-product intake — supplier sent a text list → save each as an instant draft
+    if (Array.isArray(ai.listing_drafts) && ai.lead_type === 'supplier_lead') {
+      const singleTitle = ai.listing_draft?.title
+      for (const d of ai.listing_drafts.slice(0, 8)) {
+        if (!d?.title || d.title === singleTitle) continue
+        await saveInstantListingDraft(fullPhone, contactName, convId, d, combinedText)
+      }
+    }
     await logUnmetDemand(fullPhone, contactName, convId, ai, combinedText)
+    // 💼 ERP interest — paid subscription lead → notify owner instantly (once per conversation)
+    if (ai.erp_interest === true) {
+      try {
+        const prevMetaErp = ((existing as any)?.metadata || {}) as Record<string, unknown>
+        if (!prevMetaErp.erp_interest_alerted) {
+          const title = '💼 مورد مهتم بنظام الإدارة (CRM+ERP)'
+          const body = `${contactName ? contactName + ' — ' : ''}${fullPhone}\nقال: «${combinedText.slice(0, 200)}»\nده اشتراك مدفوع — يستاهل مكالمة منك.`
+          await sb().from('marid_notifications').insert({
+            kind: 'hot_lead', title, body, phone: fullPhone, ref_table: 'whatsapp_conversations', ref_id: convId,
+          })
+          const adminPhoneErp = await getCfg('admin_alert_phone', '')
+          if (adminPhoneErp) {
+            await sendWhatsAppText(adminPhoneErp.replace(/^\+/, ''), `${title}\n${body}\nالمحادثة: madmonacairo.com/admin/wa-review`)
+          }
+          await sb().from('whatsapp_conversations').update({
+            metadata: { ...prevMetaErp, erp_interest_alerted: true, erp_interest_at: new Date().toISOString() }
+          }).eq('id', convId)
+        }
+      } catch (err) { console.error('[erp-interest-alert] error:', err) }
+    }
     const prevMeta = ((existing as any)?.metadata || {}) as Record<string, unknown>
     const convUpdate: Record<string, unknown> = { last_outbound_at: new Date().toISOString(), message_count: 1 }
     if (ai.lead_type === 'supplier_lead' || ai.lead_type === 'customer_lead') convUpdate.contact_type = ai.lead_type

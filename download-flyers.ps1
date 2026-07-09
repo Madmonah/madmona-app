@@ -1,0 +1,7 @@
+$ProgressPreference = 'SilentlyContinue'
+New-Item -ItemType Directory -Force -Path 'E:\madmona-app\marketing\flyers-a5' | Out-Null
+$u1 = 'https://export-download.canva.com/N3Cvc/DAHOeVN3Cvc/-1/0/0001-4353237534051533829.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH5AO7UJ26%2F20260704%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260704T120212Z&X-Amz-Expires=55873&X-Amz-Signature=b03a31b623aac5b47b618bd65e86f3d64067f59298134d90da804236c81495f3&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2005%20Jul%202026%2003%3A33%3A25%20GMT'
+$u2 = 'https://export-download.canva.com/Ry0F8/DAHOeVRy0F8/-1/0/0001-724462138225918321.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH5AO7UJ26%2F20260704%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260704T103148Z&X-Amz-Expires=58714&X-Amz-Signature=3f353e302605374a05af987c6730c7bff928f6c4393a7a4cbcade08b189a14e4&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2005%20Jul%202026%2002%3A50%3A22%20GMT'
+Invoke-WebRequest -Uri $u1 -OutFile 'E:\madmona-app\marketing\flyers-a5\A5-flyer-restaurant-owner.png' -UseBasicParsing
+Invoke-WebRequest -Uri $u2 -OutFile 'E:\madmona-app\marketing\flyers-a5\A5-flyer-customer.png' -UseBasicParsing
+Get-ChildItem 'E:\madmona-app\marketing\flyers-a5' | ForEach-Object { Write-Host ($_.Name + ' ' + [math]::Round($_.Length/1KB) + 'KB') }

@@ -43,10 +43,21 @@ export default function CheckoutPage() {
   const [accessToken, setAccessToken] = useState<string>('')
   // COD (cash on delivery) is offered for restaurant (food) orders only.
   const codAllowed = cart.order_type === 'food'
+  // ⚠️ مؤقتًا (قرار محمد 6 يوليو 2026): أوردرات المطاعم = كاش عند الاستلام فقط.
+  // للرجوع: خلي FOOD_COD_ONLY = false ويرجع InstaPay/المحفظة للأكل عادي.
+  const FOOD_COD_ONLY = true
+  const foodCodOnly = FOOD_COD_ONLY && codAllowed
   // Safety: if cart type changes away from food, force back to instapay.
   useEffect(() => {
     if (!codAllowed && payment === 'cod') setPayment('instapay')
   }, [codAllowed, payment])
+  // Temporary: food orders are locked to COD.
+  useEffect(() => {
+    if (foodCodOnly && payment !== 'cod') setPayment('cod')
+  }, [foodCodOnly, payment])
+
+  // «سوّق واكسب»: استخدام رصيد المحفظة كخصم (بحد أقصى عمولة الأوردر) — للمسجلين
+  const [useCredit, setUseCredit] = useState(true)
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -208,6 +219,17 @@ export default function CheckoutPage() {
         } catch (e) {
           console.error('[checkout] wallet pay error:', e)
         }
+      }
+
+      // «سوّق واكسب»: خصم رصيد المحفظة (حتى عمولة الأوردر) — best-effort، مايوقفش الأوردر
+      if (payment !== 'wallet' && isAuthed && accessToken && useCredit) {
+        try {
+          await fetch('/api/wallet/apply-discount', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+            body: JSON.stringify({ order_id: result.order_id }),
+          })
+        } catch { /* الخصم اختياري */ }
       }
 
       // Clear cart and redirect to tracking page
@@ -399,8 +421,8 @@ export default function CheckoutPage() {
             طريقة الدفع
           </h2>
           <div className="space-y-3">
-            {/* Wallet option — authenticated users only */}
-            {isAuthed && walletBalance !== null && (
+            {/* Wallet option — authenticated users only (hidden for food while COD-only is on) */}
+            {!foodCodOnly && isAuthed && walletBalance !== null && (
               <button
                 type="button"
                 disabled={walletBalance < total}
@@ -427,7 +449,8 @@ export default function CheckoutPage() {
               </button>
             )}
 
-            {/* InstaPay option */}
+            {/* InstaPay option (hidden for food while COD-only is on) */}
+            {!foodCodOnly && (
             <button
               type="button"
               onClick={() => setPayment('instapay')}
@@ -448,6 +471,7 @@ export default function CheckoutPage() {
               </div>
               {payment === 'instapay' && <CheckCircle className="w-5 h-5 text-[#1F6F5F] flex-shrink-0" />}
             </button>
+            )}
 
             {/* Cash on delivery — restaurants only */}
             {codAllowed && (
@@ -466,11 +490,26 @@ export default function CheckoutPage() {
                 <div className="flex-1">
                   <p className="font-bold text-sm text-gray-900">كاش عند الاستلام</p>
                   <p className="text-[11px] text-gray-500">
-                    ادفع كاش للمندوب وقت ما يوصلك الأوردر — للمطاعم بس
+                    {foodCodOnly ? 'ادفع كاش وقت ما يوصلك الأوردر — الدفع الأونلاين للمطاعم راجع قريبًا' : 'ادفع كاش للمندوب وقت ما يوصلك الأوردر — للمطاعم بس'}
                   </p>
                 </div>
                 {payment === 'cod' && <CheckCircle className="w-5 h-5 text-[#1F6F5F] flex-shrink-0" />}
               </button>
+            )}
+
+            {/* «سوّق واكسب»: خصم رصيد المحفظة تلقائيًا (للمسجلين) */}
+            {isAuthed && payment !== 'wallet' && (
+              <label className="w-full flex items-center gap-3 p-3 rounded-2xl border border-dashed border-[#2FA084]/50 bg-[#F0F7F4] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={useCredit}
+                  onChange={(e) => setUseCredit(e.target.checked)}
+                  className="w-4 h-4 accent-[#1F6F5F]"
+                />
+                <span className="text-xs text-gray-700 leading-relaxed">
+                  <b className="text-[#1F6F5F]">استخدم رصيد «سوّق واكسب»</b> لو متاح — خصم تلقائي من إجمالي الطلب (بحد أقصى عمولة مضمونة في الطلب)
+                </span>
+              </label>
             )}
           </div>
         </section>

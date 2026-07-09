@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1748px; height:2480px; font-family:'Cairo', sans-serif; color:#0A0A0A; background:#FAFAF7; overflow:hidden; position:relative; }
+  .mesh { position:absolute; inset:0;
+    background:
+      radial-gradient(1000px 800px at 85% 8%, rgba(212,160,23,.14), transparent 60%),
+      radial-gradient(900px 700px at 10% 35%, rgba(47,160,132,.12), transparent 60%),
+      radial-gradient(900px 700px at 85% 80%, rgba(31,111,95,.10), transparent 60%),
+      #FAFAF7; }
+  .wrap { position:relative; height:100%; padding:80px 90px 70px; display:flex; flex-direction:column; }
+
+  .topbar { display:flex; align-items:center; justify-content:space-between; }
+  .brand { display:flex; align-items:center; gap:22px; }
+  .brand .reallogo { width:190px; height:190px; object-fit:contain; border-radius:34px; box-shadow:0 12px 30px rgba(31,111,95,.18); background:#fff; }
+  .pill { background:#fff; border:3px solid rgba(212,160,23,.35); border-radius:999px; padding:18px 38px; font-size:28px; font-weight:900; color:#b8860b; box-shadow:0 8px 24px rgba(0,0,0,.05); }
+
+  .hero { text-align:center; margin-top:56px; }
+  h1 { font-size:128px; font-weight:900; line-height:1.1; }
+  h1 .grn { color:#1F6F5F; }
+  .sub { margin-top:20px; font-size:46px; font-weight:800; color:#2d7a52; }
+  .mascot-row { display:flex; align-items:center; justify-content:center; margin-top:20px; }
+  .mascot { width:600px; height:600px; object-fit:contain; border-radius:70px; border:3px solid rgba(31,111,95,.10); box-shadow:0 26px 52px rgba(31,111,95,.22); background:#fff; }
+
+  .cards { margin-top:36px; display:grid; grid-template-columns:1fr 1fr; gap:28px; }
+  .card { background:rgba(255,255,255,.94); border-radius:26px; padding:36px 40px; display:flex; align-items:center; gap:26px; box-shadow:0 10px 28px rgba(15,60,50,.07); border:2px solid rgba(31,111,95,.08); }
+  .card .ico { width:92px; height:92px; border-radius:22px; background:#1F6F5F0F; display:flex; align-items:center; justify-content:center; font-size:50px; flex:0 0 auto; }
+  .card b { font-size:40px; font-weight:900; line-height:1.35; }
+
+  .cta { margin-top:auto; background:#fff; border-radius:36px; padding:44px 50px; display:flex; align-items:center; gap:44px; box-shadow:0 18px 50px rgba(15,60,50,.12); border:2px solid rgba(31,111,95,.10); }
+  .cta .btncol { flex:1; }
+  .btn { display:block; text-align:center; background:linear-gradient(90deg,#d4a017,#2FA084 55%,#1F6F5F); color:#fff; font-size:60px; font-weight:900; padding:36px 20px; border-radius:24px; box-shadow:0 14px 34px rgba(31,111,95,.30); }
+  .link { margin-top:24px; font-size:40px; font-weight:900; color:#1F6F5F; text-align:center; direction:ltr; }
+  .wa { margin-top:8px; font-size:32px; font-weight:800; color:#0A0A0A; text-align:center; }
+  .wa b { color:#1F6F5F; }
+  .qrbox { background:#FAFAF7; border:3px solid rgba(31,111,95,.15); border-radius:26px; padding:22px; text-align:center; flex:0 0 auto; }
+  .qrbox img { width:270px; height:270px; display:block; }
+  .qrbox p { font-size:24px; font-weight:800; color:#1F6F5F; margin-top:10px; }
+
+  .footer { margin-top:36px; display:flex; align-items:center; justify-content:space-between; font-size:26px; font-weight:800; color:#5a6b64; }
+  .footer .dot { color:#d4a017; }
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <img class="reallogo" src="madmona-logo.png" alt="مضمونة MADMONA">
+    </div>
+    <div class="pill">⚽ عرض كأس العالم — اطلب أكل الماتش</div>
+  </div>
+
+  <div class="hero">
+    <h1>جعان؟ 😋 اطلب أكلك <span class="grn">مضمون</span></h1>
+    <p class="sub">من مطاعم موثوقة — منيو بالأسعار والأحجام</p>
+    <div class="mascot-row">
+      <img class="mascot" src="https://res.cloudinary.com/duxfgqioc/image/upload/madmona/mascots/genie.png" alt="المارد">
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="ico">⏱️</div><b>اطلب أونلاين في دقيقة واحدة</b></div>
+    <div class="card"><div class="ico">🛡️</div><b>طلبك بحماية كاملة 100%</b></div>
+    <div class="card"><div class="ico">🛵</div><b>توصيل لحد باب البيت</b></div>
+    <div class="card"><div class="ico">⚽</div><b>تابع كأس العالم واطلب أكل الماتش</b></div>
+  </div>
+
+  <div class="cta">
+    <div class="btncol">
+      <div class="btn">اطلب دلوقتي 🍕</div>
+      <p class="link">madmonacairo.com</p>
+      <p class="wa">🧞 كلّم المارد على واتساب: <b>01002229982</b></p>
+    </div>
+    <div class="qrbox">
+      <img src="data:image/png;base64,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" alt="QR">
+      <p>امسح واطلب من المنيو</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>مضمونة — تأجير • خدمات • أكل، كله مضمون</span>
+    <span>madmonacairo.com <span class="dot">•</span> حماية كاملة لكل طلب</span>
+  </div>
+
+</div>
+</body>
+</html>

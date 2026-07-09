@@ -281,6 +281,49 @@ Deno.serve(async (req) => {
   if (req.headers.get('x-relay-key') !== RELAY_KEY) return new Response('forbidden', { status: 403 })
   const { phone, conversation_id, text } = await req.json().catch(() => ({}))
   if (!phone || !text) return new Response(JSON.stringify({ ok: false, error: 'phone+text required' }), { status: 400 })
+
+  // ==== سوّق واكسب: اعتماد/رفض إثبات الشير — حتمي 100% (فلوس = مفيش AI) ====
+  const shareCmd = String(text).trim().match(/^(اعتماد|قبول|رفض)\s+شير\s+(.+)$/)
+  if (shareCmd) {
+    try {
+      const verdict = shareCmd[1]
+      const target = shareCmd[2].trim()
+      const digits = target.replace(/\D/g, '')
+      const tail = digits.slice(-10)
+      const { data: refs } = tail.length >= 9
+        ? await sb().from('referrals').select('*').eq('status', 'share_submitted').like('referred_phone', `%${tail}`).order('created_at', { ascending: true }).limit(1)
+        : await sb().from('referrals').select('*').eq('status', 'share_submitted').ilike('code', target).order('created_at', { ascending: true }).limit(1)
+      const ref = (refs || [])[0] as Record<string, any> | undefined
+      if (!ref) { await sendWA(String(phone), 'مفيش إثبات شير معلّق للرقم/الكود ده 🤷\nصيغة الأمر: اعتماد شير 01xxxxxxxxx'); return new Response(JSON.stringify({ ok: true })) }
+      if (verdict === 'رفض') {
+        await sb().from('referrals').update({ status: 'rejected', notes: 'إثبات الشير مرفوض من الأدمن' }).eq('id', ref.id)
+        await sendWA(String(phone), `تم الرفض ❌ — إحالة ${ref.referred_phone || ref.code} اتقفلت.`)
+        return new Response(JSON.stringify({ ok: true }))
+      }
+      // اعتماد: نرجّعها pending → نأهلها بالمنطق الرسمي → نصرف المكافأة
+      await sb().from('referrals').update({ status: 'pending' }).eq('id', ref.id)
+      const { data: q } = await sb().rpc('referral_qualify', { p_referred_phone: ref.referred_phone, p_kind: ref.referral_kind || 'customer', p_event: 'share_approved' })
+      const qq = q as Record<string, any> | null
+      if (!qq?.ok) { await sendWA(String(phone), `معرفتش أأهّل الإحالة ⚠️ ${JSON.stringify(qq).slice(0, 120)}`); return new Response(JSON.stringify({ ok: true })) }
+      const { data: rw } = await sb().rpc('referral_reward', { p_referral_id: qq.referral_id })
+      const rr = rw as Record<string, any> | null
+      if (!rr?.ok) { await sendWA(String(phone), `الإحالة اتأهلت بس المكافأة وقفت ⚠️ ${JSON.stringify(rr).slice(0, 120)}`); return new Response(JSON.stringify({ ok: true })) }
+      // بلّغ المُحيل عبر الطابور (لو جلسته مقفولة هتتأجل — عادي)
+      if (ref.referrer_phone) {
+        await sb().from('whatsapp_outbound_queue').insert({
+          recipient_phone: ref.referrer_phone.startsWith('+') ? ref.referrer_phone : '+' + ref.referrer_phone.replace(/\D/g, ''),
+          recipient_name: 'مسوّق مضمونة', status: 'pending', agent_name: 'referral-program', campaign: 'referral_reward_notice',
+          message: `مبروك! 🎉 مكافأة «سوّق واكسب» نزلت في محفظتك: +${rr.amount} جنيه رصيد.\nاستخدمه كخصم على طلباتك في مضمونة (بحد أقصى عمولة مضمونة في الطلب).\nكمّل تسويق واكسب أكتر 💪\n— مضمونة · معاملاتك مضمونة 💚`,
+          metadata: { referral_id: ref.id }
+        })
+      }
+      await sendWA(String(phone), `تم الاعتماد ✅\n+${rr.amount} ج نزلت لمحفظة المُحيل (${ref.referrer_phone || ref.code}).\nالإحالة: ${ref.referred_name || ref.referred_phone}`)
+      return new Response(JSON.stringify({ ok: true }))
+    } catch (e) {
+      await sendWA(String(phone), `خطأ في أمر الشير ⚠️ ${String(e).slice(0, 120)}`)
+      return new Response(JSON.stringify({ ok: false }))
+    }
+  }
   try {
     let history = ''
     if (conversation_id) {

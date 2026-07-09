@@ -11,11 +11,17 @@ export type CartItemKind = 'food' | 'product'
 
 export type CartItem = {
   // Unique key per cart line.
-  // For products: equals listing_id (one product per listing).
-  // For food:     equals menu_item_id (multiple menu items per restaurant listing).
+  // For products:      equals listing_id (one product per listing),
+  //                    or mart_product_id (catalog products under one listing).
+  // For food:          menu_item_id, or `${menu_item_id}:${size_id}` when sized.
   key: string
   listing_id: string
   menu_item_id?: string | null
+  // Chosen size (restaurant menu items with sizes)
+  size_id?: string | null
+  size_name?: string | null
+  // Catalog product (mart_products) under a supplier listing
+  mart_product_id?: string | null
   name: string
   photo_url?: string | null
   unit_price: number
@@ -135,6 +141,9 @@ export function addToCart(args: {
       key: args.item.key,
       listing_id: args.item.listing_id,
       menu_item_id: args.item.menu_item_id ?? null,
+      size_id: args.item.size_id ?? null,
+      size_name: args.item.size_name ?? null,
+      mart_product_id: args.item.mart_product_id ?? null,
       name: args.item.name,
       photo_url: args.item.photo_url ?? null,
       unit_price: args.item.unit_price,
@@ -203,12 +212,16 @@ export function useCart(): Cart {
 export function buildOrderItemsPayload(cart: Cart): Array<{
   listing_id: string
   menu_item_id?: string | null
+  size_id?: string | null
+  mart_product_id?: string | null
   quantity: number
   item_notes?: string
 }> {
   return cart.items.map((it) => ({
     listing_id: it.listing_id,
     menu_item_id: it.menu_item_id ?? null,
+    size_id: it.size_id ?? null,
+    mart_product_id: it.mart_product_id ?? null,
     quantity: it.quantity,
     item_notes: it.notes,
   }))

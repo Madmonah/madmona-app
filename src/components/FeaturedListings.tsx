@@ -47,6 +47,8 @@ export default function FeaturedListings() {
           pricing:pricing_rules(price, is_active)
         `)
         .eq('status', 'published')
+        // استبعاد إعلانات الدليل الغير مستلمة (directory) — تظهر فقط في البحث/التصفح
+        .not('is_directory', 'is', true)
         .not('title', 'ilike', 'DEMO%')
         .order('views_count', { ascending: false })
         .limit(48)

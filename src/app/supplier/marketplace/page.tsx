@@ -10,7 +10,7 @@ import {
   Plus, Building2, Edit2, Trash2, Eye, EyeOff, AlertCircle,
   Loader2, ArrowRight, CheckCircle, Clock, Lock, MapPin,
   Image as ImageIcon, ExternalLink, Calendar, TrendingUp,
-  DollarSign, Bell, Copy, Crown, Users, ShoppingBag, ChefHat,
+  DollarSign, Bell, Copy, Crown, Users, ShoppingBag, ChefHat, Package,
 } from 'lucide-react'
 
 // ============================================================================
@@ -583,12 +583,21 @@ function SupplierMarketplaceContent() {
             Listings ({listings.length})
           </h2>
           {access.canManageListings && (
-            <Link
-              href="/supplier/marketplace/new"
-              className="flex items-center gap-1 px-4 py-2 bg-[#1F6F5F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F6F5F]/90"
-            >
-              <Plus className="w-4 h-4" /> ضيف منتج جديد
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/supplier/marketplace/bulk-products"
+                className="flex items-center gap-1 px-3 py-2 bg-white border border-[#1F6F5F]/30 text-[#1F6F5F] rounded-lg text-sm font-semibold hover:bg-[#1F6F5F]/5"
+                title="ضيف إعلانات أو منتجات بالجملة من شيت Excel"
+              >
+                📊 استيراد بالجملة (Excel)
+              </Link>
+              <Link
+                href="/supplier/marketplace/new"
+                className="flex items-center gap-1 px-4 py-2 bg-[#1F6F5F] text-white rounded-lg text-sm font-semibold hover:bg-[#1F6F5F]/90"
+              >
+                <Plus className="w-4 h-4" /> ضيف منتج جديد
+              </Link>
+            </div>
           )}
         </div>
 
@@ -725,6 +734,15 @@ function SupplierMarketplaceContent() {
                             title="إدارة المنيو"
                           >
                             <ChefHat className="w-3.5 h-3.5" />
+                          </Link>
+                        )}
+                        {access.canManageListings && listing.category?.track !== 'restaurants' && (
+                          <Link
+                            href={`/supplier/marketplace/${listing.id}/products`}
+                            className="p-1.5 text-purple-600 hover:bg-purple-50 rounded"
+                            title="إدارة المنتجات + استيراد Excel"
+                          >
+                            <Package className="w-3.5 h-3.5" />
                           </Link>
                         )}
                         {access.canManageListings && (

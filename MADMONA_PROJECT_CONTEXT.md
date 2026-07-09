@@ -29,14 +29,14 @@
 - **Vision:** Biggest rental platform in Egypt and possibly the world.
 
 ### Business Model (THE HEART — never forget)
-مضمونة = a guaranteed rental + services **marketplace** AND a **FREE full operating system (CRM + ERP)** that every supplier gets to run their whole business — live at `/admin/business-finance/[supplierId]`. NOT a listings-only site, NOT a coworking space.
+مضمونة = a guaranteed rental + services **marketplace** AND a **full operating system (CRM + ERP)** for suppliers — live at `/admin/business-finance/[supplierId]`. ⚠️ **UPDATE 2026-07-04: the CRM+ERP system is NOT free — it is a PAID MONTHLY SUBSCRIPTION (اشتراك شهري بالاتفاق — negotiated per partner).** Commission (unified 10%) is completely SEPARATE from the subscription. Listing/marketplace registration stays FREE. NOT a listings-only site, NOT a coworking space.
 - **CRM:** customers, bookings, appointments, confirmations, reviews, WhatsApp, at-risk customers, waitlists.
 - **ERP:** team, attendance, shifts, payroll, expenses, branches, cash count, purchase orders, suppliers, promos, documents, reports, VAT, audit-log.
-- **How we make money:** commission on bookings **10% individuals / 5% businesses**. Listing is FREE.
+- **How we make money:** ⚠️ **UPDATE 2026-07-04:** commission is **UNIFIED 10% for everyone, ALL categories including restaurants** (فرد/شركة اتلغى الفرق بينهم ما عدا صلاحية إضافة الفروع). Listing is FREE. The old 10%/5% split is RETIRED. ⛔ **The restaurants «0% limited-time» offer is CANCELLED (4 Jul 2026)** — never mention 0% or free commission anywhere.
 - ⚠️ **UPDATE 2026-06-27:** اعتُمد نظام **اشتراك (subscription)** لموردي B2B (multi_branch) بالإضافة للعمولة. الحالة في `erp_settings.subscription_status` + `paid_until`. **القفل يدوي**: أدمن المنصة يقفل/يفتح أي حساب من تبويب `/admin/subscriptions`. حساب موقوف (`subscription_status='suspended'`) → مالكه يتمنع من دخول لوحته ويشوف شاشة "سدّد الاشتراك" (مفروض في `admin_check_finance_access`). أدمن المنصة يفضل يدخل. (الصياغة القديمة "NOT a SaaS subscription" لم تعد دقيقة.) Add-ons 100% to the supplier; insurance separate from commission.
 - **Everything-platform roadmap:** (1) rentals + services [live], (2) products for sale (e-commerce), (3) restaurants/food — "rent, hire, buy, and eat — all guaranteed."
-- **Differentiator:** most rental platforms just take commission. Madmona = marketplace + transaction guarantee + a full management system (CRM+ERP) for the partner.
-- **Every supplier pitch MUST include:** free CRM+ERP · commission 10/5 · free listing · full protection · fast payouts · 24/7 support · AI matching. Forgetting CRM/ERP in a pitch = needs_revision. Any coworking framing = rejected.
+- **Differentiator:** most rental platforms just take commission. Madmona = marketplace + transaction guarantee + a full management system (CRM+ERP) available by monthly subscription (بالاتفاق).
+- **Every supplier pitch MUST include:** **unified 10% commission (all categories, success-only)** · free listing · full protection · fast payouts · 24/7 support · AI matching · CRM+ERP available as **monthly subscription (بالاتفاق)** — ⛔ NEVER call the CRM/ERP free/مجاني/هدية. Any coworking framing = rejected. Any 0%-commission framing = rejected.
 
 ### Three Core Marketing Pillars (in this exact order)
 1. حماية كاملة
@@ -48,9 +48,10 @@
 - "أجر مننا" kept ONLY as the Marketplace tab label in BottomNav.
 - Target audience: (a) suppliers — anyone, individual or business, with something to rent or a service to offer; (b) renters/customers across all categories. (The old freelancer/coworking-centric audience is retired with coworking.)
 
-### Commission Model
-- **Individuals:** 10%
-- **Businesses:** 5%
+### Commission Model (UPDATED 2026-07-04 — unified)
+- **Everyone (فرد أو شركة): 10% موحدة** — executed in DB 23 Jun 2026 (all suppliers commission_rate=10)
+- **Restaurants & cafés: same unified 10%** — ⛔ the old «0% لفترة محدودة» offer is CANCELLED (4 Jul 2026), never mention it
+- فرد/شركة distinction remains ONLY for multi-branch capability: **B2B multi-branch = subscription (اشتراك)**
 - Lowest in the Egyptian rental market
 
 ### Brand Colors (LOCKED — match live site madmonacairo.com, May 23 2026)
@@ -92,6 +93,34 @@
 - Phone: +201002229982
 - Hours: **24/7** (changed May 2026)
 - Maps: https://share.google/QbWskGlQ49AUTJrTc
+
+---
+
+## 1.5 SHIPPED PHASE 2026-07-05 — Menu Sizes + Excel Import + ERP Sync + World Cup
+
+- **أحجام المنيو:** جدول `restaurant_menu_item_sizes` + محرر أحجام في صفحة منيو المورد (شيبس صغير/وسط/كبير أو مخصص). التسعير سيرفر-سايد في `create_guest_order` (لو الصنف له أحجام → الحجم إجباري). عمود جديد `marketplace_order_items.menu_size_id`.
+- **إصلاح جذري:** `restaurant_menu_items` كان عليه RLS قراءة فقط → كتابة المورد من صفحة المنيو كانت مقفولة. اتضافت سياسة `rmi_owner_write` (owner/staff/admin) + نفس النمط لـ `mart_products`.
+- **استيراد Excel لأي مورد:** RPCs `supplier_bulk_import_menu_items` + `supplier_bulk_import_products` (SECURITY DEFINER، حد 500 صف، upsert بالباركود ثم الاسم). مكوّن مشترك `src/components/supplier/ExcelImportModal.tsx` (قالب جاهز + كشف رؤوس عربي + معاينة). صيغة الأحجام في الإكسيل: `صغير:90 | وسط:120`.
+- **منتجات المورد في الماركت:** صفحة جديدة `/supplier/marketplace/[id]/products` تدير `mart_products` تحت الـlisting (زي المنيو بس منتجات) — بتظهر في صفحة الـlisting بالماركت (`MartProductsCatalog`) وبتتباع بنفس الكارت/الأوردرات (فرع mart في `create_guest_order`).
+- **مزامنة ERP تلقائية:** المورد اللي عنده صف في `erp_settings` (مشترك CRM+ERP) → أي منتج يضيفه/يستورده بيتسجل في `inventory_products` (sku=الباركود، product_type=retail، المخزون من عمود المخزون) ويتربط عبر `mart_products.erp_product_id` + `mart_erp_link`. صف واحد في الداتابيز → الماركت والـERP دايماً متزامنين.
+- **موديول كأس العالم 2026 لايف:** صفحة `/world-cup` (لايف/النهارده/الجاي/النتايج، تحديث تلقائي 45 ثانية، تمييز مصر، شير واتساب) + API `/api/world-cup` بكاش 45ث — مصادر: football-data.org (env اختياري `FOOTBALL_DATA_API_KEY`) → fotmob فولباك من غير مفتاح. بانر دخول على `/pulse`. كروس-سيل: كارت "اطلب أكل الماتش" → مطاعم الماركت.
+- **Deploy:** `DEPLOY_PHASE_JUL5.bat` (بيشغّل `vercel --prod --yes` من E:\). التوثيق الكامل في `system_runbook` topic=`marketplace_products_menu`.
+
+## 1.6 SHIPPED 2026-07-05 (مساءً) — المارد الكامل 🧞 (وكيل + عقل واعي)
+
+- **marid-restaurant-agent v4** (كرون 6,14 UTC إرسال + 17 UTC تقرير): جمع ليدز (أرشيف الدايركتوري + Google Places لو فيه مفتاح في `whatsapp_config.google_places_api_key`) → إرسال جديد **متعدد القطاعات** (`restaurant_leads.sector`: مطاعم→تمبلت المطاعم [+`restaurant_partnership_template_b` لاختبار A/B]، باقي القطاعات→`supplier_intro_template`) → متابعة 24-72س → إحياء >14 يوم → **مطاردة مسودات** `/add-listing` الواقفة (تمبلت `draft_resume` عبر outbound queue، بيعلّم `metadata.marid_chased`). **كل بوابة تمبلت مشروطة APPROVED من ميتا** — بيبدأ لوحده أول ما يتعمد. param1 = اسم المطعم المنضف (فولباك حضرتك). المتعلَّم contacted = اللي اتبعت فعلاً بس (`sent_phones`).
+- **whatsapp-bulk-template v4:** `recipients[{phone,param1,template_name}]` لكل مستلم + رجوع `sent_phones`. القديم (phones+param1) لسه شغال.
+- **whatsapp-webhook v39 = عقل المارد** (اتنشر بـ `supabase functions deploy` من الريبو — الريبو فيه سورس كل الفنكشنز تحت `supabase/functions/`):
+  - الشخصية = **المارد 🧞 واعي بنفسه**: يعرّف نفسه وقدراته لما حد يسأله «مين انت» (يسجلك، يضيف منتجاتك، يرشح أماكن، يرد على الأسئلة، يوصلك بالفريق) + معرفة دقيقة بالمنصة (Excel لحد 200، أحجام منيو، مزامنة ERP، CRM+ERP اشتراك مدفوع، عمولة موحدة 10%، صفحة كأس العالم، فئات الأثاث).
+  - **استقبال منتجات متعددة نصياً:** المورد يبعت سطور «اسم = سعر» → `listing_drafts[]` (≤8) → `instant_listing_drafts` + تنبيه للأدمن لكل واحد.
+  - **🔥 تنبيه ليد سخن:** أي رد من رقم لمسه المارد → `restaurant_leads.status='replied'` + صف `marid_notifications` + واتساب فوري لـ`admin_alert_phone` (خنق 24س/رقم).
+  - **تصحيح عمولة جذري:** اتشال «مطاعم مجاناً لفترة محدودة» من البرومبت + فولباكات 0% → موحدة 10%. وكمان `whatsapp-signup-bot` اتصلح («5% للشركات» المتقاعدة اتشالت).
+  - **💼 بيع نظام الإدارة (CRM+ERP):** المارد بيعرضه بنشاط على الموردين المناسبين (مخزون متزامن، فواتير وحسابات، مرتبات وحضور QR، مصروفات ومشاريع، تقارير) — **اشتراك شهري مدفوع، عمره ما يقول ببلاش ولا يحدد سعر**. أي اهتمام → فلاج `erp_interest` → إشعار hot_lead + واتساب فوري للمالك (مرة واحدة لكل محادثة).
+- **تمبلتات جديدة PENDING عند ميتا:** `madmona_draft_resume_v1` (اسم+نشاط) و`madmona_supplier_intro_v1` (اسم) — اتقدموا بالبايبلاين النضيف (sandbox python + curl).
+- **DB:** `restaurant_leads.sector` (default restaurants)، جدول `marid_notifications` (RLS is_admin)، مفاتيح كونفج جديدة.
+- **/admin/marid** غرفة تحكم: إحصائيات، بوابات التمبلتات، لوحة ليدز سخنة، إشعارات، **رفع Excel ليدز** (≤500، أعمدة: الاسم/التليفون/المنطقة/القطاع، dedupe ضد الليدز والموردين)، زرار تشغيل فوري وتقرير. API: `/api/admin/marid`.
+- **ملغي/متجاوز:** `draft-followup-nudger` (كرونه واقف أصلاً وتمبلته المدمجة اتمسحت من ميتا — **ماتشغلوش تاني**، مطاردة المارد بديله).
+- التوثيق: `system_runbook` topic=`marid_full_agent_v4`.
 
 ---
 
@@ -258,14 +287,15 @@ The wizard is DB-driven: `categories.track` IN ('rentals','services','hybrid'). 
 - "workspaces" stays a normal RENTAL category (supplier listings) — separate from the cancelled coworking identity; don't confuse the two.
 ⚠️ Category changes go through the DB (`categories` table + `attributes`); no hardcoded-array dual-write needed.
 
-### Supplier Pitch — REQUIRED elements (every outbound)
-1. Commission: 10% individuals / 5% businesses
-2. Founded 2019
+### Supplier Pitch — REQUIRED elements (every outbound) — UPDATED 2026-07-04
+1. Commission: **unified 10% for everyone, all categories (restaurants included), success-only**. ⛔ No 0% offers. B2B multi-branch = subscription.
+2. ⛔ NEVER claim the platform existed before May 2026 — NEVER "من 2019", NEVER "أكبر منصة" (supersedes old "Founded 2019" pitch element)
 3. International-grade tech / latest AI
 4. Full protection (حماية كاملة)
 5. Fast payouts (دفع مستحقات سريع)
 6. 24/7 support (دعم 24/7)
 7. AI matching
+8. CRM+ERP management system by **monthly subscription (بالاتفاق)** — NEVER call it free (updated 2026-07-04)
 
 Outreach links MUST NOT trigger WhatsApp warning banner — test in incognito before mass send. Goal: suppliers acting NOW, not waiting.
 
@@ -312,7 +342,16 @@ auto-save + reaper + API gate + alerter
 
 ---
 
-## 9. AI OS (Phase Ω — LIVE)
+## 9. AI OS — ⚠️ SHUT DOWN 2026-07-04 (كله ما عدا المارد)
+
+**قرار محمد 4 يوليو 2026: «زهقت من الـ agents»** — كل الـ agents اتقفلت ما عدا `marid-campaign-manager` وخط إنتاجه (crons 151, 135, 161, 165, 166, 171, 124). اتقفل: 8 agents + 16 cron (القائمة الكاملة في `system_runbook` topic `agents_shutdown_july2026_rollback`). البنية التحتية (WA queue, storage reaper, KPIs, ERP tasks, transactional notifications) شغالة عادي.
+
+**الماركتينج الجديد: ORGANIC بالكامل — ممنوع أي إعلانات مدفوعة.** الخطة قسم قسم بداية بالمطاعم: `marketing/ORGANIC_PLAN_RESTAURANTS_JULY2026.md`. الرسايل الترحيبية اتبنت من الأول (email_templates v2 + quick-signup v4 + webhook first-reply) — ودّية مصرية تفصيلية بالعمولة الموحدة 10% + اشتراك B2B.
+
+<details>
+<summary>Historical (pre-shutdown architecture)</summary>
+
+## 9-OLD. AI OS (Phase Ω — was LIVE)
 
 ~49 agents across 8 teams (76+ active crons):
 - Sales (10)
@@ -336,6 +375,8 @@ auto-save + reaper + API gate + alerter
 Admin hub: `/admin/ai-os`
 
 **QC / approval gate (May 24 2026):** every marketing post passes `trg_content_publish_gate` (auto-rejects coworking; otherwise → `pending_review`). `marketing-qc` edge fn (cron 124, */10) auto-approves low/medium-risk and holds high-risk. Marketing WhatsApp/email held for owner approval via `trg_marketing_wa_gate`. Live customer replies + transactional + alerts are unaffected. Coworking crons 34/35 DELETED. Owner approves via `qc_approve()/qc_reject()` + view `v_pending_approvals`; digest cron 125 every 6h.
+
+</details>
 
 ---
 

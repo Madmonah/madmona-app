@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabase-browser';
 import { trackEvent } from '@/components/AnalyticsTracker';
+import BulkExcelDrafts from '@/components/BulkExcelDrafts';
 
 // ============================================================================
 // Madmona "Add Listing First" — public, no-auth multi-step form
@@ -125,6 +126,11 @@ export type MenuItem = {
   description_ar?: string;
   photo_url?: string;
   is_available: boolean;
+  // Jul 5 2026: Excel import can carry section + sizes.
+  // claim_listing_draft converts these into restaurant_menu_items.category
+  // + restaurant_menu_item_sizes rows.
+  category?: string;
+  sizes?: { name_ar: string; price: number }[];
 };
 
 export type ProductCondition = 'new' | 'used_like_new' | 'used_good' | 'refurbished';
@@ -286,6 +292,7 @@ function AddListingPageInner({
 
   const [step, setStep] = useState<Step>(1);
   const [draft, setDraft] = useState<DraftPayload>({ source: 'whatsapp_link' });
+  const [showBulkExcel, setShowBulkExcel] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -346,6 +353,34 @@ function AddListingPageInner({
       utm_medium: utm_medium || prev.utm_medium,
       utm_campaign: utm_campaign || prev.utm_campaign,
     }));
+
+    // ── "ضيف صنف تاني" (Jul 5 2026): ?another=<submitted-token> starts a
+    // FRESH draft but pre-fills contact/business info from the previous
+    // submission, so the supplier adds item #2, #3... in seconds.
+    const anotherToken = params.get('another');
+    if (anotherToken) {
+      try { window.localStorage.removeItem('madmona_draft_token'); } catch {}
+      (async () => {
+        try {
+          const res = await fetch(`/api/listing-drafts?token=${anotherToken}`);
+          const json = await res.json();
+          const d = json?.draft;
+          if (json?.success && d) {
+            setDraft(prev => ({
+              ...prev,
+              contact_name: d.contact_name || prev.contact_name,
+              contact_phone: d.contact_phone || prev.contact_phone,
+              account_type: d.account_type || prev.account_type,
+              business_name: d.business_name || prev.business_name,
+              city: d.city || prev.city,
+              district: d.district || prev.district,
+              source: 'add_another',
+            }));
+          }
+        } catch { /* fresh wizard anyway */ }
+      })();
+      return; // fresh wizard at Step 1 — no resume
+    }
 
     if (!activeToken) return;
     setToken(activeToken);
@@ -602,15 +637,40 @@ function AddListingPageInner({
         )}
 
         {step === 1 && (
-          <StepCategory
-            value={draft.category_slug}
-            categories={dbExtraCategories}
-            resetSignal={resetCategoryView}
-            onSelect={async (slug) => {
-              // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
-              const t = await persist({ category_slug: slug });
-              if (t) next();
-            }}
+          <>
+            {/* Excel bulk entry (Jul 5 2026): suppliers with many items skip the
+                one-by-one wizard entirely — sheet → bulk drafts → review pipeline. */}
+            <button
+              type="button"
+              onClick={() => setShowBulkExcel(true)}
+              className="w-full mb-4 flex items-center gap-3 bg-white border-2 border-dashed border-[#1F6F5F]/35 rounded-2xl px-4 py-3.5 text-right hover:bg-[#1F6F5F]/5 transition"
+            >
+              <span className="text-2xl">📊</span>
+              <span className="flex-1">
+                <span className="block text-sm font-black text-[#1F6F5F]">عندك أصناف كتير؟ ارفعهم كلهم Excel مرة واحدة</span>
+                <span className="block text-[11px] font-bold text-gray-500 mt-0.5">شيت واحد لحد ٢٠٠ صنف — من غير ما تدخلهم واحد واحد</span>
+              </span>
+              <span className="text-[#1F6F5F] font-black">←</span>
+            </button>
+
+            <StepCategory
+              value={draft.category_slug}
+              categories={dbExtraCategories}
+              resetSignal={resetCategoryView}
+              onSelect={async (slug) => {
+                // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
+                const t = await persist({ category_slug: slug });
+                if (t) next();
+              }}
+            />
+          </>
+        )}
+
+        {showBulkExcel && (
+          <BulkExcelDrafts
+            initialName={draft.contact_name || ''}
+            initialPhone={draft.contact_phone || ''}
+            onClose={() => setShowBulkExcel(false)}
           />
         )}
 
@@ -1650,6 +1710,111 @@ function MenuBuilderStep({
   const [error, setError] = useState<string>('');
   // Mohamed May 30 2026: photo upload per menu item
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
+  // Jul 5 2026: Excel bulk import for the whole menu (with sizes)
+  const [excelBusy, setExcelBusy] = useState(false);
+  const [excelMsg, setExcelMsg] = useState<string>('');
+  const excelInputRef = useRef<HTMLInputElement>(null);
+
+  // "صغير:90 | وسط:120" → sizes[]
+  function parseSizesCell(raw: unknown): { name_ar: string; price: number }[] {
+    const s = String(raw ?? '').trim();
+    if (!s) return [];
+    return s
+      .split(/[|،,؛;\n]+/)
+      .map((part) => {
+        const m = part.split(/[:：=\-–]+/);
+        if (m.length < 2) return null;
+        const name = m[0].trim();
+        const price = Number(String(m.slice(1).join('').trim()).replace(/[^\d.]/g, ''));
+        if (!name || isNaN(price) || price < 0) return null;
+        return { name_ar: name, price };
+      })
+      .filter(Boolean) as { name_ar: string; price: number }[];
+  }
+
+  async function handleExcelFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setExcelBusy(true);
+    setExcelMsg('');
+    setError('');
+    try {
+      const XLSX = await import('xlsx');
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, raw: false, defval: '' });
+      const normH = (x: unknown) => String(x ?? '').trim().toLowerCase().replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه');
+      const hIdx = aoa.findIndex((r) => Array.isArray(r) && r.some((c) => normH(c)));
+      if (hIdx < 0) throw new Error('الملف فاضي');
+      const H: Record<string, string[]> = {
+        name_ar: ['الاسم', 'اسم الصنف', 'الصنف', 'name'],
+        category: ['القسم', 'الفئه', 'category'],
+        description_ar: ['الوصف', 'description'],
+        price: ['السعر', 'price'],
+        sizes: ['الاحجام', 'الحجم', 'sizes'],
+        photo_url: ['رابط الصوره', 'الصوره', 'photo', 'image'],
+      };
+      const cols: Record<number, string> = {};
+      (aoa[hIdx] as unknown[]).forEach((cell, i) => {
+        const h = normH(cell);
+        for (const [f, cands] of Object.entries(H)) {
+          if (cands.some((c) => normH(c) === h) && !Object.values(cols).includes(f)) { cols[i] = f; return; }
+        }
+      });
+      if (!Object.values(cols).includes('name_ar')) throw new Error('مش لاقي عمود "الاسم" — نزّل القالب واملأه');
+
+      const parsed: MenuItem[] = [];
+      let skipped = 0;
+      for (let i = hIdx + 1; i < aoa.length; i++) {
+        const raw = aoa[i] as unknown[];
+        if (!raw || raw.every((c) => !String(c ?? '').trim())) continue;
+        const row: Record<string, string> = {};
+        for (const [idx, f] of Object.entries(cols)) row[f] = String(raw[Number(idx)] ?? '').trim();
+        const sizes = parseSizesCell(row.sizes);
+        let price = Number(String(row.price || '').replace(/[^\d.]/g, ''));
+        if ((!price || price <= 0) && sizes.length > 0) price = Math.min(...sizes.map((s) => s.price));
+        if (!row.name_ar || !price || price <= 0) { skipped++; continue; }
+        parsed.push({
+          name_ar: row.name_ar,
+          price,
+          description_ar: row.description_ar || undefined,
+          category: row.category || undefined,
+          photo_url: row.photo_url || undefined,
+          sizes: sizes.length > 0 ? sizes : undefined,
+          is_available: true,
+        });
+        if (parsed.length >= 500) break;
+      }
+      if (parsed.length === 0) throw new Error('مفيش صفوف صالحة (كل صنف محتاج اسم + سعر أو أحجام)');
+
+      // replace the single empty starter, otherwise append
+      setItems((prev) => {
+        const existing = prev.filter((it) => it.name_ar.trim() !== '' || it.price > 0);
+        return [...existing, ...parsed];
+      });
+      setExcelMsg(`✅ اتضاف ${parsed.length} صنف من الشيت${skipped > 0 ? ` (${skipped} صف اتخطى)` : ''}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'مقدرتش أقرأ الملف');
+    } finally {
+      setExcelBusy(false);
+      e.target.value = '';
+    }
+  }
+
+  async function downloadMenuTemplate() {
+    const XLSX = await import('xlsx');
+    const wb = XLSX.utils.book_new();
+    const aoa = [
+      ['الاسم', 'القسم', 'الوصف', 'السعر', 'الأحجام', 'رابط الصورة'],
+      ['بيتزا مارجريتا', 'بيتزا', 'صوص طماطم وموتزاريلا', '', 'صغير:90 | وسط:120 | كبير:150', ''],
+      ['كولا كانز', 'مشروبات', '', 25, '', ''],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = aoa[0].map(() => ({ wch: 22 }));
+    XLSX.utils.book_append_sheet(wb, ws, 'المنيو');
+    XLSX.writeFile(wb, 'madmona-menu-template.xlsx');
+  }
 
   function updateItem(idx: number, patch: Partial<MenuItem>) {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
@@ -1708,9 +1873,45 @@ function MenuBuilderStep({
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
       <h2 className="text-lg font-semibold mb-1">🍽️ أضف الأصناف</h2>
       <p className="text-sm text-gray-500 mb-1">ضيف أصناف المنيو اللي بتقدمها</p>
-      <p className="text-xs text-[#1F6F5F] mb-5 font-medium">
+      <p className="text-xs text-[#1F6F5F] mb-4 font-medium">
         💡 ابدأ بـ 5 أصناف على الأقل عشان العميل يلاقي ليه اختيارات
       </p>
+
+      {/* Jul 5 2026: Excel bulk import — the whole menu in one sheet */}
+      <div className="mb-5 rounded-2xl border-2 border-dashed border-[#1F6F5F]/35 bg-[#1F6F5F]/5 p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xl">📊</span>
+          <p className="text-sm font-bold text-[#1F6F5F]">المنيو كله جاهز عندك؟ ارفعه Excel مرة واحدة</p>
+        </div>
+        <p className="text-[11px] text-gray-500 mb-3 leading-relaxed">
+          الأعمدة: الاسم · القسم · الوصف · السعر · الأحجام (مثال: صغير:90 | وسط:120 | كبير:150) · رابط الصورة
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={downloadMenuTemplate}
+            className="flex-1 py-2.5 rounded-xl border border-[#1F6F5F]/40 text-[#1F6F5F] text-xs font-bold bg-white"
+          >
+            ⬇️ نزّل القالب
+          </button>
+          <button
+            type="button"
+            onClick={() => excelInputRef.current?.click()}
+            disabled={excelBusy}
+            className="flex-1 py-2.5 rounded-xl bg-[#1F6F5F] text-white text-xs font-bold disabled:opacity-60"
+          >
+            {excelBusy ? '...جاري القراءة' : '⬆️ ارفع الشيت'}
+          </button>
+          <input
+            ref={excelInputRef}
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            className="hidden"
+            onChange={handleExcelFile}
+          />
+        </div>
+        {excelMsg && <p className="mt-2 text-xs font-bold text-[#1F6F5F]">{excelMsg}</p>}
+      </div>
 
       <div className="space-y-4">
         {items.map((item, idx) => (
@@ -1742,6 +1943,30 @@ function MenuBuilderStep({
                 className={inputCls}
               />
             </Field>
+
+            {/* Jul 5 2026: sizes chips (from Excel import) */}
+            {item.sizes && item.sizes.length > 0 && (
+              <div className="mb-3 -mt-1">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] font-bold text-gray-400">الأحجام:</span>
+                  {item.sizes.map((s, si) => (
+                    <span key={si} className="text-[10px] font-bold bg-[#1F6F5F]/10 text-[#1F6F5F] px-2 py-0.5 rounded-full">
+                      {s.name_ar} {s.price}
+                    </span>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => updateItem(idx, { sizes: undefined })}
+                    className="text-[10px] font-bold text-red-500 mr-1"
+                  >
+                    شيل الأحجام ✕
+                  </button>
+                </div>
+                {item.category && (
+                  <p className="text-[10px] font-bold text-[#2FA084] mt-1">القسم: {item.category}</p>
+                )}
+              </div>
+            )}
 
             {/* Mohamed May 30 2026: photo upload per menu item */}
             <Field label="صورة الصنف (اختياري)">
@@ -2385,6 +2610,96 @@ function CatalogBuilderStep({
   const [insurancePartners, setInsurancePartners] = useState<string[]>((draft.attributes?.insurance_partners as string[] | undefined) || []);
   const [newPartner, setNewPartner] = useState('');
 
+  // Jul 5 2026: Excel bulk import — rows grouped into sections by "القسم"
+  const [excelBusy, setExcelBusy] = useState(false);
+  const [excelMsg, setExcelMsg] = useState('');
+  const excelInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleExcelFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setExcelBusy(true);
+    setExcelMsg('');
+    setError('');
+    try {
+      const XLSX = await import('xlsx');
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, raw: false, defval: '' });
+      const normH = (x: unknown) => String(x ?? '').trim().toLowerCase().replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه');
+      const hIdx = aoa.findIndex((r) => Array.isArray(r) && r.some((c) => normH(c)));
+      if (hIdx < 0) throw new Error('الملف فاضي');
+      const H: Record<string, string[]> = {
+        name_ar: ['الاسم', 'اسم المنتج', 'اسم الصنف', 'المنتج', 'name'],
+        category: ['القسم', 'الفئه', 'category'],
+        description_ar: ['الوصف', 'description'],
+        price: ['السعر', 'price'],
+        photo_url: ['رابط الصوره', 'الصوره', 'photo', 'image'],
+      };
+      const cols: Record<number, string> = {};
+      (aoa[hIdx] as unknown[]).forEach((cell, i) => {
+        const h = normH(cell);
+        for (const [f, cands] of Object.entries(H)) {
+          if (cands.some((c) => normH(c) === h) && !Object.values(cols).includes(f)) { cols[i] = f; return; }
+        }
+      });
+      if (!Object.values(cols).includes('name_ar')) throw new Error('مش لاقي عمود "الاسم" — نزّل القالب واملأه');
+
+      const bySection = new Map<string, CatalogItem[]>();
+      let count = 0, skipped = 0;
+      for (let i = hIdx + 1; i < aoa.length; i++) {
+        const raw = aoa[i] as unknown[];
+        if (!raw || raw.every((c) => !String(c ?? '').trim())) continue;
+        const row: Record<string, string> = {};
+        for (const [idx, f] of Object.entries(cols)) row[f] = String(raw[Number(idx)] ?? '').trim();
+        const price = Number(String(row.price || '').replace(/[^\d.]/g, ''));
+        if (!row.name_ar || !price || price <= 0) { skipped++; continue; }
+        const sec = row.category || 'عام';
+        const arr = bySection.get(sec) || [];
+        arr.push({
+          name_ar: row.name_ar,
+          price,
+          description_ar: row.description_ar || undefined,
+          photo_url: row.photo_url || undefined,
+          is_available: true,
+        });
+        bySection.set(sec, arr);
+        count++;
+        if (count >= 500) break;
+      }
+      if (count === 0) throw new Error('مفيش صفوف صالحة (كل منتج محتاج اسم + سعر)');
+
+      setSections((prev) => {
+        const existing = prev
+          .map((s) => ({ ...s, items: s.items.filter((it) => it.name_ar.trim() !== '' || it.price > 0) }))
+          .filter((s) => s.items.length > 0);
+        const imported = Array.from(bySection.entries()).map(([name, items]) => ({ name_ar: name, items }));
+        return [...existing, ...imported];
+      });
+      setExcelMsg(`✅ اتضاف ${count} منتج في ${bySection.size} قسم${skipped > 0 ? ` (${skipped} صف اتخطى)` : ''}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'مقدرتش أقرأ الملف');
+    } finally {
+      setExcelBusy(false);
+      e.target.value = '';
+    }
+  }
+
+  async function downloadCatalogTemplate() {
+    const XLSX = await import('xlsx');
+    const wb = XLSX.utils.book_new();
+    const aoa = [
+      ['الاسم', 'القسم', 'الوصف', 'السعر', 'رابط الصورة'],
+      ['أرز مصري 1 كجم', 'بقالة', 'حبة عريضة', 55, ''],
+      ['بانادول اكسترا', 'مسكنات', 'شريط 24 قرص', 38, ''],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = aoa[0].map(() => ({ wch: 22 }));
+    XLSX.utils.book_append_sheet(wb, ws, 'المنتجات');
+    XLSX.writeFile(wb, 'madmona-catalog-template.xlsx');
+  }
+
   function addSection() { setSections((p) => [...p, { name_ar: '', items: [emptyItem()] }]); }
   function removeSection(si: number) { setSections((p) => (p.length > 1 ? p.filter((_, i) => i !== si) : p)); }
   function updateSectionName(si: number, name: string) { setSections((p) => p.map((s, i) => (i === si ? { ...s, name_ar: name } : s))); }
@@ -2437,7 +2752,30 @@ function CatalogBuilderStep({
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
       <h2 className='text-lg font-semibold mb-1'>🛒 أضف منتجاتك</h2>
       <p className='text-sm text-gray-500 mb-1'>قسّم منتجاتك لأقسام (مثلاً: جبن، ألبان، معلبات) وضيف تحت كل قسم اللي بتبيعه</p>
-      <p className='text-xs text-[#1F6F5F] mb-5 font-medium'>💡 كل ما تضيف منتجات أكتر، العميل يلاقي اللي بيدوّر عليه أسرع</p>
+      <p className='text-xs text-[#1F6F5F] mb-4 font-medium'>💡 كل ما تضيف منتجات أكتر، العميل يلاقي اللي بيدوّر عليه أسرع</p>
+
+      {/* Jul 5 2026: Excel bulk import for the whole catalog */}
+      <div className="mb-5 rounded-2xl border-2 border-dashed border-[#1F6F5F]/35 bg-[#1F6F5F]/5 p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xl">📊</span>
+          <p className="text-sm font-bold text-[#1F6F5F]">منتجاتك كلها جاهزة عندك؟ ارفعهم Excel مرة واحدة</p>
+        </div>
+        <p className="text-[11px] text-gray-500 mb-3 leading-relaxed">
+          الأعمدة: الاسم · القسم · الوصف · السعر · رابط الصورة — وهنقسّمهم أقسام تلقائياً
+        </p>
+        <div className="flex gap-2">
+          <button type="button" onClick={downloadCatalogTemplate}
+            className="flex-1 py-2.5 rounded-xl border border-[#1F6F5F]/40 text-[#1F6F5F] text-xs font-bold bg-white">
+            ⬇️ نزّل القالب
+          </button>
+          <button type="button" onClick={() => excelInputRef.current?.click()} disabled={excelBusy}
+            className="flex-1 py-2.5 rounded-xl bg-[#1F6F5F] text-white text-xs font-bold disabled:opacity-60">
+            {excelBusy ? '...جاري القراءة' : '⬆️ ارفع الشيت'}
+          </button>
+          <input ref={excelInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleExcelFile} />
+        </div>
+        {excelMsg && <p className="mt-2 text-xs font-bold text-[#1F6F5F]">{excelMsg}</p>}
+      </div>
 
       <div className='space-y-5'>
         {sections.map((section, si) => (
@@ -2568,6 +2906,11 @@ function StepPricing({
   saving: boolean;
   beautySchemas: Record<string, BeautySchema>;
 }) {
+  // Jul 5 2026: bulk-Excel modal for the generic pricing branch (rentals /
+  // services / sale-*). Hook lives ABOVE the early branches so hook order
+  // stays consistent for every branch of this component.
+  const [showBulkModal, setShowBulkModal] = useState(false);
+
   // EARLY BRANCH (May 29 2026): restaurants + products tracks use
   // dedicated step components, not the rental/service pricing UI.
   // Each child owns its own state, validation, and produces a final
@@ -2798,7 +3141,7 @@ function StepPricing({
       <h2 className="text-lg font-semibold mb-1">
         {isRentalCopy ? 'السعر' : (isHybrid ? 'سعر الفعالية' : 'سعر الخدمة')}
       </h2>
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-gray-500 mb-4">
         {isRentalCopy
           ? 'حضرتك بتأجره بكام؟'
           : isBeauty
@@ -2807,6 +3150,29 @@ function StepPricing({
               ? 'بكام بتقدم الفعالية الأساسية؟'
               : 'بكام بتقدم الخدمة؟'}
       </p>
+
+      {/* Jul 5 2026: bulk Excel entry for ALL tracks — each row = a separate
+          listing draft entering the same review pipeline. */}
+      <button
+        type="button"
+        onClick={() => setShowBulkModal(true)}
+        className="w-full mb-5 flex items-center gap-3 rounded-2xl border-2 border-dashed border-[#1F6F5F]/35 bg-[#1F6F5F]/5 px-4 py-3 text-right hover:bg-[#1F6F5F]/10 transition"
+      >
+        <span className="text-xl">📊</span>
+        <span className="flex-1">
+          <span className="block text-sm font-bold text-[#1F6F5F]">عندك أصناف تانية كتير؟ ارفعهم كلهم Excel مرة واحدة</span>
+          <span className="block text-[11px] text-gray-500 mt-0.5">كمّل الصنف ده عادي — والباقي يترفع بشيت واحد (لحد ٢٠٠ صنف)</span>
+        </span>
+        <span className="text-[#1F6F5F] font-black">←</span>
+      </button>
+
+      {showBulkModal && (
+        <BulkExcelDrafts
+          initialName={draft.contact_name || ''}
+          initialPhone={draft.contact_phone || ''}
+          onClose={() => setShowBulkModal(false)}
+        />
+      )}
 
       <Field label={isRentalCopy ? 'مدة الإيجار' : 'نوع التسعير'} required>
         <div className={`grid gap-2 ${isBeauty ? 'grid-cols-3' : 'grid-cols-4'}`}>

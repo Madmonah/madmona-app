@@ -23,7 +23,7 @@ Deno.serve(async (req: Request) => {
     // 1. Order
     const { data: order, error: orderErr } = await sb
       .from('marketplace_orders')
-      .select('id, reference_code, order_type, supplier_id, primary_listing_id, currency, subtotal_amount, delivery_fee, total_amount, guest_name, guest_phone, delivery_address, delivery_district, delivery_notes, customer_notes')
+      .select('id, reference_code, order_type, supplier_id, primary_listing_id, currency, subtotal_amount, delivery_fee, total_amount, guest_name, guest_phone, delivery_address, delivery_district, delivery_notes, customer_notes, payment_method')
       .eq('id', order_id)
       .single();
     if (orderErr || !order) return json({ ok: false, error: 'order not found', detail: orderErr?.message }, 404);
@@ -82,7 +82,11 @@ Deno.serve(async (req: Request) => {
       ? `\nملاحظات العميل: ${order.delivery_notes}`
       : '';
 
-    const message = `طلب جديد على مضمونة 🍽️\nالمطعم: ${listing.title}\nمرجع: ${ref}\n\n${itemsText}\n\nالمجموع: ${fmt(order.total_amount)} ج\n${deliveryFeeNote}العميل: ${customerLine}\nالعنوان: ${addressLine}${notesLine}\n\nللموافقة بنفس الأسعار رد بـ: قبول ${ref}\nلتعديل الأسعار رد بـ: تعديل ${ref}\nلو مش متاح حاليًا رد بـ: رفض ${ref}\n\nعمولة مضمونة على المطاعم = 0٪، كل المبلغ ده ليك.`;
+    const paymentLine = order.payment_method === 'cod'
+      ? `💵 الدفع: كاش عند الاستلام — حصِّل ${fmt(order.total_amount)} ج من العميل عند التسليم.`
+      : `✅ الدفع: مدفوع أونلاين عبر مضمونة.`;
+
+    const message = `طلب جديد على مضمونة 🍽️\nالمطعم: ${listing.title}\nمرجع: ${ref}\n\n${itemsText}\n\nالمجموع: ${fmt(order.total_amount)} ج\n${deliveryFeeNote}${paymentLine}\nالعميل: ${customerLine}\nالعنوان: ${addressLine}${notesLine}\n\nللموافقة بنفس الأسعار رد بـ: قبول ${ref}\nلتعديل الأسعار رد بـ: تعديل ${ref}\nلو مش متاح حاليًا رد بـ: رفض ${ref}\n\nعمولة مضمونة الموحدة = 10٪ من الأوردر.`;
 
     // 4. Queue
     const { data: queued, error: queueErr } = await sb

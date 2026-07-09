@@ -49,6 +49,12 @@ function ListingSuccessPageInner() {
 
         <div className="grid gap-3">
           <a
+            href={`/add-listing?another=${token}`}
+            className="block py-4 rounded-xl bg-[#FAF7F0] text-[#1F6F5F] font-black text-center border-2 border-[#2FA084]"
+          >
+            ➕ ضيف صنف تاني — بياناتك محفوظة
+          </a>
+          <a
             href={`/signup?token=${token}&phone=${encodeURIComponent(draft?.contact_phone || '')}`}
             className="block py-4 rounded-xl bg-[#2FA084] text-[#1F6F5F] font-bold text-center"
           >
@@ -58,6 +64,11 @@ function ListingSuccessPageInner() {
             دلوقتي مش، هرجع بعدين
           </a>
         </div>
+
+        <p className="mt-4 text-xs text-[#FAF7F0]/60 leading-relaxed">
+          📊 عندك أصناف كتير (١٠+)؟ بعد ما تنشئ حسابك هتلاقي
+          «استيراد بالجملة (Excel)» في لوحتك — بترفع لحد ٢٠٠ إعلان بشيت واحد.
+        </p>
 
         <div className="mt-8 text-xs text-[#FAF7F0]/40">
           محتاج مساعدة؟ كلمنا على الواتس اب: <a href="https://wa.me/201002229982" className="text-[#2FA084]">01002229982</a>

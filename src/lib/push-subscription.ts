@@ -46,6 +46,28 @@ export async function subscribeToPush(): Promise<{ ok: boolean; error?: string }
     // Check existing subscription
     let subscription = await registration.pushManager.getSubscription()
 
+    // VAPID rotation fix (6 Jul 2026): لو الاشتراك القديم متسجل بمفتاح مختلف
+    // عن المفتاح الحالي، لازم نفكّه ونشترك من جديد — وإلا كل الإشعارات بترجع 403.
+    if (subscription) {
+      try {
+        const currentKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        const existingKey = subscription.options?.applicationServerKey
+          ? new Uint8Array(subscription.options.applicationServerKey as ArrayBuffer)
+          : null
+        const sameKey = !!existingKey
+          && existingKey.length === currentKey.length
+          && existingKey.every((b, i) => b === currentKey[i])
+        if (!sameKey) {
+          await subscription.unsubscribe()
+          subscription = null
+        }
+      } catch {
+        // لو معرفناش نقارن — الأمان إننا نجدد الاشتراك
+        try { await subscription.unsubscribe() } catch { /* ignore */ }
+        subscription = null
+      }
+    }
+
     if (!subscription) {
       // Create a new subscription
       subscription = await registration.pushManager.subscribe({
