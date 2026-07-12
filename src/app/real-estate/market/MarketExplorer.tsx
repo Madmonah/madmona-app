@@ -189,6 +189,17 @@ export default function MarketExplorer({
     return areas.filter((a) => set.has(a.label))
   }, [areas, filteredItems])
 
+  // 🔥 المشاريع اللي عليها ميديا (صورة/بروشور/فيديو) — بتتعرض في قسم فوق خالص.
+  // من غير كده كانت بتتدفن تحت لأن العرض بيتقسّم بالمناطق، والمنطقة اللي فيها
+  // أكتر مشاريع (قديمة وبلا صور) بتطلع الأول.
+  const featured = useMemo(
+    () =>
+      filteredItems
+        .filter((it) => it.segment === 'developer' && (it.cover_url || it.brochure_url || it.video_url))
+        .slice(0, 12),
+    [filteredItems],
+  )
+
   const lastUpdate = items.length
     ? items.reduce((mx, it) => (it.updated_at > mx ? it.updated_at : mx), items[0].updated_at)
     : null
@@ -350,6 +361,29 @@ export default function MarketExplorer({
         </section>
       ) : (
         <>
+          {/* 🔥 مشاريع بالصور والبروشور والفيديو — فوق خالص عشان تتشاف */}
+          {featured.length > 0 && (
+            <section className="mb-12">
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="w-10 h-10 rounded-xl bg-[#2FA084] text-white flex items-center justify-center shrink-0">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+                  مشاريع بالبروشور والفيديو
+                </h2>
+                <span className="text-xs text-gray-400">{featured.length}</span>
+              </div>
+              <p className="text-xs text-gray-500 mb-5 pr-1">
+                أحدث المشاريع اللي المطورين نزّلوها بنفسهم — بالأسعار ونظام السداد والبروشور.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {featured.map((it) => (
+                  <ProjectCard key={`f-${it.id}`} it={it} onPlay={() => setVideoOpen(it)} />
+                ))}
+              </div>
+            </section>
+          )}
+
           {visibleAreas.map((areaDef) => {
             const areaItems = filteredItems.filter((it) => it.area_label === areaDef.label)
             if (areaItems.length === 0) return null
