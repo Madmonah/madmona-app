@@ -14,7 +14,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
   Building2, KeyRound, RefreshCcw, MessageCircle, Search, X,
-  MapPin, Flame, Clock, Plus, FileText, PlayCircle, CalendarClock, Wallet,
+  MapPin, Flame, Clock, Plus, FileText, PlayCircle, CalendarClock, Wallet, Sparkles,
 } from 'lucide-react'
 import { inquiryWaLink, projectCode, type MediaItem } from '@/lib/projects'
 
@@ -216,6 +216,64 @@ export default function MarketExplorer({
             آخر تحديث: {fmtDate(lastUpdate)} · بيتجدد يومياً
           </div>
         )}
+      </section>
+
+      {/* 🆕 بانر التوضيح — الجديد في البورصة (يوليو 2026) */}
+      <section className="mb-8">
+        <div className="rounded-2xl bg-gradient-to-l from-[#1F6F5F] to-[#2FA084] p-6 md:p-7 text-white">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 shrink-0" />
+            <h2 className="font-bold text-lg">جديد في البورصة</h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+            <div className="flex gap-2.5">
+              <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-white/80" />
+              <div>
+                <p className="font-bold text-sm mb-0.5">أي منطقة في مصر</p>
+                <p className="text-xs text-white/80 leading-relaxed">
+                  مش بس العاصمة والتجمع والساحل — مستقبل سيتي، العبور، السخنة، هليوبوليس،
+                  رأس الحكمة… مشروعك هيظهر مهما كانت منطقته.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2.5">
+              <FileText className="w-4 h-4 shrink-0 mt-0.5 text-white/80" />
+              <div>
+                <p className="font-bold text-sm mb-0.5">بروشور PDF + فيديو</p>
+                <p className="text-xs text-white/80 leading-relaxed">
+                  ارفع البروشور وفيديو المشروع مع الأسعار ونظام السداد — بيتضغطوا أوتوماتيك
+                  عشان الصفحة تفتح بسرعة على الموبايل.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2.5">
+              <MessageCircle className="w-4 h-4 shrink-0 mt-0.5 text-white/80" />
+              <div>
+                <p className="font-bold text-sm mb-0.5">استفسارات موصولة بمشروعها</p>
+                <p className="text-xs text-white/80 leading-relaxed">
+                  كل مشروع ليه زرار «اسأل عن المشروع ده» — المارد 🧞 بيعرف العميل بيسأل عن
+                  أنهي مشروع بالظبط ويوصّله بيك.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <Link
+              href={ADD_PROJECT}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-white text-[#1F6F5F] font-bold text-sm hover:bg-gray-50 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              ضيف مشروعك ببلاش
+            </Link>
+            <p className="text-xs text-white/75 text-center sm:text-right">
+              مطور أو مسوق عقاري؟ دقيقتين وهيبقى قدام آلاف الباحثين يومياً.
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* 🔎 شريط البحث والفلاتر */}

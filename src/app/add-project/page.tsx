@@ -37,6 +37,20 @@ export default function AddProjectPage() {
           </p>
         </header>
 
+        {/* اللي هتاخده — واضح قبل ما يبدأ يملا */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+          {[
+            { t: '🗺️ أي منطقة في مصر', d: 'مستقبل سيتي، العبور، السخنة، هليوبوليس، رأس الحكمة — مش لازم تكون منطقة معروفة عندنا. اكتبها وهتظهر.' },
+            { t: '📄 بروشور وفيديو', d: 'ارفع البروشور PDF وفيديو المشروع. بنضغطهم أوتوماتيك عشان صفحتك تفتح بسرعة على الموبايل.' },
+            { t: '🧞 المارد بيرد بدالك', d: 'أي حد يسأل عن مشروعك، المارد بيعرف هو أنهي مشروع بالظبط ويرد عليه ٢٤/٧ ويوصّلهولك.' },
+          ].map((c) => (
+            <div key={c.t} className="bg-white rounded-xl border border-gray-100 p-4">
+              <p className="font-bold text-gray-900 text-sm mb-1">{c.t}</p>
+              <p className="text-xs text-gray-600 leading-relaxed">{c.d}</p>
+            </div>
+          ))}
+        </div>
+
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6 mb-6">
           <ProjectForm mode="public" />
         </div>
