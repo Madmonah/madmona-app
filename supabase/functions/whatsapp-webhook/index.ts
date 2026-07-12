@@ -281,6 +281,26 @@ async function persistInboundImage(b64: string, mime: string, waMsgId: string): 
   } catch (_e) { return null }
 }
 
+// 🆕 (12 Jul 2026) حفظ الملفات الواردة (بروشورات PDF من المطورين).
+// قبل كده الـdocument كان بيتساب من غير ما يتحفظ — البروشورات كانت بتضيع خالص.
+async function persistInboundDocument(
+  b64: string, mime: string, waMsgId: string, filename?: string,
+): Promise<string | null> {
+  try {
+    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+    const safeName = (filename || 'file')
+      .replace(/[^\w.\-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 50) || 'file'
+    const path = `wa-inbound/${Date.now()}-${waMsgId.slice(-8).replace(/[^\w]/g, '')}-${safeName}`
+    const { error } = await sb().storage.from('project-media')
+      .upload(path, bytes, { contentType: mime, upsert: true })
+    if (error) return null
+    const { data } = sb().storage.from('project-media').getPublicUrl(path)
+    return data.publicUrl
+  } catch (_e) { return null }
+}
+
 async function transcribeAudio(b64: string, mime: string): Promise<string | null> {
   try {
     const key = await getCfg('groq_api_key', '')
@@ -920,6 +940,8 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
 
   let imageData: { b64: string; mime: string } | null = null
   let inboundImageUrl: string | null = null
+  let inboundDocUrl: string | null = null   // 🆕 بروشورات PDF من المطورين
+  let inboundDocName: string | null = null
   let storedBody = text || `[${msgType}]`
   let voiceFailed = false
   let adminMusicMediaId: string | null = null
@@ -941,7 +963,7 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
           const c = codeRes as { ok?: boolean; code?: string; share_url?: string } | null
           if (c?.code) {
             await sendWhatsAppText(fromPhone,
-              `🧞 كود «سوّق واكسب» بتاعك: *${c.code}*\n\n🔗 لينكك الخاص:\n${c.share_url || 'https://www.madmonacairo.com/?ref=' + c.code}\n\nإزاي تكسب:\n1️⃣ ابعت اللينك لأي حد — أول ما يعمل حساب بيه\n2️⃣ يعمل شير لصفحة مضمونة على فيسبوك ويبعتلي سكرين شوت هنا مع كلمة «شير»\n3️⃣ بعد المراجعة: *+50 جنيه رصيد* في محفظتك عن كل أكونت 💰\n\nالرصيد بتستخدمه خصم على طلباتك (بحد أقصى عمولة مضمونة في الطلب). التفاصيل: madmonacairo.com/terms\n— معاملاتك مضمونة 💚`)
+              `🧞 كود «سوّق واكسب» بتاعك: *${c.code}*\n\n🔗 لينكك الخاص:\n${c.share_url || 'https://www.madmonacairo.com/?ref=' + c.code}\n\nإزاي تكسب:\n1️⃣ ابعت اللينك لأي حد — أول ما يعمل حساب بيه\n2️⃣ يعمل شير لصفحة مضمونة على فيسبوك ويبعتلي سكرين شوت هنا مع كلمة «شير»\n3️⃣ بعد المراجعة (خلال 48 ساعة): *+300 جنيه رصيد* في محفظتك عن كل أكونت 💰\n\nالرصيد بتستخدمه خصم على طلباتك (بحد أقصى عمولة مضمونة في الطلب). الحد الأقصى 20 إحالة في الشهر.\nالتفاصيل: madmonacairo.com/terms\n— معاملاتك مضمونة 💚`)
           } else {
             await sendWhatsAppText(fromPhone, 'حصلت مشكلة صغيرة في تجهيز الكود — جرب تاني بعد دقيقة 🙏')
           }
@@ -967,6 +989,18 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
     text = caption || '(العميل بعت صورة من غير تعليق — بص على الصورة ورد على محتواها)'
     storedBody = `[صورة]${caption ? ' ' + caption : ''}`
     if (!imageData) { text = ''; storedBody = '[صورة]' }
+  } else if (msgType === 'document' && docMeta?.id) {
+    // 🆕 (12 Jul 2026) البروشورات (PDF) — قبل كده كانت بتتساب من غير حفظ وتضيع.
+    const media = await fetchWAMedia(docMeta.id, 20 * 1024 * 1024)
+    inboundDocName = docMeta.filename || 'ملف'
+    if (media) {
+      inboundDocUrl = await persistInboundDocument(media.b64, media.mime, waMsgId, docMeta.filename)
+    }
+    const cap = docMeta.caption || ''
+    storedBody = `[ملف: ${inboundDocName}]${cap ? ' ' + cap : ''}`
+    text = inboundDocUrl
+      ? `(العميل بعت ملف اسمه «${inboundDocName}»${cap ? ' وكتب: ' + cap : ''}. الملف اتحفظ عندنا. لو ده بروشور مشروع، اشكره وأكدله إننا هنرفعه على صفحة مشروعه في بورصة مضمونة.)`
+      : `(العميل بعت ملف اسمه «${inboundDocName}» بس مقدرناش نحمّله${cap ? '. وكتب: ' + cap : ''}. اعتذرله واطلب منه يبعته تاني أو يرفعه من madmonacairo.com/add-project)`
   } else if (msgType === 'audio') {
     if (audMeta?.id) {
       const media = await fetchWAMedia(audMeta.id)
@@ -1005,6 +1039,10 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
   }
   const inboundMeta: Record<string, unknown> = adData ? { has_ad_referral: true } : {}
   if (inboundImageUrl) inboundMeta.image_url = inboundImageUrl
+  if (inboundDocUrl) {                       // 🆕 بروشور/ملف — بيتحفظ ويتسجّل هنا
+    inboundMeta.document_url = inboundDocUrl
+    inboundMeta.document_name = inboundDocName
+  }
 
   // ==== «سوّق واكسب» (ب): استقبال إثبات الشير — بعد تجهيز الصورة ====
   if (!isAdminChannel && inboundImageUrl) {
@@ -1060,8 +1098,13 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
     } catch (err) { console.error('[admin-channel] error:', err); return }
   }
 
+  // 🆕 (12 Jul 2026) لو الملف اتحفظ بنجاح، سيبه يعدّي للمارد يرد عليه رد حقيقي
+  // (زمان كل document كان بياخد رسالة جاهزة ويقف — فالبروشورات كانت بتضيع).
+  const docHandled = msgType === 'document' && !!inboundDocUrl
+
   if ((msgType === 'audio' && voiceFailed) || (msgType === 'image' && !imageData && !text) ||
-      ['document', 'video'].includes(msgType) || (msgType !== 'text' && msgType !== 'image' && msgType !== 'audio' && !text)) {
+      (msgType === 'document' && !docHandled) || msgType === 'video' ||
+      (msgType !== 'text' && msgType !== 'image' && msgType !== 'audio' && msgType !== 'document' && !text)) {
     if (['image', 'document', 'video', 'audio'].includes(msgType)) {
       await handleMediaAck(convId, fromPhone, myCreatedAt, msgType)
     }
