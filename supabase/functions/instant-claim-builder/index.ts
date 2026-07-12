@@ -3,9 +3,15 @@
 // into the REAL claim flow: builds a listing under the Madmona placeholder supplier
 // + a listing_claims token, then WhatsApps the sender their /claim/<token> link.
 // v2: LISTING_STATUS = 'published' — inbound listings go live in the marketplace
-// automatically (no manual review step). De-fragments by merging same-phone +
-// same-category drafts within an 18h window into ONE listing. Idempotent: a row is
-// 'done' once its published_listing_id is set, so re-runs never duplicate/double-send.
+// automatically (no manual review step). Idempotent: a row is 'done' once its
+// published_listing_id is set, so re-runs never duplicate/double-send.
+//
+// v3 (12 Jul 2026) — 🐛 BUGFIX: كان بيدمج أي draft بنفس الرقم + نفس الفئة خلال 18 ساعة
+// في إعلان واحد. لما مطور بعت 5 مشاريع ورا بعض، الأجنت خلطهم: عنوان المشروع الأول +
+// وصف المشروع الأخير + صور الكل → إعلانات العنوان فيها مش مطابق للمحتوى (شكوى HDP).
+// الحل: (1) الدمج بقى مشروط بتشابه العنوان (>=60% كلمات مشتركة)، (2) الوصف مبيتستبدلش
+// أبداً — بيتملى بس لو فاضي، (3) رسالة الـclaim بقت بتطلب من صاحب الإعلان يراجعه
+// ويبلّغنا بأي غلط (محمد: "خليه ينشر ويكلم الناس ترجع عليه").
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
@@ -52,6 +58,32 @@ async function resolveCategory(slug: string | null): Promise<string | null> {
 
 function genToken(): string { return crypto.randomUUID().replace(/-/g, '') }
 
+// ⚠️ FIX (12 Jul 2026): الدمج القديم كان بيلمّ أي draft بنفس الرقم + نفس الفئة خلال 18 ساعة
+// في إعلان واحد — فلما مطور يبعت مشروعين مختلفين ورا بعض كان بياخد عنوان الأول
+// ووصف التاني وصور الاتنين → إعلان العنوان فيه مش مطابق للمحتوى (شكوى لويّ/HDP).
+// دلوقتي بندمج بس لو العنوانين فعلاً بيوصفوا نفس الحاجة.
+function normTitle(s: string): string {
+  return s.toLowerCase()
+    .replace(/[ً-ْـ]/g, '')
+    .replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي')
+    .replace(/[^a-z0-9؀-ۿ]+/g, ' ')
+    .trim()
+}
+
+/** نسبة الكلمات المشتركة بين عنوانين (0..1) — بنتجاهل الأرقام والوحدات القصيرة */
+function titleSimilarity(a: string, b: string): number {
+  const toks = (s: string) => new Set(
+    normTitle(s).split(' ').filter(t => t.length > 2 && !/^\d+$/.test(t))
+  )
+  const A = toks(a), B = toks(b)
+  if (A.size === 0 || B.size === 0) return 0
+  let shared = 0
+  for (const t of A) if (B.has(t)) shared++
+  return shared / Math.min(A.size, B.size)
+}
+
+const MERGE_SIMILARITY = 0.6 // لازم 60% من كلمات العنوان تتطابق عشان نعتبرهم نفس الإعلان
+
 Deno.serve(async (_req) => {
   const out = { processed: 0, created: 0, merged: 0, sent: 0, send_failed: 0, skipped: 0, errors: [] as string[] }
   try {
@@ -74,25 +106,36 @@ Deno.serve(async (_req) => {
         const fullPhone = String(d.contact_phone)
         const windowStart = new Date(Date.now() - DEDUP_WINDOW_HOURS * 3600 * 1000).toISOString()
 
-        // De-fragment: reuse a recent unclaimed listing for the same phone + category
-        const { data: existing } = await sb().from('listings')
-          .select('id')
+        // De-fragment: نجمع بس الرسايل اللي بتوصف **نفس الإعلان** (نفس الرقم + نفس الفئة
+        // + عنوان متشابه). لو المطور بعت مشروع تاني مختلف → إعلان جديد مستقل.
+        const { data: candidates } = await sb().from('listings')
+          .select('id, title')
           .eq('supplier_id', MADMONA_SUPPLIER_ID)
           .eq('contact_phone', fullPhone)
           .eq('category_id', categoryId)
           .gte('created_at', windowStart)
           .order('created_at', { ascending: false })
-          .limit(1).maybeSingle()
+          .limit(8)
+
+        const match = ((candidates || []) as Array<{ id: string; title: string }>)
+          .map(c => ({ ...c, score: titleSimilarity(c.title || '', title) }))
+          .filter(c => c.score >= MERGE_SIMILARITY)
+          .sort((a, b) => b.score - a.score)[0]
 
         let listingId: string
-        if ((existing as { id?: string } | null)?.id) {
-          listingId = (existing as { id: string }).id
+        if (match) {
+          listingId = match.id
           const { data: have } = await sb().from('listing_photos').select('url').eq('listing_id', listingId)
           const haveSet = new Set(((have || []) as Array<{ url: string }>).map(p => p.url))
           const start = (have || []).length
           const newRows = imageUrls.filter(u => !haveSet.has(u)).map((u, i) => ({ listing_id: listingId, url: u, display_order: start + i, is_primary: false }))
           if (newRows.length) await sb().from('listing_photos').insert(newRows)
-          if (description && description.length > 40) await sb().from('listings').update({ description }).eq('id', listingId)
+          // ⛔ منستبدلش الوصف — بس نملاه لو فاضي. (الاستبدال هو اللي كان بيخلط المشاريع.)
+          if (description && description.length > 40) {
+            const { data: cur } = await sb().from('listings').select('description').eq('id', listingId).maybeSingle()
+            const curDesc = (cur as { description?: string } | null)?.description || ''
+            if (curDesc.length < 40) await sb().from('listings').update({ description }).eq('id', listingId)
+          }
           out.merged++
         } else {
           const { data: nl, error: lErr } = await sb().from('listings').insert({
@@ -110,10 +153,14 @@ Deno.serve(async (_req) => {
           await sb().from('listing_claims').insert({ listing_id: listingId, token, status: 'pending' })
           out.created++
           const claimUrl = `${SITE_URL}/claim/${token}`
+          // ✅ الإعلان بينشر فوراً (سرعة)، بس بنطلب من صاحبه يراجعه ويقولنا لو فيه غلط.
           const msg =
-            `🎉 جهّزنالك صفحة إعلانك على مضمونة كاملة بالصور — من غير ما تكتب ولا حرف!\n` +
-            `افتحها واستلمها بضغطة واحدة:\n${claimUrl}\n\n` +
-            `بعد الاستلام بنكمّل معاك أي تفاصيل ناقصة. معاملاتك مضمونة 🟢`
+            `🎉 جهّزنالك صفحة إعلانك على مضمونة ونشرناها — من غير ما تكتب ولا حرف!\n\n` +
+            `📋 *${title}*\n${claimUrl}\n\n` +
+            `🔍 *افتح اللينك وراجع الإعلان من فضلك* — اتأكد إن الاسم والصور والتفاصيل كلها صح.\n` +
+            `لو فيه أي حاجة غلط أو ناقصة، ابعتلي هنا وأنا أصلّحها فوراً ✍️\n\n` +
+            `أنا *المارد* 🧞 — مساعد مضمونة الذكي، موجود ٢٤/٧ على الرقم ده.\n` +
+            `معاملاتك مضمونة 🟢`
           const res = await sendWA(fullPhone.replace(/^\+/, ''), msg)
           if (res.error) out.send_failed++; else out.sent++
           if (d.conversation_id) {
