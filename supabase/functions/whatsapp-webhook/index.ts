@@ -283,22 +283,51 @@ async function persistInboundImage(b64: string, mime: string, waMsgId: string): 
 
 // 🆕 (12 Jul 2026) حفظ الملفات الواردة (بروشورات PDF من المطورين).
 // قبل كده الـdocument كان بيتساب من غير ما يتحفظ — البروشورات كانت بتضيع خالص.
-async function persistInboundDocument(
-  b64: string, mime: string, waMsgId: string, filename?: string,
-): Promise<string | null> {
+//
+// ⚠️ مهم: مبنعدّيش على base64 هنا زي الصور. البروشورات الديجيتال بتوصل 30–45 ميجا،
+// والـbase64 بيكبّر الحجم 33% وبيبني string عملاق → الإيدج فانكشن بتقع من الميموري.
+// فبنحمّل الـbytes وندفعها للستوريدج على طول.
+const DOC_MAX_BYTES = 45 * 1024 * 1024
+
+async function fetchAndStoreDocument(
+  mediaId: string, waMsgId: string, filename?: string,
+): Promise<{ url: string; size: number } | null> {
   try {
-    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+    const { token } = await getMetaCreds()
+
+    const metaR = await fetch(`https://graph.facebook.com/v21.0/${mediaId}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    })
+    const meta = await metaR.json()
+    if (!metaR.ok || !meta?.url) {
+      console.error('[doc] meta fetch failed', metaR.status, meta?.error?.message)
+      return null
+    }
+
+    const fileR = await fetch(meta.url, { headers: { 'Authorization': `Bearer ${token}` } })
+    if (!fileR.ok) { console.error('[doc] file fetch failed', fileR.status); return null }
+
+    const bytes = new Uint8Array(await fileR.arrayBuffer())
+    if (bytes.length > DOC_MAX_BYTES) {
+      console.error('[doc] too big:', bytes.length)
+      return null
+    }
+
+    const mime = meta.mime_type || 'application/octet-stream'
     const safeName = (filename || 'file')
-      .replace(/[^\w.\-]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, 50) || 'file'
+      .replace(/[^\w.\-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'file'
     const path = `wa-inbound/${Date.now()}-${waMsgId.slice(-8).replace(/[^\w]/g, '')}-${safeName}`
+
     const { error } = await sb().storage.from('project-media')
       .upload(path, bytes, { contentType: mime, upsert: true })
-    if (error) return null
+    if (error) { console.error('[doc] upload failed:', error.message); return null }
+
     const { data } = sb().storage.from('project-media').getPublicUrl(path)
-    return data.publicUrl
-  } catch (_e) { return null }
+    return { url: data.publicUrl, size: bytes.length }
+  } catch (e) {
+    console.error('[doc] error:', String(e).slice(0, 200))
+    return null
+  }
 }
 
 async function transcribeAudio(b64: string, mime: string): Promise<string | null> {
@@ -991,11 +1020,9 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
     if (!imageData) { text = ''; storedBody = '[صورة]' }
   } else if (msgType === 'document' && docMeta?.id) {
     // 🆕 (12 Jul 2026) البروشورات (PDF) — قبل كده كانت بتتساب من غير حفظ وتضيع.
-    const media = await fetchWAMedia(docMeta.id, 20 * 1024 * 1024)
     inboundDocName = docMeta.filename || 'ملف'
-    if (media) {
-      inboundDocUrl = await persistInboundDocument(media.b64, media.mime, waMsgId, docMeta.filename)
-    }
+    const stored = await fetchAndStoreDocument(docMeta.id, waMsgId, docMeta.filename)
+    if (stored) inboundDocUrl = stored.url
     const cap = docMeta.caption || ''
     storedBody = `[ملف: ${inboundDocName}]${cap ? ' ' + cap : ''}`
     text = inboundDocUrl
