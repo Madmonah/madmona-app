@@ -3,20 +3,27 @@
 // src/app/real-estate/market/MarketExplorer.tsx
 // =====================================================================
 // 🔎 مستكشف بورصة العقارات — بحث لايف + فلاتر (client component)
-// بيستقبل الداتا من السيرفر ويدير: بحث نصي (مشروع/مطور/منطقة/وصف)،
-// فلتر منطقة، فلتر قسم (مطورين/ريسيل/إيجار/فرص بيع/فرص إيجار)،
-// عدادات نتايج، وCTA للمطورين يضيفوا مشاريعهم.
+// ⚡ التغيير الكبير (12 Jul 2026): المناطق بقت DYNAMIC.
+//    زمان كانت ٣ مناطق مكتوبة في الكود (العاصمة/التجمع/الساحل) وأي مشروع
+//    بره التلاتة كان بيختفي. دلوقتي بنبني قايمة المناطق من الداتا نفسها
+//    (area_label) — فأي مشروع في أي منطقة بيظهر أوتوماتيك.
+// ➕ كل كارت مشروع بقى فيه: بروشور PDF · فيديو · وزرار «اسأل عن المشروع ده»
+//    برسالة فيها كود المشروع → بنعرف كل استفسار عن أنهي مشروع بالظبط.
 // =====================================================================
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
   Building2, KeyRound, RefreshCcw, MessageCircle, Search, X,
-  Landmark, MapPin, Umbrella, Flame, Clock, Plus,
+  MapPin, Flame, Clock, Plus, FileText, PlayCircle, CalendarClock, Wallet,
 } from 'lucide-react'
+import { inquiryWaLink, projectCode, type MediaItem } from '@/lib/projects'
 
 export type Item = {
   id: string
-  area: 'new_capital' | 'new_cairo' | 'sahel'
+  slug: string
+  area: string
+  area_label: string
+  city: string | null
   segment: 'developer' | 'resale' | 'rent'
   developer: string | null
   title: string
@@ -25,6 +32,12 @@ export type Item = {
   price_to: number | null
   price_unit: 'egp_total' | 'egp_per_m2' | 'egp_month' | 'egp_night'
   note: string | null
+  payment_plan: string | null
+  delivery_label: string | null
+  cover_url: string | null
+  brochure_url: string | null
+  video_url: string | null
+  media: MediaItem[] | null
   sort_order: number
   updated_at: string
 }
@@ -42,8 +55,8 @@ export type Opportunity = {
 }
 
 const ADD_LISTING = '/add-listing?src=re-market'
-const WA_FOLLOW = `https://wa.me/201002229982?text=${encodeURIComponent('عايز أتابع تحديثات أسعار العقارات في العاصمة والتجمع والساحل')}`
-const WA_DEVELOPER = `https://wa.me/201002229982?text=${encodeURIComponent('أنا مطور/مسوق عقاري وعايز أضيف مشروعي في بورصة عقارات مضمونة')}`
+const ADD_PROJECT = '/add-project'
+const WA_FOLLOW = `https://wa.me/201002229982?text=${encodeURIComponent('عايز أتابع تحديثات أسعار العقارات — المارد 🧞')}`
 
 const UNIT_SUFFIX: Record<Item['price_unit'], string> = {
   egp_total: ' ج',
@@ -60,15 +73,9 @@ const KIND_LABEL: Record<string, string> = {
   commercial: 'تجاري',
 }
 
-const AREAS = [
-  { key: 'new_capital' as const, label: 'العاصمة الإدارية', icon: Landmark },
-  { key: 'new_cairo' as const, label: 'التجمع والقاهرة الجديدة', icon: MapPin },
-  { key: 'sahel' as const, label: 'الساحل الشمالي', icon: Umbrella },
-]
-
 const SEGMENTS = [
   { key: 'developer' as const, label: '🏗️ مشروعات المطورين', hint: 'إطلاقات وأسعار من السوق الأولي' },
-  { key: 'resale' as const, label: '🔁 الريسيل وسعر المتر', hint: 'متوسطات السوق الثانوي بالمنطقة' },
+  { key: 'resale' as const, label: '🔁 الريسيل وسعر المتر', hint: 'متوسطات السوق الثانوي' },
   { key: 'rent' as const, label: '🔑 الإيجارات', hint: 'متوسطات الإيجار' },
 ]
 
@@ -99,7 +106,7 @@ function fmtPrice(it: Item): string {
   if (it.price_from != null && it.price_to != null)
     return `${fmtMoney(it.price_from)} – ${fmtMoney(it.price_to)}${unit}`
   if (it.price_from != null) return `يبدأ من ${fmtMoney(it.price_from)}${unit}`
-  return '—'
+  return 'السعر عند الطلب'
 }
 
 function fmtDate(iso: string): string {
@@ -128,19 +135,30 @@ export default function MarketExplorer({
   opportunities: Opportunity[]
 }) {
   const [q, setQ] = useState('')
-  const [areaF, setAreaF] = useState<'all' | Item['area']>('all')
+  const [areaF, setAreaF] = useState<'all' | string>('all')
   const [segF, setSegF] = useState<SegFilter>('all')
+  const [videoOpen, setVideoOpen] = useState<Item | null>(null)
 
   const nq = norm(q.trim())
 
+  // 🔑 المناطق بتتبني من الداتا — مش من قايمة مكتوبة في الكود.
+  // ترتيب: المناطق اللي فيها أكتر مشاريع الأول.
+  const areas = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const it of items) counts.set(it.area_label, (counts.get(it.area_label) || 0) + 1)
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ar'))
+      .map(([label, count]) => ({ label, count }))
+  }, [items])
+
   const filteredItems = useMemo(() => {
     return items.filter((it) => {
-      if (areaF !== 'all' && it.area !== areaF) return false
+      if (areaF !== 'all' && it.area_label !== areaF) return false
       if (segF === 'ops_sale' || segF === 'ops_rent') return false
       if (segF !== 'all' && it.segment !== segF) return false
       if (!nq) return true
       const hay = norm(
-        [it.title, it.developer, it.unit_label, it.note, AREAS.find((a) => a.key === it.area)?.label]
+        [it.title, it.developer, it.unit_label, it.note, it.area_label, it.city, it.payment_plan]
           .filter(Boolean)
           .join(' '),
       )
@@ -150,8 +168,6 @@ export default function MarketExplorer({
 
   const filteredOps = useMemo(() => {
     if (segF === 'developer' || segF === 'resale' || segF === 'rent') return []
-    // الفرص إعلانات على مستوى الجمهورية — لو مختار منطقة محددة نخفيها
-    // إلا لو طالب الفرص صراحةً من الفلتر
     if (areaF !== 'all' && segF === 'all') return []
     return opportunities.filter((op) => {
       if (segF === 'ops_sale' && op.offer_type !== 'sale') return false
@@ -167,6 +183,12 @@ export default function MarketExplorer({
   const showOps = segF === 'all' || segF === 'ops_sale' || segF === 'ops_rent'
   const totalResults = filteredItems.length + (showOps ? saleOps.length + rentOps.length : 0)
 
+  // المناطق اللي فيها نتايج بعد الفلترة — بنرسمها بالترتيب
+  const visibleAreas = useMemo(() => {
+    const set = new Set(filteredItems.map((it) => it.area_label))
+    return areas.filter((a) => set.has(a.label))
+  }, [areas, filteredItems])
+
   const lastUpdate = items.length
     ? items.reduce((mx, it) => (it.updated_at > mx ? it.updated_at : mx), items[0].updated_at)
     : null
@@ -178,13 +200,15 @@ export default function MarketExplorer({
       <section className="py-8 md:py-12 text-center">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#1F6F5F]/10 rounded-full mb-4">
           <Flame className="w-3 h-3 text-[#1F6F5F]" />
-          <span className="text-xs font-medium text-[#1F6F5F]">مرجع العقارات في مصر — {devCount} مشروع وبيزيدوا</span>
+          <span className="text-xs font-medium text-[#1F6F5F]">
+            {devCount} مشروع في {areas.length} منطقة — وبيزيدوا
+          </span>
         </div>
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight mb-3">
           بورصة عقارات <span className="text-[#1F6F5F]">مضمونة</span>
         </h1>
         <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto mb-3">
-          مشروعات المطورين · الريسيل · الإيجارات · فرص بيع وإيجار حقيقية — دوّر وفلتر زي ما تحب.
+          مشروعات المطورين بالبروشور والفيديو · الريسيل · الإيجارات · فرص حقيقية — دوّر وفلتر زي ما تحب.
         </p>
         {lastUpdate && (
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs text-gray-600">
@@ -203,7 +227,7 @@ export default function MarketExplorer({
               type="text"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="دوّر باسم المشروع أو المطور أو المنطقة... (مثلاً: المراسم، سوديك، رأس الحكمة)"
+              placeholder="دوّر باسم المشروع أو المطور أو المنطقة... (مثلاً: Talda، HDP، مستقبل سيتي)"
               className="w-full rounded-full border border-gray-200 bg-[#FAFAF7] py-2.5 pr-10 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
             />
             {q && (
@@ -216,24 +240,28 @@ export default function MarketExplorer({
               </button>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-1.5 mb-2">
+
+          {/* شرايط المناطق — مبنية من الداتا */}
+          <div className="flex flex-wrap items-center gap-1.5 mb-2 max-h-24 overflow-y-auto">
             <button
               onClick={() => setAreaF('all')}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${areaF === 'all' ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-gray-700 border border-gray-200 hover:border-[#1F6F5F]/40'}`}
             >
               كل المناطق
             </button>
-            {AREAS.map((a) => (
+            {areas.map((a) => (
               <button
-                key={a.key}
-                onClick={() => setAreaF(areaF === a.key ? 'all' : a.key)}
-                className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${areaF === a.key ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-gray-700 border border-gray-200 hover:border-[#1F6F5F]/40'}`}
+                key={a.label}
+                onClick={() => setAreaF(areaF === a.label ? 'all' : a.label)}
+                className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${areaF === a.label ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-gray-700 border border-gray-200 hover:border-[#1F6F5F]/40'}`}
               >
-                <a.icon className="w-3 h-3" />
+                <MapPin className="w-3 h-3" />
                 {a.label}
+                <span className="opacity-60">{a.count}</span>
               </button>
             ))}
           </div>
+
           <div className="flex flex-wrap items-center gap-1.5">
             {SEG_CHIPS.map((s) => (
               <button
@@ -254,23 +282,27 @@ export default function MarketExplorer({
           <Clock className="w-8 h-8 mx-auto mb-3 text-[#1F6F5F]" />
           مفيش نتايج للبحث ده — جرب كلمة تانية أو شيل الفلاتر 🙏
           <div className="mt-4">
-            <button onClick={() => { setQ(''); setAreaF('all'); setSegF('all') }} className="px-5 py-2 rounded-full bg-[#1F6F5F] text-white text-sm font-bold">
+            <button
+              onClick={() => { setQ(''); setAreaF('all'); setSegF('all') }}
+              className="px-5 py-2 rounded-full bg-[#1F6F5F] text-white text-sm font-bold"
+            >
               اعرض كل حاجة
             </button>
           </div>
         </section>
       ) : (
         <>
-          {AREAS.map((areaDef) => {
-            const areaItems = filteredItems.filter((it) => it.area === areaDef.key)
+          {visibleAreas.map((areaDef) => {
+            const areaItems = filteredItems.filter((it) => it.area_label === areaDef.label)
             if (areaItems.length === 0) return null
             return (
-              <section key={areaDef.key} id={areaDef.key} className="mb-12 scroll-mt-32">
+              <section key={areaDef.label} className="mb-12 scroll-mt-32">
                 <div className="flex items-center gap-2.5 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-[#1F6F5F] text-white flex items-center justify-center">
-                    <areaDef.icon className="w-5 h-5" />
+                  <div className="w-10 h-10 rounded-xl bg-[#1F6F5F] text-white flex items-center justify-center shrink-0">
+                    <MapPin className="w-5 h-5" />
                   </div>
                   <h2 className="text-xl md:text-2xl font-bold text-gray-900">{areaDef.label}</h2>
+                  <span className="text-xs text-gray-400">{areaItems.length}</span>
                 </div>
 
                 {SEGMENTS.map((seg) => {
@@ -282,24 +314,11 @@ export default function MarketExplorer({
                       <div key={seg.key} className="mb-6">
                         <div className="flex items-baseline gap-2 mb-3 px-1">
                           <h3 className="font-bold text-gray-900">{seg.label}</h3>
-                          <span className="text-xs text-gray-500">{seg.hint} · {rows.length} مشروع</span>
+                          <span className="text-xs text-gray-500">{rows.length} مشروع</span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {rows.map((it) => (
-                            <div key={it.id} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-                              <div className="flex items-start justify-between gap-2 mb-1.5">
-                                <h4 className="font-bold text-gray-900 leading-snug">{it.title}</h4>
-                                <Building2 className="w-4 h-4 text-[#2FA084] shrink-0 mt-1" />
-                              </div>
-                              {it.developer && (
-                                <p className="text-xs text-gray-500 mb-2">المطور: {it.developer}</p>
-                              )}
-                              {it.unit_label && (
-                                <p className="text-xs text-gray-600 mb-2">{it.unit_label}</p>
-                              )}
-                              <p className="text-[#1F6F5F] font-bold text-lg mb-1.5">{fmtPrice(it)}</p>
-                              {it.note && <p className="text-xs text-gray-500 leading-relaxed">{it.note}</p>}
-                            </div>
+                            <ProjectCard key={it.id} it={it} onPlay={() => setVideoOpen(it)} />
                           ))}
                         </div>
                       </div>
@@ -347,40 +366,36 @@ export default function MarketExplorer({
                 <h2 className="text-xl md:text-2xl font-bold text-gray-900">فرص معروضة دلوقتي 🔥</h2>
               </div>
               <p className="text-xs text-gray-500 mb-5 pr-1">
-                إعلانات حقيقية من السوق بسعر واضح — اسأل عن أي وحدة واتساب وفريق مضمونة يوصّلك بصاحبها بمعاملة مضمونة. بتتجدد يومياً.
+                إعلانات حقيقية من السوق بسعر واضح — اسأل عن أي وحدة واتساب والمارد 🧞 يوصّلك بصاحبها بمعاملة مضمونة.
               </p>
 
               {saleOps.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="font-bold text-gray-900 mb-3 px-1">🏷️ للبيع <span className="text-xs text-gray-400 font-normal">({saleOps.length})</span></h3>
+                  <h3 className="font-bold text-gray-900 mb-3 px-1">
+                    🏷️ للبيع <span className="text-xs text-gray-400 font-normal">({saleOps.length})</span>
+                  </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {saleOps.map((op) => (
-                      <OppCard key={op.id} op={op} />
-                    ))}
+                    {saleOps.map((op) => <OppCard key={op.id} op={op} />)}
                   </div>
                 </div>
               )}
 
               {rentOps.length > 0 && (
                 <div className="mb-2">
-                  <h3 className="font-bold text-gray-900 mb-3 px-1">🔑 للإيجار <span className="text-xs text-gray-400 font-normal">({rentOps.length})</span></h3>
+                  <h3 className="font-bold text-gray-900 mb-3 px-1">
+                    🔑 للإيجار <span className="text-xs text-gray-400 font-normal">({rentOps.length})</span>
+                  </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {rentOps.map((op) => (
-                      <OppCard key={op.id} op={op} />
-                    ))}
+                    {rentOps.map((op) => <OppCard key={op.id} op={op} />)}
                   </div>
                 </div>
               )}
-
-              <p className="text-[11px] text-gray-400 text-center mt-4">
-                العناوين والتفاصيل من إعلانات عامة — مضمونة بتوصّلك وبتضمن المعاملة، ومش طرف في الإعلان الأصلي.
-              </p>
             </section>
           )}
         </>
       )}
 
-      {/* 🏗️ CTA للمطورين — ده اللي بيكبّر المرجع */}
+      {/* 🏗️ CTA للمطورين — دلوقتي بيوديه لفورم فعلي مش واتساب بس */}
       <section className="mb-6">
         <div className="bg-white rounded-2xl border-2 border-dashed border-[#2FA084]/40 p-6 md:p-7 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -389,32 +404,31 @@ export default function MarketExplorer({
             </div>
             <div>
               <h3 className="font-bold text-gray-900">انت مطور أو مسوق عقاري ومشروعك مش هنا؟</h3>
-              <p className="text-sm text-gray-600">ابعتلنا تفاصيل مشروعك وهنضيفه في البورصة — قدام آلاف الباحثين يومياً.</p>
+              <p className="text-sm text-gray-600">
+                ضيفه بنفسك في دقيقتين — بالأسعار والبروشور والفيديو. أي منطقة في مصر.
+              </p>
             </div>
           </div>
-          <a
-            href={WA_DEVELOPER}
-            target="_blank"
-            rel="noopener"
+          <Link
+            href={ADD_PROJECT}
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#2FA084] text-white font-bold text-sm shrink-0 hover:opacity-95 transition-opacity"
           >
-            <MessageCircle className="w-4 h-4" />
+            <Plus className="w-4 h-4" />
             ضيف مشروعك
-          </a>
+          </Link>
         </div>
       </section>
 
-      {/* Disclaimer */}
       <p className="text-[11px] text-gray-400 text-center mb-10 leading-relaxed max-w-2xl mx-auto">
-        الأسعار استرشادية مُجمّعة من مصادر سوق منشورة وبتتغير باستمرار — راجع المطور أو المعلن قبل أي قرار.
-        مضمونة مش وسيط في مشروعات المطورين المعروضة هنا.
+        الأسعار استرشادية من المطورين والمسوّقين وبتتغير باستمرار — راجع المطور قبل أي قرار.
+        مضمونة بتوصّلك وبتضمن المعاملة.
       </p>
 
       {/* CTA band */}
       <section className="bg-[#1F6F5F] rounded-2xl p-8 md:p-10 text-center mb-4">
-        <h2 className="text-xl md:text-2xl font-bold text-white mb-2">عندك وحدة في العاصمة أو التجمع أو الساحل؟</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-white mb-2">عندك وحدة عايز تبيعها أو تأجّرها؟</h2>
         <p className="text-white/80 text-sm mb-5">
-          ضيفها على مضمونة ببلاش — حماية كاملة، فلوسك بتوصلك بسرعة، وعمولة 10% على الحجز الناجح بس.
+          ضيفها على مضمونة ببلاش — حماية كاملة، وعمولة ١٠٪ على الحجز الناجح بس.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
@@ -431,22 +445,168 @@ export default function MarketExplorer({
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/40 text-white font-semibold hover:bg-white/10 transition-colors"
           >
             <MessageCircle className="w-4 h-4" />
-            تابع تحديثات الأسعار واتساب
+            كلّم المارد 🧞
           </a>
         </div>
       </section>
 
-      <p className="text-center text-xs text-gray-500">
-        <Link href="/real-estate" className="text-[#1F6F5F] font-semibold hover:underline">
-          → اعرف إزاي تأجّر عقارك مع مضمونة
-        </Link>
-      </p>
+      {videoOpen && <VideoModal it={videoOpen} onClose={() => setVideoOpen(null)} />}
     </main>
   )
 }
 
+// =====================================================================
+// كارت المشروع — بروشور + فيديو + زرار استفسار متتبَّع بكود المشروع
+// =====================================================================
+function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
+  // بنسجّل الاستفسار قبل ما الواتساب يفتح — sendBeacon عشان مايعطلش الفتح
+  function logInquiry() {
+    try {
+      const body = JSON.stringify({ project_id: it.id, source: 'bourse_card' })
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/projects/inquiry', new Blob([body], { type: 'application/json' }))
+      } else {
+        fetch('/api/projects/inquiry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+          keepalive: true,
+        }).catch(() => {})
+      }
+    } catch { /* لو التسجيل فشل، الواتساب لازم يفتح برضه */ }
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+      {it.cover_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={it.cover_url}
+          alt={it.title}
+          loading="lazy"
+          className="w-full h-36 object-cover"
+        />
+      )}
+
+      <div className="p-5 flex flex-col flex-1">
+        <div className="flex items-start justify-between gap-2 mb-1.5">
+          <h4 className="font-bold text-gray-900 leading-snug">{it.title}</h4>
+          <Building2 className="w-4 h-4 text-[#2FA084] shrink-0 mt-1" />
+        </div>
+
+        {it.developer && <p className="text-xs text-gray-500 mb-2">المطور: {it.developer}</p>}
+        {it.unit_label && <p className="text-xs text-gray-600 mb-2 leading-relaxed">{it.unit_label}</p>}
+
+        <p className="text-[#1F6F5F] font-bold text-lg mb-2">{fmtPrice(it)}</p>
+
+        {(it.payment_plan || it.delivery_label) && (
+          <div className="space-y-1 mb-2">
+            {it.payment_plan && (
+              <p className="text-[11px] text-gray-600 leading-relaxed flex gap-1.5">
+                <Wallet className="w-3 h-3 shrink-0 mt-0.5 text-[#2FA084]" />
+                <span>{it.payment_plan}</span>
+              </p>
+            )}
+            {it.delivery_label && (
+              <p className="text-[11px] text-gray-600 flex gap-1.5 items-center">
+                <CalendarClock className="w-3 h-3 shrink-0 text-[#2FA084]" />
+                <span>{it.delivery_label}</span>
+              </p>
+            )}
+          </div>
+        )}
+
+        {it.note && <p className="text-xs text-gray-500 leading-relaxed mb-3">{it.note}</p>}
+
+        {/* الميديا */}
+        {(it.brochure_url || it.video_url) && (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {it.brochure_url && (
+              <a
+                href={it.brochure_url}
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-xs font-semibold text-gray-700 hover:border-[#1F6F5F]/40 hover:text-[#1F6F5F] transition-colors"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                البروشور PDF
+              </a>
+            )}
+            {it.video_url && (
+              <button
+                onClick={onPlay}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-xs font-semibold text-gray-700 hover:border-[#1F6F5F]/40 hover:text-[#1F6F5F] transition-colors"
+              >
+                <PlayCircle className="w-3.5 h-3.5" />
+                فيديو المشروع
+              </button>
+            )}
+          </div>
+        )}
+
+        <a
+          href={inquiryWaLink(it)}
+          onClick={logInquiry}
+          target="_blank"
+          rel="noopener"
+          className="mt-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#1F6F5F] text-white text-xs font-bold hover:opacity-95 transition-opacity"
+        >
+          <MessageCircle className="w-3.5 h-3.5" />
+          اسأل عن المشروع ده
+        </a>
+        <p className="text-[10px] text-gray-300 text-center mt-1.5">{projectCode(it.id)}</p>
+      </div>
+    </div>
+  )
+}
+
+function VideoModal({ it, onClose }: { it: Item; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-white font-bold text-sm">{it.title}</p>
+          <button
+            onClick={onClose}
+            aria-label="اقفل"
+            className="w-8 h-8 rounded-full bg-white/15 text-white flex items-center justify-center hover:bg-white/25"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+        <video
+          src={it.video_url || ''}
+          controls
+          autoPlay
+          playsInline
+          preload="metadata"
+          poster={it.cover_url || undefined}
+          className="w-full rounded-xl bg-black max-h-[75vh]"
+        />
+        <a
+          href={inquiryWaLink(it)}
+          target="_blank"
+          rel="noopener"
+          className="mt-3 w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#2FA084] text-white text-sm font-bold"
+        >
+          <MessageCircle className="w-4 h-4" />
+          اسأل عن {it.title}
+        </a>
+      </div>
+    </div>
+  )
+}
+
 function OppCard({ op }: { op: Opportunity }) {
-  const waMsg = `عايز أسأل عن الفرصة دي من بورصة مضمونة: ${op.title}${op.area_label ? ' — ' + op.area_label : ''} (كود ${op.id.slice(0, 8)})`
+  const waMsg =
+    `أهلاً المارد 🧞 — عايز أسأل عن الفرصة دي من بورصة مضمونة: ${op.title}` +
+    `${op.area_label ? ' — ' + op.area_label : ''} (كود ${op.id.slice(0, 8)})`
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex flex-col">
       <div className="flex items-center justify-between gap-2 mb-2">
@@ -462,15 +622,11 @@ function OppCard({ op }: { op: Opportunity }) {
           )}
         </div>
         {op.price_label && (
-          <span className="text-sm font-black text-[#1F6F5F] whitespace-nowrap shrink-0">
-            {op.price_label}
-          </span>
+          <span className="text-sm font-black text-[#1F6F5F] whitespace-nowrap shrink-0">{op.price_label}</span>
         )}
       </div>
       <h3 className="font-bold text-gray-900 text-sm mb-1.5">{op.title}</h3>
-      {op.snippet && (
-        <p className="text-xs text-gray-600 leading-relaxed mb-3 line-clamp-2">{op.snippet}</p>
-      )}
+      {op.snippet && <p className="text-xs text-gray-600 leading-relaxed mb-3 line-clamp-2">{op.snippet}</p>}
       <a
         href={`https://wa.me/201002229982?text=${encodeURIComponent(waMsg)}`}
         target="_blank"

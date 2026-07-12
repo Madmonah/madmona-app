@@ -38,6 +38,43 @@
 - **Differentiator:** most rental platforms just take commission. Madmona = marketplace + transaction guarantee + a full management system (CRM+ERP) available by monthly subscription (بالاتفاق).
 - **Every supplier pitch MUST include:** **unified 10% commission (all categories, success-only)** · free listing · full protection · fast payouts · 24/7 support · AI matching · CRM+ERP available as **monthly subscription (بالاتفاق)** — ⛔ NEVER call the CRM/ERP free/مجاني/هدية. Any coworking framing = rejected. Any 0%-commission framing = rejected.
 
+### 🧞 RULE — ALWAYS INTRODUCE THE MARID (LOCKED 11 Jul 2026)
+**أي تواصل مع أي حد جديد لازم يعرّفه بـ«المارد 🧞» بالاسم** — كومنتات فيسبوك، واتساب، إيميل، أي قناة، أي تمبلت جديد، أي كوبي بيتكتب بالنيابة عن محمد.
+الصيغة: المارد = مساعد مضمونة الشخصي شغال 24 ساعة · بيرد فوراً · بيسجّلك ويجهّز إعلانك/مشروعك من غير فورمات · واتساب **01002229982**.
+⛔ مفيش تواصل بيوجّه للموقع من غير ما يعرّف بالمارد الأول. (runbook topic: `marid_always_introduce`)
+
+### 🏠 حملة العقارات (11 Jul 2026)
+- بوست جروب "The Society Of Real Estate In Middle East" → 12 ليد مطورين/سيلز في `restaurant_leads` (`sector='real_estate'`, `source='fb_group_post_20260711'`) → المارد بعتلهم `madmona_supplier_intro_v1` (APPROVED). + 6 ردود على الكومنتات من حساب محمد.
+- **REAL-ESTATE MODE للمارد:** بلوك اتضاف في `whatsapp_config.commission_line_restaurants_prompt` (بيتحقن في برومبت `whatsapp-webhook`) — بيطلب اسم المشروع + المنطقة + نوع الوحدات + متوسط سعر المتر + نظام السداد عشان ننزّلهم في **بورصة مضمونة** (`property_market_items` → `/real-estate/market`) والماركت. ⛔ ممنوع يخمّن أي سعر.
+- ~~`property_market_items.area` مقيّد بـ `new_capital|new_cairo|sahel`~~ → **اتفك القفل 12 Jul 2026** (شوف القسم اللي تحت).
+- ⚠️ فيسبوك بيخنق تحميل الكومنتات في المتصفح الآلي (بيقف عند ~25 كومنت) — سحب كل الكومنتات محتاج سكريبت Console.
+
+### 🏗️ مشاريع المطورين: مناطق مفتوحة + ميديا + تتبّع الاستفسارات (12 Jul 2026)
+**المشكلة اللي اتحلّت:** `area` كان CHECK على ٣ مناطق بس، والواجهة كانت بترسم الـ٣ من array مكتوب في الكود — فأي مشروع في **مستقبل سيتي / العبور / السخنة / هليوبوليس** كان بيتخزّن ويختفي.
+- **اتشال الـCHECK.** العرض بقى على `area_label` (نص حر). `MarketExplorer` بيبني قايمة المناطق **من الداتا** (`useMemo` على `area_label`) — أي منطقة جديدة تظهر لوحدها من غير ما تلمس كود.
+- **أعمدة جديدة:** `area_label` (NOT NULL) · `slug` (unique) · `cover_url` · `brochure_url` · `video_url` · `media` jsonb · `payment_plan` · `delivery_label` · `commission_pct` · `contact_phone` · `status` (draft/published/archived) · `embargoed` + `embargo_note`.
+- ⛔ **`embargoed=true` = ممنوع النشر** — صفحة البورصة بتفلتر عليه، وزرار النشر في الأدمن مقفول. (أبراج العلمين HDP: محظور لحد اللونش الرسمي أول أغسطس ٢٠٢٦.)
+- **الميديا:** بكت `project-media` (public read, 50MB). الرفع **direct-to-storage بـsigned URL** (`/api/projects/upload-url`) عشان حد الـ4.5MB بتاع Vercel body. الضغط بيحصل **في المتصفح** (`src/lib/mediaCompress.ts`): صور → WebP 1600px · فيديو → 720p @1.2Mbps بـMediaRecorder · PDF → حد ١٢ ميجا (مفيش ضغط في المتصفح).
+- **إضافة المشاريع dynamic من ٣ مصادر:** `/admin/projects` (كوكي الأدمن) · `POST /api/projects` بهيدر `x-projects-secret` (**للمارد** — يضيف المشروع من الواتساب على طول) · `/add-project` فورم self-serve للمطورين → `status='draft'` للمراجعة.
+- **env مطلوب على Vercel:** `PROJECTS_API_SECRET` = `whatsapp_config.projects_api_secret`.
+- **تتبّع الاستفسارات:** كل كارت فيه زرار «اسأل عن المشروع ده» برسالة فيها كود `MDM-<8 حروف من الـid>`. الضغطة بتتسجّل في `project_inquiries` (`/api/projects/inquiry`)، وتريجر `match_project_inquiry` على `whatsapp_messages` بيلقط الكود من الرسالة الواردة ويربط الاستفسار بالمحادثة (`status='engaged'`). الداشبورد: `/admin/projects/inquiries`.
+(runbook topic: `borsa_dynamic_projects`)
+
+### 🔗 بورصة ⇄ ماركت — ربط تلقائي (11 Jul 2026)
+`trg_sync_listing_to_property_market` على `listings` → أي عقار (فئة فيها `propert`) بيتنشر في الماركت **بيظهر تلقائياً في بورصة مضمونة** (`property_opportunities` → `/real-estate/market`)، ولو اتشال من النشر بيتمسح منها.
+- الماب: `sale-*` → sale، غيرها rent · `*tourism*` → chalets، غيرها apartments · `price_label` متولّد من `price_egp` · `developer` من `marketplace_suppliers.business_name`
+- أعمدة جديدة في `property_opportunities`: `listing_id` (unique) + `developer`
+- **لينك التسجيل الذاتي للمطورين:** `madmonacairo.com/add-listing?src=re-market` — يضيف مرة واحدة يظهر في الاتنين.
+- ⚠️ التريجر بيشتغل على أعمدة محددة بس؛ لأي backfill المس `title` مش `updated_at`.
+(runbook topic: `borsa_marketplace_autosync`)
+
+### ⚡ البورصة بتتحدث فوراً — on-demand revalidation (11 Jul 2026)
+صفحة `/real-estate/market` فيها `revalidate = 3600` (ISR ساعة) — كانت السبب إن المشاريع الجديدة ماتظهرش.
+**الحل:** راوت `src/app/api/revalidate/route.ts` (POST + هيدر `x-revalidate-secret` + whitelist مسارات) + DB trigger `notify_borsa_revalidate()` (STATEMENT-level على `property_opportunities` و `property_market_items`) بينده عليه بـ `net.http_post`.
+- **env مطلوب على Vercel production:** `REVALIDATE_SECRET` — لازم يساوي `whatsapp_config.revalidate_secret`. **لو غيّرت واحد غيّر التاني.**
+- متأكد بالاختبار: أي تغيير في البورصة → الصفحة بتتحدث في ثواني. الراوت بيرجع 401 لأي حد من غير السر.
+(runbook topic: `borsa_ondemand_revalidate`)
+
 ### Three Core Marketing Pillars (in this exact order)
 1. حماية كاملة
 2. دفع مستحقات سريع

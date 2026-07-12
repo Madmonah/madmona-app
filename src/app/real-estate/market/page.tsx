@@ -45,10 +45,16 @@ async function getItems(): Promise<Item[]> {
   try {
     const { data } = await sb()
       .from('property_market_items')
-      .select('id, area, segment, developer, title, unit_label, price_from, price_to, price_unit, note, sort_order, updated_at')
+      .select(
+        'id, slug, area, area_label, city, segment, developer, title, unit_label, ' +
+        'price_from, price_to, price_unit, note, payment_plan, delivery_label, ' +
+        'cover_url, brochure_url, video_url, media, sort_order, updated_at',
+      )
       .eq('is_active', true)
+      .eq('status', 'published')
+      .eq('embargoed', false) // ⛔ المشاريع المحظور نشرها (زي أبراج العلمين) مبتظهرش
       .order('sort_order', { ascending: true })
-    return (data as Item[]) || []
+    return (data as unknown as Item[]) || []
   } catch {
     return []
   }
