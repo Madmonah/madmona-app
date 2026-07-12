@@ -137,9 +137,34 @@ export async function compressVideo(file: File, onProgress?: Progress): Promise<
   }
 }
 
+/** لو الصورة لسه كبيرة بعد الضغط العادي — نضغط أقوى (1200px + جودة 0.6) */
+async function recompressImageHarder(file: File): Promise<File> {
+  try {
+    const bitmap = await createImageBitmap(file)
+    const scale = Math.min(1, 1200 / Math.max(bitmap.width, bitmap.height))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(bitmap.width * scale)
+    canvas.height = Math.round(bitmap.height * scale)
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return file
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+    bitmap.close()
+    const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/webp', 0.6))
+    if (!blob || blob.size >= file.size) return file
+    return new File([blob], file.name, { type: 'image/webp' })
+  } catch {
+    return file
+  }
+}
+
 export type Kind = 'image' | 'pdf' | 'video'
 
-/** ضغط + تحقق من الحجم، وبعدين رفع مباشر لـSupabase Storage بـsigned URL */
+/**
+ * ضغط + رفع مباشر لـSupabase Storage بـsigned URL.
+ * ⚠️ الفلسفة (محمد، 12 يوليو): **إحنا اللي نضغط، مش المطوّر.**
+ * المطوّر بيرفع الملف زي ما هو — وإحنا نتصرّف. مبنطلبش منه يصغّر حاجة.
+ * لو الفيديو لسه كبير بعد الضغط، بنعيد الضغط بجودة أقل بدل ما نرفضه.
+ */
 export async function prepareAndUpload(
   file: File,
   kind: Kind,
@@ -152,12 +177,18 @@ export async function prepareAndUpload(
   else if (kind === 'video') out = await compressVideo(file, onProgress)
   else onProgress?.(50, 'بيجهّز الـPDF…')
 
+  // لسه كبير؟ نضغط تاني بجودة أقل — مش نرفض ونحمّل المطوّر المشكلة.
+  if (out.size > UPLOAD_LIMITS[kind] && kind === 'image') {
+    onProgress?.(40, 'بيضغط أكتر…')
+    out = await recompressImageHarder(out)
+  }
+
   if (out.size > UPLOAD_LIMITS[kind]) {
     const limit = Math.round(UPLOAD_LIMITS[kind] / (1024 * 1024))
     throw new Error(
       kind === 'pdf'
-        ? `البروشور ${mb(out.size)} — الحد الأقصى ${limit} ميجا. اضغطه الأول (مثلاً من ilovepdf.com) وارفعه تاني 🙏`
-        : `الملف لسه كبير (${mb(out.size)}) والحد ${limit} ميجا. جرّب ملف أصغر 🙏`,
+        ? `البروشور ${mb(out.size)} وده أكبر من ${limit} ميجا — ابعته للمارد على واتساب 01002229982 وإحنا نظبّطه ونرفعه بدالك 🧞`
+        : `الملف ${mb(out.size)} وده أكبر من ${limit} ميجا — ابعته للمارد على واتساب 01002229982 وإحنا نظبّطه 🧞`,
     )
   }
 

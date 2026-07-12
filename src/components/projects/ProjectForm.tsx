@@ -267,7 +267,7 @@ export default function ProjectForm({
         />
         <MediaUploader
           kind="pdf" label="البروشور PDF" slug={slug}
-          hint="لحد ١٢ ميجا — اضغطه قبل الرفع لو أكبر"
+          hint="ارفعه زي ما هو — لحد ٤٥ ميجا"
           value={f.brochure_url || null} onChange={(u) => set('brochure_url', u)}
         />
         <MediaUploader

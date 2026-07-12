@@ -91,11 +91,15 @@ export function inquiryWaLink(p: Pick<Project, 'id' | 'title' | 'developer' | 'a
   return `https://wa.me/${MARID_WA}?text=${encodeURIComponent(inquiryMessage(p))}`
 }
 
-/** حدود الرفع — الضغط بيحصل في المتصفح قبل ما يوصل هنا */
+/**
+ * حدود الرفع. الضغط بيحصل في المتصفح قبل ما يوصل هنا.
+ * ⚠️ إحنا اللي نضغط مش المطوّر — الحدود واسعة عشان محدش يترفض،
+ * والضغط بيصغّر الحجم لوحده. البروشور مبيتضغطش (PDF) فحده أوسع.
+ */
 export const UPLOAD_LIMITS = {
-  image: 5 * 1024 * 1024, // 5MB بعد الضغط
-  pdf: 12 * 1024 * 1024, // 12MB — الـPDF مبيتضغطش في المتصفح
-  video: 50 * 1024 * 1024, // 50MB بعد الضغط (حد البكت)
+  image: 5 * 1024 * 1024, // 5MB — بعد ضغط WebP الصورة بتبقى ~200KB
+  pdf: 45 * 1024 * 1024, // 45MB — بروشورات المطورين الديجيتال بتوصل لكده
+  video: 50 * 1024 * 1024, // 50MB — بعد ضغط 720p
 } as const
 
 export const ACCEPTED_MIME: Record<MediaItem['type'], string[]> = {
