@@ -182,12 +182,19 @@ function AddExpenseModal({ supplierId, branches, onClose, onSaved }: any) {
     expense_date: new Date().toISOString().slice(0, 10),
   })
   const [saving, setSaving] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
 
+  // 🐛 (13 Jul 2026) قبل كده كان بينادي الـRPC من غير ما يفحص الـerror خالص،
+  // وبيقفل الفورم على طول — فلو الحفظ فشل، يبان إنه اتحفظ وهو مش متحفظ.
+  // (الفشل الحقيقي كان: نسختين من admin_record_expense → "function is not unique").
+  // دلوقتي بنفحص الخطأ وبنوريه، ومبنقفلش الفورم غير لما الحفظ ينجح فعلاً.
   async function save() {
-    if (!form.amount || !form.branch_id) return alert('اكمل البيانات')
+    setErr(null)
+    if (!form.amount || Number(form.amount) <= 0) return setErr('اكتب المبلغ')
+    if (!form.branch_id) return setErr('اختار الفرع')
     setSaving(true)
     // @ts-expect-error
-    await supabase.rpc('admin_record_expense', {
+    const { error } = await supabase.rpc('admin_record_expense', {
       p_supplier_id: supplierId,
       p_branch_id: form.branch_id,
       p_category: form.category,
@@ -196,7 +203,10 @@ function AddExpenseModal({ supplierId, branches, onClose, onSaved }: any) {
       p_vendor_name: form.vendor_name || null,
       p_notes: form.notes || null,
       p_expense_date: form.expense_date,
+      p_receipt_url: null,
     })
+    setSaving(false)
+    if (error) { setErr(error.message || 'الحفظ فشل — جرّب تاني'); return }
     onSaved()
   }
 
@@ -244,6 +254,11 @@ function AddExpenseModal({ supplierId, branches, onClose, onSaved }: any) {
           <Field label="ملاحظات (اختياري)">
             <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" />
           </Field>
+          {err && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+              <p className="text-xs font-bold text-red-700">{err}</p>
+            </div>
+          )}
           <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black text-sm disabled:opacity-50">
             {saving ? 'جاري الحفظ...' : 'احفظ'}
           </button>
