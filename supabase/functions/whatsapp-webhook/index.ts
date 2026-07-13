@@ -801,17 +801,68 @@ async function generateReply(
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 1100, system, messages: [{ role: 'user', content: userContent }] })
+    body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 4000, system, messages: [{ role: 'user', content: userContent }] })
   })
   const data = await r.json()
   if (!r.ok) throw new Error(`Claude error: ${JSON.stringify(data).slice(0, 200)}`)
   const text = data?.content?.[0]?.text || ''
-  const m = text.replace(/^```(json)?/i, '').replace(/```$/, '').trim().match(/\{[\s\S]*\}/)
-  if (!m) throw new Error('parse failed')
-  const parsed = JSON.parse(m[0])
-  if (parsed.reply && typeof parsed.reply === 'string') parsed.reply = enforceBrandName(parsed.reply)
-  if (parsed.supplier_kind === 'null') parsed.supplier_kind = null
-  return parsed
+  const cleaned = text.replace(/^```(json)?/i, '').replace(/```$/, '').trim()
+  const m = cleaned.match(/\{[\s\S]*\}/)
+
+  // المحاولة الأساسية: JSON سليم
+  if (m) {
+    try {
+      const parsed = JSON.parse(m[0])
+      if (parsed.reply && typeof parsed.reply === 'string') parsed.reply = enforceBrandName(parsed.reply)
+      if (parsed.supplier_kind === 'null') parsed.supplier_kind = null
+      return parsed
+    } catch (_e) { /* الرد اتقطع أو JSON مكسور — ننقذ الرد تحت */ }
+  }
+
+  // 🛟 إنقاذ: الرد اتقطع (max_tokens) أو JSON مكسور.
+  // بدل ما العميل يتساب من غير رد خالص، نستخرج نص الـ reply ونبعته.
+  const salvaged = salvageReply(cleaned)
+  if (salvaged) {
+    return {
+      intent: 'ask_question',
+      lead_type: 'unknown',
+      supplier_kind: null,
+      category: null,
+      unmet_demand: false,
+      requested_item: null,
+      erp_interest: false,
+      listing_draft: null,
+      listing_drafts: null,
+      reply: enforceBrandName(salvaged),
+    } as AIResult
+  }
+  throw new Error('parse failed')
+}
+
+/** يستخرج قيمة "reply" من JSON مقطوع/مكسور — عشان العميل ميتسابش من غير رد. */
+function salvageReply(raw: string): string | null {
+  // "reply":"...."  — لحد آخر علامة تنصيص مقفولة أو لآخر النص لو اتقطع
+  const i = raw.search(/"reply"\s*:\s*"/)
+  if (i === -1) return null
+  // امشِ من بعد فتح علامة التنصيص واقرأ لحد القفلة غير الـ escaped
+  const start = raw.indexOf('"', raw.indexOf(':', i) + 1) + 1
+  let out = ''
+  for (let k = start; k < raw.length; k++) {
+    const ch = raw[k]
+    if (ch === '\\') {
+      const nx = raw[k + 1]
+      if (nx === 'n') { out += '\n'; k++; continue }
+      if (nx === 't') { out += '\t'; k++; continue }
+      if (nx === '"') { out += '"'; k++; continue }
+      if (nx === '\\') { out += '\\'; k++; continue }
+      k++
+      continue
+    }
+    if (ch === '"') break
+    out += ch
+  }
+  out = out.trim()
+  return out.length >= 15 ? out : null
 }
 
 async function saveInstantListingDraft(
@@ -1342,10 +1393,38 @@ async function handleStatusUpdate(status: Record<string, unknown>): Promise<void
   const waMsgId = String(status.id)
   const statusValue = String(status.status)
   const errors = status.errors as Array<{ code?: number; title?: string; message?: string }> | undefined
-  await sb().from('whatsapp_messages').update({
+  const patch = {
     status: statusValue, status_updated_at: new Date().toISOString(),
     error_code: errors?.[0]?.code?.toString(), error_message: errors?.[0]?.title ?? errors?.[0]?.message
-  }).eq('wa_message_id', waMsgId)
+  }
+  const { data: updated } = await sb().from('whatsapp_messages')
+    .update(patch).eq('wa_message_id', waMsgId).select('id')
+
+  // 🛟 الرسالة اتبعتت من برّه التطبيق (API مباشر / أدوات) → مش متسجّلة عندنا.
+  // بدل ما نضيّع تأكيد التسليم، نسجّلها عشان نعرف اتسلّمت ولا فشلت.
+  if (!updated || updated.length === 0) {
+    try {
+      const recipient = String(status.recipient_id || '')
+      if (!recipient) return
+      const full = recipient.startsWith('+') ? recipient : '+' + recipient
+      let convId: string | null = null
+      const { data: conv } = await sb().from('whatsapp_conversations')
+        .select('id').eq('contact_phone', full).limit(1).maybeSingle()
+      if (conv?.id) convId = conv.id
+      else {
+        const { data: created } = await sb().from('whatsapp_conversations')
+          .insert({ contact_phone: full, contact_type: 'customer_lead', agent_name: 'external-send', status: 'active' })
+          .select('id').single()
+        convId = created?.id ?? null
+      }
+      if (!convId) return
+      await sb().from('whatsapp_messages').insert({
+        conversation_id: convId, direction: 'outbound', wa_message_id: waMsgId,
+        message_type: 'template', agent_name: 'external-send', ai_generated: false,
+        body: '[sent via API]', ...patch
+      })
+    } catch (e) { console.error('[status] backfill failed:', e) }
+  }
 }
 
 Deno.serve(async (req) => {
@@ -1363,7 +1442,15 @@ Deno.serve(async (req) => {
         for (const status of (value?.statuses || [])) await handleStatusUpdate(status)
       }
     }
-    Promise.all(inboundPromises).catch(err => console.error('[webhook] error:', err))
+    // 🐛 FIX (12 Jul 2026) — الرسايل الصوتية كانت بتضيع خالص (صفر رسالة صوتية في الداتابيز).
+    // السبب: كنا بنرجّع 200 من غير waitUntil، فالـisolate بيتقفل والشغل اللي لسه شغال بيتقتل.
+    // النص/الصور/الملفات كانت بتلحق تخلص (أقل من ٢ ثانية)، لكن الصوت محتاج
+    // تحميل + تفريغ Whisper (٥–١٠ ثواني) → كان بيتقتل قبل ما يتسجل أو يترد عليه.
+    // EdgeRuntime.waitUntil بيخلي الـisolate عايش لحد ما الشغل يخلص.
+    const work = Promise.all(inboundPromises).catch(err => console.error('[webhook] error:', err))
+    // deno-lint-ignore no-explicit-any
+    const rt = (globalThis as any).EdgeRuntime
+    if (rt?.waitUntil) rt.waitUntil(work); else await work
     return new Response('OK', { status: 200 })
   } catch (err) {
     console.error('Webhook error:', err)

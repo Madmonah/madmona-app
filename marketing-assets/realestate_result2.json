@@ -1,0 +1,60 @@
+{
+  "total": 7,
+  "sent": 7,
+  "failed": 0,
+  "blocked_by_guard": 0,
+  "results": [
+    {
+      "phone": "20221506090",
+      "ok": true,
+      "wa_id": "wamid.HBgLMjAyMjE1MDYwOTAVAgARGBRDRTJGNDhDMkRCOTJFQkIzOUQwNgA=",
+      "template": "madmona_supplier_intro_v1"
+    },
+    {
+      "phone": "201034787976",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxMDM0Nzg3OTc2FQIAERgUQ0UzQTRBM0M4QkQwNkU4NjkyNzgA",
+      "template": "madmona_supplier_intro_v1"
+    },
+    {
+      "phone": "201112180388",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxMTEyMTgwMzg4FQIAERgUQ0VGMjcwN0MyMjlFNzg0NkE5MDIA",
+      "template": "madmona_supplier_intro_v1"
+    },
+    {
+      "phone": "201040474017",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxMDQwNDc0MDE3FQIAERgUQ0VEQzNEMkYwRjYzRTkzQzk3MkUA",
+      "template": "madmona_supplier_intro_v1"
+    },
+    {
+      "phone": "201010587856",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxMDEwNTg3ODU2FQIAERgUQ0U2QzhGOTkzNkE1REQ1QkZBOUQA",
+      "template": "madmona_supplier_intro_v1"
+    },
+    {
+      "phone": "201289200293",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxMjg5MjAwMjkzFQIAERgUQ0U0NDUzN0JGM0ZBOTVBMjU5NUUA",
+      "template": "madmona_supplier_intro_v1"
+    },
+    {
+      "phone": "201551115431",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxNTUxMTE1NDMxFQIAERgUQ0U2MjJGQUU1QTBFNTJFODg3N0IA",
+      "template": "madmona_supplier_intro_v1"
+    }
+  ],
+  "sent_phones": [
+    "20221506090",
+    "201034787976",
+    "201112180388",
+    "201040474017",
+    "201010587856",
+    "201289200293",
+    "201551115431"
+  ],
+  "first_errors": []
+}

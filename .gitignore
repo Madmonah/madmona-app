@@ -48,3 +48,4 @@ next-env.d.ts
 .env*.local
 .vercel
 
+scripts/transcribe-voice.ps1

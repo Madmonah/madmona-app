@@ -106,7 +106,7 @@ function fmtPrice(it: Item): string {
   if (it.price_from != null && it.price_to != null)
     return `${fmtMoney(it.price_from)} – ${fmtMoney(it.price_to)}${unit}`
   if (it.price_from != null) return `يبدأ من ${fmtMoney(it.price_from)}${unit}`
-  return 'السعر عند الطلب'
+  return ''
 }
 
 function fmtDate(iso: string): string {

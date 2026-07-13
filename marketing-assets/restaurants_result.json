@@ -1,0 +1,83 @@
+{
+  "total": 12,
+  "sent": 12,
+  "failed": 0,
+  "blocked_by_guard": 0,
+  "results": [
+    {
+      "phone": "201200007090",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxMjAwMDA3MDkwFQIAERgUQ0U3NjkxREZFM0E5MDU0RkVGQzYA",
+      "template": "madmona_restaurant_intro_v2"
+    },
+    {
+      "phone": "201028400844",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxMDI4NDAwODQ0FQIAERgUQ0U3QjJGNkUwQTFGQTY1QkYwQTIA",
+      "template": "madmona_restaurant_intro_v2"
+    },
+    {
+      "phone": "201030787900",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxMDMwNzg3OTAwFQIAERgUQ0VCMTg4NzRGRjc0OTQ5REJDNzAA",
+      "template": "madmona_restaurant_intro_v2"
+    },
+    {
+      "phone": "201552735204",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxNTUyNzM1MjA0FQIAERgUQ0U1RDI5Rjk3QUJBQ0FFQUQwNDIA",
+      "template": "madmona_restaurant_intro_v2"
+    },
+    {
+      "phone": "201275851769",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxMjc1ODUxNzY5FQIAERgUQ0U3NkM5RkEyRjMzOEYyRjY2QTcA",
+      "template": "madmona_restaurant_intro_v2"
+    },
+    {
+      "phone": "201550057533",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxNTUwMDU3NTMzFQIAERgUQ0VEQzZBRTQ1Qjc3MTMxNjQxQUYA",
+      "template": "madmona_restaurant_intro_v2"
+    },
+    {
+      "phone": "201208711180",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxMjA4NzExMTgwFQIAERgUQ0UzNjRFQ0JBNTI5RTI2NzI3MjIA",
+      "template": "madmona_restaurant_intro_v2"
+    },
+    {
+      "phone": "201207198887",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxMjA3MTk4ODg3FQIAERgUQ0UxQUFBNUE3MjhFQjU3M0I2NkEA",
+      "template": "madmona_restaurant_intro_v2"
+    },
+    {
+      "phone": "201010101342",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxMDEwMTAxMzQyFQIAERgUQ0UwQzc2MzkyNzg1QzQ0RDZEQjQA",
+      "template": "madmona_restaurant_intro_v2"
+    },
+    {
+      "phone": "201280902028",
+      "ok": true,
+      "wa_id": "wamid.HBgMMjAxMjgwOTAyMDI4FQIAERgUQ0VERjI3NTBGQzQzMzA0OTdDODUA",
+      "template": "madmona_restaurant_intro_v2"
+    }
+  ],
+  "sent_phones": [
+    "201200007090",
+    "201028400844",
+    "201030787900",
+    "201552735204",
+    "201275851769",
+    "201550057533",
+    "201208711180",
+    "201207198887",
+    "201010101342",
+    "201280902028",
+    "201286830199",
+    "201153466893"
+  ],
+  "first_errors": []
+}
