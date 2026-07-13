@@ -147,13 +147,22 @@ async function getMetaCreds(): Promise<{ phone_id: string; token: string }> {
   return { phone_id: m.phone_number_id, token: m.access_token }
 }
 
-async function sendWhatsAppText(to: string, body: string): Promise<{ wa_id?: string; error?: string }> {
+// 🆕 (13 Jul 2026) دعم الجروبات — لو `to` هو group_id بنبعت recipient_type:'group'.
+// قبل كده كان بيبعت individual دايماً، فالرد على رسالة جروب كان بيروح للشخص في الخاص
+// (أو يفشل) بدل ما ينزل في الجروب نفسه.
+async function sendWhatsAppText(to: string, body: string, isGroup = false): Promise<{ wa_id?: string; error?: string }> {
   const { phone_id, token } = await getMetaCreds()
   const finalBody = enforceBrandName(body)
   const r = await fetch(`https://graph.facebook.com/v21.0/${phone_id}/messages`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to, type: 'text', text: { body: finalBody, preview_url: true } })
+    body: JSON.stringify({
+      messaging_product: 'whatsapp',
+      recipient_type: isGroup ? 'group' : 'individual',
+      to,
+      type: 'text',
+      text: { body: finalBody, preview_url: true },
+    })
   })
   const data = await r.json()
   if (!r.ok) return { error: data?.error?.message || `HTTP ${r.status}` }
@@ -998,6 +1007,26 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
   const fromPhone = String(message.from)
   const waMsgId = String(message.id)
   const msgType = String(message.type)
+
+  // 🆕 (13 Jul 2026) رسايل الجروبات — ميتا بتبعت group_id جنب `from` (اللي هو الشخص اللي بعت).
+  // قبل كده كنا بنتجاهل group_id تماماً، فالرد كان بيروح للشخص في الخاص بدل الجروب.
+  // دلوقتي: بنرد على الـgroup_id نفسه، والمحادثة بتتخزن باسم الجروب.
+  const groupId = String(
+    (message.group_id as string | undefined) ||
+    ((message.context as { group_id?: string } | undefined)?.group_id) || ''
+  ).trim()
+  const isGroup = groupId.length > 0
+  // وجهة الرد: الجروب لو جروب، الشخص لو خاص
+  const replyTo = isGroup ? groupId : fromPhone
+
+  // 🔍 DEBUG — نطبع الـpayload الخام لأي رسالة مش خاص عادي، عشان نشوف ميتا بتبعت الجروب إزاي
+  // (مفاتيح الجروب ممكن تكون group_id أو جوه context — لازم نتأكد بالعين مش بالتخمين)
+  const knownKeys = ['from','id','timestamp','type','text','image','audio','document','video','sticker','context','referral','errors']
+  const oddKeys = Object.keys(message).filter(k => !knownKeys.includes(k))
+  if (isGroup || oddKeys.length > 0) {
+    console.log('[GROUP-DEBUG] isGroup=', isGroup, 'groupId=', groupId, 'oddKeys=', JSON.stringify(oddKeys),
+      'raw=', JSON.stringify(message).slice(0, 700))
+  }
   let text = (message.text as { body?: string } | undefined)?.body || ''
   const contact = contacts?.find((c: Record<string, unknown>) => c.wa_id === fromPhone)
   const contactName = (contact?.profile as { name?: string } | undefined)?.name ?? null
@@ -1090,7 +1119,8 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
     } else { voiceFailed = true; storedBody = '[رسالة صوتية]' }
   }
 
-  const fullPhone = '+' + fromPhone
+  // 🆕 الجروب بياخد محادثة خاصة بيه (مفتاحها group_id) عشان السياق ميتلغبطش مع الخاص
+  const fullPhone = isGroup ? `group:${groupId}` : '+' + fromPhone
   const { data: existing } = await sb().from('whatsapp_conversations').select('id, ad_id, contact_type, metadata').eq('contact_phone', fullPhone).maybeSingle()
   let convId: string
   let isNewConversation = false
@@ -1255,6 +1285,16 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
   const combinedText = inbounds.map(m => m.body).filter(Boolean).join('\n---\n')
   if (!combinedText) return
 
+  // 🆕 (13 Jul 2026) في الجروبات: المارد بيرد على أي رسالة (طلب محمد).
+  // الحماية الوحيدة: ميردش على نفسه (لو رقمنا هو اللي بعت) عشان ميدخلش في لوب.
+  if (isGroup) {
+    const ourNumber = (await getCfg('display_phone_number', '')).replace(/\D/g, '')
+    if (ourNumber && fromPhone.replace(/\D/g, '').endsWith(ourNumber.slice(-10))) {
+      console.log('[group] skipped — our own message')
+      return
+    }
+  }
+
   if (!imageData && inbounds.every(m => isNoise(m.body))) {
     const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString()
     const { data: recentReply } = await sb().from('whatsapp_messages').select('id')
@@ -1306,7 +1346,7 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
       try {
         const tts = await ttsArabic(ai.reply)
         if (tts) {
-          const vRes = await sendWhatsAppVoice(fromPhone, tts.b64, tts.mime)
+          const vRes = await sendWhatsAppVoice(replyTo, tts.b64, tts.mime)
           if (!vRes.error) {
             voiceSent = true
             await sb().from('whatsapp_messages').insert({
@@ -1321,13 +1361,14 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
       } catch (e) { console.error('[voice-reply] error:', e) }
     }
 
-    const sendResult = await sendWhatsAppText(fromPhone, ai.reply)
+    // 🆕 لو الرسالة جت من جروب — الرد بينزل في الجروب نفسه (مش في خاص الشخص)
+    const sendResult = await sendWhatsAppText(replyTo, ai.reply, isGroup)
     await sb().from('whatsapp_messages').insert({
       conversation_id: convId, direction: 'outbound', wa_message_id: sendResult.wa_id,
       body: ai.reply, message_type: 'text', status: sendResult.error ? 'failed' : 'sent',
       status_updated_at: new Date().toISOString(), ai_generated: true, agent_name: 'inbound-responder',
       error_message: sendResult.error,
-      metadata: { intent: ai.intent, lead_type: ai.lead_type, supplier_kind: ai.supplier_kind ?? null, category: ai.category, unmet_demand: !!ai.unmet_demand, instant_listing: !!ai.listing_draft, reply_to_count: inbounds.length, had_ad_referral: !!adData, is_first_reply: isFirstReply, had_image: !!imageData, was_voice: wasVoice, voice_reply_sent: voiceSent }
+      metadata: { intent: ai.intent, lead_type: ai.lead_type, supplier_kind: ai.supplier_kind ?? null, category: ai.category, unmet_demand: !!ai.unmet_demand, instant_listing: !!ai.listing_draft, reply_to_count: inbounds.length, had_ad_referral: !!adData, is_first_reply: isFirstReply, had_image: !!imageData, was_voice: wasVoice, voice_reply_sent: voiceSent, is_group: isGroup, group_id: isGroup ? groupId : null }
     })
     if (ai.listing_draft && ai.listing_draft.title && ai.lead_type === 'supplier_lead') {
       await saveInstantListingDraft(fullPhone, contactName, convId, ai.listing_draft, combinedText)

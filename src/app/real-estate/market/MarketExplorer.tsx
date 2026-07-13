@@ -570,14 +570,21 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-      {it.cover_url && (
+      {/* 🖼️ الصورة هي البطل — لو مفيش صورة، بانر بهوية مضمونة بدل كارت فاضي */}
+      {it.cover_url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={it.cover_url}
           alt={it.title}
           loading="lazy"
-          className="w-full h-36 object-cover"
+          className="w-full h-44 object-cover"
         />
+      ) : (
+        <div className="w-full h-44 bg-gradient-to-br from-[#1F6F5F] to-[#2FA084] flex flex-col items-center justify-center gap-2 px-4 text-center">
+          <Building2 className="w-8 h-8 text-white/90" />
+          <p className="text-white font-bold text-sm leading-snug line-clamp-2">{it.title}</p>
+          {it.developer && <p className="text-white/70 text-[11px]">{it.developer}</p>}
+        </div>
       )}
 
       <div className="p-5 flex flex-col flex-1">

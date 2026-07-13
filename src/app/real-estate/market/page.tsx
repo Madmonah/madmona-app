@@ -54,7 +54,14 @@ async function getItems(): Promise<Item[]> {
       .eq('status', 'published')
       .eq('embargoed', false) // ⛔ المشاريع المحظور نشرها (زي أبراج العلمين) مبتظهرش
       .order('sort_order', { ascending: true })
-    return (data as unknown as Item[]) || []
+    const rows = (data as unknown as Item[]) || []
+    // 🆕 (13 Jul 2026) الصورة هي البطل — المشاريع اللي معاها صورة تظهر الأول،
+    // وبعدين اللي معاها بروشور/فيديو، وبعدين الباقي. الترتيب الأصلي بيتحافظ عليه جوه كل مجموعة.
+    const rank = (it: Item) => (it.cover_url ? 0 : (it.brochure_url || it.video_url) ? 1 : 2)
+    return rows
+      .map((it, i) => ({ it, i }))
+      .sort((a, b) => rank(a.it) - rank(b.it) || a.i - b.i)
+      .map(({ it }) => it)
   } catch {
     return []
   }
