@@ -107,11 +107,9 @@ export default function InventoryPage({ params }: { params: { supplierId: string
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: sup } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(sup as any)
 
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_list_inventory', {
       p_supplier_id: supplierId,
       p_filter: search || null,
@@ -285,6 +283,27 @@ export default function InventoryPage({ params }: { params: { supplierId: string
 /* ============ 🆕 (13 Jul 2026) إضافة منتج واحد يدوي ============ */
 /* بيستخدم نفس الـRPC بتاع الاستيراد (admin_import_inventory) بصف واحد،
    عشان نفس المنطق والمزامنة مع الماركت تشتغل بالظبط. */
+
+/* 🐛 لازم يفضل برّه الكومبوننت. لو اتعرّف جوّه، React بيشوفه نوع جديد كل
+   re-render فبيهدم الـ<input> ويبنيه من الأول → الفوكس بيضيع والمستخدم
+   يكتب حرف واحد بس. */
+function Fld({
+  label, value, onChange, ph, num,
+}: { label: string; value: string; onChange: (v: string) => void; ph?: string; num?: boolean }) {
+  return (
+    <div>
+      <label className="block text-[11px] font-bold text-[#6B7280] mb-1">{label}</label>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={ph}
+        inputMode={num ? 'decimal' : undefined}
+        className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#2FA084] outline-none"
+      />
+    </div>
+  )
+}
+
 function AddProductModal({
   supplierId, onClose, onDone,
 }: { supplierId: string; onClose: () => void; onDone: () => void }) {
@@ -347,18 +366,9 @@ function AddProductModal({
     setSaving(false)
   }
 
-  const In = ({ k, label, ph, type = 'text' }: { k: string; label: string; ph?: string; type?: string }) => (
-    <div>
-      <label className="block text-[11px] font-bold text-[#6B7280] mb-1">{label}</label>
-      <input
-        value={(f as Record<string, string>)[k]}
-        onChange={(e) => set(k, e.target.value)}
-        placeholder={ph}
-        inputMode={type === 'num' ? 'decimal' : undefined}
-        className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#2FA084] outline-none"
-      />
-    </div>
-  )
+  // 🐛 (13 Jul 2026) كان فيه كومبوننت `In` معرّف جوه الـmodal — كل حرف بيعمل
+  // re-render فالـinput بيتولد من الأول والفوكس بيضيع → المستخدم بيكتب حرف واحد بس.
+  // الحل: `Fld` كومبوننت ثابت برّه (تحت الملف) وبنستخدمه مباشرة.
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm p-0 md:p-4" dir="rtl">
@@ -373,26 +383,26 @@ function AddProductModal({
         </div>
 
         <div className="p-5 space-y-3">
-          <In k="name_ar" label="اسم المنتج *" ph="مثلاً: قاطع كهربا شنايدر 32A" />
+          <Fld label="اسم المنتج *" value={f.name_ar} onChange={(v) => set('name_ar', v)} ph="مثلاً: قاطع كهربا شنايدر 32A" />
 
           <div className="grid grid-cols-2 gap-2">
-            <In k="selling_price_egp" label="سعر البيع (ج)" ph="550" type="num" />
-            <In k="cost_price_egp" label="سعر التكلفة (ج)" ph="400" type="num" />
+            <Fld label="سعر البيع (ج)" value={f.selling_price_egp} onChange={(v) => set('selling_price_egp', v)} ph="550" num />
+            <Fld label="سعر التكلفة (ج)" value={f.cost_price_egp} onChange={(v) => set('cost_price_egp', v)} ph="400" num />
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <In k="current_stock" label="الكمية بالمخزن" ph="20" type="num" />
-            <In k="reorder_threshold" label="حد إعادة الطلب" ph="5" type="num" />
+            <Fld label="الكمية بالمخزن" value={f.current_stock} onChange={(v) => set('current_stock', v)} ph="20" num />
+            <Fld label="حد إعادة الطلب" value={f.reorder_threshold} onChange={(v) => set('reorder_threshold', v)} ph="5" num />
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <In k="category" label="التصنيف" ph="كهرباء / بقالة" />
-            <In k="unit" label="الوحدة" ph="قطعة / علبة" />
+            <Fld label="التصنيف" value={f.category} onChange={(v) => set('category', v)} ph="كهرباء / بقالة" />
+            <Fld label="الوحدة" value={f.unit} onChange={(v) => set('unit', v)} ph="قطعة / علبة" />
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <In k="sku" label="SKU / باركود" ph="اختياري" />
-            <In k="warehouse" label="المخزن" ph="اختياري" />
+            <Fld label="SKU / باركود" value={f.sku} onChange={(v) => set('sku', v)} ph="اختياري" />
+            <Fld label="المخزن" value={f.warehouse} onChange={(v) => set('warehouse', v)} ph="اختياري" />
           </div>
 
           {/* 📸 صورة المنتج — رفع من الموبايل */}
@@ -430,7 +440,7 @@ function AddProductModal({
             )}
           </div>
 
-          <In k="notes" label="ملاحظات" ph="اختياري" />
+          <Fld label="ملاحظات" value={f.notes} onChange={(v) => set('notes', v)} ph="اختياري" />
 
           {err && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
@@ -556,7 +566,6 @@ function ImportModal({ supplierId, onClose, onDone }: { supplierId: string; onCl
       setProgress(null)
       let inserted = 0, updated = 0, skipped = 0
       for (let i = 0; i < payload.length; i += 500) {
-        // @ts-expect-error
         const { data, error: e } = await supabase.rpc('admin_import_inventory', {
           p_supplier_id: supplierId, p_rows: payload.slice(i, i + 500),
         })
