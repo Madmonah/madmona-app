@@ -139,6 +139,33 @@ where n.nspname = 'public' group by 1 having count(*) > 1;
 
 ---
 
+## 🚨 قاعدتين لازم تتحطّوا في أي كود جديد
+
+### 1. صفحة تحت `/admin`؟ استخدم `adminRpc`
+```ts
+import { adminRpc } from '@/lib/adminRpc'
+await adminRpc('admin_import_inventory', { ... })   // ✅
+await supabase.rpc('admin_import_inventory', {...}) // ⛔ forbidden
+```
+**ليه:** لوحة `/admin` مقفولة بكوكي مش بـ Supabase Auth → `auth.uid()` = NULL
+→ `is_admin()` = false → كل RPC محميّة بترجع `forbidden`.
+
+أي RPC محميّة جديدة **لازم تتضاف** لقايمة `ALLOWED` في `src/app/api/admin/rpc/route.ts`.
+
+### 2. أي `.rpc()` لازم يتفحص الخطأ
+```ts
+const { error } = await supabase.rpc(...)   // ✅ افحص واعرض
+if (error) { setErr(error.message); return }
+
+await supabase.rpc(...)                     // ⛔ بيفشل في صمت
+onSaved()                                    //    الفورم بيقفل كأنه نجح
+```
+أو استخدم `rpcOrThrow` من `@/lib/rpc` — بيرمي Error بالرسالة الحقيقية.
+
+**ده اللي خلّى باج المصاريف مستخبّي لأسابيع.**
+
+---
+
 ## ⚠️ لسه مش مربوط
 
 - **`wallet_transactions`** — محفظة العميل. محتاجة حساب التزام «محفظة عملاء» في شجرة الحسابات.

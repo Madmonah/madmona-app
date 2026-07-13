@@ -2,7 +2,8 @@
 
 import { useEffect, useState, type ReactNode } from 'react'
 import Link from 'next/link'
-import { supabaseBrowser } from '@/lib/supabase-browser'
+// 🔐 كل الـRPCs هنا محميّة بصلاحية أدمن — لازم تعدّي من بوابة الأدمن على السيرفر
+import { adminRpc } from '@/lib/adminRpc'
 import {
   Loader2, Lock, AlertCircle, ArrowRight, ShieldCheck, Search,
   Plus, Check, ChevronDown, X, Building2, Crown, Users,
@@ -46,21 +47,19 @@ export default function PermissionsPage() {
     setOpen(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n })
   }
 
+  // 🔐 (13 Jul 2026) قبل كده كانت بتطلب جلسة Supabase وتنادي الـRPC من المتصفح
+  // — والصفحة تحت /admin اللي مقفولة بكوكي مش بـ Supabase Auth، فـ auth.uid() = NULL
+  // و is_admin() = false → forbidden، وصفحة الصلاحيات كلها مكانتش بتشتغل.
+  // دلوقتي بتعدّي من /api/admin/rpc اللي بيتأكد من الكوكي على السيرفر.
   async function load() {
     try {
-      const { data: { session } } = await supabaseBrowser.auth.getSession()
-      if (!session?.user) { setStage('unauthenticated'); return }
-      // @ts-expect-error rpc not in generated types
-      const { data, error } = await supabaseBrowser.rpc('get_employee_permissions_overview')
-      if (error) {
-        const m = (error.message || '').toLowerCase()
-        if (m.includes('forbidden') || m.includes('أدمن')) { setStage('forbidden'); return }
-        setError(error.message); setStage('ready'); return
-      }
-      setOv(data as Overview)
+      const data = await adminRpc<Overview>('get_employee_permissions_overview')
+      setOv(data)
       setOpen(new Set([MADMONA_ID]))
       setStage('ready')
     } catch (e) {
+      const m = (e instanceof Error ? e.message : '').toLowerCase()
+      if (m.includes('بوابة الأدمن') || m.includes('forbidden')) { setStage('forbidden'); return }
       setError(e instanceof Error ? e.message : 'فشل التحميل'); setStage('ready')
     }
   }
@@ -85,12 +84,10 @@ export default function PermissionsPage() {
     setBusy(b => ({ ...b, [lock]: true }))
     setOv(o => o ? applyPerms(o, emp.id, next) : o)
     try {
-      // @ts-expect-error
-      const { error } = await supabaseBrowser.rpc('set_employee_permission', { p_employee_id: emp.id, p_key: key, p_value: value })
-      if (error) throw error
-    } catch {
+      await adminRpc('set_employee_permission', { p_employee_id: emp.id, p_key: key, p_value: value })
+    } catch (e: any) {
       setOv(o => o ? applyPerms(o, emp.id, prev) : o)
-      flash('فشل الحفظ، حاول تاني')
+      flash(e?.message || 'فشل الحفظ، حاول تاني')
     } finally {
       setBusy(b => { const n = { ...b }; delete n[lock]; return n })
     }
@@ -104,12 +101,10 @@ export default function PermissionsPage() {
     setBusy(b => ({ ...b, [lock]: true }))
     setOv(o => o ? applyPerms(o, emp.id, perms) : o)
     try {
-      // @ts-expect-error
-      const { error } = await supabaseBrowser.rpc('set_employee_permissions_bulk', { p_employee_id: emp.id, p_permissions: perms })
-      if (error) throw error
-    } catch {
+      await adminRpc('set_employee_permissions_bulk', { p_employee_id: emp.id, p_permissions: perms })
+    } catch (e: any) {
       setOv(o => o ? applyPerms(o, emp.id, prev) : o)
-      flash('فشل الحفظ، حاول تاني')
+      flash(e?.message || 'فشل الحفظ، حاول تاني')
     } finally {
       setBusy(b => { const n = { ...b }; delete n[lock]; return n })
     }
@@ -293,9 +288,11 @@ function AddPermModal({ onClose, onDone, onError }: { onClose: () => void; onDon
     if (!labelAr.trim()) return
     setSaving(true)
     try {
-      // @ts-expect-error
-      const { error } = await supabaseBrowser.rpc('add_permission_to_catalog', { p_key: key.trim() || `perm_${Date.now()}`, p_label_ar: labelAr.trim(), p_label_en: null })
-      if (error) throw error
+      await adminRpc('add_permission_to_catalog', {
+        p_key: key.trim() || `perm_${Date.now()}`,
+        p_label_ar: labelAr.trim(),
+        p_label_en: null,
+      })
       onDone()
     } catch { onError() } finally { setSaving(false) }
   }

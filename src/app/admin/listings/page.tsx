@@ -13,6 +13,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+// 🔐 الـRPCs دي محميّة بصلاحية — لازم تعدّي من بوابة الأدمن على السيرفر
+import { adminRpc } from '@/lib/adminRpc'
 import {
   ArrowRight, Loader2, Lock, ShieldAlert, Plus, Eye, Edit2, Trash2,
   SlidersHorizontal, Archive, Building2,
@@ -98,25 +100,31 @@ export default function AdminListingsPage() {
   }, [search])
   useEffect(() => { setOffset(0) }, [tier, status, category, city, hasPhone, claimed])
 
+  // 🔐 الدوال دي محميّة بصلاحية أدمن — لازم تعدّي من /api/admin/rpc.
+  // النداء المباشر من المتصفح بيرجع forbidden (اللوحة بكوكي مش Supabase Auth).
   const loadFacets = useCallback(async () => {
-    const { data, error } = await supabase.rpc('admin_listings_facets')
-    if (error) { setErr(error.message); return }
-    setFacets(data as Facets)
+    try {
+      const data = await adminRpc<Facets>('admin_listings_facets')
+      setFacets(data)
+    } catch (e: any) { setErr(e?.message || 'مقدرناش نحمّل الفلاتر') }
   }, [])
 
   const load = useCallback(async () => {
     setLoading(true); setErr(null)
-    const { data, error } = await supabase.rpc('admin_listings_search', {
-      p_tier: tier, p_status: status,
-      p_category: category || null, p_city: city || null,
-      p_has_phone: hasPhone, p_claimed: claimed,
-      p_search: debounced || null, p_limit: PAGE, p_offset: offset,
-    })
+    try {
+      const data: any = await adminRpc('admin_listings_search', {
+        p_tier: tier, p_status: status,
+        p_category: category || null, p_city: city || null,
+        p_has_phone: hasPhone, p_claimed: claimed,
+        p_search: debounced || null, p_limit: PAGE, p_offset: offset,
+      })
+      setRows((data?.rows || []) as Row[])
+      setTotal(data?.total || 0)
+      setSel({})
+    } catch (e: any) {
+      setErr(e?.message || 'مقدرناش نحمّل الليستنجات'); setRows([]); setTotal(0)
+    }
     setLoading(false)
-    if (error) { setErr(error.message); setRows([]); setTotal(0); return }
-    setRows(((data as any)?.rows || []) as Row[])
-    setTotal((data as any)?.total || 0)
-    setSel({})
   }, [tier, status, category, city, hasPhone, claimed, debounced, offset])
 
   useEffect(() => { if (stage === 'ready') { loadFacets() } }, [stage, loadFacets])
@@ -136,11 +144,15 @@ export default function AdminListingsPage() {
     if (ids.length === 0) return
     if (confirmMsg && !confirm(confirmMsg)) return
     setBusy(true); setFlash(null)
-    const { data, error } = await supabase.rpc('admin_bulk_set_status', { p_ids: ids, p_status: newStatus })
+    let data: any
+    try {
+      data = await adminRpc('admin_bulk_set_status', { p_ids: ids, p_status: newStatus })
+    } catch (e: any) {
+      setBusy(false); setFlash('خطأ: ' + (e?.message || 'الحفظ فشل')); return
+    }
     setBusy(false)
-    if (error) { setFlash('خطأ: ' + error.message); return }
-    const u = (data as any)?.updated || 0
-    const f = ((data as any)?.failed || []).length
+    const u = data?.updated || 0
+    const f = (data?.failed || []).length
     setFlash(`تم تحديث ${u}${f ? ` · فشل ${f} (غالباً نشاط حقيقي محتاج صورة/توثيق رقم)` : ''}`)
     setStatusChanging(null)
     await load(); await loadFacets()

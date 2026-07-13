@@ -11,6 +11,8 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+// 🔐 الـRPCs دي محميّة — لازم تعدّي من بوابة الأدمن على السيرفر
+import { adminRpc } from '@/lib/adminRpc'
 import { Loader2, ArrowRight, ShoppingBasket, RefreshCw, Send, CheckCircle, Clock, MapPin, Phone, StickyNote } from 'lucide-react'
 
 const supa = supabaseBrowser as any
@@ -39,9 +41,11 @@ export default function QuoteOrdersPage() {
   const load = useCallback(async () => {
     setLoading(true); setErr(null)
     try {
-      const { data, error } = await supa.rpc('madmona_list_quote_orders', { p_token: token(), p_supplier_id: supplierId })
+      // 🔐 عن طريق بوابة الأدمن — الدالة محميّة، والنداء المباشر بيرجع forbidden
+      const data: any = await adminRpc('madmona_list_quote_orders', {
+        p_token: token(), p_supplier_id: supplierId,
+      })
       setLoading(false)
-      if (error) { setErr(error.message); return }
       if (!data?.ok) { setErr(data?.error || 'حصل خطأ'); return }
       const list = (data.orders || []) as Order[]
       setOrders(list)
@@ -101,12 +105,12 @@ export default function QuoteOrdersPage() {
     if (lines.every(l => l.unit_price <= 0)) { setFlash('سعّر صنف واحد على الأقل'); return }
     setBusy(o.id); setFlash(null)
     try {
-      const { data, error } = await supa.rpc('madmona_quote_order', {
+      // 🔐 عن طريق بوابة الأدمن
+      const data: any = await adminRpc('madmona_quote_order', {
         p_token: token(), p_order_id: o.id, p_lines: lines,
         p_delivery_fee: parseFloat(d.fee || '0') || 0, p_supplier_notes: d.notes.trim() || null,
       })
       setBusy(null)
-      if (error) { setFlash('خطأ: ' + error.message); return }
       if (!data?.ok) { setFlash(data?.error || 'حصل خطأ'); return }
       setFlash(`تم تسعير الطلب وإرساله للعميل — إجمالي ${Number(data.total).toLocaleString('ar-EG')} ج ✅`)
       await load()

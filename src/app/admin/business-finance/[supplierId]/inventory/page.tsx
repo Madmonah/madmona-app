@@ -10,6 +10,9 @@ import {
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { extractRowImages, uploadExtractedImage } from '@/lib/xlsxImages'
+// 🔐 admin_import_inventory محميّة بصلاحية — لازم تعدّي من بوابة الأدمن
+// مش من المتصفح مباشرة، وإلا بترجع forbidden. شوف src/lib/adminRpc.ts
+import { adminRpc } from '@/lib/adminRpc'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -341,7 +344,8 @@ function AddProductModal({
     if (!f.name_ar.trim()) { setErr('اسم المنتج مطلوب'); return }
     setSaving(true)
     try {
-      const { error } = await supabase.rpc('admin_import_inventory', {
+      // 🔐 عن طريق بوابة الأدمن — النداء المباشر من المتصفح بيرجع forbidden
+      await adminRpc('admin_import_inventory', {
         p_supplier_id: supplierId,
         p_rows: [{
           name_ar: f.name_ar.trim(),
@@ -357,11 +361,10 @@ function AddProductModal({
           notes: f.notes.trim() || null,
         }],
       })
-      if (error) throw error
       setOk(true)
       setTimeout(onDone, 900)
-    } catch {
-      setErr('حصلت مشكلة في الحفظ — جرّب تاني')
+    } catch (e: any) {
+      setErr(e?.message || 'حصلت مشكلة في الحفظ — جرّب تاني')
     }
     setSaving(false)
   }
@@ -566,10 +569,10 @@ function ImportModal({ supplierId, onClose, onDone }: { supplierId: string; onCl
       setProgress(null)
       let inserted = 0, updated = 0, skipped = 0
       for (let i = 0; i < payload.length; i += 500) {
-        const { data, error: e } = await supabase.rpc('admin_import_inventory', {
+        // 🔐 عن طريق بوابة الأدمن — النداء المباشر بيرجع forbidden
+        const data: any = await adminRpc('admin_import_inventory', {
           p_supplier_id: supplierId, p_rows: payload.slice(i, i + 500),
         })
-        if (e) throw new Error(e.message)
         inserted += Number(data?.inserted || 0); updated += Number(data?.updated || 0); skipped += Number(data?.skipped || 0)
       }
       setResult(`✅ تم: ${inserted} منتج جديد · ${updated} اتحدّث · ${skipped} اتخطى`)
