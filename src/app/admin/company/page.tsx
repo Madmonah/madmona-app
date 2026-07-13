@@ -40,14 +40,20 @@ const TEAM_AR: Record<string, string> = {
 }
 
 /* ============ shared helpers ============ */
+// 🐛 (13 Jul 2026) كان بينادي الـRPC من المتصفح على طول — ومحصلش حفظ خالص.
+// السبب: لوحة /admin مقفولة بكوكي مش بـ Supabase Auth، فـ auth.uid() = NULL
+// و is_admin() = false → كل حفظ بيرجع forbidden. القراءة كانت شغالة لأن
+// madmona_company_dashboard مفيهاش is_admin() — عشان كده الصفحة بتفتح والحفظ بس بيقع.
+// دلوقتي الحفظ بيعدّي من /api/admin/company اللي بيتأكد من الكوكي على السيرفر.
 async function callRpc(fn: string, args: any) {
-  // @ts-expect-error rpc types not generated
-  const { data, error } = await supabaseBrowser.rpc(fn, args)
-  if (error) {
-    const m = (error.message || '').toLowerCase()
-    throw new Error(m.includes('forbidden') ? 'لازم تسجّل دخول كأدمن الأول' : (error.message || 'حصل خطأ'))
-  }
-  return data
+  const res = await fetch('/api/admin/company', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fn, args }),
+  })
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(json?.error || 'حصل خطأ')
+  return json?.data
 }
 async function uploadToProofs(file: File): Promise<string> {
   const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
