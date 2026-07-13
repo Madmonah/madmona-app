@@ -446,7 +446,48 @@ export default function SupplierProductsPage() {
                 <Field label="الباركود" value={form.barcode} onChange={(v) => setForm({ ...form, barcode: v })} placeholder="اختياري" dir="ltr" />
               </div>
               <Field label="الوصف (اختياري)" value={form.description_ar} onChange={(v) => setForm({ ...form, description_ar: v })} placeholder="تفاصيل تساعد العميل" multiline />
-              <Field label="لينك صورة (اختياري)" value={form.photo_url} onChange={(v) => setForm({ ...form, photo_url: v })} placeholder="https://..." dir="ltr" />
+
+              {/* 📸 (13 Jul 2026) رفع الصورة من الموبايل — قبل كده كان لينك بس،
+                  والمورّد اللي واقف في محله مش هيلاقي لينك للمنتج بتاعه. */}
+              <div>
+                <label className="block text-[11px] font-bold text-gray-600 mb-1.5">صورة المنتج (اختياري)</label>
+                {form.photo_url ? (
+                  <div className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={form.photo_url} alt="" className="w-full h-32 object-cover rounded-2xl border border-gray-200" />
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, photo_url: '' })}
+                      className="absolute top-2 left-2 w-7 h-7 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/80"
+                    >
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className={`flex flex-col items-center justify-center gap-1.5 w-full h-24 border-2 border-dashed rounded-2xl cursor-pointer transition-colors ${
+                    uploadingPhoto ? 'border-gray-200 bg-gray-50' : 'border-gray-200 hover:border-[#2FA084] hover:bg-[#2FA084]/5'
+                  }`}>
+                    {uploadingPhoto ? (
+                      <Loader2 className="w-5 h-5 text-[#1F6F5F] animate-spin" />
+                    ) : (
+                      <>
+                        <ImageIcon className="w-5 h-5 text-gray-400" />
+                        <span className="text-xs font-bold text-gray-500">صوّر المنتج أو ارفع صورة</span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={uploadingPhoto}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0]
+                        if (f) uploadPhoto(f)
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
 
               <label className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl cursor-pointer">
                 <span className="text-sm font-bold text-gray-700">متوفر في المخزون</span>

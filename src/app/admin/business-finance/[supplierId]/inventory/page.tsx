@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import {
   Package, Search, ChevronLeft, Loader2, AlertTriangle, TrendingUp,
   RefreshCw, Filter, DollarSign, Box, AlertCircle, FileSpreadsheet, Upload, X,
+  Plus, Image as ImageIcon,
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { extractRowImages, uploadExtractedImage } from '@/lib/xlsxImages'
@@ -100,6 +101,9 @@ export default function InventoryPage({ params }: { params: { supplierId: string
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
   const [lowStockOnly, setLowStockOnly] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
+  // 🆕 (13 Jul 2026) إضافة منتج يدوي — قبل كده كان Excel بس، ومحدش هيعمل ملف
+  // عشان يضيف منتج واحد.
+  const [addOpen, setAddOpen] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -159,7 +163,11 @@ export default function InventoryPage({ params }: { params: { supplierId: string
               )}
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={() => setImportOpen(true)} className="px-4 py-2 rounded-xl bg-[#1F6F5F] hover:bg-[#1A5D4F] text-sm font-bold text-white flex items-center gap-2">
+              {/* 🆕 إضافة منتج واحد يدوي — من غير Excel */}
+              <button onClick={() => setAddOpen(true)} className="px-4 py-2 rounded-xl bg-[#1F6F5F] hover:bg-[#1A5D4F] text-sm font-bold text-white flex items-center gap-2">
+                <Plus className="w-4 h-4" /> منتج جديد
+              </button>
+              <button onClick={() => setImportOpen(true)} className="px-4 py-2 rounded-xl bg-white border border-[#1F6F5F]/30 hover:bg-[#1F6F5F]/5 text-sm font-bold text-[#1F6F5F] flex items-center gap-2">
                 <FileSpreadsheet className="w-4 h-4" /> استيراد Excel
               </button>
               <button onClick={load} className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2">
@@ -262,6 +270,195 @@ export default function InventoryPage({ params }: { params: { supplierId: string
           onDone={() => { setImportOpen(false); load() }}
         />
       )}
+
+      {addOpen && (
+        <AddProductModal
+          supplierId={supplierId}
+          onClose={() => setAddOpen(false)}
+          onDone={() => { setAddOpen(false); load() }}
+        />
+      )}
+    </div>
+  )
+}
+
+/* ============ 🆕 (13 Jul 2026) إضافة منتج واحد يدوي ============ */
+/* بيستخدم نفس الـRPC بتاع الاستيراد (admin_import_inventory) بصف واحد،
+   عشان نفس المنطق والمزامنة مع الماركت تشتغل بالظبط. */
+function AddProductModal({
+  supplierId, onClose, onDone,
+}: { supplierId: string; onClose: () => void; onDone: () => void }) {
+  const [f, setF] = useState({
+    name_ar: '', sku: '', category: '', unit: 'قطعة',
+    current_stock: '', reorder_threshold: '', cost_price_egp: '', selling_price_egp: '',
+    warehouse: '', notes: '', photo_url: '',
+  })
+  const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+  const [ok, setOk] = useState(false)
+
+  const set = (k: string, v: string) => setF((s) => ({ ...s, [k]: v }))
+  const num = (v: string) => (v.trim() === '' ? null : Number(v))
+
+  async function uploadPhoto(file: File) {
+    setUploading(true); setErr(null)
+    try {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
+      const path = `inventory/${supplierId}/${Date.now()}.${ext}`
+      const { error } = await supabase.storage.from('listing-photos')
+        .upload(path, file, { upsert: true, contentType: file.type })
+      if (error) throw error
+      const { data } = supabase.storage.from('listing-photos').getPublicUrl(path)
+      set('photo_url', data.publicUrl)
+    } catch {
+      setErr('مقدرناش نرفع الصورة — جرّب تاني')
+    }
+    setUploading(false)
+  }
+
+  async function save() {
+    setErr(null)
+    if (!f.name_ar.trim()) { setErr('اسم المنتج مطلوب'); return }
+    setSaving(true)
+    try {
+      const { error } = await supabase.rpc('admin_import_inventory', {
+        p_supplier_id: supplierId,
+        p_rows: [{
+          name_ar: f.name_ar.trim(),
+          sku: f.sku.trim() || null,
+          category: f.category.trim() || null,
+          unit: f.unit.trim() || null,
+          current_stock: num(f.current_stock),
+          reorder_threshold: num(f.reorder_threshold),
+          cost_price_egp: num(f.cost_price_egp),
+          selling_price_egp: num(f.selling_price_egp),
+          warehouse: f.warehouse.trim() || null,
+          photo_url: f.photo_url || null,
+          notes: f.notes.trim() || null,
+        }],
+      })
+      if (error) throw error
+      setOk(true)
+      setTimeout(onDone, 900)
+    } catch {
+      setErr('حصلت مشكلة في الحفظ — جرّب تاني')
+    }
+    setSaving(false)
+  }
+
+  const In = ({ k, label, ph, type = 'text' }: { k: string; label: string; ph?: string; type?: string }) => (
+    <div>
+      <label className="block text-[11px] font-bold text-[#6B7280] mb-1">{label}</label>
+      <input
+        value={(f as Record<string, string>)[k]}
+        onChange={(e) => set(k, e.target.value)}
+        placeholder={ph}
+        inputMode={type === 'num' ? 'decimal' : undefined}
+        className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#2FA084] outline-none"
+      />
+    </div>
+  )
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm p-0 md:p-4" dir="rtl">
+      <div className="bg-white w-full md:max-w-lg rounded-t-3xl md:rounded-3xl max-h-[92vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
+          <h2 className="text-lg font-black text-[#1A2E26] flex items-center gap-2">
+            <Plus className="w-5 h-5 text-[#1F6F5F]" /> منتج جديد
+          </h2>
+          <button onClick={onClose} className="w-9 h-9 hover:bg-gray-100 rounded-full flex items-center justify-center">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-3">
+          <In k="name_ar" label="اسم المنتج *" ph="مثلاً: قاطع كهربا شنايدر 32A" />
+
+          <div className="grid grid-cols-2 gap-2">
+            <In k="selling_price_egp" label="سعر البيع (ج)" ph="550" type="num" />
+            <In k="cost_price_egp" label="سعر التكلفة (ج)" ph="400" type="num" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <In k="current_stock" label="الكمية بالمخزن" ph="20" type="num" />
+            <In k="reorder_threshold" label="حد إعادة الطلب" ph="5" type="num" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <In k="category" label="التصنيف" ph="كهرباء / بقالة" />
+            <In k="unit" label="الوحدة" ph="قطعة / علبة" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <In k="sku" label="SKU / باركود" ph="اختياري" />
+            <In k="warehouse" label="المخزن" ph="اختياري" />
+          </div>
+
+          {/* 📸 صورة المنتج — رفع من الموبايل */}
+          <div>
+            <label className="block text-[11px] font-bold text-[#6B7280] mb-1">صورة المنتج (اختياري)</label>
+            {f.photo_url ? (
+              <div className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={f.photo_url} alt="" className="w-full h-32 object-cover rounded-xl border border-gray-200" />
+                <button
+                  onClick={() => set('photo_url', '')}
+                  className="absolute top-2 left-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80"
+                >
+                  <X className="w-4 h-4 text-white" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center gap-1.5 w-full h-24 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#2FA084] hover:bg-[#2FA084]/5 transition-colors">
+                {uploading ? (
+                  <Loader2 className="w-5 h-5 text-[#1F6F5F] animate-spin" />
+                ) : (
+                  <>
+                    <ImageIcon className="w-5 h-5 text-gray-400" />
+                    <span className="text-xs font-bold text-gray-500">صوّر المنتج أو ارفع صورة</span>
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={uploading}
+                  onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadPhoto(file) }}
+                />
+              </label>
+            )}
+          </div>
+
+          <In k="notes" label="ملاحظات" ph="اختياري" />
+
+          {err && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+              <p className="text-xs font-bold text-red-700">{err}</p>
+            </div>
+          )}
+          {ok && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+              <p className="text-xs font-bold text-emerald-700">✅ المنتج اتضاف — بيتزامن مع ماركت مضمونة</p>
+            </div>
+          )}
+        </div>
+
+        <div className="sticky bottom-0 bg-white border-t border-gray-100 p-4 flex gap-2">
+          <button onClick={onClose} className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-bold text-sm hover:bg-gray-200">
+            إلغاء
+          </button>
+          <button
+            onClick={save}
+            disabled={saving || uploading}
+            className="flex-1 bg-[#1F6F5F] text-white py-3 rounded-xl font-bold text-sm hover:bg-[#1A5D4F] disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            {saving ? 'جاري الحفظ...' : 'أضف المنتج'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
