@@ -101,6 +101,21 @@ function fmtMoney(v: number): string {
   return `${v}`
 }
 
+// 🎨 (13 Jul 2026) المشاريع اللي لسه مالهاش صورة بتاخد بانر بهوية مضمونة —
+// لون متدرّج حسب المنطقة عشان الشبكة تبقى حيّة مش رمادية مكررة.
+function bannerTone(it: Item): string {
+  const s = `${it.area_label || ''} ${it.city || ''}`
+  if (/ساحل|علمين|رأس الحكمة|مارينا|سيدي|مطروح|جونة|سخنة|galala|جلالة/i.test(s))
+    return 'from-[#0E7490] to-[#22D3EE]' // بحر
+  if (/عاصمة|إدارية|capital/i.test(s))
+    return 'from-[#1E3A8A] to-[#3B82F6]' // العاصمة
+  if (/زايد|أكتوبر|اكتوبر|جيزة|october|zayed/i.test(s))
+    return 'from-[#7C2D12] to-[#EA580C]' // غرب
+  if (/تجمع|قاهرة الجديدة|مستقبل|شروق|عبور|مدينتي|new cairo/i.test(s))
+    return 'from-[#1F6F5F] to-[#2FA084]' // شرق — هوية مضمونة
+  return 'from-[#334155] to-[#64748B]' // الباقي
+}
+
 function fmtPrice(it: Item): string {
   const unit = UNIT_SUFFIX[it.price_unit] || ' ج'
   if (it.price_from != null && it.price_to != null)
@@ -569,34 +584,99 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-      {/* 🖼️ الصورة هي البطل — لو مفيش صورة، بانر بهوية مضمونة بدل كارت فاضي */}
-      {it.cover_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={it.cover_url}
-          alt={it.title}
-          loading="lazy"
-          className="w-full h-44 object-cover"
-        />
-      ) : (
-        <div className="w-full h-44 bg-gradient-to-br from-[#1F6F5F] to-[#2FA084] flex flex-col items-center justify-center gap-2 px-4 text-center">
-          <Building2 className="w-8 h-8 text-white/90" />
-          <p className="text-white font-bold text-sm leading-snug line-clamp-2">{it.title}</p>
-          {it.developer && <p className="text-white/70 text-[11px]">{it.developer}</p>}
+    <div className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden flex flex-col">
+      {/* 🖼️ الميديا هي البطل */}
+      <div className="relative h-52 overflow-hidden">
+        {it.cover_url ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={it.cover_url}
+              alt={it.title}
+              loading="lazy"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            {/* تدرّج تحت عشان النص يبان */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+            <div className="absolute bottom-0 inset-x-0 p-4">
+              <h4 className="text-white font-bold text-base leading-snug drop-shadow line-clamp-2">
+                {it.title}
+              </h4>
+              {it.developer && (
+                <p className="text-white/85 text-[11px] mt-0.5 drop-shadow">{it.developer}</p>
+              )}
+            </div>
+          </>
+        ) : (
+          // 🎨 مفيش صورة؟ بانر بهوية مضمونة — مش كارت فاضي
+          <div className={`w-full h-full bg-gradient-to-br ${bannerTone(it)} relative flex flex-col items-center justify-center gap-2.5 px-5 text-center`}>
+            {/* نقشة خفيفة */}
+            <div
+              className="absolute inset-0 opacity-[0.07]"
+              style={{
+                backgroundImage:
+                  'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+                backgroundSize: '18px 18px',
+              }}
+            />
+            <Building2 className="w-9 h-9 text-white/90 relative" strokeWidth={1.5} />
+            <p className="text-white font-bold text-[15px] leading-snug line-clamp-2 relative drop-shadow-sm">
+              {it.title}
+            </p>
+            {it.developer && (
+              <p className="text-white/75 text-[11px] relative">{it.developer}</p>
+            )}
+            {it.area_label && (
+              <span className="relative mt-1 text-[10px] text-white/90 bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/20">
+                📍 {it.area_label}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* 🏷️ شارات فوق الصورة */}
+        <div className="absolute top-3 right-3 flex flex-col gap-1.5 items-end">
+          {it.video_url && (
+            <button
+              onClick={onPlay}
+              className="flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-1 rounded-full hover:bg-black/80 transition-colors"
+            >
+              <PlayCircle className="w-3 h-3" /> فيديو
+            </button>
+          )}
+          {it.brochure_url && (
+            <a
+              href={it.brochure_url}
+              target="_blank"
+              rel="noopener"
+              className="flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-1 rounded-full hover:bg-black/80 transition-colors"
+            >
+              <FileText className="w-3 h-3" /> بروشور
+            </a>
+          )}
         </div>
-      )}
+
+        {/* 💰 السعر — بادج بارز */}
+        {fmtPrice(it) && (
+          <div className="absolute top-3 left-3">
+            <span className="bg-white/95 backdrop-blur-sm text-[#1F6F5F] font-bold text-xs px-3 py-1.5 rounded-full shadow-sm">
+              {fmtPrice(it)}
+            </span>
+          </div>
+        )}
+      </div>
 
       <div className="p-5 flex flex-col flex-1">
-        <div className="flex items-start justify-between gap-2 mb-1.5">
-          <h4 className="font-bold text-gray-900 leading-snug">{it.title}</h4>
-          <Building2 className="w-4 h-4 text-[#2FA084] shrink-0 mt-1" />
-        </div>
-
-        {it.developer && <p className="text-xs text-gray-500 mb-2">المطور: {it.developer}</p>}
-        {it.unit_label && <p className="text-xs text-gray-600 mb-2 leading-relaxed">{it.unit_label}</p>}
-
-        <p className="text-[#1F6F5F] font-bold text-lg mb-2">{fmtPrice(it)}</p>
+        {/* العنوان والسعر فوق على الصورة — هنا التفاصيل بس */}
+        {it.area_label && it.cover_url && (
+          <p className="text-[11px] text-gray-500 mb-2 flex items-center gap-1">
+            <MapPin className="w-3 h-3 text-[#2FA084]" />
+            {it.area_label}
+          </p>
+        )}
+        {it.unit_label && (
+          <p className="text-[13px] text-gray-700 mb-2.5 leading-relaxed font-medium">{it.unit_label}</p>
+        )}
 
         {(it.payment_plan || it.delivery_label) && (
           <div className="space-y-1 mb-2">
@@ -615,33 +695,10 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
           </div>
         )}
 
-        {it.note && <p className="text-xs text-gray-500 leading-relaxed mb-3">{it.note}</p>}
-
-        {/* الميديا */}
-        {(it.brochure_url || it.video_url) && (
-          <div className="flex flex-wrap gap-2 mb-3">
-            {it.brochure_url && (
-              <a
-                href={it.brochure_url}
-                target="_blank"
-                rel="noopener"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-xs font-semibold text-gray-700 hover:border-[#1F6F5F]/40 hover:text-[#1F6F5F] transition-colors"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                البروشور PDF
-              </a>
-            )}
-            {it.video_url && (
-              <button
-                onClick={onPlay}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-xs font-semibold text-gray-700 hover:border-[#1F6F5F]/40 hover:text-[#1F6F5F] transition-colors"
-              >
-                <PlayCircle className="w-3.5 h-3.5" />
-                فيديو المشروع
-              </button>
-            )}
-          </div>
+        {it.note && (
+          <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-3">{it.note}</p>
         )}
+        {/* شارات الميديا فوق على الصورة — مش هنا تاني */}
 
         <a
           href={inquiryWaLink(it)}
