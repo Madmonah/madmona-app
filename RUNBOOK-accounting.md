@@ -81,9 +81,39 @@
 
 ---
 
+## 🔒 الأمان (اتصلّح 13 يوليو 2026)
+
+**كان فيه تسريب حقيقي:** ٢٢ جدول نسخ احتياطية (`_backup_*`, `_cron_*`) كانوا
+**مكشوفين لـanon** — قراءة **وكتابة**. جواهم:
+`_backup_20260609_cold_leads` (401 ليد بأرقام) · `_backup_20260615_tagamoa_login_accounts`
+(11 حساب دخول) · `_backup_noprice_listings` (8735 ليستنج) · وواحد
+(`_madmona_humans_backup`) كان عليه **policy مفتوحة صراحةً لـanon**.
+
+اتقفلوا كلهم: RLS مفعّل + كل صلاحيات anon/authenticated اتسحبت + الـpolicies
+المفتوحة اتمسحت. الـservice_role (السيرفر) بيتخطّى RLS فمفيش حاجة اتكسرت.
+
+**قاعدة:** أي جدول جديد بيبدأ بـ`_` (نسخة احتياطية) → **فعّل RLS واسحب صلاحيات
+anon فوراً**. متسيبوش مكشوف.
+
+كمان: ٣ دوال `SECURITY DEFINER` كانوا من غير `search_path` مثبّت (ثغرة اختطاف) — اتثبّتوا.
+
+---
+
 ## فحص صحة سريع
 
 ```sql
+-- 0) أمان: كلهم لازم = 0
+select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace
+ where n.nspname='public' and c.relkind='r' and not c.relrowsecurity;          -- بلا RLS
+
+select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace    -- نسخ مكشوفة
+ where n.nspname='public' and c.relkind='r' and c.relname like '\_%'
+   and has_table_privilege('anon','public.'||quote_ident(c.relname),'SELECT');
+
+select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace     -- definer بلا search_path
+ where n.nspname='public' and p.prosecdef
+   and not exists (select 1 from unnest(coalesce(p.proconfig,'{}')) cfg where cfg like 'search_path=%');
+
 -- 1) الدفاتر متزنة؟ لازم = 0
 select sum(debit) - sum(credit) from erp_journal_lines;
 
