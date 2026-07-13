@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { ChevronLeft, Loader2, RefreshCw, Calendar, Clock, Save, X, Users, Building2 } from 'lucide-react'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -143,8 +145,7 @@ function ShiftsModal({ supplierId, employee, onClose }: any) {
       end_time: shifts[d.idx]?.end + ':00',
       is_day_off: shifts[d.idx]?.off || false,
     }))
-    // @ts-expect-error
-    await supabase.rpc('admin_set_employee_shifts', {
+    await rpcSafe(supabase, 'admin_set_employee_shifts', {
       p_supplier_id: supplierId,
       p_employee_id: employee.id,
       p_shifts: payload,

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { ChevronLeft, Loader2, RefreshCw, Plus, X, Truck, Phone, Mail } from 'lucide-react'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -147,8 +149,7 @@ function AddVendorModal({ supplierId, cats, onClose, onSaved }: any) {
   async function save() {
     if (!form.name) return alert('اكتب اسم المورد')
     setSaving(true)
-    // @ts-expect-error
-    await supabase.rpc('admin_create_vendor', {
+    await rpcSafe(supabase, 'admin_create_vendor', {
       p_supplier_id: supplierId,
       p_name: form.name,
       p_phone: form.phone || null,

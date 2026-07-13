@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 import {
   Loader2, ChevronRight, Wallet, Clock, Gift, CalendarCheck, ListChecks,
   MapPin, LogIn, LogOut, CheckCircle2, Circle, Coins, AlertCircle, Briefcase,
@@ -83,8 +85,7 @@ export default function MyDashboard() {
     setTaskBusy(taskId)
     const next = current === 'completed' ? 'pending' : 'completed'
     setData((d: any) => ({ ...d, tasks: d.tasks.map((t: any) => t.id === taskId ? { ...t, status: next } : t) }))
-    // @ts-expect-error rpc typing
-    await supabase.rpc('madmona_employee_toggle_task', { p_token: token(), p_task_id: taskId, p_status: next })
+    await rpcSafe(supabase, 'madmona_employee_toggle_task', { p_token: token(), p_task_id: taskId, p_status: next })
     setTaskBusy(null)
   }
 
@@ -92,24 +93,21 @@ export default function MyDashboard() {
     setBookingBusy(bookingId)
     const newStatus = action === 'complete' ? 'completed' : 'in_progress'
     setData((d: any) => ({ ...d, today: d.today.map((b: any) => b.booking_id === bookingId ? { ...b, status: newStatus } : b) }))
-    // @ts-expect-error rpc typing
-    await supabase.rpc('madmona_employee_update_booking', { p_token: token(), p_booking_id: bookingId, p_action: action })
+    await rpcSafe(supabase, 'madmona_employee_update_booking', { p_token: token(), p_booking_id: bookingId, p_action: action })
     setBookingBusy(null)
   }
 
   async function togglePrep(bookingId: string, key: string, done: boolean) {
     setPrepBusy(bookingId + key)
     setData((d: any) => ({ ...d, today: d.today.map((b: any) => b.booking_id === bookingId ? { ...b, prep_checklist: { ...(b.prep_checklist || {}), [key]: done } } : b) }))
-    // @ts-expect-error rpc typing
-    await supabase.rpc('madmona_employee_toggle_prep', { p_token: token(), p_booking_id: bookingId, p_key: key, p_done: done })
+    await rpcSafe(supabase, 'madmona_employee_toggle_prep', { p_token: token(), p_booking_id: bookingId, p_key: key, p_done: done })
     setPrepBusy(null)
   }
 
   async function markAllRead() {
     setUnread(0)
     setNotifs((ns) => ns.map((n) => ({ ...n, read: true })))
-    // @ts-expect-error rpc typing
-    await supabase.rpc('madmona_employee_mark_notifications_read', { p_token: token() })
+    await rpcSafe(supabase, 'madmona_employee_mark_notifications_read', { p_token: token() })
   }
 
   if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div>

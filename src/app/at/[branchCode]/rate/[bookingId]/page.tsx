@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Star, Loader2, Check, Heart } from 'lucide-react'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,8 +26,7 @@ export default function RatePage({
   async function submit() {
     if (rating === 0) return
     setSubmitting(true)
-    // @ts-expect-error
-    await supabase.rpc('customer_rate_service', {
+    await rpcSafe(supabase, 'customer_rate_service', {
       p_booking_id: bookingId,
       p_rating: rating,
       p_comment: comment.trim() || null,

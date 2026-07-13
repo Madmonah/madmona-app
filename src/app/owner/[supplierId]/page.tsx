@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 import {
   Loader2, LogOut, TrendingUp, Users, Calendar, Package, DollarSign,
   Building2, BarChart3, Heart, Sparkles, CheckCircle2, Clock, AlertCircle, ShieldCheck,
@@ -52,8 +54,7 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
   async function logout() {
     const token = localStorage.getItem('madmona_owner_token')
     if (token) {
-      // @ts-expect-error
-      await supabase.rpc('owner_logout', { p_token: token })
+      await rpcSafe(supabase, 'owner_logout', { p_token: token })
       localStorage.removeItem('madmona_owner_token')
     }
     router.push('/owner/login')

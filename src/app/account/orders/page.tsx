@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 import {
   ShoppingBag, Loader2, ArrowRight, Lock, ChevronLeft, Clock,
   CreditCard, Banknote,
@@ -62,8 +64,7 @@ export default function CustomerOrdersPage() {
       // DB function signature: link_guest_orders_to_profile(p_profile_id uuid)
       // It matches guest orders by phone internally against the profile record.
       try {
-        // @ts-expect-error
-        await supabaseBrowser.rpc('link_guest_orders_to_profile', {
+        await rpcSafe(supabaseBrowser, 'link_guest_orders_to_profile', {
           p_profile_id: session.user.id,
         })
       } catch {

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { ChevronLeft, Loader2, RefreshCw, Plus, X, Ship, ChevronDown, ArrowLeft, FileText, Pencil } from 'lucide-react'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -47,8 +49,7 @@ export default function ImportPage({ params }: { params: { supplierId: string } 
     const i = stageIndex(c.stage)
     if (i < 0 || i >= STAGES.length - 1) return
     const next = STAGES[i + 1][0]
-    // @ts-expect-error
-    await supabase.rpc('admin_update_consignment_stage', { p_consignment_id: c.id, p_stage: next })
+    await rpcSafe(supabase, 'admin_update_consignment_stage', { p_consignment_id: c.id, p_stage: next })
     load()
   }
 
@@ -220,8 +221,7 @@ function AddConsignmentModal({ supplierId, onClose, onSaved }: any) {
   async function save() {
     if (!form.ref) return alert('اكتب رقم/مرجع الشحنة')
     setSaving(true)
-    // @ts-expect-error
-    await supabase.rpc('admin_create_import_consignment', {
+    await rpcSafe(supabase, 'admin_create_import_consignment', {
       p_supplier_id: supplierId,
       p_ref: form.ref,
       p_vehicle_type: form.vehicle_type,
@@ -274,8 +274,7 @@ function EditDetailsModal({ consignment: c, onClose, onSaved }: any) {
   const set = (k: string) => (e: any) => setF({ ...f, [k]: e.target.value })
   async function save() {
     setSaving(true)
-    // @ts-expect-error
-    await supabase.rpc('admin_update_consignment_details', { p_consignment_id: c.id, p_patch: f })
+    await rpcSafe(supabase, 'admin_update_consignment_details', { p_consignment_id: c.id, p_patch: f })
     onSaved()
   }
   return (
@@ -358,8 +357,7 @@ function AddUnitModal({ consignmentId, onClose, onSaved }: any) {
   async function save() {
     if (!form.model && !form.brand) return alert('اكتب البراند أو الموديل')
     setSaving(true)
-    // @ts-expect-error
-    await supabase.rpc('admin_add_import_unit', {
+    await rpcSafe(supabase, 'admin_add_import_unit', {
       p_consignment_id: consignmentId,
       p_brand: form.brand || null,
       p_model: form.model || null,

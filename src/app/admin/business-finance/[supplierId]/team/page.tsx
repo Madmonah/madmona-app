@@ -3,6 +3,8 @@
 import { useEffect, useState, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 import {
   Users, Crown, Building2, ListChecks, ChevronLeft, Loader2,
   CheckCircle2, Circle, X, RefreshCw, Plus,
@@ -792,14 +794,12 @@ function TaskModal({
   }
 
   async function clockIn() {
-    // @ts-expect-error
-    await supabase.rpc('admin_clock_in', { p_employee_id: employee.employee_id })
+    await rpcSafe(supabase, 'admin_clock_in', { p_employee_id: employee.employee_id })
     await loadTasks()
   }
 
   async function clockOut() {
-    // @ts-expect-error
-    await supabase.rpc('admin_clock_out', { p_employee_id: employee.employee_id })
+    await rpcSafe(supabase, 'admin_clock_out', { p_employee_id: employee.employee_id })
     await loadTasks()
   }
 
@@ -812,15 +812,13 @@ function TaskModal({
     const newStatus = task.status === 'completed' ? 'pending' : 'completed'
     // Optimistic update
     setTasks((prev) => prev.map((t) => t.id === task.id ? { ...t, status: newStatus, completed_at: newStatus === 'completed' ? new Date().toISOString() : null } : t))
-    // @ts-expect-error
-    await supabase.rpc('admin_update_task_status', { p_task_id: task.id, p_status: newStatus })
+    await rpcSafe(supabase, 'admin_update_task_status', { p_task_id: task.id, p_status: newStatus })
     onRefresh()
   }
 
   async function addTask() {
     if (!newTaskTitle.trim()) return
-    // @ts-expect-error
-    await supabase.rpc('admin_add_task', {
+    await rpcSafe(supabase, 'admin_add_task', {
       p_employee_id: employee.employee_id,
       p_title_ar: newTaskTitle.trim(),
       p_priority: 'medium',
@@ -1810,8 +1808,7 @@ function CommsModal({ roster, onClose, onSaved }: {
 
   async function saveOwner() {
     setSaving(true)
-    // @ts-expect-error rpc untyped
-    await supabase.rpc('set_comms_settings', {
+    await rpcSafe(supabase, 'set_comms_settings', {
       p_owner_email: ownerEmail.trim() || null,
       p_owner_name: ownerName.trim() || null,
       p_always_cc: alwaysCc.split(',').map((x) => x.trim()).filter(Boolean),
@@ -1821,8 +1818,7 @@ function CommsModal({ roster, onClose, onSaved }: {
   }
   async function saveEmp(id: string) {
     setSaving(true)
-    // @ts-expect-error rpc untyped
-    await supabase.rpc('set_employee_email', { p_employee_id: id, p_email: (emps[id] || '').trim() || null })
+    await rpcSafe(supabase, 'set_employee_email', { p_employee_id: id, p_email: (emps[id] || '').trim() || null })
     setMsg('اتسجّل ✓'); setTimeout(() => setMsg(''), 2000)
     setSaving(false); onSaved()
   }

@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { X, ArrowLeft } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 /* ============================================================
    <DailyMessageBanner />  — Phase B.10.4
@@ -88,8 +90,7 @@ export default function DailyMessageBanner() {
         }, 10800)
 
         if (msg.is_authenticated) {
-          // @ts-expect-error
-          await supabaseBrowser.rpc('mark_daily_message_action', {
+          await rpcSafe(supabaseBrowser, 'mark_daily_message_action', {
             p_message_id: msg.id,
             p_action: 'view',
           })
@@ -114,8 +115,7 @@ export default function DailyMessageBanner() {
 
     if (message.is_authenticated) {
       try {
-        // @ts-expect-error
-        await supabaseBrowser.rpc('mark_daily_message_action', {
+        await rpcSafe(supabaseBrowser, 'mark_daily_message_action', {
           p_message_id: message.id,
           p_action: 'dismiss',
         })
@@ -127,8 +127,7 @@ export default function DailyMessageBanner() {
     if (!message) return
     if (message.is_authenticated) {
       try {
-        // @ts-expect-error
-        await supabaseBrowser.rpc('mark_daily_message_action', {
+        await rpcSafe(supabaseBrowser, 'mark_daily_message_action', {
           p_message_id: message.id,
           p_action: 'click',
         })

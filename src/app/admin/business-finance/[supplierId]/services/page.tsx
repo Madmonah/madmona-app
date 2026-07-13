@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { ChevronLeft, Loader2, RefreshCw, Scissors, Package, Plus, X, Trash2, Save, Wrench, Tag } from 'lucide-react'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -130,8 +132,7 @@ function ServiceMappingModal({ supplierId, service, onClose }: any) {
   async function save() {
     setSaving(true)
     const validMappings = mappings.filter(m => m.product_id)
-    // @ts-expect-error
-    await supabase.rpc('admin_set_service_products', {
+    await rpcSafe(supabase, 'admin_set_service_products', {
       p_service_id: service.id,
       p_mappings: validMappings,
     })

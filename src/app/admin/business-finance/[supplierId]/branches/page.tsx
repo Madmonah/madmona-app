@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { ChevronLeft, Loader2, RefreshCw, Building2, Clock, Users, Save, X, Power, Copy, CheckCircle2 } from 'lucide-react'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -133,8 +135,7 @@ function BranchSettingsModal({ branch, onClose, onSaved }: any) {
 
   async function save() {
     setSaving(true)
-    // @ts-expect-error
-    await supabase.rpc('admin_update_branch_settings', {
+    await rpcSafe(supabase, 'admin_update_branch_settings', {
       p_branch_id: branch.id,
       p_opens_at: form.opens_at + ':00',
       p_closes_at: form.closes_at + ':00',

@@ -9,6 +9,8 @@ import {
   MapPin, Navigation, ShieldCheck,
 } from 'lucide-react'
 import { modulesForIndustry } from '@/lib/erpModules'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 /* ============================================================
    /admin/business-finance/[supplierId]/settings
@@ -554,8 +556,7 @@ function EmployeesTab({
 
   async function regenerateTasks() {
     setGenerating(true)
-    // @ts-expect-error
-    await supabase.rpc('generate_tasks_for_supplier_today', { p_supplier_id: supplierId })
+    await rpcSafe(supabase, 'generate_tasks_for_supplier_today', { p_supplier_id: supplierId })
     setGenerating(false)
     onChanged()
   }
@@ -847,8 +848,7 @@ function ModulesTab({ supplier, supplierId }: { supplier: Supplier; supplierId: 
   async function toggle(href: string) {
     const next = !isOn(href)
     setBusy(href)
-    // @ts-expect-error
-    await supabase.rpc('admin_set_supplier_module', { p_supplier_id: supplierId, p_module_href: href, p_enabled: next })
+    await rpcSafe(supabase, 'admin_set_supplier_module', { p_supplier_id: supplierId, p_module_href: href, p_enabled: next })
     setOverrides((prev) => ({ ...prev, [href]: { enabled: next } }))
     setBusy(null)
   }

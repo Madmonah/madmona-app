@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { ChevronLeft, Loader2, RefreshCw, Clock, Phone, Scissors, Building2, X, Calendar, CheckCircle2, MessageCircle, Trash2 } from 'lucide-react'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -45,8 +47,7 @@ export default function WaitlistPage({ params }: { params: { supplierId: string 
 
   async function updateStatus(id: string, status: string) {
     setBusyId(id)
-    // @ts-expect-error
-    await supabase.rpc('admin_update_waitlist_status', { p_waitlist_id: id, p_status: status })
+    await rpcSafe(supabase, 'admin_update_waitlist_status', { p_waitlist_id: id, p_status: status })
     await load()
     setBusyId(null)
   }

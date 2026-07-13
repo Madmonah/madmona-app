@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 import {
   ChevronLeft, Loader2, RefreshCw, ShoppingCart, Plus, X, Package,
   CheckCircle2, Truck, Filter, Trash2,
@@ -47,8 +49,7 @@ export default function PurchaseOrdersPage({ params }: { params: { supplierId: s
 
   async function receive(poId: string) {
     if (!confirm('متأكد إن البضاعة وصلت؟ هـ يتم إضافتها للمخزون.')) return
-    // @ts-expect-error
-    await supabase.rpc('admin_receive_purchase_order', { p_po_id: poId })
+    await rpcSafe(supabase, 'admin_receive_purchase_order', { p_po_id: poId })
     load()
   }
 

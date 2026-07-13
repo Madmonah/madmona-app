@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { ChevronLeft, Loader2, RefreshCw, Plus, X, Scissors, Edit2, Trash2, Save, Clock, Percent, Wrench, Tag, UtensilsCrossed } from 'lucide-react'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -76,8 +78,7 @@ export default function ServicesCatalogPage({ params }: { params: { supplierId: 
 
   async function deleteService(id: string, name: string) {
     if (!confirm(`متأكد عاوز تأرشف "${name}"؟`)) return
-    // @ts-expect-error
-    await supabase.rpc('admin_delete_service', { p_service_id: id })
+    await rpcSafe(supabase, 'admin_delete_service', { p_service_id: id })
     load()
   }
 
@@ -213,8 +214,7 @@ function ServiceModal({ supplierId, service, categories, isMenu, accent = '#1F6F
     if (!form.name_ar || !form.price_egp) return alert(isMenu ? 'اكتب اسم الصنف والسعر' : 'اكتب الاسم والسعر')
     setSaving(true)
     if (isEdit) {
-      // @ts-expect-error
-      await supabase.rpc('admin_update_service', {
+      await rpcSafe(supabase, 'admin_update_service', {
         p_service_id: service.id,
         p_name_ar: form.name_ar,
         p_category: form.category,
@@ -224,8 +224,7 @@ function ServiceModal({ supplierId, service, categories, isMenu, accent = '#1F6F
         p_description: form.description || null,
       })
     } else {
-      // @ts-expect-error
-      await supabase.rpc('admin_create_service', {
+      await rpcSafe(supabase, 'admin_create_service', {
         p_supplier_id: supplierId,
         p_name_ar: form.name_ar,
         p_category: form.category,

@@ -11,6 +11,8 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { Smartphone, ChevronLeft, Loader2, RefreshCw, ShieldCheck, ShieldAlert, RotateCcw } from 'lucide-react'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 const fdate = (d: string | null) => d ? new Date(d).toLocaleDateString('ar-EG', { day: '2-digit', month: 'short' }) : '—'
@@ -41,8 +43,7 @@ export default function AttendanceDevicesPage({ params }: { params: { supplierId
   async function reset(employeeId: string, name: string) {
     if (!confirm(`reset جهاز ${name}؟ هيقدر يربط تليفون جديد أول ما يبصم تاني.`)) return
     setBusyId(employeeId)
-    // @ts-expect-error rpc typing
-    await supabase.rpc('admin_reset_employee_device', { p_employee_id: employeeId, p_reviewed_by: reviewer })
+    await rpcSafe(supabase, 'admin_reset_employee_device', { p_employee_id: employeeId, p_reviewed_by: reviewer })
     setBusyId(null); load()
   }
 

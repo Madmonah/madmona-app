@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 import {
   ChevronLeft, Loader2, RefreshCw, DollarSign, Plus, X, TrendingDown, TrendingUp, AlertTriangle, CheckCircle2,
 } from 'lucide-react'
@@ -147,8 +149,7 @@ function AddReconModal({ supplierId, branches, onClose, onSaved }: any) {
   async function save() {
     if (!form.branch_id) return alert('اختار فرع')
     setSaving(true)
-    // @ts-expect-error
-    await supabase.rpc('admin_record_cash_recon', {
+    await rpcSafe(supabase, 'admin_record_cash_recon', {
       p_supplier_id: supplierId,
       p_branch_id: form.branch_id,
       p_date: form.date,

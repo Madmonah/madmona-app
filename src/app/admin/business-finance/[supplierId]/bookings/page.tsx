@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 import {
   ChevronLeft, Loader2, RefreshCw, Calendar, Clock, Phone, User, Plus, X,
   CheckCircle2, PlayCircle, XCircle, UserX2, Scissors, Building2, Check,
@@ -54,8 +56,7 @@ export default function BookingsPage({ params }: { params: { supplierId: string 
 
   async function updateStatus(bookingId: string, newStatus: string) {
     setBusyId(bookingId)
-    // @ts-expect-error
-    await supabase.rpc('admin_update_booking_status', { p_booking_id: bookingId, p_new_status: newStatus })
+    await rpcSafe(supabase, 'admin_update_booking_status', { p_booking_id: bookingId, p_new_status: newStatus })
     await load()
     setBusyId(null)
   }
@@ -228,8 +229,7 @@ function WalkinModal({ supplierId, branches, onClose, onSaved }: any) {
   async function save() {
     if (!form.service_id || !form.customer_name) return alert('اختار الخدمة واسم العميل')
     setSaving(true)
-    // @ts-expect-error
-    await supabase.rpc('admin_create_walkin_booking', {
+    await rpcSafe(supabase, 'admin_create_walkin_booking', {
       p_supplier_id: supplierId,
       p_branch_id: form.branch_id,
       p_service_id: form.service_id,

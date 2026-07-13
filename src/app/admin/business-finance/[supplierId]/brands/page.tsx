@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { ChevronLeft, Loader2, RefreshCw, Plus, X, BadgeCheck, Globe } from 'lucide-react'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -97,8 +99,7 @@ function AddBrandModal({ supplierId, onClose, onSaved }: any) {
   async function save() {
     if (!form.brand_name) return alert('اكتب اسم التوكيل/البراند')
     setSaving(true)
-    // @ts-expect-error
-    await supabase.rpc('admin_create_agency_brand', {
+    await rpcSafe(supabase, 'admin_create_agency_brand', {
       p_supplier_id: supplierId,
       p_brand_name: form.brand_name,
       p_country: form.country || null,

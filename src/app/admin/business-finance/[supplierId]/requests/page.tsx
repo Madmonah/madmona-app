@@ -11,6 +11,8 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { ClipboardCheck, ChevronLeft, Loader2, RefreshCw, CalendarDays, Wallet, Check, X, Inbox } from 'lucide-react'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 const money0 = (n: any) => Number(n || 0).toLocaleString('ar-EG')
@@ -43,14 +45,12 @@ export default function RequestsPage({ params }: { params: { supplierId: string 
 
   async function decideLeave(id: string, approve: boolean) {
     setBusyId(id)
-    // @ts-expect-error rpc typing
-    await supabase.rpc('admin_approve_leave_request', { p_request_id: id, p_approve: approve, p_reviewed_by: reviewer })
+    await rpcSafe(supabase, 'admin_approve_leave_request', { p_request_id: id, p_approve: approve, p_reviewed_by: reviewer })
     setBusyId(null); load()
   }
   async function decideAdvance(id: string, approve: boolean) {
     setBusyId(id)
-    // @ts-expect-error rpc typing
-    await supabase.rpc('admin_approve_advance_request', { p_request_id: id, p_approve: approve, p_recorded_by: reviewer })
+    await rpcSafe(supabase, 'admin_approve_advance_request', { p_request_id: id, p_approve: approve, p_recorded_by: reviewer })
     setBusyId(null); load()
   }
 

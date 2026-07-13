@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { ChevronLeft, Loader2, Plus, Trash2, RefreshCw, ImageIcon } from 'lucide-react'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -67,8 +69,7 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
 
   async function removeListing(id: string) {
     if (!confirm('متأكد تمسح المنتج ده؟')) return
-    // @ts-expect-error rpc typing
-    await supabase.rpc('admin_supplier_delete_listing', { p_listing_id: id })
+    await rpcSafe(supabase, 'admin_supplier_delete_listing', { p_listing_id: id })
     load()
   }
 

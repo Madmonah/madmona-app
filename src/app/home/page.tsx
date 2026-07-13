@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 import {
   Loader2, LogOut, Store, Calendar, QrCode, Wallet, Clock, Briefcase,
   Heart, Plus, Search, Building2, ChevronLeft, ShieldCheck, CalendarCheck,
@@ -93,8 +95,7 @@ export default function MadmonaHome() {
   async function reviewReq(supplierId: string, reqId: string, action: 'approve' | 'reject') {
     const token = localStorage.getItem('madmona_token'); if (!token) return
     setBusyReq(reqId)
-    // @ts-expect-error rpc typing
-    await supabase.rpc('admin_review_employee_join', { p_token: token, p_request_id: reqId, p_action: action })
+    await rpcSafe(supabase, 'admin_review_employee_join', { p_token: token, p_request_id: reqId, p_action: action })
     setJoinReqs(prev => ({ ...prev, [supplierId]: (prev[supplierId] || []).filter(r => r.id !== reqId) }))
     setBusyReq(null)
   }
@@ -107,8 +108,7 @@ export default function MadmonaHome() {
     const r = ratings[bid]
     if (!r || !r.service) return
     setBusyReview(bid)
-    // @ts-expect-error rpc typing
-    await supabase.rpc('public_submit_review', {
+    await rpcSafe(supabase, 'public_submit_review', {
       p_booking_id: bid, p_rating: r.service, p_comment: r.comment || null,
       p_stylist_rating: r.stylist || null,
     })
@@ -153,8 +153,7 @@ export default function MadmonaHome() {
   async function logout() {
     const token = localStorage.getItem('madmona_token')
     if (token) {
-      // @ts-expect-error rpc typing
-      await supabase.rpc('madmona_logout', { p_token: token })
+      await rpcSafe(supabase, 'madmona_logout', { p_token: token })
       localStorage.removeItem('madmona_token')
     }
     router.push('/login')

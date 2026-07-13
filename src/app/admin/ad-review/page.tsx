@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@supabase/supabase-js'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 import {
   CheckCircle2, XCircle, Sparkles, AlertTriangle,
   Eye, Image as ImageIcon, Loader2, Filter, ChevronDown,
@@ -143,8 +145,7 @@ export default function AdReviewPage() {
     } else {
       setMessage('✨ Regen fired — هياخد ~30 ثانية')
       setTimeout(async () => {
-        // @ts-expect-error
-        await supabase.rpc('poll_ad_regen_responses')
+        await rpcSafe(supabase, 'poll_ad_regen_responses')
         load()
       }, 35000)
     }

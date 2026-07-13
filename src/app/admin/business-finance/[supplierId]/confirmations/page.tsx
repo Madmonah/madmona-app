@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 import {
   ChevronLeft, Loader2, RefreshCw, Gift, ShoppingCart, UserPlus,
   Check, X, Phone, Wallet, Building2, CheckCircle2,
@@ -45,20 +47,17 @@ export default function ConfirmationsPage({ params }: { params: { supplierId: st
 
   async function confirmTip(id: string, approve: boolean) {
     setBusy('tip-' + id)
-    // @ts-expect-error rpc typing
-    await supabase.rpc('admin_confirm_tip', { p_token: token(), p_tip_id: id, p_approve: approve })
+    await rpcSafe(supabase, 'admin_confirm_tip', { p_token: token(), p_tip_id: id, p_approve: approve })
     await load(); setBusy(null)
   }
   async function confirmOrder(id: string, approve: boolean) {
     setBusy('order-' + id)
-    // @ts-expect-error rpc typing
-    await supabase.rpc('admin_confirm_order', { p_token: token(), p_order_id: id, p_approve: approve })
+    await rpcSafe(supabase, 'admin_confirm_order', { p_token: token(), p_order_id: id, p_approve: approve })
     await load(); setBusy(null)
   }
   async function reviewJoin(id: string, action: 'approve' | 'reject') {
     setBusy('join-' + id)
-    // @ts-expect-error rpc typing
-    await supabase.rpc('admin_review_employee_join', { p_token: token(), p_request_id: id, p_action: action })
+    await rpcSafe(supabase, 'admin_review_employee_join', { p_token: token(), p_request_id: id, p_action: action })
     await load(); setBusy(null)
   }
 

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { Loader2, Building2, ChevronLeft, LogOut } from 'lucide-react'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -30,8 +32,7 @@ export default function OwnerSelectPage() {
   async function logout() {
     const token = localStorage.getItem('madmona_owner_token')
     if (token) {
-      // @ts-expect-error
-      await supabase.rpc('owner_logout', { p_token: token })
+      await rpcSafe(supabase, 'owner_logout', { p_token: token })
       localStorage.removeItem('madmona_owner_token')
     }
     router.push('/owner/login')

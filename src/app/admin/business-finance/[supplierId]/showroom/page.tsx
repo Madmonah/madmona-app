@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { ChevronLeft, Loader2, RefreshCw, Car, X, User, Plus } from 'lucide-react'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -42,8 +44,7 @@ export default function ShowroomPage({ params }: { params: { supplierId: string 
   useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId])
 
   async function setStatus(unitId: string, status: string) {
-    // @ts-expect-error
-    await supabase.rpc('admin_update_unit_status', { p_unit_id: unitId, p_status: status })
+    await rpcSafe(supabase, 'admin_update_unit_status', { p_unit_id: unitId, p_status: status })
     load()
   }
 
@@ -146,8 +147,7 @@ function SellModal({ unit, accent = '#1F6F5F', onClose, onSaved }: any) {
   async function save() {
     if (!form.sale_price_egp) return alert('اكتب سعر البيع')
     setSaving(true)
-    // @ts-expect-error
-    await supabase.rpc('admin_update_unit_status', {
+    await rpcSafe(supabase, 'admin_update_unit_status', {
       p_unit_id: unit.id,
       p_status: 'sold',
       p_sale_price_egp: Number(form.sale_price_egp),

@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+// 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
+import { rpcSafe } from '@/lib/rpc'
 import {
   ChevronLeft, Loader2, RefreshCw, Calculator, Play, CheckCircle2,
   DollarSign, Plus, X, Wallet, Calendar as CalendarIcon, Lock,
@@ -313,8 +315,7 @@ function PayrollRunDetail({ run, onClose, onChanged }: any) {
   async function closeRun() {
     if (!confirm('متأكد عاوز تقفل الـ Run؟ هـ يعلم كل السلف والعمولات على إنها اتسددت.')) return
     setClosing(true)
-    // @ts-expect-error
-    await supabase.rpc('admin_close_payroll_run', { p_run_id: r.id })
+    await rpcSafe(supabase, 'admin_close_payroll_run', { p_run_id: r.id })
     onChanged()
   }
 
@@ -431,8 +432,7 @@ function AddAdvanceModal({ supplierId, employees, onClose, onSaved }: any) {
   async function save() {
     if (!employeeId || !amount) return alert('اكمل البيانات')
     setSaving(true)
-    // @ts-expect-error
-    await supabase.rpc('admin_record_advance', {
+    await rpcSafe(supabase, 'admin_record_advance', {
       p_supplier_id: supplierId,
       p_employee_id: employeeId,
       p_amount: parseFloat(amount),
