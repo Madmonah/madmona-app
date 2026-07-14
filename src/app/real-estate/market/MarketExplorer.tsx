@@ -664,6 +664,19 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
             </span>
           </div>
         )}
+
+        {/* 📷 مؤشر عدد الصور — لما فيه معرض (بيقول للناس فيه أكتر) */}
+        {it.cover_url && (it.media?.length || 0) > 1 && (
+          <div className="absolute bottom-3 left-3">
+            <span className="flex items-center gap-1 bg-black/55 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full">
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" />
+                <path d="M21 15l-5-5L5 21" />
+              </svg>
+              {it.media!.length}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="p-5 flex flex-col flex-1">
