@@ -65,7 +65,7 @@ async function getProject(slug: string): Promise<Row | null> {
       .eq('status', 'published')
       .eq('embargoed', false) // ⛔ المحظور نشره مبيظهرش
       .maybeSingle()
-    return (data as Row) || null
+    return (data as unknown as Row) || null
   } catch {
     return null
   }

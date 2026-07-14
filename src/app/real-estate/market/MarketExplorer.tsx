@@ -158,6 +158,8 @@ export default function MarketExplorer({
   const [segF, setSegF] = useState<SegFilter>('all')
   // 🏷️ (14 Jul 2026) فلتر التصنيف — سكني/ساحلي/تجاري/مختلط
   const [typeF, setTypeF] = useState<'all' | PropertyType>('all')
+  // 🏗️ (14 Jul 2026) فلتر المطوّر — ناس كتير بتدوّر بالمطوّر مش بالمنطقة
+  const [devF, setDevF] = useState<'all' | string>('all')
   const [videoOpen, setVideoOpen] = useState<Item | null>(null)
 
   const nq = norm(q.trim())
@@ -176,6 +178,7 @@ export default function MarketExplorer({
     return items.filter((it) => {
       if (areaF !== 'all' && it.area_label !== areaF) return false
       if (typeF !== 'all' && it.property_type !== typeF) return false
+      if (devF !== 'all' && it.developer !== devF) return false
       if (segF === 'ops_sale' || segF === 'ops_rent') return false
       if (segF !== 'all' && it.segment !== segF) return false
       if (!nq) return true
@@ -186,7 +189,7 @@ export default function MarketExplorer({
       )
       return hay.includes(nq)
     })
-  }, [items, areaF, typeF, segF, nq])
+  }, [items, areaF, typeF, devF, segF, nq])
 
   // 🏷️ عدّاد كل تصنيف (بيتحسب من الداتا — التصنيفات الفاضية مبتظهرش)
   const typeCounts = useMemo(() => {
@@ -197,9 +200,23 @@ export default function MarketExplorer({
     return c
   }, [items])
 
+  // 🏗️ المطوّرين — مبنيين من الداتا، الأكتر مشاريع الأول
+  const developers = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const it of items) {
+      if (it.segment === 'developer' && it.developer) {
+        counts.set(it.developer, (counts.get(it.developer) || 0) + 1)
+      }
+    }
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ar'))
+      .map(([name, count]) => ({ name, count }))
+  }, [items])
+
   const filteredOps = useMemo(() => {
     if (segF === 'developer' || segF === 'resale' || segF === 'rent') return []
-    if (typeF !== 'all') return [] // الفرص مالهاش تصنيف — بتختفي لما نفلتر بالنوع
+    // الفرص مالهاش تصنيف ولا مطوّر — بتختفي لما نفلتر بأي منهم
+    if (typeF !== 'all' || devF !== 'all') return []
     if (areaF !== 'all' && segF === 'all') return []
     return opportunities.filter((op) => {
       if (segF === 'ops_sale' && op.offer_type !== 'sale') return false
@@ -208,7 +225,7 @@ export default function MarketExplorer({
       const hay = norm([op.title, op.snippet, op.area_label, op.city, KIND_LABEL[op.kind]].filter(Boolean).join(' '))
       return hay.includes(nq)
     })
-  }, [opportunities, segF, areaF, typeF, nq])
+  }, [opportunities, segF, areaF, typeF, devF, nq])
 
   const saleOps = filteredOps.filter((o) => o.offer_type === 'sale').slice(0, 12)
   const rentOps = filteredOps.filter((o) => o.offer_type === 'rent').slice(0, 12)
@@ -383,6 +400,29 @@ export default function MarketExplorer({
               </button>
             ))}
           </div>
+
+          {/* 🏗️ المطوّرين — ناس كتير بتدوّر بالمطوّر: «عايز حاجة لإعمار» */}
+          {developers.length > 1 && (
+            <div className="flex flex-wrap items-center gap-1.5 mb-2 max-h-24 overflow-y-auto">
+              <button
+                onClick={() => setDevF('all')}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${devF === 'all' ? 'bg-[#8B5CF6] text-white' : 'bg-[#FAFAF7] text-gray-700 border border-gray-200 hover:border-[#8B5CF6]/50'}`}
+              >
+                كل المطوّرين
+              </button>
+              {developers.map((d) => (
+                <button
+                  key={d.name}
+                  onClick={() => setDevF(devF === d.name ? 'all' : d.name)}
+                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${devF === d.name ? 'bg-[#8B5CF6] text-white' : 'bg-[#FAFAF7] text-gray-700 border border-gray-200 hover:border-[#8B5CF6]/50'}`}
+                >
+                  <Building2 className="w-3 h-3" />
+                  {d.name}
+                  <span className="opacity-60">{d.count}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center gap-1.5">
             {SEG_CHIPS.map((s) => (
