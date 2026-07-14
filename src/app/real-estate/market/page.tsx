@@ -10,6 +10,7 @@ import { Metadata } from 'next'
 import { createClient } from '@supabase/supabase-js'
 import TopNav from '@/components/TopNav'
 import MarketExplorer, { type Item, type Opportunity } from './MarketExplorer'
+import { PUBLIC_PROJECT_COLUMNS } from '@/lib/projects'
 
 export const revalidate = 3600 // ساعة
 
@@ -45,11 +46,7 @@ async function getItems(): Promise<Item[]> {
   try {
     const { data } = await sb()
       .from('property_market_items')
-      .select(
-        'id, slug, area, area_label, city, segment, developer, title, unit_label, ' +
-        'price_from, price_to, price_unit, note, payment_plan, delivery_label, ' +
-        'cover_url, brochure_url, video_url, media, sort_order, updated_at',
-      )
+      .select(PUBLIC_PROJECT_COLUMNS)
       .eq('is_active', true)
       .eq('status', 'published')
       .eq('embargoed', false) // ⛔ المشاريع المحظور نشرها (زي أبراج العلمين) مبتظهرش

@@ -16,7 +16,10 @@ import {
   Building2, KeyRound, RefreshCcw, MessageCircle, Search, X,
   MapPin, Flame, Clock, Plus, FileText, PlayCircle, CalendarClock, Wallet, Sparkles,
 } from 'lucide-react'
-import { inquiryWaLink, projectCode, type MediaItem } from '@/lib/projects'
+import {
+  inquiryWaLink, projectCode, PROPERTY_TYPES, PROPERTY_TYPE_LABEL, PROPERTY_TYPE_ICON,
+  type MediaItem, type PropertyType,
+} from '@/lib/projects'
 
 export type Item = {
   id: string
@@ -32,6 +35,7 @@ export type Item = {
   price_to: number | null
   price_unit: 'egp_total' | 'egp_per_m2' | 'egp_month' | 'egp_night'
   note: string | null
+  property_type: PropertyType | null
   payment_plan: string | null
   delivery_label: string | null
   cover_url: string | null
@@ -152,6 +156,8 @@ export default function MarketExplorer({
   const [q, setQ] = useState('')
   const [areaF, setAreaF] = useState<'all' | string>('all')
   const [segF, setSegF] = useState<SegFilter>('all')
+  // 🏷️ (14 Jul 2026) فلتر التصنيف — سكني/ساحلي/تجاري/مختلط
+  const [typeF, setTypeF] = useState<'all' | PropertyType>('all')
   const [videoOpen, setVideoOpen] = useState<Item | null>(null)
 
   const nq = norm(q.trim())
@@ -169,6 +175,7 @@ export default function MarketExplorer({
   const filteredItems = useMemo(() => {
     return items.filter((it) => {
       if (areaF !== 'all' && it.area_label !== areaF) return false
+      if (typeF !== 'all' && it.property_type !== typeF) return false
       if (segF === 'ops_sale' || segF === 'ops_rent') return false
       if (segF !== 'all' && it.segment !== segF) return false
       if (!nq) return true
@@ -179,10 +186,20 @@ export default function MarketExplorer({
       )
       return hay.includes(nq)
     })
-  }, [items, areaF, segF, nq])
+  }, [items, areaF, typeF, segF, nq])
+
+  // 🏷️ عدّاد كل تصنيف (بيتحسب من الداتا — التصنيفات الفاضية مبتظهرش)
+  const typeCounts = useMemo(() => {
+    const c = new Map<PropertyType, number>()
+    for (const it of items) {
+      if (it.property_type) c.set(it.property_type, (c.get(it.property_type) || 0) + 1)
+    }
+    return c
+  }, [items])
 
   const filteredOps = useMemo(() => {
     if (segF === 'developer' || segF === 'resale' || segF === 'rent') return []
+    if (typeF !== 'all') return [] // الفرص مالهاش تصنيف — بتختفي لما نفلتر بالنوع
     if (areaF !== 'all' && segF === 'all') return []
     return opportunities.filter((op) => {
       if (segF === 'ops_sale' && op.offer_type !== 'sale') return false
@@ -191,7 +208,7 @@ export default function MarketExplorer({
       const hay = norm([op.title, op.snippet, op.area_label, op.city, KIND_LABEL[op.kind]].filter(Boolean).join(' '))
       return hay.includes(nq)
     })
-  }, [opportunities, segF, areaF, nq])
+  }, [opportunities, segF, areaF, typeF, nq])
 
   const saleOps = filteredOps.filter((o) => o.offer_type === 'sale').slice(0, 12)
   const rentOps = filteredOps.filter((o) => o.offer_type === 'rent').slice(0, 12)
@@ -323,6 +340,27 @@ export default function MarketExplorer({
                 <X className="w-3 h-3" />
               </button>
             )}
+          </div>
+
+          {/* 🏷️ التصنيف — أول سؤال في دماغ أي حد: بدور على سكني ولا تجاري؟ */}
+          <div className="flex flex-wrap items-center gap-1.5 mb-2">
+            <button
+              onClick={() => setTypeF('all')}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${typeF === 'all' ? 'bg-gray-900 text-white' : 'bg-[#FAFAF7] text-gray-700 border border-gray-200 hover:border-gray-400'}`}
+            >
+              كل الأنواع
+            </button>
+            {PROPERTY_TYPES.filter((t) => (typeCounts.get(t) || 0) > 0).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTypeF(typeF === t ? 'all' : t)}
+                className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${typeF === t ? 'bg-gray-900 text-white' : 'bg-[#FAFAF7] text-gray-700 border border-gray-200 hover:border-gray-400'}`}
+              >
+                <span>{PROPERTY_TYPE_ICON[t]}</span>
+                {PROPERTY_TYPE_LABEL[t]}
+                <span className="opacity-60">{typeCounts.get(t)}</span>
+              </button>
+            ))}
           </div>
 
           {/* شرايط المناطق — مبنية من الداتا */}
@@ -713,16 +751,26 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
         )}
         {/* شارات الميديا فوق على الصورة — مش هنا تاني */}
 
-        <a
-          href={inquiryWaLink(it)}
-          onClick={logInquiry}
-          target="_blank"
-          rel="noopener"
-          className="mt-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#1F6F5F] text-white text-xs font-bold hover:opacity-95 transition-opacity"
-        >
-          <MessageCircle className="w-3.5 h-3.5" />
-          اسأل عن المشروع ده
-        </a>
+        {/* 🔗 (14 Jul 2026) زرارين: صفحة المشروع الكاملة (معرض+فيديو+تفاصيل) + الواتساب */}
+        <div className="mt-auto flex gap-2">
+          <Link
+            href={`/real-estate/projects/${it.slug}`}
+            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full border-2 border-[#1F6F5F]/20 text-[#1F6F5F] text-xs font-bold hover:bg-[#1F6F5F]/5 hover:border-[#1F6F5F]/40 transition-all"
+          >
+            <Building2 className="w-3.5 h-3.5" />
+            التفاصيل
+          </Link>
+          <a
+            href={inquiryWaLink(it)}
+            onClick={logInquiry}
+            target="_blank"
+            rel="noopener"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full bg-[#1F6F5F] text-white text-xs font-bold hover:opacity-95 transition-opacity"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            اسأل عنه
+          </a>
+        </div>
         <p className="text-[10px] text-gray-300 text-center mt-1.5">{projectCode(it.id)}</p>
       </div>
     </div>

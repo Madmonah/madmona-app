@@ -14,6 +14,26 @@ export type Segment = (typeof SEGMENTS)[number]
 export const STATUSES = ['draft', 'published', 'archived'] as const
 export type ProjectStatus = (typeof STATUSES)[number]
 
+// 🏷️ (14 Jul 2026) تصنيف المشروع — عشان الناس تلاقي اللي بتدور عليه بسرعة.
+// بيتحسب أوتوماتيك من الوحدات، والمطوّر يقدر يعدّله من الداشبورد.
+export const PROPERTY_TYPES = ['residential', 'coastal', 'commercial', 'mixed'] as const
+export type PropertyType = (typeof PROPERTY_TYPES)[number]
+
+export const PROPERTY_TYPE_LABEL: Record<PropertyType, string> = {
+  residential: 'سكني',
+  coastal: 'ساحلي',
+  commercial: 'تجاري وإداري',
+  mixed: 'مختلط',
+}
+
+/** إيموجي التصنيف — بيستخدم في الشارات والفلاتر */
+export const PROPERTY_TYPE_ICON: Record<PropertyType, string> = {
+  residential: '🏠',
+  coastal: '🏖️',
+  commercial: '🏢',
+  mixed: '🏙️',
+}
+
 export type MediaItem = {
   type: 'image' | 'pdf' | 'video'
   url: string
@@ -35,6 +55,7 @@ export type Project = {
   price_to: number | null
   price_unit: PriceUnit
   note: string | null
+  property_type: PropertyType | null
   payment_plan: string | null
   delivery_label: string | null
   commission_pct: number | null
@@ -57,7 +78,7 @@ export type Project = {
 /** الأعمدة اللي البورصة العامة بتقراها (من غير حاجات داخلية) */
 export const PUBLIC_PROJECT_COLUMNS =
   'id, slug, area, area_label, city, segment, developer, title, unit_label, ' +
-  'price_from, price_to, price_unit, note, payment_plan, delivery_label, ' +
+  'price_from, price_to, price_unit, note, property_type, payment_plan, delivery_label, ' +
   'cover_url, brochure_url, video_url, media, sort_order, updated_at'
 
 /** كود المشروع اللي بيتبعت في رسالة الواتساب — التريجر بيدوّر عليه ويربط الاستفسار */
