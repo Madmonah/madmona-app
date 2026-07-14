@@ -1,15 +1,22 @@
-// =====================================================================
 // 🏗️ /my-projects — لوحة المطوّر
 // الدخول بالموبايل عن طريق واتساب (من /login) — من غير إيميل ولا باسورد.
-// المطوّر بيشوف مشاريعه بس، ويقدر يرفع صورة ويظبط السعر والتفاصيل.
-// (13 Jul 2026)
+// المطوّر بيشوف مشاريعه بس، ويقدر:
+//   • يرفع صورة الغلاف
+//   • يرفع معرض صور كامل (media[])
+//   • يرفع فيديو أو يلصق لينك يوتيوب
+//   • يرفع بروشور PDF
+//   • يظبط السعر
+// (14 Jul 2026)
 // =====================================================================
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
-import { Building2, ImagePlus, Loader2, CheckCircle2, ExternalLink } from 'lucide-react'
+import {
+  Building2, ImagePlus, Loader2, CheckCircle2, ExternalLink,
+  Video, FileText, X, Images, AlertTriangle,
+} from 'lucide-react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,6 +36,8 @@ type Project = {
   note: string | null
   cover_url: string | null
   brochure_url: string | null
+  video_url: string | null
+  media: string[] | null
 }
 
 const money = (n: number | null) =>
@@ -41,6 +50,7 @@ export default function MyProjectsPage() {
   const [phone, setPhone] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
   const [savedId, setSavedId] = useState<string | null>(null)
+  const [err, setErr] = useState<string | null>(null)
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('madmona_token') || '' : ''
 
@@ -52,61 +62,116 @@ export default function MyProjectsPage() {
       const d = await r.json()
       setProjects(d.projects || [])
       setPhone(d.phone || '')
-    } catch { /* ignore */ }
+    } catch { setErr('مقدرناش نحمّل المشاريع — جرّب تاني') }
     setLoading(false)
   }, [token, router])
 
   useEffect(() => { load() }, [load])
 
-  async function uploadCover(p: Project, file: File) {
-    setBusyId(p.id); setSavedId(null)
-    try {
-      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
-      const path = `projects/${p.slug || p.id}-${Date.now()}.${ext}`
-      const { error: upErr } = await supabase.storage
-        .from('project-media')
-        .upload(path, file, { upsert: true, contentType: file.type })
-      if (upErr) throw upErr
-      const { data } = supabase.storage.from('project-media').getPublicUrl(path)
+  /** يرفع ملف على التخزين ويرجّع اللينك */
+  async function upload(p: Project, file: File, kind: string): Promise<string> {
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
+    const path = `projects/${p.slug || p.id}/${kind}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
+    const { error } = await supabase.storage
+      .from('project-media')
+      .upload(path, file, { upsert: true, contentType: file.type })
+    if (error) throw error
+    return supabase.storage.from('project-media').getPublicUrl(path).data.publicUrl
+  }
 
-      const r = await fetch('/api/my-projects', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-madmona-token': token },
-        body: JSON.stringify({ id: p.id, cover_url: data.publicUrl }),
-      })
-      if (!r.ok) throw new Error('save failed')
-      setProjects((ps) => ps.map((x) => (x.id === p.id ? { ...x, cover_url: data.publicUrl } : x)))
+  /** يحفظ أي تعديل — بيفحص الخطأ ومبيفشلش في صمت */
+  async function patch(p: Project, body: Record<string, unknown>) {
+    const r = await fetch('/api/my-projects', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'x-madmona-token': token },
+      body: JSON.stringify({ id: p.id, ...body }),
+    })
+    const j = await r.json().catch(() => ({}))
+    if (!r.ok) throw new Error((j as { error?: string })?.error || 'الحفظ فشل')
+  }
+
+  function update(id: string, patchObj: Partial<Project>) {
+    setProjects((ps) => ps.map((x) => (x.id === id ? { ...x, ...patchObj } : x)))
+  }
+
+  async function uploadCover(p: Project, file: File) {
+    setBusyId(p.id); setSavedId(null); setErr(null)
+    try {
+      const url = await upload(p, file, 'cover')
+      await patch(p, { cover_url: url })
+      update(p.id, { cover_url: url })
       setSavedId(p.id)
-    } catch {
-      alert('حصلت مشكلة في رفع الصورة — جرّب تاني.')
-    }
+    } catch (e) { setErr(e instanceof Error ? e.message : 'مشكلة في رفع الصورة') }
+    setBusyId(null)
+  }
+
+  // 🖼️ معرض الصور — بيرفع أكتر من صورة مرة واحدة
+  async function addPhotos(p: Project, files: FileList) {
+    setBusyId(p.id); setSavedId(null); setErr(null)
+    try {
+      const urls: string[] = []
+      for (const f of Array.from(files).slice(0, 12)) urls.push(await upload(p, f, 'photo'))
+      const media = [...(p.media || []), ...urls]
+      const cover = p.cover_url || urls[0] || null   // أول صورة تبقى الغلاف لو مفيش
+      await patch(p, { media, cover_url: cover })
+      update(p.id, { media, cover_url: cover })
+      setSavedId(p.id)
+    } catch (e) { setErr(e instanceof Error ? e.message : 'مشكلة في رفع الصور') }
+    setBusyId(null)
+  }
+
+  async function removePhoto(p: Project, url: string) {
+    setBusyId(p.id); setErr(null)
+    try {
+      const media = (p.media || []).filter((m) => m !== url)
+      await patch(p, { media })
+      update(p.id, { media })
+    } catch (e) { setErr(e instanceof Error ? e.message : 'مشكلة في الحذف') }
+    setBusyId(null)
+  }
+
+  // 🎬 فيديو — رفع ملف أو لصق لينك يوتيوب
+  async function uploadVideo(p: Project, file: File) {
+    setBusyId(p.id); setSavedId(null); setErr(null)
+    try {
+      if (file.size > 60 * 1024 * 1024) throw new Error('الفيديو أكبر من ٦٠ ميجا — اضغطه أو حط لينك يوتيوب')
+      const url = await upload(p, file, 'video')
+      await patch(p, { video_url: url })
+      update(p.id, { video_url: url })
+      setSavedId(p.id)
+    } catch (e) { setErr(e instanceof Error ? e.message : 'مشكلة في رفع الفيديو') }
+    setBusyId(null)
+  }
+
+  async function setVideoLink(p: Project, link: string) {
+    setBusyId(p.id); setErr(null)
+    try {
+      await patch(p, { video_url: link || null })
+      update(p.id, { video_url: link || null })
+      setSavedId(p.id)
+    } catch (e) { setErr(e instanceof Error ? e.message : 'مشكلة في الحفظ') }
+    setBusyId(null)
+  }
+
+  async function uploadBrochure(p: Project, file: File) {
+    setBusyId(p.id); setSavedId(null); setErr(null)
+    try {
+      const url = await upload(p, file, 'brochure')
+      await patch(p, { brochure_url: url })
+      update(p.id, { brochure_url: url })
+      setSavedId(p.id)
+    } catch (e) { setErr(e instanceof Error ? e.message : 'مشكلة في رفع البروشور') }
     setBusyId(null)
   }
 
   async function savePrice(p: Project, from: string, to: string) {
-    setBusyId(p.id); setSavedId(null)
+    setBusyId(p.id); setSavedId(null); setErr(null)
     try {
-      const r = await fetch('/api/my-projects', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-madmona-token': token },
-        body: JSON.stringify({
-          id: p.id,
-          price_from: from ? Number(from) : null,
-          price_to: to ? Number(to) : null,
-        }),
-      })
-      if (!r.ok) throw new Error()
-      setProjects((ps) =>
-        ps.map((x) =>
-          x.id === p.id
-            ? { ...x, price_from: from ? Number(from) : null, price_to: to ? Number(to) : null }
-            : x,
-        ),
-      )
+      const body = { price_from: from ? Number(from) : null, price_to: to ? Number(to) : null }
+      await patch(p, body)
+      update(p.id, body as Partial<Project>)
       setSavedId(p.id)
-    } catch {
-      alert('حصلت مشكلة في الحفظ — جرّب تاني.')
-    }
+    } catch (e) { setErr(e instanceof Error ? e.message : 'مشكلة في الحفظ') }
     setBusyId(null)
   }
 
@@ -118,15 +183,25 @@ export default function MyProjectsPage() {
     )
   }
 
+  const done = projects.filter((p) => p.cover_url && p.price_from).length
+
   return (
     <div className="min-h-screen bg-[#FAFAF7] py-8 px-4" dir="rtl">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">مشاريعي على مضمونة 🏗️</h1>
+          <h1 className="text-2xl font-black text-[#1A2E26] mb-1">مشاريعي على مضمونة 🏗️</h1>
           <p className="text-sm text-gray-500">
-            {phone} · {projects.length} مشروع
+            {phone} · {projects.length} مشروع ·{' '}
+            <span className="text-[#1F6F5F] font-bold">{done} مكتمل</span>
           </p>
         </div>
+
+        {err && (
+          <div className="mb-4 bg-red-50 border border-red-200 rounded-2xl p-3 flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+            <p className="text-xs font-bold text-red-700">{err}</p>
+          </div>
+        )}
 
         {projects.length === 0 && (
           <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
@@ -138,91 +213,192 @@ export default function MyProjectsPage() {
           </div>
         )}
 
-        <div className="space-y-4">
-          {projects.map((p) => (
-            <div key={p.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-              <div className="flex flex-col sm:flex-row">
-                {/* الصورة */}
-                <div className="sm:w-56 shrink-0 relative">
+        <div className="space-y-5">
+          {projects.map((p) => {
+            const busy = busyId === p.id
+            const photos = p.media || []
+            return (
+              <div key={p.id} className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+                {/* ── الغلاف ── */}
+                <div className="relative h-48 sm:h-56">
                   {p.cover_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.cover_url} alt={p.title} className="w-full h-40 object-cover" />
+                    <img src={p.cover_url} alt={p.title} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-40 bg-gradient-to-br from-[#1F6F5F] to-[#2FA084] flex items-center justify-center">
-                      <Building2 className="w-8 h-8 text-white/80" />
+                    <div className="w-full h-full bg-gradient-to-br from-[#1F6F5F] to-[#2FA084] flex items-center justify-center">
+                      <Building2 className="w-10 h-10 text-white/70" />
                     </div>
                   )}
-                  <label className="absolute inset-0 flex items-center justify-center bg-black/45 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
-                    <span className="text-white text-xs font-semibold flex items-center gap-1.5">
-                      {busyId === p.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <ImagePlus className="w-4 h-4" />
-                      )}
-                      {p.cover_url ? 'غيّر الصورة' : 'ارفع صورة'}
-                    </span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      disabled={busyId === p.id}
-                      onChange={(e) => {
-                        const f = e.target.files?.[0]
-                        if (f) uploadCover(p, f)
-                      }}
-                    />
-                  </label>
-                </div>
-
-                {/* التفاصيل */}
-                <div className="flex-1 p-5">
-                  <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                  <div className="absolute bottom-3 right-4 left-4 flex items-end justify-between gap-3">
                     <div>
-                      <h3 className="font-bold text-gray-900">{p.title}</h3>
-                      {p.area_label && <p className="text-xs text-gray-500">{p.area_label}</p>}
+                      <h3 className="text-white font-black text-lg drop-shadow">{p.title}</h3>
+                      {p.area_label && <p className="text-white/85 text-xs">{p.area_label}</p>}
                     </div>
                     {savedId === p.id && (
-                      <span className="text-[11px] text-[#1F6F5F] font-semibold flex items-center gap-1">
+                      <span className="bg-white/95 text-[#1F6F5F] text-[11px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0">
                         <CheckCircle2 className="w-3.5 h-3.5" /> اتحفظ
                       </span>
                     )}
                   </div>
+                  <label className="absolute top-3 left-3 bg-black/55 hover:bg-black/75 text-white text-[11px] font-bold px-3 py-1.5 rounded-full cursor-pointer flex items-center gap-1.5">
+                    {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5" />}
+                    {p.cover_url ? 'غيّر الغلاف' : 'ارفع غلاف'}
+                    <input type="file" accept="image/*" className="hidden" disabled={busy}
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadCover(p, f) }} />
+                  </label>
+                </div>
 
-                  {!p.cover_url && (
-                    <p className="text-[11px] text-amber-700 bg-amber-50 rounded-lg px-2 py-1.5 mb-3">
-                      ⚠️ المشروع من غير صورة — الصورة بتزوّد الاستفسارات كتير.
-                    </p>
-                  )}
-                  {p.price_from == null && (
-                    <p className="text-[11px] text-amber-700 bg-amber-50 rounded-lg px-2 py-1.5 mb-3">
-                      ⚠️ من غير سعر — الباحثين بيفلتروا بالسعر.
-                    </p>
-                  )}
+                <div className="p-5 space-y-4">
+                  {/* تنبيهات النقص */}
+                  <div className="flex flex-wrap gap-2">
+                    {!p.cover_url && <Warn>⚠️ مفيش صورة غلاف</Warn>}
+                    {photos.length === 0 && <Warn>📸 مفيش معرض صور</Warn>}
+                    {p.price_from == null && <Warn>💰 مفيش سعر</Warn>}
+                    {!p.video_url && <Warn>🎬 مفيش فيديو</Warn>}
+                  </div>
 
-                  <PriceEditor p={p} busy={busyId === p.id} onSave={savePrice} />
+                  {/* ── 🖼️ معرض الصور ── */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-black text-[#1A2E26] flex items-center gap-1.5">
+                        <Images className="w-4 h-4 text-[#1F6F5F]" /> معرض الصور
+                        <span className="text-gray-400 font-normal">({photos.length})</span>
+                      </span>
+                      <label className="text-[11px] font-bold text-[#1F6F5F] cursor-pointer hover:underline flex items-center gap-1">
+                        {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <ImagePlus className="w-3 h-3" />}
+                        ضيف صور
+                        <input type="file" accept="image/*" multiple className="hidden" disabled={busy}
+                          onChange={(e) => { const f = e.target.files; if (f?.length) addPhotos(p, f) }} />
+                      </label>
+                    </div>
+                    {photos.length > 0 ? (
+                      <div className="flex gap-2 overflow-x-auto pb-1">
+                        {photos.map((src) => (
+                          <div key={src} className="relative shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={src} alt="" className="w-24 h-20 object-cover rounded-xl border border-gray-100" />
+                            <button onClick={() => removePhoto(p, src)} disabled={busy}
+                              className="absolute top-1 left-1 w-5 h-5 bg-black/60 hover:bg-red-600 rounded-full flex items-center justify-center">
+                              <X className="w-3 h-3 text-white" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <label className="block border-2 border-dashed border-gray-200 rounded-2xl py-5 text-center cursor-pointer hover:border-[#2FA084] hover:bg-[#2FA084]/5">
+                        <ImagePlus className="w-5 h-5 text-gray-400 mx-auto mb-1" />
+                        <span className="text-xs font-bold text-gray-500">دوس واختار صور المشروع (تقدر تختار أكتر من واحدة)</span>
+                        <input type="file" accept="image/*" multiple className="hidden" disabled={busy}
+                          onChange={(e) => { const f = e.target.files; if (f?.length) addPhotos(p, f) }} />
+                      </label>
+                    )}
+                  </div>
 
-                  <a
-                    href={`/real-estate/market`}
-                    target="_blank"
-                    rel="noopener"
-                    className="inline-flex items-center gap-1 text-xs text-[#1F6F5F] font-semibold mt-3 hover:underline"
-                  >
+                  {/* ── 🎬 فيديو + 📄 بروشور ── */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <VideoBox p={p} busy={busy} onFile={uploadVideo} onLink={setVideoLink} />
+                    <div>
+                      <span className="text-xs font-black text-[#1A2E26] flex items-center gap-1.5 mb-2">
+                        <FileText className="w-4 h-4 text-[#1F6F5F]" /> البروشور
+                      </span>
+                      {p.brochure_url ? (
+                        <a href={p.brochure_url} target="_blank" rel="noopener"
+                          className="flex items-center gap-2 bg-[#FAFAF7] border border-gray-100 rounded-xl px-3 py-2.5 text-xs font-bold text-[#1F6F5F] hover:bg-[#2FA084]/10">
+                          <FileText className="w-4 h-4" /> مرفوع — افتحه
+                        </a>
+                      ) : (
+                        <label className="flex items-center justify-center gap-1.5 border-2 border-dashed border-gray-200 rounded-xl py-2.5 cursor-pointer hover:border-[#2FA084] hover:bg-[#2FA084]/5">
+                          <FileText className="w-4 h-4 text-gray-400" />
+                          <span className="text-xs font-bold text-gray-500">ارفع PDF</span>
+                          <input type="file" accept="application/pdf" className="hidden" disabled={busy}
+                            onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadBrochure(p, f) }} />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* ── 💰 السعر ── */}
+                  <PriceEditor p={p} busy={busy} onSave={savePrice} />
+
+                  <a href="/real-estate/market" target="_blank" rel="noopener"
+                    className="inline-flex items-center gap-1 text-xs text-[#1F6F5F] font-bold hover:underline">
                     شوفه في البورصة <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>
   )
 }
 
+function Warn({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
+      {children}
+    </span>
+  )
+}
+
+/** 🎬 فيديو: رفع ملف أو لصق لينك يوتيوب */
+function VideoBox({
+  p, busy, onFile, onLink,
+}: {
+  p: Project
+  busy: boolean
+  onFile: (p: Project, f: File) => void
+  onLink: (p: Project, l: string) => void
+}) {
+  const [link, setLink] = useState('')
+  return (
+    <div>
+      <span className="text-xs font-black text-[#1A2E26] flex items-center gap-1.5 mb-2">
+        <Video className="w-4 h-4 text-[#1F6F5F]" /> الفيديو
+      </span>
+      {p.video_url ? (
+        <div className="flex items-center gap-2">
+          <a href={p.video_url} target="_blank" rel="noopener"
+            className="flex-1 flex items-center gap-2 bg-[#FAFAF7] border border-gray-100 rounded-xl px-3 py-2.5 text-xs font-bold text-[#1F6F5F] hover:bg-[#2FA084]/10">
+            <Video className="w-4 h-4" /> مرفوع — شوفه
+          </a>
+          <button onClick={() => onLink(p, '')} disabled={busy}
+            className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-red-100 flex items-center justify-center">
+            <X className="w-4 h-4 text-gray-500" />
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          <label className="flex items-center justify-center gap-1.5 border-2 border-dashed border-gray-200 rounded-xl py-2.5 cursor-pointer hover:border-[#2FA084] hover:bg-[#2FA084]/5">
+            {busy ? <Loader2 className="w-4 h-4 animate-spin text-[#1F6F5F]" /> : <Video className="w-4 h-4 text-gray-400" />}
+            <span className="text-xs font-bold text-gray-500">ارفع فيديو</span>
+            <input type="file" accept="video/*" className="hidden" disabled={busy}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(p, f) }} />
+          </label>
+          <div className="flex gap-1.5">
+            <input
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="أو الصق لينك يوتيوب"
+              className="flex-1 px-2.5 py-2 text-xs border border-gray-200 rounded-xl focus:border-[#2FA084] outline-none"
+            />
+            {link.trim() && (
+              <button onClick={() => { onLink(p, link.trim()); setLink('') }} disabled={busy}
+                className="px-3 py-2 text-xs font-bold rounded-xl bg-[#1F6F5F] text-white hover:bg-[#185849] disabled:opacity-50">
+                احفظ
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function PriceEditor({
-  p,
-  busy,
-  onSave,
+  p, busy, onSave,
 }: {
   p: Project
   busy: boolean
@@ -233,15 +409,15 @@ function PriceEditor({
   const changed = from !== (p.price_from?.toString() || '') || to !== (p.price_to?.toString() || '')
 
   return (
-    <div>
+    <div className="pt-1">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-gray-500">السعر:</span>
+        <span className="text-xs font-black text-[#1A2E26]">💰 السعر:</span>
         <input
           value={from}
           onChange={(e) => setFrom(e.target.value.replace(/\D/g, ''))}
           placeholder="من"
           inputMode="numeric"
-          className="w-28 px-2 py-1 text-sm border border-gray-200 rounded-lg focus:border-[#2FA084] outline-none"
+          className="w-28 px-2.5 py-1.5 text-sm border border-gray-200 rounded-xl focus:border-[#2FA084] outline-none"
         />
         <span className="text-gray-400 text-xs">—</span>
         <input
@@ -249,15 +425,12 @@ function PriceEditor({
           onChange={(e) => setTo(e.target.value.replace(/\D/g, ''))}
           placeholder="لحد"
           inputMode="numeric"
-          className="w-28 px-2 py-1 text-sm border border-gray-200 rounded-lg focus:border-[#2FA084] outline-none"
+          className="w-28 px-2.5 py-1.5 text-sm border border-gray-200 rounded-xl focus:border-[#2FA084] outline-none"
         />
         <span className="text-xs text-gray-400">جنيه</span>
         {changed && (
-          <button
-            onClick={() => onSave(p, from, to)}
-            disabled={busy}
-            className="px-3 py-1 text-xs font-semibold rounded-lg bg-[#1F6F5F] text-white hover:bg-[#185849] disabled:opacity-50"
-          >
+          <button onClick={() => onSave(p, from, to)} disabled={busy}
+            className="px-3.5 py-1.5 text-xs font-black rounded-xl bg-[#1F6F5F] text-white hover:bg-[#185849] disabled:opacity-50">
             {busy ? '...' : 'احفظ'}
           </button>
         )}

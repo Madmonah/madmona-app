@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
     .select(
       'id, slug, title, developer, area_label, city, unit_label, price_from, price_to, ' +
       'price_unit, payment_plan, delivery_label, note, cover_url, brochure_url, video_url, ' +
-      'is_active, status, embargoed, source_lead_phone, updated_at',
+      'media, is_active, status, embargoed, source_lead_phone, updated_at',
     )
     .order('updated_at', { ascending: false })
 
@@ -79,6 +79,8 @@ const EDITABLE = [
   'title', 'developer', 'area_label', 'city', 'unit_label',
   'price_from', 'price_to', 'price_unit', 'payment_plan', 'delivery_label',
   'note', 'cover_url', 'brochure_url', 'video_url',
+  // 🖼️ (14 Jul 2026) معرض الصور — array من روابط الصور
+  'media',
 ] as const
 
 export async function PATCH(req: NextRequest) {
