@@ -174,6 +174,7 @@ interface CategoryPool {
 }
 
 const pools: Record<NewsCategory, CategoryPool | null> = {
+  madmona: null,
   economy: null,
   real_estate: null,
   automotive: null,
@@ -315,7 +316,6 @@ async function fetchAdminNews(category: NewsCategory): Promise<NewsItem[]> {
     if (!supabaseUrl || !supabaseKey) return []
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // @ts-expect-error - RLS allows anon read of published rows
     const { data } = await supabase
       .from('admin_news')
       .select('id, title, link, image_url, category, source_label, is_pinned, pub_date')
@@ -344,10 +344,72 @@ async function fetchAdminNews(category: NewsCategory): Promise<NewsItem[]> {
   }
 }
 
+/**
+ * 🏗️ (15 Jul 2026) أحدث مشاريع المطوّرين — بتغذّي تاب «أخبار مضمونة» أوتوماتيك.
+ * قبل كده التاب كان بيعتمد على أخبار بتتكتب بالإيد، فكان بيقف عند آخر خبر اتكتب.
+ * دلوقتي أي مشروع جديد بينزل البورصة بيطلع في الأخبار لوحده، والكليك بيوديه
+ * لصفحة المشروع نفسها — مش لينك خارجي.
+ * بناخد اللي معاه صورة بس، لأن الكارت من غير صورة بيبوّظ شكل التاب.
+ */
+async function fetchLatestProjects(): Promise<NewsItem[]> {
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!supabaseUrl || !supabaseKey) return []
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    const { data } = await supabase
+      .from('property_market_items')
+      .select('title, developer, area_label, slug, cover_url, created_at, property_type')
+      .eq('segment', 'developer')
+      .eq('status', 'published')
+      .eq('is_active', true)
+      .eq('embargoed', false)          // ⛔ المحظور نشره (زي أبراج العلمين) مبيظهرش
+      .not('cover_url', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    if (!data || !Array.isArray(data)) return []
+
+    type Row = {
+      title: string; developer: string | null; area_label: string
+      slug: string; cover_url: string; created_at: string
+      property_type: string | null
+    }
+
+    // ⚠️ نفس الصورة اتحطت على أكتر من مشروع (ميديا واتساب مشتركة). لو سبناهم
+    // التاب هيبان وكأنه بيكرّر نفس الخبر — فبناخد أول مشروع لكل صورة بس.
+    const seenCovers = new Set<string>()
+
+    return (data as Row[])
+      .filter((row) => {
+        if (seenCovers.has(row.cover_url)) return false
+        seenCovers.add(row.cover_url)
+        return true
+      })
+      .map((row) => ({
+        title: row.developer
+          ? `${row.title} — ${row.developer} في ${row.area_label}`
+          : `${row.title} في ${row.area_label}`,
+        link: `https://madmonacairo.com/real-estate/projects/${row.slug}`,
+        image: row.cover_url,
+        source: 'بورصة عقارات مضمونة',
+        pubDate: row.created_at,
+        isEgyptian: true,
+        category: 'madmona' as NewsCategory,
+        isAdmin: true,
+      }))
+  } catch {
+    return []
+  }
+}
+
 async function buildPool(category: NewsCategory): Promise<NewsItem[]> {
   const sources = ALL_SOURCES.filter(s => s.category === category)
-  const [adminItems, ...rssResults] = await Promise.all([
+  const [adminItems, projectItems, ...rssResults] = await Promise.all([
     fetchAdminNews(category),
+    // المشاريع بتغذّي تاب مضمونة بس — باقي التابات مصادرها RSS
+    category === 'madmona' ? fetchLatestProjects() : Promise.resolve([]),
     ...sources.map(fetchSource),
   ])
   const rssItems = rssResults.flat()
@@ -377,10 +439,11 @@ async function buildPool(category: NewsCategory): Promise<NewsItem[]> {
   const seen = new Set<string>()
   const merged: NewsItem[] = []
 
-  // Pinned admin first, then unpinned admin, then RSS
+  // الترتيب: أخبار مثبّتة → مشاريع البورصة (أحدث الأول) → أخبار أدمن → RSS.
+  // المشاريع فوق الأدمن عشان تاب مضمونة يفضل حيّ لوحده من غير ما حد يكتب خبر.
   const pinned = adminItems.filter(i => i.isPinned)
   const unpinned = adminItems.filter(i => !i.isPinned)
-  for (const item of [...pinned, ...unpinned, ...filteredRss]) {
+  for (const item of [...pinned, ...projectItems, ...unpinned, ...filteredRss]) {
     if (seen.has(item.link)) continue
     seen.add(item.link)
     merged.push(item)
