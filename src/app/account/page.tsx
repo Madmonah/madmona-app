@@ -14,6 +14,7 @@ import BottomNav from '@/components/BottomNav'
 import PushNotificationCard from '@/components/PushNotificationCard'
 import AccountSwitcher from '@/components/AccountSwitcher'
 import WelcomeSupplierBanner from '@/components/WelcomeSupplierBanner'
+import MyAssetsCard from '@/components/MyAssetsCard'
 import { useT } from '@/lib/i18n/LanguageProvider'
 
 type Stage = 'loading' | 'unauthenticated' | 'ready'
@@ -289,6 +290,12 @@ export default function AccountPage() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* 🔑 حاجاتي — كل أصل مربوط برقم المستخدم (مشاريع · إعلانات · أنشطة).
+            فوق خالص لأن ده سبب دخول المُعلن الأساسي. بيختفي لوحده لو مفيش أصول. */}
+        <div className="animate-slide-up">
+          <MyAssetsCard />
         </div>
 
         {/* 🌟 WELCOME BANNER — shown only if user has no supplier record yet */}
