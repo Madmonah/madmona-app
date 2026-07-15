@@ -11,6 +11,7 @@ import {
   Heart, Plus, Search, Building2, ChevronLeft, ShieldCheck, CalendarCheck,
   UserPlus, Check, X, Star, Gift, Coins, ShoppingBag, Minus,
 } from 'lucide-react'
+import MyAssetsCard from '@/components/MyAssetsCard'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -225,6 +226,12 @@ export default function MadmonaHome() {
             </div>
           </div>
         </section>
+
+        {/* ===== 🔑 حاجاتي — كل أصل مربوط برقم المستخدم =====
+            (15 Jul 2026) صاحب 14 أصل كان بيدخل ويلاقي «يومك فاضي» وحاجات
+            عميل بس — وحاجاته مدفونة في /account اللي محدش بيدوّر عليها.
+            الكارت بيختفي لوحده لو مفيش أصول، فالزبون العادي مبيتأثرش. */}
+        <MyAssetsCard />
 
         {/* ===== ADMIN / OWNER ===== */}
         {admins.length > 0 && (

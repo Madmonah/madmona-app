@@ -508,7 +508,9 @@ const ar: Dict = {
   'comp.as.remove_from_list': 'احذف من القائمة',
   'comp.as.login_another': 'سجّل دخول بحساب آخر',
   'comp.as.add_account': 'إضافة حساب',
-  'comp.as.help': '💡 الحسابات بتتسجل تلقائياً لما تدخل أول مرة. هتحتاج كلمة السر بس.',
+  // (15 Jul 2026) كان مكتوب «هتحتاج كلمة السر بس» — معلومة غلط: مفيش باسورد
+  // أصلاً، الدخول بالواتساب والرقم هو الهوية.
+  'comp.as.help': '💡 الحسابات بتتسجل تلقائياً لما تدخل أول مرة. الدخول بالواتساب — من غير باسورد.',
   'comp.bh.err_phone': 'رقم الموبايل لازم يكون 11 رقم ويبدأ بـ 01',
   'comp.bh.err_generic': 'حصل خطأ، حاول تاني',
   'comp.bh.header': 'مضمونة معاك',
@@ -1234,7 +1236,7 @@ const en: Dict = {
   'comp.as.remove_from_list': 'Remove from list',
   'comp.as.login_another': 'Log in with another account',
   'comp.as.add_account': 'Add account',
-  'comp.as.help': "💡 Accounts are saved automatically on first login. You'll only need the password.",
+  'comp.as.help': '💡 Accounts are saved automatically on first login. Sign in with WhatsApp — no password needed.',
   'comp.bh.err_phone': 'Mobile number must be 11 digits and start with 01',
   'comp.bh.err_generic': 'Something went wrong, please try again',
   'comp.bh.header': 'Madmona is here',
