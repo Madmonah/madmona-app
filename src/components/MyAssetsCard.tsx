@@ -46,7 +46,16 @@ export default function MyAssetsCard() {
   useEffect(() => {
     (async () => {
       try {
-        const { data: res } = await supabaseBrowser.rpc('my_assets')
+        // الناس داخلة من مسارين: جلسة Supabase (جوجل) أو توكن واتساب.
+        // بنبعت التوكن لو موجود — الدالة بتفهم الاتنين، فمحدش بيتسجّل خروج
+        // وإحنا بنوحّد الهوية تحت.
+        const waToken =
+          typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null
+
+        // @ts-expect-error — أنواع الـRPC المولّدة لسه متعرفش my_assets
+        const { data: res } = await supabaseBrowser.rpc('my_assets', {
+          p_wa_token: waToken || null,
+        })
         setData(res as unknown as MyAssets | null)
       } catch {
         // الكارت بيختفي بدل ما يوقع الصفحة

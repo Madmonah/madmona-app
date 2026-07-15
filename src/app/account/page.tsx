@@ -53,6 +53,13 @@ export default function AccountPage() {
     const init = async () => {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
       if (!session?.user) {
+        // ⚠️ (15 Jul 2026) مفيش جلسة Supabase ≠ مش مسجّل دخول.
+        // فيه ناس داخلة بالواتساب (توكن في localStorage) — دول كانوا بيشوفوا
+        // «سجّل دخولك» غلط رغم إنهم داخلين فعلاً. لو معاهم توكن، بنسيبهم
+        // يكمّلوا: MyAssetsCard بتفهم التوكن وهتوريهم حاجاتهم.
+        const waToken =
+          typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null
+        if (waToken) { setStage('ready'); return }
         setStage('unauthenticated')
         return
       }
