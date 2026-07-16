@@ -31,7 +31,42 @@ const VERTICALS: { key: VKey; ar: string; en: string; emoji: string; accent: str
   { key: 'restaurants', ar: 'مطاعم', en: 'Restaurants', emoji: '🍽️', accent: '#E26D5C', bg: '#FAE1CB', tracks: ['restaurants'] },
 ]
 
-const DEFAULT_FALLBACK = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&auto=format&fit=crop'
+// 🚨 (16 يوليو 2026) كان هنا `DEFAULT_FALLBACK` — لينك Unsplash واحد لصورة
+//    **ممر مكتب زجاجي فاضي**، بيتحط على أي فئة مالهاش صورة. النتيجة على الهوم:
+//    «خضار وفاكهة» 🥦 و«إكسسوارات عربيات» 🛞 و«قطع غيار موتوسيكلات» 🏍️
+//    كلهم بيبانوا بنفس صورة ممر المكتب. تلات فئات مختلفة تماماً، صورة واحدة،
+//    ومالهاش أي علاقة بأي واحدة فيهم.
+//
+//    الصورة الغلط أوحش من مفيش صورة: بتكرّر نفسها وبتكدب. البديل: كارت بهوية
+//    مضمونة — لون الڤيرتيكال + أيقونة الفئة كبيرة. كل فئة عندها أيقونة (388/388)
+//    فالكارت بيطلع مميّز لكل واحدة، وعمره ما هيوعد بحاجة مش موجودة.
+//    أول ما تيجي صورة حقيقية، `image_url` بتاخد الأولوية أوتوماتيك.
+//    نفس فلسفة `bannerTone` في كروت البورصة.
+
+const TILE_TONE: Record<VKey, string> = {
+  products:    'from-[#2C5F8D] to-[#5B9BD5]',
+  rentals:     'from-[#1F6F5F] to-[#2FA084]',
+  services:    'from-[#8A6A0F] to-[#D4A017]',
+  restaurants: 'from-[#B4453A] to-[#E26D5C]',
+}
+
+function IconTile({ cat, vkey }: { cat: Category; vkey: VKey }) {
+  return (
+    <div className={`absolute inset-0 bg-gradient-to-br ${TILE_TONE[vkey]}`}>
+      {/* نقشة نقط خفيفة — عشان الكارت مايبقاش لون مصمت */}
+      <div
+        className="absolute inset-0 opacity-[0.08]"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+          backgroundSize: '20px 20px',
+        }}
+      />
+      <span className="absolute inset-0 flex items-center justify-center text-6xl md:text-7xl opacity-90 drop-shadow-lg select-none">
+        {cat.icon || '🏷️'}
+      </span>
+    </div>
+  )
+}
 
 export default function CategoryTrackTabs({ categories }: { categories: Category[] }) {
   const { t, lang } = useT()
@@ -93,16 +128,26 @@ export default function CategoryTrackTabs({ categories }: { categories: Category
               href={`/marketplace?category=${cat.slug}`}
               className="group relative block rounded-2xl overflow-hidden no-underline aspect-square"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={cat.image_url || DEFAULT_FALLBACK}
-                alt={cat.name_ar}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              {cat.image_url ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={cat.image_url}
+                    alt={cat.name_ar}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                </>
+              ) : (
+                <>
+                  <IconTile cat={cat} vkey={activeVertical.key} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
+                </>
+              )}
               <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-5">
-                {cat.icon && (
+                {/* الأيقونة الصغيرة تحت بتتكرر مع الكبيرة اللي في الكارت — تتشال */}
+                {cat.icon && cat.image_url && (
                   <span className="mb-2 text-xl md:text-2xl">{cat.icon}</span>
                 )}
                 <p className="text-white/70 font-bold tracking-[0.2em] uppercase mb-1 text-[9px] md:text-[10px]">

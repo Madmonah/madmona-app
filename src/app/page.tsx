@@ -38,7 +38,10 @@ const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
 const MADMONA_GOOGLE_REVIEW_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
 
 const DEFAULT_HERO_IMAGE = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=85&auto=format&fit=crop'
-const DEFAULT_CATEGORY_FALLBACK = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80&auto=format&fit=crop'
+// ⛔ (16 يوليو 2026) اتشال `DEFAULT_CATEGORY_FALLBACK` — كان نفس صورة ممر
+//    المكتب اللي كانت بتتحط على «خضار وفاكهة» و«إكسسوارات عربيات». كان معرَّف
+//    هنا ومش مستخدم أصلاً؛ بشيله عشان محدش يوصّله بحاجة تاني.
+//    الفئة اللي مالهاش صورة بقت تاخد كارت بأيقونتها — شوف CategoryTrackTabs.
 
 type DBCategory = {
   id: string
