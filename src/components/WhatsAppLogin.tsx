@@ -12,11 +12,15 @@ import { Loader2, MessageCircle, CheckCircle, RefreshCw } from 'lucide-react'
 // والصفحة بتكون سجلته لوحدها (polling).
 // =====================================================================
 
+export type WaLoginResult = { phone: string | null; full_name: string | null; madmona_token: string | null }
+
 export default function WhatsAppLogin({
-  onDone, label = 'ادخل بالواتساب — أسرع طريقة 🧞',
+  onDone, label = 'ادخل بالواتساب — أسرع طريقة 🧞', getFullName,
 }: {
-  onDone: () => void
+  onDone: (r: WaLoginResult) => void
   label?: string
+  /** اسم اختياري (من فورم خارجي) يتسجل به الحساب الجديد */
+  getFullName?: () => string
 }) {
   const [phase, setPhase] = useState<'idle' | 'waiting' | 'finishing' | 'done' | 'error'>('idle')
   const [err, setErr] = useState('')
@@ -56,7 +60,7 @@ export default function WhatsAppLogin({
             const f = await fetch('/api/auth/wa', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'finish', code: codeRef.current }),
+              body: JSON.stringify({ action: 'finish', code: codeRef.current, full_name: getFullName?.() || null }),
             })
             const fj = await f.json()
             if (!f.ok || !fj.token_hash) { setPhase('idle'); setErr('حصلت مشكلة — جرب تاني'); return }
@@ -64,8 +68,10 @@ export default function WhatsAppLogin({
               type: 'email', token_hash: fj.token_hash,
             })
             if (error) { setPhase('idle'); setErr('حصلت مشكلة في الدخول — جرب تاني'); return }
+            // 🔗 توحيد 100%: نفس الدخلة بتفتح كمان جلسات /me و/my-projects والحجوزات
+            if (fj.madmona_token) { try { localStorage.setItem('madmona_token', fj.madmona_token) } catch { /* */ } }
             setPhase('done')
-            onDone()
+            onDone({ phone: fj.phone || null, full_name: fj.full_name || null, madmona_token: fj.madmona_token || null })
           }
         } catch { /* poll بيكمل */ }
       }, 2000)

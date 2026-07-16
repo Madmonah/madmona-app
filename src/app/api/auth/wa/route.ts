@@ -39,7 +39,7 @@ function genCode(): string {
 
 /** رقم واتساب (2010xxxxxxxx) → Supabase session عبر magiclink hash.
  *  بيلاقي المستخدم أو يعمله، ويضمن صف profiles برقمه. */
-async function mintSession(rawPhone: string) {
+async function mintSession(rawPhone: string, fullNameHint: string | null = null) {
   const sb = admin()
   const normalized = normalizePhone(rawPhone)
   if (!normalized) throw new Error('bad_phone')
@@ -69,7 +69,21 @@ async function mintSession(rawPhone: string) {
     }
   }
 
-  return { token_hash: linkData.properties.hashed_token, email }
+  // 🔗 (17 Jul 2026) توحيد 100%: نفس الدخلة تطلع كمان madmona_token
+  // (جلسة madmona_sessions) — عشان /me و/my-projects والحجوزات القديمة
+  // اللي بتعتمد عليه تشتغل من غير دخول تاني. best-effort.
+  let madmonaToken: string | null = null
+  let fullName: string | null = null
+  try {
+    // @ts-expect-error rpc typing
+    const { data: mint } = await sb.rpc('wa_login_mint', { p_phone: normalized, p_full_name: fullNameHint })
+    if (mint?.success && mint.token) { madmonaToken = mint.token as string; fullName = (mint.full_name as string) || null }
+  } catch { /* التوكن القديم إضافة — مش شرط */ }
+
+  return {
+    token_hash: linkData.properties.hashed_token, email,
+    madmona_token: madmonaToken, phone: local, full_name: fullName,
+  }
 }
 
 // ---------------------------------------------------------------- GET (poll)
@@ -133,7 +147,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'expired' }, { status: 400 })
     }
     try {
-      const minted = await mintSession(row.verified_phone)
+      const minted = await mintSession(row.verified_phone, (body.full_name || '').trim() || null)
       await sb.from('wa_inbound_verifications')
         .update({ session_minted_at: new Date().toISOString() } as never)
         .eq('id', row.id)

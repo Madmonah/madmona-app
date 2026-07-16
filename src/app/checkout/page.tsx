@@ -11,6 +11,7 @@ import {
 import {
   useCart, cartSubtotal, clearCart, buildOrderItemsPayload,
 } from '@/lib/cart'
+import WhatsAppLogin from '@/components/WhatsAppLogin'
 
 // ============================================================================
 // /checkout
@@ -318,6 +319,21 @@ export default function CheckoutPage() {
             </div>
           </div>
         </section>
+
+        {/* 🔑 (17 Jul 2026) ضيف؟ ادخل بالواتساب في ثانية — بيفتح المحفظة
+            وخصم «سوّق واكسب» وتتبع الأوردرات. الضيف لسه يقدر يكمل عادي. */}
+        {!isAuthed && (
+          <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-75">
+            <p className="text-xs text-gray-600 mb-3 leading-relaxed">
+              <b className="text-[#1F6F5F]">عندك حساب أو أول مرة؟</b> ادخل بالواتساب في ثانية —
+              هيتفعّلك رصيد «سوّق واكسب» والمحفظة وتتبّع أوردراتك.
+            </p>
+            <WhatsAppLogin
+              label="ادخل بالواتساب قبل ما تأكّد 🧞"
+              onDone={() => window.location.reload()}
+            />
+          </section>
+        )}
 
         {/* Contact info */}
         <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-100">

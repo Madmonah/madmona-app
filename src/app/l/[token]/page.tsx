@@ -51,6 +51,8 @@ export default function MagicLinkPage() {
           router.replace(dest) // برضه وصّله — أسوأ حاجة يكون مش مسجل
           return
         }
+        // 🔗 توحيد 100%: لينك المارد بيفتح كمان جلسات /me و/my-projects القديمة
+        if (j.madmona_token) { try { localStorage.setItem('madmona_token', j.madmona_token) } catch { /* */ } }
         router.replace(dest)
         router.refresh()
       } catch (e) {
