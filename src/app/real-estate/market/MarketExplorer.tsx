@@ -783,7 +783,16 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
   )
 }
 
+/** رابط يوتيوب → embed. أي حاجة تانية = ملف فيديو مرفوع (<video>) */
+function ytEmbed(url: string): string | null {
+  const m = url.match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/,
+  )
+  return m ? `https://www.youtube.com/embed/${m[1]}` : null
+}
+
 function VideoModal({ it, onClose }: { it: Item; onClose: () => void }) {
+  const embed = it.video_url ? ytEmbed(it.video_url) : null
   return (
     <div
       className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
@@ -802,16 +811,26 @@ function VideoModal({ it, onClose }: { it: Item; onClose: () => void }) {
             <X className="w-4 h-4" />
           </button>
         </div>
-        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-        <video
-          src={it.video_url || ''}
-          controls
-          autoPlay
-          playsInline
-          preload="metadata"
-          poster={it.cover_url || undefined}
-          className="w-full rounded-xl bg-black max-h-[75vh]"
-        />
+        {embed ? (
+          <iframe
+            src={`${embed}?autoplay=1`}
+            title={`فيديو ${it.title}`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="w-full aspect-video rounded-xl bg-black"
+          />
+        ) : (
+          // eslint-disable-next-line jsx-a11y/media-has-caption
+          <video
+            src={it.video_url || ''}
+            controls
+            autoPlay
+            playsInline
+            preload="metadata"
+            poster={it.cover_url || undefined}
+            className="w-full rounded-xl bg-black max-h-[75vh]"
+          />
+        )}
         <a
           href={inquiryWaLink(it)}
           target="_blank"
