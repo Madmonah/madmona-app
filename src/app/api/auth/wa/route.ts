@@ -75,9 +75,9 @@ async function mintSession(rawPhone: string, fullNameHint: string | null = null)
   let madmonaToken: string | null = null
   let fullName: string | null = null
   try {
-    // @ts-expect-error rpc typing
-    const { data: mint } = await sb.rpc('wa_login_mint', { p_phone: normalized, p_full_name: fullNameHint })
-    if (mint?.success && mint.token) { madmonaToken = mint.token as string; fullName = (mint.full_name as string) || null }
+    const { data: mint } = await sb.rpc('wa_login_mint', { p_phone: normalized, p_full_name: fullNameHint } as never)
+    const m = mint as { success?: boolean; token?: string; full_name?: string } | null
+    if (m?.success && m.token) { madmonaToken = m.token; fullName = m.full_name || null }
   } catch { /* التوكن القديم إضافة — مش شرط */ }
 
   return {
