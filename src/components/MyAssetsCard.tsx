@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
-  Building2, Home, Store, ChevronLeft, Loader2, Phone, ShieldCheck,
+  Building2, Home, Store, ChevronLeft, Loader2, Phone, ShieldCheck, CalendarClock,
 } from 'lucide-react'
 
 type Project = {
@@ -30,6 +30,12 @@ type Business = {
   id: string; name: string; logo_url: string | null; status: string
   has_erp_crm: boolean | null; role: string; href: string
 }
+// 📅 (15 Jul 2026) المواعيد — قبل كده المارد كان بيوعد بميعاد ومفيش حاجة بتتسجّل،
+// فالعميل مكانش عنده أي طريقة يتأكد. دلوقتي بيشوفه هنا بعينه.
+type Meeting = {
+  id: string; at: string; kind: 'visit' | 'call' | 'online'
+  location: string | null; status: string
+}
 type MyAssets = {
   authenticated: boolean
   phone: string | null
@@ -37,6 +43,26 @@ type MyAssets = {
   projects: Project[]
   listings: Listing[]
   businesses: Business[]
+  meetings: Meeting[]
+}
+
+const KIND_LABEL: Record<string, string> = {
+  visit: 'زيارة لمقرّنا', call: 'مكالمة تليفون', online: 'أونلاين',
+}
+
+// «النهاردة الساعة ٤:٣٠ م» / «بكره ...» / «الخميس ٢٤ يوليو ...» — بتوقيت القاهرة
+function meetingWhen(iso: string): string {
+  const d = new Date(iso)
+  const cairo = (o: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat('ar-EG', { timeZone: 'Africa/Cairo', ...o }).format(d)
+  const يوم = (x: Date) =>
+    new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(x)
+  const الوقت = cairo({ hour: 'numeric', minute: '2-digit', hour12: true })
+  const now = new Date()
+  const بكره = new Date(now.getTime() + 86400000)
+  if (يوم(d) === يوم(now)) return `النهاردة الساعة ${الوقت}`
+  if (يوم(d) === يوم(بكره)) return `بكره الساعة ${الوقت}`
+  return `${cairo({ weekday: 'long', day: 'numeric', month: 'long' })} — ${الوقت}`
 }
 
 export default function MyAssetsCard() {
@@ -102,11 +128,47 @@ export default function MyAssetsCard() {
 
   const total =
     (data.projects?.length || 0) + (data.listings?.length || 0) + (data.businesses?.length || 0)
+  const meetings = data.meetings || []
 
-  // مفيش أصول؟ الكارت مبيظهرش خالص — بانر «اعرض معانا» الموجود بيغطّي الحالة دي
-  if (total === 0) return null
+  // 📅 الميعاد بيبان لوحده — حتى لو الشخص معندوش أصول خالص.
+  // ده مقصود: أي حد ليه ميعاد لازم يشوفه، مش بس الموردين.
+  const meetingCard = meetings.length > 0 && (
+    <div className="bg-white rounded-3xl shadow-soft overflow-hidden mb-4">
+      <div className="px-6 py-3.5 border-b border-gray-100">
+        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+          ميعادك مع فريق مضمونة
+        </p>
+      </div>
+      <div className="px-6 py-4 space-y-3">
+        {meetings.map((m) => (
+          <div key={m.id} className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#2FA084]/10 text-[#1F6F5F] flex items-center justify-center shrink-0">
+              <CalendarClock className="w-4.5 h-4.5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-[14px] text-gray-900">{meetingWhen(m.at)}</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {KIND_LABEL[m.kind] || m.kind}
+                {m.location ? ` · ${m.location}` : ''}
+              </p>
+            </div>
+          </div>
+        ))}
+        <p className="text-[11px] text-gray-400 leading-relaxed pt-1">
+          لو محتاج تغيّر الميعاد، ابعت للمارد على واتساب{' '}
+          <span className="font-bold text-gray-500" dir="ltr">01002229982</span>
+        </p>
+      </div>
+    </div>
+  )
+
+  // مفيش أصول ولا مواعيد؟ الكارت مبيظهرش — بانر «اعرض معانا» بيغطّي الحالة دي
+  if (total === 0 && meetings.length === 0) return null
+  if (total === 0) return <>{meetingCard}</>
 
   return (
+    <>
+    {meetingCard}
     <div className="bg-white rounded-3xl shadow-soft overflow-hidden">
       <div className="px-6 py-3.5 border-b border-gray-100 flex items-center justify-between">
         <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
@@ -233,6 +295,7 @@ export default function MyAssetsCard() {
         </AssetGroup>
       )}
     </div>
+    </>
   )
 }
 
