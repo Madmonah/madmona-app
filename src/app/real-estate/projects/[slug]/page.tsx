@@ -14,6 +14,7 @@ import { createClient } from '@supabase/supabase-js'
 import { MapPin, ArrowRight, FileText, CalendarClock, Wallet, Building2, MessageCircle } from 'lucide-react'
 import TopNav from '@/components/TopNav'
 import ProjectGallery from './ProjectGallery'
+import UnitsBooking from './UnitsBooking'
 import {
   inquiryWaLink, projectCode, PROPERTY_TYPE_LABEL, PROPERTY_TYPE_ICON,
   type MediaItem, type PropertyType, type PriceUnit,
@@ -44,6 +45,9 @@ type Row = {
   video_url: string | null
   media: MediaItem[] | null
   updated_at: string
+  booking_enabled: boolean | null
+  booking_fee: number | null
+  booking_fee_note: string | null
 }
 
 function sb() {
@@ -61,7 +65,8 @@ async function getProject(slug: string): Promise<Row | null> {
       .select(
         'id, slug, title, developer, area_label, city, district, lat, lng, unit_label, ' +
         'price_from, price_to, price_unit, note, property_type, payment_plan, delivery_label, ' +
-        'cover_url, brochure_url, video_url, media, updated_at',
+        'cover_url, brochure_url, video_url, media, updated_at, ' +
+        'booking_enabled, booking_fee, booking_fee_note',
       )
       .eq('slug', slug)
       .eq('is_active', true)
@@ -284,6 +289,17 @@ export default async function ProjectPage(
               افتح الموقع في خرايط جوجل
             </a>
           </section>
+        )}
+
+        {/* 🗂️ حجز الوحدات من الماستر بلان — 48 ساعة عبر مضمونة (لو المطوّر مفعّلها) */}
+        {p.booking_enabled && (
+          <UnitsBooking
+            projectId={p.id}
+            projectTitle={p.title}
+            projectCode={projectCode(p.id)}
+            bookingFee={p.booking_fee}
+            bookingFeeNote={p.booking_fee_note}
+          />
         )}
 
         {/* 📄 البروشور */}

@@ -26,6 +26,7 @@ import Link from 'next/link'
 import {
   Building2, KeyRound, RefreshCcw, MessageCircle, Search, X,
   MapPin, Flame, Clock, Plus, FileText, PlayCircle, CalendarClock, Wallet, Sparkles,
+  ChevronDown,
 } from 'lucide-react'
 import {
   inquiryWaLink, projectCode, PROPERTY_TYPES, PROPERTY_TYPE_LABEL, PROPERTY_TYPE_ICON,
@@ -429,13 +430,24 @@ export default function MarketExplorer({
                     )
                   }
 
+                  // 🔽 (16 Jul 2026) طلب محمد: متوسطات الريسيل/الإيجار كانت قايمة مفرودة
+                  // طويلة «شكلها مش حلو» — بقت دروب ليست منسدلة: سطر واحد لكل منطقة،
+                  // تدوس عليه يفتح الجدول. الصفحة اتضغطت والمشاريع بقت البطل.
                   return (
-                    <div key={seg.key} className="mb-6">
-                      <div className="flex items-baseline gap-2 mb-3 px-1">
-                        <h3 className="font-bold text-gray-900">{seg.label}</h3>
-                        <span className="text-xs text-gray-500">{seg.hint}</span>
-                      </div>
-                      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                    <details key={seg.key} className="mb-4 group/avg bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                      <summary className="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden hover:bg-gray-50/60 transition-colors">
+                        <div className="flex items-baseline gap-2 min-w-0">
+                          <h3 className="font-bold text-gray-900 text-sm">{seg.label}</h3>
+                          <span className="text-xs text-gray-400 hidden sm:inline">{seg.hint}</span>
+                        </div>
+                        <span className="flex items-center gap-2 shrink-0">
+                          <span className="text-[11px] font-bold text-[#1F6F5F] bg-[#1F6F5F]/8 px-2 py-0.5 rounded-full">
+                            {rows.length} {seg.key === 'rent' ? 'نوع وحدة' : 'متوسط'}
+                          </span>
+                          <ChevronDown className="w-4 h-4 text-gray-400 transition-transform group-open/avg:rotate-180" />
+                        </span>
+                      </summary>
+                      <div className="border-t border-gray-100">
                         {rows.map((it, i) => (
                           <div
                             key={it.id}
@@ -453,7 +465,7 @@ export default function MarketExplorer({
                           </div>
                         ))}
                       </div>
-                    </div>
+                    </details>
                   )
                 })}
               </section>

@@ -17,6 +17,7 @@ import {
   Building2, ImagePlus, Loader2, CheckCircle2, ExternalLink,
   Video, FileText, X, Images, AlertTriangle,
 } from 'lucide-react'
+import UnitsManager from './UnitsManager'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,6 +39,9 @@ type Project = {
   brochure_url: string | null
   video_url: string | null
   media: string[] | null
+  booking_enabled: boolean | null
+  booking_fee: number | null
+  booking_fee_note: string | null
 }
 
 const money = (n: number | null) =>
@@ -320,6 +324,19 @@ export default function MyProjectsPage() {
 
                   {/* ── 💰 السعر ── */}
                   <PriceEditor p={p} busy={busy} onSave={savePrice} />
+
+                  {/* ── 🗂️ الوحدات + الحجز 48 ساعة (16 Jul 2026) ── */}
+                  <UnitsManager
+                    projectId={p.id}
+                    token={token}
+                    bookingEnabled={!!p.booking_enabled}
+                    bookingFee={p.booking_fee}
+                    bookingFeeNote={p.booking_fee_note}
+                    onToggleBooking={async (enabled, feeVal, noteVal) => {
+                      await patch(p, { booking_enabled: enabled, booking_fee: feeVal, booking_fee_note: noteVal })
+                      update(p.id, { booking_enabled: enabled, booking_fee: feeVal, booking_fee_note: noteVal })
+                    }}
+                  />
 
                   <a href="/real-estate/market" target="_blank" rel="noopener"
                     className="inline-flex items-center gap-1 text-xs text-[#1F6F5F] font-bold hover:underline">
