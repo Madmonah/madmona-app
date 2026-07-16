@@ -9,6 +9,17 @@
 //    (area_label) — فأي مشروع في أي منطقة بيظهر أوتوماتيك.
 // ➕ كل كارت مشروع بقى فيه: بروشور PDF · فيديو · وزرار «اسأل عن المشروع ده»
 //    برسالة فيها كود المشروع → بنعرف كل استفسار عن أنهي مشروع بالظبط.
+//
+// 🎨 إعادة تصميم العرض (16 يوليو 2026) — الشكل كان بيأذي الصفحة:
+//    1. **حيطة الفلاتر:** ٢٥ شريطة منطقة + ١٣ شريطة مطوّر في بار لاصق =
+//       ٤٠٠ بكسل بتاكل نص الشاشة والمشاريع مدفونة تحتها، وجواها سكرول
+//       متداخل (max-h-24 overflow-auto) — أسوأ نمط ممكن. بقوا قايمتين اختيار.
+//    2. **العرض ضيّق:** max-w-4xl = ٨٩٦px على شاشة ١٤٤٠ — عمودين وبس
+//       والباقي هوامش فاضية. بقى max-w-7xl و٤ أعمدة على الديسكتوب.
+//    3. **التكرار:** قسم «مشاريع بالبروشور» كان بيعرض نفس الكروت اللي
+//       بتتكرر تاني تحت في قسم منطقتها. اتشال — الترتيب بيرفع صاحب الصورة فوق.
+//    4. **الترتيب مقلوب:** أول حاجة المشتري كان بيشوفها بانر أخضر بيقول
+//       «ضيف مشروعك» — ده إعلان للمطوّرين. اتنقل تحت بعد المشاريع.
 // =====================================================================
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
@@ -238,24 +249,15 @@ export default function MarketExplorer({
     return areas.filter((a) => set.has(a.label))
   }, [areas, filteredItems])
 
-  // 🔥 المشاريع اللي عليها ميديا (صورة/بروشور/فيديو) — بتتعرض في قسم فوق خالص.
-  // من غير كده كانت بتتدفن تحت لأن العرض بيتقسّم بالمناطق، والمنطقة اللي فيها
-  // أكتر مشاريع (قديمة وبلا صور) بتطلع الأول.
-  const featured = useMemo(
-    () =>
-      filteredItems
-        .filter((it) => it.segment === 'developer' && (it.cover_url || it.brochure_url || it.video_url))
-        .slice(0, 12),
-    [filteredItems],
-  )
-
   const lastUpdate = items.length
     ? items.reduce((mx, it) => (it.updated_at > mx ? it.updated_at : mx), items[0].updated_at)
     : null
   const devCount = items.filter((i) => i.segment === 'developer').length
 
   return (
-    <main className="max-w-4xl mx-auto px-4 pb-16">
+    // 📐 كان max-w-4xl (896px) — على شاشة 1440 ده عمودين وهوامش فاضية على
+    //    الجنبين. 84 مشروع محتاجين مساحة.
+    <main className="max-w-7xl mx-auto px-4 pb-16">
       {/* Hero */}
       <section className="py-8 md:py-12 text-center">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#1F6F5F]/10 rounded-full mb-4">
@@ -276,64 +278,6 @@ export default function MarketExplorer({
             آخر تحديث: {fmtDate(lastUpdate)} · بيتجدد يومياً
           </div>
         )}
-      </section>
-
-      {/* 🆕 بانر التوضيح — الجديد في البورصة (يوليو 2026) */}
-      <section className="mb-8">
-        <div className="rounded-2xl bg-gradient-to-l from-[#1F6F5F] to-[#2FA084] p-6 md:p-7 text-white">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 shrink-0" />
-            <h2 className="font-bold text-lg">جديد في البورصة</h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-            <div className="flex gap-2.5">
-              <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-white/80" />
-              <div>
-                <p className="font-bold text-sm mb-0.5">أي منطقة في مصر</p>
-                <p className="text-xs text-white/80 leading-relaxed">
-                  مش بس العاصمة والتجمع والساحل — مستقبل سيتي، العبور، السخنة، هليوبوليس،
-                  رأس الحكمة… مشروعك هيظهر مهما كانت منطقته.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-2.5">
-              <FileText className="w-4 h-4 shrink-0 mt-0.5 text-white/80" />
-              <div>
-                <p className="font-bold text-sm mb-0.5">بروشور PDF + فيديو</p>
-                <p className="text-xs text-white/80 leading-relaxed">
-                  ارفع البروشور وفيديو المشروع مع الأسعار ونظام السداد — بيتضغطوا أوتوماتيك
-                  عشان الصفحة تفتح بسرعة على الموبايل.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-2.5">
-              <MessageCircle className="w-4 h-4 shrink-0 mt-0.5 text-white/80" />
-              <div>
-                <p className="font-bold text-sm mb-0.5">استفسارات موصولة بمشروعها</p>
-                <p className="text-xs text-white/80 leading-relaxed">
-                  كل مشروع ليه زرار «اسأل عن المشروع ده» — المارد 🧞 بيعرف العميل بيسأل عن
-                  أنهي مشروع بالظبط ويوصّله بيك.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center gap-3">
-            <Link
-              href={ADD_PROJECT}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-white text-[#1F6F5F] font-bold text-sm hover:bg-gray-50 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              ضيف مشروعك ببلاش
-            </Link>
-            <p className="text-xs text-white/75 text-center sm:text-right">
-              مطور أو مسوق عقاري؟ دقيقتين وهيبقى قدام آلاف الباحثين يومياً.
-            </p>
-          </div>
-        </div>
       </section>
 
       {/* 🔎 شريط البحث والفلاتر */}
@@ -380,49 +324,41 @@ export default function MarketExplorer({
             ))}
           </div>
 
-          {/* شرايط المناطق — مبنية من الداتا */}
-          <div className="flex flex-wrap items-center gap-1.5 mb-2 max-h-24 overflow-y-auto">
-            <button
-              onClick={() => setAreaF('all')}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${areaF === 'all' ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-gray-700 border border-gray-200 hover:border-[#1F6F5F]/40'}`}
-            >
-              كل المناطق
-            </button>
-            {areas.map((a) => (
-              <button
-                key={a.label}
-                onClick={() => setAreaF(areaF === a.label ? 'all' : a.label)}
-                className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${areaF === a.label ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-gray-700 border border-gray-200 hover:border-[#1F6F5F]/40'}`}
+          {/* 📍🏗️ المنطقة والمطوّر — قايمتين اختيار مش حيطة شرايط.
+              كانوا ٢٥ + ١٣ شريطة جوه سكرول متداخل في بار لاصق: بتاكل نص
+              الشاشة، والمشاريع نفسها مدفونة تحتها. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+            <label className="relative">
+              <MapPin className="w-3.5 h-3.5 text-[#1F6F5F] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <select
+                value={areaF}
+                onChange={(e) => setAreaF(e.target.value)}
+                aria-label="المنطقة"
+                className={`w-full appearance-none rounded-full border py-2 pr-9 pl-3 text-xs font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 ${areaF === 'all' ? 'bg-[#FAFAF7] border-gray-200 text-gray-700' : 'bg-[#1F6F5F]/10 border-[#1F6F5F]/40 text-[#1F6F5F]'}`}
               >
-                <MapPin className="w-3 h-3" />
-                {a.label}
-                <span className="opacity-60">{a.count}</span>
-              </button>
-            ))}
-          </div>
+                <option value="all">كل المناطق ({areas.length})</option>
+                {areas.map((a) => (
+                  <option key={a.label} value={a.label}>{a.label} ({a.count})</option>
+                ))}
+              </select>
+            </label>
 
-          {/* 🏗️ المطوّرين — ناس كتير بتدوّر بالمطوّر: «عايز حاجة لإعمار» */}
-          {developers.length > 1 && (
-            <div className="flex flex-wrap items-center gap-1.5 mb-2 max-h-24 overflow-y-auto">
-              <button
-                onClick={() => setDevF('all')}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${devF === 'all' ? 'bg-[#8B5CF6] text-white' : 'bg-[#FAFAF7] text-gray-700 border border-gray-200 hover:border-[#8B5CF6]/50'}`}
+            <label className="relative">
+              <Building2 className="w-3.5 h-3.5 text-[#8B5CF6] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <select
+                value={devF}
+                onChange={(e) => setDevF(e.target.value)}
+                aria-label="المطوّر"
+                disabled={developers.length < 2}
+                className={`w-full appearance-none rounded-full border py-2 pr-9 pl-3 text-xs font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/30 disabled:opacity-50 ${devF === 'all' ? 'bg-[#FAFAF7] border-gray-200 text-gray-700' : 'bg-[#8B5CF6]/10 border-[#8B5CF6]/40 text-[#8B5CF6]'}`}
               >
-                كل المطوّرين
-              </button>
-              {developers.map((d) => (
-                <button
-                  key={d.name}
-                  onClick={() => setDevF(devF === d.name ? 'all' : d.name)}
-                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${devF === d.name ? 'bg-[#8B5CF6] text-white' : 'bg-[#FAFAF7] text-gray-700 border border-gray-200 hover:border-[#8B5CF6]/50'}`}
-                >
-                  <Building2 className="w-3 h-3" />
-                  {d.name}
-                  <span className="opacity-60">{d.count}</span>
-                </button>
-              ))}
-            </div>
-          )}
+                <option value="all">كل المطوّرين ({developers.length})</option>
+                {developers.map((d) => (
+                  <option key={d.name} value={d.name}>{d.name} ({d.count})</option>
+                ))}
+              </select>
+            </label>
+          </div>
 
           <div className="flex flex-wrap items-center gap-1.5">
             {SEG_CHIPS.map((s) => (
@@ -454,28 +390,9 @@ export default function MarketExplorer({
         </section>
       ) : (
         <>
-          {/* 🔥 مشاريع بالصور والبروشور والفيديو — فوق خالص عشان تتشاف */}
-          {featured.length > 0 && (
-            <section className="mb-12">
-              <div className="flex items-center gap-2.5 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-[#2FA084] text-white flex items-center justify-center shrink-0">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900">
-                  مشاريع بالبروشور والفيديو
-                </h2>
-                <span className="text-xs text-gray-400">{featured.length}</span>
-              </div>
-              <p className="text-xs text-gray-500 mb-5 pr-1">
-                أحدث المشاريع اللي المطورين نزّلوها بنفسهم — بالأسعار ونظام السداد والبروشور.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {featured.map((it) => (
-                  <ProjectCard key={`f-${it.id}`} it={it} onPlay={() => setVideoOpen(it)} />
-                ))}
-              </div>
-            </section>
-          )}
+          {/* ⛔ (16 يوليو) قسم «مشاريع بالبروشور والفيديو» اتشال — كان بيعرض
+              نفس الكروت اللي بتظهر تاني تحت في قسم منطقتها. نفس المشروع
+              مرتين في نفس الصفحة. ترتيب الجلب أصلاً بيرفع اللي معاه صورة فوق. */}
 
           {visibleAreas.map((areaDef) => {
             const areaItems = filteredItems.filter((it) => it.area_label === areaDef.label)
@@ -501,7 +418,8 @@ export default function MarketExplorer({
                           <h3 className="font-bold text-gray-900">{seg.label}</h3>
                           <span className="text-xs text-gray-500">{rows.length} مشروع</span>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {/* 4 أعمدة على الشاشات العريضة — كانوا 2 بحد أقصى */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                           {rows.map((it) => (
                             <ProjectCard key={it.id} it={it} onPlay={() => setVideoOpen(it)} />
                           ))}
@@ -559,7 +477,7 @@ export default function MarketExplorer({
                   <h3 className="font-bold text-gray-900 mb-3 px-1">
                     🏷️ للبيع <span className="text-xs text-gray-400 font-normal">({saleOps.length})</span>
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                     {saleOps.map((op) => <OppCard key={op.id} op={op} />)}
                   </div>
                 </div>
@@ -570,7 +488,7 @@ export default function MarketExplorer({
                   <h3 className="font-bold text-gray-900 mb-3 px-1">
                     🔑 للإيجار <span className="text-xs text-gray-400 font-normal">({rentOps.length})</span>
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                     {rentOps.map((op) => <OppCard key={op.id} op={op} />)}
                   </div>
                 </div>
@@ -580,29 +498,10 @@ export default function MarketExplorer({
         </>
       )}
 
-      {/* 🏗️ CTA للمطورين — دلوقتي بيوديه لفورم فعلي مش واتساب بس */}
-      <section className="mb-6">
-        <div className="bg-white rounded-2xl border-2 border-dashed border-[#2FA084]/40 p-6 md:p-7 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-full bg-[#2FA084]/10 text-[#2FA084] flex items-center justify-center shrink-0">
-              <Plus className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-900">انت مطور أو مسوق عقاري ومشروعك مش هنا؟</h3>
-              <p className="text-sm text-gray-600">
-                ضيفه بنفسك في دقيقتين — بالأسعار والبروشور والفيديو. أي منطقة في مصر.
-              </p>
-            </div>
-          </div>
-          <Link
-            href={ADD_PROJECT}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#2FA084] text-white font-bold text-sm shrink-0 hover:opacity-95 transition-opacity"
-          >
-            <Plus className="w-4 h-4" />
-            ضيف مشروعك
-          </Link>
-        </div>
-      </section>
+      {/* 🏗️ للمطوّرين — بعد المشاريع مش قبلها.
+          البانر ده والكارت المنقّط اللي كان تحته كانوا بيقولوا نفس الكلام
+          («ضيف مشروعك») في نفس الصفحة — اتدمجوا في واحد. */}
+      <DevelopersBanner />
 
       <p className="text-[11px] text-gray-400 text-center mb-10 leading-relaxed max-w-2xl mx-auto">
         الأسعار استرشادية من المطورين والمسوّقين وبتتغير باستمرار — راجع المطور قبل أي قرار.
@@ -637,6 +536,71 @@ export default function MarketExplorer({
 
       {videoOpen && <VideoModal it={videoOpen} onClose={() => setVideoOpen(null)} />}
     </main>
+  )
+}
+
+// =====================================================================
+// 🏗️ بانر المطوّرين — بيتعرض **بعد** المشاريع.
+// كان فوق خالص، فأول حاجة يشوفها المشتري كانت إعلان موجّه للمطوّرين.
+// =====================================================================
+function DevelopersBanner() {
+  return (
+    <section className="mb-8">
+      <div className="rounded-2xl bg-gradient-to-l from-[#1F6F5F] to-[#2FA084] p-6 md:p-7 text-white">
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="w-5 h-5 shrink-0" />
+          <h2 className="font-bold text-lg">انت مطوّر أو مسوّق عقاري؟</h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+          <div className="flex gap-2.5">
+            <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-white/80" />
+            <div>
+              <p className="font-bold text-sm mb-0.5">أي منطقة في مصر</p>
+              <p className="text-xs text-white/80 leading-relaxed">
+                مش بس العاصمة والتجمع والساحل — مستقبل سيتي، العبور، السخنة، هليوبوليس،
+                رأس الحكمة… مشروعك هيظهر مهما كانت منطقته.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-2.5">
+            <FileText className="w-4 h-4 shrink-0 mt-0.5 text-white/80" />
+            <div>
+              <p className="font-bold text-sm mb-0.5">بروشور PDF + فيديو</p>
+              <p className="text-xs text-white/80 leading-relaxed">
+                ارفع البروشور وفيديو المشروع مع الأسعار ونظام السداد — بيتضغطوا أوتوماتيك
+                عشان الصفحة تفتح بسرعة على الموبايل.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-2.5">
+            <MessageCircle className="w-4 h-4 shrink-0 mt-0.5 text-white/80" />
+            <div>
+              <p className="font-bold text-sm mb-0.5">استفسارات موصولة بمشروعها</p>
+              <p className="text-xs text-white/80 leading-relaxed">
+                كل مشروع ليه زرار «اسأل عن المشروع ده» — المارد 🧞 بيعرف العميل بيسأل عن
+                أنهي مشروع بالظبط ويوصّله بيك.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Link
+            href={ADD_PROJECT}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-white text-[#1F6F5F] font-bold text-sm hover:bg-gray-50 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            ضيف مشروعك ببلاش
+          </Link>
+          <p className="text-xs text-white/75 text-center sm:text-right">
+            دقيقتين وهيبقى قدام آلاف الباحثين يومياً.
+          </p>
+        </div>
+      </div>
+    </section>
   )
 }
 
