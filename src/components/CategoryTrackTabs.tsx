@@ -61,7 +61,10 @@ function IconTile({ cat, vkey }: { cat: Category; vkey: VKey }) {
           backgroundSize: '20px 20px',
         }}
       />
-      <span className="absolute inset-0 flex items-center justify-center text-6xl md:text-7xl opacity-90 drop-shadow-lg select-none">
+      {/* ⚠️ الأيقونة في التلت الفوقاني مش في النص: العناوين الطويلة (زي
+          «قطع غيار وإكسسوارات موتوسيكلات» = ٣ سطور) بتطلع من تحت وبتركب
+          على أي حاجة في نص الكارت. */}
+      <span className="absolute inset-x-0 top-[18%] flex justify-center text-5xl md:text-6xl opacity-90 drop-shadow-lg select-none">
         {cat.icon || '🏷️'}
       </span>
     </div>
