@@ -181,7 +181,10 @@ async function handleInboundVerification(fullPhone: string, fromPhone: string, t
   if (res.error === 'no_pending_code') return false  // not one of ours / already used — let normal flow handle it
   let reply: string
   if (res.success) {
-    reply = '✅ تم تأكيد رقمك بنجاح في مضمونة.\nترجع للموقع وتكمّل عادي — معاملاتك مضمونة.'
+    // 🔑 (16 Jul 2026) app_login = فلو الدخول الموحّد — الصفحة بتعمل poll وبتدخّله لوحدها
+    reply = res.purpose === 'app_login'
+      ? '✅ تمام يا باشا! ارجع لصفحة مضمونة المفتوحة عندك — هتلاقي نفسك دخلت لوحدك 🧞\nمعاملاتك مضمونة 💚'
+      : '✅ تم تأكيد رقمك بنجاح في مضمونة.\nترجع للموقع وتكمّل عادي — معاملاتك مضمونة.'
   } else if (res.error === 'expired') {
     reply = '⏰ كود التأكيد ده انتهت صلاحيته. ارجع للموقع واطلب كود جديد وابعته تاني.'
   } else if (res.error === 'phone_mismatch') {
@@ -200,6 +203,36 @@ async function handleInboundVerification(fullPhone: string, fromPhone: string, t
     last_outbound_at: new Date().toISOString(), last_message_direction: 'outbound'
   }).eq('id', convId)
   return true
+}
+
+// 🔗 (16 Jul 2026) لينكات ممغنطة — أي لينك مضمونة في رد المارد بيتغلف بتوكن
+// يدخّل صاحب الرقم تلقائي لما يفتحه (/l/<token>). السبب: أوردرات اتلغت عشان
+// الناس مش مسجلة دخول. في الجروبات مفيش تغليف — اللينك هناك لكل الناس.
+async function wrapMagicLinks(reply: string, fullPhone: string, isGroup: boolean): Promise<string> {
+  if (isGroup || !reply) return reply
+  const re = /(https?:\/\/)?(www\.)?madmonacairo\.com(\/[^\s"'«»()\]]*)?/g
+  const matches = [...reply.matchAll(re)]
+  if (!matches.length) return reply
+  let out = reply
+  const seen = new Map<string, string>()
+  for (const m of matches) {
+    let orig = m[0]
+    const tm = orig.match(/[.,،!؟:؛]+$/)
+    if (tm) orig = orig.slice(0, -tm[0].length)
+    const path = orig.replace(/^(https?:\/\/)?(www\.)?madmonacairo\.com/, '') || '/'
+    if (path.startsWith('/admin') || path.startsWith('/l/')) continue
+    let wrapped = seen.get(orig)
+    if (!wrapped) {
+      const { data, error } = await sb().from('wa_login_tokens')
+        .insert({ phone: fullPhone, next_path: path })
+        .select('token').single()
+      if (error || !data?.token) { console.error('[magic-wrap] insert error:', error); continue }
+      wrapped = `${SITE_URL}/l/${data.token}`
+      seen.set(orig, wrapped)
+    }
+    out = out.split(orig).join(wrapped)
+  }
+  return out
 }
 
 // —— 🎙️ TTS: Arabic voice via Groq (Orpheus) — best-effort ——
@@ -1483,10 +1516,13 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
     }
 
     // 🆕 لو الرسالة جت من جروب — الرد بينزل في الجروب نفسه (مش في خاص الشخص)
-    const sendResult = await sendWhatsAppText(replyTo, ai.reply, isGroup)
+    // 🔗 غلّف لينكات مضمونة بلينكات ممغنطة تدخّل العميل تلقائي (خاص بس، مش جروبات)
+    let finalReply = ai.reply
+    try { finalReply = await wrapMagicLinks(ai.reply, fullPhone, isGroup) } catch (e) { console.error('[magic-wrap]', e) }
+    const sendResult = await sendWhatsAppText(replyTo, finalReply, isGroup)
     await sb().from('whatsapp_messages').insert({
       conversation_id: convId, direction: 'outbound', wa_message_id: sendResult.wa_id,
-      body: ai.reply, message_type: 'text', status: sendResult.error ? 'failed' : 'sent',
+      body: finalReply, message_type: 'text', status: sendResult.error ? 'failed' : 'sent',
       status_updated_at: new Date().toISOString(), ai_generated: true, agent_name: 'inbound-responder',
       error_message: sendResult.error,
       metadata: { intent: ai.intent, lead_type: ai.lead_type, supplier_kind: ai.supplier_kind ?? null, category: ai.category, unmet_demand: !!ai.unmet_demand, instant_listing: !!ai.listing_draft, reply_to_count: inbounds.length, had_ad_referral: !!adData, is_first_reply: isFirstReply, had_image: !!imageData, was_voice: wasVoice, voice_reply_sent: voiceSent, is_group: isGroup, group_id: isGroup ? groupId : null }

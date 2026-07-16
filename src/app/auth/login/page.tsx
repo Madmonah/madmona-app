@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { GoogleSignInButton, FacebookSignInButton } from '@/components/GoogleSignInButton'
+import WhatsAppLogin from '@/components/WhatsAppLogin'
 
 // Facebook login hidden until Meta Business Verification completes (re-enable: set to true)
 const SHOW_FACEBOOK_LOGIN = false
@@ -26,6 +27,9 @@ function LoginContent() {
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // 🔑 (16 Jul 2026) الدخول اتوحّد: واتساب (أساسي) + جوجل. الباسورد بقى مطوي —
+  // للحسابات القديمة والموظفين بس. لو جاي من سويتشر الحسابات برقم → افتحه على طول.
+  const [showPassword, setShowPassword] = useState(!!prefilledPhone)
 
   // Auto-fill phone from query param when account switcher redirects here
   useEffect(() => {
@@ -154,7 +158,28 @@ function LoginContent() {
           </div>
 
           <div className="bg-white rounded-3xl shadow-luxe p-7 md:p-9">
-            <form onSubmit={handleSubmit} className="space-y-5">
+            {/* 🧞 الطريقة الأساسية: واتساب — من غير باسورد ولا كود بيتبعتلك */}
+            <WhatsAppLogin onDone={() => { router.push(redirectTo); router.refresh() }} />
+            <div className="my-4 flex items-center gap-3">
+              <div className="h-px bg-gray-100 flex-1" />
+              <span className="text-[11px] text-gray-400 font-bold">أو</span>
+              <div className="h-px bg-gray-100 flex-1" />
+            </div>
+            <GoogleSignInButton redirectTo={redirectTo} label="سجّل دخول بـ Google" />
+
+            {/* الباسورد/الـPIN — للحسابات القديمة والموظفين */}
+            {!showPassword && (
+              <button
+                type="button"
+                onClick={() => setShowPassword(true)}
+                className="mt-4 w-full text-center text-xs font-bold text-gray-400 hover:text-[#1F6F5F] transition-colors"
+              >
+                عندك باسورد أو PIN موظفين؟ ادخل بيه من هنا
+              </button>
+            )}
+
+            {showPassword && (
+            <form onSubmit={handleSubmit} className="space-y-5 mt-6 pt-6 border-t border-gray-100">
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                   <Phone className="w-3.5 h-3.5 text-[#1F6F5F]" />
@@ -229,14 +254,7 @@ function LoginContent() {
                 )}
               </button>
             </form>
-
-            {/* Social login */}
-            <div className="my-5 flex items-center gap-3">
-              <div className="h-px bg-gray-100 flex-1" />
-              <span className="text-[11px] text-gray-400 font-bold">أو</span>
-              <div className="h-px bg-gray-100 flex-1" />
-            </div>
-            <GoogleSignInButton redirectTo={redirectTo} label="سجّل دخول بـ Google" />
+            )}
             {SHOW_FACEBOOK_LOGIN && (
               <>
                 <div className="h-3" />
@@ -244,16 +262,10 @@ function LoginContent() {
               </>
             )}
 
-            <div className="mt-7 pt-6 border-t border-gray-100 text-center">
-              <p className="text-sm text-gray-600 mb-2">{t('auth.no_account_yet')}</p>
-              <Link
-                href={`/auth/signup${redirectTo !== '/account' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
-                className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold hover:gap-2 transition-all no-underline"
-              >
-                {t('auth.create_account')}
-                <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
-              </Link>
-            </div>
+            {/* مفيش «إنشاء حساب» منفصل — الواتساب/جوجل بيعملوا الحساب لوحدهم أول مرة */}
+            <p className="mt-6 pt-5 border-t border-gray-100 text-center text-xs text-gray-400 leading-relaxed">
+              أول مرة؟ نفس الزراير فوق بتعملك حساب تلقائي — مفيش فورم تسجيل.
+            </p>
           </div>
 
           <p className="text-center text-xs text-gray-500 mt-6">
