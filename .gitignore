@@ -49,3 +49,26 @@ next-env.d.ts
 .vercel
 
 scripts/transcribe-voice.ps1
+
+# 🔒 (15 يوليو 2026) شغل محلي — ماينفعش يتكوميت
+# .wa-profile فيها **جلسة واتساب مربوطة** — لو اتدفعت، أي حد ياخد الريبو
+# يقدر يقرا كل شاتات مضمونة. و.wa-dl فيها بروشورات 64 ميجا.
+.wa-profile/
+.wa-dl/
+scripts/.chrome-fb/
+scripts/.chrome-scrape/
+scripts/chrome-prof/
+
+# مخرجات مؤقتة من سكربتات الفحص (لقطات · لوجات · JSON وسيط)
+scripts/*.log
+scripts/*.png
+scripts/*.jpg
+scripts/node_modules/
+scripts/tsc-all.log
+
+# ملفات اتنزّلت للفحص
+*.pdf
+!public/**/*.pdf
+probe.txt
+
+supabase/.temp/
