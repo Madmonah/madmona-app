@@ -38,6 +38,7 @@ export type Item = {
   area: string
   area_label: string
   city: string | null
+  district: string | null
   segment: 'developer' | 'resale' | 'rent'
   developer: string | null
   title: string
@@ -644,9 +645,10 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
               <h4 className="text-white font-bold text-base leading-snug drop-shadow line-clamp-2">
                 {it.title}
               </h4>
-              {it.developer && (
-                <p className="text-white/85 text-[11px] mt-0.5 drop-shadow">{it.developer}</p>
-              )}
+              {/* المطوّر + الحتة بالظبط تحت العنوان على الصورة */}
+              <p className="text-white/85 text-[11px] mt-0.5 drop-shadow">
+                {[it.developer, it.district].filter(Boolean).join(' · ')}
+              </p>
             </div>
           </>
         ) : (

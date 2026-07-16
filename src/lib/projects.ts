@@ -77,7 +77,7 @@ export type Project = {
 
 /** الأعمدة اللي البورصة العامة بتقراها (من غير حاجات داخلية) */
 export const PUBLIC_PROJECT_COLUMNS =
-  'id, slug, area, area_label, city, segment, developer, title, unit_label, ' +
+  'id, slug, area, area_label, city, district, segment, developer, title, unit_label, ' +
   'price_from, price_to, price_unit, note, property_type, payment_plan, delivery_label, ' +
   'cover_url, brochure_url, video_url, media, sort_order, updated_at'
 

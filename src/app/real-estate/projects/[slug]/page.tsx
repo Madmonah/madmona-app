@@ -28,6 +28,9 @@ type Row = {
   developer: string | null
   area_label: string
   city: string | null
+  district: string | null
+  lat: number | null
+  lng: number | null
   unit_label: string | null
   price_from: number | null
   price_to: number | null
@@ -56,9 +59,9 @@ async function getProject(slug: string): Promise<Row | null> {
     const { data } = await sb()
       .from('property_market_items')
       .select(
-        'id, slug, title, developer, area_label, city, unit_label, price_from, price_to, ' +
-        'price_unit, note, property_type, payment_plan, delivery_label, cover_url, ' +
-        'brochure_url, video_url, media, updated_at',
+        'id, slug, title, developer, area_label, city, district, lat, lng, unit_label, ' +
+        'price_from, price_to, price_unit, note, property_type, payment_plan, delivery_label, ' +
+        'cover_url, brochure_url, video_url, media, updated_at',
       )
       .eq('slug', slug)
       .eq('is_active', true)
@@ -211,7 +214,8 @@ export default async function ProjectPage(
             )}
             <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">
               <MapPin className="w-3 h-3 text-[#2FA084]" />
-              {p.area_label}
+              {/* 🗺️ المدينة + الحتة بالظبط: «القاهرة الجديدة · التجمع الخامس» */}
+              {[p.city || p.area_label, p.district].filter(Boolean).join(' · ')}
             </span>
           </div>
 
@@ -251,6 +255,36 @@ export default async function ProjectPage(
             </DetailCard>
           )}
         </section>
+
+        {/* 🗺️ الموقع بالظبط — «المشروع فين» كان أكبر سؤال. خريطة + زرار جوجل ماب.
+            الإحداثيات من Nawy. لو مفيش موقع، الكارت مبيظهرش. */}
+        {p.lat != null && p.lng != null && (
+          <section className="mt-6">
+            <p className="flex items-center gap-1.5 text-[11px] font-semibold text-[#2FA084] mb-2">
+              <MapPin className="w-4 h-4" /> موقع المشروع بالظبط
+            </p>
+            <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+              <iframe
+                title={`موقع ${p.title}`}
+                width="100%"
+                height="240"
+                loading="lazy"
+                style={{ border: 0 }}
+                referrerPolicy="no-referrer-when-downgrade"
+                src={`https://maps.google.com/maps?q=${p.lat},${p.lng}&z=14&output=embed`}
+              />
+            </div>
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`}
+              target="_blank"
+              rel="noopener"
+              className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#1F6F5F] hover:underline"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              افتح الموقع في خرايط جوجل
+            </a>
+          </section>
+        )}
 
         {/* 📄 البروشور */}
         {p.brochure_url && (
