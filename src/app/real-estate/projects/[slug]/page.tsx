@@ -58,7 +58,12 @@ function sb() {
   )
 }
 
-async function getProject(slug: string): Promise<Row | null> {
+async function getProject(rawSlug: string): Promise<Row | null> {
+  // FIX (Jul 17 2026): محمد — «فيه مشاريع لما بفتحها بتدي 404».
+  // 55 مشروع سلجهم عربي، وNext بيسلّم params.slug مشفّر (%D8%A5...) —
+  // فالمطابقة .eq('slug') كانت بتفشل. لازم decodeURIComponent الأول.
+  let slug = rawSlug
+  try { slug = decodeURIComponent(rawSlug) } catch { /* keep raw */ }
   try {
     const { data } = await sb()
       .from('property_market_items')

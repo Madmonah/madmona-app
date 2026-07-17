@@ -111,7 +111,9 @@ export default function ListingDetailPage() {
   const { t, lang, dir } = useT()
   const params = useParams()
   const router = useRouter()
-  const slug = params?.slug as string
+  // FIX (Jul 17 2026): السلجات العربية بتوصل مشفّرة من useParams — لازم فك تشفير
+  const rawSlug = params?.slug as string
+  const slug = (() => { try { return decodeURIComponent(rawSlug) } catch { return rawSlug } })()
 
   const [listing, setListing] = useState<ListingDetail | null>(null)
   const [photos, setPhotos] = useState<Photo[]>([])

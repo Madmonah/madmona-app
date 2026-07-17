@@ -94,7 +94,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-async function fetchListing(slug: string): Promise<ListingFull | null> {
+async function fetchListing(rawSlug: string): Promise<ListingFull | null> {
+  // FIX (Jul 17 2026): السلجات العربية بتوصل مشفّرة (%D8..) من params — لازم فك تشفير
+  let slug = rawSlug
+  try { slug = decodeURIComponent(rawSlug) } catch { /* keep raw */ }
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!

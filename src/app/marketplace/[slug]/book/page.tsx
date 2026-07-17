@@ -111,7 +111,9 @@ export default function BookingPage() {
   const { t, lang, dir } = useT()
   const params = useParams()
   const router = useRouter()
-  const slug = params?.slug as string
+  // FIX (Jul 17 2026): السلجات العربية بتوصل مشفّرة من useParams — لازم فك تشفير
+  const rawSlug = params?.slug as string
+  const slug = (() => { try { return decodeURIComponent(rawSlug) } catch { return rawSlug } })()
 
   const [stage, setStage] = useState<Stage>('loading')
   const [listing, setListing] = useState<ListingForBooking | null>(null)
