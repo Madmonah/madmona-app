@@ -66,6 +66,8 @@ export const metadata: Metadata = {
   authors: [{ name: 'Madmona' }],
   creator: 'Madmona',
   publisher: 'Madmona',
+  // build marker — bump to verify which deployment actually serves the domain
+  other: { 'madmona-build': 'grpfix-2026-07-17-a' },
   manifest: '/manifest.json',
   metadataBase: new URL(SITE_URL),
   alternates: { canonical: SITE_URL },
