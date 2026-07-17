@@ -92,7 +92,17 @@ export default function CategoryTrackTabs({ categories }: { categories: Category
           return (
             <button
               key={v.key}
-              onClick={() => setActive(v.key)}
+              onClick={() => {
+                setActive(v.key)
+                // FIX (Jul 17 2026): محمد — «بدوس ضيف من تاب المطاعم في الهوم
+                // بلاقي نفسي في قسم غير اللي دوست عليه». نعكس التاب في الـURL
+                // (?track=) عشان زرار «ضيف منتج» يفتح الويزارد على نفس القسم.
+                try {
+                  const sp = new URLSearchParams(window.location.search)
+                  sp.set('track', v.key)
+                  window.history.replaceState(null, '', `${window.location.pathname}?${sp.toString()}`)
+                } catch { /* non-blocking */ }
+              }}
               type="button"
               style={{
                 background: isActive ? v.accent : '#fff',
