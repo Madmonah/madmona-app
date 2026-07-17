@@ -201,7 +201,23 @@ export async function GET() {
       }
 
       // ---------- باقي الفئات: إعلان لكل درافت ----------
+      const seenTitles = new Set<string>()
       for (const d of other) {
+        // 🛡️ (17 Jul 2026) منع التكرار: درافتات مكررة نشرت 17 إعلان مكرر (Techwood دواليب ×3!)
+        // — جوه الدفعة نفسها + ضد إعلانات موجودة بنفس العنوان لنفس المورد.
+        const titleKey = d.title.trim()
+        if (seenTitles.has(titleKey)) {
+          await supa.from('instant_listing_drafts').update({ status: 'duplicate' } as never).eq('id', d.id)
+          continue
+        }
+        seenTitles.add(titleKey)
+        const { data: dup } = await supa.from('listings').select('id, slug')
+          .eq('supplier_id', supplierId).eq('title', titleKey.slice(0, 150))
+          .in('status', ['published', 'draft', 'paused']).limit(1).maybeSingle()
+        if (dup?.id) {
+          await supa.from('instant_listing_drafts').update({ status: 'duplicate', published_listing_id: dup.id } as never).eq('id', d.id)
+          continue
+        }
         const { data: cat } = await supa.from('categories').select('id').eq('slug', d.category_slug || '').maybeSingle()
         if (!cat?.id) { // فئة مش معروفة → سيبه للفريق يراجعه
           await supa.from('instant_listing_drafts').update({ status: 'needs_review' } as never).eq('id', d.id)
