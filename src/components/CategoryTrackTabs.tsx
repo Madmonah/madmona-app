@@ -18,6 +18,47 @@ type Category = {
   icon: string | null
   image_url: string | null
   track: string | null
+  group_slug?: string | null
+  group_name_ar?: string | null
+  group_emoji?: string | null
+  group_display_order?: number | null
+}
+
+// 🗂️ (17 Jul 2026) طلب محمد: «المستخدم مايتوهش» — الهوم يعرض المجموعات الكبيرة
+// (عقارات · عربيات · بيت وأثاث · سوبرماركت وصيدليات...) مش كل فئة لوحدها.
+// الكارت بياخد صورة أول فئة عندها صورة جوه المجموعة، والضغط يودّي الماركت
+// متفلتر على المجموعة دي.
+type CatGroup = {
+  key: string
+  name_ar: string
+  emoji: string | null
+  image_url: string | null
+  order: number
+  count: number
+  firstSlug: string
+}
+
+function buildGroups(cats: Category[]): CatGroup[] {
+  const map = new Map<string, CatGroup>()
+  for (const c of cats) {
+    const key = c.group_slug || c.slug
+    const existing = map.get(key)
+    if (existing) {
+      existing.count += 1
+      if (!existing.image_url && c.image_url) existing.image_url = c.image_url
+    } else {
+      map.set(key, {
+        key,
+        name_ar: c.group_name_ar || c.name_ar,
+        emoji: c.group_emoji || c.icon,
+        image_url: c.image_url,
+        order: c.group_display_order ?? 999,
+        count: 1,
+        firstSlug: c.slug,
+      })
+    }
+  }
+  return [...map.values()].sort((a, b) => a.order - b.order)
 }
 
 // 4 verticals — same identity & order as the homepage hero (بيع · إيجار · خدمات · مطاعم).
@@ -128,25 +169,25 @@ export default function CategoryTrackTabs({ categories }: { categories: Category
         })}
       </div>
 
-      {/* Categories grid — square cards, all equal size */}
+      {/* 🗂️ (17 Jul 2026) مجموعات مش فئات — «المستخدم مايتوهش» */}
       {visible.length === 0 ? (
         <div className="text-center py-12 text-gray-400 text-sm">
           {t('tracktab.empty')}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {visible.map(cat => (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+          {buildGroups(visible).map(g => (
             <Link
-              key={cat.id}
-              href={`/marketplace?category=${cat.slug}`}
-              className="group relative block rounded-2xl overflow-hidden no-underline aspect-square"
+              key={g.key}
+              href={`/marketplace?track=${activeVertical.key}&group=${encodeURIComponent(g.key)}`}
+              className="group relative block rounded-2xl overflow-hidden no-underline aspect-[4/3]"
             >
-              {cat.image_url ? (
+              {g.image_url ? (
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={cat.image_url}
-                    alt={cat.name_ar}
+                    src={g.image_url}
+                    alt={g.name_ar}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     loading="lazy"
                   />
@@ -154,21 +195,20 @@ export default function CategoryTrackTabs({ categories }: { categories: Category
                 </>
               ) : (
                 <>
-                  <IconTile cat={cat} vkey={activeVertical.key} />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${TILE_TONE[activeVertical.key]}`}>
+                    <span className="absolute inset-x-0 top-[16%] flex justify-center text-5xl md:text-6xl opacity-90 drop-shadow-lg select-none">
+                      {g.emoji || '🏷️'}
+                    </span>
+                  </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
                 </>
               )}
               <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-5">
-                {/* الأيقونة الصغيرة تحت بتتكرر مع الكبيرة اللي في الكارت — تتشال */}
-                {cat.icon && cat.image_url && (
-                  <span className="mb-2 text-xl md:text-2xl">{cat.icon}</span>
-                )}
-                <p className="text-white/70 font-bold tracking-[0.2em] uppercase mb-1 text-[9px] md:text-[10px]">
-                  {(cat.name_en || cat.slug).toUpperCase()}
-                </p>
-                <h3 className="font-black text-white leading-tight text-lg md:text-xl">
-                  {lang === 'en' && cat.name_en ? cat.name_en : cat.name_ar}
+                <h3 className="font-black text-white leading-tight text-lg md:text-xl flex items-center gap-2">
+                  {g.image_url && g.emoji && <span className="text-xl">{g.emoji}</span>}
+                  {g.name_ar}
                 </h3>
+                <p className="text-white/70 text-[11px] font-bold mt-1">{g.count} قسم</p>
               </div>
               <div className="absolute top-4 left-4 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <ArrowLeft className="w-4 h-4 text-white" />

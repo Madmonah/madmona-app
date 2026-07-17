@@ -173,6 +173,12 @@ function MarketplaceBrowseContent() {
   // 🏗️ (17 Jul 2026) طلب محمد: العقارات تتفصل «بريمري من المطور | ريسيل».
   // البريمري = إعلان مرتبط بمشروع مطور (project_id موجود)، الريسيل = من غير مشروع.
   const [propertySource, setPropertySource] = useState<'all' | 'primary' | 'resale'>('all')
+  // 🗂️ (17 Jul 2026) drill-down: المستخدم يختار مجموعة الأول (عقارات/عربيات/بيت...)
+  // وبعدها تظهر فئاتها بس — بدل شريط واحد فيه كل حاجة. بتتقرا من ?group= (الهوم بيبعتها).
+  const [selectedGroupSlug, setSelectedGroupSlug] = useState<string | null>(null)
+  useEffect(() => {
+    try { setSelectedGroupSlug(new URLSearchParams(window.location.search).get('group')) } catch { /* ssr */ }
+  }, [])
   const [cityFilter, setCityFilter] = useState<string | null>(null)
   const [sortMenuOpen, setSortMenuOpen] = useState(false)
   const [cityMenuOpen, setCityMenuOpen] = useState(false)
@@ -268,6 +274,20 @@ function MarketplaceBrowseContent() {
             ]
           }
         }
+      } else if (activeTrack !== 'all' && selectedGroupSlug) {
+        // 🗂️ (17 Jul 2026) مجموعة مختارة (drill-down) من غير فئة محددة —
+        // الإعلانات بتتفلتر على فئات المجموعة دي + أطفالها بس.
+        const groupRoots = rootCategories.filter(c => (c.group_slug || c.slug) === selectedGroupSlug)
+        const groupRootIds = groupRoots.map(c => c.id)
+        if (groupRootIds.length > 0) {
+          // @ts-expect-error
+          const { data: childCats } = await supabaseBrowser
+            .from('categories')
+            .select('id')
+            .in('parent_id', groupRootIds)
+          const childIds = ((childCats || []) as { id: string }[]).map(c => c.id)
+          categoryIds = [...groupRootIds, ...childIds]
+        }
       } else if (activeTrack !== 'all') {
         // Vertical/track selected (e.g. from a homepage chip) with no specific
         // category — filter listings to every category in that track.
@@ -321,7 +341,7 @@ function MarketplaceBrowseContent() {
         query = query.eq('supplier_id', supplierFilter)
       }
       // 🏗️ بريمري/ريسيل — بس جوه عقارات البيع
-      const inSaleProperties = activeTrack === 'products' && !!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties') || selectedCategorySlug.startsWith('sale-tourism'))
+      const inSaleProperties = activeTrack === 'products' && (selectedGroupSlug === 'sale-property' || (!!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties') || selectedCategorySlug.startsWith('sale-tourism'))))
       if (inSaleProperties && propertySource === 'primary') {
         query = query.not('project_id', 'is', null)
       } else if (inSaleProperties && propertySource === 'resale') {
@@ -333,7 +353,7 @@ function MarketplaceBrowseContent() {
       setLoading(false)
     }
     load()
-  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource])
+  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource, selectedGroupSlug])
 
   const toggleFavorite = async (e: MouseEvent, listingId: string) => {
     e.preventDefault()
@@ -534,39 +554,70 @@ function MarketplaceBrowseContent() {
           </div>
 
           {showGroupHeadings ? (
-            <div className="mt-2 space-y-2">
-              {/* reset pill: show everything in the active track */}
-              <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
-                <CategoryPill
-                  active={!selectedCategorySlug}
-                  onClick={() => setSelectedCategorySlug(null)}
-                  label={t('market.track_all')}
-                  icon="✨"
-                />
+            // 🗂️ (17 Jul 2026) drill-down بدل الشريط المسطح — طلب محمد:
+            // المستوى الأول: كروت المجموعات بس (عقارات · عربيات · بيت وأثاث ...).
+            // تختار مجموعة → تظهر فئاتها بس + زر رجوع. المستخدم مايتوهش.
+            !selectedGroupSlug && !selectedCategorySlug ? (
+              <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-2">
+                {rootGroups.map(g => (
+                  <button
+                    key={g.slug}
+                    onClick={() => { setSelectedGroupSlug(g.slug); setPropertySource('all') }}
+                    className="flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-white border border-gray-100 shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all text-right"
+                  >
+                    <span className="text-2xl">{g.emoji || '🏷️'}</span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-extrabold text-gray-800 leading-tight">{g.name_ar || t('market.track_all')}</span>
+                      <span className="block text-[10px] font-bold text-gray-400 mt-0.5">{g.cats.length} قسم</span>
+                    </span>
+                  </button>
+                ))}
               </div>
-              {rootGroups.map(g => (
-                <div key={g.slug}>
-                  {g.name_ar && (
-                    <div className="flex items-center gap-1.5 px-0.5 mb-1 text-[11px] font-bold text-gray-500">
-                      {g.emoji && <span>{g.emoji}</span>}
-                      <span>{g.name_ar}</span>
-                    </div>
-                  )}
-                  <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
-                    {sortByData(g.cats).map(cat => (
-                      <CategoryPill
-                        key={cat.id}
-                        active={selectedRootSlug === cat.slug}
-                        onClick={() => setSelectedCategorySlug(cat.slug)}
-                        label={catName(cat)}
-                        icon={cat.icon || ''}
-                        comingSoon={categoryHasData(cat) ? undefined : comingSoonLabel}
-                      />
-                    ))}
-                  </div>
+            ) : (
+              <div className="mt-2 space-y-2">
+                <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 items-center">
+                  <button
+                    onClick={() => { setSelectedGroupSlug(null); setSelectedCategorySlug(null); setPropertySource('all') }}
+                    className="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all flex items-center gap-1"
+                  >
+                    ← كل الأقسام
+                  </button>
+                  {(() => {
+                    const g = rootGroups.find(x => x.slug === selectedGroupSlug) ||
+                      rootGroups.find(x => x.cats.some(c => c.slug === selectedRootSlug))
+                    return g?.name_ar ? (
+                      <span className="flex-shrink-0 text-xs font-extrabold text-gray-700 flex items-center gap-1">
+                        {g.emoji && <span>{g.emoji}</span>}{g.name_ar}
+                      </span>
+                    ) : null
+                  })()}
                 </div>
-              ))}
-            </div>
+                {rootGroups
+                  .filter(g => !selectedGroupSlug || g.slug === selectedGroupSlug || g.cats.some(c => c.slug === selectedRootSlug))
+                  .map(g => (
+                    <div key={g.slug}>
+                      <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
+                        <CategoryPill
+                          active={!selectedCategorySlug}
+                          onClick={() => setSelectedCategorySlug(null)}
+                          label={t('market.track_all')}
+                          icon="✨"
+                        />
+                        {sortByData(g.cats).map(cat => (
+                          <CategoryPill
+                            key={cat.id}
+                            active={selectedRootSlug === cat.slug}
+                            onClick={() => setSelectedCategorySlug(cat.slug)}
+                            label={catName(cat)}
+                            icon={cat.icon || ''}
+                            comingSoon={categoryHasData(cat) ? undefined : comingSoonLabel}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )
           ) : (
             <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
               <CategoryPill
@@ -631,7 +682,7 @@ function MarketplaceBrowseContent() {
           )}
 
           {/* 🏗️ (17 Jul 2026) بريمري/ريسيل — يظهر بس جوه عقارات البيع */}
-          {activeTrack === 'products' && !!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties') || selectedCategorySlug.startsWith('sale-tourism')) && (
+          {activeTrack === 'products' && (selectedGroupSlug === 'sale-property' || (!!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties') || selectedCategorySlug.startsWith('sale-tourism')))) && (
             <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
               {([
                 ['all', 'كل العقارات'],

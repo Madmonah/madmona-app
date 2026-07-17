@@ -1,8 +1,8 @@
-// Service Worker for Madmona PWA
+﻿// Service Worker for Madmona PWA
 // Offline caching + Push notifications + Notification clicks
 // Version: 3 — listing-first deploy: forces cache invalidation for /add-listing rollout
 
-const CACHE_NAME = 'madmona-v3';
+const CACHE_NAME = 'madmona-v4';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -58,19 +58,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // 🛡️ (17 Jul 2026) v3 كان cache-first لكل حاجة same-origin — بعد كذا deploy
+  // في نفس اليوم: HTML قديم من الكاش + chunks اتشالت من السيرفر = صور وصفحات
+  // بايظة لمستخدمي الـPWA. v4: network-first لكل حاجة، والكاش fallback للأوفلاين بس.
   event.respondWith(
-    caches.match(request).then((cached) => {
-      return (
-        cached ||
-        fetch(request).then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
-      );
-    })
+    fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+        }
+        return response;
+      })
+      .catch(() => caches.match(request))
   );
 });
 
