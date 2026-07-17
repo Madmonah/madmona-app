@@ -274,9 +274,11 @@ function MarketplaceBrowseContent() {
             ]
           }
         }
-      } else if (activeTrack !== 'all' && selectedGroupSlug) {
+      } else if (activeTrack !== 'all' && selectedGroupSlug && rootCategories.some(c => (c.group_slug || c.slug) === selectedGroupSlug)) {
         // 🗂️ (17 Jul 2026) مجموعة مختارة (drill-down) من غير فئة محددة —
         // الإعلانات بتتفلتر على فئات المجموعة دي + أطفالها بس.
+        // ⚠️ الشرط الأخير بيمنع باج الدخول المباشر بالـURL: لو الفئات لسه
+        // متحملتش بنقع على فلتر التراك، ولما تتحمل الـeffect بيعيد التشغيل.
         const groupRoots = rootCategories.filter(c => (c.group_slug || c.slug) === selectedGroupSlug)
         const groupRootIds = groupRoots.map(c => c.id)
         if (groupRootIds.length > 0) {
@@ -353,7 +355,7 @@ function MarketplaceBrowseContent() {
       setLoading(false)
     }
     load()
-  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource, selectedGroupSlug])
+  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource, selectedGroupSlug, allCategories])
 
   const toggleFavorite = async (e: MouseEvent, listingId: string) => {
     e.preventDefault()
