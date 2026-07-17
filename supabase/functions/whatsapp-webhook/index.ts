@@ -1407,6 +1407,14 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
         return
       }
       if (text) {
+        // 🔐 (17 Jul 2026) محمد بيبعت من رقم الأدمن نفسه — كود الدخول MADxxxxx
+        // كان بيتبلع في admin-command («كود تتبع؟») قبل ما يوصل للفاحص. الأكواد الأول.
+        if (/MAD[A-Z0-9]{5}/i.test(text)) {
+          try {
+            const verified = await handleInboundVerification(fullPhone, fromPhone, text, convId)
+            if (verified) return
+          } catch (err) { console.error('[inbound-verifier:admin] error:', err) }
+        }
         const composed = await handleAdminComposeCommand(convId, fromPhone, text.trim())
         if (composed) return
         await fetch(`${SUPABASE_URL}/functions/v1/admin-command`, {
