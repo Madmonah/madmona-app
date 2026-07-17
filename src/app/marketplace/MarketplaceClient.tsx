@@ -170,6 +170,9 @@ function MarketplaceBrowseContent() {
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(initialCategorySlug)
   const [supplierFilter] = useState<string | null>(initialSupplier)
   const [sortBy, setSortBy] = useState<SortOption>('newest')
+  // 🏗️ (17 Jul 2026) طلب محمد: العقارات تتفصل «بريمري من المطور | ريسيل».
+  // البريمري = إعلان مرتبط بمشروع مطور (project_id موجود)، الريسيل = من غير مشروع.
+  const [propertySource, setPropertySource] = useState<'all' | 'primary' | 'resale'>('all')
   const [cityFilter, setCityFilter] = useState<string | null>(null)
   const [sortMenuOpen, setSortMenuOpen] = useState(false)
   const [cityMenuOpen, setCityMenuOpen] = useState(false)
@@ -317,13 +320,20 @@ function MarketplaceBrowseContent() {
       if (supplierFilter) {
         query = query.eq('supplier_id', supplierFilter)
       }
+      // 🏗️ بريمري/ريسيل — بس جوه عقارات البيع
+      const inSaleProperties = activeTrack === 'products' && !!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties') || selectedCategorySlug.startsWith('sale-tourism'))
+      if (inSaleProperties && propertySource === 'primary') {
+        query = query.not('project_id', 'is', null)
+      } else if (inSaleProperties && propertySource === 'resale') {
+        query = query.is('project_id', null)
+      }
 
       const { data } = await query
       setListings((data || []) as Listing[])
       setLoading(false)
     }
     load()
-  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter])
+  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource])
 
   const toggleFavorite = async (e: MouseEvent, listingId: string) => {
     e.preventDefault()
@@ -617,6 +627,29 @@ function MarketplaceBrowseContent() {
                   </button>
                 )
               })}
+            </div>
+          )}
+
+          {/* 🏗️ (17 Jul 2026) بريمري/ريسيل — يظهر بس جوه عقارات البيع */}
+          {activeTrack === 'products' && !!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties') || selectedCategorySlug.startsWith('sale-tourism')) && (
+            <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
+              {([
+                ['all', 'كل العقارات'],
+                ['primary', '🏗️ من المطور (بريمري)'],
+                ['resale', '🔄 ريسيل'],
+              ] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setPropertySource(key)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
+                    propertySource === key
+                      ? 'bg-[#173B33] text-white shadow-soft'
+                      : 'bg-white/80 text-gray-600 hover:bg-white border border-gray-100'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           )}
 
