@@ -175,7 +175,7 @@ export async function GET() {
           } as never).select('id, slug').single()
           if (le || !nl) { results.push({ phone, error: 'listing: ' + le?.message }); continue }
           listingId = nl.id; listingSlug = nl.slug
-          const imgs = [...new Set(food.flatMap(d => d.image_urls || []))].slice(0, 12)
+          const imgs = Array.from(new Set(food.flatMap(d => d.image_urls || []))).slice(0, 12)
           await supa.from('listing_photos').insert(imgs.map((u, ix) => ({
             listing_id: listingId, url: u, display_order: ix + 1, is_primary: ix === 0,
           })) as never)
