@@ -221,13 +221,15 @@ export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Sta
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    router.push('/add-listing');
+                    // 🐛 (17 Jul 2026) محمد: «ضيف من كارت مطاعم بيفتح على إيجار» —
+                    // كان بيروح /add-listing من غير track فالويزارد بيقع على الديفولت.
+                    router.push(`/add-listing?track=${c.track}`);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
                       e.stopPropagation();
-                      router.push('/add-listing');
+                      router.push(`/add-listing?track=${c.track}`);
                     }
                   }}
                 >
