@@ -147,7 +147,18 @@ export default function TopNav() {
 
               <Link
                 href="/add-listing"
-                onClick={() => setMobileOpen(false)}
+                onClick={(e) => {
+                  setMobileOpen(false)
+                  // FIX (Jul 17 2026): لو المستخدم واقف على تاب (?track=) —
+                  // مطاعم مثلاً — نفتح الويزارد على نفس التاب مش الديفولت.
+                  try {
+                    const tr = new URLSearchParams(window.location.search).get('track')
+                    if (tr) {
+                      e.preventDefault()
+                      window.location.assign(`/add-listing?track=${encodeURIComponent(tr)}`)
+                    }
+                  } catch { /* fall through to plain link */ }
+                }}
                 className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline group transition-colors"
               >
                 <div className="w-10 h-10 rounded-xl bg-[#d4a017]/10 flex items-center justify-center flex-shrink-0">

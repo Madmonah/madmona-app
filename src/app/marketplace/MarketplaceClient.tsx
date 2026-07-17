@@ -488,6 +488,13 @@ function MarketplaceBrowseContent() {
                   key={tab}
                   onClick={() => {
                     setActiveTrack(tab)
+                    // FIX (Jul 17 2026): نعكس التاب في الـURL (?track=) عشان
+                    // «ضيف منتج» في التوب ناف يفتح الويزارد على نفس التاب.
+                    try {
+                      const sp = new URLSearchParams(window.location.search)
+                      if (tab === 'all') sp.delete('track'); else sp.set('track', tab)
+                      window.history.replaceState(null, '', `/marketplace${sp.toString() ? `?${sp.toString()}` : ''}`)
+                    } catch { /* non-blocking */ }
                     if (selectedRootSlug) {
                       const stillVisible = allRootCategories.some(
                         c => c.slug === selectedRootSlug && (tab === 'all' || c.track === tab || (tab === 'rentals' && c.track === 'hybrid'))

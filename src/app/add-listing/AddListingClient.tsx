@@ -656,6 +656,7 @@ function AddListingPageInner({
             <StepCategory
               value={draft.category_slug}
               categories={dbExtraCategories}
+              initialTrack={params.get('track')}
               resetSignal={resetCategoryView}
               onSelect={async (slug) => {
                 // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
@@ -810,11 +811,15 @@ function StepCategory({
   value,
   onSelect,
   categories,
+  initialTrack = null,
   resetSignal = 0,
 }: {
   value?: string;
   onSelect: (slug: string) => void;
   categories: MainCategory[];
+  // FIX (Jul 17 2026): «ضيف منتج» من تاب المطاعم كان بيفتح على تاب تاني —
+  // اللينك بقى يبعت ?track= والويزارد يفتح على نفس التاب اللي المستخدم جاي منه.
+  initialTrack?: string | null;
   // Phase G+ (May 18 2026): when this number changes, StepCategory resets to
   // the mains view (clears selectedMain). Used by "تغيير الفئة" button so the
   // user can quickly switch between mains without drilling out of subs first.
@@ -831,7 +836,12 @@ function StepCategory({
   const [selectedMain, setSelectedMain] = useState<string | null>(startingMainSlug);
   // Mohamed (Jun 12 2026): يفتح على مجال (مش "الكل") عشان صفحة 1 ماتبقاش زحمة
   // كل التصنيفات مرة واحدة. الديفولت = إيجار (rentals).
-  const [activeTrack, setActiveTrack] = useState<TrackTab>('rentals');
+  // FIX (Jul 17 2026): لو جاي بـ?track= (من تاب في الماركت مثلاً) نفتح عليه.
+  const [activeTrack, setActiveTrack] = useState<TrackTab>(
+    (['rentals', 'services', 'restaurants', 'products'].includes(initialTrack || '')
+      ? initialTrack
+      : initialTrack === 'hybrid' ? 'rentals' : 'rentals') as TrackTab
+  );
   const main = categories.find((m) => m.slug === selectedMain);
 
   // FIX (May 29 2026): handle clicks on a main category. If the main has
