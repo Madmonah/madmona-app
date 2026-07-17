@@ -1,0 +1,9 @@
+Vercel CLI 54.14.5 (Node.js 24.18.0)
+Retrieving project…
+Deploying madmonaadmin-1699s-projects/project-ew64j
+Uploading [--------------------] (0.0B/52MB)
+Uploading [=====---------------] (13.0MB/52MB)
+Uploading [==========----------] (26.0MB/52MB)
+Uploading [===============-----] (39.0MB/52MB)
+Uploading [====================] (52.0MB/52MB)
+Error: request to https://api.vercel.com/v13/deployments?teamId=team_j4CSSICBqtcXrCfl4ZP6p06T&skipAutoDetectionConfirmation=1 failed, reason: read ECONNRESET

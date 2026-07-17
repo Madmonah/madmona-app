@@ -1,0 +1,507 @@
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\ChromeCodeVerifyExtension
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\Local
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\Roaming
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\ZoomExtension
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\ChromeCodeVerifyExtension\background.js
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\ChromeCodeVerifyExtension\contentWA.js
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\ChromeCodeVerifyExtension\manifest.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\AutoLaunchProtocolsComponent
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Breadcrumbs
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\BrowserMetrics
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\BrowserMetrics-spare.pma
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\CertificateRevocation
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\component_crx_cache
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Crashpad
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\CrashpadMetrics-active.pma
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\EBWebViewMetrics
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\extensions_crx_cache
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\GPUPersistentCache
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\GrShaderCache
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Last Version
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Local State
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Local Traces
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\MEIPreload
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\OriginTrials
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\PKIMetadata
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\ShaderCache
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Speech Recognition
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Trust Protection Lists
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\TrustTokenKeyCommitments
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Variations
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\WidevineCdm
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\AutoLaunchProtocolsComponent\1.0.0.10
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\AutoLaunchProtocolsComponent\1.0.0.10\manifest.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\AutoLaunchProtocolsComponent\1.0.0.10\protocols.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\BrowserMetrics\BrowserMetrics-6A5769DC-1A84.pma
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\CertificateRevocation\6498.2025.9.4
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\CertificateRevocation\6498.2025.9.4\crl-set
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\CertificateRevocation\6498.2025.9.4\manifest.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\component_crx_cache\000ac7dc9366969db9d1e41810a3a27c747a7623535d856eecc2de86cfed80c7
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\component_crx_cache\00af3f07b5abb71f6d30337e1eef62fa280f06ef19485c0cf6b72171f92ccc0a
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\component_crx_cache\720517793663c90e0dbd77cb42709bac49af733f83f73320ba89859d9b0310e0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\component_crx_cache\95fd9d48e4fc245a3f3a99a3a16ecd1355050ba3f4afc555f19a97c7f9b49677
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\component_crx_cache\a81d1959892ae4180554347df1b97834abba2e1a5e6b9aeba000ecea26eabecc
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\component_crx_cache\a922b7d113e67ce71528805d3c6780f7a207cada8ad56642047577358e46ba3d
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\component_crx_cache\bec8ead1da3c9600fe66bbcc0e7a9bed9a184c1be821b4d23570c6b7af7f0410
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\component_crx_cache\fa29a6d5775ff340900a65b39b02fc8b4b77d403c048d8debf22f2f5d09c61a0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\component_crx_cache\metadata.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Crashpad\attachments
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Crashpad\metadata
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Crashpad\reports
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Crashpad\settings.dat
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Crashpad\throttle_store.dat
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Crashpad\watson_metadata
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\AutofillAiModelCache
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\AutofillStrikeDatabase
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\blob_storage
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\BookmarkMergedSurfaceOrdering
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\BrowsingTopicsSiteData
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\BrowsingTopicsSiteData-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\BrowsingTopicsState
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\BudgetDatabase
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\ClientCertificates
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\commerce_subscription_db
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DashTrackerDatabase
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DashTrackerDatabase-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DawnGraphiteCache
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DawnWebGPUCache
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DIPS
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DIPS-wal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\discounts_db
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\discount_infos_db
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\EdgeJourneys
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\EdgeSessions
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension Rules
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension Scripts
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension State
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\ExtensionActivityComp
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\ExtensionActivityEdge
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\ExtensionActivityEdge-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Favicons
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Favicons-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\favorites_diagnostic.log
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Feature Engagement Tracker
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\GPUCache
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\History
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\History-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\IndexedDB
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\InterestGroups
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Extension Settings
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Storage
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Login Data
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Login Data For Account
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Login Data For Account-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Login Data-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\MediaDeviceSalts
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\MediaDeviceSalts-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network Action Predictor
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network Action Predictor-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\optimization_guide_hint_cache_store
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\parcel_tracking_db
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\PersistentOriginTrials
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Platform Notifications
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Preferences
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\README
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Safe Browsing Network
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Secure Preferences
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\ServerCertificate
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\ServerCertificate-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Session Storage
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Sessions
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Shared Dictionary
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\SharedStorage
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\shared_proto_db
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Site Characteristics Database
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Sync Data
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Top Sites
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Top Sites-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\VideoDecodeStats
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Vpn Tokens
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Vpn Tokens-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Web Data
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Web Data-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\WebrtcVideoStats
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\WebStorage
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\AutofillAiModelCache\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\AutofillAiModelCache\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\AutofillAiModelCache\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\AutofillStrikeDatabase\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\AutofillStrikeDatabase\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\AutofillStrikeDatabase\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\blob_storage\104d3523-daab-4003-8819-5c80a2f2d19d
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\BudgetDatabase\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\BudgetDatabase\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\BudgetDatabase\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\No_Vary_Search
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\data_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\data_1
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\data_2
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\data_3
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000002
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000003
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000004
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000005
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000006
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000007
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000008
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000009
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_00000a
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_00000b
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_00000c
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_00000d
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_00000e
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_00000f
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000010
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000011
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000012
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000013
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000014
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000015
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000016
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\f_000017
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\Cache_Data\index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\No_Vary_Search\journal.baj
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Cache\No_Vary_Search\snapshot.baf
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\ClientCertificates\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\ClientCertificates\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\ClientCertificates\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\wasm
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\1f58d4c1a3911bb0_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\3fdb0f9928e06e02_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\59f0cb0d2835346a_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\6235bdd24dd92bc1_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\7b6c50e2e9380be5_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\8df1ac9da44ca5b3_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\962b08ee2ca42faf_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\9e49a25606fdfd64_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\a94b36919affa72f_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\b718dbdd71286600_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\bc127cd2f0f13e21_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\c73bd682b09aa847_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\d0b52800a48f7641_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\d346108d512a4725_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\d4489911c2636f0e_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\d519c740147b4969_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\e82ff4048f99a134_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\f67162b13d03e300_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\index-dir
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\js\index-dir\the-real-index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\wasm\index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\wasm\index-dir
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Code Cache\wasm\index-dir\the-real-index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\commerce_subscription_db\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\commerce_subscription_db\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\commerce_subscription_db\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DawnGraphiteCache\data_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DawnGraphiteCache\data_1
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DawnGraphiteCache\data_2
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DawnGraphiteCache\data_3
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DawnGraphiteCache\index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DawnWebGPUCache\data_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DawnWebGPUCache\data_1
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DawnWebGPUCache\data_2
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DawnWebGPUCache\data_3
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\DawnWebGPUCache\index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\discounts_db\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\discounts_db\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\discounts_db\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\discount_infos_db\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\discount_infos_db\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\discount_infos_db\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\EdgeJourneys\EdgeJourneys.db
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\EdgeSessions\SessionRestoreLog
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension Rules\000003.log
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension Rules\CURRENT
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension Rules\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension Rules\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension Rules\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension Rules\MANIFEST-000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension Scripts\000003.log
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension Scripts\CURRENT
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension Scripts\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension Scripts\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension Scripts\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension Scripts\MANIFEST-000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension State\000003.log
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension State\CURRENT
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension State\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension State\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension State\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Extension State\MANIFEST-000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Feature Engagement Tracker\AvailabilityDB
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Feature Engagement Tracker\EventDB
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Feature Engagement Tracker\AvailabilityDB\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Feature Engagement Tracker\AvailabilityDB\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Feature Engagement Tracker\AvailabilityDB\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Feature Engagement Tracker\EventDB\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Feature Engagement Tracker\EventDB\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Feature Engagement Tracker\EventDB\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\GPUCache\data_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\GPUCache\data_1
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\GPUCache\data_2
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\GPUCache\data_3
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\GPUCache\index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb\000006.log
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb\000008.ldb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb\CURRENT
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb\MANIFEST-000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Extension Settings\ppncngpjbffnoddcfkinoiplldkmafkc
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Extension Settings\ppncngpjbffnoddcfkinoiplldkmafkc\000003.log
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Extension Settings\ppncngpjbffnoddcfkinoiplldkmafkc\CURRENT
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Extension Settings\ppncngpjbffnoddcfkinoiplldkmafkc\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Extension Settings\ppncngpjbffnoddcfkinoiplldkmafkc\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Extension Settings\ppncngpjbffnoddcfkinoiplldkmafkc\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Extension Settings\ppncngpjbffnoddcfkinoiplldkmafkc\MANIFEST-000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Storage\leveldb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Storage\leveldb\000003.log
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Storage\leveldb\CURRENT
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Storage\leveldb\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Storage\leveldb\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Storage\leveldb\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Local Storage\leveldb\MANIFEST-000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network\Cookies
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network\Cookies-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network\Device Bound Sessions
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network\Device Bound Sessions-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network\Network Persistent State
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network\NetworkDataMigrated
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network\Reporting and NEL
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network\Reporting and NEL-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network\SCT Auditing Pending Reports
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network\Sdch Dictionaries
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network\TransportSecurity
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network\Trust Tokens
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Network\Trust Tokens-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\optimization_guide_hint_cache_store\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\optimization_guide_hint_cache_store\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\optimization_guide_hint_cache_store\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\parcel_tracking_db\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\parcel_tracking_db\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\parcel_tracking_db\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\PersistentOriginTrials\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\PersistentOriginTrials\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\PersistentOriginTrials\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Platform Notifications\000003.log
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Platform Notifications\CURRENT
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Platform Notifications\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Platform Notifications\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Platform Notifications\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Platform Notifications\MANIFEST-000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Safe Browsing Network\NetworkDataMigrated
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Safe Browsing Network\Safe Browsing Cookies
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Safe Browsing Network\Safe Browsing Cookies-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\Database
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\ScriptCache
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage\0bf6ab7f94a21cdc9c1649f884333ec20f40a544
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage\0bf6ab7f94a21cdc9c1649f884333ec20f40a544\37c2bae7-6182-4e86-b2b4-0b7a39153879
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage\0bf6ab7f94a21cdc9c1649f884333ec20f40a544\5de70e01-3820-4ded-8ffc-80485ccf48bc
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage\0bf6ab7f94a21cdc9c1649f884333ec20f40a544\index.txt
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage\0bf6ab7f94a21cdc9c1649f884333ec20f40a544\37c2bae7-6182-4e86-b2b4-0b7a39153879\index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage\0bf6ab7f94a21cdc9c1649f884333ec20f40a544\37c2bae7-6182-4e86-b2b4-0b7a39153879\index-dir
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage\0bf6ab7f94a21cdc9c1649f884333ec20f40a544\37c2bae7-6182-4e86-b2b4-0b7a39153879\index-dir\the-real-index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage\0bf6ab7f94a21cdc9c1649f884333ec20f40a544\5de70e01-3820-4ded-8ffc-80485ccf48bc\2a2b7cbbc61290b4_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage\0bf6ab7f94a21cdc9c1649f884333ec20f40a544\5de70e01-3820-4ded-8ffc-80485ccf48bc\6ea66fa5b36b4157_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage\0bf6ab7f94a21cdc9c1649f884333ec20f40a544\5de70e01-3820-4ded-8ffc-80485ccf48bc\92172a9e586cee2a_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage\0bf6ab7f94a21cdc9c1649f884333ec20f40a544\5de70e01-3820-4ded-8ffc-80485ccf48bc\e6039a61e4d2a504_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage\0bf6ab7f94a21cdc9c1649f884333ec20f40a544\5de70e01-3820-4ded-8ffc-80485ccf48bc\index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage\0bf6ab7f94a21cdc9c1649f884333ec20f40a544\5de70e01-3820-4ded-8ffc-80485ccf48bc\index-dir
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\CacheStorage\0bf6ab7f94a21cdc9c1649f884333ec20f40a544\5de70e01-3820-4ded-8ffc-80485ccf48bc\index-dir\the-real-index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\Database\000003.log
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\Database\CURRENT
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\Database\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\Database\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\Database\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\Database\MANIFEST-000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\ScriptCache\297ecea5cebb5dfe_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\ScriptCache\297ecea5cebb5dfe_1
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\ScriptCache\7b4fd8111178d5b1_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\ScriptCache\7b4fd8111178d5b1_1
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\ScriptCache\d0757ff92c7cde0a_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\ScriptCache\d0757ff92c7cde0a_1
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\ScriptCache\index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\ScriptCache\index-dir
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Service Worker\ScriptCache\index-dir\the-real-index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Session Storage\000003.log
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Session Storage\CURRENT
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Session Storage\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Session Storage\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Session Storage\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Session Storage\MANIFEST-000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Sessions\Tabs_13428587232351024
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Shared Dictionary\cache
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Shared Dictionary\db
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Shared Dictionary\db-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Shared Dictionary\cache\index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Shared Dictionary\cache\index-dir
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Shared Dictionary\cache\index-dir\the-real-index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\shared_proto_db\000003.log
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\shared_proto_db\CURRENT
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\shared_proto_db\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\shared_proto_db\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\shared_proto_db\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\shared_proto_db\MANIFEST-000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\shared_proto_db\metadata
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\shared_proto_db\metadata\000003.log
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\shared_proto_db\metadata\CURRENT
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\shared_proto_db\metadata\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\shared_proto_db\metadata\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\shared_proto_db\metadata\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\shared_proto_db\metadata\MANIFEST-000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Site Characteristics Database\000003.log
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Site Characteristics Database\CURRENT
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Site Characteristics Database\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Site Characteristics Database\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Site Characteristics Database\MANIFEST-000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Sync Data\LevelDB
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Sync Data\LevelDB\000003.log
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Sync Data\LevelDB\CURRENT
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Sync Data\LevelDB\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Sync Data\LevelDB\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Sync Data\LevelDB\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\Sync Data\LevelDB\MANIFEST-000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\VideoDecodeStats\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\VideoDecodeStats\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\VideoDecodeStats\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\WebrtcVideoStats\LOCK
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\WebrtcVideoStats\LOG
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\WebrtcVideoStats\LOG.old
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\WebStorage\QuotaManager
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Default\WebStorage\QuotaManager-journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\extensions_crx_cache\metadata.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\GPUPersistentCache\DawnGraphiteCache
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\GPUPersistentCache\DawnGraphiteCache\MNIWWJ6LYBXKQS7RZ2KZNUZ3QHFNW4K3
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\GPUPersistentCache\DawnGraphiteCache\MNIWWJ6LYBXKQS7RZ2KZNUZ3QHFNW4K3\cache.db
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\GPUPersistentCache\DawnGraphiteCache\MNIWWJ6LYBXKQS7RZ2KZNUZ3QHFNW4K3\cache.db-wal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\GPUPersistentCache\DawnGraphiteCache\MNIWWJ6LYBXKQS7RZ2KZNUZ3QHFNW4K3\cache.journal
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\GrShaderCache\data_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\GrShaderCache\data_1
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\GrShaderCache\data_2
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\GrShaderCache\data_3
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\GrShaderCache\f_000001
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\GrShaderCache\index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-af.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-as.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-be.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-bg.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-bn.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-cs.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-cu.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-cy.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-da.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-de-1901.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-de-1996.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-de-ch-1901.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-el.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-en-gb.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-en-us.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-es.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-et.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-eu.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-fr.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-ga.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-gl.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-gu.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-hi.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-hr.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-hu.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-hy.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-it.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-ka.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-kn.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-la.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-lt.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-lv.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-ml.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-mn-cyrl.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-mr.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-mul-ethi.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-nb.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-nl.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-nn.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-or.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-pa.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-pt.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-ru.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-sk.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-sl.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-sq.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-sv.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-ta.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-te.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-tk.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-uk.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\hyph-und-ethi.hyb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\manifest.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\_metadata
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\hyphen-data\120.0.6050.0\_metadata\verified_contents.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\OriginTrials\0.0.1.7
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\OriginTrials\0.0.1.7\manifest.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\PKIMetadata\46.0.0.0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\PKIMetadata\46.0.0.0\crs.pb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\PKIMetadata\46.0.0.0\ct_config.pb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\PKIMetadata\46.0.0.0\kp_pinslist.pb
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\PKIMetadata\46.0.0.0\manifest.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\ShaderCache\data_0
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\ShaderCache\data_1
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\ShaderCache\data_2
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\ShaderCache\data_3
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\ShaderCache\index
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Speech Recognition\1.15.0.1
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Speech Recognition\1.15.0.1\manifest.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Speech Recognition\1.15.0.1\Microsoft.CognitiveServices.Speech.core.dll
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Indexed Rules
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Indexed Rules\38
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Indexed Rules\38\10.34.0.84
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Indexed Rules\38\10.34.0.84\LICENSE
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Indexed Rules\38\10.34.0.84\Ruleset Data
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules\10.34.0.84
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules\10.34.0.84\adblock_snippet.js
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules\10.34.0.84\Filtering Rules
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules\10.34.0.84\Filtering Rules-AA
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules\10.34.0.84\Filtering Rules-CA
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules\10.34.0.84\LICENSE
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules\10.34.0.84\manifest.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules\10.34.0.84\Part-DE
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules\10.34.0.84\Part-ES
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules\10.34.0.84\Part-FR
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules\10.34.0.84\Part-IT
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules\10.34.0.84\Part-NL
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules\10.34.0.84\Part-RU
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\Subresource Filter\Unindexed Rules\10.34.0.84\Part-ZH
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\TrustTokenKeyCommitments\2026.3.23.1
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\TrustTokenKeyCommitments\2026.3.23.1\keys.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\TrustTokenKeyCommitments\2026.3.23.1\LICENSE
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\TrustTokenKeyCommitments\2026.3.23.1\manifest.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\TrustTokenKeyCommitments\2026.3.23.1\_metadata
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\EBWebView\TrustTokenKeyCommitments\2026.3.23.1\_metadata\verified_contents.json
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\Local\Microsoft
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\Local\Microsoft\EdgeWebView
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\Local\Microsoft\EdgeWebView\User Data
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\Local\Microsoft\EdgeWebView\User Data\Crashpad
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\Roaming\Microsoft
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\Roaming\Microsoft\Windows
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\Roaming\Microsoft\Windows\Start Menu
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\Roaming\Microsoft\Windows\Start Menu\Programs
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\ZoomExtension\background.js
+C:\Users\solutions\AppData\Local\Packages\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\LocalCache\ZoomExtension\manifest.json

@@ -1,0 +1,9 @@
+  ▲ Next.js 14.2.34
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+ ⨯ Next.js build worker exited with code: 3221226505 and signal: null

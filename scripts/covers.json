@@ -1,0 +1,452 @@
+[
+ {
+  "i": 1,
+  "title": "Green Avenue",
+  "property_type": "coastal",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/green-avenue-190fe5b5.jpg"
+ },
+ {
+  "i": 2,
+  "title": "Island 22 — لسان الوزارة",
+  "property_type": "coastal",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/wa-inbound/1783828127000-FFNzBCNjIA.jpg"
+ },
+ {
+  "i": 3,
+  "title": "Jamila",
+  "property_type": "coastal",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/jamila-2085cff6.webp"
+ },
+ {
+  "i": 4,
+  "title": "Sadaf",
+  "property_type": "coastal",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/sadaf-a68086c8.webp"
+ },
+ {
+  "i": 5,
+  "title": "Telal El Sokhna — Shores",
+  "property_type": "coastal",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/telal-el-sokhna-shores-2d36ea18.webp"
+ },
+ {
+  "i": 6,
+  "title": "جيفيرا Jefaira رأس الحكمة",
+  "property_type": "coastal",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/jefaira-ras-el-hekma-86a14009.webp"
+ },
+ {
+  "i": 7,
+  "title": "سولاري Solare رأس الحكمة",
+  "property_type": "coastal",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/solare-ras-el-hekma-842d1e56.webp"
+ },
+ {
+  "i": 8,
+  "title": "سولت SALT رأس الحكمة",
+  "property_type": "coastal",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/salt-ras-el-hekma-8c9c6016.webp"
+ },
+ {
+  "i": 9,
+  "title": "سي شور Seashore رأس الحكمة",
+  "property_type": "coastal",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/seashore-ras-el-hekma-4fa3528a.webp"
+ },
+ {
+  "i": 10,
+  "title": "سيلفر ساندس Silver Sands",
+  "property_type": "coastal",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/silver-sands-eba4aebb.webp"
+ },
+ {
+  "i": 11,
+  "title": "لافيستا راس الحكمة",
+  "property_type": "coastal",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/la-vista-ras-el-hekma-d0b3cb30.webp"
+ },
+ {
+  "i": 12,
+  "title": "ماونتن فيو الساحل ورأس الحكمة",
+  "property_type": "coastal",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/mountain-view-ras-el-hekma-52a3df82.webp"
+ },
+ {
+  "i": 13,
+  "title": "مراسي Marassi",
+  "property_type": "coastal",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/marassi-1dee18ca.jpg"
+ },
+ {
+  "i": 14,
+  "title": "هاسيندا ووترز Hacienda Waters",
+  "property_type": "coastal",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/hacienda-waters-3327f0fd.jpg"
+ },
+ {
+  "i": 15,
+  "title": "Amaz Business Complex",
+  "property_type": "commercial",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/amaz-business-complex-b136e388.webp"
+ },
+ {
+  "i": 16,
+  "title": "ANNEX 26 Mall",
+  "property_type": "commercial",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/projects/annex-00.jpg"
+ },
+ {
+  "i": 17,
+  "title": "Axin Business Complex",
+  "property_type": "commercial",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/wa-inbound/1783842286470-YyRTI3QkEA.jpg"
+ },
+ {
+  "i": 18,
+  "title": "Glow Terra Towers",
+  "property_type": "commercial",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/wa-inbound/1783844261194-QzM0JERDMA.jpg"
+ },
+ {
+  "i": 19,
+  "title": "I Business Park",
+  "property_type": "commercial",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/projects/ibp-00.jpg"
+ },
+ {
+  "i": 20,
+  "title": "Lyx Business Complex",
+  "property_type": "commercial",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/wa-inbound/1783842211370-FFQUNCRTAA.jpg"
+ },
+ {
+  "i": 21,
+  "title": "Mall The Gray",
+  "property_type": "commercial",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/wa-inbound/1783850559452-Q0QUZBQkQA.jpg"
+ },
+ {
+  "i": 22,
+  "title": "Nedit Tower",
+  "property_type": "commercial",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/matter-makers-nedit-tower/image-1783860478284-mbbvl6.webp"
+ },
+ {
+  "i": 23,
+  "title": "Sky Bridge",
+  "property_type": "commercial",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/sky-bridge-e375419e.webp"
+ },
+ {
+  "i": 24,
+  "title": "The Gryd",
+  "property_type": "commercial",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/the-gryd-61b27fd6.webp"
+ },
+ {
+  "i": 25,
+  "title": "The Pause",
+  "property_type": "commercial",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/wa-inbound/1783858917517-EzQTgyN0QA.jpg"
+ },
+ {
+  "i": 26,
+  "title": "TRI HUB",
+  "property_type": "commercial",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/wa-inbound/1783794284600-U2M0UyRUEA.jpg"
+ },
+ {
+  "i": 27,
+  "title": "Veni Mall",
+  "property_type": "commercial",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/wa-inbound/1783794229387-NCOTdDOUQA.jpg"
+ },
+ {
+  "i": 28,
+  "title": "Skyramp",
+  "property_type": "mixed",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/skyramp-1111c826.webp"
+ },
+ {
+  "i": 29,
+  "title": "Vie Collective & Vie HALO",
+  "property_type": "mixed",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/vie-collective-1c456f09.webp"
+ },
+ {
+  "i": 30,
+  "title": "Common Haus",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/projects/haus-00.jpg"
+ },
+ {
+  "i": 31,
+  "title": "Compound Anakaji",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/projects/anakaji-00.jpg"
+ },
+ {
+  "i": 32,
+  "title": "Ever New Cairo",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/ever-new-cairo-16fb80fd.jpg"
+ },
+ {
+  "i": 33,
+  "title": "Grand Lane",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/wa-inbound/1783828124971-U0RDJBNTkA.jpg"
+ },
+ {
+  "i": 34,
+  "title": "IVOIRE East",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/ivoire-east-5b3d25d9.webp"
+ },
+ {
+  "i": 35,
+  "title": "IVOIRE West",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/ivoire-west-ac4589ae.jpg"
+ },
+ {
+  "i": 36,
+  "title": "IVY Residence",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/wa-inbound/1783844115743-ZEMTQ3NjMA.jpg"
+ },
+ {
+  "i": 37,
+  "title": "Jazura",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/jazura-4ed35ce1.webp"
+ },
+ {
+  "i": 38,
+  "title": "MALIV",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/maliv-004fcd07.webp"
+ },
+ {
+  "i": 39,
+  "title": "MONARK",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/projects/monark-p68.jpg"
+ },
+ {
+  "i": 40,
+  "title": "NOLL",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/wa-inbound/1783810732014-g4MTQ0QzYA.jpg"
+ },
+ {
+  "i": 41,
+  "title": "PATTERNS",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/patterns-56c493fd.webp"
+ },
+ {
+  "i": 42,
+  "title": "Prk Vie",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/prk-vie-78cedea9.webp"
+ },
+ {
+  "i": 43,
+  "title": "RITZ New Zayed",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/projects/ritz-00.jpg"
+ },
+ {
+  "i": 44,
+  "title": "Rivali",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/rivali-01962903.webp"
+ },
+ {
+  "i": 45,
+  "title": "Selection",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/selection-8cce3b7f.webp"
+ },
+ {
+  "i": 46,
+  "title": "SQ1 — الشويفات",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/wa-inbound/1783828127406-Q3NzI5MDIA.jpg"
+ },
+ {
+  "i": 47,
+  "title": "Talda",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/wa-inbound/1783828125858-hDRDk2REYA.jpg"
+ },
+ {
+  "i": 48,
+  "title": "Telal East",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/telal-east-447c00dc.webp"
+ },
+ {
+  "i": 49,
+  "title": "The Brooks",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/the-brooks-ad4eac98.jpg"
+ },
+ {
+  "i": 50,
+  "title": "The Five",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/the-five-ddf01359.jpg"
+ },
+ {
+  "i": 51,
+  "title": "White Residence",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/white-residence-070df8f7.webp"
+ },
+ {
+  "i": 52,
+  "title": "أورو ORO",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/oro-ea9fa991.jpg"
+ },
+ {
+  "i": 53,
+  "title": "إيستاون Eastown",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/eastown-90d0f17c.webp"
+ },
+ {
+  "i": 54,
+  "title": "اب ماونت Upmount",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/upmount-593521d6.webp"
+ },
+ {
+  "i": 55,
+  "title": "الباتيو 7",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/el-patio-7-b3de7090.webp"
+ },
+ {
+  "i": 56,
+  "title": "الباتيو أورو El Patio Oro",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/el-patio-oro-88e06513.webp"
+ },
+ {
+  "i": 57,
+  "title": "البوسكو Il Bosco",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/il-bosco-4993dfd5.webp"
+ },
+ {
+  "i": 58,
+  "title": "بالم هيلز نيو كايرو",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/palm-hills-new-cairo-988b9fc3.jpg"
+ },
+ {
+  "i": 59,
+  "title": "بلوفير Bleu Vert",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/bleu-vert-f3c1bec9.webp"
+ },
+ {
+  "i": 60,
+  "title": "بوتانيكا Botanica",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/botanica-c2361cb0.webp"
+ },
+ {
+  "i": 61,
+  "title": "تاج سيتي Taj City",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/taj-city-eb45db1b.webp"
+ },
+ {
+  "i": 62,
+  "title": "جاردنز بلازا Gardens Plaza",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/gardens-plaza-a73b9006.webp"
+ },
+ {
+  "i": 63,
+  "title": "ذا كابيتال واي The Capital Way",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/the-capital-way-f14c4ddb.jpg"
+ },
+ {
+  "i": 64,
+  "title": "زيد إيست ZED East",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/zed-east-3f31ed49.webp"
+ },
+ {
+  "i": 65,
+  "title": "سوان ليك رزيدنس Swan Lake",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/swan-lake-residence-9b8aa6e9.jpg"
+ },
+ {
+  "i": 66,
+  "title": "سي��يا Celia",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/celia-893594b7.jpg"
+ },
+ {
+  "i": 67,
+  "title": "طلة Talah",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/talah-c8da9d85.webp"
+ },
+ {
+  "i": 68,
+  "title": "فيفث سكوير Fifth Square",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/fifth-square-066f00fe.webp"
+ },
+ {
+  "i": 69,
+  "title": "فينشي Vinci",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/vinci-78489068.webp"
+ },
+ {
+  "i": 70,
+  "title": "فينيا Vinia",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/vinia-fe58031c.jpg"
+ },
+ {
+  "i": 71,
+  "title": "ليك فيو ريزيدنس",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/lake-view-residence-c6d32e90.jpg"
+ },
+ {
+  "i": 72,
+  "title": "ماونتن فيو آي سيتي iCity",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/mountain-view-icity-87039a6e.jpg"
+ },
+ {
+  "i": 73,
+  "title": "��اونتن فيو هايد بارك",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/mountain-view-hyde-park-05df00d8.webp"
+ },
+ {
+  "i": 74,
+  "title": "ميدتاون كوندو Midtown Condo",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/midtown-condo-6324543e.jpg"
+ },
+ {
+  "i": 75,
+  "title": "هايد بارك نيو كايرو",
+  "property_type": "residential",
+  "cover_url": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/project-media/projects/hyde-park-new-cairo-97874ad5.webp"
+ }
+]

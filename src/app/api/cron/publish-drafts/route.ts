@@ -1,0 +1,239 @@
+// =====================================================================
+// ⚙️ نشر درافتات المارد أوتوماتيك (17 Jul 2026)
+// السبب: أسماك الصياد بعت منيوه والمارد جهّز 9 درافتات في
+// instant_listing_drafts — وقعدوا status='new' من غير ما ينزلوا.
+// «مش عايز الغلطات دي تتكرر تاني مع أي حد» — محمد.
+//
+// كل 10 دقايق: أي درافت status='new' عدّى عليه 10 دقايق (عشان المارد
+// يكون خلّص كل أصناف المورد) وفيه صورة + عنوان →
+//   1) يضمن profile بالرقم (نفس مسار /api/auth/wa)
+//   2) يضمن marketplace_supplier + owner في business_employees
+//   3) أكل (food-*) → مطعم واحد منشور + restaurant_menu_items
+//      غير كده → إعلان منشور لكل درافت
+//   4) يعلّم الدرافتات published ويبعت واتساب للمورد باللينك
+// =====================================================================
+
+import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
+
+export const dynamic = 'force-dynamic'
+export const maxDuration = 120
+
+const SITE = 'https://madmonacairo.com'
+
+function sb() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } },
+  )
+}
+
+type Draft = {
+  id: string
+  contact_phone: string
+  contact_name: string | null
+  title: string
+  description: string | null
+  category_slug: string | null
+  price_egp: number | null
+  period: string | null
+  image_urls: string[] | null
+}
+
+function slugify(name: string): string {
+  const base = name
+    .replace(/[^ء-يa-zA-Z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .slice(0, 50)
+  return `${base || 'listing'}-${Math.random().toString(36).slice(2, 7)}`
+}
+
+async function ensureProfile(supa: ReturnType<typeof sb>, rawPhone: string) {
+  const normalized = normalizePhone(rawPhone)
+  if (!normalized) return null
+  const local = '0' + normalized.slice(3)
+  const { data: existing } = await supa
+    .from('profiles').select('id')
+    .or(`phone.eq.${local},phone.eq.${normalized}`)
+    .limit(1).maybeSingle()
+  if (existing?.id) return { id: existing.id as string, local }
+
+  const email = phoneToEmail(normalized)
+  const { data: created, error } = await supa.auth.admin.createUser({
+    email, email_confirm: true, user_metadata: { phone: local, via: 'auto-publish' },
+  })
+  let userId = created?.user?.id
+  if (error && /already|exists/i.test(error.message)) {
+    const { data: link } = await supa.auth.admin.generateLink({ type: 'magiclink', email })
+    userId = link?.user?.id
+  } else if (error) return null
+  if (!userId) return null
+  await supa.from('profiles').upsert({ id: userId, phone: local, role: 'customer' } as never, { onConflict: 'id' })
+  return { id: userId, local }
+}
+
+async function waNotify(supa: ReturnType<typeof sb>, phone: string, body: string) {
+  try {
+    const { data: rows } = await supa.from('whatsapp_config').select('key, value').in('key', ['access_token', 'phone_number_id'])
+    const cfg = Object.fromEntries((rows || []).map(r => [r.key, r.value]))
+    if (!cfg.access_token || !cfg.phone_number_id) return
+    const to = phone.replace(/^\+/, '')
+    const r = await fetch(`https://graph.facebook.com/v20.0/${cfg.phone_number_id}/messages`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${cfg.access_token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messaging_product: 'whatsapp', to, type: 'text', text: { body, preview_url: true } }),
+    })
+    const j = await r.json().catch(() => null)
+    const { data: conv } = await supa.from('whatsapp_conversations').select('id').eq('contact_phone', `+${to}`).maybeSingle()
+    if (conv?.id) {
+      await supa.from('whatsapp_messages').insert({
+        conversation_id: conv.id, direction: 'outbound', body, message_type: 'text',
+        status: r.ok ? 'sent' : 'failed', ai_generated: false, agent_name: 'auto-publish',
+        wa_message_id: j?.messages?.[0]?.id ?? null,
+      } as never)
+    }
+  } catch { /* best-effort */ }
+}
+
+export async function GET() {
+  const supa = sb()
+  const cutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+  const { data: drafts } = await supa
+    .from('instant_listing_drafts')
+    .select('id, contact_phone, contact_name, title, description, category_slug, price_egp, period, image_urls')
+    .eq('status', 'new')
+    .lt('created_at', cutoff)
+    .order('created_at')
+    .limit(40)
+
+  const ready = (drafts as Draft[] | null || []).filter(d => d.title && (d.image_urls?.length || 0) > 0)
+  if (!ready.length) return NextResponse.json({ published: 0 })
+
+  const byPhone = new Map<string, Draft[]>()
+  for (const d of ready) {
+    if (!byPhone.has(d.contact_phone)) byPhone.set(d.contact_phone, [])
+    byPhone.get(d.contact_phone)!.push(d)
+  }
+
+  const results: Record<string, unknown>[] = []
+
+  for (const [phone, group] of Array.from(byPhone.entries())) {
+    try {
+      const prof = await ensureProfile(supa, phone)
+      if (!prof) { results.push({ phone, error: 'no_profile' }); continue }
+
+      const bizName = group[0].contact_name || `مورد ${prof.local}`
+
+      // supplier: موجود ولا نعمله
+      let supplierId: string | null = null
+      const { data: sup } = await supa.from('marketplace_suppliers').select('id').eq('profile_id', prof.id).limit(1).maybeSingle()
+      if (sup?.id) supplierId = sup.id
+      else {
+        const { data: ns, error: se } = await supa.from('marketplace_suppliers').insert({
+          profile_id: prof.id, account_type: 'business', business_name: bizName,
+          description: group[0].description, kyc_status: 'approved', kyc_reviewed_at: new Date().toISOString(), commission_rate: 10,
+        } as never).select('id').single()
+        if (se || !ns) { results.push({ phone, error: 'supplier: ' + se?.message }); continue }
+        supplierId = ns.id
+      }
+
+      // owner في business_employees (لو مش موجود)
+      const { data: be } = await supa.from('business_employees').select('id')
+        .eq('supplier_id', supplierId).eq('auth_user_id', prof.id).limit(1).maybeSingle()
+      if (!be?.id) {
+        await supa.from('business_employees').insert({
+          supplier_id: supplierId, auth_user_id: prof.id, full_name: bizName, phone: prof.local,
+          role: 'owner', role_ar: 'مالك', status: 'active', employee_type: 'human',
+        } as never)
+      }
+
+      const food = group.filter(d => (d.category_slug || '').startsWith('food-'))
+      const other = group.filter(d => !(d.category_slug || '').startsWith('food-'))
+      const links: string[] = []
+
+      // ---------- مطاعم/أكل: مطعم واحد + منيو ----------
+      if (food.length) {
+        let listingId: string | null = null
+        let listingSlug: string | null = null
+        const { data: exist } = await supa.from('listings')
+          .select('id, slug, categories!inner(slug)')
+          .eq('supplier_id', supplierId).eq('status', 'published')
+          .like('categories.slug', 'food-%').limit(1).maybeSingle()
+        if (exist?.id) { listingId = exist.id; listingSlug = exist.slug }
+        else {
+          const catSlug = food[0].category_slug || 'food-grill'
+          let { data: cat } = await supa.from('categories').select('id').eq('slug', catSlug).maybeSingle()
+          if (!cat?.id) ({ data: cat } = await supa.from('categories').select('id').eq('slug', 'food-grill').maybeSingle())
+          const slug = slugify(bizName)
+          const { data: nl, error: le } = await supa.from('listings').insert({
+            title: bizName, slug, status: 'draft', category_id: cat?.id,
+            supplier_id: supplierId, contact_phone: phone, phone_verified_at: new Date().toISOString(),
+            description: food[0].description || `${bizName} — اطلب أونلاين ومعاملاتك مضمونة`, country: 'EG', is_directory: false,
+          } as never).select('id, slug').single()
+          if (le || !nl) { results.push({ phone, error: 'listing: ' + le?.message }); continue }
+          listingId = nl.id; listingSlug = nl.slug
+          const imgs = [...new Set(food.flatMap(d => d.image_urls || []))].slice(0, 12)
+          await supa.from('listing_photos').insert(imgs.map((u, ix) => ({
+            listing_id: listingId, url: u, display_order: ix + 1, is_primary: ix === 0,
+          })) as never)
+          await supa.from('listings').update({ status: 'published', published_at: new Date().toISOString() } as never).eq('id', listingId)
+        }
+        // أصناف المنيو (من غير تكرار بالاسم)
+        const { data: existingItems } = await supa.from('restaurant_menu_items').select('name_ar').eq('listing_id', listingId)
+        const have = new Set((existingItems || []).map(m => m.name_ar))
+        let order = have.size
+        for (const d of food) {
+          const name = d.title.replace(new RegExp(`^${bizName}\\s*[—-]\\s*`), '').slice(0, 120)
+          if (have.has(name)) continue
+          order += 1
+          await supa.from('restaurant_menu_items').insert({
+            listing_id: listingId, name_ar: name, description_ar: d.description,
+            price: d.price_egp ?? 0, currency: 'EGP', photo_url: d.image_urls?.[0] ?? null,
+            is_available: true, display_order: order,
+          } as never)
+        }
+        await supa.from('instant_listing_drafts').update({ status: 'published', published_listing_id: listingId } as never)
+          .in('id', food.map(d => d.id))
+        links.push(`${SITE}/marketplace/${listingSlug}`)
+      }
+
+      // ---------- باقي الفئات: إعلان لكل درافت ----------
+      for (const d of other) {
+        const { data: cat } = await supa.from('categories').select('id').eq('slug', d.category_slug || '').maybeSingle()
+        if (!cat?.id) { // فئة مش معروفة → سيبه للفريق يراجعه
+          await supa.from('instant_listing_drafts').update({ status: 'needs_review' } as never).eq('id', d.id)
+          continue
+        }
+        const slug = slugify(d.title)
+        const { data: nl, error: le } = await supa.from('listings').insert({
+          title: d.title.slice(0, 150), slug, status: 'draft', category_id: cat.id,
+          supplier_id: supplierId, contact_phone: phone, phone_verified_at: new Date().toISOString(),
+          description: d.description || d.title, country: 'EG', is_directory: false,
+          price_egp: d.price_egp, price_on_request: d.price_egp == null,
+        } as never).select('id, slug').single()
+        if (le || !nl) { results.push({ phone, draft: d.id, error: 'listing: ' + le?.message }); continue }
+        await supa.from('listing_photos').insert((d.image_urls || []).slice(0, 8).map((u, ix) => ({
+          listing_id: nl.id, url: u, display_order: ix + 1, is_primary: ix === 0,
+        })) as never)
+        await supa.from('listings').update({ status: 'published', published_at: new Date().toISOString() } as never).eq('id', nl.id)
+        await supa.from('instant_listing_drafts').update({ status: 'published', published_listing_id: nl.id } as never).eq('id', d.id)
+        links.push(`${SITE}/marketplace/${nl.slug}`)
+      }
+
+      if (links.length) {
+        await waNotify(supa, phone,
+          `مبروك! 🎉 ${links.length > 1 ? 'إعلاناتك نزلت' : 'إعلانك نزل'} رسمي على مضمونة ✅\n\n` +
+          links.slice(0, 3).map(l => `🔗 ${l}`).join('\n') +
+          `\n\nأي حد يقدر يطلب منك أونلاين من دلوقتي والفلوس مضمونة لحد الاستلام. الطلبات بتوصلك على لوحة تحكمك:\n${SITE}/supplier/dashboard\n\nولو عايز تعدّل أي سعر أو صنف قولّي وأنا أظبطه 🧞\n*معاملاتك مضمونة* ✅`)
+      }
+      results.push({ phone, published: links.length, menu_items: food.length })
+    } catch (e) {
+      results.push({ phone, error: String((e as Error).message).slice(0, 120) })
+    }
+  }
+
+  return NextResponse.json({ groups: results.length, results })
+}

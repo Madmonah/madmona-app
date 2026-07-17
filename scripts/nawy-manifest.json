@@ -1,0 +1,863 @@
+[
+ {
+  "our": "bb8cc3a3-14ff-4729-a8f5-6c9e6c0f50b9",
+  "name": "Cinco",
+  "lat": 30.0283478,
+  "lng": 31.4812042,
+  "nawyId": 957,
+  "files": [
+   "bb8cc3a3-0.jpg",
+   "bb8cc3a3-1.jpg",
+   "bb8cc3a3-2.jpg",
+   "bb8cc3a3-3.jpg",
+   "bb8cc3a3-4.jpg",
+   "bb8cc3a3-5.jpg",
+   "bb8cc3a3-6.jpg",
+   "bb8cc3a3-7.jpg"
+  ]
+ },
+ {
+  "our": "87c8c3d7-45b5-4294-8454-8460429d869e",
+  "name": "Common Haus",
+  "lat": null,
+  "lng": null,
+  "nawyId": 2343,
+  "files": [
+   "87c8c3d7-0.jpg",
+   "87c8c3d7-1.jpg"
+  ]
+ },
+ {
+  "our": "16fb80fd-f7b8-4542-9a75-dd2156697525",
+  "name": "Ever New Cairo",
+  "lat": 29.95574711,
+  "lng": 31.55740954,
+  "nawyId": 1123,
+  "files": [
+   "16fb80fd-0.jpg",
+   "16fb80fd-1.jpg",
+   "16fb80fd-2.jpg",
+   "16fb80fd-3.jpg",
+   "16fb80fd-4.jpg",
+   "16fb80fd-5.jpg",
+   "16fb80fd-6.jpg",
+   "16fb80fd-7.jpg"
+  ]
+ },
+ {
+  "our": "d8f49582-ac6d-4465-88d4-9e53137e7366",
+  "name": "Grand Lane",
+  "lat": null,
+  "lng": null,
+  "nawyId": 1955,
+  "files": [
+   "d8f49582-0.jpg",
+   "d8f49582-1.jpg",
+   "d8f49582-2.jpg",
+   "d8f49582-3.jpg",
+   "d8f49582-4.jpg",
+   "d8f49582-5.jpg"
+  ]
+ },
+ {
+  "our": "b42fddcf-0d7b-4dc2-92f2-e4bfcbccb08d",
+  "name": "Helio Eye",
+  "lat": null,
+  "lng": null,
+  "nawyId": 1511,
+  "files": [
+   "b42fddcf-0.jpg",
+   "b42fddcf-1.jpg"
+  ]
+ },
+ {
+  "our": "e7959915-c86e-477a-8650-bad7478f2568",
+  "name": "I Business Park",
+  "lat": 29.99619872,
+  "lng": 31.72830105,
+  "nawyId": 428,
+  "files": [
+   "e7959915-0.jpg",
+   "e7959915-1.jpg",
+   "e7959915-2.jpg",
+   "e7959915-3.jpg",
+   "e7959915-4.jpg",
+   "e7959915-5.jpg",
+   "e7959915-6.jpg",
+   "e7959915-7.jpg"
+  ]
+ },
+ {
+  "our": "5b3d25d9-0f94-4ff7-b682-ad8e4f06c0d4",
+  "name": "IVOIRE East",
+  "lat": 30.0554255,
+  "lng": 31.4645875,
+  "nawyId": 1076,
+  "files": [
+   "5b3d25d9-0.jpg",
+   "5b3d25d9-1.jpg",
+   "5b3d25d9-2.jpg",
+   "5b3d25d9-3.jpg",
+   "5b3d25d9-4.jpg",
+   "5b3d25d9-5.jpg",
+   "5b3d25d9-6.jpg",
+   "5b3d25d9-7.jpg"
+  ]
+ },
+ {
+  "our": "ac4589ae-8ad9-461c-bb71-cc8de00f8803",
+  "name": "IVOIRE West",
+  "lat": 30.0187883,
+  "lng": 30.9753719,
+  "nawyId": 1003,
+  "files": [
+   "ac4589ae-0.jpg",
+   "ac4589ae-1.jpg",
+   "ac4589ae-2.jpg",
+   "ac4589ae-3.jpg",
+   "ac4589ae-4.jpg",
+   "ac4589ae-5.jpg",
+   "ac4589ae-6.jpg",
+   "ac4589ae-7.jpg"
+  ]
+ },
+ {
+  "our": "2085cff6-0053-4a1c-963c-862f4b5b1090",
+  "name": "Jamila",
+  "lat": 31.19431386,
+  "lng": 27.54328769,
+  "nawyId": 1290,
+  "files": [
+   "2085cff6-0.jpg",
+   "2085cff6-1.jpg",
+   "2085cff6-2.jpg",
+   "2085cff6-3.jpg",
+   "2085cff6-4.jpg",
+   "2085cff6-5.jpg",
+   "2085cff6-6.jpg",
+   "2085cff6-7.jpg"
+  ]
+ },
+ {
+  "our": "4347dc5d-ba55-4404-829b-f5af9423e210",
+  "name": "Jazebeya",
+  "lat": 29.99035155,
+  "lng": 30.95216055,
+  "nawyId": 1130,
+  "files": [
+   "4347dc5d-0.jpg",
+   "4347dc5d-1.jpg",
+   "4347dc5d-2.jpg",
+   "4347dc5d-3.jpg",
+   "4347dc5d-4.jpg",
+   "4347dc5d-5.jpg",
+   "4347dc5d-6.jpg",
+   "4347dc5d-7.jpg"
+  ]
+ },
+ {
+  "our": "4ed35ce1-1f5f-48a9-adf3-47c4682834fc",
+  "name": "Jazura",
+  "lat": 30.0461703,
+  "lng": 31.5203701,
+  "nawyId": 1802,
+  "files": [
+   "4ed35ce1-0.jpg",
+   "4ed35ce1-1.jpg",
+   "4ed35ce1-2.jpg"
+  ]
+ },
+ {
+  "our": "00b3ab78-0ac4-46ed-afa6-623d6784289e",
+  "name": "The Gray",
+  "lat": 30.0516621,
+  "lng": 31.50990554,
+  "nawyId": 1214,
+  "files": [
+   "00b3ab78-0.jpg",
+   "00b3ab78-1.jpg",
+   "00b3ab78-2.jpg",
+   "00b3ab78-3.jpg",
+   "00b3ab78-4.jpg",
+   "00b3ab78-5.jpg",
+   "00b3ab78-6.jpg",
+   "00b3ab78-7.jpg"
+  ]
+ },
+ {
+  "our": "62bc2638-191e-461c-b695-6d3df8baab5e",
+  "name": "MONARK",
+  "lat": 30.05793106,
+  "lng": 31.6391362,
+  "nawyId": 973,
+  "files": [
+   "62bc2638-0.jpg",
+   "62bc2638-1.jpg",
+   "62bc2638-2.jpg",
+   "62bc2638-3.jpg"
+  ]
+ },
+ {
+  "our": "dd70ccdf-e241-49b3-8497-7b7b129feffd",
+  "name": "NAJM",
+  "lat": 29.93112899,
+  "lng": 31.56997496,
+  "nawyId": 1851,
+  "files": [
+   "dd70ccdf-0.jpg",
+   "dd70ccdf-1.jpg",
+   "dd70ccdf-2.jpg",
+   "dd70ccdf-3.jpg",
+   "dd70ccdf-4.jpg",
+   "dd70ccdf-5.jpg",
+   "dd70ccdf-6.jpg",
+   "dd70ccdf-7.jpg"
+  ]
+ },
+ {
+  "our": "56c493fd-a8dc-412e-a9b7-bfdef1c7c22c",
+  "name": "PATTERNS",
+  "lat": 30.04568741,
+  "lng": 31.52181445,
+  "nawyId": 1884,
+  "files": [
+   "56c493fd-0.jpg",
+   "56c493fd-1.jpg",
+   "56c493fd-2.jpg",
+   "56c493fd-3.jpg",
+   "56c493fd-4.jpg",
+   "56c493fd-5.jpg",
+   "56c493fd-6.jpg",
+   "56c493fd-7.jpg"
+  ]
+ },
+ {
+  "our": "69bd9c6e-86da-411d-8749-fa5ee012d873",
+  "name": "Ritz New Zayed",
+  "lat": null,
+  "lng": null,
+  "nawyId": 1731,
+  "files": [
+   "69bd9c6e-0.jpg",
+   "69bd9c6e-1.jpg"
+  ]
+ },
+ {
+  "our": "01962903-5828-40e6-a7c3-ed474c541bf0",
+  "name": "Rivali",
+  "lat": 29.9645101,
+  "lng": 31.5299185,
+  "nawyId": 1331,
+  "files": [
+   "01962903-0.jpg",
+   "01962903-1.jpg"
+  ]
+ },
+ {
+  "our": "a68086c8-0d21-4eff-bc6b-bdea28895a68",
+  "name": "Sadaf",
+  "lat": null,
+  "lng": null,
+  "nawyId": 2348,
+  "files": [
+   "a68086c8-0.jpg",
+   "a68086c8-1.jpg"
+  ]
+ },
+ {
+  "our": "8cce3b7f-1837-47a8-8fda-37fe8cc70c38",
+  "name": "Selection",
+  "lat": null,
+  "lng": null,
+  "nawyId": 1630,
+  "files": [
+   "8cce3b7f-0.jpg",
+   "8cce3b7f-1.jpg",
+   "8cce3b7f-2.jpg",
+   "8cce3b7f-3.jpg",
+   "8cce3b7f-4.jpg"
+  ]
+ },
+ {
+  "our": "e375419e-011a-424e-96c0-c7ebdba06784",
+  "name": "Sky Bridge",
+  "lat": null,
+  "lng": null,
+  "nawyId": 1512,
+  "files": [
+   "e375419e-0.jpg",
+   "e375419e-1.jpg"
+  ]
+ },
+ {
+  "our": "1111c826-9bad-4854-84e0-c0240e58bba7",
+  "name": "Skyramp",
+  "lat": 30.0386071,
+  "lng": 30.9780058,
+  "nawyId": 1065,
+  "files": [
+   "1111c826-0.jpg",
+   "1111c826-1.jpg",
+   "1111c826-2.jpg",
+   "1111c826-3.jpg",
+   "1111c826-4.jpg",
+   "1111c826-5.jpg",
+   "1111c826-6.jpg"
+  ]
+ },
+ {
+  "our": "f6435363-8874-43e6-b229-23271bba7b6d",
+  "name": "SQ1",
+  "lat": 30.0099818,
+  "lng": 31.407049,
+  "nawyId": 1152,
+  "files": [
+   "f6435363-0.jpg",
+   "f6435363-1.jpg",
+   "f6435363-2.jpg",
+   "f6435363-3.jpg",
+   "f6435363-4.jpg",
+   "f6435363-5.jpg",
+   "f6435363-6.jpg"
+  ]
+ },
+ {
+  "our": "397319a3-752f-4419-bed1-b8e4eca1467e",
+  "name": "Talda",
+  "lat": 30.0665625,
+  "lng": 31.6544375,
+  "nawyId": 1059,
+  "files": [
+   "397319a3-0.jpg",
+   "397319a3-1.jpg",
+   "397319a3-2.jpg",
+   "397319a3-3.jpg",
+   "397319a3-4.jpg",
+   "397319a3-5.jpg"
+  ]
+ },
+ {
+  "our": "447c00dc-ba11-48f6-8efc-e2dc5cc540b9",
+  "name": "Telal East",
+  "lat": 30.0810537,
+  "lng": 31.5971387,
+  "nawyId": 939,
+  "files": [
+   "447c00dc-0.jpg",
+   "447c00dc-1.jpg",
+   "447c00dc-2.jpg",
+   "447c00dc-3.jpg",
+   "447c00dc-4.jpg",
+   "447c00dc-5.jpg",
+   "447c00dc-6.jpg",
+   "447c00dc-7.jpg"
+  ]
+ },
+ {
+  "our": "2d36ea18-87f3-4977-bed8-c4688ecc38de",
+  "name": "Telal Sokhna Shores",
+  "lat": 29.39440021,
+  "lng": 32.5423143,
+  "nawyId": 87,
+  "files": [
+   "2d36ea18-0.jpg",
+   "2d36ea18-1.jpg",
+   "2d36ea18-2.jpg",
+   "2d36ea18-3.jpg",
+   "2d36ea18-4.jpg",
+   "2d36ea18-5.jpg",
+   "2d36ea18-6.jpg"
+  ]
+ },
+ {
+  "our": "ad4eac98-f43f-4ede-b18f-cf17b07b9f6b",
+  "name": "The Brooks",
+  "lat": 29.98073596,
+  "lng": 31.37489319,
+  "nawyId": 543,
+  "files": [
+   "ad4eac98-0.jpg",
+   "ad4eac98-1.jpg",
+   "ad4eac98-2.jpg",
+   "ad4eac98-3.jpg",
+   "ad4eac98-4.jpg",
+   "ad4eac98-5.jpg",
+   "ad4eac98-6.jpg",
+   "ad4eac98-7.jpg"
+  ]
+ },
+ {
+  "our": "ddf01359-5a99-48c8-8c60-5ebe47966eed",
+  "name": "The Five",
+  "lat": 29.94510331,
+  "lng": 31.78948362,
+  "nawyId": 1332,
+  "files": [
+   "ddf01359-0.jpg",
+   "ddf01359-1.jpg"
+  ]
+ },
+ {
+  "our": "61b27fd6-5ec5-4bf0-b20f-314b5d638118",
+  "name": "The Gryd",
+  "lat": 29.9985115,
+  "lng": 31.4522287,
+  "nawyId": 1607,
+  "files": [
+   "61b27fd6-0.jpg",
+   "61b27fd6-1.jpg",
+   "61b27fd6-2.jpg",
+   "61b27fd6-3.jpg",
+   "61b27fd6-4.jpg",
+   "61b27fd6-5.jpg",
+   "61b27fd6-6.jpg",
+   "61b27fd6-7.jpg"
+  ]
+ },
+ {
+  "our": "1c456f09-58ce-411f-b0e4-b6170dc85b53",
+  "name": "Vie Collective",
+  "lat": null,
+  "lng": null,
+  "nawyId": 2098,
+  "files": [
+   "1c456f09-0.jpg",
+   "1c456f09-1.jpg",
+   "1c456f09-2.jpg",
+   "1c456f09-3.jpg",
+   "1c456f09-4.jpg",
+   "1c456f09-5.jpg",
+   "1c456f09-6.jpg",
+   "1c456f09-7.jpg"
+  ]
+ },
+ {
+  "our": "070df8f7-a6d1-4c55-9499-8f36e0198063",
+  "name": "White Residence",
+  "lat": 29.99542233,
+  "lng": 31.45591736,
+  "nawyId": 1030,
+  "files": [
+   "070df8f7-0.jpg",
+   "070df8f7-1.jpg",
+   "070df8f7-2.jpg",
+   "070df8f7-3.jpg",
+   "070df8f7-4.jpg",
+   "070df8f7-5.jpg",
+   "070df8f7-6.jpg"
+  ]
+ },
+ {
+  "our": "90d0f17c-9e5c-466b-90bd-223803a906a6",
+  "name": "Eastown",
+  "lat": 30.0108488,
+  "lng": 31.5159516,
+  "nawyId": 925,
+  "files": [
+   "90d0f17c-0.jpg",
+   "90d0f17c-1.jpg",
+   "90d0f17c-2.jpg",
+   "90d0f17c-3.jpg",
+   "90d0f17c-4.jpg",
+   "90d0f17c-5.jpg",
+   "90d0f17c-6.jpg",
+   "90d0f17c-7.jpg"
+  ]
+ },
+ {
+  "our": "593521d6-502c-445c-8aff-4aa61d45a263",
+  "name": "Upmount",
+  "lat": null,
+  "lng": null,
+  "nawyId": 2199,
+  "files": [
+   "593521d6-0.jpg",
+   "593521d6-1.jpg",
+   "593521d6-2.jpg",
+   "593521d6-3.jpg"
+  ]
+ },
+ {
+  "our": "b3de7090-b542-4664-8625-80f98744feab",
+  "name": "El Patio 7",
+  "lat": 30.0007378,
+  "lng": 31.5043543,
+  "nawyId": 14,
+  "files": [
+   "b3de7090-0.jpg",
+   "b3de7090-1.jpg",
+   "b3de7090-2.jpg",
+   "b3de7090-3.jpg",
+   "b3de7090-4.jpg",
+   "b3de7090-5.jpg",
+   "b3de7090-6.jpg",
+   "b3de7090-7.jpg"
+  ]
+ },
+ {
+  "our": "88e06513-6269-40ea-9a59-465a3f89fda3",
+  "name": "El Patio Oro",
+  "lat": 30.0235577,
+  "lng": 31.5939719,
+  "nawyId": 207,
+  "files": [
+   "88e06513-0.jpg",
+   "88e06513-1.jpg",
+   "88e06513-2.jpg"
+  ]
+ },
+ {
+  "our": "4993dfd5-c570-48f9-b62a-f61d8bb8e90c",
+  "name": "Il Bosco",
+  "lat": 30.0701153,
+  "lng": 31.66105271,
+  "nawyId": 490,
+  "files": [
+   "4993dfd5-0.jpg",
+   "4993dfd5-1.jpg",
+   "4993dfd5-2.jpg",
+   "4993dfd5-3.jpg",
+   "4993dfd5-4.jpg",
+   "4993dfd5-5.jpg",
+   "4993dfd5-6.jpg",
+   "4993dfd5-7.jpg"
+  ]
+ },
+ {
+  "our": "988b9fc3-9771-44b1-aa2e-3fd91284c72a",
+  "name": "Palm Hills New Cairo",
+  "lat": 30.05965847,
+  "lng": 31.5986404,
+  "nawyId": 148,
+  "files": [
+   "988b9fc3-0.jpg",
+   "988b9fc3-1.jpg",
+   "988b9fc3-2.jpg",
+   "988b9fc3-3.jpg",
+   "988b9fc3-4.jpg",
+   "988b9fc3-5.jpg",
+   "988b9fc3-6.jpg"
+  ]
+ },
+ {
+  "our": "f3c1bec9-d99b-4e7b-8a3f-23ac1355ab86",
+  "name": "Bleu Vert",
+  "lat": 29.9773254,
+  "lng": 31.7470735,
+  "nawyId": 296,
+  "files": [
+   "f3c1bec9-0.jpg",
+   "f3c1bec9-1.jpg",
+   "f3c1bec9-2.jpg",
+   "f3c1bec9-3.jpg",
+   "f3c1bec9-4.jpg",
+   "f3c1bec9-5.jpg",
+   "f3c1bec9-6.jpg",
+   "f3c1bec9-7.jpg"
+  ]
+ },
+ {
+  "our": "c2361cb0-d6a8-41ca-93b3-e4972dc023a5",
+  "name": "Botanica",
+  "lat": 30.01569002,
+  "lng": 31.02648873,
+  "nawyId": 67,
+  "files": [
+   "c2361cb0-0.jpg",
+   "c2361cb0-1.jpg",
+   "c2361cb0-2.jpg",
+   "c2361cb0-3.jpg",
+   "c2361cb0-4.jpg"
+  ]
+ },
+ {
+  "our": "86a14009-b414-49db-9f5b-899a138cccf2",
+  "name": "Jefaira",
+  "lat": 31.07253538,
+  "lng": 28.13571325,
+  "nawyId": 165,
+  "files": [
+   "86a14009-0.jpg",
+   "86a14009-1.jpg",
+   "86a14009-2.jpg",
+   "86a14009-3.jpg",
+   "86a14009-4.jpg",
+   "86a14009-5.jpg",
+   "86a14009-6.jpg"
+  ]
+ },
+ {
+  "our": "3f31ed49-2916-4e75-9e42-57094ea07e20",
+  "name": "ZED East",
+  "lat": 29.87269897,
+  "lng": 31.28781518,
+  "nawyId": 345,
+  "files": [
+   "3f31ed49-0.jpg",
+   "3f31ed49-1.jpg",
+   "3f31ed49-2.jpg",
+   "3f31ed49-3.jpg",
+   "3f31ed49-4.jpg",
+   "3f31ed49-5.jpg"
+  ]
+ },
+ {
+  "our": "9b8aa6e9-0c8d-4799-8943-f497090292e9",
+  "name": "Swan Lake",
+  "lat": 30.00221963,
+  "lng": 30.9967554,
+  "nawyId": 386,
+  "files": [
+   "9b8aa6e9-0.jpg",
+   "9b8aa6e9-1.jpg",
+   "9b8aa6e9-2.jpg",
+   "9b8aa6e9-3.jpg",
+   "9b8aa6e9-4.jpg",
+   "9b8aa6e9-5.jpg",
+   "9b8aa6e9-6.jpg",
+   "9b8aa6e9-7.jpg"
+  ]
+ },
+ {
+  "our": "842d1e56-83c7-4f33-9e18-4d3d69860d16",
+  "name": "Solare",
+  "lat": 31.17932188,
+  "lng": 27.86629013,
+  "nawyId": 929,
+  "files": [
+   "842d1e56-0.jpg",
+   "842d1e56-1.jpg",
+   "842d1e56-2.jpg",
+   "842d1e56-3.jpg",
+   "842d1e56-4.jpg",
+   "842d1e56-5.jpg"
+  ]
+ },
+ {
+  "our": "8c9c6016-7dae-418a-a0ad-246234b477b8",
+  "name": "SALT",
+  "lat": 30.99227265,
+  "lng": 28.68859874,
+  "nawyId": 927,
+  "files": [
+   "8c9c6016-0.jpg",
+   "8c9c6016-1.jpg",
+   "8c9c6016-2.jpg",
+   "8c9c6016-3.jpg",
+   "8c9c6016-4.jpg",
+   "8c9c6016-5.jpg",
+   "8c9c6016-6.jpg",
+   "8c9c6016-7.jpg"
+  ]
+ },
+ {
+  "our": "4fa3528a-bbe6-43f6-8c7d-733730f76df1",
+  "name": "Seashore",
+  "lat": null,
+  "lng": null,
+  "nawyId": 2381,
+  "files": [
+   "4fa3528a-0.jpg",
+   "4fa3528a-1.jpg"
+  ]
+ },
+ {
+  "our": "eba4aebb-976b-4a33-b8ac-061bb7e0d2a0",
+  "name": "Silver Sands",
+  "lat": 31.18973063,
+  "lng": 27.59368658,
+  "nawyId": 530,
+  "files": [
+   "eba4aebb-0.jpg",
+   "eba4aebb-1.jpg",
+   "eba4aebb-2.jpg",
+   "eba4aebb-3.jpg",
+   "eba4aebb-4.jpg",
+   "eba4aebb-5.jpg",
+   "eba4aebb-6.jpg",
+   "eba4aebb-7.jpg"
+  ]
+ },
+ {
+  "our": "893594b7-bfb7-4155-92ba-4eeb384ad7ac",
+  "name": "Celia",
+  "lat": 29.98002037,
+  "lng": 31.73905134,
+  "nawyId": 623,
+  "files": [
+   "893594b7-0.jpg",
+   "893594b7-1.jpg",
+   "893594b7-2.jpg",
+   "893594b7-3.jpg",
+   "893594b7-4.jpg",
+   "893594b7-5.jpg",
+   "893594b7-6.jpg",
+   "893594b7-7.jpg"
+  ]
+ },
+ {
+  "our": "c8da9d85-e9f3-49be-a047-9d970f32ee7d",
+  "name": "Talah",
+  "lat": 30.00187207,
+  "lng": 31.75885747,
+  "nawyId": 781,
+  "files": [
+   "c8da9d85-0.jpg",
+   "c8da9d85-1.jpg",
+   "c8da9d85-2.jpg",
+   "c8da9d85-3.jpg",
+   "c8da9d85-4.jpg",
+   "c8da9d85-5.jpg"
+  ]
+ },
+ {
+  "our": "066f00fe-61ba-43fd-9e58-e59e8e4c1a57",
+  "name": "Fifth Square",
+  "lat": 30.05450124,
+  "lng": 31.53463107,
+  "nawyId": 425,
+  "files": [
+   "066f00fe-0.jpg",
+   "066f00fe-1.jpg",
+   "066f00fe-2.jpg",
+   "066f00fe-3.jpg",
+   "066f00fe-4.jpg",
+   "066f00fe-5.jpg",
+   "066f00fe-6.jpg",
+   "066f00fe-7.jpg"
+  ]
+ },
+ {
+  "our": "78489068-d330-4281-b23d-48992c3e70e9",
+  "name": "Vinci",
+  "lat": 29.9498608,
+  "lng": 31.70548307,
+  "nawyId": 252,
+  "files": [
+   "78489068-0.jpg",
+   "78489068-1.jpg",
+   "78489068-2.jpg",
+   "78489068-3.jpg",
+   "78489068-4.jpg",
+   "78489068-5.jpg",
+   "78489068-6.jpg",
+   "78489068-7.jpg"
+  ]
+ },
+ {
+  "our": "d0b3cb30-9172-49d7-853f-7de6aaabbcd7",
+  "name": "La Vista Ras El Hekma",
+  "lat": 31.08346347,
+  "lng": 27.99501484,
+  "nawyId": 175,
+  "files": [
+   "d0b3cb30-0.jpg",
+   "d0b3cb30-1.jpg",
+   "d0b3cb30-2.jpg",
+   "d0b3cb30-3.jpg",
+   "d0b3cb30-4.jpg",
+   "d0b3cb30-5.jpg",
+   "d0b3cb30-6.jpg",
+   "d0b3cb30-7.jpg"
+  ]
+ },
+ {
+  "our": "87039a6e-ab80-4972-aa47-9931edbc02f7",
+  "name": "Mountain View iCity",
+  "lat": 30.0050838,
+  "lng": 30.9290455,
+  "nawyId": 422,
+  "files": [
+   "87039a6e-0.jpg",
+   "87039a6e-1.jpg",
+   "87039a6e-2.jpg",
+   "87039a6e-3.jpg",
+   "87039a6e-4.jpg",
+   "87039a6e-5.jpg",
+   "87039a6e-6.jpg",
+   "87039a6e-7.jpg"
+  ]
+ },
+ {
+  "our": "52a3df82-47b9-4a89-951c-786dac5f5469",
+  "name": "Mountain View Ras El Hekma",
+  "lat": 31.082171,
+  "lng": 28.0283681,
+  "nawyId": 45,
+  "files": [
+   "52a3df82-0.jpg",
+   "52a3df82-1.jpg",
+   "52a3df82-2.jpg",
+   "52a3df82-3.jpg",
+   "52a3df82-4.jpg",
+   "52a3df82-5.jpg",
+   "52a3df82-6.jpg",
+   "52a3df82-7.jpg"
+  ]
+ },
+ {
+  "our": "05df00d8-411f-453c-8ec3-b8565b050917",
+  "name": "Mountain View Hyde Park",
+  "lat": 29.98742567,
+  "lng": 31.55534781,
+  "nawyId": 7,
+  "files": [
+   "05df00d8-0.jpg",
+   "05df00d8-1.jpg",
+   "05df00d8-2.jpg",
+   "05df00d8-3.jpg",
+   "05df00d8-4.jpg",
+   "05df00d8-5.jpg"
+  ]
+ },
+ {
+  "our": "1dee18ca-7719-4257-bc70-23f02a1a56be",
+  "name": "Marassi",
+  "lat": 30.98016896,
+  "lng": 28.74270861,
+  "nawyId": 5,
+  "files": [
+   "1dee18ca-0.jpg",
+   "1dee18ca-1.jpg",
+   "1dee18ca-2.jpg",
+   "1dee18ca-3.jpg",
+   "1dee18ca-4.jpg",
+   "1dee18ca-5.jpg",
+   "1dee18ca-6.jpg",
+   "1dee18ca-7.jpg"
+  ]
+ },
+ {
+  "our": "3327f0fd-8e8a-4f72-8cd4-44ae03f8d7f0",
+  "name": "Hacienda Waters",
+  "lat": 31.0842023,
+  "lng": 28.1088833,
+  "nawyId": 1261,
+  "files": [
+   "3327f0fd-0.jpg",
+   "3327f0fd-1.jpg",
+   "3327f0fd-2.jpg",
+   "3327f0fd-3.jpg",
+   "3327f0fd-4.jpg",
+   "3327f0fd-5.jpg",
+   "3327f0fd-6.jpg"
+  ]
+ },
+ {
+  "our": "97874ad5-f370-4a1e-b843-72c51a0ac78b",
+  "name": "Hyde Park New Cairo",
+  "lat": 29.98306422,
+  "lng": 31.5442593,
+  "nawyId": 38,
+  "files": [
+   "97874ad5-0.jpg",
+   "97874ad5-1.jpg",
+   "97874ad5-2.jpg",
+   "97874ad5-3.jpg",
+   "97874ad5-4.jpg",
+   "97874ad5-5.jpg",
+   "97874ad5-6.jpg",
+   "97874ad5-7.jpg"
+  ]
+ }
+]

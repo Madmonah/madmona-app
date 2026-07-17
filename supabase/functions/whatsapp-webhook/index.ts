@@ -1322,14 +1322,22 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
       ? `(العميل بعت ملف اسمه «${inboundDocName}»${cap ? ' وكتب: ' + cap : ''}. الملف اتحفظ عندنا. لو ده بروشور مشروع، اشكره وأكدله إننا هنرفعه على صفحة مشروعه في بورصة مضمونة.)`
       : `(العميل بعت ملف اسمه «${inboundDocName}» بس مقدرناش نحمّله${cap ? '. وكتب: ' + cap : ''}. اعتذرله واطلب منه يبعته تاني أو يرفعه من madmonacairo.com/add-project)`
   } else if (msgType === 'audio') {
-    if (audMeta?.id) {
-      const media = await fetchWAMedia(audMeta.id)
-      if (media) {
-        const transcript = await transcribeAudio(media.b64, media.mime)
-        if (transcript) { text = transcript; storedBody = `🎙️ ${transcript}` }
-        else { voiceFailed = true; storedBody = '[رسالة صوتية]' }
+    // 🛡️ (17 Jul 2026) صفر فويسات كانت متسجلة في الداتابيز — أي exception هنا
+    // كان بيسقط الرسالة كلها قبل التسجيل. دلوقتي أي فشل = voiceFailed بس،
+    // والرسالة بتتسجل وبيتبعت acknowledgement. «أي فويس لازم يتفرغ ويترد عليه» — محمد.
+    try {
+      if (audMeta?.id) {
+        const media = await fetchWAMedia(audMeta.id)
+        if (media) {
+          const transcript = await transcribeAudio(media.b64, media.mime)
+          if (transcript) { text = transcript; storedBody = `🎙️ ${transcript}` }
+          else { voiceFailed = true; storedBody = '[رسالة صوتية]' }
+        } else { voiceFailed = true; storedBody = '[رسالة صوتية]' }
       } else { voiceFailed = true; storedBody = '[رسالة صوتية]' }
-    } else { voiceFailed = true; storedBody = '[رسالة صوتية]' }
+    } catch (audioErr) {
+      console.error('[audio-intake] hard failure:', audioErr)
+      voiceFailed = true; storedBody = '[رسالة صوتية]'
+    }
   }
 
   // 🆕 الجروب بياخد محادثة خاصة بيه (مفتاحها group_id) عشان السياق ميتلغبطش مع الخاص
@@ -1407,6 +1415,15 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
         return
       }
       if (text) {
+        // 📋 (17 Jul 2026) «أي تعديل أو أوردر اتبعت في الشات ده يتحفظ ويتعمم» — محمد.
+        // كل نص من الأدمن بيتسجل في admin_directives قبل أي معالجة، فمفيش أمر بيضيع
+        // حتى لو التنفيذ فشل — الفريق يراجع الجدول ويعمم القواعد الجديدة.
+        try {
+          await sb().from('admin_directives').insert({
+            source_phone: fromPhone, directive: text,
+            message_type: storedBody.startsWith('🎙️') ? 'voice' : 'text',
+          })
+        } catch (dirErr) { console.error('[admin-directives] log error:', dirErr) }
         // 🔐 (17 Jul 2026) محمد بيبعت من رقم الأدمن نفسه — كود الدخول MADxxxxx
         // كان بيتبلع في admin-command («كود تتبع؟») قبل ما يوصل للفاحص. الأكواد الأول.
         if (/MAD[A-Z0-9]{5}/i.test(text)) {

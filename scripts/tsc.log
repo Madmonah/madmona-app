@@ -27,14 +27,14 @@ src/app/account/bookings/[id]/page.tsx(201,8): error TS2769: No overload matches
 src/app/account/bookings/page.tsx(60,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/account/favorites/page.tsx(52,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/account/favorites/page.tsx(80,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/account/orders/page.tsx(73,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/account/page.tsx(59,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/account/page.tsx(68,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/account/page.tsx(77,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/orders/page.tsx(74,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/page.tsx(67,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/page.tsx(76,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/account/page.tsx(85,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/account/page.tsx(93,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/account/page.tsx(132,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/account/page.tsx(135,15): error TS2345: Argument of type '{ full_name: string; }' is not assignable to parameter of type 'never'.
+src/app/account/page.tsx(101,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/page.tsx(140,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/page.tsx(143,15): error TS2345: Argument of type '{ full_name: string; }' is not assignable to parameter of type 'never'.
 src/app/add-listing/page.tsx(175,42): error TS2339: Property 'id' does not exist on type 'never'.
 src/app/add-listing/page.tsx(202,31): error TS2339: Property 'id' does not exist on type 'never'.
 src/app/add-listing/page.tsx(203,73): error TS2339: Property 'id' does not exist on type 'never'.
@@ -45,12 +45,11 @@ src/app/add-listing/page.tsx(209,21): error TS2339: Property 'track' does not ex
 src/app/add-listing/page.tsx(260,26): error TS2339: Property 'attribute_schema' does not exist on type 'never'.
 src/app/add-listing/page.tsx(262,20): error TS2339: Property 'slug' does not exist on type 'never'.
 src/app/admin/ad-builder/page.tsx(40,22): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
-src/app/admin/ad-review/page.tsx(73,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/ad-review/page.tsx(117,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/ad-review/page.tsx(127,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/ad-review/page.tsx(137,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/ad-review/page.tsx(75,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/ad-review/page.tsx(119,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/ad-review/page.tsx(129,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/ad-review/page.tsx(139,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/ad-review/page.tsx(146,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/ad-review/page.tsx(141,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/agent-health/page.tsx(72,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/agent-health/page.tsx(74,15): error TS2339: Property 'role' does not exist on type 'never'.
 src/app/admin/agent-health/page.tsx(81,5): error TS2578: Unused '@ts-expect-error' directive.
@@ -73,40 +72,33 @@ src/app/admin/business-finance/[supplierId]/assignments/page.tsx(60,5): error TS
 src/app/admin/business-finance/[supplierId]/assignments/page.tsx(66,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/at-risk/page.tsx(33,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/at-risk/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/attendance-devices/page.tsx(28,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/attendance-devices/page.tsx(44,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/attendance-devices/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/attendance/page.tsx(24,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/attendance/page.tsx(27,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/attendance/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/audit-log/page.tsx(40,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/audit-log/page.tsx(43,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/bookings/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/bookings/page.tsx(39,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/bookings/page.tsx(42,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/bookings/page.tsx(57,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/bookings/page.tsx(213,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/bookings/page.tsx(222,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/bookings/page.tsx(231,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/bookings/page.tsx(38,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/bookings/page.tsx(41,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/bookings/page.tsx(44,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/bookings/page.tsx(214,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/bookings/page.tsx(223,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/boq/page.tsx(28,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/boq/page.tsx(40,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/boq/page.tsx(53,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/boq/page.tsx(61,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/boq/page.tsx(72,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/branches/page.tsx(20,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/branches/page.tsx(23,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/branches/page.tsx(136,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/brands/page.tsx(25,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/brands/page.tsx(28,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/brands/page.tsx(100,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/cash-recon/page.tsx(22,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/cash-recon/page.tsx(25,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/cash-recon/page.tsx(28,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/cash-recon/page.tsx(150,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/catalog/page.tsx(32,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/catalog/page.tsx(35,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/catalog/page.tsx(38,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/catalog/page.tsx(50,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/catalog/page.tsx(70,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/branches/page.tsx(22,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/branches/page.tsx(25,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/brands/page.tsx(27,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/brands/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/cash-recon/page.tsx(24,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/cash-recon/page.tsx(27,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/cash-recon/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/catalog/page.tsx(34,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/catalog/page.tsx(37,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/catalog/page.tsx(40,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/catalog/page.tsx(52,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/collections/page.tsx(34,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/collections/page.tsx(37,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/collections/page.tsx(41,5): error TS2578: Unused '@ts-expect-error' directive.
@@ -117,12 +109,9 @@ src/app/admin/business-finance/[supplierId]/company-docs/page.tsx(33,5): error T
 src/app/admin/business-finance/[supplierId]/company-docs/page.tsx(56,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/company-docs/page.tsx(59,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/company-docs/page.tsx(66,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/confirmations/page.tsx(31,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/confirmations/page.tsx(33,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/confirmations/page.tsx(35,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/confirmations/page.tsx(48,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/confirmations/page.tsx(54,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/confirmations/page.tsx(60,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/confirmations/page.tsx(37,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/custody-projects/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/custody-projects/page.tsx(39,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/custody-projects/page.tsx(63,7): error TS2578: Unused '@ts-expect-error' directive.
@@ -168,7 +157,7 @@ src/app/admin/business-finance/[supplierId]/expenses-projects/page.tsx(72,5): er
 src/app/admin/business-finance/[supplierId]/expenses/page.tsx(47,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/expenses/page.tsx(50,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/expenses/page.tsx(53,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/expenses/page.tsx(189,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/expenses/page.tsx(196,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/flow-tasks/page.tsx(25,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/flow-tasks/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/flow-tasks/page.tsx(32,5): error TS2578: Unused '@ts-expect-error' directive.
@@ -180,21 +169,14 @@ src/app/admin/business-finance/[supplierId]/guarantees/page.tsx(48,5): error TS2
 src/app/admin/business-finance/[supplierId]/guarantees/page.tsx(62,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/guarantees/page.tsx(72,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/guarantees/page.tsx(78,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/import/page.tsx(35,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/import/page.tsx(38,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/import/page.tsx(50,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/import/page.tsx(223,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/import/page.tsx(277,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/import/page.tsx(361,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/import/page.tsx(37,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/import/page.tsx(40,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/inspections/page.tsx(37,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/inspections/page.tsx(40,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/inspections/page.tsx(62,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/inspections/page.tsx(65,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/inspections/page.tsx(71,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/inspections/page.tsx(77,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/inventory/page.tsx(106,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/inventory/page.tsx(110,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/inventory/page.tsx(362,9): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/layout.tsx(20,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/layout.tsx(31,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/layout.tsx(61,9): error TS2578: Unused '@ts-expect-error' directive.
@@ -272,15 +254,13 @@ src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(210,67
 src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(210,78): error TS2304: Cannot find name 'Th'.
 src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(210,82): error TS2304: Cannot find name 'Th'.
 src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(210,87): error TS2304: Cannot find name 'Th'.
-src/app/admin/business-finance/[supplierId]/payroll/page.tsx(28,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/payroll/page.tsx(31,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/payroll/page.tsx(34,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/payroll/page.tsx(41,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/payroll/page.tsx(153,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/payroll/page.tsx(254,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/payroll/page.tsx(316,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/payroll/page.tsx(392,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/payroll/page.tsx(434,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payroll/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payroll/page.tsx(33,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payroll/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payroll/page.tsx(43,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payroll/page.tsx(155,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payroll/page.tsx(256,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payroll/page.tsx(393,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/pnl/page.tsx(21,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/pnl/page.tsx(23,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/pnl/page.tsx(25,5): error TS2578: Unused '@ts-expect-error' directive.
@@ -316,12 +296,11 @@ src/app/admin/business-finance/[supplierId]/projects/page.tsx(103,5): error TS25
 src/app/admin/business-finance/[supplierId]/promotions/page.tsx(27,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/promotions/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/promotions/page.tsx(117,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(33,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(39,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(42,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(50,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(167,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(35,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(38,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(41,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(44,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(168,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/qr-posters/page.tsx(54,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/qr-posters/page.tsx(59,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/qr-posters/page.tsx(65,7): error TS2578: Unused '@ts-expect-error' directive.
@@ -334,43 +313,32 @@ src/app/admin/business-finance/[supplierId]/reports/page.tsx(79,5): error TS2578
 src/app/admin/business-finance/[supplierId]/reports/page.tsx(100,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/reports/page.tsx(122,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/reports/page.tsx(142,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/requests/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/requests/page.tsx(46,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/requests/page.tsx(52,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/services-catalog/page.tsx(63,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/services-catalog/page.tsx(66,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/services-catalog/page.tsx(79,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/services-catalog/page.tsx(216,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/services-catalog/page.tsx(227,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/services/page.tsx(19,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/services/page.tsx(22,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/services/page.tsx(103,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/services/page.tsx(106,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/services/page.tsx(133,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/settings/page.tsx(83,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/requests/page.tsx(32,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/services-catalog/page.tsx(65,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/services-catalog/page.tsx(68,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/services/page.tsx(21,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/services/page.tsx(24,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/services/page.tsx(105,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/services/page.tsx(108,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/settings/page.tsx(85,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/settings/page.tsx(87,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/settings/page.tsx(96,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/settings/page.tsx(221,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/settings/page.tsx(274,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/settings/page.tsx(292,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/settings/page.tsx(303,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/settings/page.tsx(520,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/settings/page.tsx(542,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/settings/page.tsx(550,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/settings/page.tsx(557,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/settings/page.tsx(765,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/settings/page.tsx(836,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/settings/page.tsx(850,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/shifts/page.tsx(31,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/shifts/page.tsx(34,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/shifts/page.tsx(37,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/shifts/page.tsx(117,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/shifts/page.tsx(146,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/showroom/page.tsx(33,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/showroom/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/showroom/page.tsx(45,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/showroom/page.tsx(149,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(89,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(98,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(223,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(276,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(294,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(305,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(522,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(544,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(552,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(766,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(837,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/shifts/page.tsx(33,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/shifts/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/shifts/page.tsx(39,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/shifts/page.tsx(119,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/showroom/page.tsx(35,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/showroom/page.tsx(38,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/showroom/page.tsx(184,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/subcontractors/page.tsx(33,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/subcontractors/page.tsx(45,5): error TS2578: Unused '@ts-expect-error' directive.
@@ -387,32 +355,26 @@ src/app/admin/business-finance/[supplierId]/team/manage/page.tsx(102,7): error T
 src/app/admin/business-finance/[supplierId]/team/manage/page.tsx(112,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/team/manage/page.tsx(215,14): error TS2802: Type 'MapIterator<[string, Emp[]]>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
 src/app/admin/business-finance/[supplierId]/team/manage/page.tsx(230,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(244,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(250,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(256,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(263,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(266,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(269,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(288,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(332,23): error TS2802: Type 'MapIterator<AiAgent[]>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(332,47): error TS7006: Parameter 'x' implicitly has an 'any' type.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(332,50): error TS7006: Parameter 'y' implicitly has an 'any' type.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(333,16): error TS2802: Type 'MapIterator<[string, AiAgent[]]>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(334,30): error TS7006: Parameter 'x' implicitly has an 'any' type.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(334,69): error TS7006: Parameter 'x' implicitly has an 'any' type.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(533,42): error TS7006: Parameter 'a' implicitly has an 'any' type.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(541,34): error TS7006: Parameter 'a' implicitly has an 'any' type.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(773,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(783,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(795,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(801,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(815,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(822,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(836,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(1289,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(1555,36): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(1813,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/team/page.tsx(1824,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(246,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(252,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(258,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(265,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(268,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(271,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(290,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(334,23): error TS2802: Type 'MapIterator<AiAgent[]>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(334,47): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(334,50): error TS7006: Parameter 'y' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(335,16): error TS2802: Type 'MapIterator<[string, AiAgent[]]>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(336,30): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(336,69): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(535,42): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(543,34): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(775,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(785,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(834,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(1287,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(1553,36): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
 src/app/admin/business-finance/[supplierId]/tenders/page.tsx(39,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/tenders/page.tsx(65,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/tenders/page.tsx(68,7): error TS2578: Unused '@ts-expect-error' directive.
@@ -425,15 +387,13 @@ src/app/admin/business-finance/[supplierId]/variation-orders/page.tsx(69,5): err
 src/app/admin/business-finance/[supplierId]/variation-orders/page.tsx(74,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/vat-report/page.tsx(23,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/vat-report/page.tsx(26,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/vendors/page.tsx(58,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/vendors/page.tsx(61,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/vendors/page.tsx(150,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(33,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(48,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(172,9): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(184,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/vendors/page.tsx(60,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/vendors/page.tsx(63,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(32,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(35,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(38,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(173,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(185,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/whatsapp-campaigns/page.tsx(18,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/whatsapp-campaigns/page.tsx(21,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/business-finance/[supplierId]/workshop/page.tsx(18,5): error TS2578: Unused '@ts-expect-error' directive.
@@ -450,8 +410,7 @@ src/app/admin/command-center/page.tsx(415,16): error TS2304: Cannot find name 'F
 src/app/admin/command-center/page.tsx(415,134): error TS2304: Cannot find name 'FilterPill'.
 src/app/admin/command-center/page.tsx(416,16): error TS2304: Cannot find name 'FilterPill'.
 src/app/admin/command-center/page.tsx(416,147): error TS2304: Cannot find name 'FilterPill'.
-src/app/admin/company/page.tsx(44,3): error TS2578: Unused '@ts-expect-error' directive.
-src/app/admin/company/page.tsx(74,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/company/page.tsx(80,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/daily-messages/page.tsx(80,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/daily-messages/page.tsx(86,15): error TS2339: Property 'role' does not exist on type 'never'.
 src/app/admin/daily-messages/page.tsx(93,5): error TS2578: Unused '@ts-expect-error' directive.
@@ -515,7 +474,6 @@ src/app/admin/overview/page.tsx(194,9): error TS2578: Unused '@ts-expect-error' 
 src/app/admin/overview/page.tsx(196,9): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/overview/page.tsx(209,45): error TS2339: Property 'data' does not exist on type 'never'.
 src/app/admin/overview/page.tsx(210,44): error TS2339: Property 'data' does not exist on type 'never'.
-src/app/admin/permissions/page.tsx(53,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/admin/policy-rules/page.tsx(43,66): error TS2339: Property 'scope' does not exist on type 'never'.
 src/app/admin/runbook/page.tsx(48,68): error TS2339: Property 'category' does not exist on type 'never'.
 src/app/admin/site-settings/page.tsx(260,5): error TS2578: Unused '@ts-expect-error' directive.
@@ -635,8 +593,6 @@ src/app/api/bookings/notify/route.ts(120,15): error TS2352: Conversion of type '
   Types of property 'customer' are incompatible.
     Type '{ full_name: any; phone: any; }[]' is missing the following properties from type '{ full_name: string | null; phone: string; }': full_name, phone
 src/app/api/leads/capture/route.ts(68,80): error TS2345: Argument of type '{ p_name: string; p_phone: string; p_email: string | null; p_category: string | null; p_message: string | null; p_source: string; p_utm_source: string | null; p_utm_campaign: string | null; p_listing_id: string | null; }' is not assignable to parameter of type 'undefined'.
-src/app/api/news-feed/route.ts(176,7): error TS2741: Property 'madmona' is missing in type '{ economy: null; real_estate: null; automotive: null; business: null; tourism: null; fashion: null; tech: null; }' but required in type 'Record<NewsCategory, CategoryPool | null>'.
-src/app/api/news-feed/route.ts(318,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/api/push/process-queue/route.ts(53,9): error TS2578: Unused '@ts-expect-error' directive.
 src/app/api/push/process-queue/route.ts(82,3): error TS2578: Unused '@ts-expect-error' directive.
 src/app/api/push/process-queue/route.ts(118,5): error TS2578: Unused '@ts-expect-error' directive.
@@ -658,7 +614,6 @@ src/app/at/[branchCode]/page.tsx(108,5): error TS2578: Unused '@ts-expect-error'
 src/app/at/[branchCode]/page.tsx(120,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/at/[branchCode]/page.tsx(164,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/at/[branchCode]/page.tsx(406,100): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
-src/app/at/[branchCode]/rate/[bookingId]/page.tsx(27,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/auth/login/page.tsx(60,16): error TS2339: Property 'success' does not exist on type 'never'.
 src/app/auth/login/page.tsx(61,51): error TS2339: Property 'token' does not exist on type 'never'.
 src/app/auth/login/page.tsx(100,9): error TS2578: Unused '@ts-expect-error' directive.
@@ -702,22 +657,19 @@ src/app/clock/[branchCode]/page.tsx(233,5): error TS2578: Unused '@ts-expect-err
 src/app/elite/page.tsx(33,9): error TS2578: Unused '@ts-expect-error' directive.
 src/app/elite/page.tsx(35,9): error TS2578: Unused '@ts-expect-error' directive.
 src/app/elite/page.tsx(51,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/home/page.tsx(47,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/home/page.tsx(57,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/home/page.tsx(63,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/home/page.tsx(68,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(50,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(60,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(66,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/home/page.tsx(71,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/home/page.tsx(74,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/home/page.tsx(77,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/home/page.tsx(80,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/home/page.tsx(96,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/home/page.tsx(103,45): error TS2783: 'service' is specified more than once, so this usage will be overwritten.
-src/app/home/page.tsx(103,57): error TS2783: 'stylist' is specified more than once, so this usage will be overwritten.
-src/app/home/page.tsx(103,69): error TS2783: 'comment' is specified more than once, so this usage will be overwritten.
-src/app/home/page.tsx(110,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/home/page.tsx(123,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/home/page.tsx(145,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/home/page.tsx(156,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(83,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(105,45): error TS2783: 'service' is specified more than once, so this usage will be overwritten.
+src/app/home/page.tsx(105,57): error TS2783: 'stylist' is specified more than once, so this usage will be overwritten.
+src/app/home/page.tsx(105,69): error TS2783: 'comment' is specified more than once, so this usage will be overwritten.
+src/app/home/page.tsx(124,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(146,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/join/[code]/page.tsx(30,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/join/[code]/page.tsx(57,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/join/[code]/page.tsx(65,5): error TS2578: Unused '@ts-expect-error' directive.
@@ -795,13 +747,9 @@ src/app/marketplace/MarketplaceClient.tsx(356,10): error TS2769: No overload mat
   Overload 2 of 2, '(values: never[], options?: { count?: "exact" | "planned" | "estimated" | undefined; defaultToNull?: boolean | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "favorites", never, "POST">', gave the following error.
     Object literal may only specify known properties, and 'customer_id' does not exist in type 'never[]'.
 src/app/marketplace/MarketplaceClient.tsx(358,34): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
-src/app/me/page.tsx(49,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/me/page.tsx(53,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/me/page.tsx(65,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/me/page.tsx(86,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/me/page.tsx(95,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/me/page.tsx(103,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/me/page.tsx(111,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/page.tsx(51,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/page.tsx(55,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/page.tsx(67,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/me/team/page.tsx(43,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/me/team/page.tsx(49,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/me/team/page.tsx(119,5): error TS2578: Unused '@ts-expect-error' directive.
@@ -811,15 +759,13 @@ src/app/me/team/page.tsx(336,7): error TS2578: Unused '@ts-expect-error' directi
 src/app/me/team/page.tsx(354,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/me/team/page.tsx(408,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/me/team/page.tsx(497,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/owner/[supplierId]/page.tsx(31,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/owner/[supplierId]/page.tsx(41,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/owner/[supplierId]/page.tsx(44,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/owner/[supplierId]/page.tsx(55,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/owner/[supplierId]/page.tsx(33,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/owner/[supplierId]/page.tsx(43,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/owner/[supplierId]/page.tsx(46,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/owner/login/page.tsx(30,9): error TS2578: Unused '@ts-expect-error' directive.
 src/app/owner/login/page.tsx(64,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/owner/login/page.tsx(71,5): error TS2578: Unused '@ts-expect-error' directive.
-src/app/owner/select/page.tsx(19,7): error TS2578: Unused '@ts-expect-error' directive.
-src/app/owner/select/page.tsx(33,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/owner/select/page.tsx(21,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/page.tsx(60,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/page.tsx(82,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/page.tsx(104,5): error TS2578: Unused '@ts-expect-error' directive.
@@ -937,6 +883,10 @@ src/app/supplier/marketplace/[id]/products/page.tsx(231,15): error TS2345: Argum
 src/app/supplier/marketplace/[id]/products/page.tsx(237,5): error TS2578: Unused '@ts-expect-error' directive.
 src/app/supplier/marketplace/[id]/products/page.tsx(239,15): error TS2345: Argument of type '{ is_available: boolean; updated_at: string; }' is not assignable to parameter of type 'never'.
 src/app/supplier/marketplace/[id]/products/page.tsx(247,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/products/page.tsx(468,21): error TS2304: Cannot find name 'uploadingPhoto'.
+src/app/supplier/marketplace/[id]/products/page.tsx(470,22): error TS2304: Cannot find name 'uploadingPhoto'.
+src/app/supplier/marketplace/[id]/products/page.tsx(482,33): error TS2304: Cannot find name 'uploadingPhoto'.
+src/app/supplier/marketplace/[id]/products/page.tsx(485,32): error TS2304: Cannot find name 'uploadPhoto'.
 src/app/supplier/marketplace/bookings/[id]/page.tsx(89,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/supplier/marketplace/bookings/[id]/page.tsx(101,7): error TS2578: Unused '@ts-expect-error' directive.
 src/app/supplier/marketplace/bookings/[id]/page.tsx(110,32): error TS2339: Property 'id' does not exist on type 'never'.
@@ -1088,7 +1038,7 @@ src/components/BookingHelper.tsx(112,45): error TS2345: Argument of type '{ p_ev
 src/components/BookingHelper.tsx(134,76): error TS2345: Argument of type '{ p_phone: string; p_visitor_id: string; p_session_id: string; p_page_url: string | null; p_listing_id: string | null; p_capture_context: string; p_user_name: string | null; p_notes: null; p_metadata: { ...; }; }' is not assignable to parameter of type 'undefined'.
 src/components/BookingHelper.tsx(148,47): error TS2345: Argument of type '{ p_event_type: string; p_visitor_id: string; p_session_id: string; p_listing_id: string | null; p_category: null; p_page_url: string | null; p_metadata: { source: string; }; }' is not assignable to parameter of type 'undefined'.
 src/components/BookingHelper.tsx(169,45): error TS2345: Argument of type '{ p_event_type: string; p_visitor_id: string; p_session_id: string; p_listing_id: string | null; p_category: null; p_page_url: string | null; p_metadata: { source: string; }; }' is not assignable to parameter of type 'undefined'.
-src/components/DailyMessageBanner.tsx(64,9): error TS2578: Unused '@ts-expect-error' directive.
+src/components/DailyMessageBanner.tsx(66,9): error TS2578: Unused '@ts-expect-error' directive.
 src/components/FeaturedListings.tsx(40,7): error TS2578: Unused '@ts-expect-error' directive.
 src/components/marketplace/ListingForm.tsx(236,7): error TS2578: Unused '@ts-expect-error' directive.
 src/components/marketplace/ListingForm.tsx(242,20): error TS2339: Property 'phone' does not exist on type 'never'.
@@ -1804,5 +1754,5 @@ supabase/functions/whatsapp-webhook/index.ts(445,31): error TS1501: This regular
 supabase/functions/whatsapp-webhook/index.ts(446,32): error TS1501: This regular expression flag is only available when targeting 'es6' or later.
 supabase/functions/whatsapp-webhook/index.ts(554,42): error TS1501: This regular expression flag is only available when targeting 'es6' or later.
 supabase/functions/whatsapp-webhook/index.ts(667,77): error TS1501: This regular expression flag is only available when targeting 'es6' or later.
-supabase/functions/whatsapp-webhook/index.ts(1471,1): error TS2304: Cannot find name 'Deno'.
-supabase/functions/whatsapp-webhook/index.ts(1471,19): error TS7006: Parameter 'req' implicitly has an 'any' type.
+supabase/functions/whatsapp-webhook/index.ts(1486,1): error TS2304: Cannot find name 'Deno'.
+supabase/functions/whatsapp-webhook/index.ts(1486,19): error TS7006: Parameter 'req' implicitly has an 'any' type.

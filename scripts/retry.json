@@ -1,0 +1,62 @@
+[
+ {
+  "id": "d0b3cb30-9172-49d7-853f-7de6aaabbcd7",
+  "title": "La Vista Ras El Hekma",
+  "developer": "La Vista",
+  "pick": "https://realestate.eg/images/project-g/listings/184/184-5.webp",
+  "host": "realestate.eg",
+  "alts": [
+   "https://realestate.eg/images/project-g/listings/184/184-5.webp",
+   "https://fld.eg/images/1200-90/67504cb81579d.webp",
+   "https://realogy.co/images/2022/202208/2468bersvy_1.webp"
+  ]
+ },
+ {
+  "id": "61b27fd6-5ec5-4bf0-b20f-314b5d638118",
+  "title": "The Gryd",
+  "developer": "Upwyde Developments",
+  "pick": "https://gprproperty.com/wp-content/uploads/2025/04/The-gryd-Mall-New-Cairo-300x300.webp",
+  "host": "gprproperty.com",
+  "alts": [
+   "https://ipgegypt.com/storage/projects/565/68c2dd7530869_Mall-the-gryd-new-cairo.jpg",
+   "https://www.enjazproperty.com/en/wp-content/uploads/2025/05/The-Gryd-Mall-New-Cairo.jpg",
+   "https://gprproperty.com/wp-content/uploads/2025/04/The-gryd-Mall-New-Cairo-300x300.webp"
+  ]
+ },
+ {
+  "id": "070df8f7-a6d1-4c55-9499-8f36e0198063",
+  "title": "White Residence",
+  "developer": "Upwyde Developments",
+  "pick": "https://realestate.eg/images/project-g/2023/10/5053845/residential-in-new-cairo-white-residence-compound-6872359977ae9.webp",
+  "host": "realestate.eg",
+  "alts": [
+   "https://upwyde.com/wp-content/uploads/2024/04/studio-1.jpg",
+   "https://upwyde.com/wp-content/uploads/2024/04/clubhouse2.jpg",
+   "https://upwyde.com/wp-content/uploads/2024/05/duplex.jpg"
+  ]
+ },
+ {
+  "id": "4347dc5d-ba55-4404-829b-f5af9423e210",
+  "title": "Jazebeya",
+  "developer": "Upwyde Developments",
+  "pick": "https://upwyde.com/wp-content/uploads/2025/10/Reception-and-dinning_CAM05-main-scaled.jpg",
+  "host": "upwyde.com",
+  "alts": [
+   "https://upwyde.com/wp-content/uploads/2024/04/Screenshot-2024-04-13-015718.png",
+   "https://upwyde.com/wp-content/uploads/2025/10/Reception-and-dinning_CAM02-reception-scaled.jpg",
+   "https://upwyde.com/wp-content/uploads/2025/10/Reception-and-dinning_CAM02-reception-02-scaled.jpg"
+  ]
+ },
+ {
+  "id": "1111c826-9bad-4854-84e0-c0240e58bba7",
+  "title": "Skyramp",
+  "developer": "Upwyde Developments",
+  "pick": "https://flatandvilla.com/wp-content/uploads/2023/12/Sky-Ramp-Compound-New-Zayed.webp",
+  "host": "flatandvilla.com",
+  "alts": [
+   "https://upwyde.com/wp-content/uploads/2024/06/skyramp-1-768x417.jpg",
+   "https://upwyde.com/wp-content/uploads/2024/06/skyconcept2.png",
+   "https://upwyde.com/wp-content/uploads/2024/06/sky-com-1-768x417.jpg"
+  ]
+ }
+]
