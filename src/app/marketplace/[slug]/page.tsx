@@ -51,7 +51,7 @@ interface ListingDetail {
   shipping_available: boolean | null
   shipping_cost: number | string | null
   branches: { name?: string; city?: string; address?: string; phone?: string }[] | null
-  category: { name_ar: string; name_en?: string | null; icon: string | null; track: string | null; order_mode?: string | null } | null
+  category: { name_ar: string; name_en?: string | null; icon: string | null; track: string | null; order_mode?: string | null; slug?: string | null } | null
   supplier: {
     id: string
     business_name: string
@@ -146,7 +146,7 @@ export default function ListingDetailPage() {
           .from('listings')
           .select(`
             *,
-            category:categories(name_ar, name_en, icon, track, order_mode),
+            category:categories(name_ar, name_en, icon, track, order_mode, slug),
             supplier:marketplace_suppliers(
               id, business_name, kyc_status,
               profile:profiles!marketplace_suppliers_profile_id_fkey(phone, full_name)
@@ -378,8 +378,12 @@ export default function ListingDetailPage() {
   const isRestaurant = track === 'restaurants'
   const isProduct = track === 'products'
   const isListQuote = (listing.category?.order_mode === 'list_quote') && !isDirectory
+  // Real estate for sale (17 Jul 2026): properties are NOT cart products —
+  // no add-to-cart; instead favorites + real-estate platform CTA
+  const catSlug = listing.category?.slug ?? ''
+  const isRealEstate = isProduct && (catSlug.startsWith('sale-properties') || catSlug.startsWith('sale-tourism'))
   // directory listings are reference-only: no buy / cart / booking / menu
-  const isOrderable = (isRestaurant || isProduct) && !isDirectory
+  const isOrderable = (isRestaurant || isProduct) && !isDirectory && !isRealEstate
   const currentPhoto = sortedPhotos[photoIndex]
   const phone = isDirectory
     ? (listing.contact_phone || '')
@@ -389,7 +393,7 @@ export default function ListingDetailPage() {
     `عايز أستلم نشاطي "${displayTitle}" على Madmona.\nاللينك: https://madmonacairo.com/marketplace/${listing.slug}`
   )
   const startingPrice = pricing.length > 0 ? Number(pricing[0].price) : null
-  const canBook = pricing.length > 0 && !isDemo && !isDirectory  // DEMOs & directory entries can NOT be booked
+  const canBook = pricing.length > 0 && !isDemo && !isDirectory && !isRealEstate  // DEMOs, directory & sale-property entries can NOT be booked
   const hasMap = listing.latitude !== null && listing.longitude !== null
 
   const whatsappMessage = encodeURIComponent(
@@ -716,7 +720,28 @@ export default function ListingDetailPage() {
               />
             )}
 
-            {isProduct && !isDirectory && !isListQuote && listing.supplier && (
+            {isRealEstate && !isDirectory && (
+              <div className="lg:hidden bg-white rounded-3xl shadow-card p-5 space-y-2.5">
+                <p className="text-xs font-bold text-gray-500">عقار للبيع — احفظه في مفضلتك أو شوف كل تفاصيل السوق العقاري</p>
+                <button
+                  onClick={toggleFavorite}
+                  disabled={togglingFav}
+                  className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm transition-all ${isFavorite ? 'bg-rose-50 text-rose-600 border-2 border-rose-200' : 'bg-[#1F6F5F] text-white shadow-elevated'}`}
+                >
+                  <Heart className={`w-4 h-4 ${isFavorite ? 'fill-rose-500 text-rose-500' : ''}`} />
+                  {isFavorite ? 'محفوظ في المفضلة' : 'أضف للمفضلة'}
+                </button>
+                <Link
+                  href="/real-estate"
+                  className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm bg-white text-[#1F6F5F] border-2 border-[#1F6F5F] no-underline"
+                >
+                  <Building2 className="w-4 h-4" />
+                  المنصة العقارية — قارن وشوف كل المشاريع
+                </Link>
+              </div>
+            )}
+
+            {isProduct && !isRealEstate && !isDirectory && !isListQuote && listing.supplier && (
               <div className="lg:hidden">
                 <ProductBuyBox
                   listing={{ id: listing.id, title: displayTitle }}
@@ -985,7 +1010,28 @@ export default function ListingDetailPage() {
               </div>
               )}
 
-              {isProduct && !isDirectory && !isListQuote && listing.supplier && (
+              {isRealEstate && !isDirectory && (
+                <div className="bg-white rounded-3xl shadow-card p-6 space-y-2.5">
+                  <p className="text-xs font-bold text-gray-500">عقار للبيع — احفظه في مفضلتك أو شوف كل تفاصيل السوق العقاري</p>
+                  <button
+                    onClick={toggleFavorite}
+                    disabled={togglingFav}
+                    className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm transition-all ${isFavorite ? 'bg-rose-50 text-rose-600 border-2 border-rose-200' : 'bg-[#1F6F5F] text-white shadow-elevated hover:shadow-luxe hover:-translate-y-0.5'}`}
+                  >
+                    <Heart className={`w-4 h-4 ${isFavorite ? 'fill-rose-500 text-rose-500' : ''}`} />
+                    {isFavorite ? 'محفوظ في المفضلة' : 'أضف للمفضلة'}
+                  </button>
+                  <Link
+                    href="/real-estate"
+                    className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm bg-white text-[#1F6F5F] border-2 border-[#1F6F5F] no-underline hover:bg-[#1F6F5F]/5"
+                  >
+                    <Building2 className="w-4 h-4" />
+                    المنصة العقارية — قارن وشوف كل المشاريع
+                  </Link>
+                </div>
+              )}
+
+              {isProduct && !isRealEstate && !isDirectory && !isListQuote && listing.supplier && (
                 <ProductBuyBox
                   listing={{ id: listing.id, title: displayTitle }}
                   supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
