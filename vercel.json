@@ -29,6 +29,10 @@
     {
       "path": "/api/push/process-queue",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/integrations/dispatch",
+      "schedule": "* * * * *"
     }
   ],
   "headers": [
