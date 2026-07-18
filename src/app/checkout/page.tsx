@@ -57,7 +57,7 @@ export default function CheckoutPage() {
     if (foodCodOnly && payment !== 'cod') setPayment('cod')
   }, [foodCodOnly, payment])
 
-  // «سوّق واكسب»: استخدام رصيد المحفظة كخصم (بحد أقصى عمولة الأوردر) — للمسجلين
+  // «شير واكسب»: استخدام رصيد المحفظة كخصم (بحد أقصى عمولة الأوردر) — للمسجلين
   const [useCredit, setUseCredit] = useState(true)
 
   const [submitting, setSubmitting] = useState(false)
@@ -222,7 +222,7 @@ export default function CheckoutPage() {
         }
       }
 
-      // «سوّق واكسب»: خصم رصيد المحفظة (حتى عمولة الأوردر) — best-effort، مايوقفش الأوردر
+      // «شير واكسب»: خصم رصيد المحفظة (حتى عمولة الأوردر) — best-effort، مايوقفش الأوردر
       if (payment !== 'wallet' && isAuthed && accessToken && useCredit) {
         try {
           await fetch('/api/wallet/apply-discount', {
@@ -321,12 +321,12 @@ export default function CheckoutPage() {
         </section>
 
         {/* 🔑 (17 Jul 2026) ضيف؟ ادخل بالواتساب في ثانية — بيفتح المحفظة
-            وخصم «سوّق واكسب» وتتبع الأوردرات. الضيف لسه يقدر يكمل عادي. */}
+            وخصم «شير واكسب» وتتبع الأوردرات. الضيف لسه يقدر يكمل عادي. */}
         {!isAuthed && (
           <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-75">
             <p className="text-xs text-gray-600 mb-3 leading-relaxed">
               <b className="text-[#1F6F5F]">عندك حساب أو أول مرة؟</b> ادخل بالواتساب في ثانية —
-              هيتفعّلك رصيد «سوّق واكسب» والمحفظة وتتبّع أوردراتك.
+              هيتفعّلك رصيد «شير واكسب» والمحفظة وتتبّع أوردراتك.
             </p>
             <WhatsAppLogin
               label="ادخل بالواتساب قبل ما تأكّد 🧞"
@@ -513,7 +513,7 @@ export default function CheckoutPage() {
               </button>
             )}
 
-            {/* «سوّق واكسب»: خصم رصيد المحفظة تلقائيًا (للمسجلين) */}
+            {/* «شير واكسب»: خصم رصيد المحفظة تلقائيًا (للمسجلين) */}
             {isAuthed && payment !== 'wallet' && (
               <label className="w-full flex items-center gap-3 p-3 rounded-2xl border border-dashed border-[#2FA084]/50 bg-[#F0F7F4] cursor-pointer">
                 <input
@@ -523,7 +523,7 @@ export default function CheckoutPage() {
                   className="w-4 h-4 accent-[#1F6F5F]"
                 />
                 <span className="text-xs text-gray-700 leading-relaxed">
-                  <b className="text-[#1F6F5F]">استخدم رصيد «سوّق واكسب»</b> لو متاح — خصم تلقائي من إجمالي الطلب (بحد أقصى عمولة مضمونة في الطلب)
+                  <b className="text-[#1F6F5F]">استخدم رصيد «شير واكسب»</b> لو متاح — خصم تلقائي من إجمالي الطلب (بحد أقصى عمولة مضمونة في الطلب)
                 </span>
               </label>
             )}

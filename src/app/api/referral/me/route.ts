@@ -1,4 +1,4 @@
-// src/app/api/referral/me/route.ts — «سوّق واكسب»
+// src/app/api/referral/me/route.ts — «شير واكسب»
 // GET → كود الإحالة الخاص بالمستخدم + لينك المشاركة + إحصائياته.
 import { NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'

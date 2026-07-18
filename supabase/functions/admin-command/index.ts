@@ -282,7 +282,7 @@ Deno.serve(async (req) => {
   const { phone, conversation_id, text } = await req.json().catch(() => ({}))
   if (!phone || !text) return new Response(JSON.stringify({ ok: false, error: 'phone+text required' }), { status: 400 })
 
-  // ==== سوّق واكسب: اعتماد/رفض إثبات الشير — حتمي 100% (فلوس = مفيش AI) ====
+  // ==== شير واكسب: اعتماد/رفض إثبات الشير — حتمي 100% (فلوس = مفيش AI) ====
   const shareCmd = String(text).trim().match(/^(اعتماد|قبول|رفض)\s+شير\s+(.+)$/)
   if (shareCmd) {
     try {
@@ -313,7 +313,7 @@ Deno.serve(async (req) => {
         await sb().from('whatsapp_outbound_queue').insert({
           recipient_phone: ref.referrer_phone.startsWith('+') ? ref.referrer_phone : '+' + ref.referrer_phone.replace(/\D/g, ''),
           recipient_name: 'مسوّق مضمونة', status: 'pending', agent_name: 'referral-program', campaign: 'referral_reward_notice',
-          message: `مبروك! 🎉 مكافأة «سوّق واكسب» نزلت في محفظتك: +${rr.amount} جنيه رصيد.\nاستخدمه كخصم على طلباتك في مضمونة (بحد أقصى عمولة مضمونة في الطلب).\nكمّل تسويق واكسب أكتر 💪\n— مضمونة · معاملاتك مضمونة 💚`,
+          message: `مبروك! 🎉 مكافأة «شير واكسب» نزلت في محفظتك: +${rr.amount} جنيه رصيد.\nاستخدمه كخصم على طلباتك في مضمونة (بحد أقصى عمولة مضمونة في الطلب).\nكمّل تسويق واكسب أكتر 💪\n— مضمونة · معاملاتك مضمونة 💚`,
           metadata: { referral_id: ref.id }
         })
       }

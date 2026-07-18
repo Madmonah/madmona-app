@@ -1,4 +1,4 @@
-// src/app/api/wallet/apply-discount/route.ts — «سوّق واكسب»
+// src/app/api/wallet/apply-discount/route.ts — «شير واكسب»
 // POST { order_id } → خصم رصيد المحفظة (credit) على الأوردر بحد أقصى عمولة مضمونة فيه.
 import { NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'

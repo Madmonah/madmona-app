@@ -1,4 +1,4 @@
-// src/app/api/referral/apply/route.ts — «سوّق واكسب»
+// src/app/api/referral/apply/route.ts — «شير واكسب»
 // POST { code } → يربط المستخدم الحالي كمُحال بالكود (مرة واحدة، ممنوع الإحالة الذاتية).
 import { NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'

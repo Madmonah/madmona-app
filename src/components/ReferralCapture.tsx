@@ -1,5 +1,5 @@
 'use client'
-// ReferralCapture — «سوّق واكسب»: يلتقط ?ref= من أي صفحة ويخزنه، وأول ما المستخدم يسجل دخول
+// ReferralCapture — «شير واكسب»: يلتقط ?ref= من أي صفحة ويخزنه، وأول ما المستخدم يسجل دخول
 // بيربط الإحالة مرة واحدة عبر /api/referral/apply. (6 Jul 2026)
 import { useEffect } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
