@@ -1342,14 +1342,18 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
 
   // 🆕 الجروب بياخد محادثة خاصة بيه (مفتاحها group_id) عشان السياق ميتلغبطش مع الخاص
   const fullPhone = isGroup ? `group:${groupId}` : '+' + fromPhone
-  const { data: existing } = await sb().from('whatsapp_conversations').select('id, ad_id, contact_type, metadata').eq('contact_phone', fullPhone).maybeSingle()
+  const { data: existing } = await sb().from('whatsapp_conversations').select('id, ad_id, contact_type, metadata, status').eq('contact_phone', fullPhone).maybeSingle()
   let convId: string
   let isNewConversation = false
+  // 🔇 (18 Jul 2026 — أمر محمد بعد لوب بوت «ويليز») محادثة paused = المارد ساكت فيها
+  // نهائيًا: بنسجّل الوارد بس من غير أي رد، ومبنرجعهاش active. الأدمن يفكها يدويًا.
+  const isPausedConv = !isNewConversation && (existing as { status?: string } | null)?.status === 'paused'
   if (existing) {
     convId = (existing as { id: string }).id
     const updates: Record<string, unknown> = {
       last_message_at: new Date().toISOString(), last_message_direction: 'inbound',
-      last_inbound_at: new Date().toISOString(), contact_name: contactName ?? undefined, status: 'active'
+      last_inbound_at: new Date().toISOString(), contact_name: contactName ?? undefined,
+      ...(isPausedConv ? {} : { status: 'active' })
     }
     if (adData && !(existing as { ad_id?: string }).ad_id) {
       updates.ad_id = adData.source_id; updates.ad_headline = adData.headline; updates.ctwa_clid = adData.ctwa_clid
@@ -1393,7 +1397,7 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
         const { data: cfgRow } = await sb().from('whatsapp_config').select('value').eq('key', 'admin_alert_phone').maybeSingle()
         const adminPhone = ((cfgRow as { value?: string } | null)?.value || '201002229982').replace(/^\+/, '')
         await sendWhatsAppText(adminPhone, `🖼️ إثبات شير جديد وصل!\n📞 من: ${fullPhone}\n🔗 الصورة: ${inboundImageUrl}\n\nللاعتماد رد بـ:\nاعتماد شير ${normalizePhone(fromPhone)}\nللرفض:\nرفض شير ${normalizePhone(fromPhone)}`)
-        await sendWhatsAppText(fromPhone, 'وصل إثبات المشاركة 🙌\nجاري المراجعة خلال 48 ساعة، وأول ما يتعتمد — الـ 50 جنيه بينزلوا في محفظة اللي دعاك (وهيوصله إشعار).\nشكرًا إنك جزء من مضمونة 💚')
+        await sendWhatsAppText(fromPhone, 'وصل إثبات المشاركة 🙌\nجاري المراجعة خلال 48 ساعة، وأول ما يتعتمد — الـ 100 جنيه بينزلوا في محفظة اللي دعاك (وهيوصله إشعار).\nشكرًا إنك جزء من مضمونة 💚')
         return
       }
     } catch (e) { console.error('[share-proof-path] error:', e) }
@@ -1407,6 +1411,12 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
   const myCreatedAt = (insertedMsg as { id: string; created_at: string } | null)?.created_at
   const myMsgId = (insertedMsg as { id: string; created_at: string } | null)?.id
   if (!myCreatedAt || !myMsgId) return
+
+  // 🔇 محادثة موقوفة (paused): الوارد اتسجّل فوق — ومفيش أي رد ولا معالجة.
+  if (isPausedConv && !isAdminChannel) {
+    console.log('[paused-conv] skipping reply for', fullPhone)
+    return
+  }
 
   if (isAdminChannel) {
     try {
