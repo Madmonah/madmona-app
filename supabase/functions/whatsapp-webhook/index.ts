@@ -1547,17 +1547,24 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
   if (!isAdminChannel) {
     try {
       const hourAgo = new Date(Date.now() - 3600 * 1000).toISOString()
+      // ⚠️ (18 Jul — بعد false positives وقّفت الصياد وMezo وشعبان): النصوص بس!
+      // رشقات الصور بتتسجل «[صورة]» متطابقة، وmedia-ack بيكرر نفس الرد بالتصميم —
+      // فالفحص يستبعد الميديا والبلايس-هولدرز [\...] وأي agent غير inbound-responder.
       const { data: recentOutRaw } = await sb().from('whatsapp_messages').select('body')
         .eq('conversation_id', convId).eq('direction', 'outbound')
+        .eq('message_type', 'text').eq('agent_name', 'inbound-responder')
         .gt('created_at', hourAgo).order('created_at', { ascending: false }).limit(15)
-      const recentOut = (recentOutRaw || []) as Array<{ body?: string }>
       const norm = (s?: string) => (s || '').replace(/\s+/g, ' ').trim().slice(0, 32)
-      const outPrefixes = recentOut.slice(0, 4).map(m => norm(m.body)).filter(Boolean)
+      const isRealText = (s?: string) => { const t = (s || '').trim(); return t.length > 0 && !t.startsWith('[') }
+      const recentOut = ((recentOutRaw || []) as Array<{ body?: string }>).filter(m => isRealText(m.body))
+      const outPrefixes = recentOut.slice(0, 4).map(m => norm(m.body))
       const dupOut = outPrefixes.length >= 3 && outPrefixes.filter(p => p === outPrefixes[0]).length >= 3
       const { data: recentInRaw } = await sb().from('whatsapp_messages').select('body')
         .eq('conversation_id', convId).eq('direction', 'inbound')
+        .eq('message_type', 'text')
         .gt('created_at', hourAgo).order('created_at', { ascending: false }).limit(3)
-      const inPrefixes = ((recentInRaw || []) as Array<{ body?: string }>).map(m => norm(m.body)).filter(Boolean)
+      const inTexts = ((recentInRaw || []) as Array<{ body?: string }>).filter(m => isRealText(m.body))
+      const inPrefixes = inTexts.map(m => norm(m.body))
       const dupIn = inPrefixes.length >= 3 && inPrefixes.every(p => p === inPrefixes[0])
       const flood = recentOut.length >= 12
       if (flood || dupOut || dupIn) {
