@@ -152,14 +152,13 @@ function MarketplaceBrowseContent() {
   const categoryHasData = (cat: Category): boolean => {
     if (!categoryCounts) return true
     if ((categoryCounts[cat.id] || 0) > 0) return true
-    if (cat.parent_id === null) {
-      return allCategories.some(c =>
-        (c.parent_id === cat.id ||
-          (Array.isArray(c.also_show_in) && c.also_show_in.includes(cat.id))) &&
-        (categoryCounts[c.id] || 0) > 0
-      )
-    }
-    return false
+    // 🚗 (18 Jul 2026) أي فئة ليها أطفال فيهم داتا تتفتح — يخدم المستوى التالت
+    // (عربيات زيرو → سيارة) زي ما بيخدم الجذور. also_show_in للجذور بس.
+    return allCategories.some(c =>
+      (c.parent_id === cat.id ||
+        (cat.parent_id === null && Array.isArray(c.also_show_in) && c.also_show_in.includes(cat.id))) &&
+      (categoryCounts[c.id] || 0) > 0
+    )
   }
   // Locked pills sink to the end of each strip so live sections come first.
   const sortByData = (cats: Category[]) =>
@@ -254,8 +253,14 @@ function MarketplaceBrowseContent() {
 
         if (rootCat) {
           if (rootCat.parent_id) {
-            // Sub-category clicked: just show that one
-            categoryIds = [rootCat.id]
+            // 🚗 (18 Jul 2026) فئة فرعية: هي + أطفالها (لو ليها — زي عربيات زيرو → سيارة)
+            // @ts-expect-error
+            const { data: kidCats } = await supabaseBrowser
+              .from('categories')
+              .select('id')
+              .eq('parent_id', rootCat.id)
+            const kidIds = ((kidCats || []) as { id: string }[]).map(k => k.id)
+            categoryIds = [rootCat.id, ...kidIds]
           } else {
             // Root tab clicked: show all subcategories + cross-listed categories
             const [subsRes, crossRes] = await Promise.all([
@@ -426,10 +431,29 @@ function MarketplaceBrowseContent() {
   }
 
   const selectedCategory = allCategories.find(c => c.slug === selectedCategorySlug)
-  const selectedRootSlug = selectedCategory?.parent_id
-    ? allCategories.find(c => c.id === selectedCategory.parent_id)?.slug || selectedCategorySlug
-    : selectedCategorySlug
-  const selectedRoot = allCategories.find(rc => rc.slug === selectedRootSlug)
+  // 🚗 (18 Jul 2026 — طلب محمد) شجرة 3 مستويات: مركبات ونقل → عربيات زيرو/مستعملة → سيارة.
+  // بنطلع لأعلى أب (مش أول أب بس) عشان شريط الفئات الرئيسي يفضل مظبوط.
+  const findTopRoot = (cat?: Category): Category | undefined => {
+    let cur = cat
+    let guard = 0
+    while (cur?.parent_id && guard++ < 5) {
+      const p = allCategories.find(c => c.id === cur!.parent_id)
+      if (!p) break
+      cur = p
+    }
+    return cur
+  }
+  const selectedRoot = findTopRoot(selectedCategory)
+  const selectedRootSlug = selectedRoot?.slug || selectedCategorySlug
+  // المستوى التاني الحالي (الفئة المختارة نفسها لو تانية، أو أبوها لو المختارة تالتة)
+  const selectedMid = selectedCategory && selectedCategory.parent_id
+    ? (selectedCategory.parent_id === selectedRoot?.id
+        ? selectedCategory
+        : allCategories.find(c => c.id === selectedCategory.parent_id))
+    : undefined
+  const thirdLevelCats = selectedMid
+    ? allCategories.filter(c => c.parent_id === selectedMid.id)
+    : []
   // Subcategories = direct children + cross-listed (also_show_in includes this root)
   type CategoryWithCross = Category & { also_show_in?: string[] | null }
   const subCategories = selectedRoot
@@ -671,8 +695,50 @@ function MarketplaceBrowseContent() {
                     className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all flex items-center gap-1 ${
                       locked
                         ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed select-none'
-                        : selectedCategorySlug === sub.slug
+                        : (selectedCategorySlug === sub.slug || selectedMid?.id === sub.id)
                           ? 'bg-[#2FA084] text-white shadow-soft'
+                          : 'bg-white/80 text-gray-700 hover:bg-white border border-gray-100'
+                    }`}
+                  >
+                    {sub.icon && <span className={locked ? 'opacity-50' : ''}>{sub.icon}</span>}
+                    <span className={locked ? 'opacity-70' : ''}>{catName(sub)}</span>
+                    {locked && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 leading-none whitespace-nowrap">
+                        🔒 {comingSoonLabel}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {/* 🚗 (18 Jul 2026 — طلب محمد) المستوى التالت: زيرو/مستعمل صب وتحتهم سيارة */}
+          {selectedMid && thirdLevelCats.length > 0 && (
+            <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4 animate-slide-down">
+              <button
+                onClick={() => setSelectedCategorySlug(selectedMid.slug)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
+                  selectedCategorySlug === selectedMid.slug
+                    ? 'bg-[#1F6F5F] text-white shadow-soft'
+                    : 'bg-white/80 text-gray-600 hover:bg-white border border-gray-100'
+                }`}
+              >
+                {t('market.all_sections')}
+              </button>
+              {sortByData(thirdLevelCats).map(sub => {
+                const locked = !categoryHasData(sub)
+                return (
+                  <button
+                    key={sub.id}
+                    onClick={() => { if (!locked) setSelectedCategorySlug(sub.slug) }}
+                    disabled={locked}
+                    title={locked ? comingSoonLabel : undefined}
+                    className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all flex items-center gap-1 ${
+                      locked
+                        ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed select-none'
+                        : selectedCategorySlug === sub.slug
+                          ? 'bg-[#1F6F5F] text-white shadow-soft'
                           : 'bg-white/80 text-gray-700 hover:bg-white border border-gray-100'
                     }`}
                   >

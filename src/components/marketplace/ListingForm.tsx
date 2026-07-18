@@ -851,9 +851,21 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
   const rootCats = categories.filter(c => !c.parent_id)
   const subCats = (parentId: string) => categories.filter(c => c.parent_id === parentId)
   const selectedCat = categories.find(c => c.id === form.category_id)
-  const selectedRoot = selectedCat?.parent_id
-    ? categories.find(c => c.id === selectedCat.parent_id)
-    : selectedCat
+  // 🚗 (18 Jul 2026) شجرة 3 مستويات (مركبات ونقل → زيرو/مستعمل → سيارة): اطلع لأعلى أب
+  const selectedRoot = (() => {
+    let cur = selectedCat
+    let guard = 0
+    while (cur?.parent_id && guard++ < 5) {
+      const p = categories.find(c => c.id === cur!.parent_id)
+      if (!p) break
+      cur = p
+    }
+    return cur
+  })()
+  // المستوى التاني المختار (نفس الفئة لو تانية، أو أبوها لو المختارة تالتة)
+  const selectedL2 = selectedCat && selectedCat.parent_id
+    ? (selectedCat.parent_id === selectedRoot?.id ? selectedCat : categories.find(c => c.id === selectedCat.parent_id))
+    : undefined
 
   return (
     <div className="max-w-2xl mx-auto" dir="rtl">
@@ -923,6 +935,33 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                     <p className="text-xs font-semibold text-gray-500 mt-4 mb-2">اختار النوع تحديداً:</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {subCats(selectedRoot.id).map(sc => {
+                        const isSelected = form.category_id === sc.id || selectedL2?.id === sc.id
+                        return (
+                          <button
+                            key={sc.id}
+                            type="button"
+                            onClick={() => setForm(f => ({ ...f, category_id: sc.id, attributeValues: {} }))}
+                            className={`p-3 rounded-lg border text-center transition-colors ${
+                              isSelected
+                                ? 'border-[#1F6F5F] bg-[#1F6F5F]/5 text-[#1F6F5F]'
+                                : 'border-gray-100 hover:border-gray-200 text-gray-700'
+                            }`}
+                          >
+                            <div className="text-xl mb-0.5">{sc.icon}</div>
+                            <div className="text-xs font-medium">{sc.name_ar}</div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 🚗 (18 Jul 2026) المستوى التالت: زيرو/مستعمل → سيارة */}
+                {selectedL2 && subCats(selectedL2.id).length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 mt-4 mb-2">اختار الفئة تحديداً:</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {subCats(selectedL2.id).map(sc => {
                         const isSelected = form.category_id === sc.id
                         return (
                           <button
