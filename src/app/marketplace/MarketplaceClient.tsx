@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState, type MouseEvent } from 'react'
+import { Suspense, useEffect, useRef, useState, type MouseEvent } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
@@ -173,6 +173,7 @@ function MarketplaceBrowseContent() {
   // 🏗️ (17 Jul 2026) طلب محمد: العقارات تتفصل «بريمري من المطور | ريسيل».
   // البريمري = إعلان مرتبط بمشروع مطور (project_id موجود)، الريسيل = من غير مشروع.
   const [propertySource, setPropertySource] = useState<'all' | 'primary' | 'resale'>('all')
+  const loadSeqRef = useRef(0)
   // 🗂️ (17 Jul 2026) drill-down: المستخدم يختار مجموعة الأول (عقارات/عربيات/بيت...)
   // وبعدها تظهر فئاتها بس — بدل شريط واحد فيه كل حاجة. بتتقرا من ?group= (الهوم بيبعتها).
   const [selectedGroupSlug, setSelectedGroupSlug] = useState<string | null>(null)
@@ -237,6 +238,10 @@ function MarketplaceBrowseContent() {
   useEffect(() => {
     const load = async () => {
       setLoading(true)
+      // 🛡️ (18 Jul 2026) درع الردود المتأخرة: المستخدم بيدوس تاب والكويري القديم
+      // بيرجع بعد الجديد فيغطي عليه — «القسم بيفتح على الكل». كل نداء ياخد رقم،
+      // ولو رجع وهو مش آخر رقم نتايجه بتتكب.
+      const seq = ++loadSeqRef.current
 
       let categoryIds: string[] | null = null
       if (selectedCategorySlug) {
@@ -351,6 +356,7 @@ function MarketplaceBrowseContent() {
       }
 
       const { data } = await query
+      if (seq !== loadSeqRef.current) return // ردّ متأخر — فيه كويري أحدث منه شغال
       setListings((data || []) as Listing[])
       setLoading(false)
     }

@@ -195,7 +195,7 @@ const ar: Dict = {
   'market.id_required': 'بطاقة مطلوبة',
   'market.coming_soon': 'متوفر قريباً',
   'market.starts_from': 'يبدأ من',
-  'market.price_on_request': 'السعر عند الطلب',
+  'market.price_on_request': 'تواصل معانا 💬',
   'market.view_short': 'عرض',
   'market.details': 'تفاصيل',
   // category display names (server fallback chips)
@@ -923,7 +923,7 @@ const en: Dict = {
   'market.id_required': 'ID required',
   'market.coming_soon': 'Available soon',
   'market.starts_from': 'Starts from',
-  'market.price_on_request': 'Price on request',
+  'market.price_on_request': 'Contact us 💬',
   'market.view_short': 'View',
   'market.details': 'Details',
   // category display names (server fallback chips)

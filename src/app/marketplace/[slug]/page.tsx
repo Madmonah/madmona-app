@@ -382,6 +382,8 @@ export default function ListingDetailPage() {
   // no add-to-cart; instead favorites + real-estate platform CTA
   const catSlug = listing.category?.slug ?? ''
   const isRealEstate = isProduct && (catSlug.startsWith('sale-properties') || catSlug.startsWith('sale-tourism'))
+  // 18 Jul 2026 (Mohamed): لا معنى «للتوصيل» في العقارات والعربيات والمراكب
+  const noDelivery = isRealEstate || catSlug.startsWith('sale-vehicles') || catSlug.startsWith('sale-marine')
   // directory listings are reference-only: no buy / cart / booking / menu
   const isOrderable = (isRestaurant || isProduct) && !isDirectory && !isRealEstate
   const currentPhoto = sortedPhotos[photoIndex]
@@ -653,7 +655,7 @@ export default function ListingDetailPage() {
                       <span className="text-sm font-bold text-gray-900">{listing.model_name}</span>
                     </div>
                   )}
-                  {listing.stock_quantity !== null && listing.stock_quantity !== undefined && (
+                  {listing.stock_quantity !== null && listing.stock_quantity !== undefined && !noDelivery && (
                     <div className="flex items-center justify-between p-3 bg-[#FAFAF7] rounded-xl">
                       <span className="text-xs font-medium text-gray-500">المتاح</span>
                       <span className={`text-sm font-bold ${listing.stock_quantity > 0 ? 'text-[#1F6F5F]' : 'text-red-600'}`}>
@@ -661,7 +663,7 @@ export default function ListingDetailPage() {
                       </span>
                     </div>
                   )}
-                  {listing.shipping_available !== null && (
+                  {listing.shipping_available !== null && !noDelivery && (
                     <div className="flex items-center justify-between p-3 bg-[#FAFAF7] rounded-xl">
                       <span className="text-xs font-medium text-gray-500">التوصيل</span>
                       <span className="text-sm font-bold text-gray-900">
