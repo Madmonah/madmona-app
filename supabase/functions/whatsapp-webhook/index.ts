@@ -1540,6 +1540,42 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
   const combinedText = inbounds.map(m => m.body).filter(Boolean).join('\n---\n')
   if (!combinedText) return
 
+  // 🔁🛑 (18 Jul 2026 — قاعدة محمد بعد لوب «بوت ويليز») كاشف اللوب:
+  // أول ما المارد يحس إن المحادثة لوب — يوقف الإرسال فورًا (paused) ويبلغ الأدمن.
+  // الإشارات: (أ) كثافة: ≥12 صادر في آخر ساعة · (ب) 3 من آخر 4 ردود صادرة بنفس
+  // البداية · (ج) آخر 3 رسايل واردة متطابقة تقريبًا (بوت بيكرر).
+  if (!isAdminChannel) {
+    try {
+      const hourAgo = new Date(Date.now() - 3600 * 1000).toISOString()
+      const { data: recentOutRaw } = await sb().from('whatsapp_messages').select('body')
+        .eq('conversation_id', convId).eq('direction', 'outbound')
+        .gt('created_at', hourAgo).order('created_at', { ascending: false }).limit(15)
+      const recentOut = (recentOutRaw || []) as Array<{ body?: string }>
+      const norm = (s?: string) => (s || '').replace(/\s+/g, ' ').trim().slice(0, 32)
+      const outPrefixes = recentOut.slice(0, 4).map(m => norm(m.body)).filter(Boolean)
+      const dupOut = outPrefixes.length >= 3 && outPrefixes.filter(p => p === outPrefixes[0]).length >= 3
+      const { data: recentInRaw } = await sb().from('whatsapp_messages').select('body')
+        .eq('conversation_id', convId).eq('direction', 'inbound')
+        .gt('created_at', hourAgo).order('created_at', { ascending: false }).limit(3)
+      const inPrefixes = ((recentInRaw || []) as Array<{ body?: string }>).map(m => norm(m.body)).filter(Boolean)
+      const dupIn = inPrefixes.length >= 3 && inPrefixes.every(p => p === inPrefixes[0])
+      const flood = recentOut.length >= 12
+      if (flood || dupOut || dupIn) {
+        await sb().from('whatsapp_conversations').update({ status: 'paused' }).eq('id', convId)
+        const reason = flood
+          ? `كثافة غير طبيعية: ${recentOut.length} رسالة صادرة في آخر ساعة`
+          : dupOut ? 'المارد بيكرر نفس الرد' : 'الطرف التاني بيكرر نفس الرسالة (بوت غالبًا)'
+        console.log('[loop-guard] auto-paused', fullPhone, '-', reason)
+        try {
+          const { data: cfgRow } = await sb().from('whatsapp_config').select('value').eq('key', 'admin_alert_phone').maybeSingle()
+          const adminPhone = ((cfgRow as { value?: string } | null)?.value || '201026222337').replace(/^\+/, '')
+          await sendWhatsAppText(adminPhone, `🔁🛑 المارد وقّف محادثة لوب أوتوماتيك\n📞 ${fullPhone}${contactName ? `\n👤 ${contactName}` : ''}\n🧭 السبب: ${reason}\n\nالمحادثة بقت paused — مفيش أي رسايل هتتبعت فيها لحد ما تتفك يدويًا.`)
+        } catch (_alertErr) { /* التنبيه best-effort */ }
+        return
+      }
+    } catch (loopErr) { console.error('[loop-guard] error:', loopErr) }
+  }
+
   // 🆕 (13 Jul 2026) في الجروبات: المارد بيرد على أي رسالة (طلب محمد).
   // الحماية الوحيدة: ميردش على نفسه (لو رقمنا هو اللي بعت) عشان ميدخلش في لوب.
   if (isGroup) {
