@@ -16,6 +16,10 @@ const WA_API_VERSION = process.env.WHATSAPP_API_VERSION ?? 'v21.0'
 
 const WA_BASE = `https://graph.facebook.com/${WA_API_VERSION}`
 
+// خدمة المارد (Baileys على Railway) — القناة الأساسية للإرسال
+const WA_SERVICE_URL = process.env.WA_SERVICE_URL
+const WA_SERVICE_SECRET = process.env.WA_SERVICE_SECRET ?? ''
+
 export function isWhatsAppConfigured(): boolean {
   return !!(WA_PHONE_ID && WA_TOKEN)
 }
@@ -84,13 +88,58 @@ export function normalizePhone(raw: string): string {
 // ============================================================================
 
 export async function sendText(params: SendTextParams): Promise<WhatsAppSendResult> {
-  if (!isWhatsAppConfigured()) {
-    return { ok: false, error: 'WhatsApp not configured (WHATSAPP_PHONE_NUMBER_ID / WHATSAPP_ACCESS_TOKEN missing)' }
-  }
-
   const to = normalizePhone(params.to)
   if (!to) {
     return { ok: false, error: 'Invalid phone number' }
+  }
+
+  // ── المسار الأساسي: خدمة المارد (Baileys على Railway) ──────────────────
+  // الرقم بيفضل شغال على الموبايل، والخدمة متربطة كجهاز مرتبط.
+  if (WA_SERVICE_URL) {
+    try {
+      const res = await fetch(`${WA_SERVICE_URL.replace(/\/$/, '')}/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-madmona-secret': WA_SERVICE_SECRET,
+        },
+        body: JSON.stringify({ to, text: params.body }),
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok || !data?.ok) {
+        const errMsg = data?.error ?? `HTTP ${res.status}`
+        await logOutboundMessage({
+          conversationId: params.conversationId,
+          to,
+          body: params.body,
+          agentName: params.agentName,
+          aiGenerated: params.aiGenerated ?? false,
+          status: 'failed',
+          errorMessage: errMsg,
+        })
+        return { ok: false, error: errMsg }
+      }
+
+      await logOutboundMessage({
+        conversationId: params.conversationId,
+        to,
+        body: params.body,
+        agentName: params.agentName,
+        aiGenerated: params.aiGenerated ?? false,
+        status: 'sent',
+        wa_message_id: data.wa_message_id,
+      })
+      return { ok: true, wa_message_id: data.wa_message_id }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'unknown'
+      return { ok: false, error: `wa-service: ${msg}` }
+    }
+  }
+
+  // ── مسار احتياطي: Cloud API (لو رجع يشتغل يوم من الأيام) ───────────────
+  if (!isWhatsAppConfigured()) {
+    return { ok: false, error: 'مفيش قناة إرسال متظبطة (WA_SERVICE_URL أو WHATSAPP_* مطلوبين)' }
   }
 
   try {
