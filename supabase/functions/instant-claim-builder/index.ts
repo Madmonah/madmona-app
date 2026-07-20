@@ -82,7 +82,12 @@ Deno.serve(async (_req) => {
     const { data: rows } = await sb().from('instant_listing_drafts')
       .select('id, contact_phone, contact_name, conversation_id, title, description, category_slug, image_urls')
       .is('published_listing_id', null)
-      .order('created_at', { ascending: true })
+      // ⚠️ كان بياخد الأقدم الأول. عندنا ١٣٤ مسودة مستنية، أغلبها
+      //    قديمة وبتفشل كل مرة لنفس السبب (مفيش صورة) — فالدفعة
+      //    بتفضل تلف عليهم والجديد عمره ما بيوصل.
+      //    ٢٠ يوليو: مطعم بعت منيوه ومسودته فضلت واقفة ورا ١٠٦ مسودة
+      //    قديمة فاشلة. الأحدث الأول — شغل النهاردة بيمشي دايمًا.
+      .order('created_at', { ascending: false })
       .limit(BATCH)
     const drafts = (rows || []) as Array<Record<string, any>>
 
@@ -94,8 +99,47 @@ Deno.serve(async (_req) => {
 
         const title = String(d.title).slice(0, 120)
         const description = d.description ? String(d.description).slice(0, 1500) : null
-        const imageUrls: string[] = Array.isArray(d.image_urls) ? d.image_urls.filter(Boolean) : []
+        let imageUrls: string[] = Array.isArray(d.image_urls) ? d.image_urls.filter(Boolean) : []
+        let usedPlaceholder = false
         const fullPhone = String(d.contact_phone)
+
+        // 🖼️ سلسلة مصادر الصورة — النشر ماينفعش يقف عشان صورة.
+        //
+        //    الداتابيز بترفض نشر إعلان من غير صورة، وأغلب اللي بيبعت
+        //    منيو بالنص مابيبعتش صور. النتيجة كانت إعلانات واقفة
+        //    ومورّدين اتوعدوا ومحصلش.
+        //
+        //    بنجرّب بالترتيب:
+        //      ١. صوره هو — أي صورة بعتها في المحادثة (أصدق مصدر)
+        //      ٢. صورة التصنيف — مؤقتة لحد ما يبعت صوره
+        //
+        //    ⚠️ صورة التصنيف بتتعلّم `is_placeholder` عشان نعرف
+        //       نستبدلها أول ما تيجي صورة حقيقية، وماتفضلش سايبة.
+        if (!imageUrls.length) {
+          const { data: convImgs } = await sb().from('whatsapp_messages')
+            .select('body, created_at, whatsapp_conversations!inner(contact_phone)')
+            .eq('whatsapp_conversations.contact_phone', fullPhone)
+            .eq('direction', 'inbound')
+            .eq('message_type', 'image')
+            .order('created_at', { ascending: false })
+            .limit(3)
+
+          const found = ((convImgs || []) as Array<{ body: string }>)
+            .map(m => (m.body || '').match(/https:\/\/\S+/)?.[0])
+            .filter(Boolean) as string[]
+
+          if (found.length) imageUrls = found
+        }
+
+        if (!imageUrls.length) {
+          const { data: cat } = await sb().from('categories')
+            .select('image_url').eq('id', categoryId).maybeSingle()
+          const heroUrl = (cat as { image_url?: string } | null)?.image_url
+          if (heroUrl) {
+            imageUrls = [heroUrl]
+            usedPlaceholder = true
+          }
+        }
         const windowStart = new Date(Date.now() - DEDUP_WINDOW_HOURS * 3600 * 1000).toISOString()
 
         // De-fragment: نجمع بس الرسايل اللي بتوصف **نفس الإعلان** (نفس الرقم + نفس الفئة
@@ -120,8 +164,29 @@ Deno.serve(async (_req) => {
           const { data: have } = await sb().from('listing_photos').select('url').eq('listing_id', listingId)
           const haveSet = new Set(((have || []) as Array<{ url: string }>).map(p => p.url))
           const start = (have || []).length
-          const newRows = imageUrls.filter(u => !haveSet.has(u)).map((u, i) => ({ listing_id: listingId, url: u, display_order: start + i, is_primary: false }))
-          if (newRows.length) await sb().from('listing_photos').insert(newRows)
+          const newRows = imageUrls
+            .filter(u => !haveSet.has(u))
+            .map((u, i) => ({
+              listing_id: listingId,
+              url: u,
+              display_order: start + i,
+              is_primary: false,
+              is_placeholder: usedPlaceholder,
+            }))
+          if (newRows.length) {
+            await sb().from('listing_photos').insert(newRows)
+
+            // 🔁 وصلت صورة حقيقية؟ نشيل المؤقتة فورًا.
+            //    من غير ده الصورة العامة بتفضل سايبة والإعلان يبان
+            //    ناقص رغم إن صاحبه بعت صوره.
+            if (!usedPlaceholder) {
+              await sb().from('listing_photos')
+                .delete().eq('listing_id', listingId).eq('is_placeholder', true)
+              await sb().from('listing_photos')
+                .update({ is_primary: true, display_order: 0 })
+                .eq('listing_id', listingId).eq('url', newRows[0].url)
+            }
+          }
           // ⛔ منستبدلش الوصف — بس نملاه لو فاضي. (الاستبدال هو اللي كان بيخلط المشاريع.)
           if (description && description.length > 40) {
             const { data: cur } = await sb().from('listings').select('description').eq('id', listingId).maybeSingle()
@@ -130,16 +195,43 @@ Deno.serve(async (_req) => {
           }
           out.merged++
         } else {
+          // 🚨 الترتيب هنا مش تفصيلة — هو الفرق بين إن الإعلان يتنشر ولا لأ.
+          //
+          //    الكود القديم كان بيعمل insert بحالة النشر على طول وبعدين
+          //    يربط الصور. والداتابيز فيها حارس بيرفض النشر من غير صورة
+          //    («Cannot publish: at least one photo is required») —
+          //    فكل إعلان جديد كان بيفشل عند أول سطر، حتى لو الصور
+          //    موجودة وجاهزة في السطر اللي بعده.
+          //
+          //    اتكشفت يوم ٢٠ يوليو: مطعم بعت منيو وصورتين، والمسودة
+          //    فشلت بنفس الرسالة رغم إن الصورتين متسجّلتين فعلاً.
+          //
+          //    الصح: ادخل مسودة → اربط الصور → وبعدين انشر.
           const { data: nl, error: lErr } = await sb().from('listings').insert({
             supplier_id: MADMONA_SUPPLIER_ID, category_id: categoryId,
-            title, description, contact_phone: fullPhone, status: LISTING_STATUS, country: 'EG'
+            title, description, contact_phone: fullPhone, status: 'draft', country: 'EG'
           }).select('id').single()
           if (lErr || !nl) throw new Error('listing insert: ' + (lErr?.message || 'no row'))
           listingId = (nl as { id: string }).id
+
           if (imageUrls.length) {
             await sb().from('listing_photos').insert(
-              imageUrls.map((u, i) => ({ listing_id: listingId, url: u, display_order: i, is_primary: i === 0 }))
+              imageUrls.map((u, i) => ({
+                listing_id: listingId,
+                url: u,
+                display_order: i,
+                is_primary: i === 0,
+                is_placeholder: usedPlaceholder,
+              }))
             )
+          }
+
+          // دلوقتي بس — والصور مربوطة — ينفع ننشر
+          const { error: pubErr } = await sb().from('listings')
+            .update({ status: LISTING_STATUS }).eq('id', listingId)
+          if (pubErr) {
+            // مفيش صور؟ يفضل مسودة بدل ما يضيع. ونقول السبب صريح.
+            out.errors.push(`${d.id}: نُشر كمسودة — ${pubErr.message}`)
           }
           const token = genToken()
           await sb().from('listing_claims').insert({ listing_id: listingId, token, status: 'pending' })
