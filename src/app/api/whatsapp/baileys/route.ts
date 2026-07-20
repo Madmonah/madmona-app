@@ -397,6 +397,33 @@ export async function POST(request: NextRequest) {
   if (!phone && !replyJid) return NextResponse.json({ ok: true, skipped: 'invalid_sender' })
 
   try {
+    // ── ٠ق) مفتاح الطوارئ ──────────────────────────────────────────────
+    // ٢٠ يوليو ٢٠٢٦: الرقم اتوقف ٢٤ ساعة من واتساب بسبب كتافة الإرسال
+    // في يوم واحد (٥٠ جروب + ٣٥ رسالة استلام + الردود).
+    //
+    // أخطر حاجة وقتها إن المارد يفضل يحاول يبعت وهو موقوف — كل محاولة
+    // بتتحسب ضده وممكن تحوّل الإيقاف المؤقت لدائم.
+    //
+    // MARID_SEND_PAUSED=1 → بيستقبل ويسجّل عادي، بس مابيبعتش.
+    // كده مفيش رسالة بتضيع، والرقم بيرتاح.
+    const sendPaused = process.env.MARID_SEND_PAUSED === '1'
+    if (sendPaused && body.text) {
+      const cid = await upsertConversation({
+        phone,
+        name: body.push_name ?? null,
+        lastMessageAt: new Date().toISOString(),
+      })
+      if (cid) {
+        await logInboundMessage({
+          conversationId: cid,
+          wa_message_id: body.message_id,
+          body: body.text || `[${body.type}]`,
+          messageType: body.type,
+        })
+      }
+      return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'send_paused' })
+    }
+
     // ── ٠ص) فلتر الضوضاء ───────────────────────────────────────────────
     // رقم واحد (LID) بعت ~١٨٠ رسالة فاضية في ساعتين — كل دقيقة تقريبًا.
     // مالهاش نص ولا ميديا: إشعارات حالة أو أحداث بروتوكول، مش كلام بني آدم.
