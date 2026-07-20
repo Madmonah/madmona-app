@@ -228,6 +228,8 @@ function migrateLegacySession() {
 async function bootSessions() {
   const migrated = migrateLegacySession()
 
+  const forwardLidMap = (m) => forwardToApp({ kind: 'lid_map', ...m })
+
   const fromDisk = knownSessionIds(AUTH_DIR).map((id) => ({ id, label: id }))
   const all = CONFIGURED.length ? CONFIGURED : fromDisk
 
@@ -242,7 +244,7 @@ async function bootSessions() {
 
   for (const s of all) {
     try {
-      await startSession({ id: s.id, label: s.label, authRoot: AUTH_DIR, onMessage: handleMessage })
+      await startSession({ id: s.id, label: s.label, authRoot: AUTH_DIR, onMessage: handleMessage, onLidMap: forwardLidMap })
       log.info({ session: s.id }, 'الجلسة بدأت')
     } catch (e) {
       log.error({ session: s.id, err: e.message }, 'فشل بدء الجلسة')
@@ -312,7 +314,7 @@ app.post('/sessions', auth, async (req, res) => {
   const { session, label } = req.body || {}
   if (!session) return res.status(400).json({ ok: false, error: 'session مطلوب' })
   try {
-    await startSession({ id: String(session), label: label || String(session), authRoot: AUTH_DIR, onMessage: handleMessage })
+    await startSession({ id: String(session), label: label || String(session), authRoot: AUTH_DIR, onMessage: handleMessage, onLidMap: forwardLidMap })
     res.json({ ok: true, session, qr_url: `/qr?session=${encodeURIComponent(session)}` })
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message })

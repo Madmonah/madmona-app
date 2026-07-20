@@ -83,7 +83,7 @@ export function knownSessionIds(authRoot) {
     .map((d) => d.name)
 }
 
-export async function startSession({ id, label, authRoot, onMessage }) {
+export async function startSession({ id, label, authRoot, onMessage, onLidMap }) {
   if (sessions.has(id) && sessions.get(id).connected) return sessions.get(id)
 
   const dir = join(authRoot, id)
@@ -106,6 +106,33 @@ export async function startSession({ id, label, authRoot, onMessage }) {
   entry.sock = sock
 
   sock.ev.on('creds.update', saveCreds)
+
+  // ── ربط المُعرّف المخفي بالرقم الحقيقي ──────────────────────────────
+  //
+  // واتساب بيبعت الربط ده بنفسه في حدثين:
+  //   • chats.phoneNumberShare → { lid, jid }  (ربط صريح)
+  //   • contacts.upsert/update → Contact.lid   (على جهة الاتصال)
+  //
+  // ده أدق ألف مرة من الربط بالاسم — الاسم بيتغيّر، والمُعرّف ثابت.
+  // بنبعت الربط للتطبيق يخزّنه، فأي رسالة جاية بمُعرّف مخفي بنعرف
+  // صاحبها الحقيقي وتاريخه كامل.
+  const sendLidMap = (lid, jid) => {
+    if (!lid || !jid) return
+    const phone = String(jid).split('@')[0].split(':')[0]
+    if (!phone || !/^\d{8,15}$/.test(phone)) return
+    log.info({ session: id, lid, phone }, '🔗 ربط مُعرّف مخفي برقم')
+    onLidMap?.({ sessionId: id, lid: String(lid).split('@')[0], phone })
+  }
+
+  sock.ev.on('chats.phoneNumberShare', ({ lid, jid }) => sendLidMap(lid, jid))
+
+  for (const evt of ['contacts.upsert', 'contacts.update']) {
+    sock.ev.on(evt, (contacts) => {
+      for (const c of contacts || []) {
+        if (c?.lid && c?.id) sendLidMap(c.lid, c.id)
+      }
+    })
+  }
 
   sock.ev.on('connection.update', async (u) => {
     const { connection, lastDisconnect, qr } = u
@@ -156,7 +183,7 @@ export async function startSession({ id, label, authRoot, onMessage }) {
         )
       }
 
-      setTimeout(() => startSession({ id, label: entry.label, authRoot, onMessage }), wait)
+      setTimeout(() => startSession({ id, label: entry.label, authRoot, onMessage, onLidMap }), wait)
     }
   })
 

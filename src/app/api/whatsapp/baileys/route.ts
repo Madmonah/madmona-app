@@ -214,6 +214,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: 'bad json' }, { status: 400 })
   }
 
+  // ── ربط مُعرّف مخفي برقم حقيقي ──────────────────────────────────────
+  // واتساب بيبعت الربط ده بنفسه (chats.phoneNumberShare / Contact.lid).
+  // ده المصدر الرسمي — أدق بكتير من التخمين بالاسم.
+  if ((body as { kind?: string }).kind === 'lid_map') {
+    const m = body as unknown as { lid?: string; phone?: string; sessionId?: string }
+    if (m.lid && m.phone) {
+      await supabaseUntyped.from('wa_lid_map').upsert(
+        {
+          lid: m.lid,
+          phone: normalizePhone(m.phone),
+          session_id: m.sessionId ?? null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'lid' }
+      )
+      console.log('[lid-map]', m.lid, '→', m.phone)
+    }
+    return NextResponse.json({ ok: true, kind: 'lid_map' })
+  }
+
   const phone = normalizePhone(body.from)
 
   // ⚠️ الـ JID الأصلي — ده اللي بنرد عليه.

@@ -307,14 +307,35 @@ async function findHistoryByName(name?: string | null): Promise<ToolResult | nul
 async function whoIsThis(a: { phone: string; name?: string }): Promise<ToolResult> {
   const variants = phoneVariants(a.phone)
 
-  // مُعرّف مخفي؟ ندوّر بالاسم على تاريخه
+  // مُعرّف مخفي؟ نجيب رقمه الحقيقي
   if (looksLikeLidLocal(a.phone)) {
-    const hist = await findHistoryByName(a.name)
-    if (hist) return { known: true, عن_طريق: 'الاسم', ...hist }
-    return {
-      known: false,
-      note: 'مُعرّف مخفي ومفيش تاريخ بنفس الاسم — عامله كجديد',
+    const lid = (a.phone || '').replace(/\D/g, '')
+
+    // ١) الربط الرسمي من واتساب نفسه — الأدق
+    const { data: mapped } = await db
+      .from('wa_lid_map')
+      .select('phone')
+      .eq('lid', lid)
+      .maybeSingle()
+
+    if (mapped?.phone) {
+      // نكمّل بالرقم الحقيقي — التاريخ كله هيبان
+      return { ...(await whoIsThis({ phone: mapped.phone })), عن_طريق: 'ربط واتساب الرسمي' }
     }
+
+    // ٢) الاسم كخطة بديلة — أضعف، بس أحسن من لا شيء.
+    //    ⚠️ ممكن يغلط لو حد غيّر اسمه أو اتنين بنفس الاسم.
+    const hist = await findHistoryByName(a.name)
+    if (hist) {
+      return {
+        known: true,
+        عن_طريق: 'الاسم (ربط ظنّي)',
+        تحذير: 'الربط ده بالاسم مش بالرقم — لو الكلام مش متطابق مع التاريخ، اتعامل معاه كجديد',
+        ...hist,
+      }
+    }
+
+    return { known: false, note: 'مُعرّف مخفي ومفيش ربط ولا تاريخ — عامله كجديد' }
   }
 
   if (!variants.length) return { known: false }
