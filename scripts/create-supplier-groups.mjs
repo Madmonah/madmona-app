@@ -38,8 +38,10 @@ const SEND = args.includes('--send')
 const ALL = args.includes('--all')
 const LIMIT = Number(args[args.indexOf('--limit') + 1]) || 5
 
-const WA_URL = env.WA_SERVICE_URL
-const WA_SECRET = env.WA_SERVICE_SECRET || env.EDGE_GATEWAY_SECRET
+// بنعدّي من بوابة Vercel — سر الخدمة نفسه مش متاح محليًا،
+// والبوابة عندها وبتنادي الخدمة بيه.
+const GATEWAY = 'https://www.madmonacairo.com/api/internal/wa-group'
+const WA_SECRET = env.EDGE_GATEWAY_SECRET
 const SITE = 'https://www.madmonacairo.com'
 const TEAM = ['201004194133', '201104496225']
 
@@ -72,10 +74,18 @@ const { data: reListings } = await db
 
 const realEstateSuppliers = new Set((reListings || []).map((l) => l.supplier_id))
 
+// مورد مضمونة الوسيط — الإعلانات اللي إحنا بنرفعها بتتنسب ليه.
+// جروب معاه = جروب مع نفسنا.
+const MADMONA_SUPPLIER = '7310f6ef-e474-4ef8-8b8a-388b5e1f5694'
+const OUR_PHONES = ['201002229982', ...TEAM]
+
 const eligible = suppliers.filter((s) => {
   if (hasGroup.has(s.id)) return false
+  if (s.id === MADMONA_SUPPLIER) return false
   const ph = phoneOf[s.profile_id]
   if (!ph || ph.startsWith('oauth:')) return false
+  // أرقامنا إحنا — مش موردين
+  if (OUR_PHONES.some((p) => ph.replace(/\D/g, '').endsWith(p.slice(-10)))) return false
   if (!ALL && !realEstateSuppliers.has(s.id)) return false
   return true
 })
@@ -114,8 +124,8 @@ if (!SEND) {
   process.exit(0)
 }
 
-if (!WA_URL || !WA_SECRET) {
-  console.error('\n🔴 WA_SERVICE_URL أو السر ناقص')
+if (!WA_SECRET) {
+  console.error('\n🔴 EDGE_GATEWAY_SECRET ناقص')
   process.exit(1)
 }
 
@@ -133,9 +143,9 @@ for (let i = 0; i < batch.length; i++) {
   const intro = introFor(name, s.listings_count || 0)
 
   try {
-    const res = await fetch(`${WA_URL.replace(/\/$/, '')}/group-create`, {
+    const res = await fetch(GATEWAY, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-madmona-secret': WA_SECRET },
+      headers: { 'content-type': 'application/json', 'x-internal-secret': WA_SECRET },
       body: JSON.stringify({ subject, participants: [phone, ...TEAM], intro }),
     })
     const data = await res.json().catch(() => ({}))
