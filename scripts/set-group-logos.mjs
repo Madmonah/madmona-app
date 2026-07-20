@@ -39,10 +39,50 @@ if (error) {
 const supIds = groups.map((g) => g.supplier_id)
 const { data: sups } = await db
   .from('marketplace_suppliers')
-  .select('id, business_name, logo_url')
+  .select('id, business_name, logo_url, profile_id')
   .in('id', supIds)
 
+const { data: profs } = await db
+  .from('profiles')
+  .select('id, phone')
+  .in('id', (sups || []).map((s) => s.profile_id).filter(Boolean))
+
+const phoneOfProfile = Object.fromEntries((profs || []).map((p) => [p.id, p.phone]))
 const logoOf = Object.fromEntries((sups || []).map((s) => [s.id, s.logo_url]))
+const phoneOf = Object.fromEntries(
+  (sups || []).map((s) => [s.id, phoneOfProfile[s.profile_id]])
+)
+
+// 🔍 اللي مالوش لوجو في الداتابيز — بنجيب صورة بروفايله على الواتساب.
+//    أغلب الشركات حاطة لوجوها هناك، وده أوفر مصدر متاح فعلاً.
+const needLookup = groups.filter((g) => !logoOf[g.supplier_id] && !g.logo_applied_at)
+if (needLookup.length) {
+  console.log(`\n🔍 بندوّر على صور البروفايل لـ${needLookup.length} مورّد…`)
+  let found = 0
+  for (const g of needLookup) {
+    const ph = phoneOf[g.supplier_id]
+    if (!ph || String(ph).startsWith('oauth:')) continue
+    try {
+      const res = await fetch(GATEWAY, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-internal-secret': env.EDGE_GATEWAY_SECRET,
+        },
+        body: JSON.stringify({ action: 'profile_pic', phone: ph }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (data?.url) {
+        logoOf[g.supplier_id] = data.url
+        found++
+      }
+    } catch {
+      /* مفيش صورة أو الخصوصية مقفولة — عادي */
+    }
+    await new Promise((r) => setTimeout(r, 1200))
+  }
+  console.log(`   لقينا ${found} صورة\n`)
+}
 
 const ready = groups.filter((g) => logoOf[g.supplier_id] && !g.logo_applied_at)
 const missing = groups.filter((g) => !logoOf[g.supplier_id])
@@ -86,6 +126,12 @@ for (let i = 0; i < ready.length; i++) {
         .from('supplier_wa_groups')
         .update({ logo_applied_at: new Date().toISOString() })
         .eq('id', g.id)
+      // نحفظها كلوجو للمورّد كمان — عشان الماركتبليس يستفيد منها
+      // ومانرجعش ندوّر عليها كل مرة
+      await db
+        .from('marketplace_suppliers')
+        .update({ logo_url: logoOf[g.supplier_id] })
+        .eq('id', g.supplier_id)
       ok++
       console.log(`  ✅ ${g.subject}`)
     } else {

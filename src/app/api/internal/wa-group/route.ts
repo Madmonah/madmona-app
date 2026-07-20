@@ -42,9 +42,10 @@ export async function POST(request: NextRequest) {
     subject?: string
     participants?: string[]
     intro?: string
-    action?: 'create' | 'rename' | 'picture'
+    action?: 'create' | 'rename' | 'picture' | 'profile_pic'
     group_jid?: string
     image_url?: string
+    phone?: string
   }
   try {
     body = await request.json()
@@ -67,6 +68,26 @@ export async function POST(request: NextRequest) {
         headers: { 'content-type': 'application/json', 'x-madmona-secret': serviceSecret },
         body: JSON.stringify({ group_jid: body.group_jid, subject: body.subject }),
       })
+      const data = await res.json().catch(() => ({}))
+      return NextResponse.json(data, { status: res.ok ? 200 : 502 })
+    } catch (err) {
+      return NextResponse.json(
+        { ok: false, error: err instanceof Error ? err.message : 'فشل الاتصال بالخدمة' },
+        { status: 502 }
+      )
+    }
+  }
+
+  // صورة البروفايل بتاعت رقم — بنجيبها عشان نحطها لوجو للجروب
+  if (body.action === 'profile_pic') {
+    if (!body.phone) {
+      return NextResponse.json({ ok: false, error: 'phone مطلوب' }, { status: 400 })
+    }
+    try {
+      const res = await fetch(
+        `${url.replace(/\/$/, '')}/profile-picture?phone=${encodeURIComponent(body.phone)}`,
+        { headers: { 'x-madmona-secret': serviceSecret } }
+      )
       const data = await res.json().catch(() => ({}))
       return NextResponse.json(data, { status: res.ok ? 200 : 502 })
     } catch (err) {

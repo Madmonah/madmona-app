@@ -455,6 +455,25 @@ app.post('/group-subject', auth, async (req, res) => {
   }
 })
 
+// صورة البروفايل بتاعت رقم — أغلب الشركات حاطة لوجوها هناك،
+// وده أوفر مصدر عندنا فعلاً (الداتابيز فيها لوجو لاتنين موردين بس).
+app.get('/profile-picture', auth, async (req, res) => {
+  const { phone, jid } = req.query || {}
+  if (!phone && !jid) return res.status(400).json({ ok: false, error: 'phone أو jid مطلوب' })
+  const { entry } = pickSession(req)
+  if (!entry?.connected) return res.status(503).json({ ok: false, error: 'مفيش جلسة متصلة' })
+
+  try {
+    const target = jid || toJid(phone)
+    // 'image' = الحجم الكبير. لو مفيش صورة، Baileys بيرمي.
+    const url = await entry.sock.profilePictureUrl(target, 'image')
+    res.json({ ok: true, url: url || null })
+  } catch (e) {
+    // مفيش صورة أو الخصوصية مقفولة — مش خطأ، حالة عادية
+    res.json({ ok: true, url: null, note: e.message })
+  }
+})
+
 // صورة الجروب — لوجو الشركة. Baileys محتاج بافر مش لينك،
 // فبنجيب الصورة الأول وبنبعتها.
 app.post('/group-picture', auth, async (req, res) => {
