@@ -90,7 +90,10 @@ Deno.serve(async (_req) => {
   const out = { processed: 0, created: 0, merged: 0, sent: 0, send_failed: 0, skipped: 0, errors: [] as string[] }
   try {
     const { data: rows } = await sb().from('instant_listing_drafts')
-      .select('id, contact_phone, contact_name, conversation_id, title, description, category_slug, image_urls')
+      // ⚠️ price_egp كان ناقص من هنا — فالسعر اللي المطعم بعته
+      //    كان بيتخزّن في المسودة وبيضيع عند النشر، والإعلان
+      //    بينزل من غير سعر خالص.
+      .select('id, contact_phone, contact_name, conversation_id, title, description, category_slug, image_urls, price_egp')
       .is('published_listing_id', null)
       // ⚠️ كان بياخد الأقدم الأول. عندنا ١٣٤ مسودة مستنية، أغلبها
       //    قديمة وبتفشل كل مرة لنفس السبب (مفيش صورة) — فالدفعة
@@ -155,7 +158,7 @@ Deno.serve(async (_req) => {
         // De-fragment: نجمع بس الرسايل اللي بتوصف **نفس الإعلان** (نفس الرقم + نفس الفئة
         // + عنوان متشابه). لو المطور بعت مشروع تاني مختلف → إعلان جديد مستقل.
         const { data: candidates } = await sb().from('listings')
-          .select('id, title')
+          .select('id, title, price_egp')
           .eq('supplier_id', MADMONA_SUPPLIER_ID)
           .eq('contact_phone', fullPhone)
           .eq('category_id', categoryId)
@@ -163,9 +166,33 @@ Deno.serve(async (_req) => {
           .order('created_at', { ascending: false })
           .limit(8)
 
-        const match = ((candidates || []) as Array<{ id: string; title: string }>)
-          .map(c => ({ ...c, score: titleSimilarity(c.title || '', title) }))
+        // ⚠️ أصناف المنيو بتتشارك بادئة اسم المطعم:
+        //    «Rino's Kitchen — برجر جبنة» · «Rino's Kitchen — برجر مشروم»
+        //    التشابه بينهم بيطلع عالي بسبب البادئة، فبيتدمجوا وهما
+        //    أصناف مختلفة بأسعار مختلفة.
+        //
+        //    حصل فعلًا يوم ٢٠ يوليو: ١٩ صنف من Rino بقوا ٧ —
+        //    برجر مشروم ومونستر ومكسيكي كلهم اتلموا على «برجر جبنة».
+        //
+        //    بنشيل البادئة المشتركة قبل المقارنة، والأهم:
+        //    **سعر مختلف = صنف مختلف**، مهما كان الاسم متشابه.
+        const stripPrefix = (s: string) => {
+          const i = s.indexOf('—')
+          return i > 0 && i < s.length - 2 ? s.slice(i + 1).trim() : s
+        }
+
+        const match = ((candidates || []) as Array<{ id: string; title: string; price_egp?: number }>)
+          .map(c => ({
+            ...c,
+            score: titleSimilarity(stripPrefix(c.title || ''), stripPrefix(title)),
+          }))
           .filter(c => c.score >= MERGE_SIMILARITY)
+          // سعر مختلف = صنف مختلف
+          .filter(c => {
+            const dp = typeof d.price_egp === 'number' ? d.price_egp : null
+            const cp = typeof c.price_egp === 'number' ? c.price_egp : null
+            return !(dp !== null && cp !== null && Math.abs(dp - cp) > 0.01)
+          })
           .sort((a, b) => b.score - a.score)[0]
 
         let listingId: string
@@ -219,7 +246,9 @@ Deno.serve(async (_req) => {
           //    الصح: ادخل مسودة → اربط الصور → وبعدين انشر.
           const { data: nl, error: lErr } = await sb().from('listings').insert({
             supplier_id: MADMONA_SUPPLIER_ID, category_id: categoryId,
-            title, description, contact_phone: fullPhone, status: 'draft', country: 'EG'
+            title, description, contact_phone: fullPhone, status: 'draft', country: 'EG',
+            // السعر اللي المطعم بعته — كان بيضيع هنا
+            price_egp: typeof d.price_egp === 'number' ? d.price_egp : null,
           }).select('id').single()
           if (lErr || !nl) throw new Error('listing insert: ' + (lErr?.message || 'no row'))
           listingId = (nl as { id: string }).id
