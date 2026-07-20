@@ -23,6 +23,8 @@ interface WaSendArgs {
   conversationId?: string
   agentName?: string
   aiGenerated?: boolean
+  /** رقم المارد اللي هيخرج منه الرد — لازم يبقى نفس اللي العميل كلّمه */
+  session?: string
 }
 
 interface WaSendResult {
@@ -55,6 +57,7 @@ export async function waSend(args: WaSendArgs): Promise<WaSendResult> {
         conversation_id: args.conversationId,
         agent_name: args.agentName ?? 'المارد',
         ai_generated: args.aiGenerated ?? false,
+        session: args.session,
       }),
     })
     const data = await res.json().catch(() => ({}))

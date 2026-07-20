@@ -52,6 +52,9 @@ export async function POST(request: NextRequest) {
     conversation_id?: string
     agent_name?: string
     ai_generated?: boolean
+    /** رقم المارد اللي يخرج منه الرد */
+    session?: string
+    jid?: string
   }
   try {
     body = await request.json()
@@ -65,6 +68,9 @@ export async function POST(request: NextRequest) {
 
   const res = await sendText({
     to,
+    jid: body.jid,
+    // الرد يخرج من نفس الرقم اللي العميل كلّمه — مش أول رقم متصل
+    session: body.session,
     body: body.text,
     conversationId: body.conversation_id,
     agentName: body.agent_name ?? 'المارد',

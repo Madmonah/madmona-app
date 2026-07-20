@@ -33,9 +33,19 @@ async function getMetaCreds(): Promise<{ phone_id: string; token: string }> {
   return { phone_id: m.phone_number_id, token: m.access_token }
 }
 
+// 🚨 الرسالة لازم تخرج من نفس الرقم اللي العميل كلّمه.
+//    لما بقى عندنا أكتر من رقم، الإرسال من غير تحديد بياخد أول رقم
+//    متصل — فالعميل بيجيله لينك استلام من رقم عمره ما كلّمه. ده
+//    بيتقري كرسالة باردة، وهو نفس النمط اللي وقّف الرقم الأول.
+//
+//    ولو رقمه هو مش متصل دلوقتي؟ ماتبعتش من غيره. الإعلان بيتنشر
+//    عادي والرسالة تستنى لحد ما رقمه يرجع.
 async function sendWA(to: string, body: string): Promise<{ wa_id?: string; error?: string }> {
-  // البوابة الموحّدة — مافيش نداء مباشر لـ Graph
-  const r = await waSend({ to, text: body, agentName: 'المارد' })
+  const { data: conv } = await sb().from('whatsapp_conversations')
+    .select('session_id').eq('contact_phone', to).maybeSingle()
+  const session = (conv as { session_id?: string } | null)?.session_id ?? undefined
+
+  const r = await waSend({ to, text: body, agentName: 'المارد', session })
   return r.ok ? { wa_id: r.wa_message_id ?? undefined } : { error: r.error }
 }
 
