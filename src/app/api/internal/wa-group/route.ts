@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     subject?: string
     participants?: string[]
     intro?: string
-    action?: 'create' | 'rename' | 'picture' | 'profile_pic' | 'add_session'
+    action?: 'create' | 'rename' | 'picture' | 'profile_pic' | 'add_session' | 'remove_session'
     group_jid?: string
     image_url?: string
     phone?: string
@@ -70,6 +70,26 @@ export async function POST(request: NextRequest) {
         headers: { 'content-type': 'application/json', 'x-madmona-secret': serviceSecret },
         body: JSON.stringify({ group_jid: body.group_jid, subject: body.subject }),
       })
+      const data = await res.json().catch(() => ({}))
+      return NextResponse.json(data, { status: res.ok ? 200 : 502 })
+    } catch (err) {
+      return NextResponse.json(
+        { ok: false, error: err instanceof Error ? err.message : 'فشل الاتصال بالخدمة' },
+        { status: 502 }
+      )
+    }
+  }
+
+  // شيل رقم مارد — للأرقام اللي اتضافت بالغلط أو اتغيّرت
+  if (body.action === 'remove_session') {
+    if (!body.session) {
+      return NextResponse.json({ ok: false, error: 'session مطلوب' }, { status: 400 })
+    }
+    try {
+      const res = await fetch(
+        `${url.replace(/\/$/, '')}/sessions/${encodeURIComponent(body.session)}`,
+        { method: 'DELETE', headers: { 'x-madmona-secret': serviceSecret } }
+      )
       const data = await res.json().catch(() => ({}))
       return NextResponse.json(data, { status: res.ok ? 200 : 502 })
     } catch (err) {
