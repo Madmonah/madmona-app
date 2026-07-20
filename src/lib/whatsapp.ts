@@ -139,6 +139,49 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
     }
   }
 
+  // ── 🚨 وضع «رد بس» ─────────────────────────────────────────────────────
+  // ٢٠ يوليو ٢٠٢٦: واتساب حط بلوك على الرقم — **بدء محادثات جديدة بس**،
+  // والرد شغّال عادي. السبب: ٥٠ جروب و٣٥ رسالة استلام في يوم واحد.
+  //
+  // الحارس ده بيمنع أي رسالة لحد ماكلّمناش قبل كده. الرد على اللي
+  // بيكلّمنا مالوش أي قيد.
+  //
+  // ⚠️ ده مش إجراء مؤقت لليومين دول — ده اللي كان المفروض يكون
+  //    موجود من الأول. الرقم بيتوقف من الرسايل الباردة، مش من الردود.
+  if (process.env.MARID_REPLY_ONLY === '1') {
+    const contactKey = params.to || jid?.split('@')[0] || ''
+    const isGroup = jid?.endsWith('@g.us')
+
+    if (!isGroup && contactKey) {
+      const { data: conv } = await supabaseUntyped
+        .from('whatsapp_conversations')
+        .select('id')
+        .eq('contact_phone', params.to)
+        .maybeSingle()
+
+      const convId = (conv as { id?: string } | null)?.id
+      let heTalkedToUs = false
+
+      if (convId) {
+        const { data: inbound } = await supabaseUntyped
+          .from('whatsapp_messages')
+          .select('id')
+          .eq('conversation_id', convId)
+          .eq('direction', 'inbound')
+          .limit(1)
+          .maybeSingle()
+        heTalkedToUs = !!inbound
+      }
+
+      if (!heTalkedToUs) {
+        return {
+          ok: false,
+          error: `وضع «رد بس» — ${contactKey} ماكلّمناش قبل كده، فمش هنبدأ معاه`,
+        }
+      }
+    }
+  }
+
   // ── المسار الأساسي: خدمة المارد (Baileys على Railway) ──────────────────
   // الرقم بيفضل شغال على الموبايل، والخدمة متربطة كجهاز مرتبط.
   if (WA_SERVICE_URL) {
