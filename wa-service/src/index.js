@@ -42,6 +42,7 @@ const CONFIGURED = (process.env.SESSIONS || '')
     return { id: id.trim(), label: rest.join(':').trim() || id.trim() }
   })
 
+const START_TIME = Date.now()
 const log = pino({ level: 'info' })
 if (!existsSync(AUTH_DIR)) mkdirSync(AUTH_DIR, { recursive: true })
 
@@ -280,6 +281,13 @@ app.get('/health', (_req, res) => {
     waiting_for_qr: !!primary?.waiting_for_qr,
     // الجديد
     sessions: list,
+    // النسخة الشغالة فعلاً — Railway بيحقن المتغيرات دي تلقائيًا.
+    // من غيرها مفيش طريقة نتأكد إن آخر رفع اتنشر ولا لأ.
+    version: {
+      commit: (process.env.RAILWAY_GIT_COMMIT_SHA || 'unknown').slice(0, 7),
+      deployed_at: process.env.RAILWAY_DEPLOYMENT_ID ? START_TIME : null,
+      uptime_sec: Math.floor((Date.now() - START_TIME) / 1000),
+    },
   })
 })
 
