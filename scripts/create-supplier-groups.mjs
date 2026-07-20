@@ -149,6 +149,7 @@ if (!WA_SECRET) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 let ok = 0
 let fail = 0
+let rateHits = 0
 
 console.log('\n─── جاري الإنشاء ───\n')
 
@@ -181,7 +182,18 @@ for (let i = 0; i < batch.length; i++) {
       console.log(`  ✅ ${subject}`)
     } else {
       fail++
-      console.log(`  🔴 ${name}  ${data?.error || res.status}`)
+      const err = String(data?.error || res.status)
+      console.log(`  🔴 ${name}  ${err}`)
+
+      // ⚠️ واتساب بيرجّع rate-overlimit لما نعمل جروبات بسرعة.
+      //    ده مش خطأ عادي — ده تحذير قبل ما يوقف الرقم.
+      //    بنقف فورًا. الرقم أغلى من الجروبات الباقية.
+      if (/rate.?overlimit|too.?many|429/i.test(err)) {
+        rateHits++
+        console.log(`\n⛔ واتساب رجّع تحذير سرعة (${rateHits}). بنوقف حمايةً للرقم.`)
+        console.log(`   كمّل بكرة بـ --limit أقل.\n`)
+        break
+      }
     }
   } catch (e) {
     fail++
@@ -189,8 +201,9 @@ for (let i = 0; i < batch.length; i++) {
   }
 
   if (i < batch.length - 1) {
-    const wait = 60_000 + Math.floor(Math.random() * 90_000)
-    console.log(`     … استنى ${Math.round(wait / 1000)}ث`)
+    // فاصل أطول من الأول (كان ٦٠–١٥٠ث ووصلنا للحد).
+    const wait = 180_000 + Math.floor(Math.random() * 180_000)
+    console.log(`     … استنى ${Math.round(wait / 60_000)} دقيقة`)
     await sleep(wait)
   }
 }
