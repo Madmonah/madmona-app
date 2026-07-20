@@ -300,7 +300,21 @@ function auth(req, res, next) {
 /** يختار الجلسة: من body.session أو ?session أو أول جلسة متصلة */
 function pickSession(req) {
   const wanted = req.body?.session || req.query?.session
-  if (wanted) return { id: wanted, entry: getSession(wanted) }
+  if (wanted) {
+    const entry = getSession(wanted)
+    // ⚠️ الرقم المطلوب مفصول؟ الرسالة **ماتضيعش** — بنبعت من أي
+    //    رقم متصل. العميل يشوف رد من رقم تاني أحسن من إنه يستنى
+    //    ومايوصلوش حاجة.
+    //    (٢١ يوليو: الرقم القديم اتفصل، فالردود على ناسه كانت
+    //     بتتولّد وتتسجّل وتقف — والعميل مستني.)
+    if (entry?.connected) return { id: wanted, entry }
+    const alt = listSessions().find((s) => s.connected)
+    if (alt) {
+      log.warn({ wanted, used: alt.id }, 'الرقم المطلوب مفصول — بعتنا من التاني')
+      return { id: alt.id, entry: getSession(alt.id) }
+    }
+    return { id: wanted, entry }
+  }
   const first = listSessions().find((s) => s.connected)
   return first ? { id: first.id, entry: getSession(first.id) } : { id: null, entry: null }
 }

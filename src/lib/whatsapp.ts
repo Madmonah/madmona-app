@@ -159,24 +159,28 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
     const isGroup = jid?.endsWith('@g.us')
 
     if (!isGroup && contactKey) {
-      const { data: conv } = await supabaseUntyped
+      // ⚠️ الرقم الواحد ممكن يكون ليه أكتر من صف محادثة — لقينا رقم
+      //    عنده ١٥ صف. `maybeSingle()` بتفشل مع التكرار وبترجّع فاضي،
+      //    فالحارس كان بيمنع الرد على ناس كلّمونا فعلاً.
+      //    بناخد كل الصفوف وندوّر في أي واحد فيهم.
+      const { data: convs } = await supabaseUntyped
         .from('whatsapp_conversations')
         .select('id')
         .eq('contact_phone', params.to)
-        .maybeSingle()
+        .limit(30)
 
-      const convId = (conv as { id?: string } | null)?.id
+      const ids = ((convs ?? []) as { id: string }[]).map((c) => c.id)
       let heTalkedToUs = false
 
-      if (convId) {
+      if (ids.length) {
         const { data: inbound } = await supabaseUntyped
           .from('whatsapp_messages')
           .select('id')
-          .eq('conversation_id', convId)
+          .in('conversation_id', ids)
           .eq('direction', 'inbound')
           .limit(1)
-          .maybeSingle()
-        heTalkedToUs = !!inbound
+
+        heTalkedToUs = Array.isArray(inbound) && inbound.length > 0
       }
 
       if (!heTalkedToUs) {
