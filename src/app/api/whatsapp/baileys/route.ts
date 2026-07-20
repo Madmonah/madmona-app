@@ -90,6 +90,41 @@ export async function POST(request: NextRequest) {
   const phone = normalizePhone(body.from)
   if (!phone) return NextResponse.json({ ok: true, skipped: 'invalid phone' })
 
+  // ── ٠) كود تسجيل الدخول MADxxxxx ──────────────────────────────────────
+  // العميل بياخد الكود من الموقع ويبعته هنا. لازم نأكّده قبل أي حاجة تانية.
+  const loginCode = (body.text || '').toUpperCase().match(/\bMAD[A-Z0-9]{5}\b/)?.[0]
+  if (loginCode) {
+    try {
+      const { data: row } = await supabaseAdmin
+        .from('wa_inbound_verifications')
+        .select('id, verified, expires_at')
+        .eq('code', loginCode)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (!row) {
+        await sendText({ to: phone, body: 'الكود ده مش موجود. ارجع للموقع واطلب كود جديد 🙏' })
+        return NextResponse.json({ ok: true, login: 'unknown_code' })
+      }
+      if (new Date(row.expires_at) < new Date()) {
+        await sendText({ to: phone, body: 'الكود ده انتهت صلاحيته. اطلب كود جديد من الموقع 🙏' })
+        return NextResponse.json({ ok: true, login: 'expired' })
+      }
+
+      await supabaseAdmin
+        .from('wa_inbound_verifications')
+        .update({ verified: true, verified_phone: phone, verified_at: new Date().toISOString() } as never)
+        .eq('id', row.id)
+
+      await sendText({ to: phone, body: '✅ تم التأكيد! ارجع للموقع، هتلاقي نفسك دخلت.' })
+      return NextResponse.json({ ok: true, login: 'verified', phone })
+    } catch (err) {
+      console.error('[baileys] login code', err instanceof Error ? err.message : err)
+      return NextResponse.json({ ok: false, error: 'login_verify_failed' }, { status: 500 })
+    }
+  }
+
   try {
     // ── ١) تسجيل المحادثة والرسالة ────────────────────────────────────────
     const conversationId = await upsertConversation({
