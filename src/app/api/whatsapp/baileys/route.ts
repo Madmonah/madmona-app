@@ -13,7 +13,7 @@ import {
   normalizePhone,
 } from '@/lib/whatsapp'
 import { anthropic, CLAUDE_MODEL, parseJsonResponse } from '@/lib/anthropic'
-import { MARID_TOOLS, runMaridTool, MADMONA_LINKS } from '@/lib/marid-tools'
+import { MARID_TOOLS, runMaridTool, MADMONA_LINKS, recordLead } from '@/lib/marid-tools'
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
 
 export const runtime = 'nodejs'
@@ -238,6 +238,8 @@ ${opts.savedMediaUrl ? `\n📎 الملف اللي بعته اتحفظ هنا:\n
   الناس بتزعل جدًا لما تسأل عن حاجة شرحوها قبل كده.
 • «فين حجزي؟» → get_my_orders
 • عايز يضيف منتج/خدمة → اجمع البيانات ثم create_listing_draft
+• «كودي» أو «شير واكسب» أو عايز يرشّح صحابه → get_referral_code
+• عايز يشتغل معانا أو بعت سيرة ذاتية → record_job_application
 • أي كلام عن **أوردر** (قبول/رفض/إلغاء/استفسار) → manage_order
   الأداة بتتأكد من الصلاحية بنفسها. ماتأكّدش على حاجة قبل ما ترجّع ok.
 • أي كلام عن **ميعاد** (حجز/إلغاء/استفسار) → manage_meeting
@@ -611,6 +613,16 @@ export async function POST(request: NextRequest) {
         // التنبيه مايوقفش الرد أبدًا
       }
     })()
+
+    // ── ١ج) تسجيل الليد ─────────────────────────────────────────────────
+    // كل رقم بيكلّمنا = عميل محتمل. القديم كان بيسجّله ويقيّمه وضاع.
+    // بيشتغل في الخلفية — مايوقفش الرد.
+    void recordLead({
+      phone,
+      name: body.name,
+      isSupplier: false, // بيتحدّث لو who_is_this طلّعه مورد
+      intent: null,
+    })
 
     // ── ٢) فهم المحتوى ──────────────────────────────────────────────────
     let userText = body.text || ''

@@ -34,6 +34,7 @@ export const MADMONA_LINKS = {
   طلبات_المورد: `${SITE}/supplier/marketplace/orders`,
   فريق_المورد: `${SITE}/supplier/team`,
   محاسبة_المورد: `${SITE}/supplier/erp/accounting`,
+  بورصة_مضمونة_العقارية: `${SITE}/real-estate/market`,
   الخدمات: `${SITE}/services`,
   عن_مضمونة: `${SITE}/about`,
 } as const
@@ -167,6 +168,61 @@ export const MARID_TOOLS = [
         customer_name: { type: 'string', description: 'اسم العميل لو معروف' },
       },
       required: ['supplier_id', 'customer_request'],
+    },
+  },
+  {
+    name: 'search_projects',
+    description:
+      'ابحث في مشاريع بورصة مضمونة العقارية (١١٤ مشروع من مطوّرين). ' +
+      'استخدمها عشان:\n' +
+      '• تقارن مشروع بمشاريع تانية في نفس المنطقة أو نفس نطاق السعر\n' +
+      '• تعرف مطوّر معيّن عنده كام مشروع عندنا\n' +
+      '• تدّي العميل أو المطوّر سياق السوق\n\n' +
+      'المقارنة لازم تكون من هنا — ممنوع تقارن بمشروع من ذاكرتك.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        query: { type: 'string', description: 'اسم المشروع أو كلمة بحث' },
+        area: { type: 'string', description: 'المنطقة — العاصمة الإدارية، الشيخ زايد...' },
+        developer: { type: 'string', description: 'اسم المطوّر' },
+        property_type: {
+          type: 'string',
+          enum: ['residential', 'commercial', 'administrative', 'medical'],
+        },
+        max_price: { type: 'number', description: 'أقصى سعر بالجنيه' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'get_referral_code',
+    description:
+      'هات كود الإحالة بتاع العميل («شير واكسب» / «كودي» / «عايز أرشّح صحابي»). ' +
+      'بيرجّع الكود ولينك جاهز يبعته لصحابه.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        phone: { type: 'string', description: 'رقم العميل' },
+        name: { type: 'string', description: 'اسمه لو معروف' },
+      },
+      required: ['phone'],
+    },
+  },
+  {
+    name: 'record_job_application',
+    description:
+      'سجّل حد بيدوّر على شغل معانا. استخدمها لما حد يقول عايز أشتغل عندكم ' +
+      'أو يسأل عن وظايف أو يبعت سيرة ذاتية.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        phone: { type: 'string' },
+        full_name: { type: 'string' },
+        position: { type: 'string', description: 'الوظيفة اللي عايزها' },
+        message: { type: 'string', description: 'اللي قاله عن نفسه' },
+        cv_url: { type: 'string', description: 'رابط السيرة الذاتية لو بعتها' },
+      },
+      required: ['phone'],
     },
   },
   {
@@ -715,6 +771,120 @@ async function forwardToSupplierGroup(a: {
 }
 
 /**
+ * بحث البورصة العقارية.
+ *
+ * ده اللي بيخلّي المارد يقارن بدل ما يستلم وخلاص:
+ *   «Vici Mall بـ ٥ مليون. عندنا في نفس المنطقة Nabd بـ ٦.٧ وGlitz بـ ٣.١»
+ *
+ * ⚠️ ممنوع يقارن بمشروع مش راجع من هنا — ده اختراع.
+ */
+async function searchProjects(a: {
+  query?: string
+  area?: string
+  developer?: string
+  property_type?: string
+  max_price?: number
+}): Promise<ToolResult> {
+  try {
+    let q = db
+      .from('property_market_items')
+      .select('title, slug, developer, area_label, property_type, unit_label, price_from, note')
+      .eq('status', 'published')
+      .eq('is_active', true)
+      .limit(8)
+
+    if (a.query?.trim()) q = q.ilike('title', `%${a.query.trim()}%`)
+    if (a.area?.trim()) q = q.ilike('area_label', `%${a.area.trim()}%`)
+    if (a.developer?.trim()) q = q.ilike('developer', `%${a.developer.trim()}%`)
+    if (a.property_type) q = q.eq('property_type', a.property_type)
+    if (typeof a.max_price === 'number') q = q.lte('price_from', a.max_price)
+
+    const { data, error } = await q.order('price_from', { ascending: true, nullsFirst: false })
+    if (error) return { error: 'البحث فشل' }
+
+    const rows = (data ?? []) as Array<Record<string, unknown>>
+    if (!rows.length) return { found: 0, note: 'مفيش مشاريع مطابقة — ماتخترعش، قول كده' }
+
+    return {
+      found: rows.length,
+      المشاريع: rows.map((r) => ({
+        الاسم: r.title,
+        المطور: r.developer ?? null,
+        المنطقة: r.area_label ?? null,
+        النوع: r.property_type ?? null,
+        الوحدات: r.unit_label ?? null,
+        من_سعر: r.price_from ?? null,
+        اللينك: `${SITE}/real-estate/projects/${r.slug}`,
+      })),
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : 'فشل' }
+  }
+}
+
+/** كود الإحالة — «شير واكسب» */
+async function getReferralCode(a: { phone: string; name?: string }): Promise<ToolResult> {
+  const phone = (a.phone || '').replace(/\D/g, '')
+  if (!phone) return { ok: false, error: 'الرقم مطلوب' }
+
+  try {
+    const { data, error } = await db.rpc('get_or_create_referral_code', { p_phone: phone })
+    if (error || !data) return { ok: false, error: error?.message || 'مش قادر أجيب الكود' }
+
+    const code = typeof data === 'string' ? data : (data as { code?: string })?.code
+    if (!code) return { ok: false, error: 'مفيش كود' }
+
+    return {
+      ok: true,
+      الكود: code,
+      اللينك: `${SITE}/join/${code}`,
+      قول_للعميل:
+        `كودك: *${code}*\n\n` +
+        `ابعت اللينك ده لصحابك:\n${SITE}/join/${code}\n\n` +
+        `كل حد يسجّل ويشتري من اللينك ده، ليك رصيد عندنا 🤝`,
+    }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'فشل' }
+  }
+}
+
+/** طلبات التوظيف */
+async function recordJobApplication(a: {
+  phone: string
+  full_name?: string
+  position?: string
+  message?: string
+  cv_url?: string
+}): Promise<ToolResult> {
+  try {
+    const { error } = await db.from('job_applications').insert({
+      phone: a.phone,
+      full_name: a.full_name ?? null,
+      position: a.position ?? null,
+      message: a.message?.slice(0, 1000) ?? null,
+      cv_url: a.cv_url ?? null,
+      source: 'المارد — واتساب',
+      status: 'new',
+    })
+    if (error) return { ok: false, error: error.message }
+
+    notifyOwner(
+      `💼 *طلب توظيف*\n\n` +
+        `${a.full_name || a.phone}\n` +
+        (a.position ? `الوظيفة: ${a.position}\n` : '') +
+        (a.cv_url ? `السيرة: ${a.cv_url}\n` : '')
+    )
+
+    return {
+      ok: true,
+      قول_للعميل: 'سجّلت طلبك ✅ فريق الموارد البشرية هيراجعه ويتواصل معاك لو فيه فرصة مناسبة.',
+    }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'فشل' }
+  }
+}
+
+/**
  * أوردرات المطاعم والمنتجات.
  *
  * ⚠️ ده فلو فلوس. الضوابط هنا مش تحسينات — لو اتكسرت، حد ممكن
@@ -963,6 +1133,54 @@ async function recordUnmetDemand(a: {
   }
 }
 
+/**
+ * تسجيل الليد + تقييمه.
+ *
+ * القديم كان بيعمل ده (whatsapp-webhook:1740-1751) وضاع في الترحيل.
+ * من غيره مفيش أي تقييم للعملاء المحتملين — كلهم سواء.
+ *
+ * التقييم من النظام القديم: ٨٠ للمورد، ٥٠ للعميل.
+ * ⚠️ بيتنادى مرة واحدة لكل رقم (الجدول فيه contact_phone).
+ */
+export async function recordLead(a: {
+  phone: string
+  name?: string | null
+  isSupplier: boolean
+  intent?: string | null
+  category?: string | null
+}): Promise<void> {
+  try {
+    const phone = (a.phone || '').replace(/\D/g, '')
+    if (!phone) return
+
+    const { data: existing } = await db
+      .from('sales_leads')
+      .select('id')
+      .eq('contact_phone', phone)
+      .maybeSingle()
+
+    if (existing) {
+      await db
+        .from('sales_leads')
+        .update({ last_action_at: new Date().toISOString() })
+        .eq('id', existing.id)
+      return
+    }
+
+    await db.from('sales_leads').insert({
+      source: 'المارد — واتساب',
+      contact_phone: phone,
+      contact_name: a.name ?? null,
+      intent: a.intent ?? null,
+      interested_category: a.category ?? null,
+      lead_score: a.isSupplier ? 80 : 50,
+      last_action_at: new Date().toISOString(),
+    })
+  } catch {
+    // التسجيل مايوقفش الرد أبدًا
+  }
+}
+
 /** تنبيه لمحمد — مابيوقفش الرد أبدًا لو فشل */
 function notifyOwner(text: string): void {
   const url = process.env.WA_SERVICE_URL
@@ -1001,6 +1219,12 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await manageMeeting(input as never)
       case 'manage_order':
         return await manageOrder(input as never)
+      case 'search_projects':
+        return await searchProjects(input as never)
+      case 'get_referral_code':
+        return await getReferralCode(input as never)
+      case 'record_job_application':
+        return await recordJobApplication(input as never)
       case 'record_unmet_demand':
         return await recordUnmetDemand(input as never)
       default:
