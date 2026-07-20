@@ -397,6 +397,26 @@ export async function POST(request: NextRequest) {
   if (!phone && !replyJid) return NextResponse.json({ ok: true, skipped: 'invalid_sender' })
 
   try {
+    // ── ٠ص) فلتر الضوضاء ───────────────────────────────────────────────
+    // رقم واحد (LID) بعت ~١٨٠ رسالة فاضية في ساعتين — كل دقيقة تقريبًا.
+    // مالهاش نص ولا ميديا: إشعارات حالة أو أحداث بروتوكول، مش كلام بني آدم.
+    //
+    // المارد ماكانش بيرد عليها (فيه حارس تحت)، بس كانت بتتسجّل كلها
+    // في الداتابيز وبتستهلك استدعاء كامل للويبهوك. بنرميها من الأول.
+    //
+    // ⚠️ الشرط: **مفيش نص ومفيش ميديا**. أي رسالة فيها صورة أو صوت
+    //    أو مستند لازم تعدّي حتى لو نصها فاضي — دي رسالة حقيقية.
+    {
+      const hasText = typeof body.text === 'string' && body.text.trim().length > 0
+      const hasMedia = !!body.media
+      const isMediaType = ['image', 'video', 'audio', 'document', 'sticker'].includes(
+        String(body.type || ''),
+      )
+      if (!hasText && !hasMedia && !isMediaType) {
+        return NextResponse.json({ ok: true, skipped: 'empty', replied: false })
+      }
+    }
+
     // ── ٠أ) منع الرد المكرر ─────────────────────────────────────────────
     // Baileys بيعيد تسليم نفس الرسالة أحيانًا (إعادة اتصال، مزامنة أجهزة).
     // شوفنا ده فعليًا يوم ٢٠ يوليو: رد واحد اتبعت مرتين بفارق ثانية.
