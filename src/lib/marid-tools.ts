@@ -170,6 +170,31 @@ export const MARID_TOOLS = [
     },
   },
   {
+    name: 'manage_order',
+    description:
+      'إدارة أوردر مطعم أو منتج. المورد بيرد على إشعار الأوردر، أو العميل بيلغي.\n\n' +
+      'الإجراءات:\n' +
+      '• check   — يشوف تفاصيل الأوردر وحالته\n' +
+      '• accept  — المورد قبل الأوردر\n' +
+      '• reject  — المورد رفض (لازم سبب)\n' +
+      '• cancel  — العميل بيلغي (لازم سبب)\n\n' +
+      '⛔ ضوابط لازم تلتزم بيها:\n' +
+      '• قبول أو رفض الأوردر **للمورد صاحبه بس** — الأداة بتتأكد\n' +
+      '• الإلغاء **لصاحب الأوردر بس**\n' +
+      '• ماتأكّدش على حاجة قبل ما الأداة ترجّع ok\n' +
+      '• ماتغيّرش أسعار — ده بيتعمل من لوحة المورد',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        action: { type: 'string', enum: ['check', 'accept', 'reject', 'cancel'] },
+        reference_code: { type: 'string', description: 'كود الأوردر زي MDX-1234' },
+        actor_phone: { type: 'string', description: 'رقم اللي بيطلب الإجراء' },
+        reason: { type: 'string', description: 'السبب — إجباري في الرفض والإلغاء' },
+      },
+      required: ['action', 'reference_code', 'actor_phone'],
+    },
+  },
+  {
     name: 'manage_meeting',
     description:
       'حجز أو إلغاء أو الاستعلام عن ميعاد زيارة/مقابلة.\n' +
@@ -690,6 +715,149 @@ async function forwardToSupplierGroup(a: {
 }
 
 /**
+ * أوردرات المطاعم والمنتجات.
+ *
+ * ⚠️ ده فلو فلوس. الضوابط هنا مش تحسينات — لو اتكسرت، حد ممكن
+ * يقبل أو يلغي أوردر مش بتاعه.
+ *
+ * القاعدة: **الأداة بتتحقق من الصلاحية بنفسها.** ماتعتمدش على
+ * إن المارد يفتكر يسأل — الموديل ممكن يتلغبط، والداتابيز لأ.
+ */
+async function manageOrder(a: {
+  action: 'check' | 'accept' | 'reject' | 'cancel'
+  reference_code: string
+  actor_phone: string
+  reason?: string
+}): Promise<ToolResult> {
+  const ref = (a.reference_code || '').trim().toUpperCase()
+  const actor = (a.actor_phone || '').replace(/\D/g, '')
+  if (!ref || !actor) return { ok: false, error: 'كود الأوردر والرقم مطلوبين' }
+
+  try {
+    const { data: order } = await db
+      .from('marketplace_orders')
+      .select(
+        'id, reference_code, status, supplier_id, guest_phone, guest_name, ' +
+          'total_amount, currency, delivery_address, customer_notes, created_at'
+      )
+      .eq('reference_code', ref)
+      .maybeSingle()
+
+    if (!order) return { ok: false, error: `مالقتش أوردر بالكود ${ref}` }
+
+    // ── مين ده؟ المورد ولا العميل؟ ────────────────────────────────────
+    const variants = phoneVariants(actor)
+
+    const { data: prof } = await db.from('profiles').select('id').in('phone', variants).maybeSingle()
+    const { data: sup } = prof?.id
+      ? await db
+          .from('marketplace_suppliers')
+          .select('id, business_name')
+          .eq('profile_id', prof.id)
+          .maybeSingle()
+      : { data: null }
+
+    const isSupplier = !!sup && sup.id === order.supplier_id
+    const isCustomer = variants.some((v) => (order.guest_phone || '').includes(v.replace(/\D/g, '')))
+
+    if (!isSupplier && !isCustomer) {
+      return {
+        ok: false,
+        error: 'الرقم ده مالوش علاقة بالأوردر ده',
+        قول_للعميل: 'الأوردر ده مش مربوط بالرقم بتاعك — اتأكد من الكود.',
+      }
+    }
+
+    // ⚠️ الأعمدة هنا name_snapshot و line_total — مش title و total_price.
+    // قريتها من information_schema، مااتخمّنتش.
+    const items = await db
+      .from('marketplace_order_items')
+      .select('name_snapshot, quantity, unit_price, line_total')
+      .eq('order_id', order.id)
+
+    const summary = {
+      الكود: order.reference_code,
+      الحالة: order.status,
+      الاجمالي: `${order.total_amount} ${order.currency || 'EGP'}`,
+      العنوان: order.delivery_address ?? null,
+      ملاحظات: order.customer_notes ?? null,
+      الاصناف: (items.data ?? []).map(
+        (i: { name_snapshot: string; quantity: number; line_total: number }) =>
+          `${i.name_snapshot} ×${i.quantity} = ${i.line_total}`
+      ),
+    }
+
+    if (a.action === 'check') {
+      return { ok: true, انت: isSupplier ? 'المورد' : 'العميل', الاوردر: summary }
+    }
+
+    // ── الحالات اللي مايصحّش نغيّرها ──────────────────────────────────
+    // ⚠️ mp_order_status مافيهوش 'rejected' — قريت الـenum من الداتابيز.
+    // الرفض بيتسجّل cancelled مع cancelled_by='supplier'.
+    // لو كنت خمّنت، كل رفض كان هيرمي خطأ.
+    const FINAL = ['cancelled', 'completed', 'delivered', 'refunded']
+    if (FINAL.includes(order.status)) {
+      return { ok: false, error: `الأوردر حالته ${order.status} — مايتغيّرش` }
+    }
+
+    if (a.action === 'accept') {
+      if (!isSupplier) return { ok: false, error: 'القبول للمورد صاحب الأوردر بس' }
+      await db
+        .from('marketplace_orders')
+        .update({ status: 'accepted', accepted_at: new Date().toISOString() })
+        .eq('id', order.id)
+      return {
+        ok: true,
+        قول_للمورد: `اتقبل ✅ أوردر ${ref} — ابدأ التحضير.`,
+        بلّغ_العميل: `أوردرك ${ref} اتقبل من المطعم ✅ وهنبلّغك أول ما يبقى جاهز.`,
+      }
+    }
+
+    if (a.action === 'reject' || a.action === 'cancel') {
+      if (a.action === 'reject' && !isSupplier)
+        return { ok: false, error: 'الرفض للمورد صاحب الأوردر بس' }
+      if (a.action === 'cancel' && !isCustomer && !isSupplier)
+        return { ok: false, error: 'الإلغاء لصاحب الأوردر بس' }
+
+      const reason = (a.reason || '').trim()
+      if (reason.length < 3) {
+        return { ok: false, error: 'السبب مطلوب', قول_للعميل: 'ممكن تقولّي السبب؟' }
+      }
+
+      await db
+        .from('marketplace_orders')
+        .update({
+          status: 'cancelled', // الـenum مافيهوش rejected — الفرق في cancelled_by
+          cancelled_at: new Date().toISOString(),
+          cancellation_reason: reason.slice(0, 300),
+          cancelled_by: isSupplier ? 'supplier' : 'customer',
+        })
+        .eq('id', order.id)
+
+      notifyOwner(
+        `${a.action === 'reject' ? '❌ أوردر مرفوض' : '🚫 أوردر ملغي'}\n\n` +
+          `${ref} · ${order.total_amount} ${order.currency || 'EGP'}\n` +
+          `السبب: ${reason.slice(0, 150)}\n` +
+          `من: ${isSupplier ? sup?.business_name || 'المورد' : order.guest_name || 'العميل'}`
+      )
+
+      return {
+        ok: true,
+        قول_للطرف: a.action === 'reject' ? `اتسجّل الرفض ✅` : `اتلغى الأوردر ✅`,
+        بلّغ_الطرف_التاني:
+          a.action === 'reject'
+            ? `للأسف المطعم مقدرش ينفّذ أوردر ${ref}. السبب: ${reason.slice(0, 120)}`
+            : `العميل لغى أوردر ${ref}. السبب: ${reason.slice(0, 120)}`,
+      }
+    }
+
+    return { ok: false, error: 'إجراء مش معروف' }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'فشل' }
+  }
+}
+
+/**
  * المواعيد — القديم كان بيعملها والجديد ضاعت.
  * من غيرها المارد **بيخترع مواعيد** ويوعد الناس بحاجات مش مسجّلة.
  */
@@ -831,6 +999,8 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await createSupplierGroup(input as never)
       case 'manage_meeting':
         return await manageMeeting(input as never)
+      case 'manage_order':
+        return await manageOrder(input as never)
       case 'record_unmet_demand':
         return await recordUnmetDemand(input as never)
       default:
