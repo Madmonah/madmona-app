@@ -436,6 +436,25 @@ app.post('/group-add', auth, async (req, res) => {
   }
 })
 
+// تغيير اسم الجروب. احتجناه لما اتعملت جروبات بأسماء وهمية جاية
+// من التسجيل التلقائي («حساب 1060138703» · «موردة جديدة») —
+// الاسم ده بيبان للمورّد ولكل حد في الجروب.
+app.post('/group-subject', auth, async (req, res) => {
+  const { group_jid, subject } = req.body || {}
+  if (!group_jid || !subject) {
+    return res.status(400).json({ ok: false, error: 'group_jid و subject مطلوبين' })
+  }
+  const { entry } = pickSession(req)
+  if (!entry?.connected) return res.status(503).json({ ok: false, error: 'مفيش جلسة متصلة' })
+
+  try {
+    await entry.sock.groupUpdateSubject(group_jid, String(subject).slice(0, 100))
+    res.json({ ok: true })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
 app.get('/group-invite', auth, async (req, res) => {
   const { group_jid } = req.query || {}
   if (!group_jid) return res.status(400).json({ ok: false, error: 'group_jid مطلوب' })
