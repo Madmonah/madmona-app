@@ -397,6 +397,16 @@ app.post('/group-create', auth, async (req, res) => {
     const jids = participants.map(toJid)
     const group = await entry.sock.groupCreate(subject, jids)
 
+    // كل الأعضاء أدمن — عشان المورد يقدر يضيف فريقه بنفسه
+    // من غير ما يستنانا. ده بيخلّي الجروب أداة شغل مش مجرد إشعارات.
+    try {
+      await entry.sock.groupParticipantsUpdate(group.id, jids, 'promote')
+      log.info({ session: id, group: group.id }, '👑 كل الأعضاء بقوا أدمن')
+    } catch (e) {
+      // مش مانع — الجروب اتعمل والرسالة هتتبعت
+      log.warn({ err: e.message }, 'مااتعملش ترقية للأدمن')
+    }
+
     // رسالة التعريف — بتتبعت فورًا عشان محدش يلاقي نفسه في جروب مجهول
     if (intro) {
       await entry.sock.sendMessage(group.id, { text: intro })
