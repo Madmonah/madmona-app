@@ -8,7 +8,7 @@ import {
   ArrowRight, Calendar, Building2, ShoppingBag,
   LogOut, Loader2, Lock, User, Phone, Crown, ChevronLeft,
   CheckCircle, Clock, AlertCircle, FolderTree, Edit2, Check, X, Heart,
-  BarChart3, Sparkles, Wallet,
+  BarChart3, Sparkles, Wallet, UtensilsCrossed, Star, PlusCircle, Users,
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import PushNotificationCard from '@/components/PushNotificationCard'
@@ -43,6 +43,7 @@ export default function AccountPage() {
   const [ordersCount, setOrdersCount] = useState(0)
   const [favoritesCount, setFavoritesCount] = useState(0)
   const [signingOut, setSigningOut] = useState(false)
+  const [restaurantListingId, setRestaurantListingId] = useState<string | null>(null)
 
   const [editingName, setEditingName] = useState(false)
   const [newName, setNewName] = useState('')
@@ -81,6 +82,37 @@ export default function AccountPage() {
         .maybeSingle()
 
       setSupplier(sup as Supplier | null)
+
+      // 🍽️ صاحب مطعم؟ ندوّر على إعلان ليه فيه أصناف منيو.
+      // لو لقينا، بنفتحله لينك مباشر على إدارة المنيو من «حسابي» —
+      // من غير ما يلف على الماركتبليس ويدوّر على إعلانه.
+      // الأنواع المولّدة ماتعرفش الجداول دي، فبنعدّي منها صراحة
+      // بدل @ts-expect-error اللي بيفضل معلّق لما الأنواع تتغيّر.
+      const db = supabaseBrowser as unknown as {
+        from: (t: string) => any
+      }
+      const supRow = sup as Supplier | null
+
+      if (supRow?.id) {
+        const { data: myListings } = await db
+          .from('listings')
+          .select('id')
+          .eq('supplier_id', supRow.id)
+          .limit(50)
+
+        const ids = ((myListings ?? []) as { id: string }[]).map((l) => l.id)
+        if (ids.length > 0) {
+          const { data: menuRow } = await db
+            .from('restaurant_menu_items')
+            .select('listing_id')
+            .in('listing_id', ids)
+            .limit(1)
+            .maybeSingle()
+
+          const lid = (menuRow as { listing_id?: string } | null)?.listing_id
+          if (lid) setRestaurantListingId(lid)
+        }
+      }
 
       // @ts-expect-error
       const { count: bCount } = await supabaseBrowser
@@ -382,6 +414,73 @@ export default function AccountPage() {
               iconBg="bg-[#1F6F5F]/10 text-[#1F6F5F]"
               title={t('account.supplier_dashboard')}
               subtitle={t('account.supplier_dashboard_sub')}
+            />
+
+            {/* 🍽️ صاحب مطعم → المنيو على طول.
+                ده أكتر تاب بيدخله يوميًا (سعر اتغيّر · صنف خلص)،
+                فماينفعش يلف عليه من جوّه الماركتبليس كل مرة. */}
+            {restaurantListingId && (
+              <>
+                <div className="h-px bg-gray-100 mx-6" />
+                <SectionLink
+                  href={`/supplier/marketplace/${restaurantListingId}/menu`}
+                  icon={<UtensilsCrossed className="w-5 h-5" />}
+                  iconBg="bg-orange-50 text-orange-600"
+                  title="منيو المطعم"
+                  subtitle="الأصناف والأسعار — عدّل أو وقّف صنف"
+                />
+              </>
+            )}
+
+            {/* باقي التابات — كانت كلها موجودة بس محدش بيوصلها
+                غير لو عرف يلف عليها من جوّه الماركتبليس */}
+            <div className="h-px bg-gray-100 mx-6" />
+            <SectionLink
+              href="/supplier/marketplace/orders"
+              icon={<ShoppingBag className="w-5 h-5" />}
+              iconBg="bg-blue-50 text-blue-600"
+              title="الطلبات"
+              subtitle="الطلبات الجديدة والجارية"
+            />
+            <div className="h-px bg-gray-100 mx-6" />
+            <SectionLink
+              href="/supplier/marketplace/bookings"
+              icon={<Calendar className="w-5 h-5" />}
+              iconBg="bg-purple-50 text-purple-600"
+              title="الحجوزات"
+              subtitle="مواعيد عملائك"
+            />
+            <div className="h-px bg-gray-100 mx-6" />
+            <SectionLink
+              href="/supplier/marketplace/reviews"
+              icon={<Star className="w-5 h-5" />}
+              iconBg="bg-amber-50 text-amber-600"
+              title="التقييمات"
+              subtitle="رأي العملاء في شغلك"
+            />
+            <div className="h-px bg-gray-100 mx-6" />
+            <SectionLink
+              href="/supplier/marketplace/new"
+              icon={<PlusCircle className="w-5 h-5" />}
+              iconBg="bg-green-50 text-green-600"
+              title="أضف إعلان"
+              subtitle="منتج أو خدمة جديدة"
+            />
+            <div className="h-px bg-gray-100 mx-6" />
+            <SectionLink
+              href="/supplier/team"
+              icon={<Users className="w-5 h-5" />}
+              iconBg="bg-slate-50 text-slate-600"
+              title="الفريق"
+              subtitle="ضيف موظفين يشتغلوا معاك"
+            />
+            <div className="h-px bg-gray-100 mx-6" />
+            <SectionLink
+              href="/supplier/erp/accounting"
+              icon={<BarChart3 className="w-5 h-5" />}
+              iconBg="bg-teal-50 text-teal-600"
+              title="الحسابات"
+              subtitle="مبيعاتك ومستحقاتك"
             />
           </div>
         )}
