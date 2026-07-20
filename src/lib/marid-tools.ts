@@ -129,6 +129,36 @@ export const MARID_TOOLS = [
       required: ['phone', 'title'],
     },
   },
+  {
+    name: 'create_project',
+    description:
+      'سجّل مشروع عقاري جديد بعت به مطوّر أو سمسار (كمبوند، مول، تاور، برج إداري). ' +
+      'ده غير create_listing_draft — ده للمشاريع الكبيرة اللي بتتعرض في بورصة مضمونة العقارية، ' +
+      'مش وحدة فرد بيأجّرها.\n\n' +
+      '⛔ ممنوع تستخدمها لو:\n' +
+      '• الاسم مش واضح — مشروع من غير اسم مالوش لازمة\n' +
+      '• الرسالة مكتوب فيها SOLDOUT أو «تم البيع» أو «خلصت» على المشروع ده\n' +
+      '• السعر أو المطوّر مش مذكور صراحة — ماتخمّنش، سيبه فاضي\n\n' +
+      'الأداة بتتأكد بنفسها إن المشروع مش موجود قبل ما تحفظ.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        title: { type: 'string', description: 'اسم المشروع زي ما هو مكتوب بالظبط' },
+        developer: { type: 'string', description: 'المطوّر — بس لو مذكور صراحة' },
+        area_label: { type: 'string', description: 'المنطقة بالعربي' },
+        property_type: {
+          type: 'string',
+          enum: ['residential', 'commercial', 'administrative', 'medical'],
+          description: 'نوع المشروع',
+        },
+        unit_label: { type: 'string', description: 'وصف الوحدات والمساحات زي ما مذكور' },
+        price_from: { type: 'number', description: 'أقل سعر مذكور بالجنيه' },
+        note: { type: 'string', description: 'سطر أو اتنين يلخّصوا العرض' },
+        sender_phone: { type: 'string', description: 'رقم اللي بعت المشروع' },
+      },
+      required: ['title', 'sender_phone'],
+    },
+  },
 ] as const
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -291,6 +321,93 @@ async function createListingDraft(a: {
   }
 }
 
+/**
+ * تسجيل مشروع عقاري في بورصة مضمونة.
+ *
+ * الضوابط دي مش نظرية — كل واحد فيها من غلطة كانت هتحصل يوم ٢٠ يوليو
+ * لما استخرجنا ٢٠ مشروع من رسايل الواتساب:
+ *
+ * ١) SOLDOUT — الرسالة الأصلية كان مكتوب فيها SOLDOUT جنب ٦ مشاريع.
+ *    لو اتنشروا كان العملاء هيسألوا على وحدات مباعة. الضرر حقيقي.
+ * ٢) التكرار — «Blitz» و«Blitz Mall» نفس المشروع. و«Ritz» طلع
+ *    «RITZ New Zayed» الموجود أصلاً.
+ * ٣) التشابه مش دليل — «Capital Square» و«Capital Prime» طلعوا ٧٢٪
+ *    متشابهين وهما مشروعين مختلفين. المقارنة بتنبّه، مابتقررش.
+ * ٤) الماركتبليس بيرفض إعلان من غير صورة — قانون سليم، فبنكتفي
+ *    بالبورصة لحد ما تبقى معانا صور.
+ */
+async function createProject(a: {
+  title: string
+  developer?: string
+  area_label?: string
+  property_type?: string
+  unit_label?: string
+  price_from?: number
+  note?: string
+  sender_phone: string
+}): Promise<ToolResult> {
+  const title = (a.title || '').trim()
+  if (title.length < 3) return { ok: false, error: 'اسم المشروع مش واضح — ماتسجّلش' }
+
+  // ── فحص التكرار ────────────────────────────────────────────────────
+  const norm = (s: string) =>
+    s.toLowerCase().replace(/\b(mall|tower|complex|center|centre|new|the)\b/g, '').replace(/[^a-z0-9؀-ۿ]/g, '')
+
+  const { data: all } = await db.from('property_market_items').select('id, title')
+  const target = norm(title)
+
+  const exact = (all ?? []).find((r: { title: string }) => norm(r.title || '') === target)
+  if (exact) {
+    return { ok: false, duplicate: true, existing: exact.title, قول_للعميل: 'المشروع ده موجود عندنا بالفعل 👍' }
+  }
+
+  // متشابه بس مش مطابق — نسجّل ونشاور، مانرفضش
+  const similar = (all ?? [])
+    .map((r: { title: string }) => r.title)
+    .filter((t: string) => {
+      const n = norm(t || '')
+      return n.length > 3 && (n.includes(target) || target.includes(n))
+    })
+    .slice(0, 3)
+
+  const { data, error } = await db
+    .from('property_market_items')
+    .insert({
+      title,
+      slug: title.toLowerCase().replace(/[^\w؀-ۿ\s-]/g, '').trim().replace(/\s+/g, '-').slice(0, 50) +
+        '-' + Math.random().toString(36).slice(2, 6),
+      developer: a.developer ?? null,
+      area: 'other',
+      area_label: a.area_label ?? null,
+      city: a.area_label ?? null,
+      segment: 'developer',
+      property_type: a.property_type ?? null,
+      unit_label: a.unit_label ?? null,
+      price_from: typeof a.price_from === 'number' ? a.price_from : null,
+      price_unit: 'egp_total',
+      note: a.note ?? null,
+      source_lead_phone: a.sender_phone,
+      source_name: 'المارد — واتساب',
+      // منشور على طول: محمد وافق يوم ٢٠ يوليو بعد ما اتفقنا على الضوابط.
+      // الضوابط فوق هي اللي بتحمي — مش مرحلة مراجعة يدوية.
+      status: 'published',
+      is_active: true,
+    })
+    .select('id, slug')
+    .maybeSingle()
+
+  if (error) return { ok: false, error: 'مش قادر أسجّل المشروع', detail: error.message }
+
+  return {
+    ok: true,
+    project_id: data?.id,
+    url: `${SITE}/real-estate/projects/${data?.slug}`,
+    ...(similar.length ? { مشاريع_شبهه_موجودة: similar } : {}),
+    قول_للعميل: `اتسجّل ونُشر في بورصة مضمونة العقارية ✅\n${SITE}/real-estate/projects/${data?.slug}`,
+    ملحوظة_داخلية: 'الماركتبليس محتاج صورة واحدة على الأقل — لو العميل بعت صور، قوله يبعتها عشان نعرضه هناك كمان',
+  }
+}
+
 // ── الموزّع ──────────────────────────────────────────────────────────────
 export async function runMaridTool(name: string, input: Record<string, unknown>): Promise<ToolResult> {
   try {
@@ -305,6 +422,8 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await getMyOrders(input as never)
       case 'create_listing_draft':
         return await createListingDraft(input as never)
+      case 'create_project':
+        return await createProject(input as never)
       default:
         return { error: `أداة مش معروفة: ${name}` }
     }
