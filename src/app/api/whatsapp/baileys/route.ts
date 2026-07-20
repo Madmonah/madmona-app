@@ -96,6 +96,98 @@ async function callClaudeWithMedia(
   return first && first.type === 'text' ? first.text : ''
 }
 
+// ── حفظ الميديا في الستوريدج ─────────────────────────────────────────────
+//
+// كنا بنبعت الملف لـClaude **وبنرميه**. النتيجة: صفر ملفات محفوظة،
+// والمسودات بتتعمل من غير صور — والداتابيز بترفض نشر إعلان من غير صورة.
+// فكل اللي بيبعتوا صور منتجاتهم كان شغلهم بيضيع.
+//
+// النظام القديم كان بيحفظ (whatsapp-webhook:401-474) وضاع في الترحيل.
+//
+// بيرجّع الرابط العام، ولو فشل بيرجّع null — الحفظ مايوقفش الرد أبدًا.
+async function saveMedia(
+  media: BaileysMedia,
+  type: string,
+  phone: string
+): Promise<string | null> {
+  try {
+    const bucket =
+      type === 'image' ? 'content-images' : type === 'video' ? 'project-media' : 'project-media'
+
+    const ext =
+      (media.filename?.split('.').pop() || '').toLowerCase() ||
+      (media.mimetype.split('/')[1] || 'bin').split(';')[0]
+
+    const safePhone = (phone || 'unknown').replace(/\D/g, '') || 'unknown'
+    const path = `wa/${safePhone}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
+
+    const { error } = await supabaseUntyped.storage
+      .from(bucket)
+      .upload(path, Buffer.from(media.data_base64, 'base64'), {
+        contentType: media.mimetype || 'application/octet-stream',
+        upsert: false,
+      })
+
+    if (error) {
+      console.error('[save-media]', error.message)
+      return null
+    }
+
+    const { data } = supabaseUntyped.storage.from(bucket).getPublicUrl(path)
+    return data?.publicUrl ?? null
+  } catch (err) {
+    console.error('[save-media]', err instanceof Error ? err.message : err)
+    return null
+  }
+}
+
+// ── اللينكات الممغنطة ────────────────────────────────────────────────────
+//
+// أي لينك مضمونة في الرد بيتحوّل لـ /l/<token> يدخّل العميل تلقائي.
+// من غيرها العميل بيوصل لصفحة الحجز وهو مش مسجّل دخول، فيسيبها —
+// وده كان بيلغي أوردرات فعليًا.
+//
+// النظام القديم كان بيعمل ده (whatsapp-webhook:295-323) وضاع في الترحيل.
+//
+// ⚠️ لو التحويل فشل، بنرجّع اللينك العادي. الرد لازم يوصل.
+const SITE_HOST = 'www.madmonacairo.com'
+
+async function magnetizeLinks(text: string, phone: string): Promise<string> {
+  if (!phone || !text.includes(SITE_HOST)) return text
+
+  // مانحوّلش صفحات الدخول والتسجيل — دي المفروض تفضل زي ما هي
+  const SKIP = ['/auth/', '/l/', '/supplier/login']
+
+  const all: string[] = text.match(/https?:\/\/[^\s)]+/g) ?? []
+  const urls = all.filter(
+    (u, i) => all.indexOf(u) === i && u.includes(SITE_HOST) && !SKIP.some((s) => u.includes(s))
+  )
+  if (!urls.length) return text
+
+  let out = text
+  for (const url of urls.slice(0, 3)) {
+    try {
+      const nextPath = new URL(url).pathname + new URL(url).search
+      const { data, error } = await supabaseUntyped
+        .from('wa_login_tokens')
+        .insert({
+          phone,
+          next_path: nextPath,
+          expires_at: new Date(Date.now() + 7 * 24 * 3600_000).toISOString(),
+          max_uses: 5,
+        })
+        .select('token')
+        .maybeSingle()
+
+      if (error || !data?.token) continue
+      out = out.split(url).join(`https://${SITE_HOST}/l/${data.token}`)
+    } catch {
+      // اللينك يفضل زي ما هو
+    }
+  }
+  return out
+}
+
 // ── نداء المارد بالأدوات ─────────────────────────────────────────────────
 //
 // المارد بيقدر يسأل الداتابيز قبل ما يرد: يبحث في الكتالوج، يشوف المتكلّم
@@ -109,6 +201,7 @@ async function callMaridWithTools(opts: {
   mediaBlocks: Array<Record<string, unknown>>
   senderPhone: string
   senderName: string | null
+  savedMediaUrl?: string | null
 }): Promise<string> {
   const MAX_TURNS = 4
 
@@ -120,6 +213,7 @@ async function callMaridWithTools(opts: {
 رقمه: ${opts.senderPhone}${opts.senderName ? `\nاسمه: ${opts.senderName}` : ''}
 
 استخدم الرقم ده مباشرة في الأدوات — ماتسألهوش عليه.
+${opts.savedMediaUrl ? `\n📎 الملف اللي بعته اتحفظ هنا:\n${opts.savedMediaUrl}\nلو هتسجّل إعلان أو مشروع، استخدم الرابط ده كصورة.\n` : ''}
 
 ═══════════════════════════════════════════════════════════
 عندك أدوات — استخدمها
@@ -301,6 +395,64 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: 'upsert_failed' }, { status: 500 })
     }
 
+    // ── ٠ج) المحادثة موقوفة؟ ────────────────────────────────────────────
+    // لو الأدمن أوقف المحادثة، المارد يسكت خالص. النظام القديم كان
+    // بيعمل كده وضاع في الترحيل — فأي محادثة محمد أوقفها كان المارد
+    // بيرجع يرد فيها من ورا ظهره.
+    {
+      const { data: conv } = await supabaseUntyped
+        .from('whatsapp_conversations')
+        .select('status')
+        .eq('id', conversationId)
+        .maybeSingle()
+
+      if (conv?.status === 'paused' || conv?.status === 'blocked') {
+        await logInboundMessage({
+          conversationId,
+          wa_message_id: body.message_id,
+          body: body.text || `[${body.type}]`,
+          messageType: body.type,
+        })
+        return NextResponse.json({ ok: true, logged: true, replied: false, reason: conv.status })
+      }
+    }
+
+    // ── ٠د) حارس اللوب ──────────────────────────────────────────────────
+    // لو المارد بعت أكتر من الحد في ساعة على نفس المحادثة، يبقى فيه
+    // دوران — بيوقف المحادثة وينبّه بدل ما يفضل يبعت.
+    // الرقم اللي بيبعت كتير في وقت قصير بيتقفل من واتساب.
+    const LOOP_LIMIT = Number(process.env.MARID_LOOP_LIMIT || 12)
+    {
+      const hourAgo = new Date(Date.now() - 3600_000).toISOString()
+      const { count } = await supabaseUntyped
+        .from('whatsapp_messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('conversation_id', conversationId)
+        .eq('direction', 'outbound')
+        .gte('created_at', hourAgo)
+
+      if ((count ?? 0) >= LOOP_LIMIT) {
+        await supabaseUntyped
+          .from('whatsapp_conversations')
+          .update({ status: 'paused' })
+          .eq('id', conversationId)
+
+        console.error('[loop-guard] وقفت المحادثة', conversationId, 'بعد', count, 'رسالة')
+
+        // تنبيه محمد — السكوت هنا أخطر من العطل
+        const owner = process.env.OWNER_PHONE || '201002229982'
+        await sendText({
+          to: owner,
+          body:
+            `⚠️ *حارس اللوب*\n\n` +
+            `وقفت محادثة ${phone || replyJid} تلقائيًا — المارد بعت ${count} رسالة في ساعة.\n\n` +
+            `شوف المحادثة، ولو تمام شيل الإيقاف من لوحة الأدمن.`,
+        }).catch(() => {})
+
+        return NextResponse.json({ ok: true, replied: false, reason: 'loop_guard' })
+      }
+    }
+
     // ── ٠ب) رد واحد للدفعة الواحدة ──────────────────────────────────────
     // الناس بتبعت كذا حاجة ورا بعض (٤ صور + وصف). لو ردّينا على كل
     // واحدة، بيوصله ٤ رسايل شبه متطابقة في دقيقة — وده بيطفّش.
@@ -371,9 +523,13 @@ export async function POST(request: NextRequest) {
     // ── ٢) فهم المحتوى ──────────────────────────────────────────────────
     let userText = body.text || ''
     const mediaBlocks: Array<Record<string, unknown>> = []
+    let savedMediaUrl: string | null = null
 
     if (body.media) {
       const mt = body.media.mimetype || ''
+
+      // نحفظ الأول — الملف بيضيع لو ماحفظناهوش دلوقتي
+      savedMediaUrl = await saveMedia(body.media, body.type, phone)
 
       if (body.type === 'audio') {
         const transcript = await transcribeAudio(body.media)
@@ -407,6 +563,7 @@ export async function POST(request: NextRequest) {
             ? '[فيديو]'
             : `[ملف: ${body.media.filename || body.media.mimetype}]`,
           userText.startsWith('العميل بعت') ? '' : userText,
+          savedMediaUrl ?? '',
         ]
           .filter(Boolean)
           .join(' ')
@@ -426,7 +583,8 @@ export async function POST(request: NextRequest) {
     // ── ٤) الرد الذكي ───────────────────────────────────────────────────
     // getConversationHistory بترجع {role, content} جاهزة — بنحوّلها نص
     // لأن callClaude بتاخد رسالة واحدة بس.
-    const history = await getConversationHistory(conversationId, 12)
+    // ٢٤ رسالة زي النظام القديم — ١٢ كانت بتقطع سياق المحادثات الطويلة
+    const history = await getConversationHistory(conversationId, 24)
     const historyText = history
       .slice(0, -1) // آخر واحدة هي الرسالة الحالية
       .map((h) => `${h.role === 'user' ? 'العميل' : 'المارد'}: ${h.content}`)
@@ -442,6 +600,7 @@ export async function POST(request: NextRequest) {
       mediaBlocks,
       senderPhone: phone,
       senderName: body.name ?? null,
+      savedMediaUrl,
     })
 
     // البرومبت بيطلب JSON — بنفك بأمان ولو فشل نستخدم النص كما هو
@@ -452,10 +611,22 @@ export async function POST(request: NextRequest) {
       parsed = { reply: raw }
     }
 
-    const reply = (parsed.reply || '').trim()
+    // إنقاذ الرد: لو الـJSON اتقطع، بنستخرج النص الخام بدل ما نسكت.
+    // السكوت أوحش حاجة — العميل بيفتكر إننا مش موجودين.
+    let reply = (parsed.reply || '').trim()
+    if (!reply && raw.trim().length > 15) {
+      reply = raw.trim().replace(/^\s*\{[\s\S]*?"reply"\s*:\s*"/, '').replace(/"[\s\S]*$/, '')
+      if (reply.length < 15) reply = raw.trim().slice(0, 900)
+    }
+
     if (!reply) {
+      // آخر خط دفاع — بلاغ لمحمد بدل ما العميل يتساب في السكوت
+      console.error('[empty-reply]', conversationId, raw.slice(0, 120))
       return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'empty_reply' })
     }
+
+    // اللينكات تتمغنط قبل الإرسال — العميل يدخل بضغطة واحدة
+    reply = await magnetizeLinks(reply, phone)
 
     const sent = await sendText({
       to: phone,
