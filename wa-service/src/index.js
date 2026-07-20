@@ -231,7 +231,17 @@ async function bootSessions() {
   const forwardLidMap = (m) => forwardToApp({ kind: 'lid_map', ...m })
 
   const fromDisk = knownSessionIds(AUTH_DIR).map((id) => ({ id, label: id }))
-  const all = CONFIGURED.length ? CONFIGURED : fromDisk
+
+  // ⚠️ كان: `CONFIGURED.length ? CONFIGURED : fromDisk` — يعني لو
+  //    SESSIONS متظبطة، أي رقم اتربط بعدين (بـ POST /sessions) بيتجاهل
+  //    تمامًا وبيضيع أول إعادة تشغيل، رغم إن بياناته متسجّلة على القرص.
+  //
+  //    رقم اتربط ماينفعش يختفي عشان حد نسي يحدّث متغيّر بيئة.
+  //    بندمج الاتنين: المتغيّر بيدّي الأسماء، والقرص بيضمن ما حدّش يضيع.
+  const all = [...CONFIGURED]
+  for (const d of fromDisk) {
+    if (!all.some((s) => s.id === d.id)) all.push(d)
+  }
 
   // لو الترحيل حصل وماكانش في القايمة، ضيفه
   if (migrated && !all.some((s) => s.id === migrated)) {

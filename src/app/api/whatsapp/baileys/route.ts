@@ -36,6 +36,8 @@ interface BaileysMedia {
 }
 
 interface BaileysPayload {
+  /** رقم المارد اللي الرسالة جت عليه — الرد لازم يخرج من نفس الرقم */
+  session_id?: string
   reply_jid?: string
   is_lid?: boolean
   from: string
@@ -474,11 +476,11 @@ export async function POST(request: NextRequest) {
       const row = rowRaw as { id: string; verified: boolean; expires_at: string } | null
 
       if (!row) {
-        await sendText({ to: phone, jid: replyJid, body: 'الكود ده مش موجود. ارجع للموقع واطلب كود جديد 🙏' })
+        await sendText({ to: phone, jid: replyJid, session: body.session_id, body: 'الكود ده مش موجود. ارجع للموقع واطلب كود جديد 🙏' })
         return NextResponse.json({ ok: true, login: 'unknown_code' })
       }
       if (new Date(row.expires_at) < new Date()) {
-        await sendText({ to: phone, jid: replyJid, body: 'الكود ده انتهت صلاحيته. اطلب كود جديد من الموقع 🙏' })
+        await sendText({ to: phone, jid: replyJid, session: body.session_id, body: 'الكود ده انتهت صلاحيته. اطلب كود جديد من الموقع 🙏' })
         return NextResponse.json({ ok: true, login: 'expired' })
       }
 
@@ -487,7 +489,7 @@ export async function POST(request: NextRequest) {
         .update({ verified: true, verified_phone: phone, verified_at: new Date().toISOString() } as never)
         .eq('id', row.id)
 
-      await sendText({ to: phone, jid: replyJid, body: '✅ تم التأكيد! ارجع للموقع، هتلاقي نفسك دخلت.' })
+      await sendText({ to: phone, jid: replyJid, session: body.session_id, body: '✅ تم التأكيد! ارجع للموقع، هتلاقي نفسك دخلت.' })
       return NextResponse.json({ ok: true, login: 'verified' })
     }
 
@@ -499,6 +501,17 @@ export async function POST(request: NextRequest) {
     })
     if (!conversationId) {
       return NextResponse.json({ ok: false, error: 'upsert_failed' }, { status: 500 })
+    }
+
+    // 📞 نربط المحادثة بالرقم اللي جت عليه — عشان أي إرسال لاحق
+    //    (تذكير ميعاد، لينك استلام، تحويل لجروب) يعرف يخرج من
+    //    نفس الرقم. العميل لازم يشوف رد من اللي كلّمه هو.
+    if (body.session_id) {
+      await supabaseUntyped
+        .from('whatsapp_conversations')
+        .update({ session_id: body.session_id })
+        .eq('id', conversationId)
+        .is('session_id', null)
     }
 
     // ── ٠ج) المحادثة موقوفة؟ ────────────────────────────────────────────
@@ -874,6 +887,9 @@ export async function POST(request: NextRequest) {
     const sent = await sendText({
       to: phone,
       jid: replyJid,
+      // 📞 الرد يخرج من نفس الرقم اللي الرسالة جت عليه.
+      //    من غير كده اللي كلّم الرقم التاني ممكن يجيله رد من الأول.
+      session: body.session_id,
       body: reply,
       conversationId,
       agentName: 'المارد',

@@ -42,10 +42,12 @@ export async function POST(request: NextRequest) {
     subject?: string
     participants?: string[]
     intro?: string
-    action?: 'create' | 'rename' | 'picture' | 'profile_pic'
+    action?: 'create' | 'rename' | 'picture' | 'profile_pic' | 'add_session'
     group_jid?: string
     image_url?: string
     phone?: string
+    session?: string
+    label?: string
   }
   try {
     body = await request.json()
@@ -70,6 +72,30 @@ export async function POST(request: NextRequest) {
       })
       const data = await res.json().catch(() => ({}))
       return NextResponse.json(data, { status: res.ok ? 200 : 502 })
+    } catch (err) {
+      return NextResponse.json(
+        { ok: false, error: err instanceof Error ? err.message : 'فشل الاتصال بالخدمة' },
+        { status: 502 }
+      )
+    }
+  }
+
+  // ربط رقم مارد جديد — بيرجّع لينك الـQR اللي بيتمسح من الموبايل
+  if (body.action === 'add_session') {
+    if (!body.session) {
+      return NextResponse.json({ ok: false, error: 'session مطلوب' }, { status: 400 })
+    }
+    try {
+      const res = await fetch(`${url.replace(/\/$/, '')}/sessions`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-madmona-secret': serviceSecret },
+        body: JSON.stringify({ session: body.session, label: body.label || body.session }),
+      })
+      const data = await res.json().catch(() => ({}))
+      return NextResponse.json(
+        { ...data, qr_page: `${url.replace(/\/$/, '')}/qr?session=${body.session}` },
+        { status: res.ok ? 200 : 502 }
+      )
     } catch (err) {
       return NextResponse.json(
         { ok: false, error: err instanceof Error ? err.message : 'فشل الاتصال بالخدمة' },

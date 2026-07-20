@@ -45,6 +45,12 @@ export interface SendTextParams {
   body: string
   conversationId?: string
   agentName?: string
+  /**
+   * رقم المارد اللي هيخرج منه الرد (`201002229982` مثلًا).
+   * لو فاضي، الخدمة بتاخد أول رقم متصل — وده غلط لما يبقى
+   * عندنا أكتر من رقم: العميل ممكن يجيله رد من رقم ماكلّمهوش.
+   */
+  session?: string
   aiGenerated?: boolean
 }
 
@@ -192,7 +198,11 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
           'Content-Type': 'application/json',
           'x-madmona-secret': WA_SERVICE_SECRET,
         },
-        body: JSON.stringify({ to, jid, text: params.body }),
+        // 📞 الرد بيخرج من نفس الرقم اللي العميل كلّمه.
+        //    من غير `session` الخدمة بتاخد أول رقم متصل — يعني اللي
+        //    كلّم الرقم التاني ممكن يجيله رد من الأول، ويوصله كرسالة
+        //    من مجهول. ده نفس نمط البدء البارد اللي بيوقّف الأرقام.
+        body: JSON.stringify({ to, jid, text: params.body, session: params.session }),
       })
       const data = await res.json().catch(() => ({}))
 
