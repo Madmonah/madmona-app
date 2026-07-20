@@ -8,7 +8,7 @@
 //   4. Set webhook verify token: WHATSAPP_VERIFY_TOKEN (any random string you choose)
 //   5. Configure webhook in Meta dashboard pointing to /api/whatsapp/webhook
 
-import { supabase as supabaseAdmin } from './supabase'
+import { supabase as supabaseAdmin, supabaseUntyped } from './supabase'
 
 const WA_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID
 const WA_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN
@@ -69,6 +69,20 @@ export interface TemplateComponent {
 // ============================================================================
 
 /**
+ * هل ده مُعرّف مخفي (LID) مش رقم تليفون؟
+ *
+ * واتساب بيدّي بعض المستخدمين مُعرّف زي `23889212117111` بدل رقمهم.
+ * ١٤ خانة فأكتر من غير كود دولة معروف = مش رقم.
+ * الإرسال لواحد زي ده بيتقبل من Baileys ويدّي ID والرسالة بتضيع.
+ */
+export function looksLikeLid(raw: string): boolean {
+  const d = (raw || '').replace(/\D/g, '')
+  if (d.length < 14) return false
+  const knownCodes = ['20', '966', '971', '973', '974', '965', '962', '961', '963', '964', '1', '44', '49', '33', '39', '34', '90', '7', '212', '213', '216', '218', '249', '252', '967', '968', '970', '91', '92', '86']
+  return !knownCodes.some((c) => d.startsWith(c) && d.length <= 13)
+}
+
+/**
  * Normalize Egyptian phone numbers to WhatsApp format.
  * "01002229982" -> "201002229982"
  * "+201002229982" -> "201002229982"
@@ -98,10 +112,31 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
   // واتساب بيبعت مُعرّف مخفي (`xxxx@lid`) بدل الرقم الحقيقي، ومفيش طريقة
   // نرجّع منه رقم. لو حاولنا نعيد التركيب بنبعت لرقم مش موجود — الرسالة
   // بتتقبل وبتاخد ID وبتروح في الفراغ. فلما يبقى عندنا JID، نستخدمه زي ما هو.
-  const jid = params.jid?.includes('@') ? params.jid : undefined
+  let jid = params.jid?.includes('@') ? params.jid : undefined
   const to = normalizePhone(params.to)
   if (!to && !jid) {
     return { ok: false, error: 'Invalid phone number' }
+  }
+
+  // لو الرقم نفسه مُعرّف مخفي ومعندناش JID جاهز (رسالة إحنا بادئينها —
+  // جماعية، إشعار حجز) — ندوّر على الـ JID المحفوظ للمحادثة.
+  // من غير الخطوة دي الرسالة هتتبعت لرقم مش موجود وتضيع بصمت.
+  if (!jid && looksLikeLid(to)) {
+    const { data: conv } = await supabaseUntyped
+      .from('whatsapp_conversations')
+      .select('metadata')
+      .eq('contact_phone', params.to)
+      .maybeSingle()
+
+    const saved = (conv?.metadata as { wa_jid?: string } | null)?.wa_jid
+    if (saved?.includes('@')) {
+      jid = saved
+    } else {
+      return {
+        ok: false,
+        error: `مُعرّف مخفي من غير JID محفوظ (${to}) — مش هينفع نبعتله من غير ما يكلّمنا الأول`,
+      }
+    }
   }
 
   // ── المسار الأساسي: خدمة المارد (Baileys على Railway) ──────────────────

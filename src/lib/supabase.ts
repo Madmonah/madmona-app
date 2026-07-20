@@ -16,3 +16,19 @@ export const supabase = createClient<Database>(
     },
   }
 )
+
+// ============================================================
+// نسخة غير مطبوعة — للجداول اللي لسه مش في الأنواع المولّدة
+//
+// `src/types/supabase.ts` قديم ومافيهوش جداول الواتساب
+// (`whatsapp_conversations`, `whatsapp_messages`) ولا الدوال بتاعتها،
+// فالعميل المطبوع بيرجّع `never` وأي استعلام عليها بيدّي خطأ نوع.
+//
+// باقي الكود كان بيحلّها بإنشاء عميل جديد غير مطبوع في كل ملف.
+// ده أنضف: نقطة واحدة، والسبب مكتوب.
+//
+// 🔧 الحل الدائم: إعادة توليد الأنواع
+//    npx supabase gen types typescript --project-id mjhflxpxunwycbiquoig > src/types/supabase.ts
+//    وبعدها نشيل ده ونستخدم `supabase` عادي.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const supabaseUntyped = supabase as any

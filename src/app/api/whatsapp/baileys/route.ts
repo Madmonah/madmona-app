@@ -4,7 +4,7 @@
 // ⚠️ كل نداء هنا متحقق من توقيعه الفعلي في lib/whatsapp.ts و lib/anthropic.ts
 
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase as supabaseAdmin } from '@/lib/supabase'
+import { supabase as supabaseAdmin, supabaseUntyped } from '@/lib/supabase'
 import {
   upsertConversation,
   logInboundMessage,
@@ -173,6 +173,29 @@ export async function POST(request: NextRequest) {
     })
     if (!conversationId) {
       return NextResponse.json({ ok: false, error: 'upsert_failed' }, { status: 500 })
+    }
+
+    // لو الراسل بمُعرّف مخفي — نحفظ الـ JID بتاعه.
+    // ده الفرصة الوحيدة: مفيش طريقة نوصله بعد كده غير بالـ JID ده،
+    // فلو ماحفظناهوش دلوقتي، أي رسالة إحنا نبدأها ليه هتضيع.
+    if (body.is_lid && replyJid) {
+      // ندمج مش نستبدل — العمود فيه مفاتيح تانية (زي supplier_kind)
+      const { data: existing } = await supabaseUntyped
+        .from('whatsapp_conversations')
+        .select('metadata')
+        .eq('id', conversationId)
+        .maybeSingle()
+
+      const merged = {
+        ...((existing?.metadata as Record<string, unknown> | null) ?? {}),
+        wa_jid: replyJid,
+        is_lid: true,
+      }
+
+      await supabaseUntyped
+        .from('whatsapp_conversations')
+        .update({ metadata: merged })
+        .eq('id', conversationId)
     }
 
     // ── ٢) فهم المحتوى ──────────────────────────────────────────────────
