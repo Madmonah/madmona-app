@@ -6,6 +6,7 @@
 // v2: excludes WABA self number. v1: safety net per Mohamed.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { waSend } from '../_shared/wa-send.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -32,16 +33,10 @@ async function getCfg(key: string, fb = ''): Promise<string> {
 }
 
 async function sendWA(to: string, body: string): Promise<{ ok: boolean; wa_id?: string; err?: string }> {
-  const { data } = await sb.from('whatsapp_config').select('key, value').in('key', ['phone_number_id', 'access_token'])
-  const m = Object.fromEntries((data || []).map((r: { key: string; value: string }) => [r.key, r.value]))
-  const r = await fetch(`https://graph.facebook.com/v21.0/${m.phone_number_id}/messages`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${m.access_token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to, type: 'text', text: { body: enforceBrand(body), preview_url: true } })
-  })
-  const d = await r.json().catch(() => ({}))
-  if (!r.ok) return { ok: false, err: d?.error?.message || `HTTP ${r.status}` }
-  return { ok: true, wa_id: d?.messages?.[0]?.id }
+  // بيعدّي من البوابة الموحّدة — مايناديش Graph مباشرة.
+  // السبب في _shared/wa-send.ts
+  const r = await waSend({ to, text: enforceBrand(body), agentName: 'المارد' })
+  return { ok: r.ok, wa_id: r.wa_message_id ?? undefined, err: r.error }
 }
 
 async function catalogBlock(text: string): Promise<string> {

@@ -14,6 +14,7 @@
 // ويبلّغنا بأي غلط (محمد: "خليه ينشر ويكلم الناس ترجع عليه").
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { waSend } from '../_shared/wa-send.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -33,18 +34,9 @@ async function getMetaCreds(): Promise<{ phone_id: string; token: string }> {
 }
 
 async function sendWA(to: string, body: string): Promise<{ wa_id?: string; error?: string }> {
-  try {
-    const { phone_id, token } = await getMetaCreds()
-    if (!phone_id || !token) return { error: 'no creds' }
-    const r = await fetch(`https://graph.facebook.com/v21.0/${phone_id}/messages`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to, type: 'text', text: { body, preview_url: true } })
-    })
-    const d = await r.json()
-    if (!r.ok) return { error: d?.error?.message || `HTTP ${r.status}` }
-    return { wa_id: d?.messages?.[0]?.id }
-  } catch (e) { return { error: String(e).slice(0, 150) } }
+  // البوابة الموحّدة — مافيش نداء مباشر لـ Graph
+  const r = await waSend({ to, text: body, agentName: 'المارد' })
+  return r.ok ? { wa_id: r.wa_message_id ?? undefined } : { error: r.error }
 }
 
 async function resolveCategory(slug: string | null): Promise<string | null> {

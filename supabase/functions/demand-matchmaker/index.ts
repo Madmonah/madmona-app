@@ -11,6 +11,7 @@
 // Cron: every 15 min. Also callable on-demand from admin-command.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { waSend } from '../_shared/wa-send.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -154,14 +155,9 @@ Deno.serve(async (req) => {
 
     // دايجست لمحمد لو فيه حاجة اتعملت
     if (digestLines.length > 0 && adminPhone) {
-      const { data: creds } = await sb.from('whatsapp_config').select('key, value').in('key', ['phone_number_id', 'access_token'])
-      const m = Object.fromEntries((creds || []).map((r: { key: string; value: string }) => [r.key, r.value]))
+      // البوابة الموحّدة — مافيش نداء مباشر لـ Graph
       const body = `🎯 مطابقة الطلبات الغير متوفرة:\n${digestLines.join('\n')}`
-      await fetch(`https://graph.facebook.com/v21.0/${m.phone_number_id}/messages`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${m.access_token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: adminPhone.replace(/\D/g, ''), type: 'text', text: { body, preview_url: false } })
-      }).catch(() => {})
+      await waSend({ to: adminPhone.replace(/\D/g, ''), text: body, agentName: 'المارد' }).catch(() => {})
     }
 
     return json({ ok: true, processed, digest: digestLines })

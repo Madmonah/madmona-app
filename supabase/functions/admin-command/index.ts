@@ -4,6 +4,7 @@
 // v5: DESIGN power + demand matching. v4: full agentic loop.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { waSend } from '../_shared/wa-send.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -31,19 +32,18 @@ async function getCreds(): Promise<{ phone_id: string; token: string }> {
 }
 
 async function sendWA(to: string, body: string): Promise<void> {
-  const { phone_id, token } = await getCreds()
+  // البوابة الموحّدة — مافيش نداء مباشر لـ Graph
   const chunks: string[] = []
   let rest = body || ''
   while (rest.length > 0) { chunks.push(rest.slice(0, 3800)); rest = rest.slice(3800) }
   for (const chunk of chunks) {
-    await fetch(`https://graph.facebook.com/v21.0/${phone_id}/messages`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to, type: 'text', text: { body: chunk, preview_url: false } })
-    }).catch(() => {})
+    await waSend({ to, text: chunk, agentName: 'المارد' }).catch(() => {})
   }
 }
 
+// ⚠️ إرسال الصور لسه بينادي Graph — البوابة الموحّدة نصية بس.
+// Cloud API واقف، يعني الدالة دي مش شغالة دلوقتي.
+// الحل: نضيف دعم الميديا للبوابة (wa-service عنده /send-media جاهز).
 async function sendWAImage(to: string, imageUrl: string, caption: string): Promise<{ ok: boolean; err?: string }> {
   const { phone_id, token } = await getCreds()
   const r = await fetch(`https://graph.facebook.com/v21.0/${phone_id}/messages`, {

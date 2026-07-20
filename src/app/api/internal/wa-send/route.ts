@@ -22,9 +22,15 @@ export const runtime = 'nodejs'
 export const maxDuration = 30
 
 export async function POST(request: NextRequest) {
+  // بنقبل أي من السرّين الداخليين.
+  //
+  // ليه الاتنين: دوال Supabase Edge بتعيش في نظام تاني بأسراره الخاصة.
+  // لو البوابة قبلت `WA_SERVICE_SECRET` بس، كل دالة Edge هتفشل بصمت
+  // لو السر مش متظبط عندها — وده بالظبط نوع العطل اللي بنحاربه.
+  // `CRON_SECRET` سر داخلي بنفس مستوى الثقة ومتظبط أصلاً.
   const secret = request.headers.get('x-internal-secret')
-  const expected = process.env.WA_SERVICE_SECRET || process.env.CRON_SECRET
-  if (!expected || secret !== expected) {
+  const accepted = [process.env.WA_SERVICE_SECRET, process.env.CRON_SECRET].filter(Boolean)
+  if (!accepted.length || !secret || !accepted.includes(secret)) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   }
 
