@@ -633,7 +633,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     try {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/madmona-otp`,
+        '/api/auth/otp',
         {
           method: 'POST',
           headers: {

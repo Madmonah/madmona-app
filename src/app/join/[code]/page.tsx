@@ -39,7 +39,7 @@ export default function JoinPage({ params }: { params: { code: string } }) {
     if (!name || !phone || !branchId) { setError('املا كل الخانات'); return }
     setError(''); setSending(true)
     try {
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/madmona-otp`, {
+      const res = await fetch('/api/auth/otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}` },
         body: JSON.stringify({ phone: cleanPhone(phone), full_name: name }),

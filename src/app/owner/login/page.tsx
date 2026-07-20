@@ -42,7 +42,7 @@ export default function OwnerLoginPage() {
     if (!phone) return
     setError(''); setSending(true)
     try {
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/owner-wa-otp`, {
+      const res = await fetch('/api/auth/otp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
