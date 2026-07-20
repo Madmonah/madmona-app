@@ -15,7 +15,7 @@
 //
 // المتغيرات المطلوبة في الدالة:
 //   APP_BASE_URL      = https://www.madmonacairo.com
-//   WA_SERVICE_SECRET = نفس اللي في Vercel
+//   EDGE_GATEWAY_SECRET = نفس اللي في Vercel (سر مخصّص للبوابة)
 
 interface WaSendArgs {
   to: string
@@ -35,10 +35,14 @@ export async function waSend(args: WaSendArgs): Promise<WaSendResult> {
   // @ts-ignore Deno
   const base = (Deno.env.get('APP_BASE_URL') || 'https://www.madmonacairo.com').replace(/\/$/, '')
   // @ts-ignore Deno
-  const secret = Deno.env.get('WA_SERVICE_SECRET') || Deno.env.get('CRON_SECRET') || ''
+  const secret =
+    Deno.env.get('EDGE_GATEWAY_SECRET') ||
+    Deno.env.get('WA_SERVICE_SECRET') ||
+    Deno.env.get('CRON_SECRET') ||
+    ''
 
   if (!secret) {
-    return { ok: false, error: 'WA_SERVICE_SECRET ناقص في إعدادات الدالة' }
+    return { ok: false, error: 'EDGE_GATEWAY_SECRET ناقص في أسرار الدالة' }
   }
 
   try {

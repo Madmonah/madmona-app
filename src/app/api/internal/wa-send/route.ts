@@ -29,7 +29,11 @@ export async function POST(request: NextRequest) {
   // لو السر مش متظبط عندها — وده بالظبط نوع العطل اللي بنحاربه.
   // `CRON_SECRET` سر داخلي بنفس مستوى الثقة ومتظبط أصلاً.
   const secret = request.headers.get('x-internal-secret')
-  const accepted = [process.env.WA_SERVICE_SECRET, process.env.CRON_SECRET].filter(Boolean)
+  const accepted = [
+    process.env.EDGE_GATEWAY_SECRET, // مخصّص لدوال Supabase Edge
+    process.env.WA_SERVICE_SECRET,
+    process.env.CRON_SECRET,
+  ].filter(Boolean)
   if (!accepted.length || !secret || !accepted.includes(secret)) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   }
