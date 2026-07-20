@@ -273,14 +273,20 @@ Deno.serve(async (_req) => {
           //
           //    الإعلان بيتحفظ كامل ومستني صورته الحقيقية. أول ما
           //    صاحبه يبعت صورة، المؤقتة بتتشال وبيتنشر.
+          // ⚠️ كنت بمنع النشر لو الصورة مؤقتة — وده كان غلط.
+          //    المورّد اللي بعتلنا شغله يستاهل يظهر. اللي بيضر هو
+          //    تكرار نفس الصورة عبر إعلانات مختلفة، مش غياب الصورة.
+          //    بننشر، وبنعلّم الصورة عشان نستبدلها أول ما تيجي
+          //    صورته الحقيقية.
+          const { error: pubErr } = await sb().from('listings')
+            .update({ status: LISTING_STATUS }).eq('id', listingId)
+          if (pubErr) {
+            out.errors.push(`${d.id}: نُشر كمسودة — ${pubErr.message}`)
+          }
           if (usedPlaceholder) {
-            out.errors.push(`${d.id}: مستني صورة حقيقية — اتحفظ كمسودة`)
-          } else {
-            const { error: pubErr } = await sb().from('listings')
-              .update({ status: LISTING_STATUS }).eq('id', listingId)
-            if (pubErr) {
-              out.errors.push(`${d.id}: نُشر كمسودة — ${pubErr.message}`)
-            }
+            await sb().from('listing_photos')
+              .update({ quality_flag: 'placeholder' })
+              .eq('listing_id', listingId)
           }
           const token = genToken()
           await sb().from('listing_claims').insert({ listing_id: listingId, token, status: 'pending' })
