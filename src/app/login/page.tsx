@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 'use client'
 
 // =====================================================================
@@ -36,12 +37,12 @@ export default function MadmonaLoginPage() {
   // داخل خلاص؟
   useEffect(() => {
     (async () => {
-      const token = localStorage.getItem('madmona_token')
+      const token = safeStorage.get('madmona_token')
       if (token) {
         // @ts-expect-error rpc typing
         const { data } = await supabase.rpc('madmona_resolve', { p_token: token })
         if (data?.authenticated) { router.push('/home'); return }
-        localStorage.removeItem('madmona_token')
+        safeStorage.remove('madmona_token')
       }
       setChecking(false)
     })()
@@ -57,7 +58,7 @@ export default function MadmonaLoginPage() {
       p_phone: cleanPhone(phone), p_pin: pin,
     })
     if (err || !data?.success) { setError(data?.error || err?.message || 'رقم التليفون أو الـPIN غلط'); setSending(false); return }
-    localStorage.setItem('madmona_token', data.token)
+    safeStorage.set('madmona_token', data.token)
     router.push('/me')
   }
 

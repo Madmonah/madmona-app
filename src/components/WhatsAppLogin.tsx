@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { Loader2, MessageCircle, CheckCircle, RefreshCw } from 'lucide-react'
+import { safeStorage } from '@/lib/safe-storage'
 
 // =====================================================================
 // 🧞 الدخول بالواتساب — «ابعت الكود للمارد» (المسار الأساسي للدخول)
@@ -69,7 +70,7 @@ export default function WhatsAppLogin({
             })
             if (error) { setPhase('idle'); setErr('حصلت مشكلة في الدخول — جرب تاني'); return }
             // 🔗 توحيد 100%: نفس الدخلة بتفتح كمان جلسات /me و/my-projects والحجوزات
-            if (fj.madmona_token) { try { localStorage.setItem('madmona_token', fj.madmona_token) } catch { /* */ } }
+            if (fj.madmona_token) { try { safeStorage.set('madmona_token', fj.madmona_token) } catch { /* */ } }
             setPhase('done')
             onDone({ phone: fj.phone || null, full_name: fj.full_name || null, madmona_token: fj.madmona_token || null })
           }

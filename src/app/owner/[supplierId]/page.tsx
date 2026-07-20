@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
+import { safeStorage } from '@/lib/safe-storage'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
 import { rpcSafe } from '@/lib/rpc'
 import {
@@ -24,7 +25,7 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
 
   async function init() {
     setLoading(true)
-    const token = localStorage.getItem('madmona_owner_token')
+    const token = safeStorage.get('madmona_owner_token')
     if (!token) {
       router.push('/owner/login')
       return
@@ -52,10 +53,10 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
   useEffect(() => { init() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId])
 
   async function logout() {
-    const token = localStorage.getItem('madmona_owner_token')
+    const token = safeStorage.get('madmona_owner_token')
     if (token) {
       await rpcSafe(supabase, 'owner_logout', { p_token: token })
-      localStorage.removeItem('madmona_owner_token')
+      safeStorage.remove('madmona_owner_token')
     }
     router.push('/owner/login')
   }

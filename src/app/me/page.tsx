@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
+import { safeStorage } from '@/lib/safe-storage'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
 import { rpcSafe } from '@/lib/rpc'
 import {
@@ -43,7 +44,7 @@ export default function MyDashboard() {
   const [notifs, setNotifs] = useState<any[]>([])
   const [unread, setUnread] = useState(0)
 
-  const token = () => (typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null)
+  const token = () => (typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null)
 
   const load = useCallback(async () => {
     const t = token()

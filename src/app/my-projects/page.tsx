@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 // 🏗️ /my-projects — لوحة المطوّر
 // الدخول بالموبايل عن طريق واتساب (من /login) — من غير إيميل ولا باسورد.
 // المطوّر بيشوف مشاريعه بس، ويقدر:
@@ -56,13 +57,13 @@ export default function MyProjectsPage() {
   const [savedId, setSavedId] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('madmona_token') || '' : ''
+  const token = typeof window !== 'undefined' ? safeStorage.get('madmona_token') || '' : ''
 
   const load = useCallback(async () => {
     if (!token) { router.push('/login'); return }
     try {
       const r = await fetch('/api/my-projects', { headers: { 'x-madmona-token': token } })
-      if (r.status === 401) { localStorage.removeItem('madmona_token'); router.push('/login'); return }
+      if (r.status === 401) { safeStorage.remove('madmona_token'); router.push('/login'); return }
       const d = await r.json()
       setProjects(d.projects || [])
       setPhone(d.phone || '')

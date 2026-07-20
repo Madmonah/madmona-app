@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 'use client'
 
 // ============================================================================
@@ -30,7 +31,7 @@ export default function MadmonaListingClaimer() {
 
     // Don't re-claim the same token in the same browser
     try {
-      const claimed: string[] = JSON.parse(localStorage.getItem(CLAIMED_KEY) || '[]')
+      const claimed: string[] = JSON.parse(safeStorage.get(CLAIMED_KEY) || '[]')
       if (claimed.includes(token)) return
     } catch {}
 
@@ -50,9 +51,9 @@ export default function MadmonaListingClaimer() {
 
         if (json?.success) {
           try {
-            const claimed: string[] = JSON.parse(localStorage.getItem(CLAIMED_KEY) || '[]')
+            const claimed: string[] = JSON.parse(safeStorage.get(CLAIMED_KEY) || '[]')
             claimed.push(token)
-            localStorage.setItem(CLAIMED_KEY, JSON.stringify(claimed))
+            safeStorage.set(CLAIMED_KEY, JSON.stringify(claimed))
           } catch {}
 
           // ALSO claim any other unclaimed drafts under the same phone number.

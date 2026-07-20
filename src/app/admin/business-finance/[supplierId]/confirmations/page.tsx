@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { safeStorage } from '@/lib/safe-storage'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
 import { rpcSafe } from '@/lib/rpc'
 import {
@@ -23,7 +24,7 @@ export default function ConfirmationsPage({ params }: { params: { supplierId: st
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState<string | null>(null)
 
-  const token = () => (typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null)
+  const token = () => (typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null)
 
   const load = useCallback(async () => {
     setLoading(true)

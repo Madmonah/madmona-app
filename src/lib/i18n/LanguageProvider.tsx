@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 'use client'
 // src/lib/i18n/LanguageProvider.tsx
 // ============================================================
@@ -41,7 +42,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   // script in <head>, so this just syncs React state — no flash).
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(LANG_STORAGE_KEY) as Lang | null
+      const saved = safeStorage.get(LANG_STORAGE_KEY) as Lang | null
       if (saved === 'ar' || saved === 'en') {
         setLangState(saved)
         applyToDocument(saved)
@@ -55,7 +56,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLangState(l)
     applyToDocument(l)
     try {
-      localStorage.setItem(LANG_STORAGE_KEY, l)
+      safeStorage.set(LANG_STORAGE_KEY, l)
       // 1-year cookie so the server layout can pick the right dir on next load
       document.cookie = `${LANG_STORAGE_KEY}=${l};path=/;max-age=31536000;samesite=lax`
     } catch {

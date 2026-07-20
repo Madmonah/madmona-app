@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 // ============================================================
 // src/lib/cart.ts
 // Single-supplier cart stored in localStorage.
@@ -56,7 +57,7 @@ function emptyCart(): Cart {
 export function readCart(): Cart {
   if (typeof window === 'undefined') return emptyCart()
   try {
-    const raw = window.localStorage.getItem(CART_KEY)
+    const raw = safeStorage.get(CART_KEY)
     if (!raw) return emptyCart()
     const parsed = JSON.parse(raw) as Cart
     if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.items)) {
@@ -72,9 +73,9 @@ function writeCart(cart: Cart) {
   if (typeof window === 'undefined') return
   try {
     if (!cart.items || cart.items.length === 0) {
-      window.localStorage.removeItem(CART_KEY)
+      safeStorage.remove(CART_KEY)
     } else {
-      window.localStorage.setItem(CART_KEY, JSON.stringify(cart))
+      safeStorage.set(CART_KEY, JSON.stringify(cart))
     }
     window.dispatchEvent(new CustomEvent(EVENT_NAME))
   } catch {}

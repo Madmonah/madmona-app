@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { Sparkles, X, ArrowLeft } from 'lucide-react'
+import { safeStorage } from '@/lib/safe-storage'
 
 // ============================================================================
 // LaunchBanner — DOUBLE OFFER promotional banner
@@ -44,7 +45,7 @@ export default function LaunchBanner() {
   const [index, setIndex] = useState(0)
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEY)) return
+    if (typeof window !== 'undefined' && safeStorage.get(STORAGE_KEY)) return
     if (Date.now() > LAUNCH_END.getTime()) return
     const t = setTimeout(() => setVisible(true), 800)
     return () => clearTimeout(t)
@@ -63,7 +64,7 @@ export default function LaunchBanner() {
     e.preventDefault()
     e.stopPropagation()
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, '1')
+      safeStorage.set(STORAGE_KEY, '1')
     }
     setVisible(false)
   }

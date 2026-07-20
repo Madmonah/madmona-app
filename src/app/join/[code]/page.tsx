@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Loader2, Phone, User, MessageCircle, CheckCircle2, ArrowLeft, Building2, BadgeCheck, Briefcase } from 'lucide-react'
+import { safeStorage } from '@/lib/safe-storage'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabase = createClient(SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -59,7 +60,7 @@ export default function JoinPage({ params }: { params: { code: string } }) {
       p_phone: cleanPhone(phone), p_code: otp, p_full_name: name,
     })
     if (ve || !v?.success) { setError(v?.error || 'الكود غلط'); setSending(false); return }
-    localStorage.setItem('madmona_token', v.token)
+    safeStorage.set('madmona_token', v.token)
 
     // 2) submit employee join request
     // @ts-expect-error rpc typing

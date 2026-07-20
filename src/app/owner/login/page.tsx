@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { Loader2, Phone, CheckCircle2, LogIn, ShieldCheck, ArrowLeft, MessageCircle } from 'lucide-react'
+import { safeStorage } from '@/lib/safe-storage'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabase = createClient(SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -25,7 +26,7 @@ export default function OwnerLoginPage() {
   // Already logged in? (token in localStorage)
   useEffect(() => {
     (async () => {
-      const token = localStorage.getItem('madmona_owner_token')
+      const token = safeStorage.get('madmona_owner_token')
       if (token) {
         // @ts-expect-error
         const { data } = await supabase.rpc('owner_resolve_by_token', { p_token: token })
@@ -67,7 +68,7 @@ export default function OwnerLoginPage() {
     })
     if (err || !data?.success) { setError(data?.error || err?.message || 'الكود غلط'); setSending(false); return }
 
-    localStorage.setItem('madmona_owner_token', data.token)
+    safeStorage.set('madmona_owner_token', data.token)
     // @ts-expect-error
     const { data: acc } = await supabase.rpc('owner_resolve_by_token', { p_token: data.token })
     const access = acc?.access || []

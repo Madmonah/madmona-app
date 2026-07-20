@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 'use client'
 
 // ============================================================================
@@ -36,7 +37,7 @@ export default function QuoteOrdersPage() {
   const [busy, setBusy] = useState<string | null>(null)
   const [flash, setFlash] = useState<string | null>(null)
 
-  const token = () => (typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null)
+  const token = () => (typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null)
 
   const load = useCallback(async () => {
     setLoading(true); setErr(null)

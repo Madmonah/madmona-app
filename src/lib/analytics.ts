@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 // ============================================================
 // src/lib/analytics.ts — frontend funnel events tracker
 // Calls the public.track_event() RPC to log key user actions.
@@ -9,10 +10,10 @@ import { supabaseBrowser } from './supabase-browser'
 function getOrCreateVisitorId(): string {
   if (typeof window === 'undefined') return 'server'
   try {
-    let id = localStorage.getItem('madmona_visitor_id')
+    let id = safeStorage.get('madmona_visitor_id')
     if (!id) {
       id = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36)
-      localStorage.setItem('madmona_visitor_id', id)
+      safeStorage.set('madmona_visitor_id', id)
     }
     return id
   } catch {

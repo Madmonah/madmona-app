@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { MessageCircle, X, Phone, Check, Loader2 } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { safeStorage } from '@/lib/safe-storage'
 
 // ============================================================================
 // BookingHelper — multi-purpose conversion-rescue widget
@@ -39,10 +40,10 @@ const ADMIN_WHATSAPP = '+201002229982'
 function getVisitorId(): string {
   if (typeof window === 'undefined') return 'server'
   try {
-    let id = localStorage.getItem('madmona_visitor_id')
+    let id = safeStorage.get('madmona_visitor_id')
     if (!id) {
       id = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36)
-      localStorage.setItem('madmona_visitor_id', id)
+      safeStorage.set('madmona_visitor_id', id)
     }
     return id
   } catch { return 'anon' }

@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 'use client'
 
 /* Manager console — /me/team
@@ -21,7 +22,7 @@ import {
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 const DAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
-const token = () => (typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null)
+const token = () => (typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null)
 const hhmm = (iso: string | null) => {
   if (!iso) return ''
   try { return new Date(iso).toLocaleTimeString('en-GB', { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit', hour12: false }) } catch { return '' }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { safeStorage } from '@/lib/safe-storage'
 import {
   ArrowRight, Calendar, Building2, ShoppingBag,
   LogOut, Loader2, Lock, User, Phone, Crown, ChevronLeft,
@@ -59,7 +60,7 @@ export default function AccountPage() {
         // «سجّل دخولك» غلط رغم إنهم داخلين فعلاً. لو معاهم توكن، بنسيبهم
         // يكمّلوا: MyAssetsCard بتفهم التوكن وهتوريهم حاجاتهم.
         const waToken =
-          typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null
+          typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null
         if (waToken) { setStage('ready'); return }
         setStage('unauthenticated')
         return

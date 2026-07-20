@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 'use client'
 // ReferralCapture — «شير واكسب»: يلتقط ?ref= من أي صفحة ويخزنه، وأول ما المستخدم يسجل دخول
 // بيربط الإحالة مرة واحدة عبر /api/referral/apply. (6 Jul 2026)
@@ -12,13 +13,13 @@ export default function ReferralCapture() {
     try {
       const url = new URL(window.location.href)
       const ref = (url.searchParams.get('ref') || '').trim().toUpperCase()
-      if (ref && /^[A-Z0-9]{4,12}$/.test(ref) && !localStorage.getItem(DONE)) {
-        localStorage.setItem(KEY, ref)
+      if (ref && /^[A-Z0-9]{4,12}$/.test(ref) && !safeStorage.get(DONE)) {
+        safeStorage.set(KEY, ref)
       }
     } catch { /* ignore */ }
 
-    const stored = localStorage.getItem(KEY)
-    if (!stored || localStorage.getItem(DONE)) return
+    const stored = safeStorage.get(KEY)
+    if (!stored || safeStorage.get(DONE)) return
 
     supabaseBrowser.auth.getSession().then(async ({ data }) => {
       const token = data.session?.access_token
@@ -31,8 +32,8 @@ export default function ReferralCapture() {
         })
         const j = await r.json().catch(() => ({}))
         if (r.ok && (j.ok || j.already)) {
-          localStorage.setItem(DONE, '1')
-          localStorage.removeItem(KEY)
+          safeStorage.set(DONE, '1')
+          safeStorage.remove(KEY)
         }
       } catch { /* retry next visit */ }
     })

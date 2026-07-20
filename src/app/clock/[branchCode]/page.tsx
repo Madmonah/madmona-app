@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 'use client'
 
 /* Employee attendance via QR — /clock/[branchCode].
@@ -24,8 +25,8 @@ const supabase = createClient(SUPABASE_URL, ANON)
 function getDeviceId(): string {
   if (typeof window === 'undefined') return ''
   try {
-    let id = localStorage.getItem('madmona_device_id')
-    if (!id) { id = (window.crypto?.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2))); localStorage.setItem('madmona_device_id', id) }
+    let id = safeStorage.get('madmona_device_id')
+    if (!id) { id = (window.crypto?.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2))); safeStorage.set('madmona_device_id', id) }
     return id
   } catch { return '' }
 }

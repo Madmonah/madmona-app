@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { safeStorage } from '@/lib/safe-storage'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
 import { rpcSafe } from '@/lib/rpc'
 import {
@@ -147,7 +148,7 @@ function SalariesSection({ supplierId, employees, loading, onChanged }: any) {
   function startEdit(e: any) { setEditId(e.id); setVal(String(e.salary_egp || 0)); setMsg(null) }
 
   async function save(empId: string) {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null
+    const token = typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null
     if (!token) { setMsg({ text: 'سجّل دخول الأول', ok: false }); return }
     const newSalary = parseFloat(val)
     if (isNaN(newSalary) || newSalary < 0) { setMsg({ text: 'مبلغ غير صالح', ok: false }); return }
@@ -251,7 +252,7 @@ function SalaryHistoryModal({ supplierId, onClose }: any) {
 
   useEffect(() => {
     (async () => {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null
+      const token = typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null
       if (!token) { setLoading(false); return }
       // @ts-expect-error rpc typing
       const { data } = await supabase.rpc('admin_list_salary_history', { p_token: token, p_supplier_id: supplierId })

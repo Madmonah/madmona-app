@@ -14,6 +14,7 @@ import ReferralCapture from '@/components/ReferralCapture'
 import AutoResubscribe from '@/components/AutoResubscribe'
 import DailyMessageBanner from '@/components/DailyMessageBanner'
 import TelegramBotFab from '@/components/TelegramBotFab'
+import { safeStorage } from '@/lib/safe-storage'
 // 🔴 شبكة أمان: أي RPC تفشل، بيظهر تنبيه أحمر بدل ما تعدّي في صمت (13 Jul 2026)
 import RpcErrorToast from '@/components/RpcErrorToast'
 import './globals.css'
@@ -40,7 +41,7 @@ const inter = Inter({
 
 // Runs before paint: reads the saved language and sets <html lang/dir>
 // so switching to English never flashes RTL first.
-const NO_FLASH_LANG = `(function(){try{var m=document.cookie.match(/(?:^|; )madmona_lang=(ar|en)/);var l=(localStorage.getItem('madmona_lang')||(m&&m[1])||'ar');var e=document.documentElement;e.lang=l;e.dir=(l==='en'?'ltr':'rtl');}catch(e){}})();`
+const NO_FLASH_LANG = `(function(){try{var m=document.cookie.match(/(?:^|; )madmona_lang=(ar|en)/);var l=(safeStorage.get('madmona_lang')||(m&&m[1])||'ar');var e=document.documentElement;e.lang=l;e.dir=(l==='en'?'ltr':'rtl');}catch(e){}})();`
 
 // Metricool web analytics tracker (brand hash) — loads be.js then registers the page view.
 const METRICOOL_TRACKER = `function loadScript(a){var b=document.getElementsByTagName("head")[0],c=document.createElement("script");c.type="text/javascript",c.src="https://tracker.metricool.com/resources/be.js",c.onreadystatechange=a,c.onload=a,b.appendChild(c)}loadScript(function(){beTracker.t({hash:"c9accfe580e3aaee641686f8f516bdcd"})});`

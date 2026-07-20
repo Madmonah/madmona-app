@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 // ============================================================================
 // saved-accounts.ts — Manages list of remembered accounts in localStorage
 //
@@ -18,7 +19,7 @@ export interface SavedAccount {
 export function getSavedAccounts(): SavedAccount[] {
   if (typeof window === 'undefined') return []
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = safeStorage.get(STORAGE_KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed)) return []
@@ -41,7 +42,7 @@ export function saveAccount(phone: string, label: string, role?: string): void {
       { phone, label: label || phone, role, lastUsed: Date.now() },
       ...filtered,
     ].slice(0, MAX_ACCOUNTS)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+    safeStorage.set(STORAGE_KEY, JSON.stringify(updated))
   } catch {
     // ignore quota errors
   }
@@ -52,7 +53,7 @@ export function removeSavedAccount(phone: string): void {
   try {
     const existing = getSavedAccounts()
     const filtered = existing.filter(a => a.phone !== phone)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered))
+    safeStorage.set(STORAGE_KEY, JSON.stringify(filtered))
   } catch {
     // ignore
   }
@@ -61,7 +62,7 @@ export function removeSavedAccount(phone: string): void {
 export function clearAllSavedAccounts(): void {
   if (typeof window === 'undefined') return
   try {
-    localStorage.removeItem(STORAGE_KEY)
+    safeStorage.remove(STORAGE_KEY)
   } catch {
     // ignore
   }

@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 'use client'
 
 /* Shared Madmona customer account gate (phone + WhatsApp OTP).
@@ -25,7 +26,7 @@ export function useMadmonaAuth() {
 
   useEffect(() => {
     (async () => {
-      const t = typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null
+      const t = typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null
       if (t) {
         // @ts-expect-error rpc typing
         const { data } = await supabase.rpc('madmona_resolve', { p_token: t })
@@ -35,7 +36,7 @@ export function useMadmonaAuth() {
           setChecking(false)
           return
         } else if (typeof window !== 'undefined') {
-          localStorage.removeItem('madmona_token')
+          safeStorage.remove('madmona_token')
         }
       }
       // Admin bypass: a logged-in Madmona admin (Supabase Auth) skips the customer gate

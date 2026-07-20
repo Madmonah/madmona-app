@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 'use client';
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
@@ -341,7 +342,7 @@ function AddListingPageInner({
     // Token priority: URL > localStorage
     let activeToken: string | null = urlToken;
     if (!activeToken && typeof window !== 'undefined') {
-      try { activeToken = window.localStorage.getItem('madmona_draft_token'); } catch {}
+      try { activeToken = safeStorage.get('madmona_draft_token'); } catch {}
     }
 
     // Seed from URL/localStorage synchronously
@@ -359,7 +360,7 @@ function AddListingPageInner({
     // submission, so the supplier adds item #2, #3... in seconds.
     const anotherToken = params.get('another');
     if (anotherToken) {
-      try { window.localStorage.removeItem('madmona_draft_token'); } catch {}
+      try { safeStorage.remove('madmona_draft_token'); } catch {}
       (async () => {
         try {
           const res = await fetch(`/api/listing-drafts?token=${anotherToken}`);
@@ -396,7 +397,7 @@ function AddListingPageInner({
         if (!res.ok || !json.success || !json.draft) {
           // Stale token (deleted/expired). Clear it.
           if (typeof window !== 'undefined') {
-            try { window.localStorage.removeItem('madmona_draft_token'); } catch {}
+            try { safeStorage.remove('madmona_draft_token'); } catch {}
           }
           setToken(null);
           return;
@@ -495,7 +496,7 @@ function AddListingPageInner({
       if (newToken && !token) {
         setToken(newToken);
         if (typeof window !== 'undefined') {
-          try { window.localStorage.setItem('madmona_draft_token', newToken); } catch {}
+          try { safeStorage.set('madmona_draft_token', newToken); } catch {}
         }
       }
       // Keep accumulating local state with whatever was just sent.
@@ -528,7 +529,7 @@ function AddListingPageInner({
   function discardDraft() {
     // Clear local resume state + DB-linked token so a fresh wizard starts.
     if (typeof window !== 'undefined') {
-      try { window.localStorage.removeItem('madmona_draft_token'); } catch {}
+      try { safeStorage.remove('madmona_draft_token'); } catch {}
     }
     setToken(null);
     setDraft({ source: 'whatsapp_link' });

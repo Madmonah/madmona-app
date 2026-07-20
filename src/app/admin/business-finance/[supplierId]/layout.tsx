@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { Loader2, ShieldAlert, LogIn, Lock, Eye } from 'lucide-react'
+import { safeStorage } from '@/lib/safe-storage'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -55,7 +56,7 @@ export default function BusinessFinanceLayout({
 
   useEffect(() => {
     (async () => {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null
+      const token = typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null
       // 1) Owner/manager path (WhatsApp-OTP token) — e.g. Ahmed for Elite
       if (token) {
         // @ts-expect-error rpc typing

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Sparkles, X, ArrowLeft, ShieldCheck, Clock, TrendingUp } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { safeStorage } from '@/lib/safe-storage'
 
 // ============================================================================
 // WelcomeSupplierBanner
@@ -31,7 +32,7 @@ export default function WelcomeSupplierBanner({ userName }: Props) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (localStorage.getItem(STORAGE_KEY)) return
+    if (safeStorage.get(STORAGE_KEY)) return
     // Small delay so it animates in nicely after the rest of the page
     const t = setTimeout(() => setVisible(true), 300)
     return () => clearTimeout(t)
@@ -39,7 +40,7 @@ export default function WelcomeSupplierBanner({ userName }: Props) {
 
   const handleDismiss = () => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, '1')
+      safeStorage.set(STORAGE_KEY, '1')
     }
     setVisible(false)
   }

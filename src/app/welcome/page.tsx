@@ -2,6 +2,7 @@
 
 import { useState, useEffect, type ReactNode } from 'react'
 import Link from 'next/link'
+import { safeStorage } from '@/lib/safe-storage'
 import {
   Sparkles, Shield, Zap, Headphones, ArrowLeft, ArrowRight,
   ChevronLeft, Check, Building2, Search, Wand2, BadgePercent,
@@ -22,7 +23,7 @@ export default function WelcomePage() {
 
   // Mark as seen so we can redirect returning users elsewhere (used by middleware later)
   useEffect(() => {
-    try { localStorage.setItem('madmona_welcome_seen', '1') } catch {}
+    try { safeStorage.set('madmona_welcome_seen', '1') } catch {}
   }, [])
 
   function reset() {

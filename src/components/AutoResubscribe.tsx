@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 'use client'
 // AutoResubscribe (6 Jul 2026) — إصلاح ذاتي صامت لاشتراكات البوش:
 // لو الإذن granted والمستخدم مسجل دخول → يجدد الاشتراك تلقائيًا في الخلفية.
@@ -18,14 +19,14 @@ export default function AutoResubscribe() {
         if (Notification.permission !== 'granted') return
 
         // مرة كل 24 ساعة كفاية
-        const last = Number(localStorage.getItem(STAMP) || 0)
+        const last = Number(safeStorage.get(STAMP) || 0)
         if (Date.now() - last < 24 * 3600 * 1000) return
 
         const { data } = await supabaseBrowser.auth.getSession()
         if (!data.session) return
 
         const res = await subscribeToPush()
-        if (res.ok) localStorage.setItem(STAMP, String(Date.now()))
+        if (res.ok) safeStorage.set(STAMP, String(Date.now()))
       } catch { /* silent */ }
     }
     // استنى شوية بعد التحميل عشان منزاحمش الصفحة

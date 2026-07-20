@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
+import { safeStorage } from '@/lib/safe-storage'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
 import { rpcSafe } from '@/lib/rpc'
 import {
@@ -55,11 +56,11 @@ export default function MadmonaHome() {
   }
 
   async function init() {
-    const token = localStorage.getItem('madmona_token')
+    const token = safeStorage.get('madmona_token')
     if (!token) { router.push('/login'); return }
     // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('madmona_resolve', { p_token: token })
-    if (!data?.authenticated) { localStorage.removeItem('madmona_token'); router.push('/login'); return }
+    if (!data?.authenticated) { safeStorage.remove('madmona_token'); router.push('/login'); return }
     setMe(data)
 
     if (data.is_employee) {
@@ -94,7 +95,7 @@ export default function MadmonaHome() {
   useEffect(() => { init() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [])
 
   async function reviewReq(supplierId: string, reqId: string, action: 'approve' | 'reject') {
-    const token = localStorage.getItem('madmona_token'); if (!token) return
+    const token = safeStorage.get('madmona_token'); if (!token) return
     setBusyReq(reqId)
     await rpcSafe(supabase, 'admin_review_employee_join', { p_token: token, p_request_id: reqId, p_action: action })
     setJoinReqs(prev => ({ ...prev, [supplierId]: (prev[supplierId] || []).filter(r => r.id !== reqId) }))
@@ -119,7 +120,7 @@ export default function MadmonaHome() {
 
   async function sendTip() {
     if (!tipEmp || !tipAmount) return
-    const token = localStorage.getItem('madmona_token'); if (!token) return
+    const token = safeStorage.get('madmona_token'); if (!token) return
     setTipBusy(true)
     // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('madmona_create_tip', {
@@ -141,7 +142,7 @@ export default function MadmonaHome() {
   async function placeOrder() {
     const items = Object.entries(cart).map(([product_id, qty]) => ({ product_id, qty }))
     if (!items.length) return
-    const token = localStorage.getItem('madmona_token'); if (!token) return
+    const token = safeStorage.get('madmona_token'); if (!token) return
     setOrderBusy(true)
     // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('madmona_create_product_order', {
@@ -152,10 +153,10 @@ export default function MadmonaHome() {
   }
 
   async function logout() {
-    const token = localStorage.getItem('madmona_token')
+    const token = safeStorage.get('madmona_token')
     if (token) {
       await rpcSafe(supabase, 'madmona_logout', { p_token: token })
-      localStorage.removeItem('madmona_token')
+      safeStorage.remove('madmona_token')
     }
     router.push('/login')
   }

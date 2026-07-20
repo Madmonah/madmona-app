@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { Loader2, Sparkles } from 'lucide-react'
+import { safeStorage } from '@/lib/safe-storage'
 
 // =====================================================================
 // /l/[token] — لينك المارد الممغنط 🧞
@@ -52,7 +53,7 @@ export default function MagicLinkPage() {
           return
         }
         // 🔗 توحيد 100%: لينك المارد بيفتح كمان جلسات /me و/my-projects القديمة
-        if (j.madmona_token) { try { localStorage.setItem('madmona_token', j.madmona_token) } catch { /* */ } }
+        if (j.madmona_token) { try { safeStorage.set('madmona_token', j.madmona_token) } catch { /* */ } }
         router.replace(dest)
         router.refresh()
       } catch (e) {

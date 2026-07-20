@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Bell, X, Loader2, Sparkles, CheckCircle } from 'lucide-react'
+import { safeStorage } from '@/lib/safe-storage'
 import {
   isPushSupported,
   getNotificationPermission,
@@ -66,7 +67,7 @@ export default function NotificationPrompt() {
 
       // 6. Check dismissal cooldown
       try {
-        const dismissedAt = localStorage.getItem(STORAGE_KEY)
+        const dismissedAt = safeStorage.get(STORAGE_KEY)
         if (dismissedAt) {
           const ts = parseInt(dismissedAt, 10)
           if (!isNaN(ts)) {
@@ -113,7 +114,7 @@ export default function NotificationPrompt() {
 
   const handleDismiss = () => {
     try {
-      localStorage.setItem(STORAGE_KEY, Date.now().toString())
+      safeStorage.set(STORAGE_KEY, Date.now().toString())
     } catch (e) {
       // Ignore
     }

@@ -1,3 +1,4 @@
+import { safeStorage } from '@/lib/safe-storage'
 'use client'
 // =====================================================================
 // 🔑 MyAssetsCard — «حاجاتي» في شاشة حسابي  (15 Jul 2026)
@@ -76,7 +77,7 @@ export default function MyAssetsCard() {
         // بنبعت التوكن لو موجود — الدالة بتفهم الاتنين، فمحدش بيتسجّل خروج
         // وإحنا بنوحّد الهوية تحت.
         const waToken =
-          typeof window !== 'undefined' ? localStorage.getItem('madmona_token') : null
+          typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null
 
         // @ts-expect-error — أنواع الـRPC المولّدة لسه متعرفش my_assets
         const { data: res } = await supabaseBrowser.rpc('my_assets', {

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { Loader2, Building2, ChevronLeft, LogOut } from 'lucide-react'
+import { safeStorage } from '@/lib/safe-storage'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
 import { rpcSafe } from '@/lib/rpc'
 
@@ -16,7 +17,7 @@ export default function OwnerSelectPage() {
 
   useEffect(() => {
     (async () => {
-      const token = localStorage.getItem('madmona_owner_token')
+      const token = safeStorage.get('madmona_owner_token')
       if (!token) { router.push('/owner/login'); return }
       // @ts-expect-error
       const { data } = await supabase.rpc('owner_resolve_by_token', { p_token: token })
@@ -30,10 +31,10 @@ export default function OwnerSelectPage() {
   }, [])
 
   async function logout() {
-    const token = localStorage.getItem('madmona_owner_token')
+    const token = safeStorage.get('madmona_owner_token')
     if (token) {
       await rpcSafe(supabase, 'owner_logout', { p_token: token })
-      localStorage.removeItem('madmona_owner_token')
+      safeStorage.remove('madmona_owner_token')
     }
     router.push('/owner/login')
   }

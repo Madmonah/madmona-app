@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Sparkles, X, ArrowLeft, Building2, ShoppingBag, Heart } from 'lucide-react'
+import { safeStorage } from '@/lib/safe-storage'
 
 // ============================================================================
 // MUACampaignBanner — Banner مخصص لزوار إعلانات Meta لميكب أرتيست
@@ -48,7 +49,7 @@ function MUABannerInner() {
     if (!isMUATraffic) return
 
     // Check if user dismissed before
-    if (localStorage.getItem(STORAGE_KEY)) return
+    if (safeStorage.get(STORAGE_KEY)) return
 
     // Small delay for smoother UX
     const t = setTimeout(() => setVisible(true), 200)
@@ -59,7 +60,7 @@ function MUABannerInner() {
     setAnimatingOut(true)
     setTimeout(() => {
       if (typeof window !== 'undefined') {
-        localStorage.setItem(STORAGE_KEY, '1')
+        safeStorage.set(STORAGE_KEY, '1')
       }
       setVisible(false)
     }, 200)

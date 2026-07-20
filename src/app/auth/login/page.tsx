@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
 import { saveAccount } from '@/lib/saved-accounts'
+import { safeStorage } from '@/lib/safe-storage'
 import {
   ArrowRight, Phone, Lock, AlertCircle, Loader2, LogIn, Sparkles, KeyRound,
 } from 'lucide-react'
@@ -62,7 +63,7 @@ function LoginContent() {
         p_phone: normalized, p_pin: password,
       })
       if (emp?.success) {
-        localStorage.setItem('madmona_token', emp.token)
+        safeStorage.set('madmona_token', emp.token)
         router.push('/me')
         return
       }
