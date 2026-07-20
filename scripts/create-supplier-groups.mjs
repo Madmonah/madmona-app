@@ -79,9 +79,15 @@ const realEstateSuppliers = new Set((reListings || []).map((l) => l.supplier_id)
 const MADMONA_SUPPLIER = '7310f6ef-e474-4ef8-8b8a-388b5e1f5694'
 const OUR_PHONES = ['201002229982', ...TEAM]
 
+// ⚠️ أسماء وهمية من التسجيل التلقائي — «موردة جديدة» · «حساب 1060138703».
+//    جروب اسمه «مضمونة × حساب 1060138703» شكله وحش قدام المورّد
+//    وقدام أي حد يشوفه. نتخطّاهم لحد ما يتحدّد اسمهم الحقيقي.
+const PLACEHOLDER = /^(مورد|موردة|مورّد|مورّدة)\s*جديد|^حساب\s*\d|^user\s*\d|^\s*$/i
+
 const eligible = suppliers.filter((s) => {
   if (hasGroup.has(s.id)) return false
   if (s.id === MADMONA_SUPPLIER) return false
+  if (PLACEHOLDER.test(s.business_name || '')) return false
   const ph = phoneOf[s.profile_id]
   if (!ph || ph.startsWith('oauth:')) return false
   // أرقامنا إحنا — مش موردين
