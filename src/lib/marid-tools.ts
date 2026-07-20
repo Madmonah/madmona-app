@@ -171,6 +171,23 @@ export const MARID_TOOLS = [
     },
   },
   {
+    name: 'read_link',
+    description:
+      '⚠️ افتح لينك واقرا اللي فيه. **استخدمها فورًا** لما حد يبعت لينك — ' +
+      'منيو (yallamenu · linktr.ee · me-qr) أو PDF أو صفحة مشروع.\n\n' +
+      'من غيرها إنت **مش شايف** اللينك أصلاً. حصل يوم ٢٠ يوليو إن مطعم ' +
+      'بعت لينك منيوه والمارد قاله «هسجّل الأصناف دلوقتي» وهو مش قادر ' +
+      'يفتحه — فالمطعم استنى ومحصلش حاجة.\n\n' +
+      'بعد ما تقراه: سجّل الأصناف بـ create_listing_draft صنف صنف.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        url: { type: 'string', description: 'اللينك كامل' },
+      },
+      required: ['url'],
+    },
+  },
+  {
     name: 'search_projects',
     description:
       'ابحث في مشاريع بورصة مضمونة العقارية (١١٤ مشروع من مطوّرين). ' +
@@ -1219,6 +1236,67 @@ function notifyOwner(text: string): void {
 }
 
 // ── الموزّع ──────────────────────────────────────────────────────────────
+// 🔗 المارد يقرا اللينك بنفسه
+//
+// أغلب المطاعم بتبعت **لينك منيو** مش ملف — yallamenu · linktr.ee ·
+// me-qr. وماكانش عندنا أداة تفتح لينك خالص، فالمارد كان بيوعد
+// «هسجّل الأصناف من اللينك» وميحصلش حاجة.
+//
+// ⚠️ الضوابط:
+//   • https بس — مفيش ملفات محلية ولا شبكة داخلية
+//   • مهلة ١٥ث عشان ما نعلّقش الرد
+//   • ٢٠٠ ألف حرف كحد أقصى (المنيوهات الكبيرة بتوصل ٥٠ألف)
+//   • النتيجة نص خام — المارد هو اللي بيفهمه ويطلع منه الأصناف
+async function readLink(a: { url?: string }): Promise<ToolResult> {
+  const url = (a.url || '').trim()
+  if (!/^https:\/\//i.test(url)) {
+    return { ok: false, error: 'اللينك لازم يبدأ بـ https' }
+  }
+
+  // ⛔ ممنوع الشبكة الداخلية — لينك من عميل ماينفعش يوصل لخدماتنا
+  if (/localhost|127\.0\.0\.1|169\.254\.|10\.|192\.168\.|\.internal/i.test(url)) {
+    return { ok: false, error: 'لينك غير مسموح' }
+  }
+
+  try {
+    const res = await fetch(url, {
+      headers: { 'user-agent': 'Mozilla/5.0 (compatible; MadmonaBot/1.0)' },
+      signal: AbortSignal.timeout(15_000),
+    })
+    if (!res.ok) return { ok: false, error: `اللينك مش شغّال (${res.status})` }
+
+    const type = res.headers.get('content-type') || ''
+    if (/pdf/i.test(type)) {
+      return {
+        ok: false,
+        error: 'ده ملف PDF — اطلب من صاحبه يبعته كملف على الواتساب مباشرة عشان أقدر أقراه',
+      }
+    }
+
+    const html = (await res.text()).slice(0, 400_000)
+
+    // نشيل السكريبت والستايل وبعدين الوسوم — الباقي هو المحتوى
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 200_000)
+
+    if (text.length < 40) {
+      return { ok: false, error: 'الصفحة فاضية أو محتاجة جافاسكريبت — اطلب المنيو كصور' }
+    }
+
+    return { ok: true, data: { url, محتوى: text } }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'خطأ'
+    return { ok: false, error: /timeout|abort/i.test(msg) ? 'اللينك أخد وقت طويل' : msg }
+  }
+}
+
 export async function runMaridTool(name: string, input: Record<string, unknown>): Promise<ToolResult> {
   try {
     switch (name) {
@@ -1242,6 +1320,8 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await manageMeeting(input as never)
       case 'manage_order':
         return await manageOrder(input as never)
+      case 'read_link':
+        return await readLink(input as never)
       case 'search_projects':
         return await searchProjects(input as never)
       case 'get_referral_code':
