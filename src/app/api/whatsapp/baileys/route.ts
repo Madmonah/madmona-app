@@ -816,8 +816,8 @@ export async function POST(request: NextRequest) {
     // وده شكل مكسور بيوحي إن اللي بيرد آلة. بنصلّحه قبل الإرسال
     // بدل ما نعتمد على إن النموذج يفتكر.
     reply = reply
-      .replace(/\*\*\*(.+?)\*\*\*/gs, '*$1*')
-      .replace(/\*\*(.+?)\*\*/gs, '*$1*')
+      .replace(/\*\*\*([\s\S]+?)\*\*\*/g, '*$1*')
+      .replace(/\*\*([\s\S]+?)\*\*/g, '*$1*')
       .replace(/^#{1,6}\s+/gm, '')
       .replace(/\n{3,}/g, '\n\n')
       .trim()
