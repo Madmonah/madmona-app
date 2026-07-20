@@ -28,6 +28,8 @@ interface BaileysMedia {
 }
 
 interface BaileysPayload {
+  reply_jid?: string
+  is_lid?: boolean
   from: string
   name?: string | null
   message_id: string
@@ -107,9 +109,31 @@ export async function POST(request: NextRequest) {
   }
 
   const phone = normalizePhone(body.from)
-  if (!phone) return NextResponse.json({ ok: true, skipped: 'invalid_phone' })
+
+  // ⚠️ الـ JID الأصلي — ده اللي بنرد عليه.
+  // واتساب بيبعت مُعرّف مخفي (`xxx@lid`) بدل الرقم لبعض المستخدمين.
+  // لو رجّعنا تركيب رقم من الـ LID بنبعت لرقم مش موجود والرسالة بتضيع.
+  const replyJid = body.reply_jid || undefined
+  if (!phone && !replyJid) return NextResponse.json({ ok: true, skipped: 'invalid_sender' })
 
   try {
+    // ── ٠أ) منع الرد المكرر ─────────────────────────────────────────────
+    // Baileys بيعيد تسليم نفس الرسالة أحيانًا (إعادة اتصال، مزامنة أجهزة).
+    // شوفنا ده فعليًا يوم ٢٠ يوليو: رد واحد اتبعت مرتين بفارق ثانية.
+    // معرّف الرسالة من واتساب ثابت، فبنستخدمه كحارس.
+    if (body.message_id) {
+      const { data: seen } = await supabaseAdmin
+        .from('whatsapp_messages')
+        .select('id')
+        .eq('wa_message_id', body.message_id)
+        .limit(1)
+        .maybeSingle()
+
+      if (seen) {
+        return NextResponse.json({ ok: true, skipped: 'duplicate', replied: false })
+      }
+    }
+
     // ── ٠) كود تسجيل الدخول MADxxxxx ────────────────────────────────────
     const loginCode = (body.text || '').toUpperCase().match(/\bMAD[A-Z0-9]{5}\b/)?.[0]
     if (loginCode) {
@@ -124,11 +148,11 @@ export async function POST(request: NextRequest) {
       const row = rowRaw as { id: string; verified: boolean; expires_at: string } | null
 
       if (!row) {
-        await sendText({ to: phone, body: 'الكود ده مش موجود. ارجع للموقع واطلب كود جديد 🙏' })
+        await sendText({ to: phone, jid: replyJid, body: 'الكود ده مش موجود. ارجع للموقع واطلب كود جديد 🙏' })
         return NextResponse.json({ ok: true, login: 'unknown_code' })
       }
       if (new Date(row.expires_at) < new Date()) {
-        await sendText({ to: phone, body: 'الكود ده انتهت صلاحيته. اطلب كود جديد من الموقع 🙏' })
+        await sendText({ to: phone, jid: replyJid, body: 'الكود ده انتهت صلاحيته. اطلب كود جديد من الموقع 🙏' })
         return NextResponse.json({ ok: true, login: 'expired' })
       }
 
@@ -137,7 +161,7 @@ export async function POST(request: NextRequest) {
         .update({ verified: true, verified_phone: phone, verified_at: new Date().toISOString() } as never)
         .eq('id', row.id)
 
-      await sendText({ to: phone, body: '✅ تم التأكيد! ارجع للموقع، هتلاقي نفسك دخلت.' })
+      await sendText({ to: phone, jid: replyJid, body: '✅ تم التأكيد! ارجع للموقع، هتلاقي نفسك دخلت.' })
       return NextResponse.json({ ok: true, login: 'verified' })
     }
 
@@ -217,6 +241,7 @@ export async function POST(request: NextRequest) {
 
     const sent = await sendText({
       to: phone,
+      jid: replyJid,
       body: reply,
       conversationId,
       agentName: 'المارد',

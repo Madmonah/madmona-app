@@ -36,6 +36,12 @@ export interface WhatsAppSendResult {
 
 export interface SendTextParams {
   to: string // Phone number with country code, no + (e.g., "201002229982")
+  /**
+   * الـ JID الأصلي للمحادثة (`xxx@s.whatsapp.net` أو `xxx@lid`).
+   * لما يبقى موجود بيتقدّم على `to` — لأن واتساب بيبعت مُعرّف مخفي (LID)
+   * بدل الرقم، ومفيش طريقة نرجّع منه رقم حقيقي. الرد لازم يروح لنفس الـ JID.
+   */
+  jid?: string
   body: string
   conversationId?: string
   agentName?: string
@@ -88,8 +94,13 @@ export function normalizePhone(raw: string): string {
 // ============================================================================
 
 export async function sendText(params: SendTextParams): Promise<WhatsAppSendResult> {
+  // ⚠️ الـ JID له أولوية على الرقم.
+  // واتساب بيبعت مُعرّف مخفي (`xxxx@lid`) بدل الرقم الحقيقي، ومفيش طريقة
+  // نرجّع منه رقم. لو حاولنا نعيد التركيب بنبعت لرقم مش موجود — الرسالة
+  // بتتقبل وبتاخد ID وبتروح في الفراغ. فلما يبقى عندنا JID، نستخدمه زي ما هو.
+  const jid = params.jid?.includes('@') ? params.jid : undefined
   const to = normalizePhone(params.to)
-  if (!to) {
+  if (!to && !jid) {
     return { ok: false, error: 'Invalid phone number' }
   }
 
@@ -103,7 +114,7 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
           'Content-Type': 'application/json',
           'x-madmona-secret': WA_SERVICE_SECRET,
         },
-        body: JSON.stringify({ to, text: params.body }),
+        body: JSON.stringify({ to, jid, text: params.body }),
       })
       const data = await res.json().catch(() => ({}))
 

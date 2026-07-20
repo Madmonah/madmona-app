@@ -46,9 +46,15 @@ const log = pino({ level: 'info' })
 if (!existsSync(AUTH_DIR)) mkdirSync(AUTH_DIR, { recursive: true })
 
 // ── أدوات ─────────────────────────────────────────────────────────────────
+// ⚠️ مهم — الـ LID:
+// واتساب بقى بيبعت مُعرّف مخفي (`xxxx@lid`) بدل الرقم الحقيقي.
+// النسخة 6.7.9 مافيهاش أي طريقة ترجّع الرقم منه (MessageKey فيه ٤ حقول بس).
+// فالقاعدة: **نرد على نفس الـ JID اللي جت منه الرسالة** — ماننفعش نعيد
+// تركيب رقم، لأن `23889212117111@s.whatsapp.net` رقم مش موجود؛
+// Baileys بيقبله ويدّي ID والرسالة بتروح في الفراغ.
 function toJid(raw) {
   const s = String(raw)
-  if (s.includes('@')) return s
+  if (s.includes('@')) return s // JID جاهز (lid أو s.whatsapp.net) — نسيبه زي ما هو
   let n = s.replace(/[^\d]/g, '')
   if (n.startsWith('00')) n = n.slice(2)
   if (n.startsWith('0')) n = '20' + n.slice(1)
@@ -77,12 +83,43 @@ async function handleMessage({ sessionId, sock, m }) {
 
   const isGroup = jid.endsWith('@g.us')
 
+  // Baileys بيغلّف بعض الرسايل — لازم نفكّ الغلاف الأول
+  // (رسايل مؤقتة، عرض مرة واحدة، مستند بتعليق)
+  const inner =
+    m.message?.ephemeralMessage?.message ||
+    m.message?.viewOnceMessage?.message ||
+    m.message?.viewOnceMessageV2?.message ||
+    m.message?.documentWithCaptionMessage?.message ||
+    m.message ||
+    {}
+
   const text =
-    m.message?.conversation ||
-    m.message?.extendedTextMessage?.text ||
-    m.message?.imageMessage?.caption ||
-    m.message?.videoMessage?.caption ||
+    inner.conversation ||
+    inner.extendedTextMessage?.text ||
+    inner.imageMessage?.caption ||
+    inner.videoMessage?.caption ||
+    inner.documentMessage?.caption ||
+    // ردود الأزرار والقوايم
+    inner.buttonsResponseMessage?.selectedDisplayText ||
+    inner.templateButtonReplyMessage?.selectedDisplayText ||
+    inner.listResponseMessage?.title ||
     ''
+
+  // أنواع مالهاش نص — نوصفها بدل ما نسيبها فاضية
+  const noTextHint = inner.stickerMessage
+    ? '[استيكر]'
+    : inner.contactMessage || inner.contactsArrayMessage
+    ? '[جهة اتصال]'
+    : inner.locationMessage || inner.liveLocationMessage
+    ? '[موقع]'
+    : inner.reactionMessage
+    ? null // تفاعل — نتجاهله تمامًا
+    : inner.pollCreationMessage || inner.pollUpdateMessage
+    ? '[استطلاع]'
+    : ''
+
+  // التفاعلات (لايك على رسالة) مش محتاجة رد
+  if (noTextHint === null) return
 
   if (isGroup) {
     if (GROUP_MODE === 'off') return
@@ -96,13 +133,13 @@ async function handleMessage({ sessionId, sock, m }) {
     }
   }
 
-  const kind = m.message?.audioMessage
+  const kind = inner.audioMessage
     ? 'audio'
-    : m.message?.imageMessage
+    : inner.imageMessage
     ? 'image'
-    : m.message?.videoMessage
+    : inner.videoMessage
     ? 'video'
-    : m.message?.documentMessage
+    : inner.documentMessage
     ? 'document'
     : 'text'
 
@@ -115,15 +152,15 @@ async function handleMessage({ sessionId, sock, m }) {
       })
       if (buf.length / (1024 * 1024) <= MAX_MEDIA_MB) {
         const node =
-          m.message?.audioMessage ||
-          m.message?.imageMessage ||
-          m.message?.videoMessage ||
-          m.message?.documentMessage
+          inner.audioMessage ||
+          inner.imageMessage ||
+          inner.videoMessage ||
+          inner.documentMessage
         media = {
           mimetype: node?.mimetype || 'application/octet-stream',
-          filename: m.message?.documentMessage?.fileName || null,
-          seconds: m.message?.audioMessage?.seconds || null,
-          is_voice_note: !!m.message?.audioMessage?.ptt,
+          filename: inner.documentMessage?.fileName || null,
+          seconds: inner.audioMessage?.seconds || null,
+          is_voice_note: !!inner.audioMessage?.ptt,
           size_bytes: buf.length,
           data_base64: buf.toString('base64'),
         }
@@ -138,11 +175,14 @@ async function handleMessage({ sessionId, sock, m }) {
   const payload = {
     session_id: sessionId,
     from: isGroup ? (m.key.participant || '').split('@')[0] : jid.split('@')[0],
+    // الـ JID اللي نرد عليه — دايمًا نستخدمه بدل إعادة تركيب رقم من `from`
+    reply_jid: isGroup ? jid : jid,
+    is_lid: jid.endsWith('@lid'),
     name: m.pushName || null,
     message_id: m.key.id,
     timestamp: Number(m.messageTimestamp) || Math.floor(Date.now() / 1000),
     type: kind,
-    text,
+    text: text || noTextHint || '',
     is_group: isGroup,
     group_jid: isGroup ? jid : null,
     media,
@@ -277,12 +317,12 @@ app.delete('/sessions/:id', auth, async (req, res) => {
 })
 
 app.post('/send', auth, async (req, res) => {
-  const { to, text } = req.body || {}
-  if (!to || !text) return res.status(400).json({ ok: false, error: 'to و text مطلوبين' })
+  const { to, text, jid } = req.body || {}
+  if ((!to && !jid) || !text) return res.status(400).json({ ok: false, error: 'to أو jid، و text مطلوبين' })
   const { id, entry } = pickSession(req)
   if (!entry?.connected) return res.status(503).json({ ok: false, error: 'مفيش جلسة متصلة' })
   try {
-    const sent = await entry.sock.sendMessage(toJid(to), { text })
+    const sent = await entry.sock.sendMessage(toJid(jid || to), { text })
     log.info({ session: id, to }, '📤 اتبعت')
     res.json({ ok: true, wa_message_id: sent?.key?.id, session: id })
   } catch (e) {
@@ -291,12 +331,12 @@ app.post('/send', auth, async (req, res) => {
 })
 
 app.post('/send-voice', auth, async (req, res) => {
-  const { to, audio_base64, seconds } = req.body || {}
-  if (!to || !audio_base64) return res.status(400).json({ ok: false, error: 'to و audio_base64 مطلوبين' })
+  const { to, audio_base64, seconds, jid } = req.body || {}
+  if ((!to && !jid) || !audio_base64) return res.status(400).json({ ok: false, error: 'to أو jid، و audio_base64 مطلوبين' })
   const { id, entry } = pickSession(req)
   if (!entry?.connected) return res.status(503).json({ ok: false, error: 'مفيش جلسة متصلة' })
   try {
-    const sent = await entry.sock.sendMessage(toJid(to), {
+    const sent = await entry.sock.sendMessage(toJid(jid || to), {
       audio: Buffer.from(audio_base64, 'base64'),
       mimetype: 'audio/ogg; codecs=opus',
       ptt: true,
@@ -319,7 +359,7 @@ app.post('/send-media', auth, async (req, res) => {
     const content = isImage
       ? { image: buf, caption: caption || undefined }
       : { document: buf, mimetype: mimetype || 'application/pdf', fileName: filename || 'file', caption: caption || undefined }
-    const sent = await entry.sock.sendMessage(toJid(to), content)
+    const sent = await entry.sock.sendMessage(toJid(jid || to), content)
     res.json({ ok: true, wa_message_id: sent?.key?.id, session: id })
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message })
