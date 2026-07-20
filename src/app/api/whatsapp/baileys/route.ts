@@ -14,6 +14,13 @@ import {
 } from '@/lib/whatsapp'
 import { anthropic, CLAUDE_MODEL, parseJsonResponse } from '@/lib/anthropic'
 import { MARID_TOOLS, runMaridTool, MADMONA_LINKS, recordLead } from '@/lib/marid-tools'
+import {
+  ADMIN_TOOLS,
+  runAdminTool,
+  isAdmin,
+  logDirective,
+  ADMIN_PROMPT,
+} from '@/lib/marid-admin'
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
 
 export const runtime = 'nodejs'
@@ -202,10 +209,13 @@ async function callMaridWithTools(opts: {
   senderPhone: string
   senderName: string | null
   savedMediaUrl?: string | null
+  admin?: boolean
 }): Promise<string> {
-  const MAX_TURNS = 4
+  // الأدمن محتاج لفّات أكتر — أوامره بتحتاج فحص وتنفيذ ومراجعة
+  const MAX_TURNS = opts.admin ? 6 : 4
+  const tools = opts.admin ? [...MARID_TOOLS, ...ADMIN_TOOLS] : MARID_TOOLS
 
-  const system = `${opts.systemPrompt}
+  const system = `${opts.systemPrompt}${opts.admin ? ADMIN_PROMPT : ''}
 
 ═══════════════════════════════════════════════════════════
 النهاردة
@@ -279,7 +289,7 @@ ${Object.entries(MADMONA_LINKS)
         model: CLAUDE_MODEL,
         max_tokens: 2048,
         system,
-        tools: MARID_TOOLS as never,
+        tools: tools as never,
         messages: messages as never,
       })
     } catch (err) {
@@ -312,7 +322,10 @@ ${Object.entries(MADMONA_LINKS)
     const results = []
     for (const tu of toolUses) {
       if (tu.type !== 'tool_use') continue
-      const out = await runMaridTool(tu.name, tu.input as Record<string, unknown>)
+      const isAdminTool = ADMIN_TOOLS.some((t) => t.name === tu.name)
+      const out = isAdminTool
+        ? await runAdminTool(tu.name, tu.input as Record<string, unknown>)
+        : await runMaridTool(tu.name, tu.input as Record<string, unknown>)
       console.log('[marid-tool]', tu.name, JSON.stringify(out).slice(0, 160))
       results.push({
         type: 'tool_result',
@@ -468,8 +481,9 @@ export async function POST(request: NextRequest) {
     // لو المارد بعت أكتر من الحد في ساعة على نفس المحادثة، يبقى فيه
     // دوران — بيوقف المحادثة وينبّه بدل ما يفضل يبعت.
     // الرقم اللي بيبعت كتير في وقت قصير بيتقفل من واتساب.
+    // الأدمن مستثنى — محمد ممكن يبعت ٢٠ أمر ورا بعض وده طبيعي
     const LOOP_LIMIT = Number(process.env.MARID_LOOP_LIMIT || 12)
-    {
+    if (!isAdmin(phone)) {
       const hourAgo = new Date(Date.now() - 3600_000).toISOString()
       const { count } = await supabaseUntyped
         .from('whatsapp_messages')
@@ -614,6 +628,15 @@ export async function POST(request: NextRequest) {
       }
     })()
 
+    // ── ١أ) الأدمن ──────────────────────────────────────────────────────
+    // كل أمر من محمد بيتسجّل **قبل** أي معالجة.
+    // حتى لو المارد فهم غلط أو التنفيذ وقع، الأمر محفوظ في
+    // admin_directives ومحمد يقدر يراجع. مفيش أمر بيضيع.
+    const senderIsAdmin = isAdmin(phone)
+    if (senderIsAdmin && (body.text || '').trim()) {
+      void logDirective(phone, body.text, body.type)
+    }
+
     // ── ١ج) تسجيل الليد ─────────────────────────────────────────────────
     // كل رقم بيكلّمنا = عميل محتمل. القديم كان بيسجّله ويقيّمه وضاع.
     // بيشتغل في الخلفية — مايوقفش الرد.
@@ -705,6 +728,7 @@ export async function POST(request: NextRequest) {
       senderPhone: phone,
       senderName: body.name ?? null,
       savedMediaUrl,
+      admin: senderIsAdmin,
     })
 
     // البرومبت بيطلب JSON — بنفك بأمان ولو فشل نستخدم النص كما هو
