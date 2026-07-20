@@ -198,7 +198,7 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
       if (!heTalkedToUs) {
         return {
           ok: false,
-          error: `وضع «رد بس» — ${contactKey} ماكلّمناش قبل كده، فمش هنبدأ معاه`,
+          error: `وضع «رد بس» — ${contactKey} ماكلّمناش قبل كده، فمش هنبدأ معاه [صيغ:${forms.join('|')} صفوف:${ids.length}]`,
         }
       }
     }
