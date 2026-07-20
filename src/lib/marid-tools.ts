@@ -40,6 +40,11 @@ export const MADMONA_LINKS = {
 
 // ── مساعد: كل الصيغ الممكنة لرقم واحد ────────────────────────────────────
 // الأرقام متخزّنة بصيغ مختلفة (+201..., 201..., 01...) حسب مصدر التسجيل.
+function looksLikeLidLocal(raw: string): boolean {
+  const d = (raw || '').replace(/\D/g, '')
+  return d.length >= 14
+}
+
 function phoneVariants(raw: string): string[] {
   const d = (raw || '').replace(/\D/g, '')
   if (!d) return []
@@ -91,6 +96,7 @@ export const MARID_TOOLS = [
       type: 'object' as const,
       properties: {
         phone: { type: 'string', description: 'رقم المتكلّم' },
+        name: { type: 'string', description: 'الاسم المعروض — مهم جدًا لو الرقم مُعرّف مخفي' },
       },
       required: ['phone'],
     },
@@ -246,8 +252,71 @@ async function listCategories(a: { query?: string }): Promise<ToolResult> {
   return { categories: data ?? [] }
 }
 
-async function whoIsThis(a: { phone: string }): Promise<ToolResult> {
+/**
+ * تاريخ المتكلّم — حتى لو وصل بمُعرّف مخفي.
+ *
+ * المشكلة اللي بيحلّها (٢٠ يوليو):
+ *   عبده بيبعت مخططات وحدات من ١٥ يوليو والمارد بيرد رد ممتاز.
+ *   النهارده وصل بمُعرّف مخفي `275935005778128` باسم «Abdo Taha»
+ *   → اتعملت محادثة جديدة فاضية → المارد عامله كأنه غريب وسأله
+ *   أسئلة بديهية عن حاجة هو شارحها من أسبوع.
+ *
+ * مافيش طريقة نحوّل المُعرّف المخفي لرقم (Baileys 6.7.9).
+ * بس الاسم المعروض بيفضل هو هو — فبنستخدمه كجسر.
+ */
+async function findHistoryByName(name?: string | null): Promise<ToolResult | null> {
+  if (!name || name.trim().length < 3) return null
+
+  const { data: convs } = await db
+    .from('whatsapp_conversations')
+    .select('id, contact_phone, contact_name, message_count, first_intent, last_message_at')
+    .ilike('contact_name', name.trim())
+    .order('message_count', { ascending: false })
+    .limit(3)
+
+  const others = (convs ?? []).filter(
+    (c: { message_count: number }) => (c.message_count ?? 0) > 2
+  )
+  if (!others.length) return null
+
+  const main = others[0]
+
+  const { data: msgs } = await db
+    .from('whatsapp_messages')
+    .select('direction, body, created_at')
+    .eq('conversation_id', main.id)
+    .order('created_at', { ascending: false })
+    .limit(8)
+
+  return {
+    محادثة_سابقة_بنفس_الاسم: true,
+    الرقم_القديم: main.contact_phone,
+    عدد_الرسايل: main.message_count,
+    اخر_تواصل: String(main.last_message_at ?? '').slice(0, 10),
+    اهتمامه: main.first_intent ?? null,
+    آخر_ما_دار: (msgs ?? []).reverse().map((m: { direction: string; body: string }) => ({
+      من: m.direction === 'inbound' ? 'هو' : 'إحنا',
+      نص: (m.body || '').slice(0, 180),
+    })),
+    ملحوظة:
+      'ده على الأرجح نفس الشخص وصل بمُعرّف مخفي. اقرا التاريخ ده كويس ' +
+      'وكمّل من حيث انتهيتوا — ماتعاملهوش كأنه أول مرة.',
+  }
+}
+
+async function whoIsThis(a: { phone: string; name?: string }): Promise<ToolResult> {
   const variants = phoneVariants(a.phone)
+
+  // مُعرّف مخفي؟ ندوّر بالاسم على تاريخه
+  if (looksLikeLidLocal(a.phone)) {
+    const hist = await findHistoryByName(a.name)
+    if (hist) return { known: true, عن_طريق: 'الاسم', ...hist }
+    return {
+      known: false,
+      note: 'مُعرّف مخفي ومفيش تاريخ بنفس الاسم — عامله كجديد',
+    }
+  }
+
   if (!variants.length) return { known: false }
 
   const { data: profile } = await db

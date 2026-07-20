@@ -126,7 +126,9 @@ async function callMaridWithTools(opts: {
 ═══════════════════════════════════════════════════════════
 • أي سؤال عن حاجة معينة → search_catalog قبل ما ترد
 • «عندكم إيه؟» → list_categories
-• أول رسالة من حد → who_is_this عشان تعرف تبعت اللينك الصح
+• **أول حاجة دايمًا: who_is_this** — ابعتله الرقم *والاسم*.
+  لو رجّعلك تاريخ سابق، اقراه كويس وكمّل من حيث انتهيتوا.
+  الناس بتزعل جدًا لما تسأل عن حاجة شرحوها قبل كده.
 • «فين حجزي؟» → get_my_orders
 • عايز يضيف منتج/خدمة → اجمع البيانات ثم create_listing_draft
 
@@ -368,10 +370,32 @@ export async function POST(request: NextRequest) {
     }
 
     // ── ٣) التسجيل ──────────────────────────────────────────────────────
+    //
+    // ⚠️ اللي بنخزّنه هنا هو ذاكرة المارد للرسايل الجاية.
+    // لو خزّنّا «العميل بعت الملف ده»، الرسالة اللي بعدها مش هيبقى
+    // عارف الملف كان فيه إيه — وده اللي خلّاه يسأل عبده أسئلة بديهية
+    // عن ملف «Pharmacy 154m» كان قدامه.
+    //
+    // فبنخزّن اسم الملف والتعليق — على الأقل يفضل فيه دلالة.
+    const logBody = body.media
+      ? [
+          body.type === 'audio'
+            ? '[صوت]'
+            : body.type === 'image'
+            ? '[صورة]'
+            : body.type === 'video'
+            ? '[فيديو]'
+            : `[ملف: ${body.media.filename || body.media.mimetype}]`,
+          userText.startsWith('العميل بعت') ? '' : userText,
+        ]
+          .filter(Boolean)
+          .join(' ')
+      : userText
+
     await logInboundMessage({
       conversationId,
       wa_message_id: body.message_id,
-      body: userText,
+      body: logBody,
       messageType: body.type,
     })
 
