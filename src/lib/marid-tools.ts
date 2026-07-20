@@ -130,6 +130,40 @@ export const MARID_TOOLS = [
     },
   },
   {
+    name: 'create_supplier_group',
+    description:
+      'اعمل جروب متابعة لمورد جديد (المورد + فريق مضمونة). ' +
+      'استخدمها بعد ما مورد جديد يسجّل إعلانه أو يتأكد إنه عايز يشتغل معانا.\n' +
+      'أول رسالة في الجروب بتشرح إحنا مين وليه ضفناه — ده إجباري، ' +
+      'الإضافة من غير شرح بتتقري كسبام.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        supplier_phone: { type: 'string', description: 'رقم المورد' },
+        supplier_name: { type: 'string', description: 'اسم المورد أو نشاطه' },
+        supplier_id: { type: 'string', description: 'معرّفه لو مسجّل' },
+        listing_title: { type: 'string', description: 'اسم إعلانه لو موجود' },
+      },
+      required: ['supplier_phone', 'supplier_name'],
+    },
+  },
+  {
+    name: 'forward_to_supplier',
+    description:
+      'حوّل طلب عميل لجروب المورد المسؤول. استخدمها لما العميل يسأل عن إعلان ' +
+      'معيّن وتحتاج رد من المورد نفسه (توفّر، ميعاد، تفاصيل مش عندك).\n' +
+      '⚠️ ماتنقلش رقم العميل — مضمونة هي الوسيط.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        supplier_id: { type: 'string', description: 'معرّف المورد' },
+        customer_request: { type: 'string', description: 'الطلب بصياغة واضحة' },
+        customer_name: { type: 'string', description: 'اسم العميل لو معروف' },
+      },
+      required: ['supplier_id', 'customer_request'],
+    },
+  },
+  {
     name: 'create_project',
     description:
       'سجّل مشروع عقاري جديد بعت به مطوّر أو سمسار (كمبوند، مول، تاور، برج إداري). ' +
@@ -411,6 +445,120 @@ async function createProject(a: {
   }
 }
 
+/**
+ * إنشاء جروب متابعة لمورد.
+ *
+ * القاعدة الأهم هنا: **أول رسالة في الجروب بتشرح إحنا مين وليه ضفناه.**
+ * إضافة رقم لجروب من غير سياق بتتقري كسبام، والناس بتبلّغ،
+ * وواتساب بيوقف الرقم. الشرح مش تحسين شكلي — ده اللي بيفرّق
+ * بين شراكة وإزعاج.
+ */
+async function createSupplierGroup(a: {
+  supplier_phone: string
+  supplier_name: string
+  supplier_id?: string
+  listing_title?: string
+}): Promise<ToolResult> {
+  const url = process.env.WA_SERVICE_URL
+  const secret = process.env.WA_SERVICE_SECRET
+  if (!url || !secret) return { ok: false, error: 'خدمة الواتساب مش متظبطة' }
+
+  // فريق مضمونة — بيتضافوا في كل جروب
+  const TEAM = ['201004194133', '201104496225']
+
+  const subject = `مضمونة × ${a.supplier_name}`.slice(0, 60)
+
+  const intro =
+    `أهلاً ${a.supplier_name} 👋\n\n` +
+    `أنا *المارد* — مساعد مضمونة الذكي.\n\n` +
+    `عملنا الجروب ده عشان متابعة شغلك معانا في مكان واحد:\n` +
+    (a.listing_title ? `• إعلانك «${a.listing_title}» على مضمونة\n` : '') +
+    `• أي طلب أو استفسار يجيلنا ويخصّك، هبعتهولك هنا على طول\n` +
+    `• أي تحديث على أسعارك أو التوفّر، قوله هنا وهنظبطه\n\n` +
+    `كده مفيش طلب هيضيع ومفيش حاجة هتتأخر عليك.\n\n` +
+    `لو مش عايز الجروب ده، قولّي وهشيلك فورًا — مفيش مشكلة خالص.\n\n` +
+    `${MADMONA_LINKS.لوحة_المورد}`
+
+  try {
+    const res = await fetch(`${url.replace(/\/$/, '')}/group-create`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-madmona-secret': secret },
+      body: JSON.stringify({
+        subject,
+        participants: [a.supplier_phone, ...TEAM],
+        intro,
+      }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!data?.ok) return { ok: false, error: data?.error || `HTTP ${res.status}` }
+
+    // نسجّل الجروب — عشان نعرف نحوّل عليه بعدين
+    if (a.supplier_id) {
+      await db.from('supplier_wa_groups').insert({
+        supplier_id: a.supplier_id,
+        group_jid: data.group_jid,
+        subject,
+        purpose: 'followup',
+        participants: [a.supplier_phone, ...TEAM],
+        intro_message: intro,
+        created_by: 'المارد',
+      })
+    }
+
+    return {
+      ok: true,
+      group_jid: data.group_jid,
+      subject,
+      قول_للمورد: 'عملتلك جروب متابعة مع فريق مضمونة — هتلاقيه في الواتساب 👌',
+    }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'فشل إنشاء الجروب' }
+  }
+}
+
+/** تحويل طلب عميل لجروب المورد المسؤول */
+async function forwardToSupplierGroup(a: {
+  supplier_id: string
+  customer_request: string
+  customer_name?: string
+}): Promise<ToolResult> {
+  const { data: group } = await db
+    .from('supplier_wa_groups')
+    .select('group_jid, subject')
+    .eq('supplier_id', a.supplier_id)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (!group?.group_jid) {
+    return { ok: false, error: 'المورد ده مالوش جروب متابعة لسه' }
+  }
+
+  const url = process.env.WA_SERVICE_URL
+  const secret = process.env.WA_SERVICE_SECRET
+
+  // ⚠️ ماننقلش رقم العميل للمورد. مضمونة هي الوسيط —
+  // ده اللي بيحمي الطرفين وبيحافظ على دور المنصة.
+  const text =
+    `🔔 *طلب جديد من مضمونة*\n\n` +
+    `${a.customer_request}\n\n` +
+    (a.customer_name ? `العميل: ${a.customer_name}\n` : '') +
+    `\nردّوا هنا وأنا هوصّل الرد للعميل.`
+
+  try {
+    const res = await fetch(`${url!.replace(/\/$/, '')}/send`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-madmona-secret': secret! },
+      body: JSON.stringify({ jid: group.group_jid, text }),
+    })
+    const data = await res.json().catch(() => ({}))
+    return data?.ok
+      ? { ok: true, sent_to: group.subject, قول_للعميل: 'بعتّ طلبك للمورد وهرجعلك برده 👌' }
+      : { ok: false, error: data?.error }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'فشل التحويل' }
+  }
+}
+
 // ── الموزّع ──────────────────────────────────────────────────────────────
 export async function runMaridTool(name: string, input: Record<string, unknown>): Promise<ToolResult> {
   try {
@@ -427,6 +575,10 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await createListingDraft(input as never)
       case 'create_project':
         return await createProject(input as never)
+      case 'forward_to_supplier':
+        return await forwardToSupplierGroup(input as never)
+      case 'create_supplier_group':
+        return await createSupplierGroup(input as never)
       default:
         return { error: `أداة مش معروفة: ${name}` }
     }

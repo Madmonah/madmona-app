@@ -374,5 +374,70 @@ app.post('/send-media', auth, async (req, res) => {
   }
 })
 
+// ── جروبات المتابعة ──────────────────────────────────────────────────────
+//
+// لكل مورد جروب: هو + فريق مضمونة. أي طلب يخصّه يتحوّل عليه هناك،
+// وأي تحديث على إعلانه يتقال قدام الكل — فمفيش حاجة بتضيع في الخاص.
+//
+// ⚠️ إضافة رقم لجروب من غير سياق بتتقري كسبام.
+// عشان كده أول رسالة في الجروب لازم تشرح إحنا مين وليه ضفناه —
+// ده مش تحسين شكلي، ده اللي بيفرّق بين شراكة وإزعاج.
+
+app.post('/group-create', auth, async (req, res) => {
+  const { subject, participants, intro } = req.body || {}
+  if (!subject || !Array.isArray(participants) || !participants.length) {
+    return res.status(400).json({ ok: false, error: 'subject و participants مطلوبين' })
+  }
+  const { id, entry } = pickSession(req)
+  if (!entry?.connected) return res.status(503).json({ ok: false, error: 'مفيش جلسة متصلة' })
+
+  try {
+    const jids = participants.map(toJid)
+    const group = await entry.sock.groupCreate(subject, jids)
+
+    // رسالة التعريف — بتتبعت فورًا عشان محدش يلاقي نفسه في جروب مجهول
+    if (intro) {
+      await entry.sock.sendMessage(group.id, { text: intro })
+    }
+
+    log.info({ session: id, group: group.id, subject, count: jids.length }, '👥 جروب اتعمل')
+    res.json({ ok: true, group_jid: group.id, subject, participants: jids.length, session: id })
+  } catch (e) {
+    log.error({ err: e.message, subject }, 'فشل إنشاء الجروب')
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+app.post('/group-add', auth, async (req, res) => {
+  const { group_jid, participants } = req.body || {}
+  if (!group_jid || !Array.isArray(participants) || !participants.length) {
+    return res.status(400).json({ ok: false, error: 'group_jid و participants مطلوبين' })
+  }
+  const { entry } = pickSession(req)
+  if (!entry?.connected) return res.status(503).json({ ok: false, error: 'مفيش جلسة متصلة' })
+
+  try {
+    const out = await entry.sock.groupParticipantsUpdate(group_jid, participants.map(toJid), 'add')
+    res.json({ ok: true, result: out })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+app.get('/group-invite', auth, async (req, res) => {
+  const { group_jid } = req.query || {}
+  if (!group_jid) return res.status(400).json({ ok: false, error: 'group_jid مطلوب' })
+  const { entry } = pickSession(req)
+  if (!entry?.connected) return res.status(503).json({ ok: false, error: 'مفيش جلسة متصلة' })
+
+  try {
+    // لينك دعوة — أنضف من الإضافة المباشرة: المورد بيدخل بإرادته
+    const code = await entry.sock.groupInviteCode(group_jid)
+    res.json({ ok: true, invite_url: `https://chat.whatsapp.com/${code}` })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
 app.listen(PORT, () => log.info(`الخدمة على المنفذ ${PORT}`))
 bootSessions().catch((e) => log.error({ err: e.message }, 'فشل تشغيل الجلسات'))
