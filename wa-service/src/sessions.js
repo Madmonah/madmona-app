@@ -16,8 +16,50 @@ import {
 const log = pino({ level: 'info' })
 const silent = pino({ level: 'silent' })
 
-/** @type {Map<string, {sock:any, connected:boolean, qr:string|null, me:string|null, label:string}>} */
+/** @type {Map<string, {sock:any, connected:boolean, qr:string|null, me:string|null, label:string, retries:number}>} */
 const sessions = new Map()
+
+// ── تنبيه المالك ─────────────────────────────────────────────────────────
+//
+// لما المارد يقع، السكوت أخطر من العطل — محمد بيكتشفه من عميل زعلان
+// بعد ساعات. التنبيه بيروح على رقمه من جلسة تانية شغالة، ولو مفيش،
+// بيروح للتطبيق يبعته بأي قناة متاحة.
+//
+// ⚠️ الدالة دي مابترميش أبدًا. إحنا بنستخدمها وقت الأعطال —
+// آخر حاجة محتاجينها إن التنبيه نفسه يوقع الخدمة.
+const OWNER_PHONES = (process.env.OWNER_PHONES || '201002229982')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean)
+
+let lastAlertAt = 0
+const ALERT_COOLDOWN_MS = 5 * 60 * 1000
+
+function notifyOwner(text) {
+  try {
+    // مانغرقش محمد بالتنبيهات لو الاتصال بيرفرف
+    if (Date.now() - lastAlertAt < ALERT_COOLDOWN_MS) return
+    lastAlertAt = Date.now()
+
+    log.warn({ text }, '📢 تنبيه للمالك')
+
+    for (const [sid, s] of sessions) {
+      if (!s.connected || !s.sock) continue
+      for (const p of OWNER_PHONES) {
+        const jid = p.includes('@') ? p : `${p.replace(/\D/g, '')}@s.whatsapp.net`
+        // بدون await — مانوقفش معالجة الاتصال على إرسال تنبيه
+        s.sock.sendMessage(jid, { text }).catch(() => {})
+      }
+      return // جلسة واحدة تكفي
+      void sid
+    }
+
+    // مفيش جلسة شغالة — نسيب أثر في اللوج على الأقل
+    log.error({ text }, '🔴 مفيش جلسة تبعت التنبيه')
+  } catch (e) {
+    log.error({ err: e?.message }, 'فشل التنبيه نفسه')
+  }
+}
 
 export function listSessions() {
   return [...sessions.entries()].map(([id, s]) => ({
@@ -74,10 +116,14 @@ export async function startSession({ id, label, authRoot, onMessage }) {
     }
 
     if (connection === 'open') {
+      const wasDown = entry.retries > 0
       entry.connected = true
       entry.qr = null
       entry.me = sock.user?.id || null
+      entry.retries = 0
       log.info({ session: id, me: entry.me }, '✅ الجلسة اتصلت')
+
+      if (wasDown) notifyOwner(`✅ المارد رجع اتصل (${id})`)
     }
 
     if (connection === 'close') {
@@ -85,18 +131,66 @@ export async function startSession({ id, label, authRoot, onMessage }) {
       const code = lastDisconnect?.error?.output?.statusCode
       const loggedOut = code === DisconnectReason.loggedOut
       log.warn({ session: id, code, loggedOut }, 'الجلسة اتقفلت')
+
       if (loggedOut) {
+        entry.retries = 0
         log.error({ session: id }, 'تسجيل خروج — امسح المجلد وأعد الربط')
-      } else {
-        setTimeout(() => startSession({ id, label: entry.label, authRoot, onMessage }), 3000)
+        notifyOwner(`🔴 المارد اتسجّل خروج من الرقم ${id}\nمحتاج مسح QR من جديد.`)
+        return
       }
+
+      // تصاعد تدريجي: ٣ث، ٦ث، ١٢ث… لحد دقيقة.
+      // المحاولة كل ٣ث ثابتة بتضغط على واتساب لو المشكلة عندهم،
+      // وممكن تتقري إساءة استخدام.
+      entry.retries = (entry.retries || 0) + 1
+      const wait = Math.min(3000 * 2 ** (entry.retries - 1), 60_000)
+      log.info({ session: id, retry: entry.retries, wait }, '🔄 هيحاول تاني')
+
+      // لو فضل مقطوع أكتر من ٥ محاولات (~دقيقتين) — نبلّغ محمد.
+      // السكوت الطويل أخطر من العطل نفسه.
+      if (entry.retries === 5) {
+        notifyOwner(
+          `⚠️ المارد مقطوع من حوالي دقيقتين (الرقم ${id})\n` +
+            `كود الانقطاع: ${code || 'غير معروف'}\n` +
+            `بيحاول يرجع لوحده — لو استمر، شوف Railway.`
+        )
+      }
+
+      setTimeout(() => startSession({ id, label: entry.label, authRoot, onMessage }), wait)
     }
   })
 
+  // ⚠️ لازم نستقبل النوعين — `notify` و `append`.
+  //
+  // من مصدر Baileys (lib/Socket/messages-recv.js:674):
+  //   upsertMessage(msg, node.attrs.offline ? 'append' : 'notify')
+  //
+  // يعني الرسايل اللي وصلت **والخدمة مقطوعة** بتيجي بنوع `append`
+  // لما ترجع. الكود القديم كان بيرميها (`if (type !== 'notify') return`)
+  // — وده اللي ضيّع رسايل موردين يوم ٢٠ يوليو أثناء إعادة التشغيل.
+  //
+  // بنفلتر القديم بالوقت بدل ما نفلتر بالنوع: أي رسالة أقدم من
+  // MAX_AGE_MIN بنسجّلها ومانردّش عليها — عشان لو واتساب عمل مزامنة
+  // تاريخ كامل مانفضلش نرد على كلام من شهر فات.
+  const MAX_AGE_MIN = Number(process.env.MAX_MESSAGE_AGE_MIN || 30)
+
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    if (type !== 'notify') return
+    if (type !== 'notify' && type !== 'append') return
+
     for (const m of messages) {
       try {
+        const ts = Number(m.messageTimestamp) || 0
+        const ageMin = ts ? (Date.now() / 1000 - ts) / 60 : 0
+
+        if (ageMin > MAX_AGE_MIN) {
+          log.info({ session: id, ageMin: Math.round(ageMin) }, '⏭️ رسالة قديمة — اتجاهلت')
+          continue
+        }
+
+        if (type === 'append') {
+          log.info({ session: id, ageMin: Math.round(ageMin) }, '📥 رسالة فايتة — بتتعالج')
+        }
+
         await onMessage({ sessionId: id, sock, m })
       } catch (e) {
         log.error({ session: id, err: e.message }, 'فشل معالجة رسالة')
