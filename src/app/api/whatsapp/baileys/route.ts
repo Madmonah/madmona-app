@@ -279,6 +279,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: 'upsert_failed' }, { status: 500 })
     }
 
+    // ── ٠ب) رد واحد للدفعة الواحدة ──────────────────────────────────────
+    // الناس بتبعت كذا حاجة ورا بعض (٤ صور + وصف). لو ردّينا على كل
+    // واحدة، بيوصله ٤ رسايل شبه متطابقة في دقيقة — وده بيطفّش.
+    //
+    // شفنا ده فعليًا يوم ٢٠ يوليو مع مورد بعت صور مشروعه.
+    // النظام القديم كان فيه القاعدة دي واتفقدت في الترحيل.
+    //
+    // القاعدة: لو ردّينا على المحادثة دي في آخر ٤٥ ثانية، نسجّل
+    // الرسالة ومانردّش — الرد اللي فات بيغطّي.
+    const DEBOUNCE_SEC = 45
+    {
+      const since = new Date(Date.now() - DEBOUNCE_SEC * 1000).toISOString()
+      const { data: recent } = await supabaseUntyped
+        .from('whatsapp_messages')
+        .select('id')
+        .eq('conversation_id', conversationId)
+        .eq('direction', 'outbound')
+        .gte('created_at', since)
+        .limit(1)
+        .maybeSingle()
+
+      if (recent) {
+        await logInboundMessage({
+          conversationId,
+          wa_message_id: body.message_id,
+          body: body.text || `[${body.type}]`,
+          messageType: body.type,
+        })
+        return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'debounced' })
+      }
+    }
+
     // لو الراسل بمُعرّف مخفي — نحفظ الـ JID بتاعه.
     // ده الفرصة الوحيدة: مفيش طريقة نوصله بعد كده غير بالـ JID ده،
     // فلو ماحفظناهوش دلوقتي، أي رسالة إحنا نبدأها ليه هتضيع.
