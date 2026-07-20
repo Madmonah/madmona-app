@@ -225,6 +225,10 @@ ${opts.savedMediaUrl ? `\n📎 الملف اللي بعته اتحفظ هنا:\n
   الناس بتزعل جدًا لما تسأل عن حاجة شرحوها قبل كده.
 • «فين حجزي؟» → get_my_orders
 • عايز يضيف منتج/خدمة → اجمع البيانات ثم create_listing_draft
+• أي كلام عن **ميعاد** (حجز/إلغاء/استفسار) → manage_meeting
+  ⛔ ممنوع تقول ميعاد من دماغك ولا توعد بحاجة مش مسجّلة
+• **search_catalog مارجّعش حاجة مناسبة** → record_unmet_demand
+  ده مش اختياري. الطلب اللي مانسجّلوش بيضيع للأبد.
 
 ⚠️ ممنوع تخترع إعلان أو سعر أو لينك. لو الأداة مارجعتش حاجة،
 قول للعميل بصراحة إن ده مش متاح — ده أحسن ألف مرة من معلومة غلط.
@@ -543,6 +547,53 @@ export async function POST(request: NextRequest) {
         .update({ metadata: merged })
         .eq('id', conversationId)
     }
+
+    // ── ١ب) ليد سخن ─────────────────────────────────────────────────────
+    // رقم إحنا كلّمناه قبل كده (حملة أو تواصل) ورد علينا = فرصة حقيقية.
+    // القديم كان بينبّه محمد فورًا وضاع في الترحيل.
+    // بنبعت التنبيه مرة واحدة كل ٢٤ ساعة عشان مانغرقهوش.
+    void (async () => {
+      try {
+        const { data: conv } = await supabaseUntyped
+          .from('whatsapp_conversations')
+          .select('message_count, contact_name, metadata')
+          .eq('id', conversationId)
+          .maybeSingle()
+
+        // أول رد منه بعد ما إحنا بدأنا؟
+        const meta = (conv?.metadata as Record<string, unknown> | null) ?? {}
+        if (meta.hot_lead_alerted) return
+        if ((conv?.message_count ?? 0) > 6) return
+
+        const { data: firstMsg } = await supabaseUntyped
+          .from('whatsapp_messages')
+          .select('direction')
+          .eq('conversation_id', conversationId)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle()
+
+        // لو أول رسالة في المحادثة كانت مننا → يبقى إحنا اللي بدأنا
+        if (firstMsg?.direction !== 'outbound') return
+
+        await supabaseUntyped
+          .from('whatsapp_conversations')
+          .update({ metadata: { ...meta, hot_lead_alerted: true } })
+          .eq('id', conversationId)
+
+        const owner = process.env.OWNER_PHONE || '201002229982'
+        await sendText({
+          to: owner,
+          body:
+            `🔥 *ليد سخن*\n\n` +
+            `${conv?.contact_name || phone} رد على المارد.\n\n` +
+            `«${(body.text || `[${body.type}]`).slice(0, 150)}»\n\n` +
+            `المحادثة: ${MADMONA_LINKS.لوحة_المورد.replace('/supplier/dashboard', '/admin/wa-review')}`,
+        })
+      } catch {
+        // التنبيه مايوقفش الرد أبدًا
+      }
+    })()
 
     // ── ٢) فهم المحتوى ──────────────────────────────────────────────────
     let userText = body.text || ''

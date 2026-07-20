@@ -170,6 +170,44 @@ export const MARID_TOOLS = [
     },
   },
   {
+    name: 'manage_meeting',
+    description:
+      'حجز أو إلغاء أو الاستعلام عن ميعاد زيارة/مقابلة.\n' +
+      '⛔ ممنوع تقول ميعاد من دماغك — أي كلام عن مواعيد لازم يعدّي من الأداة دي.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        action: { type: 'string', enum: ['book', 'cancel', 'check'], description: 'المطلوب' },
+        phone: { type: 'string', description: 'رقم العميل' },
+        at: { type: 'string', description: 'الميعاد ISO (للحجز بس) — مثال 2026-07-22T14:00:00+03:00' },
+        kind: { type: 'string', description: 'visit أو call' },
+        name: { type: 'string', description: 'اسمه' },
+        location: { type: 'string', description: 'المكان لو محدد' },
+        notes: { type: 'string', description: 'ملاحظات' },
+      },
+      required: ['action', 'phone'],
+    },
+  },
+  {
+    name: 'record_unmet_demand',
+    description:
+      'سجّل طلب عميل مش موجود عندنا في الكتالوج. استخدمها **كل مرة** ' +
+      'search_catalog مايرجّعش حاجة مناسبة — عشان نعرف ندوّر للعميل ونرجعله، ' +
+      'ومحمد يعرف إيه الناقص في السوق.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        phone: { type: 'string', description: 'رقم العميل' },
+        name: { type: 'string', description: 'اسمه لو معروف' },
+        requested_item: { type: 'string', description: 'اللي طلبه بالظبط' },
+        category_guess: { type: 'string', description: 'التصنيف المتوقع' },
+        city: { type: 'string', description: 'المنطقة لو ذكرها' },
+        budget: { type: 'string', description: 'الميزانية لو ذكرها' },
+      },
+      required: ['phone', 'requested_item'],
+    },
+  },
+  {
     name: 'create_project',
     description:
       'سجّل مشروع عقاري جديد بعت به مطوّر أو سمسار (كمبوند، مول، تاور، برج إداري). ' +
@@ -651,6 +689,126 @@ async function forwardToSupplierGroup(a: {
   }
 }
 
+/**
+ * المواعيد — القديم كان بيعملها والجديد ضاعت.
+ * من غيرها المارد **بيخترع مواعيد** ويوعد الناس بحاجات مش مسجّلة.
+ */
+async function manageMeeting(a: {
+  action: 'book' | 'cancel' | 'check'
+  phone: string
+  at?: string
+  kind?: string
+  name?: string
+  location?: string
+  notes?: string
+}): Promise<ToolResult> {
+  const phone = a.phone?.replace(/\D/g, '')
+  if (!phone) return { ok: false, error: 'الرقم مطلوب' }
+
+  try {
+    if (a.action === 'check') {
+      const { data } = await db.rpc('my_meeting', { p_phone: phone })
+      return data
+        ? { ok: true, الميعاد: data }
+        : { ok: true, found: false, قول_للعميل: 'مالقتش ليك ميعاد محجوز — تحب نحجزلك؟' }
+    }
+
+    if (a.action === 'cancel') {
+      await db.rpc('cancel_meeting', { p_phone: phone })
+      return { ok: true, قول_للعميل: 'اتلغى الميعاد ✅ لو حبيت تحجز تاني قولّي.' }
+    }
+
+    // حجز
+    if (!a.at) return { ok: false, error: 'الميعاد مطلوب — اسأل العميل عن اليوم والساعة' }
+
+    const when = new Date(a.at)
+    if (Number.isNaN(when.getTime())) return { ok: false, error: 'صيغة الميعاد غلط' }
+    if (when.getTime() < Date.now()) return { ok: false, error: 'الميعاد في الماضي — اسأله عن ميعاد جاي' }
+
+    const { data, error } = await db.rpc('book_meeting', {
+      p_phone: phone,
+      p_at: when.toISOString(),
+      p_kind: a.kind || 'visit',
+      p_name: a.name ?? null,
+      p_location: a.location ?? null,
+      p_notes: a.notes ?? null,
+    })
+
+    if (error) return { ok: false, error: error.message }
+    return {
+      ok: true,
+      الميعاد: data,
+      قول_للعميل: `اتحجز ✅ ${when.toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'short' })}`,
+    }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'فشل' }
+  }
+}
+
+/**
+ * الطلبات اللي مش عندنا.
+ *
+ * القديم كان بيسجّلها وينبّه محمد فورًا (whatsapp-webhook:1084-1105).
+ * من غيرها بنقول للعميل «مش متاح» و**نفقد الطلب للأبد** — ومحمد
+ * مايعرفش إيه الناقص في السوق.
+ */
+async function recordUnmetDemand(a: {
+  phone: string
+  name?: string
+  requested_item: string
+  category_guess?: string
+  city?: string
+  budget?: string
+}): Promise<ToolResult> {
+  try {
+    const { error } = await db.from('customer_demand_requests').insert({
+      contact_phone: a.phone,
+      contact_name: a.name ?? null,
+      requested_item: a.requested_item.slice(0, 500),
+      category_guess: a.category_guess ?? null,
+      // الجدول مافيهوش أعمدة للمنطقة والميزانية — بيتحطوا في notes
+      notes: [a.city ? `المنطقة: ${a.city}` : '', a.budget ? `الميزانية: ${a.budget}` : '']
+        .filter(Boolean)
+        .join(' · ') || null,
+      status: 'new',
+      source: 'المارد — واتساب',
+    })
+    if (error) return { ok: false, error: error.message }
+
+    // تنبيه محمد — الطلب ده فرصة، والسكوت عنه ضياع
+    notifyOwner(
+      `🎯 *طلب مش عندنا*\n\n` +
+        `«${a.requested_item.slice(0, 120)}»\n` +
+        (a.city ? `المنطقة: ${a.city}\n` : '') +
+        (a.budget ? `الميزانية: ${a.budget}\n` : '') +
+        `\nمن ${a.name || a.phone}`
+    )
+
+    return {
+      ok: true,
+      قول_للعميل:
+        'اللي إنت طالبه مش متاح عندنا دلوقتي — بس سجّلته، ' +
+        'وأول ما يتوفر هبعتلك على طول 👌',
+    }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'فشل' }
+  }
+}
+
+/** تنبيه لمحمد — مابيوقفش الرد أبدًا لو فشل */
+function notifyOwner(text: string): void {
+  const url = process.env.WA_SERVICE_URL
+  const secret = process.env.WA_SERVICE_SECRET
+  const owner = process.env.OWNER_PHONE || '201002229982'
+  if (!url || !secret) return
+
+  fetch(`${url.replace(/\/$/, '')}/send`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-madmona-secret': secret },
+    body: JSON.stringify({ to: owner, text }),
+  }).catch(() => {})
+}
+
 // ── الموزّع ──────────────────────────────────────────────────────────────
 export async function runMaridTool(name: string, input: Record<string, unknown>): Promise<ToolResult> {
   try {
@@ -671,6 +829,10 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await forwardToSupplierGroup(input as never)
       case 'create_supplier_group':
         return await createSupplierGroup(input as never)
+      case 'manage_meeting':
+        return await manageMeeting(input as never)
+      case 'record_unmet_demand':
+        return await recordUnmetDemand(input as never)
       default:
         return { error: `أداة مش معروفة: ${name}` }
     }
