@@ -477,7 +477,9 @@ async function whoIsThis(a: { phone: string; name?: string }): Promise<ToolResul
   // مورد؟ (بنجيب الأعمدة الآمنة بس — مفيش national_id ولا kyc)
   const { data: supplier } = await db
     .from('marketplace_suppliers')
-    .select('id, business_name, kyc_status, listings_count, bookings_count, rating, has_erp_crm, account_type')
+    .select(
+      'id, business_name, kyc_status, listings_count, bookings_count, rating, has_erp_crm, account_type, is_partner',
+    )
     .eq('profile_id', profile.id)
     .maybeSingle()
 
