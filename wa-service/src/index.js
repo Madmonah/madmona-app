@@ -24,6 +24,13 @@ const SHARED_SECRET = process.env.SHARED_SECRET || ''
 const AUTH_DIR = process.env.AUTH_DIR || '/data/auth'
 const PORT = process.env.PORT || 3000
 
+// الجروبات: all = رد على كل رسالة | mentioned = لما يتمنشن بس | off = تجاهل
+const GROUP_MODE = (process.env.GROUP_MODE || 'all').toLowerCase()
+const GROUP_ALLOWLIST = (process.env.GROUP_ALLOWLIST || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean)
+
 const log = pino({ level: 'info' })
 
 if (!existsSync(AUTH_DIR)) mkdirSync(AUTH_DIR, { recursive: true })
@@ -35,7 +42,9 @@ let meJid = null
 
 // ── تحويل الرقم لصيغة واتساب ──────────────────────────────────────────────
 function toJid(raw) {
-  let n = String(raw).replace(/[^\d]/g, '')
+  const s = String(raw)
+  if (s.includes('@')) return s                    // JID جاهز (جروب أو فرد)
+  let n = s.replace(/[^\d]/g, '')
   if (n.startsWith('00')) n = n.slice(2)
   if (n.startsWith('0')) n = '20' + n.slice(1)     // أرقام مصرية
   return `${n}@s.whatsapp.net`
@@ -114,8 +123,9 @@ async function start() {
     for (const m of messages) {
       if (m.key.fromMe) continue                       // رسايلنا إحنا
       const jid = m.key.remoteJid || ''
-      if (jid.endsWith('@g.us')) continue              // تجاهل الجروبات
       if (jid === 'status@broadcast') continue         // تجاهل الحالات
+
+      const isGroup = jid.endsWith('@g.us')
 
       const text =
         m.message?.conversation ||
@@ -123,6 +133,24 @@ async function start() {
         m.message?.imageMessage?.caption ||
         m.message?.videoMessage?.caption ||
         ''
+
+      // ── قواعد الجروبات ────────────────────────────────────────────────
+      if (isGroup) {
+        if (GROUP_MODE === 'off') continue
+
+        const mentions = m.message?.extendedTextMessage?.contextInfo?.mentionedJid || []
+        const myNum = (meJid || '').split(':')[0].split('@')[0]
+        const mentioned = mentions.some((j) => j.startsWith(myNum))
+
+        // رد على رسالة من رسايلنا يُعتبر مخاطبة كمان
+        const quoted = m.message?.extendedTextMessage?.contextInfo?.participant || ''
+        const repliedToUs = quoted.startsWith(myNum)
+
+        const allowed = GROUP_ALLOWLIST.includes(jid)
+
+        if (GROUP_MODE === 'mentioned' && !mentioned && !repliedToUs && !allowed) continue
+        // GROUP_MODE === 'all' → بيعدّي على طول
+      }
 
       const kind = m.message?.audioMessage
         ? 'audio'
@@ -133,15 +161,20 @@ async function start() {
         : 'text'
 
       const payload = {
-        from: jid.split('@')[0],
+        from: isGroup ? (m.key.participant || '').split('@')[0] : jid.split('@')[0],
         name: m.pushName || null,
         message_id: m.key.id,
         timestamp: Number(m.messageTimestamp) || Math.floor(Date.now() / 1000),
         type: kind,
         text,
+        is_group: isGroup,
+        group_jid: isGroup ? jid : null,
       }
 
-      log.info({ from: payload.from, kind, preview: text.slice(0, 60) }, '📩 رسالة واردة')
+      log.info(
+        { from: payload.from, group: isGroup ? jid : undefined, kind, preview: text.slice(0, 60) },
+        isGroup ? '👥 رسالة جروب' : '📩 رسالة واردة'
+      )
       await forwardToApp(payload)
     }
   })
