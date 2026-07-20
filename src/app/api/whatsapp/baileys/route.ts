@@ -521,15 +521,47 @@ export async function POST(request: NextRequest) {
     // شفنا ده فعليًا يوم ٢٠ يوليو مع مورد بعت صور مشروعه.
     // النظام القديم كان فيه القاعدة دي واتفقدت في الترحيل.
     //
-    // ⚠️ الفرق المهم: «رسايل جت مع بعض قبل ما نرد» غير «العميل رد علينا».
+    // ⚠️ ده الحارس الحقيقي. النسختين اللي قبله فشلوا:
     //
-    // أول نسخة من الحارس ده منعت أي رد خلال ٤٥ ثانية من آخر رد —
-    // فلما عبده رد علينا بعد ٣٥ ثانية، المارد سكت. عطل أسوأ من اللي
-    // كنا بنصلحه.
+    // (١) منع أي رد خلال ٤٥ث من آخر رد → منع ردود حقيقية على عملاء
+    //     ردّوا بسرعة.
+    // (٢) مقارنة وقت الرسالة بوقت آخر رد → فشل لما ٤ رسايل وصلوا في
+    //     ثانية واحدة: اتفتحت ٤ عمليات **بالتوازي**، وكل واحدة شافت
+    //     إن مفيش رد قبلها، فكلهم ردّوا. أربع رسايل في ٢١ ثانية،
+    //     وأول رد تجاهل المنيو اللي وصل بعده بنص ثانية.
     //
-    // القاعدة الصح: نقارن **وقت الرسالة نفسها** بوقت آخر رد.
-    //   • الرسالة أقدم من آخر رد → كانت جزء من الدفعة اللي ردّينا عليها → نتخطّى
-    //   • الرسالة أحدث من آخر رد → العميل بيكلّمنا من جديد → نرد
+    // الحل (زي النظام القديم): **استنى الأول، وبعدين اتأكد**.
+    // بنستنى شوية، وبعدين نشوف: فيه رسالة أحدث مني وصلت؟
+    //   • أيوة → اسكت. العملية بتاعتها هي اللي هترد وهتشوف كلامي في التاريخ.
+    //   • لأ   → أنا آخر واحد في الدفعة → أرد، والرد يغطّي الدفعة كلها.
+    //
+    // الانتظار بيحل سباق التوازي لأن الفحص بيحصل **بعده** مش قبله.
+    const BATCH_WAIT_MS = Number(process.env.MARID_BATCH_WAIT_MS || 7000)
+    {
+      await new Promise((r) => setTimeout(r, BATCH_WAIT_MS))
+
+      const { data: newer } = await supabaseUntyped
+        .from('whatsapp_messages')
+        .select('id')
+        .eq('conversation_id', conversationId)
+        .eq('direction', 'inbound')
+        .gt('created_at', new Date(Date.now() - BATCH_WAIT_MS).toISOString())
+        .neq('wa_message_id', body.message_id)
+        .limit(1)
+        .maybeSingle()
+
+      if (newer) {
+        // رسالة أحدث موجودة — هي اللي هترد
+        await logInboundMessage({
+          conversationId,
+          wa_message_id: body.message_id,
+          body: body.text || `[${body.type}]`,
+          messageType: body.type,
+        })
+        return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'batched' })
+      }
+    }
+
     {
       const { data: lastOut } = await supabaseUntyped
         .from('whatsapp_messages')
