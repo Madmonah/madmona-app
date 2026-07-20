@@ -1,0 +1,32 @@
+name: حارس قناة الواتساب
+
+# بيمنع رجوع الجذر الأول: أي ملف بينفّذ إرسال واتساب بنفسه
+# بدل ما يعدّي من نقطة الإرسال الموحّدة.
+#
+# قبل ٢٠ يوليو ٢٠٢٦ كان فيه ١٨ ملف بينادي graph.facebook.com مباشرة.
+# لما القناة اتغيّرت، الـ ١٨ وقعوا مع بعض.
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'supabase/functions/**'
+      - 'scripts/check-wa-channel.mjs'
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'supabase/functions/**'
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: فحص إن مفيش ملف بينادي Graph مباشرة
+        run: node scripts/check-wa-channel.mjs
