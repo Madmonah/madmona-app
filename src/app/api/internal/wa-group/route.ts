@@ -42,8 +42,9 @@ export async function POST(request: NextRequest) {
     subject?: string
     participants?: string[]
     intro?: string
-    action?: 'create' | 'rename'
+    action?: 'create' | 'rename' | 'picture'
     group_jid?: string
+    image_url?: string
   }
   try {
     body = await request.json()
@@ -65,6 +66,30 @@ export async function POST(request: NextRequest) {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-madmona-secret': serviceSecret },
         body: JSON.stringify({ group_jid: body.group_jid, subject: body.subject }),
+      })
+      const data = await res.json().catch(() => ({}))
+      return NextResponse.json(data, { status: res.ok ? 200 : 502 })
+    } catch (err) {
+      return NextResponse.json(
+        { ok: false, error: err instanceof Error ? err.message : 'فشل الاتصال بالخدمة' },
+        { status: 502 }
+      )
+    }
+  }
+
+  // صورة الجروب — لوجو الشركة
+  if (body.action === 'picture') {
+    if (!body.group_jid || !body.image_url) {
+      return NextResponse.json(
+        { ok: false, error: 'group_jid و image_url مطلوبين' },
+        { status: 400 }
+      )
+    }
+    try {
+      const res = await fetch(`${url.replace(/\/$/, '')}/group-picture`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-madmona-secret': serviceSecret },
+        body: JSON.stringify({ group_jid: body.group_jid, image_url: body.image_url }),
       })
       const data = await res.json().catch(() => ({}))
       return NextResponse.json(data, { status: res.ok ? 200 : 502 })

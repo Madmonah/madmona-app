@@ -455,6 +455,33 @@ app.post('/group-subject', auth, async (req, res) => {
   }
 })
 
+// صورة الجروب — لوجو الشركة. Baileys محتاج بافر مش لينك،
+// فبنجيب الصورة الأول وبنبعتها.
+app.post('/group-picture', auth, async (req, res) => {
+  const { group_jid, image_url } = req.body || {}
+  if (!group_jid || !image_url) {
+    return res.status(400).json({ ok: false, error: 'group_jid و image_url مطلوبين' })
+  }
+  const { entry } = pickSession(req)
+  if (!entry?.connected) return res.status(503).json({ ok: false, error: 'مفيش جلسة متصلة' })
+
+  try {
+    const img = await fetch(image_url)
+    if (!img.ok) {
+      return res.status(400).json({ ok: false, error: `الصورة مش متاحة (${img.status})` })
+    }
+    const buf = Buffer.from(await img.arrayBuffer())
+    // واتساب بيرفض الصور الكبيرة، وبيعملها مربّع تلقائي
+    if (buf.length > 5_000_000) {
+      return res.status(400).json({ ok: false, error: 'الصورة أكبر من ٥ ميجا' })
+    }
+    await entry.sock.updateProfilePicture(group_jid, buf)
+    res.json({ ok: true, bytes: buf.length })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
 app.get('/group-invite', auth, async (req, res) => {
   const { group_jid } = req.query || {}
   if (!group_jid) return res.status(400).json({ ok: false, error: 'group_jid مطلوب' })
