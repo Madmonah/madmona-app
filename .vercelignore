@@ -1,12 +1,23 @@
-scripts
-supabase
-*.log
-.claude
-.wa-profile
-.wa-dl
-reel-engine
-marketing
-marketing-assets
-LAUNCH_KIT
-docs
+# ⚠️ قاعدة مهمة: كل نمط لازم يبدأ بـ / عشان يتثبّت على جذر المشروع.
+#
+# السبب: النمط من غير / بيطابق أي مجلد بنفس الاسم في أي عمق.
+# ده حصل فعلاً — سطر "WHATSAPP" (المقصود بيه فولدر التوثيق في الجذر)
+# كان بيحجب src/app/api/whatsapp/ كمان، فالويبهوك كان 404 لشهور
+# ومحدش عرف ليه. اتصلح ٢٠ يوليو ٢٠٢٦.
+#
+# فلو ضفت سطر جديد هنا: ابدأه بـ / دايمًا.
+
+/scripts
+/supabase
+/.claude
+/.wa-profile
+/.wa-dl
+/reel-engine
+/marketing
+/marketing-assets
+/LAUNCH_KIT
+/docs
 /WHATSAPP
+
+# دي أنماط عامة بقصد — بتشيل اللوجات من أي مكان
+*.log

@@ -16,6 +16,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
+import { sendText, upsertConversation } from '@/lib/whatsapp'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 120
@@ -75,26 +76,18 @@ async function ensureProfile(supa: ReturnType<typeof sb>, rawPhone: string) {
   return { id: userId, local }
 }
 
-async function waNotify(supa: ReturnType<typeof sb>, phone: string, body: string) {
+// 🎯 بيمر من نقطة الإرسال الموحّدة — sendText بتسجّل الرسالة في
+// whatsapp_messages لوحدها، فمفيش داعي للتسجيل اليدوي هنا.
+// شوف: src/app/api/internal/wa-send/route.ts
+async function waNotify(_supa: ReturnType<typeof sb>, phone: string, body: string) {
   try {
-    const { data: rows } = await supa.from('whatsapp_config').select('key, value').in('key', ['access_token', 'phone_number_id'])
-    const cfg = Object.fromEntries((rows || []).map(r => [r.key, r.value]))
-    if (!cfg.access_token || !cfg.phone_number_id) return
-    const to = phone.replace(/^\+/, '')
-    const r = await fetch(`https://graph.facebook.com/v20.0/${cfg.phone_number_id}/messages`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${cfg.access_token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messaging_product: 'whatsapp', to, type: 'text', text: { body, preview_url: true } }),
+    const conversationId = await upsertConversation({ phone, agentName: 'auto-publish' })
+    await sendText({
+      to: phone,
+      body,
+      conversationId: conversationId ?? undefined,
+      agentName: 'auto-publish',
     })
-    const j = await r.json().catch(() => null)
-    const { data: conv } = await supa.from('whatsapp_conversations').select('id').eq('contact_phone', `+${to}`).maybeSingle()
-    if (conv?.id) {
-      await supa.from('whatsapp_messages').insert({
-        conversation_id: conv.id, direction: 'outbound', body, message_type: 'text',
-        status: r.ok ? 'sent' : 'failed', ai_generated: false, agent_name: 'auto-publish',
-        wa_message_id: j?.messages?.[0]?.id ?? null,
-      } as never)
-    }
   } catch { /* best-effort */ }
 }
 

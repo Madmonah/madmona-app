@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { sendText } from '@/lib/whatsapp';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,25 +36,16 @@ async function getMetaCreds() {
   return { phone_id: m.phone_number_id, token: m.access_token };
 }
 
+// 🎯 بيمر من نقطة الإرسال الموحّدة — مفيش نداء مباشر لـ Graph.
+// شوف: src/app/api/internal/wa-send/route.ts
 async function sendWhatsAppText(toPhone: string, body: string) {
-  const { phone_id, token } = await getMetaCreds();
   const cleanedBody = enforceBrandName(body);
-  // Meta expects to-phone without the leading +
-  const to = toPhone.startsWith('+') ? toPhone.slice(1) : toPhone;
-  const r = await fetch(`https://graph.facebook.com/v21.0/${phone_id}/messages`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      messaging_product: 'whatsapp',
-      recipient_type: 'individual',
-      to,
-      type: 'text',
-      text: { body: cleanedBody, preview_url: true },
-    }),
+  const res = await sendText({
+    to: toPhone,
+    body: cleanedBody,
+    agentName: 'المارد',
   });
-  const data = await r.json();
-  if (!r.ok) return { error: data?.error?.message || `HTTP ${r.status}`, wa_id: null as string | null };
-  return { error: null as string | null, wa_id: data?.messages?.[0]?.id || null };
+  return { error: res.ok ? null : res.error ?? 'unknown', wa_id: res.wa_message_id ?? null };
 }
 
 export async function POST(req: NextRequest) {
