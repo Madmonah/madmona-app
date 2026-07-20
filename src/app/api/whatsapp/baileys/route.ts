@@ -244,14 +244,38 @@ ${Object.entries(MADMONA_LINKS)
     },
   ]
 
+  // ⚠️ لو الميديا مش مقروءة (صورة تالفة، صيغة غريبة، ملف كبير)، Claude
+  // بيرمي 400 والطلب كله بيقع — والعميل مايوصلوش رد خالص.
+  // الحل: نشيل الميديا ونكمّل بالنص. رد ناقص أحسن ألف مرة من سكوت.
+  let droppedMedia = false
+
   for (let turn = 0; turn < MAX_TURNS; turn++) {
-    const res = await anthropic.messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: 2048,
-      system,
-      tools: MARID_TOOLS as never,
-      messages: messages as never,
-    })
+    let res
+    try {
+      res = await anthropic.messages.create({
+        model: CLAUDE_MODEL,
+        max_tokens: 2048,
+        system,
+        tools: MARID_TOOLS as never,
+        messages: messages as never,
+      })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      const isMediaIssue = /image|document|media|Could not process/i.test(msg)
+
+      if (isMediaIssue && !droppedMedia && opts.mediaBlocks.length > 0) {
+        console.warn('[marid] الميديا مش مقروءة — بنكمّل من غيرها:', msg.slice(0, 120))
+        droppedMedia = true
+        messages[0] = {
+          role: 'user',
+          content:
+            `${opts.userMessage}\n\n(العميل بعت ملف مش قادر أفتحه — ` +
+            `قوله كده بصراحة واطلب منه يبعت التفاصيل مكتوبة أو يبعت الملف تاني.)`,
+        }
+        continue
+      }
+      throw err
+    }
 
     const toolUses = res.content.filter((c) => c.type === 'tool_use')
 
