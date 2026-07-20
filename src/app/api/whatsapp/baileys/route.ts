@@ -410,8 +410,8 @@ export async function POST(request: NextRequest) {
     if (sendPaused && body.text) {
       const cid = await upsertConversation({
         phone,
-        name: body.push_name ?? null,
-        lastMessageAt: new Date().toISOString(),
+        name: body.name ?? undefined,
+        agentName: 'المارد',
       })
       if (cid) {
         await logInboundMessage({
