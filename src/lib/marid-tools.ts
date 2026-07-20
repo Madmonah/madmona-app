@@ -386,6 +386,9 @@ async function createProject(a: {
       price_from: typeof a.price_from === 'number' ? a.price_from : null,
       price_unit: 'egp_total',
       note: a.note ?? null,
+      // بنحفظ رقم اللي بعت عشان نرجعله ونعرف مصدر المشروع.
+      // ⚠️ العمود ده ممنوع على الزوار (migrations/20260720_hide_supplier_phones.sql)
+      // — أرقام الموردين ماتظهرش على الماركتبليس ولا البورصة أبدًا.
       source_lead_phone: a.sender_phone,
       source_name: 'المارد — واتساب',
       // منشور على طول: محمد وافق يوم ٢٠ يوليو بعد ما اتفقنا على الضوابط.

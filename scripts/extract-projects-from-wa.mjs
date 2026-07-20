@@ -23,8 +23,11 @@ import Anthropic from '@anthropic-ai/sdk'
 // ── قراءة .env.local ──────────────────────────────────────────────────
 const env = {}
 try {
-  for (const line of readFileSync('.env.local', 'utf8').split('\n')) {
-    const m = line.match(/^([A-Z_0-9]+)=(.*)$/)
+  // ⚠️ نقسم على /\r?\n/ مش '\n'.
+  // `.` في جافاسكريبت مابتطابقش \r، فسطر واحد منتهي بـ CRLF جوه ملف LF
+  // بيفشل بصمت — المتغير بيبان «ناقص» وهو موجود قدام عينك في الملف.
+  for (const line of readFileSync('.env.local', 'utf8').split(/\r?\n/)) {
+    const m = line.trim().match(/^([A-Z_0-9]+)=(.*)$/)
     if (m) env[m[1]] = m[2].trim().replace(/^["']|["']$/g, '')
   }
 } catch { /* هنعتمد على process.env */ }
