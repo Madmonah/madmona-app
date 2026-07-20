@@ -192,8 +192,16 @@ ${Object.entries(MADMONA_LINKS)
 }
 
 export async function POST(request: NextRequest) {
-  const secret = request.headers.get('x-madmona-secret')
-  if (!process.env.WA_SERVICE_SECRET || secret !== process.env.WA_SERVICE_SECRET) {
+  // بنقبل السرّين الداخليين — نفس حدود الثقة (الاتنين على السيرفر بس).
+  // WA_SERVICE_SECRET هو اللي Railway بيبعت بيه.
+  // EDGE_GATEWAY_SECRET بيدّينا مسار اختبار بدل ما نستنى رسالة حقيقية
+  // عشان نتأكد إن التعديل شغال — التخمين بيضيّع وقت.
+  const secret = request.headers.get('x-madmona-secret')?.trim()
+  const accepted = [process.env.WA_SERVICE_SECRET, process.env.EDGE_GATEWAY_SECRET]
+    .map((s) => s?.trim())
+    .filter(Boolean)
+
+  if (!accepted.length || !secret || !accepted.includes(secret)) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   }
 
