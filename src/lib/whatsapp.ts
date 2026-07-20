@@ -163,10 +163,22 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
       //    عنده ١٥ صف. `maybeSingle()` بتفشل مع التكرار وبترجّع فاضي،
       //    فالحارس كان بيمنع الرد على ناس كلّمونا فعلاً.
       //    بناخد كل الصفوف وندوّر في أي واحد فيهم.
+      // ⚠️ الرقم بيتخزّن بأكتر من صيغة: `+201067122107` و`201067122107`
+      //    و`01067122107`. الحارس كان بيقارن بصيغة واحدة، فكان بيقول
+      //    «ماكلّمناش» على ناس كلّمونا فعلاً ويمنع الرد عليهم.
+      const digits = contactKey.replace(/\D/g, '')
+      const forms = [
+        params.to,
+        contactKey,
+        `+${digits}`,
+        digits,
+        digits.startsWith('20') ? `0${digits.slice(2)}` : `20${digits.replace(/^0/, '')}`,
+      ].filter((v, i, a) => v && a.indexOf(v) === i)
+
       const { data: convs } = await supabaseUntyped
         .from('whatsapp_conversations')
         .select('id')
-        .eq('contact_phone', params.to)
+        .in('contact_phone', forms)
         .limit(30)
 
       const ids = ((convs ?? []) as { id: string }[]).map((c) => c.id)
