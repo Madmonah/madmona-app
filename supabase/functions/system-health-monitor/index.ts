@@ -83,9 +83,14 @@ Deno.serve(async (req) => {
   })
 
   // ============== 6. Cron jobs active ==============
-  const { data: crons } = await sb.rpc('exec_sql_returning_json', { sql: 'SELECT count(*) as cnt FROM cron.job WHERE active=true' }).then(
-    r => r, () => ({ data: null })
+  // ⚠️ كان بينادي exec_sql_returning_json — دالة مش موجودة أصلاً،
+  //    فكان بيرجّع صفر ويقول «٠ مهام مجدولة» وهو غلط.
+  //    إنذار كاذب متكرر بيخلّي الكل يتجاهل التنبيهات — أخطر من مفيش تنبيه.
+  const { data: cronCnt } = await sb.rpc('active_cron_count').then(
+    (r: { data: unknown }) => r,
+    () => ({ data: null }),
   )
+  const crons = cronCnt != null ? { cnt: Number(cronCnt) } : null
   const cronCount = (crons as { cnt: number } | null)?.cnt || 0
   checks.push({
     name: 'cron_jobs',
@@ -105,6 +110,71 @@ Deno.serve(async (req) => {
     detail: `${aiReplies || 0} AI replies in last 24h`,
     severity: 'info',
   })
+
+  // ============== 8. رسايل مستنية رد ==============
+  // ٢٠ يوليو: عبده بعت الساعة ٦:٤٣ ومحدش رد عليه، وماحدش عرف
+  // إلا لما محمد سأل بعد ٣ ساعات. أي رسالة عدّى عليها ٢٠ دقيقة
+  // من غير رد = عطل، مش تأخير.
+  const { data: waiting } = await sb.rpc('wa_unanswered_since', { minutes: 20 })
+    .then((r: { data: unknown }) => r)
+    .catch(() => ({ data: null }))
+
+  let waitingCount = 0
+  if (Array.isArray(waiting)) {
+    waitingCount = waiting.length
+  } else {
+    // مفيش الدالة؟ نحسبها هنا — الفحص أهم من الشكل
+    const since = new Date(Date.now() - 20 * 60 * 1000).toISOString()
+    const { data: recent } = await sb
+      .from('whatsapp_messages')
+      .select('conversation_id, direction, created_at')
+      .gte('created_at', new Date(Date.now() - 6 * 3600 * 1000).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(500)
+
+    const lastByConv = new Map<string, { dir: string; at: string }>()
+    for (const m of (recent || []) as { conversation_id: string; direction: string; created_at: string }[]) {
+      if (!lastByConv.has(m.conversation_id)) {
+        lastByConv.set(m.conversation_id, { dir: m.direction, at: m.created_at })
+      }
+    }
+    for (const [, v] of lastByConv) {
+      if (v.dir === 'inbound' && v.at < since) waitingCount++
+    }
+  }
+
+  checks.push({
+    name: 'unanswered_messages',
+    ok: waitingCount === 0,
+    detail: `${waitingCount} رسالة مستنية رد من أكتر من ٢٠ دقيقة`,
+    severity: waitingCount > 2 ? 'alert' : waitingCount > 0 ? 'warn' : 'info',
+  })
+
+  // ============== 9. خدمة المارد شغّالة؟ ==============
+  // الرقم ممكن يفصل والدنيا تفضل ساكتة. بنسأل الخدمة نفسها.
+  try {
+    const waUrl = Deno.env.get('WA_SERVICE_URL')
+    if (waUrl) {
+      const h = await fetch(`${waUrl.replace(/\/$/, '')}/health`, {
+        signal: AbortSignal.timeout(8000),
+      })
+      const hd = await h.json().catch(() => ({}))
+      const connected = hd?.connected === true || hd?.status === 'connected'
+      checks.push({
+        name: 'marid_service',
+        ok: connected,
+        detail: connected ? `متصل · ${hd?.version?.commit ?? '?'}` : 'مفصول عن واتساب',
+        severity: connected ? 'info' : 'alert',
+      })
+    }
+  } catch (e) {
+    checks.push({
+      name: 'marid_service',
+      ok: false,
+      detail: `الخدمة مش بترد: ${e instanceof Error ? e.message : 'خطأ'}`,
+      severity: 'alert',
+    })
+  }
 
   // ============== Build alert message if needed ==============
   const alerts = checks.filter(c => c.severity === 'alert')
