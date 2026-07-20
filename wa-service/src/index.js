@@ -224,11 +224,14 @@ function migrateLegacySession() {
   return id
 }
 
+// ⚠️ كانت معرّفة جوّه bootSessions، فمسار `POST /sessions` كان بيرمي
+//    «forwardLidMap is not defined» ويفشل ربط أي رقم جديد.
+//    مكانها هنا عشان الاتنين يشوفوها.
+const forwardLidMap = (m) => forwardToApp({ kind: 'lid_map', ...m })
+
 // ── تشغيل الجلسات ─────────────────────────────────────────────────────────
 async function bootSessions() {
   const migrated = migrateLegacySession()
-
-  const forwardLidMap = (m) => forwardToApp({ kind: 'lid_map', ...m })
 
   const fromDisk = knownSessionIds(AUTH_DIR).map((id) => ({ id, label: id }))
 
