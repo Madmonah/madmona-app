@@ -145,12 +145,32 @@ async function handleMessage({ sessionId, sock, m }) {
     : 'text'
 
   let media = null
+  let mediaError = null
   if (kind !== 'text') {
+    // 🔁 تنزيل الميديا بيفشل أحيانًا لأسباب مؤقتة (الشبكة، إعادة الرفع).
+    //    كان بيتجاهل الفشل في صمت — والصورة تضيع للأبد.
+    //
+    //    ٢٠ يوليو: مطعم Shawari بعت ٣ صور منيو الساعة ٨:٣٧،
+    //    كلها فشلت، ومحصلش أي أثر غير كلمة [image] في الرسالة.
+    //    وممنوع نطلب منه يبعتها تاني — دي غلطتنا مش غلطته.
+    //
+    //    دلوقتي: محاولتين، والفشل بيتبعت للتطبيق عشان يتسجّل
+    //    ويتنبّه عليه بدل ما يضيع.
     try {
-      const buf = await downloadMediaMessage(m, 'buffer', {}, {
-        logger: pino({ level: 'silent' }),
-        reuploadRequest: sock.updateMediaMessage,
-      })
+      let buf = null
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          buf = await downloadMediaMessage(m, 'buffer', {}, {
+            logger: pino({ level: 'silent' }),
+            reuploadRequest: sock.updateMediaMessage,
+          })
+          break
+        } catch (e) {
+          if (attempt === 2) throw e
+          log.warn({ err: e.message, attempt }, 'فشل تنزيل الميديا — بنعيد')
+          await new Promise((r) => setTimeout(r, 1500))
+        }
+      }
       if (buf.length / (1024 * 1024) <= MAX_MEDIA_MB) {
         const node =
           inner.audioMessage ||

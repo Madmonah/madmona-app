@@ -265,12 +265,22 @@ Deno.serve(async (_req) => {
             )
           }
 
-          // دلوقتي بس — والصور مربوطة — ينفع ننشر
-          const { error: pubErr } = await sb().from('listings')
-            .update({ status: LISTING_STATUS }).eq('id', listingId)
-          if (pubErr) {
-            // مفيش صور؟ يفضل مسودة بدل ما يضيع. ونقول السبب صريح.
-            out.errors.push(`${d.id}: نُشر كمسودة — ${pubErr.message}`)
+          // 🚨 الصورة المؤقتة **ماتنشرش**.
+          //
+          //    ٢٠ يوليو: نشرنا إعلانات بصور تصنيف نمطية، فطلع
+          //    ٨ مطاعم مختلفة بنفس الصورة بالظبط. الشكل ده بيضرب
+          //    ثقة أي حد يفتح المنصة — أسوأ من إن الإعلان ما يظهرش.
+          //
+          //    الإعلان بيتحفظ كامل ومستني صورته الحقيقية. أول ما
+          //    صاحبه يبعت صورة، المؤقتة بتتشال وبيتنشر.
+          if (usedPlaceholder) {
+            out.errors.push(`${d.id}: مستني صورة حقيقية — اتحفظ كمسودة`)
+          } else {
+            const { error: pubErr } = await sb().from('listings')
+              .update({ status: LISTING_STATUS }).eq('id', listingId)
+            if (pubErr) {
+              out.errors.push(`${d.id}: نُشر كمسودة — ${pubErr.message}`)
+            }
           }
           const token = genToken()
           await sb().from('listing_claims').insert({ listing_id: listingId, token, status: 'pending' })
