@@ -77,9 +77,19 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  // تشخيص من غير تسريب: بنقول المتغير موجود ولا لأ وطوله بس.
+  // ده بيفرّق بين «المتغير ناقص وقت التشغيل» و«القيمة مختلفة» —
+  // من غيره بنخمّن، والتخمين بيضيّع ساعات.
+  const probe = (v?: string) => (v ? { set: true, len: v.trim().length } : { set: false })
+
   return NextResponse.json({
     ok: true,
     service: 'madmona unified whatsapp send',
     note: 'كل إرسال واتساب لازم يعدّي من هنا — ممنوع نداء graph.facebook.com مباشرة',
+    secrets: {
+      EDGE_GATEWAY_SECRET: probe(process.env.EDGE_GATEWAY_SECRET),
+      WA_SERVICE_SECRET: probe(process.env.WA_SERVICE_SECRET),
+      CRON_SECRET: probe(process.env.CRON_SECRET),
+    },
   })
 }
