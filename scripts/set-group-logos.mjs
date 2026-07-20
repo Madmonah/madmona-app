@@ -84,6 +84,32 @@ if (needLookup.length) {
   console.log(`   لقينا ${found} صورة\n`)
 }
 
+// 🖼️ آخر مصدر — أول صورة من إعلاناته.
+//    مش لوجو بالظبط، بس جروب بصورة شغله أحسن بكتير من جروب فاضي،
+//    وبيخلّي المورّد يلاقي جروبه بين ٥٠ جروب.
+const fromListing = new Set()
+const stillMissing = groups.filter((g) => !logoOf[g.supplier_id] && !g.logo_applied_at)
+if (stillMissing.length) {
+  const { data: photos } = await db
+    .from('listing_photos')
+    .select('url, listing_id, created_at, listings!inner(supplier_id)')
+    .in(
+      'listings.supplier_id',
+      stillMissing.map((g) => g.supplier_id),
+    )
+    .order('created_at')
+
+  for (const p of photos || []) {
+    const sid = p.listings?.supplier_id
+    if (sid && !logoOf[sid] && p.url) {
+      logoOf[sid] = p.url
+      fromListing.add(sid)
+    }
+  }
+  const got = stillMissing.filter((g) => logoOf[g.supplier_id]).length
+  if (got) console.log(`🖼️  ${got} صورة من الإعلانات\n`)
+}
+
 const ready = groups.filter((g) => logoOf[g.supplier_id] && !g.logo_applied_at)
 const missing = groups.filter((g) => !logoOf[g.supplier_id])
 
@@ -127,11 +153,15 @@ for (let i = 0; i < ready.length; i++) {
         .update({ logo_applied_at: new Date().toISOString() })
         .eq('id', g.id)
       // نحفظها كلوجو للمورّد كمان — عشان الماركتبليس يستفيد منها
-      // ومانرجعش ندوّر عليها كل مرة
-      await db
-        .from('marketplace_suppliers')
-        .update({ logo_url: logoOf[g.supplier_id] })
-        .eq('id', g.supplier_id)
+      // ومانرجعش ندوّر عليها كل مرة.
+      // ⚠️ صور الإعلانات مش لوجو، فمابنحفظهاش في logo_url —
+      //    هتبان غلط على صفحة المورّد في الماركتبليس.
+      if (!fromListing.has(g.supplier_id)) {
+        await db
+          .from('marketplace_suppliers')
+          .update({ logo_url: logoOf[g.supplier_id] })
+          .eq('id', g.supplier_id)
+      }
       ok++
       console.log(`  ✅ ${g.subject}`)
     } else {
