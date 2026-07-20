@@ -17,7 +17,11 @@ import {
   DisconnectReason,
   useMultiFileAuthState,
   fetchLatestBaileysVersion,
+  downloadMediaMessage,
 } from '@whiskeysockets/baileys'
+
+// أقصى حجم ميديا هنبعته للتطبيق (Claude بيقبل ~5MB للصور و32MB للـ PDF)
+const MAX_MEDIA_MB = Number(process.env.MAX_MEDIA_MB || 12)
 
 const APP_WEBHOOK_URL = process.env.APP_WEBHOOK_URL || ''
 const SHARED_SECRET = process.env.SHARED_SECRET || ''
@@ -156,11 +160,43 @@ async function start() {
         ? 'audio'
         : m.message?.imageMessage
         ? 'image'
+        : m.message?.videoMessage
+        ? 'video'
         : m.message?.documentMessage
         ? 'document'
         : 'text'
 
+      // ── تنزيل الميديا وتحويلها base64 ────────────────────────────────
+      let media = null
+      if (kind !== 'text') {
+        try {
+          const buf = await downloadMediaMessage(m, 'buffer', {}, { logger: pino({ level: 'silent' }), reuploadRequest: sock.updateMediaMessage })
+          const sizeMB = buf.length / (1024 * 1024)
+          if (sizeMB > MAX_MEDIA_MB) {
+            log.warn({ sizeMB: sizeMB.toFixed(1) }, 'الميديا كبيرة — اتجاهلت')
+          } else {
+            const node =
+              m.message?.audioMessage ||
+              m.message?.imageMessage ||
+              m.message?.videoMessage ||
+              m.message?.documentMessage
+            media = {
+              mimetype: node?.mimetype || 'application/octet-stream',
+              filename: m.message?.documentMessage?.fileName || null,
+              seconds: m.message?.audioMessage?.seconds || null,
+              is_voice_note: !!m.message?.audioMessage?.ptt,
+              size_bytes: buf.length,
+              data_base64: buf.toString('base64'),
+            }
+            log.info({ kind, mime: media.mimetype, kb: Math.round(buf.length / 1024) }, '📎 ميديا اتنزلت')
+          }
+        } catch (e) {
+          log.error({ err: e.message, kind }, 'فشل تنزيل الميديا')
+        }
+      }
+
       const payload = {
+        media,
         from: isGroup ? (m.key.participant || '').split('@')[0] : jid.split('@')[0],
         name: m.pushName || null,
         message_id: m.key.id,
@@ -182,7 +218,7 @@ async function start() {
 
 // ── HTTP API ──────────────────────────────────────────────────────────────
 const app = express()
-app.use(express.json({ limit: '2mb' }))
+app.use(express.json({ limit: '32mb' }))   // الميديا بتتبعت base64
 
 function auth(req, res, next) {
   if (!SHARED_SECRET) return next()
@@ -208,7 +244,7 @@ app.get('/qr', (_req, res) => {
   </div>`)
 })
 
-// إرسال رسالة
+// إرسال رسالة نصية
 app.post('/send', auth, async (req, res) => {
   const { to, text } = req.body || {}
   if (!to || !text) return res.status(400).json({ ok: false, error: 'to و text مطلوبين' })
@@ -221,6 +257,49 @@ app.post('/send', auth, async (req, res) => {
     res.json({ ok: true, wa_message_id: sent?.key?.id })
   } catch (e) {
     log.error({ err: e.message, to }, 'فشل الإرسال')
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+// إرسال voice note — audio_base64 لازم يكون OGG/Opus
+app.post('/send-voice', auth, async (req, res) => {
+  const { to, audio_base64, seconds } = req.body || {}
+  if (!to || !audio_base64) return res.status(400).json({ ok: false, error: 'to و audio_base64 مطلوبين' })
+  if (!connected || !sock) return res.status(503).json({ ok: false, error: 'مش متصل بواتساب' })
+
+  try {
+    const sent = await sock.sendMessage(toJid(to), {
+      audio: Buffer.from(audio_base64, 'base64'),
+      mimetype: 'audio/ogg; codecs=opus',
+      ptt: true,                        // يظهر كرسالة صوتية مش ملف
+      seconds: seconds || undefined,
+    })
+    log.info({ to, id: sent?.key?.id }, '🎤 voice note اتبعتت')
+    res.json({ ok: true, wa_message_id: sent?.key?.id })
+  } catch (e) {
+    log.error({ err: e.message, to }, 'فشل إرسال الـ voice')
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+// إرسال ملف / صورة
+app.post('/send-media', auth, async (req, res) => {
+  const { to, data_base64, mimetype, filename, caption } = req.body || {}
+  if (!to || !data_base64) return res.status(400).json({ ok: false, error: 'to و data_base64 مطلوبين' })
+  if (!connected || !sock) return res.status(503).json({ ok: false, error: 'مش متصل بواتساب' })
+
+  try {
+    const buf = Buffer.from(data_base64, 'base64')
+    const isImage = (mimetype || '').startsWith('image/')
+    const content = isImage
+      ? { image: buf, caption: caption || undefined }
+      : { document: buf, mimetype: mimetype || 'application/pdf', fileName: filename || 'file', caption: caption || undefined }
+
+    const sent = await sock.sendMessage(toJid(to), content)
+    log.info({ to, id: sent?.key?.id, isImage }, '📎 ميديا اتبعتت')
+    res.json({ ok: true, wa_message_id: sent?.key?.id })
+  } catch (e) {
+    log.error({ err: e.message, to }, 'فشل إرسال الميديا')
     res.status(500).json({ ok: false, error: e.message })
   }
 })
