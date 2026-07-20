@@ -12,7 +12,8 @@ import {
   getConversationHistory,
   normalizePhone,
 } from '@/lib/whatsapp'
-import { anthropic, CLAUDE_MODEL, callClaude, parseJsonResponse } from '@/lib/anthropic'
+import { anthropic, CLAUDE_MODEL, parseJsonResponse } from '@/lib/anthropic'
+import { MARID_TOOLS, runMaridTool, MADMONA_LINKS } from '@/lib/marid-tools'
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
 
 export const runtime = 'nodejs'
@@ -93,6 +94,101 @@ async function callClaudeWithMedia(
   })
   const first = res.content[0]
   return first && first.type === 'text' ? first.text : ''
+}
+
+// ── نداء المارد بالأدوات ─────────────────────────────────────────────────
+//
+// المارد بيقدر يسأل الداتابيز قبل ما يرد: يبحث في الكتالوج، يشوف المتكلّم
+// مين، يجيب حجوزاته، يسجّل إعلان جديد. بندوّر الحلقة لحد ما يخلص أدوات.
+//
+// ليه حد أقصى ٤ لفّات: الرد على الواتساب لازم يوصل في أقل من دقيقة،
+// وكل لفّة نداء API كامل. أربعة كفاية لأصعب سؤال، وبتمنع الدوران اللانهائي.
+async function callMaridWithTools(opts: {
+  systemPrompt: string
+  userMessage: string
+  mediaBlocks: Array<Record<string, unknown>>
+  senderPhone: string
+  senderName: string | null
+}): Promise<string> {
+  const MAX_TURNS = 4
+
+  const system = `${opts.systemPrompt}
+
+═══════════════════════════════════════════════════════════
+معلومات المتكلّم دلوقتي
+═══════════════════════════════════════════════════════════
+رقمه: ${opts.senderPhone}${opts.senderName ? `\nاسمه: ${opts.senderName}` : ''}
+
+استخدم الرقم ده مباشرة في الأدوات — ماتسألهوش عليه.
+
+═══════════════════════════════════════════════════════════
+عندك أدوات — استخدمها
+═══════════════════════════════════════════════════════════
+• أي سؤال عن حاجة معينة → search_catalog قبل ما ترد
+• «عندكم إيه؟» → list_categories
+• أول رسالة من حد → who_is_this عشان تعرف تبعت اللينك الصح
+• «فين حجزي؟» → get_my_orders
+• عايز يضيف منتج/خدمة → اجمع البيانات ثم create_listing_draft
+
+⚠️ ممنوع تخترع إعلان أو سعر أو لينك. لو الأداة مارجعتش حاجة،
+قول للعميل بصراحة إن ده مش متاح — ده أحسن ألف مرة من معلومة غلط.
+
+الروابط الرسمية:
+${Object.entries(MADMONA_LINKS)
+  .map(([k, v]) => `  ${k.replace(/_/g, ' ')}: ${v}`)
+  .join('\n')}`
+
+  const messages: Array<{ role: 'user' | 'assistant'; content: unknown }> = [
+    {
+      role: 'user',
+      content:
+        opts.mediaBlocks.length > 0
+          ? [...opts.mediaBlocks, { type: 'text', text: opts.userMessage }]
+          : opts.userMessage,
+    },
+  ]
+
+  for (let turn = 0; turn < MAX_TURNS; turn++) {
+    const res = await anthropic.messages.create({
+      model: CLAUDE_MODEL,
+      max_tokens: 2048,
+      system,
+      tools: MARID_TOOLS as never,
+      messages: messages as never,
+    })
+
+    const toolUses = res.content.filter((c) => c.type === 'tool_use')
+
+    if (!toolUses.length) {
+      const textPart = res.content.find((c) => c.type === 'text')
+      return textPart && textPart.type === 'text' ? textPart.text : ''
+    }
+
+    messages.push({ role: 'assistant', content: res.content })
+
+    const results = []
+    for (const tu of toolUses) {
+      if (tu.type !== 'tool_use') continue
+      const out = await runMaridTool(tu.name, tu.input as Record<string, unknown>)
+      console.log('[marid-tool]', tu.name, JSON.stringify(out).slice(0, 160))
+      results.push({
+        type: 'tool_result',
+        tool_use_id: tu.id,
+        content: JSON.stringify(out),
+      })
+    }
+    messages.push({ role: 'user', content: results })
+  }
+
+  // خلصت اللفّات ولسه بيطلب أدوات — نطلب رد نهائي من غير أدوات
+  const final = await anthropic.messages.create({
+    model: CLAUDE_MODEL,
+    max_tokens: 1024,
+    system: `${system}\n\nخلاص كفاية أدوات — رد على العميل دلوقتي باللي عندك.`,
+    messages: messages as never,
+  })
+  const t = final.content.find((c) => c.type === 'text')
+  return t && t.type === 'text' ? t.text : ''
 }
 
 export async function POST(request: NextRequest) {
@@ -244,10 +340,13 @@ export async function POST(request: NextRequest) {
       ? `سياق المحادثة السابقة:\n${historyText}\n\n---\nرسالة العميل الحالية:\n${userText}`
       : userText
 
-    const raw =
-      mediaBlocks.length > 0
-        ? await callClaudeWithMedia(CUSTOMER_CONCIERGE_PROMPT, userMessage, mediaBlocks)
-        : await callClaude({ systemPrompt: CUSTOMER_CONCIERGE_PROMPT, userMessage, maxTokens: 2048 })
+    const raw = await callMaridWithTools({
+      systemPrompt: CUSTOMER_CONCIERGE_PROMPT,
+      userMessage,
+      mediaBlocks,
+      senderPhone: phone,
+      senderName: body.name ?? null,
+    })
 
     // البرومبت بيطلب JSON — بنفك بأمان ولو فشل نستخدم النص كما هو
     let parsed: ConciergeReply = {}
