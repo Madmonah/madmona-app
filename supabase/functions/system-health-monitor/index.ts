@@ -185,6 +185,40 @@ Deno.serve(async (req) => {
     })
   }
 
+  // ============== 10. إعلانات واقفة من غير سبب ==============
+  // ٢٠ يوليو: ٣٨ مطعم عندهم منيوهات وصور فضلوا موقوفين ٤٥ يوم
+  // لأن العلامة is_directory ماكانتش متحطة، فحارس النشر رفضهم.
+  // ومحدش عرف. الحاجات دي لازم تبان في نفس اليوم.
+  const { count: stuckListings } = await sb
+    .from('listings')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'paused')
+    .eq('is_directory', false)
+    .lt('created_at', new Date(Date.now() - 48 * 3600 * 1000).toISOString())
+
+  checks.push({
+    name: 'stuck_listings',
+    ok: (stuckListings || 0) < 20,
+    detail: `${stuckListings || 0} إعلان موقوف من أكتر من يومين`,
+    severity: (stuckListings || 0) > 60 ? 'alert' : (stuckListings || 0) > 20 ? 'warn' : 'info',
+  })
+
+  // ============== 11. مسودات مش بتتصرّف ==============
+  // المسودة اللي بتفضل معلّقة معناها إن البانّي بيفشل في صمت —
+  // حصل مع Yuri: ١٠ أصناف وقفوا عند «محتاج صورة» ومحدش عرف.
+  const { count: stuckDrafts } = await sb
+    .from('instant_listing_drafts')
+    .select('*', { count: 'exact', head: true })
+    .is('published_listing_id', null)
+    .lt('created_at', new Date(Date.now() - 6 * 3600 * 1000).toISOString())
+
+  checks.push({
+    name: 'stuck_drafts',
+    ok: (stuckDrafts || 0) < 15,
+    detail: `${stuckDrafts || 0} مسودة معلّقة من أكتر من ٦ ساعات`,
+    severity: (stuckDrafts || 0) > 50 ? 'alert' : (stuckDrafts || 0) > 15 ? 'warn' : 'info',
+  })
+
   // ============== Build alert message if needed ==============
   const alerts = checks.filter(c => c.severity === 'alert')
   const warns = checks.filter(c => c.severity === 'warn')
