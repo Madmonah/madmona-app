@@ -810,6 +810,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'empty_reply' })
     }
 
+    // ── تنسيق واتساب ─────────────────────────────────────────────────
+    // واتساب بيعمل عريض بنجمة واحدة `*كده*`. النموذج بيكتب `**كده**`
+    // (تنسيق ماركداون)، فالعميل بيشوف النجوم حرفيًا على الشاشة —
+    // وده شكل مكسور بيوحي إن اللي بيرد آلة. بنصلّحه قبل الإرسال
+    // بدل ما نعتمد على إن النموذج يفتكر.
+    reply = reply
+      .replace(/\*\*\*(.+?)\*\*\*/gs, '*$1*')
+      .replace(/\*\*(.+?)\*\*/gs, '*$1*')
+      .replace(/^#{1,6}\s+/gm, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+
     // اللينكات تتمغنط قبل الإرسال — العميل يدخل بضغطة واحدة
     reply = await magnetizeLinks(reply, phone)
 
