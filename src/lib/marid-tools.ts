@@ -539,6 +539,26 @@ async function createListingDraft(a: {
 }): Promise<ToolResult> {
   if (!a.title?.trim()) return { ok: false, error: 'الاسم مطلوب' }
 
+  // ⚠️ المارد بيخترع تصنيفات مش موجودة بدل ما ينادي list_categories.
+  //    يوم ٢٠ يوليو حط category_slug='restaurants' وهو مش في الجدول،
+  //    فالمسودة وقفت عند «no category» ومحدش عرف.
+  //    بنتحقق فعليًا بدل ما نستنى إنه يفتكر.
+  let slug = a.category_slug?.trim() || null
+  if (slug) {
+    const { data: cat } = await db.from('categories').select('slug').eq('slug', slug).maybeSingle()
+    if (!cat) {
+      // نجرّب أقرب تصنيف بنفس البادئة (food- · properties- …)
+      const prefix = slug.split('-')[0]
+      const { data: near } = await db
+        .from('categories')
+        .select('slug')
+        .ilike('slug', `${prefix}%`)
+        .limit(1)
+        .maybeSingle()
+      slug = (near as { slug?: string } | null)?.slug ?? null
+    }
+  }
+
   const { data, error } = await db
     .from('instant_listing_drafts')
     .insert({
@@ -546,7 +566,7 @@ async function createListingDraft(a: {
       contact_name: a.name ?? null,
       title: a.title.slice(0, 120),
       description: a.description?.slice(0, 1500) ?? null,
-      category_slug: a.category_slug ?? null,
+      category_slug: slug,
       price_egp: typeof a.price_egp === 'number' ? a.price_egp : null,
       period: a.period ?? null,
       source_text: 'المارد — واتساب',

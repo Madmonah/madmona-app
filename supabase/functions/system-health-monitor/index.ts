@@ -127,13 +127,22 @@ Deno.serve(async (req) => {
     const since = new Date(Date.now() - 20 * 60 * 1000).toISOString()
     const { data: recent } = await sb
       .from('whatsapp_messages')
-      .select('conversation_id, direction, created_at')
+      .select('conversation_id, direction, created_at, body')
       .gte('created_at', new Date(Date.now() - 6 * 3600 * 1000).toISOString())
       .order('created_at', { ascending: false })
       .limit(500)
 
+    // ⚠️ الرسالة الفاضية مش «مستنية رد» — دي ضوضاء بروتوكول.
+    //    من غير الشرط ده الفحص بيعد الضوضاء كإنذار، وأول ما
+    //    يطلع إنذار كاذب واحد بيبقى كل الباقي بيتتجاهل.
     const lastByConv = new Map<string, { dir: string; at: string }>()
-    for (const m of (recent || []) as { conversation_id: string; direction: string; created_at: string }[]) {
+    for (const m of (recent || []) as {
+      conversation_id: string
+      direction: string
+      created_at: string
+      body: string | null
+    }[]) {
+      if (m.direction === 'inbound' && !(m.body || '').trim()) continue
       if (!lastByConv.has(m.conversation_id)) {
         lastByConv.set(m.conversation_id, { dir: m.direction, at: m.created_at })
       }
