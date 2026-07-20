@@ -1,5 +1,6 @@
-import { safeStorage } from '@/lib/safe-storage'
 'use client'
+
+import { safeStorage } from '@/lib/safe-storage'
 
 /* Shared Madmona customer account gate (phone + WhatsApp OTP).
    Used by the visit hub (/v) and the booking page (/book) so that

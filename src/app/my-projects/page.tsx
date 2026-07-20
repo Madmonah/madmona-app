@@ -1,3 +1,5 @@
+'use client'
+
 import { safeStorage } from '@/lib/safe-storage'
 // 🏗️ /my-projects — لوحة المطوّر
 // الدخول بالموبايل عن طريق واتساب (من /login) — من غير إيميل ولا باسورد.
@@ -9,7 +11,6 @@ import { safeStorage } from '@/lib/safe-storage'
 //   • يظبط السعر
 // (14 Jul 2026)
 // =====================================================================
-'use client'
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'

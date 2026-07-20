@@ -1,5 +1,6 @@
-import { safeStorage } from '@/lib/safe-storage'
 'use client'
+
+import { safeStorage } from '@/lib/safe-storage'
 
 /* Manager console — /me/team
    Visible only to employees whose business_employees.role is admin or branch_manager

@@ -1,5 +1,6 @@
-import { safeStorage } from '@/lib/safe-storage'
 'use client'
+
+import { safeStorage } from '@/lib/safe-storage'
 // =====================================================================
 // 🔑 MyAssetsCard — «حاجاتي» في شاشة حسابي  (15 Jul 2026)
 //

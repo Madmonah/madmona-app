@@ -1,5 +1,6 @@
-import { safeStorage } from '@/lib/safe-storage'
 'use client'
+
+import { safeStorage } from '@/lib/safe-storage'
 // AutoResubscribe (6 Jul 2026) — إصلاح ذاتي صامت لاشتراكات البوش:
 // لو الإذن granted والمستخدم مسجل دخول → يجدد الاشتراك تلقائيًا في الخلفية.
 // مع فحص VAPID-rotation في subscribeToPush، ده بيصلح أي اشتراك قديم بمفتاح بايظ

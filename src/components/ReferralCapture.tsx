@@ -1,5 +1,6 @@
-import { safeStorage } from '@/lib/safe-storage'
 'use client'
+
+import { safeStorage } from '@/lib/safe-storage'
 // ReferralCapture — «شير واكسب»: يلتقط ?ref= من أي صفحة ويخزنه، وأول ما المستخدم يسجل دخول
 // بيربط الإحالة مرة واحدة عبر /api/referral/apply. (6 Jul 2026)
 import { useEffect } from 'react'

@@ -1,5 +1,6 @@
-import { safeStorage } from '@/lib/safe-storage'
 'use client'
+
+import { safeStorage } from '@/lib/safe-storage'
 // src/lib/i18n/LanguageProvider.tsx
 // ============================================================
 // Client-side language context for Madmona.

@@ -1,5 +1,6 @@
-import { safeStorage } from '@/lib/safe-storage'
 'use client';
+
+import { safeStorage } from '@/lib/safe-storage'
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';

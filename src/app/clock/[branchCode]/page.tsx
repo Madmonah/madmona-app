@@ -1,5 +1,6 @@
-import { safeStorage } from '@/lib/safe-storage'
 'use client'
+
+import { safeStorage } from '@/lib/safe-storage'
 
 /* Employee attendance via QR — /clock/[branchCode].
    Staff scan the branch QR, enter their PIN (or phone), and the page
