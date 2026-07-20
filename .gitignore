@@ -72,3 +72,5 @@ scripts/tsc-all.log
 probe.txt
 
 supabase/.temp/
+
+build.log
