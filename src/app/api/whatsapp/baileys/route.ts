@@ -286,21 +286,33 @@ export async function POST(request: NextRequest) {
     // شفنا ده فعليًا يوم ٢٠ يوليو مع مورد بعت صور مشروعه.
     // النظام القديم كان فيه القاعدة دي واتفقدت في الترحيل.
     //
-    // القاعدة: لو ردّينا على المحادثة دي في آخر ٤٥ ثانية، نسجّل
-    // الرسالة ومانردّش — الرد اللي فات بيغطّي.
-    const DEBOUNCE_SEC = 45
+    // ⚠️ الفرق المهم: «رسايل جت مع بعض قبل ما نرد» غير «العميل رد علينا».
+    //
+    // أول نسخة من الحارس ده منعت أي رد خلال ٤٥ ثانية من آخر رد —
+    // فلما عبده رد علينا بعد ٣٥ ثانية، المارد سكت. عطل أسوأ من اللي
+    // كنا بنصلحه.
+    //
+    // القاعدة الصح: نقارن **وقت الرسالة نفسها** بوقت آخر رد.
+    //   • الرسالة أقدم من آخر رد → كانت جزء من الدفعة اللي ردّينا عليها → نتخطّى
+    //   • الرسالة أحدث من آخر رد → العميل بيكلّمنا من جديد → نرد
     {
-      const since = new Date(Date.now() - DEBOUNCE_SEC * 1000).toISOString()
-      const { data: recent } = await supabaseUntyped
+      const { data: lastOut } = await supabaseUntyped
         .from('whatsapp_messages')
-        .select('id')
+        .select('created_at')
         .eq('conversation_id', conversationId)
         .eq('direction', 'outbound')
-        .gte('created_at', since)
+        .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle()
 
-      if (recent) {
+      // وقت الرسالة من واتساب نفسه (ثواني) — أدق من وقت وصولها لينا
+      const msgAt = body.timestamp ? body.timestamp * 1000 : Date.now()
+      const lastOutAt = lastOut?.created_at ? new Date(lastOut.created_at).getTime() : 0
+
+      // هامش ثانيتين: الرسايل اللي في نفس الدفعة بتوصل بفروق أجزاء من الثانية
+      const alreadyCovered = lastOutAt > 0 && msgAt < lastOutAt + 2000
+
+      if (alreadyCovered) {
         await logInboundMessage({
           conversationId,
           wa_message_id: body.message_id,
