@@ -28,12 +28,19 @@ export async function POST(request: NextRequest) {
   // لو البوابة قبلت `WA_SERVICE_SECRET` بس، كل دالة Edge هتفشل بصمت
   // لو السر مش متظبط عندها — وده بالظبط نوع العطل اللي بنحاربه.
   // `CRON_SECRET` سر داخلي بنفس مستوى الثقة ومتظبط أصلاً.
-  const secret = request.headers.get('x-internal-secret')
+  // ⚠️ بنقصّ المسافات من الطرفين.
+  // متغيرات البيئة بتلتقط سطر جديد أو مسافة بسهولة (أنبوب في الطرفية،
+  // نسخ ولصق من لوحة تحكم). المقارنة بتفشل والخطأ بيبان «سر غلط» —
+  // عطل صامت بيضيّع وقت كتير.
+  const secret = request.headers.get('x-internal-secret')?.trim()
   const accepted = [
     process.env.EDGE_GATEWAY_SECRET, // مخصّص لدوال Supabase Edge
     process.env.WA_SERVICE_SECRET,
     process.env.CRON_SECRET,
-  ].filter(Boolean)
+  ]
+    .map((s) => s?.trim())
+    .filter(Boolean)
+
   if (!accepted.length || !secret || !accepted.includes(secret)) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   }
