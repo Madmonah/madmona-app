@@ -536,31 +536,10 @@ export async function POST(request: NextRequest) {
     //   • لأ   → أنا آخر واحد في الدفعة → أرد، والرد يغطّي الدفعة كلها.
     //
     // الانتظار بيحل سباق التوازي لأن الفحص بيحصل **بعده** مش قبله.
-    const BATCH_WAIT_MS = Number(process.env.MARID_BATCH_WAIT_MS || 7000)
-    {
-      await new Promise((r) => setTimeout(r, BATCH_WAIT_MS))
-
-      const { data: newer } = await supabaseUntyped
-        .from('whatsapp_messages')
-        .select('id')
-        .eq('conversation_id', conversationId)
-        .eq('direction', 'inbound')
-        .gt('created_at', new Date(Date.now() - BATCH_WAIT_MS).toISOString())
-        .neq('wa_message_id', body.message_id)
-        .limit(1)
-        .maybeSingle()
-
-      if (newer) {
-        // رسالة أحدث موجودة — هي اللي هترد
-        await logInboundMessage({
-          conversationId,
-          wa_message_id: body.message_id,
-          body: body.text || `[${body.type}]`,
-          messageType: body.type,
-        })
-        return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'batched' })
-      }
-    }
+    // ⚠️ الانتظار نفسه مكانه **بعد** ما الرسالة تتسجّل في الداتابيز
+    //    (تحت، بعد `logInboundMessage`). لو استنينا قبل التسجيل،
+    //    كل عملية بتدوّر على إخواتها وماتلاقيش حاجة — وده بالظبط
+    //    اللي خلّى أول محاولة تفشل وترد أربع مرات تاني.
 
     {
       const { data: lastOut } = await supabaseUntyped
@@ -734,6 +713,52 @@ export async function POST(request: NextRequest) {
       body: logBody,
       messageType: body.type,
     })
+
+    // ── جمع الدفعة ────────────────────────────────────────────────────
+    // دلوقتي بس — بعد ما الرسالة اتسجّلت — نقدر نستنى ونشوف إخواتها.
+    //
+    // الناس بتبعت على دفعات: سلام، وبعده المنيو، وبعده الأسعار، وبعده
+    // السؤال. لو كل رسالة ردّت لوحدها، بيطلع أربع ردود وأولهم أعمى
+    // عن اللي جه بعده. ده اللي حصل مع Yuri Sushi: أربع ردود في ٢١ث،
+    // وأول واحد قال «أقدر أساعدك في إيه» والمنيو كان واصل قبله بنص ثانية.
+    //
+    // بنستنى شوية وبعدين نشوف: فيه رسالة أحدث **منّي أنا** (مش من
+    // وقت عشوائي)؟
+    //   • أيوة → أسكت، هي اللي هترد وهتشوف كلامي في التاريخ
+    //   • لأ   → أنا آخر واحد في الدفعة → أرد رد واحد يغطّيها كلها
+    //
+    // ⚠️ المقارنة لازم تكون بوقت رسالتي أنا. لو قارنّا بنافذة زمنية،
+    //    كل واحد هيلاقي إخواته جوّه النافذة وهيسكت — ومحدش يرد خالص.
+    //    بوقتي أنا، بالظبط **واحد** هو اللي مالقاش حد أحدث منه.
+    //
+    // والفحص **بعد** الانتظار مش قبله — وده اللي بيحل سباق التوازي.
+    {
+      const BATCH_WAIT_MS = Number(process.env.MARID_BATCH_WAIT_MS || 7000)
+
+      const { data: mine } = await supabaseUntyped
+        .from('whatsapp_messages')
+        .select('created_at')
+        .eq('conversation_id', conversationId)
+        .eq('wa_message_id', body.message_id)
+        .maybeSingle()
+
+      if (mine?.created_at) {
+        await new Promise((r) => setTimeout(r, BATCH_WAIT_MS))
+
+        const { data: newer } = await supabaseUntyped
+          .from('whatsapp_messages')
+          .select('id')
+          .eq('conversation_id', conversationId)
+          .eq('direction', 'inbound')
+          .gt('created_at', mine.created_at)
+          .limit(1)
+          .maybeSingle()
+
+        if (newer) {
+          return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'batched' })
+        }
+      }
+    }
 
     if (!userText.trim() && mediaBlocks.length === 0) {
       return NextResponse.json({ ok: true, logged: true, replied: false })
