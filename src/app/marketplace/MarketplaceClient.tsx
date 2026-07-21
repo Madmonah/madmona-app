@@ -188,6 +188,9 @@ function MarketplaceBrowseContent() {
   const [togglingFav, setTogglingFav] = useState<string | null>(null)
 
   useEffect(() => {
+    // 🛟 التحقق من الدخول مالوش دعوة بعرض الإعلانات.
+    // لو وقع (سفاري خاص، كوكيز مقفولة) الزائر يتفرّج كضيف —
+    // ماينفعش الماركت بليس كله يختفي عشان الفيفوريت.
     const checkAuth = async () => {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
       setIsAuthed(!!session?.user)
@@ -201,7 +204,7 @@ function MarketplaceBrowseContent() {
         setFavorites(new Set((favs || []).map((f: { listing_id: string }) => f.listing_id)))
       }
     }
-    checkAuth()
+    checkAuth().catch(() => setIsAuthed(false))
 
     const load = async () => {
       // @ts-expect-error
@@ -231,7 +234,7 @@ function MarketplaceBrowseContent() {
         setCategoryCounts(map)
       }
     }
-    load()
+    load().catch((e) => console.error('[marketplace] فشل تحميل التصنيفات', e))
   }, [])
 
   useEffect(() => {
