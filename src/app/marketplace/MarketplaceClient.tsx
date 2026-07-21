@@ -173,6 +173,11 @@ function MarketplaceBrowseContent() {
   // البريمري = إعلان مرتبط بمشروع مطور (project_id موجود)، الريسيل = من غير مشروع.
   const [propertySource, setPropertySource] = useState<'all' | 'primary' | 'resale'>('all')
   const loadSeqRef = useRef(0)
+  // 🛡️ صمود التحميل: لو الكويري فشل (نت موبايل ضعيف/أول فتحة) بنعيد المحاولة
+  // بدل ما نفضّي السوق بصمت. ده كان بيخلي الماركت يبان فاضي على الموبايل.
+  const [loadError, setLoadError] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
+  const retriesRef = useRef(0)
   // 🗂️ (17 Jul 2026) drill-down: المستخدم يختار مجموعة الأول (عقارات/عربيات/بيت...)
   // وبعدها تظهر فئاتها بس — بدل شريط واحد فيه كل حاجة. بتتقرا من ?group= (الهوم بيبعتها).
   const [selectedGroupSlug, setSelectedGroupSlug] = useState<string | null>(null)
@@ -363,13 +368,27 @@ function MarketplaceBrowseContent() {
         query = query.is('project_id', null)
       }
 
-      const { data } = await query
+      const { data, error } = await query
       if (seq !== loadSeqRef.current) return // ردّ متأخر — فيه كويري أحدث منه شغال
+      if (error) {
+        // 🛡️ فشل التحميل (نت ضعيف/أول فتحة على الموبايل): بنعيد المحاولة بدل ما
+        // نفضّي السوق. أقصى ٣ محاولات، وبعدها بنورّي زر «جرّب تاني».
+        setLoading(false)
+        if (retriesRef.current < 3) {
+          retriesRef.current += 1
+          setTimeout(() => setReloadKey((k) => k + 1), 1000 * retriesRef.current)
+        } else {
+          setLoadError(true)
+        }
+        return // مهم: مانعملش setListings([]) علشان مانفضّيش اللي ظاهر
+      }
+      retriesRef.current = 0
+      setLoadError(false)
       setListings((data || []) as Listing[])
       setLoading(false)
     }
     load()
-  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource, selectedGroupSlug, allCategories])
+  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource, selectedGroupSlug, allCategories, reloadKey])
 
   const toggleFavorite = async (e: MouseEvent, listingId: string) => {
     e.preventDefault()
@@ -905,6 +924,18 @@ function MarketplaceBrowseContent() {
                 </div>
               </div>
             ))}
+          </div>
+        ) : loadError ? (
+          <div className="bg-white rounded-3xl shadow-soft p-12 md:p-20 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-amber-50 rounded-2xl flex items-center justify-center text-3xl">📡</div>
+            <h3 className="text-xl font-black text-gray-900 mb-2">مش قادرين نحمّل العروض دلوقتي</h3>
+            <p className="text-sm text-gray-500 mb-6">يمكن النت ضعيف شوية — جرّب تاني</p>
+            <button
+              onClick={() => { retriesRef.current = 0; setLoadError(false); setLoading(true); setReloadKey((k) => k + 1) }}
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#1F6F5F] text-white rounded-2xl text-sm font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
+            >
+              🔄 جرّب تاني
+            </button>
           </div>
         ) : filteredListings.length === 0 ? (
           <div className="bg-white rounded-3xl shadow-soft p-12 md:p-20 text-center">
