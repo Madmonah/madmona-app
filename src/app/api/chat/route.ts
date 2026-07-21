@@ -72,11 +72,12 @@ async function enqueueReplyPush(phone20: string, reply: string) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       { auth: { persistSession: false } }
     )
-    const local = '0' + phone20.slice(2)
+    // بنطابق بالرقم الوطني (١٠ أرقام) علشان يمسك كل الصيغ: 010..، 2010..، +2010..
+    const nsn = phone20.slice(2) // 10 أرقام بدون كود الدولة
     const { data: prof } = await admin
       .from('profiles')
       .select('id')
-      .or(`phone.eq.${local},phone.eq.${phone20},phone.eq.+${phone20}`)
+      .ilike('phone', `*${nsn}*`)
       .limit(1)
       .maybeSingle()
     const pid = (prof as { id?: string } | null)?.id
