@@ -92,17 +92,49 @@ export async function GET(req: NextRequest) {
   if (!/^MAD[A-Z0-9]{5}$/.test(code)) {
     return NextResponse.json({ error: 'bad_code' }, { status: 400 })
   }
-  const { data } = await admin()
+  const sb = admin()
+  const { data } = await sb
     .from('wa_inbound_verifications')
-    .select('verified, expires_at, session_minted_at')
+    .select('id, verified, expires_at, session_minted_at')
     .eq('code', code)
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
   if (!data) return NextResponse.json({ verified: false, expired: true })
+  const expired = new Date(data.expires_at) < new Date()
+
+  // 🔑 (تحقق صامد للحظر) لو الويبهوك ماأكّدش الكود لأي سبب، بندوّر على رسالة
+  // inbound فيها الكود في whatsapp_messages — الوارد بيوصل ويتسجّل حتى تحت
+  // الحظر (الحظر بيمنع الإرسال بس). لو لقيناها، ناخد رقم صاحبها ونأكّده.
+  if (!data.verified && !expired) {
+    try {
+      const since = new Date(Date.now() - 20 * 60 * 1000).toISOString()
+      const { data: msg } = await sb
+        .from('whatsapp_messages')
+        .select('conversation_id')
+        .eq('direction', 'inbound')
+        .ilike('body', `%${code}%`)
+        .gte('created_at', since)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      const convId = (msg as { conversation_id?: string } | null)?.conversation_id
+      if (convId) {
+        const { data: conv } = await sb.from('whatsapp_conversations').select('contact_phone').eq('id', convId).maybeSingle()
+        const senderPhone = (conv as { contact_phone?: string } | null)?.contact_phone || ''
+        if (senderPhone && normalizePhone(senderPhone)) {
+          await sb.from('wa_inbound_verifications')
+            .update({ verified: true, verified_phone: senderPhone } as never)
+            .eq('id', data.id)
+          return NextResponse.json({ verified: true, expired: false })
+        }
+      }
+    } catch { /* نرجع لحالة الويبهوك العادية */ }
+  }
+
   return NextResponse.json({
     verified: !!data.verified && !data.session_minted_at,
-    expired: new Date(data.expires_at) < new Date(),
+    expired,
   })
 }
 
