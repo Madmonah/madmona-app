@@ -366,6 +366,14 @@ export default function AccountPage() {
           />
           <div className="h-px bg-gray-100 mx-6" />
           <SectionLink
+            href="/team"
+            icon={<Users className="w-5 h-5" />}
+            iconBg="bg-indigo-50 text-indigo-600"
+            title="فريق العمل 👥"
+            subtitle="محادثات فريقك — والمارد عضو تستدعيه بكلمة «مارد»"
+          />
+          <div className="h-px bg-gray-100 mx-6" />
+          <SectionLink
             href="/account/bookings"
             icon={<Calendar className="w-5 h-5" />}
             iconBg="bg-blue-50 text-blue-600"
