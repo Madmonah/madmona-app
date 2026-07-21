@@ -258,16 +258,16 @@ export default async function HomePage() {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-5xl mx-auto">
-              <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 p-5 bg-[#FAFAF7] rounded-2xl hover:bg-white hover:shadow-card transition-all duration-300 no-underline border border-gray-100">
+              <Link href="/chat" className="group flex items-center gap-4 p-5 bg-[#FAFAF7] rounded-2xl hover:bg-white hover:shadow-card transition-all duration-300 no-underline border border-gray-100">
                 <div className="w-12 h-12 rounded-2xl bg-[#25D366] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                   <MessageCircle className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-gray-900"><T k="home.contact.whatsapp" /></p>
-                  <p className="text-xs text-gray-500 mt-0.5" dir="ltr">+20 100 222 9982 · 24/7</p>
+                  <p className="font-bold text-gray-900">شات مضمونة — رد فوري</p>
+                  <p className="text-xs text-gray-500 mt-0.5">كلّمنا مباشر على الموقع · متاح 24/7</p>
                 </div>
                 <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#25D366] group-hover:-translate-x-1 transition-all" />
-              </a>
+              </Link>
 
               <a href={MADMONA_MAPS_URL} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 p-5 bg-[#FAFAF7] rounded-2xl hover:bg-white hover:shadow-card transition-all duration-300 no-underline border border-gray-100">
                 <div className="w-12 h-12 rounded-2xl bg-gray-900 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">

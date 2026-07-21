@@ -8,7 +8,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, User, LogIn, Share2, Briefcase, Plus } from 'lucide-react'
+import { Menu, X, User, LogIn, LogOut, Share2, Briefcase, Plus } from 'lucide-react'
+import { supabaseBrowser } from '@/lib/supabase-browser'
 import NotificationButton from './NotificationButton'
 import LanguageToggle from './LanguageToggle'
 import CartButton from './CartButton'
@@ -18,6 +19,19 @@ export default function TopNav() {
   const { t, dir } = useT()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [loggedIn, setLoggedIn] = useState(false)
+
+  useEffect(() => {
+    supabaseBrowser.auth.getSession().then(({ data }) => setLoggedIn(!!data.session))
+    const { data: sub } = supabaseBrowser.auth.onAuthStateChange((_e, s) => setLoggedIn(!!s))
+    return () => sub.subscription.unsubscribe()
+  }, [])
+
+  const signOut = async () => {
+    setMobileOpen(false)
+    await supabaseBrowser.auth.signOut()
+    if (typeof window !== 'undefined') window.location.href = '/'
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -184,19 +198,35 @@ export default function TopNav() {
                 </div>
               </Link>
 
-              <Link
-                href="/auth/login"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline group transition-colors"
-              >
-                <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 flex items-center justify-center flex-shrink-0">
-                  <LogIn className="w-5 h-5 text-[#1F6F5F]" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-gray-900">{t('nav.login')}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{t('nav.login_desc')}</p>
-                </div>
-              </Link>
+              {loggedIn ? (
+                <button
+                  type="button"
+                  onClick={signOut}
+                  className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-red-50 group transition-colors text-right"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
+                    <LogOut className="w-5 h-5 text-red-500" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-900">تسجيل الخروج</p>
+                    <p className="text-xs text-gray-500 mt-0.5">إنهاء الجلسة الحالية</p>
+                  </div>
+                </button>
+              ) : (
+                <Link
+                  href="/auth/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline group transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 flex items-center justify-center flex-shrink-0">
+                    <LogIn className="w-5 h-5 text-[#1F6F5F]" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-900">{t('nav.login')}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{t('nav.login_desc')}</p>
+                  </div>
+                </Link>
+              )}
 
               <button
                 type="button"
@@ -214,14 +244,13 @@ export default function TopNav() {
             </nav>
 
             <div className="p-4 border-t border-gray-100">
-              <a
-                href="https://wa.me/201002229982"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href="/chat"
+                onClick={() => setMobileOpen(false)}
                 className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3.5 rounded-2xl font-bold shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
               >
-                {t('nav.whatsapp_cta')}
-              </a>
+                💬 كلّمنا مباشر — رد فوري
+              </Link>
             </div>
           </div>
         </div>
