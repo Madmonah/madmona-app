@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import ChatBottomNav from '@/components/ChatBottomNav'
 import { subscribeToPush, getNotificationPermission, isPushSupported } from '@/lib/push-subscription'
 
 type Attach = { type: 'image' | 'audio' | 'video' | 'document'; mimetype: string; data_base64: string; filename?: string; previewUrl?: string }
@@ -354,6 +355,7 @@ export default function ChatPage() {
           <button onClick={toggleRec} title="تسجيل صوت" style={{ ...btn, width: 48, padding: 0, background: recording ? '#c0392b' : '#128C7E' }}>{recording ? '⏹️' : '🎤'}</button>
         )}
       </div>
+      <ChatBottomNav />
     </div>
   )
 }
