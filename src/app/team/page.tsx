@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
-import ChatTabs from '@/components/ChatTabs'
+import ChatBottomNav from '@/components/ChatBottomNav'
 
 type Room = { id: string; name: string | null; marid_enabled: boolean }
 type CMsg = { id: string; sender_id: string | null; sender_kind: string; sender_name: string | null; body: string | null; kind: string; media_url: string | null; created_at: string }
@@ -43,6 +43,14 @@ export default function TeamPage() {
         const { data: prof } = await supabaseBrowser.from('profiles').select('full_name').eq('id', session.user.id).maybeSingle()
         setMyName(((prof as { full_name?: string } | null)?.full_name || 'أنا'))
         await loadRooms()
+        // فتح روم مباشرة من رابط القائمة الرئيسية (/team?room=<id>)
+        try {
+          const roomParam = new URLSearchParams(window.location.search).get('room')
+          if (roomParam) {
+            const { data: r } = await supabaseBrowser.from('chat_rooms').select('id, name, marid_enabled').eq('id', roomParam).maybeSingle()
+            if (r) await openRoom(r as Room)
+          }
+        } catch {}
       }
       setReady(true)
     })()
@@ -119,13 +127,12 @@ export default function TeamPage() {
   )
 
   if (!active) return (
-    <div dir="rtl" style={{ minHeight: '100vh', background: '#ECE5DD', fontFamily: 'system-ui' }}>
+    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ECE5DD', fontFamily: 'system-ui' }}>
       <header style={{ background: '#075E54', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ flex: 1, fontWeight: 700, fontSize: 18 }}>👥 فريق العمل</div>
         <button onClick={createRoom} style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 16, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>+ غرفة</button>
       </header>
-      <ChatTabs active="team" />
-      <div style={{ padding: 10 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: 10 }}>
         {rooms.length === 0 && <div style={{ textAlign: 'center', color: '#667', marginTop: 40 }}>لسه مفيش غرف. اعمل أول غرفة لفريقك 👆</div>}
         {rooms.map((r) => (
           <button key={r.id} onClick={() => openRoom(r)} style={{ display: 'flex', width: '100%', textAlign: 'right', alignItems: 'center', gap: 12, background: '#fff', border: 'none', borderRadius: 12, padding: 12, marginBottom: 8, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,.08)' }}>
@@ -134,6 +141,7 @@ export default function TeamPage() {
           </button>
         ))}
       </div>
+      <ChatBottomNav />
     </div>
   )
 
