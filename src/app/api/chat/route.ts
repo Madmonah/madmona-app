@@ -6,6 +6,8 @@ import { callMaridWithTools } from '@/lib/marid-brain'
 import { processIncomingMedia, type MediaInput } from '@/lib/marid-media'
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
 import { isAdmin } from '@/lib/marid-admin'
+import { createClient } from '@supabase/supabase-js'
+import { phoneToEmail } from '@/lib/auth-helpers'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -16,6 +18,48 @@ function normalizeEg(raw: string): string {
   if (d.startsWith('0') && d.length === 11) d = '20' + d.slice(1)
   if (d.length === 10) d = '20' + d
   return d
+}
+
+// إنشاء أكونت مضمونة للعميل بالرقم (نفس مسار /api/auth/wa — best-effort).
+async function ensureAccount(phone20: string, fullName: string | null) {
+  try {
+    const admin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } }
+    )
+    const local = '0' + phone20.slice(2)
+    const { data: existing } = await admin
+      .from('profiles')
+      .select('id')
+      .or(`phone.eq.${local},phone.eq.${phone20}`)
+      .limit(1)
+      .maybeSingle()
+    const exId = (existing as { id?: string } | null)?.id
+    if (exId) {
+      if (fullName) await admin.from('profiles').update({ full_name: fullName } as never).eq('id', exId)
+      return
+    }
+    const email = phoneToEmail(phone20)
+    const { data: created, error } = await admin.auth.admin.createUser({
+      email,
+      email_confirm: true,
+      user_metadata: { phone: local, full_name: fullName || undefined, via: 'chat' },
+    })
+    let userId = created?.user?.id
+    if (error && /already|exists/i.test(error.message)) {
+      const { data: link } = await admin.auth.admin.generateLink({ type: 'magiclink', email })
+      userId = link?.user?.id
+    } else if (error) {
+      return
+    }
+    if (!userId) return
+    await admin
+      .from('profiles')
+      .upsert({ id: userId, phone: local, full_name: fullName, role: 'customer' } as never, { onConflict: 'id' })
+  } catch {
+    /* best-effort — مايوقفش الرد */
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -64,6 +108,8 @@ export async function POST(request: NextRequest) {
         .single()
       if (cErr) throw cErr
       conversationId = (created as { id: string }).id
+      // عميل جديد → اعملّه أكونت مضمونة بالرقم والاسم (best-effort، مايوقفش الرد)
+      void ensureAccount(phone, name)
     } else if (name) {
       await supabaseUntyped.from('whatsapp_conversations').update({ contact_name: name }).eq('id', conversationId)
     }
