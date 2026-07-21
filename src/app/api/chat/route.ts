@@ -72,12 +72,12 @@ async function enqueueReplyPush(phone20: string, reply: string) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       { auth: { persistSession: false } }
     )
-    // بنطابق بالرقم الوطني (١٠ أرقام) علشان يمسك كل الصيغ: 010..، 2010..، +2010..
-    const nsn = phone20.slice(2) // 10 أرقام بدون كود الدولة
+    // مطابقة دقيقة لكل الصيغ المخزّنة: 010..، 2010..، +2010..
+    const local = '0' + phone20.slice(2)
     const { data: prof } = await admin
       .from('profiles')
       .select('id')
-      .ilike('phone', `*${nsn}*`)
+      .in('phone', [local, phone20, '+' + phone20])
       .limit(1)
       .maybeSingle()
     const pid = (prof as { id?: string } | null)?.id
@@ -306,7 +306,8 @@ export async function POST(request: NextRequest) {
       .eq('id', conversationId)
 
     // إشعار بوش (بيتبعت بالكرون خلال دقيقة؛ الـSW بيتجاهله لو الشات مفتوح)
-    void enqueueReplyPush(phone, reply)
+    // لازم await — الـserverless بيقفل بعد الـresponse فيقتل أي promise معلّق
+    await enqueueReplyPush(phone, reply)
 
     return NextResponse.json({ ok: true, reply, conversationId })
   } catch (err) {
