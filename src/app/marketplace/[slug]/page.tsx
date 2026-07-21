@@ -430,12 +430,13 @@ export default function ListingDetailPage() {
       {/* Premium glass header */}
       <header className="sticky top-0 z-40 glass border-b border-white/40">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-2">
-          <Link
-            href="/marketplace"
+          <button
+            onClick={() => { if (typeof window !== 'undefined' && window.history.length > 1) window.history.back(); else window.location.assign('/marketplace') }}
+            aria-label="رجوع"
             className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all flex-shrink-0"
           >
             <ArrowRight className="w-4 h-4 text-gray-700" />
-          </Link>
+          </button>
           <h1 className="text-sm font-bold text-gray-700 truncate flex-1 hidden sm:block">{displayTitle}</h1>
           <div className="flex items-center gap-2 flex-shrink-0">
             <CartButton className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full" iconClass="w-4 h-4" />
