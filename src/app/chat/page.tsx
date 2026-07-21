@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 
 type Attach = { type: 'image' | 'audio' | 'video' | 'document'; mimetype: string; data_base64: string; filename?: string; previewUrl?: string }
-type Msg = { role: 'user' | 'bot'; text: string; time: string; media?: Attach }
+type Msg = { role: 'user' | 'bot' | 'sys'; text: string; time: string; media?: Attach }
 
 const EMOJIS = ['😀','😂','🥰','😍','👍','🙏','🔥','🎉','❤️','😅','😊','🤝','👌','💪','🙌','😎','🤔','😢','😮','🥳','😉','🫡','💯','✅','⭐','🎁','📦','🚗','🏠','🍔','☕','💰','📞','✍️','👏','😇','🤩','🌹','🙈','🤗']
 const QUICKS = ['عايز أشوف العروض 🛍️', 'احجزلي ميعاد 🗓️', 'كلمني عن العقارات 🏠', 'عايز أضيف إعلان ➕']
@@ -40,6 +40,7 @@ export default function ChatPage() {
   const [recording, setRecording] = useState(false)
   const [showEmoji, setShowEmoji] = useState(false)
   const [showPlus, setShowPlus] = useState(false)
+  const [maridOn, setMaridOn] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const calRef = useRef<HTMLInputElement>(null)
@@ -47,8 +48,17 @@ export default function ChatPage() {
   const chunksRef = useRef<Blob[]>([])
 
   const welcome = useCallback((nm: string) => {
-    setMessages([{ role: 'bot', text: `أهلاً بيك${nm ? ' يا ' + nm : ''} في مضمونة 👋\nأنا المارد — قولّي محتاج إيه، وتقدر تبعتلي صور أو رسالة صوتية أو تشارك موقعك عادي.`, time: nowTime() }])
+    setMessages([{ role: 'sys', text: `أهلاً${nm ? ' يا ' + nm : ''} 👋 دي محادثتك على مضمونة. تقدر تستدعي المارد (المساعد الذكي) أي وقت من الزر اللي فوق.`, time: nowTime() }])
   }, [])
+  function summonMarid() {
+    setMaridOn(true)
+    setShowPlus(false); setShowEmoji(false)
+    setMessages((m) => [...m, { role: 'sys', text: 'المارد انضم للمحادثة 🤖', time: nowTime() }, { role: 'bot', text: 'أنا المارد، تحت أمرك 👋 محتاج إيه؟', time: nowTime() }])
+  }
+  function dismissMarid() {
+    setMaridOn(false)
+    setMessages((m) => [...m, { role: 'sys', text: 'المارد خرج من المحادثة', time: nowTime() }])
+  }
 
   useEffect(() => {
     ;(async () => {
@@ -69,20 +79,21 @@ export default function ChatPage() {
 
   function start() { if (normEg(phone).length < 11) return; setStarted(true); welcome(name.trim()) }
 
-  async function submit(text: string, media: Attach | null) {
+  async function submit(text: string, media: Attach | null, summonNow: boolean) {
     if ((!text && !media) || sending) return
     setMessages((m) => [...m, { role: 'user', text, time: nowTime(), media: media || undefined }])
-    setSending(true)
+    if (summonNow) setSending(true)
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, name, message: text, media: media ? { type: media.type, mimetype: media.mimetype, data_base64: media.data_base64, filename: media.filename } : undefined }),
+        body: JSON.stringify({ phone, name, message: text, summon: summonNow, media: media ? { type: media.type, mimetype: media.mimetype, data_base64: media.data_base64, filename: media.filename } : undefined }),
       })
       const data = await res.json()
-      setMessages((m) => [...m, { role: 'bot', text: data?.ok ? data.reply : (data?.error || 'حصل خطأ مؤقت، جرّب تاني.'), time: nowTime() }])
+      if (data?.ok && data.reply) setMessages((m) => [...m, { role: 'bot', text: data.reply, time: nowTime() }])
+      else if (!data?.ok) setMessages((m) => [...m, { role: 'sys', text: data?.error || 'حصل خطأ مؤقت، جرّب تاني.', time: nowTime() }])
     } catch {
-      setMessages((m) => [...m, { role: 'bot', text: 'مش قادر أوصل للسيرفر دلوقتي، جرّب تاني.', time: nowTime() }])
+      setMessages((m) => [...m, { role: 'sys', text: 'مش قادر أوصل للسيرفر دلوقتي، جرّب تاني.', time: nowTime() }])
     } finally {
       setSending(false)
     }
@@ -92,21 +103,21 @@ export default function ChatPage() {
     const t = input.trim(); const m = attach
     if (!t && !m) return
     setInput(''); setAttach(null); setShowEmoji(false); setShowPlus(false)
-    submit(t, m)
+    submit(t, m, maridOn)
   }
-  function sendQuick(t: string) { submit(t, null) }
+  function sendQuick(t: string) { submit(t, null, maridOn) }
   function sendLocation() {
     setShowPlus(false)
     if (!navigator.geolocation) { alert('الموقع مش متاح في المتصفح ده'); return }
     navigator.geolocation.getCurrentPosition(
-      (pos) => submit(`📍 موقعي: https://maps.google.com/?q=${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`, null),
+      (pos) => submit(`📍 موقعي: https://maps.google.com/?q=${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`, null, maridOn),
       () => alert('مش قادر أجيب موقعك — اسمح للمتصفح بالوصول للموقع')
     )
   }
   function onCal(e: React.ChangeEvent<HTMLInputElement>) {
     const v = e.target.value; e.target.value = ''; setShowPlus(false)
     if (!v) return
-    submit(`🗓️ أنا متاح: ${new Date(v).toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'short' })}`, null)
+    submit(`🗓️ أنا متاح: ${new Date(v).toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'short' })}`, null, maridOn)
   }
 
   function compressImage(file: File): Promise<Attach> {
@@ -169,15 +180,25 @@ export default function ChatPage() {
   return (
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ECE5DD', fontFamily: 'system-ui, sans-serif' }}>
       <header style={{ background: '#075E54', color: '#fff', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#25D366', display: 'grid', placeItems: 'center', fontSize: 20 }}>🤖</div>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#25D366', display: 'grid', placeItems: 'center', fontSize: 20 }}>{maridOn ? '🤖' : '💬'}</div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700 }}>المارد — مضمونة</div>
-          <div style={{ fontSize: 12, opacity: .85 }}>{sending ? 'بيكتب…' : 'متصل'}</div>
+          <div style={{ fontWeight: 700 }}>شات مضمونة</div>
+          <div style={{ fontSize: 12, opacity: .85 }}>{maridOn ? (sending ? 'المارد بيكتب…' : 'المارد حاضر') : 'محادثة'}</div>
         </div>
+        {maridOn ? (
+          <button onClick={dismissMarid} style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 16, padding: '6px 10px', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>اصرف المارد</button>
+        ) : (
+          <button onClick={summonMarid} style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 16, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>🤖 استدعِ المارد</button>
+        )}
       </header>
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '14px 10px' }}>
         {messages.map((m, i) => (
+          m.role === 'sys' ? (
+            <div key={i} style={{ textAlign: 'center', margin: '10px 0' }}>
+              <span style={{ background: '#d7ece2', color: '#0a6b4f', fontSize: 12, padding: '5px 12px', borderRadius: 12, display: 'inline-block', maxWidth: '85%' }}>{m.text}</span>
+            </div>
+          ) : (
           <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-start' : 'flex-end', marginBottom: 8 }}>
             <div style={{ maxWidth: '78%', background: m.role === 'user' ? '#DCF8C6' : '#fff', padding: '7px 10px', borderRadius: 10, boxShadow: '0 1px 1px rgba(0,0,0,.12)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 15, lineHeight: 1.5 }}>
               {m.media?.type === 'image' && m.media.previewUrl && <img src={m.media.previewUrl} alt="" style={{ maxWidth: '100%', borderRadius: 8, marginBottom: m.text ? 6 : 0 }} />}
@@ -187,9 +208,10 @@ export default function ChatPage() {
               <span style={{ display: 'block', textAlign: 'left', fontSize: 10, color: '#8a8a8a', marginTop: 2 }}>{m.time}</span>
             </div>
           </div>
+          )
         ))}
         {sending && <div style={{ textAlign: 'end', color: '#667', fontSize: 13, padding: '2px 8px' }}>المارد بيكتب…</div>}
-        {messages.length <= 1 && !sending && (
+        {maridOn && !sending && messages[messages.length - 1]?.role === 'bot' && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-end', marginTop: 6 }}>
             {QUICKS.map((q) => (
               <button key={q} onClick={() => sendQuick(q)} style={{ background: '#fff', border: '1px solid #25D366', color: '#075E54', borderRadius: 16, padding: '6px 12px', fontSize: 13, cursor: 'pointer' }}>{q}</button>

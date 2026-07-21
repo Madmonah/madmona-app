@@ -63,7 +63,7 @@ async function ensureAccount(phone20: string, fullName: string | null) {
 }
 
 export async function POST(request: NextRequest) {
-  let body: { phone?: string; name?: string; message?: string; media?: MediaInput }
+  let body: { phone?: string; name?: string; message?: string; media?: MediaInput; summon?: boolean }
   try {
     body = await request.json()
   } catch {
@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
   const name = (body.name || '').trim() || null
   const message = (body.message || '').trim()
   const media = body.media && body.media.data_base64 ? body.media : null
+  const summon = body.summon !== false // المارد مستدعى؟ (افتراضي أيوه؛ false = شات عادي بدون رد)
 
   if (!phone || phone.length < 11) {
     return NextResponse.json({ ok: false, error: 'رقم غير صحيح' }, { status: 400 })
@@ -136,6 +137,15 @@ export async function POST(request: NextRequest) {
       message_type: media ? media.type : 'text',
       status: 'delivered',
     })
+
+    // المارد مش مستدعى → نخزّن الرسالة كشات عادي من غير رد
+    if (!summon) {
+      await supabaseUntyped
+        .from('whatsapp_conversations')
+        .update({ last_message_at: new Date().toISOString(), last_message_direction: 'inbound', last_inbound_at: new Date().toISOString() })
+        .eq('id', conversationId)
+      return NextResponse.json({ ok: true, reply: null, stored: true, conversationId })
+    }
 
     // ── ٤) تاريخ المحادثة ───────────────────────────────────────────────
     const { data: hist } = await supabaseUntyped

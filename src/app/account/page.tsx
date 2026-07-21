@@ -361,8 +361,8 @@ export default function AccountPage() {
             href="/chat"
             icon={<Sparkles className="w-5 h-5" />}
             iconBg="bg-teal-50 text-teal-600"
-            title="كلّم المارد 💬"
-            subtitle="شات مضمونة — مساعدك الذكي أونلاين"
+            title="شات مضمونة 💬"
+            subtitle="محادثة + مساعد ذكي (المارد) تستدعيه وقت ما تحب"
           />
           <div className="h-px bg-gray-100 mx-6" />
           <SectionLink
