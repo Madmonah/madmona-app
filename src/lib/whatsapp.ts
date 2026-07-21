@@ -119,13 +119,36 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
   // نرجّع منه رقم. لو حاولنا نعيد التركيب بنبعت لرقم مش موجود — الرسالة
   // بتتقبل وبتاخد ID وبتروح في الفراغ. فلما يبقى عندنا JID، نستخدمه زي ما هو.
   let jid = params.jid?.includes('@') ? params.jid : undefined
-  const to = normalizePhone(params.to)
+  let to = normalizePhone(params.to)
   if (!to && !jid) {
     return { ok: false, error: 'Invalid phone number' }
   }
 
-  // لو الرقم نفسه مُعرّف مخفي ومعندناش JID جاهز (رسالة إحنا بادئينها —
-  // جماعية، إشعار حجز) — ندوّر على الـ JID المحفوظ للمحادثة.
+  // 🔑 حل الـ LID لرقم حقيقي (٢١ يوليو ٢٠٢٦):
+  // Baileys مابيوصّلش بثقة للـ `xxxx@lid` المجرّد — بيقبل الرسالة ويدّي ID
+  // والرسالة تروح في الفراغ (ده سبب إن الردود بتتسجّل «اتبعت» وموبايل العميل
+  // مايوصلوش حاجة). لكن واتساب بيشاركنا الرقم الحقيقي وبنخزّنه في `wa_lid_map`،
+  // فلو معانا الرقم الحقيقي نبعت عليه بدل الـ LID.
+  const lidDigits = jid?.endsWith('@lid')
+    ? jid.split('@')[0]
+    : looksLikeLid(to)
+      ? to
+      : null
+  if (lidDigits) {
+    const { data: mapped } = await supabaseUntyped
+      .from('wa_lid_map')
+      .select('phone')
+      .eq('lid', lidDigits)
+      .maybeSingle()
+    const realPhone = (mapped as { phone?: string } | null)?.phone
+    if (realPhone) {
+      to = normalizePhone(realPhone)
+      jid = `${to}@s.whatsapp.net`
+    }
+  }
+
+  // لو لسه مُعرّف مخفي ومعندناش JID جاهز (رسالة إحنا بادئينها —
+  // جماعية، إشعار حجز) ومفيش رقم حقيقي في الماب — ندوّر على الـ JID المحفوظ.
   // من غير الخطوة دي الرسالة هتتبعت لرقم مش موجود وتضيع بصمت.
   if (!jid && looksLikeLid(to)) {
     const { data: conv } = await supabaseUntyped
