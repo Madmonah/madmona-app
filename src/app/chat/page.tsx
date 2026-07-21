@@ -15,6 +15,16 @@ function normEg(raw: string) {
   if (d.length === 10) d = '20' + d
   return d
 }
+// يحوّل اللينكات في النص لروابط قابلة للضغط
+function linkify(text: string): React.ReactNode[] {
+  return (text || '').split(/(https?:\/\/[^\s]+)/g).map((p, i) =>
+    /^https?:\/\//.test(p) ? (
+      <a key={i} href={p} target="_blank" rel="noopener noreferrer" style={{ color: '#1F6F5F', fontWeight: 600, textDecoration: 'underline', wordBreak: 'break-all' }}>{p}</a>
+    ) : (
+      <span key={i}>{p}</span>
+    )
+  )
+}
 
 export default function ChatPage() {
   const [phone, setPhone] = useState('')
@@ -179,7 +189,7 @@ export default function ChatPage() {
               {m.media?.type === 'image' && m.media.previewUrl && <img src={m.media.previewUrl} alt="" style={{ maxWidth: '100%', borderRadius: 8, marginBottom: m.text ? 6 : 0 }} />}
               {m.media?.type === 'audio' && <div style={{ marginBottom: m.text ? 6 : 0 }}>🎤 رسالة صوتية</div>}
               {m.media && m.media.type !== 'image' && m.media.type !== 'audio' && <div style={{ marginBottom: m.text ? 6 : 0 }}>📎 {m.media.filename || m.media.type}</div>}
-              {m.text}
+              {linkify(m.text)}
               <span style={{ display: 'block', textAlign: 'left', fontSize: 10, color: '#8a8a8a', marginTop: 2 }}>{m.time}</span>
             </div>
           </div>
