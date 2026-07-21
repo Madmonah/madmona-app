@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ChatBottomNav from '@/components/ChatBottomNav'
 
-type Room = { id: string; name: string | null; marid_enabled: boolean }
+type Room = { id: string; name: string | null; marid_enabled: boolean; kind?: string | null; otherName?: string | null }
 type CMsg = { id: string; sender_id: string | null; sender_kind: string; sender_name: string | null; body: string | null; kind: string; media_url: string | null; created_at: string }
 
 function t(iso: string) {
@@ -30,9 +30,27 @@ export default function TeamPage() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const chanRef = useRef<ReturnType<typeof supabaseBrowser.channel> | null>(null)
 
-  const loadRooms = useCallback(async () => {
-    const { data } = await supabaseBrowser.from('chat_rooms').select('id, name, marid_enabled').order('created_at', { ascending: false })
-    setRooms((data as Room[]) || [])
+  const loadRooms = useCallback(async (myId: string) => {
+    const { data } = await supabaseBrowser.from('chat_rooms').select('id, name, marid_enabled, kind').order('created_at', { ascending: false })
+    let rooms = (data as Room[]) || []
+    // للمحادثات الخاصة (direct): نعرض اسم الطرف التاني
+    const directIds = rooms.filter((r) => r.kind === 'direct').map((r) => r.id)
+    if (directIds.length && myId) {
+      try {
+        const { data: mems } = await supabaseBrowser.from('chat_room_members').select('room_id, profile_id').in('room_id', directIds)
+        const others = ((mems || []) as { room_id: string; profile_id: string }[]).filter((m) => m.profile_id !== myId)
+        const otherIds = [...new Set(others.map((o) => o.profile_id))]
+        const nameById = new Map<string, string>()
+        if (otherIds.length) {
+          const { data: profs } = await supabaseBrowser.from('profiles').select('id, full_name').in('id', otherIds)
+          for (const p of (profs || []) as { id: string; full_name: string }[]) nameById.set(p.id, p.full_name)
+        }
+        const otherByRoom = new Map<string, string>()
+        for (const o of others) if (!otherByRoom.has(o.room_id)) otherByRoom.set(o.room_id, nameById.get(o.profile_id) || 'محادثة خاصة')
+        rooms = rooms.map((r) => (r.kind === 'direct' ? { ...r, otherName: otherByRoom.get(r.id) || 'محادثة خاصة' } : r))
+      } catch { /* non-blocking */ }
+    }
+    setRooms(rooms)
   }, [])
 
   useEffect(() => {
@@ -42,12 +60,12 @@ export default function TeamPage() {
         setUid(session.user.id); setToken(session.access_token)
         const { data: prof } = await supabaseBrowser.from('profiles').select('full_name').eq('id', session.user.id).maybeSingle()
         setMyName(((prof as { full_name?: string } | null)?.full_name || 'أنا'))
-        await loadRooms()
+        await loadRooms(session.user.id)
         // فتح روم مباشرة من رابط القائمة الرئيسية (/team?room=<id>)
         try {
           const roomParam = new URLSearchParams(window.location.search).get('room')
           if (roomParam) {
-            const { data: r } = await supabaseBrowser.from('chat_rooms').select('id, name, marid_enabled').eq('id', roomParam).maybeSingle()
+            const { data: r } = await supabaseBrowser.from('chat_rooms').select('id, name, marid_enabled, kind').eq('id', roomParam).maybeSingle()
             if (r) await openRoom(r as Room)
           }
         } catch {}
@@ -98,8 +116,29 @@ export default function TeamPage() {
     const { data: room } = await supabaseBrowser.from('chat_rooms').insert({ name, kind: 'team', created_by: uid } as never).select('id, name, marid_enabled').single()
     if (room) {
       await supabaseBrowser.from('chat_room_members').insert({ room_id: (room as Room).id, profile_id: uid, role: 'owner' } as never)
-      await loadRooms(); openRoom(room as Room)
+      await loadRooms(uid); openRoom(room as Room)
     }
+  }
+
+  // ابدأ محادثة خاصة ١:١ برقم موبايل
+  async function startDM() {
+    if (!uid) return
+    const raw = prompt('رقم موبايل الشخص (لازم يكون مسجّل على مضمونة):')?.trim()
+    if (!raw) return
+    try {
+      const res = await fetch('/api/chat/dm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ phone: raw }),
+      })
+      const data = await res.json()
+      if (!data?.ok) {
+        alert(data?.error === 'no_account' ? 'مفيش أكونت بالرقم ده على مضمونة.' : data?.error === 'self' ? 'ده رقمك انت 🙂' : 'مقدرتش أبدأ المحادثة، جرّب تاني.')
+        return
+      }
+      await loadRooms(uid)
+      openRoom({ id: data.roomId, name: null, marid_enabled: false, kind: 'direct', otherName: data.otherName || 'محادثة خاصة' })
+    } catch { alert('مش قادر أبدأ المحادثة دلوقتي.') }
   }
 
   async function addMember() {
@@ -141,17 +180,22 @@ export default function TeamPage() {
   if (!active) return (
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ECE5DD', fontFamily: 'system-ui' }}>
       <header style={{ background: '#075E54', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ flex: 1, fontWeight: 700, fontSize: 18 }}>👥 فريق العمل</div>
-        <button onClick={createRoom} style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 16, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>+ غرفة</button>
+        <div style={{ flex: 1, fontWeight: 700, fontSize: 18 }}>👥 محادثاتك</div>
+        <button onClick={startDM} style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 16, padding: '6px 10px', fontWeight: 700, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>💬 خاصة</button>
+        <button onClick={createRoom} style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 16, padding: '6px 10px', fontWeight: 700, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>+ غرفة</button>
       </header>
       <div style={{ flex: 1, overflowY: 'auto', padding: 10 }}>
-        {rooms.length === 0 && <div style={{ textAlign: 'center', color: '#667', marginTop: 40 }}>لسه مفيش غرف. اعمل أول غرفة لفريقك 👆</div>}
-        {rooms.map((r) => (
-          <button key={r.id} onClick={() => openRoom(r)} style={{ display: 'flex', width: '100%', textAlign: 'right', alignItems: 'center', gap: 12, background: '#fff', border: 'none', borderRadius: 12, padding: 12, marginBottom: 8, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,.08)' }}>
-            <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#128C7E', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18 }}>{(r.name || 'غ')[0]}</div>
-            <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{r.name || 'غرفة'}</div><div style={{ fontSize: 12, color: '#888' }}>اضغط للدخول</div></div>
-          </button>
-        ))}
+        {rooms.length === 0 && <div style={{ textAlign: 'center', color: '#667', marginTop: 40 }}>لسه مفيش محادثات. ابدأ محادثة خاصة 💬 أو اعمل غرفة فريق 👆</div>}
+        {rooms.map((r) => {
+          const isDirect = r.kind === 'direct'
+          const title = isDirect ? (r.otherName || 'محادثة خاصة') : (r.name || 'غرفة')
+          return (
+            <button key={r.id} onClick={() => openRoom(r)} style={{ display: 'flex', width: '100%', textAlign: 'right', alignItems: 'center', gap: 12, background: '#fff', border: 'none', borderRadius: 12, padding: 12, marginBottom: 8, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,.08)' }}>
+              <div style={{ width: 44, height: 44, borderRadius: '50%', background: isDirect ? '#075E54' : '#128C7E', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18 }}>{(title || 'م').trim()[0]}</div>
+              <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{title}</div><div style={{ fontSize: 12, color: '#888' }}>{isDirect ? 'محادثة خاصة' : 'غرفة فريق'}</div></div>
+            </button>
+          )
+        })}
       </div>
       <ChatBottomNav />
     </div>
@@ -161,7 +205,7 @@ export default function TeamPage() {
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ECE5DD', fontFamily: 'system-ui' }}>
       <header style={{ background: '#075E54', color: '#fff', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <button onClick={() => { setActive(null); if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null } }} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer' }}>→</button>
-        <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{active.name || 'غرفة'}</div><div style={{ fontSize: 11, opacity: .85 }}>اكتب «مارد» لاستدعاء المساعد 🤖</div></div>
+        <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{active.kind === 'direct' ? (active.otherName || 'محادثة خاصة') : (active.name || 'غرفة')}</div><div style={{ fontSize: 11, opacity: .85 }}>اكتب «مارد» لاستدعاء المساعد 🤖</div></div>
         <button onClick={inviteLink} style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 14, padding: '5px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>🔗 دعوة</button>
         <button onClick={addMember} style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 10px', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>+ عضو</button>
       </header>
