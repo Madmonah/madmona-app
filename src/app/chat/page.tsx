@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import ChatTabs from '@/components/ChatTabs'
 
 type Attach = { type: 'image' | 'audio' | 'video' | 'document'; mimetype: string; data_base64: string; filename?: string; previewUrl?: string }
 type Msg = { role: 'user' | 'bot' | 'sys'; text: string; time: string; media?: Attach }
@@ -191,6 +192,7 @@ export default function ChatPage() {
           <button onClick={summonMarid} style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 16, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>🤖 استدعِ المارد</button>
         )}
       </header>
+      <ChatTabs active="chat" />
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '14px 10px' }}>
         {messages.map((m, i) => (

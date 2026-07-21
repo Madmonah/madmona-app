@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import ChatTabs from '@/components/ChatTabs'
 
 type Room = { id: string; name: string | null; marid_enabled: boolean }
 type CMsg = { id: string; sender_id: string | null; sender_kind: string; sender_name: string | null; body: string | null; kind: string; media_url: string | null; created_at: string }
@@ -123,6 +124,7 @@ export default function TeamPage() {
         <div style={{ flex: 1, fontWeight: 700, fontSize: 18 }}>👥 فريق العمل</div>
         <button onClick={createRoom} style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 16, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>+ غرفة</button>
       </header>
+      <ChatTabs active="team" />
       <div style={{ padding: 10 }}>
         {rooms.length === 0 && <div style={{ textAlign: 'center', color: '#667', marginTop: 40 }}>لسه مفيش غرف. اعمل أول غرفة لفريقك 👆</div>}
         {rooms.map((r) => (
