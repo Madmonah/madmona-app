@@ -44,7 +44,7 @@ export default function ChatPage() {
   const [recording, setRecording] = useState(false)
   const [showEmoji, setShowEmoji] = useState(false)
   const [showPlus, setShowPlus] = useState(false)
-  const [maridOn, setMaridOn] = useState(false)
+  const [maridOn] = useState(true) // تاب المارد = المارد دايمًا حاضر (شخصي)
   const [installEvt, setInstallEvt] = useState<BIPEvent | null>(null)
   const [iosHint, setIosHint] = useState(false)
   const [installDismissed, setInstallDismissed] = useState(false)
@@ -56,17 +56,8 @@ export default function ChatPage() {
   const chunksRef = useRef<Blob[]>([])
 
   const welcome = useCallback((nm: string) => {
-    setMessages([{ role: 'sys', text: `أهلاً${nm ? ' يا ' + nm : ''} 👋 دي محادثتك على مضمونة. تقدر تستدعي المارد (المساعد الذكي) أي وقت من الزر اللي فوق.`, time: nowTime() }])
+    setMessages([{ role: 'sys', text: `أهلاً${nm ? ' يا ' + nm : ''} 👋 أنا المارد، مساعدك الشخصي على مضمونة — اسألني في أي حاجة.`, time: nowTime() }])
   }, [])
-  function summonMarid() {
-    setMaridOn(true)
-    setShowPlus(false); setShowEmoji(false)
-    setMessages((m) => [...m, { role: 'sys', text: 'المارد انضم للمحادثة 🤖', time: nowTime() }, { role: 'bot', text: 'أنا المارد، تحت أمرك 👋 محتاج إيه؟', time: nowTime() }])
-  }
-  function dismissMarid() {
-    setMaridOn(false)
-    setMessages((m) => [...m, { role: 'sys', text: 'المارد خرج من المحادثة', time: nowTime() }])
-  }
 
   // تحميل تاريخ المحادثة السابقة (محمي بالتوكن) وتحويله لرسايل الشاشة
   async function loadHistory(token: string): Promise<Msg[]> {
@@ -264,16 +255,11 @@ export default function ChatPage() {
           <img src="https://res.cloudinary.com/duxfgqioc/image/upload/c_crop,x_375,y_120,w_410,h_410/c_fill,w_120,h_120/madmona/mascots/genie.png" alt="المارد" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700 }}>شات مضمونة</div>
-          <div style={{ fontSize: 12, opacity: .85 }}>{maridOn ? (sending ? 'المارد بيكتب…' : 'المارد حاضر') : 'محادثة'}</div>
+          <div style={{ fontWeight: 700 }}>المارد 🧞</div>
+          <div style={{ fontSize: 12, opacity: .85 }}>{sending ? 'بيكتب…' : 'مساعدك الشخصي · حاضر'}</div>
         </div>
         {notifState === 'default' && (
           <button onClick={enableNotifs} title="فعّل التنبيهات" aria-label="فعّل التنبيهات" style={{ background: 'rgba(255,255,255,.15)', color: '#fff', border: 'none', borderRadius: '50%', width: 34, height: 34, fontSize: 16, cursor: 'pointer', flexShrink: 0 }}>🔔</button>
-        )}
-        {maridOn ? (
-          <button onClick={dismissMarid} style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 16, padding: '6px 10px', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>اصرف المارد</button>
-        ) : (
-          <button onClick={summonMarid} style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 16, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>🤖 استدعِ المارد</button>
         )}
       </header>
 
