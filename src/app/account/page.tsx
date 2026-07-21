@@ -358,6 +358,14 @@ export default function AccountPage() {
             <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('account.section_customer')}</p>
           </div>
           <SectionLink
+            href="/chat"
+            icon={<Sparkles className="w-5 h-5" />}
+            iconBg="bg-teal-50 text-teal-600"
+            title="كلّم المارد 💬"
+            subtitle="شات مضمونة — مساعدك الذكي أونلاين"
+          />
+          <div className="h-px bg-gray-100 mx-6" />
+          <SectionLink
             href="/account/bookings"
             icon={<Calendar className="w-5 h-5" />}
             iconBg="bg-blue-50 text-blue-600"
