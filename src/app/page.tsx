@@ -16,7 +16,6 @@ import CategoryTrackTabs from '@/components/CategoryTrackTabs'
 import DailyMessageCard from '@/components/retention/DailyMessageCard'
 import T from '@/components/T'
 import MadmonaShowcase from '@/components/MadmonaShowcase'
-import WorldCupHomeSection from '@/components/WorldCupHomeSection'
 import PropertyMarketHomeSection from '@/components/PropertyMarketHomeSection'
 
 // ============================================================
@@ -144,11 +143,6 @@ export default async function HomePage() {
         {/* 📥 ZAR واحد كبير لتحميل التطبيق — استبدل الـ dual CTAs المكررة */}
         <div className="max-w-7xl mx-auto px-4 pt-6">
           <DownloadAppBig />
-        </div>
-
-        {/* ⚽ World Cup 2026 live section — full match details (Jul 5 2026) */}
-        <div className="max-w-7xl mx-auto px-4 pt-4">
-          <WorldCupHomeSection />
         </div>
 
         {/* 📅 Daily message card — retention feature (Phase X, May 18 2026).
