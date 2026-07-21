@@ -61,6 +61,28 @@ export default function ChatPage() {
     setMessages((m) => [...m, { role: 'sys', text: 'المارد خرج من المحادثة', time: nowTime() }])
   }
 
+  // تحميل تاريخ المحادثة السابقة (محمي بالتوكن) وتحويله لرسايل الشاشة
+  async function loadHistory(token: string): Promise<Msg[]> {
+    try {
+      const res = await fetch('/api/chat', { headers: { Authorization: `Bearer ${token}` } })
+      const data = await res.json()
+      if (!data?.ok || !Array.isArray(data.messages)) return []
+      type HistRow = { direction: string; message_type: string; text: string; media_url: string | null; created_at: string }
+      return (data.messages as HistRow[]).map((m): Msg => {
+        const role: Msg['role'] = m.direction === 'inbound' ? 'user' : 'bot'
+        let media: Attach | undefined
+        let text = m.text || ''
+        if (m.message_type === 'image' && m.media_url) {
+          media = { type: 'image', mimetype: 'image/jpeg', data_base64: '', previewUrl: m.media_url }
+        } else if (m.media_url) {
+          text = (text ? text + '\n' : '') + m.media_url
+        }
+        const time = (() => { try { return new Date(m.created_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) } catch { return nowTime() } })()
+        return { role, text, time, media }
+      })
+    } catch { return [] }
+  }
+
   useEffect(() => {
     ;(async () => {
       try {
@@ -69,7 +91,12 @@ export default function ChatPage() {
           const { data: prof } = await supabaseBrowser.from('profiles').select('phone, full_name').eq('id', session.user.id).maybeSingle()
           const p = normEg((prof as { phone?: string } | null)?.phone || session.user.phone || '')
           const nm = ((prof as { full_name?: string } | null)?.full_name || '').trim()
-          if (p && p.length >= 11) { setPhone(p); setName(nm); setStarted(true); welcome(nm) }
+          if (p && p.length >= 11) {
+            setPhone(p); setName(nm); setStarted(true)
+            const hist = await loadHistory(session.access_token)
+            if (hist.length) setMessages(hist)
+            else welcome(nm)
+          }
         }
       } catch {}
       setAuthChecked(true)

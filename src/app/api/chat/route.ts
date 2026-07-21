@@ -62,6 +62,73 @@ async function ensureAccount(phone20: string, fullName: string | null) {
   }
 }
 
+// ── جلب تاريخ المحادثة (محمي بتوكن الحساب — الخصوصية أولاً) ──────────────
+// بنرجّع الرسايل بس لصاحب الحساب نفسه (Bearer token). من غير توكن = مفيش تاريخ،
+// علشان محدش يقدر يقرا محادثة حد تاني بمجرد معرفة رقمه.
+export async function GET(request: NextRequest) {
+  try {
+    const authHeader = request.headers.get('authorization') || ''
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim()
+    if (!token) return NextResponse.json({ ok: true, messages: [] })
+
+    const admin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } }
+    )
+    const { data: userData, error: uErr } = await admin.auth.getUser(token)
+    const user = userData?.user
+    if (uErr || !user) return NextResponse.json({ ok: true, messages: [] })
+
+    const { data: prof } = await admin.from('profiles').select('phone').eq('id', user.id).maybeSingle()
+    const phone = normalizeEg((prof as { phone?: string } | null)?.phone || user.phone || '')
+    if (!phone || phone.length < 11) return NextResponse.json({ ok: true, messages: [] })
+
+    const { data: conv } = await supabaseUntyped
+      .from('whatsapp_conversations')
+      .select('id')
+      .eq('contact_phone', phone)
+      .eq('session_id', 'web')
+      .maybeSingle()
+    const conversationId = (conv as { id?: string } | null)?.id
+    if (!conversationId) return NextResponse.json({ ok: true, messages: [] })
+
+    const { data: rows } = await supabaseUntyped
+      .from('whatsapp_messages')
+      .select('id, direction, body, message_type, ai_generated, created_at')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true })
+      .limit(200)
+
+    const urlRe = /(https?:\/\/[^\s]+)/
+    const messages = ((rows ?? []) as Array<{ id: string; direction: string; body: string; message_type: string; ai_generated: boolean; created_at: string }>).map((r) => {
+      const isMedia = !!r.message_type && r.message_type !== 'text'
+      let text = r.body || ''
+      let media_url: string | null = null
+      if (isMedia) {
+        const mm = text.match(urlRe)
+        media_url = mm ? mm[1] : null
+        text = text.replace(/^\[[^\]]*\]\s*/, '').replace(urlRe, '').trim()
+      }
+      return {
+        id: r.id,
+        direction: r.direction,
+        ai_generated: !!r.ai_generated,
+        message_type: r.message_type || 'text',
+        text,
+        media_url,
+        created_at: r.created_at,
+      }
+    })
+
+    return NextResponse.json({ ok: true, messages })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'unknown'
+    console.error('[chat GET]', msg)
+    return NextResponse.json({ ok: true, messages: [] })
+  }
+}
+
 export async function POST(request: NextRequest) {
   let body: { phone?: string; name?: string; message?: string; media?: MediaInput; summon?: boolean }
   try {
