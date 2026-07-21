@@ -6,6 +6,9 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 type Attach = { type: 'image' | 'audio' | 'video' | 'document'; mimetype: string; data_base64: string; filename?: string; previewUrl?: string }
 type Msg = { role: 'user' | 'bot'; text: string; time: string; media?: Attach }
 
+const EMOJIS = ['😀','😂','🥰','😍','👍','🙏','🔥','🎉','❤️','😅','😊','🤝','👌','💪','🙌','😎','🤔','😢','😮','🥳','😉','🫡','💯','✅','⭐','🎁','📦','🚗','🏠','🍔','☕','💰','📞','✍️','👏','😇','🤩','🌹','🙈','🤗']
+const QUICKS = ['عايز أشوف العروض 🛍️', 'احجزلي ميعاد 🗓️', 'كلمني عن العقارات 🏠', 'عايز أضيف إعلان ➕']
+
 function nowTime() {
   return new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
 }
@@ -15,7 +18,6 @@ function normEg(raw: string) {
   if (d.length === 10) d = '20' + d
   return d
 }
-// يحوّل اللينكات في النص لروابط قابلة للضغط
 function linkify(text: string): React.ReactNode[] {
   return (text || '').split(/(https?:\/\/[^\s]+)/g).map((p, i) =>
     /^https?:\/\//.test(p) ? (
@@ -36,115 +38,49 @@ export default function ChatPage() {
   const [attach, setAttach] = useState<Attach | null>(null)
   const [sending, setSending] = useState(false)
   const [recording, setRecording] = useState(false)
+  const [showEmoji, setShowEmoji] = useState(false)
+  const [showPlus, setShowPlus] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const calRef = useRef<HTMLInputElement>(null)
   const recRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
 
   const welcome = useCallback((nm: string) => {
-    setMessages([{ role: 'bot', text: `أهلاً بيك${nm ? ' يا ' + nm : ''} في مضمونة 👋\nأنا المارد — قولّي محتاج إيه، وتقدر تبعتلي صور أو رسالة صوتية عادي.`, time: nowTime() }])
+    setMessages([{ role: 'bot', text: `أهلاً بيك${nm ? ' يا ' + nm : ''} في مضمونة 👋\nأنا المارد — قولّي محتاج إيه، وتقدر تبعتلي صور أو رسالة صوتية أو تشارك موقعك عادي.`, time: nowTime() }])
   }, [])
 
-  // ── هوية بالأكونت: لو مسجّل دخول، ندخل تلقائي ──────────────────────
   useEffect(() => {
     ;(async () => {
       try {
         const { data: { session } } = await supabaseBrowser.auth.getSession()
         if (session?.user) {
-          const { data: prof } = await supabaseBrowser
-            .from('profiles')
-            .select('phone, full_name')
-            .eq('id', session.user.id)
-            .maybeSingle()
+          const { data: prof } = await supabaseBrowser.from('profiles').select('phone, full_name').eq('id', session.user.id).maybeSingle()
           const p = normEg((prof as { phone?: string } | null)?.phone || session.user.phone || '')
           const nm = ((prof as { full_name?: string } | null)?.full_name || '').trim()
-          if (p && p.length >= 11) {
-            setPhone(p); setName(nm); setStarted(true); welcome(nm)
-          }
+          if (p && p.length >= 11) { setPhone(p); setName(nm); setStarted(true); welcome(nm) }
         }
       } catch {}
       setAuthChecked(true)
     })()
   }, [welcome])
 
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
-  }, [messages, sending])
+  useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }) }, [messages, sending])
 
-  function start() {
-    if (normEg(phone).length < 11) return
-    setStarted(true)
-    welcome(name.trim())
-  }
+  function start() { if (normEg(phone).length < 11) return; setStarted(true); welcome(name.trim()) }
 
-  // ── ضغط الصورة قبل الرفع (يوفّر مساحة) ─────────────────────────────
-  function compressImage(file: File): Promise<Attach> {
-    return new Promise((resolve) => {
-      const img = new Image()
-      const url = URL.createObjectURL(file)
-      img.onload = () => {
-        const maxW = 1280
-        const scale = Math.min(1, maxW / img.width)
-        const c = document.createElement('canvas')
-        c.width = Math.round(img.width * scale)
-        c.height = Math.round(img.height * scale)
-        c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height)
-        const dataUrl = c.toDataURL('image/jpeg', 0.7)
-        URL.revokeObjectURL(url)
-        resolve({ type: 'image', mimetype: 'image/jpeg', data_base64: dataUrl.split(',')[1], filename: file.name, previewUrl: dataUrl })
-      }
-      img.src = url
-    })
-  }
-
-  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    e.target.value = ''
-    if (file.size > 30 * 1024 * 1024) { alert('الملف كبير أوي (أقصى ٣٠ ميجا)'); return }
-    if (file.type.startsWith('image/')) { setAttach(await compressImage(file)); return }
-    const b64: string = await new Promise((res) => { const r = new FileReader(); r.onload = () => res((r.result as string).split(',')[1]); r.readAsDataURL(file) })
-    const type = file.type.startsWith('video/') ? 'video' : file.type.startsWith('audio/') ? 'audio' : 'document'
-    setAttach({ type, mimetype: file.type || 'application/octet-stream', data_base64: b64, filename: file.name })
-  }
-
-  async function toggleRec() {
-    if (recording) { recRef.current?.stop(); return }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const mr = new MediaRecorder(stream)
-      chunksRef.current = []
-      mr.ondataavailable = (ev) => chunksRef.current.push(ev.data)
-      mr.onstop = async () => {
-        stream.getTracks().forEach((t) => t.stop())
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
-        const b64: string = await new Promise((res) => { const r = new FileReader(); r.onload = () => res((r.result as string).split(',')[1]); r.readAsDataURL(blob) })
-        setAttach({ type: 'audio', mimetype: 'audio/webm', data_base64: b64, filename: 'voice.webm' })
-        setRecording(false)
-      }
-      recRef.current = mr; mr.start(); setRecording(true)
-    } catch { alert('مش قادر أوصل للمايك') }
-  }
-
-  async function send() {
-    const text = input.trim()
-    if ((!text && !attach) || sending) return
-    const media = attach
-    setInput(''); setAttach(null)
+  async function submit(text: string, media: Attach | null) {
+    if ((!text && !media) || sending) return
     setMessages((m) => [...m, { role: 'user', text, time: nowTime(), media: media || undefined }])
     setSending(true)
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone, name, message: text,
-          media: media ? { type: media.type, mimetype: media.mimetype, data_base64: media.data_base64, filename: media.filename } : undefined,
-        }),
+        body: JSON.stringify({ phone, name, message: text, media: media ? { type: media.type, mimetype: media.mimetype, data_base64: media.data_base64, filename: media.filename } : undefined }),
       })
       const data = await res.json()
-      const reply = data?.ok ? data.reply : (data?.error || 'حصل خطأ مؤقت، جرّب تاني.')
-      setMessages((m) => [...m, { role: 'bot', text: reply, time: nowTime() }])
+      setMessages((m) => [...m, { role: 'bot', text: data?.ok ? data.reply : (data?.error || 'حصل خطأ مؤقت، جرّب تاني.'), time: nowTime() }])
     } catch {
       setMessages((m) => [...m, { role: 'bot', text: 'مش قادر أوصل للسيرفر دلوقتي، جرّب تاني.', time: nowTime() }])
     } finally {
@@ -152,11 +88,67 @@ export default function ChatPage() {
     }
   }
 
-  if (!authChecked) {
-    return <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#075E54', color: '#fff', fontFamily: 'system-ui' }}>لحظة…</div>
+  function send() {
+    const t = input.trim(); const m = attach
+    if (!t && !m) return
+    setInput(''); setAttach(null); setShowEmoji(false); setShowPlus(false)
+    submit(t, m)
+  }
+  function sendQuick(t: string) { submit(t, null) }
+  function sendLocation() {
+    setShowPlus(false)
+    if (!navigator.geolocation) { alert('الموقع مش متاح في المتصفح ده'); return }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => submit(`📍 موقعي: https://maps.google.com/?q=${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`, null),
+      () => alert('مش قادر أجيب موقعك — اسمح للمتصفح بالوصول للموقع')
+    )
+  }
+  function onCal(e: React.ChangeEvent<HTMLInputElement>) {
+    const v = e.target.value; e.target.value = ''; setShowPlus(false)
+    if (!v) return
+    submit(`🗓️ أنا متاح: ${new Date(v).toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'short' })}`, null)
   }
 
-  // ── شاشة الدخول (لغير المسجّلين) ────────────────────────────────────
+  function compressImage(file: File): Promise<Attach> {
+    return new Promise((resolve) => {
+      const img = new Image(); const url = URL.createObjectURL(file)
+      img.onload = () => {
+        const scale = Math.min(1, 1280 / img.width)
+        const c = document.createElement('canvas')
+        c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale)
+        c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height)
+        const dataUrl = c.toDataURL('image/jpeg', 0.7); URL.revokeObjectURL(url)
+        resolve({ type: 'image', mimetype: 'image/jpeg', data_base64: dataUrl.split(',')[1], filename: file.name, previewUrl: dataUrl })
+      }
+      img.src = url
+    })
+  }
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]; if (!file) return; e.target.value = ''; setShowPlus(false)
+    if (file.size > 30 * 1024 * 1024) { alert('الملف كبير أوي (أقصى ٣٠ ميجا)'); return }
+    if (file.type.startsWith('image/')) { setAttach(await compressImage(file)); return }
+    const b64: string = await new Promise((res) => { const r = new FileReader(); r.onload = () => res((r.result as string).split(',')[1]); r.readAsDataURL(file) })
+    const type = file.type.startsWith('video/') ? 'video' : file.type.startsWith('audio/') ? 'audio' : 'document'
+    setAttach({ type, mimetype: file.type || 'application/octet-stream', data_base64: b64, filename: file.name })
+  }
+  async function toggleRec() {
+    if (recording) { recRef.current?.stop(); return }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mr = new MediaRecorder(stream); chunksRef.current = []
+      mr.ondataavailable = (ev) => chunksRef.current.push(ev.data)
+      mr.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop())
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+        const b64: string = await new Promise((res) => { const r = new FileReader(); r.onload = () => res((r.result as string).split(',')[1]); r.readAsDataURL(blob) })
+        setAttach({ type: 'audio', mimetype: 'audio/webm', data_base64: b64, filename: 'voice.webm' }); setRecording(false)
+      }
+      recRef.current = mr; mr.start(); setRecording(true)
+    } catch { alert('مش قادر أوصل للمايك') }
+  }
+
+  if (!authChecked) return <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#075E54', color: '#fff', fontFamily: 'system-ui' }}>لحظة…</div>
+
   if (!started) {
     return (
       <div dir="rtl" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#075E54', padding: 16, fontFamily: 'system-ui, sans-serif' }}>
@@ -171,6 +163,8 @@ export default function ChatPage() {
       </div>
     )
   }
+
+  const hasText = input.trim().length > 0 || !!attach
 
   return (
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ECE5DD', fontFamily: 'system-ui, sans-serif' }}>
@@ -195,7 +189,30 @@ export default function ChatPage() {
           </div>
         ))}
         {sending && <div style={{ textAlign: 'end', color: '#667', fontSize: 13, padding: '2px 8px' }}>المارد بيكتب…</div>}
+        {messages.length <= 1 && !sending && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-end', marginTop: 6 }}>
+            {QUICKS.map((q) => (
+              <button key={q} onClick={() => sendQuick(q)} style={{ background: '#fff', border: '1px solid #25D366', color: '#075E54', borderRadius: 16, padding: '6px 12px', fontSize: 13, cursor: 'pointer' }}>{q}</button>
+            ))}
+          </div>
+        )}
       </div>
+
+      {showEmoji && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, padding: 8, background: '#fff', borderTop: '1px solid #ddd', maxHeight: 160, overflowY: 'auto' }}>
+          {EMOJIS.map((e) => (
+            <button key={e} onClick={() => setInput((v) => v + e)} style={{ border: 'none', background: 'none', fontSize: 24, cursor: 'pointer', padding: 3 }}>{e}</button>
+          ))}
+        </div>
+      )}
+
+      {showPlus && (
+        <div style={{ display: 'flex', gap: 10, padding: 12, background: '#fff', borderTop: '1px solid #ddd' }}>
+          <button onClick={() => fileRef.current?.click()} style={sheetBtn}>🖼️<div style={sheetLbl}>صورة/ملف</div></button>
+          <button onClick={sendLocation} style={sheetBtn}>📍<div style={sheetLbl}>موقعي</div></button>
+          <button onClick={() => { const el = calRef.current; if (el) { try { el.showPicker() } catch { el.click() } } }} style={sheetBtn}>🗓️<div style={sheetLbl}>ميعاد</div></button>
+        </div>
+      )}
 
       {attach && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', background: '#e8f5e9', fontSize: 13 }}>
@@ -204,17 +221,24 @@ export default function ChatPage() {
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 6, padding: 10, background: '#F0F0F0', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 4, padding: 8, background: '#F0F0F0', alignItems: 'center' }}>
         <input ref={fileRef} type="file" accept="image/*,video/*,application/pdf" onChange={onFile} style={{ display: 'none' }} />
-        <button onClick={() => fileRef.current?.click()} title="إرفاق" style={iconBtn}>📎</button>
-        <button onClick={toggleRec} title="تسجيل صوت" style={{ ...iconBtn, color: recording ? '#c00' : '#075E54' }}>{recording ? '⏹️' : '🎤'}</button>
-        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder={recording ? 'بسجّل…' : 'اكتب رسالة'} style={{ ...inp, margin: 0, flex: 1 }} />
-        <button onClick={send} disabled={sending} style={{ ...btn, width: 52, padding: 0, opacity: sending ? .6 : 1 }}>➤</button>
+        <input ref={calRef} type="datetime-local" onChange={onCal} style={{ display: 'none' }} />
+        <button onClick={() => { setShowPlus((v) => !v); setShowEmoji(false) }} title="إرفاق" style={{ ...iconBtn, transform: showPlus ? 'rotate(45deg)' : 'none' }}>➕</button>
+        <button onClick={() => { setShowEmoji((v) => !v); setShowPlus(false) }} title="إيموجي" style={iconBtn}>😊</button>
+        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} onFocus={() => { setShowEmoji(false); setShowPlus(false) }} placeholder={recording ? 'بسجّل…' : 'اكتب رسالة'} style={{ ...inp, margin: 0, flex: 1 }} />
+        {hasText ? (
+          <button onClick={send} disabled={sending} style={{ ...btn, width: 48, padding: 0, opacity: sending ? .6 : 1 }}>➤</button>
+        ) : (
+          <button onClick={toggleRec} title="تسجيل صوت" style={{ ...btn, width: 48, padding: 0, background: recording ? '#c0392b' : '#128C7E' }}>{recording ? '⏹️' : '🎤'}</button>
+        )}
       </div>
     </div>
   )
 }
 
-const inp: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '12px 14px', margin: '0 0 12px', border: '1px solid #ddd', borderRadius: 10, fontSize: 15, outline: 'none' }
-const btn: React.CSSProperties = { background: '#128C7E', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 16px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
-const iconBtn: React.CSSProperties = { border: 'none', background: 'none', fontSize: 22, cursor: 'pointer', padding: 4, lineHeight: 1 }
+const inp: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '12px 14px', margin: '0 0 12px', border: '1px solid #ddd', borderRadius: 22, fontSize: 15, outline: 'none' }
+const btn: React.CSSProperties = { background: '#128C7E', color: '#fff', border: 'none', borderRadius: '50%', height: 48, fontSize: 18, fontWeight: 700, cursor: 'pointer' }
+const iconBtn: React.CSSProperties = { border: 'none', background: 'none', fontSize: 22, cursor: 'pointer', padding: 4, lineHeight: 1, transition: 'transform .15s' }
+const sheetBtn: React.CSSProperties = { border: '1px solid #eee', background: '#fafafa', borderRadius: 12, padding: '10px 16px', fontSize: 26, cursor: 'pointer', display: 'grid', placeItems: 'center', gap: 2 }
+const sheetLbl: React.CSSProperties = { fontSize: 12, color: '#555' }
