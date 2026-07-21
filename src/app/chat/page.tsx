@@ -6,6 +6,7 @@ import ChatTabs from '@/components/ChatTabs'
 
 type Attach = { type: 'image' | 'audio' | 'video' | 'document'; mimetype: string; data_base64: string; filename?: string; previewUrl?: string }
 type Msg = { role: 'user' | 'bot' | 'sys'; text: string; time: string; media?: Attach }
+type BIPEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }> }
 
 const EMOJIS = ['😀','😂','🥰','😍','👍','🙏','🔥','🎉','❤️','😅','😊','🤝','👌','💪','🙌','😎','🤔','😢','😮','🥳','😉','🫡','💯','✅','⭐','🎁','📦','🚗','🏠','🍔','☕','💰','📞','✍️','👏','😇','🤩','🌹','🙈','🤗']
 const QUICKS = ['عايز أشوف العروض 🛍️', 'احجزلي ميعاد 🗓️', 'كلمني عن العقارات 🏠', 'عايز أضيف إعلان ➕']
@@ -42,6 +43,9 @@ export default function ChatPage() {
   const [showEmoji, setShowEmoji] = useState(false)
   const [showPlus, setShowPlus] = useState(false)
   const [maridOn, setMaridOn] = useState(false)
+  const [installEvt, setInstallEvt] = useState<BIPEvent | null>(null)
+  const [iosHint, setIosHint] = useState(false)
+  const [installDismissed, setInstallDismissed] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const calRef = useRef<HTMLInputElement>(null)
@@ -104,6 +108,31 @@ export default function ChatPage() {
   }, [welcome])
 
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }) }, [messages, sending])
+
+  // تثبيت الشات كأيقونة على التليفون (PWA)
+  useEffect(() => {
+    const standalone = window.matchMedia?.('(display-mode: standalone)')?.matches
+      || (window.navigator as unknown as { standalone?: boolean }).standalone === true
+    if (standalone) return
+    const onBip = (e: Event) => { e.preventDefault(); setInstallEvt(e as BIPEvent) }
+    const onInstalled = () => { setInstallEvt(null); setIosHint(false) }
+    window.addEventListener('beforeinstallprompt', onBip)
+    window.addEventListener('appinstalled', onInstalled)
+    const ua = navigator.userAgent || ''
+    const isIOS = /iphone|ipad|ipod/i.test(ua)
+    const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(ua)
+    if (isIOS && isSafari) setIosHint(true)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBip)
+      window.removeEventListener('appinstalled', onInstalled)
+    }
+  }, [])
+
+  async function installApp() {
+    if (!installEvt) return
+    try { await installEvt.prompt(); await installEvt.userChoice } catch {}
+    setInstallEvt(null)
+  }
 
   function start() { if (normEg(phone).length < 11) return; setStarted(true); welcome(name.trim()) }
 
@@ -220,6 +249,21 @@ export default function ChatPage() {
         )}
       </header>
       <ChatTabs active="chat" />
+
+      {(installEvt || iosHint) && !installDismissed && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#DCF8C6', borderBottom: '1px solid #cbe8bd', fontSize: 13, color: '#0a5e46' }}>
+          <span style={{ fontSize: 18 }}>📲</span>
+          {installEvt ? (
+            <>
+              <span style={{ flex: 1 }}>ثبّت شات مضمونة على تليفونك — أيقونة مستقلة، رد فوري بضغطة.</span>
+              <button onClick={installApp} style={{ background: '#128C7E', color: '#fff', border: 'none', borderRadius: 16, padding: '6px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>ثبّت</button>
+            </>
+          ) : (
+            <span style={{ flex: 1 }}>عايز الشات كأيقونة؟ اضغط زر المشاركة ⬆️ في سفاري واختار «إضافة إلى الشاشة الرئيسية».</span>
+          )}
+          <button onClick={() => setInstallDismissed(true)} aria-label="إغلاق" style={{ border: 'none', background: 'none', color: '#0a5e46', cursor: 'pointer', fontSize: 16, lineHeight: 1 }}>✕</button>
+        </div>
+      )}
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '14px 10px' }}>
         {messages.map((m, i) => (
