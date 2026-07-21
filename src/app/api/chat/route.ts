@@ -65,7 +65,8 @@ async function ensureAccount(phone20: string, fullName: string | null) {
 // ── إشعار بوش لما المارد يرد (best-effort) ──────────────────────────────
 // بنضيف صف في notification_queue، وكرون كل دقيقة بيبعته. الـSW بيتجاهله
 // لو المستخدم فاتح الشات فعلاً (suppressIfChatFocused) علشان مايزعّجوش.
-async function enqueueReplyPush(phone20: string, reply: string) {
+async function enqueueReplyPush(phone20: string, reply: string): Promise<Record<string, unknown>> {
+  const diag: Record<string, unknown> = { step: 'start' }
   try {
     const admin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -74,21 +75,25 @@ async function enqueueReplyPush(phone20: string, reply: string) {
     )
     // مطابقة دقيقة لكل الصيغ المخزّنة: 010..، 2010..، +2010..
     const local = '0' + phone20.slice(2)
-    const { data: prof } = await admin
+    const { data: prof, error: pe } = await admin
       .from('profiles')
       .select('id')
       .in('phone', [local, phone20, '+' + phone20])
       .limit(1)
       .maybeSingle()
     const pid = (prof as { id?: string } | null)?.id
-    if (!pid) return
-    const { count } = await admin
+    diag.pid = pid || null
+    diag.profErr = pe?.message || null
+    if (!pid) { diag.step = 'no_pid'; return diag }
+    const { count, error: ce } = await admin
       .from('push_subscriptions')
       .select('id', { count: 'exact', head: true })
       .eq('profile_id', pid)
-    if (!count) return
+    diag.count = count ?? null
+    diag.countErr = ce?.message || null
+    if (!count) { diag.step = 'no_subs'; return diag }
     const preview = (reply || '').replace(/\s+/g, ' ').trim().slice(0, 90)
-    await admin.from('notification_queue').insert({
+    const { error: ie } = await admin.from('notification_queue').insert({
       recipient_id: pid,
       type: 'chat_reply',
       title: 'المارد رد عليك 💬',
@@ -96,8 +101,13 @@ async function enqueueReplyPush(phone20: string, reply: string) {
       url: '/chat',
       data: { icon: '/marid-icon-192.png', suppressIfChatFocused: true },
     } as never)
-  } catch {
-    /* best-effort */
+    diag.insErr = ie?.message || null
+    diag.step = ie ? 'insert_failed' : 'inserted'
+    return diag
+  } catch (e) {
+    diag.step = 'threw'
+    diag.threw = e instanceof Error ? e.message : String(e)
+    return diag
   }
 }
 
@@ -307,9 +317,9 @@ export async function POST(request: NextRequest) {
 
     // إشعار بوش (بيتبعت بالكرون خلال دقيقة؛ الـSW بيتجاهله لو الشات مفتوح)
     // لازم await — الـserverless بيقفل بعد الـresponse فيقتل أي promise معلّق
-    await enqueueReplyPush(phone, reply)
+    const _enq = await enqueueReplyPush(phone, reply)
 
-    return NextResponse.json({ ok: true, reply, conversationId })
+    return NextResponse.json({ ok: true, reply, conversationId, _enq })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'unknown'
     console.error('[chat]', msg)
