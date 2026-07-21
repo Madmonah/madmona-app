@@ -93,6 +93,20 @@ export default function TopNav() {
 
           {/* Compact actions — language + notifications (enlarged) + menu */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            <Link
+              href="/chat"
+              aria-label="شات مضمونة"
+              className="w-11 h-11 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-2xl flex items-center justify-center transition-all overflow-hidden no-underline"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://res.cloudinary.com/duxfgqioc/image/upload/c_crop,x_375,y_120,w_410,h_410/c_fill,w_96,h_96/madmona/mascots/genie.png"
+                alt="شات مضمونة"
+                className="w-9 h-9 object-cover rounded-full"
+                width={36}
+                height={36}
+              />
+            </Link>
             <LanguageToggle className="bg-white shadow-soft" />
             <NotificationButton variant="icon-only" />
             <CartButton className="w-11 h-11 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-2xl" />

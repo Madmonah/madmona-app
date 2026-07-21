@@ -9,7 +9,7 @@ import {
   ArrowRight, Calendar, Building2, ShoppingBag,
   LogOut, Loader2, Lock, User, Phone, Crown, ChevronLeft,
   CheckCircle, Clock, AlertCircle, FolderTree, Edit2, Check, X, Heart,
-  BarChart3, Sparkles, Wallet, UtensilsCrossed, Star, PlusCircle, Users,
+  BarChart3, Wallet, UtensilsCrossed, Star, PlusCircle, Users,
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import PushNotificationCard from '@/components/PushNotificationCard'
@@ -357,22 +357,6 @@ export default function AccountPage() {
           <div className="px-6 py-3 border-b border-gray-100">
             <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('account.section_customer')}</p>
           </div>
-          <SectionLink
-            href="/chat"
-            icon={<Sparkles className="w-5 h-5" />}
-            iconBg="bg-teal-50 text-teal-600"
-            title="شات مضمونة 💬"
-            subtitle="محادثة + مساعد ذكي (المارد) تستدعيه وقت ما تحب"
-          />
-          <div className="h-px bg-gray-100 mx-6" />
-          <SectionLink
-            href="/team"
-            icon={<Users className="w-5 h-5" />}
-            iconBg="bg-indigo-50 text-indigo-600"
-            title="فريق العمل 👥"
-            subtitle="محادثات فريقك — والمارد عضو تستدعيه بكلمة «مارد»"
-          />
-          <div className="h-px bg-gray-100 mx-6" />
           <SectionLink
             href="/account/bookings"
             icon={<Calendar className="w-5 h-5" />}

@@ -113,6 +113,18 @@ export default function TeamPage() {
     alert(error ? 'مقدرتش أضيفه (لازم تكون مالك الغرفة)' : `تمت إضافة ${(prof as { full_name?: string }).full_name || 'العضو'} ✅`)
   }
 
+  // دعوة بلينك — يتبعت على أي تطبيق (share sheet)، واللي يفتحه ينضم للمجموعة
+  async function inviteLink() {
+    if (!active) return
+    const url = `${window.location.origin}/chat/join/${active.id}`
+    const text = `تعال انضم لمجموعة «${active.name || 'فريقنا'}» على شات مضمونة 💬`
+    if (typeof navigator !== 'undefined' && (navigator as Navigator & { share?: unknown }).share) {
+      try { await navigator.share({ title: 'دعوة على شات مضمونة', text, url }); return } catch {}
+    }
+    try { await navigator.clipboard.writeText(url); alert('اتنسخ رابط الدعوة — ابعته لأي حد على أي تطبيق 👍') }
+    catch { window.prompt('انسخ رابط الدعوة وابعته:', url) }
+  }
+
   if (!ready) return <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#075E54', color: '#fff', fontFamily: 'system-ui' }}>لحظة…</div>
 
   if (!uid) return (
@@ -150,7 +162,8 @@ export default function TeamPage() {
       <header style={{ background: '#075E54', color: '#fff', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <button onClick={() => { setActive(null); if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null } }} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer' }}>→</button>
         <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{active.name || 'غرفة'}</div><div style={{ fontSize: 11, opacity: .85 }}>اكتب «مارد» لاستدعاء المساعد 🤖</div></div>
-        <button onClick={addMember} style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 10px', fontSize: 12, cursor: 'pointer' }}>+ عضو</button>
+        <button onClick={inviteLink} style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 14, padding: '5px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>🔗 دعوة</button>
+        <button onClick={addMember} style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 10px', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>+ عضو</button>
       </header>
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 10px' }}>
         {messages.map((m) => {
