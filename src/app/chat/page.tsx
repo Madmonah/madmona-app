@@ -62,6 +62,14 @@ export default function ChatHub() {
     })()
   }, [])
 
+  // آخر باك (وأنت على القائمة الرئيسية للشات) يوديك لهوم المنصة بدل ما يقفل التطبيق
+  useEffect(() => {
+    try { window.history.pushState({ chatRoot: true }, '') } catch {}
+    const onPop = () => { window.location.assign('/') }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+
   return (
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#fff', fontFamily: 'system-ui, sans-serif' }}>
       <header style={{ background: '#075E54', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
