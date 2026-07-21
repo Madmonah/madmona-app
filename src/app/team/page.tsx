@@ -99,14 +99,20 @@ export default function TeamPage() {
         .insert({ room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: myName, body: text, kind: 'text' } as never)
         .select('*').single()
       if (ins) setMessages((m) => (m.some((x) => x.id === (ins as CMsg).id) ? m : [...m, ins as CMsg]))
-      if (/مارد/.test(text)) {
-        await fetch('/api/team/marid', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ roomId: active.id, text }),
-        })
-      }
     } finally { setBusy(false) }
+  }
+
+  // استدعاء المارد بزرار (بدل كلمة «مارد») — بيقرا الثريد ويرد لكل الأعضاء
+  async function summonMaridInRoom() {
+    if (!active || busy) return
+    setBusy(true)
+    try {
+      await fetch('/api/team/marid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ roomId: active.id, text: '' }),
+      })
+    } catch { /* الرد بيوصل بالـrealtime */ } finally { setBusy(false) }
   }
 
   async function createRoom() {
@@ -205,9 +211,10 @@ export default function TeamPage() {
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ECE5DD', fontFamily: 'system-ui' }}>
       <header style={{ background: '#075E54', color: '#fff', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <button onClick={() => { setActive(null); if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null } }} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer' }}>→</button>
-        <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{active.kind === 'direct' ? (active.otherName || 'محادثة خاصة') : (active.name || 'غرفة')}</div><div style={{ fontSize: 11, opacity: .85 }}>اكتب «مارد» لاستدعاء المساعد 🤖</div></div>
-        <button onClick={inviteLink} style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 14, padding: '5px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>🔗 دعوة</button>
-        <button onClick={addMember} style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 10px', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>+ عضو</button>
+        <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{active.kind === 'direct' ? (active.otherName || 'محادثة خاصة') : (active.name || 'غرفة')}</div><div style={{ fontSize: 11, opacity: .85 }}>اضغط 🧞 لاستدعاء المارد</div></div>
+        <button onClick={summonMaridInRoom} disabled={busy} title="استدعِ المارد" style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 14, padding: '5px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', opacity: busy ? 0.6 : 1 }}>🧞 المارد</button>
+        <button onClick={inviteLink} title="دعوة بلينك" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>🔗</button>
+        <button onClick={addMember} title="ضيف عضو" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>➕</button>
       </header>
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 10px' }}>
         {messages.map((m) => {
