@@ -1,46 +1,136 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { supabaseBrowser } from '@/lib/supabase-browser'
 
-type Msg = { role: 'user' | 'bot'; text: string; time: string }
+type Attach = { type: 'image' | 'audio' | 'video' | 'document'; mimetype: string; data_base64: string; filename?: string; previewUrl?: string }
+type Msg = { role: 'user' | 'bot'; text: string; time: string; media?: Attach }
 
 function nowTime() {
   return new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
+}
+function normEg(raw: string) {
+  let d = (raw || '').replace(/\D/g, '')
+  if (d.startsWith('0') && d.length === 11) d = '20' + d.slice(1)
+  if (d.length === 10) d = '20' + d
+  return d
 }
 
 export default function ChatPage() {
   const [phone, setPhone] = useState('')
   const [name, setName] = useState('')
   const [started, setStarted] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
   const [messages, setMessages] = useState<Msg[]>([])
   const [input, setInput] = useState('')
+  const [attach, setAttach] = useState<Attach | null>(null)
   const [sending, setSending] = useState(false)
+  const [recording, setRecording] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const recRef = useRef<MediaRecorder | null>(null)
+  const chunksRef = useRef<Blob[]>([])
+
+  const welcome = useCallback((nm: string) => {
+    setMessages([{ role: 'bot', text: `أهلاً بيك${nm ? ' يا ' + nm : ''} في مضمونة 👋\nأنا المارد — قولّي محتاج إيه، وتقدر تبعتلي صور أو رسالة صوتية عادي.`, time: nowTime() }])
+  }, [])
+
+  // ── هوية بالأكونت: لو مسجّل دخول، ندخل تلقائي ──────────────────────
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const { data: { session } } = await supabaseBrowser.auth.getSession()
+        if (session?.user) {
+          const { data: prof } = await supabaseBrowser
+            .from('profiles')
+            .select('phone, full_name')
+            .eq('id', session.user.id)
+            .maybeSingle()
+          const p = normEg((prof as { phone?: string } | null)?.phone || session.user.phone || '')
+          const nm = ((prof as { full_name?: string } | null)?.full_name || '').trim()
+          if (p && p.length >= 11) {
+            setPhone(p); setName(nm); setStarted(true); welcome(nm)
+          }
+        }
+      } catch {}
+      setAuthChecked(true)
+    })()
+  }, [welcome])
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, sending])
 
   function start() {
-    const p = phone.replace(/\D/g, '')
-    if (p.length < 10) return
+    if (normEg(phone).length < 11) return
     setStarted(true)
-    setMessages([
-      { role: 'bot', text: `أهلاً بيك${name ? ' يا ' + name : ''} في مضمونة 👋\nأنا المارد — قولّي محتاج إيه وأنا تحت أمرك.`, time: nowTime() },
-    ])
+    welcome(name.trim())
+  }
+
+  // ── ضغط الصورة قبل الرفع (يوفّر مساحة) ─────────────────────────────
+  function compressImage(file: File): Promise<Attach> {
+    return new Promise((resolve) => {
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+      img.onload = () => {
+        const maxW = 1280
+        const scale = Math.min(1, maxW / img.width)
+        const c = document.createElement('canvas')
+        c.width = Math.round(img.width * scale)
+        c.height = Math.round(img.height * scale)
+        c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height)
+        const dataUrl = c.toDataURL('image/jpeg', 0.7)
+        URL.revokeObjectURL(url)
+        resolve({ type: 'image', mimetype: 'image/jpeg', data_base64: dataUrl.split(',')[1], filename: file.name, previewUrl: dataUrl })
+      }
+      img.src = url
+    })
+  }
+
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    if (file.size > 30 * 1024 * 1024) { alert('الملف كبير أوي (أقصى ٣٠ ميجا)'); return }
+    if (file.type.startsWith('image/')) { setAttach(await compressImage(file)); return }
+    const b64: string = await new Promise((res) => { const r = new FileReader(); r.onload = () => res((r.result as string).split(',')[1]); r.readAsDataURL(file) })
+    const type = file.type.startsWith('video/') ? 'video' : file.type.startsWith('audio/') ? 'audio' : 'document'
+    setAttach({ type, mimetype: file.type || 'application/octet-stream', data_base64: b64, filename: file.name })
+  }
+
+  async function toggleRec() {
+    if (recording) { recRef.current?.stop(); return }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mr = new MediaRecorder(stream)
+      chunksRef.current = []
+      mr.ondataavailable = (ev) => chunksRef.current.push(ev.data)
+      mr.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop())
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+        const b64: string = await new Promise((res) => { const r = new FileReader(); r.onload = () => res((r.result as string).split(',')[1]); r.readAsDataURL(blob) })
+        setAttach({ type: 'audio', mimetype: 'audio/webm', data_base64: b64, filename: 'voice.webm' })
+        setRecording(false)
+      }
+      recRef.current = mr; mr.start(); setRecording(true)
+    } catch { alert('مش قادر أوصل للمايك') }
   }
 
   async function send() {
     const text = input.trim()
-    if (!text || sending) return
-    setInput('')
-    setMessages((m) => [...m, { role: 'user', text, time: nowTime() }])
+    if ((!text && !attach) || sending) return
+    const media = attach
+    setInput(''); setAttach(null)
+    setMessages((m) => [...m, { role: 'user', text, time: nowTime(), media: media || undefined }])
     setSending(true)
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, name, message: text }),
+        body: JSON.stringify({
+          phone, name, message: text,
+          media: media ? { type: media.type, mimetype: media.mimetype, data_base64: media.data_base64, filename: media.filename } : undefined,
+        }),
       })
       const data = await res.json()
       const reply = data?.ok ? data.reply : (data?.error || 'حصل خطأ مؤقت، جرّب تاني.')
@@ -52,7 +142,11 @@ export default function ChatPage() {
     }
   }
 
-  // ── شاشة الدخول (زي أونبوردنج واتساب) ──────────────────────────────
+  if (!authChecked) {
+    return <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#075E54', color: '#fff', fontFamily: 'system-ui' }}>لحظة…</div>
+  }
+
+  // ── شاشة الدخول (لغير المسجّلين) ────────────────────────────────────
   if (!started) {
     return (
       <div dir="rtl" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#075E54', padding: 16, fontFamily: 'system-ui, sans-serif' }}>
@@ -68,7 +162,6 @@ export default function ChatPage() {
     )
   }
 
-  // ── شاشة الشات ─────────────────────────────────────────────────────
   return (
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ECE5DD', fontFamily: 'system-ui, sans-serif' }}>
       <header style={{ background: '#075E54', color: '#fff', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -83,6 +176,9 @@ export default function ChatPage() {
         {messages.map((m, i) => (
           <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-start' : 'flex-end', marginBottom: 8 }}>
             <div style={{ maxWidth: '78%', background: m.role === 'user' ? '#DCF8C6' : '#fff', padding: '7px 10px', borderRadius: 10, boxShadow: '0 1px 1px rgba(0,0,0,.12)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 15, lineHeight: 1.5 }}>
+              {m.media?.type === 'image' && m.media.previewUrl && <img src={m.media.previewUrl} alt="" style={{ maxWidth: '100%', borderRadius: 8, marginBottom: m.text ? 6 : 0 }} />}
+              {m.media?.type === 'audio' && <div style={{ marginBottom: m.text ? 6 : 0 }}>🎤 رسالة صوتية</div>}
+              {m.media && m.media.type !== 'image' && m.media.type !== 'audio' && <div style={{ marginBottom: m.text ? 6 : 0 }}>📎 {m.media.filename || m.media.type}</div>}
               {m.text}
               <span style={{ display: 'block', textAlign: 'left', fontSize: 10, color: '#8a8a8a', marginTop: 2 }}>{m.time}</span>
             </div>
@@ -91,8 +187,18 @@ export default function ChatPage() {
         {sending && <div style={{ textAlign: 'end', color: '#667', fontSize: 13, padding: '2px 8px' }}>المارد بيكتب…</div>}
       </div>
 
-      <div style={{ display: 'flex', gap: 8, padding: 10, background: '#F0F0F0' }}>
-        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder="اكتب رسالة" style={{ ...inp, margin: 0, flex: 1 }} />
+      {attach && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', background: '#e8f5e9', fontSize: 13 }}>
+          <span>{attach.type === 'image' ? '🖼️ صورة جاهزة' : attach.type === 'audio' ? '🎤 صوت جاهز' : '📎 ' + (attach.filename || 'ملف')}</span>
+          <button onClick={() => setAttach(null)} style={{ marginInlineStart: 'auto', border: 'none', background: 'none', color: '#c00', cursor: 'pointer', fontSize: 16 }}>✕</button>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: 6, padding: 10, background: '#F0F0F0', alignItems: 'center' }}>
+        <input ref={fileRef} type="file" accept="image/*,video/*,application/pdf" onChange={onFile} style={{ display: 'none' }} />
+        <button onClick={() => fileRef.current?.click()} title="إرفاق" style={iconBtn}>📎</button>
+        <button onClick={toggleRec} title="تسجيل صوت" style={{ ...iconBtn, color: recording ? '#c00' : '#075E54' }}>{recording ? '⏹️' : '🎤'}</button>
+        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder={recording ? 'بسجّل…' : 'اكتب رسالة'} style={{ ...inp, margin: 0, flex: 1 }} />
         <button onClick={send} disabled={sending} style={{ ...btn, width: 52, padding: 0, opacity: sending ? .6 : 1 }}>➤</button>
       </div>
     </div>
@@ -101,3 +207,4 @@ export default function ChatPage() {
 
 const inp: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '12px 14px', margin: '0 0 12px', border: '1px solid #ddd', borderRadius: 10, fontSize: 15, outline: 'none' }
 const btn: React.CSSProperties = { background: '#128C7E', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 16px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+const iconBtn: React.CSSProperties = { border: 'none', background: 'none', fontSize: 22, cursor: 'pointer', padding: 4, lineHeight: 1 }

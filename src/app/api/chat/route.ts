@@ -1,9 +1,9 @@
-// شات مضمونة — نفس مخ المارد، بس رد مباشر بدون واتساب.
-// الهوية بالرقم زي واتساب، والمارد بيعرف العميل بـ who_is_this.
+// شات مضمونة — نفس مخ المارد، رد مباشر بدون واتساب. بيدعم نص + صور + صوت + ملفات.
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseUntyped } from '@/lib/supabase'
 import { parseJsonResponse } from '@/lib/anthropic'
 import { callMaridWithTools } from '@/lib/marid-brain'
+import { processIncomingMedia, type MediaInput } from '@/lib/marid-media'
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
 import { isAdmin } from '@/lib/marid-admin'
 
@@ -19,7 +19,7 @@ function normalizeEg(raw: string): string {
 }
 
 export async function POST(request: NextRequest) {
-  let body: { phone?: string; name?: string; message?: string }
+  let body: { phone?: string; name?: string; message?: string; media?: MediaInput }
   try {
     body = await request.json()
   } catch {
@@ -29,11 +29,12 @@ export async function POST(request: NextRequest) {
   const phone = normalizeEg(body.phone || '')
   const name = (body.name || '').trim() || null
   const message = (body.message || '').trim()
+  const media = body.media && body.media.data_base64 ? body.media : null
 
   if (!phone || phone.length < 11) {
     return NextResponse.json({ ok: false, error: 'رقم غير صحيح' }, { status: 400 })
   }
-  if (!message) {
+  if (!message && !media) {
     return NextResponse.json({ ok: false, error: 'الرسالة فاضية' }, { status: 400 })
   }
 
@@ -47,7 +48,6 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     let conversationId = (existing as { id?: string } | null)?.id
-
     if (!conversationId) {
       const { data: created, error: cErr } = await supabaseUntyped
         .from('whatsapp_conversations')
@@ -65,67 +65,70 @@ export async function POST(request: NextRequest) {
       if (cErr) throw cErr
       conversationId = (created as { id: string }).id
     } else if (name) {
-      await supabaseUntyped
-        .from('whatsapp_conversations')
-        .update({ contact_name: name })
-        .eq('id', conversationId)
+      await supabaseUntyped.from('whatsapp_conversations').update({ contact_name: name }).eq('id', conversationId)
     }
 
-    // ── ٢) تسجيل رسالة العميل ───────────────────────────────────────────
+    // ── ٢) الميديا (لو موجودة): حفظ + تجهيز للمارد ──────────────────────
+    let mediaBlocks: Array<Record<string, unknown>> = []
+    let savedMediaUrl: string | null = null
+    let effectiveText = message
+    if (media) {
+      const r = await processIncomingMedia(media, phone)
+      mediaBlocks = r.blocks
+      savedMediaUrl = r.savedUrl
+      if (!effectiveText) effectiveText = r.textHint
+    }
+
+    // ── ٣) تسجيل رسالة العميل ───────────────────────────────────────────
+    const logBody = media
+      ? `[${media.type}${media.filename ? ': ' + media.filename : ''}]${message ? ' ' + message : ''}${savedMediaUrl ? ' ' + savedMediaUrl : ''}`
+      : message
     await supabaseUntyped.from('whatsapp_messages').insert({
       conversation_id: conversationId,
       direction: 'inbound',
-      body: message,
-      message_type: 'text',
+      body: logBody,
+      message_type: media ? media.type : 'text',
       status: 'delivered',
     })
 
-    // ── ٣) تاريخ المحادثة (آخر ٢٤ رسالة) ────────────────────────────────
+    // ── ٤) تاريخ المحادثة ───────────────────────────────────────────────
     const { data: hist } = await supabaseUntyped
       .from('whatsapp_messages')
       .select('direction, body, created_at')
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: false })
       .limit(24)
-
-    const rows = ((hist ?? []) as Array<{ direction: string; body: string }>).reverse()
-    const historyText = rows
-      .slice(0, -1) // آخر واحدة هي الرسالة الحالية
+    const histRows = ((hist ?? []) as Array<{ direction: string; body: string }>).reverse()
+    const historyText = histRows
+      .slice(0, -1)
       .map((h) => `${h.direction === 'inbound' ? 'العميل' : 'المارد'}: ${h.body || ''}`)
       .join('\n')
-
     const userMessage = historyText
-      ? `سياق المحادثة السابقة:\n${historyText}\n\n---\nرسالة العميل الحالية:\n${message}`
-      : message
+      ? `سياق المحادثة السابقة:\n${historyText}\n\n---\nرسالة العميل الحالية:\n${effectiveText}`
+      : effectiveText
 
-    // ── ٤) رد المارد ────────────────────────────────────────────────────
-    const admin = isAdmin(phone)
+    // ── ٥) رد المارد ────────────────────────────────────────────────────
     const raw = await callMaridWithTools({
       systemPrompt: CUSTOMER_CONCIERGE_PROMPT,
       userMessage,
+      mediaBlocks,
+      savedMediaUrl,
       senderPhone: phone,
       senderName: name,
-      admin,
+      admin: isAdmin(phone),
     })
 
     let reply = ''
     try {
-      const parsed = parseJsonResponse<{ reply?: string }>(raw)
-      reply = (parsed.reply || '').trim()
+      reply = (parseJsonResponse<{ reply?: string }>(raw).reply || '').trim()
     } catch {
       reply = (raw || '').trim()
     }
     if (!reply && raw.trim().length > 10) reply = raw.trim().slice(0, 1200)
-    if (!reply) reply = 'ثانية واحدة، بحاول أوصلك رد مناسب — ممكن تعيد صياغة طلبك؟'
+    if (!reply) reply = 'ثانية واحدة — ممكن تعيد صياغة طلبك؟'
+    reply = reply.replace(/\*\*([\s\S]+?)\*\*/g, '$1').replace(/^#{1,6}\s+/gm, '').replace(/\n{3,}/g, '\n\n').trim()
 
-    // تنظيف تنسيق ماركداون البسيط
-    reply = reply
-      .replace(/\*\*([\s\S]+?)\*\*/g, '$1')
-      .replace(/^#{1,6}\s+/gm, '')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim()
-
-    // ── ٥) تسجيل رد المارد ──────────────────────────────────────────────
+    // ── ٦) تسجيل الرد ───────────────────────────────────────────────────
     await supabaseUntyped.from('whatsapp_messages').insert({
       conversation_id: conversationId,
       direction: 'outbound',
@@ -135,14 +138,9 @@ export async function POST(request: NextRequest) {
       ai_generated: true,
       agent_name: 'المارد',
     })
-
     await supabaseUntyped
       .from('whatsapp_conversations')
-      .update({
-        last_message_at: new Date().toISOString(),
-        last_message_direction: 'outbound',
-        last_outbound_at: new Date().toISOString(),
-      })
+      .update({ last_message_at: new Date().toISOString(), last_message_direction: 'outbound', last_outbound_at: new Date().toISOString() })
       .eq('id', conversationId)
 
     return NextResponse.json({ ok: true, reply, conversationId })
