@@ -13,7 +13,6 @@ import MadmonaListingClaimer from '@/components/MadmonaListingClaimer'
 import ReferralCapture from '@/components/ReferralCapture'
 import AutoResubscribe from '@/components/AutoResubscribe'
 import DailyMessageBanner from '@/components/DailyMessageBanner'
-import TelegramBotFab from '@/components/TelegramBotFab'
 import { safeStorage } from '@/lib/safe-storage'
 // 🔴 شبكة أمان: أي RPC تفشل، بيظهر تنبيه أحمر بدل ما تعدّي في صمت (13 Jul 2026)
 import RpcErrorToast from '@/components/RpcErrorToast'
@@ -242,7 +241,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Suspense fallback={null}>
           <DailyMessageBanner />
         </Suspense>
-        <TelegramBotFab />
         <RpcErrorToast />
         </LanguageProvider>
       </body>
