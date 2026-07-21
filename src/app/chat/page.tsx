@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ChatTabs from '@/components/ChatTabs'
+import { subscribeToPush, getNotificationPermission, isPushSupported } from '@/lib/push-subscription'
 
 type Attach = { type: 'image' | 'audio' | 'video' | 'document'; mimetype: string; data_base64: string; filename?: string; previewUrl?: string }
 type Msg = { role: 'user' | 'bot' | 'sys'; text: string; time: string; media?: Attach }
@@ -46,6 +47,7 @@ export default function ChatPage() {
   const [installEvt, setInstallEvt] = useState<BIPEvent | null>(null)
   const [iosHint, setIosHint] = useState(false)
   const [installDismissed, setInstallDismissed] = useState(false)
+  const [notifState, setNotifState] = useState<'unsupported' | 'default' | 'granted' | 'denied'>('default')
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const calRef = useRef<HTMLInputElement>(null)
@@ -132,6 +134,24 @@ export default function ChatPage() {
     if (!installEvt) return
     try { await installEvt.prompt(); await installEvt.userChoice } catch {}
     setInstallEvt(null)
+  }
+
+  // حالة إذن التنبيهات
+  useEffect(() => {
+    if (!isPushSupported()) { setNotifState('unsupported'); return }
+    const p = getNotificationPermission()
+    setNotifState(p === 'unsupported' ? 'unsupported' : p)
+  }, [])
+
+  async function enableNotifs() {
+    const r = await subscribeToPush()
+    if (r.ok) {
+      setNotifState('granted')
+      setMessages((m) => [...m, { role: 'sys', text: '🔔 تمام — هنبعتلك تنبيه لو المارد رد وانت مش فاتح الشات.', time: nowTime() }])
+    } else {
+      setMessages((m) => [...m, { role: 'sys', text: r.error || 'مش قادر أفعّل التنبيهات دلوقتي.', time: nowTime() }])
+      if (getNotificationPermission() === 'denied') setNotifState('denied')
+    }
   }
 
   function start() { if (normEg(phone).length < 11) return; setStarted(true); welcome(name.trim()) }
@@ -245,6 +265,9 @@ export default function ChatPage() {
           <div style={{ fontWeight: 700 }}>شات مضمونة</div>
           <div style={{ fontSize: 12, opacity: .85 }}>{maridOn ? (sending ? 'المارد بيكتب…' : 'المارد حاضر') : 'محادثة'}</div>
         </div>
+        {notifState === 'default' && (
+          <button onClick={enableNotifs} title="فعّل التنبيهات" aria-label="فعّل التنبيهات" style={{ background: 'rgba(255,255,255,.15)', color: '#fff', border: 'none', borderRadius: '50%', width: 34, height: 34, fontSize: 16, cursor: 'pointer', flexShrink: 0 }}>🔔</button>
+        )}
         {maridOn ? (
           <button onClick={dismissMarid} style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 16, padding: '6px 10px', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>اصرف المارد</button>
         ) : (

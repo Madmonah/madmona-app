@@ -109,7 +109,19 @@ self.addEventListener('push', (event) => {
     vibrate: [200, 100, 200],
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  // لو الإشعار خاص بالشات والمستخدم فاتح الشات فعلاً وشايفه — منعرضهوش (مايزعّجوش)
+  const suppressIfChatFocused = data.tag === 'chat_reply' || (data.data && data.data.suppressIfChatFocused);
+
+  event.waitUntil((async () => {
+    if (suppressIfChatFocused) {
+      try {
+        const cls = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        const chatFocused = cls.some((c) => c.focused && (c.url || '').indexOf('/chat') !== -1);
+        if (chatFocused) return;
+      } catch (e) { /* لو فشل الفحص، اعرض الإشعار عادي */ }
+    }
+    await self.registration.showNotification(title, options);
+  })());
 });
 
 // Handle notification click — open the relevant page

@@ -130,11 +130,15 @@ async function handle(req: NextRequest) {
       continue
     }
 
+    const iconFromData = item.data && typeof (item.data as Record<string, unknown>).icon === 'string'
+      ? (item.data as Record<string, string>).icon
+      : undefined
     const payload: PushPayload = {
       title: item.title,
       body: item.body,
       url: item.url || '/',
       tag: item.type,
+      icon: iconFromData,
       data: item.data || {},
     }
 

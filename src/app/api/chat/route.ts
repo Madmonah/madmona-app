@@ -62,7 +62,45 @@ async function ensureAccount(phone20: string, fullName: string | null) {
   }
 }
 
-// ── جلب تاريخ المحادثة (محمي بتوكن الحساب — الخصوصية أولاً) ──────────────
+// ── إشعار بوش لما المارد يرد (best-effort) ──────────────────────────────
+// بنضيف صف في notification_queue، وكرون كل دقيقة بيبعته. الـSW بيتجاهله
+// لو المستخدم فاتح الشات فعلاً (suppressIfChatFocused) علشان مايزعّجوش.
+async function enqueueReplyPush(phone20: string, reply: string) {
+  try {
+    const admin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } }
+    )
+    const local = '0' + phone20.slice(2)
+    const { data: prof } = await admin
+      .from('profiles')
+      .select('id')
+      .or(`phone.eq.${local},phone.eq.${phone20},phone.eq.+${phone20}`)
+      .limit(1)
+      .maybeSingle()
+    const pid = (prof as { id?: string } | null)?.id
+    if (!pid) return
+    const { count } = await admin
+      .from('push_subscriptions')
+      .select('id', { count: 'exact', head: true })
+      .eq('profile_id', pid)
+    if (!count) return
+    const preview = (reply || '').replace(/\s+/g, ' ').trim().slice(0, 90)
+    await admin.from('notification_queue').insert({
+      recipient_id: pid,
+      type: 'chat_reply',
+      title: 'المارد رد عليك 💬',
+      body: preview || 'عندك رد جديد على مضمونة',
+      url: '/chat',
+      data: { icon: '/marid-icon-192.png', suppressIfChatFocused: true },
+    } as never)
+  } catch {
+    /* best-effort */
+  }
+}
+
+// ── جلب تاريخ المحادثة (محمي بتوكن الحساب — الخصوصية أولاً) ──────────────────
 // بنرجّع الرسايل بس لصاحب الحساب نفسه (Bearer token). من غير توكن = مفيش تاريخ،
 // علشان محدش يقدر يقرا محادثة حد تاني بمجرد معرفة رقمه.
 export async function GET(request: NextRequest) {
@@ -265,6 +303,9 @@ export async function POST(request: NextRequest) {
       .from('whatsapp_conversations')
       .update({ last_message_at: new Date().toISOString(), last_message_direction: 'outbound', last_outbound_at: new Date().toISOString() })
       .eq('id', conversationId)
+
+    // إشعار بوش (بيتبعت بالكرون خلال دقيقة؛ الـSW بيتجاهله لو الشات مفتوح)
+    void enqueueReplyPush(phone, reply)
 
     return NextResponse.json({ ok: true, reply, conversationId })
   } catch (err) {
