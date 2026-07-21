@@ -237,7 +237,10 @@ export default function ChatPage() {
   return (
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ECE5DD', fontFamily: 'system-ui, sans-serif' }}>
       <header style={{ background: '#075E54', color: '#fff', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#25D366', display: 'grid', placeItems: 'center', fontSize: 20 }}>{maridOn ? '🤖' : '💬'}</div>
+        <div style={{ width: 42, height: 42, borderRadius: '50%', background: '#fff', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(255,255,255,.35)' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="https://res.cloudinary.com/duxfgqioc/image/upload/c_crop,x_375,y_120,w_410,h_410/c_fill,w_120,h_120/madmona/mascots/genie.png" alt="المارد" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700 }}>شات مضمونة</div>
           <div style={{ fontSize: 12, opacity: .85 }}>{maridOn ? (sending ? 'المارد بيكتب…' : 'المارد حاضر') : 'محادثة'}</div>

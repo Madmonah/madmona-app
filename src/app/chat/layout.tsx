@@ -5,7 +5,8 @@ import type { Metadata, Viewport } from 'next'
 export const metadata: Metadata = {
   title: 'شات مضمونة',
   manifest: '/chat-manifest.webmanifest',
-  appleWebApp: { capable: true, title: 'شات مضمونة', statusBarStyle: 'black-translucent' },
+  appleWebApp: { capable: true, title: 'شات مضمونة', statusBarStyle: 'default' },
+  icons: { apple: '/marid-apple-180.png' },
 }
 
 export const viewport: Viewport = {
