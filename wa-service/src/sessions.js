@@ -83,7 +83,7 @@ export function knownSessionIds(authRoot) {
     .map((d) => d.name)
 }
 
-export async function startSession({ id, label, authRoot, onMessage, onLidMap }) {
+export async function startSession({ id, label, authRoot, onMessage, onLidMap, onStatus }) {
   if (sessions.has(id) && sessions.get(id).connected) return sessions.get(id)
 
   const dir = join(authRoot, id)
@@ -165,7 +165,7 @@ export async function startSession({ id, label, authRoot, onMessage, onLidMap })
         notifyOwner(`🔴 المارد اتسجّل خروج من الرقم ${id}\nبنمسح الجلسة القديمة ونطلّع QR جديد تلقائيًا — افتح صفحة الـQR واسكان من واتساب.`)
         // نمسح الـcreds الميتة ونعيد التشغيل — يطلّع QR جديد لوحده بدل ما يقف مستني مسح يدوي
         try { await logoutSession(id, authRoot) } catch { /* ignore */ }
-        setTimeout(() => startSession({ id, label: entry.label, authRoot, onMessage, onLidMap }), 2000)
+        setTimeout(() => startSession({ id, label: entry.label, authRoot, onMessage, onLidMap, onStatus }), 2000)
         return
       }
 
@@ -186,7 +186,7 @@ export async function startSession({ id, label, authRoot, onMessage, onLidMap })
         )
       }
 
-      setTimeout(() => startSession({ id, label: entry.label, authRoot, onMessage, onLidMap }), wait)
+      setTimeout(() => startSession({ id, label: entry.label, authRoot, onMessage, onLidMap, onStatus }), wait)
     }
   })
 
@@ -224,6 +224,29 @@ export async function startSession({ id, label, authRoot, onMessage, onLidMap })
         await onMessage({ sessionId: id, sock, m })
       } catch (e) {
         log.error({ session: id, err: e.message }, 'فشل معالجة رسالة')
+      }
+    }
+  })
+
+  // ── ✓/✓✓/seen: حالة الرسايل اللي إحنا بعتناها ───────────────────────
+  // Baileys بيبعت التحديث في messages.update، وحقل status رقم:
+  //   2 = SERVER_ACK (اتبعت ✓)، 3 = DELIVERY_ACK (اتسلّمت ✓✓)،
+  //   4 = READ (اتقرت / seen)، 5 = PLAYED (فويس اتسمع).
+  // بنبعت التحديث للتطبيق عشان الحالة تبان في اللوحة — ده بيساعد
+  // نعرف الرسالة وصلت فعلًا ولا اتقطعت (مهم مع مشكلة التسليم).
+  sock.ev.on('messages.update', async (updates) => {
+    for (const u of updates || []) {
+      try {
+        const st = u.update?.status
+        if (st == null) continue
+        const messageId = u.key?.id
+        if (!messageId) continue
+        const map = { 2: 'sent', 3: 'delivered', 4: 'read', 5: 'read' }
+        const mapped = map[Number(st)]
+        if (!mapped) continue
+        onStatus?.({ sessionId: id, message_id: messageId, status: mapped })
+      } catch (e) {
+        log.error({ session: id, err: e.message }, 'فشل تحديث حالة رسالة')
       }
     }
   })

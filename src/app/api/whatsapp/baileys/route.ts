@@ -401,6 +401,31 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, kind: 'lid_map' })
   }
 
+  // ── تحديث حالة رسالة صادرة (✓ اتبعت / ✓✓ اتسلّمت / seen اتقرت) ────────
+  // wa-service بيبعت ده من messages.update. بنرفع الحالة بس (ماننزّلهاش —
+  // تسلّم متأخر مايمسحش «اتقرت») عشان تبان في اللوحة وتساعدنا نعرف الرسالة
+  // وصلت فعلًا ولا اتقطعت (مهم مع مشكلة التسليم على الرقم).
+  if ((body as { kind?: string }).kind === 'status') {
+    const s = body as unknown as { message_id?: string; status?: string }
+    const rank: Record<string, number> = { sent: 1, delivered: 2, read: 3 }
+    if (s.message_id && s.status && rank[s.status]) {
+      const { data: cur } = await supabaseUntyped
+        .from('whatsapp_messages')
+        .select('status')
+        .eq('wa_message_id', s.message_id)
+        .limit(1)
+        .maybeSingle()
+      const curRank = rank[((cur as { status?: string } | null)?.status ?? '')] ?? 0
+      if (rank[s.status] > curRank) {
+        await supabaseUntyped
+          .from('whatsapp_messages')
+          .update({ status: s.status, status_updated_at: new Date().toISOString() } as never)
+          .eq('wa_message_id', s.message_id)
+      }
+    }
+    return NextResponse.json({ ok: true, kind: 'status' })
+  }
+
   let phone = normalizePhone(body.from)
 
   // ⚠️ الـ JID الأصلي — ده اللي بنرد عليه.

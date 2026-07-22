@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
       (convs || []).map(async (c: { id: string; contact_name: string | null; contact_phone: string; session_id: string | null; status: string | null; last_message_at: string | null; last_message_direction: string | null; message_count: number | null }) => {
         const { data: msgs } = await supabase
           .from('whatsapp_messages')
-          .select('direction, body, ai_generated, created_at, message_type')
+          .select('direction, body, ai_generated, created_at, message_type, status')
           .eq('conversation_id', c.id)
           .order('created_at', { ascending: false })
           .limit(30)

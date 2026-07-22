@@ -2,12 +2,20 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 
-type Msg = { direction: string; body: string | null; ai_generated: boolean; created_at: string; message_type: string }
+type Msg = { direction: string; body: string | null; ai_generated: boolean; created_at: string; message_type: string; status?: string | null }
 type Conv = { id: string; name: string | null; phone: string; channel: string; status: string | null; last_at: string | null; waiting: boolean; messages: Msg[] }
 
 function tm(iso: string | null) {
   if (!iso) return ''
   try { return new Date(iso).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) } catch { return '' }
+}
+// علامة تسليم الرسالة الصادرة: ✓ اتبعت · ✓✓ اتسلّمت · ✓✓ (أزرق) اتقرت · ✗ فشلت
+function tick(status?: string | null): { m: string; c: string; t: string } | null {
+  if (status === 'read') return { m: '✓✓', c: '#53bdeb', t: 'اتقرت' }
+  if (status === 'delivered') return { m: '✓✓', c: '#8696a0', t: 'اتسلّمت' }
+  if (status === 'sent') return { m: '✓', c: '#8696a0', t: 'اتبعت' }
+  if (status === 'failed' || status === 'error') return { m: '✗', c: '#e11d48', t: 'فشلت' }
+  return null
 }
 function preview(c: Conv) {
   const last = c.messages[c.messages.length - 1]
@@ -166,6 +174,7 @@ export default function MaridMonitor() {
           <div ref={threadRef} style={{ flex: 1, overflowY: 'auto', padding: '14px 10px' }}>
             {sel.messages.map((m, i) => {
               const bot = m.direction === 'outbound'
+              const t = bot ? tick(m.status) : null
               return (
                 <div key={i} style={{ display: 'flex', justifyContent: bot ? 'flex-start' : 'flex-end', marginBottom: 8 }}>
                   <div style={{ maxWidth: '82%', background: bot ? (m.ai_generated ? '#dcf8c6' : '#fff7cc') : '#fff', borderRadius: 14, padding: '8px 11px', boxShadow: '0 1px 3px rgba(0,0,0,.08)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 14.5, lineHeight: 1.6 }}>
@@ -173,7 +182,10 @@ export default function MaridMonitor() {
                       {bot ? (m.ai_generated ? '🧞 المارد' : '👤 رد يدوي') : `📩 ${sel.name || 'العميل'}`}
                     </span>
                     {m.message_type && m.message_type !== 'text' ? `[${m.message_type}] ` : ''}{m.body || ''}
-                    <span style={{ display: 'block', textAlign: 'left', fontSize: 10, color: '#999', marginTop: 3 }}>{tm(m.created_at)}</span>
+                    <span style={{ display: 'block', textAlign: 'left', fontSize: 10, color: '#999', marginTop: 3 }}>
+                      {tm(m.created_at)}
+                      {t ? <span title={t.t} style={{ marginInlineStart: 4, fontWeight: 700, color: t.c }}>{t.m}</span> : null}
+                    </span>
                   </div>
                 </div>
               )

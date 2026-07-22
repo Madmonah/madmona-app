@@ -248,6 +248,8 @@ function migrateLegacySession() {
 //    «forwardLidMap is not defined» ويفشل ربط أي رقم جديد.
 //    مكانها هنا عشان الاتنين يشوفوها.
 const forwardLidMap = (m) => forwardToApp({ kind: 'lid_map', ...m })
+// ✓/✓✓/seen — تحديث حالة الرسايل اللي بعتناها (بيتحدّث في اللوحة)
+const forwardStatus = (s) => forwardToApp({ kind: 'status', ...s })
 
 // ── تشغيل الجلسات ─────────────────────────────────────────────────────────
 async function bootSessions() {
@@ -277,7 +279,7 @@ async function bootSessions() {
 
   for (const s of all) {
     try {
-      await startSession({ id: s.id, label: s.label, authRoot: AUTH_DIR, onMessage: handleMessage, onLidMap: forwardLidMap })
+      await startSession({ id: s.id, label: s.label, authRoot: AUTH_DIR, onMessage: handleMessage, onLidMap: forwardLidMap, onStatus: forwardStatus })
       log.info({ session: s.id }, 'الجلسة بدأت')
     } catch (e) {
       log.error({ session: s.id, err: e.message }, 'فشل بدء الجلسة')
@@ -361,7 +363,7 @@ app.post('/sessions', auth, async (req, res) => {
   const { session, label } = req.body || {}
   if (!session) return res.status(400).json({ ok: false, error: 'session مطلوب' })
   try {
-    await startSession({ id: String(session), label: label || String(session), authRoot: AUTH_DIR, onMessage: handleMessage, onLidMap: forwardLidMap })
+    await startSession({ id: String(session), label: label || String(session), authRoot: AUTH_DIR, onMessage: handleMessage, onLidMap: forwardLidMap, onStatus: forwardStatus })
     res.json({ ok: true, session, qr_url: `/qr?session=${encodeURIComponent(session)}` })
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message })
