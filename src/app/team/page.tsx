@@ -29,6 +29,7 @@ export default function TeamPage() {
   const [busy, setBusy] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const chanRef = useRef<ReturnType<typeof supabaseBrowser.channel> | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const loadRooms = useCallback(async (myId: string) => {
     const { data } = await supabaseBrowser.from('chat_rooms').select('id, name, marid_enabled, kind').order('created_at', { ascending: false })
@@ -100,6 +101,31 @@ export default function TeamPage() {
         .select('*').single()
       if (ins) setMessages((m) => (m.some((x) => x.id === (ins as CMsg).id) ? m : [...m, ins as CMsg]))
     } finally { setBusy(false) }
+  }
+
+  // رفع ميديا (صورة/فيديو) — بيتبعت لـ/api/chat/media اللي بيرفع للستوريج ويسجّل الرسالة
+  async function sendMedia(file: File) {
+    if (!active || !uid || busy) return
+    if (file.size > 25 * 1024 * 1024) { alert('الملف كبير أوي — الحد الأقصى 25 ميجا'); return }
+    setBusy(true)
+    try {
+      const dataUrl: string = await new Promise((res, rej) => {
+        const r = new FileReader()
+        r.onload = () => res(String(r.result || ''))
+        r.onerror = () => rej(new Error('read failed'))
+        r.readAsDataURL(file)
+      })
+      const dataBase64 = dataUrl.split(',')[1] || ''
+      const kind = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : 'document'
+      const resp = await fetch('/api/chat/media', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ roomId: active.id, dataBase64, mimetype: file.type, kind, filename: file.name }),
+      })
+      const j = await resp.json().catch(() => null)
+      if (j?.ok && j.message) setMessages((m) => (m.some((x) => x.id === (j.message as CMsg).id) ? m : [...m, j.message as CMsg]))
+      else alert(j?.error || 'فشل رفع الملف')
+    } catch { alert('فشل رفع الملف') } finally { setBusy(false); if (fileRef.current) fileRef.current.value = '' }
   }
 
   // استدعاء المارد بزرار (بدل كلمة «مارد») — بيقرا الثريد ويرد لكل الأعضاء
@@ -224,6 +250,16 @@ export default function TeamPage() {
             <div key={m.id} style={{ display: 'flex', justifyContent: mine ? 'flex-start' : 'flex-end', marginBottom: 8 }}>
               <div style={{ maxWidth: '80%', background: mine ? '#DCF8C6' : (marid ? '#e7f3ff' : '#fff'), padding: '7px 10px', borderRadius: 10, boxShadow: '0 1px 1px rgba(0,0,0,.12)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 15, lineHeight: 1.5 }}>
                 {!mine && <div style={{ fontSize: 11, fontWeight: 700, color: marid ? '#0a66c2' : '#128C7E', marginBottom: 2 }}>{marid ? '🤖 المارد' : (m.sender_name || 'عضو')}</div>}
+                {m.media_url && m.kind === 'image' && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={m.media_url} alt="" onClick={() => window.open(m.media_url!, '_blank')} style={{ display: 'block', maxWidth: 220, width: '100%', borderRadius: 8, marginBottom: m.body ? 4 : 0, cursor: 'pointer' }} />
+                )}
+                {m.media_url && m.kind === 'video' && (
+                  <video src={m.media_url} controls style={{ display: 'block', maxWidth: 240, width: '100%', borderRadius: 8, marginBottom: m.body ? 4 : 0 }} />
+                )}
+                {m.media_url && m.kind !== 'image' && m.kind !== 'video' && (
+                  <a href={m.media_url} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginBottom: m.body ? 4 : 0, color: '#0a66c2', textDecoration: 'underline', fontSize: 14 }}>📎 ملف مرفق</a>
+                )}
                 {m.body}
                 <span style={{ display: 'block', textAlign: 'left', fontSize: 10, color: '#8a8a8a', marginTop: 2 }}>{t(m.created_at)}</span>
               </div>
@@ -232,9 +268,11 @@ export default function TeamPage() {
         })}
         {busy && <div style={{ textAlign: 'end', color: '#667', fontSize: 13, padding: '2px 8px' }}>…</div>}
       </div>
-      <div style={{ display: 'flex', gap: 8, padding: 10, background: '#F0F0F0' }}>
-        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendMsg()} placeholder="اكتب رسالة… (اكتب «مارد» لاستدعاء المساعد)" style={{ flex: 1, padding: '12px 14px', border: '1px solid #ddd', borderRadius: 22, fontSize: 15, outline: 'none' }} />
-        <button onClick={sendMsg} disabled={busy} style={{ background: '#128C7E', color: '#fff', border: 'none', borderRadius: '50%', width: 48, height: 48, fontSize: 18, cursor: 'pointer', opacity: busy ? 0.6 : 1 }}>➤</button>
+      <div style={{ display: 'flex', gap: 8, padding: 10, background: '#F0F0F0', alignItems: 'center' }}>
+        <input ref={fileRef} type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) sendMedia(f) }} />
+        <button onClick={() => fileRef.current?.click()} disabled={busy} title="أرفق صورة أو فيديو" style={{ background: '#fff', color: '#128C7E', border: '1px solid #ddd', borderRadius: '50%', width: 44, height: 44, fontSize: 18, cursor: 'pointer', flexShrink: 0, opacity: busy ? 0.6 : 1 }}>📎</button>
+        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendMsg()} placeholder="اكتب رسالة…" style={{ flex: 1, padding: '12px 14px', border: '1px solid #ddd', borderRadius: 22, fontSize: 15, outline: 'none' }} />
+        <button onClick={sendMsg} disabled={busy} style={{ background: '#128C7E', color: '#fff', border: 'none', borderRadius: '50%', width: 48, height: 48, fontSize: 18, cursor: 'pointer', opacity: busy ? 0.6 : 1, flexShrink: 0 }}>➤</button>
       </div>
     </div>
   )
