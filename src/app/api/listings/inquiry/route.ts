@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { sendEmail } from '@/lib/email'
 
 export const runtime = 'nodejs'
 
@@ -43,11 +44,11 @@ export async function POST(req: NextRequest) {
 
     // الإعلان + صاحبه
     const { data: listing } = await admin.from('listings')
-      .select('id, title, contact_phone, supplier_id, marketplace_suppliers(profile_id)')
+      .select('id, title, slug, contact_phone, supplier_id, marketplace_suppliers(profile_id)')
       .eq('id', listingId).eq('status', 'published').maybeSingle()
     if (!listing) return NextResponse.json({ ok: false, error: 'listing not found' }, { status: 404 })
 
-    const l = listing as unknown as { id: string; title: string; contact_phone: string | null; supplier_id: string; marketplace_suppliers?: { profile_id?: string } | null }
+    const l = listing as unknown as { id: string; title: string; slug: string | null; contact_phone: string | null; supplier_id: string; marketplace_suppliers?: { profile_id?: string } | null }
     const supplierProfileId = l.marketplace_suppliers?.profile_id || null
 
     // اسم المستفسر
@@ -131,6 +132,26 @@ export async function POST(req: NextRequest) {
         body: `فيه حد مستفسر عن إعلانك «${l.title}» على مضمونة. ادخل شات مضمونة للرد على العميل، وفعّل الإشعارات علشان توصلك فورًا.`,
         ref_table: 'listings', ref_id: l.id, seen: false,
       } as never)
+
+      // قناة شغّالة دلوقتي: تنبيه الأدمن بالإيميل (Resend) عشان يوصل لصاحب الإعلان يدوي
+      // لحد ما واتساب المارد يرجع. كده مفيش استفسار بيضيع.
+      try {
+        const ownerEmail = process.env.MADMONA_OWNER_EMAIL
+        if (ownerEmail) {
+          const link = l.slug ? `https://www.madmonacairo.com/marketplace/${l.slug}` : ''
+          await sendEmail({
+            to: ownerEmail,
+            subject: `📩 استفسار جديد على إعلان: ${l.title}`,
+            text: `استفسار جديد على إعلان في الماركت — صاحب الإعلان لسه مش مسجّل على مضمونة.\n\n`
+              + `الإعلان: ${l.title}\n`
+              + `رقم صاحب الإعلان: ${localPhone}\n`
+              + `المستفسر: ${inquirerName}\n`
+              + (link ? `رابط الإعلان: ${link}\n` : '')
+              + `\nكلّم صاحب الإعلان على واتساب وقوله يدخل شات مضمونة يرد على العميل ويفعّل حسابه.`,
+          })
+        }
+      } catch { /* الإيميل best-effort */ }
+
       return NextResponse.json({ ok: true, channel: 'whatsapp', pending: true })
     }
 
