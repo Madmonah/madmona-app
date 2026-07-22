@@ -853,13 +853,8 @@ function StepCategory({
   // the slug immediately so the wizard advances to Step 2. Without this,
   // the user lands in an empty sub-view and the wizard appears frozen.
   // Mohamed: "el aksam el gdeda lsa msh byet3mlaha add listing sare3".
-  const handleMainClick = (c: MainCategory) => {
-    if (c.subs.length === 0) {
-      onSelect(c.slug);
-    } else {
-      setSelectedMain(c.slug);
-    }
-  };
+  // (Jul 22 2026) handleMainClick اتشال — الاختيار بقى flat one-tap (onSelect
+  // مباشرة على الـleaf)، فمفيش drill على mains-with-subs.
 
   // Phase G+ (May 18 2026): when parent signals "reset", jump back to the
   // mains list so the user can pick a totally different category.
@@ -913,77 +908,37 @@ function StepCategory({
             مفيش تصنيفات في التبويب ده دلوقتي
           </div>
         ) : (() => {
-          // Phase G (May 18 2026): render visible mains GROUPED by group_slug
-          // with a heading per group. If a main has no group_slug (legacy/null),
-          // it falls into an "أخرى" bucket at the end so nothing is hidden.
-          const groupsMap = new Map<string, { name_ar: string; emoji: string; order: number; mains: MainCategory[] }>();
+          // UNIFIED one-tap picker (Jul 22 2026 — Mohamed): نبسّط اختيار الفئة
+          // زي فورم «حسابي» — كل الأصناف النهائية (leaves) في التاب المختار بتتعرض
+          // مسطّحة في جريد واحد، فالمستخدم بيختار في نقرة واحدة من غير تدخيل على
+          // مجموعات. الصنف اللي بيظهر تحت أكتر من مجال بيتعرض مرة واحدة (dedupe).
+          const seen = new Set<string>();
+          const leaves: { slug: string; emoji: string; name_ar: string }[] = [];
           for (const c of visibleMains) {
-            const key = c.group_slug || '__other';
-            if (!groupsMap.has(key)) {
-              groupsMap.set(key, {
-                name_ar: c.group_name_ar || 'أخرى',
-                emoji: c.group_emoji || '📦',
-                order: c.group_display_order ?? 999,
-                mains: [],
-              });
+            if (c.subs.length === 0) {
+              if (!seen.has(c.slug)) { seen.add(c.slug); leaves.push({ slug: c.slug, emoji: c.emoji, name_ar: c.name_ar }); }
+            } else {
+              for (const s of c.subs) {
+                if (!seen.has(s.slug)) { seen.add(s.slug); leaves.push({ slug: s.slug, emoji: s.emoji, name_ar: s.name_ar }); }
+              }
             }
-            groupsMap.get(key)!.mains.push(c);
           }
-          const orderedGroups = Array.from(groupsMap.entries())
-            .sort((a, b) => a[1].order - b[1].order);
-
-          // If everything ended up in one group, render flat (no heading needed).
-          if (orderedGroups.length === 1) {
-            return (
-              <div className="grid grid-cols-2 gap-3">
-                {orderedGroups[0][1].mains.map((c) => (
-                  <button
-                    key={c.slug}
-                    type="button"
-                    onClick={() => handleMainClick(c)}
-                    className="p-5 rounded-2xl border text-right transition-all bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300"
-                  >
-                    <div className="text-3xl mb-2">{c.emoji}</div>
-                    <div className="font-semibold">{c.name_ar}</div>
-                    {c.subs.length > 0 ? (
-                      <div className="text-[10px] text-gray-500 mt-1">{c.subs.length} نوع</div>
-                    ) : (
-                      <div className="text-[10px] text-[#1F6F5F] mt-1 font-medium">دوس لتختار ←</div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            );
-          }
-
           return (
-            <div className="space-y-6">
-              {orderedGroups.map(([key, group]) => (
-                <div key={key}>
-                  <h3 className="flex items-center gap-2 text-sm font-bold text-[#1F6F5F] mb-3">
-                    <span className="text-lg leading-none">{group.emoji}</span>
-                    <span>{group.name_ar}</span>
-                    <span className="text-[10px] font-normal text-gray-400">({group.mains.length})</span>
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {group.mains.map((c) => (
-                      <button
-                        key={c.slug}
-                        type="button"
-                        onClick={() => handleMainClick(c)}
-                        className="p-5 rounded-2xl border text-right transition-all bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300"
-                      >
-                        <div className="text-3xl mb-2">{c.emoji}</div>
-                        <div className="font-semibold">{c.name_ar}</div>
-                        {c.subs.length > 0 ? (
-                          <div className="text-[10px] text-gray-500 mt-1">{c.subs.length} نوع</div>
-                        ) : (
-                          <div className="text-[10px] text-[#1F6F5F] mt-1 font-medium">دوس لتختار ←</div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+            <div className="grid grid-cols-2 gap-3">
+              {leaves.map((c) => (
+                <button
+                  key={c.slug}
+                  type="button"
+                  onClick={() => onSelect(c.slug)}
+                  className={`p-5 rounded-2xl border text-right transition-all ${
+                    value === c.slug
+                      ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
+                      : 'bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300'
+                  }`}
+                >
+                  <div className="text-3xl mb-2">{c.emoji}</div>
+                  <div className="font-semibold text-sm">{c.name_ar}</div>
+                </button>
               ))}
             </div>
           );

@@ -460,8 +460,11 @@ export default function AccountPage() {
               subtitle="رأي العملاء في شغلك"
             />
             <div className="h-px bg-gray-100 mx-6" />
+            {/* (22 يوليو 2026) وحّدنا فورم الإضافة: التاب ده بقى يفتح /add-listing
+                نفسه (الفورم الكامل بخطوة اختيار مسطّحة one-tap + بيلدر المنيو)
+                بدل /supplier/marketplace/new — عشان مفيش فورمين مختلفين يعملوا كونفلكت. */}
             <SectionLink
-              href="/supplier/marketplace/new"
+              href="/add-listing"
               icon={<PlusCircle className="w-5 h-5" />}
               iconBg="bg-green-50 text-green-600"
               title="أضف إعلان"
