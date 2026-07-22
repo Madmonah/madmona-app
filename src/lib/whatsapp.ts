@@ -479,7 +479,10 @@ async function logOutboundMessage(params: LogOutboundParams): Promise<void> {
           last_message_at: now,
           last_message_direction: 'outbound',
           last_outbound_at: now,
-          message_count: 1, // will be wrong, but it's a tracking signal
+          // ملاحظة: message_count بيتولّاه تريجر tg_wa_sync_conversation_counters
+          // (COALESCE(message_count,0)+1 على كل إدخال رسالة). كان بيتحط 1 يدويًا
+          // هنا فبيصفّر العدّاد مع كل رسالة صادرة — وده كان بيخلّي who_is_this
+          // مايعرفش العميل الراجع (بيفلتر > 2). شيلناه.
         } as never)
         .eq('id', conversationId)
     }
