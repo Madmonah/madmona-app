@@ -57,3 +57,27 @@ RLS: خدمة service-role بس من الـAPI (زي project_inquiries).
 1. migration `listing_inquiries`. 2. route `/api/listings/inquiry`. 3. زرار الاستفسار.
 4. تعديل بوت رايلواي: قراءة `marid_notifications` kind='listing_inquiry' وإرسال الواتساب.
 5. اختبار live: حساب مستفسر + إعلان لصاحب عنده حساب (روم+بوش)، وإعلان لصاحب من غير حساب (واتساب).
+
+---
+
+## ✅ تحديث 2026-07-22 (مساءً) — جزء مضمونة اتبنى ونزل
+
+اتعمل واتنشر (commit على main):
+1. **جدول `listing_inquiries`** — اتطبّق live (`sql/2026-07-22_listing_inquiries.sql`).
+2. **`POST /api/listings/inquiry`** — جاهز: بيحدد صاحب الإعلان (contact_phone → بروفايل،
+   وإلا بروفايل المورّد لو مش مضمونة داخلي). لو عنده حساب: يعمل/يلاقي روم direct + رسالة
+   افتتاحية + `notification_queue` (بوش) + `listing_inquiries`. لو معندوش: `listing_inquiries`
+   + `marid_notifications` (kind='listing_inquiry').
+3. **زرار «استفسر عن الإعلان»** في صفحة تفاصيل الإعلان (للإعلانات غير الدليل/الديمو) —
+   لو مش مسجّل يوجّه للّوجين؛ روم → `/team?room=<id>`؛ pending → توست تأكيد.
+
+### 🔴 الباقي (البوت — رايلواي):
+البوت لازم يقرا `marid_notifications` WHERE kind='listing_inquiry' AND seen=false،
+يبعت الواتساب للـ`phone`:
+> «فيه استفسار على إعلانك «{title}» على مضمونة. ادخل شات مضمونة للرد وفعّل الإشعارات.»
+وبعدها UPDATE seen=true. (نفس نمط hot_lead/daily_report الموجود عند البوت.)
+مسار الملاك اللي عندهم حساب (روم + بوش) شغّال دلوقتي من غير البوت.
+
+### اختبار مقترح بعد الـdeploy:
+- افتح إعلان أبيكس بحساب تاني → دوس «استفسر» → المفروض يفتح روم في /team + نوتيفيكيشن لصاحب أبيكس.
+- افتح إعلان عقاري تحت مضمونة (رقم من غير حساب) → دوس «استفسر» → توست + صف في marid_notifications.

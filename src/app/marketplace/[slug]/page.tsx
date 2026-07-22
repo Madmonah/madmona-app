@@ -127,6 +127,7 @@ export default function ListingDetailPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [isFavorite, setIsFavorite] = useState(false)
   const [togglingFav, setTogglingFav] = useState(false)
+  const [inquiring, setInquiring] = useState(false)
   const [shareSuccess, setShareSuccess] = useState(false)
   const [activeTab, setActiveTab] = useState<'details' | 'location' | 'reviews'>('details')
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
@@ -333,6 +334,36 @@ export default function ListingDetailPage() {
     }
     load()
   }, [slug])
+
+  // «استفسار» — بيفتح شات مضمونة مع صاحب الإعلان + نوتيفيكيشن، ولو معندوش حساب
+  // المارد يبعتله واتساب. (API: /api/listings/inquiry)
+  const handleInquiry = async () => {
+    if (!listing) return
+    const { data: { session } } = await supabaseBrowser.auth.getSession()
+    if (!session?.user) {
+      router.push(`/auth/login?redirect=${encodeURIComponent(`/marketplace/${slug}`)}`)
+      return
+    }
+    setInquiring(true)
+    try {
+      const res = await fetch('/api/listings/inquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ listingId: listing.id }),
+      })
+      const data = await res.json()
+      if (data?.ok && data.roomId) { router.push(`/team?room=${data.roomId}`); return }
+      if (data?.ok && data.pending) {
+        alert('تم إرسال استفسارك ✅\nهنبلّغ صاحب الإعلان على واتساب، وهيرد عليك في شات مضمونة.')
+        return
+      }
+      alert(data?.message || 'مقدرتش أبعت الاستفسار دلوقتي، جرّب تاني.')
+    } catch {
+      alert('مش قادر أبعت الاستفسار دلوقتي.')
+    } finally {
+      setInquiring(false)
+    }
+  }
 
   const toggleFavorite = async () => {
     if (!userId || !listing) {
@@ -1020,6 +1051,17 @@ export default function ListingDetailPage() {
                       <Clock className="w-4 h-4" />
                       {t('listing.booking_disabled_demo')}
                     </div>
+                  )}
+
+                  {!isDirectory && !isDemo && (
+                    <button
+                      onClick={handleInquiry}
+                      disabled={inquiring}
+                      className="flex items-center justify-center gap-2 bg-[#1F6F5F] text-white py-3.5 rounded-2xl font-bold text-sm shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all w-full disabled:opacity-60"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      {inquiring ? 'جاري الإرسال…' : 'استفسر عن الإعلان'}
+                    </button>
                   )}
 
                   {phoneClean && (
