@@ -68,12 +68,10 @@ export function RestaurantMenu({
   listing,
   supplier,
   menuItems,
-  readOnly = false,
 }: {
   listing: Listing
   supplier: Supplier
   menuItems: MenuItem[]
-  readOnly?: boolean
 }) {
   const { t, lang } = useT()
   const cart = useCart()
@@ -149,11 +147,6 @@ export function RestaurantMenu({
 
   return (
     <div className="space-y-4">
-      {readOnly && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-xs font-bold text-amber-800 leading-relaxed">
-          منيو استرشادي 📋 — المطعم لسه ما انضمّش لمضمونة رسمياً. الأسعار تقريبية وبتتأكد من المطعم عند الطلب. لو ده نشاطك، استلمه من زرار «ده نشاطي» عشان تفعّل الطلب وتظبط المنيو والأسعار.
-        </div>
-      )}
       {orderedCats.map((cat) => {
         const items = grouped.get(cat) || []
         const catLabel =
@@ -239,7 +232,7 @@ export function RestaurantMenu({
                                     {' '}{sz.price.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
                                   </span>
                                 </span>
-                                {!readOnly && (szQty > 0 ? (
+                                {szQty > 0 ? (
                                   <QtyStepper
                                     qty={szQty}
                                     onDec={() => setItemQuantity(`${mi.id}:${sz.id}`, szQty - 1)}
@@ -257,14 +250,14 @@ export function RestaurantMenu({
                                       <Plus className="w-3.5 h-3.5" />
                                     )}
                                   </button>
-                                ))}
+                                )}
                               </div>
                             )
                           })}
                         </div>
                       )}
                     </div>
-                    {!hasSizes && !readOnly && (
+                    {!hasSizes && (
                       <div className="flex-shrink-0 self-center">
                         {qty > 0 ? (
                           <QtyStepper

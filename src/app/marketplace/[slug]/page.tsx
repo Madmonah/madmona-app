@@ -707,12 +707,11 @@ export default function ListingDetailPage() {
               </section>
             )}
 
-            {isRestaurant && listing.supplier && menuItems.length > 0 && (
+            {isRestaurant && !isDirectory && listing.supplier && (
               <RestaurantMenu
                 listing={{ id: listing.id, title: displayTitle }}
                 supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
                 menuItems={menuItems}
-                readOnly={isDirectory}
               />
             )}
 
