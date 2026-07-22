@@ -102,6 +102,14 @@ export default function TeamPage() {
         .insert({ room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: myName, body: text, kind: 'text' } as never)
         .select('*').single()
       if (ins) setMessages((m) => (m.some((x) => x.id === (ins as CMsg).id) ? m : [...m, ins as CMsg]))
+      // المارد بيسمع اسمه: أي رسالة فيها «مارد» يرد عليها تلقائي (الرد بيوصل بالـrealtime)
+      if (/مارد/i.test(text)) {
+        fetch('/api/team/marid', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ roomId: active.id, text }),
+        }).catch(() => {})
+      }
     } finally { setBusy(false) }
   }
 
