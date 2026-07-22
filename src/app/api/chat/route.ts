@@ -237,13 +237,13 @@ export async function POST(request: NextRequest) {
     const logBody = media
       ? `[${media.type}${media.filename ? ': ' + media.filename : ''}]${message ? ' ' + message : ''}${savedMediaUrl ? ' ' + savedMediaUrl : ''}`
       : message
-    await supabaseUntyped.from('whatsapp_messages').insert({
+    const { data: myInbound } = await supabaseUntyped.from('whatsapp_messages').insert({
       conversation_id: conversationId,
       direction: 'inbound',
       body: logBody,
       message_type: media ? media.type : 'text',
       status: 'delivered',
-    })
+    }).select('created_at').single()
 
     // المارد مش مستدعى → نخزّن الرسالة كشات عادي من غير رد
     if (!summon) {
@@ -252,6 +252,28 @@ export async function POST(request: NextRequest) {
         .update({ last_message_at: new Date().toISOString(), last_message_direction: 'inbound', last_inbound_at: new Date().toISOString() })
         .eq('id', conversationId)
       return NextResponse.json({ ok: true, reply: null, stored: true, conversationId })
+    }
+
+    // ── ٣ب) جمع الدفعة (مطابق لمسار الواتساب) ──────────────────────────
+    // نستنى شوية بعد ما نسجّل الرسالة، وبعدين نبص: فيه رسالة أحدث من
+    // العميل وصلت في نفس المحادثة؟
+    //   • أيوة → اسكت (batched) — العملية بتاعت الرسالة الأحدث هي اللي هترد.
+    //   • لأ   → أنا آخر واحد في الدفعة → أرد رد واحد يغطّيها كلها.
+    // ده بيمنع إن ٤ رسايل ورا بعض تطلّع ٤ ردود، وبيخلّي المارد يبان إنسان.
+    const BATCH_WAIT_MS = Number(process.env.MARID_BATCH_WAIT_MS || 7000)
+    if (myInbound?.created_at) {
+      await new Promise((r) => setTimeout(r, BATCH_WAIT_MS))
+      const { data: newer } = await supabaseUntyped
+        .from('whatsapp_messages')
+        .select('id')
+        .eq('conversation_id', conversationId)
+        .eq('direction', 'inbound')
+        .gt('created_at', (myInbound as { created_at: string }).created_at)
+        .limit(1)
+        .maybeSingle()
+      if (newer) {
+        return NextResponse.json({ ok: true, reply: null, batched: true, conversationId })
+      }
     }
 
     // ── ٤) تاريخ المحادثة ───────────────────────────────────────────────
