@@ -1,7 +1,8 @@
 // app/api/admin/marid-monitor/route.ts
-// مراقبة حية: آخر المحادثات اللي المارد بيرد فيها (ويب + واتساب) عشان الأدمن يلحق أي غلط.
-import { NextResponse } from 'next/server'
+// مراقبة حية: آخر المحادثات اللي المارد بيرد فيها (ويب + واتساب) — أدمن فقط.
+import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { ADMIN_COOKIE, ADMIN_SESSION_VALUE } from '@/lib/adminGate'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,13 +12,18 @@ const supabase = createClient(
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // 🔒 أدمن بس — نفس كوكي حارس /admin
+  if (req.cookies.get(ADMIN_COOKIE)?.value !== ADMIN_SESSION_VALUE) {
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
+  }
+
   try {
     const { data: convs, error } = await supabase
       .from('whatsapp_conversations')
       .select('id, contact_name, contact_phone, session_id, status, last_message_at, last_message_direction, message_count')
       .order('last_message_at', { ascending: false })
-      .limit(30)
+      .limit(40)
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
 
     const rows = await Promise.all(
@@ -27,7 +33,7 @@ export async function GET() {
           .select('direction, body, ai_generated, created_at, message_type')
           .eq('conversation_id', c.id)
           .order('created_at', { ascending: false })
-          .limit(6)
+          .limit(30)
         return {
           id: c.id,
           name: c.contact_name,
