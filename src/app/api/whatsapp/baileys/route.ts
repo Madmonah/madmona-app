@@ -691,23 +691,13 @@ export async function POST(request: NextRequest) {
     // ده الفرصة الوحيدة: مفيش طريقة نوصله بعد كده غير بالـ JID ده،
     // فلو ماحفظناهوش دلوقتي، أي رسالة إحنا نبدأها ليه هتضيع.
     if (body.is_lid && replyJid) {
-      // ندمج مش نستبدل — العمود فيه مفاتيح تانية (زي supplier_kind)
-      const { data: existing } = await supabaseUntyped
-        .from('whatsapp_conversations')
-        .select('metadata')
-        .eq('id', conversationId)
-        .maybeSingle()
-
-      const merged = {
-        ...((existing?.metadata as Record<string, unknown> | null) ?? {}),
-        wa_jid: replyJid,
-        is_lid: true,
-      }
-
-      await supabaseUntyped
-        .from('whatsapp_conversations')
-        .update({ metadata: merged })
-        .eq('id', conversationId)
+      // دمج ذرّي — العمود فيه مفاتيح تانية (زي supplier_kind) والدمج بيحافظ
+      // عليها. read-modify-write القديم كان ممكن يمسح wa_jid لو بلوك تاني
+      // (الليد السخن) كتب metadata في نفس اللحظة → العميل يبقى غير قابل للوصول.
+      await supabaseUntyped.rpc('wa_meta_merge', {
+        p_conv: conversationId,
+        p_patch: { wa_jid: replyJid, is_lid: true },
+      })
     }
 
     // ── ١ب) ليد سخن ─────────────────────────────────────────────────────
@@ -718,13 +708,10 @@ export async function POST(request: NextRequest) {
       try {
         const { data: conv } = await supabaseUntyped
           .from('whatsapp_conversations')
-          .select('message_count, contact_name, metadata')
+          .select('message_count, contact_name')
           .eq('id', conversationId)
           .maybeSingle()
 
-        // أول رد منه بعد ما إحنا بدأنا؟
-        const meta = (conv?.metadata as Record<string, unknown> | null) ?? {}
-        if (meta.hot_lead_alerted) return
         if ((conv?.message_count ?? 0) > 6) return
 
         const { data: firstMsg } = await supabaseUntyped
@@ -738,10 +725,13 @@ export async function POST(request: NextRequest) {
         // لو أول رسالة في المحادثة كانت مننا → يبقى إحنا اللي بدأنا
         if (firstMsg?.direction !== 'outbound') return
 
-        await supabaseUntyped
-          .from('whatsapp_conversations')
-          .update({ metadata: { ...meta, hot_lead_alerted: true } })
-          .eq('id', conversationId)
+        // claim ذرّي — واحد بس من إخوة الدفعة المتزامنين بياخد حق الإرسال
+        // (compare-and-swap على hot_lead_alerted)، فمفيش تنبيه مكرّر،
+        // والدمج الذرّي مش بيمسح wa_jid.
+        const { data: claimed } = await supabaseUntyped.rpc('wa_claim_hot_lead', {
+          p_conv: conversationId,
+        })
+        if (!claimed) return
 
         const owner = process.env.OWNER_PHONE || '201002229982'
         await sendText({
