@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendEmail } from '@/lib/email'
+import { sendText } from '@/lib/whatsapp'
 
 export const runtime = 'nodejs'
 
@@ -122,22 +123,30 @@ export async function POST(req: NextRequest) {
     // ---- مسار (ب): صاحب الإعلان معندوش حساب → المارد يبعتله واتساب ----
     if (ownerPhoneIntl.length >= 11) {
       const localPhone = '0' + ownerPhoneIntl.slice(2)
+
+      // القناة الأساسية: واتساب لصاحب الإعلان عبر خدمة المارد (Railway) — sendText بيروح
+      // على WA_SERVICE_URL. Baileys بيبعت لأي رقم من غير قيود template/24 ساعة.
+      const waBody = `السلام عليكم 👋\n`
+        + `فيه عميل على مضمونة مستفسر عن إعلانك «${l.title}».\n`
+        + `ادخل شات مضمونة للرد عليه: https://www.madmonacairo.com/team\n`
+        + `ولو حابب، فعّل حسابك علشان توصلك الاستفسارات فورًا.`
+      let waSent = false
+      try {
+        const waRes = await sendText({ to: ownerPhoneIntl, body: waBody, agentName: 'مضمونة' })
+        waSent = !!waRes.ok
+      } catch { /* best-effort */ }
+
       await admin.from('listing_inquiries').insert({
         listing_id: l.id, listing_title: l.title, inquirer_id: me.id, inquirer_name: inquirerName,
-        owner_profile_id: null, owner_phone: localPhone, room_id: null, channel: 'whatsapp', notified_via: ['marid_queued'],
-      } as never)
-      await admin.from('marid_notifications').insert({
-        kind: 'listing_inquiry', phone: localPhone,
-        title: 'استفسار على إعلانك في مضمونة',
-        body: `فيه حد مستفسر عن إعلانك «${l.title}» على مضمونة. ادخل شات مضمونة للرد على العميل، وفعّل الإشعارات علشان توصلك فورًا.`,
-        ref_table: 'listings', ref_id: l.id, seen: false,
+        owner_profile_id: null, owner_phone: localPhone, room_id: null, channel: 'whatsapp',
+        notified_via: waSent ? ['whatsapp'] : ['email_fallback'],
       } as never)
 
-      // قناة شغّالة دلوقتي: تنبيه الأدمن بالإيميل (Resend) عشان يوصل لصاحب الإعلان يدوي
-      // لحد ما واتساب المارد يرجع. كده مفيش استفسار بيضيع.
+      // fallback: لو واتساب المارد مبعتش (سيشن مفصول/الخدمة مش متظبطة)، نبعت إيميل
+      // تنبيه للأدمن عشان يوصل لصاحب الإعلان يدوي — كده مفيش استفسار بيضيع.
       try {
         const ownerEmail = process.env.MADMONA_OWNER_EMAIL
-        if (ownerEmail) {
+        if (!waSent && ownerEmail) {
           const link = l.slug ? `https://www.madmonacairo.com/marketplace/${l.slug}` : ''
           await sendEmail({
             to: ownerEmail,
@@ -152,7 +161,7 @@ export async function POST(req: NextRequest) {
         }
       } catch { /* الإيميل best-effort */ }
 
-      return NextResponse.json({ ok: true, channel: 'whatsapp', pending: true })
+      return NextResponse.json({ ok: true, channel: 'whatsapp', sent: waSent, pending: !waSent })
     }
 
     return NextResponse.json({ ok: false, error: 'no_owner_contact', message: 'مفيش وسيلة تواصل لصاحب الإعلان' }, { status: 422 })
