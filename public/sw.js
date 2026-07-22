@@ -1,8 +1,9 @@
 ﻿// Service Worker for Madmona PWA
 // Offline caching + Push notifications + Notification clicks
-// Version: 3 — listing-first deploy: forces cache invalidation for /add-listing rollout
+// Version: 5 (22 يوليو 2026) — يجبر مسح الكاش القديم على كل الأجهزة (كان في
+// أجهزة ماسكة نسخة قديمة فاضية من الماركت بليس). activate بيمسح أي كاش مختلف.
 
-const CACHE_NAME = 'madmona-v4';
+const CACHE_NAME = 'madmona-v5';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
