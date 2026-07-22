@@ -161,8 +161,11 @@ export async function startSession({ id, label, authRoot, onMessage, onLidMap })
 
       if (loggedOut) {
         entry.retries = 0
-        log.error({ session: id }, 'تسجيل خروج — امسح المجلد وأعد الربط')
-        notifyOwner(`🔴 المارد اتسجّل خروج من الرقم ${id}\nمحتاج مسح QR من جديد.`)
+        log.error({ session: id }, 'تسجيل خروج — بنمسح الجلسة ونطلّع QR جديد تلقائيًا')
+        notifyOwner(`🔴 المارد اتسجّل خروج من الرقم ${id}\nبنمسح الجلسة القديمة ونطلّع QR جديد تلقائيًا — افتح صفحة الـQR واسكان من واتساب.`)
+        // نمسح الـcreds الميتة ونعيد التشغيل — يطلّع QR جديد لوحده بدل ما يقف مستني مسح يدوي
+        try { await logoutSession(id, authRoot) } catch { /* ignore */ }
+        setTimeout(() => startSession({ id, label: entry.label, authRoot, onMessage, onLidMap }), 2000)
         return
       }
 
