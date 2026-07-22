@@ -484,12 +484,24 @@ async function findHistoryByName(name?: string | null): Promise<ToolResult | nul
     .select('id, contact_phone, contact_name, message_count, first_intent, last_message_at')
     .ilike('contact_name', name.trim())
     .order('message_count', { ascending: false })
-    .limit(3)
+    .limit(10)
 
   const others = (convs ?? []).filter(
     (c: { message_count: number }) => (c.message_count ?? 0) > 2
   )
   if (!others.length) return null
+
+  // 🔒 خصوصية: الاسم مش مُعرّف فريد. لو فيه أكتر من رقم مختلف بنفس الاسم،
+  //    مش قادرين نأكّد مين فيهم الشخص ده — فمانكشفش رقم ولا رسايل حد تاني،
+  //    ونتعامل معاه كجديد (المارد هيسأله يأكّد نفسه بشكل طبيعي). الربط بالاسم
+  //    بيتعمل بس لما يبقى فيه شخص واحد بالاسم ده (زي حالة عبده الأصلية).
+  const distinctPhones = new Set(
+    (others as Array<{ contact_phone?: string }>).map((c) =>
+      (c.contact_phone || '').replace(/\D/g, ''),
+    ),
+  )
+  distinctPhones.delete('')
+  if (distinctPhones.size > 1) return null
 
   const main = others[0]
 
