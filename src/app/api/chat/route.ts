@@ -276,11 +276,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ── ٤) تاريخ المحادثة ───────────────────────────────────────────────
+    // ── ٤) تاريخ المحادثة (عبر القنوات) ─────────────────────────────────
+    // نجمع كل محادثات نفس الرقم (ويب + واتساب بنفس الرقم الحقيقي) عشان
+    // المارد يفتكر التاريخ حتى لو جه من قناة تانية.
+    const { data: sameConvs } = await supabaseUntyped
+      .from('whatsapp_conversations')
+      .select('id')
+      .eq('contact_phone', phone)
+    const convIds = ((sameConvs ?? []) as Array<{ id: string }>).map((c) => c.id)
     const { data: hist } = await supabaseUntyped
       .from('whatsapp_messages')
       .select('direction, body, created_at')
-      .eq('conversation_id', conversationId)
+      .in('conversation_id', convIds.length ? convIds : [conversationId])
       .order('created_at', { ascending: false })
       .limit(24)
     const histRows = ((hist ?? []) as Array<{ direction: string; body: string }>).reverse()
