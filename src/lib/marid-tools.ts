@@ -379,6 +379,17 @@ export const MARID_TOOLS = [
       required: ['query'],
     },
   },
+  {
+    name: 'business_snapshot',
+    description:
+      'لخّصلي حالة الشغل بسرعة (Catch Me Up) — عدد المهام المفتوحة وأهمها، والمحادثات اللي مستنية رد. ' +
+      'استخدمها لما حد يقول «إيه الوضع؟» أو «لخّصلي الشغل» أو «فيه إيه جديد».',
+    input_schema: {
+      type: 'object' as const,
+      properties: {},
+      required: [],
+    },
+  },
 ] as const
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -1411,6 +1422,26 @@ async function completeTask(a: { query: string }): Promise<ToolResult> {
   return { ok: true, message: `تمام، اتقفلت المهمة: «${task.title}» ✅` }
 }
 
+async function businessSnapshot(): Promise<ToolResult> {
+  const tasksRes = await db
+    .from('flow_tasks')
+    .select('title, priority', { count: 'exact' })
+    .neq('status', 'done')
+    .order('created_at', { ascending: false })
+    .limit(5)
+  const convsRes = await db
+    .from('whatsapp_conversations')
+    .select('id', { count: 'exact', head: true })
+    .eq('last_message_direction', 'inbound')
+  const openTasks = (tasksRes.data ?? []) as Array<{ title: string; priority: string }>
+  return {
+    ok: true,
+    مهام_مفتوحة: tasksRes.count ?? openTasks.length,
+    أهم_المهام: openTasks.map((t) => `${t.title} (${t.priority})`),
+    محادثات_مستنية_رد: convsRes.count ?? 0,
+  }
+}
+
 export async function runMaridTool(name: string, input: Record<string, unknown>): Promise<ToolResult> {
   try {
     switch (name) {
@@ -1450,6 +1481,8 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await listTasks(input as never)
       case 'complete_task':
         return await completeTask(input as never)
+      case 'business_snapshot':
+        return await businessSnapshot()
       default:
         return { error: `أداة مش معروفة: ${name}` }
     }
