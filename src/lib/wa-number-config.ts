@@ -1,0 +1,66 @@
+// src/lib/wa-number-config.ts
+// إعداد/سياق مستقل لكل رقم واتساب للمارد.
+//
+// كل رقم (session_id) ممكن يكون ليه:
+//   • persona  → سياق/شخصية إضافية تتحقن في برومبت الدماغ لهذا الرقم بس
+//   • enabled  → لو false المارد يسجّل الرسالة ويسكت (زي paused بس على مستوى الرقم كله)
+//   • label    → اسم ودّي للعرض في لوحة الأدمن
+//
+// الجدول: public.wa_number_configs (session_id primary key). RLS مفعّل والوصول
+// من السيرفر بمفتاح الخدمة بس. لو مفيش صف للرقم → الافتراضي: شغّال بالبرومبت الأساسي.
+import { supabaseUntyped } from '@/lib/supabase'
+
+export interface WaNumberConfig {
+  session_id: string
+  label: string | null
+  persona: string | null
+  enabled: boolean
+}
+
+function defaults(sessionId: string): WaNumberConfig {
+  return { session_id: sessionId, label: null, persona: null, enabled: true }
+}
+
+/**
+ * بيرجّع إعداد الرقم. أي رقم من غير صف → الافتراضي الآمن (شغّال، بلا سياق إضافي).
+ * أي عطل في القراءة → نفس الافتراضي، عشان قراءة الإعداد ماتوقفش الرد أبدًا.
+ */
+export async function getNumberConfig(
+  sessionId: string | null | undefined,
+): Promise<WaNumberConfig> {
+  if (!sessionId) return defaults('')
+  try {
+    const { data } = await supabaseUntyped
+      .from('wa_number_configs')
+      .select('session_id, label, persona, enabled')
+      .eq('session_id', sessionId)
+      .maybeSingle()
+
+    if (!data) return defaults(sessionId)
+    return {
+      session_id: sessionId,
+      label: (data.label as string | null) ?? null,
+      persona: (data.persona as string | null) ?? null,
+      enabled: (data.enabled as boolean | null) ?? true,
+    }
+  } catch {
+    return defaults(sessionId)
+  }
+}
+
+/**
+ * القسم اللي يتحقن في البرومبت لهذا الرقم — بيترجع فاضي لو مفيش سياق.
+ * السياق **إضافي**: بيتلزّق فوق البرومبت الأساسي من غير ما يلغي أي قاعدة أساسية.
+ */
+export function numberPromptSection(cfg: WaNumberConfig): string {
+  const persona = (cfg.persona || '').trim()
+  if (!persona) return ''
+  return `
+
+═══════════════════════════════════════════════════════════
+سياق خاص بالرقم ده${cfg.label ? ` — ${cfg.label}` : ''}
+═══════════════════════════════════════════════════════════
+${persona}
+
+⚠️ ده سياق إضافي مخصوص للرقم ده — التزم بيه، بس من غير ما تكسر أي قاعدة أساسية فوق.`
+}

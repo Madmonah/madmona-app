@@ -22,6 +22,7 @@ import {
   ADMIN_PROMPT,
 } from '@/lib/marid-admin'
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
+import { getNumberConfig, numberPromptSection } from '@/lib/wa-number-config'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -558,6 +559,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ── ٠ه) إعداد الرقم — سياق/تشغيل مستقل لكل رقم ───────────────────────
+    // كل رقم (session_id) ممكن يكون ليه سياق خاص (persona) بيتحقن في برومبت
+    // الدماغ، أو يتقفل بالكامل (enabled=false). القراءة آمنة: أي عطل → الافتراضي
+    // (شغّال، بلا سياق إضافي) عشان الإعداد مايوقفش الرد أبدًا.
+    // الأدمن مستثنى من الإيقاف — محمد لازم يقدر يوصل من أي رقم.
+    const numberCfg = await getNumberConfig(body.session_id)
+    if (!numberCfg.enabled && !isAdmin(phone)) {
+      // الرسالة اتسجّلت فوق (خطوة ١·٥) — الرقم متوقّف فبنكتفي بإننا مانردّش
+      return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'number_disabled' })
+    }
+
     // ── ٠د) حارس اللوب ──────────────────────────────────────────────────
     // لو المارد بعت أكتر من الحد في ساعة على نفس المحادثة، يبقى فيه
     // دوران — بيوقف المحادثة وينبّه بدل ما يفضل يبعت.
@@ -860,7 +872,8 @@ export async function POST(request: NextRequest) {
       : userText
 
     const raw = await callMaridWithTools({
-      systemPrompt: CUSTOMER_CONCIERGE_PROMPT,
+      // البرومبت الأساسي + سياق الرقم (لو موجود) — كل رقم بشخصيته/سياقه
+      systemPrompt: CUSTOMER_CONCIERGE_PROMPT + numberPromptSection(numberCfg),
       userMessage,
       mediaBlocks,
       senderPhone: phone,
