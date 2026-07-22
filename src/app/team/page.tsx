@@ -27,6 +27,7 @@ export default function TeamPage() {
   const [messages, setMessages] = useState<CMsg[]>([])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
+  const [maridThinking, setMaridThinking] = useState(false)
   const [gallery, setGallery] = useState(false)
   const [forwardMsg, setForwardMsg] = useState<CMsg | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -87,7 +88,11 @@ export default function TeamPage() {
     const ch = supabaseBrowser
       .channel(`room:${room.id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `room_id=eq.${room.id}` },
-        (payload) => setMessages((m) => (m.some((x) => x.id === (payload.new as CMsg).id) ? m : [...m, payload.new as CMsg])))
+        (payload) => {
+          const msg = payload.new as CMsg
+          if (msg.sender_kind === 'marid') setMaridThinking(false)
+          setMessages((m) => (m.some((x) => x.id === msg.id) ? m : [...m, msg]))
+        })
       .subscribe()
     chanRef.current = ch
   }
@@ -104,6 +109,8 @@ export default function TeamPage() {
       if (ins) setMessages((m) => (m.some((x) => x.id === (ins as CMsg).id) ? m : [...m, ins as CMsg]))
       // المارد بيسمع اسمه: أي رسالة فيها «مارد» يرد عليها تلقائي (الرد بيوصل بالـrealtime)
       if (/مارد/i.test(text)) {
+        setMaridThinking(true)
+        setTimeout(() => setMaridThinking(false), 30000)
         fetch('/api/team/marid', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -155,7 +162,8 @@ export default function TeamPage() {
   // استدعاء المارد بزرار (بدل كلمة «مارد») — بيقرا الثريد ويرد لكل الأعضاء
   async function summonMaridInRoom() {
     if (!active || busy) return
-    setBusy(true)
+    setBusy(true); setMaridThinking(true)
+    setTimeout(() => setMaridThinking(false), 30000)
     try {
       await fetch('/api/team/marid', {
         method: 'POST',
@@ -258,8 +266,9 @@ export default function TeamPage() {
   )
 
   return (
-    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ECE5DD', fontFamily: 'system-ui' }}>
-      <header style={{ background: '#075E54', color: '#fff', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg,#ece5db 0%,#ddd4c6 100%)', fontFamily: "'Cairo', system-ui, sans-serif" }}>
+      <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');"}</style>
+      <header style={{ background: 'linear-gradient(135deg,#0a7d6e 0%,#075E54 100%)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 10px rgba(0,0,0,.18)', zIndex: 2 }}>
         <button onClick={() => { setActive(null); if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null } }} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer' }}>→</button>
         <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{active.kind === 'direct' ? (active.otherName || 'محادثة خاصة') : (active.name || 'غرفة')}</div><div style={{ fontSize: 11, opacity: .85 }}>اضغط 🧞 لاستدعاء المارد</div></div>
         <button onClick={summonMaridInRoom} disabled={busy} title="استدعِ المارد" style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 14, padding: '5px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', opacity: busy ? 0.6 : 1 }}>🧞 المارد</button>
@@ -312,7 +321,7 @@ export default function TeamPage() {
           const marid = m.sender_kind === 'marid'
           return (
             <div key={m.id} style={{ display: 'flex', justifyContent: mine ? 'flex-start' : 'flex-end', marginBottom: 8 }}>
-              <div style={{ maxWidth: '80%', background: mine ? '#DCF8C6' : (marid ? '#e7f3ff' : '#fff'), padding: '7px 10px', borderRadius: 10, boxShadow: '0 1px 1px rgba(0,0,0,.12)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 15, lineHeight: 1.5 }}>
+              <div style={{ maxWidth: '82%', background: mine ? '#d7f6c2' : (marid ? '#e7f1ff' : '#fff'), padding: '9px 13px', borderRadius: 16, boxShadow: '0 1px 4px rgba(0,0,0,.08)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 15, lineHeight: 1.65 }}>
                 {!mine && <div style={{ fontSize: 11, fontWeight: 700, color: marid ? '#0a66c2' : '#128C7E', marginBottom: 2 }}>{marid ? '🤖 المارد' : (m.sender_name || 'عضو')}</div>}
                 {m.media_url && m.kind === 'image' && (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -333,9 +342,9 @@ export default function TeamPage() {
             </div>
           )
         })}
-        {busy && <div style={{ textAlign: 'end', color: '#667', fontSize: 13, padding: '2px 8px' }}>…</div>}
+        {(busy || maridThinking) && <div style={{ textAlign: 'end', color: '#0a66c2', fontSize: 13, padding: '4px 10px', fontWeight: 600 }}>🧞 المارد بيفكر…</div>}
       </div>
-      <div style={{ display: 'flex', gap: 8, padding: 10, background: '#F0F0F0', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 8, padding: 10, background: 'rgba(255,255,255,.92)', borderTop: '1px solid rgba(0,0,0,.06)', boxShadow: '0 -2px 10px rgba(0,0,0,.05)', alignItems: 'center' }}>
         <input ref={fileRef} type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) sendMedia(f) }} />
         <button onClick={() => fileRef.current?.click()} disabled={busy} title="أرفق صورة أو فيديو" style={{ background: '#fff', color: '#128C7E', border: '1px solid #ddd', borderRadius: '50%', width: 44, height: 44, fontSize: 18, cursor: 'pointer', flexShrink: 0, opacity: busy ? 0.6 : 1 }}>📎</button>
         <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendMsg()} placeholder="اكتب رسالة…" style={{ flex: 1, padding: '12px 14px', border: '1px solid #ddd', borderRadius: 22, fontSize: 15, outline: 'none' }} />
