@@ -406,8 +406,11 @@ app.post('/send-voice', auth, async (req, res) => {
 })
 
 app.post('/send-media', auth, async (req, res) => {
-  const { to, data_base64, mimetype, filename, caption } = req.body || {}
-  if (!to || !data_base64) return res.status(400).json({ ok: false, error: 'to و data_base64 مطلوبين' })
+  // ⚠️ كان بينقص `jid` من الـ destructure رغم إنه بيستخدمه تحت في
+  //    `toJid(jid || to)` — يعني ReferenceError وأي إرسال ميديا كان بيرمي 500.
+  //    زي باقي المسارات: نقبل `to` أو `jid`.
+  const { to, jid, data_base64, mimetype, filename, caption } = req.body || {}
+  if ((!to && !jid) || !data_base64) return res.status(400).json({ ok: false, error: 'to أو jid، و data_base64 مطلوبين' })
   const { id, entry } = pickSession(req)
   if (!entry?.connected) return res.status(503).json({ ok: false, error: 'مفيش جلسة متصلة' })
   try {

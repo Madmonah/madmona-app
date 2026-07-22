@@ -493,28 +493,42 @@ export async function logInboundMessage(args: {
   wa_message_id: string
   body: string
   messageType?: string
-}): Promise<void> {
+}): Promise<boolean> {
   const now = new Date().toISOString()
 
-  await supabaseAdmin.from('whatsapp_messages').insert({
-    conversation_id: args.conversationId,
-    direction: 'inbound',
-    wa_message_id: args.wa_message_id,
-    body: args.body,
-    message_type: args.messageType ?? 'text',
-    status: 'delivered',
-    status_updated_at: now,
-    ai_generated: false,
-  } as never)
+  // ⚠️ القاعدة (طلب محمد ٢٢ يوليو): كل رسالة واردة لازم تتسجّل — حتى لو
+  // الرد واحد للدفعة. بنستخدم upsert مش insert لسببين:
+  //   ١) الجدول فيه قيد فريد على wa_message_id (whatsapp_messages_wa_message_id_key)،
+  //      فأي إعادة تسجيل (تخصيب رسالة بميديا، أو سباق بين نسختين من نفس
+  //      الرسالة) بتحدّث نفس الصف بدل ما ترمي unique-violation وتضيّع
+  //      الرسالة في صمت.
+  //   ٢) بنفحص الخطأ ونرجّع boolean — الإدخال الصامت اللي بيفشل من غير ما
+  //      حد يعرف هو بالظبط اللي كان بيضيّع رسايل الدفعات.
+  //
+  // حقول «آخر رسالة» بيتولّاها تريجر tg_wa_sync_conversation_counters على
+  // مستوى الداتابيز (AFTER INSERT، بـ GREATEST عشان مايرجّعش الوقت) — فمش
+  // محتاجين نحدّث المحادثة يدويًا هنا. (ON CONFLICT DO UPDATE مش بيعيد
+  // تفجير تريجرات الـINSERT، فالتصنيف/المطابقة/العدّادات بتشتغل مرة واحدة.)
+  const { error } = await supabaseAdmin.from('whatsapp_messages').upsert(
+    {
+      conversation_id: args.conversationId,
+      direction: 'inbound',
+      wa_message_id: args.wa_message_id,
+      body: args.body,
+      message_type: args.messageType ?? 'text',
+      status: 'delivered',
+      status_updated_at: now,
+      ai_generated: false,
+    } as never,
+    { onConflict: 'wa_message_id' }
+  )
 
-  await supabaseAdmin
-    .from('whatsapp_conversations')
-    .update({
-      last_message_at: now,
-      last_message_direction: 'inbound',
-      last_inbound_at: now,
-    } as never)
-    .eq('id', args.conversationId)
+  if (error) {
+    console.error('[logInboundMessage] فشل تسجيل رسالة واردة:', args.wa_message_id, error.message)
+    return false
+  }
+
+  return true
 }
 
 // ============================================================================

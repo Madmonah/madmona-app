@@ -518,6 +518,29 @@ export async function POST(request: NextRequest) {
         .eq('id', conversationId)
     }
 
+    // ── ١·٥) تسجيل مضمون للرسالة الواردة ────────────────────────────────
+    // القاعدة (طلب محمد ٢٢ يوليو): «كل رسالة تتسجّل حتى لو الرد واحد».
+    //
+    // بنسجّلها **دلوقتي** — قبل حارس اللوب، ومعالجة الميديا (رفع + تفريغ)،
+    // وانتظار الدفعة (٧ث)، والرد الذكي. كل دول ممكن يفشلوا أو ياخدوا وقت
+    // طويل يوصل لـ timeout الدالة (٦٠ث)، وقبل التعديل ده كانت الرسالة
+    // بتتسجّل بعدهم — يعني أي فشل قبل خطوة ٣ كان بيبلع الرسالة بصمت،
+    // وحارس اللوب كان بيرجع من غير ما يسجّلها خالص.
+    //
+    // upsert idempotent (قيد فريد على wa_message_id) — فلو اتسجّلت تاني
+    // تحت (تخصيب ميديا في خطوة ٣) بتحدّث نفس الصف مش بتتكرّر.
+    const inboundLogged = await logInboundMessage({
+      conversationId,
+      wa_message_id: body.message_id,
+      body: body.text || `[${body.type}]`,
+      messageType: body.type,
+    })
+    if (!inboundLogged) {
+      // ماقدرناش نسجّلها — ده عطل داتابيز حقيقي (نادر، لأن الـupsert بيبلع
+      // التعارضات). نبلّغ في اللوج بوضوح بدل ما تضيع الرسالة في صمت.
+      console.error('[baileys] فشل تسجيل رسالة واردة', body.message_id, phone || replyJid)
+    }
+
     // ── ٠ج) المحادثة موقوفة؟ ────────────────────────────────────────────
     // لو الأدمن أوقف المحادثة، المارد يسكت خالص. النظام القديم كان
     // بيعمل كده وضاع في الترحيل — فأي محادثة محمد أوقفها كان المارد
@@ -530,12 +553,7 @@ export async function POST(request: NextRequest) {
         .maybeSingle()
 
       if (conv?.status === 'paused' || conv?.status === 'blocked') {
-        await logInboundMessage({
-          conversationId,
-          wa_message_id: body.message_id,
-          body: body.text || `[${body.type}]`,
-          messageType: body.type,
-        })
+        // الرسالة اتسجّلت فوق (خطوة ١·٥) — بنكتفي بإننا مانردّش
         return NextResponse.json({ ok: true, logged: true, replied: false, reason: conv.status })
       }
     }
@@ -622,12 +640,7 @@ export async function POST(request: NextRequest) {
       const alreadyCovered = lastOutAt > 0 && msgAt < lastOutAt + 2000
 
       if (alreadyCovered) {
-        await logInboundMessage({
-          conversationId,
-          wa_message_id: body.message_id,
-          body: body.text || `[${body.type}]`,
-          messageType: body.type,
-        })
+        // اتسجّلت فوق (خطوة ١·٥) — دي في نافذة ٢ث بعد آخر رد فمانردّش تاني
         return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'debounced' })
       }
     }
@@ -754,28 +767,33 @@ export async function POST(request: NextRequest) {
     // عن ملف «Pharmacy 154m» كان قدامه.
     //
     // فبنخزّن اسم الملف والتعليق — على الأقل يفضل فيه دلالة.
-    const logBody = body.media
-      ? [
-          body.type === 'audio'
-            ? '[صوت]'
-            : body.type === 'image'
-            ? '[صورة]'
-            : body.type === 'video'
-            ? '[فيديو]'
-            : `[ملف: ${body.media.filename || body.media.mimetype}]`,
-          userText.startsWith('العميل بعت') ? '' : userText,
-          savedMediaUrl ?? '',
-        ]
-          .filter(Boolean)
-          .join(' ')
-      : userText
+    // الرسالة النصية اتسجّلت خام في خطوة ١·٥ فوق. هنا بنخصّب الميديا بس:
+    // دلوقتي بقى عندنا الرابط المحفوظ والتفريغ، فبنحدّث نفس الصف (upsert
+    // على wa_message_id) بالنسخة الغنية عشان ذاكرة المارد للرسايل الجاية
+    // تبقى فيها الدلالة. (ON CONFLICT DO UPDATE مابيعيدش تفجير تريجرات
+    // الـINSERT، فمفيش تصنيف/مطابقة مكرّرة.)
+    if (body.media) {
+      const logBody = [
+        body.type === 'audio'
+          ? '[صوت]'
+          : body.type === 'image'
+          ? '[صورة]'
+          : body.type === 'video'
+          ? '[فيديو]'
+          : `[ملف: ${body.media.filename || body.media.mimetype}]`,
+        userText.startsWith('العميل بعت') ? '' : userText,
+        savedMediaUrl ?? '',
+      ]
+        .filter(Boolean)
+        .join(' ')
 
-    await logInboundMessage({
-      conversationId,
-      wa_message_id: body.message_id,
-      body: logBody,
-      messageType: body.type,
-    })
+      await logInboundMessage({
+        conversationId,
+        wa_message_id: body.message_id,
+        body: logBody,
+        messageType: body.type,
+      })
+    }
 
     // ── جمع الدفعة ────────────────────────────────────────────────────
     // دلوقتي بس — بعد ما الرسالة اتسجّلت — نقدر نستنى ونشوف إخواتها.
