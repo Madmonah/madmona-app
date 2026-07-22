@@ -572,6 +572,26 @@ export async function POST(request: NextRequest) {
       console.error('[baileys] فشل تسجيل رسالة واردة', body.message_id, phone || replyJid)
     }
 
+    // ── ٠أ+) claim ذرّي للرد (بيكمّل الـpre-check فوق) ───────────────────
+    // الـpre-check بالـSELECT فوق (٠أ) بيمسك أغلب المكرّرات، بس فيه سباق
+    // TOCTOU: لو إعادتين تسليم لنفس الرسالة وصلوا في نفس اللحظة، الاتنين
+    // ممكن يعدّوا (كلاهما شاف null) فيردّوا مرتين. الـclaim الذرّي هنا
+    // (INSERT بقيد فريد) بيخلّي **واحد بس** يكمّل للرد. الرسالة اتسجّلت فوق
+    // في خطوة ١·٥ فمفيش رسالة بتضيع — بس الرد بيطلع مرة واحدة.
+    if (body.message_id) {
+      const { data: claimedReply } = await supabaseUntyped.rpc('wa_claim_reply', {
+        p_message_id: body.message_id,
+      })
+      if (claimedReply === false) {
+        return NextResponse.json({
+          ok: true,
+          logged: true,
+          replied: false,
+          reason: 'duplicate_claimed',
+        })
+      }
+    }
+
     // ── ٠ج) المحادثة موقوفة؟ ────────────────────────────────────────────
     // لو الأدمن أوقف المحادثة، المارد يسكت خالص. النظام القديم كان
     // بيعمل كده وضاع في الترحيل — فأي محادثة محمد أوقفها كان المارد
@@ -674,8 +694,20 @@ export async function POST(request: NextRequest) {
         .limit(1)
         .maybeSingle()
 
-      // وقت الرسالة من واتساب نفسه (ثواني) — أدق من وقت وصولها لينا
-      const msgAt = body.timestamp ? body.timestamp * 1000 : Date.now()
+      // ⏱️ وقت وصول الرسالة على **ساعة السيرفر** (من تسجيلها في خطوة ١·٥) —
+      //    نفس ساعة lastOutAt عشان المقارنة تبقى صح. قبل كده كنا بنستخدم
+      //    body.timestamp من واتساب (ساعة تانية)، وأي فرق بين الساعتين كان
+      //    ممكن يعتبر رسالة جديدة «متغطّية» فيسقّطها بصمت. للـredelivery:
+      //    الـupsert بيحافظ على created_at الأصلي، فالمنطق يفضل صح.
+      const { data: thisMsg } = body.message_id
+        ? await supabaseUntyped
+            .from('whatsapp_messages')
+            .select('created_at')
+            .eq('wa_message_id', body.message_id)
+            .limit(1)
+            .maybeSingle()
+        : { data: null }
+      const msgAt = thisMsg?.created_at ? new Date(thisMsg.created_at).getTime() : Date.now()
       const lastOutAt = lastOut?.created_at ? new Date(lastOut.created_at).getTime() : 0
 
       // هامش ثانيتين: الرسايل اللي في نفس الدفعة بتوصل بفروق أجزاء من الثانية
