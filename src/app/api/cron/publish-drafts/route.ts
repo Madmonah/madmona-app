@@ -55,7 +55,10 @@ function slugify(name: string): string {
 async function ensureProfile(supa: ReturnType<typeof sb>, rawPhone: string) {
   const normalized = normalizePhone(rawPhone)
   if (!normalized) return null
-  const local = '0' + normalized.slice(3)
+  // slice(2) مش slice(3): normalizePhone بترجّع "20"+عشر أرقام (مثلاً 201101745789)،
+  // فكود الدولة حرفين. slice(3) كان بيوقع أول رقم من الموبايل (011→010) ويدّي رقم
+  // بروفايل غلط. شات الموقع (chat/route.ts) بيستخدم slice(2) الصح.
+  const local = '0' + normalized.slice(2)
   const { data: existing } = await supa
     .from('profiles').select('id')
     .or(`phone.eq.${local},phone.eq.${normalized}`)
