@@ -352,6 +352,33 @@ export const MARID_TOOLS = [
       required: ['title'],
     },
   },
+  {
+    name: 'list_tasks',
+    description:
+      'اعرض المهام المفتوحة (اللي لسه مش خالصة) من نظام الشغل. ' +
+      'استخدمها لما حد يسأل «إيه المهام؟» أو «فيه إيه عليّا؟». تقدر تفلتر باسم المكلّف.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        assignee_name: { type: 'string', description: 'اسم المكلّف لو عايز تفلتر بيه' },
+        include_done: { type: 'boolean', description: 'يشمل المهام الخالصة كمان؟ (افتراضي لأ)' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'complete_task',
+    description:
+      'علّم مهمة إنها خلصت. استخدمها لما حد يقول «خلّصت مهمة كذا» أو «اقفل مهمة أبيكس». ' +
+      'بتدوّر على المهمة بجزء من عنوانها وتقفلها.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        query: { type: 'string', description: 'جزء من عنوان المهمة اللي خلصت' },
+      },
+      required: ['query'],
+    },
+  },
 ] as const
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -1343,6 +1370,47 @@ async function createTask(a: { title: string; detail?: string; assignee_name?: s
   }
 }
 
+async function listTasks(a: { assignee_name?: string; include_done?: boolean }): Promise<ToolResult> {
+  let q = db
+    .from('flow_tasks')
+    .select('title, assignee_name, priority, status, created_at')
+    .order('created_at', { ascending: false })
+    .limit(20)
+  if (!a.include_done) q = q.neq('status', 'done')
+  if (a.assignee_name?.trim()) q = q.ilike('assignee_name', `%${a.assignee_name.trim()}%`)
+  const { data, error } = await q
+  if (error) return { ok: false, error: 'مقدرش أجيب المهام', detail: error.message }
+  const rows = (data ?? []) as Array<{ title: string; assignee_name: string | null; priority: string; status: string }>
+  if (!rows.length) return { ok: true, count: 0, message: 'مفيش مهام مفتوحة.' }
+  return {
+    ok: true,
+    count: rows.length,
+    tasks: rows.map((t) => ({ العنوان: t.title, المكلّف: t.assignee_name || '—', الأولوية: t.priority, الحالة: t.status })),
+  }
+}
+
+async function completeTask(a: { query: string }): Promise<ToolResult> {
+  const query = (a.query || '').trim()
+  if (!query) return { ok: false, error: 'محتاج جزء من عنوان المهمة' }
+  const { data: found } = await db
+    .from('flow_tasks')
+    .select('id, title')
+    .neq('status', 'done')
+    .ilike('title', `%${query}%`)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const task = found as { id: string; title: string } | null
+  if (!task) return { ok: false, error: `مالقيتش مهمة مفتوحة فيها «${query}»` }
+  const now = new Date().toISOString()
+  const { error } = await db
+    .from('flow_tasks')
+    .update({ status: 'done', completed_at: now, updated_at: now } as never)
+    .eq('id', task.id)
+  if (error) return { ok: false, error: 'مقدرش أقفل المهمة', detail: error.message }
+  return { ok: true, message: `تمام، اتقفلت المهمة: «${task.title}» ✅` }
+}
+
 export async function runMaridTool(name: string, input: Record<string, unknown>): Promise<ToolResult> {
   try {
     switch (name) {
@@ -1378,6 +1446,10 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await recordUnmetDemand(input as never)
       case 'create_task':
         return await createTask(input as never)
+      case 'list_tasks':
+        return await listTasks(input as never)
+      case 'complete_task':
+        return await completeTask(input as never)
       default:
         return { error: `أداة مش معروفة: ${name}` }
     }
