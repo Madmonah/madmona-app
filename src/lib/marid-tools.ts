@@ -1388,6 +1388,28 @@ async function createTask(a: { title: string; detail?: string; assignee_name?: s
     .select('id')
     .single()
   if (error) return { ok: false, error: 'مقدرش أسجّل المهمة', detail: error.message }
+  // إشعار للمكلّف لو اتحدد وله حساب على مضمونة (best-effort — مايوقفش الرد)
+  if (a.assignee_name?.trim()) {
+    try {
+      const { data: prof } = await db
+        .from('profiles')
+        .select('id')
+        .ilike('full_name', a.assignee_name.trim())
+        .limit(1)
+        .maybeSingle()
+      const pid = (prof as { id?: string } | null)?.id
+      if (pid) {
+        await db.from('notification_queue').insert({
+          recipient_id: pid,
+          type: 'task_assigned',
+          title: '📋 مهمة جديدة ليك',
+          body: title.slice(0, 90),
+          url: '/chat/tasks',
+          data: { icon: '/marid-icon-192.png' },
+        } as never)
+      }
+    } catch { /* best-effort */ }
+  }
   return {
     ok: true,
     task_id: (data as { id: string }).id,
