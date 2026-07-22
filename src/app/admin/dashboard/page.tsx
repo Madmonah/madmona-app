@@ -309,6 +309,7 @@ export default function AdminOverview() {
               <Link className="nav-item" href="/admin/funnel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18l-7 8v6l-4 2v-8z" /></svg>Funnel</Link>
               <Link className="nav-item" href="/admin/messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.5 8.5 0 01-12.6 7.4L3 21l2.1-5.4A8.5 8.5 0 1121 11.5z" /></svg>المحادثات</Link>
               <Link className="nav-item" href="/admin/wa-review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" /></svg>مراجعة WA</Link>
+              <Link className="nav-item" href="/admin/marid-monitor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.5 8.5 0 01-12.6 7.4L3 21l2.1-5.4A8.5 8.5 0 1121 11.5z" /></svg>🧞 مراقبة المارد لايف</Link>
             </div>
 
             <div className="nav-group">
