@@ -100,7 +100,7 @@ export async function startSession({ id, label, authRoot, onMessage, onLidMap })
     version,
     auth: state,
     logger: silent,
-    browser: ['Madmona', 'Chrome', '1.0.0'],
+    browser: ['Mac OS', 'Desktop', '10.15.7'], // يبان كـ WhatsApp Desktop رسمي بدل اسم مخصص يتفلّج
     markOnlineOnConnect: false, // إشعارات الموبايل تفضل شغالة
   })
   entry.sock = sock
