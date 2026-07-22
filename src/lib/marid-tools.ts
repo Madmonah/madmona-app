@@ -335,6 +335,23 @@ export const MARID_TOOLS = [
       required: ['title', 'sender_phone'],
     },
   },
+  {
+    name: 'create_task',
+    description:
+      'سجّل مهمة/تاسك في نظام الشغل — لما حد يطلب تذكير، متابعة، أو تكليف بعمل. ' +
+      'أمثلة: «افتكرني أكلم فلان بكرة»، «اعمل مهمة راجع أوردر كذا»، «كلّف أحمد يجهّز التقرير». ' +
+      'المهمة بتتسجّل في نظام المهام وتقدر تتسند لموظف بالاسم.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        title: { type: 'string', description: 'عنوان المهمة باختصار وبوضوح' },
+        detail: { type: 'string', description: 'تفاصيل إضافية لو موجودة' },
+        assignee_name: { type: 'string', description: 'اسم الشخص المكلّف لو اتحدد' },
+        priority: { type: 'string', enum: ['low', 'medium', 'high'], description: 'الأولوية (افتراضي medium)' },
+      },
+      required: ['title'],
+    },
+  },
 ] as const
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -1297,6 +1314,35 @@ async function readLink(a: { url?: string }): Promise<ToolResult> {
   }
 }
 
+async function createTask(a: { title: string; detail?: string; assignee_name?: string; priority?: string }): Promise<ToolResult> {
+  const title = (a.title || '').trim()
+  if (!title) return { ok: false, error: 'عنوان المهمة مطلوب' }
+  const priority = ['low', 'medium', 'high'].includes(a.priority || '') ? a.priority : 'medium'
+  const now = new Date().toISOString()
+  const { data, error } = await db
+    .from('flow_tasks')
+    .insert({
+      title,
+      detail: a.detail?.trim() || null,
+      assignee_name: a.assignee_name?.trim() || null,
+      status: 'pending',
+      priority,
+      steps: [],
+      source: 'chat',
+      flow_name: 'شات المارد',
+      created_at: now,
+      updated_at: now,
+    } as never)
+    .select('id')
+    .single()
+  if (error) return { ok: false, error: 'مقدرش أسجّل المهمة', detail: error.message }
+  return {
+    ok: true,
+    task_id: (data as { id: string }).id,
+    message: `اتسجّلت المهمة: «${title}»${a.assignee_name ? ` — مكلّف بيها: ${a.assignee_name}` : ''}`,
+  }
+}
+
 export async function runMaridTool(name: string, input: Record<string, unknown>): Promise<ToolResult> {
   try {
     switch (name) {
@@ -1330,6 +1376,8 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await recordJobApplication(input as never)
       case 'record_unmet_demand':
         return await recordUnmetDemand(input as never)
+      case 'create_task':
+        return await createTask(input as never)
       default:
         return { error: `أداة مش معروفة: ${name}` }
     }
