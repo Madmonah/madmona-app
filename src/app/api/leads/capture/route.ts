@@ -134,6 +134,24 @@ export async function POST(request: NextRequest) {
     let whatsappResult: { sent: boolean; error?: string } = { sent: false }
     if (isHigh && isWhatsAppConfigured()) {
       try {
+        // 💬 لينك دخول تلقائي لشات مضمونة (قناة مملوكة، توصيل مضمون). نعمل توكن
+        //    زي اللينكات الممغنطة عشان العميل يدخل بضغطة واحدة بهويته.
+        let chatUrl = 'https://www.madmonacairo.com/chat/marid'
+        try {
+          const { data: tok } = await supabaseAdmin
+            .from('wa_login_tokens')
+            .insert({
+              phone,
+              next_path: '/chat/marid',
+              expires_at: new Date(Date.now() + 7 * 24 * 3600_000).toISOString(),
+              max_uses: 5,
+            } as never)
+            .select('token')
+            .maybeSingle()
+          const t = (tok as { token?: string } | null)?.token
+          if (t) chatUrl = `https://www.madmonacairo.com/l/${t}`
+        } catch { /* اللينك العادي يكفّي */ }
+
         const greeting = `أهلاً ${body.name.split(' ')[0]} 👋
 
 شكراً إنك سجلت على مضمونة!${listingContext ? `\nشفت إنك مهتم بـ ${listingContext}.` : categoryLabel ? `\nشفت إنك مهتم بـ ${categoryLabel}.` : ''}
@@ -141,6 +159,9 @@ export async function POST(request: NextRequest) {
 أنا من فريق مضمونة، وأنا هنا عشان أساعدك تلاقي اللي محتاجه بأفضل سعر وحماية كاملة.
 
 ابعتلي أي سؤال وأنا هرد فوراً 💬
+
+ولو حابب تكمّل معايا على طول ادخل من هنا 👇
+${chatUrl}
 
 — معاملاتك مضمونة 🤝`
 
