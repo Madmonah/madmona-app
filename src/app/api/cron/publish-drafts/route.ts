@@ -91,16 +91,24 @@ async function waNotify(_supa: ReturnType<typeof sb>, phone: string, body: strin
   } catch { /* best-effort */ }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const supa = sb()
+  // ?silent=1 → ينشر من غير ما يبعت واتساب. بنستخدمه لباك-فيل العالقين مرة واحدة
+  // من غير ما نبعت دفعة إشعارات تكسر الرقم (درس rate-overlimit — ٢٠ يوليو).
+  const silent = new URL(req.url).searchParams.get('silent') === '1'
   const cutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+  // نقبل 'new' و'pending' — أداة المارد اتغيّرت مرة لـ'pending' والكرون كان بيدوّر
+  // على 'new' بس، فمسودات المارد علقت وماوصلتش الماركتبليس. قبول الاتنين بيمنع
+  // تكرار الغلطة دي لو الحالة اتلخبطت تاني، وبيلقط أي عالقين قدام.
   const { data: drafts } = await supa
     .from('instant_listing_drafts')
     .select('id, contact_phone, contact_name, title, description, category_slug, price_egp, period, image_urls')
-    .eq('status', 'new')
+    .in('status', ['new', 'pending'])
     .lt('created_at', cutoff)
     .order('created_at')
-    .limit(40)
+    // نافذة واسعة: المسودات بلا صورة بتفضل في نفس الحالة، فلو النافذة صغيرة ممكن
+    // تملاها القديمة بلا صور وتحرم اللي معاها صور من النشر. ready بيفلتر بعد كده.
+    .limit(150)
 
   const ready = (drafts as Draft[] | null || []).filter(d => d.title && (d.image_urls?.length || 0) > 0)
   if (!ready.length) return NextResponse.json({ published: 0 })
@@ -252,7 +260,7 @@ export async function GET() {
         links.push(`${SITE}/marketplace/${nl.slug}`)
       }
 
-      if (links.length) {
+      if (links.length && !silent) {
         await waNotify(supa, phone,
           `مبروك! 🎉 ${links.length > 1 ? 'إعلاناتك نزلت' : 'إعلانك نزل'} رسمي على مضمونة ✅\n\n` +
           links.slice(0, 3).map(l => `🔗 ${l}`).join('\n') +

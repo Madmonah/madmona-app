@@ -174,6 +174,9 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   // 🏗️ (17 Jul 2026) طلب محمد: العقارات تتفصل «بريمري من المطور | ريسيل».
   // البريمري = إعلان مرتبط بمشروع مطور (project_id موجود)، الريسيل = من غير مشروع.
   const [propertySource, setPropertySource] = useState<'all' | 'primary' | 'resale'>('all')
+  // 📄 بيجينيشن «حمّل المزيد» — كان محدود بـ60 إعلان بس. بيكبر بـ60 كل ضغطة،
+  //    وبيرجع 60 أول ما أي فلتر يتغيّر (تحت). loadSeqRef بيضمن إن آخر ردّ بس هو اللي يتطبّق.
+  const [visibleLimit, setVisibleLimit] = useState(60)
   const loadSeqRef = useRef(0)
   // 🛡️ صمود التحميل: لو الكويري فشل (نت موبايل ضعيف/أول فتحة) بنعيد المحاولة
   // بدل ما نفضّي السوق بصمت. ده كان بيخلي الماركت يبان فاضي على الموبايل.
@@ -345,7 +348,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         `)
         .eq('status', 'published')
         .eq('is_directory', false)
-        .limit(60)
+        .limit(visibleLimit)
 
       if (sortBy === 'rating') {
         query = query.order('rating', { ascending: false, nullsFirst: false })
@@ -390,7 +393,13 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       setLoading(false)
     }
     load()
-  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource, selectedGroupSlug, allCategories, reloadKey])
+  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource, selectedGroupSlug, allCategories, reloadKey, visibleLimit])
+
+  // 📄 أول ما أي فلتر يتغيّر، نرجّع العرض لأول 60 (عشان مانفضلش محمّلين 300 إعلان
+  //    من تصنيف قديم). لو كان 60 أصلًا، ده no-op فمفيش فيتش زيادة.
+  useEffect(() => {
+    setVisibleLimit(60)
+  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource, selectedGroupSlug])
 
   const toggleFavorite = async (e: MouseEvent, listingId: string) => {
     e.preventDefault()
@@ -957,6 +966,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
             )}
           </div>
         ) : (
+          <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredListings.map((listing, i) => {
               const photos = listing.photos || []
@@ -1088,6 +1098,21 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
               )
             })}
           </div>
+
+          {/* 📄 حمّل المزيد — بيظهر طول ما الصفحة رجعت كاملة (يعني غالبًا فيه أكتر) */}
+          {listings.length >= visibleLimit && (
+            <div className="mt-8 text-center">
+              <button
+                onClick={() => setVisibleLimit((v) => v + 60)}
+                disabled={loading}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#1F6F5F] border border-[#1F6F5F]/30 rounded-2xl text-sm font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all disabled:opacity-50"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                {loading ? t('common.loading') : t('market.load_more')}
+              </button>
+            </div>
+          )}
+          </>
         )}
       </main>
 

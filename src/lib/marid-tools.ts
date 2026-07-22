@@ -120,8 +120,10 @@ export const MARID_TOOLS = [
     description:
       'سجّل إعلان جديد لحد عايز يضيف منتج أو خدمة على مضمونة. ' +
       'استخدمها بس لما يبقى معاك على الأقل: اسم الحاجة + وصف مختصر. ' +
-      'لو ناقص السعر أو التصنيف اسأله الأول. بعد ما تحفظ، المسودة بتروح للمراجعة ' +
-      'وبيوصله لينك يكمّل بيه.',
+      'لو العميل بعت صورة، مرّر رابطها في image_urls (استخدم الرابط المحفوظ اللي في سياق الرسالة) — ' +
+      'وقتها الإعلان بينزل على مضمونة أوتوماتيك خلال دقايق. ' +
+      'لو مفيش صورة، سجّل الإعلان واطلب منه صورة فورًا — الماركتبليس بيرفض إعلان من غير صورة. ' +
+      'لو ناقص السعر أو التصنيف اسأله.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -132,6 +134,11 @@ export const MARID_TOOLS = [
         category_slug: { type: 'string', description: 'التصنيف من list_categories' },
         price_egp: { type: 'number', description: 'السعر بالجنيه' },
         period: { type: 'string', description: 'اليوم/الشهر/الساعة/القطعة' },
+        image_urls: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'روابط صور المنتج/الخدمة اللي العميل بعتها (الرابط المحفوظ في سياق الرسالة)',
+        },
       },
       required: ['phone', 'title'],
     },
@@ -622,6 +629,7 @@ async function createListingDraft(a: {
   category_slug?: string
   price_egp?: number
   period?: string
+  image_urls?: string[]
 }): Promise<ToolResult> {
   if (!a.title?.trim()) return { ok: false, error: 'الاسم مطلوب' }
 
@@ -645,6 +653,13 @@ async function createListingDraft(a: {
     }
   }
 
+  // 📸 صور العميل — بتتخزّن في المسودة عشان الكرون يقدر ينشرها.
+  //    من غير الصور المسودة بتفضل عالقة (الماركتبليس بيرفض إعلان بلا صورة).
+  //    كانت الأداة مابتاخدش الصورة أصلًا، فكل مسودات المارد كانت بلا صور وعالقة.
+  const images = Array.isArray(a.image_urls)
+    ? a.image_urls.filter((u) => typeof u === 'string' && /^https?:\/\//.test(u)).slice(0, 8)
+    : []
+
   const { data, error } = await db
     .from('instant_listing_drafts')
     .insert({
@@ -655,20 +670,33 @@ async function createListingDraft(a: {
       category_slug: slug,
       price_egp: typeof a.price_egp === 'number' ? a.price_egp : null,
       period: a.period ?? null,
+      image_urls: images,
       source_text: 'المارد — واتساب',
-      status: 'pending',
+      // 'new' = الحالة اللي كرون publish-drafts بيلقطها وينشرها. كانت 'pending'
+      // (مش بيلقطها) فالإعلانات كانت بتعلق وماتوصلش الماركتبليس أبدًا.
+      status: 'new',
     })
     .select('id')
     .maybeSingle()
 
   if (error) return { ok: false, error: 'مش قادر أحفظ المسودة', detail: error.message }
 
+  // 🔔 العميل لازم يعرف الناقص في نفس اللحظة عشان يكمّله — مش بعدين.
+  const missing: string[] = []
+  if (!images.length) missing.push('صورة واحدة على الأقل')
+  if (typeof a.price_egp !== 'number') missing.push('السعر')
+  if (!slug) missing.push('نوع النشاط/التصنيف')
+
   return {
     ok: true,
     draft_id: data?.id,
-    قول_للعميل:
-      'اتسجّل! المسودة راحت للمراجعة وهنبعتلك لينك تكمّل بيه بياناتك وصورك. ' +
-      `ولو عايز تكمّل بنفسك دلوقتي: ${MADMONA_LINKS.اضافة_اعلان}`,
+    has_image: images.length > 0,
+    ...(missing.length ? { الناقص: missing } : {}),
+    قول_للعميل: images.length
+      ? 'تمام سجّلت إعلانك، وهينزل على مضمونة خلال دقايق ✅' +
+        (missing.length ? ` — بس كمّلّي ${missing.join(' و')} عشان يظهر كامل.` : '')
+      : `سجّلت إعلانك ✅ بس عشان ينزل على مضمونة محتاج ${missing.join(' و')}. ` +
+        'ابعتلي صورة للمنتج/الخدمة وأنا أنشره على طول 📸',
   }
 }
 

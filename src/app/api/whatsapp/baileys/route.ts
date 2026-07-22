@@ -239,7 +239,7 @@ ${new Date().toLocaleString('ar-EG', {
 رقمه: ${opts.senderPhone}${opts.senderName ? `\nاسمه: ${opts.senderName}` : ''}
 
 استخدم الرقم ده مباشرة في الأدوات — ماتسألهوش عليه.
-${opts.savedMediaUrl ? `\n📎 الملف اللي بعته اتحفظ هنا:\n${opts.savedMediaUrl}\nلو هتسجّل إعلان أو مشروع، استخدم الرابط ده كصورة.\n` : ''}
+${opts.savedMediaUrl ? `\n📎 الملف اللي بعته اتحفظ هنا:\n${opts.savedMediaUrl}\nلو هتسجّل إعلان أو مشروع، مرّر الرابط ده في image_urls كصورة.\n\n🧾 لو الصورة فيها منيو أو قائمة أسعار: اقرا كل صنف وسعره من الصورة نفسها (إنت شايفها)، وسجّلهم بـ create_listing_draft صنف صنف — كل صنف باسمه وسعره اللي في الصورة، مش صورة واحدة بلا تفاصيل. الأسعار اللي في الصورة هي المصدر، متخترعش.\n` : ''}
 
 ═══════════════════════════════════════════════════════════
 عندك أدوات — استخدمها
@@ -326,9 +326,19 @@ ${Object.entries(MADMONA_LINKS)
     for (const tu of toolUses) {
       if (tu.type !== 'tool_use') continue
       const isAdminTool = ADMIN_TOOLS.some((t) => t.name === tu.name)
+
+      // 📸 لو العميل بعت صورة والمارد بيسجّل إعلان، نحقن الرابط المحفوظ في الأداة
+      //    كضمان (حتى لو المارد نسي يمرّره في image_urls) — عشان الإعلان ينزل
+      //    الماركتبليس مش يعلق كمسودة بلا صورة.
+      let toolInput = tu.input as Record<string, unknown>
+      if (tu.name === 'create_listing_draft' && opts.savedMediaUrl) {
+        const existing = Array.isArray(toolInput.image_urls) ? (toolInput.image_urls as string[]) : []
+        if (!existing.length) toolInput = { ...toolInput, image_urls: [opts.savedMediaUrl] }
+      }
+
       const out = isAdminTool
-        ? await runAdminTool(tu.name, tu.input as Record<string, unknown>)
-        : await runMaridTool(tu.name, tu.input as Record<string, unknown>)
+        ? await runAdminTool(tu.name, toolInput)
+        : await runMaridTool(tu.name, toolInput)
       console.log('[marid-tool]', tu.name, JSON.stringify(out).slice(0, 160))
       results.push({
         type: 'tool_result',

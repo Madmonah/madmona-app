@@ -198,6 +198,7 @@ const ar: Dict = {
   'market.price_on_request': 'تواصل معانا 💬',
   'market.view_short': 'عرض',
   'market.details': 'تفاصيل',
+  'market.load_more': 'حمّل المزيد',
   // category display names (server fallback chips)
   'cat.properties': 'عقارات',
   'cat.vehicles': 'عربيات',
@@ -926,6 +927,7 @@ const en: Dict = {
   'market.price_on_request': 'Contact us 💬',
   'market.view_short': 'View',
   'market.details': 'Details',
+  'market.load_more': 'Load more',
   // category display names (server fallback chips)
   'cat.properties': 'Properties',
   'cat.vehicles': 'Vehicles',
