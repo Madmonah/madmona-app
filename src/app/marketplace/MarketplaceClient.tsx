@@ -97,7 +97,7 @@ const TRACK_NAME: Record<TrackTab, { ar: string; en: string }> = {
   hybrid:      { ar: 'مناسبات', en: 'Events' },
 }
 
-function MarketplaceBrowseContent() {
+function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listing[] }) {
   const { t, lang, dir } = useT()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -163,8 +163,10 @@ function MarketplaceBrowseContent() {
   // Locked pills sink to the end of each strip so live sections come first.
   const sortByData = (cats: Category[]) =>
     [...cats].sort((a, b) => Number(!categoryHasData(a)) - Number(!categoryHasData(b)))
-  const [listings, setListings] = useState<Listing[]>([])
-  const [loading, setLoading] = useState(true)
+  // (22 يوليو 2026) نبدأ بإعلانات الـSSR (من السيرفر) — فحتى لو فetch الكلاينت فشل
+  // على الموبايل/المتصفحات الجوانية، الإعلانات تفضل ظاهرة ومش بترجع فاضية.
+  const [listings, setListings] = useState<Listing[]>(initialListings ?? [])
+  const [loading, setLoading] = useState(!(initialListings && initialListings.length > 0))
   const [searchQuery, setSearchQuery] = useState(initialQuery)
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(initialCategorySlug)
   const [supplierFilter] = useState<string | null>(initialSupplier)
@@ -1136,14 +1138,14 @@ function CategoryPill({
 
 
 
-export default function MarketplaceClient() {
+export default function MarketplaceClient({ initialListings }: { initialListings?: Listing[] } = {}) {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
         <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
       </div>
     }>
-      <MarketplaceBrowseContent />
+      <MarketplaceBrowseContent initialListings={initialListings} />
     </Suspense>
   )
 }

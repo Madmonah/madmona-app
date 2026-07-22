@@ -29,7 +29,13 @@ async function getInitialListings(): Promise<SSRListing[]> {
     );
     const { data } = await supa
       .from('listings')
-      .select('id, title, slug, city, category:categories(name_ar, icon), photos:listing_photos(url, is_primary)')
+      .select(`
+        id, title, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification,
+        category:categories(name_ar, name_en, icon, slug),
+        supplier:marketplace_suppliers(business_name, logo_url, kyc_status),
+        photos:listing_photos(url, is_primary),
+        pricing:pricing_rules(price, is_active)
+      `)
       .eq('status', 'published')
       .eq('is_directory', false)
       .order('created_at', { ascending: false })
@@ -157,7 +163,7 @@ export default async function MarketplacePage() {
   const initialListings = await getInitialListings();
   return (
     <Suspense fallback={<MarketplaceFallback listings={initialListings} />}>
-      <MarketplaceClient />
+      <MarketplaceClient initialListings={(initialListings as unknown) as never} />
     </Suspense>
   );
 }
