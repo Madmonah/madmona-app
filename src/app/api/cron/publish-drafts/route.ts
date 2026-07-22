@@ -151,21 +151,33 @@ export async function GET() {
         } as never)
       }
 
-      const food = group.filter(d => (d.category_slug || '').startsWith('food-'))
-      const other = group.filter(d => !(d.category_slug || '').startsWith('food-'))
+      // FIX (22 يوليو 2026): تفكيك المنيو — أصناف زي الحلويات كانت بتتصنّف
+      // catering-desserts (مش food-) فتروح فرع other = كل صنف إعلان منفصل بـ0 منيو.
+      // دلوقتي أي تصنيف أكل (food-/catering-/شواء/حلويات/طبخ) بيتعامل كصنف منيو.
+      const isFoodish = (s: string) =>
+        s.startsWith('food-') || s.startsWith('catering-') ||
+        ['bbq-grill', 'daily-meals', 'pastry-cakes', 'cooking-classes'].includes(s)
+      const food = group.filter(d => isFoodish(d.category_slug || ''))
+      const other = group.filter(d => !isFoodish(d.category_slug || ''))
       const links: string[] = []
 
       // ---------- مطاعم/أكل: مطعم واحد + منيو ----------
       if (food.length) {
         let listingId: string | null = null
         let listingSlug: string | null = null
-        const { data: exist } = await supa.from('listings')
-          .select('id, slug, categories!inner(slug)')
-          .eq('supplier_id', supplierId).eq('status', 'published')
-          .like('categories.slug', 'food-%').limit(1).maybeSingle()
-        if (exist?.id) { listingId = exist.id; listingSlug = exist.slug }
+        // FIX (22 يوليو 2026): find-or-create صامد — بدل embedded filter + maybeSingle
+        // (اللي كان بيفشل يلاقي إعلان المطعم الموجود فيعمل نسخ مكررة)، بنجيب إعلانات
+        // المورّد المنشورة ونلاقي المطعم بالـtrack في JS.
+        const { data: existRows } = await supa.from('listings')
+          .select('id, slug, categories(slug, track)')
+          .eq('supplier_id', supplierId).eq('status', 'published').eq('is_directory', false)
+          .limit(20)
+        const existRow = ((existRows || []) as Array<{ id: string; slug: string; categories?: { slug?: string; track?: string } | null }>)
+          .find(r => r.categories?.track === 'restaurants' || (r.categories?.slug || '').startsWith('food-'))
+        if (existRow?.id) { listingId = existRow.id; listingSlug = existRow.slug }
         else {
-          const catSlug = food[0].category_slug || 'food-grill'
+          // التصنيف الرئيسي لازم يكون مطعم (food-)، مش حلويات/كاترينج
+          const catSlug = (food.find(d => (d.category_slug || '').startsWith('food-'))?.category_slug) || 'food-grill'
           let { data: cat } = await supa.from('categories').select('id').eq('slug', catSlug).maybeSingle()
           if (!cat?.id) ({ data: cat } = await supa.from('categories').select('id').eq('slug', 'food-grill').maybeSingle())
           const slug = slugify(bizName)
