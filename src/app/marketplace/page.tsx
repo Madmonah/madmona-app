@@ -6,8 +6,39 @@
 // =====================================================================
 
 import { Suspense } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import MarketplaceClient from './MarketplaceClient';
 import T from '@/components/T';
+
+// (22 يوليو 2026) SSR لأول دفعة إعلانات — بدل شاشة «جاري التحميل» الفاضية،
+// السيرفر بيجيب الإعلانات ويرسمها في الـfallback، فالناس بتشوف إعلانات فوراً
+// حتى على الموبايل البطيء/المتصفحات الجوانية قبل ما الـJS يهدرت. الحل الجذري
+// لمشكلة «الماركت بيبان فاضي أول فتحة».
+type SSRListing = {
+  id: string; title: string; slug: string; city: string | null;
+  category: { name_ar: string | null; icon: string | null } | null;
+  photos: { url: string; is_primary: boolean }[] | null;
+};
+
+async function getInitialListings(): Promise<SSRListing[]> {
+  try {
+    const supa = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { auth: { persistSession: false } },
+    );
+    const { data } = await supa
+      .from('listings')
+      .select('id, title, slug, city, category:categories(name_ar, icon), photos:listing_photos(url, is_primary)')
+      .eq('status', 'published')
+      .eq('is_directory', false)
+      .order('created_at', { ascending: false })
+      .limit(30);
+    return ((data || []) as unknown) as SSRListing[];
+  } catch {
+    return [];
+  }
+}
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -32,7 +63,7 @@ const CATEGORY_PREVIEW = [
  * Server-rendered HTML shown before client JS hydrates.
  * Same pattern as /add-listing: real content visible to slow browsers.
  */
-function MarketplaceFallback() {
+function MarketplaceFallback({ listings = [] }: { listings?: SSRListing[] }) {
   return (
     <div className="min-h-screen bg-[#FAFAF7]">
       <header className="bg-[#1F6F5F] text-[#FAF7F0] px-5 py-6">
@@ -62,11 +93,36 @@ function MarketplaceFallback() {
           ))}
         </div>
 
-        <div className="text-center py-12">
-          <div className="inline-block animate-pulse text-gray-400">
-            <T k="market.loading" />
+        {listings.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {listings.map((l) => {
+              const photo = (l.photos || []).find((p) => p.is_primary)?.url || (l.photos || [])[0]?.url || '';
+              return (
+                <a key={l.id} href={`/marketplace/${l.slug}`} className="block bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-[#1F6F5F] transition-colors no-underline">
+                  <div className="aspect-[4/3] bg-gray-100 flex items-center justify-center overflow-hidden">
+                    {photo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={photo} alt={l.title} className="w-full h-full object-cover" loading="lazy" />
+                    ) : (
+                      <span className="text-4xl">{l.category?.icon || '🛍️'}</span>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <div className="text-[11px] text-gray-500 mb-0.5">{l.category?.name_ar || ''}</div>
+                    <div className="font-bold text-sm text-gray-900 leading-snug line-clamp-2">{l.title}</div>
+                    {l.city && <div className="text-[11px] text-gray-400 mt-1">{l.city}</div>}
+                  </div>
+                </a>
+              );
+            })}
           </div>
-        </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="inline-block animate-pulse text-gray-400">
+              <T k="market.loading" />
+            </div>
+          </div>
+        )}
 
         <noscript>
           <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900">
@@ -97,9 +153,10 @@ function MarketplaceFallback() {
   );
 }
 
-export default function MarketplacePage() {
+export default async function MarketplacePage() {
+  const initialListings = await getInitialListings();
   return (
-    <Suspense fallback={<MarketplaceFallback />}>
+    <Suspense fallback={<MarketplaceFallback listings={initialListings} />}>
       <MarketplaceClient />
     </Suspense>
   );
