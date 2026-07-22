@@ -390,6 +390,20 @@ export const MARID_TOOLS = [
       required: [],
     },
   },
+  {
+    name: 'recent_orders',
+    description:
+      'اعرض آخر الأوردرات/الحجوزات على مضمونة — لمتابعة المبيعات. ' +
+      'استخدمها لما حد يسأل «إيه آخر الأوردرات؟» أو «فيه مبيعات النهاردة؟».',
+    input_schema: { type: 'object' as const, properties: {}, required: [] },
+  },
+  {
+    name: 'recent_demand',
+    description:
+      'اعرض آخر الطلبات اللي العملاء دوّروا عليها (فرص وطلب مش متغطّى). ' +
+      'استخدمها لما حد يسأل «الناس بتدوّر على إيه؟» أو «الطلبات الناقصة».',
+    input_schema: { type: 'object' as const, properties: {}, required: [] },
+  },
 ] as const
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -1442,6 +1456,50 @@ async function businessSnapshot(): Promise<ToolResult> {
   }
 }
 
+async function recentOrders(): Promise<ToolResult> {
+  const { data, error } = await db
+    .from('marketplace_orders')
+    .select('reference_code, order_type, guest_name, total_amount, currency, status, delivery_city, created_at')
+    .order('created_at', { ascending: false })
+    .limit(10)
+  if (error) return { ok: false, error: 'مقدرش أجيب الأوردرات', detail: error.message }
+  const rows = (data ?? []) as Array<Record<string, unknown>>
+  if (!rows.length) return { ok: true, count: 0, message: 'مفيش أوردرات لسه.' }
+  return {
+    ok: true,
+    count: rows.length,
+    orders: rows.map((o) => ({
+      كود: o.reference_code,
+      النوع: o.order_type,
+      العميل: o.guest_name || '—',
+      المبلغ: o.total_amount != null ? `${o.total_amount} ${o.currency || 'ج'}` : '—',
+      الحالة: o.status,
+      المدينة: o.delivery_city || '—',
+    })),
+  }
+}
+
+async function recentDemand(): Promise<ToolResult> {
+  const { data, error } = await db
+    .from('customer_demand_requests')
+    .select('contact_name, contact_phone, requested_item, category_guess, status, created_at')
+    .order('created_at', { ascending: false })
+    .limit(10)
+  if (error) return { ok: false, error: 'مقدرش أجيب الطلبات', detail: error.message }
+  const rows = (data ?? []) as Array<Record<string, unknown>>
+  if (!rows.length) return { ok: true, count: 0, message: 'مفيش طلبات مسجّلة.' }
+  return {
+    ok: true,
+    count: rows.length,
+    requests: rows.map((r) => ({
+      العميل: r.contact_name || r.contact_phone,
+      المطلوب: r.requested_item,
+      التصنيف: r.category_guess || '—',
+      الحالة: r.status,
+    })),
+  }
+}
+
 export async function runMaridTool(name: string, input: Record<string, unknown>): Promise<ToolResult> {
   try {
     switch (name) {
@@ -1483,6 +1541,10 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await completeTask(input as never)
       case 'business_snapshot':
         return await businessSnapshot()
+      case 'recent_orders':
+        return await recentOrders()
+      case 'recent_demand':
+        return await recentDemand()
       default:
         return { error: `أداة مش معروفة: ${name}` }
     }
