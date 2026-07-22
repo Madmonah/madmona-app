@@ -40,6 +40,13 @@ export default function MaridMonitor() {
     return () => clearInterval(id)
   }, [auto, load])
 
+  const setConvStatus = useCallback(async (id: string, action: 'pause' | 'resume') => {
+    try {
+      await fetch('/api/admin/marid-monitor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conversationId: id, action }) })
+      setConvs((cs) => cs.map((c) => (c.id === id ? { ...c, status: action === 'resume' ? 'active' : 'paused' } : c)))
+    } catch {}
+  }, [])
+
   const sel = useMemo(() => convs.find((c) => c.id === selId) || null, [convs, selId])
 
   return (
@@ -59,6 +66,11 @@ export default function MaridMonitor() {
           <label style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
             <input type="checkbox" checked={auto} onChange={(e) => setAuto(e.target.checked)} /> تلقائي
           </label>
+        )}
+        {sel && (
+          <button onClick={() => setConvStatus(sel.id, sel.status === 'paused' ? 'resume' : 'pause')} style={{ background: sel.status === 'paused' ? '#22c55e' : '#ef4444', color: '#fff', border: 'none', borderRadius: 12, padding: '5px 11px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            {sel.status === 'paused' ? '▶️ رجّع المارد' : '⏸️ وقّف المارد'}
+          </button>
         )}
         <button onClick={load} title="حدّث" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 12, padding: '5px 10px', fontSize: 13, cursor: 'pointer' }}>↻</button>
       </div>

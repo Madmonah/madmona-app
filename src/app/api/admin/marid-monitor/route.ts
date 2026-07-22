@@ -52,3 +52,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: err instanceof Error ? err.message : 'unknown' }, { status: 500 })
   }
 }
+
+export async function POST(req: NextRequest) {
+  if (req.cookies.get(ADMIN_COOKIE)?.value !== ADMIN_SESSION_VALUE) {
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
+  }
+  let body: { conversationId?: string; action?: string }
+  try { body = await req.json() } catch { return NextResponse.json({ ok: false, error: 'bad json' }, { status: 400 }) }
+  const id = (body.conversationId || '').trim()
+  if (!id) return NextResponse.json({ ok: false, error: 'conversationId مطلوب' }, { status: 400 })
+  const status = body.action === 'resume' ? 'active' : 'paused'
+  const { error } = await supabase.from('whatsapp_conversations').update({ status } as never).eq('id', id)
+  if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true, status })
+}
