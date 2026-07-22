@@ -247,8 +247,9 @@ export default function ChatPage() {
   const hasText = input.trim().length > 0 || !!attach
 
   return (
-    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ECE5DD', fontFamily: 'system-ui, sans-serif' }}>
-      <header style={{ background: '#075E54', color: '#fff', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg,#ece5db 0%,#ddd4c6 100%)', fontFamily: "'Cairo', system-ui, sans-serif" }}>
+      <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');"}</style>
+      <header style={{ background: 'linear-gradient(135deg,#0a7d6e 0%,#075E54 100%)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 10px rgba(0,0,0,.18)', zIndex: 2 }}>
         <Link href="/chat" aria-label="رجوع" style={{ color: '#fff', textDecoration: 'none', fontSize: 24, lineHeight: 1, padding: '2px 4px', flexShrink: 0 }}>→</Link>
         <div style={{ width: 42, height: 42, borderRadius: '50%', background: '#fff', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(255,255,255,.35)' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -286,7 +287,7 @@ export default function ChatPage() {
             </div>
           ) : (
           <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-start' : 'flex-end', marginBottom: 8 }}>
-            <div style={{ maxWidth: '78%', background: m.role === 'user' ? '#DCF8C6' : '#fff', padding: '7px 10px', borderRadius: 10, boxShadow: '0 1px 1px rgba(0,0,0,.12)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 15, lineHeight: 1.5 }}>
+            <div style={{ maxWidth: '80%', background: m.role === 'user' ? '#d7f6c2' : '#fff', padding: '9px 13px', borderRadius: 16, boxShadow: '0 1px 4px rgba(0,0,0,.08)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 15, lineHeight: 1.65 }}>
               {m.media?.type === 'image' && m.media.previewUrl && <img src={m.media.previewUrl} alt="" style={{ maxWidth: '100%', borderRadius: 8, marginBottom: m.text ? 6 : 0 }} />}
               {m.media?.type === 'audio' && <div style={{ marginBottom: m.text ? 6 : 0 }}>🎤 رسالة صوتية</div>}
               {m.media && m.media.type !== 'image' && m.media.type !== 'audio' && <div style={{ marginBottom: m.text ? 6 : 0 }}>📎 {m.media.filename || m.media.type}</div>}
@@ -329,7 +330,7 @@ export default function ChatPage() {
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 4, padding: 8, background: '#F0F0F0', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 6, padding: 10, background: 'rgba(255,255,255,.92)', borderTop: '1px solid rgba(0,0,0,.06)', boxShadow: '0 -2px 10px rgba(0,0,0,.05)', alignItems: 'center' }}>
         <input ref={fileRef} type="file" accept="image/*,video/*,application/pdf" onChange={onFile} style={{ display: 'none' }} />
         <input ref={calRef} type="datetime-local" onChange={onCal} style={{ display: 'none' }} />
         <button onClick={() => { setShowPlus((v) => !v); setShowEmoji(false) }} title="إرفاق" style={{ ...iconBtn, transform: showPlus ? 'rotate(45deg)' : 'none' }}>➕</button>
@@ -346,8 +347,8 @@ export default function ChatPage() {
   )
 }
 
-const inp: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '12px 14px', margin: '0 0 12px', border: '1px solid #ddd', borderRadius: 22, fontSize: 15, outline: 'none' }
-const btn: React.CSSProperties = { background: '#128C7E', color: '#fff', border: 'none', borderRadius: '50%', height: 48, fontSize: 18, fontWeight: 700, cursor: 'pointer' }
+const inp: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '12px 16px', margin: '0 0 12px', border: '1px solid #e3e3e3', borderRadius: 24, fontSize: 15, outline: 'none', background: '#fff' }
+const btn: React.CSSProperties = { background: 'linear-gradient(135deg,#1aa58f,#0f7d6c)', color: '#fff', border: 'none', borderRadius: '50%', height: 48, fontSize: 18, fontWeight: 700, cursor: 'pointer', boxShadow: '0 3px 10px rgba(15,125,108,.35)' }
 const iconBtn: React.CSSProperties = { border: 'none', background: 'none', fontSize: 22, cursor: 'pointer', padding: 4, lineHeight: 1, transition: 'transform .15s' }
 const sheetBtn: React.CSSProperties = { border: '1px solid #eee', background: '#fafafa', borderRadius: 12, padding: '10px 16px', fontSize: 26, cursor: 'pointer', display: 'grid', placeItems: 'center', gap: 2 }
 const sheetLbl: React.CSSProperties = { fontSize: 12, color: '#555' }
