@@ -28,6 +28,7 @@ export default function TeamPage() {
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [gallery, setGallery] = useState(false)
+  const [forwardMsg, setForwardMsg] = useState<CMsg | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const chanRef = useRef<ReturnType<typeof supabaseBrowser.channel> | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -127,6 +128,20 @@ export default function TeamPage() {
       if (j?.ok && j.message) setMessages((m) => (m.some((x) => x.id === (j.message as CMsg).id) ? m : [...m, j.message as CMsg]))
       else alert(j?.error || 'فشل رفع الملف')
     } catch { alert('فشل رفع الملف') } finally { setBusy(false); if (fileRef.current) fileRef.current.value = '' }
+  }
+
+  // فوروارد: تحويل رسالة ميديا لمحادثة تانية (نسخ media_url + kind لغرفة تانية)
+  async function forwardTo(room: Room) {
+    const m = forwardMsg
+    setForwardMsg(null)
+    if (!m || !uid) return
+    try {
+      const { data: ins } = await supabaseBrowser
+        .from('chat_messages')
+        .insert({ room_id: room.id, sender_id: uid, sender_kind: 'user', sender_name: myName, body: m.body, kind: m.kind, media_url: m.media_url } as never)
+        .select('*').single()
+      if (active && room.id === active.id && ins) setMessages((x) => (x.some((y) => y.id === (ins as CMsg).id) ? x : [...x, ins as CMsg]))
+    } catch { /* الرد بيوصل بالـrealtime لو نفس الغرفة */ }
   }
 
   // استدعاء المارد بزرار (بدل كلمة «مارد») — بيقرا الثريد ويرد لكل الأعضاء
@@ -268,6 +283,21 @@ export default function TeamPage() {
           })()}
         </div>
       )}
+      {forwardMsg && (
+        <div onClick={() => setForwardMsg(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 60, display: 'flex', alignItems: 'flex-end' }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxHeight: '60vh', overflowY: 'auto', borderRadius: '16px 16px 0 0', padding: 16 }}>
+            <div style={{ fontWeight: 700, marginBottom: 10, fontSize: 16 }}>حوّل الميديا لـ…</div>
+            {rooms.filter((r) => !active || r.id !== active.id).length === 0 ? (
+              <div style={{ color: '#888', textAlign: 'center', padding: 16 }}>مفيش محادثات تانية تحوّل ليها</div>
+            ) : rooms.filter((r) => !active || r.id !== active.id).map((r) => (
+              <button key={r.id} onClick={() => forwardTo(r)} style={{ display: 'block', width: '100%', textAlign: 'right', padding: '12px 8px', border: 'none', borderBottom: '1px solid #eee', background: '#fff', cursor: 'pointer', fontSize: 15 }}>
+                {r.kind === 'direct' ? `💬 ${r.otherName || 'محادثة خاصة'}` : `👥 ${r.name || 'غرفة'}`}
+              </button>
+            ))}
+            <button onClick={() => setForwardMsg(null)} style={{ display: 'block', width: '100%', textAlign: 'center', padding: '12px', border: 'none', background: 'none', cursor: 'pointer', fontSize: 14, color: '#888', marginTop: 6 }}>إلغاء</button>
+          </div>
+        </div>
+      )}
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 10px' }}>
         {messages.map((m) => {
           const mine = m.sender_id === uid
@@ -285,6 +315,9 @@ export default function TeamPage() {
                 )}
                 {m.media_url && m.kind !== 'image' && m.kind !== 'video' && (
                   <a href={m.media_url} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginBottom: m.body ? 4 : 0, color: '#0a66c2', textDecoration: 'underline', fontSize: 14 }}>📎 ملف مرفق</a>
+                )}
+                {m.media_url && (
+                  <button onClick={() => setForwardMsg(m)} title="تحويل لمحادثة تانية" style={{ display: 'block', marginBottom: 4, background: 'none', border: 'none', color: '#128C7E', cursor: 'pointer', fontSize: 12, padding: 0 }}>↗️ تحويل</button>
                 )}
                 {m.body}
                 <span style={{ display: 'block', textAlign: 'left', fontSize: 10, color: '#8a8a8a', marginTop: 2 }}>{t(m.created_at)}</span>
