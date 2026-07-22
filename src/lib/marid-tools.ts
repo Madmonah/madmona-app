@@ -556,6 +556,7 @@ async function whoIsThis(a: { phone: string; name?: string }): Promise<ToolResul
     .from('profiles')
     .select('id, full_name, role, created_at')
     .in('phone', variants)
+    .limit(1)
     .maybeSingle()
 
   if (!profile) {
@@ -598,7 +599,7 @@ async function whoIsThis(a: { phone: string; name?: string }): Promise<ToolResul
 async function getMyOrders(a: { phone: string }): Promise<ToolResult> {
   const variants = phoneVariants(a.phone)
 
-  const { data: profile } = await db.from('profiles').select('id').in('phone', variants).maybeSingle()
+  const { data: profile } = await db.from('profiles').select('id').in('phone', variants).limit(1).maybeSingle()
 
   // بنقبل الحجوزات المربوطة بالحساب أو المسجّلة كضيف بنفس الرقم
   let q = db
@@ -1055,16 +1056,24 @@ async function manageOrder(a: {
     // ── مين ده؟ المورد ولا العميل؟ ────────────────────────────────────
     const variants = phoneVariants(actor)
 
-    const { data: prof } = await db.from('profiles').select('id').in('phone', variants).maybeSingle()
-    const { data: sup } = prof?.id
+    // بنجيب كل بروفايلات الرقم (ممكن يكون ليه أكتر من صف بصيغ مختلفة).
+    // .maybeSingle() كان بيرمي خطأ لو رجّع أكتر من صف → صاحب الأوردر يتعامل
+    // كأنه غريب ويتقفل قبول/رفض الأوردر (تدفّق فلوس). بنفحص كل بروفايلاته.
+    const { data: profs } = await db.from('profiles').select('id').in('phone', variants).limit(10)
+    const profIds = ((profs ?? []) as Array<{ id: string }>).map((p) => p.id)
+    const { data: sups } = profIds.length
       ? await db
           .from('marketplace_suppliers')
           .select('id, business_name')
-          .eq('profile_id', prof.id)
-          .maybeSingle()
+          .in('profile_id', profIds)
+          .limit(10)
       : { data: null }
+    const sup =
+      ((sups ?? []) as Array<{ id: string; business_name?: string }>).find(
+        (s) => s.id === order.supplier_id,
+      ) ?? null
 
-    const isSupplier = !!sup && sup.id === order.supplier_id
+    const isSupplier = !!sup
     const isCustomer = variants.some((v) => (order.guest_phone || '').includes(v.replace(/\D/g, '')))
 
     if (!isSupplier && !isCustomer) {
@@ -1294,6 +1303,7 @@ export async function recordLead(a: {
       .from('sales_leads')
       .select('id')
       .eq('contact_phone', phone)
+      .limit(1)
       .maybeSingle()
 
     if (existing) {

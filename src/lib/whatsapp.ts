@@ -151,14 +151,20 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
   // جماعية، إشعار حجز) ومفيش رقم حقيقي في الماب — ندوّر على الـ JID المحفوظ.
   // من غير الخطوة دي الرسالة هتتبعت لرقم مش موجود وتضيع بصمت.
   if (!jid && looksLikeLid(to)) {
-    const { data: conv } = await supabaseUntyped
+    // الرقم الواحد ممكن يكون عنده أكتر من صف محادثة، فـ.maybeSingle() كان
+    // بيرمي خطأ ويرجّع null فالرسالة تفشل بصمت. بنجيب أحدث الصفوف ونختار
+    // اللي فيه wa_jid محفوظ.
+    const { data: convs } = await supabaseUntyped
       .from('whatsapp_conversations')
       .select('metadata')
       .eq('contact_phone', params.to)
-      .maybeSingle()
+      .order('last_message_at', { ascending: false })
+      .limit(20)
 
-    const saved = (conv?.metadata as { wa_jid?: string } | null)?.wa_jid
-    if (saved?.includes('@')) {
+    const saved = ((convs ?? []) as Array<{ metadata?: { wa_jid?: string } | null }>)
+      .map((c) => c?.metadata?.wa_jid)
+      .find((j) => typeof j === 'string' && j.includes('@'))
+    if (saved) {
       jid = saved
     } else {
       return {
