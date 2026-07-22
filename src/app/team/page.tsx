@@ -27,6 +27,7 @@ export default function TeamPage() {
   const [messages, setMessages] = useState<CMsg[]>([])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
+  const [gallery, setGallery] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const chanRef = useRef<ReturnType<typeof supabaseBrowser.channel> | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -239,9 +240,34 @@ export default function TeamPage() {
         <button onClick={() => { setActive(null); if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null } }} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer' }}>→</button>
         <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{active.kind === 'direct' ? (active.otherName || 'محادثة خاصة') : (active.name || 'غرفة')}</div><div style={{ fontSize: 11, opacity: .85 }}>اضغط 🧞 لاستدعاء المارد</div></div>
         <button onClick={summonMaridInRoom} disabled={busy} title="استدعِ المارد" style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 14, padding: '5px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', opacity: busy ? 0.6 : 1 }}>🧞 المارد</button>
+        <button onClick={() => setGallery(true)} title="ميديا المحادثة" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>🖼️</button>
         <button onClick={inviteLink} title="دعوة بلينك" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>🔗</button>
         <button onClick={addMember} title="ضيف عضو" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>➕</button>
       </header>
+      {gallery && (
+        <div onClick={() => setGallery(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.92)', zIndex: 50, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', color: '#fff' }}>
+            <button onClick={(e) => { e.stopPropagation(); setGallery(false) }} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer' }}>→</button>
+            <div style={{ fontWeight: 700 }}>ميديا المحادثة</div>
+          </div>
+          {(() => {
+            const media = messages.filter((m) => m.media_url && (m.kind === 'image' || m.kind === 'video'))
+            if (media.length === 0) return <div style={{ color: '#bbb', textAlign: 'center', marginTop: 40 }}>لسه مفيش صور أو فيديو في المحادثة دي</div>
+            return (
+              <div onClick={(e) => e.stopPropagation()} style={{ flex: 1, overflowY: 'auto', padding: 10, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, alignContent: 'start' }}>
+                {media.slice().reverse().map((m) => (
+                  m.kind === 'image' ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={m.id} src={m.media_url!} alt="" onClick={() => window.open(m.media_url!, '_blank')} style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 8, cursor: 'pointer' }} />
+                  ) : (
+                    <video key={m.id} src={m.media_url!} controls style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 8, background: '#000' }} />
+                  )
+                ))}
+              </div>
+            )
+          })()}
+        </div>
+      )}
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 10px' }}>
         {messages.map((m) => {
           const mine = m.sender_id === uid
