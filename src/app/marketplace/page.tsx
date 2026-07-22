@@ -27,12 +27,12 @@ async function getInitialListings(): Promise<SSRListing[]> {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       { auth: { persistSession: false } },
     );
-    const { data } = await supa
+    const { data, error } = await supa
       .from('listings')
       .select(`
         id, title, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification,
         category:categories(name_ar, name_en, icon, slug),
-        supplier:marketplace_suppliers(business_name, logo_url, kyc_status),
+        supplier:marketplace_suppliers(business_name, logo_url),
         photos:listing_photos(url, is_primary),
         pricing:pricing_rules(price, is_active)
       `)
@@ -40,8 +40,20 @@ async function getInitialListings(): Promise<SSRListing[]> {
       .eq('is_directory', false)
       .order('created_at', { ascending: false })
       .limit(30);
-    return ((data || []) as unknown) as SSRListing[];
-  } catch {
+    if (!error && data && data.length) return (data as unknown) as SSRListing[];
+    // fallback أمان: لو الكويري الغني فشل (مثلاً عمود ممنوع على anon زي kyc_status)
+    // مانرجعش فاضي — نجيب أقل داتا مضمونة للـanon علشان الماركت مايبانش فاضي أبداً.
+    if (error) console.error('[marketplace SSR] rich query failed:', error.message);
+    const { data: basic } = await supa
+      .from('listings')
+      .select('id, title, slug, city, category:categories(name_ar, name_en, icon, slug), photos:listing_photos(url, is_primary)')
+      .eq('status', 'published')
+      .eq('is_directory', false)
+      .order('created_at', { ascending: false })
+      .limit(30);
+    return ((basic || []) as unknown) as SSRListing[];
+  } catch (e) {
+    console.error('[marketplace SSR] getInitialListings threw:', e);
     return [];
   }
 }

@@ -339,7 +339,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         .select(`
           id, title, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification,
           category:categories(name_ar, name_en, icon, slug),
-          supplier:marketplace_suppliers(business_name, logo_url, kyc_status),
+          supplier:marketplace_suppliers(business_name, logo_url),
           photos:listing_photos(url, is_primary),
           pricing:pricing_rules(price, is_active)
         `)

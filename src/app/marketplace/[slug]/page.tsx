@@ -141,16 +141,26 @@ export default function ListingDetailPage() {
         setIsAuthed(!!session?.user)
         if (session?.user) setUserId(session.user.id)
 
+        // (22 يوليو 2026) إصلاح جذري: الصفحة كانت بتبان «غير موجود» لأي زائر مش مسجّل
+        // (anon) لأن select('*') بيطلب أعمدة ممنوعة على anon (rejection_reason,
+        // contact_phone, phone_verified_at)، وكمان join المورّد→البروفايل محتاج
+        // قراءة profile_id الممنوع على anon → الكويري كله بيرجع 401 → setNotFound.
+        // ده كان بيكسر أي لينك إعلان متبعوت (واتساب مثلاً) لأي حد مش داخل بحسابه.
+        // الحل: كويري أساسي بأعمدة آمنة (بيشتغل دايمًا)، والمورّد/التواصل best-effort
+        // بيتدرّج: المسجّل بياخد الهاتف؛ الزائر بياخد اسم المورّد بس (يسجّل علشان يتواصل).
         // @ts-expect-error
         const { data: l, error } = await supabaseBrowser
           .from('listings')
           .select(`
-            *,
-            category:categories(name_ar, name_en, icon, track, order_mode, slug),
-            supplier:marketplace_suppliers(
-              id, business_name, kyc_status,
-              profile:profiles!marketplace_suppliers_profile_id_fkey(phone, full_name)
-            )
+            id, supplier_id, category_id, title, slug, description, status, country, city, district, address,
+            latitude, longitude, min_booking_hours, max_booking_hours, advance_booking_days, cancellation_hours,
+            auto_accept_bookings, requires_security_deposit, security_deposit_amount, rating, reviews_count,
+            bookings_count, views_count, created_at, updated_at, published_at, requires_id_verification,
+            available_addons, stock_quantity, product_condition, brand, model_name, shipping_available,
+            shipping_cost, wholesale_tiers, accepts_insurance, insurance_partners, insurance_deposit_pct,
+            branches, booking_deposit_pct, is_directory, directory_source, price_egp, price_on_request,
+            source_url, project_id,
+            category:categories(name_ar, name_en, icon, track, order_mode, slug)
           `)
           .eq('slug', slug)
           .eq('status', 'published')
@@ -162,8 +172,43 @@ export default function ListingDetailPage() {
           return
         }
 
+        // المورّد + التواصل (best-effort): للمسجّل بيرجّع الهاتف؛ للزائر بيتدرّج لاسم المورّد بس.
+        let supplier: ListingDetail['supplier'] = null
+        if (l.supplier_id) {
+          // @ts-expect-error
+          const { data: supFull } = await supabaseBrowser
+            .from('marketplace_suppliers')
+            .select('id, business_name, profile:profiles!marketplace_suppliers_profile_id_fkey(phone, full_name)')
+            .eq('id', l.supplier_id)
+            .maybeSingle()
+          if (supFull) {
+            supplier = supFull as ListingDetail['supplier']
+          } else {
+            // anon مايقدرش يقرأ profile_id فالـjoin بيتمنع → نجيب اسم المورّد بس
+            // @ts-expect-error
+            const { data: supBasic } = await supabaseBrowser
+              .from('marketplace_suppliers')
+              .select('id, business_name')
+              .eq('id', l.supplier_id)
+              .maybeSingle()
+            supplier = (supBasic ? { ...(supBasic as object), profile: null } : null) as ListingDetail['supplier']
+          }
+        }
+
+        // contact_phone ممنوع على anon → نجيبه best-effort (للمسجّل غالبًا، ولإعلانات الدليل)
+        let contactPhone: string | null = null
+        if (l.is_directory) {
+          // @ts-expect-error
+          const { data: cp } = await supabaseBrowser
+            .from('listings')
+            .select('contact_phone')
+            .eq('id', l.id)
+            .maybeSingle()
+          contactPhone = (cp as { contact_phone?: string } | null)?.contact_phone ?? null
+        }
+
         resolvedListingId = l.id
-        setListing(l as ListingDetail)
+        setListing({ ...(l as object), supplier, contact_phone: contactPhone } as ListingDetail)
 
         const fetches: Promise<{ data: unknown }>[] = [
           // @ts-expect-error
