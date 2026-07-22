@@ -120,17 +120,26 @@ export async function GET() {
 
       const bizName = group[0].contact_name || `مورد ${prof.local}`
 
-      // supplier: موجود ولا نعمله
+      // supplier: موجود ولا نعمله — idempotent.
+      // FIX (22 يوليو 2026): كان select-then-insert بيقع بـduplicate key على
+      // marketplace_suppliers_profile_id_key لما المورّد موجود بالفعل، والباتش
+      // كله بيفشل (كل الدرافتات من نفس الرقم) فالكرون واقف من 18 يوليو. دلوقتي:
+      // نستخدم .limit(1) array (مش maybeSingle اللي ممكن يرمي)، ولو الإنشاء فشل
+      // نجيب الموجود بدل ما نطلّع الجروب كله error.
       let supplierId: string | null = null
-      const { data: sup } = await supa.from('marketplace_suppliers').select('id').eq('profile_id', prof.id).limit(1).maybeSingle()
-      if (sup?.id) supplierId = sup.id
+      const { data: supRows } = await supa.from('marketplace_suppliers').select('id').eq('profile_id', prof.id).limit(1)
+      if (supRows && supRows.length) supplierId = (supRows[0] as { id: string }).id
       else {
         const { data: ns, error: se } = await supa.from('marketplace_suppliers').insert({
           profile_id: prof.id, account_type: 'business', business_name: bizName,
           description: group[0].description, kyc_status: 'approved', kyc_reviewed_at: new Date().toISOString(), commission_rate: 10,
         } as never).select('id').single()
-        if (se || !ns) { results.push({ phone, error: 'supplier: ' + se?.message }); continue }
-        supplierId = ns.id
+        if (ns) supplierId = (ns as { id: string }).id
+        else {
+          const { data: again } = await supa.from('marketplace_suppliers').select('id').eq('profile_id', prof.id).limit(1)
+          if (again && again.length) supplierId = (again[0] as { id: string }).id
+          else { results.push({ phone, error: 'supplier: ' + (se?.message || 'unknown') }); continue }
+        }
       }
 
       // owner في business_employees (لو مش موجود)
