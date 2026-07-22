@@ -130,16 +130,15 @@ export async function GET() {
       const { data: supRows } = await supa.from('marketplace_suppliers').select('id').eq('profile_id', prof.id).limit(1)
       if (supRows && supRows.length) supplierId = (supRows[0] as { id: string }).id
       else {
-        const { data: ns, error: se } = await supa.from('marketplace_suppliers').insert({
+        // upsert بـonConflict=profile_id — الحل المضمون: لو المورّد موجود بالفعل
+        // (والـselect فوق مالقاهوش بسبب لخبطة تطبيع الرقم) الـupsert بيعمل UPDATE
+        // ويرجّع الـid بدل ما يقع duplicate key ويسدّ الطابور.
+        const { data: up, error: se } = await supa.from('marketplace_suppliers').upsert({
           profile_id: prof.id, account_type: 'business', business_name: bizName,
           description: group[0].description, kyc_status: 'approved', kyc_reviewed_at: new Date().toISOString(), commission_rate: 10,
-        } as never).select('id').single()
-        if (ns) supplierId = (ns as { id: string }).id
-        else {
-          const { data: again } = await supa.from('marketplace_suppliers').select('id').eq('profile_id', prof.id).limit(1)
-          if (again && again.length) supplierId = (again[0] as { id: string }).id
-          else { results.push({ phone, error: 'supplier: ' + (se?.message || 'unknown') }); continue }
-        }
+        } as never, { onConflict: 'profile_id' }).select('id').single()
+        if (up) supplierId = (up as { id: string }).id
+        else { results.push({ phone, error: 'supplier: ' + (se?.message || 'unknown') }); continue }
       }
 
       // owner في business_employees (لو مش موجود)
