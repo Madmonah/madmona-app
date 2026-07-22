@@ -401,13 +401,33 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, kind: 'lid_map' })
   }
 
-  const phone = normalizePhone(body.from)
+  let phone = normalizePhone(body.from)
 
   // ⚠️ الـ JID الأصلي — ده اللي بنرد عليه.
   // واتساب بيبعت مُعرّف مخفي (`xxx@lid`) بدل الرقم لبعض المستخدمين.
   // لو رجّعنا تركيب رقم من الـ LID بنبعت لرقم مش موجود والرسالة بتضيع.
   const replyJid = body.reply_jid || undefined
   if (!phone && !replyJid) return NextResponse.json({ ok: true, skipped: 'invalid_sender' })
+
+  // 🔗 حلّ الـLID → الرقم الحقيقي من wa_lid_map أول ما الرسالة تدخل.
+  //    من غير كده كان الـLID بيتخزّن كـ contact_phone في المحادثة والمسودات،
+  //    فالمسودات كانت تعلق (مطعم زي Rino) لأن ماينفعش نعمل حساب مورّد بـLID.
+  //    دلوقتي المحادثة والمسودات والأدوات كلها بتشتغل بالرقم الحقيقي.
+  //    (فشل الحل مايوقفش المعالجة — بنكمّل بالـLID زي ما هو.)
+  if (body.is_lid) {
+    try {
+      const lid = (body.from || '').replace(/\D/g, '') || (replyJid || '').split('@')[0]
+      if (lid) {
+        const { data: m } = await supabaseUntyped
+          .from('wa_lid_map')
+          .select('phone')
+          .eq('lid', lid)
+          .maybeSingle()
+        const mapped = (m as { phone?: string } | null)?.phone
+        if (mapped) phone = normalizePhone(mapped)
+      }
+    } catch { /* نكمّل بالـLID */ }
+  }
 
   try {
     // ── ٠ق) مفتاح الطوارئ ──────────────────────────────────────────────
