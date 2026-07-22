@@ -28,6 +28,7 @@ export default function TeamPage() {
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [maridThinking, setMaridThinking] = useState(false)
+  const [toast, setToast] = useState('')
   const [gallery, setGallery] = useState(false)
   const [forwardMsg, setForwardMsg] = useState<CMsg | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -157,6 +158,22 @@ export default function TeamPage() {
         .select('*').single()
       if (active && room.id === active.id && ins) setMessages((x) => (x.some((y) => y.id === (ins as CMsg).id) ? x : [...x, ins as CMsg]))
     } catch { /* الرد بيوصل بالـrealtime لو نفس الغرفة */ }
+  }
+
+  // حوّل رسالة لمهمة في نظام الشغل (زي ClickUp)
+  async function addTask(m: CMsg) {
+    const text = (m.body || '').trim()
+    if (!text || !active) return
+    try {
+      const res = await fetch('/api/team/task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ roomId: active.id, text }),
+      })
+      const d = await res.json()
+      setToast(d?.ok ? `✅ اتعملت مهمة${d.assignee ? ` — لـ${d.assignee}` : ''}` : (d?.error || 'مقدرتش أعمل المهمة'))
+    } catch { setToast('مقدرتش أعمل المهمة') }
+    setTimeout(() => setToast(''), 3500)
   }
 
   // استدعاء المارد بزرار (بدل كلمة «مارد») — بيقرا الثريد ويرد لكل الأعضاء
@@ -315,6 +332,7 @@ export default function TeamPage() {
           </div>
         </div>
       )}
+      {toast && <div style={{ position: 'fixed', top: 70, left: '50%', transform: 'translateX(-50%)', background: '#0a6b4f', color: '#fff', padding: '8px 16px', borderRadius: 20, fontSize: 13, fontWeight: 700, zIndex: 70, boxShadow: '0 4px 14px rgba(0,0,0,.25)' }}>{toast}</div>}
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 10px' }}>
         {messages.map((m) => {
           const mine = m.sender_id === uid
@@ -337,6 +355,9 @@ export default function TeamPage() {
                   <button onClick={() => setForwardMsg(m)} title="تحويل لمحادثة تانية" style={{ display: 'block', marginBottom: 4, background: 'none', border: 'none', color: '#128C7E', cursor: 'pointer', fontSize: 12, padding: 0 }}>↗️ تحويل</button>
                 )}
                 {m.body}
+                {m.body && (
+                  <button onClick={() => addTask(m)} title="حوّل الرسالة لمهمة" style={{ display: 'block', marginTop: 4, background: 'none', border: 'none', color: '#0a66c2', cursor: 'pointer', fontSize: 11, padding: 0, fontWeight: 700 }}>➕ حوّل لمهمة</button>
+                )}
                 <span style={{ display: 'block', textAlign: 'left', fontSize: 10, color: '#8a8a8a', marginTop: 2 }}>{t(m.created_at)}</span>
               </div>
             </div>
