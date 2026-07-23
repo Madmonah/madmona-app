@@ -20,12 +20,14 @@ import { safeStorage } from '@/lib/safe-storage'
 export type WaLoginResult = { phone: string | null; full_name: string | null; madmona_token: string | null }
 
 export default function WhatsAppLogin({
-  onDone, label = 'ادخل بالواتساب — أسرع طريقة 🧞', getFullName,
+  onDone, label = 'ادخل بالواتساب — أسرع طريقة 🧞', getFullName, redirect,
 }: {
   onDone: (r: WaLoginResult) => void
   label?: string
   /** اسم اختياري (من فورم خارجي) يتسجل به الحساب الجديد */
   getFullName?: () => string
+  /** الوجهة اللي المستخدم رايحها — المارد بيبعتها في رسالة تأكيد الدخول على واتساب */
+  redirect?: string
 }) {
   const [phase, setPhase] = useState<'idle' | 'waiting' | 'finishing' | 'done' | 'error'>('idle')
   const [err, setErr] = useState('')
@@ -54,7 +56,7 @@ export default function WhatsAppLogin({
           const f = await fetch('/api/auth/wa', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'finish', code: codeRef.current, full_name: getFullName?.() || null }),
+            body: JSON.stringify({ action: 'finish', code: codeRef.current, full_name: getFullName?.() || null, next: redirect || '' }),
           })
           const fj = await f.json()
           if (!f.ok || !fj.token_hash) {

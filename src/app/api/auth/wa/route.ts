@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
+import { sendText, upsertConversation } from '@/lib/whatsapp'
 
 // =====================================================================
 // 🔑 الدخول بالواتساب — «ابعت الكود للمارد» (عكس الـOTP)
@@ -204,6 +205,27 @@ export async function POST(req: NextRequest) {
       await sb.from('wa_inbound_verifications')
         .update({ session_minted_at: new Date().toISOString() } as never)
         .eq('id', row.id)
+
+      // 📩 رسالة تأكيد الدخول على واتساب + رابط المتابعة — رد على رسالة المستخدم
+      //    (مسموح تحت الحظر لأنه رد على محادثة نشطة). best-effort: لو الإرسال فشل
+      //    (رقم مخفي/الخدمة واقفة) الدخول بيكمّل عادي والمتصفح بيوديه لوجهته برضه.
+      try {
+        const next = String(body.next || '').trim()
+        const site = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.madmonacairo.com').replace(/\/$/, '')
+        const path = next.startsWith('/') ? next : next ? '/' + next : '/account'
+        const name = minted.full_name ? ` ${minted.full_name}` : ''
+        const conversationId = await upsertConversation({ phone: row.verified_phone, agentName: 'المارد' })
+        await sendText({
+          to: row.verified_phone,
+          body: `أهلاً بيك${name} في مضمونة 🧞✅\nدخلت بنجاح.\nكمّل من هنا 👇\n${site}${path}`,
+          conversationId: conversationId ?? undefined,
+          agentName: 'المارد',
+          aiGenerated: false,
+        })
+      } catch (e) {
+        console.error('[wa-auth] confirm send failed (best-effort):', e)
+      }
+
       return NextResponse.json(minted)
     } catch (e) {
       const msg = e instanceof Error ? e.message : ''

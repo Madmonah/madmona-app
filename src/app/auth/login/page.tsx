@@ -160,7 +160,7 @@ function LoginContent() {
 
           <div className="bg-white rounded-3xl shadow-luxe p-7 md:p-9">
             {/* 🧞 الطريقة الأساسية: واتساب — من غير باسورد ولا كود بيتبعتلك */}
-            <WhatsAppLogin onDone={() => { router.push(redirectTo); router.refresh() }} />
+            <WhatsAppLogin redirect={redirectTo} onDone={() => { router.push(redirectTo); router.refresh() }} />
             <div className="my-4 flex items-center gap-3">
               <div className="h-px bg-gray-100 flex-1" />
               <span className="text-[11px] text-gray-400 font-bold">أو</span>
