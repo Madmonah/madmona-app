@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import ChatNotificationGate from '@/components/ChatNotificationGate'
 
 // أيقونة الشات لوحدها على التليفون: مانيفست خاص بالشات (id مستقل، بيفتح على /chat)
 // بيتحمّل كتطبيق منفصل اسمه "شات مضمونة" غير تطبيق المنصة الرئيسي.
@@ -14,5 +15,5 @@ export const viewport: Viewport = {
 }
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>
+  return <>{children}<ChatNotificationGate /></>
 }
