@@ -41,8 +41,20 @@ function genCode(): string {
  *  بيلاقي المستخدم أو يعمله، ويضمن صف profiles برقمه. */
 async function mintSession(rawPhone: string, fullNameHint: string | null = null) {
   const sb = admin()
-  const normalized = normalizePhone(rawPhone)
-  if (!normalized) throw new Error('bad_phone')
+  let normalized = normalizePhone(rawPhone)
+  // 🔗 الجذر: لو اللي وصلنا مُعرّف مخفي (LID) مش رقم حقيقي — نحاول نحلّه من
+  //    wa_lid_map. ده كان بيخلي verified_phone يتخزّن LID فـ mintSession يفشل
+  //    بصمت (٣ من كل ٤ محاولات دخول متأكدة كانت بتقع هنا). لو مفيش تطابق،
+  //    برمي lid_no_phone عشان الواجهة توجّه المستخدم لجوجل بدل «حصلت مشكلة».
+  if (!normalized) {
+    const lid = String(rawPhone || '').replace(/\D/g, '')
+    if (lid.length >= 10) {
+      const { data: map } = await sb.from('wa_lid_map').select('phone').eq('lid', lid).maybeSingle()
+      const mapped = (map as { phone?: string } | null)?.phone
+      if (mapped) normalized = normalizePhone(mapped)
+    }
+  }
+  if (!normalized) throw new Error('lid_no_phone')
   const email = phoneToEmail(normalized)
   const local = '0' + normalized.slice(3) // +2010... → 010...
 
@@ -185,8 +197,13 @@ export async function POST(req: NextRequest) {
         .eq('id', row.id)
       return NextResponse.json(minted)
     } catch (e) {
+      const msg = e instanceof Error ? e.message : ''
       console.error('[wa-auth] mint error:', e)
-      return NextResponse.json({ error: 'mint_failed' }, { status: 500 })
+      // رقم مخفي (LID) بلا تطابق — نرجّع خطأ واضح توجّه بيه الواجهة لجوجل
+      return NextResponse.json(
+        { error: msg === 'lid_no_phone' ? 'lid_no_phone' : 'mint_failed' },
+        { status: msg === 'lid_no_phone' ? 400 : 500 },
+      )
     }
   }
 
