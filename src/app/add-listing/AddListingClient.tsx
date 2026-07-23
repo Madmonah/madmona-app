@@ -3685,10 +3685,6 @@ function StepContact({
   }
 
   function handleFinalSubmit() {
-    if (!otpVerified) {
-      setOtpError('لازم تتأكد من رقم الواتس اب الأول');
-      return;
-    }
     onSubmit({
       contact_name: name,
       contact_phone: phone,
@@ -3701,7 +3697,7 @@ function StepContact({
     <section>
       <h2 className="text-lg font-semibold mb-1">بياناتك</h2>
       <p className="text-sm text-gray-500 mb-6">
-        آخر خطوة. هنبعتلك كود تأكيد على الواتس اب.
+        آخر خطوة — سيب بياناتك وفريقنا هيراجع المنتج ويتواصل معاك على الواتس اب.
       </p>
 
       <Field label="اسمك" error={errors.contact_name} required>
@@ -3722,81 +3718,11 @@ function StepContact({
           onChange={(e) => handlePhoneChange(e.target.value)}
           placeholder="01XXXXXXXXX"
           className={inputCls + ' text-left'}
-          disabled={otpVerified}
         />
       </Field>
 
-      {/* ─── OTP VERIFICATION UI ─── */}
-      {!otpVerified ? (
-        <div className="mb-4 p-4 rounded-xl bg-white border border-[#E5E5E0]">
-          {!otpSent ? (
-            <>
-              <p className="text-sm text-gray-700 mb-3">
-                📱 هنبعت كود تأكيد على الواتس اب عشان نتأكد إن الرقم بتاعك
-              </p>
-              <button
-                type="button"
-                onClick={sendOtp}
-                disabled={otpSending || !isValidPhone(phone)}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#25D366] text-white font-semibold disabled:opacity-50 transition-all"
-              >
-                {otpSending ? 'بنبعت...' : '📲 إبعتلي كود على الواتس اب'}
-              </button>
-            </>
-          ) : (
-            <>
-              <p className="text-sm text-gray-700 mb-3">
-                ✅ بعتنالك كود من 6 أرقام على <span dir="ltr" className="font-mono">{phone}</span>
-              </p>
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="\d{6}"
-                  maxLength={6}
-                  dir="ltr"
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                  placeholder="000000"
-                  className={inputCls + ' text-center text-lg tracking-widest font-mono flex-1'}
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  onClick={verifyOtp}
-                  disabled={otpVerifying || otpCode.length !== 6}
-                  className="py-2.5 px-4 rounded-xl bg-[#1F6F5F] text-white font-semibold disabled:opacity-50 whitespace-nowrap"
-                >
-                  {otpVerifying ? '...' : 'تأكيد'}
-                </button>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <button
-                  type="button"
-                  onClick={sendOtp}
-                  disabled={otpSending}
-                  className="text-[#1F6F5F] underline disabled:opacity-50"
-                >
-                  ابعت كود تاني
-                </button>
-                {otpAttemptsLeft !== null && (
-                  <span className="text-gray-500">
-                    باقي {otpAttemptsLeft} محاولات
-                  </span>
-                )}
-              </div>
-            </>
-          )}
-          {otpError && (
-            <div className="text-xs text-red-600 mt-2">{otpError}</div>
-          )}
-        </div>
-      ) : (
-        <div className="mb-4 p-4 rounded-xl bg-green-50 border border-green-200 text-sm text-green-800 flex items-center gap-2">
-          <span className="text-lg">✅</span>
-          <span>رقم الواتس اب اتأكد — تقدر تكمل</span>
-        </div>
-      )}
+      {/* توثيق الرقم بالـOTP البارد اتشال (بيحظر الرقم + مقرّرين الوارد بس في DECISIONS.md).
+          العميل يسيب رقمه والفريق بيراجع ويتواصل ويوثّق. */}
 
       {accountType === 'business' && (
         <Field label="اسم الشركة" error={errors.business_name} required>
@@ -3818,7 +3744,7 @@ function StepContact({
         onBack={onBack}
         onNext={handleFinalSubmit}
         saving={saving}
-        nextLabel={otpVerified ? 'ابعت المنتج 🚀' : '🔒 محتاج تأكيد الرقم الأول'}
+        nextLabel="ابعت المنتج 🚀"
       />
     </section>
   );
