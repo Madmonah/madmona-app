@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ChatBottomNav from '@/components/ChatBottomNav'
+import InviteContacts from '@/components/InviteContacts'
 
 const MARID_AVATAR = 'https://res.cloudinary.com/duxfgqioc/image/upload/c_crop,x_375,y_120,w_410,h_410/c_fill,w_120,h_120/madmona/mascots/genie.png'
 
@@ -74,6 +75,7 @@ export default function ChatHub() {
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#fff', fontFamily: 'system-ui, sans-serif' }}>
       <header style={{ background: '#075E54', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ fontSize: 20, fontWeight: 800, flex: 1 }}>شات مضمونة</div>
+        <InviteContacts />
         <Link href="/chat/settings" aria-label="إعدادات" style={{ color: '#fff', fontSize: 22, textDecoration: 'none' }}>⚙️</Link>
       </header>
 
