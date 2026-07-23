@@ -67,8 +67,6 @@ export const metadata: Metadata = {
   authors: [{ name: 'Madmona' }],
   creator: 'Madmona',
   publisher: 'Madmona',
-  // build marker — bump to verify which deployment actually serves the domain
-  other: { 'madmona-build': 'grpfix-2026-07-17-a' },
   manifest: '/manifest.json',
   metadataBase: new URL(SITE_URL),
   alternates: { canonical: SITE_URL },
@@ -105,6 +103,8 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: 'مضمونة', statusBarStyle: 'default' },
   category: 'business',
   other: {
+    // build marker — bump to verify which deployment actually serves the domain
+    'madmona-build': 'grpfix-2026-07-17-a',
     'p:domain_verify': '17411bdfcac6fbb3fa1286d6074aa8a4',
     'facebook-domain-verification': 't7trqm1upwaaju0pn7ejmvyx6497qv',
   },
