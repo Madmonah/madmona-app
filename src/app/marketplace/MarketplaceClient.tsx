@@ -177,6 +177,9 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   // 📄 بيجينيشن «حمّل المزيد» — كان محدود بـ60 إعلان بس. بيكبر بـ60 كل ضغطة،
   //    وبيرجع 60 أول ما أي فلتر يتغيّر (تحت). loadSeqRef بيضمن إن آخر ردّ بس هو اللي يتطبّق.
   const [visibleLimit, setVisibleLimit] = useState(60)
+  // 🔢 العدد الإجمالي الحقيقي لكل الإعلانات المطابقة (مش المُحمّل) — عشان العدّاد
+  //    فوق يقول الرقم الصح (272 مثلًا) مش 60 (عدد أول دفعة).
+  const [totalCount, setTotalCount] = useState<number | null>(null)
   const loadSeqRef = useRef(0)
   // 👁️ مرساة التحميل التلقائي عند التمرير — بدل ما المستخدم يكبس «حمّل المزيد» ٤ مرات
   //    عشان يشوف كل الإعلانات (٢٧٢+). أول ما توصل لآخر القايمة نجيب الباقي لوحدنا.
@@ -348,7 +351,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           supplier:marketplace_suppliers(business_name, logo_url),
           photos:listing_photos(url, is_primary),
           pricing:pricing_rules(price, is_active)
-        `)
+        `, { count: 'exact' })
         .eq('status', 'published')
         .eq('is_directory', false)
         .limit(visibleLimit)
@@ -376,7 +379,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         query = query.is('project_id', null)
       }
 
-      const { data, error } = await query
+      const { data, error, count } = await query
       if (seq !== loadSeqRef.current) return // ردّ متأخر — فيه كويري أحدث منه شغال
       if (error) {
         // 🛡️ فشل التحميل (نت ضعيف/أول فتحة على الموبايل): بنعيد المحاولة بدل ما
@@ -393,6 +396,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       retriesRef.current = 0
       setLoadError(false)
       setListings((data || []) as Listing[])
+      setTotalCount(typeof count === 'number' ? count : null)
       setLoading(false)
     }
     load()
@@ -926,7 +930,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           <div className="mb-6 flex items-end justify-between flex-wrap gap-2">
             <div>
               <h2 className="text-2xl md:text-3xl font-black text-gray-900">
-                <span className="tabular">{filteredListings.length}</span>{' '}
+                <span className="tabular">{cityFilter ? filteredListings.length : (totalCount ?? filteredListings.length)}</span>{' '}
                 <span className="font-semibold text-gray-500">
                   {selectedCategoryName ? t('market.in_category', { cat: selectedCategoryName }) : t('market.results_word')}
                 </span>
