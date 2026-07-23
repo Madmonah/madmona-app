@@ -49,6 +49,19 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({ error: 'agent_name required' }, { status: 400 })
   }
 
+  // 🛡️ منع تراكم الطابور: الـscheduler بيصفّي ٥ pending من آخر ساعة بس، فلو
+  //    اتضاف أكتر من ما يتصفّى بيتكدّس pending للأبد — ده اللي عمل ٨٩٦٥ صف عالق
+  //    لـquality-control وخلّى كل العمليات تبان Failed. مانضيفش لو فيه ١٠+ عالقين.
+  const { count: alreadyPending } = await supabaseAdmin
+    .from('agent_runs').select('*', { count: 'exact', head: true })
+    .eq('agent_name', body.agent_name).eq('status', 'pending')
+  if ((alreadyPending ?? 0) >= 10) {
+    return NextResponse.json(
+      { error: `فيه ${alreadyPending} في الطابور بالفعل للوكيل ده — استنى يخلصوا الأول`, queued: false },
+      { status: 429 },
+    )
+  }
+
   // @ts-expect-error
   const { error } = await supabaseAdmin.from('agent_runs').insert({
         agent_name: body.agent_name,
