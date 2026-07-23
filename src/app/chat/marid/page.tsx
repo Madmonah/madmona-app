@@ -7,7 +7,7 @@ import ChatBottomNav from '@/components/ChatBottomNav'
 import { subscribeToPush, getNotificationPermission, isPushSupported } from '@/lib/push-subscription'
 
 type Attach = { type: 'image' | 'audio' | 'video' | 'document'; mimetype: string; data_base64: string; filename?: string; previewUrl?: string }
-type Msg = { role: 'user' | 'bot' | 'sys'; text: string; time: string; media?: Attach }
+type Msg = { role: 'user' | 'bot' | 'sys'; text: string; time: string; media?: Attach; status?: 'sent' | 'delivered' | 'read' }
 type BIPEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }> }
 
 const EMOJIS = ['😀','😂','🥰','😍','👍','🙏','🔥','🎉','❤️','😅','😊','🤝','👌','💪','🙌','😎','🤔','😢','😮','🥳','😉','🫡','💯','✅','⭐','🎁','📦','🚗','🏠','🍔','☕','💰','📞','✍️','👏','😇','🤩','🌹','🙈','🤗']
@@ -15,6 +15,17 @@ const QUICKS = ['عايز أشوف العروض 🛍️', 'احجزلي ميعا
 
 function nowTime() {
   return new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
+}
+// علامة تسليم آخر رسالة للمستخدم: ✓ اتبعت · ✓✓ وصلت السيرفر · ✓✓ أزرق = المارد قرأ ورد
+function markLastUser(msgs: Msg[], status: Msg['status']): Msg[] {
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    if (msgs[i].role === 'user') {
+      const copy = msgs.slice()
+      copy[i] = { ...copy[i], status }
+      return copy
+    }
+  }
+  return msgs
 }
 function normEg(raw: string) {
   let d = (raw || '').replace(/\D/g, '')
@@ -76,7 +87,7 @@ export default function ChatPage() {
           text = (text ? text + '\n' : '') + m.media_url
         }
         const time = (() => { try { return new Date(m.created_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) } catch { return nowTime() } })()
-        return { role, text, time, media }
+        return { role, text, time, media, status: role === 'user' ? ('read' as const) : undefined }
       })
     } catch { return [] }
   }
@@ -150,7 +161,7 @@ export default function ChatPage() {
 
   async function submit(text: string, media: Attach | null, summonNow: boolean) {
     if ((!text && !media) || sending) return
-    setMessages((m) => [...m, { role: 'user', text, time: nowTime(), media: media || undefined }])
+    setMessages((m) => [...m, { role: 'user', text, time: nowTime(), media: media || undefined, status: 'sent' }])
     if (summonNow) setSending(true)
     try {
       const res = await fetch('/api/chat', {
@@ -159,8 +170,13 @@ export default function ChatPage() {
         body: JSON.stringify({ phone, name, message: text, summon: summonNow, media: media ? { type: media.type, mimetype: media.mimetype, data_base64: media.data_base64, filename: media.filename } : undefined }),
       })
       const data = await res.json()
-      if (data?.ok && data.reply) setMessages((m) => [...m, { role: 'bot', text: data.reply, time: nowTime() }])
-      else if (!data?.ok) setMessages((m) => [...m, { role: 'sys', text: data?.error || 'حصل خطأ مؤقت، جرّب تاني.', time: nowTime() }])
+      if (data?.ok) {
+        // وصلت السيرفر → ✓✓، ولو المارد رد → seen (أزرق)
+        setMessages((m) => markLastUser(m, data.reply ? 'read' : 'delivered'))
+        if (data.reply) setMessages((m) => [...m, { role: 'bot', text: data.reply, time: nowTime() }])
+      } else {
+        setMessages((m) => [...m, { role: 'sys', text: data?.error || 'حصل خطأ مؤقت، جرّب تاني.', time: nowTime() }])
+      }
     } catch {
       setMessages((m) => [...m, { role: 'sys', text: 'مش قادر أوصل للسيرفر دلوقتي، جرّب تاني.', time: nowTime() }])
     } finally {
@@ -292,7 +308,14 @@ export default function ChatPage() {
               {m.media?.type === 'audio' && <div style={{ marginBottom: m.text ? 6 : 0 }}>🎤 رسالة صوتية</div>}
               {m.media && m.media.type !== 'image' && m.media.type !== 'audio' && <div style={{ marginBottom: m.text ? 6 : 0 }}>📎 {m.media.filename || m.media.type}</div>}
               {linkify(m.text)}
-              <span style={{ display: 'block', textAlign: 'left', fontSize: 10, color: '#8a8a8a', marginTop: 2 }}>{m.time}</span>
+              <span style={{ display: 'block', textAlign: 'left', fontSize: 10, color: '#8a8a8a', marginTop: 2 }}>
+                {m.time}
+                {m.role === 'user' && m.status && (
+                  <span style={{ marginInlineStart: 4, fontWeight: 700, color: m.status === 'read' ? '#53bdeb' : '#8a8a8a' }}>
+                    {m.status === 'sent' ? '✓' : '✓✓'}
+                  </span>
+                )}
+              </span>
             </div>
           </div>
           )
