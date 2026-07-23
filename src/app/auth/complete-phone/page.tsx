@@ -1,112 +1,116 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
-import { normalizePhone } from '@/lib/auth-helpers'
 import {
-  Phone, ShieldCheck, AlertCircle, Loader2, CheckCircle, MessageCircle,
+  ShieldCheck, AlertCircle, Loader2, CheckCircle, MessageCircle, Send, RefreshCw,
 } from 'lucide-react'
 
+// =====================================================================
+// 🔗 توثيق رقم حساب جوجل — بنفس طريقة الدخول (ابعت الكود للمارد)
+// -----------------------------------------------------------------
+// حساب جوجل بياخد منه الإيميل والاسم بس — لكن *لازم* يوثّق رقمه على واتساب
+// زي أي دخول: يبعت كود MADxxxxx للمارد. الرقم بيتأكّد من *مصدر الرسالة*
+// (محدش يبعت برقم غيره)، والوارد شغّال دايمًا. مضمونة مابتبعتش أي كود بارد.
+//
+// نفس الجذر اللي اتصلّح في WhatsAppLogin: نفتح نافذة الواتساب *فورًا* جوّه
+// ضغطة المستخدم (قبل أي await) عشان مانتبلوكش بالـpopup-blocker، وكمان زرار
+// <a> مباشر + عرض الكود لو الفتح فشل. بعد ما الكود يتأكّد → نربط الرقم
+// بالحساب الحالي عبر /api/auth/complete-phone (مش سيشن جديدة — هو داخل أصلًا).
+// =====================================================================
 function CompletePhoneContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/account'
 
   const [checkingSession, setCheckingSession] = useState(true)
-  const [step, setStep] = useState<'phone' | 'code'>('phone')
-  const [phone, setPhone] = useState('')
+  const [phase, setPhase] = useState<'idle' | 'waiting' | 'finishing' | 'done'>('idle')
+  const [err, setErr] = useState('')
+  const [waUrl, setWaUrl] = useState('')
   const [code, setCode] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [info, setInfo] = useState<string | null>(null)
-  const [done, setDone] = useState(false)
+  const codeRef = useRef<string>('')
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Must be logged in (via Google) to be here.
+  // لازم يكون داخل (بجوجل) عشان يبقى هنا
   useEffect(() => {
     supabaseBrowser.auth.getSession().then(({ data }) => {
-      if (!data.session?.user) {
-        router.replace('/auth/login')
-        return
-      }
+      if (!data.session?.user) { router.replace('/auth/login'); return }
       setCheckingSession(false)
     })
   }, [router])
 
-  const sendCode = async () => {
-    setError(null)
-    setInfo(null)
-    const normalized = normalizePhone(phone)
-    if (!normalized) {
-      setError('اكتب رقم موبايل مصري صح (مثال: 01XXXXXXXXX)')
-      return
-    }
-    setSubmitting(true)
-    try {
-      const res = await fetch('/api/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: normalized }),
-      })
-      const data = await res.json()
-      if (!data.ok) {
-        setError(data.message || 'مقدرناش نبعت الكود، حاول تاني')
-        setSubmitting(false)
-        return
-      }
-      setStep('code')
-      setInfo('بعتنالك كود على الواتس اب 📲')
-    } catch (e) {
-      console.error('[complete-phone] send error:', e)
-      setError('حصلت مشكلة، حاول تاني')
-    }
-    setSubmitting(false)
-  }
+  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current) }, [])
 
-  const verifyCode = async () => {
-    setError(null)
-    setInfo(null)
-    const normalized = normalizePhone(phone)
-    if (!normalized) {
-      setError('رقم التليفون مش صحيح')
-      setStep('phone')
-      return
-    }
-    if (!/^\d{6}$/.test(code.trim())) {
-      setError('الكود لازم يكون 6 أرقام')
-      return
-    }
-    setSubmitting(true)
+  // الربط: الكود اتأكّد → نربط الرقم المُثبت بالحساب الحالي
+  async function linkPhone(): Promise<void> {
+    setPhase('finishing')
     try {
       const { data: sessionData } = await supabaseBrowser.auth.getSession()
       const token = sessionData.session?.access_token
-      if (!token) {
-        router.replace('/auth/login')
-        return
-      }
+      if (!token) { router.replace('/auth/login'); return }
       const res = await fetch('/api/auth/complete-phone', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ phone: normalized, code: code.trim() }),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ code: codeRef.current, next: redirectTo }),
       })
-      const data = await res.json()
-      if (!data.ok) {
-        setError(data.message || 'الكود غلط أو انتهت صلاحيته')
-        setSubmitting(false)
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || !data.ok) {
+        setPhase('idle')
+        setErr(data.message || 'حصلت مشكلة، جرّب تاني')
         return
       }
-      setDone(true)
-      setTimeout(() => {
-        router.replace(redirectTo)
-        router.refresh()
-      }, 1200)
+      setPhase('done')
+      setTimeout(() => { router.replace(redirectTo); router.refresh() }, 1200)
     } catch (e) {
-      console.error('[complete-phone] verify error:', e)
-      setError('حصلت مشكلة، حاول تاني')
-      setSubmitting(false)
+      console.error('[complete-phone] link error:', e)
+      setPhase('idle')
+      setErr('حصلت مشكلة، جرّب تاني')
+    }
+  }
+
+  // polling: بنسأل كل ثانيتين لحد ما رسالة الكود توصل وتتأكد
+  function startPolling() {
+    if (timerRef.current) clearInterval(timerRef.current)
+    const startedAt = Date.now()
+    timerRef.current = setInterval(async () => {
+      if (Date.now() - startedAt > 5 * 60 * 1000) {
+        clearInterval(timerRef.current!)
+        setPhase('idle'); setErr('الوقت خلص — جرّب تاني')
+        return
+      }
+      try {
+        const s = await fetch(`/api/auth/wa?code=${codeRef.current}`).then((r) => r.json())
+        if (s.verified) {
+          clearInterval(timerRef.current!)
+          await linkPhone()
+        }
+      } catch { /* poll بيكمل */ }
+    }, 2000)
+  }
+
+  async function begin() {
+    setErr('')
+    // 🔑 الجذر: نفتح نافذة *فورًا* جوّه الضغطة — قبل أي await — عشان مانتبلوكش.
+    let win: Window | null = null
+    try { win = window.open('', '_blank') } catch { win = null }
+    try {
+      const res = await fetch('/api/auth/wa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'start' }),
+      })
+      const j = await res.json()
+      if (!res.ok || !j.code) { try { win?.close() } catch { /* */ } setErr('حصلت مشكلة — جرّب تاني'); return }
+      codeRef.current = j.code
+      setCode(j.code)
+      setWaUrl(j.wa_url)
+      setPhase('waiting')
+      if (win) { try { win.location.href = j.wa_url } catch { /* الزرار البديل موجود */ } }
+      startPolling()
+    } catch {
+      try { win?.close() } catch { /* */ }
+      setErr('حصلت مشكلة في الاتصال — جرّب تاني')
     }
   }
 
@@ -118,7 +122,7 @@ function CompletePhoneContent() {
     )
   }
 
-  if (done) {
+  if (phase === 'done') {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-sm bg-white rounded-3xl shadow-luxe p-10 text-center animate-scale-in">
@@ -145,118 +149,79 @@ function CompletePhoneContent() {
               <span className="text-xs font-bold text-gray-700">خطوة أخيرة</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight tracking-tight">
-              أكّد <span className="gradient-text-green">رقم موبايلك</span>
+              وثّق <span className="gradient-text-green">رقم واتسابك</span>
             </h1>
             <p className="text-sm text-gray-500 mt-2 leading-relaxed">
-              محتاجين رقمك عشان نتواصل معاك على الواتس اب ونأمّن حسابك. هنبعتلك كود تأكيد.
+              عشان نأمّن حسابك ونقدر نتواصل معاك، ابعت كود تأكيد للمارد على واتساب — من نفس رقمك.
+              مضمونة مابتبعتش أكواد، إنت اللي بتبعت. 🧞
             </p>
           </div>
 
           <div className="bg-white rounded-3xl shadow-luxe p-7 md:p-9">
-            {step === 'phone' ? (
-              <div className="space-y-5">
-                <div>
-                  <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Phone className="w-3.5 h-3.5 text-[#1F6F5F]" />
-                    رقم الموبايل
-                  </label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="01XXXXXXXXX"
-                    className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
-                    dir="ltr"
-                    style={{ textAlign: 'right' }}
-                    autoComplete="tel"
-                    autoFocus
-                  />
-                </div>
+            {phase === 'idle' && (
+              <button
+                type="button"
+                onClick={begin}
+                className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
+              >
+                <MessageCircle className="w-5 h-5" />
+                وثّق رقمك على واتساب
+              </button>
+            )}
 
-                {error && (
-                  <div className="flex items-start gap-2 p-3.5 bg-red-50 border border-red-200 rounded-2xl text-sm text-red-800">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                    <span>{error}</span>
+            {(phase === 'waiting' || phase === 'finishing') && (
+              <div className="bg-[#F0F7F4] border border-[#2FA084]/30 rounded-2xl p-4 text-center">
+                {phase === 'waiting' ? (
+                  <>
+                    <a
+                      href={waUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-3.5 rounded-2xl font-bold text-base shadow-elevated hover:-translate-y-0.5 transition-all mb-3"
+                    >
+                      <Send className="w-5 h-5" />
+                      افتح واتساب وابعت الكود
+                    </a>
+                    <p className="text-xs text-gray-600 leading-relaxed mb-2">
+                      هيفتحلك واتساب برسالة جاهزة فيها الكود — <b>دوس إرسال بس</b> وارجع هنا.
+                      <br />لو مفتحش، ابعت الكود ده يدوي لـ«المارد» على واتساب:
+                    </p>
+                    <div className="inline-block bg-white border border-[#2FA084]/40 rounded-xl px-5 py-2 font-black text-xl tracking-[0.3em] text-[#1F6F5F] mb-3 select-all">
+                      {code}
+                    </div>
+                    <div className="flex items-center justify-center gap-2 text-[#1F6F5F] font-bold text-sm mb-1">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      مستنيين رسالتك…
+                    </div>
+                    <button
+                      type="button"
+                      onClick={begin}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1F6F5F] hover:underline mt-1"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      جرّب تاني
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center gap-2 text-[#1F6F5F] font-bold text-sm">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    ثواني — بنوثّق رقمك…
                   </div>
                 )}
-
-                <button
-                  onClick={sendCode}
-                  disabled={submitting || !phone}
-                  className="w-full bg-[#1F6F5F] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
-                >
-                  {submitting ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /><span>بنبعت الكود…</span></>
-                  ) : (
-                    <><MessageCircle className="w-4 h-4" />ابعت كود الواتس اب</>
-                  )}
-                </button>
               </div>
-            ) : (
-              <div className="space-y-5">
-                <div>
-                  <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#1F6F5F]" />
-                    كود التأكيد
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    placeholder="------"
-                    className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-2xl font-black tracking-[0.4em] text-center focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
-                    dir="ltr"
-                    autoFocus
-                  />
-                  <p className="text-[11px] text-gray-500 mt-1.5">
-                    بعتنا الكود على <span dir="ltr">{normalizePhone(phone)}</span>
-                  </p>
-                </div>
+            )}
 
-                {info && (
-                  <div className="flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded-2xl text-sm text-green-800">
-                    <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                    <span>{info}</span>
-                  </div>
-                )}
-                {error && (
-                  <div className="flex items-start gap-2 p-3.5 bg-red-50 border border-red-200 rounded-2xl text-sm text-red-800">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                <button
-                  onClick={verifyCode}
-                  disabled={submitting || code.length !== 6}
-                  className="w-full bg-[#1F6F5F] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
-                >
-                  {submitting ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /><span>بنأكّد…</span></>
-                  ) : (
-                    <><ShieldCheck className="w-4 h-4" />أكّد الرقم</>
-                  )}
-                </button>
-
-                <div className="flex items-center justify-between text-[12px]">
-                  <button
-                    onClick={() => { setStep('phone'); setCode(''); setError(null); setInfo(null) }}
-                    className="text-gray-500 hover:text-gray-700 font-semibold"
-                  >
-                    غيّر الرقم
-                  </button>
-                  <button
-                    onClick={sendCode}
-                    disabled={submitting}
-                    className="text-[#1F6F5F] hover:underline font-bold disabled:opacity-50"
-                  >
-                    ابعت الكود تاني
-                  </button>
-                </div>
+            {err && (
+              <div className="flex items-start gap-2 p-3.5 bg-red-50 border border-red-200 rounded-2xl text-sm text-red-800 mt-3">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>{err}</span>
               </div>
             )}
           </div>
+
+          <p className="text-center text-[11px] text-gray-400 mt-4">
+            رقمك بيتأكّد من رسالتك نفسها — أأمن من أي كود، ومفيش رسايل بتتبعتلك.
+          </p>
         </div>
       </main>
     </div>

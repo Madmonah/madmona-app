@@ -20,19 +20,23 @@ function CallbackContent() {
   const handled = useRef(false)
 
   useEffect(() => {
-    const route = async (userId: string) => {
+    const route = async (user: { id: string; user_metadata?: Record<string, unknown> | null }) => {
       if (handled.current) return
       handled.current = true
       try {
+        // اللي وثّق واتساب بالوارد (حتى برقم مخفي/LID) بيتعلّم wa_verified في
+        // الـmetadata — عشان مايفضلش يترجّع لصفحة التوثيق كل مرة (loop).
+        const waVerified = user.user_metadata?.wa_verified === true
         const { data: profile } = await supabaseBrowser
           .from('profiles')
           .select('phone')
-          .eq('id', userId)
+          .eq('id', user.id)
           .maybeSingle()
         // @ts-expect-error loose profile typing
-        if (hasRealPhone(profile?.phone)) {
+        if (hasRealPhone(profile?.phone) || waVerified) {
           router.replace(redirectTo)
         } else {
+          // حساب جوجل من غير رقم موثّق → لازم يوثّق رقمه بالوارد (ابعت كود للمارد)
           router.replace(`/auth/complete-phone?redirect=${encodeURIComponent(redirectTo)}`)
         }
         router.refresh()
@@ -45,12 +49,12 @@ function CallbackContent() {
 
     // 1) Session may already be available (detectSessionInUrl parses the hash).
     supabaseBrowser.auth.getSession().then(({ data }) => {
-      if (data.session?.user) route(data.session.user.id)
+      if (data.session?.user) route(data.session.user)
     })
 
     // 2) Otherwise wait for the SIGNED_IN event once the URL is processed.
     const { data: sub } = supabaseBrowser.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) route(session.user.id)
+      if (session?.user) route(session.user)
     })
 
     // 3) Fallback: if nothing happened in 6s, the OAuth likely failed.
