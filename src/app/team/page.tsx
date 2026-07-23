@@ -31,9 +31,12 @@ export default function TeamPage() {
   const [toast, setToast] = useState('')
   const [gallery, setGallery] = useState(false)
   const [forwardMsg, setForwardMsg] = useState<CMsg | null>(null)
+  const [recording, setRecording] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const chanRef = useRef<ReturnType<typeof supabaseBrowser.channel> | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const recRef = useRef<MediaRecorder | null>(null)
+  const chunksRef = useRef<Blob[]>([])
 
   const loadRooms = useCallback(async (myId: string) => {
     const { data } = await supabaseBrowser.from('chat_rooms').select('id, name, marid_enabled, kind').order('created_at', { ascending: false })
@@ -134,7 +137,7 @@ export default function TeamPage() {
         r.readAsDataURL(file)
       })
       const dataBase64 = dataUrl.split(',')[1] || ''
-      const kind = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : 'document'
+      const kind = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : file.type.startsWith('audio/') ? 'audio' : 'document'
       const resp = await fetch('/api/chat/media', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -144,6 +147,24 @@ export default function TeamPage() {
       if (j?.ok && j.message) setMessages((m) => (m.some((x) => x.id === (j.message as CMsg).id) ? m : [...m, j.message as CMsg]))
       else alert(j?.error || 'فشل رفع الملف')
     } catch { alert('فشل رفع الملف') } finally { setBusy(false); if (fileRef.current) fileRef.current.value = '' }
+  }
+
+  // تسجيل رسالة صوتية وإرسالها — بتتفرّغ لنص في السيرفر عشان تظهر والمارد يفهمها لما يتنده
+  async function toggleRec() {
+    if (busy) return
+    if (recording) { recRef.current?.stop(); return }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mr = new MediaRecorder(stream); chunksRef.current = []
+      mr.ondataavailable = (ev) => { if (ev.data.size) chunksRef.current.push(ev.data) }
+      mr.onstop = async () => {
+        stream.getTracks().forEach((tr) => tr.stop())
+        setRecording(false)
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+        if (blob.size > 0) await sendMedia(new File([blob], 'voice.webm', { type: 'audio/webm' }))
+      }
+      recRef.current = mr; mr.start(); setRecording(true)
+    } catch { alert('مش قادر أوصل للمايك') }
   }
 
   // فوروارد: تحويل رسالة ميديا لمحادثة تانية (نسخ media_url + kind لغرفة تانية)
@@ -348,7 +369,10 @@ export default function TeamPage() {
                 {m.media_url && m.kind === 'video' && (
                   <video src={m.media_url} controls style={{ display: 'block', maxWidth: 240, width: '100%', borderRadius: 8, marginBottom: m.body ? 4 : 0 }} />
                 )}
-                {m.media_url && m.kind !== 'image' && m.kind !== 'video' && (
+                {m.media_url && m.kind === 'audio' && (
+                  <audio src={m.media_url} controls style={{ display: 'block', maxWidth: 240, width: '100%', marginBottom: m.body ? 4 : 0 }} />
+                )}
+                {m.media_url && m.kind !== 'image' && m.kind !== 'video' && m.kind !== 'audio' && (
                   <a href={m.media_url} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginBottom: m.body ? 4 : 0, color: '#0a66c2', textDecoration: 'underline', fontSize: 14 }}>📎 ملف مرفق</a>
                 )}
                 {m.media_url && (
@@ -368,6 +392,7 @@ export default function TeamPage() {
       <div style={{ display: 'flex', gap: 8, padding: 10, background: 'rgba(255,255,255,.92)', borderTop: '1px solid rgba(0,0,0,.06)', boxShadow: '0 -2px 10px rgba(0,0,0,.05)', alignItems: 'center' }}>
         <input ref={fileRef} type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) sendMedia(f) }} />
         <button onClick={() => fileRef.current?.click()} disabled={busy} title="أرفق صورة أو فيديو" style={{ background: '#fff', color: '#128C7E', border: '1px solid #ddd', borderRadius: '50%', width: 44, height: 44, fontSize: 18, cursor: 'pointer', flexShrink: 0, opacity: busy ? 0.6 : 1 }}>📎</button>
+        <button onClick={toggleRec} disabled={busy} title={recording ? 'إيقاف وإرسال' : 'رسالة صوتية'} style={{ background: recording ? '#c0392b' : '#fff', color: recording ? '#fff' : '#128C7E', border: '1px solid #ddd', borderRadius: '50%', width: 44, height: 44, fontSize: 18, cursor: 'pointer', flexShrink: 0, opacity: busy ? 0.6 : 1 }}>{recording ? '⏹️' : '🎤'}</button>
         <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendMsg()} placeholder="اكتب رسالة…" style={{ flex: 1, padding: '12px 14px', border: '1px solid #ddd', borderRadius: 22, fontSize: 15, outline: 'none' }} />
         <button onClick={sendMsg} disabled={busy} style={{ background: '#128C7E', color: '#fff', border: 'none', borderRadius: '50%', width: 48, height: 48, fontSize: 18, cursor: 'pointer', opacity: busy ? 0.6 : 1, flexShrink: 0 }}>➤</button>
       </div>

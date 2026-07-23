@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { saveMedia, type MediaInput } from '@/lib/marid-media'
+import { saveMedia, transcribeAudio, type MediaInput } from '@/lib/marid-media'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -61,9 +61,17 @@ export async function POST(request: NextRequest) {
     const mediaUrl = await saveMedia({ type: mediaType, mimetype, data_base64: dataBase64, filename } as MediaInput, phone)
     if (!mediaUrl) return NextResponse.json({ ok: false, error: 'فشل رفع الملف' }, { status: 500 })
 
+    // الصوت: نفرّغه لنص (Whisper عبر Groq/OpenAI) عشان يظهر في المحادثة والمارد يفهمه لما يتنده.
+    // لو مفيش مفتاح مضبوط، transcribeAudio بترجّع null وبنسيبها كـ«رسالة صوتية» من غير ما نكسر الرفع.
+    let messageBody = caption || null
+    if (mediaType === 'audio') {
+      const transcript = (await transcribeAudio({ data_base64: dataBase64, mimetype }))?.trim()
+      messageBody = transcript ? (caption ? `${caption}\n🎤 ${transcript}` : `🎤 ${transcript}`) : (caption || '🎤 رسالة صوتية')
+    }
+
     const { data: ins, error } = await admin
       .from('chat_messages')
-      .insert({ room_id: roomId, sender_id: user.id, sender_kind: 'user', sender_name: senderName, body: caption || null, kind, media_url: mediaUrl })
+      .insert({ room_id: roomId, sender_id: user.id, sender_kind: 'user', sender_name: senderName, body: messageBody, kind, media_url: mediaUrl })
       .select('*').single()
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
 
