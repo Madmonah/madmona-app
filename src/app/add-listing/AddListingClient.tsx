@@ -1109,10 +1109,11 @@ function StepBasics({
     const parent = categories.find((c) => c.subs?.some((x) => x.slug === s));
     return parent?.track ?? null;
   })();
-  const [accountType, setAccountType] = useState<'individual' | 'business'>(
-    draft.account_type || (slugTrack && SURE_COMPANY_TRACKS.includes(slugTrack) ? 'business' : 'individual')
+  // «شركة/فرد» اتشالت — بدلها زرار محايد «عندك أكتر من فرع؟». العمولة ١٠٪ للكل.
+  const [hasBranches, setHasBranches] = useState<boolean>(
+    draft.account_type === 'business' || !!(slugTrack && SURE_COMPANY_TRACKS.includes(slugTrack))
   );
-  const isBusiness = accountType === 'business';
+  const isBusiness = hasBranches;
 
   // Mohamed May 31 2026: multi-branch — one listing can cover several branches
   type Branch = { name?: string; city?: string; address?: string; phone?: string };
@@ -1242,7 +1243,7 @@ function StepBasics({
       .filter((b) => b.name || b.address || b.phone);
     if (isBusiness && cleanBranches.length > 0) finalAttrs.branches = cleanBranches;
 
-    onSubmit({ title, description, city, district, attributes: finalAttrs, account_type: accountType });
+    onSubmit({ title, description, city, district, attributes: finalAttrs });
   }
 
   return (
@@ -1252,19 +1253,19 @@ function StepBasics({
 
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
 
-      {/* Mohamed (Jul 3 2026): checklist «شركة؟» بيفتح إضافة الفروع بس — العمولة ثابتة 10٪ للكل */}
+      {/* «شركة/فرد» اتشالت — زرار محايد لإضافة الفروع بس (العمولة ١٠٪ للكل) */}
       <div className="mb-5 p-3 rounded-xl bg-white border border-[#E5E5E0]">
         <label className="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
-            checked={isBusiness}
-            onChange={(e) => setAccountType(e.target.checked ? 'business' : 'individual')}
+            checked={hasBranches}
+            onChange={(e) => setHasBranches(e.target.checked)}
             className="mt-1 w-4 h-4 accent-[#1F6F5F]"
           />
           <span className="text-sm">
-            <span className="font-semibold">بسجّل كشركة</span>
+            <span className="font-semibold">عندك أكتر من فرع؟</span>
             <span className="block text-xs text-gray-500 mt-0.5">
-              لو عندك سجل تجاري أو أكتر من فرع — بيفتحلك إضافة الفروع. العمولة ثابتة ١٠٪ على الكل.
+              لو نشاطك ليه أكتر من فرع، فعّل ده وأضفهم في نفس الإعلان.
             </span>
           </span>
         </label>
@@ -3592,9 +3593,7 @@ function StepContact({
 }) {
   const [name, setName] = useState(draft.contact_name || '');
   const [phone, setPhone] = useState(draft.contact_phone || '');
-  // Mohamed (Jul 3 2026): مبنسألش تاني فرد/شركة هنا — بيتحدد من checklist «بسجّل كشركة»
-  // في خطوة المعلومات الأساسية (للفروع بس). العمولة ثابتة 10٪ على الكل.
-  const accountType: 'individual' | 'business' = draft.account_type || 'individual';
+  // «شركة/فرد» اتشالت — اسم المتجر/النشاط اختياري للكل.
   const [businessName, setBusinessName] = useState(draft.business_name || '');
 
   // ─── OTP VERIFICATION (May 30 2026 — Task 4) ─────────────────────
@@ -3688,8 +3687,7 @@ function StepContact({
     onSubmit({
       contact_name: name,
       contact_phone: phone,
-      account_type: accountType,
-      business_name: accountType === 'business' ? businessName : undefined,
+      business_name: businessName.trim() || undefined,
     });
   }
 
@@ -3724,17 +3722,15 @@ function StepContact({
       {/* توثيق الرقم بالـOTP البارد اتشال (بيحظر الرقم + مقرّرين الوارد بس في DECISIONS.md).
           العميل يسيب رقمه والفريق بيراجع ويتواصل ويوثّق. */}
 
-      {accountType === 'business' && (
-        <Field label="اسم الشركة" error={errors.business_name} required>
-          <input
-            type="text"
-            value={businessName}
-            onChange={(e) => setBusinessName(e.target.value)}
-            placeholder="الاسم التجاري"
-            className={inputCls}
-          />
-        </Field>
-      )}
+      <Field label="اسم المتجر أو النشاط (اختياري)" error={errors.business_name}>
+        <input
+          type="text"
+          value={businessName}
+          onChange={(e) => setBusinessName(e.target.value)}
+          placeholder="مثلاً: سوبر ماركت النور، صيدلية الشفا…"
+          className={inputCls}
+        />
+      </Field>
 
       <div className="mt-6 p-4 rounded-xl bg-white border border-[#E5E5E0] text-xs text-gray-600">
         ✅ بكدا حضرتك سجلت المنتج — هنبعتلك تأكيد على الواتس اب وتقدر تكمل تسجيل حسابك (دقيقة واحدة).
@@ -3755,8 +3751,6 @@ function validateContact(patch: Partial<DraftPayload>, setErrors: (e: Record<str
   if (!patch.contact_name || patch.contact_name.length < 2) errs.contact_name = 'اكتب اسمك';
   if (!patch.contact_phone || !/^(\+?2)?01\d{9}$/.test(String(patch.contact_phone).replace(/\s/g, '')))
     errs.contact_phone = 'رقم تليفون مش صحيح (لازم 11 رقم)';
-  if (patch.account_type === 'business' && !patch.business_name)
-    errs.business_name = 'اكتب اسم الشركة';
   setErrors(errs);
   return Object.keys(errs).length === 0;
 }
