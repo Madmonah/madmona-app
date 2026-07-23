@@ -42,25 +42,32 @@ function genCode(): string {
 async function mintSession(rawPhone: string, fullNameHint: string | null = null) {
   const sb = admin()
   let normalized = normalizePhone(rawPhone)
+  let lid: string | null = null
   // 🔗 الجذر: لو اللي وصلنا مُعرّف مخفي (LID) مش رقم حقيقي — نحاول نحلّه من
-  //    wa_lid_map. ده كان بيخلي verified_phone يتخزّن LID فـ mintSession يفشل
-  //    بصمت (٣ من كل ٤ محاولات دخول متأكدة كانت بتقع هنا). لو مفيش تطابق،
-  //    برمي lid_no_phone عشان الواجهة توجّه المستخدم لجوجل بدل «حصلت مشكلة».
+  //    wa_lid_map الأول. لو مفيش تطابق، بنعمل الحساب مربوط بالـLID نفسه:
+  //    الـLID هوية واتساب ثابتة ومتأكدة من *مصدر الرسالة* (محدش يقدر يبعت
+  //    بهوية غيره)، فالدخول بيه آمن زي الرقم بالظبط — واللي رقمه مخفي بيدخل
+  //    فعلًا بدل ما يتوقف. (يكمّل رقمه بعدين من صفحة complete-phone.)
   if (!normalized) {
-    const lid = String(rawPhone || '').replace(/\D/g, '')
-    if (lid.length >= 10) {
-      const { data: map } = await sb.from('wa_lid_map').select('phone').eq('lid', lid).maybeSingle()
+    const digits = String(rawPhone || '').replace(/\D/g, '')
+    if (digits.length >= 10) {
+      const { data: map } = await sb.from('wa_lid_map').select('phone').eq('lid', digits).maybeSingle()
       const mapped = (map as { phone?: string } | null)?.phone
       if (mapped) normalized = normalizePhone(mapped)
+      else lid = digits
     }
   }
-  if (!normalized) throw new Error('lid_no_phone')
-  const email = phoneToEmail(normalized)
-  const local = '0' + normalized.slice(3) // +2010... → 010...
+  if (!normalized && !lid) throw new Error('bad_identifier')
+
+  // الإيميل الداخلي (مُعرّف الحساب في Supabase): من الرقم لو موجود، أو من الـLID
+  // لو الرقم مخفي. المستخدم بيدخل بالواتساب كل مرة فالإيميل ده داخلي بحت.
+  const email = normalized ? phoneToEmail(normalized) : `wa-lid-${lid}@lid.madmona.eg`
+  const local = normalized ? '0' + normalized.slice(3) : null // +2010... → 010...
 
   // اعمل المستخدم لو مش موجود (لو موجود بيرجع email_exists وده تمام)
   const { data: created, error: createErr } = await sb.auth.admin.createUser({
-    email, email_confirm: true, user_metadata: { phone: local, via: 'whatsapp' },
+    email, email_confirm: true,
+    user_metadata: local ? { phone: local, via: 'whatsapp' } : { via: 'whatsapp_lid', lid },
   })
   let userId = created?.user?.id
   if (createErr && !/already|exists/i.test(createErr.message)) throw createErr
@@ -76,7 +83,7 @@ async function mintSession(rawPhone: string, fullNameHint: string | null = null)
     const { data: prof } = await sb.from('profiles').select('id, phone').eq('id', userId).maybeSingle()
     if (!prof) {
       await sb.from('profiles').insert({ id: userId, phone: local, role: 'customer' } as never)
-    } else if (!prof.phone) {
+    } else if (!prof.phone && local) {
       await sb.from('profiles').update({ phone: local } as never).eq('id', userId)
     }
   }
@@ -86,11 +93,13 @@ async function mintSession(rawPhone: string, fullNameHint: string | null = null)
   // اللي بتعتمد عليه تشتغل من غير دخول تاني. best-effort.
   let madmonaToken: string | null = null
   let fullName: string | null = null
-  try {
-    const { data: mint } = await sb.rpc('wa_login_mint', { p_phone: normalized, p_full_name: fullNameHint } as never)
-    const m = mint as { success?: boolean; token?: string; full_name?: string } | null
-    if (m?.success && m.token) { madmonaToken = m.token; fullName = m.full_name || null }
-  } catch { /* التوكن القديم إضافة — مش شرط */ }
+  if (normalized) { // التوكن القديم محتاج رقم — لو الحساب مربوط بـLID بنتخطاه
+    try {
+      const { data: mint } = await sb.rpc('wa_login_mint', { p_phone: normalized, p_full_name: fullNameHint } as never)
+      const m = mint as { success?: boolean; token?: string; full_name?: string } | null
+      if (m?.success && m.token) { madmonaToken = m.token; fullName = m.full_name || null }
+    } catch { /* التوكن القديم إضافة — مش شرط */ }
+  }
 
   return {
     token_hash: linkData.properties.hashed_token, email,
