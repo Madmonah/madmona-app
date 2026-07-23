@@ -2554,6 +2554,27 @@ function ProductDetailsStep({
 type CatalogItem = { name_ar: string; price: number; description_ar?: string; photo_url?: string; is_available: boolean; };
 type CatalogSection = { name_ar: string; items: CatalogItem[]; };
 
+// قوالب جاهزة بالأصناف الدارجة في السوق المصري — البائع يحط السعر بس (والكمية).
+// أقسام + أسماء أصناف؛ loadTemplate بيحوّلها لصفوف كتالوج بأسعار فاضية.
+const CATALOG_TEMPLATES: Record<string, { name_ar: string; items: string[] }[]> = {
+  'shop-supermarket': [
+    { name_ar: 'بقالة جافة', items: ['أرز مصري', 'مكرونة', 'سكر', 'دقيق فاخر', 'شاي', 'ملح', 'عدس', 'فول', 'صلصة طماطم', 'زيت'] },
+    { name_ar: 'ألبان وأجبان وبيض', items: ['لبن', 'جبنة بيضاء', 'جبنة رومي', 'زبادي', 'زبدة', 'قشطة', 'بيض'] },
+    { name_ar: 'مشروبات', items: ['مياه معدنية', 'مياه غازية', 'عصاير', 'شاي مثلج'] },
+    { name_ar: 'معلبات وحفظ', items: ['تونة', 'فول معلب', 'ذرة', 'طماطم معلبة'] },
+    { name_ar: 'منظفات ومنزلية', items: ['صابون', 'مسحوق غسيل', 'معطر', 'كلور', 'أكياس قمامة', 'مناديل'] },
+    { name_ar: 'سناكس وحلويات', items: ['شيبسي', 'بسكويت', 'شوكولاتة', 'علكة'] },
+  ],
+  'shop-pharmacy': [
+    { name_ar: 'مسكنات وخافض حرارة', items: ['بانادول', 'بروفين', 'كتافلام', 'أسبرين', 'كتافاست'] },
+    { name_ar: 'برد وسعال', items: ['كونجستال', 'فلورست', 'توسيكولار', 'فيتامين سي'] },
+    { name_ar: 'معدة وجهاز هضمي', items: ['أنتينال', 'فوار فروت', 'مالوكس', 'بيبار'] },
+    { name_ar: 'عناية شخصية', items: ['شامبو', 'صابون طبي', 'مطهر ديتول', 'كريم مرطب'] },
+    { name_ar: 'إسعافات ومستلزمات', items: ['شاش', 'قطن طبي', 'بلاستر', 'محلول ملح', 'ترمومتر'] },
+    { name_ar: 'فيتامينات ومكملات', items: ['فيتامين د', 'كالسيوم', 'حديد', 'أوميجا 3'] },
+  ],
+};
+
 function CatalogBuilderStep({
   draft, categories, token, onSubmit, onBack, onChangeCategory, saving,
 }: {
@@ -2668,6 +2689,12 @@ function CatalogBuilderStep({
     XLSX.writeFile(wb, 'madmona-catalog-template.xlsx');
   }
 
+  function loadTemplate() {
+    const tpl = CATALOG_TEMPLATES[slug || ''];
+    if (!tpl) return;
+    setSections(tpl.map((s) => ({ name_ar: s.name_ar, items: s.items.map((n) => ({ ...emptyItem(), name_ar: n })) })));
+    setError('');
+  }
   function addSection() { setSections((p) => [...p, { name_ar: '', items: [emptyItem()] }]); }
   function removeSection(si: number) { setSections((p) => (p.length > 1 ? p.filter((_, i) => i !== si) : p)); }
   function updateSectionName(si: number, name: string) { setSections((p) => p.map((s, i) => (i === si ? { ...s, name_ar: name } : s))); }
@@ -2744,6 +2771,13 @@ function CatalogBuilderStep({
         </div>
         {excelMsg && <p className="mt-2 text-xs font-bold text-[#1F6F5F]">{excelMsg}</p>}
       </div>
+
+      {CATALOG_TEMPLATES[slug || ''] && (
+        <button type="button" onClick={loadTemplate}
+          className="w-full mb-5 py-3 rounded-2xl bg-[#FFF7E6] border-2 border-[#F0C36D] text-[#7a5200] text-sm font-bold">
+          🧾 ابدأ بقالب جاهز بالأصناف الدارجة — انت بس تحط السعر
+        </button>
+      )}
 
       <div className='space-y-5'>
         {sections.map((section, si) => (
