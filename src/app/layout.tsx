@@ -16,6 +16,7 @@ import DailyMessageBanner from '@/components/DailyMessageBanner'
 import { safeStorage } from '@/lib/safe-storage'
 // 🔴 شبكة أمان: أي RPC تفشل، بيظهر تنبيه أحمر بدل ما تعدّي في صمت (13 Jul 2026)
 import RpcErrorToast from '@/components/RpcErrorToast'
+import MaridChatFab from '@/components/MaridChatFab'
 import './globals.css'
 
 // Madmona root layout — Arabic typography (Tajawal), brand metadata,
@@ -242,6 +243,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <DailyMessageBanner />
         </Suspense>
         <RpcErrorToast />
+        <MaridChatFab />
         </LanguageProvider>
       </body>
     </html>

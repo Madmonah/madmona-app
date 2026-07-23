@@ -85,7 +85,7 @@ export default function ChatHub() {
           <img src={MARID_AVATAR} alt="المارد" style={avatarStyle} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-              <span style={{ fontWeight: 700, color: '#111' }}>المارد 🤖</span>
+              <span style={{ fontWeight: 700, color: '#111' }}>المارد 🧞</span>
               <span style={{ fontSize: 11, color: '#8a8a8a' }}>{maridTime}</span>
             </div>
             <div style={{ fontSize: 13, color: '#667', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{maridPreview}</div>
