@@ -178,6 +178,9 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   //    وبيرجع 60 أول ما أي فلتر يتغيّر (تحت). loadSeqRef بيضمن إن آخر ردّ بس هو اللي يتطبّق.
   const [visibleLimit, setVisibleLimit] = useState(60)
   const loadSeqRef = useRef(0)
+  // 👁️ مرساة التحميل التلقائي عند التمرير — بدل ما المستخدم يكبس «حمّل المزيد» ٤ مرات
+  //    عشان يشوف كل الإعلانات (٢٧٢+). أول ما توصل لآخر القايمة نجيب الباقي لوحدنا.
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
   // 🛡️ صمود التحميل: لو الكويري فشل (نت موبايل ضعيف/أول فتحة) بنعيد المحاولة
   // بدل ما نفضّي السوق بصمت. ده كان بيخلي الماركت يبان فاضي على الموبايل.
   const [loadError, setLoadError] = useState(false)
@@ -400,6 +403,22 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   useEffect(() => {
     setVisibleLimit(60)
   }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource, selectedGroupSlug])
+
+  // ♾️ تحميل تلقائي عند التمرير: أول ما مرساة «حمّل المزيد» تقرب من الشاشة، نكبّر الحد لوحدنا.
+  //    الشرط listings.length >= visibleLimit معناه إن آخر دفعة رجعت كاملة (يعني غالبًا فيه أكتر).
+  //    أول ما دفعة ترجع أقل من الحد (آخر صفحة) الشرط يبقى false، المرساة تتفصل، فبيقف لوحده.
+  //    (الزرار موجود كمان كخطة بديلة للأجهزة اللي مابتدعمش IntersectionObserver.)
+  useEffect(() => {
+    if (listings.length < visibleLimit) return // كله اتحمّل — مفيش أكتر
+    const el = loadMoreRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(
+      (entries) => { if (entries[0]?.isIntersecting) setVisibleLimit((v) => v + 60) },
+      { rootMargin: '600px' }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [listings.length, visibleLimit])
 
   const toggleFavorite = async (e: MouseEvent, listingId: string) => {
     e.preventDefault()
@@ -1101,7 +1120,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
 
           {/* 📄 حمّل المزيد — بيظهر طول ما الصفحة رجعت كاملة (يعني غالبًا فيه أكتر) */}
           {listings.length >= visibleLimit && (
-            <div className="mt-8 text-center">
+            <div ref={loadMoreRef} className="mt-8 text-center">
               <button
                 onClick={() => setVisibleLimit((v) => v + 60)}
                 disabled={loading}
