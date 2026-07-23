@@ -23,6 +23,7 @@ import {
 } from '@/lib/marid-admin'
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
 import { getNumberConfig, numberPromptSection } from '@/lib/wa-number-config'
+import { notifyAdminsMaridReply } from '@/lib/admin-notify'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -1012,6 +1013,12 @@ export async function POST(request: NextRequest) {
       agentName: 'المارد',
       aiGenerated: true,
     })
+
+    // إشعار بوش للأدمن على كل رد من المارد (best-effort) — بعد الإرسال فمايأخّرش
+    // رد العميل. إلا لو المتكلّم نفسه أدمن.
+    if (sent.ok && !senderIsAdmin) {
+      await notifyAdminsMaridReply({ customerName: body.name, customerPhone: phone, preview: reply, channel: 'whatsapp' })
+    }
 
     return NextResponse.json({
       ok: true,

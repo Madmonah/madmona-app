@@ -6,6 +6,7 @@ import { callMaridWithTools } from '@/lib/marid-brain'
 import { processIncomingMedia, type MediaInput } from '@/lib/marid-media'
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
 import { isAdmin } from '@/lib/marid-admin'
+import { notifyAdminsMaridReply } from '@/lib/admin-notify'
 import { createClient } from '@supabase/supabase-js'
 import { phoneToEmail } from '@/lib/auth-helpers'
 
@@ -338,6 +339,11 @@ export async function POST(request: NextRequest) {
     // إشعار بوش (بيتبعت بالكرون خلال دقيقة؛ الـSW بيتجاهله لو الشات مفتوح)
     // لازم await — الـserverless بيقفل بعد الـresponse فيقتل أي promise معلّق
     await enqueueReplyPush(phone, reply)
+
+    // إشعار للأدمن على كل رد من المارد (best-effort) — إلا لو العميل نفسه أدمن
+    if (!isAdmin(phone)) {
+      await notifyAdminsMaridReply({ customerName: name, customerPhone: phone, preview: reply, channel: 'chat' })
+    }
 
     return NextResponse.json({ ok: true, reply, conversationId })
   } catch (err) {
