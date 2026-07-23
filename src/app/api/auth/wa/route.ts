@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
-import { sendText, upsertConversation } from '@/lib/whatsapp'
+import { sendText } from '@/lib/whatsapp'
 
 // =====================================================================
 // 🔑 الدخول بالواتساب — «ابعت الكود للمارد» (عكس الـOTP)
@@ -206,24 +206,53 @@ export async function POST(req: NextRequest) {
         .update({ session_minted_at: new Date().toISOString() } as never)
         .eq('id', row.id)
 
-      // 📩 رسالة تأكيد الدخول على واتساب + رابط المتابعة — رد على رسالة المستخدم
-      //    (مسموح تحت الحظر لأنه رد على محادثة نشطة). best-effort: لو الإرسال فشل
-      //    (رقم مخفي/الخدمة واقفة) الدخول بيكمّل عادي والمتصفح بيوديه لوجهته برضه.
+      // 📩 رد ترحيب على رسالة الدخول — ده *رد* على رسالة العميل (مش رسالة باردة
+      //    متولّدة زي الـOTP)، فمسموح ومابيسببش حظر. نستفيد إنه كلّمنا: نرحّب +
+      //    نبعت اللينك اللي كان رايحه + لينك شات المارد. بنبعت لنفس الـ JID اللي
+      //    جت منه رسالة الكود (يوصل حتى للرقم المخفي). best-effort بالكامل — لو
+      //    فشل الدخول بيكمّل عادي والمتصفح بيوديه لوجهته.
       try {
-        const next = String(body.next || '').trim()
-        const site = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.madmonacairo.com').replace(/\/$/, '')
-        const path = next.startsWith('/') ? next : next ? '/' + next : '/account'
-        const name = minted.full_name ? ` ${minted.full_name}` : ''
-        const conversationId = await upsertConversation({ phone: row.verified_phone, agentName: 'المارد' })
-        await sendText({
-          to: row.verified_phone,
-          body: `أهلاً بيك${name} في مضمونة 🧞✅\nدخلت بنجاح.\nكمّل من هنا 👇\n${site}${path}`,
-          conversationId: conversationId ?? undefined,
-          agentName: 'المارد',
-          aiGenerated: false,
-        })
+        const code = (body.code || '').toUpperCase()
+        const since = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+        const { data: msg } = await sb
+          .from('whatsapp_messages')
+          .select('conversation_id')
+          .eq('direction', 'inbound')
+          .ilike('body', `%${code}%`)
+          .gte('created_at', since)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        const convId = (msg as { conversation_id?: string } | null)?.conversation_id
+        if (convId) {
+          const { data: conv } = await sb
+            .from('whatsapp_conversations')
+            .select('metadata, session_id, contact_phone')
+            .eq('id', convId)
+            .maybeSingle()
+          const c = conv as { metadata?: { wa_jid?: string } | null; session_id?: string | null; contact_phone?: string | null } | null
+          const jid = c?.metadata?.wa_jid || undefined
+          const site = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.madmonacairo.com').replace(/\/$/, '')
+          const next = String(body.next || '').trim()
+          const dest = next.startsWith('/') ? next : next ? '/' + next : ''
+          const nm = minted.full_name ? ` يا ${minted.full_name}` : ''
+          const lines = [`أهلاً بيك${nm} في مضمونة 🧞`, `دخلت بنجاح ✅`]
+          if (dest) lines.push('', 'كمّل اللي كنت بتعمله من هنا 👇', `${site}${dest}`)
+          lines.push('', 'وأنا المارد — في خدمتك ٢٤/٧، اسألني أي حاجة من هنا 👇', `${site}/chat/marid`)
+          if (jid || c?.contact_phone) {
+            await sendText({
+              to: c?.contact_phone || row.verified_phone,
+              jid,
+              session: c?.session_id || undefined,
+              body: lines.join('\n'),
+              conversationId: convId,
+              agentName: 'المارد',
+              aiGenerated: false,
+            })
+          }
+        }
       } catch (e) {
-        console.error('[wa-auth] confirm send failed (best-effort):', e)
+        console.error('[wa-auth] welcome reply failed (best-effort):', e)
       }
 
       return NextResponse.json(minted)

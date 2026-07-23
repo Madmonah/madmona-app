@@ -26,7 +26,7 @@ export default function WhatsAppLogin({
   label?: string
   /** اسم اختياري (من فورم خارجي) يتسجل به الحساب الجديد */
   getFullName?: () => string
-  /** الوجهة اللي المستخدم رايحها — المارد بيبعتها في رسالة تأكيد الدخول على واتساب */
+  /** الوجهة اللي المستخدم رايحها — بتترجّع في رد ترحيب الدخول على واتساب */
   redirect?: string
 }) {
   const [phase, setPhase] = useState<'idle' | 'waiting' | 'finishing' | 'done' | 'error'>('idle')
