@@ -3785,91 +3785,11 @@ function StepContact({
   // «شركة/فرد» اتشالت — اسم المتجر/النشاط اختياري للكل.
   const [businessName, setBusinessName] = useState(draft.business_name || '');
 
-  // ─── OTP VERIFICATION (May 30 2026 — Task 4) ─────────────────────
-  // User must verify their WhatsApp number via 6-digit code before publish.
-  // Server trigger trg_enforce_listing_publish_requirements blocks publish
-  // without phone_verified_at; wizard mirrors that gate client-side.
-  // Flow: send OTP → user receives WA message → types 6-digit code → verify.
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [otpError, setOtpError] = useState('');
-  const [otpSending, setOtpSending] = useState(false);
-  const [otpVerifying, setOtpVerifying] = useState(false);
-  const [otpAttemptsLeft, setOtpAttemptsLeft] = useState<number | null>(null);
-
-  function isValidPhone(p: string): boolean {
-    return /^(\+?2)?01\d{9}$/.test(p.replace(/\s/g, ''));
-  }
-
+  // توثيق الرقم بالـOTP البارد اتشال خالص من المشروع — المقرّر: الوارد بس
+  // (المستخدم هو اللي يبعت كود للمارد). العميل هنا بيسيب رقمه والفريق بيراجع
+  // ويتواصل ويوثّق. مفيش أي كود بيتبعت من عندنا، ومفيش نداء لـ/api/otp.
   function handlePhoneChange(newPhone: string) {
     setPhone(newPhone);
-    // Reset OTP state when phone changes — the previous code/verification
-    // is for the old number and must be invalidated.
-    if (otpSent || otpVerified) {
-      setOtpSent(false);
-      setOtpVerified(false);
-      setOtpCode('');
-      setOtpError('');
-      setOtpAttemptsLeft(null);
-    }
-  }
-
-  async function sendOtp() {
-    if (!isValidPhone(phone)) {
-      setOtpError('رقم تليفون مش صحيح (لازم 11 رقم)');
-      return;
-    }
-    setOtpSending(true);
-    setOtpError('');
-    try {
-      const res = await fetch('/api/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }),
-      });
-      const data = await res.json();
-      if (!data.ok) {
-        setOtpError(data.message || 'مش قادر يبعت الكود، حاول تاني');
-      } else {
-        setOtpSent(true);
-        setOtpError('');
-      }
-    } catch {
-      setOtpError('مشكلة في الشبكة، حاول تاني');
-    } finally {
-      setOtpSending(false);
-    }
-  }
-
-  async function verifyOtp() {
-    if (!/^\d{6}$/.test(otpCode)) {
-      setOtpError('الكود لازم يكون 6 أرقام');
-      return;
-    }
-    setOtpVerifying(true);
-    setOtpError('');
-    try {
-      const res = await fetch('/api/otp/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, code: otpCode }),
-      });
-      const data = await res.json();
-      if (!data.ok) {
-        setOtpError(data.message || 'الكود غلط');
-        if (typeof data.attempts_left === 'number') {
-          setOtpAttemptsLeft(data.attempts_left);
-        }
-      } else {
-        setOtpVerified(true);
-        setOtpError('');
-      }
-    } catch {
-      setOtpError('مشكلة في الشبكة، حاول تاني');
-    } finally {
-      setOtpVerifying(false);
-    }
   }
 
   function handleFinalSubmit() {
