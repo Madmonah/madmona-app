@@ -134,6 +134,9 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
     : looksLikeLid(to)
       ? to
       : null
+  // لو اضطرينا نجرّب هوية الرقم كخطة بديلة بعد فشل الإرسال على الـLID
+  let lidFallbackJid: string | undefined
+
   if (lidDigits) {
     const { data: mapped } = await supabaseUntyped
       .from('wa_lid_map')
@@ -142,8 +145,28 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
       .maybeSingle()
     const realPhone = (mapped as { phone?: string } | null)?.phone
     if (realPhone) {
+      // الرقم الحقيقي مفيد للتسجيل في الداتابيز وحارس «رد بس» — بناخده دايمًا.
       to = normalizePhone(realPhone)
-      jid = `${to}@s.whatsapp.net`
+
+      // ⚠️ ٢٤ يوليو ٢٠٢٦ — بس **ماندهسش** الـJID اللي جت منه الرسالة.
+      // كان هنا `jid = `${to}@s.whatsapp.net`` بيستبدل هوية الـLID بهوية الرقم.
+      // دول **هويتين Signal مختلفتين لنفس الشخص**: الجلسة المتشفّرة اتبنت على
+      // هوية الـLID لما هو كلّمنا، فلما نرد على هوية الرقم موبايله بيستقبل شيفرة
+      // بجلسة مايعرفهاش ويعرض «في انتظار الرسالة»، ومايبعتش إيصال تسليم.
+      //
+      // الدليل من لوج رايل واي (٢١:٠٤:٠٩):
+      //   📩 وارد from: 30988725919893 (LID)  →  📤 اتبعت to: 201026222337 (رقم)
+      //   Closing session: SessionEntry { pendingPreKey: { preKeyId: 172 } }
+      // (`Closing session` + `pendingPreKey` على كل إرسال = جلسة جديدة معلّقة كل مرة)
+      //
+      // ودي نفس قاعدة رقم ١ المكتوبة فوق: «الرد يروح على نفس الـJID اللي جت منه».
+      if (!jid) {
+        // مالناش JID أصلاً (إحنا البادئين) — الرقم الحقيقي أحسن من LID مجرّد.
+        jid = `${to}@s.whatsapp.net`
+      } else if (jid.endsWith('@lid')) {
+        // معانا JID حقيقي — نرد عليه، ونسيب هوية الرقم كخطة بديلة لو فشل.
+        lidFallbackJid = `${to}@s.whatsapp.net`
+      }
     }
   }
 
@@ -237,22 +260,39 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
   // الرقم بيفضل شغال على الموبايل، والخدمة متربطة كجهاز مرتبط.
   if (WA_SERVICE_URL) {
     try {
-      const res = await fetch(`${WA_SERVICE_URL.replace(/\/$/, '')}/send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-madmona-secret': WA_SERVICE_SECRET,
-        },
-        // 📞 الرد بيخرج من نفس الرقم اللي العميل كلّمه.
-        //    من غير `session` الخدمة بتاخد أول رقم متصل — يعني اللي
-        //    كلّم الرقم التاني ممكن يجيله رد من الأول، ويوصله كرسالة
-        //    من مجهول. ده نفس نمط البدء البارد اللي بيوقّف الأرقام.
-        body: JSON.stringify({ to, jid, text: params.body, session: params.session }),
-      })
-      const data = await res.json().catch(() => ({}))
+      // 📞 الرد بيخرج من نفس الرقم اللي العميل كلّمه.
+      //    من غير `session` الخدمة بتاخد أول رقم متصل — يعني اللي
+      //    كلّم الرقم التاني ممكن يجيله رد من الأول، ويوصله كرسالة
+      //    من مجهول. ده نفس نمط البدء البارد اللي بيوقّف الأرقام.
+      const postSend = async (useJid: string | undefined) => {
+        const r = await fetch(`${WA_SERVICE_URL.replace(/\/$/, '')}/send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-madmona-secret': WA_SERVICE_SECRET,
+          },
+          body: JSON.stringify({ to, jid: useJid, text: params.body, session: params.session }),
+        })
+        const d = await r.json().catch(() => ({}))
+        return { ok: r.ok && !!d?.ok, data: d, error: d?.error ?? `HTTP ${r.status}` }
+      }
 
-      if (!res.ok || !data?.ok) {
-        const errMsg = data?.error ?? `HTTP ${res.status}`
+      let attempt = await postSend(jid)
+
+      // 🛟 شبكة أمان: لو الرد على هوية الـLID فشل، نجرّب هوية الرقم مرة واحدة.
+      //    الخدمة بترجّع ok:false من غير ما تبعت حاجة، فمفيش خطر إرسال مزدوج.
+      //    كده أسوأ حالة = نفس سلوك ٢١ يوليو، مش رسالة ضايعة.
+      if (!attempt.ok && lidFallbackJid) {
+        console.warn('[wa] الرد على الـLID فشل — بنجرّب هوية الرقم', {
+          lid: jid, fallback: lidFallbackJid, error: attempt.error,
+        })
+        attempt = await postSend(lidFallbackJid)
+      }
+
+      const data = attempt.data
+
+      if (!attempt.ok) {
+        const errMsg = attempt.error
         await logOutboundMessage({
           conversationId: params.conversationId,
           to,
