@@ -908,7 +908,7 @@ export async function POST(request: NextRequest) {
 
       const { data: mine } = await supabaseUntyped
         .from('whatsapp_messages')
-        .select('created_at')
+        .select('id, created_at')
         .eq('conversation_id', conversationId)
         .eq('wa_message_id', body.message_id)
         .maybeSingle()
@@ -916,16 +916,27 @@ export async function POST(request: NextRequest) {
       if (mine?.created_at) {
         await new Promise((r) => setTimeout(r, BATCH_WAIT_MS))
 
-        const { data: newer } = await supabaseUntyped
+        // 🔧 (٢٤ يوليو) كسر تعادل حاسم لمنع «رسالتين ورا بعض»:
+        // الفحص كان `.gt(created_at)` بس. لو رسالتين وصلوا في نفس الجزء من
+        // الثانية (نفس created_at بالظبط) ولا واحدة تشوف التانية «أحدث» →
+        // الاتنين يردّوا. دلوقتي «أحدث مني» = وقت أكبر، أو نفس الوقت و id أكبر
+        // → بالظبط واحد (الأكبر) هو اللي يرد، والباقي يسكت. المقارنة في JS
+        // أأمن من فلتر توقيت في الكويري.
+        const { data: sibs } = await supabaseUntyped
           .from('whatsapp_messages')
-          .select('id')
+          .select('id, created_at')
           .eq('conversation_id', conversationId)
           .eq('direction', 'inbound')
-          .gt('created_at', mine.created_at)
-          .limit(1)
-          .maybeSingle()
+          .gte('created_at', mine.created_at)
 
-        if (newer) {
+        const mineT = new Date(mine.created_at).getTime()
+        const mineId = String(mine.id)
+        const hasNewer = (sibs || []).some((s: { id: string; created_at: string }) => {
+          const t = new Date(s.created_at).getTime()
+          return t > mineT || (t === mineT && String(s.id) > mineId)
+        })
+
+        if (hasNewer) {
           return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'batched' })
         }
       }
