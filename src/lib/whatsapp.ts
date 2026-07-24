@@ -1,27 +1,23 @@
 // src/lib/whatsapp.ts
-// WhatsApp Cloud API client + conversation tracking
+// قناة واتساب مضمونة — خدمة المارد (Baileys على Railway) وبس.
 //
-// Setup (one-time):
-//   1. Get Phone Number ID from Meta Business Suite
-//   2. Get System User Access Token (permanent) from Meta
-//   3. Set env vars: WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_ACCESS_TOKEN
-//   4. Set webhook verify token: WHATSAPP_VERIFY_TOKEN (any random string you choose)
-//   5. Configure webhook in Meta dashboard pointing to /api/whatsapp/webhook
+// ⛔ Meta Cloud API اتشال خالص (٢٤ يوليو ٢٠٢٦ — بقرار محمد).
+//    كان واقف من ١٨ يوليو بكود 190 (توكن منتهي) وماكانش هيرجع، وكان بيفضل
+//    موجود كـ«مسار احتياطي» وهمي بيلخبط التشخيص: أي عطل في خدمة المارد كان
+//    بيقع على مسار ميت ويرجّع رسالة خطأ من Meta مالهاش علاقة بالسبب الحقيقي.
+//
+//    القناة الوحيدة دلوقتي = wa-service. لو هي واقعة، الإرسال بيفشل **بوضوح**
+//    برسالة تقول كده — وده أحسن من fallback بيبلع السبب.
 
 import { supabase as supabaseAdmin, supabaseUntyped } from './supabase'
 
-const WA_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID
-const WA_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN
-const WA_API_VERSION = process.env.WHATSAPP_API_VERSION ?? 'v21.0'
-
-const WA_BASE = `https://graph.facebook.com/${WA_API_VERSION}`
-
-// خدمة المارد (Baileys على Railway) — القناة الأساسية للإرسال
+// خدمة المارد (Baileys على Railway) — القناة الوحيدة للإرسال
 const WA_SERVICE_URL = process.env.WA_SERVICE_URL
 const WA_SERVICE_SECRET = process.env.WA_SERVICE_SECRET ?? ''
 
+/** فيه قناة واتساب شغّالة؟ (بقت = خدمة المارد، مش Cloud API) */
 export function isWhatsAppConfigured(): boolean {
-  return !!(WA_PHONE_ID && WA_TOKEN)
+  return !!WA_SERVICE_URL
 }
 
 // ============================================================================
@@ -321,124 +317,38 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
     }
   }
 
-  // ── مسار احتياطي: Cloud API (لو رجع يشتغل يوم من الأيام) ───────────────
-  if (!isWhatsAppConfigured()) {
-    return { ok: false, error: 'مفيش قناة إرسال متظبطة (WA_SERVICE_URL أو WHATSAPP_* مطلوبين)' }
-  }
-
-  try {
-    const res = await fetch(`${WA_BASE}/${WA_PHONE_ID}/messages`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${WA_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        recipient_type: 'individual',
-        to,
-        type: 'text',
-        text: { body: params.body, preview_url: true },
-      }),
-    })
-
-    const data = await res.json()
-    if (!res.ok) {
-      const errMsg = data?.error?.message ?? `HTTP ${res.status}`
-      await logOutboundMessage({
-        conversationId: params.conversationId,
-        to,
-        body: params.body,
-        agentName: params.agentName,
-        aiGenerated: params.aiGenerated ?? false,
-        status: 'failed',
-        errorMessage: errMsg,
-        errorCode: data?.error?.code?.toString(),
-      })
-      return { ok: false, error: errMsg }
-    }
-
-    const wa_message_id = data?.messages?.[0]?.id
-
-    await logOutboundMessage({
-      conversationId: params.conversationId,
-      to,
-      body: params.body,
-      agentName: params.agentName,
-      aiGenerated: params.aiGenerated ?? false,
-      status: 'sent',
-      wa_message_id,
-    })
-
-    return { ok: true, wa_message_id }
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'unknown'
-    return { ok: false, error: msg }
+  // ⛔ مفيش مسار تاني — Cloud API اتشال (٢٤ يوليو ٢٠٢٦).
+  //    لو وصلنا هنا يبقى `WA_SERVICE_URL` مش متظبط، ولازم ده يبان بوضوح
+  //    بدل ما يتبلع في fallback ميت.
+  await logOutboundMessage({
+    conversationId: params.conversationId,
+    to,
+    body: params.body,
+    agentName: params.agentName,
+    aiGenerated: params.aiGenerated ?? false,
+    status: 'failed',
+    errorMessage: 'WA_SERVICE_URL مش متظبط',
+  })
+  return {
+    ok: false,
+    error: 'مفيش قناة إرسال — WA_SERVICE_URL مش متظبط (خدمة المارد هي القناة الوحيدة)',
   }
 }
 
 // ============================================================================
-// Send template message (required for first message > 24h since last user reply)
+// قوالب واتساب (Templates) — ⛔ اتشالت مع Cloud API
 // ============================================================================
+// القوالب المعتمدة حاجة خاصة بـ Meta Cloud API بس؛ Baileys مالوش قوالب —
+// أي رسالة عنده نص عادي. ومضمونة أصلاً **مابتبدأش محادثات** (MARID_REPLY_ONLY)،
+// وده كان الاستخدام الوحيد للقوالب (أول رسالة بعد ٢٤ ساعة).
+//
+// سايبين الدالة موجودة عشان الكولرز تفضل تكومپايل، بس بترجّع فشل واضح
+// بدل ما تبعت على مسار ميت وترجّع خطأ من Meta مالوش علاقة بالسبب.
 
 export async function sendTemplate(params: SendTemplateParams): Promise<WhatsAppSendResult> {
-  if (!isWhatsAppConfigured()) {
-    return { ok: false, error: 'WhatsApp not configured' }
-  }
-
-  const to = normalizePhone(params.to)
-  if (!to) return { ok: false, error: 'Invalid phone number' }
-
-  try {
-    const res = await fetch(`${WA_BASE}/${WA_PHONE_ID}/messages`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${WA_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        to,
-        type: 'template',
-        template: {
-          name: params.templateName,
-          language: { code: params.languageCode ?? 'ar' },
-          components: params.components ?? [],
-        },
-      }),
-    })
-
-    const data = await res.json()
-    if (!res.ok) {
-      const errMsg = data?.error?.message ?? `HTTP ${res.status}`
-      return { ok: false, error: errMsg }
-    }
-
-    const wa_message_id = data?.messages?.[0]?.id
-
-    // Build a readable preview body for logging
-    const paramsText = (params.components ?? [])
-      .flatMap((c) => c.parameters?.map((p) => p.text) ?? [])
-      .join(' | ')
-    const previewBody = `[template:${params.templateName}] ${paramsText}`
-
-    await logOutboundMessage({
-      conversationId: params.conversationId,
-      to,
-      body: previewBody,
-      agentName: params.agentName,
-      aiGenerated: false,
-      status: 'sent',
-      wa_message_id,
-      messageType: 'template',
-      templateName: params.templateName,
-      templateParams: params.components,
-    })
-
-    return { ok: true, wa_message_id }
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'unknown'
-    return { ok: false, error: msg }
+  return {
+    ok: false,
+    error: `القوالب اتشالت مع Cloud API (${params.templateName}) — استخدم sendText عبر خدمة المارد`,
   }
 }
 
