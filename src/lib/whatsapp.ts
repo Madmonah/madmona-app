@@ -297,6 +297,7 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
           aiGenerated: params.aiGenerated ?? false,
           status: 'failed',
           errorMessage: errMsg,
+          session: params.session,
         })
         return { ok: false, error: errMsg }
       }
@@ -309,6 +310,7 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
         aiGenerated: params.aiGenerated ?? false,
         status: 'sent',
         wa_message_id: data.wa_message_id,
+        session: params.session,
       })
       return { ok: true, wa_message_id: data.wa_message_id }
     } catch (err) {
@@ -328,6 +330,7 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
     aiGenerated: params.aiGenerated ?? false,
     status: 'failed',
     errorMessage: 'WA_SERVICE_URL مش متظبط',
+    session: params.session,
   })
   return {
     ok: false,
@@ -397,6 +400,14 @@ interface LogOutboundParams {
   messageType?: string
   templateName?: string
   templateParams?: unknown
+  /**
+   * رقم المارد اللي الرسالة خرجت منه. بيتسجّل **على الرسالة نفسها** —
+   * مش بيتقري من whatsapp_conversations.session_id لأن ده حقل متغيّر
+   * بيتكتب فوق بعضه كل رسالة واردة، فأول ما العميل يكلّم رقم تاني كل
+   * تاريخه القديم بيتنسب للرقم الجديد بأثر رجعي.
+   * من غير ده مستحيل نقيس صحة تسليم أي رقم. (٢٤ يوليو ٢٠٢٦)
+   */
+  session?: string
 }
 
 async function logOutboundMessage(params: LogOutboundParams): Promise<void> {
@@ -426,6 +437,7 @@ async function logOutboundMessage(params: LogOutboundParams): Promise<void> {
       error_message: params.errorMessage ?? null,
       ai_generated: params.aiGenerated,
       agent_name: params.agentName ?? null,
+      session_id: params.session ?? null,
     } as never)
 
     if (params.status === 'sent') {
@@ -452,6 +464,8 @@ export async function logInboundMessage(args: {
   wa_message_id: string
   body: string
   messageType?: string
+  /** رقم المارد اللي الرسالة جت عليه — بيتثبّت على الرسالة (شوف LogOutboundParams.session) */
+  session?: string
 }): Promise<boolean> {
   const now = new Date().toISOString()
 
@@ -478,6 +492,7 @@ export async function logInboundMessage(args: {
       status: 'delivered',
       status_updated_at: now,
       ai_generated: false,
+      session_id: args.session ?? null,
     } as never,
     { onConflict: 'wa_message_id' }
   )

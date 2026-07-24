@@ -477,6 +477,7 @@ export async function POST(request: NextRequest) {
           wa_message_id: body.message_id,
           body: body.text || `[${body.type}]`,
           messageType: body.type,
+          session: body.session_id,
         })
       }
       return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'send_paused' })
@@ -591,6 +592,7 @@ export async function POST(request: NextRequest) {
       wa_message_id: body.message_id,
       body: body.text || `[${body.type}]`,
       messageType: body.type,
+      session: body.session_id,
     })
     if (!inboundLogged) {
       // ماقدرناش نسجّلها — ده عطل داتابيز حقيقي (نادر، لأن الـupsert بيبلع
@@ -889,6 +891,7 @@ export async function POST(request: NextRequest) {
         wa_message_id: body.message_id,
         body: logBody,
         messageType: body.type,
+        session: body.session_id,
       })
     }
 
