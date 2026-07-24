@@ -24,7 +24,28 @@ interface Category {
   slug: string
   icon: string | null
   is_active: boolean
+  // 🗂️ (٢٥ يوليو ٢٠٢٦ — محمد): «خلي التصنيفات تبان زي أضف وزي الماركت بليس».
+  //    الأعمدة دي كانت بتتجاب أصلاً (`select('*')`) بس مكانتش متعرّفة هنا،
+  //    فخطوة اختيار الفئة كانت **حيطة مسطّحة من ٩٠+ فئة** من غير تابات ولا مجموعات.
+  track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | null
+  group_slug?: string | null
+  group_name_ar?: string | null
+  group_emoji?: string | null
+  group_display_order?: number | null
+  display_order?: number | null
 }
+
+// نفس التابات وبنفس الترتيب اللي في الماركت بليس وصفحة الإضافة
+type FormTrackTab = 'all' | 'products' | 'rentals' | 'services' | 'restaurants' | 'daily'
+
+const FORM_TRACKS: { key: FormTrackTab; ar: string; emoji: string }[] = [
+  { key: 'all',         ar: 'الكل',       emoji: '✨' },
+  { key: 'products',    ar: 'بيع',        emoji: '🏷️' },
+  { key: 'rentals',     ar: 'إيجار',      emoji: '🔑' },
+  { key: 'services',    ar: 'خدمات',      emoji: '🛠️' },
+  { key: 'restaurants', ar: 'مطاعم',      emoji: '🍽️' },
+  { key: 'daily',       ar: 'سوبر ماركت', emoji: '🛒' },
+]
 
 interface Attribute {
   id: string
@@ -193,6 +214,9 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
 
   const [categories, setCategories] = useState<Category[]>([])
   const [loadingCategories, setLoadingCategories] = useState(true)
+  // 🗂️ تصفّح الفئات زي الماركت بليس: تاب المجال → كارت المجموعة → الأقسام
+  const [pickTrack, setPickTrack] = useState<FormTrackTab>('all')
+  const [pickGroup, setPickGroup] = useState<string | null>(null)
 
   const [form, setForm] = useState<ListingFormData>({
     category_id: initialData?.category_id || null,
@@ -261,6 +285,25 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     }
     load()
   }, [])
+
+  // 🗂️ لو بنعدّل إعلان موجود، الخطوة تفتح على **تاب ومجموعة فئته** مش على
+  //    «الكل» — عشان المورّد يلاقي نفسه مكانه على طول بدل ما يدوّر تاني.
+  //    بيتنفّذ مرة واحدة أول ما التصنيفات تتحمّل.
+  useEffect(() => {
+    if (!categories.length || !form.category_id) return
+    let cur = categories.find(c => c.id === form.category_id)
+    let guard = 0
+    while (cur?.parent_id && guard++ < 5) {
+      const p = categories.find(c => c.id === cur!.parent_id)
+      if (!p) break
+      cur = p
+    }
+    if (!cur) return
+    const t = cur.track === 'hybrid' ? 'rentals' : cur.track
+    if (t && FORM_TRACKS.some(f => f.key === t)) setPickTrack(t as FormTrackTab)
+    if (cur.group_slug) setPickGroup(cur.group_slug)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categories])
 
   // Load attributes when category changes
   useEffect(() => {
@@ -867,6 +910,38 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     ? (selectedCat.parent_id === selectedRoot?.id ? selectedCat : categories.find(c => c.id === selectedCat.parent_id))
     : undefined
 
+  // 🗂️ (٢٥ يوليو ٢٠٢٦ — محمد) نفس منطق الماركت بليس بالظبط: فلترة بالمجال،
+  //    وبعدين تجميع بـ`group_slug`. قبل كده كانت الخطوة دي بتفرد **كل** الفئات
+  //    الجذر (٩٠+) في حيطة واحدة — نفس الزحمة اللي شيلناها من صفحة الإضافة.
+  //    ولو المجال فيه مجموعة واحدة بس، بنعدّي مستوى المجموعات على طول
+  //    عشان مانحطّش خطوة فاضية (زي `StepCategory` في صفحة الإضافة).
+  const trackCats = pickTrack === 'all'
+    ? rootCats
+    : rootCats.filter(c => c.track === pickTrack || (pickTrack === 'rentals' && c.track === 'hybrid'))
+
+  const rootGroups = (() => {
+    const map = new Map<string, { key: string; name_ar: string; emoji: string; order: number; cats: Category[] }>()
+    for (const c of trackCats) {
+      const key = c.group_slug || c.slug
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          name_ar: c.group_name_ar || c.name_ar,
+          emoji: c.group_emoji || c.icon || '🏷️',
+          order: c.group_display_order ?? 999,
+          cats: [],
+        })
+      }
+      map.get(key)!.cats.push(c)
+    }
+    // Array.from مش [...spread] — التارجت هنا ماعندوش downlevelIteration
+    return Array.from(map.values()).sort((a, b) => a.order - b.order)
+  })()
+
+  const grouped = rootGroups.length > 1
+  const openGroup = grouped ? rootGroups.find(g => g.key === pickGroup) : undefined
+  const visibleRootCats: Category[] = grouped ? (openGroup?.cats ?? []) : trackCats
+
   return (
     <div className="max-w-2xl mx-auto" dir="rtl">
       <div className="flex items-center justify-between mb-6 px-2">
@@ -909,26 +984,89 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
               <div className="text-center py-12"><Loader2 className="w-6 h-6 text-gray-400 animate-spin mx-auto" /></div>
             ) : (
               <div className="space-y-3">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {rootCats.map(rc => {
-                    const isSelected = selectedRoot?.id === rc.id
+                {/* تابات المجالات — نفس الترتيب والأسماء اللي في الماركت بليس */}
+                <div className="flex gap-2 overflow-x-auto pb-1 -mx-6 px-6">
+                  {FORM_TRACKS.map(tt => {
+                    const n = tt.key === 'all'
+                      ? rootCats.length
+                      : rootCats.filter(c => c.track === tt.key || (tt.key === 'rentals' && c.track === 'hybrid')).length
+                    const on = pickTrack === tt.key
                     return (
                       <button
-                        key={rc.id}
+                        key={tt.key}
                         type="button"
-                        onClick={() => setForm(f => ({ ...f, category_id: rc.id, attributeValues: {} }))}
-                        className={`p-4 rounded-xl border-2 text-center transition-colors ${
-                          isSelected
-                            ? 'border-[#1F6F5F] bg-[#1F6F5F]/5'
-                            : 'border-gray-100 hover:border-gray-200 bg-white'
+                        onClick={() => { setPickTrack(tt.key); setPickGroup(null) }}
+                        className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 ${
+                          on
+                            ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
+                            : 'bg-white border-gray-100 text-gray-700 hover:bg-gray-50'
                         }`}
                       >
-                        <div className="text-3xl mb-1">{rc.icon}</div>
-                        <div className="text-sm font-medium text-gray-900">{rc.name_ar}</div>
+                        <span>{tt.emoji}</span>
+                        <span>{tt.ar}</span>
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${
+                            on ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          {n}
+                        </span>
                       </button>
                     )
                   })}
                 </div>
+
+                {/* المستوى الأول: كروت المجموعات (زي الماركت بليس بالظبط) */}
+                {grouped && !openGroup && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {rootGroups.map(g => (
+                      <button
+                        key={g.key}
+                        type="button"
+                        onClick={() => setPickGroup(g.key)}
+                        className="p-4 rounded-xl border-2 border-gray-100 bg-white text-center transition-all hover:border-gray-200 hover:-translate-y-0.5"
+                      >
+                        <div className="text-3xl mb-1">{g.emoji}</div>
+                        <div className="text-sm font-bold text-gray-900">{g.name_ar}</div>
+                        <div className="text-[11px] text-gray-400 mt-0.5">{g.cats.length} قسم</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* زر الرجوع لمستوى المجموعات */}
+                {grouped && openGroup && (
+                  <button
+                    type="button"
+                    onClick={() => setPickGroup(null)}
+                    className="text-xs font-bold text-[#1F6F5F] hover:underline"
+                  >
+                    ← كل الأقسام
+                  </button>
+                )}
+
+                {visibleRootCats.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {visibleRootCats.map(rc => {
+                      const isSelected = selectedRoot?.id === rc.id
+                      return (
+                        <button
+                          key={rc.id}
+                          type="button"
+                          onClick={() => setForm(f => ({ ...f, category_id: rc.id, attributeValues: {} }))}
+                          className={`p-4 rounded-xl border-2 text-center transition-colors ${
+                            isSelected
+                              ? 'border-[#1F6F5F] bg-[#1F6F5F]/5'
+                              : 'border-gray-100 hover:border-gray-200 bg-white'
+                          }`}
+                        >
+                          <div className="text-3xl mb-1">{rc.icon}</div>
+                          <div className="text-sm font-medium text-gray-900">{rc.name_ar}</div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
 
                 {selectedRoot && subCats(selectedRoot.id).length > 0 && (
                   <div>
