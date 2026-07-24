@@ -89,11 +89,16 @@ async function enqueueReplyPush(phone20: string, reply: string) {
       .eq('profile_id', pid)
     if (!count) return
     const preview = (reply || '').replace(/\s+/g, ' ').trim().slice(0, 90)
-    // ملاحظة: تريجر notification_queue_dedupe بيمنع تكرار نفس العنوان لنفس الشخص خلال ساعة
+    // تريجر notification_queue_dedupe بيرمي أي إشعار بنفس (المستقبِل + العنوان) خلال ٦٠ دقيقة.
+    // العنوان كان ثابت «المارد رد عليك 💬» → فأول رد في الساعة بس هو اللي بيوصل، وكل
+    // الردود اللي بعده جوّه الساعة كانت بتتبلع بصمت (ده سبب إن الـpush مكانش بيبعت في الشات).
+    // الحل: نخلي العنوان يحمل أول الرسالة، فكل رد مختلف = عنوان مختلف = بيوصل.
+    // (لو الرد اتكرر حرفيًا نفس الساعة بيتمنع — وده اللي احنا عايزينه فعلاً.)
+    const shortPreview = preview.slice(0, 45)
     await admin.from('notification_queue').insert({
       recipient_id: pid,
       type: 'chat_reply',
-      title: 'المارد رد عليك 💬',
+      title: preview ? `المارد: ${shortPreview}${preview.length > 45 ? '…' : ''}` : 'المارد رد عليك 💬',
       body: preview || 'عندك رد جديد على مضمونة',
       url: '/chat',
       data: { icon: '/marid-icon-192.png', suppressIfChatFocused: true },
