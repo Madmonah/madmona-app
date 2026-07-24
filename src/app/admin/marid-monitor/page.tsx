@@ -69,7 +69,26 @@ export default function MaridMonitor() {
   }, [])
 
   const sel = useMemo(() => convs.find((c) => c.id === selId) || null, [convs, selId])
-  const waitingCount = useMemo(() => convs.filter((c) => c.waiting && c.status !== 'paused').length, [convs])
+
+  // 🔀 (٢٥ يوليو ٢٠٢٦ — محمد): «كل رقم كأنه مارد منفصل». دلوقتي كل رقم ليه
+  //    خيط محادثة مستقل مع نفس العميل، فالقايمة محتاجة فلتر بالرقم — من
+  //    غيره الخيوط بتتلخبط في بعضها ومش هتعرف مين رد على مين.
+  //    الأرقام بتتبني من الداتا نفسها، فأي رقم جديد بيبان لوحده.
+  const [channelFilter, setChannelFilter] = useState<string>('all')
+  const channels = useMemo(() => {
+    const seen: string[] = []
+    for (const c of convs) {
+      const ch = c.channel || '—'
+      if (!seen.includes(ch)) seen.push(ch)
+    }
+    return seen
+  }, [convs])
+
+  const visibleConvs = useMemo(
+    () => (channelFilter === 'all' ? convs : convs.filter((c) => (c.channel || '—') === channelFilter)),
+    [convs, channelFilter],
+  )
+  const waitingCount = useMemo(() => visibleConvs.filter((c) => c.waiting && c.status !== 'paused').length, [visibleConvs])
 
   // ننزل لآخر الرسايل لما نفتح محادثة أو توصل رسالة جديدة
   useEffect(() => {
@@ -143,9 +162,33 @@ export default function MaridMonitor() {
       {/* قايمة المحادثات */}
       {!sel && (
         <div style={{ flex: 1, overflowY: 'auto', background: '#fff' }}>
+          {/* فلتر الأرقام — كل رقم مارد لوحده */}
+          {loaded && channels.length > 1 && (
+            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '8px 12px', borderBottom: '1px solid #eee', background: '#fafafa' }}>
+              {(['all', ...channels] as string[]).map((ch) => {
+                const on = channelFilter === ch
+                const n = ch === 'all' ? convs.length : convs.filter((c) => (c.channel || '—') === ch).length
+                return (
+                  <button
+                    key={ch}
+                    type="button"
+                    onClick={() => setChannelFilter(ch)}
+                    style={{
+                      flexShrink: 0, borderRadius: 20, padding: '4px 11px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                      border: on ? '1px solid #128C7E' : '1px solid #ddd',
+                      background: on ? '#128C7E' : '#fff',
+                      color: on ? '#fff' : '#444',
+                    }}
+                  >
+                    {ch === 'all' ? 'الكل' : ch} <span style={{ opacity: .75 }}>{n}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
           {!loaded && <div style={{ padding: 20, color: '#667' }}>لحظة…</div>}
-          {loaded && convs.length === 0 && !err && <div style={{ padding: 20, color: '#667', textAlign: 'center' }}>مفيش محادثات</div>}
-          {convs.map((c) => {
+          {loaded && visibleConvs.length === 0 && !err && <div style={{ padding: 20, color: '#667', textAlign: 'center' }}>مفيش محادثات</div>}
+          {visibleConvs.map((c) => {
             const paused = c.status === 'paused'
             return (
               <button key={c.id} onClick={() => { setSelId(c.id); setReply('') }} style={{ display: 'flex', width: '100%', textAlign: 'right', alignItems: 'center', gap: 12, background: c.waiting && !paused ? '#fffbeb' : '#fff', border: 'none', borderBottom: '1px solid #eee', padding: '10px 14px', cursor: 'pointer' }}>
