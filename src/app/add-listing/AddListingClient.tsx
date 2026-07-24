@@ -2578,6 +2578,17 @@ const CATALOG_TEMPLATES: Record<string, { name_ar: string; items: string[] }[]> 
   ],
 };
 
+// Task 20 (Jul 24 2026): read an uploaded image/file as base64 (من غير بادئة data:)
+// عشان نبعتها لـ /api/listing-drafts/extract (الاستيراد الذكي بالمارد).
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => { const s = String(r.result || ''); resolve(s.includes(',') ? s.split(',')[1] : s); };
+    r.onerror = () => reject(new Error('read error'));
+    r.readAsDataURL(file);
+  });
+}
+
 function CatalogBuilderStep({
   draft, categories, token, onSubmit, onBack, onChangeCategory, saving,
 }: {
@@ -2606,6 +2617,13 @@ function CatalogBuilderStep({
   const [excelBusy, setExcelBusy] = useState(false);
   const [excelMsg, setExcelMsg] = useState('');
   const excelInputRef = useRef<HTMLInputElement>(null);
+
+  // Task 20 (Jul 24 2026): الاستيراد الذكي — العميل يكتب/يلصق أو يرفع صورة/شيت،
+  // والمارد (Claude) يطلّع الأصناف والأسعار ويملا الكتالوج. الناقص يظهر فاضي عشان يكمّله.
+  const [smartText, setSmartText] = useState('');
+  const [smartBusy, setSmartBusy] = useState(false);
+  const [smartMsg, setSmartMsg] = useState('');
+  const smartFileRef = useRef<HTMLInputElement>(null);
 
   async function handleExcelFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -2698,6 +2716,64 @@ function CatalogBuilderStep({
     setSections(tpl.map((s) => ({ name_ar: s.name_ar, items: s.items.map((n) => ({ ...emptyItem(), name_ar: n })) })));
     setError('');
   }
+
+  // Task 20: دمج الأصناف المستخرجة (من المارد) في الكتالوج — متجمّعة بالأقسام،
+  // والسعر الناقص بيتحط 0 فيظهر فاضي في الواجهة عشان البائع يكمّله.
+  function applyExtracted(list: { name_ar: string; price: number | null; section?: string }[]) {
+    if (!list.length) return;
+    const bySection = new Map<string, CatalogItem[]>();
+    for (const it of list) {
+      const sec = (it.section || 'أصناف مستوردة').trim() || 'أصناف مستوردة';
+      const arr = bySection.get(sec) || [];
+      arr.push({ ...emptyItem(), name_ar: it.name_ar, price: it.price ?? 0 });
+      bySection.set(sec, arr);
+    }
+    const imported: CatalogSection[] = Array.from(bySection.entries()).map(([name_ar, items]) => ({ name_ar, items }));
+    setSections((prev) => {
+      const kept = prev.filter((s) => s.items.some((it) => it.name_ar.trim().length > 0));
+      return [...kept, ...imported];
+    });
+  }
+
+  async function callExtract(payload: Record<string, unknown>) {
+    setSmartBusy(true); setSmartMsg(''); setError('');
+    try {
+      const res = await fetch('/api/listing-drafts/extract', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+      });
+      const j = await res.json();
+      if (!j.ok) { setError(j.error || 'مقدرناش نستخرج القائمة، حاول تاني'); return; }
+      const list = (j.items || []) as { name_ar: string; price: number | null; section?: string }[];
+      if (!list.length) { setSmartMsg('مفيش أصناف اتلاقت — جرّب تكتبهم أوضح أو صورة أوضح.'); return; }
+      applyExtracted(list);
+      const miss = j.missing_price || 0;
+      setSmartMsg(`🧞 المارد لقى ${j.count} صنف${miss ? ` — ${miss} منهم محتاج سعر، كمّلهم تحت` : ' — راجعهم وأضف الأسعار'}`);
+      setSmartText('');
+    } catch { setError('مشكلة في الاتصال، حاول تاني'); }
+    finally { setSmartBusy(false); }
+  }
+
+  async function handleSmartFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fname = file.name.toLowerCase();
+    try {
+      if (fname.endsWith('.xlsx') || fname.endsWith('.xls') || fname.endsWith('.csv')) {
+        const XLSX = await import('xlsx');
+        const buf = await file.arrayBuffer();
+        const wb = XLSX.read(buf, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const csv = XLSX.utils.sheet_to_csv(ws);
+        await callExtract({ text: csv });
+      } else if (file.type.startsWith('image/')) {
+        const b64 = await fileToBase64(file);
+        await callExtract({ image_base64: b64, mimetype: file.type });
+      } else {
+        setError('النوع ده مش مدعوم دلوقتي — جرّب صورة أو Excel أو اكتب الأصناف.');
+      }
+    } catch { setError('مقدرناش نقرأ الملف'); }
+    finally { e.target.value = ''; }
+  }
   function addSection() { setSections((p) => [...p, { name_ar: '', items: [emptyItem()] }]); }
   function removeSection(si: number) { setSections((p) => (p.length > 1 ? p.filter((_, i) => i !== si) : p)); }
   function updateSectionName(si: number, name: string) { setSections((p) => p.map((s, i) => (i === si ? { ...s, name_ar: name } : s))); }
@@ -2751,6 +2827,36 @@ function CatalogBuilderStep({
       <h2 className='text-lg font-semibold mb-1'>🛒 أضف منتجاتك</h2>
       <p className='text-sm text-gray-500 mb-1'>قسّم منتجاتك لأقسام (مثلاً: جبن، ألبان، معلبات) وضيف تحت كل قسم اللي بتبيعه</p>
       <p className='text-xs text-[#1F6F5F] mb-4 font-medium'>💡 كل ما تضيف منتجات أكتر، العميل يلاقي اللي بيدوّر عليه أسرع</p>
+
+      {/* Task 20 (Jul 24 2026): استيراد ذكي — اكتب/الصق أو ارفع صورة/شيت والمارد يطلّع الأصناف */}
+      <div className="mb-4 rounded-2xl border-2 border-[#2FA084] bg-[#F0FAF7] p-4">
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="text-xl">🧞</span>
+          <p className="text-sm font-bold text-[#1F6F5F]">عندك قائمة جاهزة؟ سيبها للمارد</p>
+        </div>
+        <p className="text-[11px] text-gray-600 mb-3 leading-relaxed">
+          اكتب أو الصق أصنافك، أو ارفع صورة لقائمتك/المنيو أو ملف Excel — والمارد هيطلّعهم ويرتّبهم في ثواني، وانت بس تكمّل الأسعار الناقصة.
+        </p>
+        <textarea
+          value={smartText}
+          onChange={(e) => setSmartText(e.target.value)}
+          rows={3}
+          placeholder="مثلاً: أرز مصري 45، مكرونة 12، زيت 60، سكر 30 ..."
+          className={inputCls + ' text-sm mb-2 resize-none'}
+        />
+        <div className="flex gap-2">
+          <button type="button" onClick={() => callExtract({ text: smartText })} disabled={smartBusy || smartText.trim().length < 3}
+            className="flex-1 py-2.5 rounded-xl bg-[#1F6F5F] text-white text-xs font-bold disabled:opacity-60">
+            {smartBusy ? '🧞 المارد بيقرأ...' : '🧞 استخرج بالمارد'}
+          </button>
+          <button type="button" onClick={() => smartFileRef.current?.click()} disabled={smartBusy}
+            className="flex-1 py-2.5 rounded-xl border border-[#1F6F5F]/40 text-[#1F6F5F] text-xs font-bold bg-white disabled:opacity-60">
+            📷 صورة / Excel
+          </button>
+          <input ref={smartFileRef} type="file" accept="image/*,.xlsx,.xls,.csv" className="hidden" onChange={handleSmartFile} />
+        </div>
+        {smartMsg && <p className="mt-2 text-xs font-bold text-[#1F6F5F]">{smartMsg}</p>}
+      </div>
 
       {/* Jul 5 2026: Excel bulk import for the whole catalog */}
       <div className="mb-5 rounded-2xl border-2 border-dashed border-[#1F6F5F]/35 bg-[#1F6F5F]/5 p-4">
