@@ -2551,7 +2551,7 @@ function ProductDetailsStep({
 // Saved to draft.attributes.catalog_sections (+ insurance). Backend mapping
 // catalog->product rows = follow-up.
 // =================================================
-type CatalogItem = { name_ar: string; price: number; description_ar?: string; photo_url?: string; is_available: boolean; };
+type CatalogItem = { name_ar: string; price: number; quantity?: number; description_ar?: string; photo_url?: string; is_available: boolean; };
 type CatalogSection = { name_ar: string; items: CatalogItem[]; };
 
 // قوالب جاهزة بالأصناف الدارجة في السوق المصري — البائع يحط السعر بس (والكمية).
@@ -2827,6 +2827,7 @@ function CatalogBuilderStep({
                             <input type='number' value={item.price || ''} onChange={(e) => updateItem(si, ii, { price: Number(e.target.value) || 0 })} placeholder='السعر' className={inputCls + ' py-2 text-sm pl-10'} />
                             <span className='absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-500'>ج.م</span>
                           </div>
+                          <input type='number' inputMode='numeric' value={item.quantity ?? ''} onChange={(e) => updateItem(si, ii, { quantity: Number(e.target.value) || undefined })} placeholder='العدد' className={inputCls + ' py-2 text-sm w-20 text-center'} />
                           <label className='flex items-center gap-1.5 text-xs cursor-pointer whitespace-nowrap px-2'>
                             <input type='checkbox' checked={item.is_available} onChange={(e) => updateItem(si, ii, { is_available: e.target.checked })} className='w-4 h-4 accent-[#1F6F5F]' />
                             متاح
