@@ -15,10 +15,23 @@ export interface WaNumberConfig {
   label: string | null
   persona: string | null
   enabled: boolean
+  /**
+   * 🧪 (٢٥ يوليو ٢٠٢٦) يبعت على `<رقم>@s.whatsapp.net` بدل `<lid>@lid`.
+   *
+   * كل رسالة فشلت في التشخيص راحت على هوية LID، والرقم الوحيد اللي بيسلّم
+   * جلساته اتفتحت **قبل** تحويل واتساب للـLID ومحفوظة على الديسك. ولوج
+   * رايلواي بيوري `pendingPreKey` + `Closing session` على كل إرسال — يعني
+   * جلسة تشفير جديدة بتتعلّق كل مرة وماتكملش.
+   *
+   * الفرضية: Baileys ٦.٧.٩ مش قادر يفتح جلسة **جديدة** مع هوية LID.
+   * المفتاح ده بيجرّبها لكل رقم على حدة من غير ما نلمس الرقم الشغّال،
+   * وبديل الترقية الخطرة. الرجوع = تحديث صف واحد.
+   */
+  prefer_phone_jid: boolean
 }
 
 function defaults(sessionId: string): WaNumberConfig {
-  return { session_id: sessionId, label: null, persona: null, enabled: true }
+  return { session_id: sessionId, label: null, persona: null, enabled: true, prefer_phone_jid: false }
 }
 
 /**
@@ -32,7 +45,7 @@ export async function getNumberConfig(
   try {
     const { data } = await supabaseUntyped
       .from('wa_number_configs')
-      .select('session_id, label, persona, enabled')
+      .select('session_id, label, persona, enabled, prefer_phone_jid')
       .eq('session_id', sessionId)
       .maybeSingle()
 
@@ -42,6 +55,7 @@ export async function getNumberConfig(
       label: (data.label as string | null) ?? null,
       persona: (data.persona as string | null) ?? null,
       enabled: (data.enabled as boolean | null) ?? true,
+      prefer_phone_jid: (data.prefer_phone_jid as boolean | null) ?? false,
     }
   } catch {
     return defaults(sessionId)

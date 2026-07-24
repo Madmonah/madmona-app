@@ -10,6 +10,7 @@
 //    برسالة تقول كده — وده أحسن من fallback بيبلع السبب.
 
 import { supabase as supabaseAdmin, supabaseUntyped } from './supabase'
+import { getNumberConfig } from './wa-number-config'
 
 // خدمة المارد (Baileys على Railway) — القناة الوحيدة للإرسال
 const WA_SERVICE_URL = process.env.WA_SERVICE_URL
@@ -196,6 +197,35 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
       jid = `${mappedLid}@lid`
       lidFallbackJid = `${to}@s.whatsapp.net`
     }
+  }
+
+  // 🧪 (٢٥ يوليو ٢٠٢٦) مفتاح «ابعت على الرقم مش على الـLID» — **لكل رقم لوحده**.
+  //
+  // الملاحظة اللي وراه: كل رسالة فشلت في التشخيص راحت على هوية `@lid`،
+  // وولا مرة جرّب جهاز جديد يبعت على هوية الرقم. والرقم الوحيد اللي بيسلّم
+  // (201002229982) جلساته اتفتحت **قبل** تحويل واتساب للـLID ومحفوظة على
+  // الديسك. ولوج رايلواي بيوري `pendingPreKey` + `Closing session` على كل
+  // إرسال — يعني جلسة تشفير جديدة بتتعلّق كل مرة وماتكملش أبدًا.
+  //
+  // الفرضية: Baileys ٦.٧.٩ مش قادر يفتح جلسة **جديدة** مع هوية LID.
+  //
+  // ده بديل آمن لترقية Baileys (اللي فشلت مرتين وضربت الرقمين): بنجرّب على
+  // الرقم اللي محدّد في `wa_number_configs.prefer_phone_jid` بس، والباقي
+  // زي ما هو. والـLID بيفضل خطة بديلة عن طريق شبكة الأمان تحت.
+  // الرجوع = `update wa_number_configs set prefer_phone_jid = false`.
+  if (params.session && jid?.endsWith('@lid')) {
+    try {
+      const cfg = await getNumberConfig(params.session)
+      if (cfg.prefer_phone_jid) {
+        const phoneJid =
+          lidFallbackJid || (to && !looksLikeLid(to) ? `${to}@s.whatsapp.net` : undefined)
+        if (phoneJid) {
+          console.log('[wa] الرقم متظبط يبعت على هوية الرقم', { session: params.session, was: jid, now: phoneJid })
+          lidFallbackJid = jid // الـLID بقى الخطة البديلة
+          jid = phoneJid
+        }
+      }
+    } catch { /* قراءة الإعداد ماتوقفش الإرسال أبدًا */ }
   }
 
   // لو لسه مُعرّف مخفي ومعندناش JID جاهز (رسالة إحنا بادئينها —
