@@ -251,6 +251,34 @@ export async function startSession({ id, label, authRoot, onMessage, onLidMap, o
     }
   })
 
+  // ── مصدر تاني للإيصالات: message-receipt.update ──────────────────────
+  // ليه ده موجود: قِسنا بالداتا (٢٤ يوليو) إن ١٣٤ رسالة **مثبت** إنها
+  // اتسلّمت (العميل رد عليها خلال ١٠ دقايق) — منهم **٢ بس** اللي اتسجّل
+  // ليهم ✓✓. يعني `messages.update` لوحده بيفوّت ~٩٨٪ من الإيصالات،
+  // فاللوحة بتوري «كله واقف على اتبعت» والناس تفتكر الرقم متحظور.
+  // ده اللي خلّى جلسة قبل كده ترقّي Baileys وترجّعها — كانت بتطارد شبح.
+  //
+  // ⚠️ الرسالة مش بتوصل ≠ مفيش ✓✓. العدّاد كان هو المكسور مش التسليم.
+  //
+  // الإيصال هنا بيجي بـ receiptTimestamp (اتسلّمت) و readTimestamp (اتقرت).
+  // التطبيق بيرفع الحالة بس ومابينزّلهاش، فمفيش ضرر من مصدرين مع بعض.
+  sock.ev.on('message-receipt.update', async (updates) => {
+    for (const u of updates || []) {
+      try {
+        const messageId = u.key?.id
+        if (!messageId) continue
+        const r = u.receipt || {}
+        const mapped = (r.readTimestamp || r.playedTimestamp)
+          ? 'read'
+          : (r.receiptTimestamp ? 'delivered' : null)
+        if (!mapped) continue
+        onStatus?.({ sessionId: id, message_id: messageId, status: mapped })
+      } catch (e) {
+        log.error({ session: id, err: e.message }, 'فشل إيصال رسالة')
+      }
+    }
+  })
+
   return entry
 }
 
