@@ -736,11 +736,18 @@ export async function POST(request: NextRequest) {
       const msgAt = thisMsg?.created_at ? new Date(thisMsg.created_at).getTime() : Date.now()
       const lastOutAt = lastOut?.created_at ? new Date(lastOut.created_at).getTime() : 0
 
-      // هامش ثانيتين: الرسايل اللي في نفس الدفعة بتوصل بفروق أجزاء من الثانية
-      const alreadyCovered = lastOutAt > 0 && msgAt < lastOutAt + 2000
+      // 🔧 (#26ب — ٢٤ يوليو) الهامش اتقلّل من ٢٠٠٠ لـ٥٠٠ مللي ثانية.
+      // نافذة الـ٢ث كانت بتبلع رسائل المتابعة الحقيقية: العميل يقرا رد المارد
+      // ويبعت رسالة تانية بسرعة (خلال ثانية-اتنين) → الرسالة بتتسجّل في التاريخ
+      // بس المارد مايردّش عليها (reason: debounced) = «بعت أكتر من رسالة مش بتوصل».
+      // تجميع الدفعة الحقيقي بيتعامل معاه فحص hasNewer تحت (بعد BATCH_WAIT)، مش هنا.
+      // ٥٠٠مللي بتكفي للريدليفري (الـupsert بيحافظ على created_at الأصلي < آخر رد
+      // فبيتمسك برضه) وللسباق اللحظي بين تسجيل الرسالة وكتابة الرد — من غير ما
+      // تبلع متابعة بني آدم (محدش بيقرا ويرد في نص ثانية).
+      const alreadyCovered = lastOutAt > 0 && msgAt < lastOutAt + 500
 
       if (alreadyCovered) {
-        // اتسجّلت فوق (خطوة ١·٥) — دي في نافذة ٢ث بعد آخر رد فمانردّش تاني
+        // ريدليفري أو رسالة وصلت في نفس اللحظة اللي بعتنا فيها الرد — متغطّية
         return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'debounced' })
       }
     }
