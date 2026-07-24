@@ -381,8 +381,13 @@ app.post('/send', auth, async (req, res) => {
   const { id, entry } = pickSession(req)
   if (!entry?.connected) return res.status(503).json({ ok: false, error: 'مفيش جلسة متصلة' })
   try {
-    const sent = await entry.sock.sendMessage(toJid(jid || to), { text })
-    log.info({ session: id, to }, '📤 اتبعت')
+    // ⚠️ (٢٥ يوليو ٢٠٢٦) اللوج كان بيطبع `to` — وده **حقل الرقم**، مش الهوية
+    //    اللي اتبعت عليها فعلاً. فضلنا ساعات نستنتج «الرسالة راحت على الـLID»
+    //    من غير ما نشوفها ولا مرة. الهوية الحقيقية هي `toJid(jid || to)`،
+    //    ودي اللي بتحدّد وصلت ولا لأ. تتطبع صريحة.
+    const target = toJid(jid || to)
+    const sent = await entry.sock.sendMessage(target, { text })
+    log.info({ session: id, to, jid: target, msg: sent?.key?.id }, '📤 اتبعت')
     res.json({ ok: true, wa_message_id: sent?.key?.id, session: id })
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message })
