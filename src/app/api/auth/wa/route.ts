@@ -38,8 +38,45 @@ function genCode(): string {
   return 'MAD' + Array.from(a, (n) => ALPHABET[n % ALPHABET.length]).join('')
 }
 
+/** 👤 اسم العرض بتاع العميل من واتساب.
+ *
+ *  (٢٥ يوليو ٢٠٢٦ — محمد: «أي حد يسجل دخول من واتساب ومعندوش أكونت نعمله أكونت»)
+ *  الحساب كان بيتعمل فعلاً، بس **من غير اسم خالص** (`full_name` = NULL).
+ *  مثال حي: العميلة اللي دخلت ٢١:٠٣:٣٠ اتعمل ليها حساب واسمها فاضي، رغم إن
+ *  واتساب مدّينا «Eman Ali» وإحنا مخزّنينه في `whatsapp_conversations`.
+ *  النتيجة إن التطبيق كله بينادي العميل بـ«يا » فاضية.
+ *
+ *  ⚠️ الرقم بيتخزّن بأكتر من صيغة (`201…` · `01…` · LID) فبندوّر بكلهم،
+ *     وبنرفض أي «اسم» طالع رقم تليفون (واتساب بيحط الرقم كاسم لما يكون
+ *     الشخص مش في جهات الاتصال).
+ */
+async function lookupWaName(
+  sb: ReturnType<typeof admin>,
+  keys: string[],
+): Promise<string | null> {
+  // filter بدل [...new Set] — التارجت هنا ماعندوش downlevelIteration
+  const uniq = keys.filter((k, i) => k && keys.indexOf(k) === i)
+  if (!uniq.length) return null
+  try {
+    const { data } = await sb
+      .from('whatsapp_conversations')
+      .select('contact_name, last_message_at')
+      .in('contact_phone', uniq)
+      .order('last_message_at', { ascending: false })
+      .limit(5)
+    const rows = (data ?? []) as Array<{ contact_name?: string | null }>
+    return (
+      rows
+        .map((r) => (r.contact_name || '').trim())
+        .find((n) => n.length > 1 && !/^\+?[\d\s()-]+$/.test(n)) || null
+    )
+  } catch {
+    return null // الاسم تحسين — عمره ما يوقف تسجيل الدخول
+  }
+}
+
 /** رقم واتساب (2010xxxxxxxx) → Supabase session عبر magiclink hash.
- *  بيلاقي المستخدم أو يعمله، ويضمن صف profiles برقمه. */
+ *  بيلاقي المستخدم أو يعمله، ويضمن صف profiles برقمه واسمه. */
 async function mintSession(rawPhone: string, fullNameHint: string | null = null) {
   const sb = admin()
   let normalized = normalizePhone(rawPhone)
@@ -65,10 +102,17 @@ async function mintSession(rawPhone: string, fullNameHint: string | null = null)
   const email = normalized ? phoneToEmail(normalized) : `wa-lid-${lid}@lid.madmona.eg`
   const local = normalized ? '0' + normalized.slice(3) : null // +2010... → 010...
 
+  // 👤 الاسم: اللي الواجهة بعتته له الأولوية، وبعده اسم واتساب.
+  const waName = await lookupWaName(sb, [normalized, local, lid].filter(Boolean) as string[])
+  const displayName = (fullNameHint || waName || '').trim() || null
+
   // اعمل المستخدم لو مش موجود (لو موجود بيرجع email_exists وده تمام)
   const { data: created, error: createErr } = await sb.auth.admin.createUser({
     email, email_confirm: true,
-    user_metadata: local ? { phone: local, via: 'whatsapp' } : { via: 'whatsapp_lid', lid },
+    user_metadata: {
+      ...(local ? { phone: local, via: 'whatsapp' } : { via: 'whatsapp_lid', lid }),
+      ...(displayName ? { full_name: displayName } : {}),
+    },
   })
   let userId = created?.user?.id
   if (createErr && !/already|exists/i.test(createErr.message)) throw createErr
@@ -81,11 +125,19 @@ async function mintSession(rawPhone: string, fullNameHint: string | null = null)
 
   // profiles: كمّل الرقم لو ناقص من غير ما تلمس اسم/دور موجودين
   if (userId) {
-    const { data: prof } = await sb.from('profiles').select('id, phone').eq('id', userId).maybeSingle()
+    const { data: prof } = await sb.from('profiles').select('id, phone, full_name').eq('id', userId).maybeSingle()
     if (!prof) {
-      await sb.from('profiles').insert({ id: userId, phone: local, role: 'customer' } as never)
-    } else if (!prof.phone && local) {
-      await sb.from('profiles').update({ phone: local } as never).eq('id', userId)
+      await sb.from('profiles').insert({
+        id: userId, phone: local, full_name: displayName, role: 'customer',
+      } as never)
+    } else {
+      // بنكمّل الناقص بس — عمرنا ما ندهس اسم أو رقم العميل كتبه بنفسه.
+      const patch: Record<string, string> = {}
+      if (!prof.phone && local) patch.phone = local
+      if (!prof.full_name && displayName) patch.full_name = displayName
+      if (Object.keys(patch).length) {
+        await sb.from('profiles').update(patch as never).eq('id', userId)
+      }
     }
   }
 
@@ -96,7 +148,7 @@ async function mintSession(rawPhone: string, fullNameHint: string | null = null)
   let fullName: string | null = null
   if (normalized) { // التوكن القديم محتاج رقم — لو الحساب مربوط بـLID بنتخطاه
     try {
-      const { data: mint } = await sb.rpc('wa_login_mint', { p_phone: normalized, p_full_name: fullNameHint } as never)
+      const { data: mint } = await sb.rpc('wa_login_mint', { p_phone: normalized, p_full_name: displayName } as never)
       const m = mint as { success?: boolean; token?: string; full_name?: string } | null
       if (m?.success && m.token) { madmonaToken = m.token; fullName = m.full_name || null }
     } catch { /* التوكن القديم إضافة — مش شرط */ }
@@ -104,7 +156,9 @@ async function mintSession(rawPhone: string, fullNameHint: string | null = null)
 
   return {
     token_hash: linkData.properties.hashed_token, email,
-    madmona_token: madmonaToken, phone: local, full_name: fullName,
+    // الاسم اللي بيرجع للواجهة ولرسالة الترحيب — اسم واتساب لو التوكن القديم
+    // مارجّعش حاجة (ده بيحصل مع الحسابات المربوطة بـLID).
+    madmona_token: madmonaToken, phone: local, full_name: fullName || displayName,
   }
 }
 
