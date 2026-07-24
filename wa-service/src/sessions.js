@@ -116,12 +116,42 @@ export async function startSession({ id, label, authRoot, onMessage, onLidMap, o
   // ده أدق ألف مرة من الربط بالاسم — الاسم بيتغيّر، والمُعرّف ثابت.
   // بنبعت الربط للتطبيق يخزّنه، فأي رسالة جاية بمُعرّف مخفي بنعرف
   // صاحبها الحقيقي وتاريخه كامل.
+  // 🚨 (٢٥ يوليو ٢٠٢٦) كان بيبعت **طلب HTTP منفصل + سطر لوج لكل جهة اتصال**.
+  //
+  //    أول ما رقم يتربط من جديد (QR)، واتساب بيصبّ **كل** جهات الاتصال مرة
+  //    واحدة في `contacts.upsert`. النتيجة: آلاف الطلبات في ثواني معدودة.
+  //    لوج رايلواي سجّلها حرفيًا بعد إعادة ربط 201114621551 الساعة ٠٠:٤٤:
+  //      00:46:02  rate limit of 500 logs/sec reached — Messages dropped: 1269
+  //      00:47:02  rate limit of 500 logs/sec reached — Messages dropped: 1113
+  //    ولمّا الخدمة غرقانة كده، **الإرسال الحقيقي بيتزنق ومايخرجش** — وده
+  //    اللي خلّى محمد يقول «مفيش رد بيتبعت» بعد السكان على طول.
+  //
+  //    الحل: إزالة تكرار + تجميع + دفعة واحدة كل ٣ث (أو كل ٢٠٠ عنصر).
+  //    آلاف الطلبات بقت أقل من عشرة.
+  const lidSeen = new Set()
+  let lidBuffer = []
+  let lidTimer = null
+
+  const flushLidMap = () => {
+    if (lidTimer) { clearTimeout(lidTimer); lidTimer = null }
+    if (!lidBuffer.length) return
+    const batch = lidBuffer
+    lidBuffer = []
+    log.info({ session: id, count: batch.length }, '🔗 ربط مُعرّفات مخفية (دفعة)')
+    onLidMap?.({ sessionId: id, batch })
+  }
+
   const sendLidMap = (lid, jid) => {
     if (!lid || !jid) return
     const phone = String(jid).split('@')[0].split(':')[0]
     if (!phone || !/^\d{8,15}$/.test(phone)) return
-    log.info({ session: id, lid, phone }, '🔗 ربط مُعرّف مخفي برقم')
-    onLidMap?.({ sessionId: id, lid: String(lid).split('@')[0], phone })
+    const lidDigits = String(lid).split('@')[0]
+    const key = `${lidDigits}:${phone}`
+    if (lidSeen.has(key)) return // اتبعت قبل كده في الجلسة دي — مفيش داعي نكرّر
+    lidSeen.add(key)
+    lidBuffer.push({ lid: lidDigits, phone })
+    if (lidBuffer.length >= 200) return flushLidMap()
+    if (!lidTimer) lidTimer = setTimeout(flushLidMap, 3000)
   }
 
   sock.ev.on('chats.phoneNumberShare', ({ lid, jid }) => sendLidMap(lid, jid))

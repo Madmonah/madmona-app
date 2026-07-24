@@ -385,21 +385,35 @@ export async function POST(request: NextRequest) {
   // ── ربط مُعرّف مخفي برقم حقيقي ──────────────────────────────────────
   // واتساب بيبعت الربط ده بنفسه (chats.phoneNumberShare / Contact.lid).
   // ده المصدر الرسمي — أدق بكتير من التخمين بالاسم.
+  // ⚠️ (٢٥ يوليو ٢٠٢٦) بقى بيستقبل **دفعة**. wa-service كان بيبعت طلب لكل
+  //    جهة اتصال، وأول ما رقم يتربط من جديد واتساب بيصبّ كل جهات الاتصال —
+  //    آلاف الطلبات في ثواني، والخدمة بتغرق فالإرسال الحقيقي بيتزنق.
+  //    بنقبل الشكلين: `{lid, phone}` (القديم) و`{batch:[{lid,phone}]}` (الجديد)
+  //    عشان النشر مايكسرش أي طرف لو اتنشر واحد قبل التاني.
   if ((body as { kind?: string }).kind === 'lid_map') {
-    const m = body as unknown as { lid?: string; phone?: string; sessionId?: string }
-    if (m.lid && m.phone) {
-      await supabaseUntyped.from('wa_lid_map').upsert(
-        {
-          lid: m.lid,
-          phone: normalizePhone(m.phone),
-          session_id: m.sessionId ?? null,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'lid' }
-      )
-      console.log('[lid-map]', m.lid, '→', m.phone)
+    const m = body as unknown as {
+      lid?: string; phone?: string; sessionId?: string
+      batch?: Array<{ lid?: string; phone?: string }>
     }
-    return NextResponse.json({ ok: true, kind: 'lid_map' })
+    const items = (m.batch?.length ? m.batch : [{ lid: m.lid, phone: m.phone }])
+      .filter((x): x is { lid: string; phone: string } => !!x?.lid && !!x?.phone)
+
+    if (items.length) {
+      const now = new Date().toISOString()
+      // إزالة تكرار على مستوى الدفعة — upsert بيرمي لو نفس المفتاح اتكرر جواها
+      const seen = new Set<string>()
+      const rows = items
+        .filter((x) => !seen.has(x.lid) && seen.add(x.lid))
+        .map((x) => ({
+          lid: x.lid,
+          phone: normalizePhone(x.phone),
+          session_id: m.sessionId ?? null,
+          updated_at: now,
+        }))
+      await supabaseUntyped.from('wa_lid_map').upsert(rows, { onConflict: 'lid' })
+      console.log('[lid-map]', rows.length, 'مُعرّف من', m.sessionId ?? '—')
+    }
+    return NextResponse.json({ ok: true, kind: 'lid_map', count: items.length })
   }
 
   // ── تحديث حالة رسالة صادرة (✓ اتبعت / ✓✓ اتسلّمت / seen اتقرت) ────────
