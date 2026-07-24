@@ -9,7 +9,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { ADMIN_COOKIE, ADMIN_SESSION_VALUE } from '@/lib/adminGate'
-import { sendText } from '@/lib/whatsapp'
+import { sendText, resolveSessionForConversation } from '@/lib/whatsapp'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -63,7 +63,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'المحادثة مش موجودة' }, { status: 404 })
   }
 
-  const sessionId = (conv as { session_id: string | null }).session_id
+  // ⚠️ إرسال **لاحق** مش رد لحظي — الرقم لازم ييجي من آخر رسالة واردة فعلًا،
+  //    مش من صف المحادثة (حقل متغيّر بيتكتب فوق بعضه، فالعميل اللي كلّم رقمين
+  //    ممكن يجيله رد الأدمن من رقم ماكلّمهوش = رسالة من مجهول).
+  const sessionId =
+    (await resolveSessionForConversation(conversationId)) ??
+    (conv as { session_id: string | null }).session_id
 
   // محادثات الويب مش على واتساب — الرد اليدوي من هنا لسه مش متاح ليها
   if (sessionId === 'web') {

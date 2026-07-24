@@ -339,6 +339,51 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
 }
 
 // ============================================================================
+// الرقم الصح لأي إرسال **لاحق** (مش رد لحظي)
+// ============================================================================
+/**
+ * الرد اللحظي بياخد الرقم من الرسالة الواردة نفسها (`body.session_id`) — وده سليم.
+ * إنما أي إرسال **لاحق** (الرد اليدوي من لوحة الأدمن · رسالة ترحيب · إشعار · كرون)
+ * كان بياخده من `whatsapp_conversations.session_id`، وده حقل **متغيّر** بيتكتب فوق
+ * بعضه كل رسالة واردة.
+ *
+ * النتيجة: العميل اللي كلّم رقمين بتاعنا ليه صف محادثة واحد، فالإرسال اللاحق ممكن
+ * يخرج من رقم **ماكلّمهوش** — ويوصله كرسالة من مجهول، وده نفس نمط البدء البارد
+ * اللي بيوقّف الأرقام.
+ *
+ * الحل: نحدّد الرقم من **آخر رسالة واردة فعلًا** (العمود الثابت على الرسالة)،
+ * ونرجع للحقل القديم بس لو الرسايل القديمة لسه من غير نسبة. (٢٤ يوليو ٢٠٢٦)
+ */
+export async function resolveSessionForConversation(
+  conversationId?: string | null
+): Promise<string | undefined> {
+  if (!conversationId) return undefined
+  try {
+    const { data } = await supabaseUntyped
+      .from('whatsapp_messages')
+      .select('session_id')
+      .eq('conversation_id', conversationId)
+      .eq('direction', 'inbound')
+      .not('session_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    const fromMsg = (data as { session_id?: string | null }[] | null)?.[0]?.session_id
+    if (fromMsg) return fromMsg
+
+    // fallback: الرسايل القديمة (قبل ٢٤ يوليو) مالهاش نسبة — نستخدم الحقل القديم.
+    const { data: conv } = await supabaseUntyped
+      .from('whatsapp_conversations')
+      .select('session_id')
+      .eq('id', conversationId)
+      .maybeSingle()
+    return (conv as { session_id?: string | null } | null)?.session_id ?? undefined
+  } catch {
+    return undefined // أي عطل → نسيب الخدمة تختار، زي السلوك القديم
+  }
+}
+
+// ============================================================================
 // قوالب واتساب (Templates) — ⛔ اتشالت مع Cloud API
 // ============================================================================
 // القوالب المعتمدة حاجة خاصة بـ Meta Cloud API بس؛ Baileys مالوش قوالب —

@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { sendText } from '@/lib/whatsapp'
+import { sendText, resolveSessionForConversation } from '@/lib/whatsapp'
 
 // =====================================================================
 // 📩 رد ترحيب الدخول على واتساب — *رد* على رسالة الكود (مش رسالة باردة)
@@ -59,7 +59,9 @@ export async function sendLoginWelcome(
       await sendText({
         to: c?.contact_phone || opts.verifiedPhone,
         jid,
-        session: c?.session_id || undefined,
+        // إرسال لاحق مش رد لحظي — الرقم من آخر رسالة واردة فعلًا،
+        // مش من صف المحادثة المتغيّر (شوف resolveSessionForConversation).
+        session: (await resolveSessionForConversation(convId)) || c?.session_id || undefined,
         body: lines.join('\n'),
         conversationId: convId,
         agentName: 'المارد',

@@ -79,3 +79,4 @@ build.log
 build-*.log
 scripts/_commit_*.txt
 scripts/_*.ps1
+scripts/_probe_*.py
