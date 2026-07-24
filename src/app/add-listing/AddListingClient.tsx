@@ -729,6 +729,7 @@ function AddListingPageInner({
         {step === 4 && (
           <StepPhotos
             draft={draft}
+            categories={categories}
             token={token}
             onSubmit={async (photos) => {
               // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
@@ -3469,6 +3470,41 @@ function StepPricing({
 }
 
 // =================================================
+// SERVICE PHOTO PROMPTS (Task 18, Jul 24 2026)
+// For the services track the hero image is the trust signal for THAT specific
+// service, so we keep it required (enforced below for every track) AND tailor
+// the label per activity family: عيادات → صورة الدكتور، كوافير → صورة من شغلك،
+// ورش عربيات → صورة الورشة … Matching is keyword-based on the (English) slug so
+// new service categories inherit a sensible prompt without a code change.
+// =================================================
+type PhotoCopy = { heading: string; sub: string; box: string };
+
+function getServicePhotoCopy(slug: string | null | undefined): PhotoCopy | null {
+  if (!slug) return null;
+  const s = slug.toLowerCase();
+  const has = (re: RegExp) => re.test(s);
+  if (has(/clinic|medical|dentist|dental|dermat|cardio|pediatric|gyneco|ophthal|ent-doctor|orthoped|psychiat|psycholog|physio|nutrition|aesthetic|botox|filler|cosmetic-surgery|hair-transplant|laser|general-practitioner|consultation|veterinar/))
+    return { heading: 'صورة الدكتور أو العيادة', sub: 'ارفع صورة الدكتور أو العيادة — دي أول حاجة المريض بيشوفها وبتبني الثقة.', box: 'صورة الدكتور / العيادة' };
+  if (has(/beauty|hair-stylist|hair-removal|makeup|nail|skincare|brows|lashes|bridal|massage|spa|salon/))
+    return { heading: 'صورة من شغلك', sub: 'ارفع صورة من شغلك (قبل/بعد) أو السالون — بتفرق جداً في جذب العملاء.', box: 'صورة من شغلك' };
+  if (has(/auto|car-|vehicle|mechanic|tire|towing|motorcycle-service|motorcycle-school/))
+    return { heading: 'صورة الخدمة أو الورشة', sub: 'ارفع صورة للورشة أو لخدمة عملتها قبل كده — بتطمّن العميل.', box: 'صورة الورشة / الخدمة' };
+  if (has(/plumb|electric|carpenter|painter|handyman|contractor|ac-maintenance|appliance-repair|pest|garden|clean|furniture-assembly|moving|home-services/))
+    return { heading: 'صورة من شغلك', sub: 'ارفع صورة من شغل سابق أو أدواتك — بتوري العميل إنك محترف.', box: 'صورة من شغلك' };
+  if (has(/pet|dog|nann|babysit|childcare|newborn|elder-care|housekeeper|housemanager|domestic/))
+    return { heading: 'صورة توضّح خدمتك', sub: 'ارفع صورة للمكان أو للخدمة اللي بتقدمها.', box: 'صورة الخدمة' };
+  if (has(/tutor|course|class|instructor|education|exam-prep|language|quran|music|art-class|kids-|coach|soft-skills|workshop|translator/))
+    return { heading: 'صورتك أو شهاداتك', sub: 'ارفع صورة ليك وانت بتدرّس، أو شهاداتك — بتبني ثقة الأهل والطلبة.', box: 'صورتك / شهاداتك' };
+  if (has(/event|catering|wedding|zaffa|buffet|party|birthday|planner|djs|photograph|videograph|inshad|mazoun|reciter|hajj|umrah|religious/))
+    return { heading: 'صورة من شغل سابق', sub: 'ارفع صورة من فرح أو فعالية عملتها قبل كده — أقوى دعاية ليك.', box: 'صورة من شغلك' };
+  if (has(/print/))
+    return { heading: 'نماذج من شغل الطباعة', sub: 'ارفع صور لنماذج طبعتها قبل كده — العميل بيختار بعينه.', box: 'نموذج من شغلك' };
+  if (has(/trainer|yoga|pilates|fitness|gym/))
+    return { heading: 'صورتك أو المكان', sub: 'ارفع صورة ليك أو للمكان اللي بتدرّب فيه.', box: 'صورة الخدمة' };
+  return { heading: 'صورة توضّح خدمتك', sub: 'ارفع صورة توضّح الخدمة اللي بتقدمها — دي أول انطباع للعميل وبتزوّد الحجوزات.', box: 'صورة الخدمة' };
+}
+
+// =================================================
 // STEP 4 — PHOTOS
 // May 13 2026 fix: photos are now REQUIRED (was skippable).
 // Rationale: 14 of 14 claimed drafts had 0 photos → all stuck in
@@ -3477,15 +3513,22 @@ function StepPricing({
 // which dramatically improves marketplace appeal and conversion.
 // =================================================
 function StepPhotos({
-  draft, token, onSubmit, onUpload, onBack, saving,
+  draft, categories, token, onSubmit, onUpload, onBack, saving,
 }: {
   draft: DraftPayload;
+  categories: MainCategory[];
   token: string | null;
   onSubmit: (photos: { url: string }[]) => void | Promise<void>;
   onUpload?: (photos: { url: string }[]) => void | Promise<void>;
   onBack: () => void;
   saving: boolean;
 }) {
+  // Task 18 (Jul 24 2026): for the services track, tailor the photo prompt per
+  // activity (عيادة → صورة الدكتور، كوافير → صورة من شغلك …). Non-service tracks
+  // keep the generic copy. The ≥1-photo requirement below applies to all.
+  const svcCopy = getCategoryTrack(draft.category_slug, categories) === 'services'
+    ? getServicePhotoCopy(draft.category_slug)
+    : null;
   const [photos, setPhotos] = useState<{ url: string; caption?: string }[]>(draft.photos || []);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -3542,9 +3585,11 @@ function StepPhotos({
 
   return (
     <section>
-      <h2 className="text-lg font-semibold mb-1">الصور</h2>
+      <h2 className="text-lg font-semibold mb-1">{svcCopy ? svcCopy.heading : 'الصور'}</h2>
       <p className="text-sm text-gray-500 mb-6">
-        ارفع صورة واحدة على الأقل عشان نقدر ننشر إعلانك فوراً. الإعلانات بصور بتاخد حجوزات أسرع بـ 7 مرات.
+        {svcCopy
+          ? svcCopy.sub
+          : 'ارفع صورة واحدة على الأقل عشان نقدر ننشر إعلانك فوراً. الإعلانات بصور بتاخد حجوزات أسرع بـ 7 مرات.'}
       </p>
 
       {photos.length > 0 && (
@@ -3568,7 +3613,7 @@ function StepPhotos({
       <label className="block">
         <div className="border-2 border-dashed border-[#D1D5DB] rounded-2xl p-8 text-center cursor-pointer hover:border-[#1F6F5F] transition-colors">
           <div className="text-3xl mb-2">📸</div>
-          <div className="font-semibold">{uploading ? 'جاري الرفع...' : 'اضغط هنا لإضافة صور'}</div>
+          <div className="font-semibold">{uploading ? 'جاري الرفع...' : (svcCopy ? svcCopy.box : 'اضغط هنا لإضافة صور')}</div>
           <div className="text-xs text-gray-500 mt-1">JPG/PNG، حتى 8 صور</div>
         </div>
         <input
