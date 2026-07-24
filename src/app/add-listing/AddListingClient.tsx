@@ -673,6 +673,7 @@ function AddListingPageInner({
           <BulkExcelDrafts
             initialName={draft.contact_name || ''}
             initialPhone={draft.contact_phone || ''}
+            track={getCategoryTrack(draft.category_slug, dbExtraCategories) || params.get('track')}
             onClose={() => setShowBulkExcel(false)}
           />
         )}
@@ -3174,6 +3175,7 @@ function StepPricing({
         <BulkExcelDrafts
           initialName={draft.contact_name || ''}
           initialPhone={draft.contact_phone || ''}
+          track={track}
           onClose={() => setShowBulkModal(false)}
         />
       )}

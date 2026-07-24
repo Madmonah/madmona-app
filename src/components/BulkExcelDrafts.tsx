@@ -44,17 +44,41 @@ function detect(headerRow: unknown[]): Record<number, string> {
   return map
 }
 
-function template() {
-  const wb = XLSX.utils.book_new()
-  const aoa = [
-    ['العنوان', 'الفئة', 'السعر', 'اتصل للسعر', 'الوصف', 'المنطقة', 'المدينة', 'رابط الصورة'],
+// Jul 24 2026 (Task 17): the sample rows adapt to the activity type so a
+// دكتور/مقدّم خدمة/صاحب معدّات إيجار يلاقي أمثلة من مجاله بدل عفش وموتوسيكلات.
+// المهم: نفس الأعمدة بالظبط في كل الحالات — الـparser و POST /bulk مااتغيروش.
+const TEMPLATE_HEADER = ['العنوان', 'الفئة', 'السعر', 'اتصل للسعر', 'الوصف', 'المنطقة', 'المدينة', 'رابط الصورة']
+
+function sampleRows(track?: string | null): (string | number)[][] {
+  if (track === 'services') {
+    return [
+      ['كشف باطنة', 'عيادات', 300, '', 'كشف + متابعة أسبوع', 'مدينة نصر', 'القاهرة', ''],
+      ['غيار زيت وفلتر', 'صيانة سيارات', 450, '', 'شامل الزيت', 'فيصل', 'الجيزة', ''],
+      ['جلسة تنظيف بشرة', 'تجميل وعناية', 350, '', '', '', 'القاهرة', ''],
+    ]
+  }
+  if (track === 'rentals') {
+    return [
+      ['كاميرا Canon R5', 'كاميرات', 800, '', 'إيجار يومي + عدسة', 'الدقي', 'الجيزة', ''],
+      ['كرسي زفاف مذهّب', 'أثاث أفراح', 40, '', 'سعر القطعة / اليوم', '', 'القاهرة', ''],
+      ['بروجيكتور Full HD', 'أجهزة عرض', 350, '', '', 'وسط البلد', 'القاهرة', ''],
+    ]
+  }
+  // products / sale-* / غير محدد: سلع للبيع
+  return [
     ['ركنة مودرن 5 قطع', 'أثاث منزلي', 25000, '', 'خشب زان + قماش مستورد', 'مدينة نصر', 'القاهرة', ''],
     ['مكتب مدير + كرسي', 'أثاث مكتبي', 18500, '', '', 'وسط البلد', 'القاهرة', ''],
     ['BMW S1000RR 2020', 'موتوسيكل', '', 'نعم', 'حالة ممتازة', '', 'القاهرة', ''],
   ]
+}
+
+function template(track?: string | null) {
+  const wb = XLSX.utils.book_new()
+  const aoa = [TEMPLATE_HEADER, ...sampleRows(track)]
   const ws = XLSX.utils.aoa_to_sheet(aoa)
   ws['!cols'] = aoa[0].map(() => ({ wch: 20 }))
-  XLSX.utils.book_append_sheet(wb, ws, 'الأصناف')
+  const sheetName = track === 'services' ? 'الخدمات' : 'الأصناف'
+  XLSX.utils.book_append_sheet(wb, ws, sheetName)
   XLSX.writeFile(wb, 'madmona-bulk-template.xlsx')
 }
 
@@ -63,10 +87,12 @@ const isPor = (v: unknown) => ['نعم', 'اه', 'آه', 'yes', 'true', '1', 'y'
 export default function BulkExcelDrafts({
   initialName = '',
   initialPhone = '',
+  track = null,
   onClose,
 }: {
   initialName?: string
   initialPhone?: string
+  track?: string | null
   onClose: () => void
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
@@ -174,10 +200,19 @@ export default function BulkExcelDrafts({
         <div className="flex-1 overflow-y-auto p-5">
           {step === 'pick' && (
             <div className="space-y-4">
-              <button onClick={template} className="w-full flex items-center gap-3 p-4 rounded-2xl border-2 border-dashed border-[#1F6F5F]/30 bg-[#1F6F5F]/5 hover:bg-[#1F6F5F]/10 transition">
+              <button onClick={() => template(track)} className="w-full flex items-center gap-3 p-4 rounded-2xl border-2 border-dashed border-[#1F6F5F]/30 bg-[#1F6F5F]/5 hover:bg-[#1F6F5F]/10 transition">
                 <Download className="w-5 h-5 text-[#1F6F5F]" />
-                <span className="text-sm font-bold text-[#1F6F5F]">نزّل القالب الجاهز (Excel)</span>
+                <span className="text-sm font-bold text-[#1F6F5F]">
+                  {track === 'services' ? 'نزّل قالب الخدمات الجاهز (Excel)' : 'نزّل القالب الجاهز (Excel)'}
+                </span>
               </button>
+              <p className="text-[11px] text-gray-500 font-bold -mt-1 px-1">
+                {track === 'services'
+                  ? 'القالب فيه أمثلة خدمات (عيادات، صيانة، تجميل…) — كل صف = خدمة تتنشر لوحدها. غيّرهم ببياناتك.'
+                  : track === 'rentals'
+                    ? 'القالب فيه أمثلة معدّات إيجار — كل صف = صنف يتنشر لوحده. غيّرهم ببياناتك.'
+                    : 'كل صف = إعلان يتنشر لوحده. غيّر الأمثلة اللي في القالب ببياناتك.'}
+              </p>
               <div
                 onClick={() => fileRef.current?.click()}
                 className="cursor-pointer border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-[#1F6F5F]/40 hover:bg-gray-50 transition"
