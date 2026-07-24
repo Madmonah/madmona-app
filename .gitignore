@@ -74,3 +74,8 @@ probe.txt
 supabase/.temp/
 
 build.log
+
+# ملفات شغل مؤقتة للجلسات (كانت بتلوّث git status بـ40+ ملف كل جلسة)
+build-*.log
+scripts/_commit_*.txt
+scripts/_*.ps1
