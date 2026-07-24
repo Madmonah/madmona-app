@@ -1,6 +1,7 @@
 // شات مضمونة — نفس مخ المارد، رد مباشر بدون واتساب. بيدعم نص + صور + صوت + ملفات.
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseUntyped } from '@/lib/supabase'
+import { WEB_MARID_SESSION, WEB_MARID_NAME } from '@/lib/whatsapp'
 import { parseJsonResponse } from '@/lib/anthropic'
 import { callMaridWithTools } from '@/lib/marid-brain'
 import { processIncomingMedia, type MediaInput } from '@/lib/marid-media'
@@ -212,7 +213,10 @@ export async function POST(request: NextRequest) {
         .insert({
           contact_phone: phone,
           contact_name: name,
-          session_id: 'web',
+          // 🧞 شات الموقع = «المارد الرسمي» — مارد منفصل بمساره الخاص،
+          //    بنفس قدرات مارد الواتساب وبنفس الذاكرة (الجزء ٤ تحت).
+          session_id: WEB_MARID_SESSION,
+          agent_name: WEB_MARID_NAME,
           status: 'active',
           last_message_at: new Date().toISOString(),
           last_message_direction: 'inbound',
@@ -334,7 +338,8 @@ export async function POST(request: NextRequest) {
       message_type: 'text',
       status: 'sent',
       ai_generated: true,
-      agent_name: 'المارد',
+      agent_name: WEB_MARID_NAME,
+      session_id: WEB_MARID_SESSION,
     })
     await supabaseUntyped
       .from('whatsapp_conversations')

@@ -3,6 +3,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { ADMIN_COOKIE, ADMIN_SESSION_VALUE } from '@/lib/adminGate'
+import { maridLabel } from '@/lib/whatsapp'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,7 +39,8 @@ export async function GET(req: NextRequest) {
           id: c.id,
           name: c.contact_name,
           phone: c.contact_phone,
-          channel: c.session_id === 'web' ? 'ويب' : (c.session_id || '—'),
+          // 🧞 شات الموقع بقى ليه اسمه: «المارد الرسمي». باقي القنوات = رقمها.
+          channel: maridLabel(c.session_id),
           status: c.status,
           last_at: c.last_message_at,
           waiting: c.last_message_direction === 'inbound',

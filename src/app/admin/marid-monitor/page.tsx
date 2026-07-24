@@ -2,6 +2,12 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 
+// 🧞 (٢٥ يوليو ٢٠٢٦ — محمد): «المارد بتاع شات مضمونة خليه منفصل وسميه
+//    المارد الرسمي». الـAPI بقى بيرجّع الاسم ده بدل «ويب» (شوف `maridLabel`
+//    في lib/whatsapp). القيمة متكرّرة هنا لأن ده كومپوننت كلاينت
+//    و`lib/whatsapp` بيجرّ معاه عميل السيرفر.
+const OFFICIAL_MARID = 'المارد الرسمي'
+
 type Msg = { direction: string; body: string | null; ai_generated: boolean; created_at: string; message_type: string; status?: string | null }
 type Conv = { id: string; name: string | null; phone: string; channel: string; status: string | null; last_at: string | null; waiting: boolean; messages: Msg[] }
 
@@ -97,7 +103,7 @@ export default function MaridMonitor() {
 
   const sendReply = useCallback(async () => {
     if (!sel || !reply.trim() || sending) return
-    if (sel.channel === 'ويب') { flash('محادثة ويب — الرد اليدوي لواتساب بس دلوقتي', false); return }
+    if (sel.channel === OFFICIAL_MARID) { flash('المارد الرسمي (شات الموقع) — الرد اليدوي لواتساب بس دلوقتي', false); return }
     setSending(true)
     try {
       const res = await fetch('/api/admin/marid-monitor/send', {
@@ -192,12 +198,12 @@ export default function MaridMonitor() {
             const paused = c.status === 'paused'
             return (
               <button key={c.id} onClick={() => { setSelId(c.id); setReply('') }} style={{ display: 'flex', width: '100%', textAlign: 'right', alignItems: 'center', gap: 12, background: c.waiting && !paused ? '#fffbeb' : '#fff', border: 'none', borderBottom: '1px solid #eee', padding: '10px 14px', cursor: 'pointer' }}>
-                <div style={{ width: 46, height: 46, borderRadius: '50%', background: c.channel === 'ويب' ? '#2563eb' : '#128C7E', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 700, flexShrink: 0 }}>{(c.name || 'م').trim()[0]}</div>
+                <div style={{ width: 46, height: 46, borderRadius: '50%', background: c.channel === OFFICIAL_MARID ? '#2563eb' : '#128C7E', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 700, flexShrink: 0 }}>{(c.name || 'م').trim()[0]}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                     <span style={{ fontWeight: 700, color: '#111', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name || c.phone}</span>
                     {paused && <span title="المارد موقوف" style={{ fontSize: 10, background: '#fee2e2', color: '#991b1b', padding: '1px 7px', borderRadius: 20, fontWeight: 700, flexShrink: 0 }}>موقوف ⏸️</span>}
-                    <span style={{ fontSize: 10, background: c.channel === 'ويب' ? '#dbeafe' : '#dcfce7', color: c.channel === 'ويب' ? '#1e40af' : '#166534', padding: '1px 7px', borderRadius: 20 }}>{c.channel}</span>
+                    <span style={{ fontSize: 10, background: c.channel === OFFICIAL_MARID ? '#dbeafe' : '#dcfce7', color: c.channel === OFFICIAL_MARID ? '#1e40af' : '#166534', padding: '1px 7px', borderRadius: 20 }}>{c.channel}</span>
                     <span style={{ fontSize: 10, color: '#999' }}>{tm(c.last_at)}</span>
                   </div>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 2 }}>
@@ -237,9 +243,9 @@ export default function MaridMonitor() {
 
           {/* شريط التدخّل — الأدمن يصحّح غلطة المارد فورًا */}
           <div style={{ background: '#f0f2f5', borderTop: '1px solid #ddd', padding: '8px 10px' }}>
-            {sel.channel === 'ويب' ? (
+            {sel.channel === OFFICIAL_MARID ? (
               <div style={{ textAlign: 'center', color: '#667', fontSize: 12, padding: '6px 0' }}>
-                دي محادثة ويب — الرد اليدوي من هنا لواتساب بس دلوقتي.
+                دي محادثة المارد الرسمي (شات الموقع) — الرد اليدوي من هنا لواتساب بس دلوقتي.
               </div>
             ) : (
               <>
