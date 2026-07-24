@@ -24,6 +24,10 @@ import {
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
 import { getNumberConfig, numberPromptSection } from '@/lib/wa-number-config'
 import { notifyAdminsMaridReply } from '@/lib/admin-notify'
+// 🧞 مخ المارد **المشترك** — كان فيه نسخة متكرّرة من الدالة دي هنا، واتشالت.
+//    نسخة واحدة بس دلوقتي، فأي تعليمة جديدة تسري على كل الماردة على طول
+//    (واتساب · المارد الرسمي على الموقع · أي مارد جديد).
+import { callMaridWithTools } from '@/lib/marid-brain'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -199,167 +203,6 @@ async function magnetizeLinks(text: string, phone: string): Promise<string> {
   return out
 }
 
-// ── نداء المارد بالأدوات ─────────────────────────────────────────────────
-//
-// المارد بيقدر يسأل الداتابيز قبل ما يرد: يبحث في الكتالوج، يشوف المتكلّم
-// مين، يجيب حجوزاته، يسجّل إعلان جديد. بندوّر الحلقة لحد ما يخلص أدوات.
-//
-// ليه حد أقصى ٤ لفّات: الرد على الواتساب لازم يوصل في أقل من دقيقة،
-// وكل لفّة نداء API كامل. أربعة كفاية لأصعب سؤال، وبتمنع الدوران اللانهائي.
-async function callMaridWithTools(opts: {
-  systemPrompt: string
-  userMessage: string
-  mediaBlocks: Array<Record<string, unknown>>
-  senderPhone: string
-  senderName: string | null
-  savedMediaUrl?: string | null
-  admin?: boolean
-}): Promise<string> {
-  // الأدمن محتاج لفّات أكتر — أوامره بتحتاج فحص وتنفيذ ومراجعة
-  const MAX_TURNS = opts.admin ? 6 : 4
-  const tools = opts.admin ? [...MARID_TOOLS, ...ADMIN_TOOLS] : MARID_TOOLS
-
-  const system = `${opts.systemPrompt}${opts.admin ? ADMIN_PROMPT : ''}
-
-═══════════════════════════════════════════════════════════
-النهاردة
-═══════════════════════════════════════════════════════════
-${new Date().toLocaleString('ar-EG', {
-  timeZone: 'Africa/Cairo',
-  dateStyle: 'full',
-  timeStyle: 'short',
-})}
-(بتوقيت القاهرة · ISO: ${new Date().toISOString()})
-
-⛔ ماتسألش العميل عن التاريخ أو الساعة — إنت عارفهم.
-«بكرة» و«بعد بكرة» و«الأسبوع الجاي» احسبهم بنفسك من التاريخ ده.
-
-═══════════════════════════════════════════════════════════
-معلومات المتكلّم دلوقتي
-═══════════════════════════════════════════════════════════
-رقمه: ${opts.senderPhone}${opts.senderName ? `\nاسمه: ${opts.senderName}` : ''}
-
-استخدم الرقم ده مباشرة في الأدوات — ماتسألهوش عليه.
-${opts.savedMediaUrl ? `\n📎 الملف اللي بعته اتحفظ هنا:\n${opts.savedMediaUrl}\nلو هتسجّل إعلان أو مشروع، مرّر الرابط ده في image_urls كصورة.\n\n🧾 لو الصورة فيها منيو أو قائمة أسعار: اقرا كل صنف وسعره من الصورة نفسها (إنت شايفها)، وسجّلهم بـ create_listing_draft صنف صنف — كل صنف باسمه وسعره اللي في الصورة، مش صورة واحدة بلا تفاصيل. الأسعار اللي في الصورة هي المصدر، متخترعش.\n` : ''}
-
-═══════════════════════════════════════════════════════════
-عندك أدوات — استخدمها
-═══════════════════════════════════════════════════════════
-• أي سؤال عن حاجة معينة → search_catalog قبل ما ترد
-• «عندكم إيه؟» → list_categories
-• **أول حاجة دايمًا: who_is_this** — ابعتله الرقم *والاسم*.
-  لو رجّعلك تاريخ سابق، اقراه كويس وكمّل من حيث انتهيتوا.
-  الناس بتزعل جدًا لما تسأل عن حاجة شرحوها قبل كده.
-• «فين حجزي؟» → get_my_orders
-• عايز يضيف منتج/خدمة → اجمع البيانات ثم create_listing_draft
-• «كودي» أو «شير واكسب» أو عايز يرشّح صحابه → get_referral_code
-• عايز يشتغل معانا أو بعت سيرة ذاتية → record_job_application
-• أي كلام عن **أوردر** (قبول/رفض/إلغاء/استفسار) → manage_order
-  الأداة بتتأكد من الصلاحية بنفسها. ماتأكّدش على حاجة قبل ما ترجّع ok.
-• أي كلام عن **ميعاد** (حجز/إلغاء/استفسار) → manage_meeting
-  ⛔ ممنوع تقول ميعاد من دماغك ولا توعد بحاجة مش مسجّلة
-• **search_catalog مارجّعش حاجة مناسبة** → نادِ record_unmet_demand
-  **فورًا وقبل ما ترد**. ماتستأذنش وماتقولش «تحب أسجّلهولك؟» —
-  سجّله وبعدين قول للعميل إنك سجّلته وهترجعله.
-  الطلب اللي مايتسجّلش بيضيع للأبد.
-
-⚠️ ممنوع تخترع إعلان أو سعر أو لينك. لو الأداة مارجعتش حاجة،
-قول للعميل بصراحة إن ده مش متاح — ده أحسن ألف مرة من معلومة غلط.
-
-الروابط الرسمية:
-${Object.entries(MADMONA_LINKS)
-  .map(([k, v]) => `  ${k.replace(/_/g, ' ')}: ${v}`)
-  .join('\n')}`
-
-  const messages: Array<{ role: 'user' | 'assistant'; content: unknown }> = [
-    {
-      role: 'user',
-      content:
-        opts.mediaBlocks.length > 0
-          ? [...opts.mediaBlocks, { type: 'text', text: opts.userMessage }]
-          : opts.userMessage,
-    },
-  ]
-
-  // ⚠️ لو الميديا مش مقروءة (صورة تالفة، صيغة غريبة، ملف كبير)، Claude
-  // بيرمي 400 والطلب كله بيقع — والعميل مايوصلوش رد خالص.
-  // الحل: نشيل الميديا ونكمّل بالنص. رد ناقص أحسن ألف مرة من سكوت.
-  let droppedMedia = false
-
-  for (let turn = 0; turn < MAX_TURNS; turn++) {
-    let res
-    try {
-      res = await anthropic.messages.create({
-        model: CLAUDE_MODEL,
-        max_tokens: 2048,
-        system,
-        tools: tools as never,
-        messages: messages as never,
-      })
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      const isMediaIssue = /image|document|media|Could not process/i.test(msg)
-
-      if (isMediaIssue && !droppedMedia && opts.mediaBlocks.length > 0) {
-        console.warn('[marid] الميديا مش مقروءة — بنكمّل من غيرها:', msg.slice(0, 120))
-        droppedMedia = true
-        messages[0] = {
-          role: 'user',
-          content:
-            `${opts.userMessage}\n\n(العميل بعت ملف مش قادر أفتحه — ` +
-            `قوله كده بصراحة واطلب منه يبعت التفاصيل مكتوبة أو يبعت الملف تاني.)`,
-        }
-        continue
-      }
-      throw err
-    }
-
-    const toolUses = res.content.filter((c) => c.type === 'tool_use')
-
-    if (!toolUses.length) {
-      const textPart = res.content.find((c) => c.type === 'text')
-      return textPart && textPart.type === 'text' ? textPart.text : ''
-    }
-
-    messages.push({ role: 'assistant', content: res.content })
-
-    const results = []
-    for (const tu of toolUses) {
-      if (tu.type !== 'tool_use') continue
-      const isAdminTool = ADMIN_TOOLS.some((t) => t.name === tu.name)
-
-      // 📸 لو العميل بعت صورة والمارد بيسجّل إعلان، نحقن الرابط المحفوظ في الأداة
-      //    كضمان (حتى لو المارد نسي يمرّره في image_urls) — عشان الإعلان ينزل
-      //    الماركتبليس مش يعلق كمسودة بلا صورة.
-      let toolInput = tu.input as Record<string, unknown>
-      if (tu.name === 'create_listing_draft' && opts.savedMediaUrl) {
-        const existing = Array.isArray(toolInput.image_urls) ? (toolInput.image_urls as string[]) : []
-        if (!existing.length) toolInput = { ...toolInput, image_urls: [opts.savedMediaUrl] }
-      }
-
-      const out = isAdminTool
-        ? await runAdminTool(tu.name, toolInput)
-        : await runMaridTool(tu.name, toolInput)
-      console.log('[marid-tool]', tu.name, JSON.stringify(out).slice(0, 160))
-      results.push({
-        type: 'tool_result',
-        tool_use_id: tu.id,
-        content: JSON.stringify(out),
-      })
-    }
-    messages.push({ role: 'user', content: results })
-  }
-
-  // خلصت اللفّات ولسه بيطلب أدوات — نطلب رد نهائي من غير أدوات
-  const final = await anthropic.messages.create({
-    model: CLAUDE_MODEL,
-    max_tokens: 1024,
-    system: `${system}\n\nخلاص كفاية أدوات — رد على العميل دلوقتي باللي عندك.`,
-    messages: messages as never,
-  })
-  const t = final.content.find((c) => c.type === 'text')
-  return t && t.type === 'text' ? t.text : ''
-}
 
 export async function POST(request: NextRequest) {
   // بنقبل السرّين الداخليين — نفس حدود الثقة (الاتنين على السيرفر بس).

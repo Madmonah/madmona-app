@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseUntyped } from '@/lib/supabase'
 import { WEB_MARID_SESSION, WEB_MARID_NAME } from '@/lib/whatsapp'
+import { getNumberConfig, numberPromptSection } from '@/lib/wa-number-config'
 import { parseJsonResponse } from '@/lib/anthropic'
 import { callMaridWithTools } from '@/lib/marid-brain'
 import { processIncomingMedia, type MediaInput } from '@/lib/marid-media'
@@ -310,8 +311,13 @@ export async function POST(request: NextRequest) {
       : effectiveText
 
     // ── ٥) رد المارد ────────────────────────────────────────────────────
+    // 🧞 نفس مخ الواتساب بالظبط (`lib/marid-brain`) — نسخة واحدة لكل الماردة.
+    //    والسياق الخاص بالمارد ده بيتقري من نفس المكان اللي أرقام الواتساب
+    //    بتقرا منه (`wa_number_configs`)، فأي تعليمة جديدة للمارد الرسمي
+    //    تتحط في صف واحد من غير أي نشر.
+    const maridCfg = await getNumberConfig(WEB_MARID_SESSION)
     const raw = await callMaridWithTools({
-      systemPrompt: CUSTOMER_CONCIERGE_PROMPT,
+      systemPrompt: CUSTOMER_CONCIERGE_PROMPT + numberPromptSection(maridCfg),
       userMessage,
       mediaBlocks,
       savedMediaUrl,
