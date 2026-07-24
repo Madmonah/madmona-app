@@ -20,7 +20,7 @@ interface Category {
   name_en?: string | null
   slug: string
   icon: string | null
-  track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | null
+  track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | null
   also_show_in?: string[] | null
   group_slug?: string | null
   group_name_ar?: string | null
@@ -54,7 +54,7 @@ const SORT_LABELS: Record<SortOption, string> = {
   rating: 'market.sort_rating',
 }
 
-type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products'
+type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily'
 
 const TRACK_LABELS: Record<TrackTab, string> = {
   all: 'market.track_all',
@@ -63,6 +63,7 @@ const TRACK_LABELS: Record<TrackTab, string> = {
   hybrid: 'market.track_hybrid',
   restaurants: 'market.track_restaurants',
   products: 'market.track_products',
+  daily: 'market.track_daily',
 }
 
 const TRACK_EMOJI: Record<TrackTab, string> = {
@@ -72,6 +73,7 @@ const TRACK_EMOJI: Record<TrackTab, string> = {
   hybrid: '💒',
   restaurants: '🍽️',
   products: '🏷️',
+  daily: '🛒',
 }
 
 // Per-vertical colours — same identity as the homepage hero/tabs.
@@ -82,19 +84,25 @@ const TRACK_ACCENT: Record<TrackTab, { accent: string; bg: string }> = {
   services:    { accent: '#D4A017', bg: '#FAEFD1' },
   restaurants: { accent: '#E26D5C', bg: '#FAE1CB' },
   hybrid:      { accent: '#1F6F5F', bg: '#E7F1ED' },
+  daily:       { accent: '#7A4FA3', bg: '#EDE3F5' },
 }
 
-// Tab order: الكل + بيع · إيجار · خدمات · مطاعم (مناسبات مدمجة في الإيجار)
-const TRACK_TAB_ORDER: TrackTab[] = ['all', 'products', 'rentals', 'services', 'restaurants']
+// Tab order: الكل + بيع · إيجار · خدمات · مطاعم · سوبر ماركت
+// (مناسبات مدمجة في الإيجار)
+// 🛒 (٢٥ يوليو ٢٠٢٦ — محمد، طلبها مرتين): السوبر ماركت والصيدلية كانوا
+//    مجموعة جوه تاب «بيع»، والمفروض يبقوا مجال قايم بذاته. `daily` تراك
+//    مستقل دلوقتي في الداتابيز كمان (`categories_track_check`).
+const TRACK_TAB_ORDER: TrackTab[] = ['all', 'products', 'rentals', 'services', 'restaurants', 'daily']
 
-// Vertical names — identical to the homepage hero (الكل + بيع · إيجار · خدمات · مطاعم).
+// Vertical names — identical to the homepage hero.
 const TRACK_NAME: Record<TrackTab, { ar: string; en: string }> = {
-  all:         { ar: 'الكل',    en: 'All' },
-  products:    { ar: 'بيع',     en: 'Buy' },
-  rentals:     { ar: 'إيجار',   en: 'Rent' },
-  services:    { ar: 'خدمات',   en: 'Services' },
-  restaurants: { ar: 'مطاعم',   en: 'Restaurants' },
-  hybrid:      { ar: 'مناسبات', en: 'Events' },
+  all:         { ar: 'الكل',        en: 'All' },
+  products:    { ar: 'بيع',         en: 'Buy' },
+  rentals:     { ar: 'إيجار',       en: 'Rent' },
+  services:    { ar: 'خدمات',       en: 'Services' },
+  restaurants: { ar: 'مطاعم',       en: 'Restaurants' },
+  daily:       { ar: 'سوبر ماركت',  en: 'Groceries' },
+  hybrid:      { ar: 'مناسبات',     en: 'Events' },
 }
 
 function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listing[] }) {
@@ -113,7 +121,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   const [activeTrack, setActiveTrack] = useState<TrackTab>(
     (initialTrack === 'hybrid'
       ? 'rentals'
-      : (['rentals', 'services', 'restaurants', 'products'].includes(initialTrack || '')
+      : (['rentals', 'services', 'restaurants', 'products', 'daily'].includes(initialTrack || '')
           ? initialTrack
           : 'all')) as TrackTab
   )

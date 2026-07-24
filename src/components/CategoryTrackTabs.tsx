@@ -61,15 +61,17 @@ function buildGroups(cats: Category[]): CatGroup[] {
   return [...map.values()].sort((a, b) => a.order - b.order)
 }
 
-// 4 verticals — same identity & order as the homepage hero (بيع · إيجار · خدمات · مطاعم).
+// 5 verticals — same identity & order as الماركت (بيع · إيجار · خدمات · مطاعم · سوبر ماركت).
 // مناسبات (hybrid/events) is merged into إيجار per the new structure.
-type VKey = 'products' | 'rentals' | 'services' | 'restaurants'
+// 🛒 (٢٥ يوليو ٢٠٢٦ — محمد): «سوبر ماركت» مجال مستقل، مش مجموعة جوه «بيع».
+type VKey = 'products' | 'rentals' | 'services' | 'restaurants' | 'daily'
 
 const VERTICALS: { key: VKey; ar: string; en: string; emoji: string; accent: string; bg: string; tracks: string[] }[] = [
-  { key: 'products',    ar: 'بيع',   en: 'Buy',         emoji: '🏷️', accent: '#3D7BB6', bg: '#D9E7F4', tracks: ['products'] },
-  { key: 'rentals',     ar: 'إيجار', en: 'Rent',        emoji: '🔑', accent: '#1F6F5F', bg: '#E7F1ED', tracks: ['rentals', 'hybrid'] },
-  { key: 'services',    ar: 'خدمات', en: 'Services',    emoji: '🛠️', accent: '#D4A017', bg: '#FAEFD1', tracks: ['services'] },
-  { key: 'restaurants', ar: 'مطاعم', en: 'Restaurants', emoji: '🍽️', accent: '#E26D5C', bg: '#FAE1CB', tracks: ['restaurants'] },
+  { key: 'products',    ar: 'بيع',        en: 'Buy',         emoji: '🏷️', accent: '#3D7BB6', bg: '#D9E7F4', tracks: ['products'] },
+  { key: 'rentals',     ar: 'إيجار',      en: 'Rent',        emoji: '🔑', accent: '#1F6F5F', bg: '#E7F1ED', tracks: ['rentals', 'hybrid'] },
+  { key: 'services',    ar: 'خدمات',      en: 'Services',    emoji: '🛠️', accent: '#D4A017', bg: '#FAEFD1', tracks: ['services'] },
+  { key: 'restaurants', ar: 'مطاعم',      en: 'Restaurants', emoji: '🍽️', accent: '#E26D5C', bg: '#FAE1CB', tracks: ['restaurants'] },
+  { key: 'daily',       ar: 'سوبر ماركت', en: 'Groceries',   emoji: '🛒', accent: '#7A4FA3', bg: '#EDE3F5', tracks: ['daily'] },
 ]
 
 // 🚨 (16 يوليو 2026) كان هنا `DEFAULT_FALLBACK` — لينك Unsplash واحد لصورة
@@ -89,6 +91,7 @@ const TILE_TONE: Record<VKey, string> = {
   rentals:     'from-[#1F6F5F] to-[#2FA084]',
   services:    'from-[#8A6A0F] to-[#D4A017]',
   restaurants: 'from-[#B4453A] to-[#E26D5C]',
+  daily:       'from-[#5C3A7E] to-[#9B6FC4]',
 }
 
 function IconTile({ cat, vkey }: { cat: Category; vkey: VKey }) {

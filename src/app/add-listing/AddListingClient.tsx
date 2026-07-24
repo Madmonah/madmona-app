@@ -42,7 +42,7 @@ export type MainCategory = {
   slug: string;
   name_ar: string;
   emoji: string;
-  track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | null;
+  track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | null;
   subs: SubCategory[];
   // Phase G (May 18 2026): group metadata for visual grouping in StepCategory.
   // When null, the wizard falls back to flat rendering (zero-regression).
@@ -97,7 +97,7 @@ function getCategoryWizardMeta(
 function getCategoryTrack(
   categorySlug: string | undefined | null,
   categories: MainCategory[],
-): 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | null {
+): 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | null {
   if (!categorySlug) return null;
   const asMain = categories.find((m) => m.slug === categorySlug);
   if (asMain) return asMain.track ?? null;
@@ -791,7 +791,7 @@ function AddListingPageInner({
 // May 17 2026: Added track tabs (الكل/إيجار/خدمات/هايبرد) above the mains
 // grid so 27 categories don't overwhelm the user. Same DB, cleaner UX.
 // =================================================
-type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products';
+type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily';
 
 const TRACK_LABELS: Record<TrackTab, string> = {
   all: 'الكل',
@@ -800,6 +800,7 @@ const TRACK_LABELS: Record<TrackTab, string> = {
   hybrid: 'هايبرد',
   restaurants: 'مطاعم',
   products: 'منتجات',
+  daily: 'سوبر ماركت',
 };
 
 const TRACK_EMOJI: Record<TrackTab, string> = {
@@ -809,6 +810,7 @@ const TRACK_EMOJI: Record<TrackTab, string> = {
   hybrid: '💒',
   restaurants: '🍔',
   products: '🏷️',
+  daily: '🛒',
 };
 
 function StepCategory({
@@ -842,7 +844,7 @@ function StepCategory({
   // كل التصنيفات مرة واحدة. الديفولت = إيجار (rentals).
   // FIX (Jul 17 2026): لو جاي بـ?track= (من تاب في الماركت مثلاً) نفتح عليه.
   const [activeTrack, setActiveTrack] = useState<TrackTab>(
-    (['rentals', 'services', 'restaurants', 'products'].includes(initialTrack || '')
+    (['rentals', 'services', 'restaurants', 'products', 'daily'].includes(initialTrack || '')
       ? initialTrack
       : initialTrack === 'hybrid' ? 'rentals' : 'rentals') as TrackTab
   );
@@ -886,7 +888,7 @@ function StepCategory({
 
         {/* Track tabs */}
         <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-5 px-5">
-          {(['all', 'rentals', 'services', 'restaurants', 'products'] as TrackTab[]).map((t) => {
+          {(['all', 'rentals', 'services', 'restaurants', 'products', 'daily'] as TrackTab[]).map((t) => {
             const count = t === 'all'
               ? categories.length
               : categories.filter((c) => c.track === t).length;
