@@ -443,6 +443,20 @@ export async function upsertConversation(args: {
   supplierId?: string
   profileId?: string
   agentName?: string
+  /**
+   * 🔀 (٢٥ يوليو ٢٠٢٦ — محمد): «كل رقم مارد منفصل خالص عن التاني».
+   *
+   * رقم المارد اللي المحادثة دي بتحصل عليه. المفتاح بقى
+   * **(رقم العميل + رقمنا)** مش رقم العميل لوحده.
+   *
+   * قبل كده الرقمين كانوا بيكتبوا في نفس الصف و`session_id` بيتكتب فوق
+   * بعضه كل رسالة واردة — فالرقم التاني بيرد بحالة كتبها الرقم الأول
+   * (الـJID المحفوظ، الرقم اللي بيخرج منه الإرسال اللاحق… إلخ).
+   *
+   * القدرات واحدة للرقمين — المفصول هو **التوجيه** بس.
+   * والذاكرة مشتركة عند القراءة (شوف `getConversationHistory`).
+   */
+  session?: string
 }): Promise<string | null> {
   const phone = normalizePhone(args.phone)
   if (!phone) return null
@@ -454,6 +468,7 @@ export async function upsertConversation(args: {
     p_supplier_id: args.supplierId ?? null,
     p_profile_id: args.profileId ?? null,
     p_agent_name: args.agentName ?? null,
+    p_session_id: args.session ?? null,
   })
 
   if (error) {
@@ -590,10 +605,39 @@ export async function getConversationHistory(
   conversationId: string,
   limit = 20
 ): Promise<Array<{ role: 'user' | 'assistant'; content: string }>> {
+  // 🧠 (٢٥ يوليو ٢٠٢٦ — محمد): «كل واحد فيهم يتعامل مع العملاء اللي بيبعتوله،
+  //    والذاكرة بتاعتهم تتخزن في مكان واحد».
+  //
+  //    فالتوجيه مفصول (كل رقم ليه صف محادثة خاص بيه — شوف `upsertConversation`)
+  //    إنما **الذاكرة مشتركة**: بنجمع تاريخ العميل من كل أرقامنا في خيط واحد
+  //    مرتّب بالوقت. يعني لو العميل كلّم رقم النهاردة ورقم تاني بكرة،
+  //    المارد عارف الكلام كله ومش هيخلّيه يعيد نفسه.
+  //
+  //    ⚠️ بنجيب الصفوف الشقيقة بالرقم، مش بالـ`session_id` — عشان أي رقم
+  //    جديد يتضاف بعدين يدخل في نفس الذاكرة تلقائيًا من غير أي تعديل.
+  const { data: conv } = await supabaseAdmin
+    .from('whatsapp_conversations')
+    .select('contact_phone')
+    .eq('id', conversationId)
+    .maybeSingle()
+
+  const phone = (conv as { contact_phone?: string } | null)?.contact_phone
+  let conversationIds: string[] = [conversationId]
+
+  if (phone) {
+    const { data: siblings } = await supabaseAdmin
+      .from('whatsapp_conversations')
+      .select('id')
+      .eq('contact_phone', phone)
+      .limit(20)
+    const ids = ((siblings ?? []) as { id: string }[]).map((c) => c.id).filter(Boolean)
+    if (ids.length) conversationIds = ids
+  }
+
   const { data } = await supabaseAdmin
     .from('whatsapp_messages')
     .select('direction, body, created_at')
-    .eq('conversation_id', conversationId)
+    .in('conversation_id', conversationIds)
     .order('created_at', { ascending: false })
     .limit(limit)
 

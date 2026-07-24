@@ -484,6 +484,7 @@ export async function POST(request: NextRequest) {
         phone,
         name: body.name ?? undefined,
         agentName: 'المارد',
+        session: body.session_id,
       })
       if (cid) {
         await logInboundMessage({
@@ -566,10 +567,15 @@ export async function POST(request: NextRequest) {
     }
 
     // ── ١) المحادثة ─────────────────────────────────────────────────────
+    // 🔀 (٢٥ يوليو ٢٠٢٦ — محمد): «اعمل مسار جديد لكل رقم، كل واحد يرد على
+    //    اللي بعت ليه». المفتاح بقى (رقم العميل + رقمنا) — فكل رقم ليه خيطه
+    //    ومابيدهسش حالة التاني. العملاء عملاء مضمونة والداتا مشتركة؛
+    //    المفصول هو التوجيه بس.
     const conversationId = await upsertConversation({
       phone,
       name: body.name ?? undefined,
       agentName: 'المارد',
+      session: body.session_id,
     })
     if (!conversationId) {
       return NextResponse.json({ ok: false, error: 'upsert_failed' }, { status: 500 })
