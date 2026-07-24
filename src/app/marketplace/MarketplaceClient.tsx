@@ -142,9 +142,14 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
     }
     return Array.from(map.values()).sort((a, b) => a.order - b.order)
   })()
-  // Group headings show only inside a specific track that has >1 group.
-  // The "الكل" view stays a flat strip (groups would collide across tracks).
-  const showGroupHeadings = activeTrack !== 'all' && rootGroups.length > 1
+  // (Jul 24 2026) اتفعّلت في تاب «الكل» كمان.
+  // الملاحظة القديمة («groups would collide across tracks») مالهاش أساس —
+  // قِسناها من الداتابيز: **كل group_slug بيخص تراك واحد بس**، مفيش ولا تصادم.
+  // والعكس هو اللي كان بيحصل: «الكل» المسطّح كان بيعرض التوأم جنب بعضه
+  // («عقارات سكنية» للإيجار و«عقارات سكنية» للبيع بنفس الاسم بالظبط).
+  // بالمجموعات بقى الفرق واضح من العنوان: «عقارات» مقابل «عقارات للبيع»،
+  // و«مركبات» مقابل «عربيات للبيع».
+  const showGroupHeadings = rootGroups.length > 1
 
   // Jul 2026 (Mohamed): any section with zero published listings is locked and
   // labeled "قريباً". A root section counts its own listings + its children +
