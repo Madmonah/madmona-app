@@ -858,11 +858,17 @@ function StepCategory({
   // (Jul 22 2026) handleMainClick اتشال — الاختيار بقى flat one-tap (onSelect
   // مباشرة على الـleaf)، فمفيش drill على mains-with-subs.
 
+  // 🗂️ (Jul 24 2026 — محمد): المجموعة المختارة في خطوة اختيار النشاط.
+  // نفس أسلوب الماركت بليس بالظبط: مستوى أول = كروت المجموعات، تختار
+  // مجموعة → تظهر أقسامها + زر رجوع.
+  const [pickGroup, setPickGroup] = useState<string | null>(null);
+
   // Phase G+ (May 18 2026): when parent signals "reset", jump back to the
   // mains list so the user can pick a totally different category.
   useEffect(() => {
     if (resetSignal > 0) {
       setSelectedMain(null);
+      setPickGroup(null);
     }
   }, [resetSignal]);
 
@@ -888,7 +894,7 @@ function StepCategory({
               <button
                 key={t}
                 type="button"
-                onClick={() => setActiveTrack(t)}
+                onClick={() => { setActiveTrack(t); setPickGroup(null); }}
                 className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold border transition-all flex items-center gap-1.5 ${
                   activeTrack === t
                     ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
@@ -910,38 +916,109 @@ function StepCategory({
             مفيش تصنيفات في التبويب ده دلوقتي
           </div>
         ) : (() => {
-          // UNIFIED one-tap picker (Jul 22 2026 — Mohamed): نبسّط اختيار الفئة
-          // زي فورم «حسابي» — كل الأصناف النهائية (leaves) في التاب المختار بتتعرض
-          // مسطّحة في جريد واحد، فالمستخدم بيختار في نقرة واحدة من غير تدخيل على
-          // مجموعات. الصنف اللي بيظهر تحت أكتر من مجال بيتعرض مرة واحدة (dedupe).
+          // 🗂️ (Jul 24 2026 — محمد: «عايز أسلوب عرض أضف يبقى شبه الماركت بليس»)
+          //
+          // كان: كل الأصناف النهائية مسطّحة في جريد واحد (Jul 22). المشكلة إن
+          // التسطيح بيحط التوأم جنب بعضه: «شقة» للإيجار و«شقة» للبيع اسمهم واحد
+          // وإيموچي واحد وسلاجّهم مختلفة — فالـdedupe (بالـslug) مابيشوفهمش
+          // مكرّرين، والمستخدم بيشوف كارتين متطابقين مالهمش أي فرق ظاهر.
+          // نفس الحكاية مع «سيارة» (بيع · إيجار · مستعملة) و٢٨ صنف تاني.
+          //
+          // دلوقتي: نفس drill-down الماركت بليس — كروت المجموعات الأول، وبعدين
+          // أقسام المجموعة المختارة. المجموعة نفسها بتفصل البيع عن الإيجار،
+          // فالتكرار بيختفي من غير ما نمسح أي صنف حقيقي.
+          const groupsMap = new Map<
+            string,
+            { slug: string; name_ar: string; emoji: string; order: number; leaves: { slug: string; emoji: string; name_ar: string }[] }
+          >();
           const seen = new Set<string>();
-          const leaves: { slug: string; emoji: string; name_ar: string }[] = [];
+
           for (const c of visibleMains) {
-            if (c.subs.length === 0) {
-              if (!seen.has(c.slug)) { seen.add(c.slug); leaves.push({ slug: c.slug, emoji: c.emoji, name_ar: c.name_ar }); }
-            } else {
-              for (const s of c.subs) {
-                if (!seen.has(s.slug)) { seen.add(s.slug); leaves.push({ slug: s.slug, emoji: s.emoji, name_ar: s.name_ar }); }
-              }
+            const key = c.group_slug || c.slug;
+            if (!groupsMap.has(key)) {
+              groupsMap.set(key, {
+                slug: key,
+                name_ar: c.group_name_ar || c.name_ar,
+                emoji: c.group_emoji || c.emoji || '🏷️',
+                order: c.group_display_order ?? 999,
+                leaves: [],
+              });
             }
+            const bucket = groupsMap.get(key)!;
+            const push = (l: { slug: string; emoji: string; name_ar: string }) => {
+              const dedupeKey = `${key}::${l.slug}`;
+              if (seen.has(dedupeKey)) return;
+              seen.add(dedupeKey);
+              bucket.leaves.push(l);
+            };
+            if (c.subs.length === 0) push({ slug: c.slug, emoji: c.emoji, name_ar: c.name_ar });
+            else for (const s of c.subs) push({ slug: s.slug, emoji: s.emoji, name_ar: s.name_ar });
           }
+
+          const groups = Array.from(groupsMap.values())
+            .filter((g) => g.leaves.length > 0)
+            .sort((a, b) => a.order - b.order);
+
+          const current = pickGroup ? groups.find((g) => g.slug === pickGroup) : null;
+
+          // مجموعة واحدة بس؟ مفيش لازمة لمستوى زيادة — نعرض أقسامها على طول.
+          const showLeaves = current || (groups.length === 1 ? groups[0] : null);
+
+          if (!showLeaves) {
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {groups.map((g) => (
+                  <button
+                    key={g.slug}
+                    type="button"
+                    onClick={() => setPickGroup(g.slug)}
+                    className="flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-white border border-gray-100 shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all text-right"
+                  >
+                    <span className="text-2xl">{g.emoji}</span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-extrabold text-gray-800 leading-tight">{g.name_ar}</span>
+                      <span className="block text-[10px] font-bold text-gray-400 mt-0.5">{g.leaves.length} قسم</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            );
+          }
+
           return (
-            <div className="grid grid-cols-2 gap-3">
-              {leaves.map((c) => (
-                <button
-                  key={c.slug}
-                  type="button"
-                  onClick={() => onSelect(c.slug)}
-                  className={`p-5 rounded-2xl border text-right transition-all ${
-                    value === c.slug
-                      ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
-                      : 'bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">{c.emoji}</div>
-                  <div className="font-semibold text-sm">{c.name_ar}</div>
-                </button>
-              ))}
+            <div className="space-y-3">
+              {groups.length > 1 && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPickGroup(null)}
+                    className="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
+                  >
+                    ← كل الأقسام
+                  </button>
+                  <span className="text-xs font-extrabold text-gray-700 flex items-center gap-1">
+                    <span>{showLeaves.emoji}</span>
+                    {showLeaves.name_ar}
+                  </span>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                {showLeaves.leaves.map((c) => (
+                  <button
+                    key={c.slug}
+                    type="button"
+                    onClick={() => onSelect(c.slug)}
+                    className={`p-5 rounded-2xl border text-right transition-all ${
+                      value === c.slug
+                        ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
+                        : 'bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300'
+                    }`}
+                  >
+                    <div className="text-3xl mb-2">{c.emoji}</div>
+                    <div className="font-semibold text-sm">{c.name_ar}</div>
+                  </button>
+                ))}
+              </div>
             </div>
           );
         })()}
