@@ -17,6 +17,51 @@ function normEg(raw: string) {
   return d
 }
 
+type PickedContact = { phone: string; name?: string }
+
+// هل المتصفح بيدعم اختيار جهات الاتصال؟ (كروم أندرويد على https)
+function contactsSupported(): boolean {
+  return typeof navigator !== 'undefined' && 'contacts' in navigator && typeof window !== 'undefined' && 'ContactsManager' in window
+}
+
+// يجيب رقم موبايل: من جهات الاتصال لو مدعوم، وإلا يكتبه المستخدم يدوي (ديسكتوب)
+async function getPhone(promptMsg: string): Promise<PickedContact | null> {
+  if (contactsSupported()) {
+    try {
+      const cm = (navigator as unknown as {
+        contacts: {
+          select: (p: string[], o: { multiple: boolean }) => Promise<Array<{ tel?: string[]; name?: string[] }>>
+          getProperties?: () => Promise<string[]>
+        }
+      }).contacts
+      const avail = (cm.getProperties ? await cm.getProperties() : ['tel', 'name']) || ['tel', 'name']
+      const want = ['tel', 'name'].filter((p) => avail.includes(p))
+      const sel = await cm.select(want.length ? want : ['tel'], { multiple: false })
+      if (!sel || !sel.length) return null // المستخدم قفل الاختيار
+      const c = sel[0]
+      const phone = (c.tel || []).find(Boolean) || ''
+      const name = (c.name || []).find(Boolean) || ''
+      if (!phone) { alert('الكونتاكت ده مالوش رقم موبايل 📵'); return null }
+      return { phone, name }
+    } catch { /* أي خطأ → نرجع للكتابة اليدوي */ }
+  }
+  const raw = prompt(promptMsg)?.trim()
+  if (!raw) return null
+  return { phone: raw }
+}
+
+// دعوة أوتوماتيك: يفتح واتساب على رقم الكونتاكت برسالة جاهزة (للتطبيق أو للجروب)
+function sendInvite(picked: PickedContact, opts: { roomId?: string; roomName?: string }) {
+  if (typeof window === 'undefined') return
+  const wa = normEg(picked.phone)
+  const first = (picked.name || '').trim().split(/\s+/)[0]
+  const hi = first ? `أهلاً ${first} 👋 ` : ''
+  const msg = opts.roomId
+    ? `${hi}تعال انضم لمجموعة «${opts.roomName || 'فريقنا'}» على شات مضمونة 💬\n${window.location.origin}/chat/join/${opts.roomId}`
+    : `${hi}تعال سجّل على مضمونة (مجاناً) ونكمّل شغلنا ومهامنا مع بعض في مكان واحد 💬\n${window.location.origin}`
+  window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank')
+}
+
 export default function TeamPage() {
   const [ready, setReady] = useState(false)
   const [uid, setUid] = useState<string | null>(null)
@@ -222,20 +267,27 @@ export default function TeamPage() {
     }
   }
 
-  // ابدأ محادثة خاصة ١:١ برقم موبايل
+  // ابدأ محادثة خاصة ١:١ — اختار الشخص من جهات اتصال التليفون
   async function startDM() {
     if (!uid) return
-    const raw = prompt('رقم موبايل الشخص (لازم يكون مسجّل على مضمونة):')?.trim()
-    if (!raw) return
+    const picked = await getPhone('رقم موبايل الشخص (لازم يكون مسجّل على مضمونة):')
+    if (!picked) return
     try {
       const res = await fetch('/api/chat/dm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ phone: raw }),
+        body: JSON.stringify({ phone: picked.phone }),
       })
       const data = await res.json()
       if (!data?.ok) {
-        alert(data?.error === 'no_account' ? 'مفيش أكونت بالرقم ده على مضمونة.' : data?.error === 'self' ? 'ده رقمك انت 🙂' : 'مقدرتش أبدأ المحادثة، جرّب تاني.')
+        if (data?.error === 'self') { alert('ده رقمك انت 🙂'); return }
+        // مش مسجّل على مضمونة → دعوة أوتوماتيك على واتساب
+        if (data?.error === 'no_account') {
+          sendInvite(picked, {})
+          alert(`${picked.name || 'الشخص ده'} لسه مش على مضمونة — فتحنا واتساب علشان تبعتله دعوة 📨`)
+          return
+        }
+        alert('مقدرتش أبدأ المحادثة، جرّب تاني.')
         return
       }
       await loadRooms(uid)
@@ -245,11 +297,17 @@ export default function TeamPage() {
 
   async function addMember() {
     if (!active) return
-    const raw = prompt('رقم موبايل العضو (لازم يكون مسجّل على مضمونة):')?.trim()
-    if (!raw) return
-    const p20 = normEg(raw); const local = '0' + p20.slice(2)
+    const picked = await getPhone('رقم موبايل العضو (لازم يكون مسجّل على مضمونة):')
+    if (!picked) return
+    const p20 = normEg(picked.phone); const local = '0' + p20.slice(2)
     const { data: prof } = await supabaseBrowser.from('profiles').select('id, full_name').or(`phone.eq.${local},phone.eq.${p20}`).limit(1).maybeSingle()
-    if (!prof) { alert('مفيش أكونت بالرقم ده — لازم يكون مسجّل على مضمونة الأول'); return }
+    if (!prof) {
+      // مش مسجّل على مضمونة → دعوة أوتوماتيك للجروب على واتساب
+      sendInvite(picked, { roomId: active.id, roomName: active.name || undefined })
+      setToast('📨 مش مسجّل — فتحنا واتساب تبعتله دعوة للجروب')
+      setTimeout(() => setToast(''), 3500)
+      return
+    }
     const { error } = await supabaseBrowser.from('chat_room_members').insert({ room_id: active.id, profile_id: (prof as { id: string }).id, role: 'member' } as never)
     alert(error ? 'مقدرتش أضيفه (لازم تكون مالك الغرفة)' : `تمت إضافة ${(prof as { full_name?: string }).full_name || 'العضو'} ✅`)
   }
@@ -283,7 +341,7 @@ export default function TeamPage() {
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ECE5DD', fontFamily: 'system-ui' }}>
       <header style={{ background: '#075E54', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ flex: 1, fontWeight: 700, fontSize: 18 }}>👥 محادثاتك</div>
-        <button onClick={startDM} style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 16, padding: '6px 10px', fontWeight: 700, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>💬 خاصة</button>
+        <button onClick={startDM} title="اختار شخص من جهات الاتصال" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 16, padding: '6px 10px', fontWeight: 700, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>💬 خاصة</button>
         <button onClick={createRoom} style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 16, padding: '6px 10px', fontWeight: 700, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>+ غرفة</button>
       </header>
       <div style={{ flex: 1, overflowY: 'auto', padding: 10 }}>
@@ -312,7 +370,7 @@ export default function TeamPage() {
         <button onClick={summonMaridInRoom} disabled={busy} title="استدعِ المارد" style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 14, padding: '5px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', opacity: busy ? 0.6 : 1 }}>🧞 المارد</button>
         <button onClick={() => setGallery(true)} title="ميديا المحادثة" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>🖼️</button>
         <button onClick={inviteLink} title="دعوة بلينك" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>🔗</button>
-        <button onClick={addMember} title="ضيف عضو" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>➕</button>
+        <button onClick={addMember} title="ضيف عضو من جهات الاتصال" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>➕</button>
       </header>
       {gallery && (
         <div onClick={() => setGallery(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.92)', zIndex: 50, display: 'flex', flexDirection: 'column' }}>
