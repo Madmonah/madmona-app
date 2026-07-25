@@ -53,6 +53,10 @@ export function listSessions() {
     connected: s.connected,
     me: s.me,
     waiting_for_qr: !!s.qr,
+    // آخر مرة اتأكدنا فيها إن الصفحة حية فعلاً (مش مجرد علم مرفوع من ready).
+    // لو الرقم ده بيكبر ومابيرجعش لصفر، يبقى النبض واقف والجلسة على وشك
+    // إعادة تشغيل — ده اللي بيفرّق بين «متصل» الحقيقي و«متصل» الكذّاب.
+    alive_sec_ago: s.lastAlive ? Math.floor((Date.now() - s.lastAlive) / 1000) : null,
   }))
 }
 
@@ -81,6 +85,7 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
 
   // ⚠️ درس من wa-service: كل إعادة اتصال لازم تقفل اللي قبلها، وإلا يفضل
   //    فيه أكتر من عميل حي على نفس الحساب.
+  if (entry.heartbeat) { clearInterval(entry.heartbeat); entry.heartbeat = null }
   if (entry.client) {
     try { await entry.client.destroy() } catch { /* تجاهل */ }
     entry.client = null
@@ -152,7 +157,33 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
     entry.qr = null
     entry.starting = false
     entry.me = client.info?.wid?._serialized || null
+    entry.lastAlive = Date.now()
     log.info({ session: id, me: entry.me }, '✅ الجلسة جاهزة')
+
+    // ── نبض حقيقي ────────────────────────────────────────────────────
+    // ⚠️ ٢٥ يوليو: الخدمة فضلت ساعة كاملة بتقول «متصل ✅» وهي مش مستقبلة
+    //    ولا رسالة. السبب إن `connected` بيتحط مرة واحدة عند ready
+    //    ومابيتغيّرش إلا لو حدث `disconnected` اتطلق — ولو الصفحة ماتت
+    //    أو واتساب فك الجهاز من غير حدث، الخدمة بتكدب علينا للأبد
+    //    ومحدّش بيعرف. رسالة عميل حقيقية راحت في الساعة دي.
+    //
+    //    `getState()` بينفّذ فعليًا جوّه الصفحة — فلو الصفحة ماتت بيرمي.
+    //    يعني ده فحص حياة حقيقي مش علم مرفوع من زمان.
+    if (entry.heartbeat) clearInterval(entry.heartbeat)
+    entry.heartbeat = setInterval(async () => {
+      try {
+        const state = await client.getState()
+        if (state !== 'CONNECTED') throw new Error(`state=${state}`)
+        entry.lastAlive = Date.now()
+      } catch (e) {
+        log.error({ session: id, err: e?.message || String(e) }, '💀 الجلسة ميتة والصحة كانت بتقول متصل — إعادة تشغيل')
+        entry.connected = false
+        clearInterval(entry.heartbeat)
+        entry.heartbeat = null
+        try { await client.destroy() } catch { /* تجاهل */ }
+        setTimeout(() => startSession({ id, label: entry.label, authRoot, onMessage, onStatus }), 3000)
+      }
+    }, Number(process.env.HEARTBEAT_MS || 60000))
   })
 
   client.on('disconnected', (reason) => {
