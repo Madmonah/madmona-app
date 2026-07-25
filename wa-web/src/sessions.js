@@ -17,6 +17,31 @@ import { join } from 'node:path'
 
 const log = pino({ level: 'info' })
 
+const MAX_MEDIA_MB = Number(process.env.MAX_MEDIA_MB || 12)
+
+/** أنواع whatsapp-web.js → نفس اتحاد أنواع wa-service بالحرف */
+const KIND = {
+  chat: 'text',
+  image: 'image',
+  sticker: 'image',
+  video: 'video',
+  audio: 'audio',
+  ptt: 'audio',
+  document: 'document',
+}
+
+/** أنواع مالهاش نص — نوصفها بدل ما نسيبها فاضية (زي wa-service) */
+const NO_TEXT_HINT = {
+  sticker: '[استيكر]',
+  vcard: '[جهة اتصال]',
+  multi_vcard: '[جهة اتصال]',
+  location: '[موقع]',
+  poll_creation: '[استطلاع]',
+}
+
+/** رسايل مش محتاجة رد أصلاً */
+const IGNORED = new Set(['reaction', 'revoked', 'e2e_notification', 'notification_template', 'call_log'])
+
 /** id → { client, connected, qr, me, label, starting } */
 const sessions = new Map()
 
@@ -111,6 +136,7 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
   client.on('message', async (msg) => {
     try {
       if (msg.fromMe) return
+      if (IGNORED.has(msg.type)) return
       const chat = await msg.getChat()
       const isGroup = !!chat?.isGroup
       const from = isGroup ? (msg.author || '') : (msg.from || '')
@@ -121,6 +147,46 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
       //    whatsapp-web.js بيدّينا الرقم الحقيقي من جهة الاتصال، فنقدّمه.
       const contactNumber = contact?.number ? String(contact.number).replace(/\D/g, '') : ''
 
+      const kind = KIND[msg.type] || 'text'
+
+      // ── تنزيل الميديا ─────────────────────────────────────────────────
+      // ⚠️ درس ٢٠ يوليو من wa-service: مطعم Shawari بعت ٣ صور منيو،
+      //    كلها فشلت في التنزيل واتجاهلت في صمت — والصور ضاعت للأبد.
+      //    فمحاولتين، والفشل بيتسجّل بصوت عالي بدل ما يعدّي ساكت.
+      let media = null
+      if (msg.hasMedia) {
+        try {
+          let m = null
+          for (let attempt = 1; attempt <= 2; attempt++) {
+            try {
+              m = await msg.downloadMedia()
+              if (m?.data) break
+            } catch (e) {
+              if (attempt === 2) throw e
+              log.warn({ session: id, err: e.message, attempt }, 'فشل تنزيل الميديا — بنعيد')
+              await new Promise((r) => setTimeout(r, 1500))
+            }
+          }
+          if (!m?.data) throw new Error('الميديا رجعت فاضية')
+
+          const sizeBytes = Buffer.byteLength(m.data, 'base64')
+          if (sizeBytes / (1024 * 1024) <= MAX_MEDIA_MB) {
+            media = {
+              mimetype: m.mimetype || 'application/octet-stream',
+              filename: m.filename || null,
+              seconds: Number(msg.duration) || null,
+              is_voice_note: msg.type === 'ptt',
+              size_bytes: sizeBytes,
+              data_base64: m.data,
+            }
+          } else {
+            log.warn({ session: id, mb: (sizeBytes / 1048576).toFixed(1) }, 'ميديا كبيرة — اتجاهلت')
+          }
+        } catch (e) {
+          log.error({ session: id, err: e.message, kind }, 'فشل تنزيل الميديا')
+        }
+      }
+
       onMessage?.({
         session_id: id,
         from: contactNumber || String(from).split('@')[0],
@@ -129,11 +195,11 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
         name: contact?.pushname || contact?.name || null,
         message_id: msg.id?._serialized || msg.id?.id || null,
         timestamp: msg.timestamp || Math.floor(Date.now() / 1000),
-        type: msg.type === 'chat' ? 'text' : msg.type,
-        text: msg.body || '',
+        type: kind,
+        text: msg.body || NO_TEXT_HINT[msg.type] || '',
         is_group: isGroup,
         group_jid: isGroup ? msg.from : null,
-        media: null, // الميديا مرحلة تانية — النص أولاً
+        media,
       })
     } catch (e) {
       log.error({ session: id, err: e.message }, 'فشل معالجة رسالة واردة')
