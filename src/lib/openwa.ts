@@ -30,9 +30,15 @@ async function getSessionId(sessionName: string): Promise<string | null> {
     try {
       const r = await fetch(`${OPENWA_URL}/api/sessions`, { headers: jsonHeaders() })
       if (!r.ok) return sessionCache?.map[sessionName] ?? null
-      const list = (await r.json()) as Array<{ id: string; name: string }>
+      const list = (await r.json()) as Array<{ id: string; name: string; phone?: string | number }>
       const map: Record<string, string> = {}
-      for (const s of list) map[s.name] = s.id
+      for (const s of list) {
+        if (s.name) map[s.name] = s.id
+        // نفهرس بالرقم كمان: sendText بيمرّر session_id = الرقم (201002229982)،
+        // مش اسم الجلسة (madmona-982). من غير ده البحث بالرقم بيفشل والرد مايخرجش.
+        const phone = String(s.phone ?? '').replace(/\D/g, '')
+        if (phone) map[phone] = s.id
+      }
       sessionCache = { at: now, map }
     } catch {
       return sessionCache?.map[sessionName] ?? null
