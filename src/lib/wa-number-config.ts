@@ -36,7 +36,7 @@ export interface WaNumberConfig {
    * التوجيه بالإعداد مش بالكود: نقل أي رقم من خدمة للتانية = تحديث صف واحد،
    * من غير نشر ومن غير ما الرقم التاني يتهز.
    */
-  transport: 'baileys' | 'web'
+  transport: 'baileys' | 'web' | 'openwa'
 }
 
 // ── حارس اللفة اللانهائية ──────────────────────────────────────────────────
@@ -99,7 +99,7 @@ export async function getNumberConfig(
       persona: (data.persona as string | null) ?? null,
       enabled: (data.enabled as boolean | null) ?? true,
       prefer_phone_jid: (data.prefer_phone_jid as boolean | null) ?? false,
-      transport: (data.transport as 'baileys' | 'web' | null) ?? 'baileys',
+      transport: (data.transport as 'baileys' | 'web' | 'openwa' | null) ?? 'baileys',
     }
   } catch {
     return defaults(sessionId)

@@ -11,6 +11,7 @@
 
 import { supabase as supabaseAdmin, supabaseUntyped } from './supabase'
 import { getNumberConfig } from './wa-number-config'
+import { sendTextViaOpenWa, isOpenWaConfigured } from './openwa'
 
 // خدمة المارد (Baileys على Railway) — القناة الوحيدة للإرسال
 const WA_SERVICE_URL = process.env.WA_SERVICE_URL
@@ -119,6 +120,9 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
   // نرجّع منه رقم. لو حاولنا نعيد التركيب بنبعت لرقم مش موجود — الرسالة
   // بتتقبل وبتاخد ID وبتروح في الفراغ. فلما يبقى عندنا JID، نستخدمه زي ما هو.
   let jid = params.jid?.includes('@') ? params.jid : undefined
+  // 🚚 (OpenWA) هدف الرد الأصلي زي ما جه من الـwebhook (@lid أو @c.us) — نمسكه
+  //    قبل منطق Baileys اللي بيحوّل jid، عشان الرد على OpenWA يروح للـ chatId الصح.
+  const openwaReplyChatId = jid
   let to = normalizePhone(params.to)
   if (!to && !jid) {
     return { ok: false, error: 'Invalid phone number' }
@@ -332,7 +336,20 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
       // ⛔ تعطيل مسار wa-web نهائياً: خدمة wa-web اتمسحت من Railway (يوليو 2026).
       //    كل الأرقام دلوقتي على جسر Baileys الواحد (WA_SERVICE_URL). نتجاهل transport
       //    تماماً عشان لو أي رقم رجع لـ'web' بالغلط مايبعتش لخدمة ميتة والرسايل تضيع.
-      void cfg
+      // 🚚 (٢٥ يوليو ٢٠٢٦) نقل تالت: `openwa` → جسر OpenWA (whatsapp-web.js self-hosted).
+      //    التحويل = صف واحد في wa_number_configs، والرجوع = تغيير transport تاني.
+      //    (مسار wa-web القديم اتمسح من Railway؛ `web` بيقع على الأصلية.)
+      if (cfg.transport === 'openwa' && isOpenWaConfigured()) {
+        // OpenWA بيرد على نفس الـ chatId اللي جت منه (@lid أو @c.us). لو إحنا
+        // البادئين (مفيش chatId) نركّب @c.us من الرقم الحقيقي.
+        const chatId =
+          openwaReplyChatId || (to && !looksLikeLid(to) ? `${to}@c.us` : undefined)
+        if (!chatId) {
+          return { ok: false, error: `OpenWA: مفيش chatId للإرسال (to=${to || '—'})` }
+        }
+        const res = await sendTextViaOpenWa(params.session, chatId, params.body)
+        return res.ok ? { ok: true } : { ok: false, error: res.error }
+      }
     } catch { /* نكمّل على الأصلية */ }
   }
 
