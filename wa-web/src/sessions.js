@@ -118,27 +118,22 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
   //    ⚠️ مطفي لأن تغيير النسخة ممكن يبطّل الجلسة الحالية ويطلب QR جديد.
   //    ماينفعش نجرّبه إلا وإحنا فاضيين للسكان. للتفعيل: متغيّر
   //    WA_WEB_VERSION على رايلواي (مثال: 2.3000.1040111714-alpha).
+  // 🎯 (25 يوليو — الحل الجذري لعدم التسليم canCheckStatusRankingPosterGating):
+  //    whatsapp-web.js 1.34.7 متوقعة نسخة واتساب ويب 2.3000.1017054665 (webVersionCache: local).
+  //    لما كنا نفرض type:'remote' بنسخة أحدث من wa-version، sendMessage كان بيستدعي
+  //    دالة داخلية (canCheckStatusRankingPosterGating) مش موجودة في الـ build الأحدث →
+  //    الرسالة تتقبل بس تتعلّق وماتتسلّمش. الحل: نسيب المكتبة على إعدادها الافتراضي
+  //    (local) اللي بيتوافق مع نسختها — ومنفرضش remote إلا لو محمد ثبّت نسخة يدوياً عن عمد.
   const pinned = (process.env.WA_WEB_VERSION || '').trim()
-
-  // 25 يوليو: النسخة المثبتة ممكن تنتهي وتبقى 404 فالمكتبة تقع على بروتوكول متكسر
-  // (تتصل وتستقبل بس واتساب يرفض التسليم بصمت). نتأكد إنها صالحة وإلا نجيب أحدث صالحة.
-  let webVersion = pinned || null
-  try {
-    const _l = await (await fetch('https://raw.githubusercontent.com/wppconnect-team/wa-version/main/versions.json')).json()
-    const _vs = Array.isArray(_l) ? _l : (_l.versions || [])
-    const _n = _vs.map((v) => (typeof v === 'string' ? v : v.version)).filter(Boolean)
-    if (pinned && _n.includes(pinned)) { webVersion = pinned }
-    else if (_n.length) { webVersion = _n[_n.length >= 2 ? _n.length - 2 : _n.length - 1]; if (pinned) log.warn({ session: id, pinned, using: webVersion }, 'pinned wa-web version 404 -> auto fallback') }
-  } catch (e) { log.warn({ session: id, err: e && e.message }, 'wa-web version check failed -> default') }
+  const webVersionCache = pinned
+    ? { type: 'remote', remotePath: `https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/${pinned}.html` }
+    : { type: 'local' }
+  if (pinned) log.info({ session: id, pinned }, 'using pinned remote wa-web version')
+  else log.info({ session: id }, 'using library-default wa-web version (local, compatible)')
 
   const client = new Client({
     authStrategy: new LocalAuth({ clientId: id, dataPath: authRoot }),
-    ...(webVersion && {
-      webVersionCache: {
-        type: 'remote',
-        remotePath: `https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/${webVersion}.html`,
-      },
-    }),
+    webVersionCache,
     puppeteer: {
       headless: true,
       executablePath: process.env.CHROME_PATH || undefined,
