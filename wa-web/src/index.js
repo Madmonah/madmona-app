@@ -147,6 +147,41 @@ app.post('/send', auth, async (req, res) => {
   }
 })
 
+// 🔍 (تشخيص مؤقت 25 يوليو): مقارنة مجلدات auth للجلسات — نشوف فرق الشغال عن المكسور
+app.get('/diag', auth, async (req, res) => {
+  try {
+    const fs = await import('fs')
+    const path = await import('path')
+    const root = AUTH_DIR
+    const out = {}
+    const walk = (dir) => {
+      const items = {}
+      let entries = []
+      try { entries = fs.readdirSync(dir, { withFileTypes: true }) } catch (e) { return { _error: e.message } }
+      for (const e of entries) {
+        const full = path.join(dir, e.name)
+        if (e.isDirectory()) {
+          items[e.name + '/'] = walk(full)
+        } else {
+          let sz = 0, mtime = null
+          try { const st = fs.statSync(full); sz = st.size; mtime = st.mtime } catch {}
+          items[e.name] = { size: sz, mtime }
+        }
+      }
+      return items
+    }
+    // نلف على كل مجلد جوه /data/auth
+    let top = []
+    try { top = fs.readdirSync(root, { withFileTypes: true }) } catch (e) { return res.json({ error: 'cant read root: ' + e.message, root }) }
+    for (const e of top) {
+      if (e.isDirectory()) out[e.name] = walk(path.join(root, e.name))
+    }
+    res.json({ ok: true, root, tree: out })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
 app.listen(PORT, () => {
   log.info({ port: PORT }, 'خدمة واتساب ويب شغالة')
   bootSessions()
