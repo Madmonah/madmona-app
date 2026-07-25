@@ -85,6 +85,25 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
     entry.client = null
   }
 
+  // 🔒 قفل البروفايل الميّت — أخطر لغم في الخدمة دي.
+  //
+  //    كروميوم بيسيب `SingletonLock` جوه مجلد البروفايل ومربوط باسم الجهاز.
+  //    رايلواي بيقتل الحاوية عند كل نشر، فالقفل بيفضل على الفوليوم واسم
+  //    جهاز الحاوية القديمة معاه. الحاوية الجديدة بتقرا القفل وترفض تشتغل:
+  //      "The profile appears to be in use by another Chromium process
+  //       (13) on another computer (75f7249329e4)"
+  //
+  //    وده **مابيتصلّحش لوحده أبدًا** — جرّبناه ٢٥ يوليو: الرقمين فضلوا
+  //    ميّتين ٦ دقايق وإعادة المحاولة كل ١٥ ثانية بتقع على نفس القفل.
+  //    يعني أي نشر عادي كان هيوقّف الأرقام لحد ما حد يمسح الملف بإيده.
+  //
+  //    إحنا الحاوية الوحيدة اللي شغّالة على الفوليوم ده، فمفيش كروميوم تاني
+  //    حي ممكن القفل يحميه. بنمسحه قبل كل إقلاع.
+  const profileDir = join(authRoot, `session-${id}`)
+  for (const lock of ['SingletonLock', 'SingletonCookie', 'SingletonSocket']) {
+    try { rmSync(join(profileDir, lock), { force: true, recursive: true }) } catch { /* تجاهل */ }
+  }
+
   const client = new Client({
     authStrategy: new LocalAuth({ clientId: id, dataPath: authRoot }),
     puppeteer: {
