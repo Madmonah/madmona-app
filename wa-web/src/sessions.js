@@ -18,6 +18,7 @@ import { join } from 'node:path'
 const log = pino({ level: 'info' })
 
 const MAX_MEDIA_MB = Number(process.env.MAX_MEDIA_MB || 12)
+const MAX_MESSAGE_AGE_MIN = Number(process.env.MAX_MESSAGE_AGE_MIN || 30)
 
 /** أنواع whatsapp-web.js → نفس اتحاد أنواع wa-service بالحرف */
 const KIND = {
@@ -156,6 +157,28 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
     try {
       if (msg.fromMe) return
       if (IGNORED.has(msg.type)) return
+
+      // 📵 حالات واتساب (الاستوري) — مش رسايل موجّهة لينا.
+      //
+      //    ٢٥ يوليو: أول ما الجلسة اتربطت، فيد الحالات اتزامن: ٧٤ حالة في
+      //    ثانية واحدة (أدعية، إعلانات عربيات بصورها، لينكات فيسبوك) دخلت
+      //    النظام كإنها رسايل عملاء، والمارد ابتدى يرد عليها.
+      //
+      //    والرد على `status@broadcast` **بيتنشر كحالة عامة** يشوفها كل
+      //    جهات الاتصال — يعني كان هيبقى المارد بينشر ردود على حيطة الحالة.
+      //    المكتبة وقعت في مسار إرسال الحالة قبل ما ده يحصل، فالحماية جت
+      //    بالصدفة. `wa-service` عنده السطر ده من الأول، wa-web كان ناقصه.
+      if (msg.from === 'status@broadcast' || msg.to === 'status@broadcast') return
+
+      // ⏳ واتساب ويب بيزامن تاريخ الشاتات عند كل ربط أو إعادة اتصال.
+      //    من غير الحارس ده، أي إعادة تشغيل = ردود على رسايل من شهور
+      //    لعملاء حقيقيين. نفس حارس wa-service.
+      const ageMin = (Date.now() / 1000 - Number(msg.timestamp || 0)) / 60
+      if (msg.timestamp && ageMin > MAX_MESSAGE_AGE_MIN) {
+        log.info({ session: id, age_min: Math.round(ageMin) }, 'رسالة قديمة من المزامنة — اتجاهلت')
+        return
+      }
+
       const chat = await msg.getChat()
       const isGroup = !!chat?.isGroup
       const from = isGroup ? (msg.author || '') : (msg.from || '')
@@ -259,6 +282,13 @@ export async function sendText({ id, to, jid, text }) {
   const target = (jid && jid.includes('@'))
     ? jid.replace('@s.whatsapp.net', '@c.us')
     : `${String(to).replace(/\D/g, '')}@c.us`
+
+  // 🚫 حزام أمان تاني: ماينفعش نبعت لحيطة الحالات مهما كان اللي طلب.
+  //    الرد هناك بيتنشر لكل جهات الاتصال، مش لشخص. لو أي صف قديم في
+  //    الداتابيز لسه شايل الهوية دي، بيقف هنا مش بيوصل لواتساب.
+  if (String(target).includes('status@broadcast')) {
+    throw new Error('ممنوع الإرسال لـstatus@broadcast — ده بيتنشر كحالة عامة')
+  }
 
   const sent = await entry.client.sendMessage(target, text)
   return { wa_message_id: sent?.id?._serialized || sent?.id?.id || null, target }
