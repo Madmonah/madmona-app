@@ -296,6 +296,9 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
       const messageId = msg.id?._serialized || msg.id?.id
       if (!messageId) return
       const status = ack >= 3 ? 'read' : ack === 2 ? 'delivered' : null
+      // بنطبع كل الإيصالات — حتى ack=1 — عشان لو التسليم وقف نعرف
+      // هو وقف عند فين، بدل ما نفضل نسأل «وصلت؟» من غير أي دليل.
+      log.info({ session: id, ack, msg: messageId, to: msg?.to }, '📬 إيصال')
       if (!status) return
       onStatus?.({ session_id: id, message_id: messageId, status })
     } catch (e) {
@@ -332,7 +335,29 @@ export async function sendText({ id, to, jid, text }) {
   }
 
   const sent = await entry.client.sendMessage(target, text)
-  return { wa_message_id: sent?.id?._serialized || sent?.id?.id || null, target }
+
+  // 🆔 من غير معرّف الرسالة، إيصالات التسليم (✓✓) ماينفعش تتربط بصف في
+  //    الداتابيز — فالحالة بتفضل «اتبعت» للأبد وإحنا مش عارفين وصلت ولا لأ.
+  //    ٢٥ يوليو: طلع NULL وفضلنا ساعة بنسأل «وصلت؟» من غير أي طريقة نعرف.
+  //    بنجرّب كل الأشكال المحتملة، ولو لسه فاضي بنطبع شكل الكائن عشان
+  //    المرة الجاية نبقى عارفين بدل ما نخمّن.
+  const waId =
+    sent?.id?._serialized ||
+    (typeof sent?.id === 'string' ? sent.id : null) ||
+    sent?.id?.id ||
+    sent?._serialized ||
+    null
+
+  if (!waId) {
+    log.warn({
+      session: id,
+      sent_keys: Object.keys(sent || {}).slice(0, 20),
+      id_type: typeof sent?.id,
+      id_keys: sent?.id && typeof sent.id === 'object' ? Object.keys(sent.id) : null,
+    }, '⚠️ الرسالة اتبعتت من غير معرّف — تتبّع التسليم هيبقى أعمى')
+  }
+
+  return { wa_message_id: waId, target }
 }
 
 export async function logoutSession(id, authRoot) {
