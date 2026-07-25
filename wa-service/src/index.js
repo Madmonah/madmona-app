@@ -344,6 +344,34 @@ app.get('/health', (_req, res) => {
 
 app.get('/sessions', (_req, res) => res.json({ ok: true, sessions: listSessions() }))
 
+// 🔍 (٢٥ يوليو ٢٠٢٦) تشخيص: مقارنة حالة الجلسات على الديسك.
+//
+//    الرقم الوحيد اللي بيسلّم جلسته اتبنت من شهور؛ أي جلسة اتعملت النهاردة
+//    بتستقبل ولا تسلّم. الفرق الوحيد اللي فاضل هو **محتوى مجلد الـauth**،
+//    وماكانش فيه طريقة نشوفه من برّه.
+//
+//    ⚠️ بيرجّع **عدد الملفات حسب النوع بس** — مفيش أسماء ولا مفاتيح ولا أي
+//    بيانات. `session-*` و`pre-key-*` أسماؤها فيها معرّفات جهات اتصال،
+//    فبنعدّها ومابنعرضهاش.
+app.get('/debug/auth-state', (_req, res) => {
+  const out = {}
+  try {
+    for (const id of knownSessionIds(AUTH_DIR)) {
+      const files = readdirSync(join(AUTH_DIR, id))
+      const counts = {}
+      for (const f of files) {
+        // session-xxx.json → session · app-state-sync-key-xxx.json → app-state-sync-key
+        const kind = f.replace(/\.json$/, '').replace(/-?[0-9]+(-[0-9]+)?$/, '').replace(/-[A-Za-z0-9+/=_%.]{6,}$/, '') || f
+        counts[kind] = (counts[kind] || 0) + 1
+      }
+      out[id] = { total: files.length, kinds: counts }
+    }
+    res.json({ ok: true, auth_dir: AUTH_DIR, sessions: out })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
 app.get('/qr', async (req, res) => {
   const id = req.query.session || listSessions()[0]?.id
   const s = id ? getSession(id) : null
