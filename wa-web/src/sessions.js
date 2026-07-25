@@ -105,8 +105,24 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
     try { rmSync(join(profileDir, lock), { force: true, recursive: true }) } catch { /* تجاهل */ }
   }
 
+  // 📌 تثبيت نسخة واتساب ويب — **مطفي افتراضيًا**.
+  //    المكتبة بتحقن كود جوّه صفحة واتساب ويب، وأي تحديث من واتساب بيكسر
+  //    الحقن ده (شفناه في تنزيل الميديا وقراءة الشات وإرسال الحالات).
+  //    الحل إننا نثبّت نسخة الصفحة على واحدة المكتبة فاهماها.
+  //
+  //    ⚠️ مطفي لأن تغيير النسخة ممكن يبطّل الجلسة الحالية ويطلب QR جديد.
+  //    ماينفعش نجرّبه إلا وإحنا فاضيين للسكان. للتفعيل: متغيّر
+  //    WA_WEB_VERSION على رايلواي (مثال: 2.3000.1040111714-alpha).
+  const pinned = (process.env.WA_WEB_VERSION || '').trim()
+
   const client = new Client({
     authStrategy: new LocalAuth({ clientId: id, dataPath: authRoot }),
+    ...(pinned && {
+      webVersionCache: {
+        type: 'remote',
+        remotePath: `https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/${pinned}.html`,
+      },
+    }),
     puppeteer: {
       headless: true,
       executablePath: process.env.CHROME_PATH || undefined,
@@ -203,6 +219,7 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
       //    كلها فشلت في التنزيل واتجاهلت في صمت — والصور ضاعت للأبد.
       //    فمحاولتين، والفشل بيتسجّل بصوت عالي بدل ما يعدّي ساكت.
       let media = null
+      let mediaFailed = false
       if (msg.hasMedia) {
         try {
           let m = null
@@ -232,8 +249,18 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
             log.warn({ session: id, mb: (sizeBytes / 1048576).toFixed(1) }, 'ميديا كبيرة — اتجاهلت')
           }
         } catch (e) {
+          mediaFailed = true
           log.error({ session: id, err: e.message, kind }, 'فشل تنزيل الميديا')
         }
+      }
+
+      // لو الميديا وقعت والرسالة مالهاش نص، المارد بيستلم رسالة فاضية
+      //    ويرد على لا حاجة. بندّيه تلميح صريح يقدر يتصرّف بيه مع العميل.
+      const FAILED_HINT = {
+        audio: '[العميل بعت رسالة صوتية بس ماقدرناش نفتحها]',
+        image: '[العميل بعت صورة بس ماقدرناش نفتحها]',
+        video: '[العميل بعت فيديو بس ماقدرناش نفتحه]',
+        document: '[العميل بعت ملف بس ماقدرناش نفتحه]',
       }
 
       onMessage?.({
@@ -245,7 +272,7 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
         message_id: msg.id?._serialized || msg.id?.id || null,
         timestamp: msg.timestamp || Math.floor(Date.now() / 1000),
         type: kind,
-        text: msg.body || NO_TEXT_HINT[msg.type] || '',
+        text: msg.body || (mediaFailed && FAILED_HINT[kind]) || NO_TEXT_HINT[msg.type] || '',
         is_group: isGroup,
         group_jid: isGroup ? msg.from : null,
         media,
