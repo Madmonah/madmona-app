@@ -641,7 +641,13 @@ function AddListingPageInner({
         {step === 1 && (
           <>
             {/* Excel bulk entry (Jul 5 2026): suppliers with many items skip the
-                one-by-one wizard entirely — sheet → bulk drafts → review pipeline. */}
+                one-by-one wizard entirely — sheet → bulk drafts → review pipeline.
+
+                🧹 (٢٥ يوليو ٢٠٢٦ — محمد) الكلام هنا كان «عندك أصناف كتير؟ ارفعهم
+                Excel»، وجوّه الويزارد في خطوة المنتجات فيه رفع Excel تاني.
+                الاتنين **مش نفس الحاجة**: ده لـ«إعلانات منفصلة»، وده لـ«منتجات
+                جوّه إعلان واحد» — بس الكلمتين كانوا شكل واحد فبيبانوا تكرار.
+                الكلام هنا بقى يقول «إعلانات» صراحةً عشان الفرق يبان من أول نظرة. */}
             <button
               type="button"
               onClick={() => setShowBulkExcel(true)}
@@ -649,8 +655,8 @@ function AddListingPageInner({
             >
               <span className="text-2xl">📊</span>
               <span className="flex-1">
-                <span className="block text-sm font-black text-[#1F6F5F]">عندك أصناف كتير؟ ارفعهم كلهم Excel مرة واحدة</span>
-                <span className="block text-[11px] font-bold text-gray-500 mt-0.5">شيت واحد لحد ٢٠٠ صنف — من غير ما تدخلهم واحد واحد</span>
+                <span className="block text-sm font-black text-[#1F6F5F]">عندك أكتر من إعلان تضيفه؟ ارفعهم كلهم مرة واحدة</span>
+                <span className="block text-[11px] font-bold text-gray-500 mt-0.5">شيت واحد لحد ٢٠٠ إعلان — بدل ما تعيد الخطوات لكل واحد</span>
               </span>
               <span className="text-[#1F6F5F] font-black">←</span>
             </button>
@@ -2907,14 +2913,24 @@ function CatalogBuilderStep({
       <p className='text-sm text-gray-500 mb-1'>قسّم منتجاتك لأقسام (مثلاً: جبن، ألبان، معلبات) وضيف تحت كل قسم اللي بتبيعه</p>
       <p className='text-xs text-[#1F6F5F] mb-4 font-medium'>💡 كل ما تضيف منتجات أكتر، العميل يلاقي اللي بيدوّر عليه أسرع</p>
 
-      {/* Task 20 (Jul 24 2026): استيراد ذكي — اكتب/الصق أو ارفع صورة/شيت والمارد يطلّع الأصناف */}
-      <div className="mb-4 rounded-2xl border-2 border-[#2FA084] bg-[#F0FAF7] p-4">
+      {/* 🧹 (٢٥ يوليو ٢٠٢٦ — محمد: «فيه حاجات متكررة وحاجات مش منظمة… وتاب
+          مكتوب عليه عندك أكتر من صنف ولسه محطوط عليه نزل التمبلت»)
+
+          كان هنا **صندوقين** فوق بعض بيعملوا نفس الحاجة:
+            ١) «سيبها للمارد» — نص/صورة/Excel  (الـinput كان accept=".xlsx,.xls,.csv" كمان!)
+            ٢) «ارفعهم Excel مرة واحدة» — نفس رفع الشيت + نزّل القالب
+          يعني رفع الإكسيل كان موجود **مرتين**، وزرارين أساسيين بيتنافسوا.
+
+          بقى صندوق واحد بمدخل واضح لكل نوع، و«نزّل القالب» بقى لينك صغير
+          تحت — مش زرار أساسي بينافس اللي فوقه. */}
+      <div className="mb-5 rounded-2xl border-2 border-[#2FA084] bg-[#F0FAF7] p-4">
         <div className="flex items-center gap-2 mb-1.5">
           <span className="text-xl">🧞</span>
-          <p className="text-sm font-bold text-[#1F6F5F]">عندك قائمة جاهزة؟ سيبها للمارد</p>
+          <p className="text-sm font-bold text-[#1F6F5F]">عندك قائمتك جاهزة؟ سيبها للمارد</p>
         </div>
         <p className="text-[11px] text-gray-600 mb-3 leading-relaxed">
-          اكتب أو الصق أصنافك، أو ارفع صورة لقائمتك/المنيو أو ملف Excel — والمارد هيطلّعهم ويرتّبهم في ثواني، وانت بس تكمّل الأسعار الناقصة.
+          اكتب أصنافك، أو ارفع صورة للمنيو، أو ملف Excel — والمارد هيطلّعهم ويرتّبهم
+          في ثواني، وانت بس تكمّل الأسعار الناقصة.
         </p>
         <textarea
           value={smartText}
@@ -2926,38 +2942,26 @@ function CatalogBuilderStep({
         <div className="flex gap-2">
           <button type="button" onClick={() => callExtract({ text: smartText })} disabled={smartBusy || smartText.trim().length < 3}
             className="flex-1 py-2.5 rounded-xl bg-[#1F6F5F] text-white text-xs font-bold disabled:opacity-60">
-            {smartBusy ? '🧞 المارد بيقرأ...' : '🧞 استخرج بالمارد'}
+            {smartBusy ? '🧞 بيقرأ...' : '🧞 استخرج'}
           </button>
           <button type="button" onClick={() => smartFileRef.current?.click()} disabled={smartBusy}
             className="flex-1 py-2.5 rounded-xl border border-[#1F6F5F]/40 text-[#1F6F5F] text-xs font-bold bg-white disabled:opacity-60">
-            📷 صورة / Excel
+            📷 صورة
           </button>
-          <input ref={smartFileRef} type="file" accept="image/*,.xlsx,.xls,.csv" className="hidden" onChange={handleSmartFile} />
-        </div>
-        {smartMsg && <p className="mt-2 text-xs font-bold text-[#1F6F5F]">{smartMsg}</p>}
-      </div>
-
-      {/* Jul 5 2026: Excel bulk import for the whole catalog */}
-      <div className="mb-5 rounded-2xl border-2 border-dashed border-[#1F6F5F]/35 bg-[#1F6F5F]/5 p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-xl">📊</span>
-          <p className="text-sm font-bold text-[#1F6F5F]">منتجاتك كلها جاهزة عندك؟ ارفعهم Excel مرة واحدة</p>
-        </div>
-        <p className="text-[11px] text-gray-500 mb-3 leading-relaxed">
-          الأعمدة: الاسم · القسم · الوصف · السعر · رابط الصورة — وهنقسّمهم أقسام تلقائياً
-        </p>
-        <div className="flex gap-2">
-          <button type="button" onClick={downloadCatalogTemplate}
-            className="flex-1 py-2.5 rounded-xl border border-[#1F6F5F]/40 text-[#1F6F5F] text-xs font-bold bg-white">
-            ⬇️ نزّل القالب
+          <button type="button" onClick={() => excelInputRef.current?.click()} disabled={excelBusy || smartBusy}
+            className="flex-1 py-2.5 rounded-xl border border-[#1F6F5F]/40 text-[#1F6F5F] text-xs font-bold bg-white disabled:opacity-60">
+            {excelBusy ? '...بيقرأ' : '📊 Excel'}
           </button>
-          <button type="button" onClick={() => excelInputRef.current?.click()} disabled={excelBusy}
-            className="flex-1 py-2.5 rounded-xl bg-[#1F6F5F] text-white text-xs font-bold disabled:opacity-60">
-            {excelBusy ? '...جاري القراءة' : '⬆️ ارفع الشيت'}
-          </button>
+          <input ref={smartFileRef} type="file" accept="image/*" className="hidden" onChange={handleSmartFile} />
           <input ref={excelInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleExcelFile} />
         </div>
-        {excelMsg && <p className="mt-2 text-xs font-bold text-[#1F6F5F]">{excelMsg}</p>}
+        {(smartMsg || excelMsg) && (
+          <p className="mt-2 text-xs font-bold text-[#1F6F5F]">{smartMsg || excelMsg}</p>
+        )}
+        <button type="button" onClick={downloadCatalogTemplate}
+          className="mt-2 text-[11px] text-[#1F6F5F]/75 underline underline-offset-2 hover:text-[#1F6F5F]">
+          مش عارف تظبط الشيت؟ نزّل قالب Excel جاهز
+        </button>
       </div>
 
       {CATALOG_TEMPLATES[slug || ''] && (
