@@ -179,8 +179,15 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
         return
       }
 
-      const chat = await msg.getChat()
-      const isGroup = !!chat?.isGroup
+      // ⚠️ كان هنا `await msg.getChat()` — وده بينفّذ كود جوّه صفحة واتساب ويب.
+      //    ٢٥ يوليو ١:١٦ ظهرًا: رمى «Evaluation failed: r» ورمى الرسالة كلها
+      //    في الـcatch. يعني رسالة عميل حقيقية دخلت واتبهدلت في صمت — وإحنا
+      //    شايفين الجلسة «متصلة» وكل حاجة تمام.
+      //
+      //    مالناش لزوم الاستدعاء ده أصلاً: الجروب معروف من شكل الهوية نفسها،
+      //    زي ما wa-service بيعمل بالظبط. كل نداء بيتنفّذ جوّه الصفحة هو نقطة
+      //    انهيار محتملة مع أي تحديث من واتساب — فبنقلّلها لأقل حاجة ممكنة.
+      const isGroup = String(msg.from || '').endsWith('@g.us')
       const from = isGroup ? (msg.author || '') : (msg.from || '')
       const contact = await msg.getContact().catch(() => null)
 
@@ -244,7 +251,14 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
         media,
       })
     } catch (e) {
-      log.error({ session: id, err: e.message }, 'فشل معالجة رسالة واردة')
+      // 🚨 رسالة عميل ضاعت. لازم تبان بكل تفاصيلها في اللوج — «err: r»
+      //    لوحدها ضيّعت علينا ساعة وإحنا مش عارفين إيه اللي وقع.
+      log.error({
+        session: id,
+        err: e?.message || String(e),
+        stack: (e?.stack || '').split('\n').slice(0, 4).join(' | '),
+        from: msg?.from, type: msg?.type, msg_id: msg?.id?._serialized,
+      }, '🚨 رسالة واردة ضاعت')
     }
   })
 
