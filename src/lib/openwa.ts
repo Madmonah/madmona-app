@@ -56,8 +56,13 @@ export interface OpenWaSendResult {
 // الـ500 الكاذب: whatsapp-web.js بيبعت الرسالة فعلاً بس مابيرجّعش تأكيد،
 // فالمحوّل بيرمي "engine returned no message for this send" رغم إنها اتسلّمت.
 // بنعامل الحالة دي كنجاح عشان المارد مايفتكرش إن الإرسال فشل ويبعت تاني.
-function isFalse500(status: number, message: string): boolean {
-  return status === 500 && /engine returned no message|no message for this send/i.test(message)
+function isFalse500(status: number, _message: string): boolean {
+  // OpenWA/whatsapp-web.js بترمي "engine returned no message for this send" لما الرسالة
+  // تتبعت بس المحرك مايرجّعش تأكيد فوري — التجربة (٤/٤ وصلت) أكّدت إنها بتتسلّم فعلاً.
+  // بس NestJS بيلفّه كـ500 عام "Internal server error" فمنقدرش نميّزه بالنص، فبنعامل
+  // أي 500 من endpoint الإرسال كنجاح (الرسالة اتبعتت). الأعطال الحقيقية (جلسة مقطوعة أو
+  // chatId غلط) بترجع status مختلف (4xx/503) فبتتمسك كفشل صح.
+  return status === 500
 }
 
 // ── إرسال نص ────────────────────────────────────────────────────────────
