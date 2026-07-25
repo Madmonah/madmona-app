@@ -39,6 +39,37 @@ export interface WaNumberConfig {
   transport: 'baileys' | 'web'
 }
 
+// ── حارس اللفة اللانهائية ──────────────────────────────────────────────────
+// بقى عندنا أكتر من مارد على أرقام مختلفة. لو رقم مارد كلّم رقم مارد تاني —
+// بالغلط أو أثناء اختبار — كل واحد فيهم هيرد على التاني للأبد: سبام على
+// الرقمين وحرق توكينز بلا نهاية، ومفيش أي حاجة توقّفه من نفسها.
+//
+// فأي رسالة جاية من رقم إحنا مشغّلينه: تتسجّل، ومايتردّش عليها.
+let maridNumbers: { at: number; set: Set<string> } | null = null
+
+export async function isMaridNumber(phone: string | null | undefined): Promise<boolean> {
+  const p = (phone || '').replace(/\D/g, '')
+  if (!p) return false
+
+  const now = Date.now()
+  if (!maridNumbers || now - maridNumbers.at > 60_000) {
+    try {
+      const { data } = await supabaseUntyped.from('wa_number_configs').select('session_id')
+      const set = new Set(
+        ((data as Array<{ session_id: string }> | null) ?? [])
+          .map((r) => (r.session_id || '').replace(/\D/g, ''))
+          .filter(Boolean),
+      )
+      // عطل في القراءة مايتخزّنش كإنه الحقيقة — وإلا نفضل عميان دقيقة كاملة
+      if (!set.size) return false
+      maridNumbers = { at: now, set }
+    } catch {
+      return false
+    }
+  }
+  return maridNumbers.set.has(p)
+}
+
 function defaults(sessionId: string): WaNumberConfig {
   return {
     session_id: sessionId, label: null, persona: null,
