@@ -28,10 +28,22 @@ export interface WaNumberConfig {
    * وبديل الترقية الخطرة. الرجوع = تحديث صف واحد.
    */
   prefer_phone_jid: boolean
+  /**
+   * 🚚 (٢٥ يوليو ٢٠٢٦) أنهي خدمة بتبعت لهذا الرقم:
+   *   `baileys` → `wa-service`  (الرقم الأساسي — مربوط من شهور وبيسلّم، ماينفعش يتلمس)
+   *   `web`     → `wa-web`      (whatsapp-web.js — واتساب ويب الرسمي في متصفح مخفي)
+   *
+   * التوجيه بالإعداد مش بالكود: نقل أي رقم من خدمة للتانية = تحديث صف واحد،
+   * من غير نشر ومن غير ما الرقم التاني يتهز.
+   */
+  transport: 'baileys' | 'web'
 }
 
 function defaults(sessionId: string): WaNumberConfig {
-  return { session_id: sessionId, label: null, persona: null, enabled: true, prefer_phone_jid: false }
+  return {
+    session_id: sessionId, label: null, persona: null,
+    enabled: true, prefer_phone_jid: false, transport: 'baileys',
+  }
 }
 
 /**
@@ -45,7 +57,7 @@ export async function getNumberConfig(
   try {
     const { data } = await supabaseUntyped
       .from('wa_number_configs')
-      .select('session_id, label, persona, enabled, prefer_phone_jid')
+      .select('session_id, label, persona, enabled, prefer_phone_jid, transport')
       .eq('session_id', sessionId)
       .maybeSingle()
 
@@ -56,6 +68,7 @@ export async function getNumberConfig(
       persona: (data.persona as string | null) ?? null,
       enabled: (data.enabled as boolean | null) ?? true,
       prefer_phone_jid: (data.prefer_phone_jid as boolean | null) ?? false,
+      transport: (data.transport as 'baileys' | 'web' | null) ?? 'baileys',
     }
   } catch {
     return defaults(sessionId)

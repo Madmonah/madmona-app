@@ -14,6 +14,9 @@ import { getNumberConfig } from './wa-number-config'
 
 // خدمة المارد (Baileys على Railway) — القناة الوحيدة للإرسال
 const WA_SERVICE_URL = process.env.WA_SERVICE_URL
+// 🚚 الخدمة التانية — واتساب ويب الرسمي (whatsapp-web.js) للأرقام الجديدة.
+// لو مش متظبطة، كل الأرقام بتفضل على الخدمة الأصلية زي ما هي.
+const WA_WEB_SERVICE_URL = process.env.WA_WEB_SERVICE_URL
 const WA_SERVICE_SECRET = process.env.WA_SERVICE_SECRET ?? ''
 
 /** فيه قناة واتساب شغّالة؟ (بقت = خدمة المارد، مش Cloud API) */
@@ -314,16 +317,32 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
     }
   }
 
-  // ── المسار الأساسي: خدمة المارد (Baileys على Railway) ──────────────────
+  // ── اختيار الخدمة حسب الرقم ────────────────────────────────────────────
+  // 🚚 (٢٥ يوليو ٢٠٢٦) بقى عندنا خدمتين:
+  //   `baileys` → wa-service  (الرقم الأساسي — مربوط من شهور وبيسلّم)
+  //   `web`     → wa-web      (whatsapp-web.js — واتساب ويب الرسمي في متصفح)
+  //
+  // الاختيار من `wa_number_configs.transport`، يعني نقل أي رقم بين الخدمتين
+  // = تحديث صف واحد، من غير نشر ومن غير ما الرقم التاني يتهز.
+  // أي عطل في قراءة الإعداد → بنقع على الخدمة الأصلية (آمن).
+  let serviceUrl = WA_SERVICE_URL
+  if (params.session) {
+    try {
+      const cfg = await getNumberConfig(params.session)
+      if (cfg.transport === 'web' && WA_WEB_SERVICE_URL) serviceUrl = WA_WEB_SERVICE_URL
+    } catch { /* نكمّل على الأصلية */ }
+  }
+
+  // ── الإرسال ────────────────────────────────────────────────────────────
   // الرقم بيفضل شغال على الموبايل، والخدمة متربطة كجهاز مرتبط.
-  if (WA_SERVICE_URL) {
+  if (serviceUrl) {
     try {
       // 📞 الرد بيخرج من نفس الرقم اللي العميل كلّمه.
       //    من غير `session` الخدمة بتاخد أول رقم متصل — يعني اللي
       //    كلّم الرقم التاني ممكن يجيله رد من الأول، ويوصله كرسالة
       //    من مجهول. ده نفس نمط البدء البارد اللي بيوقّف الأرقام.
       const postSend = async (useJid: string | undefined) => {
-        const r = await fetch(`${WA_SERVICE_URL.replace(/\/$/, '')}/send`, {
+        const r = await fetch(`${serviceUrl.replace(/\/$/, '')}/send`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
