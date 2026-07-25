@@ -96,6 +96,26 @@ export async function startSession({ id, label, authRoot, onMessage, onLidMap, o
   entry.label = label || entry.label
   sessions.set(id, entry)
 
+  // 🚨 (٢٥ يوليو ٢٠٢٦) كان بيعمل سوكيت جديد **من غير ما يقفل القديم**.
+  //
+  //    `startSession` بتتنادى تاني في كل إعادة اتصال (`connection.update` →
+  //    close → setTimeout → startSession). والجلسة اللي لسه اتربطت بالـQR
+  //    بتعدّي على `pairing → 515 → إعادة اتصال` فورًا — يعني من أول دقيقة
+  //    بيبقى فيه **أكتر من سوكيت حي على نفس الحساب**، كلهم بلسنرات شغّالة.
+  //
+  //    إحنا بنبعت من `entry.sock` (الأحدث)، وواتساب ممكن يكون معتمد اتصال
+  //    تاني للحساب ده. النتيجة: Baileys بيقبل الرسالة ويدّي `wa_message_id`
+  //    والرسالة ماتتنقلش — وده بالظبط شكل «اتبعت ومحدش استلم» اللي على
+  //    الرقمين الجداد، بينما الرقم الأساسي (اتصل مرة واحدة وفضل) بيسلّم.
+  //
+  //    وكمان اللسنرات المتراكمة = معالجة مكررة لنفس الحدث.
+  if (entry.sock) {
+    try { entry.sock.ev.removeAllListeners() } catch { /* تجاهل */ }
+    try { entry.sock.end(undefined) } catch { /* تجاهل */ }
+    entry.sock = null
+    log.info({ session: id }, '🧹 قفلنا السوكيت القديم قبل ما نفتح جديد')
+  }
+
   const sock = makeWASocket({
     version,
     auth: state,
