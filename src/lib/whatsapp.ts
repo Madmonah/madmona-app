@@ -329,7 +329,10 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
   if (params.session) {
     try {
       const cfg = await getNumberConfig(params.session)
-      if (cfg.transport === 'web' && WA_WEB_SERVICE_URL) serviceUrl = WA_WEB_SERVICE_URL
+      // ⛔ تعطيل مسار wa-web نهائياً: خدمة wa-web اتمسحت من Railway (يوليو 2026).
+      //    كل الأرقام دلوقتي على جسر Baileys الواحد (WA_SERVICE_URL). نتجاهل transport
+      //    تماماً عشان لو أي رقم رجع لـ'web' بالغلط مايبعتش لخدمة ميتة والرسايل تضيع.
+      void cfg
     } catch { /* نكمّل على الأصلية */ }
   }
 
