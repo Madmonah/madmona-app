@@ -733,10 +733,17 @@ function AddListingPageInner({
           />
         )}
 
+        {/* 🐛 (٢٥ يوليو ٢٠٢٦) خطوة الصور كانت بتاخد `categories={categories}` —
+            والمتغيّر ده **مش موجود** في السكوب ده أصلاً (اسمه `dbExtraCategories`
+            زي باقي الخطوات كلها). TypeScript كان بيقولها صراحةً:
+            «Cannot find name 'categories'» — بس `ignoreBuildErrors: true` في
+            next.config بيخلّي البيلد يعدّي والخطأ يوصل للمتصفح.
+            `StepPhotos` بتستخدمها في `getCategoryTrack` عشان تظبط كلام خطوة
+            الصور لمسار الخدمات. */}
         {step === 4 && (
           <StepPhotos
             draft={draft}
-            categories={categories}
+            categories={dbExtraCategories}
             token={token}
             onSubmit={async (photos) => {
               // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
