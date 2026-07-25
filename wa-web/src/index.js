@@ -147,6 +147,19 @@ app.post('/send', auth, async (req, res) => {
   }
 })
 
+// 📡 (تشخيص مؤقت): آخر إيصالات (ACK) لكل جلسة — نشوف الإرسال بيوصل لكام
+const _ackLog = []
+export function recordAck(session, msgId, ack, to) {
+  _ackLog.push({ t: Date.now(), session, msgId, ack, to })
+  if (_ackLog.length > 200) _ackLog.shift()
+}
+app.get('/acks', auth, (req, res) => {
+  const sess = req.query.session
+  let rows = _ackLog
+  if (sess) rows = rows.filter((r) => r.session === sess)
+  res.json({ ok: true, count: rows.length, acks: rows.slice(-50) })
+})
+
 // 🔍 (تشخيص مؤقت 25 يوليو): مقارنة مجلدات auth للجلسات — نشوف فرق الشغال عن المكسور
 app.get('/diag', auth, async (req, res) => {
   try {

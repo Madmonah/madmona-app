@@ -332,6 +332,8 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
     try {
       const messageId = msg.id?._serialized || msg.id?.id
       if (!messageId) return
+      // 📡 سجّل كل ACK (حتى 1) للتشخيص
+      try { import('./index.js').then((m) => m.recordAck?.(id, messageId, ack, msg?.to)).catch(() => {}) } catch {}
       const status = ack >= 3 ? 'read' : ack === 2 ? 'delivered' : null
       // بنطبع كل الإيصالات — حتى ack=1 — عشان لو التسليم وقف نعرف
       // هو وقف عند فين، بدل ما نفضل نسأل «وصلت؟» من غير أي دليل.
