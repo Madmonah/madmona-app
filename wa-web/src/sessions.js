@@ -116,9 +116,14 @@ export async function startSession({ id, label, authRoot, onMessage, onStatus })
       const from = isGroup ? (msg.author || '') : (msg.from || '')
       const contact = await msg.getContact().catch(() => null)
 
+      // ⚠️ الذاكرة المشتركة بين المَرَدة مفهرسة بالرقم — مش بالـLID.
+      //    لو الـjid جه `@lid` وأخدنا الرقم منه، هيتخزن العميل مرتين.
+      //    whatsapp-web.js بيدّينا الرقم الحقيقي من جهة الاتصال، فنقدّمه.
+      const contactNumber = contact?.number ? String(contact.number).replace(/\D/g, '') : ''
+
       onMessage?.({
         session_id: id,
-        from: String(from).split('@')[0],
+        from: contactNumber || String(from).split('@')[0],
         reply_jid: msg.from,
         is_lid: String(msg.from).includes('@lid'),
         name: contact?.pushname || contact?.name || null,
