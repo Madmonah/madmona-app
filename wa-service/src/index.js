@@ -353,7 +353,7 @@ app.get('/sessions', (_req, res) => res.json({ ok: true, sessions: listSessions(
 //    ⚠️ بيرجّع **عدد الملفات حسب النوع بس** — مفيش أسماء ولا مفاتيح ولا أي
 //    بيانات. `session-*` و`pre-key-*` أسماؤها فيها معرّفات جهات اتصال،
 //    فبنعدّها ومابنعرضهاش.
-app.get('/debug/auth-state', (_req, res) => {
+app.get('/debug/auth-state', (req, res) => {
   const out = {}
   try {
     for (const id of knownSessionIds(AUTH_DIR)) {
@@ -365,6 +365,15 @@ app.get('/debug/auth-state', (_req, res) => {
         counts[kind] = (counts[kind] || 0) + 1
       }
       out[id] = { total: files.length, kinds: counts }
+
+      // ?has=201104496225,145398115078244 → هل فيه جلسة تشفير مع الهوية دي؟
+      // بنجاوب بـtrue/false على قيمة **إحنا** بعتناها، فمفيش أي كشف بيانات.
+      const probe = String(req.query.has || '').split(',').map((s) => s.trim()).filter(Boolean)
+      if (probe.length) {
+        out[id].has = Object.fromEntries(
+          probe.map((p) => [p, files.some((f) => f.startsWith('session-') && f.includes(p))]),
+        )
+      }
     }
     res.json({ ok: true, auth_dir: AUTH_DIR, sessions: out })
   } catch (e) {
