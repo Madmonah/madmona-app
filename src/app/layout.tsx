@@ -222,6 +222,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LanguageProvider>
         {children}
         <ServiceWorkerRegister />
+        <AutoResubscribe />
         <NotificationPrompt />
         <Analytics />
         <SpeedInsights />
