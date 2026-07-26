@@ -92,10 +92,10 @@ export default function ChatHub() {
           </div>
         </Link>
 
-        <div style={{ padding: '12px 16px 4px', fontSize: 12, fontWeight: 700, color: '#075E54' }}>فريق العمل</div>
+        <div style={{ padding: '12px 16px 4px', fontSize: 12, fontWeight: 700, color: '#075E54' }}>الجروبات</div>
         {rooms.length === 0 ? (
           <div style={{ padding: '6px 16px 16px', fontSize: 13, color: '#999' }}>
-            {loggedIn ? 'لسه مفيش رومات — ابدأ واحدة من تبويب فريق العمل.' : 'سجّل دخولك علشان تشوف رومات فريقك.'}
+            {loggedIn ? 'لسه مفيش جروبات — ابدأ واحد من تبويب الجروبات.' : 'سجّل دخولك علشان تشوف جروباتك.'}
           </div>
         ) : (
           rooms.map((r) => (

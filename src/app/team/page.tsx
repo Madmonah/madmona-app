@@ -4,8 +4,9 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ChatBottomNav from '@/components/ChatBottomNav'
 
-type Room = { id: string; name: string | null; marid_enabled: boolean; kind?: string | null; otherName?: string | null }
+type Room = { id: string; name: string | null; marid_enabled: boolean; kind?: string | null; otherName?: string | null; role?: string | null }
 type CMsg = { id: string; sender_id: string | null; sender_kind: string; sender_name: string | null; body: string | null; kind: string; media_url: string | null; created_at: string }
+type Member = { member_id: string; member_name: string; member_role: string; is_me: boolean }
 
 function t(iso: string) {
   try { return new Date(iso).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) } catch { return '' }
@@ -77,6 +78,10 @@ export default function TeamPage() {
   const [gallery, setGallery] = useState(false)
   const [forwardMsg, setForwardMsg] = useState<CMsg | null>(null)
   const [recording, setRecording] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)          // قائمة (⋮) في هيدر المحادثة
+  const [membersOpen, setMembersOpen] = useState(false)    // شيت عرض الأعضاء
+  const [members, setMembers] = useState<Member[]>([])
+  const [membersLoading, setMembersLoading] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const chanRef = useRef<ReturnType<typeof supabaseBrowser.channel> | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -130,9 +135,24 @@ export default function TeamPage() {
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }) }, [messages])
 
   async function openRoom(room: Room) {
-    setActive(room)
+    setActive(room); setMenuOpen(false); setMembersOpen(false)
     if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null }
-    const { data } = await supabaseBrowser.from('chat_messages').select('*').eq('room_id', room.id).order('created_at', { ascending: true }).limit(100)
+    // دوري في الغرفة (owner/member) — يحدّد خيارات القائمة
+    let myRole = room.role || null
+    if (!myRole && uid) {
+      const { data: mrow } = await supabaseBrowser.from('chat_room_members').select('role').eq('room_id', room.id).eq('profile_id', uid).maybeSingle()
+      myRole = (mrow as { role?: string } | null)?.role || 'member'
+      setActive((a) => (a && a.id === room.id ? { ...a, role: myRole } : a))
+    }
+    // «مسح من عندي»: لو ليا صف مسح على الغرفة دي، نعرض بس الأحدث منه
+    let clearedAt: string | null = null
+    if (uid) {
+      const { data: cl } = await supabaseBrowser.from('chat_room_clears').select('cleared_at').eq('room_id', room.id).eq('profile_id', uid).maybeSingle()
+      clearedAt = (cl as { cleared_at?: string } | null)?.cleared_at || null
+    }
+    let q = supabaseBrowser.from('chat_messages').select('*').eq('room_id', room.id)
+    if (clearedAt) q = q.gt('created_at', clearedAt)
+    const { data } = await q.order('created_at', { ascending: true }).limit(100)
     setMessages((data as CMsg[]) || [])
     const ch = supabaseBrowser
       .channel(`room:${room.id}`)
@@ -258,12 +278,12 @@ export default function TeamPage() {
 
   async function createRoom() {
     if (!uid) return
-    const name = prompt('اسم غرفة الفريق:')?.trim()
+    const name = prompt('اسم الجروب:')?.trim()
     if (!name) return
     const { data: room } = await supabaseBrowser.from('chat_rooms').insert({ name, kind: 'team', created_by: uid } as never).select('id, name, marid_enabled').single()
     if (room) {
       await supabaseBrowser.from('chat_room_members').insert({ room_id: (room as Room).id, profile_id: uid, role: 'owner' } as never)
-      await loadRooms(uid); openRoom(room as Room)
+      await loadRooms(uid); openRoom({ ...(room as Room), kind: 'team', role: 'owner' })
     }
   }
 
@@ -309,7 +329,9 @@ export default function TeamPage() {
       return
     }
     const { error } = await supabaseBrowser.from('chat_room_members').insert({ room_id: active.id, profile_id: (prof as { id: string }).id, role: 'member' } as never)
-    alert(error ? 'مقدرتش أضيفه (لازم تكون مالك الغرفة)' : `تمت إضافة ${(prof as { full_name?: string }).full_name || 'العضو'} ✅`)
+    if (error) { alert('مقدرتش أضيفه (لازم تكون مالك الجروب)'); return }
+    setToast(`تمت إضافة ${(prof as { full_name?: string }).full_name || 'العضو'} ✅`); setTimeout(() => setToast(''), 3000)
+    if (membersOpen) openMembers()  // حدّث لستة الأعضاء لو مفتوحة
   }
 
   // دعوة بلينك — يتبعت على أي تطبيق (share sheet)، واللي يفتحه ينضم للمجموعة
@@ -324,13 +346,88 @@ export default function TeamPage() {
     catch { window.prompt('انسخ رابط الدعوة وابعته:', url) }
   }
 
+  const iAmOwner = active?.role === 'owner'
+
+  // فتح شيت الأعضاء + تحميل اللستة من الـRPC (آمن — عضو الغرفة بس)
+  async function openMembers() {
+    if (!active) return
+    setMenuOpen(false); setMembersOpen(true); setMembersLoading(true)
+    try {
+      const { data, error } = await supabaseBrowser.rpc('room_members', { _room: active.id })
+      if (error) throw error
+      setMembers((data as Member[]) || [])
+    } catch { setToast('مقدرتش أجيب الأعضاء'); setTimeout(() => setToast(''), 3000) }
+    finally { setMembersLoading(false) }
+  }
+
+  // المالك يشيل عضو
+  async function kickMember(m: Member) {
+    if (!active || !iAmOwner || m.is_me) return
+    if (!confirm(`تشيل ${m.member_name} من الجروب؟`)) return
+    const { error } = await supabaseBrowser.rpc('remove_room_member', { _room: active.id, _member: m.member_id })
+    if (error) { setToast('مقدرتش أشيله'); setTimeout(() => setToast(''), 3000); return }
+    setMembers((list) => list.filter((x) => x.member_id !== m.member_id))
+    setToast(`اتشال ${m.member_name} ✅`); setTimeout(() => setToast(''), 3000)
+  }
+
+  // مسح المحادثة من عندي أنا بس (تفضل عند الباقيين)
+  async function clearForMe() {
+    if (!active) return
+    setMenuOpen(false)
+    if (!confirm('مسح المحادثة من عندك انت بس؟ (هتفضل عند باقي الأعضاء)')) return
+    const { error } = await supabaseBrowser.rpc('clear_room_for_me', { _room: active.id })
+    if (error) { setToast('مقدرتش أمسح'); setTimeout(() => setToast(''), 3000); return }
+    setMessages([])
+    setToast('اتمسحت المحادثة من عندك ✅'); setTimeout(() => setToast(''), 3000)
+  }
+
+  // المالك يمسح رسايل الجروب للكل نهائياً
+  async function clearForAll() {
+    if (!active || !iAmOwner) return
+    setMenuOpen(false)
+    if (!confirm('مسح كل رسايل الجروب للأعضاء كلهم نهائياً؟ (مفيش رجوع)')) return
+    const { error } = await supabaseBrowser.rpc('clear_room_messages_for_all', { _room: active.id })
+    if (error) { setToast('مقدرتش أمسح'); setTimeout(() => setToast(''), 3000); return }
+    setMessages([])
+    setToast('اتمسحت رسايل الجروب للكل ✅'); setTimeout(() => setToast(''), 3000)
+  }
+
+  // الخروج من الجروب (أي عضو)
+  async function leaveGroup() {
+    if (!active) return
+    setMenuOpen(false)
+    if (!confirm(`تخرج من جروب «${active.name || 'الجروب'}»؟`)) return
+    const { error } = await supabaseBrowser.rpc('leave_room', { _room: active.id })
+    if (error) {
+      const msg = /owner must delete/i.test(error.message)
+        ? 'انت المالك — لازم تحذف الجروب أو تنقل الملكية قبل الخروج.'
+        : 'مقدرتش أخرج، جرّب تاني.'
+      setToast(msg); setTimeout(() => setToast(''), 4000); return
+    }
+    if (uid) await loadRooms(uid)
+    setActive(null)
+    if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null }
+  }
+
+  // حذف الجروب بالكامل (المالك بس)
+  async function deleteGroup() {
+    if (!active || !iAmOwner) return
+    setMenuOpen(false)
+    if (!confirm(`حذف جروب «${active.name || 'الجروب'}» نهائياً بكل رسايله وأعضائه؟ (مفيش رجوع)`)) return
+    const { error } = await supabaseBrowser.rpc('delete_room', { _room: active.id })
+    if (error) { setToast('مقدرتش أحذف الجروب'); setTimeout(() => setToast(''), 3000); return }
+    if (uid) await loadRooms(uid)
+    setActive(null)
+    if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null }
+  }
+
   if (!ready) return <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#075E54', color: '#fff', fontFamily: 'system-ui' }}>لحظة…</div>
 
   if (!uid) return (
     <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#075E54', color: '#fff', fontFamily: 'system-ui', textAlign: 'center', padding: 20 }}>
       <div>
         <div style={{ fontSize: 44 }}>👥</div>
-        <h2>فريق العمل</h2>
+        <h2>الجروبات</h2>
         <p style={{ opacity: .85 }}>لازم تسجّل دخول على مضمونة الأول.</p>
         <a href="/auth/login" style={{ background: '#25D366', color: '#053b32', padding: '10px 20px', borderRadius: 10, fontWeight: 700, textDecoration: 'none', display: 'inline-block', marginTop: 10 }}>تسجيل الدخول</a>
       </div>
@@ -342,17 +439,17 @@ export default function TeamPage() {
       <header style={{ background: '#075E54', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ flex: 1, fontWeight: 700, fontSize: 18 }}>👥 محادثاتك</div>
         <button onClick={startDM} title="اختار شخص من جهات الاتصال" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 16, padding: '6px 10px', fontWeight: 700, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>💬 خاصة</button>
-        <button onClick={createRoom} style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 16, padding: '6px 10px', fontWeight: 700, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>+ غرفة</button>
+        <button onClick={createRoom} style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 16, padding: '6px 10px', fontWeight: 700, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>+ جروب</button>
       </header>
       <div style={{ flex: 1, overflowY: 'auto', padding: 10 }}>
-        {rooms.length === 0 && <div style={{ textAlign: 'center', color: '#667', marginTop: 40 }}>لسه مفيش محادثات. ابدأ محادثة خاصة 💬 أو اعمل غرفة فريق 👆</div>}
+        {rooms.length === 0 && <div style={{ textAlign: 'center', color: '#667', marginTop: 40 }}>لسه مفيش محادثات. ابدأ محادثة خاصة 💬 أو اعمل جروب 👆</div>}
         {rooms.map((r) => {
           const isDirect = r.kind === 'direct'
-          const title = isDirect ? (r.otherName || 'محادثة خاصة') : (r.name || 'غرفة')
+          const title = isDirect ? (r.otherName || 'محادثة خاصة') : (r.name || 'جروب')
           return (
             <button key={r.id} onClick={() => openRoom(r)} style={{ display: 'flex', width: '100%', textAlign: 'right', alignItems: 'center', gap: 12, background: '#fff', border: 'none', borderRadius: 12, padding: 12, marginBottom: 8, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,.08)' }}>
               <div style={{ width: 44, height: 44, borderRadius: '50%', background: isDirect ? '#075E54' : '#128C7E', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18 }}>{(title || 'م').trim()[0]}</div>
-              <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{title}</div><div style={{ fontSize: 12, color: '#888' }}>{isDirect ? 'محادثة خاصة' : 'غرفة فريق'}</div></div>
+              <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{title}</div><div style={{ fontSize: 12, color: '#888' }}>{isDirect ? 'محادثة خاصة' : 'جروب'}</div></div>
             </button>
           )
         })}
@@ -365,13 +462,56 @@ export default function TeamPage() {
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg,#ece5db 0%,#ddd4c6 100%)', fontFamily: "'Cairo', system-ui, sans-serif" }}>
       <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');"}</style>
       <header style={{ background: 'linear-gradient(135deg,#0a7d6e 0%,#075E54 100%)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 10px rgba(0,0,0,.18)', zIndex: 2 }}>
-        <button onClick={() => { setActive(null); if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null } }} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer' }}>→</button>
-        <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{active.kind === 'direct' ? (active.otherName || 'محادثة خاصة') : (active.name || 'غرفة')}</div><div style={{ fontSize: 11, opacity: .85 }}>اضغط 🧞 لاستدعاء المارد</div></div>
+        <button onClick={() => { setActive(null); setMenuOpen(false); if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null } }} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer' }}>→</button>
+        <div onClick={() => { if (active.kind !== 'direct') openMembers() }} style={{ flex: 1, minWidth: 0, cursor: active.kind !== 'direct' ? 'pointer' : 'default' }}><div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{active.kind === 'direct' ? (active.otherName || 'محادثة خاصة') : (active.name || 'جروب')}</div><div style={{ fontSize: 11, opacity: .85 }}>{active.kind === 'direct' ? 'اضغط 🧞 لاستدعاء المارد' : 'اضغط للأعضاء · 🧞 للمارد'}</div></div>
         <button onClick={summonMaridInRoom} disabled={busy} title="استدعِ المارد" style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 14, padding: '5px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', opacity: busy ? 0.6 : 1 }}>🧞 المارد</button>
         <button onClick={() => setGallery(true)} title="ميديا المحادثة" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>🖼️</button>
-        <button onClick={inviteLink} title="دعوة بلينك" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>🔗</button>
-        <button onClick={addMember} title="ضيف عضو من جهات الاتصال" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>➕</button>
+        {active.kind !== 'direct' && (
+          <button onClick={() => setMenuOpen((v) => !v)} title="خيارات الجروب" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 11px', fontSize: 18, lineHeight: 1, cursor: 'pointer', whiteSpace: 'nowrap' }}>⋮</button>
+        )}
       </header>
+      {menuOpen && active.kind !== 'direct' && (
+        <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: 56, insetInlineStart: 10, background: '#fff', borderRadius: 12, boxShadow: '0 6px 24px rgba(0,0,0,.22)', overflow: 'hidden', minWidth: 210, fontSize: 14 }}>
+            <button onClick={openMembers} style={menuItem}>👥 أعضاء الجروب</button>
+            <button onClick={inviteLink} style={menuItem}>🔗 دعوة بلينك</button>
+            {iAmOwner && <button onClick={addMember} style={menuItem}>➕ ضيف عضو</button>}
+            <div style={{ height: 1, background: '#eee' }} />
+            <button onClick={clearForMe} style={menuItem}>🧹 امسح المحادثة من عندي</button>
+            {iAmOwner && <button onClick={clearForAll} style={{ ...menuItem, color: '#c0392b' }}>🗑️ امسح الرسايل للكل</button>}
+            <div style={{ height: 1, background: '#eee' }} />
+            {iAmOwner
+              ? <button onClick={deleteGroup} style={{ ...menuItem, color: '#c0392b', fontWeight: 700 }}>❌ احذف الجروب</button>
+              : <button onClick={leaveGroup} style={{ ...menuItem, color: '#c0392b', fontWeight: 700 }}>🚪 اخرج من الجروب</button>}
+          </div>
+        </div>
+      )}
+      {membersOpen && (
+        <div onClick={() => setMembersOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 55, display: 'flex', alignItems: 'flex-end' }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxHeight: '70vh', overflowY: 'auto', borderRadius: '16px 16px 0 0', padding: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <div style={{ fontWeight: 800, fontSize: 16, flex: 1 }}>👥 أعضاء «{active.name || 'الجروب'}» {members.length ? `(${members.length})` : ''}</div>
+              <button onClick={() => setMembersOpen(false)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#888' }}>✕</button>
+            </div>
+            {membersLoading ? (
+              <div style={{ textAlign: 'center', color: '#888', padding: 20 }}>لحظة…</div>
+            ) : members.length === 0 ? (
+              <div style={{ textAlign: 'center', color: '#888', padding: 20 }}>مفيش أعضاء</div>
+            ) : members.map((m) => (
+              <div key={m.member_id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 4px', borderBottom: '1px solid #f2f2f2' }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', background: m.member_role === 'owner' ? '#0a7d6e' : '#128C7E', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 16, fontWeight: 700, flexShrink: 0 }}>{(m.member_name || 'م').trim()[0]}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.member_name}{m.is_me ? ' (انت)' : ''}</div>
+                  <div style={{ fontSize: 12, color: m.member_role === 'owner' ? '#0a7d6e' : '#888' }}>{m.member_role === 'owner' ? '👑 مالك الجروب' : 'عضو'}</div>
+                </div>
+                {iAmOwner && !m.is_me && (
+                  <button onClick={() => kickMember(m)} style={{ background: '#fdecea', color: '#c0392b', border: 'none', borderRadius: 10, padding: '6px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>شيل</button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {gallery && (
         <div onClick={() => setGallery(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.92)', zIndex: 50, display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', color: '#fff' }}>
@@ -457,3 +597,5 @@ export default function TeamPage() {
     </div>
   )
 }
+
+const menuItem: React.CSSProperties = { display: 'block', width: '100%', textAlign: 'start', padding: '12px 16px', border: 'none', background: '#fff', cursor: 'pointer', fontSize: 14, color: '#222' }

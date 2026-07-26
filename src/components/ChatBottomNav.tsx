@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation'
 const TABS: { href: string; label: string; icon: string; match: (p: string) => boolean }[] = [
   { href: '/chat/marid', label: 'المارد', icon: '🧞', match: (p) => p.startsWith('/chat/marid') },
   { href: '/chat', label: 'محادثات', icon: '💬', match: (p) => p === '/chat' },
-  { href: '/team', label: 'فريق', icon: '👥', match: (p) => p.startsWith('/team') },
+  { href: '/team', label: 'جروبات', icon: '👥', match: (p) => p.startsWith('/team') },
   { href: '/chat/tasks', label: 'مهامي', icon: '📋', match: (p) => p.startsWith('/chat/tasks') },
   { href: '/chat/offers', label: 'عروض', icon: '🏷️', match: (p) => p.startsWith('/chat/offers') },
   { href: '/chat/settings', label: 'إعدادات', icon: '⚙️', match: (p) => p.startsWith('/chat/settings') },
