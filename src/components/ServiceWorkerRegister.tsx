@@ -9,7 +9,27 @@ import { useEffect } from 'react'
 export default function ServiceWorkerRegister() {
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (!('serviceWorker' in navigator)) return
+
+    // التقاط beforeinstallprompt بدري (بيطير مرة واحدة وممكن يسبق زرار التحميل).
+    // بنخزّنه في متغير عام عشان DownloadAppBig يقراه مهما اتحمّل متأخر.
+    const early = (e: Event) => {
+      e.preventDefault()
+      // @ts-expect-error - global stash consumed by DownloadAppBig
+      window.__mdmInstallEvent = e
+    }
+    window.addEventListener('beforeinstallprompt', early)
+    const clearOnInstall = () => {
+      // @ts-expect-error
+      window.__mdmInstallEvent = null
+    }
+    window.addEventListener('appinstalled', clearOnInstall)
+
+    if (!('serviceWorker' in navigator)) {
+      return () => {
+        window.removeEventListener('beforeinstallprompt', early)
+        window.removeEventListener('appinstalled', clearOnInstall)
+      }
+    }
 
     // Register after window load to not compete with critical rendering
     const register = () => {
@@ -22,6 +42,11 @@ export default function ServiceWorkerRegister() {
       register()
     } else {
       window.addEventListener('load', register, { once: true })
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', early)
+      window.removeEventListener('appinstalled', clearOnInstall)
     }
   }, [])
 

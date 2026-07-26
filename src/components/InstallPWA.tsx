@@ -51,10 +51,17 @@ export default function InstallPWA() {
       setDismissed(wasDismissed)
     }
 
-    // Capture the install event for Android/Chrome
+    // Capture the install event for Android/Chrome (+ read early-captured one)
+    // @ts-expect-error - global stash set by ServiceWorkerRegister early capture
+    if (window.__mdmInstallEvent) {
+      // @ts-expect-error
+      setInstallEvent(window.__mdmInstallEvent as InstallPromptEvent)
+    }
     const handler = (e: Event) => {
       e.preventDefault()
       setInstallEvent(e as InstallPromptEvent)
+      // @ts-expect-error
+      window.__mdmInstallEvent = e
     }
     window.addEventListener('beforeinstallprompt', handler)
 

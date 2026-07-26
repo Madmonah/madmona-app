@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { Download, Smartphone, X, CheckCircle2, ScanLine, ArrowLeft } from 'lucide-react'
+import { Download, Smartphone, X, CheckCircle2, ArrowLeft } from 'lucide-react'
 
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>
@@ -25,13 +25,16 @@ const QR_API = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${
 export default function DownloadAppBig() {
   const [installEvent, setInstallEvent] = useState<InstallPromptEvent | null>(null)
   const [isIOS, setIsIOS] = useState(false)
+  const [isAndroid, setIsAndroid] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
-  const [showModal, setShowModal] = useState<'ios' | 'desktop' | null>(null)
+  const [showModal, setShowModal] = useState<'ios' | 'android' | 'desktop' | null>(null)
 
   useEffect(() => {
     const ua = window.navigator.userAgent.toLowerCase()
     const ios = /iphone|ipad|ipod/.test(ua) && !/crios|fxios|edgios/.test(ua)
     setIsIOS(ios)
+    const android = /android/.test(ua)
+    setIsAndroid(android)
 
     const standalone =
       window.matchMedia('(display-mode: standalone)').matches ||
@@ -39,14 +42,26 @@ export default function DownloadAppBig() {
       window.navigator.standalone === true
     setIsStandalone(standalone)
 
+    // الحدث بيطير مرة واحدة وممكن يسبق تسجيل الـlistener — بنلتقطه على window
+    // من ملف مبكّر (ServiceWorkerRegister) في متغير عام، ونقراه هنا لو موجود.
+    // @ts-expect-error - global stash set by early capture
+    if (window.__mdmInstallEvent) {
+      // @ts-expect-error
+      setInstallEvent(window.__mdmInstallEvent as InstallPromptEvent)
+    }
+
     const handler = (e: Event) => {
       e.preventDefault()
       setInstallEvent(e as InstallPromptEvent)
+      // @ts-expect-error - keep a copy for late-mounting components
+      window.__mdmInstallEvent = e
     }
     window.addEventListener('beforeinstallprompt', handler)
 
     const installedHandler = () => {
       setInstallEvent(null)
+      // @ts-expect-error
+      window.__mdmInstallEvent = null
       setIsStandalone(true)
     }
     window.addEventListener('appinstalled', installedHandler)
@@ -62,12 +77,22 @@ export default function DownloadAppBig() {
       try {
         await installEvent.prompt()
         const result = await installEvent.userChoice
-        if (result.outcome === 'accepted') setInstallEvent(null)
+        if (result.outcome === 'accepted') {
+          setInstallEvent(null)
+          // @ts-expect-error
+          window.__mdmInstallEvent = null
+        }
       } catch (err) {
         console.error('Install prompt error:', err)
+        // لو الـprompt فشل لأي سبب على أندرويد → تعليمات يدوية (مش QR)
+        if (isAndroid) setShowModal('android')
       }
     } else if (isIOS) {
       setShowModal('ios')
+    } else if (isAndroid) {
+      // أندرويد من غير prompt جاهز (اتفتح متأخر أو متثبت بالفعل) →
+      // تعليمات تثبيت يدوية من قائمة كروم، مش QR (إحنا على الموبايل أصلاً).
+      setShowModal('android')
     } else {
       setShowModal('desktop')
     }
@@ -129,6 +154,20 @@ export default function DownloadAppBig() {
           </span>
         </div>
       </button>
+
+      {/* Android: manual install instructions (when prompt not available) */}
+      {showModal === 'android' && (
+        <Modal onClose={() => setShowModal(null)} title="تثبيت على أندرويد">
+          <div className="da-ios-steps">
+            <Step n="١" text="اضغط زرار القائمة ⋮ فوق يمين كروم" />
+            <Step n="٢" text="اختر 'تثبيت التطبيق' أو 'إضافة إلى الشاشة الرئيسية'" />
+            <Step n="٣" text="اضغط 'تثبيت' — خلصت!" />
+          </div>
+          <p className="da-ios-note">
+            لو مش لاقي 'تثبيت التطبيق'، يبقى التطبيق متثبّت عندك بالفعل — دوّر على أيقونة مضمونة في الشاشة الرئيسية.
+          </p>
+        </Modal>
+      )}
 
       {/* iOS Install Instructions Modal */}
       {showModal === 'ios' && (
