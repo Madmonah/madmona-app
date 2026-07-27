@@ -22,7 +22,7 @@ interface Listing {
   rating: number | null
   reviews_count: number
   category: { name_ar: string; name_en?: string | null; icon: string | null } | null
-  photos: { url: string; is_primary: boolean }[] | null
+  photos: { url: string; is_primary: boolean; quality_flag?: string | null }[] | null
   pricing: { price: number | string; is_active: boolean }[] | null
 }
 
@@ -43,7 +43,7 @@ export default function FeaturedListings() {
         .select(`
           id, title, slug, city, district, rating, reviews_count,
           category:categories(name_ar, name_en, icon),
-          photos:listing_photos(url, is_primary),
+          photos:listing_photos(url, is_primary, quality_flag),
           pricing:pricing_rules(price, is_active)
         `)
         .eq('status', 'published')
@@ -54,8 +54,8 @@ export default function FeaturedListings() {
         .limit(48)
 
       const rows = ((data || []) as Listing[])
-        // بس اللي عندهم صورة فعلاً
-        .filter(l => (l.photos || []).some(p => p?.url))
+        // بس اللي عندهم صورة فعلاً (ومش معلّمة graphic)
+        .filter(l => (l.photos || []).some(p => p?.url && p.quality_flag !== 'graphic'))
 
       // round-robin بين الفئات علشان يبدّل بينها
       const byCat = new Map<string, Listing[]>()
@@ -138,7 +138,7 @@ export default function FeaturedListings() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {visible.map((listing, i) => {
-          const photos = listing.photos || []
+          const photos = (listing.photos || []).filter(p => p.quality_flag !== 'graphic')
           const primary = photos.find(p => p.is_primary) || photos[0]
           const photoUrl = primary?.url
           const activePrices = (listing.pricing || [])

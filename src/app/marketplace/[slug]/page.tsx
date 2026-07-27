@@ -260,7 +260,12 @@ export default function ListingDetailPage() {
 
         const results = await Promise.all(fetches) as { data: unknown }[]
 
-        setPhotos((results[0].data || []) as Photo[])
+        // إخفاء الصور المعلّمة graphic (زي صور الدم/الحجامة) من الجاليري بالكامل
+        setPhotos(
+          ((results[0].data || []) as Photo[]).filter(
+            (p) => (p as { quality_flag?: string | null }).quality_flag !== 'graphic'
+          )
+        )
         const attrsData = (results[1].data || []) as AttributeWithValue[]
         const sorted = attrsData.sort((a, b) =>
           (a.attribute?.display_order || 0) - (b.attribute?.display_order || 0)

@@ -14,6 +14,9 @@ const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 type Status = 'verifying' | 'success' | 'error'
 
+// معالج ماجيك-لينك بيعتمد على useSearchParams — dynamic عشان ماتوقعش الـ prerender
+export const dynamic = 'force-dynamic'
+
 export default function MagicLinkPage() {
   const router = useRouter()
   const searchParams = useSearchParams()

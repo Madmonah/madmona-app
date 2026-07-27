@@ -5,11 +5,14 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import MadmonaInlineLogin from '@/components/MadmonaInlineLogin'
 import { getMadmonaSession } from '@/lib/madmonaSession'
 
-export default function ChatLoginPage() {
+// صفحة دخول تعتمد على useSearchParams + الجلسة — لازم dynamic عشان ماتوقعش الـ prerender وقت البناء
+export const dynamic = 'force-dynamic'
+
+function ChatLoginInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -46,5 +49,13 @@ export default function ChatLoginPage() {
         }}
       />
     </div>
+  )
+}
+
+export default function ChatLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <ChatLoginInner />
+    </Suspense>
   )
 }
