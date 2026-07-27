@@ -10,6 +10,7 @@ import DownloadAppBig from '@/components/DownloadAppBig'
 import FeaturedListings from '@/components/FeaturedListings'
 import FinancialTicker from '@/components/FinancialTicker'
 import CompactNewsTabs from '@/components/CompactNewsTabs'
+import NewsStories from '@/components/NewsStories'
 import SocialLinks from '@/components/SocialLinks'
 import MUACampaignBanner from '@/components/MUACampaignBanner'
 import CategoryTrackTabs from '@/components/CategoryTrackTabs'
@@ -140,7 +141,12 @@ export default async function HomePage() {
         {/* 🔴 NEWS HUB — فوق خالص، بعرض ماجازين (27 Jul 2026) */}
         <section className="pt-4 md:pt-5 pb-3">
           <div className="max-w-7xl mx-auto px-4">
-            <CompactNewsTabs />
+            {/* موبايل: ستوري */}
+            <NewsStories />
+            {/* ديسكتوب: ماجازين */}
+            <div className="hidden md:block">
+              <CompactNewsTabs />
+            </div>
           </div>
         </section>
 
