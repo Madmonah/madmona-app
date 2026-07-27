@@ -3782,6 +3782,19 @@ function StepPhotos({
     }
   }
 
+  // (يوليو 2026) الناشر يختار الصورة الرئيسية — بننقلها لأول المصفوفة، والنشر بياخد الأولى كـ is_primary
+  async function makePrimary(idx: number) {
+    if (idx <= 0) return;
+    const next = [photos[idx], ...photos.filter((_, i) => i !== idx)];
+    setPhotos(next);
+    if (onUpload) {
+      setAutoSaving(true);
+      try { await onUpload(next); }
+      catch (e) { console.warn('autosave (primary) failed:', e); }
+      finally { setAutoSaving(false); }
+    }
+  }
+
   return (
     <section>
       <h2 className="text-lg font-semibold mb-1">{svcCopy ? svcCopy.heading : 'الصور'}</h2>
@@ -3804,6 +3817,19 @@ function StepPhotos({
               >
                 ×
               </button>
+              {i === 0 ? (
+                <span className="absolute bottom-1 inset-x-1 text-center bg-[#1F6F5F] text-white text-[10px] font-bold py-1 rounded-lg">
+                  ⭐ الرئيسية
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => makePrimary(i)}
+                  className="absolute bottom-1 inset-x-1 text-center bg-black/55 hover:bg-[#1F6F5F] text-white text-[10px] font-bold py-1 rounded-lg transition-colors"
+                >
+                  اجعلها الرئيسية
+                </button>
+              )}
             </div>
           ))}
         </div>
