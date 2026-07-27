@@ -205,13 +205,6 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* FEATURED */}
-        <section className="py-16 md:py-24">
-          <div className="max-w-7xl mx-auto px-4">
-            <FeaturedListings />
-          </div>
-        </section>
-
         {/* HOW IT WORKS */}
         <section className="py-16 md:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4">
@@ -275,6 +268,13 @@ export default async function HomePage() {
                 <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#FBBC04] group-hover:-translate-x-1 transition-all" />
               </a>
             </div>
+          </div>
+        </section>
+
+        {/* FEATURED — feed لا نهائي، آخر الصفحة عشان النزول المستمر يبقى طبيعي */}
+        <section className="py-16 md:py-24">
+          <div className="max-w-7xl mx-auto px-4">
+            <FeaturedListings />
           </div>
         </section>
 
