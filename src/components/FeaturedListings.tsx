@@ -26,14 +26,10 @@ interface Listing {
   pricing: { price: number | string; is_active: boolean }[] | null
 }
 
-const VISIBLE = 3
-const ROTATE_MS = 5000
-
 export default function FeaturedListings() {
   const { t, lang } = useT()
   const [pool, setPool] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
-  const [start, setStart] = useState(0)
 
   useEffect(() => {
     const load = async () => {
@@ -81,21 +77,12 @@ export default function FeaturedListings() {
     load()
   }, [])
 
-  // لفّ أوتوماتيك
-  useEffect(() => {
-    if (pool.length <= VISIBLE) return
-    const t = setInterval(() => {
-      setStart(prev => (prev + VISIBLE) % pool.length)
-    }, ROTATE_MS)
-    return () => clearInterval(t)
-  }, [pool])
-
   if (loading) {
     return (
       <section>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-soft">
+        <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="flex-shrink-0 w-[270px] sm:w-[290px] bg-white rounded-3xl overflow-hidden shadow-soft">
               <div className="aspect-[4/3] animate-shimmer" />
               <div className="p-5 space-y-3">
                 <div className="h-3 w-16 animate-shimmer rounded-full" />
@@ -111,10 +98,8 @@ export default function FeaturedListings() {
 
   if (pool.length === 0) return null
 
-  // النافذة الظاهرة (٣) مع الالتفاف
-  const visible = Array.from({ length: Math.min(VISIBLE, pool.length) }).map(
-    (_, i) => pool[(start + i) % pool.length]
-  )
+  // صف أفقي قابل للسحب — نعرض أول 15 من الـ pool المتنوّع
+  const items = pool.slice(0, 15)
 
   return (
     <section>
@@ -136,8 +121,8 @@ export default function FeaturedListings() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {visible.map((listing, i) => {
+      <div className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-3 -mx-4 px-4 md:-mx-1 md:px-1">
+        {items.map((listing, i) => {
           const photos = (listing.photos || []).filter(p => p.quality_flag !== 'graphic')
           const primary = photos.find(p => p.is_primary) || photos[0]
           const photoUrl = primary?.url
@@ -151,10 +136,9 @@ export default function FeaturedListings() {
 
           return (
             <Link
-              key={`${listing.id}-${start}-${i}`}
+              key={`${listing.id}-${i}`}
               href={`/marketplace/${listing.slug}`}
-              className="group block bg-white rounded-3xl overflow-hidden shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-500 no-underline animate-slide-up"
-              style={{ animationDelay: `${i * 100}ms` }}
+              className="group flex-shrink-0 w-[270px] sm:w-[290px] snap-start block bg-white rounded-3xl overflow-hidden shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-500 no-underline"
             >
               <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
                 {photoUrl ? (
