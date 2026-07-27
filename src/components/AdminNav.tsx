@@ -43,6 +43,7 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/supplier-posts', label: 'منشورات الموردين' },
   ] },
   { title: 'AI / المارد', icon: Bot, items: [
+    { href: '/admin/orchestrator', label: 'تحكم الكرونات 🧞' },
     { href: '/admin/ai-assistant', label: 'المساعد الذكي' },
     { href: '/admin/ai-os', label: 'AI OS' },
     { href: '/admin/agent-health', label: 'صحة الوكلاء' },
