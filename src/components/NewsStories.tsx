@@ -75,6 +75,12 @@ export default function NewsStories() {
 
   const close = () => { setOpenTab(null); setIdx(0); setProgress(0) }
 
+  // نجيب كل التصنيفات أول ما يفتح الكومبوننت — عشان الصور والعناوين تبان تحت الدواير
+  useEffect(() => {
+    TABS.forEach((tt) => { void fetchTab(tt.id) })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const stories: NewsItem[] = openTab ? (cache[openTab] || []) : []
   const current = stories[idx]
   const activeCfg = openTab ? TABS.find((tt) => tt.id === openTab)! : null
@@ -141,7 +147,7 @@ export default function NewsStories() {
             <button
               key={tab.id}
               onClick={() => openStory(tab.id)}
-              className="flex flex-col items-center gap-1.5 flex-shrink-0 w-[68px] active:scale-95 transition-transform"
+              className="flex flex-col items-center gap-1 flex-shrink-0 w-[96px] active:scale-95 transition-transform"
               type="button"
             >
               <span
@@ -163,7 +169,10 @@ export default function NewsStories() {
                   )}
                 </span>
               </span>
-              <span className="text-[10px] font-bold text-gray-700 truncate w-full text-center">{tab.label}</span>
+              <span className="text-[10px] font-black text-gray-800 truncate w-full text-center">{tab.label}</span>
+              <span className="text-[9px] leading-[1.2] text-gray-500 w-full text-center line-clamp-2 min-h-[22px]">
+                {cache[tab.id]?.[0]?.title || ''}
+              </span>
             </button>
           )
         })}

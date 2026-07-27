@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { ArrowLeft, MapPin, Star, ImageIcon, Clock } from 'lucide-react'
@@ -26,10 +26,22 @@ interface Listing {
   pricing: { price: number | string; is_active: boolean }[] | null
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
 export default function FeaturedListings() {
   const { t, lang } = useT()
-  const [pool, setPool] = useState<Listing[]>([])
+  const [items, setItems] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
+  const poolRef = useRef<Listing[]>([])
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -53,14 +65,14 @@ export default function FeaturedListings() {
         // بس اللي عندهم صورة فعلاً (ومش معلّمة graphic)
         .filter(l => (l.photos || []).some(p => p?.url && p.quality_flag !== 'graphic'))
 
-      // round-robin بين الفئات علشان يبدّل بينها
+      // round-robin بين الفئات + عشوائية كل ريفريش (shuffle للفئات وجوّاها)
       const byCat = new Map<string, Listing[]>()
       for (const l of rows) {
         const key = l.category?.name_ar || 'أخرى'
         if (!byCat.has(key)) byCat.set(key, [])
         byCat.get(key)!.push(l)
       }
-      const buckets = Array.from(byCat.values())
+      const buckets = shuffle(Array.from(byCat.values()).map((b) => shuffle(b)))
       const diverse: Listing[] = []
       let added = true
       while (added) {
@@ -71,11 +83,30 @@ export default function FeaturedListings() {
         }
       }
 
-      setPool(diverse)
+      poolRef.current = diverse
+      setItems(diverse)
       setLoading(false)
     }
     load()
   }, [])
+
+  // اسكرول لا نهائي — أول ما نقرب من الآخر نضيف دفعة جديدة (shuffled) فيفضل يعرض
+  useEffect(() => {
+    if (loading) return
+    const root = scrollRef.current
+    const sentinel = sentinelRef.current
+    if (!root || !sentinel || poolRef.current.length === 0) return
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setItems((prev) => (prev.length > 300 ? prev : [...prev, ...shuffle(poolRef.current)]))
+        }
+      },
+      { root, rootMargin: '0px 600px 0px 600px' }
+    )
+    io.observe(sentinel)
+    return () => io.disconnect()
+  }, [loading])
 
   if (loading) {
     return (
@@ -96,10 +127,7 @@ export default function FeaturedListings() {
     )
   }
 
-  if (pool.length === 0) return null
-
-  // صف أفقي قابل للسحب — نعرض أول 15 من الـ pool المتنوّع
-  const items = pool.slice(0, 15)
+  if (items.length === 0) return null
 
   return (
     <section>
@@ -121,7 +149,7 @@ export default function FeaturedListings() {
         </Link>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-3 -mx-4 px-4 md:-mx-1 md:px-1">
+      <div ref={scrollRef} className="flex gap-4 overflow-x-auto scrollbar-hide snap-x pb-3 -mx-4 px-4 md:-mx-1 md:px-1">
         {items.map((listing, i) => {
           const photos = (listing.photos || []).filter(p => p.quality_flag !== 'graphic')
           const primary = photos.find(p => p.is_primary) || photos[0]
@@ -214,6 +242,8 @@ export default function FeaturedListings() {
             </Link>
           )
         })}
+        {/* حارس التحميل اللانهائي */}
+        <div ref={sentinelRef} className="flex-shrink-0 w-1 self-stretch" aria-hidden />
       </div>
 
       <Link
