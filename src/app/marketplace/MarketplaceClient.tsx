@@ -41,7 +41,7 @@ interface Listing {
   requires_id_verification: boolean | null
   category: { name_ar: string; name_en: string | null; icon: string | null; slug: string } | null
   supplier: { business_name?: string | null; logo_url?: string | null; kyc_status: string | null } | null
-  photos: { url: string; is_primary: boolean }[] | null
+  photos: { url: string; is_primary: boolean; quality_flag?: string | null; is_placeholder?: boolean | null }[] | null
   pricing: { price: number | string; is_active: boolean }[] | null
 }
 
@@ -362,7 +362,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           id, title, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification,
           category:categories(name_ar, name_en, icon, slug),
           supplier:marketplace_suppliers(business_name, logo_url),
-          photos:listing_photos(url, is_primary),
+          photos:listing_photos(url, is_primary, quality_flag, is_placeholder),
           pricing:pricing_rules(price, is_active)
         `, { count: 'exact' })
         .eq('status', 'published')
@@ -1005,7 +1005,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredListings.map((listing, i) => {
-              const photos = listing.photos || []
+              const photos = (listing.photos || []).filter(p => p?.url && !p.is_placeholder && p.quality_flag !== 'graphic')
               const primary = photos.find(p => p.is_primary) || photos[0]
               const photoUrl = primary?.url
               const minPrice = getMinPrice(listing)
@@ -1033,8 +1033,12 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       </>
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ImageIcon className="w-12 h-12 text-gray-300" />
+                      // كارت بهوية مضمونة بدل صورة الستوك/الفراغ — أيقونة الفئة على جرادينت + نقشة خفيفة
+                      <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-[#1F6F5F] to-[#2FA084]">
+                        <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '18px 18px' }} />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-6xl opacity-95 drop-shadow select-none">{listing.category?.icon || '🏷️'}</span>
+                        </div>
                       </div>
                     )}
 
