@@ -137,8 +137,19 @@ export default async function HomePage() {
       <FinancialTicker />
 
       <main className="relative">
+        {/* 🔴 NEWS HUB — فوق خالص، بعرض ماجازين (27 Jul 2026) */}
+        <section className="pt-4 md:pt-5 pb-3">
+          <div className="max-w-7xl mx-auto px-4">
+            <CompactNewsTabs />
+          </div>
+        </section>
+
         {/* قسم الواجهة المتحرك — Hero + 5 chips + counters */}
         <MadmonaShowcase stats={stats} />
+
+        {/* 📊 بورصة عقارات مضمونة — بعد الأصناف الـ5 مباشرة (27 Jul 2026).
+            Server component بيقرأ property_market_items + شريط لوجوهات المطورين، وبيخفي نفسه لو مفيش داتا. */}
+        <PropertyMarketHomeSection />
 
         {/* 📥 ZAR واحد كبير لتحميل التطبيق — استبدل الـ dual CTAs المكررة */}
         <div className="max-w-7xl mx-auto px-4 pt-6">
@@ -154,34 +165,7 @@ export default async function HomePage() {
           <DailyMessageCard />
         </div>
 
-        {/* 🔥 NEWS HUB - Top of page, full prominence */}
-        <section className="relative pt-4 md:pt-6 pb-8 md:pb-10">
-          <div className="max-w-7xl mx-auto px-4">
-            {/* Section header - clear title for the news block */}
-            <div className="flex items-end justify-between mb-5 md:mb-6 flex-wrap gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#1F6F5F] text-white flex items-center justify-center shadow-soft">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-300 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-400" />
-                  </span>
-                </div>
-                <div>
-                  <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F6F5F]">LIVE · EST. 2026</p>
-                  <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-tight"><T k="home.news.title" /></h2>
-                </div>
-              </div>
-              <p className="text-[11px] md:text-xs text-gray-500 max-w-md leading-relaxed">
-                <T k="home.news.sub" />
-              </p>
-            </div>
-            <CompactNewsTabs />
-          </div>
-        </section>
-
-        {/* 📊 بورصة عقارات مضمونة — أسعار العاصمة والتجمع لايف (Jul 9 2026).
-            Server component بيقرأ property_market_items وبيخفي نفسه لو مفيش داتا. */}
-        <PropertyMarketHomeSection />
+        {/* (الأخبار اتنقلت لفوق خالص — أول قسم في main، بعرض ماجازين) */}
 
         {/* CATEGORIES */}
         <section className="py-16 md:py-24 bg-white">
@@ -218,13 +202,6 @@ export default async function HomePage() {
         {/* FEATURED */}
         <section className="py-16 md:py-24">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="mb-10 md:mb-14">
-              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2FA084] mb-3">FEATURED</p>
-              <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
-                <span className="block"><T k="home.featured.title1" /></span>
-                <span className="block italic font-light gradient-text-green"><T k="home.featured.title2" /></span>
-              </h2>
-            </div>
             <FeaturedListings />
           </div>
         </section>
