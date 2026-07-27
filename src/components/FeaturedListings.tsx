@@ -40,7 +40,6 @@ export default function FeaturedListings() {
   const [items, setItems] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
   const poolRef = useRef<Listing[]>([])
-  const scrollRef = useRef<HTMLDivElement>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -102,19 +101,18 @@ export default function FeaturedListings() {
     load()
   }, [])
 
-  // اسكرول لا نهائي — أول ما نقرب من الآخر نضيف دفعة جديدة (shuffled) فيفضل يعرض
+  // feed لا نهائي رأسي — ترتيب عشوائي لكل مستخدم؛ أول ما نقرب من الآخر نضيف دفعة جديدة shuffled
   useEffect(() => {
     if (loading) return
-    const root = scrollRef.current
     const sentinel = sentinelRef.current
-    if (!root || !sentinel || poolRef.current.length === 0) return
+    if (!sentinel || poolRef.current.length === 0) return
     const io = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
           setItems((prev) => (prev.length > 300 ? prev : [...prev, ...shuffle(poolRef.current)]))
         }
       },
-      { root, rootMargin: '0px 600px 0px 600px' }
+      { rootMargin: '0px 0px 800px 0px' }
     )
     io.observe(sentinel)
     return () => io.disconnect()
@@ -123,9 +121,9 @@ export default function FeaturedListings() {
   if (loading) {
     return (
       <section>
-        <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="flex-shrink-0 w-[270px] sm:w-[290px] bg-white rounded-3xl overflow-hidden shadow-soft">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-soft">
               <div className="aspect-[4/3] animate-shimmer" />
               <div className="p-5 space-y-3">
                 <div className="h-3 w-16 animate-shimmer rounded-full" />
@@ -161,7 +159,7 @@ export default function FeaturedListings() {
         </Link>
       </div>
 
-      <div ref={scrollRef} className="flex gap-4 overflow-x-auto scrollbar-hide snap-x pb-3 -mx-4 px-4 md:-mx-1 md:px-1">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map((listing, i) => {
           const photos = (listing.photos || []).filter(p => !p.quality_flag && !p.is_placeholder)
           const primary = photos.find(p => p.is_primary) || photos[0]
@@ -178,7 +176,7 @@ export default function FeaturedListings() {
             <Link
               key={`${listing.id}-${i}`}
               href={`/marketplace/${listing.slug}`}
-              className="group flex-shrink-0 w-[270px] sm:w-[290px] snap-start block bg-white rounded-3xl overflow-hidden shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-500 no-underline"
+              className="group block bg-white rounded-3xl overflow-hidden shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-500 no-underline"
             >
               <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
                 {photoUrl ? (
@@ -254,9 +252,10 @@ export default function FeaturedListings() {
             </Link>
           )
         })}
-        {/* حارس التحميل اللانهائي */}
-        <div ref={sentinelRef} className="flex-shrink-0 w-1 self-stretch" aria-hidden />
       </div>
+
+      {/* حارس التحميل اللا نهائي (feed) */}
+      <div ref={sentinelRef} className="h-1 w-full" aria-hidden />
 
       <Link
         href="/marketplace"

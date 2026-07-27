@@ -137,41 +137,47 @@ export default function NewsStories() {
         <span className="text-[10px] font-bold text-[#1F6F5F] bg-[#1F6F5F]/10 px-2 py-0.5 rounded-full">LIVE</span>
       </div>
 
-      {/* شريط دواير الستوري */}
-      <div className="flex gap-3.5 overflow-x-auto scrollbar-hide pb-1 px-0.5">
+      {/* شريط ستوري بشكل فيسبوك — كروت مستطيلة طويلة */}
+      <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1 px-0.5">
         {TABS.map((tab) => {
           const Icon = tab.icon
           const cover = cache[tab.id]?.[0]?.image
+          const headline = cache[tab.id]?.[0]?.title
           const isLoading = loadingTab === tab.id
           return (
             <button
               key={tab.id}
               onClick={() => openStory(tab.id)}
-              className="flex flex-col items-center gap-1 flex-shrink-0 w-[96px] active:scale-95 transition-transform"
               type="button"
+              className="relative flex-shrink-0 w-[116px] h-[190px] rounded-2xl overflow-hidden shadow-soft active:scale-95 transition-transform"
             >
-              <span
-                className="w-[62px] h-[62px] rounded-full p-[2.5px] flex items-center justify-center"
-                style={{ background: `linear-gradient(135deg, ${tab.accent}, #D4A017)` }}
-              >
-                <span className="w-full h-full rounded-full bg-white p-[2px] flex items-center justify-center overflow-hidden">
-                  {cover ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={cover} alt={tab.label} className="w-full h-full object-cover rounded-full" loading="lazy" />
+              {/* الخلفية: صورة الخبر أو جرادينت الفئة */}
+              {cover ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={cover} alt={tab.label} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+              ) : (
+                <span className="absolute inset-0 flex items-center justify-center" style={{ background: `linear-gradient(160deg, ${tab.accent}, #12211c)` }}>
+                  {isLoading ? (
+                    <span className="w-5 h-5 border-2 border-white/50 border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <span className="w-full h-full rounded-full flex items-center justify-center" style={{ background: `${tab.accent}14` }}>
-                      {isLoading ? (
-                        <span className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Icon className="w-5 h-5" style={{ color: tab.accent }} />
-                      )}
-                    </span>
+                    <Icon className="w-8 h-8 text-white/80" />
                   )}
                 </span>
+              )}
+              {/* تدرّج للقراءة */}
+              <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/25" />
+              {/* أفاتار التصنيف فوق (بلون الفئة زي فيسبوك) */}
+              <span className="absolute top-2 right-2 w-9 h-9 rounded-full p-[2.5px] flex items-center justify-center" style={{ background: tab.accent }}>
+                <span className="w-full h-full rounded-full bg-white flex items-center justify-center">
+                  <Icon className="w-4 h-4" style={{ color: tab.accent }} />
+                </span>
               </span>
-              <span className="text-[10px] font-black text-gray-800 truncate w-full text-center">{tab.label}</span>
-              <span className="text-[9px] leading-[1.2] text-gray-500 w-full text-center line-clamp-2 min-h-[22px]">
-                {cache[tab.id]?.[0]?.title || ''}
+              {/* العنوان + التصنيف تحت */}
+              <span className="absolute inset-x-0 bottom-0 p-2 text-right">
+                <span className="block text-white text-[11px] font-black leading-tight line-clamp-2 drop-shadow">
+                  {headline || tab.label}
+                </span>
+                <span className="block text-white/70 text-[9px] font-bold mt-0.5">{tab.label}</span>
               </span>
             </button>
           )
