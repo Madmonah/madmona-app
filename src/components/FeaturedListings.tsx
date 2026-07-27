@@ -22,7 +22,7 @@ interface Listing {
   rating: number | null
   reviews_count: number
   category: { name_ar: string; name_en?: string | null; icon: string | null } | null
-  photos: { url: string; is_primary: boolean; quality_flag?: string | null }[] | null
+  photos: { url: string; is_primary: boolean; quality_flag?: string | null; is_placeholder?: boolean | null }[] | null
   pricing: { price: number | string; is_active: boolean }[] | null
 }
 
@@ -51,7 +51,7 @@ export default function FeaturedListings() {
         .select(`
           id, title, slug, city, district, rating, reviews_count,
           category:categories(name_ar, name_en, icon),
-          photos:listing_photos(url, is_primary, quality_flag),
+          photos:listing_photos(url, is_primary, quality_flag, is_placeholder),
           pricing:pricing_rules(price, is_active)
         `)
         .eq('status', 'published')
@@ -83,8 +83,20 @@ export default function FeaturedListings() {
         }
       }
 
-      poolRef.current = diverse
-      setItems(diverse)
+      // dedup بصورة العرض: مايكررش نفس الصورة (وحدات العقار نفس المبنى)، ومن غير بلاسهولدر
+      const seen = new Set<string>()
+      const deduped = diverse.filter((l) => {
+        const real = (l.photos || []).filter(
+          (p) => p?.url && !p.is_placeholder && p.quality_flag !== 'graphic'
+        )
+        const url = (real.find((p) => p.is_primary) || real[0])?.url
+        if (!url || seen.has(url)) return false
+        seen.add(url)
+        return true
+      })
+
+      poolRef.current = deduped
+      setItems(deduped)
       setLoading(false)
     }
     load()
@@ -151,7 +163,7 @@ export default function FeaturedListings() {
 
       <div ref={scrollRef} className="flex gap-4 overflow-x-auto scrollbar-hide snap-x pb-3 -mx-4 px-4 md:-mx-1 md:px-1">
         {items.map((listing, i) => {
-          const photos = (listing.photos || []).filter(p => p.quality_flag !== 'graphic')
+          const photos = (listing.photos || []).filter(p => p.quality_flag !== 'graphic' && !p.is_placeholder)
           const primary = photos.find(p => p.is_primary) || photos[0]
           const photoUrl = primary?.url
           const activePrices = (listing.pricing || [])
