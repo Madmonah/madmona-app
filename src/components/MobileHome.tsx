@@ -499,11 +499,6 @@ function MarketTicker({ fin, en }: { fin: FinData | null; en: boolean }) {
             transform: translateX(-50%);
           }
         }
-        @media (prefers-reduced-motion: reduce) {
-          .market-track {
-            animation: none;
-          }
-        }
       `}</style>
     </div>
   )

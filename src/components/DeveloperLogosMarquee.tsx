@@ -81,7 +81,7 @@ export default function DeveloperLogosMarquee({ multiRow = false }: { multiRow?:
                       src={logo.src}
                       alt={logo.name}
                       className="h-full w-auto object-contain hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
+                      loading="eager"
                       draggable={false}
                     />
                   </div>
@@ -132,11 +132,6 @@ export default function DeveloperLogosMarquee({ multiRow = false }: { multiRow?:
           }
           to {
             transform: translateX(0);
-          }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .marquee-track {
-            animation: none;
           }
         }
       `}</style>
