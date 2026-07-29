@@ -121,9 +121,8 @@ export default function CompactNewsTabs() {
   const isLoading = loading[activeTab] && tabItems.length === 0
   const activeCfg = TABS.find(t => t.id === activeTab)!
   const featured = tabItems[featuredIndex]
-  // كل الأخبار تنزل ورا بعض (29 Jul 2026): نعرض كل الأخبار المتبقية مش 5 بس
   const sideItems = tabItems.length > 1
-    ? Array.from({ length: tabItems.length - 1 }).map(
+    ? Array.from({ length: Math.min(5, tabItems.length - 1) }).map(
         (_, i) => tabItems[(featuredIndex + i + 1) % tabItems.length]
       )
     : []
@@ -199,13 +198,13 @@ export default function CompactNewsTabs() {
           </button>
         </div>
       ) : (
-        <div className="flex flex-col">
-          {/* Featured — large (full width) */}
+        <div className="grid grid-cols-1 lg:grid-cols-5">
+          {/* Featured — large */}
           <a
             href={featured.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="group relative block no-underline overflow-hidden aspect-[16/10] md:aspect-[21/9]"
+            className="lg:col-span-3 group relative block no-underline overflow-hidden aspect-[16/10] lg:aspect-auto lg:min-h-[360px]"
           >
             <NewsImage src={featured.image} alt={featured.title} accent={activeCfg.accent} big />
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
@@ -252,8 +251,8 @@ export default function CompactNewsTabs() {
             </div>
           </a>
 
-          {/* كل الأخبار ورا بعض — قايمة رأسية بعرض الكارت */}
-          <div className="divide-y divide-gray-100 border-t border-gray-100 max-h-[420px] overflow-y-auto">
+          {/* Side headlines */}
+          <div className="lg:col-span-2 divide-y divide-gray-100 border-t lg:border-t-0 lg:border-r border-gray-100">
             {sideItems.map((item, i) => (
               <a
                 key={`${activeTab}-${item.link}-${i}`}

@@ -140,7 +140,7 @@ export default function MobileHome({ categories }: { categories: Category[] }) {
     let dead = false
     fetch(`/api/news-feed?category=madmona&_=${Date.now()}`, { cache: 'no-store' })
       .then(r => r.json())
-      .then(j => { if (!dead && j?.ok && Array.isArray(j.items)) setNews(j.items.slice(0, 2)) })
+      .then(j => { if (!dead && j?.ok && Array.isArray(j.items)) setNews(j.items) })
       .catch(() => {})
     return () => { dead = true }
   }, [])
@@ -324,8 +324,8 @@ export default function MobileHome({ categories }: { categories: Category[] }) {
           <StatCard label={en ? 'USD' : 'دولار'} value={usd ? `${usd.toFixed(2)} ج` : '…'} />
           <StatCard label={en ? 'Gold 21' : 'ذهب ٢١'} value={gold21 ? `${gold21.toLocaleString('ar-EG')} ج` : '…'} />
         </div>
-        {/* شريط لوجوهات المطورين المتعاقدين — بيخفي نفسه لو مفيش لوجوهات */}
-        <DeveloperLogosMarquee />
+        {/* شريط لوجوهات المطورين المتعاقدين — شرايط 10 لوجوهات بتتحرك باتجاهات متعاكسة (موبايل) */}
+        <DeveloperLogosMarquee multiRow />
       </section>
 
       {/* 7. News list */}

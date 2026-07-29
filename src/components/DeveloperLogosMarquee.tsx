@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react'
 
 type Logo = { src: string; name: string }
 
-export default function DeveloperLogosMarquee() {
+export default function DeveloperLogosMarquee({ multiRow = false }: { multiRow?: boolean }) {
   const [logos, setLogos] = useState<Logo[]>([])
   const [ready, setReady] = useState(false)
 
@@ -33,12 +33,16 @@ export default function DeveloperLogosMarquee() {
 
   if (!ready || logos.length === 0) return null
 
-  // (29 Jul 2026) نقسّم اللوجوهات لشرايط، كل شريط 10 شركات،
-  // وكل شريط يتحرك في عكس اتجاه اللي قبله.
+  // (29 Jul 2026) الموبايل بس (multiRow): نقسّم اللوجوهات لشرايط، كل شريط 10 شركات،
+  // وكل شريط يتحرك في عكس اتجاه اللي قبله. الديسكتوب: شريط واحد زي الأول.
   const ROW_SIZE = 10
   const rows: Logo[][] = []
-  for (let i = 0; i < logos.length; i += ROW_SIZE) {
-    rows.push(logos.slice(i, i + ROW_SIZE))
+  if (multiRow) {
+    for (let i = 0; i < logos.length; i += ROW_SIZE) {
+      rows.push(logos.slice(i, i + ROW_SIZE))
+    }
+  } else {
+    rows.push(logos)
   }
 
   return (
