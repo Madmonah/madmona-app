@@ -107,7 +107,7 @@ function timeAgoAr(iso: string): string {
   } catch { return '' }
 }
 
-export default function MobileHome({ categories }: { categories: Category[] }) {
+export default function MobileHome({ categories, liveCounts = {} }: { categories: Category[]; liveCounts?: Record<string, number> }) {
   const { lang } = useT()
   const router = useRouter()
   const en = lang === 'en'
@@ -295,6 +295,8 @@ export default function MobileHome({ categories }: { categories: Category[] }) {
         <div className="grid grid-cols-2 gap-2.5">
           {catCards.map(g => {
             const vm = VERTICALS.find(v => v.key === g.vkey)
+            // (29 Jul 2026) قسم رئيسي أقل من 5 إعلانات منشورة ← ضل + «قريبًا»
+            const soon = (liveCounts[g.key] ?? 0) < 5
             return (
               <Link
                 key={g.key}
@@ -320,6 +322,16 @@ export default function MobileHome({ categories }: { categories: Category[] }) {
                   <span className="block text-white text-base font-black leading-tight">{g.name_ar}</span>
                   <span className="block text-white/75 text-[10.5px] font-bold mt-0.5">{g.count} {en ? 'sections' : 'قسم'}</span>
                 </span>
+                {soon && (
+                  <>
+                    <span className="absolute inset-0 bg-black/45 backdrop-blur-[1px]" />
+                    <span className="absolute inset-0 flex items-center justify-center">
+                      <span className="bg-white/95 text-[#14231E] text-[12px] font-black px-3.5 py-1.5 rounded-full shadow">
+                        {en ? 'Coming soon' : 'قريبًا'} ✨
+                      </span>
+                    </span>
+                  </>
+                )}
               </Link>
             )
           })}

@@ -81,6 +81,23 @@ async function getRootCategories(): Promise<DBCategory[]> {
 
 export const revalidate = 30
 
+// (29 Jul 2026) عدّاد الإعلانات المنشورة لكل قسم رئيسي — لشارة «قريبًا» تحت 5
+async function getGroupLiveCounts(): Promise<Record<string, number>> {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    // @ts-expect-error
+    const { data } = await supabase.rpc('home_group_live_counts')
+    const out: Record<string, number> = {}
+    for (const row of (data || []) as { gkey: string; live: number }[]) out[row.gkey] = Number(row.live)
+    return out
+  } catch (e) {
+    return {}
+  }
+}
+
 async function getSiteSettings(): Promise<Record<string, string>> {
   try {
     const supabase = createClient(
@@ -124,10 +141,11 @@ async function getSiteStats(): Promise<{ listings: number; categories: number; s
 }
 
 export default async function HomePage() {
-  const [settings, rootCategories, stats] = await Promise.all([
+  const [settings, rootCategories, stats, liveCounts] = await Promise.all([
     getSiteSettings(),
     getRootCategories(),
     getSiteStats(),
+    getGroupLiveCounts(),
   ])
 
   const HERO_IMAGE = settings.hero_image_url || DEFAULT_HERO_IMAGE
@@ -136,7 +154,7 @@ export default async function HomePage() {
     <div className="min-h-screen bg-[#FAFAF7] overflow-x-hidden pb-20 md:pb-0">
       {/* 📱 MOBILE — new "2a" focused home (30 يوليو 2026). الديسكتوب تحت من غير تغيير. */}
       <div className="md:hidden"><MUACampaignBanner /></div>
-      <MobileHome categories={rootCategories} />
+      <MobileHome categories={rootCategories} liveCounts={liveCounts} />
 
       {/* 🖥️ DESKTOP — الهوم الحالي زي ما هو */}
       <div className="hidden md:block">

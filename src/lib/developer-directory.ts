@@ -32,6 +32,12 @@ export const DEVELOPER_DIRECTORY: DeveloperEntry[] = [
   { slug: 'al-kayan', name: 'الكيان', logo: '/developers/al-kayan.webp', match: ['Al Kayan Real Estate'] },
   { slug: 'maqam', name: 'مقام', logo: '/developers/maqam.webp', match: ['MAQAM for Urban Development'] },
   { slug: 'ncb', name: 'NCB', logo: '/developers/ncb.png', match: ['NCB Developments'] },
+  { slug: 'upwyde', name: 'أبوايد', logo: '/developers/upwyde.png', match: ['Upwyde Developments'] },
+  { slug: 'misr-italia', name: 'مصر إيطاليا', logo: '/developers/misr-italia.webp', match: ['مصر إيطاليا'] },
+  { slug: 'hassan-allam', name: 'حسن علام', logo: '/developers/hassan-allam.png', match: ['حسن علام'] },
+  { slug: 'samco', name: 'سامكو', logo: '/developers/samco.webp', match: ['Samco Holding'] },
+  { slug: 'rayn', name: 'راين', logo: '/developers/rayn.svg', match: ['Rayn Developments'] },
+  { slug: 'arqa', name: 'أرقى', logo: '/developers/arqa.png', match: ['ARQA Development Group'] },
 ]
 
 export function findDeveloperBySlug(slug: string): DeveloperEntry | undefined {
