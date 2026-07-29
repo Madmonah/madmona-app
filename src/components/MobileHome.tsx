@@ -135,13 +135,28 @@ export default function MobileHome({ categories }: { categories: Category[] }) {
     return () => { dead = true }
   }, [])
 
-  // top news (madmona feed)
+  // all news (كل التصنيفات مدموجة ورا بعض — 29 Jul 2026)
   useEffect(() => {
     let dead = false
-    fetch(`/api/news-feed?category=madmona&_=${Date.now()}`, { cache: 'no-store' })
-      .then(r => r.json())
-      .then(j => { if (!dead && j?.ok && Array.isArray(j.items)) setNews(j.items) })
-      .catch(() => {})
+    const cats = ['madmona', 'economy', 'real_estate', 'automotive', 'business', 'tourism', 'fashion', 'tech']
+    Promise.all(
+      cats.map(c =>
+        fetch(`/api/news-feed?category=${c}&_=${Date.now()}`, { cache: 'no-store' })
+          .then(r => r.json())
+          .then(j => (j?.ok && Array.isArray(j.items) ? (j.items as NewsItem[]) : []))
+          .catch(() => [] as NewsItem[])
+      )
+    ).then(lists => {
+      if (dead) return
+      const seen = new Set<string>()
+      const merged = lists.flat().filter(n => {
+        if (!n?.link || seen.has(n.link)) return false
+        seen.add(n.link)
+        return true
+      })
+      merged.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
+      setNews(merged)
+    })
     return () => { dead = true }
   }, [])
 
@@ -320,10 +335,8 @@ export default function MobileHome({ categories }: { categories: Category[] }) {
           </h2>
           <Link href="/real-estate/market" className="text-xs font-extrabold text-[#1F6F5F] no-underline">{en ? 'All ←' : 'الكل ←'}</Link>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-0.5 hide-scroll">
-          <StatCard label={en ? 'USD' : 'دولار'} value={usd ? `${usd.toFixed(2)} ج` : '…'} />
-          <StatCard label={en ? 'Gold 21' : 'ذهب ٢١'} value={gold21 ? `${gold21.toLocaleString('ar-EG')} ج` : '…'} />
-        </div>
+        {/* شريط اتجاه السوق — marquee متحرك عشان العرض ما يتقطعش (29 Jul 2026) */}
+        <MarketTicker fin={fin} en={en} />
         {/* شريط لوجوهات المطورين المتعاقدين — شرايط 10 لوجوهات بتتحرك باتجاهات متعاكسة (موبايل) */}
         <DeveloperLogosMarquee multiRow />
       </section>
@@ -434,5 +447,64 @@ function DrawerLink({ href, icon, iconBg = 'bg-gray-100', title, desc, onClose }
         {desc && <span className="block text-xs text-gray-500 mt-0.5">{desc}</span>}
       </span>
     </Link>
+  )
+}
+
+// شريط اتجاه السوق — marquee متحرك بكل العملات وأسعار الدهب (29 Jul 2026)
+function MarketTicker({ fin, en }: { fin: FinData | null; en: boolean }) {
+  const ticks: { label: string; value: string }[] = []
+  fin?.currencies?.forEach(c => {
+    if (c?.rate) ticks.push({ label: `${c.flag || ''} ${c.name_ar || c.code}`.trim(), value: `${c.rate.toFixed(2)} ج` })
+  })
+  fin?.gold?.forEach(g => {
+    if (g?.price_per_gram_egp) ticks.push({ label: g.label || `ذهب ${g.karat}`, value: `${g.price_per_gram_egp.toLocaleString('ar-EG')} ج` })
+  })
+
+  if (ticks.length === 0) {
+    return (
+      <div className="flex gap-2 overflow-x-auto pb-0.5 hide-scroll">
+        <StatCard label={en ? 'USD' : 'دولار'} value="…" />
+        <StatCard label={en ? 'Gold 21' : 'ذهب ٢١'} value="…" />
+      </div>
+    )
+  }
+
+  const base: typeof ticks = []
+  while (base.length < 8) base.push(...ticks)
+  const loop = [...base, ...base]
+
+  return (
+    <div className="market-mask relative overflow-hidden">
+      <div className="market-track flex items-center gap-2 w-max">
+        {loop.map((t, i) => (
+          <span key={i} className="shrink-0 inline-flex items-baseline gap-1.5 bg-white border border-black/5 rounded-xl px-3 py-2">
+            <span className="text-[10px] font-bold text-gray-500 whitespace-nowrap">{t.label}</span>
+            <span className="text-[12px] font-black text-[#1F6F5F] whitespace-nowrap">{t.value}</span>
+          </span>
+        ))}
+      </div>
+      <style jsx>{`
+        .market-mask {
+          -webkit-mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+        }
+        .market-track {
+          animation: market-scroll 40s linear infinite;
+        }
+        @keyframes market-scroll {
+          from {
+            transform: translateX(0);
+          }
+          to {
+            transform: translateX(-50%);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .market-track {
+            animation: none;
+          }
+        }
+      `}</style>
+    </div>
   )
 }

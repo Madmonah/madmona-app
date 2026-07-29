@@ -33,9 +33,9 @@ export default function DeveloperLogosMarquee({ multiRow = false }: { multiRow?:
 
   if (!ready || logos.length === 0) return null
 
-  // (29 Jul 2026) الموبايل بس (multiRow): نقسّم اللوجوهات لشرايط، كل شريط 10 شركات،
-  // وكل شريط يتحرك في عكس اتجاه اللي قبله. الديسكتوب: شريط واحد زي الأول.
-  const ROW_SIZE = 10
+  // (29 Jul 2026) الموبايل بس (multiRow): نقسّم اللوجوهات لشرايط، كل شريط 5 شركات،
+  // كل شريط مفصول لوحده وبيتحرك في عكس اتجاه اللي قبله. الديسكتوب: شريط واحد زي الأول.
+  const ROW_SIZE = 5
   const rows: Logo[][] = []
   if (multiRow) {
     for (let i = 0; i < logos.length; i += ROW_SIZE) {
@@ -55,13 +55,19 @@ export default function DeveloperLogosMarquee({ multiRow = false }: { multiRow?:
         <span className="h-px flex-1 bg-gradient-to-r from-transparent to-gray-200" />
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col">
         {rows.map((row, rowIdx) => {
-          // نكرّر لوجوهات الشريط مرتين عشان اللف يبقى متواصل بلا فجوة
-          const loop = [...row, ...row]
+          // نطوّل محتوى الشريط لحد 10 عناصر على الأقل عشان اللف يفضل متواصل
+          // حتى لو الشريط فيه لوجوهات قليلة، وبعدين نكرّره مرتين للـ loop.
+          const base: Logo[] = []
+          while (base.length < 10) base.push(...row)
+          const loop = [...base, ...base]
           const reverse = rowIdx % 2 === 1
           return (
-            <div key={`row-${rowIdx}`} className="marquee-mask relative overflow-hidden">
+            <div
+              key={`row-${rowIdx}`}
+              className={`marquee-mask relative overflow-hidden py-3 ${rowIdx > 0 ? 'border-t border-gray-100' : ''}`}
+            >
               <div
                 className={`marquee-track flex items-center gap-10 md:gap-14 w-max ${reverse ? 'marquee-reverse' : ''}`}
               >
