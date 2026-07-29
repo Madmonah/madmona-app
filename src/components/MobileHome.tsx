@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { useT } from '@/lib/i18n/LanguageProvider'
-import DeveloperLogosMarquee from '@/components/DeveloperLogosMarquee'
+import { DEVELOPER_DIRECTORY } from '@/lib/developer-directory'
 
 type Category = {
   id: string
@@ -326,19 +326,51 @@ export default function MobileHome({ categories }: { categories: Category[] }) {
         </div>
       </section>
 
-      {/* 6. Property market + FX strip */}
+      {/* 6. Property market + developers grid */}
       <section className="px-4 pt-[22px]">
-        <div className="flex items-baseline justify-between mb-2.5">
-          <h2 className="text-[17px] font-black text-[#0A0A0A]">
-            {en ? 'Property market' : 'بورصة العقارات'}{' '}
-            <span className="text-[10px] font-bold text-[#1F6F5F] bg-[#1F6F5F]/10 px-2 py-0.5 rounded-full align-[2px]">LIVE</span>
-          </h2>
-          <Link href="/real-estate/market" className="text-xs font-extrabold text-[#1F6F5F] no-underline">{en ? 'All ←' : 'الكل ←'}</Link>
-        </div>
-        {/* شريط اتجاه السوق — marquee متحرك عشان العرض ما يتقطعش (29 Jul 2026) */}
+        {/* شريط بورصة العقارات — فوق اللوجوهات وبيودّي على البورصة (29 Jul 2026) */}
+        <Link
+          href="/real-estate/market"
+          className="flex items-center gap-3 rounded-[18px] px-4 py-3.5 no-underline mb-3"
+          style={{ background: 'linear-gradient(118deg, #14231E, #1F6F5F)' }}
+        >
+          <span className="w-10 h-10 rounded-xl bg-white/12 flex items-center justify-center flex-shrink-0 text-xl">🏗️</span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-white text-[15px] font-black">
+              {en ? 'Property market' : 'بورصة العقارات'}{' '}
+              <span className="text-[9px] font-bold text-[#8FE3C8] bg-white/10 px-1.5 py-0.5 rounded-full align-[2px]">LIVE</span>
+            </span>
+            <span className="block text-white/70 text-[11px] font-semibold mt-0.5">{en ? 'Developer projects, prices & offers' : 'مشاريع المطوّرين وأسعارهم وعروضهم'}</span>
+          </span>
+          <span className="text-white font-black text-[13px] flex-shrink-0">←</span>
+        </Link>
+
+        {/* شريط اتجاه السوق */}
         <MarketTicker fin={fin} en={en} />
-        {/* شريط لوجوهات المطورين المتعاقدين — شرايط 10 لوجوهات بتتحرك باتجاهات متعاكسة (موبايل) */}
-        <DeveloperLogosMarquee multiRow />
+
+        {/* رصّة لوجوهات المطوّرين — ثابتة، كل لوجو بيودّي على مشاريع الشركة في البورصة */}
+        <div className="mt-3">
+          <div className="flex items-center gap-2 mb-2.5 px-1">
+            <span className="h-px flex-1 bg-gradient-to-l from-transparent to-gray-200" />
+            <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 whitespace-nowrap">نخبة المطورين المتعاقدين</p>
+            <span className="h-px flex-1 bg-gradient-to-r from-transparent to-gray-200" />
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {DEVELOPER_DIRECTORY.map((d) => (
+              <Link
+                key={d.slug}
+                href={`/real-estate/market?dev=${d.slug}`}
+                className="bg-white border border-black/5 rounded-2xl p-2 flex flex-col items-center justify-center gap-1 no-underline active:scale-95 transition-transform"
+              >
+                <span className="h-9 w-full flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={d.logo} alt={d.name} className="max-h-9 max-w-full object-contain" loading="lazy" draggable={false} />
+                </span>
+                <span className="text-[9px] font-bold text-gray-500 text-center leading-tight line-clamp-1">{d.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* 7. News list */}
@@ -450,7 +482,7 @@ function DrawerLink({ href, icon, iconBg = 'bg-gray-100', title, desc, onClose }
   )
 }
 
-// شريط اتجاه السوق — marquee متحرك بكل العملات وأسعار الدهب (29 Jul 2026)
+// شريط اتجاه السوق — ثابت من غير حركة، بيتسحب بالإيد (29 Jul 2026: بلاش أنيميشن)
 function MarketTicker({ fin, en }: { fin: FinData | null; en: boolean }) {
   const ticks: { label: string; value: string }[] = []
   fin?.currencies?.forEach(c => {
@@ -469,37 +501,14 @@ function MarketTicker({ fin, en }: { fin: FinData | null; en: boolean }) {
     )
   }
 
-  const base: typeof ticks = []
-  while (base.length < 8) base.push(...ticks)
-  const loop = [...base, ...base]
-
   return (
-    <div className="market-mask relative overflow-hidden">
-      <div className="market-track flex items-center gap-2 w-max">
-        {loop.map((t, i) => (
-          <span key={i} className="shrink-0 inline-flex items-baseline gap-1.5 bg-white border border-black/5 rounded-xl px-3 py-2">
-            <span className="text-[10px] font-bold text-gray-500 whitespace-nowrap">{t.label}</span>
-            <span className="text-[12px] font-black text-[#1F6F5F] whitespace-nowrap">{t.value}</span>
-          </span>
-        ))}
-      </div>
-      <style jsx>{`
-        .market-mask {
-          -webkit-mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
-          mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
-        }
-        .market-track {
-          animation: market-scroll 40s linear infinite;
-        }
-        @keyframes market-scroll {
-          from {
-            transform: translateX(0);
-          }
-          to {
-            transform: translateX(-50%);
-          }
-        }
-      `}</style>
+    <div className="flex gap-2 overflow-x-auto pb-0.5 hide-scroll">
+      {ticks.map((t, i) => (
+        <span key={i} className="shrink-0 inline-flex items-baseline gap-1.5 bg-white border border-black/5 rounded-xl px-3 py-2">
+          <span className="text-[10px] font-bold text-gray-500 whitespace-nowrap">{t.label}</span>
+          <span className="text-[12px] font-black text-[#1F6F5F] whitespace-nowrap">{t.value}</span>
+        </span>
+      ))}
     </div>
   )
 }

@@ -17,6 +17,7 @@
 // =====================================================================
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import Link from 'next/link'
+import { findDeveloperBySlug } from '@/lib/developer-directory'
 import {
   ArrowRight, Building2, Search, X, MapPin, ChevronDown,
   FileText, PlayCircle, CalendarClock, Wallet, MessageCircle, Clock,
@@ -148,6 +149,16 @@ export default function MarketExplorer({
   const [devF, setDevF] = useState<'all' | string>('all')
   const [chip, setChip] = useState<Chip>('all')
   const [videoOpen, setVideoOpen] = useState<Item | null>(null)
+  // 🔗 فلتر لوجو المطوّر (?dev=slug) — جاي من رصّة اللوجوهات في هوم الموبايل (29 Jul 2026)
+  const [devSlug, setDevSlug] = useState<string>('')
+
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search)
+      const s = sp.get('dev') || ''
+      if (s && findDeveloperBySlug(s)) setDevSlug(s)
+    } catch { /* non-blocking */ }
+  }, [])
 
   const nq = norm(q.trim())
 
@@ -185,7 +196,9 @@ export default function MarketExplorer({
 
   const filteredItems = useMemo(() => {
     if (chip === 'ops') return []
+    const slugEntry = devSlug ? findDeveloperBySlug(devSlug) : undefined
     return devItems.filter((it) => {
+      if (slugEntry && (!it.developer || !slugEntry.match.includes(it.developer))) return false
       if (areaF !== 'all' && it.area_label !== areaF) return false
       if (devF !== 'all' && it.developer !== devF) return false
       if (chip !== 'all' && it.property_type !== chip) return false
@@ -197,7 +210,7 @@ export default function MarketExplorer({
       )
       return hay.includes(nq)
     })
-  }, [devItems, areaF, devF, chip, nq])
+  }, [devItems, areaF, devF, chip, nq, devSlug])
 
   // 🔥 الفرص: بتظهر مع «الكل» (من غير فلاتر منطقة/مطوّر) أو مع شريطة «فرص»
   const filteredOps = useMemo(() => {
@@ -326,13 +339,35 @@ export default function MarketExplorer({
       {/* ─── 3) شريط المؤشرات: دولار · دهب ٢١ · متر العاصمة · متر التجمع ─── */}
       <IndicatorsBar items={items} />
 
+      {/* 🔗 بادج فلتر المطوّر الجاي من رصّة اللوجوهات (?dev=) */}
+      {devSlug && findDeveloperBySlug(devSlug) && (
+        <div className="mx-4 mt-3 flex items-center justify-between bg-white border border-[#1F6F5F]/20 rounded-2xl px-4 py-2.5">
+          <span className="text-[13px] font-black text-[#1F6F5F]">
+            مشاريع {findDeveloperBySlug(devSlug)!.name}
+          </span>
+          <button
+            onClick={() => {
+              setDevSlug('')
+              try {
+                const sp = new URLSearchParams(window.location.search)
+                sp.delete('dev')
+                window.history.replaceState(null, '', `${window.location.pathname}${sp.toString() ? '?' + sp.toString() : ''}`)
+              } catch { /* non-blocking */ }
+            }}
+            className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-500"
+          >
+            <X className="w-3.5 h-3.5" /> كل المطوّرين
+          </button>
+        </div>
+      )}
+
       {totalResults === 0 ? (
         <section className="mx-4 mt-6 bg-white rounded-[18px] border border-black/5 p-10 text-center text-[#7C8A84] text-[13px] font-semibold">
           <Clock className="w-8 h-8 mx-auto mb-3 text-[#1F6F5F]" />
           مفيش نتايج للبحث ده — جرب كلمة تانية أو شيل الفلاتر 🙏
           <div className="mt-4">
             <button
-              onClick={() => { setQ(''); setAreaF('all'); setDevF('all'); setChip('all') }}
+              onClick={() => { setQ(''); setAreaF('all'); setDevF('all'); setChip('all'); setDevSlug('') }}
               className="px-5 py-2 rounded-full bg-[#1F6F5F] text-white text-sm font-bold"
             >
               اعرض كل حاجة
