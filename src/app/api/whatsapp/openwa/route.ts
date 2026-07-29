@@ -13,7 +13,7 @@
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server'
-import { downloadOpenWaMedia } from '@/lib/openwa'
+import { downloadOpenWaMedia, fetchInboundMediaByPhone } from '@/lib/openwa'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
   const isLid = chatId.endsWith('@lid') || fromRaw.endsWith('@lid')
   const rawType = String(data.type ?? 'text')
   // ptt = رسالة صوتية؛ نوحّدها audio زي ما المخ بيفهم.
-  const type = rawType === 'ptt' ? 'audio' : rawType === 'chat' ? 'text' : rawType
+  const type = (rawType === 'ptt' || rawType === 'voice') ? 'audio' : rawType === 'chat' ? 'text' : rawType
   const body = typeof data.body === 'string' ? (data.body as string) : ''
   const waMessageId = String(data.waMessageId ?? data.id ?? '')
   const name = (data.chatName as string) || (data.author as string) || undefined
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
   let media:
     | { mimetype: string; is_voice_note: boolean; data_base64: string; seconds?: number }
     | undefined
-  const isMediaType = ['image', 'video', 'audio', 'document', 'sticker'].includes(type)
+  const isMediaType = ['image', 'video', 'audio', 'voice', 'ptt', 'document', 'sticker'].includes(type)
   if (isMediaType) {
     const meta = (data.metadata as Record<string, unknown>) ?? {}
     const mediaUrl =
@@ -101,7 +101,19 @@ export async function POST(req: NextRequest) {
       (meta.mediaUrl as string) ||
       (meta.url as string) ||
       ''
-    if (mediaUrl) {
+    // Awwalan: OpenWA byeb3at el media inline base64 (media.data) mesh rabet.
+    const mediaObj = (data.media as Record<string, unknown>) ?? (meta.media as Record<string, unknown>) ?? {}
+    const inlineB64 = (mediaObj?.data as string) || ''
+    const inlineMime = (mediaObj?.mimetype as string) || ''
+    if (inlineB64) {
+      const seconds = Number(data.duration ?? meta.duration ?? 0) || undefined
+      media = {
+        mimetype: String(inlineMime || 'application/octet-stream'),
+        is_voice_note: rawType === 'ptt' || type === 'audio',
+        data_base64: String(inlineB64),
+        seconds,
+      }
+    } else if (mediaUrl) {
       const dl = await downloadOpenWaMedia(String(mediaUrl))
       if (dl) {
         const seconds = Number(data.duration ?? meta.duration ?? 0) || undefined
@@ -115,7 +127,19 @@ export async function POST(req: NextRequest) {
         console.error('[openwa-relay] فشل تحميل الميديا', { mediaUrl: String(mediaUrl).slice(0, 120) })
       }
     } else {
-      console.error('[openwa-relay] نوع ميديا بس مفيش رابط', { type, metaKeys: Object.keys(meta) })
+      // el webhook mfihosh el media. bengibha men OpenWA API mobasharatan.
+      const fetched = await fetchInboundMediaByPhone(sessionId, fromDigits, waMessageId)
+      if (fetched) {
+        const seconds = Number(data.duration ?? meta.duration ?? 0) || undefined
+        media = {
+          mimetype: fetched.mimetype,
+          is_voice_note: fetched.is_voice_note || rawType === 'ptt' || type === 'audio',
+          data_base64: fetched.base64,
+          seconds,
+        }
+      } else {
+        console.error('[openwa-relay] media API failed', { type, metaKeys: Object.keys(meta) })
+      }
     }
   }
 

@@ -59,8 +59,13 @@ export default function MadmonaHome() {
     const token = safeStorage.get('madmona_token')
     if (!token) { router.push('/login'); return }
     // @ts-expect-error rpc typing
-    const { data } = await supabase.rpc('madmona_resolve', { p_token: token })
-    if (!data?.authenticated) { safeStorage.remove('madmona_token'); router.push('/login'); return }
+    const { data, error } = await supabase.rpc('madmona_resolve', { p_token: token })
+    // (27 يوليو 2026) فشل الاتصال لا يساوي توكن باطل — لو فيه error (شبكة/سيرفر)
+    // ما نمسحش التوكن وما نطلّعش المستخدم؛ نسيبه مكانه. كان أي فشل مؤقت بيمسح
+    // الدخول ويطلب تسجيل جديد — سبب رئيسي للدخول المتكرر.
+    if (error) { return }
+    if (data && data.authenticated === false) { safeStorage.remove('madmona_token'); router.push('/login'); return }
+    if (!data?.authenticated) { return }
     setMe(data)
 
     if (data.is_employee) {

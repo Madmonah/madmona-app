@@ -48,6 +48,10 @@ export async function POST(req: NextRequest) {
           auth: sub.keys.auth,
           user_agent: req.headers.get('user-agent') || null,
           last_used_at: new Date().toISOString(),
+          // If the cleanup cron had soft-deactivated this endpoint before, the
+          // user re-subscribing means it's live again — reset the deactivation flags.
+          deactivated_at: null,
+          deactivated_reason: null,
         },
         { onConflict: 'endpoint' }
       )

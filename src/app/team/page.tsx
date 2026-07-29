@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ChatBottomNav from '@/components/ChatBottomNav'
+import { subscribeToPush, getNotificationPermission, isPushSupported } from '@/lib/push-subscription'
 
 type Room = { id: string; name: string | null; marid_enabled: boolean; kind?: string | null; otherName?: string | null; role?: string | null }
 type CMsg = { id: string; sender_id: string | null; sender_kind: string; sender_name: string | null; body: string | null; kind: string; media_url: string | null; created_at: string }
@@ -87,6 +88,17 @@ export default function TeamPage() {
   const fileRef = useRef<HTMLInputElement>(null)
   const recRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
+  const askedNotifRef = useRef(false)
+
+  // تفعيل الإشعارات تلقائي أول ما المستخدم يفتح جروب/محادثة (اتفق عليه محمد 26 يوليو:
+  // «لمسة المحادثة»). لمسة فتح الغرفة = user gesture صالح للمتصفح. مرة واحدة، ولو default بس.
+  async function maybeAutoEnableNotifs() {
+    if (askedNotifRef.current) return
+    if (!isPushSupported()) return
+    if (getNotificationPermission() !== 'default') return // granted → مشترك · denied → مانضايقوش
+    askedNotifRef.current = true
+    try { await subscribeToPush() } catch {}
+  }
 
   const loadRooms = useCallback(async (myId: string) => {
     const { data } = await supabaseBrowser.from('chat_rooms').select('id, name, marid_enabled, kind').order('created_at', { ascending: false })
@@ -135,6 +147,7 @@ export default function TeamPage() {
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }) }, [messages])
 
   async function openRoom(room: Room) {
+    void maybeAutoEnableNotifs() // لمسة فتح الغرفة = فرصة نطلب إذن الإشعارات (مرة واحدة)
     setActive(room); setMenuOpen(false); setMembersOpen(false)
     if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null }
     // دوري في الغرفة (owner/member) — يحدّد خيارات القائمة
@@ -421,35 +434,36 @@ export default function TeamPage() {
     if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null }
   }
 
-  if (!ready) return <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#075E54', color: '#fff', fontFamily: 'system-ui' }}>لحظة…</div>
+  if (!ready) return <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'linear-gradient(160deg,#14231E,#1F6F5F)', color: '#fff', fontFamily: 'system-ui' }}>لحظة…</div>
 
   if (!uid) return (
-    <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#075E54', color: '#fff', fontFamily: 'system-ui', textAlign: 'center', padding: 20 }}>
+    <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'linear-gradient(160deg,#14231E,#1F6F5F)', color: '#fff', fontFamily: 'system-ui', textAlign: 'center', padding: 20 }}>
       <div>
         <div style={{ fontSize: 44 }}>👥</div>
         <h2>الجروبات</h2>
         <p style={{ opacity: .85 }}>لازم تسجّل دخول على مضمونة الأول.</p>
-        <a href="/auth/login" style={{ background: '#25D366', color: '#053b32', padding: '10px 20px', borderRadius: 10, fontWeight: 700, textDecoration: 'none', display: 'inline-block', marginTop: 10 }}>تسجيل الدخول</a>
+        <a href="/auth/login" style={{ background: '#F4C430', color: '#3a2e05', padding: '10px 20px', borderRadius: 12, fontWeight: 700, textDecoration: 'none', display: 'inline-block', marginTop: 10 }}>تسجيل الدخول</a>
       </div>
     </div>
   )
 
   if (!active) return (
-    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ECE5DD', fontFamily: 'system-ui' }}>
-      <header style={{ background: '#075E54', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ flex: 1, fontWeight: 700, fontSize: 18 }}>👥 محادثاتك</div>
-        <button onClick={startDM} title="اختار شخص من جهات الاتصال" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 16, padding: '6px 10px', fontWeight: 700, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>💬 خاصة</button>
-        <button onClick={createRoom} style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 16, padding: '6px 10px', fontWeight: 700, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>+ جروب</button>
+    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "'Cairo', system-ui, sans-serif" }}>
+      <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');"}</style>
+      <header style={{ background: 'linear-gradient(135deg,#14231E,#1F6F5F)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
+        <div style={{ flex: 1, fontWeight: 900, fontSize: 17 }}>👥 محادثاتك</div>
+        <button onClick={startDM} title="اختار شخص من جهات الاتصال" style={{ background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.18)', color: '#fff', borderRadius: 999, padding: '6px 12px', fontWeight: 800, cursor: 'pointer', fontSize: 12.5, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>💬 خاصة</button>
+        <button onClick={createRoom} style={{ background: '#2FA084', color: '#fff', border: 'none', borderRadius: 999, padding: '6px 12px', fontWeight: 800, cursor: 'pointer', fontSize: 12.5, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>+ جروب</button>
       </header>
       <div style={{ flex: 1, overflowY: 'auto', padding: 10 }}>
-        {rooms.length === 0 && <div style={{ textAlign: 'center', color: '#667', marginTop: 40 }}>لسه مفيش محادثات. ابدأ محادثة خاصة 💬 أو اعمل جروب 👆</div>}
+        {rooms.length === 0 && <div style={{ textAlign: 'center', color: '#5A6660', fontWeight: 600, marginTop: 40 }}>لسه مفيش محادثات. ابدأ محادثة خاصة 💬 أو اعمل جروب 👆</div>}
         {rooms.map((r) => {
           const isDirect = r.kind === 'direct'
           const title = isDirect ? (r.otherName || 'محادثة خاصة') : (r.name || 'جروب')
           return (
-            <button key={r.id} onClick={() => openRoom(r)} style={{ display: 'flex', width: '100%', textAlign: 'right', alignItems: 'center', gap: 12, background: '#fff', border: 'none', borderRadius: 12, padding: 12, marginBottom: 8, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,.08)' }}>
-              <div style={{ width: 44, height: 44, borderRadius: '50%', background: isDirect ? '#075E54' : '#128C7E', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18 }}>{(title || 'م').trim()[0]}</div>
-              <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{title}</div><div style={{ fontSize: 12, color: '#888' }}>{isDirect ? 'محادثة خاصة' : 'جروب'}</div></div>
+            <button key={r.id} onClick={() => openRoom(r)} style={{ display: 'flex', width: '100%', textAlign: 'right', alignItems: 'center', gap: 12, background: '#fff', border: '1px solid #EAE5D9', borderRadius: 16, padding: 12, marginBottom: 8, cursor: 'pointer', boxShadow: '0 1px 2px rgba(20,35,30,.06)', fontFamily: 'inherit' }}>
+              <div style={{ width: 46, height: 46, borderRadius: '50%', background: isDirect ? 'radial-gradient(circle at 35% 30%,#2FA084,#1F6F5F)' : 'linear-gradient(135deg,#D4A017,#6FCF97)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 800, flexShrink: 0 }}>{(title || 'م').trim()[0]}</div>
+              <div style={{ flex: 1 }}><div style={{ fontWeight: 800, color: '#14231E' }}>{title}</div><div style={{ fontSize: 12, color: '#8A9690', fontWeight: 600 }}>{isDirect ? 'محادثة خاصة' : 'جروب'}</div></div>
             </button>
           )
         })}
@@ -459,13 +473,13 @@ export default function TeamPage() {
   )
 
   return (
-    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg,#ece5db 0%,#ddd4c6 100%)', fontFamily: "'Cairo', system-ui, sans-serif" }}>
-      <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');"}</style>
-      <header style={{ background: 'linear-gradient(135deg,#0a7d6e 0%,#075E54 100%)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 10px rgba(0,0,0,.18)', zIndex: 2 }}>
+    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#F1EEE6', fontFamily: "'Cairo', system-ui, sans-serif" }}>
+      <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');"}</style>
+      <header style={{ background: 'linear-gradient(135deg,#14231E,#1F6F5F)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)', zIndex: 2 }}>
         <button onClick={() => { setActive(null); setMenuOpen(false); if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null } }} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer' }}>→</button>
-        <div onClick={() => { if (active.kind !== 'direct') openMembers() }} style={{ flex: 1, minWidth: 0, cursor: active.kind !== 'direct' ? 'pointer' : 'default' }}><div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{active.kind === 'direct' ? (active.otherName || 'محادثة خاصة') : (active.name || 'جروب')}</div><div style={{ fontSize: 11, opacity: .85 }}>{active.kind === 'direct' ? 'اضغط 🧞 لاستدعاء المارد' : 'اضغط للأعضاء · 🧞 للمارد'}</div></div>
-        <button onClick={summonMaridInRoom} disabled={busy} title="استدعِ المارد" style={{ background: '#25D366', color: '#053b32', border: 'none', borderRadius: 14, padding: '5px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', opacity: busy ? 0.6 : 1 }}>🧞 المارد</button>
-        <button onClick={() => setGallery(true)} title="ميديا المحادثة" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>🖼️</button>
+        <div onClick={() => { if (active.kind !== 'direct') openMembers() }} style={{ flex: 1, minWidth: 0, cursor: active.kind !== 'direct' ? 'pointer' : 'default' }}><div style={{ fontWeight: 900, fontSize: 15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{active.kind === 'direct' ? (active.otherName || 'محادثة خاصة') : (active.name || 'جروب')}</div><div style={{ fontSize: 10.5, fontWeight: 600, color: '#6FCF97' }}>{active.kind === 'direct' ? 'اضغط 🧞 لاستدعاء المارد' : 'اضغط للأعضاء · 🧞 للمارد'}</div></div>
+        <button onClick={summonMaridInRoom} disabled={busy} title="استدعِ المارد" style={{ background: '#2FA084', color: '#fff', border: 'none', borderRadius: 999, padding: '5px 11px', fontSize: 12, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap', opacity: busy ? 0.6 : 1, fontFamily: 'inherit' }}>🧞 المارد</button>
+        <button onClick={() => setGallery(true)} title="ميديا المحادثة" style={{ background: 'rgba(255,255,255,.12)', color: '#fff', border: '1px solid rgba(255,255,255,.18)', borderRadius: 999, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>🖼️</button>
         {active.kind !== 'direct' && (
           <button onClick={() => setMenuOpen((v) => !v)} title="خيارات الجروب" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 11px', fontSize: 18, lineHeight: 1, cursor: 'pointer', whiteSpace: 'nowrap' }}>⋮</button>
         )}
@@ -551,48 +565,48 @@ export default function TeamPage() {
           </div>
         </div>
       )}
-      {toast && <div style={{ position: 'fixed', top: 70, left: '50%', transform: 'translateX(-50%)', background: '#0a6b4f', color: '#fff', padding: '8px 16px', borderRadius: 20, fontSize: 13, fontWeight: 700, zIndex: 70, boxShadow: '0 4px 14px rgba(0,0,0,.25)' }}>{toast}</div>}
-      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 10px' }}>
+      {toast && <div style={{ position: 'fixed', top: 70, left: '50%', transform: 'translateX(-50%)', background: '#14231E', color: '#fff', padding: '8px 16px', borderRadius: 999, fontSize: 13, fontWeight: 700, zIndex: 70, boxShadow: '0 4px 14px rgba(0,0,0,.25)' }}>{toast}</div>}
+      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '14px 12px', background: '#F1EEE6', backgroundImage: 'radial-gradient(circle at 1.5px 1.5px, rgba(31,111,95,.07) 1.5px, transparent 0)', backgroundSize: '26px 26px' }}>
         {messages.map((m) => {
           const mine = m.sender_id === uid
           const marid = m.sender_kind === 'marid'
           return (
-            <div key={m.id} style={{ display: 'flex', justifyContent: mine ? 'flex-start' : 'flex-end', marginBottom: 8 }}>
-              <div style={{ maxWidth: '82%', background: mine ? '#d7f6c2' : (marid ? '#e7f1ff' : '#fff'), padding: '9px 13px', borderRadius: 16, boxShadow: '0 1px 4px rgba(0,0,0,.08)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 15, lineHeight: 1.65 }}>
-                {!mine && <div style={{ fontSize: 11, fontWeight: 700, color: marid ? '#0a66c2' : '#128C7E', marginBottom: 2 }}>{marid ? '🤖 المارد' : (m.sender_name || 'عضو')}</div>}
+            <div key={m.id} style={{ display: 'flex', justifyContent: mine ? 'flex-start' : 'flex-end', marginBottom: 9 }}>
+              <div style={{ maxWidth: '82%', background: mine ? 'linear-gradient(118deg,#1F6F5F,#2d7a52)' : (marid ? '#FFF7E0' : '#fff'), color: mine ? '#fff' : '#14231E', padding: '10px 14px', borderRadius: mine ? '18px 18px 5px 18px' : '18px 18px 18px 5px', boxShadow: mine ? '0 6px 16px -8px rgba(31,111,95,.45)' : '0 1px 2px rgba(20,35,30,.06)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 14, fontWeight: 600, lineHeight: 1.65 }}>
+                {!mine && <div style={{ fontSize: 11, fontWeight: 800, color: marid ? '#B78A12' : '#2FA084', marginBottom: 2 }}>{marid ? '🧞 المارد' : (m.sender_name || 'عضو')}</div>}
                 {m.media_url && m.kind === 'image' && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={m.media_url} alt="" onClick={() => window.open(m.media_url!, '_blank')} style={{ display: 'block', maxWidth: 220, width: '100%', borderRadius: 8, marginBottom: m.body ? 4 : 0, cursor: 'pointer' }} />
+                  <img src={m.media_url} alt="" onClick={() => window.open(m.media_url!, '_blank')} style={{ display: 'block', maxWidth: 220, width: '100%', borderRadius: 12, marginBottom: m.body ? 4 : 0, cursor: 'pointer' }} />
                 )}
                 {m.media_url && m.kind === 'video' && (
-                  <video src={m.media_url} controls style={{ display: 'block', maxWidth: 240, width: '100%', borderRadius: 8, marginBottom: m.body ? 4 : 0 }} />
+                  <video src={m.media_url} controls style={{ display: 'block', maxWidth: 240, width: '100%', borderRadius: 12, marginBottom: m.body ? 4 : 0 }} />
                 )}
                 {m.media_url && m.kind === 'audio' && (
                   <audio src={m.media_url} controls style={{ display: 'block', maxWidth: 240, width: '100%', marginBottom: m.body ? 4 : 0 }} />
                 )}
                 {m.media_url && m.kind !== 'image' && m.kind !== 'video' && m.kind !== 'audio' && (
-                  <a href={m.media_url} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginBottom: m.body ? 4 : 0, color: '#0a66c2', textDecoration: 'underline', fontSize: 14 }}>📎 ملف مرفق</a>
+                  <a href={m.media_url} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginBottom: m.body ? 4 : 0, color: mine ? '#CDEFE2' : '#1F6F5F', textDecoration: 'underline', fontSize: 14 }}>📎 ملف مرفق</a>
                 )}
                 {m.media_url && (
-                  <button onClick={() => setForwardMsg(m)} title="تحويل لمحادثة تانية" style={{ display: 'block', marginBottom: 4, background: 'none', border: 'none', color: '#128C7E', cursor: 'pointer', fontSize: 12, padding: 0 }}>↗️ تحويل</button>
+                  <button onClick={() => setForwardMsg(m)} title="تحويل لمحادثة تانية" style={{ display: 'block', marginBottom: 4, background: 'none', border: 'none', color: mine ? '#CDEFE2' : '#2FA084', cursor: 'pointer', fontSize: 12, padding: 0, fontFamily: 'inherit' }}>↗️ تحويل</button>
                 )}
                 {m.body}
                 {m.body && (
-                  <button onClick={() => addTask(m)} title="حوّل الرسالة لمهمة" style={{ display: 'block', marginTop: 4, background: 'none', border: 'none', color: '#0a66c2', cursor: 'pointer', fontSize: 11, padding: 0, fontWeight: 700 }}>➕ حوّل لمهمة</button>
+                  <button onClick={() => addTask(m)} title="حوّل الرسالة لمهمة" style={{ display: 'block', marginTop: 4, background: 'none', border: 'none', color: mine ? '#CDEFE2' : '#1F6F5F', cursor: 'pointer', fontSize: 11, padding: 0, fontWeight: 800, fontFamily: 'inherit' }}>➕ حوّل لمهمة</button>
                 )}
-                <span style={{ display: 'block', textAlign: 'left', fontSize: 10, color: '#8a8a8a', marginTop: 2 }}>{t(m.created_at)}</span>
+                <span style={{ display: 'block', textAlign: 'left', fontSize: 9.5, fontWeight: 600, color: mine ? 'rgba(255,255,255,.65)' : '#9CA3AF', marginTop: 3 }}>{t(m.created_at)}</span>
               </div>
             </div>
           )
         })}
-        {(busy || maridThinking) && <div style={{ textAlign: 'end', color: '#0a66c2', fontSize: 13, padding: '4px 10px', fontWeight: 600 }}>🧞 المارد بيفكر…</div>}
+        {(busy || maridThinking) && <div style={{ textAlign: 'end', color: '#B78A12', fontSize: 13, padding: '4px 10px', fontWeight: 700 }}>🧞 المارد بيفكر…</div>}
       </div>
-      <div style={{ display: 'flex', gap: 8, padding: 10, background: 'rgba(255,255,255,.92)', borderTop: '1px solid rgba(0,0,0,.06)', boxShadow: '0 -2px 10px rgba(0,0,0,.05)', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 8, padding: '10px 12px', background: '#fff', borderTop: '1px solid rgba(0,0,0,.05)', alignItems: 'center' }}>
         <input ref={fileRef} type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) sendMedia(f) }} />
-        <button onClick={() => fileRef.current?.click()} disabled={busy} title="أرفق صورة أو فيديو" style={{ background: '#fff', color: '#128C7E', border: '1px solid #ddd', borderRadius: '50%', width: 44, height: 44, fontSize: 18, cursor: 'pointer', flexShrink: 0, opacity: busy ? 0.6 : 1 }}>📎</button>
-        <button onClick={toggleRec} disabled={busy} title={recording ? 'إيقاف وإرسال' : 'رسالة صوتية'} style={{ background: recording ? '#c0392b' : '#fff', color: recording ? '#fff' : '#128C7E', border: '1px solid #ddd', borderRadius: '50%', width: 44, height: 44, fontSize: 18, cursor: 'pointer', flexShrink: 0, opacity: busy ? 0.6 : 1 }}>{recording ? '⏹️' : '🎤'}</button>
-        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendMsg()} placeholder="اكتب رسالة…" style={{ flex: 1, padding: '12px 14px', border: '1px solid #ddd', borderRadius: 22, fontSize: 15, outline: 'none' }} />
-        <button onClick={sendMsg} disabled={busy} style={{ background: '#128C7E', color: '#fff', border: 'none', borderRadius: '50%', width: 48, height: 48, fontSize: 18, cursor: 'pointer', opacity: busy ? 0.6 : 1, flexShrink: 0 }}>➤</button>
+        <button onClick={() => fileRef.current?.click()} disabled={busy} title="أرفق صورة أو فيديو" style={{ background: '#F1EEE6', color: '#5A6660', border: 'none', borderRadius: '50%', width: 40, height: 40, fontSize: 17, cursor: 'pointer', flexShrink: 0, opacity: busy ? 0.6 : 1 }}>📎</button>
+        <button onClick={toggleRec} disabled={busy} title={recording ? 'إيقاف وإرسال' : 'رسالة صوتية'} style={{ background: recording ? '#E26D5C' : '#F1EEE6', color: recording ? '#fff' : '#5A6660', border: 'none', borderRadius: '50%', width: 40, height: 40, fontSize: 17, cursor: 'pointer', flexShrink: 0, opacity: busy ? 0.6 : 1 }}>{recording ? '⏹️' : '🎤'}</button>
+        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendMsg()} placeholder="اكتب رسالتك…" style={{ flex: 1, padding: '11px 15px', border: 'none', background: '#F1EEE6', borderRadius: 999, fontSize: 13.5, fontWeight: 500, color: '#14231E', outline: 'none', fontFamily: 'inherit' }} />
+        <button onClick={sendMsg} disabled={busy} style={{ background: 'linear-gradient(135deg,#1F6F5F,#2FA084)', color: '#fff', border: 'none', borderRadius: '50%', width: 44, height: 44, fontSize: 17, cursor: 'pointer', opacity: busy ? 0.6 : 1, flexShrink: 0, boxShadow: '0 8px 18px -6px rgba(31,111,95,.5)' }}>➤</button>
       </div>
     </div>
   )

@@ -32,10 +32,11 @@ async function getCfg(key: string, fb = ''): Promise<string> {
   return (data as { value?: string } | null)?.value || fb
 }
 
-async function sendWA(to: string, body: string): Promise<{ ok: boolean; wa_id?: string; err?: string }> {
+async function sendWA(to: string, body: string, session?: string): Promise<{ ok: boolean; wa_id?: string; err?: string }> {
   // بيعدّي من البوابة الموحّدة — مايناديش Graph مباشرة.
-  // السبب في _shared/wa-send.ts
-  const r = await waSend({ to, text: enforceBrand(body), agentName: 'المارد' })
+  // 🔀 (28 Jul) بنمرّر session (رقم المحادثة) عشان الإرسال يتوجّه لخدمة الرقم المتصلة
+  //    (OpenWA) بدل ما يقع على جسر Baileys الاحتياطي الميت («مفيش جلسة متصلة»).
+  const r = await waSend({ to, text: enforceBrand(body), agentName: 'المارد', session })
   return { ok: r.ok, wa_id: r.wa_message_id ?? undefined, err: r.error }
 }
 
@@ -60,10 +61,10 @@ Deno.serve(async (req) => {
       'Commission: 10% unified for everyone / restaurants & cafes FREE (0%) for a LIMITED TIME — frame as «عرض لفترة محدودة»')
 
     const { data: convs } = await sb.from('whatsapp_conversations')
-      .select('id, contact_phone, contact_name, contact_type, last_inbound_at, last_outbound_at')
+      .select('id, contact_phone, contact_name, contact_type, last_inbound_at, last_outbound_at, session_id')
       .gt('last_inbound_at', new Date(Date.now() - 24 * 3600000).toISOString())
       .lt('last_inbound_at', new Date(Date.now() - 10 * 60000).toISOString())
-      .order('last_inbound_at', { ascending: true }).limit(30)
+      .order('last_inbound_at', { ascending: false }).limit(30)
     const targets = ((convs || []) as Array<any>).filter(c => {
       const digits = (c.contact_phone || '').replace(/\D/g, '')
       if (digits.endsWith(WABA_TAIL)) return false
@@ -112,7 +113,7 @@ HARD RULES: never ask for name/email/personal info. Supplier CTA: ${SITE}/add-li
         const d = await r.json()
         const reply = (d?.content?.[0]?.text || '').trim()
         if (!r.ok || !reply) { results.push({ conv: c.id, err: 'gen_failed' }); continue }
-        const sent = await sendWA(c.contact_phone.replace(/^\+/, ''), reply)
+        const sent = await sendWA(c.contact_phone.replace(/^\+/, ''), reply, c.session_id)
         await sb.from('whatsapp_messages').insert({
           conversation_id: c.id, direction: 'outbound', wa_message_id: sent.wa_id,
           body: enforceBrand(reply), message_type: 'text', status: sent.ok ? 'sent' : 'failed',
@@ -120,10 +121,23 @@ HARD RULES: never ask for name/email/personal info. Supplier CTA: ${SITE}/add-li
           agent_name: 'reply-sweeper', error_message: sent.err,
           metadata: { swept: true, reply_to_count: unanswered.length, inbound_age_min: Math.round((Date.now() - new Date(c.last_inbound_at).getTime()) / 60000) }
         })
-        await sb.from('whatsapp_conversations').update({
-          last_outbound_at: new Date().toISOString(), last_message_direction: 'outbound'
-        }).eq('id', c.id)
-        if (sent.ok) swept++
+        if (sent.ok) {
+          await sb.from('whatsapp_conversations').update({
+            last_outbound_at: new Date().toISOString(), last_message_direction: 'outbound'
+          }).eq('id', c.id)
+          swept++
+        } else {
+          // ⚠️ (28 Jul) الإرسال فشل — مانعلّمش المحادثة «اترد عليها» عشان مانحرقش الليد.
+          //   فشل دايم (مُعرّف مخفي @lid مش هينفع نبعتله) → نعلّمها بس عشان مانعيدش المحاولة للأبد.
+          //   فشل مؤقت (جلسة/شبكة) → نشيل الـclaim عشان الرن الجاي يعيد المحاولة لما القناة ترجع.
+          const permanent = /مُعرّف مخفي|@lid|مش هينفع/.test(String(sent.err || ''))
+          if (permanent) {
+            await sb.from('whatsapp_conversations').update({ last_outbound_at: new Date().toISOString() }).eq('id', c.id)
+          } else {
+            await sb.from('wa_reply_claims').delete()
+              .eq('conversation_id', c.id).eq('last_inbound_id', lastInboundId).eq('claimed_by', 'reply-sweeper')
+          }
+        }
         results.push({ conv: c.id, ok: sent.ok, err: sent.err ?? null })
       } catch (e) { results.push({ conv: c.id, err: String(e).slice(0, 120) }) }
     }

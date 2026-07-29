@@ -1,31 +1,34 @@
 // src/app/real-estate/market/page.tsx
 // =====================================================================
-// 📊 بورصة عقارات مضمونة — مرجع العقارات في مصر (يوليو 2026)
+// 🏗️ بورصة مشاريع المطوّرين — إعادة تصميم 3a (29 Jul 2026)
 // server component خفيف: SEO + جلب الداتا من Supabase (ISR كل ساعة)
 // والتفاعل كله (بحث + فلاتر) في MarketExplorer (client).
-// الداتا: property_market_items + property_opportunities — بتتجدد
-// يومياً تلقائياً (pg_cron → olx-scraper → refresh_property_opportunities).
+// ⚠️ بنجيب كل property_market_items (مش المطوّرين بس) — صفوف الريسيل
+// egp_per_m2 بتتحسب منها مؤشرات «العاصمة — المتر» و«التجمع — المتر».
+// الموبايل: هيدر التطبيق المدمج + BottomNav (تبويب السوق). TopNav على
+// الديسكتوب بس.
 // =====================================================================
 import { Metadata } from 'next'
 import { createClient } from '@supabase/supabase-js'
 import TopNav from '@/components/TopNav'
+import BottomNav from '@/components/BottomNav'
 import MarketExplorer, { type Item, type Opportunity } from './MarketExplorer'
 import { PUBLIC_PROJECT_COLUMNS } from '@/lib/projects'
 
 export const revalidate = 3600 // ساعة
 
 export const metadata: Metadata = {
-  title: 'بورصة عقارات مضمونة — أسعار العاصمة والتجمع والساحل + بحث وفلاتر',
+  title: 'بورصة مشاريع المطوّرين — مضمونة | أسعار من المطوّرين مباشرة + بحث وفلاتر',
   description:
-    'مرجع العقارات في مصر: ابحث وفلتر في عشرات مشروعات المطورين بأسعار محدثة، الريسيل، الإيجارات، وفرص بيع وإيجار حقيقية بتتجدد يومياً — العاصمة الإدارية، التجمع الخامس، والساحل الشمالي.',
+    'بورصة مشاريع المطوّرين على مضمونة: ابحث وفلتر في عشرات المشاريع بأسعار محدثة من المطوّرين مباشرة، بروشور وفيديو لكل مشروع، وفرص بيع وإيجار حقيقية بتتجدد يومياً — العاصمة الإدارية، التجمع الخامس، والساحل الشمالي.',
   keywords: [
-    'أسعار العقارات في مصر', 'بحث عقارات', 'أسعار العاصمة الإدارية', 'سعر المتر في العاصمة الإدارية',
-    'أسعار شقق التجمع الخامس', 'شاليهات الساحل الشمالي', 'أسعار الساحل 2026', 'إيجار شاليهات الساحل',
-    'ريسيل العاصمة الإدارية', 'إيجارات التجمع الخامس', 'مشروعات المطورين 2026', 'شقق للبيع', 'شقق للإيجار',
+    'مشروعات المطورين 2026', 'أسعار العقارات في مصر', 'بحث عقارات', 'أسعار العاصمة الإدارية',
+    'سعر المتر في العاصمة الإدارية', 'أسعار شقق التجمع الخامس', 'شاليهات الساحل الشمالي',
+    'أسعار الساحل 2026', 'كمبوندات العاصمة الإدارية', 'شقق للبيع', 'فرص عقارية',
   ],
   openGraph: {
-    title: 'بورصة عقارات مضمونة — مرجع العقارات في مصر',
-    description: 'ابحث وفلتر: مشروعات المطورين · الريسيل · الإيجارات · فرص بيع وإيجار بتتجدد يومياً.',
+    title: 'بورصة مشاريع المطوّرين — مضمونة',
+    description: 'أسعار من المطوّرين مباشرة · بروشور وفيديو لكل مشروع · فرص بيع وإيجار بتتجدد يومياً.',
     url: 'https://madmonacairo.com/real-estate/market',
     siteName: 'Madmona',
     locale: 'ar_EG',
@@ -82,8 +85,12 @@ export default async function PropertyMarketPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <TopNav />
+      {/* TopNav للديسكتوب بس — الموبايل ليه هيدر التطبيق المدمج جوه MarketExplorer */}
+      <div className="hidden md:block">
+        <TopNav />
+      </div>
       <MarketExplorer items={items} opportunities={opportunities} />
+      <BottomNav />
     </div>
   )
 }

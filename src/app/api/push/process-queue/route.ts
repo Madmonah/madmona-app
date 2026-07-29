@@ -110,23 +110,40 @@ async function handle(req: NextRequest) {
   let totalSent = 0
   let totalFailed = 0
   const expiredEndpoints: string[] = []
+  const sentEndpoints: string[] = []
   const processedIds: string[] = []
   const failedIds: string[] = []
 
   for (const item of queue as QueueItem[]) {
-    // Get all subscriptions for this user
+    // Get all ACTIVE subscriptions for this user (skip ones the cleanup cron soft-deleted)
     // @ts-expect-error
     const { data: subs } = await adminClient
       .from('push_subscriptions')
       .select('endpoint, p256dh, auth')
       .eq('profile_id', item.recipient_id)
+      .is('deactivated_at', null)
 
     type SubRow = { endpoint: string; p256dh: string; auth: string }
     const subRows = (subs || []) as SubRow[]
 
     if (subRows.length === 0) {
-      // No subscriptions — mark as sent (no point keeping it)
-      processedIds.push(item.id)
+      // No active subscriptions — mark the queue item as processed but flag the
+      // reason in `data` so we can tell it apart from a real successful send.
+      // Design note (26 Jul 2026): before this change, no-subs items were marked
+      // with sent_at just like real sends — silently dropping them and creating
+      // fake "delivered" data. Now we record why nothing was sent.
+      // @ts-expect-error
+      await adminClient
+        .from('notification_queue')
+        .update({
+          sent_at: new Date().toISOString(),
+          data: {
+            ...(item.data || {}),
+            _drop_reason: 'no_active_subscription',
+            _dropped_at: new Date().toISOString(),
+          },
+        })
+        .eq('id', item.id)
       continue
     }
 
@@ -146,6 +163,7 @@ async function handle(req: NextRequest) {
     totalSent += result.sent
     totalFailed += result.failed
     expiredEndpoints.push(...result.expiredEndpoints)
+    sentEndpoints.push(...result.sentEndpoints)
 
     if (result.sent > 0) {
       processedIds.push(item.id)
@@ -191,11 +209,24 @@ async function handle(req: NextRequest) {
       .in('endpoint', expiredEndpoints)
   }
 
+  // Update last_used_at for endpoints we successfully delivered to.
+  // Design fix (26 Jul 2026): previously last_used_at was only touched on
+  // client re-subscribe, so cleanup_stale_push_subscriptions was deactivating
+  // perfectly-working endpoints just because the user hadn't reopened the site.
+  if (sentEndpoints.length > 0) {
+    // @ts-expect-error
+    await adminClient
+      .from('push_subscriptions')
+      .update({ last_used_at: new Date().toISOString() })
+      .in('endpoint', sentEndpoints)
+  }
+
   return NextResponse.json({
     ok: true,
     processed: queue.length,
     sent: totalSent,
     failed: totalFailed,
     expiredCleaned: expiredEndpoints.length,
+    lastUsedUpdated: sentEndpoints.length,
   })
 }

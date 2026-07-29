@@ -78,6 +78,19 @@ function makeFallbackSVG(category: NewsCategory): string {
   return `data:image/svg+xml;base64,${b64}`
 }
 
+// 📷 صور حقيقية مواضيعية بديلة للأخبار اللي مالهاش صورة (بدل الكارت الأخضر SVG).
+const CATEGORY_PHOTO: Record<NewsCategory, string> = {
+  madmona: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80',
+  economy: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&q=80',
+  real_estate: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80',
+  automotive: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80',
+  business: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=800&q=80',
+  tourism: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
+  fashion: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80',
+  tech: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80',
+}
+const catPhoto = (c: NewsCategory): string => CATEGORY_PHOTO[c] || CATEGORY_PHOTO.economy
+
 // ============================================================================
 // CATEGORY KEYWORDS (filter for relevance)
 // ============================================================================
@@ -260,7 +273,7 @@ async function fetchSource(source: NewsSource): Promise<NewsItem[]> {
     const itemRegex = /<(?:item|entry)(?:\s[^>]*)?>([\s\S]*?)<\/(?:item|entry)>/gi
     let match: RegExpExecArray | null
     const maxItems = source.weight * 4
-    const fallback = makeFallbackSVG(source.category)
+    const fallback = catPhoto(source.category)
 
     while ((match = itemRegex.exec(xml)) !== null && items.length < maxItems) {
       const itemXml = match[1]
@@ -327,7 +340,7 @@ async function fetchAdminNews(category: NewsCategory): Promise<NewsItem[]> {
 
     if (!data || !Array.isArray(data)) return []
 
-    const fallback = makeFallbackSVG(category)
+    const fallback = catPhoto(category)
     return (data as AdminNewsRow[]).map((row) => ({
       title: row.title,
       link: row.link || `https://madmonacairo.com/?n=${row.id}`,

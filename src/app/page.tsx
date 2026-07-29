@@ -18,6 +18,7 @@ import DailyMessageCard from '@/components/retention/DailyMessageCard'
 import T from '@/components/T'
 import MadmonaShowcase from '@/components/MadmonaShowcase'
 import PropertyMarketHomeSection from '@/components/PropertyMarketHomeSection'
+import MobileHome from '@/components/MobileHome'
 
 // ============================================================
 // Home page — Single brand: "خدمات مضمونة"
@@ -133,11 +134,20 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7] overflow-x-hidden pb-20 md:pb-0">
+      {/* 📱 MOBILE — new "2a" focused home (30 يوليو 2026). الديسكتوب تحت من غير تغيير. */}
+      <div className="md:hidden"><MUACampaignBanner /></div>
+      <MobileHome categories={rootCategories} />
+
+      {/* 🖥️ DESKTOP — الهوم الحالي زي ما هو */}
+      <div className="hidden md:block">
       <TopNav />
       <MUACampaignBanner />
       <FinancialTicker />
 
       <main className="relative">
+        {/* GET IN TOUCH (تواصل معانا) — منقول لفوق خالص: بين شريط العملات والأخبار (28 يوليو 2026) */}
+        <ContactSection />
+
         {/* 🔴 NEWS HUB — فوق خالص، بعرض ماجازين (27 Jul 2026) */}
         <section className="pt-4 md:pt-5 pb-3">
           <div className="max-w-7xl mx-auto px-4">
@@ -205,78 +215,11 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* HOW IT WORKS */}
-        <section className="py-16 md:py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="text-center mb-14">
-              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2FA084] mb-3">THE PROCESS</p>
-              <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
-                <span className="block"><T k="home.how.title1" /></span>
-                <span className="block italic font-light gradient-text-green"><T k="home.how.title2" /></span>
-              </h2>
-            </div>
+        {/* HOW IT WORKS (٣ خطوات) — اتشال من الهوم (28 يوليو 2026) */}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-              <Step num="01" title={<T k="home.how.s1.title" />} description={<T k="home.how.s1.desc" />} icon={<Compass className="w-6 h-6" />} iconAccent="text-[#1F6F5F] bg-[#1F6F5F]/10" />
-              <Step num="02" title={<T k="home.how.s2.title" />} description={<T k="home.how.s2.desc" />} icon={<Zap className="w-6 h-6" />} iconAccent="text-[#2FA084] bg-[#2FA084]/10" />
-              <Step num="03" title={<T k="home.how.s3.title" />} description={<T k="home.how.s3.desc" />} icon={<ShieldCheck className="w-6 h-6" />} iconAccent="text-[#6FCF97] bg-[#6FCF97]/10" />
-            </div>
-          </div>
-        </section>
+        {/* CONTACT — اتنقل لأول main فوق (28 يوليو 2026) */}
 
-        {/* CONTACT */}
-        <section className="py-12 md:py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4">
-            <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2FA084] mb-3 text-center">GET IN TOUCH</p>
-            <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-[0.95] text-center mb-10">
-              <T k="home.contact.title1" />
-              <span className="italic font-light gradient-text-green"> <T k="home.contact.title2" /></span>
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-5xl mx-auto">
-              <Link href="/chat" className="group flex items-center gap-4 p-5 bg-[#FAFAF7] rounded-2xl hover:bg-white hover:shadow-card transition-all duration-300 no-underline border border-gray-100">
-                <div className="w-12 h-12 rounded-2xl bg-[#25D366] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                  <MessageCircle className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-gray-900">شات مضمونة — رد فوري</p>
-                  <p className="text-xs text-gray-500 mt-0.5">كلّمنا مباشر على الموقع · متاح 24/7</p>
-                </div>
-                <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#25D366] group-hover:-translate-x-1 transition-all" />
-              </Link>
-
-              <a href={MADMONA_MAPS_URL} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 p-5 bg-[#FAFAF7] rounded-2xl hover:bg-white hover:shadow-card transition-all duration-300 no-underline border border-gray-100">
-                <div className="w-12 h-12 rounded-2xl bg-gray-900 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                  <MapPin className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-gray-900"><T k="home.contact.address" /></p>
-                  <p className="text-xs text-gray-500 mt-0.5"><T k="home.contact.address_sub" /></p>
-                </div>
-                <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#1F6F5F] group-hover:-translate-x-1 transition-all" />
-              </a>
-
-              {/* Rate us on Google */}
-              <a href={MADMONA_GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 p-5 bg-[#FAFAF7] rounded-2xl hover:bg-white hover:shadow-card transition-all duration-300 no-underline border border-gray-100">
-                <div className="w-12 h-12 rounded-2xl bg-[#FBBC04] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                  <Star className="w-6 h-6 text-white fill-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-gray-900"><T k="home.contact.rate" /></p>
-                  <p className="text-xs text-gray-500 mt-0.5"><T k="home.contact.rate_sub" /></p>
-                </div>
-                <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#FBBC04] group-hover:-translate-x-1 transition-all" />
-              </a>
-            </div>
-          </div>
-        </section>
-
-        {/* FEATURED — feed لا نهائي، آخر الصفحة عشان النزول المستمر يبقى طبيعي */}
-        <section className="py-16 md:py-24">
-          <div className="max-w-7xl mx-auto px-4">
-            <FeaturedListings />
-          </div>
-        </section>
+        {/* FEATURED (المختار بعناية) — اتشال من الهوم (28 يوليو 2026)؛ لسه متاح في /marketplace */}
 
         {/* FOOTER */}
         <footer className="py-12 md:py-16 border-t border-gray-200 bg-white">
@@ -284,10 +227,7 @@ export default async function HomePage() {
             <p className="font-black text-3xl gradient-text-green mb-2"><T k="common.brand" /></p>
             <p className="text-xs text-gray-500 mb-6 tracking-[0.2em] uppercase"><T k="footer.tagline" /></p>
 
-            {/* Social media icons (smart-hide if URL empty) */}
-            <div className="mb-8">
-              <SocialLinks variant="default" />
-            </div>
+            {/* Social media icons — اتشالت من الفوتر (بقت في قسم تواصل معانا) 29 يوليو 2026 */}
 
             <div className="flex justify-center items-center gap-3 text-xs flex-wrap mb-6 px-4">
               <Link href="/about" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors"><T k="footer.about_link" /></Link>
@@ -304,6 +244,7 @@ export default async function HomePage() {
           </div>
         </footer>
       </main>
+      </div>{/* /desktop */}
 
       <BottomNav />
     </div>
@@ -350,5 +291,26 @@ function Step({ num, title, description, icon, iconAccent }: { num: string; titl
         <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
       </div>
     </div>
+  )
+}
+
+
+function ContactSection() {
+  return (
+    <section className="py-7 md:py-9 bg-white">
+      <div className="max-w-7xl mx-auto px-4 text-center">
+        <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2FA084] mb-2">GET IN TOUCH</p>
+        <h2 className="text-2xl md:text-3xl font-black text-gray-900 leading-[0.95] mb-5">
+          تواصل <span className="italic font-light gradient-text-green">معانا</span>
+        </h2>
+        <div className="flex flex-wrap items-center justify-center gap-2.5 md:gap-3">
+          <a href="/chat" title="شات مضمونة — رد فوري" aria-label="شات مضمونة" className="w-10 h-10 md:w-11 md:h-11 rounded-2xl bg-[#25D366] text-white flex items-center justify-center shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all no-underline"><MessageCircle className="w-5 h-5" /></a>
+          <a href={MADMONA_MAPS_URL} target="_blank" rel="noopener noreferrer" title="مكاننا — النزهة، مصر الجديدة" aria-label="مكاننا" className="w-10 h-10 md:w-11 md:h-11 rounded-2xl bg-gray-900 text-white flex items-center justify-center shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all no-underline"><MapPin className="w-5 h-5" /></a>
+          <a href={MADMONA_GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer" title="قيّمنا على جوجل" aria-label="قيّمنا على جوجل" className="w-10 h-10 md:w-11 md:h-11 rounded-2xl bg-[#FBBC04] text-white flex items-center justify-center shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all no-underline"><Star className="w-5 h-5 fill-white" /></a>
+          <span className="w-px h-7 bg-gray-200 mx-1" />
+          <SocialLinks variant="default" />
+        </div>
+      </div>
+    </section>
   )
 }

@@ -157,13 +157,7 @@ export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Sta
             <span className="mdm-kicker-dot" />
           </Link>
 
-          {/* Headline */}
-          <Link href="/add-listing" className="mdm-h1-link mdm-reveal" prefetch={false}>
-            <h1 className="mdm-h1">
-              <span className="mdm-h1-line">معاملاتك</span>
-              <span className="mdm-h1-em">مضمونة.</span>
-            </h1>
-          </Link>
+          {/* Headline «معاملاتك مضمونة» — اتشال من الهيرو (29 يوليو 2026) */}
 
           {/* Sublabel */}
           <p className="mdm-sub mdm-reveal">
@@ -240,13 +234,7 @@ export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Sta
             ))}
           </div>
 
-          {/* Stats inline at bottom — clickable مع counters */}
-          <div className="mdm-stats-row mdm-reveal">
-            <StatPill href="/add-listing" num={stats.listings} label="منتج" />
-            <StatPill href="/add-listing" num={stats.categories} label="مجال" />
-            <StatPill href="/add-listing" num={stats.suppliers} label="مورد" />
-            <StatPill href="/add-listing" num={stats.cities} label="مدينة" />
-          </div>
+          {/* Stats counters — اتشالت من تحت الأقسام (29 يوليو 2026) */}
 
           {/* Primary CTAs */}
           <div className="mdm-hero-actions mdm-reveal">
@@ -368,18 +356,18 @@ const CSS = `
 .mdm-vk-grid{
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:16px;
-  max-width:760px;
-  margin:0 auto 36px;
+  gap:10px;
+  max-width:640px;
+  margin:0 auto 28px;
 }
-@media(max-width:760px){.mdm-vk-grid{grid-template-columns:repeat(2,1fr);gap:12px}}
+@media(max-width:760px){.mdm-vk-grid{grid-template-columns:repeat(4,1fr);gap:7px}}
 
 .mdm-vk-chip{
   position:relative;
   background:#fff;
   border:2px solid transparent;
-  border-radius:24px;
-  padding:24px 12px 20px;
+  border-radius:16px;
+  padding:12px 6px 10px;
   text-align:center;
   cursor:pointer;
   transition:transform .35s cubic-bezier(.2,.7,.6,1.4), box-shadow .35s, border-color .25s, background .25s;
@@ -408,8 +396,8 @@ const CSS = `
 
 .mdm-vk-emoji{
   display:block; position:relative; z-index:1;
-  font-size:clamp(40px, 6vw, 56px); line-height:1;
-  margin-bottom:8px;
+  font-size:clamp(24px, 4vw, 30px); line-height:1;
+  margin-bottom:4px;
   animation:mdmEmojiWobble 5.5s ease-in-out infinite;
   animation-delay:var(--delay,0s);
   filter:drop-shadow(0 4px 8px rgba(0,0,0,.10));
@@ -423,27 +411,29 @@ const CSS = `
 
 .mdm-vk-name{
   position:relative; z-index:1;
-  font-size:clamp(16px, 2.2vw, 22px);
+  font-size:clamp(13px, 1.8vw, 15px);
   font-weight:900;
   color:var(--ink);
-  letter-spacing:-.5px;
+  letter-spacing:-.3px;
   line-height:1.1;
-  margin-bottom:4px;
+  margin-bottom:3px;
 }
 .mdm-vk-sub{
   position:relative; z-index:1;
-  font-size:11px;
+  font-size:9px;
   font-weight:600;
   color:var(--muted);
   letter-spacing:-.01em;
-  line-height:1.35;
-  margin-bottom:12px;
+  line-height:1.3;
+  margin-bottom:8px;
+  display:none;
 }
+@media(min-width:760px){.mdm-vk-sub{display:block}}
 .mdm-vk-add{
   position:relative; z-index:1;
-  display:inline-flex; align-items:center; gap:4px;
-  font-size:11px; font-weight:800;
-  padding:5px 10px; border-radius:999px;
+  display:inline-flex; align-items:center; gap:3px;
+  font-size:9.5px; font-weight:800;
+  padding:3px 8px; border-radius:999px;
   background:var(--accent); color:#fff;
   letter-spacing:.05em;
   opacity:.85;

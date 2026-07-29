@@ -41,9 +41,11 @@ export default function MadmonaLoginPage() {
       const token = safeStorage.get('madmona_token')
       if (token) {
         // @ts-expect-error rpc typing
-        const { data } = await supabase.rpc('madmona_resolve', { p_token: token })
+        const { data, error } = await supabase.rpc('madmona_resolve', { p_token: token })
         if (data?.authenticated) { router.push('/home'); return }
-        safeStorage.remove('madmona_token')
+        // (27 يوليو 2026) نمسح التوكن فقط لو الـresolve أكّد إنه باطل.
+        // فشل الاتصال المؤقت (error) مايمسحش توكن صالح.
+        if (!error && data && data.authenticated === false) safeStorage.remove('madmona_token')
       }
       setChecking(false)
     })()

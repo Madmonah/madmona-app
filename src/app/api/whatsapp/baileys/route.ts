@@ -30,7 +30,10 @@ import { notifyAdminsMaridReply } from '@/lib/admin-notify'
 import { callMaridWithTools } from '@/lib/marid-brain'
 
 export const runtime = 'nodejs'
-export const maxDuration = 60
+// ⏱️ (٢٨ يوليو) رفعناها من ٦٠ لـ٣٠٠ (Vercel Pro). رسايل الصوت/الصور كانت
+// بتعدّي الـ٦٠ث (تفريغ صوت + رؤية صورة + حلقة الأدوات) فـVercel كان بيقطع
+// الطلب قبل ما الرد يخرج — فالنص بيرد والميديا لأ. ٣٠٠ث تدّي مساحة كافية.
+export const maxDuration = 300
 
 interface BaileysMedia {
   mimetype: string
@@ -255,6 +258,23 @@ export async function POST(request: NextRequest) {
         }))
       await supabaseUntyped.from('wa_lid_map').upsert(rows, { onConflict: 'lid' })
       console.log('[lid-map]', rows.length, 'مُعرّف من', m.sessionId ?? '—')
+
+      // 🔗 (٢٥ يوليو ٢٠٢٦ — محمد): إصلاح رجعي فوري. أي محادثات قديمة اتسجّلت
+      //    بالـLID كمفتاح (قبل ما الماب يوصل) بنرجّع مفتاحها للرقم الحقيقي —
+      //    عشان ذاكرة العميل تتوحّد مع شات مضمونة وباقي الأرقام التلاتة.
+      //    من غير الخطوة دي، العميل اللي واتسابه بيبان LID بيبقى «شخص تاني»
+      //    عند المارد في كل قناة. الدالة آمنة: rekey بس، من غير حذف أو دمج.
+      for (const r of rows) {
+        if (!r.phone) continue
+        try {
+          await supabaseUntyped.rpc('wa_rekey_lid_conversations', {
+            p_lid: r.lid,
+            p_phone: r.phone,
+          })
+        } catch (e) {
+          console.error('[lid-map] rekey فشل', r.lid, e)
+        }
+      }
     }
     return NextResponse.json({ ok: true, kind: 'lid_map', count: items.length })
   }
@@ -384,7 +404,7 @@ export async function POST(request: NextRequest) {
     {
       const hasText = typeof body.text === 'string' && body.text.trim().length > 0
       const hasMedia = !!body.media
-      const isMediaType = ['image', 'video', 'audio', 'document', 'sticker'].includes(
+      const isMediaType = ['image', 'video', 'audio', 'voice', 'ptt', 'document', 'sticker'].includes(
         String(body.type || ''),
       )
       if (!hasText && !hasMedia && !isMediaType) {
@@ -739,7 +759,11 @@ export async function POST(request: NextRequest) {
       savedMediaUrl = await saveMedia(body.media, body.type, phone)
 
       if (body.type === 'audio') {
-        const transcript = await transcribeAudio(body.media)
+        // ⏱️ (٢٨ يوليو) time-box التفريغ بـ٢٠ث — لو Groq بطيء/واقع مايعلّقش الطلب كله
+        const transcript = await Promise.race([
+          transcribeAudio(body.media),
+          new Promise<string | null>((resolve) => setTimeout(() => resolve(null), 20000)),
+        ])
         userText = transcript || body.text || '[رسالة صوتية — مش قادر أفرّغها دلوقتي]'
       } else if (body.type === 'image' && mt.startsWith('image/')) {
         mediaBlocks.push({ type: 'image', source: { type: 'base64', media_type: mt, data: body.media.data_base64 } })

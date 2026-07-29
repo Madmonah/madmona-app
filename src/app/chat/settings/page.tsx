@@ -65,44 +65,45 @@ export default function ChatSettings() {
   }
 
   return (
-    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: 'system-ui, sans-serif' }}>
-      <header style={{ background: '#075E54', color: '#fff', padding: '14px 16px', fontSize: 20, fontWeight: 800 }}>الإعدادات ⚙️</header>
+    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "'Cairo', system-ui, sans-serif" }}>
+      <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');"}</style>
+      <header style={{ background: 'linear-gradient(135deg,#14231E,#1F6F5F)', color: '#fff', padding: '14px 16px', fontSize: 17, fontWeight: 900, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>الإعدادات ⚙️</header>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
         {loggedIn && (
-          <div style={{ background: '#fff', borderRadius: 16, padding: 16, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12, border: '1px solid #eee' }}>
-            <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#075E54', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 22, fontWeight: 800 }}>{(name || '؟').trim().charAt(0)}</div>
+          <div style={{ background: '#fff', borderRadius: 16, padding: 16, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12, border: '1px solid #EAE5D9', boxShadow: '0 1px 2px rgba(20,35,30,.06)' }}>
+            <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#1F6F5F)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 22, fontWeight: 900 }}>{(name || '؟').trim().charAt(0)}</div>
             <div>
-              <div style={{ fontWeight: 800, color: '#111' }}>{name || 'مستخدم مضمونة'}</div>
-              <div style={{ fontSize: 13, color: '#8a8a8a', direction: 'ltr', textAlign: 'right' }}>{phone}</div>
+              <div style={{ fontWeight: 900, color: '#14231E' }}>{name || 'مستخدم مضمونة'}</div>
+              <div style={{ fontSize: 13, color: '#8A9690', fontWeight: 600, direction: 'ltr', textAlign: 'right' }}>{phone}</div>
             </div>
           </div>
         )}
 
-        <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #eee', overflow: 'hidden', marginBottom: 14 }}>
+        <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #EAE5D9', overflow: 'hidden', marginBottom: 14, boxShadow: '0 1px 2px rgba(20,35,30,.06)' }}>
           <button onClick={toggleNotif} disabled={!notifSupported || busy} style={rowBtn}>
             <span style={{ fontSize: 20 }}>🔔</span>
-            <span style={{ flex: 1, textAlign: 'start', fontWeight: 600, color: '#111' }}>تنبيهات ردود المارد</span>
-            <span style={{ fontSize: 13, color: notifOn ? '#1F6F5F' : '#999', fontWeight: 700 }}>{!notifSupported ? 'مش مدعوم' : notifOn ? 'مفعّلة' : 'متوقفة'}</span>
+            <span style={{ flex: 1, textAlign: 'start', fontWeight: 700, color: '#14231E' }}>تنبيهات ردود المارد</span>
+            <span style={{ fontSize: 13, color: notifOn ? '#1F6F5F' : '#8A9690', fontWeight: 800 }}>{!notifSupported ? 'مش مدعوم' : notifOn ? 'مفعّلة' : 'متوقفة'}</span>
           </button>
           {installEvt && (
-            <button onClick={installApp} style={{ ...rowBtn, borderTop: '1px solid #f0f0f0' }}>
+            <button onClick={installApp} style={{ ...rowBtn, borderTop: '1px solid #F4F1E8' }}>
               <span style={{ fontSize: 20 }}>📲</span>
-              <span style={{ flex: 1, textAlign: 'start', fontWeight: 600, color: '#111' }}>ثبّت شات مضمونة على التليفون</span>
-              <span style={{ fontSize: 13, color: '#1F6F5F', fontWeight: 700 }}>ثبّت</span>
+              <span style={{ flex: 1, textAlign: 'start', fontWeight: 700, color: '#14231E' }}>ثبّت شات مضمونة على التليفون</span>
+              <span style={{ fontSize: 13, color: '#1F6F5F', fontWeight: 800 }}>ثبّت</span>
             </button>
           )}
-          <Link href="/account" style={{ ...rowBtn, borderTop: '1px solid #f0f0f0', textDecoration: 'none' }}>
+          <Link href="/account" style={{ ...rowBtn, borderTop: '1px solid #F4F1E8', textDecoration: 'none' }}>
             <span style={{ fontSize: 20 }}>👤</span>
-            <span style={{ flex: 1, textAlign: 'start', fontWeight: 600, color: '#111' }}>حسابي على مضمونة</span>
-            <span style={{ fontSize: 16, color: '#ccc' }}>←</span>
+            <span style={{ flex: 1, textAlign: 'start', fontWeight: 700, color: '#14231E' }}>حسابي على مضمونة</span>
+            <span style={{ fontSize: 16, color: '#C9C3B5' }}>←</span>
           </Link>
         </div>
 
-        {msg && <div style={{ fontSize: 13, color: '#1F6F5F', textAlign: 'center', marginBottom: 14 }}>{msg}</div>}
+        {msg && <div style={{ fontSize: 13, color: '#1F6F5F', fontWeight: 700, textAlign: 'center', marginBottom: 14 }}>{msg}</div>}
 
         {loggedIn && (
-          <button onClick={signOut} style={{ width: '100%', background: '#fff', border: '1px solid #f2c1c1', color: '#c0392b', borderRadius: 16, padding: '13px', fontWeight: 700, cursor: 'pointer' }}>تسجيل الخروج</button>
+          <button onClick={signOut} style={{ width: '100%', background: '#fff', border: '1px solid rgba(226,109,92,.4)', color: '#E26D5C', borderRadius: 16, padding: '13px', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>تسجيل الخروج</button>
         )}
       </div>
 

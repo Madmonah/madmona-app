@@ -1,13 +1,14 @@
 // src/components/PropertyMarketHomeSection.tsx
 // =====================================================================
 // 📊 قسم بورصة العقارات في الهوم — يجيب أرقام مختارة من
-// property_market_items ويعرضها كستريب لايف + CTA لصفحة البورصة.
+// property_market_items ويعرضها كبطاقة لايف + شريط لوجوهات المطورين + CTA.
 // Server component — بيخفي نفسه تماماً لو مفيش داتا (fail-safe).
-// v2 (9 Jul 2026): + كارت الساحل الشمالي + دعم الإيجار بالليلة
+// v3 (27 Jul 2026): تصميم احترافي + شريط لوجوهات المطورين المتحرك (دينامك)
 // =====================================================================
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
-import { TrendingUp, ArrowLeft, RefreshCcw, Landmark, MapPin, KeyRound, Umbrella } from 'lucide-react'
+import { TrendingUp, ArrowLeft, RefreshCcw, Landmark, MapPin, KeyRound, Umbrella, ShieldCheck } from 'lucide-react'
+import DeveloperLogosMarquee from './DeveloperLogosMarquee'
 
 type Item = {
   area: 'new_capital' | 'new_cairo' | 'sahel'
@@ -84,41 +85,51 @@ export default async function PropertyMarketHomeSection() {
       area: 'العاصمة الإدارية',
       title: capitalMeter.title,
       value: fmtRange(capitalMeter),
+      img: '/areas/capital.jpg',
     },
     cairoMeter && {
       icon: MapPin,
       area: 'التجمع الخامس',
       title: cairoMeter.title,
       value: fmtRange(cairoMeter),
+      img: '/areas/newcairo.jpg',
     },
     sahelRent && {
       icon: Umbrella,
       area: 'الساحل — الصيف',
       title: sahelRent.title,
       value: fmtRange(sahelRent),
+      img: '/areas/coast.jpg',
     },
     cairoRent && {
       icon: KeyRound,
       area: 'إيجارات التجمع',
       title: cairoRent.title,
       value: fmtRange(cairoRent),
+      img: '/areas/rentals.jpg',
     },
-  ].filter(Boolean) as Array<{ icon: typeof Landmark; area: string; title: string; value: string }>
+  ].filter(Boolean) as Array<{ icon: typeof Landmark; area: string; title: string; value: string; img: string }>
 
   if (tiles.length === 0) return null
 
   return (
-    <section className="relative pb-8 md:pb-10">
+    <section className="relative py-6 md:py-8">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Section header — نفس نمط NEWS HUB */}
+        {/* Section header */}
         <div className="flex items-end justify-between mb-5 flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#1F6F5F] text-white flex items-center justify-center shadow-soft">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#2FA084] to-[#1F6F5F] text-white flex items-center justify-center shadow-lg shadow-[#1F6F5F]/20">
               <TrendingUp className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F6F5F]">LIVE MARKET</p>
-              <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-tight">بورصة عقارات مضمونة 📊</h2>
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#6FCF97] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2FA084]" />
+                </span>
+                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F6F5F]">LIVE MARKET</p>
+              </div>
+              <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-tight">بورصة عقارات مضمونة</h2>
             </div>
           </div>
           {lastUpdateLabel && (
@@ -129,32 +140,57 @@ export default async function PropertyMarketHomeSection() {
           )}
         </div>
 
-        {/* البطاقة الخضراء */}
-        <Link href="/real-estate/market" className="block no-underline group">
-          <div className="bg-[#1F6F5F] rounded-3xl p-5 md:p-7 shadow-card overflow-hidden relative">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        {/* البطاقة الرئيسية */}
+        <div className="bg-gradient-to-br from-white to-[#F3F1EA] border border-[#EAE4D7] rounded-3xl p-5 md:p-7 shadow-xl shadow-[#1F6F5F]/10 overflow-hidden relative">
+          {/* لمسة ذهبية خفيفة في الخلفية */}
+          <div className="pointer-events-none absolute -top-16 -left-16 w-56 h-56 rounded-full bg-[#6FCF97]/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 -right-10 w-64 h-64 rounded-full bg-[#2FA084]/10 blur-3xl" />
+
+          <Link href="/real-estate/market" className="block no-underline group relative">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
               {tiles.map((t) => (
-                <div key={t.area} className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <t.icon className="w-3.5 h-3.5 text-[#6FCF97]" />
-                    <p className="text-[10px] font-bold tracking-wider uppercase text-white/70">{t.area}</p>
+                <div
+                  key={t.area}
+                  className="relative rounded-2xl overflow-hidden h-28 md:h-32 ring-1 ring-black/5 hover:ring-black/15 hover:-translate-y-0.5 transition-all duration-300 group/tile"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={t.img}
+                    alt={t.area}
+                    className="absolute inset-0 w-full h-full object-cover group-hover/tile:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/10" />
+                  <div className="absolute inset-0 p-3 flex flex-col justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <t.icon className="w-3.5 h-3.5 text-[#6FCF97] shrink-0" />
+                      <p className="text-[10px] font-black tracking-wider uppercase text-white drop-shadow truncate">{t.area}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/75 text-[10px] mb-0.5 truncate">{t.title}</p>
+                      <p className="text-white font-black text-sm md:text-base leading-tight tabular-nums drop-shadow">{t.value}</p>
+                    </div>
                   </div>
-                  <p className="text-white/80 text-xs mb-1">{t.title}</p>
-                  <p className="text-white font-black text-base md:text-lg leading-tight">{t.value}</p>
                 </div>
               ))}
             </div>
             <div className="flex items-center justify-between flex-wrap gap-3">
-              <p className="text-white/80 text-xs md:text-sm">
-                أسعار {devCount > 0 ? `${devCount} مشروع من المطورين` : 'مشروعات المطورين'} + الريسيل + الإيجارات + فرص معروضة 🔥 — العاصمة والتجمع والساحل
+              <p className="text-gray-600 text-xs md:text-sm inline-flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-[#1F6F5F] shrink-0" />
+                أسعار {devCount > 0 ? `${devCount} مشروع من المطورين` : 'مشروعات المطورين'} + الريسيل + الإيجارات — العاصمة والتجمع والساحل
               </p>
-              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-[#1F6F5F] font-bold text-sm group-hover:gap-3 transition-all">
+              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#1F6F5F] text-white font-bold text-sm group-hover:gap-3 transition-all shadow-lg">
                 شوف كل الأسعار
                 <ArrowLeft className="w-4 h-4" />
               </span>
             </div>
+          </Link>
+
+          {/* شريط لوجوهات المطورين المتحرك — على شريحة فاتحة جوّه البطاقة */}
+          <div className="mt-6 -mx-5 md:-mx-7 -mb-5 md:-mb-7 bg-white border-t border-[#EAE4D7] rounded-t-3xl px-5 md:px-7 pt-4 pb-5 relative">
+            <DeveloperLogosMarquee />
           </div>
-        </Link>
+        </div>
       </div>
     </section>
   )

@@ -18,7 +18,7 @@ export default function MaridChatFab() {
       href="/chat/marid"
       aria-label="كلّم المارد على مضمونة"
       title="كلّم المارد"
-      className="fixed z-50 right-4 bottom-24 md:bottom-6 flex items-center gap-2 ps-1.5 pe-4 py-1.5 rounded-full text-white font-bold text-sm no-underline shadow-luxe ring-2 ring-white/60 hover:-translate-y-0.5 transition-transform"
+      className="fixed z-50 right-4 bottom-24 md:bottom-6 hidden md:flex items-center gap-2 ps-1.5 pe-4 py-1.5 rounded-full text-white font-bold text-sm no-underline shadow-luxe ring-2 ring-white/60 hover:-translate-y-0.5 transition-transform"
       style={{ background: 'linear-gradient(135deg,#0a7d6e 0%,#075E54 100%)' }}
     >
       <span className="w-9 h-9 rounded-full bg-white grid place-items-center overflow-hidden shrink-0">

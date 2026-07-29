@@ -640,27 +640,7 @@ function AddListingPageInner({
 
         {step === 1 && (
           <>
-            {/* Excel bulk entry (Jul 5 2026): suppliers with many items skip the
-                one-by-one wizard entirely — sheet → bulk drafts → review pipeline.
-
-                🧹 (٢٥ يوليو ٢٠٢٦ — محمد) الكلام هنا كان «عندك أصناف كتير؟ ارفعهم
-                Excel»، وجوّه الويزارد في خطوة المنتجات فيه رفع Excel تاني.
-                الاتنين **مش نفس الحاجة**: ده لـ«إعلانات منفصلة»، وده لـ«منتجات
-                جوّه إعلان واحد» — بس الكلمتين كانوا شكل واحد فبيبانوا تكرار.
-                الكلام هنا بقى يقول «إعلانات» صراحةً عشان الفرق يبان من أول نظرة. */}
-            <button
-              type="button"
-              onClick={() => setShowBulkExcel(true)}
-              className="w-full mb-4 flex items-center gap-3 bg-white border-2 border-dashed border-[#1F6F5F]/35 rounded-2xl px-4 py-3.5 text-right hover:bg-[#1F6F5F]/5 transition"
-            >
-              <span className="text-2xl">📊</span>
-              <span className="flex-1">
-                <span className="block text-sm font-black text-[#1F6F5F]">عندك أكتر من إعلان تضيفه؟ ارفعهم كلهم مرة واحدة</span>
-                <span className="block text-[11px] font-bold text-gray-500 mt-0.5">شيت واحد لحد ٢٠٠ إعلان — بدل ما تعيد الخطوات لكل واحد</span>
-              </span>
-              <span className="text-[#1F6F5F] font-black">←</span>
-            </button>
-
+            {/* 🧹 (٢٩ يوليو ٢٠٢٦ — محمد) شريط «ارفع إعلاناتك بالجملة» اتشال من فوق خالص. */}
             <StepCategory
               value={draft.category_slug}
               categories={dbExtraCategories}

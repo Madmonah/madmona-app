@@ -173,6 +173,20 @@ const VERTICALS: Record<string, VerticalCfg> = {
     catLabels: { general: 'عام', عام: 'عام' }, catIcons: {},
   },
 
+  // بيع منتجات (أثاث / منزل / إلكترونيات) — تسوّق بدل حجز
+  retail: {
+    kicker: 'تسوّق أونلاين',
+    heroCta: 'اتفرّج على المنتجات', heroCtaIcon: ShoppingBag, waCta: 'اسأل عن منتج',
+    bookChip: 'شحن وتوصيل', unitWord: 'منتج',
+    galleryHeading: 'من المعرض',
+    galleryTiles: ['المنتجات', 'المعرض', 'تفاصيل', 'الجودة'],
+    branchesHeading: 'فروعنا', branchCta: 'زور',
+    servicesHeading: 'منتجاتنا وأسعارها', servicesIcon: ShoppingBag,
+    teamHeading: 'الفريق',
+    accountSub: 'تابع طلباتك ومشترياتك',
+    coverBadge: 'صورة المعرض',
+    catLabels: { general: 'عام', 'عام': 'عام' }, catIcons: {},
+  },
   // أي مجال تاني (تكنولوجيا / غير محدد) — محايد عام
   default: {
     kicker: 'احجز أونلاين',
@@ -195,6 +209,7 @@ function getVertical(industry: string | null | undefined): VerticalCfg {
   if (industry === 'restaurant' || industry === 'restaurants') return VERTICALS.restaurant
   if (industry === 'vehicle_agency' || industry === 'auto') return VERTICALS.vehicle_agency
   if (industry === 'contracting' || industry === 'construction') return VERTICALS.contracting
+  if (industry === 'retail' || industry === 'furniture' || industry === 'shop') return VERTICALS.retail
   return VERTICALS.default
 }
 
@@ -287,13 +302,13 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
           <p className="text-sm text-white/90 flex items-center gap-1.5"><MapPin className="w-4 h-4" /> {loc}</p>
 
           <div className="flex flex-wrap gap-2 mt-3.5">
-            {[`${fmt(branches.length)} فروع`, `${fmt(data.service_count)} ${v.unitWord}`, v.bookChip].map((s) => (
+            {[branches.length > 0 ? `${fmt(branches.length)} فروع` : null, `${fmt(data.industry === 'retail' ? data.product_count : data.service_count)} ${v.unitWord}`, v.bookChip].filter(Boolean).map((s: any) => (
               <span key={s} className="text-xs font-bold bg-white/14 ring-1 ring-white/25 px-3 py-1.5 rounded-full">{s}</span>
             ))}
           </div>
 
           <div className="flex gap-2.5 mt-4">
-            <a href="#book" className="flex-[1.4] h-12 rounded-2xl text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: t.gCta }}>
+            <a href={data.industry === 'retail' ? '#products' : '#book'} className="flex-[1.4] h-12 rounded-2xl text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg" style={{ backgroundImage: t.gCta }}>
               <HeroCtaIcon className="w-4 h-4" /> {v.heroCta}
             </a>
             <a href={`https://wa.me/${WA}`} target="_blank" rel="noopener" className="flex-1 h-12 rounded-2xl bg-white/14 ring-1 ring-white/28 text-white font-bold text-sm flex items-center justify-center gap-2">
@@ -313,7 +328,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
 
         {/* products → marketplace (filtered to this merchant) */}
         {data.product_count > 0 && (
-          <Link href={`/marketplace?supplier=${data.supplier_id}`} className="rounded-2xl shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all" style={{ backgroundImage: t.gSoft, border: `1px solid ${t.trustBorder}` }}>
+          <Link id="products" href={`/marketplace?supplier=${data.supplier_id}`} className="rounded-2xl shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all" style={{ backgroundImage: t.gSoft, border: `1px solid ${t.trustBorder}` }}>
             <div className="w-11 h-11 rounded-xl grid place-items-center flex-shrink-0" style={{ background: t.accentSoft }}><ShoppingBag className="w-5 h-5" style={{ color: t.accent }} /></div>
             <div className="min-w-0 flex-1">
               <p className="font-black text-[#1A2E26]">{data.industry === 'vehicle_agency' ? 'قطع غيار وإكسسوارات موتوسيكلات' : 'المنتجات'}</p>
@@ -365,6 +380,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
         )}
 
         {/* branches → book */}
+        {branches.length > 0 && (
         <section id="book">
           <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5"><MapPin className="w-4 h-4" style={{ color: t.accent }} /> {v.branchesHeading}</h2>
           <div className="space-y-2.5">
@@ -386,6 +402,8 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
             ))}
           </div>
         </section>
+
+        )}
 
         {/* services / menu */}
         {services.length > 0 && (

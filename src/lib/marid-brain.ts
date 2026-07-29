@@ -33,7 +33,7 @@ export async function callMaridWithTools(opts: {
   const MAX_TURNS = opts.admin ? 6 : 4
   const tools = opts.admin ? [...MARID_TOOLS, ...ADMIN_TOOLS] : MARID_TOOLS
 
-  const system = `${opts.systemPrompt}${opts.admin ? ADMIN_PROMPT : ''}
+  const systemRaw = `${opts.systemPrompt}${opts.admin ? ADMIN_PROMPT : ''}<<<CACHE_SPLIT>>>
 
 ═══════════════════════════════════════════════════════════
 النهاردة
@@ -67,6 +67,8 @@ ${opts.savedMediaUrl ? `\n📎 الملف اللي بعته اتحفظ هنا:\n
 • «فين حجزي؟» → get_my_orders
 • عايز يضيف منتج/خدمة → اجمع البيانات ثم create_listing_draft
 • «كودي» أو «شير واكسب» أو عايز يرشّح صحابه → get_referral_code
+• أي سؤال عن **سعر الذهب** (عيار 24/21/18) أو **الدولار/اليورو/الاسترليني/الريال** → get_financial_prices
+  الأسعار لحظية على الموقع — ماتقولش «مش متاح» وماتخترعش سعر، نادِ الأداة.
 • عايز يشتغل معانا أو بعت سيرة ذاتية → record_job_application
 • أي كلام عن **أوردر** (قبول/رفض/إلغاء/استفسار) → manage_order
   الأداة بتتأكد من الصلاحية بنفسها. ماتأكّدش على حاجة قبل ما ترجّع ok.
@@ -76,6 +78,10 @@ ${opts.savedMediaUrl ? `\n📎 الملف اللي بعته اتحفظ هنا:\n
   **فورًا وقبل ما ترد**. ماتستأذنش وماتقولش «تحب أسجّلهولك؟» —
   سجّله وبعدين قول للعميل إنك سجّلته وهترجعله.
   الطلب اللي مايتسجّلش بيضيع للأبد.
+• أي سؤال عن **سعر الذهب** (عيار 24/21/18) أو **الدولار/اليورو/الاسترليني/الريال** → get_financial_prices
+  الأسعار لحظية. ماتخترعش سعر من دماغك — الأداة بترجّع نفس اللي ظاهر فوق في الموقع.
+• أي سؤال عن **سعر عقار/شقة/فيلا/محل** في منطقة (العاصمة/التجمع/الساحل/أكتوبر...) → get_property_prices
+  ابعت اسم المنطقة لو حدّدها. ماتخترعش سعر عقار — الأداة بترجّع أسعار بورصة مضمونة الحقيقية.
 
 ⚠️ ممنوع تخترع إعلان أو سعر أو لينك. لو الأداة مارجعتش حاجة،
 قول للعميل بصراحة إن ده مش متاح — ده أحسن ألف مرة من معلومة غلط.
@@ -84,6 +90,19 @@ ${opts.savedMediaUrl ? `\n📎 الملف اللي بعته اتحفظ هنا:\n
 ${Object.entries(MADMONA_LINKS)
   .map(([k, v]) => `  ${k.replace(/_/g, ' ')}: ${v}`)
   .join('\n')}`
+
+  // 💰 Prompt caching (28 Jul 2026) — نكاش الجزء الثابت (البرومبت + تعريفات الأدوات).
+  // حلقة الأدوات بتنادي Claude لحد ٤ مرات لكل رسالة بنفس الـsystem+tools — فالكاش
+  // بيتقري ٣ مرات جوّه الرسالة الواحدة (توفير مضمون مهما كان معدّل الرسايل). دمج
+  // الجزئين بيرجّع البرومبت الأصلي بالحرف (العلامة بتتشال) فسلوك المارد زيّه بالظبط.
+  const _sp = systemRaw.split('<<<CACHE_SPLIT>>>')
+  const system: Array<Record<string, unknown>> =
+    _sp.length === 2
+      ? [
+          { type: 'text', text: _sp[0], cache_control: { type: 'ephemeral' } },
+          { type: 'text', text: _sp[1] },
+        ]
+      : [{ type: 'text', text: _sp.join('') }]
 
   const messages: Array<{ role: 'user' | 'assistant'; content: unknown }> = [
     {
@@ -103,7 +122,7 @@ ${Object.entries(MADMONA_LINKS)
       res = await anthropic.messages.create({
         model: CLAUDE_MODEL,
         max_tokens: 2048,
-        system,
+        system: system as never,
         tools: tools as never,
         messages: messages as never,
       })

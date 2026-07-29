@@ -263,7 +263,7 @@ export default function ListingDetailPage() {
         // إخفاء الصور المعلّمة graphic (زي صور الدم/الحجامة) من الجاليري بالكامل
         setPhotos(
           ((results[0].data || []) as Photo[]).filter(
-            (p) => !(p as { quality_flag?: string | null }).quality_flag
+            (p) => { const q = (p as { quality_flag?: string | null }).quality_flag; return !q || q === 'clean' }
           )
         )
         const attrsData = (results[1].data || []) as AttributeWithValue[]

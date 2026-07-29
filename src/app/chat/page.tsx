@@ -72,41 +72,46 @@ export default function ChatHub() {
   }, [])
 
   return (
-    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#fff', fontFamily: 'system-ui, sans-serif' }}>
-      <header style={{ background: '#075E54', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ fontSize: 20, fontWeight: 800, flex: 1 }}>شات مضمونة</div>
+    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "'Cairo', system-ui, sans-serif" }}>
+      <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');"}</style>
+      {/* هوية 4b: هيدر غامق متدرّج زي شات المارد */}
+      <header style={{ background: 'linear-gradient(135deg,#14231E,#1F6F5F)', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
+        <div style={{ fontSize: 18, fontWeight: 900, flex: 1 }}>شات مضمونة</div>
         <InviteContacts />
-        <Link href="/chat/settings" aria-label="إعدادات" style={{ color: '#fff', fontSize: 22, textDecoration: 'none' }}>⚙️</Link>
+        <Link href="/chat/settings" aria-label="إعدادات" style={{ color: 'rgba(255,255,255,.85)', fontSize: 20, textDecoration: 'none' }}>⚙️</Link>
       </header>
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        <Link href="/chat/marid" style={rowStyle}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={MARID_AVATAR} alt="المارد" style={avatarStyle} />
+        <Link href="/chat/marid" style={{ ...rowStyle, background: '#fff' }}>
+          <span style={{ position: 'relative', flexShrink: 0 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={MARID_AVATAR} alt="المارد" style={{ ...avatarStyle, border: '2px solid rgba(31,111,95,.2)' }} />
+            <span style={{ position: 'absolute', bottom: 1, left: 1, width: 12, height: 12, borderRadius: '50%', background: '#6FCF97', border: '2px solid #fff' }} />
+          </span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-              <span style={{ fontWeight: 700, color: '#111' }}>المارد 🧞</span>
-              <span style={{ fontSize: 11, color: '#8a8a8a' }}>{maridTime}</span>
+              <span style={{ fontWeight: 900, color: '#14231E' }}>المارد 🧞</span>
+              <span style={{ fontSize: 11, color: '#8A9690', fontWeight: 600 }}>{maridTime}</span>
             </div>
-            <div style={{ fontSize: 13, color: '#667', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{maridPreview}</div>
+            <div style={{ fontSize: 13, color: '#5A6660', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{maridPreview}</div>
           </div>
         </Link>
 
-        <div style={{ padding: '12px 16px 4px', fontSize: 12, fontWeight: 700, color: '#075E54' }}>الجروبات</div>
+        <div style={{ padding: '14px 16px 4px', fontSize: 11, fontWeight: 900, color: '#1F6F5F', letterSpacing: '.3px' }}>الجروبات</div>
         {rooms.length === 0 ? (
-          <div style={{ padding: '6px 16px 16px', fontSize: 13, color: '#999' }}>
+          <div style={{ padding: '6px 16px 16px', fontSize: 13, color: '#8A9690', fontWeight: 600 }}>
             {loggedIn ? 'لسه مفيش جروبات — ابدأ واحد من تبويب الجروبات.' : 'سجّل دخولك علشان تشوف جروباتك.'}
           </div>
         ) : (
           rooms.map((r) => (
             <Link key={r.id} href={`/team?room=${r.id}`} style={rowStyle}>
-              <div style={{ ...avatarStyle, background: '#25D366', color: '#053b32', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 800 }}>{(r.name || '؟').trim().charAt(0)}</div>
+              <div style={{ ...avatarStyle, background: 'radial-gradient(circle at 35% 30%,#2FA084,#1F6F5F)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 800 }}>{(r.name || '؟').trim().charAt(0)}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                  <span style={{ fontWeight: 700, color: '#111' }}>{r.name}</span>
-                  <span style={{ fontSize: 11, color: '#8a8a8a' }}>{r.time}</span>
+                  <span style={{ fontWeight: 800, color: '#14231E' }}>{r.name}</span>
+                  <span style={{ fontSize: 11, color: '#8A9690', fontWeight: 600 }}>{r.time}</span>
                 </div>
-                <div style={{ fontSize: 13, color: '#667', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.last}</div>
+                <div style={{ fontSize: 13, color: '#5A6660', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.last}</div>
               </div>
             </Link>
           ))
@@ -118,5 +123,5 @@ export default function ChatHub() {
   )
 }
 
-const rowStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', textDecoration: 'none', borderBottom: '1px solid #f0f0f0' }
+const rowStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', textDecoration: 'none', borderBottom: '1px solid #F4F1E8' }
 const avatarStyle: React.CSSProperties = { width: 50, height: 50, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, background: '#fff' }

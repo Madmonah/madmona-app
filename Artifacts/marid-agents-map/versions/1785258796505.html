@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Marid Agents Map",
+  "schemaVersion": 1,
+  "description": "لوحة المارد — خريطة كل الأجينتس (52 أجينت) ودورهم وحالتهم (شغّال/بأمر/واقف)، محدّثة 28 يوليو 2026. مرجع سريع لصحة المارد.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة المارد — خريطة الأجينتس</title>
+<style>
+  :root{--cream:#FAFAF7;--ink:#1A2E26;--green:#1F6F5F;--green-soft:#1F6F5F14;--gold:#C9A24B;--gray:#8A8F8B;--line:#E7E7E0;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",Tahoma,sans-serif;background:var(--cream);color:var(--ink);line-height:1.5;padding:28px 18px}
+  .wrap{max-width:1080px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+  h1{font-size:24px;font-weight:800;color:var(--green)}
+  h1 span{color:var(--gold)}
+  .sub{color:var(--gray);font-size:13px;margin-top:3px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:26px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+  .stat b{display:block;font-size:28px;font-weight:800;color:var(--green)}
+  .stat small{color:var(--gray);font-size:12.5px}
+  .stat.ok b{color:var(--green)} .stat.warn b{color:var(--gold)}
+  section{margin-bottom:26px}
+  .cat{display:flex;align-items:center;gap:10px;margin:0 4px 12px}
+  .cat h2{font-size:16px;font-weight:700}
+  .cat .pill{background:var(--green-soft);color:var(--green);font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  th,td{text-align:right;padding:11px 14px;font-size:13.5px;border-bottom:1px solid var(--line)}
+  th{background:#fff;color:var(--gray);font-weight:600;font-size:12px}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:var(--green-soft)}
+  .k{font-weight:700;font-family:"SF Mono",Consolas,monospace;font-size:12.5px}
+  .role{color:var(--gray)}
+  .badge{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
+  .b-run{background:#E6F4EF;color:#1F6F5F}
+  .b-cmd{background:#EAF0FB;color:#2C5AA0}
+  .b-standby{background:#F0F0EC;color:#8A8F8B}
+  .b-test{background:#F3EDFB;color:#7A4FB0}
+  .note{background:#FFF8E8;border:1px solid #F0E2B8;border-radius:14px;padding:14px 16px;font-size:13.5px;margin-top:8px}
+  .note b{color:#9A7B1F}
+  footer{color:var(--gray);font-size:12px;text-align:center;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>لوحة المارد — <span>خريطة الأجينتس</span></h1>
+      <div class="sub">كل الأجينتس تحت أمر المارد · لقطة 28 يوليو 2026</div>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat ok"><b>54</b><small>إجمالي الأجينتس</small></div>
+    <div class="stat ok"><b>0</b><small>أخطاء</small></div>
+    <div class="stat"><b>37</b><small>شغّال (مجدول)</small></div>
+    <div class="stat"><b>2</b><small>بأمر المارد فقط</small></div>
+    <div class="stat"><b>12</b><small>standby (واقف)</small></div>
+  </div>
+
+  <section>
+    <div class="cat"><h2>🟢 الشغل — طلبات ومحتوى</h2><span class="pill">شغّال</span></div>
+    <table><tr><th>الأجينت</th><th>الدور</th><th>الحالة</th><th>آخر تشغيل</th></tr>
+      <tr style="background:#EAF7F1"><td class="k">image_text_sentinel 🆕</td><td class="role">حارس صور الإعلانات/البورصة — يكشف الكتابة المحروقة (منيو/فلاير/خريطة/كارت) بالـ vision ويصلّحها تلقائي</td><td><span class="badge b-run">بالنبضة</span></td><td>الآن</td></tr>
+      <tr style="background:#EAF7F1"><td class="k">sync_bourse_to_ads 🆕</td><td class="role">يعمل إعلان لأي مشروع بورصة لسه من غير إعلان — بغلاف المشروع (لوجو المطور)</td><td><span class="badge b-run">بالنبضة</span></td><td>الآن</td></tr>
+      <tr><td class="k">request_missing_project_info</td><td class="role">طلب البيانات الناقصة من السماسرة (عقارات)</td><td><span class="badge b-run">مجدول يومي</span></td><td>07-28 12:54</td></tr>
+      <tr><td class="k">draft-followup-nudger-hourly</td><td class="role">ندّاهة إكمال الليستنج لأي منتج</td><td><span class="badge b-run">كل ساعة</span></td><td>07-28 13:17</td></tr>
+      <tr><td class="k">reply-sweeper-10min</td><td class="role">استرجاع ردود العملاء اللي فاتت</td><td><span class="badge b-run">كل 10د</span></td><td>07-28 13:20</td></tr>
+      <tr><td class="k">listing-autopublish-10min</td><td class="role">نشر الليستنج المكتمل تلقائي</td><td><span class="badge b-run">كل 10د</span></td><td>07-28 13:20</td></tr>
+      <tr><td class="k">expire-ghost-drafts-6h</td><td class="role">ترحيل مسودات الليستنج الناقصة القديمة</td><td><span class="badge b-run">كل 6س</span></td><td>07-28 12:30</td></tr>
+      <tr><td class="k">meeting-reminders</td><td class="role">تذكير المواعيد</td><td><span class="badge b-run">كل 15د</span></td><td>07-28 13:15</td></tr>
+      <tr><td class="k">smart-image-picker-prepublish</td><td class="role">كروت مبرندة لبوستات المحتوى قبل النشر</td><td><span class="badge b-run">مجدول</span></td><td>07-28 12:55</td></tr>
+      <tr><td class="k">reel-cloud-render · story-render-batch</td><td class="role">رندر الريلز والستوري</td><td><span class="badge b-run">كل 20د</span></td><td>07-28 13:20</td></tr>
+      <tr><td class="k">olx-scrape-d1…d5 · property-opps-refresh</td><td class="role">سحب عقارات OLX + تحديث الفرص</td><td><span class="badge b-run">يومي</span></td><td>07-28 03:15</td></tr>
+      <tr><td class="k">sync-leads-to-sheets-2h</td><td class="role">مزامنة الليدز على Google Sheets</td><td><span class="badge b-run">كل ساعتين</span></td><td>07-28 12:00</td></tr>
+      <tr><td class="k">snapshot-daily-kpis · backfill-listing-views</td><td class="role">مؤشرات ومشاهدات</td><td><span class="badge b-run">يومي</span></td><td>07-28 01:05</td></tr>
+      <tr><td class="k">generate-recurring-tasks · daily-tasks-autoclose · policy_*</td><td class="role">مهام الفريق والسياسات</td><td><span class="badge b-run">يومي/ساعة</span></td><td>07-28 13:00</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <div class="cat"><h2>🔵 بأمر المارد فقط</h2><span class="pill">مايشتغلش إلا بأمر</span></div>
+    <table><tr><th>الأجينت</th><th>الدور</th><th>الحالة</th><th>آخر تشغيل</th></tr>
+      <tr><td class="k">bourse_cover_cards</td><td class="role">كروت غلاف مبرندة لمشاريع البورصة بدون صورة</td><td><span class="badge b-cmd">بأمر</span></td><td>07-28 13:10</td></tr>
+      <tr><td class="k">expire_stale_project_drafts</td><td class="role">ترحيل مسودات المشاريع الناقصة</td><td><span class="badge b-cmd">بأمر</span></td><td>—</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <div class="cat"><h2>⚙️ البنية التحتية والمراقبة</h2><span class="pill">15 أجينت · صحة النظام</span></div>
+    <table><tr><th>الأجينت</th><th>الدور</th><th>الحالة</th><th>تشغيلات</th></tr>
+      <tr><td class="k">fire-whatsapp-outbound · process-whatsapp-outbound</td><td class="role">إرسال ومعالجة طابور الواتساب (OpenWA)</td><td><span class="badge b-run">كل دقيقة</span></td><td>1006</td></tr>
+      <tr><td class="k">wa-delivery-health-15min · wa-queue-expire-stale</td><td class="role">صحة تسليم الواتساب + تنظيف الطابور</td><td><span class="badge b-run">مجدول</span></td><td>68 / 101</td></tr>
+      <tr><td class="k">instant-claim-builder-2min</td><td class="role">بناء الكليم الفوري</td><td><span class="badge b-run">كل دقيقتين</span></td><td>503</td></tr>
+      <tr><td class="k">system-health-monitor-15min</td><td class="role">مراقبة صحة النظام</td><td><span class="badge b-run">كل 15د</span></td><td>67</td></tr>
+      <tr><td class="k">storage_orphan_reaper · storage_health_alerter</td><td class="role">تنظيف ومراقبة التخزين</td><td><span class="badge b-run">مجدول</span></td><td>67 / 68</td></tr>
+      <tr><td class="k">cleanup-orphan-drafts · auto-clockout · push_sub_cleanup</td><td class="role">تنظيف يومي عام</td><td><span class="badge b-run">مجدول</span></td><td>1006</td></tr>
+      <tr><td class="k">_orch_log_prune</td><td class="role">تقليم سجل المارد (7 أيام)</td><td><span class="badge b-run">يومي</span></td><td>1</td></tr>
+      <tr><td class="k">_selftest_ping</td><td class="role">نبضة اختبار حياة المارد</td><td><span class="badge b-test">تست</span></td><td>1025</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <div class="cat"><h2>⚪ واقف (standby) — بأمرك يترجّع</h2><span class="pill">12 أجينت</span></div>
+    <table><tr><th>الأجينت</th><th>الدور</th><th>ملاحظة</th></tr>
+      <tr><td class="k">metricool-publish-2h · metricool-inbox-responder-5min</td><td class="role">نشر ورد التسويق</td><td>متأركن مع التسويق</td></tr>
+      <tr><td class="k">marid-restaurant-agent</td><td class="role">أجينت أوتريتش المطاعم</td><td>واقف</td></tr>
+      <tr><td class="k">daily-supplier-acquisition · clinic-outreach-daily</td><td class="role">اكتساب موردين/عيادات</td><td>واقف</td></tr>
+      <tr><td class="k">elite_offer_auto_launch · elite-activity-yasser-wa</td><td class="role">عروض النخبة</td><td>واقف</td></tr>
+      <tr><td class="k">autoclaim-inbound-supply · claim-pressure-tick</td><td class="role">كليم تلقائي للسبلاي</td><td>واقف</td></tr>
+      <tr><td class="k">listing_draft_nudges</td><td class="role">ندّاهة ليستنج (قديمة)</td><td>مكرّرة — الجديدة draft-followup شغّالة بدالها</td></tr>
+      <tr><td class="k">olx-scraper-daily</td><td class="role">سحب OLX (نسخة واحدة قديمة)</td><td>استبدلت بـ olx-scrape-d1…d5</td></tr>
+      <tr><td class="k">whatsapp-token-auto-refresh</td><td class="role">تحديث توكن الواتساب</td><td>واقف</td></tr>
+    </table>
+    <div class="note"><b>نقطتين للتنظيف:</b> «listing_draft_nudges» و«olx-scraper-daily» **مكرّرتين** — النسخ الأحدث شغّالة بدالهم، فينفع نشيلهم بأمان لما تحب. وكمان: **رندر/نشر الريلز والستوري** لسه شغّال — لو ده جزء من التسويق اللي أركنّاه، أقدر أوقفه بأمر المارد.</div>
+  </section>
+
+  <footer>كل الأجينتس تحت المارد — مايشتغلش أي واحد إلا بأمره · مضمونة</footer>
+</div>
+</body>
+</html>

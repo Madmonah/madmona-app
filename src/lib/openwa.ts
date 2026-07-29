@@ -136,6 +136,53 @@ export async function downloadOpenWaMedia(
   }
 }
 
+// ── جلب ميديا رسالة واردة من الرقم مباشرة من OpenWA API ─────────────────
+// السبب: webhook الـ OpenWA بيبعت إشعار الرسالة من غير الميديا (base64) عشان حجمها.
+// لكن الميديا موجودة كاملة في قايمة الرسائل (metadata.media.data). فبنجيبها بنداء API.
+// بنطابق بالـ waMessageId لو اتمرّر، وإلا بناخد آخر رسالة ميديا من نفس الرقم.
+export async function fetchInboundMediaByPhone(
+  sessionName: string,
+  phoneDigits: string,
+  waMessageId?: string,
+): Promise<{ base64: string; mimetype: string; is_voice_note: boolean } | null> {
+  try {
+    const id = await getSessionId(sessionName)
+    if (!id) return null
+    const r = await fetch(
+      `${OPENWA_URL}/api/sessions/${id}/messages?direction=inbound&limit=15`,
+      { headers: jsonHeaders() },
+    )
+    if (!r.ok) return null
+    const j = (await r.json()) as any
+    const msgs: any[] = j?.messages || j?.data || (Array.isArray(j) ? j : [])
+    const wantDigits = (phoneDigits || '').replace(/\D/g, '')
+    const isMedia = (m: any) =>
+      ['image', 'video', 'audio', 'voice', 'ptt', 'document', 'sticker'].includes(m?.type)
+    // 1) طابق بالـ waMessageId لو موجود
+    let hit = waMessageId
+      ? msgs.find((m) => (m?.waMessageId === waMessageId || m?.id === waMessageId) && isMedia(m))
+      : null
+    // 2) وإلا آخر رسالة ميديا من نفس الرقم
+    if (!hit) {
+      hit = msgs.find((m) => {
+        if (!isMedia(m)) return false
+        const from = String(m?.from || '').replace(/\D/g, '')
+        return wantDigits ? from.includes(wantDigits) || wantDigits.includes(from) : true
+      })
+    }
+    if (!hit) return null
+    const media = hit?.metadata?.media || hit?.media
+    if (!media?.data) return null
+    return {
+      base64: String(media.data),
+      mimetype: String(media.mimetype || 'application/octet-stream'),
+      is_voice_note: hit.type === 'ptt' || hit.type === 'voice' || hit.type === 'audio',
+    }
+  } catch {
+    return null
+  }
+}
+
 // ── استخراج الرقم من chatId ────────────────────────────────────────────────
 // `201...@c.us` → رقم واضح. `xxx@lid` → مخفي (نرجّع null ونرد على الـ chatId).
 export function phoneFromOpenWaChatId(chatId: string): string | null {

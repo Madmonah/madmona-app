@@ -9,7 +9,7 @@ export default function ChatTabs({ active }: { active: 'chat' | 'team' }) {
     { key: 'team', href: '/team', label: 'فريق العمل', icon: '👥' },
   ] as const
   return (
-    <div dir="rtl" style={{ display: 'flex', background: '#075E54' }}>
+    <div dir="rtl" style={{ display: 'flex', background: 'linear-gradient(135deg,#14231E,#1F6F5F)' }}>
       {tabs.map((todo) => {
         const on = todo.key === active
         return (
@@ -20,12 +20,12 @@ export default function ChatTabs({ active }: { active: 'chat' | 'team' }) {
               flex: 1,
               textAlign: 'center',
               padding: '11px 6px',
-              color: on ? '#fff' : 'rgba(255,255,255,.6)',
+              color: on ? '#fff' : 'rgba(255,255,255,.55)',
               fontWeight: on ? 800 : 600,
               fontSize: 14,
               textDecoration: 'none',
-              borderBottom: on ? '3px solid #25D366' : '3px solid transparent',
-              fontFamily: 'system-ui, sans-serif',
+              borderBottom: on ? '3px solid #6FCF97' : '3px solid transparent',
+              fontFamily: "'Cairo', system-ui, sans-serif",
             }}
           >
             {todo.icon} {todo.label}

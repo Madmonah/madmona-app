@@ -411,6 +411,32 @@ export const MARID_TOOLS = [
       'استخدمها لما حد يسأل «الناس بتدوّر على إيه؟» أو «الطلبات الناقصة».',
     input_schema: { type: 'object' as const, properties: {}, required: [] },
   },
+  {
+    name: 'get_financial_prices',
+    description:
+      'هات أسعار الذهب والعملات اللحظية (نفس اللي ظاهر فوق في الموقع). ' +
+      'استخدمها كل ما حد يسأل عن سعر الذهب (عيار 24/21/18)، أو سعر الدولار ' +
+      'أو اليورو أو الاسترليني أو الريال مقابل الجنيه. الأسعار بتتحدّث لحظيًا. ' +
+      'ماتخترعش سعر من دماغك أبدًا — استخدم الأداة دي.',
+    input_schema: { type: 'object' as const, properties: {}, required: [] },
+  },
+  {
+    name: 'get_property_prices',
+    description:
+      'هات أسعار العقارات من بورصة عقارات مضمونة (مشاريع المطورين + الريسيل + الإيجارات). ' +
+      'استخدمها كل ما حد يسأل عن سعر عقار أو شقة أو فيلا أو محل في منطقة معينة، ' +
+      'زي «بكام المتر في العاصمة الإدارية؟» أو «فيه إيه في الساحل؟» أو «عايز أعرف أسعار التجمع». ' +
+      'ممكن تبعت اسم المنطقة (زي «الساحل الشمالي» أو «التجمع») عشان يفلتر، أو سيبها فاضية عشان يجيب عيّنة. ' +
+      'ماتخترعش سعر عقار من دماغك — الأداة دي بترجّع الأسعار الحقيقية المسجّلة في البورصة.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        area: { type: 'string', description: 'اسم المنطقة للتصفية — سيبها فاضية للعيّنة العامة' },
+        segment: { type: 'string', description: 'نوع العرض: developer (مطورين) أو resale (ريسيل) أو rent (إيجار) — اختياري' },
+      },
+      required: [],
+    },
+  },
 ] as const
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -1234,7 +1260,7 @@ async function manageMeeting(a: {
     return {
       ok: true,
       الميعاد: data,
-      قول_للعميل: `اتحجز ✅ ${when.toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'short' })}`,
+      قول_للعميل: `اتحجز ✅ ${when.toLocaleString('ar-EG', { timeZone: 'Africa/Cairo', dateStyle: 'full', timeStyle: 'short' })}`,
     }
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'فشل' }
@@ -1572,6 +1598,115 @@ async function recentDemand(): Promise<ToolResult> {
   }
 }
 
+// ── أسعار الذهب والعملات اللحظية (من /api/financial-data — نفس مصدر شريط الموقع) ──
+async function getFinancialPrices(): Promise<ToolResult> {
+  try {
+    const res = await fetch(`${SITE}/api/financial-data`, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(8000),
+    })
+    if (!res.ok) {
+      return { ok: false, message: 'مصدر الأسعار مش متاح دلوقتي' }
+    }
+    const data = await res.json()
+    if (!data?.ok) {
+      return { ok: false, message: 'مصدر الأسعار مش متاح دلوقتي' }
+    }
+
+    type Cur = { code: string; name_ar: string; rate: number }
+    type Au = { karat: number; price_per_gram_egp: number }
+
+    const gold = (data.gold as Au[]).map((g) => ({
+      العيار: `عيار ${g.karat}`,
+      السعر_للجرام: `${g.price_per_gram_egp.toLocaleString('ar-EG')} ج.م`,
+    }))
+    const currencies = (data.currencies as Cur[]).map((c) => ({
+      العملة: c.name_ar,
+      الكود: c.code,
+      السعر_بالجنيه: c.rate.toFixed(2),
+    }))
+
+    return {
+      ok: true,
+      ذهب: gold,
+      عملات: currencies,
+      ملاحظة: 'الأسعار لحظية وبتتحدّث باستمرار. أسعار الذهب للبيع بالمصنعية بتختلف من محل للتاني.',
+    }
+  } catch {
+    return { ok: false, message: 'مصدر الأسعار مش متاح دلوقتي — جرّب كمان شوية' }
+  }
+}
+// ── أسعار العقارات من بورصة عقارات مضمونة (جدول property_market_items) ──
+async function getPropertyPrices(a: { area?: string; segment?: string }): Promise<ToolResult> {
+  try {
+    const UNIT_LABEL: Record<string, string> = {
+      egp_total: 'إجمالي',
+      egp_per_m2: 'للمتر',
+      egp_month: 'شهريًا',
+      egp_night: 'لليلة',
+    }
+    const SEG_LABEL: Record<string, string> = {
+      developer: 'مطوّر',
+      resale: 'ريسيل',
+      rent: 'إيجار',
+    }
+
+    let q = db
+      .from('property_market_items')
+      .select('title, developer, area_label, price_from, price_to, price_unit, segment, property_type')
+      .eq('status', 'published')
+      .order('area_label', { ascending: true })
+      .limit(a.area?.trim() ? 25 : 12)
+
+    if (a.area?.trim()) q = q.ilike('area_label', `%${a.area.trim()}%`)
+    if (a.segment?.trim() && ['developer', 'resale', 'rent'].includes(a.segment.trim())) {
+      q = q.eq('segment', a.segment.trim())
+    }
+
+    const { data, error } = await q
+    if (error) return { ok: false, message: 'مش قادر أجيب أسعار العقارات دلوقتي' }
+    if (!data || data.length === 0) {
+      return { ok: false, message: a.area ? 'مفيش مشاريع مسجّلة في المنطقة دي' : 'مفيش مشاريع متاحة دلوقتي' }
+    }
+
+    type Row = {
+      title: string
+      developer: string | null
+      area_label: string | null
+      price_from: number | null
+      price_to: number | null
+      price_unit: string
+      segment: string
+    }
+
+    const fmt = (n: number | null) => (n == null ? null : Number(n).toLocaleString('ar-EG'))
+
+    const items = (data as Row[]).map((r) => {
+      const unit = UNIT_LABEL[r.price_unit] || ''
+      let priceStr: string
+      if (r.price_from && r.price_to) priceStr = `من ${fmt(r.price_from)} لـ ${fmt(r.price_to)} ج.م ${unit}`
+      else if (r.price_from) priceStr = `يبدأ من ${fmt(r.price_from)} ج.م ${unit}`
+      else priceStr = 'السعر غير معلن — اسأل المطوّر'
+      return {
+        المشروع: r.title,
+        المطوّر: r.developer || '—',
+        المنطقة: r.area_label || '—',
+        النوع: SEG_LABEL[r.segment] || r.segment,
+        السعر: priceStr,
+      }
+    })
+
+    return {
+      ok: true,
+      عدد_النتائج: items.length,
+      عقارات: items,
+      رابط_البورصة: `${SITE}/real-estate/market`,
+      ملاحظة: 'الأسعار مسجّلة في بورصة مضمونة وبتتحدّث. للتفاصيل ابعت العميل على رابط البورصة.',
+    }
+  } catch {
+    return { ok: false, message: 'مش قادر أجيب أسعار العقارات دلوقتي — جرّب كمان شوية' }
+  }
+}
 export async function runMaridTool(name: string, input: Record<string, unknown>): Promise<ToolResult> {
   try {
     switch (name) {
@@ -1617,6 +1752,10 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await recentOrders()
       case 'recent_demand':
         return await recentDemand()
+      case 'get_financial_prices':
+        return await getFinancialPrices()
+      case 'get_property_prices':
+        return await getPropertyPrices(input as never)
       default:
         return { error: `أداة مش معروفة: ${name}` }
     }

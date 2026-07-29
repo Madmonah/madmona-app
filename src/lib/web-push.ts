@@ -87,9 +87,9 @@ export async function sendPush(
 export async function sendPushToMany(
   subs: PushSubscriptionData[],
   payload: PushPayload
-): Promise<{ sent: number; failed: number; expiredEndpoints: string[] }> {
+): Promise<{ sent: number; failed: number; expiredEndpoints: string[]; sentEndpoints: string[] }> {
   if (subs.length === 0) {
-    return { sent: 0, failed: 0, expiredEndpoints: [] }
+    return { sent: 0, failed: 0, expiredEndpoints: [], sentEndpoints: [] }
   }
 
   const results = await Promise.allSettled(subs.map((s) => sendPush(s, payload)))
@@ -97,11 +97,13 @@ export async function sendPushToMany(
   let sent = 0
   let failed = 0
   const expiredEndpoints: string[] = []
+  const sentEndpoints: string[] = []
 
   results.forEach((r, i) => {
     if (r.status === 'fulfilled') {
       if (r.value.ok) {
         sent++
+        sentEndpoints.push(subs[i].endpoint)
       } else {
         failed++
         if (r.value.expired) {
@@ -113,7 +115,7 @@ export async function sendPushToMany(
     }
   })
 
-  return { sent, failed, expiredEndpoints }
+  return { sent, failed, expiredEndpoints, sentEndpoints }
 }
 
 export function isPushConfigured(): boolean {
