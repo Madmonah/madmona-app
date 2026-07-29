@@ -99,7 +99,7 @@ export default function InviteContacts() {
           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
         }}
       >
-        <span style={{ fontSize: 16 }}>👥</span> ادعُ
+        <span style={{ fontSize: 16 }}>👥</span> Invite
       </button>
 
       {open && (
@@ -163,7 +163,7 @@ export default function InviteContacts() {
             {picked.length > 0 && (
               <div style={{ marginTop: 16 }}>
                 <div style={{ fontSize: 12, fontWeight: 800, color: '#075E54', marginBottom: 8 }}>
-                  {picked.length} جهة اتصال — اكبس «ادعُ» جنب كل حد
+                  {picked.length} جهة اتصال — اكبس «Invite» جنب كل حد
                 </div>
                 {picked.map((p, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 4px', borderBottom: '1px solid #f0f0f0' }}>
@@ -180,7 +180,7 @@ export default function InviteContacts() {
                       rel="noopener noreferrer"
                       style={{ background: '#25D366', color: '#fff', textDecoration: 'none', borderRadius: 18, padding: '7px 15px', fontSize: 13, fontWeight: 800, flexShrink: 0 }}
                     >
-                      ادعُ
+                      Invite
                     </a>
                   </div>
                 ))}

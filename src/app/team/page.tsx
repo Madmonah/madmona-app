@@ -1,9 +1,14 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { Plus, Smile, Mic, Send, Square, Phone, Video } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ChatBottomNav from '@/components/ChatBottomNav'
+import CallOverlay from '@/components/CallOverlay'
+import FriendsSheet from '@/components/FriendsSheet'
 import { subscribeToPush, getNotificationPermission, isPushSupported } from '@/lib/push-subscription'
+
+const EMOJIS = ['😀','😂','🥰','😍','👍','🙏','🔥','🎉','❤️','😅','😊','🤝','👌','💪','🙌','😎','🤔','😢','😮','🥳','😉','🫡','💯','✅','⭐','🎁','📦','🚗','🏠','🍔','☕','💰','📞','✍️','👏','😇','🤩','🌹','🙈','🤗']
 
 type Room = { id: string; name: string | null; marid_enabled: boolean; kind?: string | null; otherName?: string | null; role?: string | null }
 type CMsg = { id: string; sender_id: string | null; sender_kind: string; sender_name: string | null; body: string | null; kind: string; media_url: string | null; created_at: string }
@@ -83,7 +88,14 @@ export default function TeamPage() {
   const [membersOpen, setMembersOpen] = useState(false)    // شيت عرض الأعضاء
   const [members, setMembers] = useState<Member[]>([])
   const [membersLoading, setMembersLoading] = useState(false)
+  const [showEmoji, setShowEmoji] = useState(false)        // لوحة الإيموجي (زي شات المارد)
+  const [showPlus, setShowPlus] = useState(false)          // شيت الإرفاق ➕ (صورة/ملف/موقع/ميعاد)
+  const [call, setCall] = useState<{ video: boolean } | null>(null)      // مكالمة شغالة
+  const [incomingCall, setIncomingCall] = useState<CMsg | null>(null)    // بانر مكالمة واردة
+  const [showFriends, setShowFriends] = useState(false)    // شيت الأصدقاء
   const scrollRef = useRef<HTMLDivElement>(null)
+  const docRef = useRef<HTMLInputElement>(null)
+  const calRef = useRef<HTMLInputElement>(null)
   const chanRef = useRef<ReturnType<typeof supabaseBrowser.channel> | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const recRef = useRef<MediaRecorder | null>(null)
@@ -173,6 +185,8 @@ export default function TeamPage() {
         (payload) => {
           const msg = payload.new as CMsg
           if (msg.sender_kind === 'marid') setMaridThinking(false)
+          // مكالمة واردة: رسالة kind='call' من حد تاني وجديدة → بانر انضمام
+          if (msg.kind === 'call' && msg.sender_id !== uid && Date.now() - new Date(msg.created_at).getTime() < 90_000) setIncomingCall(msg)
           setMessages((m) => (m.some((x) => x.id === msg.id) ? m : [...m, msg]))
         })
       .subscribe()
@@ -245,6 +259,51 @@ export default function TeamPage() {
     } catch { alert('مش قادر أوصل للمايك') }
   }
 
+  // ابدأ مكالمة (صوت/فيديو): بنبعت رسالة kind='call' علشان الطرف التاني يشوف بانر الانضمام
+  async function startCall(video: boolean) {
+    if (!active || !uid) return
+    setShowPlus(false); setShowEmoji(false)
+    try {
+      await supabaseBrowser.from('chat_messages').insert({
+        room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: myName,
+        body: video ? '🎥 بدأ مكالمة فيديو — اكبس زر الفيديو فوق علشان تنضم' : '📞 بدأ مكالمة صوتية — اكبس زر السماعة فوق علشان تنضم',
+        kind: 'call',
+      } as never)
+    } catch {}
+    setCall({ video })
+  }
+  function joinIncoming() {
+    const wantVideo = /🎥/.test(incomingCall?.body || '')
+    setIncomingCall(null); setCall({ video: wantVideo })
+  }
+
+  // بعت موقعي الحالي كرسالة لينك خرائط جوجل (زي شات المارد)
+  function sendLocation() {
+    setShowPlus(false)
+    if (!navigator.geolocation) { alert('الموقع مش متاح في المتصفح ده'); return }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        if (!active || !uid) return
+        const body = `📍 موقعي: https://maps.google.com/?q=${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`
+        const { data: ins } = await supabaseBrowser.from('chat_messages')
+          .insert({ room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: myName, body, kind: 'text' } as never)
+          .select('*').single()
+        if (ins) setMessages((m) => (m.some((x) => x.id === (ins as CMsg).id) ? m : [...m, ins as CMsg]))
+      },
+      () => alert('مش قادر أجيب موقعك — اسمح للمتصفح بالوصول للموقع')
+    )
+  }
+  // بعت ميعاد متاح (زي شات المارد)
+  async function onCal(e: React.ChangeEvent<HTMLInputElement>) {
+    const v = e.target.value; e.target.value = ''; setShowPlus(false)
+    if (!v || !active || !uid) return
+    const body = `🗓️ أنا متاح: ${new Date(v).toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'short' })}`
+    const { data: ins } = await supabaseBrowser.from('chat_messages')
+      .insert({ room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: myName, body, kind: 'text' } as never)
+      .select('*').single()
+    if (ins) setMessages((m) => (m.some((x) => x.id === (ins as CMsg).id) ? m : [...m, ins as CMsg]))
+  }
+
   // فوروارد: تحويل رسالة ميديا لمحادثة تانية (نسخ media_url + kind لغرفة تانية)
   async function forwardTo(room: Room) {
     const m = forwardMsg
@@ -300,10 +359,16 @@ export default function TeamPage() {
     }
   }
 
+  // فتح محادثة خاصة برقم معيّن (بيستخدمها شيت الأصدقاء «💬 كلّمه»)
+  async function openDMByPhone(phone: string) {
+    setShowFriends(false)
+    await startDM({ phone })
+  }
+
   // ابدأ محادثة خاصة ١:١ — اختار الشخص من جهات اتصال التليفون
-  async function startDM() {
+  async function startDM(pre?: PickedContact) {
     if (!uid) return
-    const picked = await getPhone('رقم موبايل الشخص (لازم يكون مسجّل على مضمونة):')
+    const picked = pre || await getPhone('رقم موبايل الشخص (لازم يكون مسجّل على مضمونة):')
     if (!picked) return
     try {
       const res = await fetch('/api/chat/dm', {
@@ -422,11 +487,16 @@ export default function TeamPage() {
     if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null }
   }
 
-  // حذف الجروب بالكامل (المالك بس)
+  // حذف الجروب بالكامل (المالك بس) — أو حذف المحادثة الخاصة (أي طرف فيها)
   async function deleteGroup() {
-    if (!active || !iAmOwner) return
+    if (!active) return
+    const isDirect = active.kind === 'direct'
+    if (!isDirect && !iAmOwner) return
     setMenuOpen(false)
-    if (!confirm(`حذف جروب «${active.name || 'الجروب'}» نهائياً بكل رسايله وأعضائه؟ (مفيش رجوع)`)) return
+    const q = isDirect
+      ? `حذف المحادثة مع «${active.otherName || 'الشخص ده'}» نهائياً بكل رسايلها؟ (هتتحذف عند الطرفين — مفيش رجوع)`
+      : `حذف جروب «${active.name || 'الجروب'}» نهائياً بكل رسايله وأعضائه؟ (مفيش رجوع)`
+    if (!confirm(q)) return
     const { error } = await supabaseBrowser.rpc('delete_room', { _room: active.id })
     if (error) { setToast('مقدرتش أحذف الجروب'); setTimeout(() => setToast(''), 3000); return }
     if (uid) await loadRooms(uid)
@@ -452,7 +522,8 @@ export default function TeamPage() {
       <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');"}</style>
       <header style={{ background: 'linear-gradient(135deg,#14231E,#1F6F5F)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
         <div style={{ flex: 1, fontWeight: 900, fontSize: 17 }}>👥 محادثاتك</div>
-        <button onClick={startDM} title="اختار شخص من جهات الاتصال" style={{ background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.18)', color: '#fff', borderRadius: 999, padding: '6px 12px', fontWeight: 800, cursor: 'pointer', fontSize: 12.5, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>💬 خاصة</button>
+        <button onClick={() => setShowFriends(true)} title="أصحابك على مضمونة" style={{ background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.18)', color: '#fff', borderRadius: 999, padding: '6px 12px', fontWeight: 800, cursor: 'pointer', fontSize: 12.5, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>🤝 أصحابي</button>
+        <button onClick={() => startDM()} title="اختار شخص من جهات الاتصال" style={{ background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.18)', color: '#fff', borderRadius: 999, padding: '6px 12px', fontWeight: 800, cursor: 'pointer', fontSize: 12.5, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>💬 خاصة</button>
         <button onClick={createRoom} style={{ background: '#2FA084', color: '#fff', border: 'none', borderRadius: 999, padding: '6px 12px', fontWeight: 800, cursor: 'pointer', fontSize: 12.5, whiteSpace: 'nowrap', fontFamily: 'inherit' }}>+ جروب</button>
       </header>
       <div style={{ flex: 1, overflowY: 'auto', padding: 10 }}>
@@ -468,6 +539,7 @@ export default function TeamPage() {
           )
         })}
       </div>
+      {showFriends && <FriendsSheet onOpenDM={openDMByPhone} onClose={() => setShowFriends(false)} />}
       <ChatBottomNav />
     </div>
   )
@@ -478,28 +550,47 @@ export default function TeamPage() {
       <header style={{ background: 'linear-gradient(135deg,#14231E,#1F6F5F)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)', zIndex: 2 }}>
         <button onClick={() => { setActive(null); setMenuOpen(false); if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null } }} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer' }}>→</button>
         <div onClick={() => { if (active.kind !== 'direct') openMembers() }} style={{ flex: 1, minWidth: 0, cursor: active.kind !== 'direct' ? 'pointer' : 'default' }}><div style={{ fontWeight: 900, fontSize: 15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{active.kind === 'direct' ? (active.otherName || 'محادثة خاصة') : (active.name || 'جروب')}</div><div style={{ fontSize: 10.5, fontWeight: 600, color: '#6FCF97' }}>{active.kind === 'direct' ? 'اضغط 🧞 لاستدعاء المارد' : 'اضغط للأعضاء · 🧞 للمارد'}</div></div>
-        <button onClick={summonMaridInRoom} disabled={busy} title="استدعِ المارد" style={{ background: '#2FA084', color: '#fff', border: 'none', borderRadius: 999, padding: '5px 11px', fontSize: 12, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap', opacity: busy ? 0.6 : 1, fontFamily: 'inherit' }}>🧞 المارد</button>
+        <button onClick={() => startCall(false)} title="مكالمة صوتية" aria-label="مكالمة صوتية" style={callBtn}><Phone size={16} strokeWidth={2.2} /></button>
+        <button onClick={() => startCall(true)} title="مكالمة فيديو" aria-label="مكالمة فيديو" style={callBtn}><Video size={17} strokeWidth={2.2} /></button>
+        <button onClick={summonMaridInRoom} disabled={busy} title="استدعِ المارد" style={{ background: '#2FA084', color: '#fff', border: 'none', borderRadius: 999, padding: '5px 11px', fontSize: 12, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap', opacity: busy ? 0.6 : 1, fontFamily: 'inherit' }}>🧞</button>
         <button onClick={() => setGallery(true)} title="ميديا المحادثة" style={{ background: 'rgba(255,255,255,.12)', color: '#fff', border: '1px solid rgba(255,255,255,.18)', borderRadius: 999, padding: '5px 9px', fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>🖼️</button>
-        {active.kind !== 'direct' && (
-          <button onClick={() => setMenuOpen((v) => !v)} title="خيارات الجروب" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 11px', fontSize: 18, lineHeight: 1, cursor: 'pointer', whiteSpace: 'nowrap' }}>⋮</button>
-        )}
+        <button onClick={() => setMenuOpen((v) => !v)} title="خيارات" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 14, padding: '5px 11px', fontSize: 18, lineHeight: 1, cursor: 'pointer', whiteSpace: 'nowrap' }}>⋮</button>
       </header>
-      {menuOpen && active.kind !== 'direct' && (
+      {menuOpen && (
         <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: 56, insetInlineStart: 10, background: '#fff', borderRadius: 12, boxShadow: '0 6px 24px rgba(0,0,0,.22)', overflow: 'hidden', minWidth: 210, fontSize: 14 }}>
-            <button onClick={openMembers} style={menuItem}>👥 أعضاء الجروب</button>
-            <button onClick={inviteLink} style={menuItem}>🔗 دعوة بلينك</button>
-            {iAmOwner && <button onClick={addMember} style={menuItem}>➕ ضيف عضو</button>}
-            <div style={{ height: 1, background: '#eee' }} />
-            <button onClick={clearForMe} style={menuItem}>🧹 امسح المحادثة من عندي</button>
-            {iAmOwner && <button onClick={clearForAll} style={{ ...menuItem, color: '#c0392b' }}>🗑️ امسح الرسايل للكل</button>}
-            <div style={{ height: 1, background: '#eee' }} />
-            {iAmOwner
-              ? <button onClick={deleteGroup} style={{ ...menuItem, color: '#c0392b', fontWeight: 700 }}>❌ احذف الجروب</button>
-              : <button onClick={leaveGroup} style={{ ...menuItem, color: '#c0392b', fontWeight: 700 }}>🚪 اخرج من الجروب</button>}
+            {active.kind === 'direct' ? (
+              <>
+                <button onClick={clearForMe} style={menuItem}>🧹 امسح المحادثة من عندي</button>
+                <div style={{ height: 1, background: '#eee' }} />
+                <button onClick={deleteGroup} style={{ ...menuItem, color: '#c0392b', fontWeight: 700 }}>🗑️ احذف المحادثة نهائياً</button>
+              </>
+            ) : (
+              <>
+                <button onClick={openMembers} style={menuItem}>👥 أعضاء الجروب</button>
+                <button onClick={inviteLink} style={menuItem}>🔗 Invite بلينك</button>
+                {iAmOwner && <button onClick={addMember} style={menuItem}>➕ ضيف عضو</button>}
+                <div style={{ height: 1, background: '#eee' }} />
+                <button onClick={clearForMe} style={menuItem}>🧹 امسح المحادثة من عندي</button>
+                {iAmOwner && <button onClick={clearForAll} style={{ ...menuItem, color: '#c0392b' }}>🗑️ امسح الرسايل للكل</button>}
+                <div style={{ height: 1, background: '#eee' }} />
+                {iAmOwner
+                  ? <button onClick={deleteGroup} style={{ ...menuItem, color: '#c0392b', fontWeight: 700 }}>❌ احذف الجروب</button>
+                  : <button onClick={leaveGroup} style={{ ...menuItem, color: '#c0392b', fontWeight: 700 }}>🚪 اخرج من الجروب</button>}
+              </>
+            )}
           </div>
         </div>
       )}
+      {incomingCall && !call && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: '#FFF7E0', borderBottom: '1px solid #f0e2b8' }}>
+          <span style={{ fontSize: 20 }}>{/🎥/.test(incomingCall.body || '') ? '🎥' : '📞'}</span>
+          <div style={{ flex: 1, fontSize: 13, fontWeight: 800, color: '#8a6d1a' }}>{incomingCall.sender_name || 'حد'} بدأ مكالمة</div>
+          <button onClick={joinIncoming} style={{ background: '#2FA084', color: '#fff', border: 'none', borderRadius: 999, padding: '7px 16px', fontWeight: 800, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>انضم</button>
+          <button onClick={() => setIncomingCall(null)} style={{ background: 'none', border: 'none', fontSize: 17, color: '#8a6d1a', cursor: 'pointer' }}>✕</button>
+        </div>
+      )}
+      {call && active && uid && <CallOverlay roomId={active.id} uid={uid} myName={myName} video={call.video} onClose={() => setCall(null)} />}
       {membersOpen && (
         <div onClick={() => setMembersOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 55, display: 'flex', alignItems: 'flex-end' }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxHeight: '70vh', overflowY: 'auto', borderRadius: '16px 16px 0 0', padding: 16 }}>
@@ -601,15 +692,63 @@ export default function TeamPage() {
         })}
         {(busy || maridThinking) && <div style={{ textAlign: 'end', color: '#B78A12', fontSize: 13, padding: '4px 10px', fontWeight: 700 }}>🧞 المارد بيفكر…</div>}
       </div>
-      <div style={{ display: 'flex', gap: 8, padding: '10px 12px', background: '#fff', borderTop: '1px solid rgba(0,0,0,.05)', alignItems: 'center' }}>
-        <input ref={fileRef} type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) sendMedia(f) }} />
-        <button onClick={() => fileRef.current?.click()} disabled={busy} title="أرفق صورة أو فيديو" style={{ background: '#F1EEE6', color: '#5A6660', border: 'none', borderRadius: '50%', width: 40, height: 40, fontSize: 17, cursor: 'pointer', flexShrink: 0, opacity: busy ? 0.6 : 1 }}>📎</button>
-        <button onClick={toggleRec} disabled={busy} title={recording ? 'إيقاف وإرسال' : 'رسالة صوتية'} style={{ background: recording ? '#E26D5C' : '#F1EEE6', color: recording ? '#fff' : '#5A6660', border: 'none', borderRadius: '50%', width: 40, height: 40, fontSize: 17, cursor: 'pointer', flexShrink: 0, opacity: busy ? 0.6 : 1 }}>{recording ? '⏹️' : '🎤'}</button>
-        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendMsg()} placeholder="اكتب رسالتك…" style={{ flex: 1, padding: '11px 15px', border: 'none', background: '#F1EEE6', borderRadius: 999, fontSize: 13.5, fontWeight: 500, color: '#14231E', outline: 'none', fontFamily: 'inherit' }} />
-        <button onClick={sendMsg} disabled={busy} style={{ background: 'linear-gradient(135deg,#1F6F5F,#2FA084)', color: '#fff', border: 'none', borderRadius: '50%', width: 44, height: 44, fontSize: 17, cursor: 'pointer', opacity: busy ? 0.6 : 1, flexShrink: 0, boxShadow: '0 8px 18px -6px rgba(31,111,95,.5)' }}>➤</button>
+      {/* لوحة الإيموجي — زي شات المارد */}
+      {showEmoji && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, padding: 8, background: '#fff', borderTop: '1px solid rgba(0,0,0,.05)', maxHeight: 160, overflowY: 'auto' }}>
+          {EMOJIS.map((e) => (
+            <button key={e} onClick={() => setInput((v) => v + e)} style={{ border: 'none', background: 'none', fontSize: 24, cursor: 'pointer', padding: 3 }}>{e}</button>
+          ))}
+        </div>
+      )}
+
+      {/* شيت الإرفاق ➕ — صورة/فيديو · ملف/مستند · موقعي · ميعاد (زي شات المارد) */}
+      {showPlus && (
+        <div style={{ display: 'flex', gap: 10, padding: 12, background: '#fff', borderTop: '1px solid rgba(0,0,0,.05)', overflowX: 'auto' }}>
+          <button onClick={() => { setShowPlus(false); fileRef.current?.click() }} style={sheetBtn}>🖼️<div style={sheetLbl}>صورة/فيديو</div></button>
+          <button onClick={() => { setShowPlus(false); docRef.current?.click() }} style={sheetBtn}>📎<div style={sheetLbl}>ملف/مستند</div></button>
+          <button onClick={sendLocation} style={sheetBtn}>📍<div style={sheetLbl}>موقعي</div></button>
+          <button onClick={() => { const el = calRef.current; if (el) { try { el.showPicker() } catch { el.click() } } }} style={sheetBtn}>🗓️<div style={sheetLbl}>ميعاد</div></button>
+        </div>
+      )}
+
+      {/* ─── الكومبوزر بهوية 4b: ➕ دايرة كريمي · بيل الكتابة مع إيموجي · مايك/إرسال متدرّج ─── */}
+      <div style={{ background: '#fff', borderTop: '1px solid rgba(0,0,0,.05)', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <input ref={fileRef} type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) sendMedia(f); e.target.value = '' }} />
+        <input ref={docRef} type="file" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) sendMedia(f); e.target.value = '' }} />
+        <input ref={calRef} type="datetime-local" onChange={onCal} style={{ display: 'none' }} />
+        <button onClick={() => { setShowPlus((v) => !v); setShowEmoji(false) }} title="إرفاق" aria-label="إرفاق" style={{ width: 38, height: 38, borderRadius: '50%', background: '#F1EEE6', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, transition: 'transform .15s', transform: showPlus ? 'rotate(45deg)' : 'none' }}>
+          <Plus size={18} color="#5A6660" strokeWidth={2.2} />
+        </button>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, background: '#F1EEE6', borderRadius: 999, padding: '10px 15px', minWidth: 0 }}>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && sendMsg()}
+            onFocus={() => { setShowEmoji(false); setShowPlus(false) }}
+            placeholder={recording ? 'بسجّل…' : 'اكتب رسالتك…'}
+            style={{ flex: 1, minWidth: 0, border: 'none', background: 'transparent', fontSize: 13.5, fontWeight: 500, color: '#14231E', outline: 'none', fontFamily: 'inherit' }}
+          />
+          <button onClick={() => { setShowEmoji((v) => !v); setShowPlus(false) }} title="إيموجي" aria-label="إيموجي" style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, display: 'flex', flexShrink: 0 }}>
+            <Smile size={17} color="#8A9690" strokeWidth={2} />
+          </button>
+        </div>
+        {input.trim() ? (
+          <button onClick={sendMsg} disabled={busy} title="إرسال" aria-label="إرسال" style={{ ...actionBtn, opacity: busy ? 0.6 : 1 }}>
+            <Send size={18} color="#fff" strokeWidth={2.2} style={{ transform: 'scaleX(-1)' }} />
+          </button>
+        ) : (
+          <button onClick={toggleRec} disabled={busy} title={recording ? 'إيقاف وإرسال' : 'رسالة صوتية'} aria-label="تسجيل صوت" style={{ ...actionBtn, background: recording ? '#E26D5C' : actionBtn.background, boxShadow: recording ? '0 8px 18px -6px rgba(226,109,92,.5)' : actionBtn.boxShadow, opacity: busy ? 0.6 : 1 }}>
+            {recording ? <Square size={16} color="#fff" fill="#fff" /> : <Mic size={19} color="#fff" strokeWidth={2.2} />}
+          </button>
+        )}
       </div>
     </div>
   )
 }
+
+const callBtn: React.CSSProperties = { background: 'rgba(255,255,255,.12)', color: '#fff', border: '1px solid rgba(255,255,255,.18)', borderRadius: 999, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, padding: 0 }
+const actionBtn: React.CSSProperties = { width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,#1F6F5F,#2FA084)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, boxShadow: '0 8px 18px -6px rgba(31,111,95,.5)' }
+const sheetBtn: React.CSSProperties = { border: '1px solid #EAE5D9', background: '#FAFAF7', borderRadius: 12, padding: '10px 16px', fontSize: 26, cursor: 'pointer', display: 'grid', placeItems: 'center', gap: 2, fontFamily: 'inherit', flexShrink: 0 }
+const sheetLbl: React.CSSProperties = { fontSize: 12, color: '#5A6660', fontWeight: 600 }
 
 const menuItem: React.CSSProperties = { display: 'block', width: '100%', textAlign: 'start', padding: '12px 16px', border: 'none', background: '#fff', cursor: 'pointer', fontSize: 14, color: '#222' }
