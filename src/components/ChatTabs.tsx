@@ -6,7 +6,7 @@ import Link from 'next/link'
 export default function ChatTabs({ active }: { active: 'chat' | 'team' }) {
   const tabs = [
     { key: 'chat', href: '/chat', label: 'المحادثة', icon: '💬' },
-    { key: 'team', href: '/team', label: 'فريق العمل', icon: '👥' },
+    { key: 'team', href: '/chat/team', label: 'فريق العمل', icon: '👥' },
   ] as const
   return (
     <div dir="rtl" style={{ display: 'flex', background: 'linear-gradient(135deg,#14231E,#1F6F5F)' }}>
@@ -25,7 +25,7 @@ export default function ChatTabs({ active }: { active: 'chat' | 'team' }) {
               fontSize: 14,
               textDecoration: 'none',
               borderBottom: on ? '3px solid #6FCF97' : '3px solid transparent',
-              fontFamily: "'Cairo', system-ui, sans-serif",
+              fontFamily: "var(--font-cairo), system-ui, sans-serif",
             }}
           >
             {todo.icon} {todo.label}

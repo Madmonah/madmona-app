@@ -65,8 +65,7 @@ export default function ChatSettings() {
   }
 
   return (
-    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "'Cairo', system-ui, sans-serif" }}>
-      <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');"}</style>
+    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
       <header style={{ background: 'linear-gradient(135deg,#14231E,#1F6F5F)', color: '#fff', padding: '14px 16px', fontSize: 17, fontWeight: 900, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>الإعدادات ⚙️</header>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>

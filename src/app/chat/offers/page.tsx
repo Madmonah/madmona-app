@@ -38,8 +38,7 @@ export default function OffersScreen() {
   }, [nonce])
 
   return (
-    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "'Cairo', system-ui, sans-serif" }}>
-      <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');"}</style>
+    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
       <header style={{ background: 'linear-gradient(135deg,#14231E,#1F6F5F)', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
         <div style={{ fontSize: 17, fontWeight: 900, flex: 1 }}>عروض مضمونة 🏷️</div>
         <Link href="/marketplace" style={{ color: '#6FCF97', fontSize: 12.5, fontWeight: 700, textDecoration: 'none' }}>السوق كامل ←</Link>

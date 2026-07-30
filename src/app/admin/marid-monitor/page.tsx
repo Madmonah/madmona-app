@@ -127,8 +127,7 @@ export default function MaridMonitor() {
   }, [sel, reply, sending, pauseAfter, load])
 
   return (
-    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ECE5DD', fontFamily: "'Cairo', system-ui, sans-serif" }}>
-      <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');"}</style>
+    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ECE5DD', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
 
       {/* توست */}
       {toast && (

@@ -28,7 +28,10 @@ function admin() {
   )
 }
 
-const MARID_WA = '201002229982'
+// (30 Jul 2026) رقم اللوجين اتغيّر 9982 -> 337 (البيزنس الموثّق). التأكيد
+// session-agnostic: المخ في /api/whatsapp/baileys بيأكّد كود MADxxxxx مهما
+// كان الرقم المستقبِل وبيرد على نفس الجلسة.
+const MARID_WA = '201026222337'
 // من غير حروف/أرقام لبس (0/O · 1/I/L) — العميل ممكن يكتبه بإيده
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
 

@@ -4,12 +4,18 @@
 
 /* ============================================================================
    Premium Arabic + English typography
+   ----------------------------------------------------------------------------
+   🚀 (٣١ يوليو ٢٠٢٦) اتشال @import بتاع Google Fonts من هنا.
+   كان بيحمّل Cairo + Inter من دومين خارجي بطريقة بتوقف رسم الصفحة، على كل
+   صفحة في الموقع — و Inter كان أصلاً مستضاف محلياً بـ next/font يعني كان
+   بيتحمّل مرتين. دلوقتي التلاتة (Tajawal · Inter · Cairo) كلهم من next/font
+   في layout.tsx: مستضافين على نفس الدومين ومتحطّين بـ preload في <head>،
+   فالمتصفح يبدأ تحميلهم من أول بايت بدل ما يستنى الـCSS يتقرا.
    ============================================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 @layer base {
   html {
-    font-family: 'Cairo', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-cairo), var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;

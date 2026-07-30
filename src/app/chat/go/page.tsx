@@ -25,7 +25,7 @@ function Redirector() {
 
 function Splash() {
   return (
-    <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#F1EEE6', fontFamily: "'Cairo', system-ui, sans-serif" }}>
+    <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#F1EEE6', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: 40, marginBottom: 8 }}>🧞</div>
         <div style={{ fontSize: 14, fontWeight: 800, color: '#5A6660' }}>لحظة…</div>

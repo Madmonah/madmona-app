@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Tajawal, Inter } from 'next/font/google'
+import { Tajawal, Inter, Cairo } from 'next/font/google'
 import { LanguageProvider } from '@/lib/i18n/LanguageProvider'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -37,6 +37,21 @@ const inter = Inter({
   weight: ['400', '500', '600', '700', '800'],
   display: 'swap',
   variable: '--font-inter',
+})
+
+// 🚀 (٣٠ يوليو ٢٠٢٦) خط شات مضمونة.
+// قبل كده كل صفحة شات كانت بتحمّله بـ @import جوّه <style> في كومبوننت client،
+// يعني المتصفح ماكانش يكتشفه غير بعد ما الجافاسكريبت يتحمّل ويعمل hydrate —
+// وبعدين يعمل DNS+TLS لـ fonts.googleapis.com، يقرا الـCSS، يكتشف إن الخط على
+// fonts.gstatic.com، ويعمل DNS+TLS تاني. سلسلة كاملة بتوقف رسم النص، وكلها
+// أول مرة بس (بعد كده كاش) — وده كان بالظبط سبب الديلاي اللي بيحصل أول فتحة.
+// دلوقتي next/font بيستضيفه محلياً وبيحط preload في <head>، فالتحميل بيبدأ من
+// أول بايت بالتوازي مع الجافاسكريبت.
+const cairo = Cairo({
+  subsets: ['arabic', 'latin'],
+  weight: ['400', '600', '700', '800', '900'],
+  display: 'swap',
+  variable: '--font-cairo',
 })
 
 // Runs before paint: reads the saved language and sets <html lang/dir>
@@ -210,7 +225,7 @@ const websiteJsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" className={`${tajawal.variable} ${inter.variable}`}>
+    <html lang="ar" dir="rtl" className={`${tajawal.variable} ${inter.variable} ${cairo.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: NO_FLASH_LANG }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }} />

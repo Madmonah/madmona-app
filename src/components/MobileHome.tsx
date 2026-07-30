@@ -18,6 +18,7 @@ import {
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { DEVELOPER_DIRECTORY } from '@/lib/developer-directory'
+import DownloadAppBig from '@/components/DownloadAppBig'
 
 type Category = {
   id: string
@@ -236,10 +237,16 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
 
       {/* 2. Search hero */}
       <div className="px-4 pt-3.5">
-        <h1 className="text-[22px] font-black text-[#0A0A0A] leading-[1.25] mb-3">
+        {/* تاب تحميل التطبيق - في نفس سطر العنوان على الشمال (30 Jul 2026) */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+        <h1 className="text-[22px] font-black text-[#0A0A0A] leading-[1.25] flex-1 min-w-0">
           {en ? <>Find anything —<br/>you&apos;re <span className="text-[#1F6F5F]">covered</span></>
               : <>دوّر على أي حاجة —<br/>معاملاتك <span className="text-[#1F6F5F]">مضمونة</span></>}
         </h1>
+          <div className="flex-shrink-0 pt-1">
+            <DownloadAppBig compact />
+          </div>
+        </div>
         <form onSubmit={submitSearch} className="flex items-center gap-2.5 bg-white border-2 border-[#E5DFD3] rounded-2xl px-4 py-[13px] shadow-[0_4px_16px_rgba(20,40,34,.05)]">
           <Search className="w-[18px] h-[18px] text-[#7C8A84] flex-shrink-0" strokeWidth={2.5} />
           <input

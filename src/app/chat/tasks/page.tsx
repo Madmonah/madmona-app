@@ -37,8 +37,7 @@ export default function TasksPage() {
   }
 
   return (
-    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#F1EEE6', backgroundImage: 'radial-gradient(circle at 1.5px 1.5px, rgba(31,111,95,.07) 1.5px, transparent 0)', backgroundSize: '26px 26px', fontFamily: "'Cairo', system-ui, sans-serif" }}>
-      <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');"}</style>
+    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#F1EEE6', backgroundImage: 'radial-gradient(circle at 1.5px 1.5px, rgba(31,111,95,.07) 1.5px, transparent 0)', backgroundSize: '26px 26px', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
       <header style={{ background: 'linear-gradient(135deg,#14231E,#1F6F5F)', color: '#fff', padding: '14px 16px', boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
         <div style={{ fontWeight: 900, fontSize: 17 }}>📋 مهامي</div>
         <div style={{ fontSize: 11.5, fontWeight: 600, color: '#6FCF97' }}>{tasks.length} مهمة مفتوحة</div>

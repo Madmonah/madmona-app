@@ -36,7 +36,7 @@ export default function FriendsSheet({ onOpenDM, onClose, onOpenBook }: {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(20,35,30,.55)', zIndex: 65, display: 'flex', alignItems: 'flex-end' }}>
-      <div onClick={(e) => e.stopPropagation()} dir="rtl" style={{ background: '#fff', width: '100%', maxHeight: '78vh', overflowY: 'auto', borderRadius: '18px 18px 0 0', padding: 16, fontFamily: "'Cairo', system-ui, sans-serif" }}>
+      <div onClick={(e) => e.stopPropagation()} dir="rtl" style={{ background: '#fff', width: '100%', maxHeight: '78vh', overflowY: 'auto', borderRadius: '18px 18px 0 0', padding: 16, fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
           <div style={{ fontWeight: 900, fontSize: 16, color: '#14231E', flex: 1 }}>🤝 أصحابي {rows.length ? `(${rows.length})` : ''}</div>
           {onOpenBook && (

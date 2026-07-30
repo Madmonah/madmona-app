@@ -26,6 +26,16 @@ const supabase = createClient(
 
 function cleanPhone(raw: string): string { return raw.replace(/[^0-9]/g, '') }
 
+// (30 Jul 2026) دعم ?next= — الصفحة كانت بتودّي /home دايماً، فأي حد جاي من
+// لينك دعوة كان يدخل وميرجعش يكمّل. بنقرا من window.location مش
+// useSearchParams عشان مانلفّش الصفحة في Suspense ونكسر الـprerender.
+// الشرط !// بيمنع الخروج لدومين برّه (open redirect).
+function nextPath(fallback = '/home'): string {
+  if (typeof window === 'undefined') return fallback
+  const n = new URLSearchParams(window.location.search).get('next') || ''
+  return n.startsWith('/') && !n.startsWith('//') ? n : fallback
+}
+
 export default function MadmonaLoginPage() {
   const router = useRouter()
   const [mode, setMode] = useState<'wa' | 'pin'>('wa')
@@ -42,7 +52,7 @@ export default function MadmonaLoginPage() {
       if (token) {
         // @ts-expect-error rpc typing
         const { data, error } = await supabase.rpc('madmona_resolve', { p_token: token })
-        if (data?.authenticated) { router.push('/home'); return }
+        if (data?.authenticated) { router.push(nextPath()); return }
         // (27 يوليو 2026) نمسح التوكن فقط لو الـresolve أكّد إنه باطل.
         // فشل الاتصال المؤقت (error) مايمسحش توكن صالح.
         if (!error && data && data.authenticated === false) safeStorage.remove('madmona_token')
@@ -108,7 +118,7 @@ export default function MadmonaLoginPage() {
               <p className="text-sm text-[#6B7280] mb-5">
                 من غير باسورد ولا كود بيتبعتلك — رقمك اللي بتبعت منه هو إثبات هويتك.
               </p>
-              <WhatsAppLogin onDone={() => { router.push('/home'); router.refresh() }} />
+              <WhatsAppLogin onDone={() => { router.push(nextPath()); router.refresh() }} />
               <button onClick={() => { setMode('pin'); setError('') }} className="w-full mt-3 py-2.5 rounded-xl border border-[#1F6F5F]/25 text-[#1F6F5F] font-bold text-[13px] flex items-center justify-center gap-1.5">
                 <Briefcase className="w-4 h-4" /> أنا موظف — دخول بالـPIN
               </button>

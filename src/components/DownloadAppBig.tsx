@@ -22,7 +22,10 @@ type InstallPromptEvent = Event & {
 const HOME_URL = 'https://madmonacairo.com'
 const QR_API = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(HOME_URL)}&color=1F6F5F&bgcolor=FAFAF7&qzone=1`
 
-export default function DownloadAppBig() {
+// (30 Jul 2026) compact = نسخة تاب صغيرة بتتحط جمب السيرش في الهيرو.
+// نفس منطق التثبيت والمودالات بالظبط — الاختلاف في الشكل بس، عشان
+// مانكررش كود اكتشاف المنصة في مكانين ويفضل واحد يتصلّح والتاني لأ.
+export default function DownloadAppBig({ compact = false }: { compact?: boolean }) {
   const [installEvent, setInstallEvent] = useState<InstallPromptEvent | null>(null)
   const [isIOS, setIsIOS] = useState(false)
   const [isAndroid, setIsAndroid] = useState(false)
@@ -100,6 +103,8 @@ export default function DownloadAppBig() {
 
   // ============ Already installed state ============
   if (isStandalone) {
+    // في وضع التاب المصغّر مابنعرضش حاجة — الهيرو يفضل نضيف.
+    if (compact) return null
     return (
       <div className="da-installed">
         <CheckCircle2 className="da-installed-icon" />
@@ -115,6 +120,12 @@ export default function DownloadAppBig() {
   // ============ Big CTA button ============
   return (
     <>
+      {compact ? (
+        <button onClick={handleClick} className="da-pill" type="button">
+          <Download className="da-pill-icon" />
+          <span>حمّل التطبيق</span>
+        </button>
+      ) : (
       <button onClick={handleClick} className="da-big">
         {/* Floating decoration emojis */}
         <span className="da-floaty da-floaty-1" aria-hidden>📱</span>
@@ -154,6 +165,7 @@ export default function DownloadAppBig() {
           </span>
         </div>
       </button>
+      )}
 
       {/* Android: manual install instructions (when prompt not available) */}
       {showModal === 'android' && (
@@ -200,6 +212,17 @@ export default function DownloadAppBig() {
       )}
 
       <style jsx>{BIG_CSS}</style>
+      <style jsx>{`
+        .da-pill{
+          display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+          padding:8px 13px; border:none; border-radius:999px; cursor:pointer;
+          font-family:inherit; font-size:12.5px; font-weight:800; color:#fff;
+          background:linear-gradient(118deg,#1F6F5F 0%, #2FA084 55%, #D4A017 100%);
+          box-shadow:0 4px 12px rgba(31,111,95,.28); transition:.25s;
+        }
+        .da-pill:hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(31,111,95,.34)}
+        .da-pill-icon{width:14px;height:14px;flex-shrink:0}
+      `}</style>
     </>
   )
 }

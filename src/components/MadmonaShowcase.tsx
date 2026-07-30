@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+import DownloadAppBig from '@/components/DownloadAppBig';
 
 type Stats = {
   listings: number;
@@ -189,6 +190,11 @@ export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Sta
             </button>
           </form>
 
+          {/* تاب تحميل التطبيق - تحت السيرش على طول (30 Jul 2026) */}
+          <div className="mdm-dl-row mdm-reveal">
+            <DownloadAppBig compact />
+          </div>
+
           {/* ============ 5 BIG VK-STYLE CATEGORY CHIPS ============ */}
           <div className="mdm-vk-grid mdm-reveal">
             {VK_CATEGORIES.map((c, i) => (
@@ -320,6 +326,8 @@ const CSS = `
 @keyframes mdmShimmer{from{background-position:0% center}to{background-position:100% center}}
 
 .mdm-sub{font-size:clamp(15px,2vw,18px);color:var(--muted);max-width:540px;margin:0 auto 36px;line-height:1.65;font-weight:600}
+.mdm-dl-row{display:flex;justify-content:center;max-width:600px;margin:-22px auto 30px}
+@media(max-width:560px){.mdm-dl-row{margin:-18px auto 26px;padding:0 2px}}
 
 /* ============ SEARCH BAR (تبويب البحث) ============ */
 .mdm-search{

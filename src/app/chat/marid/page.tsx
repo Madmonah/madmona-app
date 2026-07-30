@@ -387,8 +387,7 @@ export default function ChatPage() {
 
   if (!started) {
     return (
-      <div dir="rtl" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg,#1F6F5F 0%,#2FA084 100%)', padding: 16, fontFamily: "'Cairo', system-ui, sans-serif" }}>
-        <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');"}</style>
+      <div dir="rtl" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg,#1F6F5F 0%,#2FA084 100%)', padding: 16, fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
         <div style={{ background: '#FAFAF7', borderRadius: 22, padding: 30, width: '100%', maxWidth: 380, boxShadow: '0 18px 50px rgba(0,0,0,.28)' }}>
           <div style={{ width: 84, height: 84, margin: '0 auto 12px', borderRadius: '50%', background: 'linear-gradient(135deg,#F4C430,#2FA084)', display: 'grid', placeItems: 'center', boxShadow: '0 8px 22px rgba(47,160,132,.35)' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -411,9 +410,9 @@ export default function ChatPage() {
   const lastPinned = pinnedList[pinnedList.length - 1]
 
   return (
-    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#F1EEE6', fontFamily: "'Cairo', system-ui, sans-serif" }}>
+    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#F1EEE6', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
+        
         @keyframes maridTyping{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-3px)}}
         .marid-dot{animation:maridTyping 1.2s infinite}
         @media (prefers-reduced-motion: reduce){.marid-dot{animation:none}}
