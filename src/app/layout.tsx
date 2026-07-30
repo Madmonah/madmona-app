@@ -1,14 +1,10 @@
 import type { Metadata, Viewport } from 'next'
 import { Tajawal, Inter, Cairo } from 'next/font/google'
 import { LanguageProvider } from '@/lib/i18n/LanguageProvider'
-import { Analytics } from '@vercel/analytics/react'
-import { SpeedInsights } from '@vercel/speed-insights/next'
+import SiteAnalytics from '@/components/SiteAnalytics'
 import { Suspense } from 'react'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 import NotificationPrompt from '@/components/NotificationPrompt'
-import GoogleAnalytics from '@/components/analytics/GoogleAnalytics'
-import MetaPixel from '@/components/analytics/MetaPixel'
-import AnalyticsTracker from '@/components/AnalyticsTracker'
 import MadmonaListingClaimer from '@/components/MadmonaListingClaimer'
 import ReferralCapture from '@/components/ReferralCapture'
 import AutoResubscribe from '@/components/AutoResubscribe'
@@ -61,8 +57,6 @@ const cairo = Cairo({
 // so switching to English never flashes RTL first.
 const NO_FLASH_LANG = `(function(){try{var m=document.cookie.match(/(?:^|; )madmona_lang=(ar|en)/);var l=(safeStorage.get('madmona_lang')||(m&&m[1])||'ar');var e=document.documentElement;e.lang=l;e.dir=(l==='en'?'ltr':'rtl');}catch(e){}})();`
 
-// Metricool web analytics tracker (brand hash) — loads be.js then registers the page view.
-const METRICOOL_TRACKER = `function loadScript(a){var b=document.getElementsByTagName("head")[0],c=document.createElement("script");c.type="text/javascript",c.src="https://tracker.metricool.com/resources/be.js",c.onreadystatechange=a,c.onload=a,b.appendChild(c)}loadScript(function(){beTracker.t({hash:"c9accfe580e3aaee641686f8f516bdcd"})});`
 
 export const metadata: Metadata = {
   title: {
@@ -234,7 +228,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
-        <script dangerouslySetInnerHTML={{ __html: METRICOOL_TRACKER }} />
+
       </head>
       <body className={`${tajawal.className} bg-[#FAFAF7] text-gray-900 antialiased`}>
         <LanguageProvider>
@@ -242,13 +236,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ServiceWorkerRegister />
         <AutoResubscribe />
         <NotificationPrompt />
-        <Analytics />
-        <SpeedInsights />
-        <GoogleAnalytics />
-        <MetaPixel />
-        <Suspense fallback={null}>
-          <AnalyticsTracker />
-        </Suspense>
+        {/* (31 Jul 2026) التتبّع اتلمّ في مكوّن واحد بيتخطّى نفسه جوّه /chat */}
+        <SiteAnalytics />
         <Suspense fallback={null}>
           <MadmonaListingClaimer />
         </Suspense>
