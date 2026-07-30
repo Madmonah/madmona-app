@@ -200,11 +200,15 @@ export default function TeamPage() {
         setMyName(((prof as { full_name?: string } | null)?.full_name || 'أنا'))
         await loadRooms(session.user.id)
         // فتح روم مباشرة من رابط القائمة الرئيسية (/team?room=<id>)
+        // أو بدء محادثة خاصة جديدة من تاب المحادثات (/team?new=dm)
         try {
-          const roomParam = new URLSearchParams(window.location.search).get('room')
+          const qs = new URLSearchParams(window.location.search)
+          const roomParam = qs.get('room')
           if (roomParam) {
             const { data: r } = await supabaseBrowser.from('chat_rooms').select('id, name, marid_enabled, kind').eq('id', roomParam).maybeSingle()
             if (r) await openRoom(r as Room)
+          } else if (qs.get('new') === 'dm') {
+            void startDM()
           }
         } catch {}
       }
@@ -870,7 +874,7 @@ export default function TeamPage() {
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "'Cairo', system-ui, sans-serif" }}>
       <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');"}</style>
       <header style={{ background: 'linear-gradient(135deg,#14231E,#1F6F5F)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
-        <div style={{ flex: 1, minWidth: 0, fontWeight: 900, fontSize: 17, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>👥 محادثاتك</div>
+        <div style={{ flex: 1, minWidth: 0, fontWeight: 900, fontSize: 17, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>👥 جروباتك</div>
         <button onClick={() => setShowFriends(true)} title="أصحابي ودفتري" aria-label="أصحابي ودفتري" style={{ background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.18)', color: '#fff', borderRadius: 999, width: 34, height: 34, display: 'grid', placeItems: 'center', fontSize: 16, cursor: 'pointer', flexShrink: 0, padding: 0 }}>🤝</button>
         <div style={{ position: 'relative', flexShrink: 0 }}>
           <button onClick={() => setNewMenu((v) => !v)} title="جديد" aria-label="جديد" style={{ background: '#2FA084', border: 'none', color: '#fff', borderRadius: 999, width: 34, height: 34, display: 'grid', placeItems: 'center', fontSize: 20, lineHeight: 1, cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>+</button>
@@ -878,8 +882,6 @@ export default function TeamPage() {
             <>
               <div onClick={() => setNewMenu(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
               <div style={{ position: 'absolute', top: 40, insetInlineEnd: 0, background: '#fff', borderRadius: 12, boxShadow: '0 6px 24px rgba(0,0,0,.22)', overflow: 'hidden', minWidth: 190, zIndex: 41 }}>
-                <button onClick={() => { setNewMenu(false); startDM() }} style={{ ...menuItem, color: '#14231E' }}>💬 محادثة خاصة</button>
-                <div style={{ height: 1, background: '#eee' }} />
                 <button onClick={() => { setNewMenu(false); createRoom() }} style={{ ...menuItem, color: '#14231E' }}>👥 جروب جديد</button>
                 <div style={{ height: 1, background: '#eee' }} />
                 <button onClick={() => { setNewMenu(false); setShowBook(true) }} style={{ ...menuItem, color: '#14231E' }}>📕 دفتر مضمونة</button>
@@ -890,33 +892,43 @@ export default function TeamPage() {
       </header>
       <div style={{ flex: 1, overflowY: 'auto', padding: 10 }}>
         {(() => {
-          const archivedCount = rooms.filter((r) => r.archivedAt).length
-          return archivedCount > 0 ? (
-            <button onClick={() => setShowArchived((v) => !v)} style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 8, background: showArchived ? '#EAE5D9' : '#fff', border: '1px solid #EAE5D9', borderRadius: 14, padding: '10px 12px', marginBottom: 8, cursor: 'pointer', fontFamily: 'inherit' }}>
-              <span style={{ fontSize: 17 }}>🗄️</span>
-              <span style={{ flex: 1, textAlign: 'start', fontWeight: 800, fontSize: 13.5, color: '#14231E' }}>{showArchived ? 'إخفاء الأرشيف' : 'الأرشيف'}</span>
-              <span style={{ fontSize: 12, fontWeight: 800, color: '#8A9690' }}>{archivedCount}</span>
-            </button>
-          ) : null
-        })()}
-        {rooms.filter((r) => (showArchived ? !!r.archivedAt : !r.archivedAt)).length === 0 && <div style={{ textAlign: 'center', color: '#5A6660', fontWeight: 600, marginTop: 40 }}>{showArchived ? 'الأرشيف فاضي.' : 'لسه مفيش محادثات. ابدأ محادثة خاصة 💬 أو اعمل جروب 👆'}</div>}
-        {rooms.filter((r) => (showArchived ? !!r.archivedAt : !r.archivedAt)).map((r) => {
-          const isDirect = r.kind === 'direct'
-          const title = isDirect ? (r.otherName || 'محادثة خاصة') : (r.name || 'جروب')
+          // الجروبات بس — المحادثات الفردية مكانها /chat (قرار محمد 30 يوليو)
+          const groups = rooms.filter((r) => r.kind !== 'direct')
+          const archivedCount = groups.filter((r) => r.archivedAt).length
+          const shown = groups.filter((r) => (showArchived ? !!r.archivedAt : !r.archivedAt))
           return (
-            <button key={r.id} onClick={() => openRoom(r)} style={{ display: 'flex', width: '100%', textAlign: 'right', alignItems: 'center', gap: 12, background: '#fff', border: '1px solid #EAE5D9', borderRadius: 16, padding: 12, marginBottom: 8, cursor: 'pointer', boxShadow: '0 1px 2px rgba(20,35,30,.06)', fontFamily: 'inherit' }}>
-              <div style={{ width: 46, height: 46, borderRadius: '50%', background: isDirect ? 'radial-gradient(circle at 35% 30%,#2FA084,#1F6F5F)' : 'linear-gradient(135deg,#D4A017,#6FCF97)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 800, flexShrink: 0 }}>{(title || 'م').trim()[0]}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 800, color: '#14231E', display: 'flex', alignItems: 'center', gap: 5 }}>
-                  {r.roomPinnedAt && <span title="مثبّتة" style={{ fontSize: 12 }}>📌</span>}
-                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</span>
-                  {isMuted(r) && <span title="مكتومة" style={{ fontSize: 12 }}>🔕</span>}
+            <>
+              {archivedCount > 0 && (
+                <button onClick={() => setShowArchived((v) => !v)} style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 8, background: showArchived ? '#EAE5D9' : '#fff', border: '1px solid #EAE5D9', borderRadius: 14, padding: '10px 12px', marginBottom: 8, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <span style={{ fontSize: 17 }}>🗄️</span>
+                  <span style={{ flex: 1, textAlign: 'start', fontWeight: 800, fontSize: 13.5, color: '#14231E' }}>{showArchived ? 'إخفاء الأرشيف' : 'الأرشيف'}</span>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: '#8A9690' }}>{archivedCount}</span>
+                </button>
+              )}
+              {shown.length === 0 && (
+                <div style={{ textAlign: 'center', color: '#5A6660', fontWeight: 600, marginTop: 40, fontSize: 13.5, lineHeight: 1.9, padding: '0 20px' }}>
+                  {showArchived ? 'الأرشيف فاضي.' : (
+                    <>لسه مفيش جروبات.<br />اكبس ➕ واعمل جروب لفريقك أو لأصحابك.<br /><br />
+                    <span style={{ fontSize: 12, color: '#8A9690' }}>المحادثات الفردية مكانها تاب 💬 محادثات</span></>
+                  )}
                 </div>
-                <div style={{ fontSize: 12, color: '#8A9690', fontWeight: 600 }}>{isDirect ? 'محادثة خاصة' : 'جروب'}</div>
-              </div>
-            </button>
+              )}
+              {shown.map((r) => (
+                <button key={r.id} onClick={() => openRoom(r)} style={{ display: 'flex', width: '100%', textAlign: 'right', alignItems: 'center', gap: 12, background: '#fff', border: '1px solid #EAE5D9', borderRadius: 16, padding: 12, marginBottom: 8, cursor: 'pointer', boxShadow: '0 1px 2px rgba(20,35,30,.06)', fontFamily: 'inherit' }}>
+                  <div style={{ width: 46, height: 46, borderRadius: '50%', background: 'linear-gradient(135deg,#D4A017,#6FCF97)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 800, flexShrink: 0 }}>{(r.name || 'ج').trim()[0]}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 800, color: '#14231E', display: 'flex', alignItems: 'center', gap: 5 }}>
+                      {r.roomPinnedAt && <span title="مثبّت" style={{ fontSize: 12 }}>📌</span>}
+                      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name || 'جروب'}</span>
+                      {isMuted(r) && <span title="مكتوم" style={{ fontSize: 12 }}>🔕</span>}
+                    </div>
+                    <div style={{ fontSize: 12, color: '#8A9690', fontWeight: 600 }}>جروب</div>
+                  </div>
+                </button>
+              ))}
+            </>
           )
-        })}
+        })()}
       </div>
       {showStarred && (
         <div onClick={() => setShowStarred(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(20,35,30,.55)', zIndex: 96, display: 'flex', alignItems: 'flex-end' }}>

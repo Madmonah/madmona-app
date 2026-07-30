@@ -37,24 +37,40 @@ export default function ChatHub() {
             setMaridTime(fmtTime(last.created_at))
           }
         } catch {}
-        // رومات فريق العمل
+        // المحادثات الفردية بس — الجروبات مكانها تاب /team (قرار محمد 30 يوليو)
         try {
           const uid = session.user.id
           const { data: mem } = await supabaseBrowser.from('chat_room_members').select('room_id').eq('profile_id', uid)
           const ids = ((mem || []) as { room_id: string }[]).map((m) => m.room_id)
           if (ids.length) {
-            const { data: rs } = await supabaseBrowser.from('chat_rooms').select('id, name').in('id', ids)
+            const { data: rs } = await supabaseBrowser.from('chat_rooms').select('id, name, kind').in('id', ids)
+            const directs = ((rs || []) as { id: string; name: string; kind: string | null }[]).filter((r) => r.kind === 'direct')
+            if (directs.length === 0) { setRooms([]); return }
+            const dIds = directs.map((r) => r.id)
+
+            // اسم الطرف التاني في كل محادثة خاصة
+            const { data: mems } = await supabaseBrowser.from('chat_room_members').select('room_id, profile_id').in('room_id', dIds)
+            const others = ((mems || []) as { room_id: string; profile_id: string }[]).filter((m) => m.profile_id !== uid)
+            const otherIds = [...new Set(others.map((o) => o.profile_id))]
+            const nameById = new Map<string, string>()
+            if (otherIds.length) {
+              const { data: profs } = await supabaseBrowser.from('profiles').select('id, full_name').in('id', otherIds)
+              for (const p of ((profs || []) as { id: string; full_name: string }[])) nameById.set(p.id, p.full_name)
+            }
+            const otherByRoom = new Map<string, string>()
+            for (const o of others) if (!otherByRoom.has(o.room_id)) otherByRoom.set(o.room_id, nameById.get(o.profile_id) || 'محادثة خاصة')
+
             const { data: msgs } = await supabaseBrowser
               .from('chat_messages').select('room_id, body, created_at')
-              .in('room_id', ids).order('created_at', { ascending: false }).limit(200)
+              .in('room_id', dIds).order('created_at', { ascending: false }).limit(200)
             const lastByRoom = new Map<string, { body: string; created_at: string }>()
             for (const m of (msgs || []) as { room_id: string; body: string; created_at: string }[]) {
               if (!lastByRoom.has(m.room_id)) lastByRoom.set(m.room_id, m)
             }
-            setRooms(((rs || []) as { id: string; name: string }[]).map((r) => ({
+            setRooms(directs.map((r) => ({
               id: r.id,
-              name: r.name || 'روم',
-              last: (lastByRoom.get(r.id)?.body || 'روم جديدة').slice(0, 50),
+              name: otherByRoom.get(r.id) || 'محادثة خاصة',
+              last: (lastByRoom.get(r.id)?.body || 'ابدأ الكلام').slice(0, 50),
               time: fmtTime(lastByRoom.get(r.id)?.created_at),
             })))
           }
@@ -97,10 +113,15 @@ export default function ChatHub() {
           </div>
         </Link>
 
-        <div style={{ padding: '14px 16px 4px', fontSize: 11, fontWeight: 900, color: '#1F6F5F', letterSpacing: '.3px' }}>الجروبات</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 16px 4px' }}>
+          <div style={{ flex: 1, fontSize: 11, fontWeight: 900, color: '#1F6F5F', letterSpacing: '.3px' }}>محادثاتك الخاصة</div>
+          <Link href="/team?new=dm" style={{ background: '#F1EEE6', color: '#1F6F5F', borderRadius: 999, padding: '5px 12px', fontSize: 11.5, fontWeight: 800, textDecoration: 'none' }}>➕ محادثة جديدة</Link>
+        </div>
         {rooms.length === 0 ? (
-          <div style={{ padding: '6px 16px 16px', fontSize: 13, color: '#8A9690', fontWeight: 600 }}>
-            {loggedIn ? 'لسه مفيش جروبات — ابدأ واحد من تبويب الجروبات.' : 'سجّل دخولك علشان تشوف جروباتك.'}
+          <div style={{ padding: '6px 16px 16px', fontSize: 13, color: '#8A9690', fontWeight: 600, lineHeight: 1.8 }}>
+            {loggedIn
+              ? <>لسه مفيش محادثات خاصة.<br />اكبس ➕ محادثة جديدة، أو ابعت لينك دعوة لصاحبك من 📕 دفترك.</>
+              : 'سجّل دخولك علشان تشوف محادثاتك.'}
           </div>
         ) : (
           rooms.map((r) => (
