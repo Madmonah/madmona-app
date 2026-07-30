@@ -6,11 +6,15 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { playRing } from '@/lib/ringtone'
 
 type Props = { roomId: string; uid: string; myName: string; video: boolean; onClose: () => void }
 type PeerInfo = { pc: RTCPeerConnection; name: string; stream: MediaStream | null; video: boolean }
 
-const ICE = { iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }] }
+// STUN بس — بيستخدم لو Cloudflare TURN مش متظبط. TURN بيتجاب من /api/turn وقت التشغيل.
+const DEFAULT_ICE: RTCIceServer[] = [
+  { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+]
 
 export default function CallOverlay({ roomId, uid, myName, video, onClose }: Props) {
   const [peers, setPeers] = useState<Record<string, PeerInfo>>({})
@@ -22,6 +26,20 @@ export default function CallOverlay({ roomId, uid, myName, video, onClose }: Pro
   const localVidRef = useRef<HTMLVideoElement>(null)
   const chanRef = useRef<ReturnType<typeof supabaseBrowser.channel> | null>(null)
   const peersRef = useRef<Record<string, PeerInfo>>({})
+  const iceRef = useRef<RTCIceServer[]>(DEFAULT_ICE)
+  const ringRef = useRef<{ stop: () => void } | null>(null)
+
+  // ringback: بيرنّ لحد ما أول طرف يتصل فعلاً، وبيقف لوحده
+  useEffect(() => {
+    const anyConnected = Object.values(peers).some((p) => p.stream)
+    if (anyConnected) { ringRef.current?.stop(); ringRef.current = null; return }
+    if (!ringRef.current) ringRef.current = playRing('ringback')
+    // مهلة أمان: لو محدش رد خلال 45 ثانية نوقف الرنة
+    const t = setTimeout(() => { ringRef.current?.stop(); ringRef.current = null }, 45000)
+    return () => clearTimeout(t)
+  }, [peers])
+
+  useEffect(() => () => { ringRef.current?.stop(); ringRef.current = null }, [])
 
   useEffect(() => {
     let alive = true
@@ -30,7 +48,7 @@ export default function CallOverlay({ roomId, uid, myName, video, onClose }: Pro
     function syncPeers() { setPeers({ ...peersRef.current }) }
 
     function newPC(other: string, name: string, theirVideo: boolean): RTCPeerConnection {
-      const pc = new RTCPeerConnection(ICE)
+      const pc = new RTCPeerConnection({ iceServers: iceRef.current })
       localRef.current?.getTracks().forEach((t) => pc.addTrack(t, localRef.current!))
       pc.ontrack = (ev) => {
         const p = peersRef.current[other]
@@ -59,6 +77,14 @@ export default function CallOverlay({ roomId, uid, myName, video, onClose }: Pro
       } catch { alert('مش قادر أوصل للمايك/الكاميرا — اسمح للمتصفح'); onClose(); return }
       if (!alive) { localRef.current.getTracks().forEach((t) => t.stop()); return }
       if (localVidRef.current) localVidRef.current.srcObject = localRef.current
+
+      // TURN من Cloudflare — لازم قبل أول RTCPeerConnection، وإلا المكالمة تفشل على بيانات الموبايل (CGNAT)
+      try {
+        const r = await fetch('/api/turn', { cache: 'no-store' })
+        const j = (await r.json()) as { iceServers?: RTCIceServer[] }
+        if (Array.isArray(j?.iceServers) && j.iceServers.length) iceRef.current = j.iceServers
+      } catch { /* نكمّل بـ STUN */ }
+      if (!alive) { localRef.current.getTracks().forEach((t) => t.stop()); return }
 
       const ch = supabaseBrowser.channel(`call:${roomId}`, { config: { broadcast: { self: false } } })
       chanRef.current = ch
