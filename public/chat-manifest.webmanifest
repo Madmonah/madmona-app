@@ -9,7 +9,7 @@
   "scope": "/chat",
   "display": "standalone",
   "background_color": "#FFFFFF",
-  "theme_color": "#075E54",
+  "theme_color": "#14231E",
   "orientation": "portrait",
   "icons": [
     {

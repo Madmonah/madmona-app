@@ -155,6 +155,25 @@ export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () =>
     }
   }
 
+  // ── رابط الدعوة: أبعته لصاحبك، يفتحه، تبقوا أصحاب فوراً ──
+  // بديل الكونتكتس: بيشتغل على كل جهاز وبصفر أذونات، والنية صريحة من الطرفين.
+  async function inviteFriend() {
+    setBusy(true)
+    const { data, error } = await supabaseBrowser.rpc('chat_invite_link')
+    setBusy(false)
+    if (error || !data) { setNote('مقدرتش أجيب رابط الدعوة'); setTimeout(() => setNote(''), 3000); return }
+    const url = `${window.location.origin}/i/${data as string}`
+    const msg = `تعالى كلّمني على مضمونة 🧞\nافتح اللينك ده وهنبقى أصحاب على طول:\n${url}`
+    // Web Share يفتح شيت المشاركة الأصلي (واتساب وغيره) — وإلا نفتح واتساب مباشرة
+    try {
+      if (navigator.share) {
+        await navigator.share({ text: msg })
+        return
+      }
+    } catch { return /* المستخدم لغى */ }
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank')
+  }
+
   async function removeOne(r: Row) {
     if (!confirm(`تشيل ${r.display_name || r.phone_e164} من دفترك؟`)) return
     await supabaseBrowser.from('chat_contacts').delete().eq('id', r.id)
@@ -175,11 +194,24 @@ export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () =>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#8A9690' }}>✕</button>
         </div>
         <div style={{ fontSize: 11.5, color: '#8A9690', fontWeight: 600, marginBottom: 13, lineHeight: 1.65 }}>
-          الصداقة بتتكوّن أوتوماتيك لما الطرفين يكونوا ضايفين رقم بعض — مفيش زرار قبول، ومحدش بيعرف إنك ضايفه لحد ما يضيفك.
+          أسهل طريقة: ابعت لينك لصاحبك. أو ضيف رقمه في دفترك، ولما هو كمان يضيف رقمك تبقوا أصحاب أوتوماتيك.
         </div>
 
         {note && <div style={{ background: '#F1EEE6', borderRadius: 10, padding: '9px 12px', fontSize: 13, fontWeight: 700, color: '#14231E', marginBottom: 10 }}>{note}</div>}
 
+        {/* الطريق الأساسي: رابط الدعوة — بصفر أذونات وعلى كل جهاز */}
+        <button onClick={inviteFriend} disabled={busy}
+          style={{ display: 'flex', alignItems: 'center', gap: 11, width: '100%', background: 'linear-gradient(118deg,#1F6F5F,#2d7a52)', color: '#fff', border: 'none', borderRadius: 16, padding: '14px 16px', cursor: 'pointer', opacity: busy ? 0.6 : 1, fontFamily: 'inherit', textAlign: 'start', marginBottom: 8, boxShadow: '0 6px 18px -8px rgba(31,111,95,.5)' }}>
+          <span style={{ fontSize: 24, flexShrink: 0 }}>🔗</span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: 'block', fontSize: 14.5, fontWeight: 900 }}>ادعُ صاحبك بلينك</span>
+            <span style={{ display: 'block', fontSize: 11, fontWeight: 600, opacity: 0.85, marginTop: 1 }}>ابعته على واتساب — يفتحه وتبقوا أصحاب فوراً</span>
+          </span>
+        </button>
+
+        <details style={{ marginBottom: 14 }}>
+          <summary style={{ fontSize: 12, fontWeight: 800, color: '#2FA084', cursor: 'pointer', padding: '3px 0' }}>أو ضيف أرقام بنفسك</summary>
+          <div style={{ paddingTop: 10 }}>
         <div style={{ display: 'flex', gap: 6, marginBottom: 7 }}>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="الاسم (اختياري)"
             style={{ flex: 1, minWidth: 0, background: '#F1EEE6', border: 'none', borderRadius: 12, padding: '10px 13px', fontSize: 13.5, fontWeight: 600, color: '#14231E', outline: 'none', fontFamily: 'inherit' }} />
@@ -201,6 +233,8 @@ export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () =>
             <b>أندرويد:</b> جهات الاتصال ← ⋮ ← إعدادات ← تصدير ← اختار «إلى ملف .vcf»<br />
             <b>iPhone:</b> جهات الاتصال ← اختار الكل ← شارك ← احفظ في الملفات<br />
             أو من <b>iCloud.com</b> ← Contacts ← ⚙️ ← Export vCard
+          </div>
+        </details>
           </div>
         </details>
 
