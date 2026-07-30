@@ -145,9 +145,16 @@ self.addEventListener('notificationclick', (event) => {
           return client;
         }
       }
-      // Otherwise open a new window
+      // Otherwise open a new window.
+      // شات مضمونة مثبّت بنطاق /chat، فأي هدف بره النطاق (زي /team?room=..)
+      // لو فتحناه مباشرة هيطلع في براوزر مش جوه التطبيق. نمرّره على
+      // /chat/go?to=... اللي جوه النطاق وهو يحوّل client-side. (30 يوليو 2026)
       if (self.clients.openWindow) {
-        return self.clients.openWindow(targetUrl);
+        const inChatScope = targetUrl.startsWith('/chat');
+        const url = inChatScope
+          ? targetUrl
+          : '/chat/go?to=' + encodeURIComponent(targetUrl);
+        return self.clients.openWindow(url);
       }
     })
   );
