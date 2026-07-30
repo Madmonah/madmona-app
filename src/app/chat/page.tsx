@@ -37,43 +37,18 @@ export default function ChatHub() {
             setMaridTime(fmtTime(last.created_at))
           }
         } catch {}
-        // المحادثات الفردية بس — الجروبات مكانها تاب /team (قرار محمد 30 يوليو)
+        // (31 Jul 2026) المحادثات الفردية بس - الجروبات مكانها تاب /chat/team.
+        // كان هنا ٦ رحلات متتالية: عضويتي ← الغرف ← أعضاء المحادثات ← الأسماء
+        // ← آخر ٢٠٠ رسالة. كل واحدة مستنية اللي قبلها. بقت رحلة واحدة.
         try {
-          const uid = session.user.id
-          const { data: mem } = await supabaseBrowser.from('chat_room_members').select('room_id').eq('profile_id', uid)
-          const ids = ((mem || []) as { room_id: string }[]).map((m) => m.room_id)
-          if (ids.length) {
-            const { data: rs } = await supabaseBrowser.from('chat_rooms').select('id, name, kind').in('id', ids)
-            const directs = ((rs || []) as { id: string; name: string; kind: string | null }[]).filter((r) => r.kind === 'direct')
-            if (directs.length === 0) { setRooms([]); return }
-            const dIds = directs.map((r) => r.id)
-
-            // اسم الطرف التاني في كل محادثة خاصة
-            const { data: mems } = await supabaseBrowser.from('chat_room_members').select('room_id, profile_id').in('room_id', dIds)
-            const others = ((mems || []) as { room_id: string; profile_id: string }[]).filter((m) => m.profile_id !== uid)
-            const otherIds = [...new Set(others.map((o) => o.profile_id))]
-            const nameById = new Map<string, string>()
-            if (otherIds.length) {
-              const { data: profs } = await supabaseBrowser.from('profiles').select('id, full_name').in('id', otherIds)
-              for (const p of ((profs || []) as { id: string; full_name: string }[])) nameById.set(p.id, p.full_name)
-            }
-            const otherByRoom = new Map<string, string>()
-            for (const o of others) if (!otherByRoom.has(o.room_id)) otherByRoom.set(o.room_id, nameById.get(o.profile_id) || 'محادثة خاصة')
-
-            const { data: msgs } = await supabaseBrowser
-              .from('chat_messages').select('room_id, body, created_at')
-              .in('room_id', dIds).order('created_at', { ascending: false }).limit(200)
-            const lastByRoom = new Map<string, { body: string; created_at: string }>()
-            for (const m of (msgs || []) as { room_id: string; body: string; created_at: string }[]) {
-              if (!lastByRoom.has(m.room_id)) lastByRoom.set(m.room_id, m)
-            }
-            setRooms(directs.map((r) => ({
-              id: r.id,
-              name: otherByRoom.get(r.id) || 'محادثة خاصة',
-              last: (lastByRoom.get(r.id)?.body || 'ابدأ الكلام').slice(0, 50),
-              time: fmtTime(lastByRoom.get(r.id)?.created_at),
-            })))
-          }
+          const { data: rs } = await supabaseBrowser.rpc('chat_rooms_for_me', { p_kind: 'direct' })
+          type RpcRoom = { id: string; other_name: string | null; last_body: string | null; last_at: string | null }
+          setRooms(((rs as RpcRoom[]) || []).map((r) => ({
+            id: r.id,
+            name: r.other_name || 'محادثة خاصة',
+            last: (r.last_body || 'ابدأ الكلام').slice(0, 50),
+            time: fmtTime(r.last_at || undefined),
+          })))
         } catch {}
       } catch {}
     })()

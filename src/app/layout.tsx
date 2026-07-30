@@ -24,17 +24,18 @@ import './globals.css'
 
 const SITE_URL = 'https://madmonacairo.com'
 
+// Tajawal مش متغيّر - أوزان ثابتة. قلّلناها للمستخدم فعلاً بدل ٤.
 const tajawal = Tajawal({
   subsets: ['arabic', 'latin'],
-  weight: ['300', '400', '500', '700'],
+  weight: ['400', '700'],
   display: 'swap',
   variable: '--font-tajawal',
 })
 
 // English/Latin face — used when the app is switched to English (LTR).
+// Inter خط متغيّر - من غير weight بياخد الملف المتغيّر الواحد بدل ٥ ملفات ثابتة.
 const inter = Inter({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
   display: 'swap',
   variable: '--font-inter',
 })
@@ -47,9 +48,11 @@ const inter = Inter({
 // أول مرة بس (بعد كده كاش) — وده كان بالظبط سبب الديلاي اللي بيحصل أول فتحة.
 // دلوقتي next/font بيستضيفه محلياً وبيحط preload في <head>، فالتحميل بيبدأ من
 // أول بايت بالتوازي مع الجافاسكريبت.
+// ⚠️ (31 Jul 2026) من غير weight بقصد: Cairo خط متغيّر، فده بيطلّع ملف واحد
+// لكل subset بدل ملف لكل وزن. أول نسخة حطيت فيها ٥ أوزان × ٢ subsets = ١٠
+// ملفات، وكلهم preload يعني بيزاحموا الجافاسكريبت أول فتحة. متحطش weight هنا.
 const cairo = Cairo({
   subsets: ['arabic', 'latin'],
-  weight: ['400', '600', '700', '800', '900'],
   display: 'swap',
   variable: '--font-cairo',
 })

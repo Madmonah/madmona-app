@@ -164,7 +164,7 @@ export default function TeamPage() {
   // chat_rooms_for_me() بترجّع الأربعة مع بعض (SECURITY INVOKER فالـRLS زي ما هي،
   // والترتيب - المثبّت الأول ثم الأحدث - بقى في SQL بدل ما يتعمل هنا).
   const loadRooms = useCallback(async (_myId: string) => {
-    const { data, error } = await supabaseBrowser.rpc('chat_rooms_for_me')
+    const { data, error } = await supabaseBrowser.rpc('chat_rooms_for_me', { p_kind: 'group' })
     if (error) { setRooms([]); return }
     type RpcRoom = {
       id: string; name: string | null; marid_enabled: boolean; kind: string | null

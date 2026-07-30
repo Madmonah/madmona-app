@@ -92,7 +92,7 @@ export default function ChatInvitePage() {
             <div style={{ fontSize: 14, fontWeight: 700, color: '#14231E', marginBottom: 18 }}>
               إنت و{st.name} تقدروا تتكلموا على طول.
             </div>
-            <button onClick={() => router.push('/chat/team')}
+            <button onClick={() => router.push('/chat')}
               style={{ background: 'linear-gradient(118deg,#1F6F5F,#2d7a52)', color: '#fff', border: 'none', borderRadius: 999, padding: '13px 30px', fontSize: 15, fontWeight: 900, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
               افتح الشات
             </button>
@@ -102,7 +102,7 @@ export default function ChatInvitePage() {
         {st.s === 'err' && (
           <>
             <div style={{ fontSize: 15.5, fontWeight: 800, color: '#14231E', marginBottom: 16 }}>{st.msg}</div>
-            <button onClick={() => router.push('/chat/team')}
+            <button onClick={() => router.push('/chat')}
               style={{ background: '#F1EEE6', color: '#1F6F5F', border: 'none', borderRadius: 999, padding: '12px 26px', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
               افتح الشات
             </button>
