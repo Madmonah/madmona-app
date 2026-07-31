@@ -832,7 +832,7 @@ export async function POST(request: NextRequest) {
     //
     // والفحص **بعد** الانتظار مش قبله — وده اللي بيحل سباق التوازي.
     {
-      const BATCH_WAIT_MS = Number(process.env.MARID_BATCH_WAIT_MS || 7000)
+      const BATCH_WAIT_MS = Number(process.env.MARID_BATCH_WAIT_MS || 12000)
 
       const { data: mine } = await supabaseUntyped
         .from('whatsapp_messages')
