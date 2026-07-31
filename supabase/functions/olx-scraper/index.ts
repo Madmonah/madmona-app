@@ -107,7 +107,7 @@ function extractLeads(html: string, categoryInfo: typeof CATEGORIES[0]) {
       const displayLabel = (categoryInfo as any).label || labelMap[categoryInfo.category] || "إعلان";
       leads.push({
         business_name: `${displayLabel} - ${location}`,
-        phone, category: categoryInfo.category, location,
+        phone, category: categoryInfo.category, location, city: location,
         source: "olx_individuals", source_url: categoryInfo.url, status: "new", notes: desc
       });
     }
