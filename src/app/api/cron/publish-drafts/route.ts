@@ -131,13 +131,20 @@ export async function GET(req: Request) {
   // من غير ما نبعت دفعة إشعارات تكسر الرقم (درس rate-overlimit — ٢٠ يوليو).
   const silent = new URL(req.url).searchParams.get('silent') === '1'
   const cutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+  // 🔁 (31 يوليو 2026 — محمد اشتكى: المارد بيوعد الناس بالإضافة وميضيفش):
+  // 66 مسودة علقوا في 'needs_review' للأبد لأن الكرون قديمًا كان بيرفض يعيد
+  // محاولتها خالص، رغم إن غالبية أسباب الرفض (تصنيف مش موجود وقتها) بقت
+  // متاحة دلوقتي (تصنيفات بتتضاف باستمرار). فالعميل ياخد رسالة «تم التسجيل»
+  // من المارد بس إعلانه فعليًا مايطلعش أبدًا. دلوقتي بنعيد محاولة needs_review
+  // كل مرة — لو التصنيف اتلقى دلوقتي هينشر، ولو لسه مش موجود هيفضل needs_review
+  // (no-op، مفيش ضرر من المحاولة).
   // نقبل 'new' و'pending' — أداة المارد اتغيّرت مرة لـ'pending' والكرون كان بيدوّر
   // على 'new' بس، فمسودات المارد علقت وماوصلتش الماركتبليس. قبول الاتنين بيمنع
   // تكرار الغلطة دي لو الحالة اتلخبطت تاني، وبيلقط أي عالقين قدام.
   const { data: drafts } = await supa
     .from('instant_listing_drafts')
     .select('id, contact_phone, contact_name, title, description, category_slug, price_egp, period, is_furnished, image_urls')
-    .in('status', ['new', 'pending'])
+    .in('status', ['new', 'pending', 'needs_review'])
     .lt('created_at', cutoff)
     .order('created_at')
     // نافذة واسعة: المسودات بلا صورة بتفضل في نفس الحالة، فلو النافذة صغيرة ممكن

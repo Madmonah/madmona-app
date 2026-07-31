@@ -68,6 +68,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, skipped: 'not_incoming', direction })
   }
 
+  // 🛡️ (31 يوليو 2026 — محمد اشتكى من ردّين على كل رسالة) whatsapp-web.js
+  // بيعمل self-echo أحيانًا: الرسالة اللي *إحنا* بعتناها بترجع كـwebhook تاني
+  // (خصوصًا مع أجهزة مرتبطة/مزامنة). لو مفيش فحص fromMe، المخ بيشوف ردّه هو
+  // كأنه رسالة عميل جديدة ويرد عليها تاني — فيطلع ردّين. direction وحدها
+  // (فوق) مش كفاية لأنها ممكن تيجي فاضية/مش موجودة في الحمولة.
+  const fromMe = data.fromMe === true || data.from_me === true || data.isMe === true
+  if (fromMe) {
+    return NextResponse.json({ ok: true, skipped: 'from_me' })
+  }
   const chatId = String(data.chatId ?? data.from ?? '')
   const fromRaw = String(data.from ?? data.author ?? chatId)
   const isLid = chatId.endsWith('@lid') || fromRaw.endsWith('@lid')
