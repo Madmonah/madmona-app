@@ -22,6 +22,7 @@ export default function ChatHub() {
   const [loggedIn, setLoggedIn] = useState(false)
   const [uid, setUid] = useState<string | null>(null)
   const [hidden, setHidden] = useState<Set<string>>(new Set())
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     ;(async () => {
@@ -30,35 +31,37 @@ export default function ChatHub() {
         if (!session?.user) return
         setLoggedIn(true)
         setUid(session.user.id)
-        // الشاتات اللي العميل مسحها من عنده (لسه محفوظة عندنا في الداتا بيز)
+        // (31 Jul 2026) التلاتة دول مالهمش علاقة ببعض، وكانوا بيتنفّذوا ورا
+        // بعض والمحادثات آخر واحدة — يعني القايمة كانت بتستنى نداءين على
+        // الفاضي قبل ما تبدأ تحمّل أصلاً. دلوقتي بيطلعوا مع بعض.
+        // المحفيّات لازم توصل مع المحادثات (مش بعدها) وإلا المحذوف هيومض.
+        const roomsP = supabaseBrowser.rpc('chat_rooms_for_me', { p_kind: 'direct' })
+        const hiddenP = supabaseBrowser.from('chat_hidden_rooms').select('room_id').eq('user_id', session.user.id)
+        const maridP = fetch('/api/chat', { headers: { Authorization: `Bearer ${session.access_token}` } })
+          .then((r) => r.json()).catch(() => null)
+
         try {
-          const { data: hid } = await supabaseBrowser.from('chat_hidden_rooms').select('room_id').eq('user_id', session.user.id)
-          setHidden(new Set(((hid as { room_id: string }[]) || []).map((h) => h.room_id)))
-        } catch {}
-        // آخر رسالة مع المارد
-        try {
-          const res = await fetch('/api/chat', { headers: { Authorization: `Bearer ${session.access_token}` } })
-          const data = await res.json()
-          if (data?.ok && Array.isArray(data.messages) && data.messages.length) {
-            const last = data.messages[data.messages.length - 1]
-            setMaridPreview(((last.text || '📎 ملف') as string).slice(0, 60))
-            setMaridTime(fmtTime(last.created_at))
-          }
-        } catch {}
-        // (31 Jul 2026) المحادثات الفردية بس - الجروبات مكانها تاب /chat/team.
-        // كان هنا ٦ رحلات متتالية: عضويتي ← الغرف ← أعضاء المحادثات ← الأسماء
-        // ← آخر ٢٠٠ رسالة. كل واحدة مستنية اللي قبلها. بقت رحلة واحدة.
-        try {
-          const { data: rs } = await supabaseBrowser.rpc('chat_rooms_for_me', { p_kind: 'direct' })
+          const [roomsRes, hiddenRes] = await Promise.all([roomsP, hiddenP])
+          setHidden(new Set(((hiddenRes.data as { room_id: string }[]) || []).map((h) => h.room_id)))
           type RpcRoom = { id: string; other_name: string | null; last_body: string | null; last_at: string | null }
-          setRooms(((rs as RpcRoom[]) || []).map((r) => ({
+          setRooms(((roomsRes.data as RpcRoom[]) || []).map((r) => ({
             id: r.id,
             name: r.other_name || 'محادثة خاصة',
             last: (r.last_body || 'ابدأ الكلام').slice(0, 50),
             time: fmtTime(r.last_at || undefined),
           })))
         } catch {}
-      } catch {}
+        setLoading(false)
+
+        // معاينة المارد مالهاش علاقة بالقايمة — بتتحدّث لما توصل
+        maridP.then((data) => {
+          if (data?.ok && Array.isArray(data.messages) && data.messages.length) {
+            const last = data.messages[data.messages.length - 1]
+            setMaridPreview(((last.text || '📎 ملف') as string).slice(0, 60))
+            setMaridTime(fmtTime(last.created_at))
+          }
+        }).catch(() => {})
+      } catch { setLoading(false) }
     })()
   }, [])
 
@@ -106,7 +109,21 @@ export default function ChatHub() {
           <div style={{ flex: 1, fontSize: 11, fontWeight: 900, color: '#1F6F5F', letterSpacing: '.3px' }}>محادثاتك الخاصة</div>
           <Link href="/chat/team?new=dm" style={{ background: '#F1EEE6', color: '#1F6F5F', borderRadius: 999, padding: '5px 12px', fontSize: 11.5, fontWeight: 800, textDecoration: 'none' }}>➕ محادثة جديدة</Link>
         </div>
-        {rooms.length === 0 ? (
+        {/* (31 Jul 2026) هيكل مؤقت بدل رسالة «مفيش محادثات» وهي لسه بتحمّل —
+            كانت بتقول للمستخدم إنه مالوش محادثات قبل ما الداتا توصل أصلاً. */}
+        {loading ? (
+          <div style={{ padding: '2px 0' }}>
+            {[0, 1, 2].map((i) => (
+              <div key={i} style={{ ...rowStyle, opacity: 1 - i * 0.25 }}>
+                <div style={{ ...avatarStyle, background: '#E8E4DA' }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ height: 12, width: '40%', background: '#E8E4DA', borderRadius: 6, marginBottom: 9 }} />
+                  <div style={{ height: 10, width: '70%', background: '#EFECE3', borderRadius: 6 }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : rooms.length === 0 ? (
           <div style={{ padding: '6px 16px 16px', fontSize: 13, color: '#8A9690', fontWeight: 600, lineHeight: 1.8 }}>
             {loggedIn
               ? <>لسه مفيش محادثات خاصة.<br />اكبس ➕ محادثة جديدة، أو ابعت لينك دعوة لصاحبك من 📕 دفترك.</>
