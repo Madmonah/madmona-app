@@ -1005,7 +1005,10 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredListings.map((listing, i) => {
-              const photos = (listing.photos || []).filter(p => p?.url && !p.is_placeholder && (!p.quality_flag || p.quality_flag === 'clean'))
+              // 31 يوليو: has_text و logo بقوا مقبولين — دي صور المنتج الحقيقية اللي التاجر باعتها
+              // graphic لسه مستبعد (بوسترات/جرافيك مش صورة منتج)
+              const SHOWABLE_FLAGS = ['clean', 'has_text', 'logo']
+              const photos = (listing.photos || []).filter(p => p?.url && !p.is_placeholder && (!p.quality_flag || SHOWABLE_FLAGS.includes(p.quality_flag)))
               const primary = photos.find(p => p.is_primary) || photos[0]
               const photoUrl = primary?.url
               const minPrice = getMinPrice(listing)

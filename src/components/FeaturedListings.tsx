@@ -26,6 +26,9 @@ interface Listing {
   pricing: { price: number | string; is_active: boolean }[] | null
 }
 
+// 31 يوليو: صور المنتج اللي عليها كتابة أو لوجو بقت تتعرض — graphic بس هو المستبعد
+const SHOWABLE_FLAGS = ['clean', 'has_text', 'logo']
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
   for (let i = a.length - 1; i > 0; i--) {
@@ -62,7 +65,7 @@ export default function FeaturedListings() {
 
       const rows = ((data || []) as Listing[])
         // بس اللي عندهم صورة فعلاً (ومش معلّمة graphic)
-        .filter(l => (l.photos || []).some(p => p?.url && !p.is_placeholder && (!p.quality_flag || p.quality_flag === 'clean')))
+        .filter(l => (l.photos || []).some(p => p?.url && !p.is_placeholder && (!p.quality_flag || SHOWABLE_FLAGS.includes(p.quality_flag))))
 
       // round-robin بين الفئات + عشوائية كل ريفريش (shuffle للفئات وجوّاها)
       const byCat = new Map<string, Listing[]>()
@@ -86,7 +89,7 @@ export default function FeaturedListings() {
       const seen = new Set<string>()
       const deduped = diverse.filter((l) => {
         const real = (l.photos || []).filter(
-          (p) => p?.url && !p.is_placeholder && (!p.quality_flag || p.quality_flag === 'clean')
+          (p) => p?.url && !p.is_placeholder && (!p.quality_flag || SHOWABLE_FLAGS.includes(p.quality_flag))
         )
         const url = (real.find((p) => p.is_primary) || real[0])?.url
         if (!url || seen.has(url)) return false
@@ -161,7 +164,7 @@ export default function FeaturedListings() {
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map((listing, i) => {
-          const photos = (listing.photos || []).filter(p => (!p.quality_flag || p.quality_flag === 'clean') && !p.is_placeholder)
+          const photos = (listing.photos || []).filter(p => (!p.quality_flag || SHOWABLE_FLAGS.includes(p.quality_flag)) && !p.is_placeholder)
           const primary = photos.find(p => p.is_primary) || photos[0]
           const photoUrl = primary?.url
           const activePrices = (listing.pricing || [])

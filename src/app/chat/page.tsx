@@ -20,6 +20,8 @@ export default function ChatHub() {
   const [maridTime, setMaridTime] = useState('')
   const [rooms, setRooms] = useState<Room[]>([])
   const [loggedIn, setLoggedIn] = useState(false)
+  const [uid, setUid] = useState<string | null>(null)
+  const [hidden, setHidden] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     ;(async () => {
@@ -27,6 +29,12 @@ export default function ChatHub() {
         const { data: { session } } = await supabaseBrowser.auth.getSession()
         if (!session?.user) return
         setLoggedIn(true)
+        setUid(session.user.id)
+        // الشاتات اللي العميل مسحها من عنده (لسه محفوظة عندنا في الداتا بيز)
+        try {
+          const { data: hid } = await supabaseBrowser.from('chat_hidden_rooms').select('room_id').eq('user_id', session.user.id)
+          setHidden(new Set(((hid as { room_id: string }[]) || []).map((h) => h.room_id)))
+        } catch {}
         // آخر رسالة مع المارد
         try {
           const res = await fetch('/api/chat', { headers: { Authorization: `Bearer ${session.access_token}` } })
@@ -61,6 +69,13 @@ export default function ChatHub() {
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
+
+  const hideRoom = async (roomId: string) => {
+    if (!uid) return
+    if (typeof window !== 'undefined' && !window.confirm('تمسح المحادثة دي من عندك؟ (هتفضل محفوظة عندنا في مضمونة)')) return
+    setHidden((s) => { const n = new Set(s); n.add(roomId); return n })
+    try { await supabaseBrowser.from('chat_hidden_rooms').insert({ user_id: uid, room_id: roomId }) } catch {}
+  }
 
   return (
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
@@ -98,17 +113,20 @@ export default function ChatHub() {
               : 'سجّل دخولك علشان تشوف محادثاتك.'}
           </div>
         ) : (
-          rooms.map((r) => (
-            <Link key={r.id} href={`/chat/team?room=${r.id}`} style={rowStyle}>
-              <div style={{ ...avatarStyle, background: 'radial-gradient(circle at 35% 30%,#2FA084,#1F6F5F)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 800 }}>{(r.name || '؟').trim().charAt(0)}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                  <span style={{ fontWeight: 800, color: '#14231E' }}>{r.name}</span>
-                  <span style={{ fontSize: 11, color: '#8A9690', fontWeight: 600 }}>{r.time}</span>
+          rooms.filter((r) => !hidden.has(r.id)).map((r) => (
+            <div key={r.id} style={{ ...rowStyle, paddingLeft: 6 }}>
+              <Link href={`/chat/team?room=${r.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, textDecoration: 'none' }}>
+                <div style={{ ...avatarStyle, background: 'radial-gradient(circle at 35% 30%,#2FA084,#1F6F5F)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 800 }}>{(r.name || '؟').trim().charAt(0)}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                    <span style={{ fontWeight: 800, color: '#14231E' }}>{r.name}</span>
+                    <span style={{ fontSize: 11, color: '#8A9690', fontWeight: 600 }}>{r.time}</span>
+                  </div>
+                  <div style={{ fontSize: 13, color: '#5A6660', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.last}</div>
                 </div>
-                <div style={{ fontSize: 13, color: '#5A6660', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.last}</div>
-              </div>
-            </Link>
+              </Link>
+              <button onClick={() => hideRoom(r.id)} aria-label="مسح المحادثة" title="مسح المحادثة من عندك" style={{ flexShrink: 0, width: 36, height: 36, borderRadius: 10, border: 'none', background: 'transparent', color: '#C0453A', fontSize: 17, cursor: 'pointer', lineHeight: 1 }}>🗑️</button>
+            </div>
           ))
         )}
       </div>
