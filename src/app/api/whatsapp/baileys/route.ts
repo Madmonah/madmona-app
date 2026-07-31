@@ -4,6 +4,7 @@
 // ⚠️ كل نداء هنا متحقق من توقيعه الفعلي في lib/whatsapp.ts و lib/anthropic.ts
 
 import { NextRequest, NextResponse } from 'next/server'
+import { waitUntil } from '@vercel/functions'
 import { supabase as supabaseAdmin, supabaseUntyped } from '@/lib/supabase'
 import {
   upsertConversation,
@@ -534,6 +535,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ✅ (٣١ يوليو ٢٠٢٦ — محمد اشتكى: بيبعت ردّين مختلفين على رسالة واحدة):
+    // المعالجة الكاملة (انتظار الدفعة ١٢ث + استدعاء الذكاء الاصطناعي +
+    // الأدوات) بتاخد وقت أطول من مهلة الـHTTP client بتاع OpenWA على
+    // Railway، فهو بيعتبرها فشلت ويعيد إرسال نفس الرسالة بمعرّف تاني —
+    // وكل استدعاء AI بيطلع صياغة مختلفة، فالعميل يشوف ردّين مختلفين فعليًا.
+    // claim فوق (wa_claim_reply) بيمنع تكرار على نفس message_id بس مش
+    // على إعادة بمعرّف جديد. الحل: نأكّد الاستلام لـOpenWA فورًا هنا
+    // (بعد ما ملكنا حق الرد بالـclaim)، والمعالجة الحقيقية تكمل في
+    // الخلفية بـwaitUntil — من غير ما تنتظر رد الـHTTP خالص.
+    waitUntil((async () => {
+      try {
     // ── ٠ج) المحادثة موقوفة؟ ────────────────────────────────────────────
     // لو الأدمن أوقف المحادثة، المارد يسكت خالص. النظام القديم كان
     // بيعمل كده وضاع في الترحيل — فأي محادثة محمد أوقفها كان المارد
@@ -977,6 +989,13 @@ export async function POST(request: NextRequest) {
       handoff: parsed.needs_human_handoff ?? false,
       error: sent.error,
     })
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'unknown'
+        console.error('[baileys webhook bg]', msg)
+      }
+    })())
+
+    return NextResponse.json({ ok: true, accepted: true, logged: true })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'unknown'
     console.error('[baileys webhook]', msg)
