@@ -357,7 +357,7 @@ export default function ListingDetailPage() {
         body: JSON.stringify({ listingId: listing.id }),
       })
       const data = await res.json()
-      if (data?.ok && data.roomId) { router.push(`/team?room=${data.roomId}`); return }
+      if (data?.ok && data.roomId) { router.push(`/chat/team?room=${data.roomId}`); return }
       if (data?.ok && data.pending) {
         alert('تم إرسال استفسارك ✅\nهنبلّغ صاحب الإعلان على واتساب، وهيرد عليك في شات مضمونة.')
         return

@@ -89,7 +89,7 @@ export default function ChatHub() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 16px 4px' }}>
           <div style={{ flex: 1, fontSize: 11, fontWeight: 900, color: '#1F6F5F', letterSpacing: '.3px' }}>محادثاتك الخاصة</div>
-          <Link href="/team?new=dm" style={{ background: '#F1EEE6', color: '#1F6F5F', borderRadius: 999, padding: '5px 12px', fontSize: 11.5, fontWeight: 800, textDecoration: 'none' }}>➕ محادثة جديدة</Link>
+          <Link href="/chat/team?new=dm" style={{ background: '#F1EEE6', color: '#1F6F5F', borderRadius: 999, padding: '5px 12px', fontSize: 11.5, fontWeight: 800, textDecoration: 'none' }}>➕ محادثة جديدة</Link>
         </div>
         {rooms.length === 0 ? (
           <div style={{ padding: '6px 16px 16px', fontSize: 13, color: '#8A9690', fontWeight: 600, lineHeight: 1.8 }}>
@@ -99,7 +99,7 @@ export default function ChatHub() {
           </div>
         ) : (
           rooms.map((r) => (
-            <Link key={r.id} href={`/team?room=${r.id}`} style={rowStyle}>
+            <Link key={r.id} href={`/chat/team?room=${r.id}`} style={rowStyle}>
               <div style={{ ...avatarStyle, background: 'radial-gradient(circle at 35% 30%,#2FA084,#1F6F5F)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 800 }}>{(r.name || '؟').trim().charAt(0)}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>

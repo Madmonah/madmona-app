@@ -25,7 +25,7 @@ export default function JoinRoom() {
           body: JSON.stringify({ roomId }),
         })
         const data = await res.json()
-        if (data?.ok) { router.replace(`/team?room=${roomId}`); return }
+        if (data?.ok) { router.replace(`/chat/team?room=${roomId}`); return }
         setMsg(data?.error === 'room not found' ? 'الدعوة دي مش صالحة أو المجموعة اتشالت.' : 'حصلت مشكلة، جرّب تاني.')
       } catch {
         setMsg('مش قادر أضيفك دلوقتي — جرّب تاني.')

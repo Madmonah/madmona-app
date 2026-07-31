@@ -9,7 +9,7 @@ export const runtime = 'nodejs'
 // POST /api/listings/inquiry
 // «استفسار» على إعلان الماركت. المستفسر لازم يكون مسجّل.
 // - لو صاحب الإعلان عنده حساب: بنلاقي/نعمل روم direct بينهم + notification_queue
-//   (بوش) + نرجّع roomId فالمستفسر يروح على /team?room=<id>.
+//   (بوش) + نرجّع roomId فالمستفسر يروح على /chat/team?room=<id>.
 // - لو معندوش حساب: بنسجّل listing_inquiries + marid_notifications
 //   (kind='listing_inquiry') فالمارد يبعتله واتساب: «فيه استفسار على إعلانك».
 // body: { listingId }
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
         recipient_id: ownerProfileId, type: 'listing_inquiry',
         title: 'استفسار جديد على إعلانك 📩',
         body: `${inquirerName} عايز يستفسر عن «${l.title}». افتح الشات للرد.`,
-        url: `/team?room=${roomId}`, data: { listing_id: l.id, room_id: roomId },
+        url: `/chat/team?room=${roomId}`, data: { listing_id: l.id, room_id: roomId },
       } as never)
 
       await admin.from('listing_inquiries').insert({
