@@ -224,7 +224,29 @@ Deno.serve(async (req) => {
   const warns = checks.filter(c => c.severity === 'warn')
   const sendAlert = alerts.length > 0
 
-  if (sendAlert) {
+  // ============== 31 يوليو 2026 (محمد: بيتكرر كل 15 دقيقة من غير توقف) ==============
+  // كان بيبعت نفس الإنذار كل 15 دقيقة طول ما الحالة مستمرة (زي stuck_listings
+  // اللي فيه بيانات مش دقيقة أصلاً — كتير من الليستنجات دي متوقفة قصدًا).
+  // دلوقتي: نفس مجموعة أسماء الإنذارات (alert names) متبعتش تاني إلا بعد 6
+  // ساعات من آخر مرة اتبعتت، حتى لو الفحص شغال كل 15 دقيقة.
+  const alertNames = alerts.map(a => a.name).sort().join(',')
+  let alreadySentRecently = false
+  if (alertNames) {
+    const { data: recentSame } = await sb
+      .from('whatsapp_outbound_queue')
+      .select('metadata, created_at')
+      .eq('campaign', 'system_health_alerts')
+      .gte('created_at', new Date(Date.now() - 6 * 3600 * 1000).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(10)
+    alreadySentRecently = (recentSame || []).some((r: { metadata: unknown }) => {
+      const m = r.metadata as { alerts?: { name: string }[] } | null
+      const names = (m?.alerts || []).map(a => a.name).sort().join(',')
+      return names === alertNames
+    })
+  }
+
+  if (sendAlert && !alreadySentRecently) {
     const msg = `🚨 *Madmona Health Alert*\n\n` +
       alerts.map(a => `❗ *${a.name}*: ${a.detail}`).join('\n') +
       (warns.length > 0 ? `\n\n⚠️ Warnings:\n` + warns.map(w => `• ${w.name}: ${w.detail}`).join('\n') : '')
