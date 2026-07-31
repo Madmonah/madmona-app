@@ -315,29 +315,45 @@ export const MARID_TOOLS = [
   {
     name: 'create_project',
     description:
-      'سجّل مشروع عقاري جديد بعت به مطوّر أو سمسار (كمبوند، مول، تاور، برج إداري). ' +
-      'ده غير create_listing_draft — ده للمشاريع الكبيرة اللي بتتعرض في بورصة مضمونة العقارية، ' +
-      'مش وحدة فرد بيأجّرها.\n\n' +
+      'سجّل عقار في بورصة مضمونة العقارية — سواء مشروع مطوّر (كمبوند، مول، تاور) ' +
+      'أو وحدة ريسيل من فرد (شقة/فيلا/شاليه للبيع). حدّد segment حسب الحالة:\n' +
+      '  • developer = مشروع مطوّر (الافتراضي لو ماتحددش)\n' +
+      '  • resale = وحدة ريسيل بيع من شخص (مش مطوّر)\n\n' +
+      '📸 لو الريسيل بيع (أو أي عقار) معاه صور أو فيديو: مرّرهم في image_urls/video_url. ' +
+      'لو معاه بيانات واضحة (مساحة وسعر ومنطقة) وصور، سجّله على طول — ماتستنيش لحد يطلب منك ذلك.\n' +
+      '⛔ لو العرض ريسيل من فرد ومعاه صور/فيديو: نادي الأداة دي بـ segment="resale" **وكمان** نادي ' +
+      'create_listing_draft بنفس الصور عشان يظهر في الماركتبليس كمان البورصة — الاتنين مش بديل بعض.\n\n' +
       '⛔ ممنوع تستخدمها لو:\n' +
-      '• الاسم مش واضح — مشروع من غير اسم مالوش لازمة\n' +
-      '• الرسالة مكتوب فيها SOLDOUT أو «تم البيع» أو «خلصت» على المشروع ده\n' +
-      '• السعر أو المطوّر مش مذكور صراحة — ماتخمّنش، سيبه فاضي\n\n' +
-      'الأداة بتتأكد بنفسها إن المشروع مش موجود قبل ما تحفظ.',
+      '• الاسم مش واضح — مشروع/وحدة من غير اسم مالوش لازمة\n' +
+      '• الرسالة مكتوب فيها SOLDOUT أو «تم البيع» أو «خلصت» على المشروع/الوحدة دي\n' +
+      '• السعر مش مذكور صراحة — ماتخمّنش، سيبه فاضي\n\n' +
+      'الأداة بتتأكد بنفسها إن المشروع/الوحدة مش موجود قبل ما تحفظ.',
     input_schema: {
       type: 'object' as const,
       properties: {
-        title: { type: 'string', description: 'اسم المشروع زي ما هو مكتوب بالظبط' },
-        developer: { type: 'string', description: 'المطوّر — بس لو مذكور صراحة' },
+        title: { type: 'string', description: 'اسم المشروع أو وصف قصير للوحدة زي ما هو مكتوب بالظبط' },
+        segment: {
+          type: 'string',
+          enum: ['developer', 'resale'],
+          description: 'developer = مشروع مطوّر (الافتراضي). resale = وحدة ريسيل بيع من فرد',
+        },
+        developer: { type: 'string', description: 'المطوّر — بس لو مذكور صراحة (مش مطلوب في resale)' },
         area_label: { type: 'string', description: 'المنطقة بالعربي' },
         property_type: {
           type: 'string',
           enum: ['residential', 'commercial', 'administrative', 'medical'],
-          description: 'نوع المشروع',
+          description: 'نوع المشروع/الوحدة',
         },
         unit_label: { type: 'string', description: 'وصف الوحدات والمساحات زي ما مذكور' },
         price_from: { type: 'number', description: 'أقل سعر مذكور بالجنيه' },
         note: { type: 'string', description: 'سطر أو اتنين يلخّصوا العرض' },
-        sender_phone: { type: 'string', description: 'رقم اللي بعت المشروع' },
+        image_urls: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'روابط صور الوحدة/المشروع اللي العميل بعتها (الرابط المحفوظ في سياق الرسالة)',
+        },
+        video_url: { type: 'string', description: 'رابط فيديو لو العميل بعت واحد' },
+        sender_phone: { type: 'string', description: 'رقم اللي بعت المشروع/الوحدة' },
       },
       required: ['title', 'sender_phone'],
     },
@@ -756,16 +772,21 @@ async function createListingDraft(a: {
  */
 async function createProject(a: {
   title: string
+  segment?: string
   developer?: string
   area_label?: string
   property_type?: string
   unit_label?: string
   price_from?: number
   note?: string
+  image_urls?: string[]
+  video_url?: string
   sender_phone: string
 }): Promise<ToolResult> {
   const title = (a.title || '').trim()
-  if (title.length < 3) return { ok: false, error: 'اسم المشروع مش واضح — ماتسجّلش' }
+  if (title.length < 3) return { ok: false, error: 'اسم المشروع/الوحدة مش واضح — ماتسجّلش' }
+  const segment = a.segment === 'resale' ? 'resale' : 'developer'
+  const images = (a.image_urls || []).filter((u) => typeof u === 'string' && u.trim().length > 0)
 
   // ── فحص التكرار ────────────────────────────────────────────────────
   const norm = (s: string) =>
@@ -798,12 +819,15 @@ async function createProject(a: {
       area: 'other',
       area_label: a.area_label ?? null,
       city: a.area_label ?? null,
-      segment: 'developer',
+      segment,
       property_type: a.property_type ?? null,
       unit_label: a.unit_label ?? null,
       price_from: typeof a.price_from === 'number' ? a.price_from : null,
       price_unit: 'egp_total',
       note: a.note ?? null,
+      cover_url: images[0] ?? null,
+      media: images.length ? images : null,
+      video_url: a.video_url ?? null,
       // بنحفظ رقم اللي بعت عشان نرجعله ونعرف مصدر المشروع.
       // ⚠️ العمود ده ممنوع على الزوار (migrations/20260720_hide_supplier_phones.sql)
       // — أرقام الموردين ماتظهرش على الماركتبليس ولا البورصة أبدًا.
@@ -817,7 +841,7 @@ async function createProject(a: {
     .select('id, slug')
     .maybeSingle()
 
-  if (error) return { ok: false, error: 'مش قادر أسجّل المشروع', detail: error.message }
+  if (error) return { ok: false, error: 'مش قادر أسجّل المشروع/الوحدة', detail: error.message }
 
   return {
     ok: true,
