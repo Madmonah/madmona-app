@@ -187,6 +187,8 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   // 🏗️ (17 Jul 2026) طلب محمد: العقارات تتفصل «بريمري من المطور | ريسيل».
   // البريمري = إعلان مرتبط بمشروع مطور (project_id موجود)، الريسيل = من غير مشروع.
   const [propertySource, setPropertySource] = useState<'all' | 'primary' | 'resale'>('all')
+  // 31 Jul 2026 (محمد): الإيجار يتقسّم مفروش / بدون فرش
+  const [furnishedFilter, setFurnishedFilter] = useState<'all' | 'furnished' | 'unfurnished'>('all')
   // 📄 بيجينيشن «حمّل المزيد» — كان محدود بـ60 إعلان بس. بيكبر بـ60 كل ضغطة،
   //    وبيرجع 60 أول ما أي فلتر يتغيّر (تحت). loadSeqRef بيضمن إن آخر ردّ بس هو اللي يتطبّق.
   const [visibleLimit, setVisibleLimit] = useState(60)
@@ -392,6 +394,16 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         query = query.is('project_id', null)
       }
 
+      // 🛏️ مفروش/بدون فرش — بس جوه عقارات الإيجار (properties- مش sale-properties-)
+      const inRentalProperties = activeTrack === 'rentals' && !!selectedCategorySlug && selectedCategorySlug.startsWith('properties-')
+      if (inRentalProperties && furnishedFilter === 'furnished') {
+        // @ts-expect-error -- is_furnished مش في types/supabase.ts لسه (لحد ما نعمل regenerate)
+        query = query.eq('is_furnished', true)
+      } else if (inRentalProperties && furnishedFilter === 'unfurnished') {
+        // @ts-expect-error -- نفس الحكاية
+        query = query.eq('is_furnished', false)
+      }
+
       const { data, error, count } = await query
       if (seq !== loadSeqRef.current) return // ردّ متأخر — فيه كويري أحدث منه شغال
       if (error) {
@@ -413,13 +425,13 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       setLoading(false)
     }
     load()
-  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource, selectedGroupSlug, allCategories, reloadKey, visibleLimit])
+  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource, furnishedFilter, selectedGroupSlug, allCategories, reloadKey, visibleLimit])
 
   // 📄 أول ما أي فلتر يتغيّر، نرجّع العرض لأول 60 (عشان مانفضلش محمّلين 300 إعلان
   //    من تصنيف قديم). لو كان 60 أصلًا، ده no-op فمفيش فيتش زيادة.
   useEffect(() => {
     setVisibleLimit(60)
-  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource, selectedGroupSlug])
+  }, [selectedCategorySlug, searchQuery, sortBy, activeTrack, supplierFilter, propertySource, furnishedFilter, selectedGroupSlug])
 
   // ♾️ تحميل تلقائي عند التمرير: أول ما مرساة «حمّل المزيد» تقرب من الشاشة، نكبّر الحد لوحدنا.
   //    الشرط listings.length >= visibleLimit معناه إن آخر دفعة رجعت كاملة (يعني غالبًا فيه أكتر).
@@ -663,7 +675,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                 {rootGroups.map(g => (
                   <button
                     key={g.slug}
-                    onClick={() => { setSelectedGroupSlug(g.slug); setPropertySource('all') }}
+                    onClick={() => { setSelectedGroupSlug(g.slug); setPropertySource('all'); setFurnishedFilter('all') }}
                     className="flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-white border border-gray-100 shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all text-right"
                   >
                     <span className="text-2xl">{g.emoji || '🏷️'}</span>
@@ -678,7 +690,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
               <div className="mt-2 space-y-2">
                 <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 items-center">
                   <button
-                    onClick={() => { setSelectedGroupSlug(null); setSelectedCategorySlug(null); setPropertySource('all') }}
+                    onClick={() => { setSelectedGroupSlug(null); setSelectedCategorySlug(null); setPropertySource('all'); setFurnishedFilter('all') }}
                     className="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all flex items-center gap-1"
                   >
                     ← كل الأقسام
@@ -837,6 +849,29 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                   onClick={() => setPropertySource(key)}
                   className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
                     propertySource === key
+                      ? 'bg-[#173B33] text-white shadow-soft'
+                      : 'bg-white/80 text-gray-600 hover:bg-white border border-gray-100'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* 🛏️ (31 Jul 2026 — محمد) مفروش/بدون فرش — يظهر بس جوه عقارات الإيجار */}
+          {activeTrack === 'rentals' && !!selectedCategorySlug && selectedCategorySlug.startsWith('properties-') && (
+            <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
+              {([
+                ['all', 'الكل'],
+                ['furnished', '🛋️ مفروش'],
+                ['unfurnished', '🧱 بدون فرش'],
+              ] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setFurnishedFilter(key)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
+                    furnishedFilter === key
                       ? 'bg-[#173B33] text-white shadow-soft'
                       : 'bg-white/80 text-gray-600 hover:bg-white border border-gray-100'
                   }`}

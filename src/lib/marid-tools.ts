@@ -134,6 +134,13 @@ export const MARID_TOOLS = [
         category_slug: { type: 'string', description: 'التصنيف من list_categories' },
         price_egp: { type: 'number', description: 'السعر بالجنيه' },
         period: { type: 'string', description: 'اليوم/الشهر/الساعة/القطعة' },
+        is_furnished: {
+          type: 'boolean',
+          description:
+            'إلزامي لو التصنيف عقار للإيجار (category_slug يبدأ بـ properties- مش sale-properties-): ' +
+            'true = مفروش، false = بدون فرش. اسأل العميل صراحة الشقة مفروشة ولا فاضية لو مش واضح من كلامه. ' +
+            'من غير القيمة دي الإعلان بيظهر في القسمين مع بعض وده بيلخبط الدور.',
+        },
         image_urls: {
           type: 'array',
           items: { type: 'string' },
@@ -684,6 +691,7 @@ async function createListingDraft(a: {
   category_slug?: string
   price_egp?: number
   period?: string
+  is_furnished?: boolean
   image_urls?: string[]
 }): Promise<ToolResult> {
   if (!a.title?.trim()) return { ok: false, error: 'الاسم مطلوب' }
@@ -725,6 +733,7 @@ async function createListingDraft(a: {
       category_slug: slug,
       price_egp: typeof a.price_egp === 'number' ? a.price_egp : null,
       period: a.period ?? null,
+      is_furnished: typeof a.is_furnished === 'boolean' ? a.is_furnished : null,
       image_urls: images,
       source_text: 'المارد — واتساب',
       // 'new' = الحالة اللي كرون publish-drafts بيلقطها وينشرها. كانت 'pending'

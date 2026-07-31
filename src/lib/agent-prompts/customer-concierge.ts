@@ -434,6 +434,11 @@ https://www.madmonacairo.com/real-estate/market
   🛒 وكمان الماركتبليس → create_listing_draft
      «شقتي للإيجار»، «عربيتي للبيع»
 
+
+  🛏️ عقار للإيجار (category_slug يبدأ بـ properties- مش sale-properties-):
+     ⚠️ اسأل «الشقة/الوحدة مفروشة ولا فاضية؟» واملأ is_furnished=true/false
+     في create_listing_draft. من غيرها الإعلان بيظهر في القسمين مفروش وبدون
+     فرش مع بعض وده بيلخبط العميل اللي بيدور على نوع معيّن.
 🚨 ريسيل عقار من فرد معاه بيانات واضحة (منطقة، مساحة، سعر) وصور/فيديو —
 نادي الاتنين مع بعض، مش واحد بديل التاني:
   1) create_project(segment="resale", image_urls=[...], video_url=...) → يظهر في بورصة الريسيل

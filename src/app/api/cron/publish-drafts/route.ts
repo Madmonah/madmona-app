@@ -40,6 +40,7 @@ type Draft = {
   category_slug: string | null
   price_egp: number | null
   period: string | null
+  is_furnished: boolean | null
   image_urls: string[] | null
 }
 
@@ -135,7 +136,7 @@ export async function GET(req: Request) {
   // تكرار الغلطة دي لو الحالة اتلخبطت تاني، وبيلقط أي عالقين قدام.
   const { data: drafts } = await supa
     .from('instant_listing_drafts')
-    .select('id, contact_phone, contact_name, title, description, category_slug, price_egp, period, image_urls')
+    .select('id, contact_phone, contact_name, title, description, category_slug, price_egp, period, is_furnished, image_urls')
     .in('status', ['new', 'pending'])
     .lt('created_at', cutoff)
     .order('created_at')
@@ -283,7 +284,7 @@ export async function GET(req: Request) {
           supplier_id: supplierId, contact_phone: phone, phone_verified_at: new Date().toISOString(),
           description: d.description || d.title, country: 'EG', is_directory: false,
           city: guessCity(`${d.title} ${d.description || ''}`),
-          price_egp: d.price_egp, price_on_request: d.price_egp == null,
+          price_egp: d.price_egp, price_on_request: d.price_egp == null, is_furnished: d.is_furnished,
         } as never).select('id, slug').single()
         if (le || !nl) { results.push({ phone, draft: d.id, error: 'listing: ' + le?.message }); continue }
         await supa.from('listing_photos').insert((d.image_urls || []).slice(0, 8).map((u, ix) => ({
