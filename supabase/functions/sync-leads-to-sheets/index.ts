@@ -1,3 +1,11 @@
+// sync-leads-to-sheets v2 (31 يوليو 2026)
+//
+// v1: تاب واحد فيه كل الليدز مع عمود category نصي.
+// v2 (طلب محمد): تابات منفصلة لكل قسم + عمود "اتبعتله؟" مبني من داتا حقيقية
+// (whatsapp_conversations.last_outbound_at) مش من status الجدول اللي محدش
+// بيحدّثه فعليًا (كل الليدز status='new' للأبد لأنه مفيش أوتوميشن بيبعت
+// من cold_leads أصلاً — status مش موثوق فيه كمصدر حقيقة).
+
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { create, getNumericDate } from "https://deno.land/x/djwt@v3.0.2/mod.ts";
@@ -26,9 +34,6 @@ async function getGoogleAccessToken(): Promise<string> {
   return tokJson.access_token;
 }
 
-// 31 Jul 2026: normalize to FULL INTERNATIONAL format (+20XXXXXXXXXX) instead of
-// stripping the country code back to local format. This sheet is used as a
-// source list for WhatsApp bulk sends (OpenWA), which requires +20 format.
 function normPhone(p: string | null): string | null {
   if (!p) return null;
   let x = String(p).replace(/[^\d]/g, "");
@@ -37,7 +42,6 @@ function normPhone(p: string | null): string | null {
   return "+" + x;
 }
 
-// 31 Jul 2026: clean Arabic display labels for category codes (بدل الكود الخام)
 const CATEGORY_LABELS: Record<string, string> = {
   apartments: "شقق للإيجار",
   apartments_sale: "شقق للبيع",
@@ -46,7 +50,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   chalets: "شاليهات للإيجار",
   chalets_sale: "شاليهات للبيع",
   cars: "سيارات للإيجار",
-  vehicles: "مركبات (بيع/دراجات نارية)",
+  vehicles: "مركبات (بيع دراجات نارية)",
   marine: "مركبات بحرية",
   equipment: "معدات وآليات",
   workspaces: "مكاتب ومساحات عمل",
@@ -64,13 +68,10 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: "أخرى",
 };
 function categoryLabel(cat: string | null): string {
-  if (!cat) return "غير مصنّف";
-  return CATEGORY_LABELS[cat] || cat;
+  if (!cat) return "غير مصنف";
+  return (CATEGORY_LABELS[cat] || cat).replace(/[\/\\?*\[\]]/g, "-").slice(0, 90);
 }
 
-// 31 Jul 2026: notes = real scraped ad text (much richer than the generic
-// "شقة للبيع - المدينة" placeholder). Clean up JSON/HTML scraping artifacts
-// and use it as the displayed ad description when it's usable.
 function cleanAdText(notes: string | null, fallback: string): string {
   if (!notes) return fallback;
   let n = notes;
@@ -100,50 +101,130 @@ async function fetchAllLeads(maxTotal: number): Promise<any[]> {
   return out;
 }
 
+async function fetchContactedPhones(): Promise<Set<string>> {
+  const pageSize = 1000;
+  const set = new Set<string>();
+  let from = 0;
+  for (;;) {
+    const { data, error } = await sb
+      .from("whatsapp_conversations")
+      .select("contact_phone")
+      .not("last_outbound_at", "is", null)
+      .range(from, from + pageSize - 1);
+    if (error) throw new Error(`whatsapp_conversations page ${from}: ${error.message}`);
+    if (!data || data.length === 0) break;
+    for (const row of data as { contact_phone: string | null }[]) {
+      const p = normPhone(row.contact_phone);
+      if (p) set.add(p);
+    }
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  return set;
+}
+
+async function sheetsGet(token: string): Promise<{ sheets: { properties: { sheetId: number; title: string } }[] }> {
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?fields=sheets.properties`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`Sheets get failed: ${await res.text()}`);
+  return res.json();
+}
+
+async function ensureTabsExist(token: string, existing: Map<string, number>, wantedTitles: string[]): Promise<Map<string, number>> {
+  const toCreate = wantedTitles.filter(t => !existing.has(t));
+  if (toCreate.length === 0) return existing;
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}:batchUpdate`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ requests: toCreate.map(title => ({ addSheet: { properties: { title } } })) }),
+  });
+  if (!res.ok) throw new Error(`addSheet failed: ${await res.text()}`);
+  const json = await res.json();
+  for (const reply of json.replies || []) {
+    const p = reply.addSheet?.properties;
+    if (p) existing.set(p.title, p.sheetId);
+  }
+  return existing;
+}
+
+const HEADERS = ["Phone", "اتبعتله؟", "وصف الإعلان", "الموقع", "Price", "Source", "Added Date", "Status الخام", "URL", "Synced_At"];
+
 Deno.serve(async (req) => {
   const started = Date.now();
   try {
     const url = new URL(req.url);
     const limit = parseInt(url.searchParams.get("limit") || "10000");
 
-    const leads = await fetchAllLeads(limit);
+    const [leads, contactedPhones] = await Promise.all([fetchAllLeads(limit), fetchContactedPhones()]);
 
-    const seen = new Set<string>();
-    const rows: any[][] = [];
+    const byCategory = new Map<string, any[][]>();
+    let totalRows = 0;
+    let contactedCount = 0;
     for (const lead of leads) {
       const p = normPhone(lead.phone);
-      if (!p || seen.has(p)) continue;
-      seen.add(p);
-      rows.push([
+      if (!p) continue;
+      const tabTitle = categoryLabel(lead.category);
+      const arr = byCategory.get(tabTitle) || [];
+      if (arr.some(r => r[0] === p)) continue;
+      const contacted = contactedPhones.has(p);
+      if (contacted) contactedCount++;
+      arr.push([
         p,
-        categoryLabel(lead.category),
+        contacted ? "اتبعتله" : "لسه",
         cleanAdText(lead.notes, lead.business_name || ""),
         [lead.location, lead.city].filter(Boolean).join(" - "),
         "",
         lead.source || "",
         (lead.added_at || "").slice(0, 10),
-        lead.status || "pending",
+        lead.status || "",
         (lead.source_url || "").slice(0, 200),
         new Date().toISOString().slice(0, 19).replace("T", " "),
       ]);
+      byCategory.set(tabTitle, arr);
+      totalRows++;
+    }
+
+    for (const [, rows] of byCategory) {
+      rows.sort((a, b) => (a[1] === b[1] ? 0 : a[1] === "لسه" ? -1 : 1));
     }
 
     const token = await getGoogleAccessToken();
+    const existingSheets = await sheetsGet(token);
+    const existingMap = new Map<string, number>(
+      existingSheets.sheets.map(s => [s.properties.title, s.properties.sheetId])
+    );
 
-    const clearRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/A:J:clear`, { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: "{}" });
-    if (!clearRes.ok) throw new Error(`Sheets clear failed: ${await clearRes.text()}`);
+    const wantedTitles = Array.from(byCategory.keys());
+    await ensureTabsExist(token, existingMap, wantedTitles);
 
-    const values = [["Phone", "القسم", "وصف الإعلان", "الموقع", "Price", "Source", "Added Date", "Status", "URL", "Synced_At"], ...rows];
-    const endRow = values.length;
-    const upRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/A1:J${endRow}?valueInputOption=RAW`, { method: "PUT", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ values }) });
-    if (!upRes.ok) throw new Error(`Sheets upload failed: ${await upRes.text()}`);
-    const upJson = await upRes.json();
+    const perTabResults: Record<string, number> = {};
+    for (const [tabTitle, rows] of byCategory) {
+      const safeTitle = tabTitle.replace(/'/g, "''");
+      const clearRes = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/'${encodeURIComponent(safeTitle)}'!A:J:clear`,
+        { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: "{}" }
+      );
+      if (!clearRes.ok) throw new Error(`clear tab "${tabTitle}" failed: ${await clearRes.text()}`);
+
+      const values = [HEADERS, ...rows];
+      const endRow = values.length;
+      const upRes = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/'${encodeURIComponent(safeTitle)}'!A1:J${endRow}?valueInputOption=RAW`,
+        { method: "PUT", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ values }) }
+      );
+      if (!upRes.ok) throw new Error(`upload tab "${tabTitle}" failed: ${await upRes.text()}`);
+      perTabResults[tabTitle] = rows.length;
+      await new Promise(r => setTimeout(r, 150));
+    }
 
     return new Response(JSON.stringify({
       ok: true,
       leads_fetched: leads.length,
-      unique_rows_uploaded: rows.length,
-      cells_updated: upJson.updatedCells,
+      unique_rows_uploaded: totalRows,
+      contacted_count: contactedCount,
+      not_contacted_count: totalRows - contactedCount,
+      tabs: perTabResults,
       sheet_url: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`,
       elapsed_ms: Date.now() - started,
     }, null, 2), { headers: { "Content-Type": "application/json" } });
