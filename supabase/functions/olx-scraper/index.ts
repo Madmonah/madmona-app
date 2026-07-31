@@ -48,13 +48,17 @@ const CATEGORIES = [
   { url: "https://www.olx.com.eg/vehicles/motorcycles-accessories/cairo/", category: "vehicles", label: "دراجة نارية", default_loc: "القاهرة" },
   { url: "https://www.olx.com.eg/vehicles/motorcycles-accessories/giza/", category: "vehicles", label: "دراجة نارية", default_loc: "الجيزة" },
   { url: "https://www.olx.com.eg/vehicles/motorcycles-accessories/alexandria/", category: "vehicles", label: "دراجة نارية", default_loc: "الإسكندرية" },
-  // ⛵ BOATS - WATERCRAFT (مركبات بحرية) — v4 (31 Jul 2026) — DB category "marine"
-  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/alexandria/", category: "marine", label: "مركب بحري", default_loc: "الإسكندرية" },
-  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/red-sea/", category: "marine", label: "مركب بحري", default_loc: "الغردقة" },
-  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/matrouh/", category: "marine", label: "مركب بحري", default_loc: "الساحل الشمالي" },
-  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/south-sinai/", category: "marine", label: "مركب بحري", default_loc: "سيناء" },
-  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/cairo/", category: "marine", label: "مركب بحري", default_loc: "القاهرة" },
-  // BUSINESS / EQUIPMENT
+  // \u26f5 BOATS - WATERCRAFT (\u0645\u0631\u0643\u0628\u0627\u062a \u0628\u062d\u0631\u064a\u0629) \u2014 v4 (31 Jul 2026) \u2014 DB category "marine"/"marine_sale"
+  // v5 (31 Jul 2026 \u062a\u0627\u0646\u064a): + \u0635\u0641\u062d\u0629 2 \u0644\u0643\u0644 \u0645\u0646\u0637\u0642\u0629 (\u0645\u0632\u064a\u062f \u0625\u0639\u0644\u0627\u0646\u0627\u062a) + \u062a\u0635\u0646\u064a\u0641 \u0628\u064a\u0639/\u0625\u064a\u062c\u0627\u0631 \u062a\u0644\u0642\u0627\u0626\u064a \u0641\u064a extractLeads
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/alexandria/", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0627\u0644\u0625\u0633\u0643\u0646\u062f\u0631\u064a\u0629" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/alexandria/?page=2", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0627\u0644\u0625\u0633\u0643\u0646\u062f\u0631\u064a\u0629" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/red-sea/", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0627\u0644\u063a\u0631\u062f\u0642\u0629" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/red-sea/?page=2", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0627\u0644\u063a\u0631\u062f\u0642\u0629" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/matrouh/", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0627\u0644\u0633\u0627\u062d\u0644 \u0627\u0644\u0634\u0645\u0627\u0644\u064a" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/south-sinai/", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0633\u064a\u0646\u0627\u0621" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/south-sinai/?page=2", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0633\u064a\u0646\u0627\u0621" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/cairo/", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0627\u0644\u0642\u0627\u0647\u0631\u0629" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/cairo/?page=2", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0627\u0644\u0642\u0627\u0647\u0631\u0629" },
   { url: "https://www.olx.com.eg/business-industrial-agriculture/", category: "equipment", default_loc: "القاهرة" },
   // OFFICES & COMMERCIAL
   { url: "https://www.olx.com.eg/properties/office-commercial-for-rent/cairo/", category: "workspaces", default_loc: "القاهرة" },
@@ -102,12 +106,22 @@ function extractLeads(html: string, categoryInfo: typeof CATEGORIES[0]) {
         apartments_sale: "شقة للبيع", villas_sale: "فيلا للبيع", chalets_sale: "شاليه للبيع",
       };
       // categoryInfo.label overrides the generic per-category label when several
+      // 31 يوليو 2026 (تاني): مركبات بحرية OLX مالهاش رابط منفصل بيع/إيجار
+      // زي الشقق — كله في نفس الصفحة. نصنّف من نص الوصف نفسه: كلمة إيجار/تأجير
+      // صريحة = إيجار، غير كده (الأغلبية الساحقة) = بيع (marine_sale).
+      let effectiveCategory = categoryInfo.category
+      if (effectiveCategory === "marine") {
+        const rentWords = ["إيجار", "تأجير", "ايجار", "يومي", "باليوم", "لليلة"]
+        const isRent = rentWords.some(w => desc.includes(w))
+        effectiveCategory = isRent ? "marine" : "marine_sale"
+      }
       // sub-types share one DB category value (e.g. "vehicles" covers cars-for-sale
       // AND motorcycles — the DB category_check constraint doesn't allow finer values).
-      const displayLabel = (categoryInfo as any).label || labelMap[categoryInfo.category] || "إعلان";
+      const baseLabel = (categoryInfo as any).label || labelMap[categoryInfo.category] || "إعلان";
+      const displayLabel = effectiveCategory === "marine_sale" ? `${baseLabel} للبيع` : effectiveCategory === "marine" ? `${baseLabel} للإيجار` : baseLabel;
       leads.push({
         business_name: `${displayLabel} - ${location}`,
-        phone, category: categoryInfo.category, location, city: location,
+        phone, category: effectiveCategory, location, city: location,
         source: "olx_individuals", source_url: categoryInfo.url, status: "new", notes: desc
       });
     }
