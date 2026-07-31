@@ -1,13 +1,13 @@
-// olx-scraper v3 — comprehensive: all major cities, rentals + FOR-SALE properties
+// olx-scraper v4 — comprehensive: all major cities, rentals + FOR-SALE properties + vehicles
 // v3 (9 Jul 2026): + for-sale apartments/villas/chalets URLs (categories *_sale)
-//   عشان تاب «فرص معروضة 🔥 — للبيع» في بورصة العقارات يتملي بإعلانات بيع حقيقية.
+// v4 (31 Jul 2026): + مركبات أوسع (سيارات للبيع، دراجات نارية) + مركبات بحرية (بورصة/يخوت)
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-// 36 URLs across rental + sale categories + cities
+// URLs across rental + sale categories + cities + vehicles
 const CATEGORIES = [
   // APARTMENTS FOR RENT — 11 cities
   { url: "https://www.olx.com.eg/properties/apartments-duplex-for-rent/cairo/", category: "apartments", default_loc: "القاهرة" },
@@ -32,18 +32,35 @@ const CATEGORIES = [
   { url: "https://www.olx.com.eg/properties/short-term-cairo/red-sea/", category: "chalets", default_loc: "الغردقة" },
   { url: "https://www.olx.com.eg/properties/short-term-cairo/matrouh/", category: "chalets", default_loc: "مرسى مطروح" },
   { url: "https://www.olx.com.eg/properties/short-term-cairo/south-sinai/", category: "chalets", default_loc: "سيناء" },
-  // CARS — 4 cities
+  // CARS FOR RENT — 4 cities
   { url: "https://www.olx.com.eg/vehicles/cars-for-rent/cairo/", category: "cars", default_loc: "القاهرة" },
   { url: "https://www.olx.com.eg/vehicles/cars-for-rent/giza/", category: "cars", default_loc: "الجيزة" },
   { url: "https://www.olx.com.eg/vehicles/cars-for-rent/alexandria/", category: "cars", default_loc: "الإسكندرية" },
   { url: "https://www.olx.com.eg/vehicles/cars-for-rent/red-sea/", category: "cars", default_loc: "الغردقة" },
+  // 🚗 CARS FOR SALE — v4 (31 Jul 2026). DB category_check constraint only
+  // allows the generic "vehicles" value, not "cars_sale" — use "vehicles"
+  // for the DB category column; business_name keeps the specific Arabic label.
+  { url: "https://www.olx.com.eg/vehicles/cars-for-sale/cairo/", category: "vehicles", label: "سيارة للبيع", default_loc: "القاهرة" },
+  { url: "https://www.olx.com.eg/vehicles/cars-for-sale/giza/", category: "vehicles", label: "سيارة للبيع", default_loc: "الجيزة" },
+  { url: "https://www.olx.com.eg/vehicles/cars-for-sale/alexandria/", category: "vehicles", label: "سيارة للبيع", default_loc: "الإسكندرية" },
+  { url: "https://www.olx.com.eg/vehicles/cars-for-sale/red-sea/", category: "vehicles", label: "سيارة للبيع", default_loc: "الغردقة" },
+  // 🏍️ MOTORCYCLES & ACCESSORIES — v4 (31 Jul 2026) — also DB category "vehicles"
+  { url: "https://www.olx.com.eg/vehicles/motorcycles-accessories/cairo/", category: "vehicles", label: "دراجة نارية", default_loc: "القاهرة" },
+  { url: "https://www.olx.com.eg/vehicles/motorcycles-accessories/giza/", category: "vehicles", label: "دراجة نارية", default_loc: "الجيزة" },
+  { url: "https://www.olx.com.eg/vehicles/motorcycles-accessories/alexandria/", category: "vehicles", label: "دراجة نارية", default_loc: "الإسكندرية" },
+  // ⛵ BOATS - WATERCRAFT (مركبات بحرية) — v4 (31 Jul 2026) — DB category "marine"
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/alexandria/", category: "marine", label: "مركب بحري", default_loc: "الإسكندرية" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/red-sea/", category: "marine", label: "مركب بحري", default_loc: "الغردقة" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/matrouh/", category: "marine", label: "مركب بحري", default_loc: "الساحل الشمالي" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/south-sinai/", category: "marine", label: "مركب بحري", default_loc: "سيناء" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/cairo/", category: "marine", label: "مركب بحري", default_loc: "القاهرة" },
   // BUSINESS / EQUIPMENT
   { url: "https://www.olx.com.eg/business-industrial-agriculture/", category: "equipment", default_loc: "القاهرة" },
   // OFFICES & COMMERCIAL
   { url: "https://www.olx.com.eg/properties/office-commercial-for-rent/cairo/", category: "workspaces", default_loc: "القاهرة" },
   { url: "https://www.olx.com.eg/properties/office-commercial-for-rent/giza/", category: "workspaces", default_loc: "الجيزة" },
   { url: "https://www.olx.com.eg/properties/office-commercial-for-rent/alexandria/", category: "workspaces", default_loc: "الإسكندرية" },
-  // 🏷️ APARTMENTS FOR SALE — v3 (5 areas عالية الطلب)
+  // 🏷️ APARTMENTS FOR SALE — v3 (مناطق عالية الطلب)
   { url: "https://www.olx.com.eg/properties/apartments-duplex-for-sale/cairo/", category: "apartments_sale", default_loc: "القاهرة" },
   { url: "https://www.olx.com.eg/properties/apartments-duplex-for-sale/giza/", category: "apartments_sale", default_loc: "الجيزة" },
   { url: "https://www.olx.com.eg/properties/apartments-duplex-for-sale/alexandria/", category: "apartments_sale", default_loc: "الإسكندرية" },
@@ -84,8 +101,12 @@ function extractLeads(html: string, categoryInfo: typeof CATEGORIES[0]) {
         cars: "سيارة", workspaces: "مكتب", equipment: "معدات",
         apartments_sale: "شقة للبيع", villas_sale: "فيلا للبيع", chalets_sale: "شاليه للبيع",
       };
+      // categoryInfo.label overrides the generic per-category label when several
+      // sub-types share one DB category value (e.g. "vehicles" covers cars-for-sale
+      // AND motorcycles — the DB category_check constraint doesn't allow finer values).
+      const displayLabel = (categoryInfo as any).label || labelMap[categoryInfo.category] || "إعلان";
       leads.push({
-        business_name: `${labelMap[categoryInfo.category] || "إعلان"} - ${location}`,
+        business_name: `${displayLabel} - ${location}`,
         phone, category: categoryInfo.category, location,
         source: "olx_individuals", source_url: categoryInfo.url, status: "new", notes: desc
       });
