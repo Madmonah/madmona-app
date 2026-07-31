@@ -52,6 +52,36 @@ function slugify(name: string): string {
   return `${base || 'listing'}-${Math.random().toString(36).slice(2, 7)}`
 }
 
+// 31 Jul 2026: النظام بيقرأ السعر من pricing_rules مش من listings.price_egp — الأداة دي كانت
+// بتحط السعر على العمود القديم بس ومابتسجلش في pricing_rules خالص، فكل إعلان بيطلع
+// بلا سعر ظاهر (263+ إعلان اتأكد). نفس الشي: city مابيتحطش خالص.
+const PERIOD_MAP: Record<string, string> = {
+  'الساعة': 'hourly', 'ساعة': 'hourly', 'hourly': 'hourly',
+  'اليوم': 'daily', 'يوم': 'daily', 'daily': 'daily',
+  'الأسبوع': 'weekly', 'أسبوع': 'weekly', 'weekly': 'weekly',
+  'الشهر': 'monthly', 'شهر': 'monthly', 'monthly': 'monthly',
+  'القطعة': 'per_unit', 'قطعة': 'per_unit',
+}
+function mapPeriodType(period: string | null): string {
+  if (!period) return 'per_unit'
+  return PERIOD_MAP[period.trim()] || 'per_unit'
+}
+
+const CITY_KEYWORDS: Array<[RegExp, string]> = [
+  [/الإسكندرية|إسكندرية/, 'الإسكندرية'],
+  [/الجيزة|الشيخ زايد|6 أكتوبر|أكتوبر/, 'الجيزة'],
+  [/الساحل الشمالي|مرسى مطروح/, 'الساحل الشمالي'],
+  [/الغردقة|البحر الأحمر/, 'الغردقة'],
+  [/شرم الشيخ/, 'شرم الشيخ'],
+  [/العاصمة الإدارية/, 'العاصمة الإدارية'],
+  [/السويس|الإسماعيلية|بورسعيد/, 'القناة'],
+]
+function guessCity(text: string | null): string {
+  const t = text || ''
+  for (const [re, city] of CITY_KEYWORDS) if (re.test(t)) return city
+  return 'القاهرة' // افتراضي أمن من الفراغ الكامل
+}
+
 async function ensureProfile(supa: ReturnType<typeof sb>, rawPhone: string) {
   const normalized = normalizePhone(rawPhone)
   if (!normalized) return null
@@ -252,12 +282,19 @@ export async function GET(req: Request) {
           title: d.title.slice(0, 150), slug, status: 'draft', category_id: cat.id,
           supplier_id: supplierId, contact_phone: phone, phone_verified_at: new Date().toISOString(),
           description: d.description || d.title, country: 'EG', is_directory: false,
+          city: guessCity(`${d.title} ${d.description || ''}`),
           price_egp: d.price_egp, price_on_request: d.price_egp == null,
         } as never).select('id, slug').single()
         if (le || !nl) { results.push({ phone, draft: d.id, error: 'listing: ' + le?.message }); continue }
         await supa.from('listing_photos').insert((d.image_urls || []).slice(0, 8).map((u, ix) => ({
           listing_id: nl.id, url: u, display_order: ix + 1, is_primary: ix === 0,
         })) as never)
+        if (d.price_egp != null) {
+          await supa.from('pricing_rules').insert({
+            listing_id: nl.id, period_type: mapPeriodType(d.period), period_count: 1,
+            price: d.price_egp, currency: 'EGP', is_active: true, display_order: 1,
+          } as never)
+        }
         await supa.from('listings').update({ status: 'published', published_at: new Date().toISOString() } as never).eq('id', nl.id)
         await supa.from('instant_listing_drafts').update({ status: 'published', published_listing_id: nl.id } as never).eq('id', d.id)
         links.push(`${SITE}/marketplace/${nl.slug}`)

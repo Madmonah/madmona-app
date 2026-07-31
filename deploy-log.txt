@@ -1,19 +1,20 @@
 Vercel CLI 54.14.5 (Node.js 24.18.0)
 Retrieving project…
 Deploying madmonaadmin-1699s-projects/project-ew64j
-Uploading [--------------------] (0.0B/34.2KB)
-Uploading [=========-----------] (16.0KB/34.2KB)
-Uploading [==================--] (32.0KB/34.2KB)
-Uploading [====================] (34.2KB/34.2KB)
-  Inspect         https://vercel.com/madmonaadmin-1699s-projects/project-ew64j/72qZgPStqcm6zxzWFwZVnz6DWKzW
-  Production      https://project-ew64j-9s1mscesy-madmonaadmin-1699s-projects.vercel.app
-https://project-ew64j-9s1mscesy-madmonaadmin-1699s-projects.vercel.appBuilding…
+Uploading [--------------------] (0.0B/689.2KB)
+Uploading [=====---------------] (179.1KB/689.2KB)
+Uploading [==========----------] (359.0KB/689.2KB)
+Uploading [===============-----] (519.0KB/689.2KB)
+Uploading [====================] (689.2KB/689.2KB)
+  Inspect         https://vercel.com/madmonaadmin-1699s-projects/project-ew64j/ACsuFpSKzSZBGcMGLAYZgQaZTXuE
+  Production      https://project-ew64j-aseq8i9uv-madmonaadmin-1699s-projects.vercel.app
+https://project-ew64j-aseq8i9uv-madmonaadmin-1699s-projects.vercel.appBuilding…
 Building…
 Running build in Washington, D.C., USA (East) – iad1
 Build machine configuration: 4 cores, 8 GB
 Retrieving list of deployment files...
 Downloading 1719 deployment files...
-Restored build cache from previous deployment (C6rSVY2mvCibFSGaaDMN2Wb2u2D2)
+Restored build cache from previous deployment (GzNmBQAQokMkrB2hQCpTk9j17AUr)
 Running "vercel build"
 Vercel CLI 58.1.0
 Running "install" command: `npm install`...
@@ -62,7 +63,7 @@ Finalizing page optimization ...
 Collecting build traces ...
 Route (app)                                                      Size     First Load JS
 ┌ ○ /                                                            29.7 kB         218 kB
-├ ○ /_not-found                                                  288 B          87.9 kB
+├ ○ /_not-found                                                  289 B          87.9 kB
 ├ ○ /about                                                       4.24 kB         190 kB
 ├ ○ /account                                                     12.3 kB         198 kB
 ├ ○ /account/bookings                                            3.28 kB         183 kB
@@ -76,7 +77,7 @@ Route (app)                                                      Size     First 
 ├ ƒ /add-listing                                                 29.6 kB         316 kB
 ├ ○ /add-listing/success                                         1.6 kB         89.2 kB
 ├ ○ /add-project                                                 1.14 kB         193 kB
-├ ○ /admin                                                       288 B          87.9 kB
+├ ○ /admin                                                       289 B          87.9 kB
 ├ ○ /admin-entry                                                 1.64 kB        89.3 kB
 ├ ƒ /admin/activity                                              288 B          87.9 kB
 ├ ƒ /admin/ad-builder                                            2.41 kB        90.1 kB
@@ -89,10 +90,10 @@ Route (app)                                                      Size     First 
 ├ ○ /admin/ai-assistant                                          4.77 kB         101 kB
 ├ ƒ /admin/ai-os                                                 2.03 kB         149 kB
 ├ ƒ /admin/alerts                                                288 B          87.9 kB
-├ ○ /admin/bookings                                              288 B          87.9 kB
-├ ○ /admin/business-finance                                      288 B          87.9 kB
+├ ○ /admin/bookings                                              289 B          87.9 kB
+├ ○ /admin/business-finance                                      289 B          87.9 kB
 ├ ƒ /admin/business-finance/[supplierId]                         12.8 kB         168 kB
-├ ƒ /admin/business-finance/[supplierId]/accounting              288 B          87.9 kB
+├ ƒ /admin/business-finance/[supplierId]/accounting              289 B          87.9 kB
 ├ ƒ /admin/business-finance/[supplierId]/advances                4.76 kB         160 kB
 ├ ƒ /admin/business-finance/[supplierId]/appointments            5.68 kB         161 kB
 ├ ƒ /admin/business-finance/[supplierId]/assignments             4.63 kB         160 kB
@@ -163,18 +164,18 @@ Route (app)                                                      Size     First 
 ├ ○ /admin/careers                                               2.44 kB        90.1 kB
 ├ ○ /admin/categories                                            7.48 kB         104 kB
 ├ ƒ /admin/ceo-briefs                                            288 B          87.9 kB
-├ ○ /admin/cockpit                                               288 B          87.9 kB
+├ ○ /admin/cockpit                                               286 B          87.9 kB
 ├ ƒ /admin/collaborations                                        1.84 kB        89.5 kB
 ├ ○ /admin/command-center                                        9.45 kB         165 kB
 ├ ○ /admin/company                                               12.9 kB         168 kB
-├ ○ /admin/custody                                               288 B          87.9 kB
+├ ○ /admin/custody                                               289 B          87.9 kB
 ├ ○ /admin/daily-messages                                        7.41 kB         163 kB
 ├ ○ /admin/dashboard                                             24.8 kB         184 kB
 ├ ƒ /admin/demand-forecast                                       288 B          87.9 kB
 ├ ○ /admin/email-queue                                           5.47 kB         161 kB
 ├ ○ /admin/email-templates                                       5.35 kB         161 kB
-├ ○ /admin/flow-tasks                                            286 B          87.9 kB
-├ ƒ /admin/fraud-alerts                                          288 B          87.9 kB
+├ ○ /admin/flow-tasks                                            288 B          87.9 kB
+├ ƒ /admin/fraud-alerts                                          286 B          87.9 kB
 ├ ƒ /admin/funnel                                                288 B          87.9 kB
 ├ ƒ /admin/hq                                                    10.8 kB        98.5 kB
 ├ ƒ /admin/insights                                              288 B          87.9 kB
@@ -183,18 +184,18 @@ Route (app)                                                      Size     First 
 ├ ○ /admin/listing-drafts                                        3.08 kB        90.7 kB
 ├ ƒ /admin/listing-performance                                   288 B          87.9 kB
 ├ ○ /admin/listings                                              7.62 kB         163 kB
-├ ○ /admin/madmona                                               288 B          87.9 kB
-├ ○ /admin/manage                                                288 B          87.9 kB
+├ ○ /admin/madmona                                               289 B          87.9 kB
+├ ○ /admin/manage                                                289 B          87.9 kB
 ├ ○ /admin/marid                                                 4.17 kB        91.8 kB
 ├ ○ /admin/marid-monitor                                         3.94 kB        91.6 kB
-├ ƒ /admin/marketing-hq                                          288 B          87.9 kB
+├ ƒ /admin/marketing-hq                                          289 B          87.9 kB
 ├ ○ /admin/marketplace-bookings                                  4.83 kB         101 kB
 ├ ○ /admin/marketplace-orders                                    6.42 kB         103 kB
 ├ ○ /admin/marketplace-suppliers                                 288 B          87.9 kB
 ├ ƒ /admin/messages                                              288 B          87.9 kB
 ├ ○ /admin/news                                                  8.69 kB         164 kB
 ├ ○ /admin/notifications                                         7.23 kB         163 kB
-├ ○ /admin/onboard                                               288 B          87.9 kB
+├ ○ /admin/onboard                                               289 B          87.9 kB
 ├ ƒ /admin/orchestrator                                          288 B          87.9 kB
 ├ ○ /admin/outreach-leads                                        2.93 kB        90.6 kB
 ├ ○ /admin/overview                                              19.2 kB         175 kB
@@ -217,20 +218,20 @@ Route (app)                                                      Size     First 
 ├ ○ /admin/social-packs                                          2.52 kB        98.9 kB
 ├ ƒ /admin/social-packs/[id]                                     3.43 kB        99.8 kB
 ├ ƒ /admin/sponsorships                                          186 B          96.6 kB
-├ ƒ /admin/strategy                                              288 B          87.9 kB
+├ ƒ /admin/strategy                                              286 B          87.9 kB
 ├ ○ /admin/subscriptions                                         3.27 kB         159 kB
 ├ ○ /admin/sup                                                   2.42 kB         149 kB
 ├ ○ /admin/supplier-posts                                        3.45 kB        99.8 kB
 ├ ○ /admin/suppliers                                             289 B          87.9 kB
 ├ ○ /admin/suppliers-v2                                          289 B          87.9 kB
-├ ○ /admin/units                                                 288 B          87.9 kB
+├ ○ /admin/units                                                 289 B          87.9 kB
 ├ ƒ /admin/units/[id]/edit                                       1.8 kB          164 kB
 ├ ○ /admin/units/new                                             1.36 kB         163 kB
 ├ ○ /admin/wa-numbers                                            6.02 kB         162 kB
 ├ ○ /admin/wa-review                                             2.7 kB         90.3 kB
 ├ ○ /admin/wallets                                               4.54 kB         107 kB
 ├ ○ /admin/welcome-messages                                      8.14 kB         164 kB
-├ ƒ /admin/workflows                                             288 B          87.9 kB
+├ ƒ /admin/workflows                                             289 B          87.9 kB
 ├ ƒ /api/admin-entry                                             0 B                0 B
 ├ ƒ /api/admin/agent-flow                                        0 B                0 B
 ├ ƒ /api/admin/agent-toggle                                      0 B                0 B
@@ -374,7 +375,7 @@ Route (app)                                                      Size     First 
 ├ ○ /auth/signup                                                 6.25 kB         186 kB
 ├ ○ /book                                                        288 B          87.9 kB
 ├ ƒ /bookings/[id]                                               6.89 kB         186 kB
-├ ○ /browse                                                      288 B          87.9 kB
+├ ○ /browse                                                      289 B          87.9 kB
 ├ ○ /careers                                                     8.69 kB         164 kB
 ├ ○ /cart                                                        4.97 kB         101 kB
 ├ ○ /chat                                                        5.45 kB         161 kB
@@ -391,12 +392,12 @@ Route (app)                                                      Size     First 
 ├ ƒ /claim/[token]                                               2.96 kB         150 kB
 ├ ƒ /clinic/[slug]                                               5.99 kB         153 kB
 ├ ƒ /clock/[branchCode]                                          9.63 kB         156 kB
-├ ○ /coworking                                                   288 B          87.9 kB
+├ ○ /coworking                                                   289 B          87.9 kB
 ├ ƒ /demo/clinic/[slug]                                          6.59 kB         162 kB
 ├ ○ /elite                                                       5.01 kB         152 kB
 ├ ○ /halls                                                       0 B                0 B
 ├ ○ /home                                                        9.38 kB         168 kB
-├ ƒ /i/[token]                                                   288 B          87.9 kB
+├ ƒ /i/[token]                                                   289 B          87.9 kB
 ├ ƒ /icon                                                        0 B                0 B
 ├ ƒ /icon-192.png                                                0 B                0 B
 ├ ƒ /icon-512.png                                                0 B                0 B
@@ -405,7 +406,7 @@ Route (app)                                                      Size     First 
 ├ ƒ /join/[code]                                                 5.24 kB         152 kB
 ├ ƒ /l/[token]                                                   2.65 kB         149 kB
 ├ ○ /launch                                                      7.34 kB         193 kB
-├ ○ /list-your-asset                                             286 B          87.9 kB
+├ ○ /list-your-asset                                             289 B          87.9 kB
 ├ ƒ /list-your-asset/opengraph-image                             0 B                0 B
 ├ ○ /login                                                       5.68 kB         153 kB
 ├ ƒ /marketplace                                                 12.4 kB         192 kB
@@ -413,7 +414,7 @@ Route (app)                                                      Size     First 
 ├ ƒ /marketplace/[slug]/book                                     10.1 kB         193 kB
 ├ ○ /me                                                          7.83 kB         163 kB
 ├ ○ /me/team                                                     9.08 kB         165 kB
-├ ○ /my-orders                                                   287 B          87.9 kB
+├ ○ /my-orders                                                   289 B          87.9 kB
 ├ ○ /my-projects                                                 8.1 kB          155 kB
 ├ ƒ /opengraph-image                                             0 B                0 B
 ├ ƒ /order/[ref]                                                 7.46 kB         163 kB
@@ -426,16 +427,16 @@ Route (app)                                                      Size     First 
 ├ ○ /real-estate                                                 1.8 kB          187 kB
 ├ ○ /real-estate/market                                          11.6 kB         197 kB
 ├ ƒ /real-estate/projects/[slug]                                 6.53 kB         192 kB
-├ ○ /reserve/indoor-coworking                                    288 B          87.9 kB
-├ ○ /reserve/meeting-room                                        288 B          87.9 kB
-├ ○ /reserve/outdoor-garden                                      288 B          87.9 kB
-├ ○ /reserve/private-office                                      288 B          87.9 kB
+├ ○ /reserve/indoor-coworking                                    286 B          87.9 kB
+├ ○ /reserve/meeting-room                                        289 B          87.9 kB
+├ ○ /reserve/outdoor-garden                                      289 B          87.9 kB
+├ ○ /reserve/private-office                                      289 B          87.9 kB
 ├ ƒ /review/[bookingId]                                          3.38 kB         150 kB
 ├ ○ /robots.txt                                                  0 B                0 B
 ├ ƒ /s/[slug]                                                    8.65 kB         164 kB
 ├ ○ /services                                                    2.96 kB         188 kB
 ├ ○ /sitemap.xml                                                 0 B                0 B
-├ ○ /supplier                                                    288 B          87.9 kB
+├ ○ /supplier                                                    289 B          87.9 kB
 ├ ○ /supplier/bookings                                           4.21 kB         160 kB
 ├ ○ /supplier/dashboard                                          13.1 kB         172 kB
 ├ ○ /supplier/erp/accounting                                     5.94 kB         292 kB
@@ -454,8 +455,8 @@ Route (app)                                                      Size     First 
 ├ ○ /supplier/register                                           6.3 kB          162 kB
 ├ ○ /supplier/signup                                             4.16 kB         101 kB
 ├ ○ /supplier/team                                               7.92 kB         163 kB
-├ ○ /suspended                                                   288 B          87.9 kB
-├ ƒ /team                                                        288 B          87.9 kB
+├ ○ /suspended                                                   289 B          87.9 kB
+├ ƒ /team                                                        289 B          87.9 kB
 ├ ○ /terms                                                       7.3 kB          193 kB
 ├ ○ /v                                                           2.85 kB         150 kB
 ├ ƒ /v/[branchCode]                                              12.2 kB         183 kB
@@ -468,14 +469,14 @@ Route (app)                                                      Size     First 
 ƒ Middleware                                                     27.4 kB
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
-Traced Next.js server files in: 59.644ms
-Created all serverless functions in: 578.404ms
-Collected static files (public/, static/, .next/static): 42.867ms
+Traced Next.js server files in: 47.805ms
+Created all serverless functions in: 574.596ms
+Collected static files (public/, static/, .next/static): 44.021ms
 Build Completed in /vercel/output [2m]
 Deploying outputs...
 Deployment completed
 Creating build cache...
-[2K[1A[2K[G  Production      https://project-ew64j-9s1mscesy-madmonaadmin-1699s-projects.vercel.app
+[2K[1A[2K[G  Production      https://project-ew64j-aseq8i9uv-madmonaadmin-1699s-projects.vercel.app
 Completing…
 ▲ Aliased         https://www.madmonacairo.com
 
