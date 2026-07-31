@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { Plus, Smile, Mic, Send, Square, Phone, Video } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ChatBottomNav from '@/components/ChatBottomNav'
@@ -163,6 +164,8 @@ export default function TeamPage() {
   // كل واحدة مستنية اللي قبلها، وكل رحلة من مصر ≈ ١٥٠-٢٥٠ مللي.
   // chat_rooms_for_me() بترجّع الأربعة مع بعض (SECURITY INVOKER فالـRLS زي ما هي،
   // والترتيب - المثبّت الأول ثم الأحدث - بقى في SQL بدل ما يتعمل هنا).
+  const router = useRouter()
+
   const loadRooms = useCallback(async (_myId: string) => {
     const { data, error } = await supabaseBrowser.rpc('chat_rooms_for_me', { p_kind: 'group' })
     if (error) { setRooms([]); return }
@@ -957,7 +960,16 @@ export default function TeamPage() {
   return (
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#F1EEE6', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
       <header style={{ background: 'linear-gradient(135deg,#14231E,#1F6F5F)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)', zIndex: 2 }}>
-        <button onClick={() => { setActive(null); setMenuOpen(false); if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null } }} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer' }}>→</button>
+        {/* (31 Jul 2026 - محمد: «الفردي يفتح في الشات والجماعي في جروب»)
+            الرجوع بيرجّعك للتاب اللي جيت منه: المحادثة الفردية -> /chat،
+            الجروب -> قايمة الجروبات. قبل كده الاتنين كانوا بيرجعوا لقايمة
+            الجروبات، فاللي بيفتح محادثة خاصة من الشات كان بيتوه. */}
+        <button onClick={() => {
+          setMenuOpen(false)
+          if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null }
+          if (active.kind === 'direct') { router.push('/chat'); return }
+          setActive(null)
+        }} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer' }}>→</button>
         <div onClick={() => { if (active.kind !== 'direct') openMembers() }} style={{ flex: 1, minWidth: 0, cursor: active.kind !== 'direct' ? 'pointer' : 'default' }}><div style={{ fontWeight: 900, fontSize: 15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{active.kind === 'direct' ? (active.otherName || 'محادثة خاصة') : (active.name || 'جروب')}</div><div style={{ fontSize: 10.5, fontWeight: 600, color: '#6FCF97' }}>{active.kind === 'direct' ? 'اضغط 🧞 لاستدعاء المارد' : 'اضغط للأعضاء · 🧞 للمارد'}</div></div>
         <button onClick={() => startCall(false)} title="مكالمة صوتية" aria-label="مكالمة صوتية" style={callBtn}><Phone size={16} strokeWidth={2.2} /></button>
         <button onClick={() => startCall(true)} title="مكالمة فيديو" aria-label="مكالمة فيديو" style={callBtn}><Video size={17} strokeWidth={2.2} /></button>
