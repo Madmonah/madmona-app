@@ -31,7 +31,25 @@ function admin() {
 // (30 Jul 2026) رقم اللوجين اتغيّر 9982 -> 337 (البيزنس الموثّق). التأكيد
 // session-agnostic: المخ في /api/whatsapp/baileys بيأكّد كود MADxxxxx مهما
 // كان الرقم المستقبِل وبيرد على نفس الجلسة.
-const MARID_WA = '201026222337'
+const LOGIN_WA_PRIMARY = '201002229982' // 982 — البراند/المارد (الأساسي)
+const LOGIN_WA_FALLBACK = '201026222337' // 337 — البيزنس الموثّق (الاحتياطي)
+
+// بيختار رقم اللوجين لحظيًا: 982 طالما مش متعطّل، وإلا يرجع لـ337. الإشارة من
+// wa_number_configs.enabled (نفس الفلاج اللي بيوقّف المارد على الرقم) — Supabase
+// دايمًا متاح للتطبيق. أي عطل نادر في القراءة → نفضّل الأساسي 982. يأتمت سويتش 30 يوليو.
+async function pickLoginWa(sb: ReturnType<typeof admin>): Promise<string> {
+  try {
+    const { data } = await sb
+      .from('wa_number_configs')
+      .select('session_id, enabled')
+      .in('session_id', [LOGIN_WA_PRIMARY, LOGIN_WA_FALLBACK])
+    const rows = (data ?? []) as Array<{ session_id: string; enabled: boolean | null }>
+    const primary = rows.find((r) => (r.session_id || '').replace(/\D/g, '') === LOGIN_WA_PRIMARY)
+    return !primary || primary.enabled !== false ? LOGIN_WA_PRIMARY : LOGIN_WA_FALLBACK
+  } catch {
+    return LOGIN_WA_PRIMARY
+  }
+}
 // من غير حروف/أرقام لبس (0/O · 1/I/L) — العميل ممكن يكتبه بإيده
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
 
@@ -234,7 +252,7 @@ export async function POST(req: NextRequest) {
     const text = encodeURIComponent(code)
     return NextResponse.json({
       code,
-      wa_url: `https://wa.me/${MARID_WA}?text=${text}`,
+      wa_url: `https://wa.me/${await pickLoginWa(sb)}?text=${text}`,
     })
   }
 
