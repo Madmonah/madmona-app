@@ -48,17 +48,34 @@ const CATEGORIES = [
   { url: "https://www.olx.com.eg/vehicles/motorcycles-accessories/cairo/", category: "vehicles", label: "دراجة نارية", default_loc: "القاهرة" },
   { url: "https://www.olx.com.eg/vehicles/motorcycles-accessories/giza/", category: "vehicles", label: "دراجة نارية", default_loc: "الجيزة" },
   { url: "https://www.olx.com.eg/vehicles/motorcycles-accessories/alexandria/", category: "vehicles", label: "دراجة نارية", default_loc: "الإسكندرية" },
-  // \u26f5 BOATS - WATERCRAFT (\u0645\u0631\u0643\u0628\u0627\u062a \u0628\u062d\u0631\u064a\u0629) \u2014 v4 (31 Jul 2026) \u2014 DB category "marine"/"marine_sale"
-  // v5 (31 Jul 2026 \u062a\u0627\u0646\u064a): + \u0635\u0641\u062d\u0629 2 \u0644\u0643\u0644 \u0645\u0646\u0637\u0642\u0629 (\u0645\u0632\u064a\u062f \u0625\u0639\u0644\u0627\u0646\u0627\u062a) + \u062a\u0635\u0646\u064a\u0641 \u0628\u064a\u0639/\u0625\u064a\u062c\u0627\u0631 \u062a\u0644\u0642\u0627\u0626\u064a \u0641\u064a extractLeads
-  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/alexandria/", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0627\u0644\u0625\u0633\u0643\u0646\u062f\u0631\u064a\u0629" },
-  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/alexandria/?page=2", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0627\u0644\u0625\u0633\u0643\u0646\u062f\u0631\u064a\u0629" },
-  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/red-sea/", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0627\u0644\u063a\u0631\u062f\u0642\u0629" },
-  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/red-sea/?page=2", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0627\u0644\u063a\u0631\u062f\u0642\u0629" },
-  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/matrouh/", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0627\u0644\u0633\u0627\u062d\u0644 \u0627\u0644\u0634\u0645\u0627\u0644\u064a" },
-  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/south-sinai/", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0633\u064a\u0646\u0627\u0621" },
-  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/south-sinai/?page=2", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0633\u064a\u0646\u0627\u0621" },
-  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/cairo/", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0627\u0644\u0642\u0627\u0647\u0631\u0629" },
-  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/cairo/?page=2", category: "marine", label: "\u0645\u0631\u0643\u0628 \u0628\u062d\u0631\u064a", default_loc: "\u0627\u0644\u0642\u0627\u0647\u0631\u0629" },
+  // ⛵ BOATS - WATERCRAFT (مركبات بحرية) — v4 (31 Jul 2026) — DB category "marine"/"marine_sale"
+  // v5 (31 Jul 2026 تاني): + صفحة 2 لكل منطقة (مزيد إعلانات) + تصنيف بيع/إيجار تلقائي في extractLeads
+  // v6 (1 Aug 2026): + صفحة 3 للمناطق التقيلة + محافظات ساحلية/نيلية جديدة (دمياط، بورسعيد، كفر الشيخ، البحيرة، الدقهلية)
+  //   عشان جيت سكي ولانشات أفراد "من المالك" مش بس تجار — OLX كل الإعلانات الفردية والتجارية في نفس الصفحة
+  //   (مفيش تصنيف بيع/إيجار منفصل في الرابط) فبنعتمد على extractLeads لتصنيفها من النص.
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/alexandria/", category: "marine", label: "مركب بحري", default_loc: "الإسكندرية" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/alexandria/?page=2", category: "marine", label: "مركب بحري", default_loc: "الإسكندرية" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/alexandria/?page=3", category: "marine", label: "مركب بحري", default_loc: "الإسكندرية" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/red-sea/", category: "marine", label: "مركب بحري", default_loc: "الغردقة" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/red-sea/?page=2", category: "marine", label: "مركب بحري", default_loc: "الغردقة" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/red-sea/?page=3", category: "marine", label: "مركب بحري", default_loc: "الغردقة" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/matrouh/", category: "marine", label: "مركب بحري", default_loc: "الساحل الشمالي" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/matrouh/?page=2", category: "marine", label: "مركب بحري", default_loc: "الساحل الشمالي" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/south-sinai/", category: "marine", label: "مركب بحري", default_loc: "سيناء" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/south-sinai/?page=2", category: "marine", label: "مركب بحري", default_loc: "سيناء" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/south-sinai/?page=3", category: "marine", label: "مركب بحري", default_loc: "سيناء" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/cairo/", category: "marine", label: "مركب بحري", default_loc: "القاهرة" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/cairo/?page=2", category: "marine", label: "مركب بحري", default_loc: "القاهرة" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/cairo/?page=3", category: "marine", label: "مركب بحري", default_loc: "القاهرة" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/giza/", category: "marine", label: "مركب بحري", default_loc: "الجيزة" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/damietta/", category: "marine", label: "مركب بحري", default_loc: "دمياط" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/damietta/?page=2", category: "marine", label: "مركب بحري", default_loc: "دمياط" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/port-said/", category: "marine", label: "مركب بحري", default_loc: "بورسعيد" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/kafr-el-sheikh/", category: "marine", label: "مركب بحري", default_loc: "كفر الشيخ" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/beheira/", category: "marine", label: "مركب بحري", default_loc: "البحيرة" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/dakahlia/", category: "marine", label: "مركب بحري", default_loc: "الدقهلية" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/ismailia/", category: "marine", label: "مركب بحري", default_loc: "الإسماعيلية" },
+  { url: "https://www.olx.com.eg/vehicles/boats-watercraft/suez/", category: "marine", label: "مركب بحري", default_loc: "السويس" },
   { url: "https://www.olx.com.eg/business-industrial-agriculture/", category: "equipment", default_loc: "القاهرة" },
   // OFFICES & COMMERCIAL
   { url: "https://www.olx.com.eg/properties/office-commercial-for-rent/cairo/", category: "workspaces", default_loc: "القاهرة" },
