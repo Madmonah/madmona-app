@@ -102,6 +102,29 @@ async function fetchAllLeads(maxTotal: number): Promise<any[]> {
   return out;
 }
 
+// 1 أغسطس 2026: clinic_leads جدول منفصل تمامًا عن cold_leads (مفيش category عليه)،
+// وده اللي كان مخلي العيادات مش ظاهرة في الشيت خالص. clinic_leads.status موثوق فيه
+// فعليًا (مش زي cold_leads) لأن enqueue_clinic_outreach_batch() بيحدّثه لـ'contacted'
+// بعد كل إرسال حقيقي — فبنجمعه مع سجل whatsapp_conversations عشان أدق نتيجة.
+async function fetchClinicLeads(): Promise<any[]> {
+  const pageSize = 1000;
+  const out: any[] = [];
+  let from = 0;
+  for (;;) {
+    const { data, error } = await sb
+      .from("clinic_leads")
+      .select("name, phone, specialty_ar, city, area, rating, user_ratings_total, status, source, place_id, created_at")
+      .order("created_at", { ascending: false })
+      .range(from, from + pageSize - 1);
+    if (error) throw new Error(`clinic_leads page ${from}: ${error.message}`);
+    if (!data || data.length === 0) break;
+    out.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  return out;
+}
+
 async function fetchContactedPhones(): Promise<Set<string>> {
   const pageSize = 1000;
   const set = new Set<string>();
@@ -157,7 +180,7 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const limit = parseInt(url.searchParams.get("limit") || "10000");
 
-    const [leads, contactedPhones] = await Promise.all([fetchAllLeads(limit), fetchContactedPhones()]);
+    const [leads, contactedPhones, clinicLeads] = await Promise.all([fetchAllLeads(limit), fetchContactedPhones(), fetchClinicLeads()]);
 
     const byCategory = new Map<string, any[][]>();
     let totalRows = 0;
@@ -186,8 +209,37 @@ Deno.serve(async (req) => {
       totalRows++;
     }
 
+    const clinicTabTitle = "\u0639\u064a\u0627\u062f\u0627\u062a";
+    const clinicRows: any[][] = [];
+    let clinicContactedCount = 0;
+    for (const clinic of clinicLeads) {
+      const p = normPhone(clinic.phone);
+      if (!p) continue;
+      if (clinicRows.some(r => r[0] === p)) continue;
+      const contacted = (clinic.status && clinic.status !== "new") || contactedPhones.has(p);
+      if (contacted) clinicContactedCount++;
+      const ratingText = clinic.rating ? `${clinic.rating}\u2b50 (${clinic.user_ratings_total || 0} \u062a\u0642\u064a\u064a\u0645)` : "";
+      clinicRows.push([
+        p,
+        contacted ? "\u0627\u062a\u0628\u0639\u062a\u0644\u0647" : "\u0644\u0633\u0647",
+        [clinic.name, clinic.specialty_ar, ratingText].filter(Boolean).join(" - "),
+        [clinic.area, clinic.city].filter(Boolean).join(" - "),
+        "",
+        clinic.source || "",
+        (clinic.created_at || "").slice(0, 10),
+        clinic.status || "",
+        clinic.place_id || "",
+        new Date().toISOString().slice(0, 19).replace("T", " "),
+      ]);
+    }
+    if (clinicRows.length > 0) {
+      byCategory.set(clinicTabTitle, clinicRows);
+      totalRows += clinicRows.length;
+      contactedCount += clinicContactedCount;
+    }
+
     for (const [, rows] of byCategory) {
-      rows.sort((a, b) => (a[1] === b[1] ? 0 : a[1] === "لسه" ? -1 : 1));
+      rows.sort((a, b) => (a[1] === b[1] ? 0 : a[1] === "\u0644\u0633\u0647" ? -1 : 1));
     }
 
     const token = await getGoogleAccessToken();
