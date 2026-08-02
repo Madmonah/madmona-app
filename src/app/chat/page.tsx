@@ -5,6 +5,9 @@ import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ChatBottomNav from '@/components/ChatBottomNav'
 import InviteContacts from '@/components/InviteContacts'
+import dynamic from 'next/dynamic'
+
+const NewDMSheet = dynamic(() => import('@/components/NewDMSheet'), { ssr: false })
 
 const MARID_AVATAR = 'https://res.cloudinary.com/duxfgqioc/image/upload/c_crop,x_375,y_120,w_410,h_410/c_fill,w_120,h_120/madmona/mascots/genie.png'
 
@@ -23,6 +26,7 @@ export default function ChatHub() {
   const [uid, setUid] = useState<string | null>(null)
   const [hidden, setHidden] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
+  const [showNewDM, setShowNewDM] = useState(false)
 
   useEffect(() => {
     ;(async () => {
@@ -107,7 +111,11 @@ export default function ChatHub() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 16px 4px' }}>
           <div style={{ flex: 1, fontSize: 11, fontWeight: 900, color: '#1F6F5F', letterSpacing: '.3px' }}>محادثاتك الخاصة</div>
-          <Link href="/chat/team?new=dm" style={{ background: '#F1EEE6', color: '#1F6F5F', borderRadius: 999, padding: '5px 12px', fontSize: 11.5, fontWeight: 800, textDecoration: 'none' }}>➕ محادثة جديدة</Link>
+          {/* 🐛 (٢ أغسطس ٢٠٢٦) كان لينك لـ/chat/team?new=dm — بينقلك لتاب
+              الجروبات وبعدين يحاول يفتح prompt() اللي متصفحات الموبايل
+              بتمنعها، فتفضل واقف في التاب الغلط ومش فاهم مطلوب منك إيه.
+              دلوقتي شاشة بتفتح في مكانها. */}
+          <button onClick={() => setShowNewDM(true)} style={{ background: '#F1EEE6', color: '#1F6F5F', borderRadius: 999, padding: '5px 12px', fontSize: 11.5, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>➕ محادثة جديدة</button>
         </div>
         {/* (31 Jul 2026) هيكل مؤقت بدل رسالة «مفيش محادثات» وهي لسه بتحمّل —
             كانت بتقول للمستخدم إنه مالوش محادثات قبل ما الداتا توصل أصلاً. */}
@@ -147,6 +155,13 @@ export default function ChatHub() {
           ))
         )}
       </div>
+
+      {showNewDM && (
+        <NewDMSheet
+          onClose={() => setShowNewDM(false)}
+          onOpened={(roomId) => { setShowNewDM(false); window.location.href = `/chat/team?room=${roomId}` }}
+        />
+      )}
 
       <ChatBottomNav />
     </div>
