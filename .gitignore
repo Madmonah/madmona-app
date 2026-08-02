@@ -92,3 +92,6 @@ keys*.txt
 _*.log
 tsc*.log
 _d.txt 
+
+MACRODROID-SETUP.txt
+_sec.tmp
