@@ -87,7 +87,24 @@ export function knownSessionIds(authRoot) {
     .map((d) => d.name)
 }
 
+// 🚨 (٢ أغسطس ٢٠٢٦) جلسة اتمسحت كانت بترجع لوحدها بعد شوية.
+//
+//    `logoutSession` كانت بتشيلها من الـMap وتمسح المجلد، بس **مابتلغيش
+//    مؤقّت إعادة الاتصال** اللي كان متجدول من آخر `connection.close`.
+//    المؤقّت بيصحى بعد ثواني وينادي `startSession` من تاني، فالجلسة
+//    بتتبعت وتعمل المجلد من جديد وتفضل تطلّع QR للأبد.
+//
+//    ظهرت مع رقمين غريبين (`01281814675` و`201114621551` المحظور) —
+//    مسحناهم أكتر من مرة وبيرجعوا، وبيفضلوا في لوحة الأدمن كأنهم أرقامنا.
+//
+//    الحل: نفضل فاكرين مين اتمسح، وأي محاولة تشغيل بعد كده بترفض.
+const removed = new Set()
+
 export async function startSession({ id, label, authRoot, onMessage, onLidMap, onStatus }) {
+  if (removed.has(id)) {
+    log.info({ session: id }, '⛔ الجلسة دي اتمسحت — مش هنشغّلها تاني')
+    return null
+  }
   if (sessions.has(id) && sessions.get(id).connected) return sessions.get(id)
 
   const dir = join(authRoot, id)
@@ -253,7 +270,10 @@ export async function startSession({ id, label, authRoot, onMessage, onLidMap, o
         )
       }
 
-      setTimeout(() => startSession({ id, label: entry.label, authRoot, onMessage, onLidMap, onStatus }), wait)
+      entry.retryTimer = setTimeout(() => {
+        entry.retryTimer = null
+        startSession({ id, label: entry.label, authRoot, onMessage, onLidMap, onStatus })
+      }, wait)
     }
   })
 
@@ -350,14 +370,26 @@ export async function startSession({ id, label, authRoot, onMessage, onLidMap, o
 }
 
 export async function logoutSession(id, authRoot) {
+  // العلامة الأول — عشان لو فيه مؤقّت إعادة اتصال صاحي دلوقتي،
+  // يلاقي الجلسة متعلّمة كـ«متمسوحة» ويرفض يشغّلها.
+  removed.add(id)
+
   const s = sessions.get(id)
-  if (s?.sock) {
-    try { await s.sock.logout() } catch { /* ignore */ }
+  if (s) {
+    if (s.retryTimer) { clearTimeout(s.retryTimer); s.retryTimer = null }
+    try { s.sock?.ev.removeAllListeners() } catch { /* ignore */ }
+    try { await s.sock?.logout() } catch { /* ignore */ }
+    try { s.sock?.end(undefined) } catch { /* ignore */ }
   }
   sessions.delete(id)
   const dir = join(authRoot, id)
   if (existsSync(dir)) rmSync(dir, { recursive: true, force: true })
   return true
+}
+
+/** رجوع رقم اتمسح قبل كده (بيتنادى من `POST /sessions`) */
+export function allowSession(id) {
+  removed.delete(id)
 }
 
 export { downloadMediaMessage }

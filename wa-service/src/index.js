@@ -22,6 +22,7 @@ import {
   logoutSession,
   knownSessionIds,
   downloadMediaMessage,
+  allowSession,
 } from './sessions.js'
 import { resolveProxy, saveProxy, assertValid, buildAgent, mask as maskProxy } from './proxy.js'
 
@@ -504,6 +505,7 @@ app.post('/sessions', auth, async (req, res) => {
   const { session, label, proxy } = req.body || {}
   if (!session) return res.status(400).json({ ok: false, error: 'session مطلوب' })
   const id = String(session)
+  allowSession(id) // لو الرقم ده اتمسح قبل كده، الإضافة اليدوية بترجّعه
 
   // القناة بتتحفظ **قبل** تشغيل الجلسة — عشان أول اتصال بواتساب في حياة
   // الرقم ده يطلع من الـIP الصح. لو حفظناها بعدين، أول ربط (وهو أخطر
