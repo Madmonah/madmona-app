@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState, type MouseEvent } from 'react'
 import Link from 'next/link'
+import SmartImage from '@/components/SmartImage'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
@@ -1062,11 +1063,20 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                   <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
                     {photoUrl ? (
                       <>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        {/* PERF (١ أغسطس): كان <img> خام — يعني كل صور الجريد بتتحمّل
+                            مرة واحدة بحجمها الأصلي، وده اللي كان مخلّي سكور
+                            /marketplace على الموبايل = 41. next/image بيحوّلها
+                            AVIF/WebP بالمقاس المناسب للشاشة، وبيأجّل اللي تحت
+                            الشاشة. كل صور الإعلانات على supabase أو cloudinary
+                            وهما الاتنين في remotePatterns في next.config.mjs. */}
+                        <SmartImage
                           src={photoUrl}
                           alt={displayTitle}
-                          className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out ${isDemo ? 'opacity-90' : ''}`}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          priority={i < 3}
+                          loading={i < 3 ? undefined : 'lazy'}
+                          className={`object-cover group-hover:scale-110 transition-transform duration-700 ease-out ${isDemo ? 'opacity-90' : ''}`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       </>

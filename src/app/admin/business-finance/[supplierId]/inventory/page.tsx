@@ -8,7 +8,8 @@ import {
   RefreshCw, Filter, DollarSign, Box, AlertCircle, FileSpreadsheet, Upload, X,
   Plus, Image as ImageIcon,
 } from 'lucide-react'
-import * as XLSX from 'xlsx'
+// PERF: xlsx (~110KB gzipped) loaded on demand in onFile() instead of shipping
+// in this page's initial bundle (was 306KB First Load JS).
 import { extractRowImages, uploadExtractedImage } from '@/lib/xlsxImages'
 // 🔐 admin_import_inventory محميّة بصلاحية — لازم تعدّي من بوابة الأدمن
 // مش من المتصفح مباشرة، وإلا بترجع forbidden. شوف src/lib/adminRpc.ts
@@ -519,6 +520,7 @@ function ImportModal({ supplierId, onClose, onDone }: { supplierId: string; onCl
   async function onFile(file: File) {
     setError(null); setResult(null); setProgress('بقرا الشيت…')
     const buf = await file.arrayBuffer()
+    const XLSX = await import('xlsx')
     const wb = XLSX.read(buf)
     const ws = wb.Sheets[wb.SheetNames[0]]
     const json: Record<string, any>[] = XLSX.utils.sheet_to_json(ws, { defval: null })

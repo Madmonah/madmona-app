@@ -9,7 +9,8 @@ import {
   ClipboardPaste, Type, AlertCircle, Building2, ArrowDownToLine,
   Sparkles, FileSpreadsheet,
 } from 'lucide-react'
-import * as XLSX from 'xlsx'
+// PERF: xlsx (~110KB gzipped) loaded on demand in the file handler below
+// instead of shipping in this page's initial bundle (was 304KB First Load JS).
 import { extractRowImages, uploadExtractedImage } from '@/lib/xlsxImages'
 
 const supabase = createClient(
@@ -167,6 +168,7 @@ export default function BulkAddEmployeesPage({
     setExcelError(null)
     try {
       const buf = await file.arrayBuffer()
+      const XLSX = await import('xlsx')
       const wb = XLSX.read(buf)
       const ws = wb.Sheets[wb.SheetNames[0]]
       const json: Record<string, any>[] = XLSX.utils.sheet_to_json(ws, { defval: null })

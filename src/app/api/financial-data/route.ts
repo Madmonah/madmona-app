@@ -170,7 +170,7 @@ export async function GET() {
   if (cache && Date.now() - cache.timestamp < CACHE_TTL) {
     return new NextResponse(
       JSON.stringify({ ok: true, ...cache.data, cached: true }),
-      { status: 200, headers: noCacheHeaders() }
+      { status: 200, headers: cacheHeaders() }
     )
   }
 
@@ -199,18 +199,23 @@ export async function GET() {
 
   return new NextResponse(
     JSON.stringify({ ok: true, ...data, cached: false }),
-    { status: 200, headers: noCacheHeaders() }
+    { status: 200, headers: cacheHeaders() }
   )
 }
 
-function noCacheHeaders(): HeadersInit {
+// ⚡ ١ أغسطس ٢٠٢٦ — كان اسمها noCacheHeaders وكانت بتقفل كل أنواع الكاش.
+// النتيجة: كل فتحة للصفحة الرئيسية = استدعاء فنكشن كامل (١٦ استدعاء في ٦ دقايق
+// في اللوجات، كلهم cache: MISS)، والكاش الداخلي 60 ثانية مبيفيدش لأنه في ذاكرة
+// كل نسخة لوحدها. أسعار الدولار والدهب مش محتاجة تحديث كل ثانية:
+//   - المتصفح: يراجع في كل مرة (max-age=0) عشان مايعلقش على سعر قديم
+//   - شبكة فيرسل: تخدم من الكاش 60 ثانية + 5 دقايق stale-while-revalidate
+// يعني الرد بيوصل من أقرب نقطة للمستخدم من غير ما يشتغل أي فنكشن أصلاً.
+function cacheHeaders(): HeadersInit {
+  const edge = 'public, s-maxage=60, stale-while-revalidate=300'
   return {
     'Content-Type': 'application/json',
-    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
-    'CDN-Cache-Control': 'no-store',
-    'Vercel-CDN-Cache-Control': 'no-store',
-    'Pragma': 'no-cache',
-    'Expires': '0',
-    'Surrogate-Control': 'no-store',
+    'Cache-Control': 'public, max-age=0, must-revalidate',
+    'CDN-Cache-Control': edge,
+    'Vercel-CDN-Cache-Control': edge,
   }
 }

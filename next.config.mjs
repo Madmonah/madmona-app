@@ -77,12 +77,20 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // NOTE: security headers live HERE only. They used to be duplicated in
+        // vercel.json with a slightly different set (no Permissions-Policy),
+        // which made it unclear which one actually applied. vercel.json now
+        // only handles regions + crons.
         source: '/(.*)',
         headers: [
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'geolocation=*, camera=*, microphone=*' },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
         ],
       },
       {

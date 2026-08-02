@@ -2,7 +2,9 @@
 // Madmona ERP — المحاسبة (شجرة حسابات · قيود · قوائم مالية · استيراد Excel)
 import { supabaseBrowser as supabase } from '@/lib/supabase-browser';
 import { useEffect, useMemo, useState } from 'react';
-import * as XLSX from 'xlsx';
+// PERF: xlsx (~430KB raw / ~110KB gzipped) is only used by the import flow
+// below, so it is loaded on demand instead of shipping in this page's initial
+// bundle (this page was 292KB First Load JS).
 
 const G = { dark: '#1F6F5F', mid: '#2d7a52', teal: '#2FA084', light: '#6FCF97', bg: '#FAFAF7', ink: '#0A0A0A' };
 
@@ -113,6 +115,7 @@ export default function ErpAccountingPage() {
   const onFile = async (f: File) => {
     setImpFile(f.name); setImpResult(null);
     const buf = await f.arrayBuffer();
+    const XLSX = await import('xlsx');
     const wb = XLSX.read(buf);
     const ws = wb.Sheets[wb.SheetNames[0]];
     const json: any[] = XLSX.utils.sheet_to_json(ws, { defval: null });

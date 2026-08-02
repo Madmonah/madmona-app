@@ -1,78 +1,24 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
-    }
-  ],
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
+  "regions": ["fra1"],
   "crons": [
-    {
-      "path": "/api/agents/scheduler",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/agents/generate-tasks",
-      "schedule": "0 4 * * *"
-    },
-    {
-      "path": "/api/agents/daily-report",
-      "schedule": "0 20 * * *"
-    },
-    {
-      "path": "/api/cron/render-reels",
-      "schedule": "30 5 * * *"
-    },
-    {
-      "path": "/api/push/process-queue",
-      "schedule": "* * * * *"
-    },
-    {
-      "path": "/api/integrations/dispatch",
-      "schedule": "* * * * *"
-    },
-    {
-      "path": "/api/cron/publish-drafts",
-      "schedule": "*/10 * * * *"
-    },
-    {
-      "path": "/api/cron/wa-queue-send",
-      "schedule": "* * * * *"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "origin-when-cross-origin"
-        }
-      ]
-    },
-    {
-      "source": "/sw.js",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        },
-        {
-          "key": "Service-Worker-Allowed",
-          "value": "/"
-        }
-      ]
-    }
+    { "path": "/api/agents/scheduler", "schedule": "0 9 * * *" },
+    { "path": "/api/agents/generate-tasks", "schedule": "0 4 * * *" },
+    { "path": "/api/agents/daily-report", "schedule": "0 20 * * *" },
+    { "path": "/api/cron/render-reels", "schedule": "30 5 * * *" },
+    { "path": "/api/cron/publish-drafts", "schedule": "*/10 * * * *" },
+
+    { "path": "/api/push/process-queue", "schedule": "* 5-22 * * *" },
+    { "path": "/api/push/process-queue", "schedule": "*/5 23,0-4 * * *" },
+
+    { "path": "/api/integrations/dispatch", "schedule": "* 5-22 * * *" },
+    { "path": "/api/integrations/dispatch", "schedule": "*/5 23,0-4 * * *" },
+
+    { "path": "/api/cron/wa-queue-send", "schedule": "* 5-22 * * *" },
+    { "path": "/api/cron/wa-queue-send", "schedule": "*/5 23,0-4 * * *" }
   ]
 }

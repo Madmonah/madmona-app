@@ -8,7 +8,10 @@
 // ============================================================
 
 import { useRef, useState } from 'react'
-import * as XLSX from 'xlsx'
+// PERF: xlsx is ~430KB raw / ~110KB gzipped. A static import put it in the
+// initial bundle of every page that renders this component (/add-listing was
+// 316KB First Load JS). It is only ever needed AFTER the user clicks
+// "download template" or picks a file, so we load it on demand instead.
 import {
   X, FileSpreadsheet, Download, Upload, Loader2, CheckCircle, AlertCircle, ArrowRight,
 } from 'lucide-react'
@@ -72,7 +75,8 @@ function sampleRows(track?: string | null): (string | number)[][] {
   ]
 }
 
-function template(track?: string | null) {
+async function template(track?: string | null) {
+  const XLSX = await import('xlsx')
   const wb = XLSX.utils.book_new()
   const aoa = [TEMPLATE_HEADER, ...sampleRows(track)]
   const ws = XLSX.utils.aoa_to_sheet(aoa)
@@ -113,6 +117,7 @@ export default function BulkExcelDrafts({
     setFileName(f.name)
     try {
       const buf = await f.arrayBuffer()
+      const XLSX = await import('xlsx')
       const wb = XLSX.read(buf, { type: 'array' })
       const ws = wb.Sheets[wb.SheetNames[0]]
       const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, raw: false, defval: '' })

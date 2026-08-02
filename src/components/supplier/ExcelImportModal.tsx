@@ -9,7 +9,10 @@
 // ============================================================
 
 import { useRef, useState } from 'react'
-import * as XLSX from 'xlsx'
+// PERF: xlsx is ~430KB raw / ~110KB gzipped. Statically importing it here put
+// it in the initial bundle of every supplier page that mounts this modal
+// (/supplier/marketplace/[id]/products & /menu were 309KB First Load JS).
+// It is only needed after a click, so it is imported on demand below.
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   X, FileSpreadsheet, Download, Upload, Loader2, CheckCircle,
@@ -110,7 +113,8 @@ const cleanStr = (v: unknown): string | null => {
 }
 
 // ---------- templates ----------
-function downloadTemplate(mode: Mode) {
+async function downloadTemplate(mode: Mode) {
+  const XLSX = await import('xlsx')
   const wb = XLSX.utils.book_new()
   let aoa: (string | number)[][]
   if (mode === 'menu') {
@@ -170,6 +174,7 @@ export default function ExcelImportModal({
     setFileName(f.name)
     try {
       const buf = await f.arrayBuffer()
+      const XLSX = await import('xlsx')
       const wb = XLSX.read(buf, { type: 'array' })
       const ws = wb.Sheets[wb.SheetNames[0]]
       const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, raw: false, defval: '' })
