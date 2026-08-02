@@ -8,7 +8,17 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 
-type FriendRow = { friend_id: string; friend_name: string; friend_phone: string; status: string }
+// ✅ (٢ أغسطس ٢٠٢٦) `friends_list()` كانت لسه بتقرا جدول `chat_friends` القديم
+//    (طلب/قبول) اللي فيه صفين بس — يعني التاب ده عمره ما كان هيعرض حاجة مهما
+//    الناس ضافت أرقام. اتصلّحت في الداتابيز عشان تحسب الصداقة من الأرقام
+//    المتبادلة زي ما الكلام هنا بيقول بالظبط.
+type FriendRow = {
+  friend_id: string
+  friend_name: string
+  friend_phone: string
+  friend_avatar: string | null
+  status: string
+}
 
 export default function FriendsSheet({ onOpenDM, onClose, onOpenBook }: {
   onOpenDM: (phone: string) => void
@@ -28,9 +38,17 @@ export default function FriendsSheet({ onOpenDM, onClose, onOpenBook }: {
   useEffect(() => { load() }, [load])
 
   async function remove(r: FriendRow) {
-    if (!confirm(`تشيل ${r.friend_name} من أصحابك؟`)) return
+    if (!confirm(`تشيل ${r.friend_name} من أصحابك؟\n\nهيتشال من دفترك، والصداقة هتتكسر لحد ما تضيفه تاني.`)) return
     const { error } = await supabaseBrowser.rpc('friend_remove', { _friend: r.friend_id })
     if (error) { setNote('مقدرتش أشيله'); setTimeout(() => setNote(''), 2800); return }
+    load()
+  }
+
+  async function block(r: FriendRow) {
+    if (!confirm(`تعمل بلوك لـ${r.friend_name}؟\n\nمش هيقدر يشوفك ولا يكلّمك، ومش هتظهروا لبعض خالص.`)) return
+    const { error } = await supabaseBrowser.rpc('chat_block', { _other: r.friend_id })
+    if (error) { setNote('مقدرتش أعمله بلوك'); setTimeout(() => setNote(''), 2800); return }
+    setNote(`اتعمل بلوك لـ${r.friend_name}`); setTimeout(() => setNote(''), 2800)
     load()
   }
 
@@ -59,13 +77,22 @@ export default function FriendsSheet({ onOpenDM, onClose, onOpenBook }: {
 
         {rows.map((r) => (
           <div key={r.friend_id} style={row}>
-            <div style={ava}>{(r.friend_name || '؟').trim()[0]}</div>
+            {/* الصورة بتظهر للأصدقاء بس — ودول أصدقاء بالتعريف.
+                الداتابيز هي اللي بتقرر (chat_directory)، مش الواجهة. */}
+            {r.friend_avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={r.friend_avatar} alt={r.friend_name} loading="lazy" decoding="async"
+                   style={{ ...ava, objectFit: 'cover' }} />
+            ) : (
+              <div style={ava}>{(r.friend_name || '؟').trim()[0]}</div>
+            )}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 800, color: '#14231E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.friend_name}</div>
               <div style={{ fontSize: 11, color: '#8A9690', direction: 'ltr', textAlign: 'right' }}>{r.friend_phone}</div>
             </div>
             <button onClick={() => onOpenDM(r.friend_phone)} style={{ ...pill, background: '#1F6F5F', color: '#fff' }}>💬 كلّمه</button>
             <button onClick={() => remove(r)} style={{ ...pill, background: '#F1EEE6', color: '#5A6660' }}>شيل</button>
+            <button onClick={() => block(r)} title="بلوك" style={{ ...pill, background: '#FCEEEE', color: '#B4423A', padding: '6px 9px' }}>🚫</button>
           </div>
         ))}
       </div>
