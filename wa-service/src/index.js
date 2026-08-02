@@ -344,6 +344,34 @@ app.get('/health', (_req, res) => {
 
 app.get('/sessions', (_req, res) => res.json({ ok: true, sessions: listSessions() }))
 
+// 🌐 الـIP اللي واتساب شايفه فعلاً.
+//
+// سؤال بيتكرر: «الرقم بيتصل بواتساب من فين؟» الإجابة: من **السيرفر ده**،
+// مش من الموبايل. الموبايل بيمسح الـQR مرة واحدة وبيسلّم المفاتيح وبس؛
+// بعد كده الجهاز المرتبط بيمسك سوكيت مباشر مع واتساب من IP الكونتينر،
+// طول اليوم، حتى لو الموبايل مقفول أو من غير نت.
+//
+// المسار ده بيرجّع الرقم ده بالظبط عشان مانفضلش نخمّن — مفيد كمان لو
+// احتجنا نضيف الـIP في allowlist عند أي طرف تاني.
+app.get('/debug/egress-ip', async (_req, res) => {
+  const out = {}
+  await Promise.all(
+    [
+      ['ipify', 'https://api.ipify.org?format=json'],
+      ['icanhazip', 'https://icanhazip.com'],
+    ].map(async ([name, url]) => {
+      try {
+        const r = await fetch(url, { signal: AbortSignal.timeout(6000) })
+        const t = (await r.text()).trim()
+        out[name] = t.startsWith('{') ? JSON.parse(t).ip : t
+      } catch (e) {
+        out[name] = `err: ${e.message}`
+      }
+    }),
+  )
+  res.json({ ok: true, egress_ip: out, railway_region: process.env.RAILWAY_REPLICA_REGION || null })
+})
+
 // 🔍 (٢٥ يوليو ٢٠٢٦) تشخيص: مقارنة حالة الجلسات على الديسك.
 //
 //    الرقم الوحيد اللي بيسلّم جلسته اتبنت من شهور؛ أي جلسة اتعملت النهاردة
