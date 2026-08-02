@@ -329,28 +329,38 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
   // الاختيار من `wa_number_configs.transport`، يعني نقل أي رقم بين الخدمتين
   // = تحديث صف واحد، من غير نشر ومن غير ما الرقم التاني يتهز.
   // أي عطل في قراءة الإعداد → بنقع على الخدمة الأصلية (آمن).
+  // 🚨 (٢ أغسطس ٢٠٢٦) OpenWA بقى المسار الوحيد.
+  //
+  //    `wa-service` (جسر Baileys بتاعنا) كان **بيستقبل ولا يسلّم**: الرد
+  //    بيتولّد ويتسجّل عندنا في اللوحة، وBaileys بيدّي wa_message_id،
+  //    والعميل مايوصلوش حاجة. اتجرّب بالفعل مع عميل حقيقي واتأكد.
+  //    الخدمة اتشالت من رايلواي.
+  //
+  //    فالقاعدة دلوقتي: **طالما OpenWA متظبط، كل الأرقام تعدّي منه** —
+  //    مش بس اللي `transport='openwa'`. رقم جديد اتربط من لوحة OpenWA
+  //    ولسه ماتسجّلش عندنا كان هيقع على الخدمة الميتة ويضيع رده في
+  //    صمت. الافتراض الآمن هو الخدمة الشغالة، مش الصف الناقص.
+  //
+  //    ⚠️ ماترجّعش الافتراض لـWA_SERVICE_URL غير لما يبقى فيه جسر
+  //       **مثبت إنه بيسلّم** — التسجيل في اللوحة مش دليل تسليم.
   let serviceUrl = WA_SERVICE_URL
-  if (params.session) {
+  if (params.session && isOpenWaConfigured()) {
+    // ماننتظرش قراءة الإعداد تنجح: حتى لو الصف ناقص أو القراءة فشلت،
+    // OpenWA هو المقصد. الصف بيتعمل لوحده من /api/cron/wa-sync.
+    let transport = 'openwa'
     try {
-      const cfg = await getNumberConfig(params.session)
-      // ⛔ تعطيل مسار wa-web نهائياً: خدمة wa-web اتمسحت من Railway (يوليو 2026).
-      //    كل الأرقام دلوقتي على جسر Baileys الواحد (WA_SERVICE_URL). نتجاهل transport
-      //    تماماً عشان لو أي رقم رجع لـ'web' بالغلط مايبعتش لخدمة ميتة والرسايل تضيع.
-      // 🚚 (٢٥ يوليو ٢٠٢٦) نقل تالت: `openwa` → جسر OpenWA (whatsapp-web.js self-hosted).
-      //    التحويل = صف واحد في wa_number_configs، والرجوع = تغيير transport تاني.
-      //    (مسار wa-web القديم اتمسح من Railway؛ `web` بيقع على الأصلية.)
-      if (cfg.transport === 'openwa' && isOpenWaConfigured()) {
-        // OpenWA بيرد على نفس الـ chatId اللي جت منه (@lid أو @c.us). لو إحنا
-        // البادئين (مفيش chatId) نركّب @c.us من الرقم الحقيقي.
-        const chatId =
-          openwaReplyChatId || (to && !looksLikeLid(to) ? `${to}@c.us` : undefined)
-        if (!chatId) {
-          return { ok: false, error: `OpenWA: مفيش chatId للإرسال (to=${to || '—'})` }
-        }
-        const res = await sendTextViaOpenWa(params.session, chatId, params.body)
-        return res.ok ? { ok: true } : { ok: false, error: res.error }
+      transport = (await getNumberConfig(params.session)).transport || 'openwa'
+    } catch { /* الصف ناقص أو القراءة فشلت — OpenWA برضه */ }
+
+    // `web` القديم كان بيشاور على خدمة اتمسحت — بنعامله كـopenwa.
+    if (transport !== 'baileys') {
+      const chatId = openwaReplyChatId || (to && !looksLikeLid(to) ? `${to}@c.us` : undefined)
+      if (!chatId) {
+        return { ok: false, error: `OpenWA: مفيش chatId للإرسال (to=${to || '—'})` }
       }
-    } catch { /* نكمّل على الأصلية */ }
+      const res = await sendTextViaOpenWa(params.session, chatId, params.body)
+      return res.ok ? { ok: true } : { ok: false, error: res.error }
+    }
   }
 
   // ── الإرسال ────────────────────────────────────────────────────────────

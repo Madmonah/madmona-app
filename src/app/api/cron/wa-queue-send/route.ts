@@ -33,13 +33,28 @@ export async function GET(request: NextRequest) {
   }
 
   // ── ١) المارد متصل؟ لو لأ منبعتش خالص ────────────────────────────────
+  //
+  // 🚨 (٢ أغسطس ٢٠٢٦) كان بيسأل `WA_SERVICE_URL/health` — وده جسر Baileys
+  //    اللي اتشال. كان بيرجّع `connected:false` دايمًا، فالكرون كان بيقف
+  //    عند البوابة دي كل دقيقة و**الطابور مقفول بالكامل** من غير أي أثر
+  //    غير كلمة «المارد مش متصل» في رد مالوش قارئ.
+  //
+  //    دلوقتي بيسأل OpenWA: طالما فيه جلسة واحدة `ready`، الطابور يمشي.
   try {
-    const base = (process.env.WA_SERVICE_URL || '').replace(/\/$/, '')
-    if (!base) return NextResponse.json({ ok: false, error: 'WA_SERVICE_URL ناقص' })
-    const h = await fetch(`${base}/health`, { signal: AbortSignal.timeout(8000) })
-    const health = await h.json()
-    if (!health?.connected) {
-      return NextResponse.json({ ok: true, skipped: 'المارد مش متصل', sent: 0 })
+    const base = (process.env.OPENWA_URL || '').replace(/\/$/, '')
+    const key = process.env.OPENWA_API_KEY || ''
+    if (!base || !key) {
+      return NextResponse.json({ ok: false, error: 'OPENWA_URL أو OPENWA_API_KEY ناقص' })
+    }
+    const h = await fetch(`${base}/api/sessions`, {
+      headers: { 'x-api-key': key },
+      signal: AbortSignal.timeout(8000),
+      cache: 'no-store',
+    })
+    const list = (await h.json()) as Array<{ status?: string }>
+    const anyReady = Array.isArray(list) && list.some((s) => s?.status === 'ready')
+    if (!anyReady) {
+      return NextResponse.json({ ok: true, skipped: 'مفيش رقم متصل على OpenWA', sent: 0 })
     }
   } catch {
     return NextResponse.json({ ok: true, skipped: 'فشل فحص صحة المارد', sent: 0 })

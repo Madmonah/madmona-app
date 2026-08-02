@@ -14,6 +14,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { downloadOpenWaMedia, fetchInboundMediaByPhone } from '@/lib/openwa'
+import { supabaseUntyped } from '@/lib/supabase'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -165,6 +166,18 @@ export async function POST(req: NextRequest) {
     ...(media ? { media } : {}),
   }
 
+  // ── رقم جديد اتربط من لوحة OpenWA؟ نسجّله فورًا ──────────────────────
+  //
+  // الكرون بيمسح كل ١٠ دقايق، بس رسالة من رقم لسه متربط مايصحّش تستنى
+  // ١٠ دقايق. أول رسالة من جلسة مش متسجّلة بتعمل المزامنة على طول،
+  // فالرقم بيشتغل من أول رسالة.
+  //
+  // ⚠️ مابنستناش النتيجة ومابنوقفش التحويل عليها — المزامنة حاجة
+  //    مساعدة، والرد للعميل أهم منها.
+  if (sessionId) {
+    void ensureNumberRegistered(sessionId)
+  }
+
   // ── تحويل للمخ (نفس الديبلوي) ────────────────────────────────────────
   const brainUrl = `${req.nextUrl.origin}/api/whatsapp/baileys`
   try {
@@ -179,6 +192,38 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     console.error('[openwa-relay] فشل التحويل للمخ', (e as Error).message)
     return NextResponse.json({ ok: false, error: (e as Error).message })
+  }
+}
+
+// ── تسجيل رقم جديد أول مرة نشوفه ────────────────────────────────────────
+//
+// كاش في الذاكرة عشان مانضربش الداتابيز مع كل رسالة. الكاش بيضيع مع كل
+// نشر جديد وده مقصود — أول رسالة بعد النشر بتتأكد إن الصف لسه موجود.
+const seenSessions = new Set<string>()
+
+async function ensureNumberRegistered(sessionId: string): Promise<void> {
+  if (seenSessions.has(sessionId)) return
+  seenSessions.add(sessionId)
+  try {
+    const { data } = await supabaseUntyped
+      .from('wa_number_configs')
+      .select('session_id')
+      .eq('session_id', sessionId)
+      .maybeSingle()
+    if (data) return
+
+    console.log('[openwa-relay] رقم جديد من اللوحة — بنزامن', sessionId)
+    const { syncOpenWaNumbers } = await import('@/app/api/cron/wa-sync/route')
+    const r = await syncOpenWaNumbers()
+    console.log('[openwa-relay] المزامنة خلصت', {
+      added: r.numbers_added,
+      hooks: r.webhooks_added,
+      err: r.error,
+    })
+  } catch (e) {
+    // فشل المزامنة مايقفش الرسالة — الكرون هيمسك الرقم بعد شوية
+    console.error('[openwa-relay] فشلت مزامنة رقم جديد', (e as Error).message)
+    seenSessions.delete(sessionId) // نجرّب تاني مع الرسالة الجاية
   }
 }
 
