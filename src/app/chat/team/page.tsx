@@ -15,6 +15,7 @@ import { playRing } from '@/lib/ringtone'
 const CallOverlay = dynamic(() => import('@/components/CallOverlay'), { ssr: false })
 const FriendsSheet = dynamic(() => import('@/components/FriendsSheet'), { ssr: false })
 const ContactBookSheet = dynamic(() => import('@/components/ContactBookSheet'), { ssr: false })
+const NewGroupSheet = dynamic(() => import('@/components/NewGroupSheet'), { ssr: false })
 
 const EMOJIS = ['😀','😂','🥰','😍','👍','🙏','🔥','🎉','❤️','😅','😊','🤝','👌','💪','🙌','😎','🤔','😢','😮','🥳','😉','🫡','💯','✅','⭐','🎁','📦','🚗','🏠','🍔','☕','💰','📞','✍️','👏','😇','🤩','🌹','🙈','🤗']
 
@@ -102,6 +103,7 @@ export default function TeamPage() {
   const [incomingCall, setIncomingCall] = useState<CMsg | null>(null)    // بانر مكالمة واردة
   const [showFriends, setShowFriends] = useState(false)    // شيت الأصدقاء
   const [showBook, setShowBook] = useState(false)           // شيت دفتر مضمونة
+  const [showNewGroup, setShowNewGroup] = useState(false)   // شيت جروب جديد
   const [newMenu, setNewMenu] = useState(false)             // قايمة ➕ في هيدر قايمة المحادثات
   const incomingRingRef = useRef<{ stop: () => void } | null>(null)
 
@@ -702,15 +704,13 @@ export default function TeamPage() {
     } catch { /* الرد بيوصل بالـrealtime */ } finally { setBusy(false) }
   }
 
-  async function createRoom() {
+  // 👥 (٢ أغسطس ٢٠٢٦) كان بيعمل insert مباشر لجروب فاضي من غير أي قيود —
+  //    يعني أي حد يقدر يعمل جروب ويحط فيه ناس متعرفش بعض ويتخطى قاعدة
+  //    «مضمونة في النص». دلوقتي بيعدّي على `chat_create_group` اللي بترفض
+  //    أي عضو مش صاحبك، وبترفض كمان لو الأعضاء مش أصدقاء لبعض. الأدمن معفى.
+  function createRoom() {
     if (!uid) return
-    const name = prompt('اسم الجروب:')?.trim()
-    if (!name) return
-    const { data: room } = await supabaseBrowser.from('chat_rooms').insert({ name, kind: 'team', created_by: uid } as never).select('id, name, marid_enabled').single()
-    if (room) {
-      await supabaseBrowser.from('chat_room_members').insert({ room_id: (room as Room).id, profile_id: uid, role: 'owner' } as never)
-      await loadRooms(uid); openRoom({ ...(room as Room), kind: 'team', role: 'owner' })
-    }
+    setShowNewGroup(true)
   }
 
   // فتح محادثة خاصة برقم معيّن (بيستخدمها شيت الأصدقاء «💬 كلّمه»)
@@ -953,6 +953,18 @@ export default function TeamPage() {
       )}
       {showBook && <ContactBookSheet onClose={() => { setShowBook(false); if (uid) loadRooms(uid) }} onOpenDM={openDMByPhone} />}
       {showFriends && <FriendsSheet onOpenDM={openDMByPhone} onClose={() => setShowFriends(false)} onOpenBook={() => setShowBook(true)} />}
+      {showNewGroup && (
+        <NewGroupSheet
+          onClose={() => setShowNewGroup(false)}
+          onCreated={async (roomId) => {
+            setShowNewGroup(false)
+            if (uid) await loadRooms(uid)
+            const { data: r } = await supabaseBrowser.from('chat_rooms')
+              .select('id, name, marid_enabled, kind').eq('id', roomId).maybeSingle()
+            if (r) openRoom({ ...(r as Room), role: 'owner' })
+          }}
+        />
+      )}
       <ChatBottomNav />
     </div>
   )
