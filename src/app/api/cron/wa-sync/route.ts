@@ -28,12 +28,35 @@ export const dynamic = 'force-dynamic'
 const OPENWA_URL = (process.env.OPENWA_URL || '').replace(/\/$/, '')
 const OPENWA_API_KEY = process.env.OPENWA_API_KEY || ''
 const SECRET = process.env.WA_SERVICE_SECRET || ''
-const APP_ORIGIN = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.madmonacairo.com'
+// 🚨 (٢ أغسطس ٢٠٢٦) الأصل مثبّت بـwww بقصد — مش من متغير بيئة.
+//
+//    أول تشغيل للمزامنة عمل ويبهوك **تاني** على نفس الجلسة، لأن
+//    `NEXT_PUBLIC_SITE_URL` بيقول `madmonacairo.com` من غير www، والويبهوك
+//    اللي كان موجود بـwww. المقارنة شافت أصلين مختلفين فحسبته ناقص.
+//
+//    وده مش مجرد صف زيادة: كل رسالة واردة كانت هتتبعت **مرتين**، والنسخة
+//    بدون www بتاخد ريديركت — والريديركت على POST بيرمي الجسم، يعني
+//    ويبهوك بيفشل في صمت وبيعيد المحاولة.
+const WEBHOOK_PATH = '/api/whatsapp/openwa'
+const APP_ORIGIN = 'https://www.madmonacairo.com'
 
 /** الويبهوك اللي المفروض يكون متسجّل على كل جلسة */
 function webhookUrl(): string {
-  const base = `${APP_ORIGIN.replace(/\/$/, '')}/api/whatsapp/openwa`
+  const base = `${APP_ORIGIN}${WEBHOOK_PATH}`
   return SECRET ? `${base}?token=${encodeURIComponent(SECRET)}` : base
+}
+
+/**
+ * هل الويبهوك ده بتاعنا؟
+ * بنقارن بالمسار بس — الأصل ممكن يكون بـwww أو من غيرها أو دومين قديم،
+ * وكلهم بتاعنا ولازم يتحدّثوا في مكانهم مش يتضاعفوا.
+ */
+function isOurs(url: string): boolean {
+  try {
+    return new URL(url).pathname.replace(/\/$/, '') === WEBHOOK_PATH
+  } catch {
+    return false
+  }
 }
 
 function headers(): HeadersInit {
@@ -104,7 +127,19 @@ export async function syncOpenWaNumbers(): Promise<SyncResult> {
         cache: 'no-store',
       })
       const hooks = wr.ok ? ((await wr.json()) as OwaWebhook[]) : []
-      const ours = hooks.find((h) => (h.url || '').split('?')[0] === want.split('?')[0])
+      const mine = hooks.filter((h) => isOurs(h.url || ''))
+      const ours = mine[0]
+
+      // نضمن **واحد بس**: أي نسخة زيادة بتتشال. رسالة واردة بتتبعت مرتين
+      // بتولّد ردّين للعميل، وده أوحش من إن الويبهوك ناقص.
+      for (const dup of mine.slice(1)) {
+        await fetch(`${OPENWA_URL}/api/sessions/${s.id}/webhooks/${dup.id}`, {
+          method: 'DELETE',
+          headers: headers(),
+          signal: AbortSignal.timeout(12000),
+        }).catch(() => {})
+        out.skipped.push(`${s.name}: شلنا ويبهوك مكرر`)
+      }
 
       if (!ours) {
         const cr = await fetch(`${OPENWA_URL}/api/sessions/${s.id}/webhooks`, {
