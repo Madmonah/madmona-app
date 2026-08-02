@@ -84,11 +84,20 @@ export default function WhatsAppLogin({
 
   async function begin() {
     setErr('')
-    // 🔑 الجذر: نفتح نافذة *فورًا* جوّه ضغطة المستخدم — قبل أي await — عشان
-    //    مانتبلوكش بالـpopup-blocker. لو المتصفح منعها (win=null)، الزرار المباشر
-    //    تحت بيفتح بضغطة جديدة (مبتتبلوكش أبدًا).
-    let win: Window | null = null
-    try { win = window.open('', '_blank') } catch { win = null }
+    // ⚠️⚠️ ماترجّعش `window.open('', '_blank')` تاني هنا مهما حصل.
+    //
+    // إصلاح ٢٣ يوليو فتح تاب فاضي جوّه الضغطة عشان يهرب من الـpopup-blocker،
+    // وبعدين يوجّهه للواتساب. النتيجة: **التاب الفاضي بيفضل مفتوح**، ولما
+    // العميل يرجع من الواتساب بيلاقي نفسه عليه — مش على صفحة الدخول.
+    // دي «الصفحة البيضا» اللي محمد بيشتكي منها (شافها بنفسه، والسبب باين في
+    // الكود). وزيادة: التاب الأصلي بيروح الخلفية والموبايل بيخنق المؤقتات
+    // فيها، فالـpolling نفسه بيقف.
+    //
+    // الحل: مفيش تاب جديد خالص. العميل بيدوس <a> اللي تحت — ضغطة حقيقية
+    // مبتتبلوكش أبدًا — وصفحة الدخول بتفضل مكانها شغالة والـpolling عايش.
+    //
+    // ملاحظة: `wa_login_tokens` **مش** بتخدم المسار ده — دي لينكات المارد
+    // العادية (شوف SKIP في api/whatsapp/baileys اللي بيستثني /auth/).
     try {
       const res = await fetch('/api/auth/wa', {
         method: 'POST',
@@ -96,16 +105,13 @@ export default function WhatsAppLogin({
         body: JSON.stringify({ action: 'start' }),
       })
       const j = await res.json()
-      if (!res.ok || !j.code) { try { win?.close() } catch { /* */ } setErr('حصلت مشكلة — جرب تاني'); return }
+      if (!res.ok || !j.code) { setErr('حصلت مشكلة — جرب تاني'); return }
       codeRef.current = j.code
       setCode(j.code)
       setWaUrl(j.wa_url)
       setPhase('waiting')
-      // وجّه النافذة المفتوحة للواتساب. لو اتبلوكت، الزرار المباشر تحت بديلها.
-      if (win) { try { win.location.href = j.wa_url } catch { /* الزرار البديل موجود */ } }
       startPolling()
     } catch {
-      try { win?.close() } catch { /* */ }
       setErr('حصلت مشكلة في الاتصال — جرب تاني')
     }
   }

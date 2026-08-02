@@ -12,7 +12,6 @@ import {
 } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { GoogleSignInButton } from '@/components/GoogleSignInButton'
-import EmailMagicLink from '@/components/EmailMagicLink'
 import WhatsAppLogin from '@/components/WhatsAppLogin'
 
 // ⛔ دخول فيسبوك اتشال نهائياً (٢ أغسطس ٢٠٢٦) — كان متقفل بفلاج من زمان
@@ -161,13 +160,14 @@ function LoginContent() {
           </div>
 
           <div className="bg-white rounded-3xl shadow-luxe p-7 md:p-9">
-            {/* 🔑 الترتيب اتغيّر (٢ أغسطس ٢٠٢٦):
-                الواتساب كان الطريقة الأساسية، ونسبة نجاحه المقاسة 9.5% بس
-                (571 لينك اتبعت / 54 اتفتح في 7 أيام). جوجل شغّال ومستقر
-                (40% من مستخدمينه نشطين) ومالوش علاقة بميتا — فبقى الأول،
-                والإيميل تانياً، والواتساب فضل موجود للناس اللي متعوّدة عليه. */}
+            {/* 🔑 الترتيب اتغيّر (٢ أغسطس ٢٠٢٦): جوجل بقى الأول والواتساب تحته.
+                السبب: جوجل مستقر (6 من 15 مستخدم نشطين خلال 30 يوم — أعلى نسبة
+                نشاط بين كل المزوّدين) ومالوش علاقة بميتا، ومسار الواتساب كان
+                بيوقّع الناس على تاب فاضي (اتصلّح في WhatsAppLogin.tsx).
+                الواتساب فضل موجود — ناس كتير متعوّدة عليه، وميزته إن الرقم
+                بيتأكد من مصدر الرسالة نفسها.
+                (ماجيك لينك بالإيميل اتجرّب واتشال بقرار محمد — مش محتاجينه) */}
             <GoogleSignInButton redirectTo={redirectTo} label="سجّل دخول بـ Google" />
-            <EmailMagicLink redirect={redirectTo} />
 
             <div className="my-4 flex items-center gap-3">
               <div className="h-px bg-gray-100 flex-1" />
