@@ -13,16 +13,20 @@ import { supabase as supabaseAdmin, supabaseUntyped } from './supabase'
 import { getNumberConfig } from './wa-number-config'
 import { sendTextViaOpenWa, isOpenWaConfigured } from './openwa'
 
-// خدمة المارد (Baileys على Railway) — القناة الوحيدة للإرسال
+// 🚨 (٢ أغسطس ٢٠٢٦) OpenWA بقى القناة الوحيدة.
+//
+//    `wa-service` (جسر Baileys) و`wa-web` (whatsapp-web.js) اتمسحوا من
+//    رايلواي والفولدرات اتشالت من الريبو. `WA_SERVICE_URL` فاضل هنا
+//    كمسار احتياطي **ميت** بيرجع خطأ واضح لو حد ظبّطه بالغلط.
+//
+//    `WA_SERVICE_SECRET` لسه مستخدم فعلاً — هو التوكن اللي بنتحقق بيه
+//    من ويبهوك OpenWA الوارد، مالوش علاقة بالخدمة اللي اتمسحت.
 const WA_SERVICE_URL = process.env.WA_SERVICE_URL
-// 🚚 الخدمة التانية — واتساب ويب الرسمي (whatsapp-web.js) للأرقام الجديدة.
-// لو مش متظبطة، كل الأرقام بتفضل على الخدمة الأصلية زي ما هي.
-const WA_WEB_SERVICE_URL = process.env.WA_WEB_SERVICE_URL
 const WA_SERVICE_SECRET = process.env.WA_SERVICE_SECRET ?? ''
 
-/** فيه قناة واتساب شغّالة؟ (بقت = خدمة المارد، مش Cloud API) */
+/** فيه قناة واتساب شغّالة؟ */
 export function isWhatsAppConfigured(): boolean {
-  return !!WA_SERVICE_URL
+  return isOpenWaConfigured() || !!WA_SERVICE_URL
 }
 
 // ============================================================================
