@@ -6,13 +6,21 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ShieldCheck, AlertCircle, Loader2, CheckCircle, MessageCircle, Send, RefreshCw,
 } from 'lucide-react'
+import VerifyPhoneByCall from '@/components/VerifyPhoneByCall'
 
 // =====================================================================
-// 🔗 توثيق رقم حساب جوجل — بنفس طريقة الدخول (ابعت الكود للمارد)
+// 🔗 توثيق الرقم — طريقتين
 // -----------------------------------------------------------------
-// حساب جوجل بياخد منه الإيميل والاسم بس — لكن *لازم* يوثّق رقمه على واتساب
-// زي أي دخول: يبعت كود MADxxxxx للمارد. الرقم بيتأكّد من *مصدر الرسالة*
-// (محدش يبعت برقم غيره)، والوارد شغّال دايمًا. مضمونة مابتبعتش أي كود بارد.
+// ١) 📞 **الاتصال** (الأساسية): العميل بيرن علينا رنة من رقمه، وإحنا بنقرا
+//    رقم المتصل ونقفل قبل ما نرد. إثبات أقوى (بيثبت إنه ماسك التليفون
+//    دلوقتي)، ومالوش علاقة بميتا ولا بجلسات الواتساب اللي بتقع.
+//
+// ٢) 💬 **الواتساب**: يبعت كود MADxxxxx للمارد. الرقم بيتأكّد من *مصدر
+//    الرسالة* (محدش يبعت برقم غيره). فضل موجود لأنه شغّال وناس متعوّدة عليه.
+//    ⚠️ بيفشل مع الأرقام المخفية (@lid) — وساعتها الاتصال هو البديل.
+//
+// ⚠️ الصفحة دي مابقتش إجبارية بعد الدخول (٢ أغسطس ٢٠٢٦) — العميل بيدخل على
+//    طول والرقم بيتطلب لما يلزم بس (مطالبة بأصل · أوردر).
 //
 // نفس الجذر اللي اتصلّح في WhatsAppLogin: نفتح نافذة الواتساب *فورًا* جوّه
 // ضغطة المستخدم (قبل أي await) عشان مانتبلوكش بالـpopup-blocker، وكمان زرار
@@ -149,24 +157,42 @@ function CompletePhoneContent() {
               <span className="text-xs font-bold text-gray-700">خطوة أخيرة</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight tracking-tight">
-              وثّق <span className="gradient-text-green">رقم واتسابك</span>
+              وثّق <span className="gradient-text-green">رقمك</span>
             </h1>
             <p className="text-sm text-gray-500 mt-2 leading-relaxed">
-              عشان نأمّن حسابك ونقدر نتواصل معاك، ابعت كود تأكيد للمارد على واتساب — من نفس رقمك.
-              مضمونة مابتبعتش أكواد، إنت اللي بتبعت. 🧞
+              عشان نأمّن حسابك ونقدر نتواصل معاك. مضمونة مابتبعتش أكواد —
+              إنت اللي بتبعت أو بترن. 🧞
             </p>
           </div>
 
           <div className="bg-white rounded-3xl shadow-luxe p-7 md:p-9">
             {phase === 'idle' && (
-              <button
-                type="button"
-                onClick={begin}
-                className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
-              >
-                <MessageCircle className="w-5 h-5" />
-                وثّق رقمك على واتساب
-              </button>
+              <>
+                {/* 📞 (٢ أغسطس ٢٠٢٦) الاتصال بقى الطريقة الأولى:
+                    - إثبات أقوى — بيثبت إنه ماسك التليفون دلوقتي
+                    - مالوش علاقة بميتا ولا بجلسات الواتساب اللي بتقع
+                    - العميل مايكتبش أي كود
+                    الواتساب فضل تحته لأنه شغّال وناس متعوّدة عليه، وميزته
+                    إن الرقم بيتأكد من مصدر الرسالة نفسها. */}
+                <VerifyPhoneByCall
+                  onDone={() => { setPhase('done'); setTimeout(() => router.replace(redirectTo), 900) }}
+                />
+
+                <div className="my-4 flex items-center gap-3">
+                  <div className="h-px bg-gray-100 flex-1" />
+                  <span className="text-[11px] text-gray-400 font-bold">أو</span>
+                  <div className="h-px bg-gray-100 flex-1" />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={begin}
+                  className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  وثّق بالواتساب
+                </button>
+              </>
             )}
 
             {(phase === 'waiting' || phase === 'finishing') && (
