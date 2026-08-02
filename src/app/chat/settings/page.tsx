@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ChatBottomNav from '@/components/ChatBottomNav'
+import AvatarUpload from '@/components/AvatarUpload'
 import { subscribeToPush, unsubscribeFromPush, getNotificationPermission, isPushSupported, isSubscribed } from '@/lib/push-subscription'
 
 type BIPEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }
@@ -13,6 +14,7 @@ export default function ChatSettings() {
   const router = useRouter()
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
+  const [avatar, setAvatar] = useState<string | null>(null)
   const [loggedIn, setLoggedIn] = useState(false)
   const [notifOn, setNotifOn] = useState(false)
   const [notifSupported, setNotifSupported] = useState(true)
@@ -26,9 +28,10 @@ export default function ChatSettings() {
         const { data: { session } } = await supabaseBrowser.auth.getSession()
         if (session?.user) {
           setLoggedIn(true)
-          const { data: prof } = await supabaseBrowser.from('profiles').select('phone, full_name').eq('id', session.user.id).maybeSingle()
+          const { data: prof } = await supabaseBrowser.from('profiles').select('phone, full_name, avatar_url').eq('id', session.user.id).maybeSingle()
           setName((prof as { full_name?: string } | null)?.full_name || '')
           setPhone((prof as { phone?: string } | null)?.phone || session.user.phone || '')
+          setAvatar((prof as { avatar_url?: string | null } | null)?.avatar_url || null)
         }
       } catch {}
       if (!isPushSupported()) setNotifSupported(false)
@@ -70,12 +73,12 @@ export default function ChatSettings() {
 
       <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
         {loggedIn && (
-          <div style={{ background: '#fff', borderRadius: 16, padding: 16, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12, border: '1px solid #EAE5D9', boxShadow: '0 1px 2px rgba(20,35,30,.06)' }}>
-            <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#1F6F5F)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 22, fontWeight: 900 }}>{(name || '؟').trim().charAt(0)}</div>
-            <div>
+          <div style={{ background: '#fff', borderRadius: 16, padding: 16, marginBottom: 14, border: '1px solid #EAE5D9', boxShadow: '0 1px 2px rgba(20,35,30,.06)' }}>
+            <div style={{ marginBottom: 12 }}>
               <div style={{ fontWeight: 900, color: '#14231E' }}>{name || 'مستخدم مضمونة'}</div>
               <div style={{ fontSize: 13, color: '#8A9690', fontWeight: 600, direction: 'ltr', textAlign: 'right' }}>{phone}</div>
             </div>
+            <AvatarUpload currentUrl={avatar} name={name} onChange={setAvatar} />
           </div>
         )}
 
