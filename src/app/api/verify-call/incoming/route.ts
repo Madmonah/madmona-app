@@ -70,17 +70,6 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   const url = new URL(request.url)
   if (!authorized(request, url)) {
-    // 🔎 تشخيص مؤقت — أطوال بس، مفيش أي قيمة بتتكشف. يتشال بعد ما نظبطه.
-    if (url.searchParams.get('diag') === '1') {
-      const envv = process.env.CALL_VERIFY_SECRET
-      return NextResponse.json({
-        ok: false,
-        env_present: !!envv,
-        env_len: envv ? envv.length : 0,
-        given_len: (url.searchParams.get('secret') || '').length,
-        env_keys_seen: Object.keys(process.env).filter((k) => k.startsWith('CALL_')),
-      }, { status: 401 })
-    }
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   }
   return handle(url.searchParams.get('caller') || '', url.searchParams.get('source'))
