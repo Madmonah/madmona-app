@@ -10,7 +10,9 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 
 type Row = { id: string; phone_e164: string; display_name: string | null; source: string }
-type Status = 'friend' | 'waiting' | 'not_on_madmona'
+// 'blocked' اتضافت ٢ أغسطس ٢٠٢٦ — `chat_contacts_with_status()` بقت ترجّعها،
+// ومن غيرها الشارة كانت هتطلع undefined. و`other_id` بييجي معاها عشان الـunblock.
+type Status = 'friend' | 'waiting' | 'not_on_madmona' | 'blocked'
 type PickItem = { phone: string; name?: string }
 
 function pickerSupported(): boolean {
@@ -21,6 +23,7 @@ function pickerSupported(): boolean {
 export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () => void; onOpenDM?: (phone: string) => void }) {
   const [rows, setRows] = useState<Row[]>([])
   const [statuses, setStatuses] = useState<Record<string, Status>>({})
+  const [otherIds, setOtherIds] = useState<Record<string, string | null>>({})
   const [loading, setLoading] = useState(true)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -43,11 +46,13 @@ export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () =>
     // (profiles.phone فيه +20 و20 و01 ونصوص تالفة — المقارنة المباشرة كانت بتفشل)
     const { data, error } = await supabaseBrowser.rpc('chat_contacts_with_status')
     if (error) { setLoading(false); setNote('مقدرتش أحمّل الدفتر'); setTimeout(() => setNote(''), 3200); return }
-    const list = (data as (Row & { status: Status })[]) || []
+    const list = (data as (Row & { status: Status; other_id: string | null })[]) || []
     setRows(list)
     const st: Record<string, Status> = {}
-    for (const r of list) st[r.id] = r.status
+    const ids: Record<string, string | null> = {}
+    for (const r of list) { st[r.id] = r.status; ids[r.id] = r.other_id }
     setStatuses(st)
+    setOtherIds(ids)
     setLoading(false)
   }, [])
 
@@ -208,6 +213,15 @@ export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () =>
     friend: { t: '🤝 صاحب', bg: '#E4F3EC', c: '#1F6F5F' },
     waiting: { t: '⏳ مستني يضيفك', bg: '#FDF3DA', c: '#8a6d1a' },
     not_on_madmona: { t: 'مش على مضمونة', bg: '#F1EEE6', c: '#8A9690' },
+    blocked: { t: '🚫 متعمله بلوك', bg: '#FCEEEE', c: '#B4423A' },
+  }
+
+  // ↩️ فك البلوك — من غير الزرار ده اللي بيعمل بلوك مش هيقدر يرجع فيه أبدًا
+  async function unblock(otherId: string) {
+    const { error } = await supabaseBrowser.rpc('chat_unblock', { _other: otherId })
+    if (error) { setNote('مقدرتش أفك البلوك'); setTimeout(() => setNote(''), 2800); return }
+    setNote('اتفك البلوك'); setTimeout(() => setNote(''), 2800)
+    load()
   }
 
   // ── شاشة المراجعة بالتشيك مارك ──────────────────────────────
@@ -346,6 +360,12 @@ export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () =>
               <span style={{ background: b.bg, color: b.c, borderRadius: 999, padding: '4px 9px', fontSize: 10.5, fontWeight: 800, whiteSpace: 'nowrap' }}>{b.t}</span>
               {s === 'friend' && onOpenDM && (
                 <button onClick={() => { onClose(); onOpenDM(r.phone_e164) }} title="افتح محادثة" style={{ background: 'none', border: 'none', fontSize: 17, cursor: 'pointer', padding: 0 }}>💬</button>
+              )}
+              {s === 'blocked' && otherIds[r.id] && (
+                <button onClick={() => unblock(otherIds[r.id]!)} title="فك البلوك"
+                  style={{ background: '#F1EEE6', color: '#5A6660', border: 'none', borderRadius: 999, padding: '5px 10px', fontSize: 11, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit' }}>
+                  فك البلوك
+                </button>
               )}
               <button onClick={() => removeOne(r)} title="شيل من الدفتر" style={{ background: 'none', border: 'none', fontSize: 15, cursor: 'pointer', color: '#E26D5C', padding: 0 }}>🗑️</button>
             </div>
