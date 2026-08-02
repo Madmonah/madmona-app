@@ -127,7 +127,12 @@ export async function syncOpenWaNumbers(): Promise<SyncResult> {
         cache: 'no-store',
       })
       const hooks = wr.ok ? ((await wr.json()) as OwaWebhook[]) : []
-      const mine = hooks.filter((h) => isOurs(h.url || ''))
+      // الترتيب مهم: لو فيه واحد **مطابق تمامًا** للأصل الرسمي، يبقى هو
+      // اللي نستبقيه. من غير الترتيب ده كنا بنستبقي أول واحد في القايمة
+      // — وطلع اللي من غير www، وهو اللي بياخد ريديركت ومابيشتغلش.
+      const mine = hooks
+        .filter((h) => isOurs(h.url || ''))
+        .sort((a, b) => Number(b.url === want) - Number(a.url === want))
       const ours = mine[0]
 
       // نضمن **واحد بس**: أي نسخة زيادة بتتشال. رسالة واردة بتتبعت مرتين
@@ -151,14 +156,24 @@ export async function syncOpenWaNumbers(): Promise<SyncResult> {
         if (cr.ok) out.webhooks_added.push(s.name)
         else out.skipped.push(`${s.name}: ويبهوك ${cr.status}`)
       } else if (ours.url !== want || !ours.active) {
-        // نفس المسار بس السر اتغيّر أو اتوقف — نحدّثه في مكانه
+        // نفس المسار بس الأصل غلط (www ناقصة مثلاً) أو السر اتغيّر.
+        //
+        // 🚨 كان بيعمل PATCH — و OpenWA **مابيغيّرش الـurl** منه. النتيجة:
+        //    كل دورة تقول «اتحدّث» والويبهوك زي ما هو، والصح مايتظبطش
+        //    أبدًا. بنمسح ونعمل واحد جديد — ده مثبت إنه بيشتغل.
         await fetch(`${OPENWA_URL}/api/sessions/${s.id}/webhooks/${ours.id}`, {
-          method: 'PATCH',
+          method: 'DELETE',
           headers: headers(),
-          body: JSON.stringify({ url: want, events: ['*'], active: true }),
           signal: AbortSignal.timeout(12000),
         }).catch(() => {})
-        out.webhooks_added.push(`${s.name} (تحديث)`)
+        const cr = await fetch(`${OPENWA_URL}/api/sessions/${s.id}/webhooks`, {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify({ url: want, events: ['*'], retryCount: 3 }),
+          signal: AbortSignal.timeout(12000),
+        })
+        if (cr.ok) out.webhooks_added.push(`${s.name} (تصليح)`)
+        else out.skipped.push(`${s.name}: فشل تصليح الويبهوك ${cr.status}`)
       }
     } catch {
       out.skipped.push(`${s.name}: فشل فحص الويبهوك`)
