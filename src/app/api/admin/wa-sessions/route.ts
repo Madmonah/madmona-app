@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
   const bad = guard()
   if (bad) return bad
 
-  let body: { session?: string; label?: string }
+  let body: { session?: string; label?: string; proxy?: string }
   try {
     body = await request.json()
   } catch {
@@ -53,7 +53,9 @@ export async function POST(request: NextRequest) {
     const res = await fetch(`${BASE}/sessions`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-madmona-secret': SECRET },
-      body: JSON.stringify({ session, label: body.label || session }),
+      // البروكسي بيروح مع الإضافة عشان **أول** اتصال للرقم بواتساب يطلع
+      // من الـIP الصح — أخطر لحظة على رقم جديد هي أول ربط.
+      body: JSON.stringify({ session, label: body.label || session, proxy: body.proxy || '' }),
       signal: AbortSignal.timeout(20000),
     })
     const data = await res.json()
@@ -61,6 +63,43 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     return NextResponse.json(
       { ok: false, error: e instanceof Error ? e.message : 'فشل إضافة الرقم' },
+      { status: 502 }
+    )
+  }
+}
+
+/**
+ * تغيير قناة الخروج (البروكسي) لرقم — بيعيد تشغيل الرقم ده بس.
+ * القيمة الفاضية = رجوع لـIP السيرفر.
+ *
+ * ⚠️ الرد بيرجّع البروكسي **مخفي منه اليوزر والباسورد** (`***@host:port`).
+ *    بيانات البروكسي سر زي أي سر — ماتوصلش للمتصفح أبدًا.
+ */
+export async function PUT(request: NextRequest) {
+  const bad = guard()
+  if (bad) return bad
+
+  let body: { session?: string; proxy?: string }
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ ok: false, error: 'bad_json' }, { status: 400 })
+  }
+
+  const session = (body.session || '').replace(/[^\d]/g, '')
+  if (!session) return NextResponse.json({ ok: false, error: 'session مطلوب' }, { status: 400 })
+
+  try {
+    const res = await fetch(`${BASE}/sessions/${encodeURIComponent(session)}/proxy`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json', 'x-madmona-secret': SECRET },
+      body: JSON.stringify({ proxy: body.proxy ?? '' }),
+      signal: AbortSignal.timeout(20000),
+    })
+    return NextResponse.json(await res.json(), { status: res.status })
+  } catch (e) {
+    return NextResponse.json(
+      { ok: false, error: e instanceof Error ? e.message : 'فشل تغيير القناة' },
       { status: 502 }
     )
   }

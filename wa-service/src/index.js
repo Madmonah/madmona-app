@@ -14,6 +14,7 @@ import express from 'express'
 import pino from 'pino'
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync } from 'node:fs'
 import { join } from 'node:path'
+import { request as httpsRequest } from 'node:https'
 import {
   startSession,
   listSessions,
@@ -22,6 +23,7 @@ import {
   knownSessionIds,
   downloadMediaMessage,
 } from './sessions.js'
+import { resolveProxy, saveProxy, assertValid, buildAgent, mask as maskProxy } from './proxy.js'
 
 const APP_WEBHOOK_URL = process.env.APP_WEBHOOK_URL || ''
 const SHARED_SECRET = process.env.SHARED_SECRET || ''
@@ -303,19 +305,19 @@ function auth(req, res, next) {
 function pickSession(req) {
   const wanted = req.body?.session || req.query?.session
   if (wanted) {
-    const entry = getSession(wanted)
-    // ⚠️ الرقم المطلوب مفصول؟ الرسالة **ماتضيعش** — بنبعت من أي
-    //    رقم متصل. العميل يشوف رد من رقم تاني أحسن من إنه يستنى
-    //    ومايوصلوش حاجة.
-    //    (٢١ يوليو: الرقم القديم اتفصل، فالردود على ناسه كانت
-    //     بتتولّد وتتسجّل وتقف — والعميل مستني.)
-    if (entry?.connected) return { id: wanted, entry }
-    const alt = listSessions().find((s) => s.connected)
-    if (alt) {
-      log.warn({ wanted, used: alt.id }, 'الرقم المطلوب مفصول — بعتنا من التاني')
-      return { id: alt.id, entry: getSession(alt.id) }
-    }
-    return { id: wanted, entry }
+    // 🚨 (٢ أغسطس ٢٠٢٦) شيلنا الرجوع لرقم تاني.
+    //
+    //    كان: لو الرقم المطلوب مفصول، ابعت من أي رقم متصل — بحجة إن
+    //    العميل يشوف رد أحسن من إنه يستنى. النية كويسة والنتيجة وحشة:
+    //
+    //    • العميل بيكلّم رقم المبيعات وبيجيله رد من رقم تاني خالص —
+    //      شكل نصب، وكتير بيبلّغ عن الرقم. وده بيجيب الحظر بنفسه.
+    //    • الرقم اللي بيرد مش شايف تاريخ المحادثة، فالرد بيبقى في اللا.
+    //    • والأهم: بيخفي إن الرقم واقع. الرسايل ماشية فمحدش بيلاحظ
+    //      إن رقم من التلاتة مفصول من يومين.
+    //
+    //    كل رقم مستقل بذاته: الرقم المطلوب أو خطأ واضح يتصلّح.
+    return { id: wanted, entry: getSession(wanted) }
   }
   const first = listSessions().find((s) => s.connected)
   return first ? { id: first.id, entry: getSession(first.id) } : { id: null, entry: null }
@@ -353,23 +355,97 @@ app.get('/sessions', (_req, res) => res.json({ ok: true, sessions: listSessions(
 //
 // المسار ده بيرجّع الرقم ده بالظبط عشان مانفضلش نخمّن — مفيد كمان لو
 // احتجنا نضيف الـIP في allowlist عند أي طرف تاني.
+// بيرجّع IP السيرفر نفسه، **وكمان** الـIP الفعلي لكل رقم لو ليه قناة
+// خاصة — عشان تتأكد بعينك إن البروكسي شغال فعلًا مش مجرد متسجّل.
+// ⚠️ مابنستخدمش `fetch` هنا بقصد.
+//    `fetch` في نود 20 مبني على undici، و undici **بيتجاهل** خيار `agent`
+//    تمامًا (بياخد `dispatcher` بشكل مختلف). فلو استخدمناه، كل الأرقام
+//    هتقول نفس الـIP وإحنا فاكرين إن البروكسي شغال — أسوأ من ما نفحصش
+//    أصلًا. `https.request` بيحترم الـagent، وهو نفس الطريق اللي Baileys
+//    بيمشي فيه.
+async function whatIsMyIp(agent) {
+  return new Promise((resolve) => {
+    const req = httpsRequest(
+      { hostname: 'api.ipify.org', path: '/?format=json', timeout: 8000, ...(agent ? { agent } : {}) },
+      (r) => {
+        let body = ''
+        r.on('data', (c) => { body += c })
+        r.on('end', () => {
+          try { resolve(JSON.parse(body)?.ip || null) } catch { resolve(body.trim() || null) }
+        })
+      },
+    )
+    req.on('timeout', () => { req.destroy(new Error('timeout')) })
+    req.on('error', (e) => resolve(`err: ${e.message}`))
+    req.end()
+  })
+}
+
 app.get('/debug/egress-ip', async (_req, res) => {
-  const out = {}
-  await Promise.all(
-    [
-      ['ipify', 'https://api.ipify.org?format=json'],
-      ['icanhazip', 'https://icanhazip.com'],
-    ].map(async ([name, url]) => {
-      try {
-        const r = await fetch(url, { signal: AbortSignal.timeout(6000) })
-        const t = (await r.text()).trim()
-        out[name] = t.startsWith('{') ? JSON.parse(t).ip : t
-      } catch (e) {
-        out[name] = `err: ${e.message}`
-      }
-    }),
-  )
-  res.json({ ok: true, egress_ip: out, railway_region: process.env.RAILWAY_REPLICA_REGION || null })
+  const server = await whatIsMyIp()
+
+  // كل رقم بقناة خاصة — بنسأل من خلال قناته هو
+  const perSession = {}
+  for (const s of listSessions()) {
+    const raw = resolveProxy(AUTH_DIR, s.id)
+    if (!raw) {
+      perSession[s.id] = { proxy: null, ip: server, note: 'طالع من IP السيرفر' }
+      continue
+    }
+    if (raw.startsWith('bind://')) {
+      perSession[s.id] = { proxy: maskProxy(raw), ip: new URL(raw).hostname, note: 'عنوان محلي على السيرفر' }
+      continue
+    }
+    perSession[s.id] = { proxy: maskProxy(raw), ip: await whatIsMyIp(buildAgent(raw, log)) }
+  }
+
+  res.json({
+    ok: true,
+    server_ip: server,
+    railway_region: process.env.RAILWAY_REPLICA_REGION || null,
+    sessions: perSession,
+  })
+})
+
+// ── قناة الخروج بتاعة رقم ─────────────────────────────────────────────
+//
+// PUT /sessions/:id/proxy   { "proxy": "socks5://user:pass@1.2.3.4:1080" }
+// القيمة الفاضية بتشيل البروكسي وترجّع الرقم على IP السيرفر.
+//
+// بيتحفظ في الـvolume جنب مفاتيح الجلسة، فبيعيش بعد أي نشر جديد.
+// وبيعيد تشغيل **الرقم ده بس** — الباقي مايتهزّش.
+app.put('/sessions/:id/proxy', auth, async (req, res) => {
+  const id = req.params.id
+  const value = (req.body?.proxy ?? '').toString()
+
+  try {
+    if (value.trim()) assertValid(value)
+  } catch (e) {
+    return res.status(400).json({ ok: false, error: e.message })
+  }
+
+  try {
+    const saved = saveProxy(AUTH_DIR, id, value)
+    const entry = getSession(id)
+    const label = entry?.label || id
+
+    // إعادة تشغيل الجلسة عشان تمسك القناة الجديدة.
+    // ⚠️ مابنعملش logout — ده هيمسح الربط ويطلب QR تاني.
+    //    بنقفل السوكيت بس، و`startSession` بيفتح واحد جديد بنفس المفاتيح.
+    if (entry?.sock) {
+      try { entry.sock.ev.removeAllListeners() } catch { /* تجاهل */ }
+      try { entry.sock.end(undefined) } catch { /* تجاهل */ }
+      entry.sock = null
+      entry.connected = false
+    }
+    startSession({ id, label, authRoot: AUTH_DIR, onMessage: handleMessage, onLidMap: forwardLidMap, onStatus: forwardStatus })
+      .catch((e) => log.error({ session: id, err: e.message }, 'فشل إعادة تشغيل الجلسة بعد تغيير القناة'))
+
+    log.info({ session: id, proxy: maskProxy(saved) }, saved ? '🌐 اتظبطت قناة خاصة للرقم' : '↩️ الرقم رجع على IP السيرفر')
+    res.json({ ok: true, session: id, proxy: maskProxy(saved) })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
 })
 
 // 🔍 (٢٥ يوليو ٢٠٢٦) تشخيص: مقارنة حالة الجلسات على الديسك.
@@ -425,11 +501,28 @@ app.get('/qr', async (req, res) => {
 
 // إضافة رقم جديد (بيبدأ جلسة ويطلّع QR)
 app.post('/sessions', auth, async (req, res) => {
-  const { session, label } = req.body || {}
+  const { session, label, proxy } = req.body || {}
   if (!session) return res.status(400).json({ ok: false, error: 'session مطلوب' })
+  const id = String(session)
+
+  // القناة بتتحفظ **قبل** تشغيل الجلسة — عشان أول اتصال بواتساب في حياة
+  // الرقم ده يطلع من الـIP الصح. لو حفظناها بعدين، أول ربط (وهو أخطر
+  // لحظة على رقم جديد) هيكون من IP السيرفر وبعدين يتغيّر — وده تغيير
+  // مفاجئ في مكان الاتصال، بيلفت النظر أكتر من إنه يفضل ثابت.
   try {
-    await startSession({ id: String(session), label: label || String(session), authRoot: AUTH_DIR, onMessage: handleMessage, onLidMap: forwardLidMap, onStatus: forwardStatus })
-    res.json({ ok: true, session, qr_url: `/qr?session=${encodeURIComponent(session)}` })
+    if (proxy != null && String(proxy).trim()) saveProxy(AUTH_DIR, id, String(proxy))
+  } catch (e) {
+    return res.status(400).json({ ok: false, error: `البروكسي: ${e.message}` })
+  }
+
+  try {
+    await startSession({ id, label: label || id, authRoot: AUTH_DIR, onMessage: handleMessage, onLidMap: forwardLidMap, onStatus: forwardStatus })
+    res.json({
+      ok: true,
+      session: id,
+      proxy: maskProxy(resolveProxy(AUTH_DIR, id)),
+      qr_url: `/qr?session=${encodeURIComponent(id)}`,
+    })
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message })
   }

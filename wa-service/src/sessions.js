@@ -12,6 +12,7 @@ import {
   fetchLatestBaileysVersion,
   downloadMediaMessage,
 } from '@whiskeysockets/baileys'
+import { resolveProxy, buildAgent, mask as maskProxy } from './proxy.js'
 
 const log = pino({ level: 'info' })
 const silent = pino({ level: 'silent' })
@@ -68,6 +69,9 @@ export function listSessions() {
     connected: s.connected,
     me: s.me,
     waiting_for_qr: !!s.qr,
+    // قناة الخروج بتاعة الرقم ده — مخفي منها اليوزر والباسورد.
+    // '' معناها الرقم طالع من IP السيرفر زي الباقي.
+    proxy: maskProxy(s.proxy || ''),
   }))
 }
 
@@ -116,12 +120,25 @@ export async function startSession({ id, label, authRoot, onMessage, onLidMap, o
     log.info({ session: id }, '🧹 قفلنا السوكيت القديم قبل ما نفتح جديد')
   }
 
+  // ── قناة الخروج بتاعة الرقم ده ────────────────────────────────────────
+  // كل جلسة ممكن يكون ليها بروكسي (أو عنوان محلي) خاص بيها، فالأرقام
+  // ماتبقاش كلها طالعة من نفس الـIP. التفاصيل في proxy.js.
+  //
+  // بنمرّر الـagent للاتنين: `agent` للسوكيت بتاع واتساب نفسه،
+  // و`fetchAgent` لتنزيل ورفع الميديا — لو مرّرنا الأول بس، الصور
+  // والفويسات هتفضل طالعة من IP السيرفر وينكشف الموضوع.
+  const proxyUrl = resolveProxy(authRoot, id)
+  const agent = buildAgent(proxyUrl, log)
+  entry.proxy = proxyUrl
+  if (proxyUrl) log.info({ session: id, proxy: maskProxy(proxyUrl) }, '🌐 الرقم طالع من قناة خاصة')
+
   const sock = makeWASocket({
     version,
     auth: state,
     logger: silent,
     browser: ['Mac OS', 'Desktop', '10.15.7'], // يبان كـ WhatsApp Desktop رسمي بدل اسم مخصص يتفلّج
     markOnlineOnConnect: false, // إشعارات الموبايل تفضل شغالة
+    ...(agent ? { agent, fetchAgent: agent } : {}),
   })
   entry.sock = sock
 

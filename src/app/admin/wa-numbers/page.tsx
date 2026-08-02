@@ -11,7 +11,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Loader2, Lock, ShieldAlert, RefreshCw,
   CheckCircle, AlertCircle, Plus, Trash2, QrCode, Smartphone,
-  Settings2, Power,
+  Settings2, Power, Globe,
 } from 'lucide-react'
 
 type Stage = 'loading' | 'unauthenticated' | 'forbidden' | 'ready'
@@ -22,6 +22,8 @@ interface WaSession {
   connected: boolean
   me: string | null
   waiting_for_qr: boolean
+  /** قناة الخروج — جاية مخفي منها اليوزر والباسورد. '' = IP السيرفر */
+  proxy?: string
 }
 
 interface NumberCfg {
@@ -38,6 +40,7 @@ export default function WaNumbersPage() {
   const [adding, setAdding] = useState(false)
   const [newPhone, setNewPhone] = useState('')
   const [newLabel, setNewLabel] = useState('')
+  const [newProxy, setNewProxy] = useState('')
   const [qrFor, setQrFor] = useState<string | null>(null)
   const [flash, setFlash] = useState<{ ok: boolean; text: string } | null>(null)
 
@@ -47,6 +50,8 @@ export default function WaNumbersPage() {
   const [draftPersona, setDraftPersona] = useState('')
   const [draftEnabled, setDraftEnabled] = useState(true)
   const [savingCfg, setSavingCfg] = useState(false)
+  const [draftProxy, setDraftProxy] = useState('')
+  const [savingProxy, setSavingProxy] = useState(false)
 
   useEffect(() => { init() }, [])
 
@@ -104,12 +109,12 @@ export default function WaNumbersPage() {
       const res = await fetch('/api/admin/wa-sessions', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ session: phone, label: newLabel || phone }),
+        body: JSON.stringify({ session: phone, label: newLabel || phone, proxy: newProxy.trim() }),
       })
       const data = await res.json()
       if (data?.ok) {
         setQrFor(phone)
-        setNewPhone(''); setNewLabel('')
+        setNewPhone(''); setNewLabel(''); setNewProxy('')
         setFlash({ ok: true, text: 'الرقم اتضاف — امسح الـ QR من الموبايل' })
         await load()
       } else {
@@ -138,7 +143,34 @@ export default function WaNumbersPage() {
     const c = configs[id]
     setDraftPersona(c?.persona ?? '')
     setDraftEnabled(c?.enabled ?? true)
+    // القناة الحالية جاية مخفي منها اليوزر والباسورد، فماينفعش نحطها في
+    // الخانة (لو المستخدم حفظ من غير ما يغيّر، هيتبعت `***` وتبوظ).
+    // الخانة بتفضل فاضية = «ماتغيّرش»، والقيمة الحالية بتبان تحتها.
+    setDraftProxy('')
     setEditFor(id)
+  }
+
+  /** تغيير قناة الخروج لرقم. القيمة الفاضية = رجوع لـIP السيرفر. */
+  async function saveProxy(id: string, value: string) {
+    setSavingProxy(true)
+    try {
+      const res = await fetch('/api/admin/wa-sessions', {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ session: id, proxy: value }),
+      })
+      const data = await res.json()
+      if (data?.ok) {
+        setFlash({ ok: true, text: value ? 'اتظبطت القناة — الرقم بيعيد الاتصال دلوقتي' : 'الرقم رجع على IP السيرفر' })
+        setDraftProxy('')
+        await load()
+      } else {
+        setFlash({ ok: false, text: data?.error || 'فشل تغيير القناة' })
+      }
+    } catch {
+      setFlash({ ok: false, text: 'حصل خطأ في الاتصال' })
+    }
+    setSavingProxy(false)
   }
 
   async function saveConfig() {
@@ -235,6 +267,12 @@ export default function WaNumbersPage() {
                   <div className="text-sm text-gray-500 tabular">
                     +{s.id} · {s.connected ? 'متصل' : s.waiting_for_qr ? 'مستني مسح QR' : 'مفصول'}
                   </div>
+                  <div className="text-xs mt-1 flex items-center gap-1.5" dir="ltr">
+                    <Globe className={`w-3.5 h-3.5 ${s.proxy ? 'text-[#1F6F5F]' : 'text-gray-400'}`} />
+                    <span className={s.proxy ? 'text-[#1F6F5F] font-bold' : 'text-gray-400'}>
+                      {s.proxy || 'IP السيرفر (مشترك)'}
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -272,8 +310,16 @@ export default function WaNumbersPage() {
               {adding ? 'بيضيف…' : 'ضيف واطلّع QR'}
             </button>
           </div>
-          <p className="text-xs text-gray-500 mt-3">
+          <input value={newProxy} onChange={(e) => setNewProxy(e.target.value)}
+            placeholder="قناة خروج خاصة (اختياري) — socks5://user:pass@host:port" dir="ltr"
+            className="w-full mt-3 border border-gray-200 rounded-xl px-4 py-3 text-sm" />
+          <p className="text-xs text-gray-500 mt-3 leading-relaxed">
             الرقم لازم يكون شغال على واتساب عادي — الخدمة بتتربط كجهاز مرتبط، والرقم يفضل على الموبايل.
+            <br />
+            <span className="text-gray-400">
+              لو سبت خانة القناة فاضية، الرقم هيطلع من IP السيرفر زي باقي الأرقام. حطّ بروكسي عشان يبقى ليه IP لوحده
+              — والأفضل تحطه دلوقتي قبل الربط، عشان أول اتصال للرقم بواتساب يبقى من نفس المكان.
+            </span>
           </p>
         </div>
 
@@ -319,6 +365,40 @@ export default function WaNumbersPage() {
                   <textarea value={draftPersona} onChange={(e) => setDraftPersona(e.target.value)} rows={6}
                     placeholder="اكتب سياق أو تعليمات خاصة بالرقم ده…"
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm resize-y" dir="rtl" />
+                </div>
+
+                {/* ── قناة الخروج ───────────────────────────────────── */}
+                <div className="border-t pt-4">
+                  <label className="block text-sm font-bold mb-1 flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-[#1F6F5F]" /> قناة الخروج (الـIP)
+                  </label>
+                  <p className="text-xs text-gray-500 mb-2 leading-relaxed">
+                    الحالي: <span className="font-bold" dir="ltr">{sessions.find((s) => s.id === editFor)?.proxy || 'IP السيرفر (مشترك مع باقي الأرقام)'}</span>
+                    <br />
+                    اكتب قناة جديدة عشان الرقم ده يطلع من IP لوحده. سيبها فاضية = ماتغيّرش حاجة.
+                  </p>
+                  <input value={draftProxy} onChange={(e) => setDraftProxy(e.target.value)}
+                    placeholder="socks5://user:pass@host:port · http://… · bind://203.0.113.7" dir="ltr"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm" />
+                  <div className="flex items-center gap-2 mt-2">
+                    <button onClick={() => editFor && saveProxy(editFor, draftProxy.trim())}
+                      disabled={savingProxy || !draftProxy.trim()}
+                      className="bg-[#1F6F5F] text-white px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-40">
+                      {savingProxy ? 'بيظبط…' : 'ظبّط القناة'}
+                    </button>
+                    {!!sessions.find((s) => s.id === editFor)?.proxy && (
+                      <button onClick={() => editFor && saveProxy(editFor, '')} disabled={savingProxy}
+                        className="px-4 py-2 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50 disabled:opacity-40">
+                        شيل القناة
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-amber-700 bg-amber-50 rounded-lg p-2 mt-2 leading-relaxed">
+                    ⚠️ تغيير القناة بيعيد اتصال الرقم ده بس (تانية-اتنين) — مش بيمسح الربط ومش هيطلب QR تاني.
+                    <br />
+                    وخلي بالك: IP داتا سنتر منفصل بيعمل <b>عزل</b> (رقم يتحظر مايجرّش الباقي)، مش <b>تمويه</b>.
+                    اللي بيقلل الحظر نفسه هو بروكسي موبايل/ريزيدنشال مصري.
+                  </p>
                 </div>
               </div>
               <div className="p-4 border-t flex justify-end gap-2">
