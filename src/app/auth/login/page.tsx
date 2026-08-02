@@ -11,11 +11,13 @@ import {
   ArrowRight, Phone, Lock, AlertCircle, Loader2, LogIn, Sparkles, KeyRound,
 } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
-import { GoogleSignInButton, FacebookSignInButton } from '@/components/GoogleSignInButton'
+import { GoogleSignInButton } from '@/components/GoogleSignInButton'
+import EmailMagicLink from '@/components/EmailMagicLink'
 import WhatsAppLogin from '@/components/WhatsAppLogin'
 
-// Facebook login hidden until Meta Business Verification completes (re-enable: set to true)
-const SHOW_FACEBOOK_LOGIN = false
+// ⛔ دخول فيسبوك اتشال نهائياً (٢ أغسطس ٢٠٢٦) — كان متقفل بفلاج من زمان
+//    ومحدش استخدمه ولا مرة (صفر هوية facebook في auth.identities)، وقرار
+//    محمد إننا نقلل التعامل مع ميتا على قد ما نقدر.
 
 function LoginContent() {
   const { t, dir } = useT()
@@ -159,14 +161,21 @@ function LoginContent() {
           </div>
 
           <div className="bg-white rounded-3xl shadow-luxe p-7 md:p-9">
-            {/* 🧞 الطريقة الأساسية: واتساب — من غير باسورد ولا كود بيتبعتلك */}
-            <WhatsAppLogin redirect={redirectTo} onDone={() => { router.push(redirectTo); router.refresh() }} />
+            {/* 🔑 الترتيب اتغيّر (٢ أغسطس ٢٠٢٦):
+                الواتساب كان الطريقة الأساسية، ونسبة نجاحه المقاسة 9.5% بس
+                (571 لينك اتبعت / 54 اتفتح في 7 أيام). جوجل شغّال ومستقر
+                (40% من مستخدمينه نشطين) ومالوش علاقة بميتا — فبقى الأول،
+                والإيميل تانياً، والواتساب فضل موجود للناس اللي متعوّدة عليه. */}
+            <GoogleSignInButton redirectTo={redirectTo} label="سجّل دخول بـ Google" />
+            <EmailMagicLink redirect={redirectTo} />
+
             <div className="my-4 flex items-center gap-3">
               <div className="h-px bg-gray-100 flex-1" />
               <span className="text-[11px] text-gray-400 font-bold">أو</span>
               <div className="h-px bg-gray-100 flex-1" />
             </div>
-            <GoogleSignInButton redirectTo={redirectTo} label="سجّل دخول بـ Google" />
+
+            <WhatsAppLogin redirect={redirectTo} onDone={() => { router.push(redirectTo); router.refresh() }} />
 
             {/* الباسورد/الـPIN — للحسابات القديمة والموظفين */}
             {!showPassword && (
@@ -256,13 +265,6 @@ function LoginContent() {
               </button>
             </form>
             )}
-            {SHOW_FACEBOOK_LOGIN && (
-              <>
-                <div className="h-3" />
-                <FacebookSignInButton redirectTo={redirectTo} label="سجّل دخول بـ Facebook" />
-              </>
-            )}
-
             {/* مفيش «إنشاء حساب» منفصل — الواتساب/جوجل بيعملوا الحساب لوحدهم أول مرة */}
             <p className="mt-6 pt-5 border-t border-gray-100 text-center text-xs text-gray-400 leading-relaxed">
               أول مرة؟ نفس الزراير فوق بتعملك حساب تلقائي — مفيش فورم تسجيل.

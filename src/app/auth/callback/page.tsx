@@ -26,24 +26,21 @@ function CallbackContent() {
       try {
         // اللي وثّق واتساب بالوارد (حتى برقم مخفي/LID) بيتعلّم wa_verified في
         // الـmetadata — عشان مايفضلش يترجّع لصفحة التوثيق كل مرة (loop).
+        // 🔑 (٢ أغسطس ٢٠٢٦) كان بيجبر أي حد مالوش رقم موثّق يروح
+        //    /auth/complete-phone فورًا — واللي بيوثّق بإرسال كود للمارد على
+        //    واتساب. ده كان بيهدّ الغرض من الدخول بجوجل/الإيميل: بنشيله من
+        //    الواتساب وبنرجّعه له في نفس اللحظة.
+        //
+        //    قرار محمد: **الرقم يتطلب بعد الدخول، ولما يلزم بس** (مطالبة بأصل
+        //    أو أوردر) — مش على باب الدخول. فبندخّله على طول، والصفحات اللي
+        //    محتاجة رقم هي اللي تطلبه.
         const waVerified = user.user_metadata?.wa_verified === true
-        const { data: profile } = await supabaseBrowser
-          .from('profiles')
-          .select('phone')
-          .eq('id', user.id)
-          .maybeSingle()
-        // @ts-expect-error loose profile typing
-        if (hasRealPhone(profile?.phone) || waVerified) {
-          router.replace(redirectTo)
-        } else {
-          // حساب جوجل من غير رقم موثّق → لازم يوثّق رقمه بالوارد (ابعت كود للمارد)
-          router.replace(`/auth/complete-phone?redirect=${encodeURIComponent(redirectTo)}`)
-        }
+        void waVerified
+        router.replace(redirectTo)
         router.refresh()
       } catch (e) {
         console.error('[auth/callback] routing error:', e)
-        // If the phone check fails for any reason, be safe and ask for phone.
-        router.replace(`/auth/complete-phone?redirect=${encodeURIComponent(redirectTo)}`)
+        router.replace(redirectTo)
       }
     }
 
@@ -60,7 +57,7 @@ function CallbackContent() {
     // 3) Fallback: if nothing happened in 6s, the OAuth likely failed.
     const timer = setTimeout(() => {
       if (!handled.current) {
-        setError('مقدرناش نكمّل الدخول بـ Google. حاول تاني.')
+        setError('مقدرناش نكمّل الدخول. حاول تاني.')
       }
     }, 6000)
 
