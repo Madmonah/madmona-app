@@ -872,7 +872,7 @@ export default function TeamPage() {
   )
 
   if (!active) return (
-    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
+    <div dir="rtl" style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
       <header style={{ background: 'linear-gradient(135deg,#14231E,#1F6F5F)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
         <div style={{ flex: 1, minWidth: 0, fontWeight: 900, fontSize: 17, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>👥 جروباتك</div>
         <button onClick={() => setShowFriends(true)} title="أصحابي ودفتري" aria-label="أصحابي ودفتري" style={{ background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.18)', color: '#fff', borderRadius: 999, width: 34, height: 34, display: 'grid', placeItems: 'center', fontSize: 16, cursor: 'pointer', flexShrink: 0, padding: 0 }}>🤝</button>
@@ -970,7 +970,7 @@ export default function TeamPage() {
   )
 
   return (
-    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#F1EEE6', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
+    <div dir="rtl" style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#F1EEE6', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
       <header style={{ background: 'linear-gradient(135deg,#14231E,#1F6F5F)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)', zIndex: 2 }}>
         {/* (31 Jul 2026 - محمد: «الفردي يفتح في الشات والجماعي في جروب»)
             الرجوع بيرجّعك للتاب اللي جيت منه: المحادثة الفردية -> /chat،

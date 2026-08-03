@@ -1,0 +1,1281 @@
+.next/types/app/icon-192.png/route.ts(8,13): error TS2344: Type 'OmitWithTag<typeof import("E:/madmona-app/src/app/icon-192.png/route"), "POST" | "GET" | "config" | "PATCH" | "DELETE" | "HEAD" | "PUT" | "revalidate" | "generateStaticParams" | "dynamic" | ... 5 more ... | "OPTIONS", "">' does not satisfy the constraint '{ [x: string]: never; }'.
+  Property 'contentType' is incompatible with index signature.
+    Type '"image/png"' is not assignable to type 'never'.
+.next/types/app/icon-512.png/route.ts(8,13): error TS2344: Type 'OmitWithTag<typeof import("E:/madmona-app/src/app/icon-512.png/route"), "POST" | "GET" | "config" | "PATCH" | "DELETE" | "HEAD" | "PUT" | "revalidate" | "generateStaticParams" | "dynamic" | ... 5 more ... | "OPTIONS", "">' does not satisfy the constraint '{ [x: string]: never; }'.
+  Property 'contentType' is incompatible with index signature.
+    Type '"image/png"' is not assignable to type 'never'.
+.next/types/app/icon-maskable-192.png/route.ts(8,13): error TS2344: Type 'OmitWithTag<typeof import("E:/madmona-app/src/app/icon-maskable-192.png/route"), "POST" | "GET" | "config" | "PATCH" | "DELETE" | "HEAD" | "PUT" | "revalidate" | "generateStaticParams" | ... 6 more ... | "OPTIONS", "">' does not satisfy the constraint '{ [x: string]: never; }'.
+  Property 'contentType' is incompatible with index signature.
+    Type '"image/png"' is not assignable to type 'never'.
+.next/types/app/icon-maskable-512.png/route.ts(8,13): error TS2344: Type 'OmitWithTag<typeof import("E:/madmona-app/src/app/icon-maskable-512.png/route"), "POST" | "GET" | "config" | "PATCH" | "DELETE" | "HEAD" | "PUT" | "revalidate" | "generateStaticParams" | ... 6 more ... | "OPTIONS", "">' does not satisfy the constraint '{ [x: string]: never; }'.
+  Property 'contentType' is incompatible with index signature.
+    Type '"image/png"' is not assignable to type 'never'.
+src/app/account/bookings/[id]/page.tsx(126,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/bookings/[id]/page.tsx(152,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/bookings/[id]/page.tsx(168,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/bookings/[id]/page.tsx(198,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/bookings/page.tsx(60,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/favorites/page.tsx(52,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/favorites/page.tsx(80,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/orders/page.tsx(74,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/orders/page.tsx(85,55): error TS2345: Argument of type '(o: { id: string; reference_code: string; order_type: "food" | "product"; status: OrderStatus; total_amount: number | string; currency: string; payment_method: "instapay" | "cod" | null; created_at: string; supplier: { id: string; business_name: string | null; } | null; items: { id: string; }[]; }) => { ...; }' is not assignable to parameter of type '(value: { id: string; reference_code: string | null; order_type: string; status: "cancelled" | "completed" | "pending_payment" | "refunded" | "awaiting_quote" | "quoted" | "paid" | "accepted" | "preparing" | "ready" | "out_for_delivery" | "delivered"; ... 5 more ...; items: { ...; }[]; }, index: number, array: { ......'.
+  Types of parameters 'o' and 'value' are incompatible.
+    Type '{ id: string; reference_code: string | null; order_type: string; status: "cancelled" | "completed" | "pending_payment" | "refunded" | "awaiting_quote" | "quoted" | "paid" | "accepted" | "preparing" | "ready" | "out_for_delivery" | "delivered"; ... 5 more ...; items: { ...; }[]; }' is not assignable to type '{ id: string; reference_code: string; order_type: "food" | "product"; status: OrderStatus; total_amount: string | number; currency: string; payment_method: "instapay" | "cod" | null; created_at: string; supplier: { ...; } | null; items: { ...; }[]; }'.
+      Types of property 'reference_code' are incompatible.
+        Type 'string | null' is not assignable to type 'string'.
+          Type 'null' is not assignable to type 'string'.
+src/app/account/page.tsx(69,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/page.tsx(78,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/page.tsx(118,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/page.tsx(126,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/page.tsx(134,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/account/page.tsx(173,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/ad-listing/[slug]/page.tsx(82,14): error TS2352: Conversion of type 'SelectQueryError<"column 'rate_period' does not exist on 'pricing_rules'.">[]' to type 'PricingRow[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ error: true; } & String' is missing the following properties from type 'PricingRow': rate_period, base_price
+src/app/add-listing/AddListingClient.tsx(1216,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/add-listing/page.tsx(195,18): error TS2352: Conversion of type 'GenericStringError[]' to type 'SubRow[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'GenericStringError' is not comparable to type 'SubRow'.
+    Type '{ error: true; } & String' is missing the following properties from type 'WizardMetaRow': title_placeholder, description_placeholder, district_placeholder, allowed_pricing_periods, and 2 more.
+src/app/admin/ad-builder/page.tsx(58,5): error TS2352: Conversion of type 'SelectQueryError<"column 'base_price' does not exist on 'pricing_rules'.">[]' to type 'Pr[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ error: true; } & String' is missing the following properties from type 'Pr': listing_id, base_price
+src/app/admin/ad-review/page.tsx(75,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/ad-review/page.tsx(119,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/ad-review/page.tsx(129,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/ad-review/page.tsx(139,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/ad-review/page.tsx(141,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/agent-health/page.tsx(72,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/agent-health/page.tsx(81,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/agent-health/page.tsx(94,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/agent-health/page.tsx(109,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/agent-health/page.tsx(115,64): error TS2339: Property 'woken_count' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; }'.
+  Property 'woken_count' does not exist on type 'string'.
+src/app/admin/business-finance/[supplierId]/advances/page.tsx(31,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/advances/page.tsx(34,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/advances/page.tsx(58,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/advances/page.tsx(61,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/advances/page.tsx(68,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/appointments/page.tsx(60,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/appointments/page.tsx(73,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/appointments/page.tsx(240,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/appointments/page.tsx(295,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/assignments/page.tsx(33,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/assignments/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/assignments/page.tsx(50,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/assignments/page.tsx(60,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/assignments/page.tsx(66,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/at-risk/page.tsx(33,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/at-risk/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/attendance-devices/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/attendance/page.tsx(24,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/attendance/page.tsx(27,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/attendance/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/audit-log/page.tsx(40,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/audit-log/page.tsx(43,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/bookings/page.tsx(38,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/bookings/page.tsx(41,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/bookings/page.tsx(44,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/bookings/page.tsx(214,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/bookings/page.tsx(223,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/boq/page.tsx(28,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/boq/page.tsx(40,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/boq/page.tsx(53,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/boq/page.tsx(61,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/boq/page.tsx(72,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/branches/page.tsx(22,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/branches/page.tsx(25,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/brands/page.tsx(27,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/brands/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/cash-recon/page.tsx(24,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/cash-recon/page.tsx(27,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/cash-recon/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/catalog/page.tsx(34,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/catalog/page.tsx(37,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/catalog/page.tsx(40,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/catalog/page.tsx(52,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/collections/page.tsx(34,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/collections/page.tsx(37,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/collections/page.tsx(41,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/collections/page.tsx(67,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/collections/page.tsx(70,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/collections/page.tsx(77,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/company-docs/page.tsx(33,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/company-docs/page.tsx(56,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/company-docs/page.tsx(59,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/company-docs/page.tsx(66,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/confirmations/page.tsx(34,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/confirmations/page.tsx(36,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/confirmations/page.tsx(38,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/custody-projects/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/custody-projects/page.tsx(39,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/custody-projects/page.tsx(63,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/custody-projects/page.tsx(66,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/custody-projects/page.tsx(73,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/custody/page.tsx(24,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/custody/page.tsx(27,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/custody/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/custody/page.tsx(124,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/customers/[customerId]/page.tsx(35,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/customers/[customerId]/page.tsx(38,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/customers/[customerId]/page.tsx(60,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/customers/page.tsx(57,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/customers/page.tsx(61,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/daily-reports/page.tsx(25,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/daily-reports/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/daily-reports/page.tsx(57,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/daily-reports/page.tsx(60,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/daily-reports/page.tsx(67,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/dashboard/page.tsx(29,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/dashboard/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/documents/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/documents/page.tsx(33,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/documents/page.tsx(42,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/documents/page.tsx(186,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/documents/page.tsx(198,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/equipment-logs/page.tsx(32,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/equipment-logs/page.tsx(35,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/equipment-logs/page.tsx(59,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/equipment-logs/page.tsx(62,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/equipment-logs/page.tsx(69,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/equipment/page.tsx(37,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/equipment/page.tsx(40,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/equipment/page.tsx(64,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/equipment/page.tsx(67,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/equipment/page.tsx(73,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/equipment/page.tsx(79,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/expenses-projects/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/expenses-projects/page.tsx(39,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/expenses-projects/page.tsx(62,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/expenses-projects/page.tsx(65,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/expenses-projects/page.tsx(72,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/expenses/page.tsx(47,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/expenses/page.tsx(50,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/expenses/page.tsx(53,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/expenses/page.tsx(196,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/flow-tasks/page.tsx(25,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/flow-tasks/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/flow-tasks/page.tsx(32,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/flow-tasks/page.tsx(42,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/flow-tasks/page.tsx(47,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/flow-tasks/page.tsx(58,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/guarantees/page.tsx(45,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/guarantees/page.tsx(48,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/guarantees/page.tsx(62,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/guarantees/page.tsx(72,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/guarantees/page.tsx(78,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/import/page.tsx(37,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/import/page.tsx(40,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/inspections/page.tsx(37,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/inspections/page.tsx(40,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/inspections/page.tsx(62,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/inspections/page.tsx(65,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/inspections/page.tsx(71,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/inspections/page.tsx(77,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/layout.tsx(21,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/layout.tsx(32,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/layout.tsx(62,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/links/page.tsx(27,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/links/page.tsx(30,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/material-requests/page.tsx(31,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/material-requests/page.tsx(34,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/material-requests/page.tsx(56,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/material-requests/page.tsx(59,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/material-requests/page.tsx(65,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/material-requests/page.tsx(71,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/milestones/page.tsx(32,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/milestones/page.tsx(43,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/milestones/page.tsx(70,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/milestones/page.tsx(73,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/milestones/page.tsx(79,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/milestones/page.tsx(85,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(79,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(81,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(83,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(85,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(87,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(89,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(91,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(93,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(95,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(258,52): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(262,52): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(266,52): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(270,52): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(274,52): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(278,52): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(283,52): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(287,52): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(291,52): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(295,52): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(299,52): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(303,52): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(403,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(452,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(495,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(537,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(573,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(623,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(688,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(725,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(768,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(833,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(879,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/operations/page.tsx(939,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/page.tsx(155,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/page.tsx(164,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/page.tsx(173,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/page.tsx(189,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/page.tsx(199,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(74,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(77,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(90,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(124,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(133,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(139,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(208,24): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(208,37): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(208,41): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(208,52): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(208,56): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(208,96): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(209,24): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(209,62): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(209,66): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(209,96): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(210,24): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(210,63): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(210,67): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(210,78): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(210,82): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payment-certificates/page.tsx(210,87): error TS2304: Cannot find name 'Th'.
+src/app/admin/business-finance/[supplierId]/payroll/page.tsx(31,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payroll/page.tsx(34,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payroll/page.tsx(37,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payroll/page.tsx(44,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payroll/page.tsx(156,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payroll/page.tsx(257,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/payroll/page.tsx(394,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/pnl/page.tsx(21,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/pnl/page.tsx(23,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/pnl/page.tsx(25,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/pnl/page.tsx(27,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/pnl/page.tsx(29,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/pnl/page.tsx(31,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/pnl/page.tsx(33,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(42,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(46,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(48,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(50,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(52,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(54,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(56,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(58,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(60,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(62,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(64,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(66,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(68,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(70,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(72,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(74,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(76,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(81,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(121,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/[projectId]/page.tsx(127,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/page.tsx(41,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/page.tsx(44,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/page.tsx(89,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/page.tsx(93,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/projects/page.tsx(103,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/promotions/page.tsx(27,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/promotions/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/promotions/page.tsx(117,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(35,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(38,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(41,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(44,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/purchase-orders/page.tsx(168,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/qr-posters/page.tsx(54,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/qr-posters/page.tsx(59,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/qr-posters/page.tsx(65,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/ratings/page.tsx(52,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/ratings/page.tsx(57,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/ratings/page.tsx(62,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/reports/page.tsx(45,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/reports/page.tsx(59,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/reports/page.tsx(79,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/reports/page.tsx(100,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/reports/page.tsx(122,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/reports/page.tsx(142,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/requests/page.tsx(32,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/services-catalog/page.tsx(65,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/services-catalog/page.tsx(68,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/services/page.tsx(21,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/services/page.tsx(24,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/services/page.tsx(105,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/services/page.tsx(108,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(85,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(87,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(89,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(98,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(223,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(276,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(294,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(305,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(522,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(544,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(552,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(766,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/settings/page.tsx(837,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/shifts/page.tsx(33,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/shifts/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/shifts/page.tsx(39,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/shifts/page.tsx(119,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/showroom/page.tsx(35,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/showroom/page.tsx(38,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/showroom/page.tsx(184,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/subcontractors/page.tsx(33,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/subcontractors/page.tsx(45,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/subcontractors/page.tsx(68,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/subcontractors/page.tsx(71,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/subcontractors/page.tsx(78,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/bulk-add/page.tsx(127,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/bulk-add/page.tsx(130,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/bulk-add/page.tsx(296,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/manage/page.tsx(48,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/manage/page.tsx(53,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/manage/page.tsx(58,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/manage/page.tsx(102,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/manage/page.tsx(112,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(246,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(252,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(258,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(265,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(268,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(271,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(290,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(775,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(785,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(834,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/team/page.tsx(1287,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/tenders/page.tsx(39,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/tenders/page.tsx(65,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/tenders/page.tsx(68,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/tenders/page.tsx(74,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/tenders/page.tsx(80,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/variation-orders/page.tsx(33,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/variation-orders/page.tsx(45,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/variation-orders/page.tsx(59,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/variation-orders/page.tsx(69,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/variation-orders/page.tsx(74,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/vat-report/page.tsx(23,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/vat-report/page.tsx(26,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/vendors/page.tsx(60,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/vendors/page.tsx(63,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(32,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(35,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(38,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(173,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/waitlist/page.tsx(185,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/whatsapp-campaigns/page.tsx(18,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/whatsapp-campaigns/page.tsx(21,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/workshop/page.tsx(18,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-finance/[supplierId]/workshop/page.tsx(21,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-partners/new/page.tsx(129,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-partners/page.tsx(85,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-partners/page.tsx(131,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/business-partners/page.tsx(138,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/command-center/page.tsx(414,16): error TS2304: Cannot find name 'FilterPill'.
+src/app/admin/command-center/page.tsx(414,124): error TS2304: Cannot find name 'FilterPill'.
+src/app/admin/command-center/page.tsx(415,16): error TS2304: Cannot find name 'FilterPill'.
+src/app/admin/command-center/page.tsx(415,134): error TS2304: Cannot find name 'FilterPill'.
+src/app/admin/command-center/page.tsx(416,16): error TS2304: Cannot find name 'FilterPill'.
+src/app/admin/command-center/page.tsx(416,147): error TS2304: Cannot find name 'FilterPill'.
+src/app/admin/company/page.tsx(80,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/daily-messages/page.tsx(80,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/daily-messages/page.tsx(93,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/daily-messages/page.tsx(107,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/daily-messages/page.tsx(150,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/daily-messages/page.tsx(157,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/daily-messages/page.tsx(176,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/daily-messages/page.tsx(191,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/email-queue/page.tsx(71,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/email-queue/page.tsx(83,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/email-queue/page.tsx(98,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/email-queue/page.tsx(119,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/email-queue/page.tsx(135,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/email-templates/page.tsx(55,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/email-templates/page.tsx(63,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/email-templates/page.tsx(71,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/email-templates/page.tsx(92,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/email-templates/page.tsx(105,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/hq/HQClient.tsx(245,21): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+src/app/admin/hq/page.tsx(74,5): error TS2589: Type instantiation is excessively deep and possibly infinite.
+src/app/admin/hq/page.tsx(74,24): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"lead_captures"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"lead_captures"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/admin/hq/page.tsx(75,5): error TS2589: Type instantiation is excessively deep and possibly infinite.
+src/app/admin/hq/page.tsx(75,24): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"lead_captures"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"lead_captures"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/admin/hq/page.tsx(77,5): error TS2589: Type instantiation is excessively deep and possibly infinite.
+src/app/admin/hq/page.tsx(77,24): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"payouts"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"payouts"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/admin/hq/page.tsx(78,5): error TS2589: Type instantiation is excessively deep and possibly infinite.
+src/app/admin/hq/page.tsx(78,24): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"notifications"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"notifications"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/admin/hq/page.tsx(79,5): error TS2589: Type instantiation is excessively deep and possibly infinite.
+src/app/admin/hq/page.tsx(79,24): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"listing_categories"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"listing_categories"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/admin/hq/page.tsx(148,9): error TS2322: Type 'ResultOne[]' is not assignable to type 'Record<string, unknown>[]'.
+  Type 'ResultOne' is not assignable to type 'Record<string, unknown>'.
+src/app/admin/hq/page.tsx(149,9): error TS2322: Type 'ResultOne[]' is not assignable to type 'Record<string, unknown>[]'.
+  Type 'ResultOne' is not assignable to type 'Record<string, unknown>'.
+src/app/admin/hq/page.tsx(150,9): error TS2322: Type 'ResultOne[]' is not assignable to type 'Record<string, unknown>[]'.
+  Type 'ResultOne' is not assignable to type 'Record<string, unknown>'.
+src/app/admin/leads-feed/page.tsx(145,19): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+src/app/admin/listing-performance/page.tsx(74,18): error TS2352: Conversion of type 'SelectQueryError<"column 'base_price' does not exist on 'pricing_rules'.">[]' to type 'Pr[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ error: true; } & String' is missing the following properties from type 'Pr': listing_id, base_price, period_type
+src/app/admin/marketing-hq/page.tsx(37,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/news/page.tsx(75,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/news/page.tsx(89,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/news/page.tsx(154,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/news/page.tsx(163,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/news/page.tsx(177,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/news/page.tsx(187,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/news/page.tsx(198,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/news/page.tsx(215,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/notifications/page.tsx(95,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/notifications/page.tsx(109,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/notifications/page.tsx(117,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/notifications/page.tsx(205,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/overview/page.tsx(190,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/overview/page.tsx(192,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/overview/page.tsx(194,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/overview/page.tsx(196,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/site-settings/page.tsx(260,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/site-settings/page.tsx(274,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/site-settings/page.tsx(281,27): error TS2345: Argument of type '(row: Row) => void' is not assignable to parameter of type '(value: { key: string; value: string | null; }, index: number, array: { key: string; value: string | null; }[]) => void'.
+  Types of parameters 'row' and 'value' are incompatible.
+    Type '{ key: string; value: string | null; }' is not assignable to type 'Row'.
+      Types of property 'value' are incompatible.
+        Type 'string | null' is not assignable to type 'string'.
+          Type 'null' is not assignable to type 'string'.
+src/app/admin/site-settings/page.tsx(297,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/site-settings/page.tsx(688,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/subscriptions/page.tsx(18,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/subscriptions/page.tsx(29,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/subscriptions/page.tsx(40,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/sup/page.tsx(27,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/sup/page.tsx(35,23): error TS2352: Conversion of type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[] | null' to type 'Supplier[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Json[]' is not comparable to type 'Supplier[]'.
+    Type 'Json' is not comparable to type 'Supplier'.
+      Type 'Json[]' is missing the following properties from type 'Supplier': id, business_name, kyc_status, listings_count, and 3 more.
+src/app/admin/sup/page.tsx(45,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/sup/page.tsx(49,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/admin/welcome-messages/page.tsx(86,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/welcome-messages/page.tsx(111,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/admin/welcome-messages/page.tsx(115,9): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/app/admin/welcome-messages/page.tsx(131,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/agent-flow/route.ts(27,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/agent-flow/route.ts(53,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/agent-flow/route.ts(62,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/agent-flow/route.ts(92,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/agent-flow/route.ts(109,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/agent-flow/route.ts(120,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/agent-toggle/route.ts(14,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/agent-toggle/route.ts(33,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/agent-toggle/route.ts(65,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/attributes/[id]/route.ts(53,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/blocks/route.ts(22,11): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"space_blocks"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"space_blocks"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/api/admin/blocks/route.ts(76,11): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"space_blocks"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"space_blocks"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/api/admin/blocks/route.ts(78,7): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(values: RejectExcessProperties<{ agent_name?: string | null | undefined; config?: Json | undefined; created_at?: string | null | undefined; description?: string | null | undefined; display_name?: string | null | undefined; ... 8 more ...; updated_at?: string | ... 1 more ... | undefined; } | ... 331 more ... | { ...; }, { ...; } | ... 331 more ... | { ...; }>[], options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Object literal may only specify known properties, and 'space_slug' does not exist in type 'RejectExcessProperties<{ agent_name?: string | null | undefined; config?: Json | undefined; created_at?: string | null | undefined; description?: string | null | undefined; display_name?: string | null | undefined; ... 8 more ...; updated_at?: string | ... 1 more ... | undefined; } | ... 331 more ... | { ...; }, { ....'.
+src/app/api/admin/bookings/route.ts(20,11): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"room_bookings"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"room_bookings"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/api/admin/categories/[id]/attributes/route.ts(19,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/categories/[id]/route.ts(54,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/categories/[id]/route.ts(72,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/categories/[id]/route.ts(85,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/categories/route.ts(16,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(141,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(193,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(200,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(209,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(268,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(279,11): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(301,11): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(323,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(334,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(347,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(366,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(389,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(398,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(407,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(414,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(434,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(446,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/flow/route.ts(451,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/leads/route.ts(24,11): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"booking_leads"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"booking_leads"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/api/admin/leads/route.ts(65,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/leads/route.ts(67,11): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"booking_leads"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"booking_leads"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/api/admin/leads/route.ts(68,15): error TS2322: Type 'string' is not assignable to type 'never'.
+src/app/api/admin/leads/route.ts(69,9): error TS2345: Argument of type '"id"' is not assignable to parameter of type 'never'.
+src/app/api/admin/listings/[id]/route.ts(47,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/listings/[id]/route.ts(65,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/listings/[id]/route.ts(76,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/listings/[id]/route.ts(86,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/listings/[id]/route.ts(116,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/listings/[id]/route.ts(129,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/listings/[id]/route.ts(150,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/listings/[id]/route.ts(159,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/marketplace-orders/route.ts(26,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/marketplace-orders/route.ts(46,32): error TS2345: Argument of type 'string' is not assignable to parameter of type 'NonNullable<"cancelled" | "completed" | "pending_payment" | "refunded" | "awaiting_quote" | "quoted" | "paid" | "accepted" | "preparing" | "ready" | "out_for_delivery" | "delivered">'.
+src/app/api/admin/marketplace-orders/route.ts(90,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/marketplace-orders/route.ts(122,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/marketplace-orders/route.ts(125,5): error TS2322: Type 'string' is not assignable to type '"cancelled" | "completed" | "pending_payment" | "refunded" | "awaiting_quote" | "quoted" | "paid" | "accepted" | "preparing" | "ready" | "out_for_delivery" | "delivered"'.
+src/app/api/admin/marketplace-orders/route.ts(126,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/api/admin/marketplace-suppliers/route.ts(24,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/marketplace-suppliers/route.ts(54,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/marketplace-suppliers/route.ts(64,36): error TS2345: Argument of type 'string' is not assignable to parameter of type 'NonNullable<"rejected" | "pending" | "approved" | "suspended">'.
+src/app/api/admin/marketplace-suppliers/route.ts(130,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/marketplace-suppliers/route.ts(133,13): error TS2345: Argument of type 'Record<string, unknown>' is not assignable to parameter of type 'RejectExcessProperties<{ account_type?: string | undefined; bookings_count?: number | undefined; business_name?: string | undefined; business_name_en?: string | null | undefined; commercial_registration?: string | ... 1 more ... | undefined; ... 20 more ...; updated_at?: string | undefined; }, Record<...>>'.
+  Type 'Record<string, unknown>' is not assignable to type '{ [x: string]: never; }'.
+    'string' index signatures are incompatible.
+      Type 'unknown' is not assignable to type 'never'.
+src/app/api/admin/meta/route.ts(21,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/meta/route.ts(28,13): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"unit_categories"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"unit_categories"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/api/admin/social-groups/[id]/route.ts(23,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/social-groups/[id]/route.ts(40,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/social-groups/route.ts(17,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/social-groups/route.ts(47,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/social-packs/[id]/groups/[gid]/route.ts(53,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/social-packs/[id]/route.ts(19,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/social-packs/[id]/route.ts(36,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/social-packs/route.ts(22,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/social-packs/route.ts(42,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/social-packs/route.ts(70,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/stats/route.ts(34,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/stats/route.ts(36,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/supplier-action/route.ts(31,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/supplier-action/route.ts(71,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/supplier-action/route.ts(74,13): error TS2345: Argument of type 'Record<string, unknown>' is not assignable to parameter of type 'RejectExcessProperties<{ account_type?: string | undefined; bookings_count?: number | undefined; business_name?: string | undefined; business_name_en?: string | null | undefined; commercial_registration?: string | ... 1 more ... | undefined; ... 20 more ...; updated_at?: string | undefined; }, Record<...>>'.
+  Type 'Record<string, unknown>' is not assignable to type '{ [x: string]: never; }'.
+    'string' index signatures are incompatible.
+      Type 'unknown' is not assignable to type 'never'.
+src/app/api/admin/supplier-posts/route.ts(33,7): error TS2531: Object is possibly 'null'.
+src/app/api/admin/suppliers/route.ts(19,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/unit-bookings/route.ts(21,11): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"unit_bookings"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"unit_bookings"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/api/admin/unit-bookings/route.ts(29,22): error TS2345: Argument of type '"payout_status"' is not assignable to parameter of type 'never'.
+src/app/api/admin/units/[id]/route.ts(27,11): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"space_units"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"space_units"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/api/admin/units/[id]/route.ts(32,9): error TS2345: Argument of type '"id"' is not assignable to parameter of type 'never'.
+src/app/api/admin/units/[id]/route.ts(59,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/units/[id]/route.ts(61,11): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"unit_bookings"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"unit_bookings"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/api/admin/units/[id]/route.ts(63,9): error TS2345: Argument of type '"unit_id"' is not assignable to parameter of type 'never'.
+src/app/api/admin/units/route.ts(18,11): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"space_units"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"space_units"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/api/admin/units/route.ts(74,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/admin/units/route.ts(76,11): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"space_units"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"space_units"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/api/admin/units/route.ts(78,7): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(values: RejectExcessProperties<{ agent_name?: string | null | undefined; config?: Json | undefined; created_at?: string | null | undefined; description?: string | null | undefined; display_name?: string | null | undefined; ... 8 more ...; updated_at?: string | ... 1 more ... | undefined; } | ... 331 more ... | { ...; }, { ...; } | ... 331 more ... | { ...; }>[], options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Object literal may only specify known properties, and 'supplier_id' does not exist in type 'RejectExcessProperties<{ agent_name?: string | null | undefined; config?: Json | undefined; created_at?: string | null | undefined; description?: string | null | undefined; display_name?: string | null | undefined; ... 8 more ...; updated_at?: string | ... 1 more ... | undefined; } | ... 331 more ... | { ...; }, { ....'.
+src/app/api/admin/wallets/route.ts(97,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/api/admin/wallets/route.ts(116,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/api/agents/content-marketing/route.ts(53,16): error TS2352: Conversion of type 'SelectQueryError<"column 'category' does not exist on 'listings'.">[]' to type 'C[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'category' is missing in type '{ error: true; } & String' but required in type 'C'.
+src/app/api/agents/run-buffer-now/route.ts(15,37): error TS2305: Module '"next/server"' has no exported member 'after'.
+src/app/api/auth/forgot-password/route.ts(56,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/auth/forgot-password/route.ts(95,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/auth/reset-password/route.ts(42,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/auth/reset-password/route.ts(85,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/auth/reset-password/route.ts(120,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/bookings/notify/route.ts(101,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/bookings/notify/route.ts(120,15): error TS2352: Conversion of type '{ id: any; reference_code: any; start_at: any; end_at: any; total_amount: any; status: any; customer_id: any; customer: { full_name: any; phone: any; }[]; listing: { title: any; }[]; supplier: { business_name: any; profile_id: any; profile: { ...; }[]; }[]; }' to type 'BookingFull' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'customer' are incompatible.
+    Type '{ full_name: any; phone: any; }[]' is missing the following properties from type '{ full_name: string | null; phone: string; }': full_name, phone
+src/app/api/leads/capture/route.ts(71,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/api/leads/capture/route.ts(72,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/api/leads/capture/route.ts(73,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/api/leads/capture/route.ts(75,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/api/leads/capture/route.ts(76,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/api/leads/capture/route.ts(77,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/api/push/process-queue/route.ts(53,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/push/process-queue/route.ts(82,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/push/process-queue/route.ts(119,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/push/process-queue/route.ts(135,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/push/process-queue/route.ts(177,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/push/process-queue/route.ts(187,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/push/process-queue/route.ts(194,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/push/process-queue/route.ts(205,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/push/process-queue/route.ts(217,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/push/subscribe/route.ts(40,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/push/unsubscribe/route.ts(21,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/referral/apply/route.ts(46,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/api/referral/me/route.ts(21,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/api/suppliers/signup/route.ts(64,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/api/verify-call/route.ts(48,10): error TS2345: Argument of type '"pick_verify_number"' is not assignable to parameter of type '"_finance_can" | "_finance_phone" | "_gen_referral_code" | "_hotels_norm_city" | "_norm_ar" | "_norm_eg_phone" | "_probe_elite_managers" | "_probe_emp_types" | "_profile_ids_for_phones" | ... 644 more ... | "whatsapp_watchdog_check"'.
+src/app/api/verify-call/route.ts(58,15): error TS2322: Type 'string' is not assignable to type 'never'.
+src/app/api/verify-call/route.ts(59,9): error TS2345: Argument of type '"profile_id"' is not assignable to parameter of type 'never'.
+src/app/api/verify-call/route.ts(59,37): error TS2345: Argument of type '"status"' is not assignable to parameter of type 'never'.
+src/app/api/verify-call/route.ts(63,11): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "_agent_registry_backup_20260609" | "_agent_registry_legacy_backup_20260603" | "_backup_20260609_clinic_leads" | "_backup_20260609_cold_leads" | "_backup_20260609_content_calendar" | ... 327 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"phone_call_verifications"' is not assignable to parameter of type '"_agent_registry_backup_20260609" | "_agent_registry_legacy_backup_20260603" | "_backup_20260609_clinic_leads" | "_backup_20260609_cold_leads" | "_backup_20260609_content_calendar" | ... 327 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"phone_call_verifications"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/api/verify-call/route.ts(64,15): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(values: RejectExcessProperties<{ agent_name?: string | null | undefined; config?: Json | undefined; created_at?: string | null | undefined; description?: string | null | undefined; display_name?: string | null | undefined; ... 8 more ...; updated_at?: string | ... 1 more ... | undefined; } | ... 331 more ... | { ...; }, { ...; } | ... 331 more ... | { ...; }>[], options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Object literal may only specify known properties, and 'profile_id' does not exist in type 'RejectExcessProperties<{ agent_name?: string | null | undefined; config?: Json | undefined; created_at?: string | null | undefined; description?: string | null | undefined; display_name?: string | null | undefined; ... 8 more ...; updated_at?: string | ... 1 more ... | undefined; } | ... 331 more ... | { ...; }, { ....'.
+src/app/api/verify-call/route.ts(74,11): error TS2339: Property 'id' does not exist on type 'NonNullable<NewResultOne>'.
+src/app/api/verify-call/route.ts(75,19): error TS2339: Property 'expires_at' does not exist on type 'NonNullable<NewResultOne>'.
+src/app/api/verify-call/route.ts(90,11): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "_agent_registry_backup_20260609" | "_agent_registry_legacy_backup_20260603" | "_backup_20260609_clinic_leads" | "_backup_20260609_cold_leads" | "_backup_20260609_content_calendar" | ... 327 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"phone_call_verifications"' is not assignable to parameter of type '"_agent_registry_backup_20260609" | "_agent_registry_legacy_backup_20260603" | "_backup_20260609_clinic_leads" | "_backup_20260609_cold_leads" | "_backup_20260609_content_calendar" | ... 327 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"phone_call_verifications"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/api/verify-call/route.ts(92,9): error TS2345: Argument of type '"id"' is not assignable to parameter of type 'never'.
+src/app/api/verify-call/route.ts(93,9): error TS2345: Argument of type '"profile_id"' is not assignable to parameter of type 'never'.
+src/app/api/verify-call/route.ts(98,24): error TS2339: Property 'status' does not exist on type 'NonNullable<ResultOne>'.
+src/app/api/verify-call/route.ts(98,62): error TS2339: Property 'expires_at' does not exist on type 'NonNullable<ResultOne>'.
+src/app/api/verify-call/route.ts(100,40): error TS2339: Property 'status' does not exist on type 'NonNullable<ResultOne>'.
+src/app/api/verify-call/route.ts(101,17): error TS2339: Property 'status' does not exist on type 'NonNullable<ResultOne>'.
+src/app/api/verify-call/route.ts(101,46): error TS2339: Property 'phone' does not exist on type 'NonNullable<ResultOne>'.
+src/app/api/wallet/pay/route.ts(29,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/api/wallet/pay/route.ts(30,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/api/wallet/topup/route.ts(41,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/at/[branchCode]/page.tsx(84,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/at/[branchCode]/page.tsx(92,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/at/[branchCode]/page.tsx(108,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/at/[branchCode]/page.tsx(120,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/at/[branchCode]/page.tsx(164,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/at/[branchCode]/page.tsx(406,100): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
+src/app/auth/login/page.tsx(62,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/auth/login/page.tsx(106,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/auth/signup/page.tsx(104,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/auth/signup/page.tsx(169,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/bookings/[id]/page.tsx(92,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/bookings/[id]/page.tsx(111,11): error TS2578: Unused '@ts-expect-error' directive.
+src/app/bookings/[id]/page.tsx(122,13): error TS2578: Unused '@ts-expect-error' directive.
+src/app/bookings/[id]/page.tsx(144,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/bookings/[id]/page.tsx(233,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/bookings/[id]/page.tsx(236,15): error TS2345: Argument of type 'Record<string, unknown>' is not assignable to parameter of type 'RejectExcessProperties<{ addons_amount?: number | null | undefined; admin_notes?: string | null | undefined; base_amount?: number | undefined; cancellation_reason?: string | null | undefined; cancelled_at?: string | ... 1 more ... | undefined; ... 33 more ...; updated_at?: string | undefined; }, Record<...>>'.
+  Type 'Record<string, unknown>' is not assignable to type '{ [x: string]: never; }'.
+    'string' index signatures are incompatible.
+      Type 'unknown' is not assignable to type 'never'.
+src/app/careers/page.tsx(107,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/careers/page.tsx(111,9): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/careers/page.tsx(113,9): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/careers/page.tsx(114,9): error TS2322: Type 'number | null' is not assignable to type 'number | undefined'.
+  Type 'null' is not assignable to type 'number | undefined'.
+src/app/careers/page.tsx(115,9): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/careers/page.tsx(116,9): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/careers/page.tsx(117,9): error TS2322: Type 'number | null' is not assignable to type 'number | undefined'.
+  Type 'null' is not assignable to type 'number | undefined'.
+src/app/careers/page.tsx(118,9): error TS2322: Type 'number | null' is not assignable to type 'number | undefined'.
+  Type 'null' is not assignable to type 'number | undefined'.
+src/app/chat/page.tsx(42,24): error TS2589: Type instantiation is excessively deep and possibly infinite.
+src/app/chat/page.tsx(42,44): error TS2345: Argument of type '"chat_rooms_for_me"' is not assignable to parameter of type '"_finance_can" | "_finance_phone" | "_gen_referral_code" | "_hotels_norm_city" | "_norm_ar" | "_norm_eg_phone" | "_probe_elite_managers" | "_probe_emp_types" | "_profile_ids_for_phones" | ... 644 more ... | "whatsapp_watchdog_check"'.
+src/app/chat/page.tsx(43,25): error TS2589: Type instantiation is excessively deep and possibly infinite.
+src/app/chat/page.tsx(43,46): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "_agent_registry_backup_20260609" | "_agent_registry_legacy_backup_20260603" | "_backup_20260609_clinic_leads" | "_backup_20260609_cold_leads" | "_backup_20260609_content_calendar" | ... 327 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"chat_hidden_rooms"' is not assignable to parameter of type '"_agent_registry_backup_20260609" | "_agent_registry_legacy_backup_20260603" | "_backup_20260609_clinic_leads" | "_backup_20260609_cold_leads" | "_backup_20260609_content_calendar" | ... 327 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"chat_hidden_rooms"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/chat/page.tsx(43,88): error TS2345: Argument of type '"user_id"' is not assignable to parameter of type 'never'.
+src/app/chat/page.tsx(84,38): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "_agent_registry_backup_20260609" | "_agent_registry_legacy_backup_20260603" | "_backup_20260609_clinic_leads" | "_backup_20260609_cold_leads" | "_backup_20260609_content_calendar" | ... 327 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"chat_hidden_rooms"' is not assignable to parameter of type '"_agent_registry_backup_20260609" | "_agent_registry_legacy_backup_20260603" | "_backup_20260609_clinic_leads" | "_backup_20260609_cold_leads" | "_backup_20260609_content_calendar" | ... 327 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"chat_hidden_rooms"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/chat/page.tsx(84,68): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(values: RejectExcessProperties<{ agent_name?: string | null | undefined; config?: Json | undefined; created_at?: string | null | undefined; description?: string | null | undefined; display_name?: string | null | undefined; ... 8 more ...; updated_at?: string | ... 1 more ... | undefined; } | ... 331 more ... | { ...; }, { ...; } | ... 331 more ... | { ...; }>[], options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Object literal may only specify known properties, and 'user_id' does not exist in type 'RejectExcessProperties<{ agent_name?: string | null | undefined; config?: Json | undefined; created_at?: string | null | undefined; description?: string | null | undefined; display_name?: string | null | undefined; ... 8 more ...; updated_at?: string | ... 1 more ... | undefined; } | ... 331 more ... | { ...; }, { ....'.
+src/app/chat/team/page.tsx(172,55): error TS2345: Argument of type '"chat_rooms_for_me"' is not assignable to parameter of type '"_finance_can" | "_finance_phone" | "_gen_referral_code" | "_hotels_norm_city" | "_norm_ar" | "_norm_eg_phone" | "_probe_elite_managers" | "_probe_emp_types" | "_profile_ids_for_phones" | ... 644 more ... | "whatsapp_watchdog_check"'.
+src/app/chat/team/page.tsx(324,83): error TS2322: Type 'number | null' is not assignable to type 'number | undefined'.
+  Type 'null' is not assignable to type 'number | undefined'.
+src/app/checkout/page.tsx(86,11): error TS2578: Unused '@ts-expect-error' directive.
+src/app/checkout/page.tsx(311,70): error TS2339: Property 'toLocaleString' does not exist on type 'never'.
+src/app/claim/[token]/page.tsx(45,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/claim/[token]/page.tsx(47,32): error TS2339: Property 'error' does not exist on type 'string | number | true | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'error' does not exist on type 'string'.
+src/app/claim/[token]/page.tsx(49,15): error TS2339: Property 'status' does not exist on type 'string | number | true | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'status' does not exist on type 'string'.
+src/app/claim/[token]/page.tsx(61,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/claim/[token]/page.tsx(63,26): error TS2339: Property 'ok' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'ok' does not exist on type 'string'.
+src/app/clinic/[slug]/page.tsx(36,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/clinic/[slug]/page.tsx(45,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/clinic/[slug]/page.tsx(57,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/clock/[branchCode]/page.tsx(52,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/clock/[branchCode]/page.tsx(56,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/clock/[branchCode]/page.tsx(81,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/clock/[branchCode]/page.tsx(119,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/clock/[branchCode]/page.tsx(158,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/clock/[branchCode]/page.tsx(173,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/clock/[branchCode]/page.tsx(193,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/clock/[branchCode]/page.tsx(206,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/clock/[branchCode]/page.tsx(219,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/clock/[branchCode]/page.tsx(225,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/clock/[branchCode]/page.tsx(235,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/demo/clinic/[slug]/page.tsx(95,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/demo/clinic/[slug]/page.tsx(101,17): error TS2352: Conversion of type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[] | null' to type 'Snapshot' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Json[]' is missing the following properties from type 'Snapshot': business_name, industry, contact_phone, branches, and 4 more.
+src/app/elite/page.tsx(33,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/elite/page.tsx(35,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/elite/page.tsx(51,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(51,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(61,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(72,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(77,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(80,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(83,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(86,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(89,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(111,45): error TS2783: 'service' is specified more than once, so this usage will be overwritten.
+src/app/home/page.tsx(111,57): error TS2783: 'stylist' is specified more than once, so this usage will be overwritten.
+src/app/home/page.tsx(111,69): error TS2783: 'comment' is specified more than once, so this usage will be overwritten.
+src/app/home/page.tsx(130,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/home/page.tsx(152,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/join/[code]/page.tsx(27,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/join/[code]/page.tsx(43,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/launch/page.tsx(43,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/launch/page.tsx(68,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/launch/page.tsx(70,15): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"leads"' is not assignable to parameter of type '"listings" | "categories" | "suppliers" | "agent_messages" | "agent_workflows" | "supplier_branches" | "business_employees" | "marketplace_bookings" | "financial_transactions" | ... 323 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"leads"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/app/launch/page.tsx(72,11): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(values: RejectExcessProperties<{ agent_name?: string | null | undefined; config?: Json | undefined; created_at?: string | null | undefined; description?: string | null | undefined; display_name?: string | null | undefined; ... 8 more ...; updated_at?: string | ... 1 more ... | undefined; } | ... 331 more ... | { ...; }, { ...; } | ... 331 more ... | { ...; }>[], options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Object literal may only specify known properties, and 'name' does not exist in type 'RejectExcessProperties<{ agent_name?: string | null | undefined; config?: Json | undefined; created_at?: string | null | undefined; description?: string | null | undefined; display_name?: string | null | undefined; ... 8 more ...; updated_at?: string | ... 1 more ... | undefined; } | ... 331 more ... | { ...; }, { ....'.
+src/app/list-your-asset/ListYourAssetForm.tsx(128,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/list-your-asset/ListYourAssetForm.tsx(138,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/login/page.tsx(53,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/login/page.tsx(69,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/book/page.tsx(152,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/book/page.tsx(196,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/book/page.tsx(214,11): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/book/page.tsx(336,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/book/page.tsx(338,14): error TS2345: Argument of type '"check_booking_conflict"' is not assignable to parameter of type '"_finance_can" | "_finance_phone" | "_gen_referral_code" | "_hotels_norm_city" | "_norm_ar" | "_norm_eg_phone" | "_probe_elite_managers" | "_probe_emp_types" | "_profile_ids_for_phones" | ... 644 more ... | "whatsapp_watchdog_check"'.
+src/app/marketplace/[slug]/book/page.tsx(357,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/book/page.tsx(365,11): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/marketplace/[slug]/book/page.tsx(367,11): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/marketplace/[slug]/book/page.tsx(416,13): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/book/page.tsx(430,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/book/page.tsx(433,17): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: RejectExcessProperties<{ addons_amount?: number | null | undefined; admin_notes?: string | null | undefined; base_amount: number; cancellation_reason?: string | null | undefined; cancelled_at?: string | null | undefined; ... 33 more ...; updated_at?: string | undefined; }, { ...; }>, options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Argument of type 'Record<string, unknown>' is not assignable to parameter of type 'RejectExcessProperties<{ addons_amount?: number | null | undefined; admin_notes?: string | null | undefined; base_amount: number; cancellation_reason?: string | null | undefined; cancelled_at?: string | null | undefined; ... 33 more ...; updated_at?: string | undefined; }, { ...; }>'.
+      Type 'Record<string, unknown>' is missing the following properties from type '{ addons_amount?: number | null | undefined; admin_notes?: string | null | undefined; base_amount: number; cancellation_reason?: string | null | undefined; cancelled_at?: string | null | undefined; ... 33 more ...; updated_at?: string | undefined; }': base_amount, commission_amount, commission_rate, end_at, and 5 more.
+  Overload 2 of 2, '(values: RejectExcessProperties<{ addons_amount?: number | null | undefined; admin_notes?: string | null | undefined; base_amount: number; cancellation_reason?: string | null | undefined; cancelled_at?: string | null | undefined; ... 33 more ...; updated_at?: string | undefined; }, { ...; }>[], options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Argument of type 'Record<string, unknown>' is not assignable to parameter of type 'RejectExcessProperties<{ addons_amount?: number | null | undefined; admin_notes?: string | null | undefined; base_amount: number; cancellation_reason?: string | null | undefined; cancelled_at?: string | null | undefined; ... 33 more ...; updated_at?: string | undefined; }, { ...; }>[]'.
+      Type 'Record<string, unknown>' is missing the following properties from type 'RejectExcessProperties<{ addons_amount?: number | null | undefined; admin_notes?: string | null | undefined; base_amount: number; cancellation_reason?: string | null | undefined; cancelled_at?: string | null | undefined; ... 33 more ...; updated_at?: string | undefined; }, { ...; }>[]': length, pop, push, concat, and 29 more.
+src/app/marketplace/[slug]/layout.tsx(105,3): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/page.tsx(152,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/page.tsx(179,11): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/page.tsx(189,13): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/page.tsx(202,11): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/page.tsx(284,11): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/page.tsx(293,13): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/page.tsx(314,11): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/page.tsx(333,13): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/page.tsx(380,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/[slug]/page.tsx(388,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/MarketplaceClient.tsx(231,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/MarketplaceClient.tsx(242,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/MarketplaceClient.tsx(248,24): error TS2345: Argument of type '{ id: string; parent_id: string | null; name_ar: string; name_en: string | null; slug: string; icon: string | null; track: string | null; also_show_in: string[] | null; group_slug: string | null; group_name_ar: string | null; group_emoji: string | null; group_display_order: number | null; }[]' is not assignable to parameter of type 'SetStateAction<Category[]>'.
+  Type '{ id: string; parent_id: string | null; name_ar: string; name_en: string | null; slug: string; icon: string | null; track: string | null; also_show_in: string[] | null; group_slug: string | null; group_name_ar: string | null; group_emoji: string | null; group_display_order: number | null; }[]' is not assignable to type 'Category[]'.
+    Type '{ id: string; parent_id: string | null; name_ar: string; name_en: string | null; slug: string; icon: string | null; track: string | null; also_show_in: string[] | null; group_slug: string | null; group_name_ar: string | null; group_emoji: string | null; group_display_order: number | null; }' is not assignable to type 'Category'.
+      Types of property 'track' are incompatible.
+        Type 'string | null' is not assignable to type '"products" | "daily" | "services" | "rentals" | "hybrid" | "restaurants" | null | undefined'.
+          Type 'string' is not assignable to type '"products" | "daily" | "services" | "rentals" | "hybrid" | "restaurants" | null | undefined'.
+src/app/marketplace/MarketplaceClient.tsx(259,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/MarketplaceClient.tsx(282,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/MarketplaceClient.tsx(292,13): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/MarketplaceClient.tsx(302,15): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/MarketplaceClient.tsx(307,15): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/MarketplaceClient.tsx(330,11): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/MarketplaceClient.tsx(344,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/MarketplaceClient.tsx(351,11): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/MarketplaceClient.tsx(361,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/MarketplaceClient.tsx(393,9): error TS2719: Type 'import("E:/madmona-app/node_modules/@supabase/postgrest-js/dist/index").PostgrestFilterBuilder<{ PostgrestVersion: "14.5"; }, { Tables: { _agent_registry_backup_20260609: { Row: { agent_name: string | null; config: import("E:/madmona-app/src/types/supabase").Json; created_at: string | null; ... 10 more ...; updated_...' is not assignable to type 'import("E:/madmona-app/node_modules/@supabase/postgrest-js/dist/index").PostgrestFilterBuilder<{ PostgrestVersion: "14.5"; }, { Tables: { _agent_registry_backup_20260609: { Row: { agent_name: string | null; config: import("E:/madmona-app/src/types/supabase").Json; created_at: string | null; ... 10 more ...; updated_...'. Two different types with this name exist, but they are unrelated.
+  The types returned by 'not(...)' are incompatible between these types.
+    Type 'import("E:/madmona-app/node_modules/@supabase/postgrest-js/dist/index").PostgrestFilterBuilder<{ PostgrestVersion: "14.5"; }, { Tables: { _agent_registry_backup_20260609: { Row: { agent_name: string | null; config: import("E:/madmona-app/src/types/supabase").Json; created_at: string | null; ... 10 more ...; updated_...' is not assignable to type 'import("E:/madmona-app/node_modules/@supabase/postgrest-js/dist/index").PostgrestFilterBuilder<{ PostgrestVersion: "14.5"; }, { Tables: { _agent_registry_backup_20260609: { Row: { agent_name: string | null; config: import("E:/madmona-app/src/types/supabase").Json; created_at: string | null; ... 10 more ...; updated_...'. Two different types with this name exist, but they are unrelated.
+      Type '{ accepts_insurance: boolean | null; address: string | null; advance_booking_days: number; auto_accept_bookings: boolean; available_addons: import("E:/madmona-app/src/types/supabase").Json; ... 44 more ...; wholesale_tiers: import("E:/madmona-app/src/types/supabase").Json; } | { ...; }' is not assignable to type '{ accepts_insurance: boolean | null; address: string | null; advance_booking_days: number; auto_accept_bookings: boolean; available_addons: import("E:/madmona-app/src/types/supabase").Json; ... 44 more ...; wholesale_tiers: import("E:/madmona-app/src/types/supabase").Json; } | { ...; }'. Two different types with this name exist, but they are unrelated.
+        Type '{ accepts_insurance: boolean | null; address: string | null; advance_booking_days: number; auto_accept_bookings: boolean; available_addons: Json; booking_deposit_pct: number | null; ... 43 more ...; wholesale_tiers: Json; }' is not assignable to type '{ accepts_insurance: boolean | null; address: string | null; advance_booking_days: number; auto_accept_bookings: boolean; available_addons: Json; booking_deposit_pct: number | null; ... 43 more ...; wholesale_tiers: Json; } | { ...; }'.
+          Type '{ accepts_insurance: boolean | null; address: string | null; advance_booking_days: number; auto_accept_bookings: boolean; available_addons: Json; booking_deposit_pct: number | null; ... 43 more ...; wholesale_tiers: Json; }' is not assignable to type '{ accepts_insurance: NonNullable<boolean | null>; address: string; advance_booking_days: number; auto_accept_bookings: boolean; available_addons: NonNullable<Json>; ... 44 more ...; wholesale_tiers: NonNullable<...>; }'.
+            Types of property 'accepts_insurance' are incompatible.
+              Type 'boolean | null' is not assignable to type 'NonNullable<boolean | null>'.
+                Type 'null' is not assignable to type 'NonNullable<boolean | null>'.
+src/app/marketplace/MarketplaceClient.tsx(466,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/marketplace/MarketplaceClient.tsx(478,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/page.tsx(52,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/page.tsx(56,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/page.tsx(68,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/team/page.tsx(45,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/team/page.tsx(51,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/team/page.tsx(121,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/team/page.tsx(172,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/team/page.tsx(275,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/team/page.tsx(338,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/team/page.tsx(356,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/team/page.tsx(410,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/me/team/page.tsx(499,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/order/[ref]/page.tsx(119,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/order/[ref]/page.tsx(134,16): error TS2352: Conversion of type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]' to type 'OrderData' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Json[]' is missing the following properties from type 'OrderData': id, reference_code, status, order_type, and 27 more.
+src/app/owner/[supplierId]/page.tsx(34,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/owner/[supplierId]/page.tsx(44,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/owner/[supplierId]/page.tsx(47,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/owner/login/page.tsx(25,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/owner/login/page.tsx(42,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/owner/login/page.tsx(44,30): error TS2339: Property 'success' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'success' does not exist on type 'string'.
+src/app/owner/login/page.tsx(56,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/owner/select/page.tsx(22,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/page.tsx(68,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/page.tsx(91,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/page.tsx(107,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/page.tsx(129,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/pulse/PulseClient.tsx(100,11): error TS2578: Unused '@ts-expect-error' directive.
+src/app/pulse/PulseClient.tsx(102,28): error TS2339: Property 'new_reward' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'new_reward' does not exist on type 'string'.
+src/app/pulse/PulseClient.tsx(104,61): error TS2339: Property 'new_reward' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'new_reward' does not exist on type 'string'.
+src/app/pulse/PulseClient.tsx(111,15): error TS2352: Conversion of type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[] | null' to type 'PulseFeed' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Json[]' is missing the following properties from type 'PulseFeed': streak, drop, activity, picks
+src/app/pulse/PulseClient.tsx(501,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/pulse/PulseClient.tsx(512,49): error TS2345: Argument of type '(l: { id: string; title: string; slug: string; city: string | null; photos: { url: string; is_primary: boolean; }[]; }, i: number) => { listing_id: string; title: string; slug: string; city: string | null; rank: number; reason_ar: string; photo_url: string | null; }' is not assignable to parameter of type '(value: { id: string; title: string; slug: string | null; city: string | null; photos: { url: string; is_primary: boolean; }[]; }, index: number, array: { id: string; title: string; slug: string | null; city: string | null; photos: { ...; }[]; }[]) => { ...; }'.
+  Types of parameters 'l' and 'value' are incompatible.
+    Type '{ id: string; title: string; slug: string | null; city: string | null; photos: { url: string; is_primary: boolean; }[]; }' is not assignable to type '{ id: string; title: string; slug: string; city: string | null; photos: { url: string; is_primary: boolean; }[]; }'.
+      Types of property 'slug' are incompatible.
+        Type 'string | null' is not assignable to type 'string'.
+          Type 'null' is not assignable to type 'string'.
+src/app/qr/[branchCode]/page.tsx(21,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/real-estate/projects/[slug]/UnitsBooking.tsx(59,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/real-estate/projects/[slug]/UnitsBooking.tsx(80,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/real-estate/projects/[slug]/UnitsBooking.tsx(86,27): error TS2339: Property 'success' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'success' does not exist on type 'string'.
+src/app/real-estate/projects/[slug]/UnitsBooking.tsx(87,22): error TS2339: Property 'error' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'error' does not exist on type 'string'.
+src/app/real-estate/projects/[slug]/UnitsBooking.tsx(91,56): error TS2339: Property 'held_until' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'held_until' does not exist on type 'string'.
+src/app/real-estate/projects/[slug]/UnitsBooking.tsx(93,61): error TS2339: Property 'held_until' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'held_until' does not exist on type 'string'.
+src/app/review/[bookingId]/page.tsx(23,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/review/[bookingId]/page.tsx(34,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/s/[slug]/page.tsx(226,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/sitemap.ts(76,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/sitemap.ts(82,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/bookings/page.tsx(73,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/bookings/page.tsx(93,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/bookings/page.tsx(106,34): error TS2345: Argument of type 'string' is not assignable to parameter of type 'NonNullable<"confirmed" | "cancelled" | "completed" | "pending_payment" | "active" | "refunded">'.
+src/app/supplier/erp/accounting/page.tsx(49,41): error TS2339: Property 'supplier_id' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'supplier_id' does not exist on type 'string'.
+src/app/supplier/erp/accounting/page.tsx(49,76): error TS2339: Property 'supplier_id' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'supplier_id' does not exist on type 'string'.
+src/app/supplier/erp/accounting/page.tsx(63,15): error TS2339: Property 'ok' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'ok' does not exist on type 'string'.
+src/app/supplier/erp/accounting/page.tsx(63,50): error TS2339: Property 'accounts_created' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'accounts_created' does not exist on type 'string'.
+src/app/supplier/erp/accounting/page.tsx(64,29): error TS2339: Property 'error' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'error' does not exist on type 'string'.
+src/app/supplier/erp/accounting/page.tsx(78,15): error TS2339: Property 'ok' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'ok' does not exist on type 'string'.
+src/app/supplier/erp/accounting/page.tsx(78,60): error TS2339: Property 'entry_no' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'entry_no' does not exist on type 'string'.
+src/app/supplier/erp/accounting/page.tsx(80,29): error TS2339: Property 'error' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'error' does not exist on type 'string'.
+src/app/supplier/erp/accounting/page.tsx(142,19): error TS2339: Property 'ok' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'ok' does not exist on type 'string'.
+src/app/supplier/erp/accounting/page.tsx(142,44): error TS2339: Property 'error' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'error' does not exist on type 'string'.
+src/app/supplier/erp/accounting/page.tsx(143,23): error TS2339: Property 'batch_id' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'batch_id' does not exist on type 'string'.
+src/app/supplier/erp/accounting/page.tsx(144,75): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/app/supplier/erp/accounting/page.tsx(145,20): error TS2339: Property 'ok' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'ok' does not exist on type 'string'.
+src/app/supplier/erp/accounting/page.tsx(145,46): error TS2339: Property 'error' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'error' does not exist on type 'string'.
+src/app/supplier/erp/accounting/page.tsx(146,26): error TS2339: Property 'ok_rows' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'ok_rows' does not exist on type 'string'.
+src/app/supplier/erp/accounting/page.tsx(146,54): error TS2339: Property 'failed_rows' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'failed_rows' does not exist on type 'string'.
+src/app/supplier/marketplace/[id]/edit/page.tsx(105,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/edit/page.tsx(139,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/edit/page.tsx(150,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/edit/page.tsx(167,17): error TS2352: Conversion of type '{ id: string; kyc_status: "rejected" | "pending" | "approved" | "suspended"; }' to type 'null' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/app/supplier/marketplace/[id]/edit/page.tsx(180,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/edit/page.tsx(200,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/edit/page.tsx(208,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/edit/page.tsx(216,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/edit/page.tsx(341,13): error TS2322: Type 'InitialData' is not assignable to type 'Partial<ListingFormData> & { existingPhotos?: Photo[] | undefined; existingPricing?: PricingRule[] | undefined; existingAttributes?: { ...; }[] | undefined; }'.
+  Type 'InitialData' is not assignable to type 'Partial<ListingFormData>'.
+    Types of property 'status' are incompatible.
+      Type 'string' is not assignable to type '"published" | "draft" | undefined'.
+src/app/supplier/marketplace/[id]/menu/page.tsx(99,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/menu/page.tsx(116,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/menu/page.tsx(126,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/menu/page.tsx(147,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/menu/page.tsx(156,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/menu/page.tsx(229,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/menu/page.tsx(238,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/menu/page.tsx(250,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/menu/page.tsx(253,11): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/menu/page.tsx(278,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/menu/page.tsx(289,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/products/page.tsx(90,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/products/page.tsx(107,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/products/page.tsx(117,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/products/page.tsx(131,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/products/page.tsx(147,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/products/page.tsx(201,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/products/page.tsx(204,19): error TS2322: Type 'Record<string, unknown>' is not assignable to type 'Json'.
+  Type 'Record<string, unknown>' is missing the following properties from type 'Json[]': length, pop, push, concat, and 29 more.
+src/app/supplier/marketplace/[id]/products/page.tsx(212,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/products/page.tsx(229,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/products/page.tsx(237,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/products/page.tsx(247,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/[id]/products/page.tsx(468,21): error TS2304: Cannot find name 'uploadingPhoto'.
+src/app/supplier/marketplace/[id]/products/page.tsx(470,22): error TS2304: Cannot find name 'uploadingPhoto'.
+src/app/supplier/marketplace/[id]/products/page.tsx(482,33): error TS2304: Cannot find name 'uploadingPhoto'.
+src/app/supplier/marketplace/[id]/products/page.tsx(485,32): error TS2304: Cannot find name 'uploadPhoto'.
+src/app/supplier/marketplace/bookings/[id]/page.tsx(89,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/bookings/[id]/page.tsx(101,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/bookings/[id]/page.tsx(139,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/bookings/[id]/page.tsx(157,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/bookings/[id]/page.tsx(188,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/bookings/[id]/page.tsx(191,15): error TS2345: Argument of type 'Record<string, unknown>' is not assignable to parameter of type 'RejectExcessProperties<{ addons_amount?: number | null | undefined; admin_notes?: string | null | undefined; base_amount?: number | undefined; cancellation_reason?: string | null | undefined; cancelled_at?: string | ... 1 more ... | undefined; ... 33 more ...; updated_at?: string | undefined; }, Record<...>>'.
+  Type 'Record<string, unknown>' is not assignable to type '{ [x: string]: never; }'.
+    'string' index signatures are incompatible.
+      Type 'unknown' is not assignable to type 'never'.
+src/app/supplier/marketplace/bookings/page.tsx(88,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/bookings/page.tsx(97,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/bookings/page.tsx(114,17): error TS2352: Conversion of type '{ id: string; business_name: string; }' to type 'null' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/app/supplier/marketplace/bookings/page.tsx(137,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/bulk-products/page.tsx(53,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/bulk-products/page.tsx(62,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/bulk-products/page.tsx(74,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/bulk-products/page.tsx(90,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/bulk-products/page.tsx(99,36): error TS2339: Property 'products_count' does not exist on type '{ id: string; title: string; status: string; track: string | null; }'.
+src/app/supplier/marketplace/bulk-products/page.tsx(107,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/new/page.tsx(77,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/new/page.tsx(111,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/new/page.tsx(122,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/new/page.tsx(139,17): error TS2352: Conversion of type '{ id: string; kyc_status: "rejected" | "pending" | "approved" | "suspended"; }' to type 'null' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/app/supplier/marketplace/orders/[id]/page.tsx(124,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/orders/[id]/page.tsx(138,14): error TS2352: Conversion of type '{ accepted_at: string | null; admin_notes: string | null; cancellation_reason: string | null; cancelled_at: string | null; cancelled_by: string | null; commission_amount: number; ... 37 more ...; items: { ...; }[]; }' to type 'OrderFull' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'customer' are incompatible.
+    Type 'SelectQueryError<"could not find the relation between marketplace_orders and profiles">' is not comparable to type '{ phone: string | null; full_name: string | null; } | null'.
+src/app/supplier/marketplace/orders/[id]/page.tsx(149,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/orders/[id]/page.tsx(157,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/orders/[id]/page.tsx(167,17): error TS2352: Conversion of type '{ id: string; }' to type 'null' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/app/supplier/marketplace/orders/[id]/page.tsx(184,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/orders/[id]/page.tsx(188,9): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/app/supplier/marketplace/orders/[id]/page.tsx(209,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/orders/[id]/page.tsx(234,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/orders/page.tsx(102,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/orders/page.tsx(111,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/orders/page.tsx(124,17): error TS2352: Conversion of type '{ id: string; business_name: string; }' to type 'null' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/app/supplier/marketplace/orders/page.tsx(138,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/page.tsx(129,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/page.tsx(141,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/page.tsx(156,17): error TS2352: Conversion of type '{ id: string; business_name: string; kyc_status: "rejected" | "pending" | "approved" | "suspended"; kyc_rejection_reason: string | null; }' to type 'null' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/app/supplier/marketplace/page.tsx(235,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/page.tsx(255,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/page.tsx(267,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/page.tsx(293,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/page.tsx(313,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/page.tsx(332,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/page.tsx(370,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/page.tsx(373,15): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: RejectExcessProperties<{ accepts_insurance?: boolean | null | undefined; address?: string | null | undefined; advance_booking_days?: number | undefined; auto_accept_bookings?: boolean | undefined; ... 45 more ...; wholesale_tiers?: Json | undefined; }, { ...; }>, options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Argument of type 'Record<string, unknown>' is not assignable to parameter of type 'RejectExcessProperties<{ accepts_insurance?: boolean | null | undefined; address?: string | null | undefined; advance_booking_days?: number | undefined; auto_accept_bookings?: boolean | undefined; available_addons?: Json | undefined; ... 44 more ...; wholesale_tiers?: Json | undefined; }, { ...; }>'.
+      Type 'Record<string, unknown>' is missing the following properties from type '{ accepts_insurance?: boolean | null | undefined; address?: string | null | undefined; advance_booking_days?: number | undefined; auto_accept_bookings?: boolean | undefined; available_addons?: Json | undefined; ... 44 more ...; wholesale_tiers?: Json | undefined; }': category_id, supplier_id, title
+  Overload 2 of 2, '(values: RejectExcessProperties<{ accepts_insurance?: boolean | null | undefined; address?: string | null | undefined; advance_booking_days?: number | undefined; auto_accept_bookings?: boolean | undefined; ... 45 more ...; wholesale_tiers?: Json | undefined; }, { ...; }>[], options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Argument of type 'Record<string, unknown>' is not assignable to parameter of type 'RejectExcessProperties<{ accepts_insurance?: boolean | null | undefined; address?: string | null | undefined; advance_booking_days?: number | undefined; auto_accept_bookings?: boolean | undefined; available_addons?: Json | undefined; ... 44 more ...; wholesale_tiers?: Json | undefined; }, { ...; }>[]'.
+      Type 'Record<string, unknown>' is missing the following properties from type 'RejectExcessProperties<{ accepts_insurance?: boolean | null | undefined; address?: string | null | undefined; advance_booking_days?: number | undefined; auto_accept_bookings?: boolean | undefined; available_addons?: Json | undefined; ... 44 more ...; wholesale_tiers?: Json | undefined; }, { ...; }>[]': length, pop, push, concat, and 29 more.
+src/app/supplier/marketplace/page.tsx(504,9): error TS2322: Type '{ visible: boolean; bookingId: string | null; onClose: () => void; }' is not assignable to type 'IntrinsicAttributes & BookingToastProps'.
+  Property 'onClose' does not exist on type 'IntrinsicAttributes & BookingToastProps'.
+src/app/supplier/marketplace/reviews/page.tsx(56,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/reviews/page.tsx(65,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/reviews/page.tsx(78,17): error TS2352: Conversion of type '{ id: string; business_name: string; }' to type 'null' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/app/supplier/marketplace/reviews/page.tsx(91,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/marketplace/reviews/page.tsx(134,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/register/page.tsx(81,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/register/page.tsx(90,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/register/page.tsx(129,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/register/page.tsx(132,15): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: RejectExcessProperties<{ account_type?: string | undefined; bookings_count?: number | undefined; business_name: string; business_name_en?: string | null | undefined; commercial_registration?: string | null | undefined; ... 20 more ...; updated_at?: string | undefined; }, { ...; }>, options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Argument of type 'Record<string, unknown>' is not assignable to parameter of type 'RejectExcessProperties<{ account_type?: string | undefined; bookings_count?: number | undefined; business_name: string; business_name_en?: string | null | undefined; commercial_registration?: string | null | undefined; ... 20 more ...; updated_at?: string | undefined; }, { ...; }>'.
+      Type 'Record<string, unknown>' is missing the following properties from type '{ account_type?: string | undefined; bookings_count?: number | undefined; business_name: string; business_name_en?: string | null | undefined; commercial_registration?: string | null | undefined; ... 20 more ...; updated_at?: string | undefined; }': business_name, profile_id
+  Overload 2 of 2, '(values: RejectExcessProperties<{ account_type?: string | undefined; bookings_count?: number | undefined; business_name: string; business_name_en?: string | null | undefined; commercial_registration?: string | null | undefined; ... 20 more ...; updated_at?: string | undefined; }, { ...; }>[], options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Argument of type 'Record<string, unknown>' is not assignable to parameter of type 'RejectExcessProperties<{ account_type?: string | undefined; bookings_count?: number | undefined; business_name: string; business_name_en?: string | null | undefined; commercial_registration?: string | null | undefined; ... 20 more ...; updated_at?: string | undefined; }, { ...; }>[]'.
+      Type 'Record<string, unknown>' is missing the following properties from type 'RejectExcessProperties<{ account_type?: string | undefined; bookings_count?: number | undefined; business_name: string; business_name_en?: string | null | undefined; commercial_registration?: string | null | undefined; ... 20 more ...; updated_at?: string | undefined; }, { ...; }>[]': length, pop, push, concat, and 29 more.
+src/app/supplier/team/page.tsx(99,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/team/page.tsx(115,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/team/page.tsx(271,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/team/page.tsx(286,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/team/page.tsx(401,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/team/page.tsx(437,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/supplier/team/page.tsx(652,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/v/[branchCode]/page.tsx(32,7): error TS2578: Unused '@ts-expect-error' directive.
+src/app/v/[branchCode]/page.tsx(36,9): error TS2578: Unused '@ts-expect-error' directive.
+src/app/v/[branchCode]/page.tsx(354,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/v/[branchCode]/page.tsx(423,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/v/page.tsx(21,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/v/page.tsx(31,9): error TS2578: Unused '@ts-expect-error' directive.
+src/components/AccountGate.tsx(32,9): error TS2578: Unused '@ts-expect-error' directive.
+src/components/AccountGate.tsx(47,11): error TS2578: Unused '@ts-expect-error' directive.
+src/components/AccountGate.tsx(50,13): error TS2578: Unused '@ts-expect-error' directive.
+src/components/admin/ActionHub.tsx(48,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/admin/ActionHub.tsx(51,15): error TS2352: Conversion of type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[] | null' to type 'ActionHubData' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Json[]' is missing the following properties from type 'ActionHubData': careers_pending, careers_total_pending, alerts_unread, alerts_total_unread, and 11 more.
+src/components/admin/AgentDirectives.tsx(48,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/admin/AgentDirectives.tsx(51,15): error TS2352: Conversion of type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[] | null' to type 'Directives' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Json[]' is missing the following properties from type 'Directives': scope, current_trend, focus_areas, target_audience, and 3 more.
+src/components/admin/AgentDirectives.tsx(52,15): error TS2345: Argument of type 'string | number | true | { [key: string]: Json | undefined; } | Json[]' is not assignable to parameter of type 'SetStateAction<Partial<Directives>>'.
+  Type 'string' is not assignable to type 'SetStateAction<Partial<Directives>>'.
+src/components/admin/AgentDirectives.tsx(65,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/admin/AgentDirectives.tsx(68,9): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/admin/AgentDirectives.tsx(70,9): error TS2322: Type '"suppliers" | "customers" | "both" | "employees" | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/admin/AgentDirectives.tsx(71,9): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/admin/AgentDirectives.tsx(75,15): error TS2352: Conversion of type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[] | null' to type 'Directives' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Json[]' is missing the following properties from type 'Directives': scope, current_trend, focus_areas, target_audience, and 3 more.
+src/components/AvatarUpload.tsx(65,59): error TS2345: Argument of type '"set_my_avatar"' is not assignable to parameter of type '"_finance_can" | "_finance_phone" | "_gen_referral_code" | "_hotels_norm_city" | "_norm_ar" | "_norm_eg_phone" | "_probe_elite_managers" | "_probe_emp_types" | "_profile_ids_for_phones" | ... 644 more ... | "whatsapp_watchdog_check"'.
+src/components/AvatarUpload.tsx(82,33): error TS2345: Argument of type '"set_my_avatar"' is not assignable to parameter of type '"_finance_can" | "_finance_phone" | "_gen_referral_code" | "_hotels_norm_city" | "_norm_ar" | "_norm_eg_phone" | "_probe_elite_managers" | "_probe_emp_types" | "_profile_ids_for_phones" | ... 644 more ... | "whatsapp_watchdog_check"'.
+src/components/BookingHelper.tsx(98,9): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(99,9): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(100,9): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(117,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(118,7): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(119,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(139,9): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(140,9): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(142,9): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(143,9): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(153,9): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(154,9): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(155,9): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(174,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(175,7): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/components/BookingHelper.tsx(176,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/ContactBookSheet.tsx(191,55): error TS2345: Argument of type '"chat_invite_link"' is not assignable to parameter of type '"_finance_can" | "_finance_phone" | "_gen_referral_code" | "_hotels_norm_city" | "_norm_ar" | "_norm_eg_phone" | "_probe_elite_managers" | "_probe_emp_types" | "_profile_ids_for_phones" | ... 644 more ... | "whatsapp_watchdog_check"'.
+src/components/ContactBookSheet.tsx(221,49): error TS2345: Argument of type '"chat_unblock"' is not assignable to parameter of type '"_finance_can" | "_finance_phone" | "_gen_referral_code" | "_hotels_norm_city" | "_norm_ar" | "_norm_eg_phone" | "_probe_elite_managers" | "_probe_emp_types" | "_profile_ids_for_phones" | ... 644 more ... | "whatsapp_watchdog_check"'.
+src/components/DailyMessageBanner.tsx(66,9): error TS2578: Unused '@ts-expect-error' directive.
+src/components/FeaturedListings.tsx(50,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/FriendsSheet.tsx(49,49): error TS2345: Argument of type '"chat_block"' is not assignable to parameter of type '"_finance_can" | "_finance_phone" | "_gen_referral_code" | "_hotels_norm_city" | "_norm_ar" | "_norm_eg_phone" | "_probe_elite_managers" | "_probe_emp_types" | "_profile_ids_for_phones" | ... 644 more ... | "whatsapp_watchdog_check"'.
+src/components/marketplace/ListingForm.tsx(260,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(277,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(283,21): error TS2345: Argument of type '{ allowed_pricing_periods: string[] | null; also_show_in: string[] | null; attribute_schema: Json; created_at: string; default_pricing_period: string | null; description: string | null; ... 20 more ...; updated_at: string; }[]' is not assignable to parameter of type 'SetStateAction<Category[]>'.
+  Type '{ allowed_pricing_periods: string[] | null; also_show_in: string[] | null; attribute_schema: Json; created_at: string; default_pricing_period: string | null; description: string | null; ... 20 more ...; updated_at: string; }[]' is not assignable to type 'Category[]'.
+    Type '{ allowed_pricing_periods: string[] | null; also_show_in: string[] | null; attribute_schema: Json; created_at: string; default_pricing_period: string | null; description: string | null; ... 20 more ...; updated_at: string; }' is not assignable to type 'Category'.
+      Types of property 'track' are incompatible.
+        Type 'string | null' is not assignable to type '"daily" | "products" | "hybrid" | "restaurants" | "services" | "rentals" | null | undefined'.
+          Type 'string' is not assignable to type '"daily" | "products" | "hybrid" | "restaurants" | "services" | "rentals" | null | undefined'.
+src/components/marketplace/ListingForm.tsx(316,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(320,28): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/components/marketplace/ListingForm.tsx(322,21): error TS2345: Argument of type '{ category_id: string; created_at: string; display_order: number; field_key: string; field_type: "number" | "boolean" | "select" | "text" | "date" | "multi_select" | "file"; help_text: string | null; ... 7 more ...; unit: string | null; }[]' is not assignable to parameter of type 'SetStateAction<Attribute[]>'.
+  Type '{ category_id: string; created_at: string; display_order: number; field_key: string; field_type: "number" | "boolean" | "select" | "text" | "date" | "multi_select" | "file"; help_text: string | null; ... 7 more ...; unit: string | null; }[]' is not assignable to type 'Attribute[]'.
+    Type '{ category_id: string; created_at: string; display_order: number; field_key: string; field_type: "number" | "boolean" | "select" | "text" | "date" | "multi_select" | "file"; help_text: string | null; ... 7 more ...; unit: string | null; }' is not assignable to type 'Attribute'.
+      Types of property 'options' are incompatible.
+        Type 'Json' is not assignable to type '{ key: string; label_ar?: string | undefined; }[]'.
+          Type 'null' is not assignable to type '{ key: string; label_ar?: string | undefined; }[]'.
+src/components/marketplace/ListingForm.tsx(327,42): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(predicate: (value: { category_id: string; created_at: string; display_order: number; field_key: string; field_type: "number" | "boolean" | "select" | "text" | "date" | "multi_select" | "file"; help_text: string | null; ... 7 more ...; unit: string | null; }, index: number, obj: { ...; }[]) => value is { ...; }, thisArg?: any): { ...; } | undefined', gave the following error.
+    Argument of type '(a: Attribute) => boolean' is not assignable to parameter of type '(value: { category_id: string; created_at: string; display_order: number; field_key: string; field_type: "number" | "boolean" | "select" | "text" | "date" | "multi_select" | "file"; help_text: string | null; ... 7 more ...; unit: string | null; }, index: number, obj: { ...; }[]) => value is { ...; }'.
+      Types of parameters 'a' and 'value' are incompatible.
+        Type '{ category_id: string; created_at: string; display_order: number; field_key: string; field_type: "number" | "boolean" | "select" | "text" | "date" | "multi_select" | "file"; help_text: string | null; ... 7 more ...; unit: string | null; }' is not assignable to type 'Attribute'.
+          Types of property 'options' are incompatible.
+            Type 'Json' is not assignable to type '{ key: string; label_ar?: string | undefined; }[]'.
+              Type 'null' is not assignable to type '{ key: string; label_ar?: string | undefined; }[]'.
+  Overload 2 of 2, '(predicate: (value: { category_id: string; created_at: string; display_order: number; field_key: string; field_type: "number" | "boolean" | "select" | "text" | "date" | "multi_select" | "file"; help_text: string | null; ... 7 more ...; unit: string | null; }, index: number, obj: { ...; }[]) => unknown, thisArg?: any): { ...; } | undefined', gave the following error.
+    Argument of type '(a: Attribute) => boolean' is not assignable to parameter of type '(value: { category_id: string; created_at: string; display_order: number; field_key: string; field_type: "number" | "boolean" | "select" | "text" | "date" | "multi_select" | "file"; help_text: string | null; ... 7 more ...; unit: string | null; }, index: number, obj: { ...; }[]) => unknown'.
+      Types of parameters 'a' and 'value' are incompatible.
+        Type '{ category_id: string; created_at: string; display_order: number; field_key: string; field_type: "number" | "boolean" | "select" | "text" | "date" | "multi_select" | "file"; help_text: string | null; ... 7 more ...; unit: string | null; }' is not assignable to type 'Attribute'.
+          Types of property 'options' are incompatible.
+            Type 'Json' is not assignable to type '{ key: string; label_ar?: string | undefined; }[]'.
+              Type 'null' is not assignable to type '{ key: string; label_ar?: string | undefined; }[]'.
+src/components/marketplace/ListingForm.tsx(489,9): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(541,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(548,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(589,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(593,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(600,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(611,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(617,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(636,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(651,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(708,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(714,11): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/marketplace/ListingForm.tsx(718,41): error TS2339: Property 'verified' does not exist on type 'string | number | true | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'verified' does not exist on type 'string'.
+src/components/marketplace/ListingForm.tsx(719,39): error TS2339: Property 'error' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'error' does not exist on type 'string'.
+src/components/marketplace/ListingForm.tsx(722,7): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(726,19): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/components/marketplace/ListingForm.tsx(771,9): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(778,9): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(827,9): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(849,9): error TS2578: Unused '@ts-expect-error' directive.
+src/components/marketplace/ListingForm.tsx(877,9): error TS2578: Unused '@ts-expect-error' directive.
+src/components/MyAssetsCard.tsx(83,9): error TS2578: Unused '@ts-expect-error' directive.
+src/components/MyAssetsCard.tsx(85,11): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/NewGroupSheet.tsx(56,57): error TS2345: Argument of type '"chat_create_group"' is not assignable to parameter of type '"_finance_can" | "_finance_phone" | "_gen_referral_code" | "_hotels_norm_city" | "_norm_ar" | "_norm_eg_phone" | "_probe_elite_managers" | "_probe_emp_types" | "_profile_ids_for_phones" | ... 644 more ... | "whatsapp_watchdog_check"'.
+src/components/SocialLinks.tsx(134,5): error TS2578: Unused '@ts-expect-error' directive.
+src/components/TrustStatsSection.tsx(33,11): error TS2578: Unused '@ts-expect-error' directive.
+src/components/TrustStatsSection.tsx(35,11): error TS2578: Unused '@ts-expect-error' directive.
+src/components/TrustStatsSection.tsx(37,11): error TS2578: Unused '@ts-expect-error' directive.
+src/components/TrustStatsSection.tsx(45,59): error TS2345: Argument of type '(r: { city: string; }) => string' is not assignable to parameter of type '(value: { city: string | null; }, index: number, array: { city: string | null; }[]) => string'.
+  Types of parameters 'r' and 'value' are incompatible.
+    Type '{ city: string | null; }' is not assignable to type '{ city: string; }'.
+      Types of property 'city' are incompatible.
+        Type 'string | null' is not assignable to type 'string'.
+          Type 'null' is not assignable to type 'string'.
+src/lib/agent-runners/ai-os-runners.ts(43,93): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+src/lib/agent-runners/ai-os-runners.ts(52,23): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/lib/agent-runners/ai-os-runners.ts(193,16): error TS2352: Conversion of type 'SelectQueryError<"column 'customer_profile_id' does not exist on 'marketplace_bookings'.">[]' to type 'B[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ error: true; } & String' is missing the following properties from type 'B': id, customer_profile_id, listing_id, total_amount, and 3 more.
+src/lib/agent-runners/ai-os-runners.ts(204,55): error TS2345: Argument of type '"customer_profile_id"' is not assignable to parameter of type '"status" | "created_at" | "updated_at" | "id" | "listing_id" | "currency" | "supplier_id" | "admin_notes" | "cancellation_reason" | "cancelled_at" | "cancelled_by" | "commission_amount" | ... 26 more ... | "selected_addons"'.
+src/lib/agent-runners/buffer-publisher.ts(173,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/lib/agent-runners/phase4-runners.ts(41,69): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+src/lib/agent-runners/phase4-runners.ts(179,62): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/lib/agent-runners/phase4-runners.ts(180,25): error TS2352: Conversion of type 'SelectQueryError<"column 'amount' does not exist on 'pricing_rules'.">[]' to type '{ amount: number; }[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'amount' is missing in type '{ error: true; } & String' but required in type '{ amount: number; }'.
+src/lib/agent-runners/phase4-runners.ts(408,45): error TS2352: Conversion of type 'SelectQueryError<"column 'customer_profile_id' does not exist on 'marketplace_bookings'.">[]' to type 'B[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'customer_profile_id' is missing in type '{ error: true; } & String' but required in type 'B'.
+src/lib/agent-runners/phase4-runners.ts(428,9): error TS2345: Argument of type '"customer_profile_id"' is not assignable to parameter of type '"status" | "created_at" | "updated_at" | "id" | "listing_id" | "currency" | "supplier_id" | "admin_notes" | "cancellation_reason" | "cancelled_at" | "cancelled_by" | "commission_amount" | ... 26 more ... | "selected_addons"'.
+src/lib/agent-runners/phase5-runners.ts(161,5): error TS2589: Type instantiation is excessively deep and possibly infinite.
+src/lib/agent-runners/phase5-runners.ts(161,24): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "_agent_registry_backup_20260609" | "_agent_registry_legacy_backup_20260603" | "_backup_20260609_clinic_leads" | "_backup_20260609_cold_leads" | "_backup_20260609_content_calendar" | ... 327 more ... | "whatsapp_poll_requests"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"lead_captures"' is not assignable to parameter of type '"_agent_registry_backup_20260609" | "_agent_registry_legacy_backup_20260603" | "_backup_20260609_clinic_leads" | "_backup_20260609_cold_leads" | "_backup_20260609_content_calendar" | ... 327 more ... | "whatsapp_poll_requests"'.
+  Overload 2 of 2, '(relation: "listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"lead_captures"' is not assignable to parameter of type '"listing_pricing_outliers" | "v_branch_pnl" | "v_business_daily_summary" | "v_business_team_oversight" | "category_demand_view" | "v_live_transactions_feed" | "lifecycle_view" | ... 33 more ... | "whatsapp_campaign_analytics"'.
+src/lib/agent-runners/phase5-runners.ts(338,22): error TS2352: Conversion of type 'SelectQueryError<"column 'customer_profile_id' does not exist on 'marketplace_bookings'.">[]' to type 'B[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ error: true; } & String' is missing the following properties from type 'B': customer_profile_id, created_at
+src/lib/agent-runners/phase5-runners.ts(355,9): error TS2345: Argument of type '"customer_profile_id"' is not assignable to parameter of type '"status" | "created_at" | "updated_at" | "id" | "listing_id" | "currency" | "supplier_id" | "admin_notes" | "cancellation_reason" | "cancelled_at" | "cancelled_by" | "commission_amount" | ... 26 more ... | "selected_addons"'.
+src/lib/agent-runners/phase6-runners.ts(31,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/lib/agent-runners/phase6-runners.ts(32,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/lib/analytics.ts(78,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/lib/analytics.ts(79,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/lib/analytics.ts(81,7): error TS2322: Type 'Record<string, unknown>' is not assignable to type 'Json | undefined'.
+  Type 'Record<string, unknown>' is missing the following properties from type 'Json[]': length, pop, push, concat, and 29 more.
+src/lib/push-subscription.ts(66,21): error TS18047: 'subscription' is possibly 'null'.
+src/lib/push-subscription.ts(75,9): error TS2322: Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'string | BufferSource | null | undefined'.
+  Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'ArrayBufferView<ArrayBuffer>'.
+    Types of property 'buffer' are incompatible.
+      Type 'ArrayBufferLike' is not assignable to type 'ArrayBuffer'.
+        Type 'SharedArrayBuffer' is not assignable to type 'ArrayBuffer'.
+          Types of property '[Symbol.toStringTag]' are incompatible.
+            Type '"SharedArrayBuffer"' is not assignable to type '"ArrayBuffer"'.
+src/lib/use-supplier-access.tsx(95,9): error TS2578: Unused '@ts-expect-error' directive.
+src/lib/use-supplier-access.tsx(112,9): error TS2578: Unused '@ts-expect-error' directive.
+src/lib/use-supplier-access.tsx(127,7): error TS2578: Unused '@ts-expect-error' directive.
+src/lib/whatsapp.ts(574,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/lib/whatsapp.ts(576,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/lib/whatsapp.ts(577,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/lib/whatsapp.ts(578,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/lib/whatsapp.ts(579,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.

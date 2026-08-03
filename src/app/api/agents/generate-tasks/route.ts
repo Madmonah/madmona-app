@@ -126,6 +126,7 @@ ${roles.map((r) => `- ${r.role_ar} (${r.count})`).join('\n')}
         due_time: cleanTime(t.due_time),
         is_auto_generated: true,
         status: 'pending',
+        task_kind: 'fixed', // مهام يومية ثابتة مجدولة — «chat» محجوزة لمهام الشات الإضافية (add_chat_task)
       })
     }
   }

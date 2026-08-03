@@ -370,7 +370,7 @@ export const MARID_TOOLS = [
     description:
       'سجّل مهمة/تاسك في نظام الشغل — لما حد يطلب تذكير، متابعة، أو تكليف بعمل. ' +
       'أمثلة: «افتكرني أكلم فلان بكرة»، «اعمل مهمة راجع أوردر كذا»، «كلّف أحمد يجهّز التقرير». ' +
-      'المهمة بتتسجّل في نظام المهام وتقدر تتسند لموظف بالاسم.',
+      'لو المكلّف موظف مسجّل، المهمة بتنزل في مهامه اليومية (النوع: من الشات) — وممكن بتاريخ مستقبلي. غير كده بتتسجّل في لوحة المهام العامة.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -378,6 +378,8 @@ export const MARID_TOOLS = [
         detail: { type: 'string', description: 'تفاصيل إضافية لو موجودة' },
         assignee_name: { type: 'string', description: 'اسم الشخص المكلّف لو اتحدد' },
         priority: { type: 'string', enum: ['low', 'medium', 'high'], description: 'الأولوية (افتراضي medium)' },
+        task_date: { type: 'string', description: 'تاريخ المهمة YYYY-MM-DD لو اتحدد يوم («بكرة»، «الخميس») — احسبه من تاريخ النهارده. سيبه فاضي لو النهارده' },
+        due_time: { type: 'string', description: 'وقت المهمة HH:MM بنظام ٢٤ ساعة لو اتحدد («الساعة ٦ مساءً» = 18:00)' },
       },
       required: ['title'],
     },
@@ -1475,10 +1477,60 @@ async function readLink(a: { url?: string }): Promise<ToolResult> {
   }
 }
 
-async function createTask(a: { title: string; detail?: string; assignee_name?: string; priority?: string }): Promise<ToolResult> {
+async function createTask(a: { title: string; detail?: string; assignee_name?: string; priority?: string; task_date?: string; due_time?: string }): Promise<ToolResult> {
   const title = (a.title || '').trim()
   if (!title) return { ok: false, error: 'عنوان المهمة مطلوب' }
   const priority = ['low', 'medium', 'high'].includes(a.priority || '') ? a.priority : 'medium'
+  const assignee = a.assignee_name?.trim() || ''
+
+  // (3 Aug 2026 — بأمر محمد) مهام الشات بتنزل في قايمة المهام اليومية نفسها (daily_tasks)
+  // معلّمة task_kind='chat' عشان تتفرق عن المهام الثابتة المجدولة (fixed) — عبر RPC add_chat_task.
+  // لو المكلّف مش موظف مسجّل → بتتسجّل في لوحة flow_tasks زي زمان (fallback).
+  if (assignee) {
+    const { data: emp } = await db
+      .from('business_employees')
+      .select('id, full_name')
+      .eq('status', 'active')
+      .ilike('full_name', `%${assignee}%`)
+      .limit(1)
+      .maybeSingle()
+    const empRow = emp as { id: string; full_name: string } | null
+    if (empRow) {
+      const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(a.task_date || '')
+      const { data: res, error: rpcErr } = await db.rpc('add_chat_task', {
+        p_employee_id: empRow.id,
+        p_title_ar: title,
+        p_priority: priority,
+        p_due_time: a.due_time || null,
+        p_assigned_by: null,
+        p_description: a.detail?.trim() || null,
+        p_task_date: dateOk ? a.task_date : null,
+      } as never)
+      if (rpcErr) return { ok: false, error: 'مقدرش أسجّل المهمة', detail: rpcErr.message }
+      const r = res as { ok?: boolean; error?: string; task_id?: string; task_date?: string } | null
+      if (!r?.ok) return { ok: false, error: r?.error || 'مقدرش أسجّل المهمة' }
+      try {
+        const { data: prof } = await db.from('profiles').select('id').ilike('full_name', `%${assignee}%`).limit(1).maybeSingle()
+        const pid = (prof as { id?: string } | null)?.id
+        if (pid) {
+          await db.from('notification_queue').insert({
+            recipient_id: pid,
+            type: 'task_assigned',
+            title: '📋 مهمة جديدة ليك',
+            body: title.slice(0, 90),
+            url: '/chat/tasks',
+            data: { icon: '/marid-icon-192.png' },
+          } as never)
+        }
+      } catch { /* best-effort */ }
+      return {
+        ok: true,
+        task_id: r.task_id,
+        message: `اتسجّلت في المهام اليومية بتاعة ${empRow.full_name}${r.task_date ? ` — يوم ${r.task_date}` : ''} (النوع: من الشات)`,
+      }
+    }
+  }
+
   const now = new Date().toISOString()
   const { data, error } = await db
     .from('flow_tasks')
@@ -1522,7 +1574,7 @@ async function createTask(a: { title: string; detail?: string; assignee_name?: s
   return {
     ok: true,
     task_id: (data as { id: string }).id,
-    message: `اتسجّلت المهمة: «${title}»${a.assignee_name ? ` — مكلّف بيها: ${a.assignee_name}` : ''}`,
+    message: `اتسجّلت المهمة: «${title}»${a.assignee_name ? ` — مكلّف بيها: ${a.assignee_name}` : ''} (في لوحة المهام العامة)`,
   }
 }
 

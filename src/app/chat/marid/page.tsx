@@ -410,7 +410,7 @@ export default function ChatPage() {
   const lastPinned = pinnedList[pinnedList.length - 1]
 
   return (
-    <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#F1EEE6', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
+    <div dir="rtl" style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#F1EEE6', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
       <style>{`
         
         @keyframes maridTyping{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-3px)}}
