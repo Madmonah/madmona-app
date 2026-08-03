@@ -909,9 +909,6 @@ export async function POST(request: NextRequest) {
       senderName: body.name ?? null,
       savedMediaUrl,
       admin: senderIsAdmin,
-      // 📊 للقياس بس (٣ أغسطس ٢٠٢٦) — مالهمش أي أثر على البرومبت ولا الرد
-      channel: 'whatsapp',
-      conversationId,
     })
 
     // البرومبت بيطلب JSON — بنفك بأمان ولو فشل نستخدم النص كما هو

@@ -4,6 +4,32 @@
 
 ---
 
+## 🔒 تحديث ٣ أغسطس ٢٠٢٦ — وظايف `work` واقفة ومقفولة
+
+**٤١ وظيفة في فئة `work` واقفة بأمر محمد ومقفولة ضد التشغيل التلقائي.**
+مايتشغّلوش إلا بأمر صريح منه — ممنوع تفكّهم من نفسك.
+
+```sql
+select public.unlock_orchestrator_job('job_key');   -- فك القفل + تشغيل
+```
+
+القفل: ترايجر `trg_block_locked_job_enable` + جدول `orchestrator_job_locks`.
+أي `update orchestrator_jobs set enabled = true` على وظيفة مقفولة **هتفشل**.
+
+**المارد نفسه شغّال عادي** — `process-whatsapp-outbound` و `fire-whatsapp-outbound`
+لسه شغالين، والرد على العملاء ماتأثرش.
+
+**آثار مقصودة تلمس عملاء:** `meeting-reminders` واقف (تذكيرات المواعيد مش بتتبعت) ·
+`snapshot-daily-kpis` واقف (`daily_kpis` مش بيتسجّل) · `olx-scrape-d1..d5` واقفين.
+
+**كمان في نفس اليوم:** اتضاف قياس تكلفة حقيقي (`ai_usage_log` + `v_ai_cost_per_message`)
+واتصلح باج `[object Object]` في `marid-brain.ts` — تفاصيلهم في `MARID-COST-20260803.md`.
+⚠️ تعديلات الكود دي **لسه محتاجة deploy**.
+
+التفاصيل الكاملة: `docs/sessions/2026-08-03-work-jobs-locked.md`
+
+---
+
 ## الوضع دلوقتي
 
 **شغّال ومتصل** على Railway بـ Baileys، الرقم `201002229982`،

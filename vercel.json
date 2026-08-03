@@ -8,7 +8,6 @@
   "crons": [
     { "path": "/api/agents/scheduler", "schedule": "0 9 * * *" },
     { "path": "/api/agents/generate-tasks", "schedule": "0 4 * * *" },
-    { "path": "/api/agents/daily-report", "schedule": "0 20 * * *" },
     { "path": "/api/cron/render-reels", "schedule": "30 5 * * *" },
     { "path": "/api/cron/publish-drafts", "schedule": "*/10 * * * *" },
 

@@ -1,5 +1,23 @@
 # قواعد العمل على مضمونة
 
+> ## 🔒 حالة تشغيل قائمة — ٣ أغسطس ٢٠٢٦
+>
+> **٤١ وظيفة في فئة `work` واقفة ومقفولة بأمر محمد.** مايتشغّلوش إلا بأمر صريح منه.
+> القفل بترايجر `trg_block_locked_job_enable` + جدول `orchestrator_job_locks` —
+> أي محاولة `update orchestrator_jobs set enabled = true` هتفشل.
+>
+> **ممنوع تشغيلهم من نفسك مهما بدا السبب وجيه.** لو شفت وظيفة واقفة وانت شايف
+> إنها لازم تشتغل، اسأل محمد — ماتفكّهاش.
+>
+> التشغيل: `select public.unlock_orchestrator_job('job_key');`
+> التفاصيل: `docs/sessions/2026-08-03-work-jobs-locked.md` ·
+> `system_runbook` topic = `orchestrator-work-jobs-locked`
+>
+> آثار مقصودة: `meeting-reminders` واقف (تذكيرات المواعيد مش بتتبعت) ·
+> `snapshot-daily-kpis` واقف (`daily_kpis` مش بيتسجّل) · `olx-scrape-d1..d5` واقفين.
+>
+> شغّال عادي: الواتساب بيوصّل والمارد بيرد على العملاء.
+
 > اتفاق مع محمد — ١٩/٢٠ يوليو ٢٠٢٦
 
 ## 📌 سجل الاتفاقات

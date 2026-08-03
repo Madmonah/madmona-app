@@ -2,6 +2,7 @@
 // Shared Anthropic client for all Madmona agents
 
 import Anthropic from '@anthropic-ai/sdk'
+import { logAiUsage } from './ai-usage'
 
 export const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -18,7 +19,12 @@ export async function callClaude(opts: {
   userMessage: string
   maxTokens?: number
   temperature?: number
+  // 📊 (٣ أغسطس ٢٠٢٦) للقياس بس — اختياري، ولو مابعتّهوش السلوك زيّه بالظبط.
+  //    الدالة دي هي **نقطة العبور الوحيدة** لكل الوكلاء الخلفيين، فتسجيل
+  //    الاستهلاك هنا بيغطّيهم كلهم مرة واحدة.
+  agentName?: string
 }): Promise<string> {
+  const _t0 = Date.now()
   const response = await anthropic.messages.create({
     model: CLAUDE_MODEL,
     // Bumped to 8192 (was 4096) to prevent JSON truncation across all agents.
@@ -31,6 +37,16 @@ export async function callClaude(opts: {
         content: opts.userMessage,
       },
     ],
+  })
+
+  // 📊 قياس — fire-and-forget، قبل أي رمي استثناء عشان نسجّل حتى الردود الفاشلة
+  logAiUsage({
+    agentName: opts.agentName ?? 'backend-agent-غير-مسمّى',
+    channel: 'backend',
+    model: CLAUDE_MODEL,
+    turn: 0,
+    latencyMs: Date.now() - _t0,
+    usage: response.usage as never,
   })
 
   // Extract text from response
