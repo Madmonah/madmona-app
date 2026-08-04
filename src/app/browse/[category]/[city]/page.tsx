@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
   const catAr = d.cat?.name_ar || dec(category)
   const cityAr = d.city || dec(city)
   const n = Array.isArray(d.listings) ? d.listings.length : 0
-  const title = `${catAr} في ${cityAr} — ${n > 0 ? n + ' إعلان مضمون' : 'إعلانات مضمونة'} | مضمونة`
+  const title = `${catAr} في ${cityAr} — ${n > 0 ? n + ' إعلان مضمون' : 'إعلانات مضمونة'}`
   const desc = `اكتشف ${catAr} في ${cityAr} على مضمونة — منصة المعاملات المضمونة في مصر. حماية كاملة، دفع مستحقات سريع، ودعم مستمر. معاملاتك مضمونة.`
   const url = `${SITE}/browse/${encodeURIComponent(dec(category))}/${encodeURIComponent(cityAr)}`
   return {
