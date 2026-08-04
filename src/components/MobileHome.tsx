@@ -11,6 +11,7 @@
 
 import { useState, useEffect, FormEvent, ReactNode } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   Search, Bell, Menu, X, ArrowLeft, User, LogIn, LogOut, Briefcase, Plus,
@@ -300,7 +301,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
           <Link href="/marketplace" className="text-xs font-extrabold text-[#1F6F5F] no-underline">{en ? 'See all ←' : 'شوف الكل ←'}</Link>
         </div>
         <div className="grid grid-cols-2 gap-2.5">
-          {catCards.map(g => {
+          {catCards.map((g, gi) => {
             const vm = VERTICALS.find(v => v.key === g.vkey)
             // (29 Jul 2026) قسم رئيسي أقل من 5 إعلانات منشورة ← ضل + «قريبًا»
             const soon = (liveCounts[g.key] ?? 0) < 5
@@ -312,8 +313,9 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
               >
                 {g.useImg && g.image_url ? (
                   <>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={g.image_url} alt={g.name_ar} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                    {/* ⚡ LCP fix (4 Aug): next/image AVIF بمقاس الكارت + priority لأول ٤ فوق الطية
+                        (كانوا JPG خام lazy من Supabase = عنصر الـLCP بـ5 ثواني) */}
+                    <Image src={g.image_url} alt={g.name_ar} fill sizes="(max-width: 768px) 50vw, 300px" className="object-cover" priority={gi < 4} />
                     <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,25,20,.8), rgba(10,25,20,.05) 60%)' }} />
                   </>
                 ) : (
