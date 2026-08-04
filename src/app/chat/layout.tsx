@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import ChatNotificationGate from '@/components/ChatNotificationGate'
 import InstallChatPWA from '@/components/InstallChatPWA'
+import EksabLoop from '@/components/EksabLoop'
 
 // أيقونة الشات لوحدها على التليفون: مانيفست خاص بالشات (id مستقل، بيفتح على /chat)
 // بيتحمّل كتطبيق منفصل اسمه "شات مضمونة" غير تطبيق المنصة الرئيسي.
@@ -22,6 +23,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
       {children}
       <ChatNotificationGate />
       <InstallChatPWA />
+      <EksabLoop />
     </>
   )
 }
