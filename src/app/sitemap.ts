@@ -72,7 +72,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-    const [{ data: listings }, { data: categories }] = await Promise.all([
+    const [{ data: listings }, { data: categories }, { data: combos }] = await Promise.all([
       // @ts-expect-error
       supabase
         .from('listings')
@@ -85,6 +85,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .select('slug')
         .eq('is_active', true)
         .limit(200),
+      // @ts-expect-error — pSEO combos (تصنيف × مدينة)
+      supabase.rpc('seo_combos'),
     ])
 
     const listingUrls: MetadataRoute.Sitemap = (listings || []).map((l: { slug: string; updated_at: string }) => ({
@@ -101,7 +103,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
 
-    return [...staticUrls, ...listingUrls, ...categoryUrls]
+    // صفحات pSEO: تصنيف × مدينة (محرك الترافيك)
+    const comboUrls: MetadataRoute.Sitemap = (Array.isArray(combos) ? (combos as { cat: string; city: string }[]) : []).map((c) => ({
+      url: `${SITE_URL}/browse/${encodeURIComponent(c.cat)}/${encodeURIComponent(String(c.city).trim())}`,
+      lastModified,
+      changeFrequency: 'daily' as const,
+      priority: 0.85,
+    }))
+
+    return [...staticUrls, ...listingUrls, ...categoryUrls, ...comboUrls]
   } catch (e) {
     console.error('[sitemap] failed to fetch dynamic data:', e)
     return staticUrls
