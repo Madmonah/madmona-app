@@ -18,7 +18,7 @@ import './globals.css'
 // Madmona root layout — Arabic typography (Tajawal), brand metadata,
 // JSON-LD (LocalBusiness + Organization + WebSite), and analytics.
 
-const SITE_URL = 'https://madmonacairo.com'
+const SITE_URL = 'https://www.madmonacairo.com'
 
 // Tajawal مش متغيّر - أوزان ثابتة. قلّلناها للمستخدم فعلاً بدل ٤.
 const tajawal = Tajawal({

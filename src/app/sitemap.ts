@@ -82,7 +82,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       // @ts-expect-error
       supabase
         .from('listings')
-        .select('slug, updated_at')
+        .select('id, slug, updated_at')
         .eq('status', 'published')
         .limit(50000),
       // @ts-expect-error
@@ -103,11 +103,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .limit(2000),
     ])
 
-    const listingUrls: MetadataRoute.Sitemap = (listings || []).map((l: { slug: string; updated_at: string }) => ({
+    // صور الإعلانات الأساسية → Google Images (image sitemap)
+    const { data: primaryPhotos } = await supabase
+      .from('listing_photos')
+      .select('listing_id, url')
+      .eq('is_primary', true)
+      .limit(5000)
+    const imgOf: Record<string, string> = {}
+    for (const p of (primaryPhotos || []) as { listing_id: string; url: string }[]) {
+      if (p?.url && !imgOf[p.listing_id]) imgOf[p.listing_id] = p.url
+    }
+
+    const listingUrls: MetadataRoute.Sitemap = (listings || []).map((l: { id: string; slug: string; updated_at: string }) => ({
       url: `${SITE_URL}/marketplace/${l.slug}`,
       lastModified: l.updated_at ? new Date(l.updated_at) : lastModified,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
+      ...(imgOf[l.id] ? { images: [imgOf[l.id]] } : {}),
     }))
 
     const categoryUrls: MetadataRoute.Sitemap = (categories || []).map((c: { slug: string }) => ({
