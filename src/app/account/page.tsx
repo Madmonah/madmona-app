@@ -14,7 +14,6 @@ import {
 import BottomNav from '@/components/BottomNav'
 import PushNotificationCard from '@/components/PushNotificationCard'
 import AccountSwitcher from '@/components/AccountSwitcher'
-import WelcomeSupplierBanner from '@/components/WelcomeSupplierBanner'
 import MyAssetsCard from '@/components/MyAssetsCard'
 import { useT } from '@/lib/i18n/LanguageProvider'
 
@@ -338,10 +337,7 @@ export default function AccountPage() {
           <MyAssetsCard />
         </div>
 
-        {/* 🌟 WELCOME BANNER — shown only if user has no supplier record yet */}
-        {!supplier && (
-          <WelcomeSupplierBanner userName={profile?.full_name} />
-        )}
+        {/* (4 Aug 2026) عرض اللونش/بانر المورّد اتشال بقرار محمد */}
 
         {/* 🔁 Account Switcher — switch between accounts WITHOUT browser */}
         <div className="animate-slide-up delay-75">
