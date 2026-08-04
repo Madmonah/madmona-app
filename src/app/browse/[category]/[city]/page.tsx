@@ -55,18 +55,50 @@ export default async function BrowseCityPage({ params }: P) {
   const listings: any[] = Array.isArray(d?.listings) ? d.listings : []
   const otherCities: string[] = Array.isArray(d?.other_cities) ? d.other_cities : []
   const otherCats: any[] = Array.isArray(d?.other_cats) ? d.other_cats : []
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    name: `${catAr} في ${cityAr}`,
-    numberOfItems: listings.length,
-    itemListElement: listings.slice(0, 30).map((l, i) => ({
-      '@type': 'ListItem',
-      position: i + 1,
-      name: l.title,
-      url: `${SITE}/marketplace/${l.slug}`,
-    })),
-  }
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: `${catAr} في ${cityAr}`,
+      numberOfItems: listings.length,
+      itemListElement: listings.slice(0, 30).map((l, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: l.title,
+        url: `${SITE}/marketplace/${l.slug}`,
+      })),
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'مضمونة', item: SITE },
+        { '@type': 'ListItem', position: 2, name: catAr, item: `${SITE}/marketplace` },
+        { '@type': 'ListItem', position: 3, name: `${catAr} في ${cityAr}` },
+      ],
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: `إزاي أضمن معاملتي في ${catAr} في ${cityAr}؟`,
+          acceptedAnswer: { '@type': 'Answer', text: `كل إعلانات ${catAr} على مضمونة بتتم بحماية كاملة للمعاملة، دفع مستحقات سريع، ودعم مستمر — معاملاتك مضمونة.` },
+        },
+        {
+          '@type': 'Question',
+          name: `إزاي أنشر إعلان ${catAr} في ${cityAr}؟`,
+          acceptedAnswer: { '@type': 'Answer', text: `من صفحة «ضيف الليستنج» على مضمونة تقدر تنشر إعلانك في دقايق مجانًا، وفريقنا بيراجعه قبل النشر.` },
+        },
+        {
+          '@type': 'Question',
+          name: 'هل التواصل مع المعلن مباشر؟',
+          acceptedAnswer: { '@type': 'Answer', text: 'أيوه — كل إعلان فيه وسيلة تواصل مباشرة، ومضمون (مساعد مضمونة الذكي) متاح على واتساب يساعدك في أي خطوة.' },
+        },
+      ],
+    },
+  ]
   return (
     <main dir="rtl" className="min-h-screen bg-[#FAFAF7] pb-24" style={{ fontFamily: 'Cairo,sans-serif' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
