@@ -784,7 +784,7 @@ function AddListingPageInner({
 // May 17 2026: Added track tabs (الكل/إيجار/خدمات/هايبرد) above the mains
 // grid so 27 categories don't overwhelm the user. Same DB, cleaner UX.
 // =================================================
-type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily';
+type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | 'sales';
 
 const TRACK_LABELS: Record<TrackTab, string> = {
   all: 'الكل',
@@ -794,6 +794,7 @@ const TRACK_LABELS: Record<TrackTab, string> = {
   restaurants: 'مطاعم',
   products: 'منتجات',
   daily: 'سوبر ماركت',
+  sales: 'منتجات',
 };
 
 const TRACK_EMOJI: Record<TrackTab, string> = {
@@ -804,6 +805,7 @@ const TRACK_EMOJI: Record<TrackTab, string> = {
   restaurants: '🍔',
   products: '🏷️',
   daily: '🛒',
+  sales: '🏷️',
 };
 
 function StepCategory({
@@ -839,7 +841,7 @@ function StepCategory({
   const [activeTrack, setActiveTrack] = useState<TrackTab>(
     (['rentals', 'services', 'restaurants', 'products', 'daily'].includes(initialTrack || '')
       ? initialTrack
-      : initialTrack === 'hybrid' ? 'rentals' : 'rentals') as TrackTab
+      : initialTrack === 'hybrid' ? 'rentals' : initialTrack === 'sales' ? 'products' : 'rentals') as TrackTab
   );
   const main = categories.find((m) => m.slug === selectedMain);
 
@@ -867,10 +869,10 @@ function StepCategory({
     }
   }, [resetSignal]);
 
-  // Filter mains by selected track tab
+  // Filter mains by selected track tab — «بيع» (products) بيضم sales (بيع الأصول)
   const visibleMains = useMemo(() => {
     if (activeTrack === 'all') return categories;
-    return categories.filter((c) => c.track === activeTrack);
+    return categories.filter((c) => c.track === activeTrack || (activeTrack === 'products' && c.track === 'sales'));
   }, [activeTrack, categories]);
 
   if (!main) {
@@ -884,7 +886,7 @@ function StepCategory({
           {(['all', 'rentals', 'services', 'restaurants', 'products', 'daily'] as TrackTab[]).map((t) => {
             const count = t === 'all'
               ? categories.length
-              : categories.filter((c) => c.track === t).length;
+              : categories.filter((c) => c.track === t || (t === 'products' && c.track === 'sales')).length;
             return (
               <button
                 key={t}

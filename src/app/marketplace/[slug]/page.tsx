@@ -457,7 +457,7 @@ export default function ListingDetailPage() {
   const displayTitle = cleanListingTitle(listing.title)
   const track = listing.category?.track ?? null
   const isRestaurant = track === 'restaurants'
-  const isProduct = track === 'products'
+  const isProduct = track === 'products' || track === 'sales'
   const isListQuote = (listing.category?.order_mode === 'list_quote') && !isDirectory
   // Real estate for sale (17 Jul 2026): properties are NOT cart products —
   // no add-to-cart; instead favorites + real-estate platform CTA

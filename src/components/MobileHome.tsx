@@ -37,7 +37,7 @@ type Category = {
 type VKey = 'products' | 'rentals' | 'services' | 'restaurants' | 'daily'
 
 const VERTICALS: { key: VKey; ar: string; en: string; emoji: string; tracks: string[]; tone: string; accent: string }[] = [
-  { key: 'products',    ar: 'بيع',        en: 'Buy',         emoji: '🏷️', tracks: ['products'],            tone: 'from-[#2C5F8D] to-[#5B9BD5]', accent: '#3D7BB6' },
+  { key: 'products',    ar: 'بيع',        en: 'Buy',         emoji: '🏷️', tracks: ['products', 'sales'],   tone: 'from-[#2C5F8D] to-[#5B9BD5]', accent: '#3D7BB6' },
   { key: 'rentals',     ar: 'إيجار',      en: 'Rent',        emoji: '🔑', tracks: ['rentals', 'hybrid'],   tone: 'from-[#1F6F5F] to-[#2FA084]', accent: '#1F6F5F' },
   { key: 'services',    ar: 'خدمات',      en: 'Services',    emoji: '🛠️', tracks: ['services'],            tone: 'from-[#8A6A0F] to-[#D4A017]', accent: '#B8860B' },
   { key: 'restaurants', ar: 'مطاعم',      en: 'Restaurants', emoji: '🍽️', tracks: ['restaurants'],         tone: 'from-[#B4453A] to-[#E26D5C]', accent: '#D24C3E' },

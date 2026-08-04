@@ -54,8 +54,8 @@ export default async function ListingSeoLayout({ children, params }: P & { child
   const l = await getListing(slugOf(params))
   let jsonLd: object | null = null
   const track = l?.categories?.track
-  const grp = l?.categories?.group_slug
-  const isRealProduct = (track === 'products' || track === 'daily') && !['sale-property', 'sale-vehicles'].includes(grp)
+  // بعد إصلاح التاكسونومي (track='sales' لبيع الأصول) — المنتجات الحقيقية بس هنا
+  const isRealProduct = track === 'products' || track === 'daily'
   if (l && l.price_egp > 0 && isRealProduct) {
     jsonLd = {
       '@context': 'https://schema.org',

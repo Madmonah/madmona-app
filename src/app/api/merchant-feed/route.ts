@@ -20,8 +20,6 @@ export async function GET() {
     .eq('status', 'published')
     .gt('price_egp', 0)
     .in('categories.track', ['products', 'daily'])
-    // استبعاد العقارات والمركبات المعلَّمة products بالغلط (قضية التاكسونومي القديمة)
-    .or('group_slug.is.null,group_slug.not.in.(sale-property,sale-vehicles)', { foreignTable: 'categories' })
     .limit(1000)
   const ids = (rows || []).map((r: any) => r.id)
   const photoById: Record<string, string> = {}

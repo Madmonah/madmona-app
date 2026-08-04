@@ -22,5 +22,8 @@ echo ----------------------------- RESULT -----------------------------
 type deploy-log.txt
 echo ------------------------------------------------------------------
 echo.
+echo Pinging IndexNow (search engines) ...
+powershell -NoProfile -Command "try{ (Invoke-RestMethod -Uri 'https://www.madmonacairo.com/api/indexnow' -TimeoutSec 90 | ConvertTo-Json -Compress) } catch { Write-Host 'IndexNow ping failed (non-fatal)' }"
+echo.
 echo Done. Full log saved in: deploy-log.txt
 pause

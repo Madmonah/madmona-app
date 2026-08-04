@@ -55,7 +55,7 @@ const SORT_LABELS: Record<SortOption, string> = {
   rating: 'market.sort_rating',
 }
 
-type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily'
+type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | 'sales'
 
 const TRACK_LABELS: Record<TrackTab, string> = {
   all: 'market.track_all',
@@ -65,6 +65,7 @@ const TRACK_LABELS: Record<TrackTab, string> = {
   restaurants: 'market.track_restaurants',
   products: 'market.track_products',
   daily: 'market.track_daily',
+  sales: 'market.track_products',
 }
 
 const TRACK_EMOJI: Record<TrackTab, string> = {
@@ -75,6 +76,7 @@ const TRACK_EMOJI: Record<TrackTab, string> = {
   restaurants: '🍽️',
   products: '🏷️',
   daily: '🛒',
+  sales: '🏷️',
 }
 
 // Per-vertical colours — same identity as the homepage hero/tabs.
@@ -86,6 +88,7 @@ const TRACK_ACCENT: Record<TrackTab, { accent: string; bg: string }> = {
   restaurants: { accent: '#E26D5C', bg: '#FAE1CB' },
   hybrid:      { accent: '#1F6F5F', bg: '#E7F1ED' },
   daily:       { accent: '#7A4FA3', bg: '#EDE3F5' },
+  sales:       { accent: '#3D7BB6', bg: '#D9E7F4' },
 }
 
 // Tab order: الكل + بيع · إيجار · خدمات · مطاعم · سوبر ماركت
@@ -122,13 +125,13 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   const [activeTrack, setActiveTrack] = useState<TrackTab>(
     (initialTrack === 'hybrid'
       ? 'rentals'
-      : (['rentals', 'services', 'restaurants', 'products', 'daily'].includes(initialTrack || '')
+      : (['rentals', 'services', 'restaurants', 'products', 'daily', 'sales'].includes(initialTrack || '')
           ? initialTrack
           : 'all')) as TrackTab
   )
   const rootCategories = activeTrack === 'all'
     ? allRootCategories
-    : allRootCategories.filter(c => c.track === activeTrack || (activeTrack === 'rentals' && c.track === 'hybrid'))
+    : allRootCategories.filter(c => c.track === activeTrack || (activeTrack === 'rentals' && c.track === 'hybrid') || (activeTrack === 'products' && c.track === 'sales'))
 
   // Group the visible root categories by their DB group_* metadata (Jun 2026).
   // Every track now carries group_slug/group_name_ar/group_emoji so the strip
@@ -340,7 +343,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         // category — filter listings to every category in that track.
         // Mohamed (Jun 12 2026): المناسبات (hybrid) اتحطت جوه الإيجار (rentals)،
         // فتصفح الإيجار بيورّي المناسبات كمان.
-        const tracksToMatch = activeTrack === 'rentals' ? ['rentals', 'hybrid'] : [activeTrack];
+        const tracksToMatch = activeTrack === 'rentals' ? ['rentals', 'hybrid'] : activeTrack === 'products' ? ['products', 'sales'] : [activeTrack];
         // @ts-expect-error
         const { data: trackRoots } = await supabaseBrowser
           .from('categories')
@@ -388,7 +391,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         query = query.eq('supplier_id', supplierFilter)
       }
       // 🏗️ بريمري/ريسيل — بس جوه عقارات البيع
-      const inSaleProperties = activeTrack === 'products' && (selectedGroupSlug === 'sale-property' || (!!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties') || selectedCategorySlug.startsWith('sale-tourism'))))
+      const inSaleProperties = (activeTrack === 'products' || activeTrack === 'sales') && (selectedGroupSlug === 'sale-property' || (!!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties') || selectedCategorySlug.startsWith('sale-tourism'))))
       if (inSaleProperties && propertySource === 'primary') {
         query = query.not('project_id', 'is', null)
       } else if (inSaleProperties && propertySource === 'resale') {
@@ -624,8 +627,8 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
             {TRACK_TAB_ORDER.map(tab => {
               const count = tab === 'all'
                 ? allRootCategories.length
-                : allRootCategories.filter(c => c.track === tab || (tab === 'rentals' && c.track === 'hybrid')).length
-              const isActive = activeTrack === tab || (tab === 'rentals' && activeTrack === 'hybrid')
+                : allRootCategories.filter(c => c.track === tab || (tab === 'rentals' && c.track === 'hybrid') || (tab === 'products' && c.track === 'sales')).length
+              const isActive = activeTrack === tab || (tab === 'rentals' && activeTrack === 'hybrid') || (tab === 'products' && activeTrack === 'sales')
               const col = TRACK_ACCENT[tab]
               return (
                 <button
@@ -838,7 +841,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           )}
 
           {/* 🏗️ (17 Jul 2026) بريمري/ريسيل — يظهر بس جوه عقارات البيع */}
-          {activeTrack === 'products' && (selectedGroupSlug === 'sale-property' || (!!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties') || selectedCategorySlug.startsWith('sale-tourism')))) && (
+          {(activeTrack === 'products' || activeTrack === 'sales') && (selectedGroupSlug === 'sale-property' || (!!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties') || selectedCategorySlug.startsWith('sale-tourism')))) && (
             <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
               {([
                 ['all', 'كل العقارات'],
