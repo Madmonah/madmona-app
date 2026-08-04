@@ -145,7 +145,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.85,
     }))
 
-    return [...staticUrls, ...listingUrls, ...categoryUrls, ...comboUrls, ...projectUrls]
+    // مدونة مضمونة — مقالات بلوج المارد
+    const { data: posts } = await supabase
+      .from('blog_posts')
+      .select('slug, published_at')
+      .eq('status', 'published')
+      .limit(500)
+    const blogUrls: MetadataRoute.Sitemap = [
+      { url: `${SITE_URL}/blog`, lastModified, changeFrequency: 'daily' as const, priority: 0.8 },
+      ...(posts || []).map((p: { slug: string; published_at: string }) => ({
+        url: `${SITE_URL}/blog/${encodeURIComponent(p.slug)}`,
+        lastModified: p.published_at ? new Date(p.published_at) : lastModified,
+        changeFrequency: 'weekly' as const,
+        priority: 0.75,
+      })),
+    ]
+
+    return [...staticUrls, ...listingUrls, ...categoryUrls, ...comboUrls, ...projectUrls, ...blogUrls]
   } catch (e) {
     console.error('[sitemap] failed to fetch dynamic data:', e)
     return staticUrls
