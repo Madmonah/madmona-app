@@ -10,7 +10,7 @@ async function getListing(slug: string) {
     const u = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/listings` +
       `?slug=eq.${encodeURIComponent(slug)}&status=eq.published&limit=1` +
       `&select=slug,title,description,city,district,price_egp,rating,reviews_count,stock_quantity,brand,product_condition,` +
-      `categories(name_ar,track),listing_photos(url,is_primary,display_order)`
+      `categories(name_ar,track,group_slug),listing_photos(url,is_primary,display_order)`
     const r = await fetch(u, {
       headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}` },
       next: { revalidate: 600 },
@@ -27,9 +27,11 @@ const firstPhoto = (l: any): string | null => {
 }
 
 type P = { params: { slug: string } }
+// params بييجي percent-encoded في الـApp Router — لازم فكّة الأول (سبب اختفاء الميتاداتا)
+const slugOf = (p: { slug: string }) => { try { return decodeURIComponent(p.slug) } catch { return p.slug } }
 
 export async function generateMetadata({ params }: P): Promise<Metadata> {
-  const l = await getListing(params.slug)
+  const l = await getListing(slugOf(params))
   if (!l) return {}
   const place = [l.district, l.city].filter(Boolean).join('، ')
   const title = place ? `${l.title} — ${place}` : String(l.title)
@@ -49,10 +51,12 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
 }
 
 export default async function ListingSeoLayout({ children, params }: P & { children: React.ReactNode }) {
-  const l = await getListing(params.slug)
+  const l = await getListing(slugOf(params))
   let jsonLd: object | null = null
   const track = l?.categories?.track
-  if (l && l.price_egp > 0 && (track === 'products' || track === 'daily')) {
+  const grp = l?.categories?.group_slug
+  const isRealProduct = (track === 'products' || track === 'daily') && !['sale-property', 'sale-vehicles'].includes(grp)
+  if (l && l.price_egp > 0 && isRealProduct) {
     jsonLd = {
       '@context': 'https://schema.org',
       '@type': 'Product',

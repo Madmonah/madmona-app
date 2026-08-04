@@ -51,7 +51,10 @@ export default function robots(): MetadataRoute.Robots {
         disallow: DISALLOW_PRIVATE,
       },
     ],
-    sitemap: 'https://www.madmonacairo.com/sitemap.xml',
+    sitemap: [
+      'https://www.madmonacairo.com/sitemap.xml',
+      'https://www.madmonacairo.com/sitemap-images.xml',
+    ],
     host: 'https://www.madmonacairo.com',
   }
 }

@@ -16,10 +16,12 @@ export async function GET() {
   })
   const { data: rows } = await db
     .from('listings')
-    .select('id, slug, title, description, price_egp, brand, product_condition, stock_quantity, categories!inner(name_ar, track)')
+    .select('id, slug, title, description, price_egp, brand, product_condition, stock_quantity, categories!inner(name_ar, track, group_slug)')
     .eq('status', 'published')
     .gt('price_egp', 0)
     .in('categories.track', ['products', 'daily'])
+    // استبعاد العقارات والمركبات المعلَّمة products بالغلط (قضية التاكسونومي القديمة)
+    .or('group_slug.is.null,group_slug.not.in.(sale-property,sale-vehicles)', { foreignTable: 'categories' })
     .limit(1000)
   const ids = (rows || []).map((r: any) => r.id)
   const photoById: Record<string, string> = {}
