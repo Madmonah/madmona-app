@@ -4,15 +4,10 @@ import { LanguageProvider } from '@/lib/i18n/LanguageProvider'
 import SiteAnalytics from '@/components/SiteAnalytics'
 import { Suspense } from 'react'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
-import NotificationPrompt from '@/components/NotificationPrompt'
-import MadmonaListingClaimer from '@/components/MadmonaListingClaimer'
-import ReferralCapture from '@/components/ReferralCapture'
-import AutoResubscribe from '@/components/AutoResubscribe'
-import DailyMessageBanner from '@/components/DailyMessageBanner'
+import DeferredWidgets from '@/components/DeferredWidgets'
 import { safeStorage } from '@/lib/safe-storage'
 // 🔴 شبكة أمان: أي RPC تفشل، بيظهر تنبيه أحمر بدل ما تعدّي في صمت (13 Jul 2026)
 import RpcErrorToast from '@/components/RpcErrorToast'
-import MaridChatFab from '@/components/MaridChatFab'
 import './globals.css'
 
 // Madmona root layout — Arabic typography (Tajawal), brand metadata,
@@ -234,24 +229,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LanguageProvider>
         {children}
         <ServiceWorkerRegister />
-        <AutoResubscribe />
-        <NotificationPrompt />
         {/* (31 Jul 2026) التتبّع اتلمّ في مكوّن واحد بيتخطّى نفسه جوّه /chat */}
         <SiteAnalytics />
         <Suspense fallback={null}>
-          <MadmonaListingClaimer />
-        </Suspense>
-        <Suspense fallback={null}>
-          <ReferralCapture />
-        </Suspense>
-        <Suspense fallback={null}>
-          <AutoResubscribe />
-        </Suspense>
-        <Suspense fallback={null}>
-          <DailyMessageBanner />
+          <DeferredWidgets />
         </Suspense>
         <RpcErrorToast />
-        <MaridChatFab />
         </LanguageProvider>
       </body>
     </html>

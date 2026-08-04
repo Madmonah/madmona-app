@@ -6,6 +6,7 @@
 // v3 (27 Jul 2026): تصميم احترافي + شريط لوجوهات المطورين المتحرك (دينامك)
 // =====================================================================
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@supabase/supabase-js'
 import { TrendingUp, ArrowLeft, RefreshCcw, Landmark, MapPin, KeyRound, Umbrella, ShieldCheck } from 'lucide-react'
 import DeveloperLogosMarquee from './DeveloperLogosMarquee'
@@ -153,11 +154,13 @@ export default async function PropertyMarketHomeSection() {
                   key={t.area}
                   className="relative rounded-2xl overflow-hidden h-28 md:h-32 ring-1 ring-black/5 hover:ring-black/15 hover:-translate-y-0.5 transition-all duration-300 group/tile"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  {/* ⚡ next/image: تحويل تلقائي AVIF/WebP بمقاس الكارت (كانوا JPG خام ~90KB للواحدة) */}
+                  <Image
                     src={t.img}
                     alt={t.area}
-                    className="absolute inset-0 w-full h-full object-cover group-hover/tile:scale-105 transition-transform duration-500"
+                    fill
+                    sizes="(max-width: 768px) 45vw, 300px"
+                    className="object-cover group-hover/tile:scale-105 transition-transform duration-500"
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/10" />

@@ -37,16 +37,22 @@ export default function SiteAnalytics() {
   // Metricool: كان سكربت inline في <head> بيشتغل على كل صفحة.
   // بقى هنا عشان يتحكم فيه نفس شرط المسار — وهو أصلاً بيحمّل نفسه
   // ديناميكياً فمش محتاج يكون في الهيد.
+  // ⚡ (4 Aug 2026) FCP: نأجّله لوقت الفراغ بعد الرسم — كان بياخد ~4 ثواني
+  // ويزاحم تحميل الصفحة الأولى، والتتبّع مش حرج يتأخر ثواني.
   useEffect(() => {
     if (isChat || typeof window === 'undefined') return
     if (window.__madmonaMetricool) return
     window.__madmonaMetricool = true
-    const s = document.createElement('script')
-    s.type = 'text/javascript'
-    s.src = 'https://tracker.metricool.com/resources/be.js'
-    s.async = true
-    s.onload = () => { try { window.beTracker?.t({ hash: METRICOOL_HASH }) } catch { /* التتبّع مش حرج */ } }
-    document.head.appendChild(s)
+    const inject = () => {
+      const s = document.createElement('script')
+      s.type = 'text/javascript'
+      s.src = 'https://tracker.metricool.com/resources/be.js'
+      s.async = true
+      s.onload = () => { try { window.beTracker?.t({ hash: METRICOOL_HASH }) } catch { /* التتبّع مش حرج */ } }
+      document.head.appendChild(s)
+    }
+    if ('requestIdleCallback' in window) (window as any).requestIdleCallback(inject, { timeout: 6000 })
+    else setTimeout(inject, 3500)
   }, [isChat])
 
   if (isChat) return null
