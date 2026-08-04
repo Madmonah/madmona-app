@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 // Includes: home, marketplace, browse, all published listings, all categories,
 // static pages (about, privacy, terms, auth)
 
-const SITE_URL = 'https://madmonacairo.com'
+const SITE_URL = 'https://www.madmonacairo.com'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''

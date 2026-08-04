@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const HOST = 'madmonacairo.com'
+const HOST = 'www.madmonacairo.com'
 const SITE = `https://${HOST}`
 const KEY = '8f4a2d7c1e9b4356a0d8e2f7c4b1a693'
 

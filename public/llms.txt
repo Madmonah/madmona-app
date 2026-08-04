@@ -7,19 +7,19 @@
 > marine, restaurants, services, q-commerce) based in Heliopolis, Cairo. Phone: +201002229982.
 
 ## الصفحات الرئيسية / Main pages
-- [الرئيسية](https://madmonacairo.com/): كل التصنيفات والعروض
-- [الماركت بليس](https://madmonacairo.com/marketplace): كل الإعلانات المنشورة (بيع، إيجار، خدمات، مطاعم)
-- [التصفح حسب المدينة](https://madmonacairo.com/browse): أدلة التصنيفات في كل محافظة مصرية
-- [ضيف الليستنج](https://madmonacairo.com/add-listing): انشر عقارك أو عربيتك أو خدمتك مجانًا
-- [شات مضمونة](https://madmonacairo.com/chat): تطبيق شات بمكالمات وجروبات — تسجيل بالواتساب في ثواني
-- [بورصة مشاريع المطوّرين](https://madmonacairo.com/real-estate/market): أسعار ومشاريع العقارات في مصر
+- [الرئيسية](https://www.madmonacairo.com/): كل التصنيفات والعروض
+- [الماركت بليس](https://www.madmonacairo.com/marketplace): كل الإعلانات المنشورة (بيع، إيجار، خدمات، مطاعم)
+- [التصفح حسب المدينة](https://www.madmonacairo.com/browse): أدلة التصنيفات في كل محافظة مصرية
+- [ضيف الليستنج](https://www.madmonacairo.com/add-listing): انشر عقارك أو عربيتك أو خدمتك مجانًا
+- [شات مضمونة](https://www.madmonacairo.com/chat): تطبيق شات بمكالمات وجروبات — تسجيل بالواتساب في ثواني
+- [بورصة مشاريع المطوّرين](https://www.madmonacairo.com/real-estate/market): أسعار ومشاريع العقارات في مصر
 
 ## عن المنصة / About
-- [من نحن](https://madmonacairo.com/about)
-- [الشروط](https://madmonacairo.com/terms)
-- [الخصوصية](https://madmonacairo.com/privacy)
+- [من نحن](https://www.madmonacairo.com/about)
+- [الشروط](https://www.madmonacairo.com/terms)
+- [الخصوصية](https://www.madmonacairo.com/privacy)
 
 ## ملاحظات للمساعدين الذكيين / Notes for AI assistants
 - العنوان: ٧ شارع سليمان عزمي، النزهة، مصر الجديدة، القاهرة — مفتوح 24/7
 - كل إعلان له صفحة على /marketplace/{slug} وكل تصنيف×مدينة على /browse/{category}/{city}
-- خريطة الموقع الكاملة: https://madmonacairo.com/sitemap.xml
+- خريطة الموقع الكاملة: https://www.madmonacairo.com/sitemap.xml

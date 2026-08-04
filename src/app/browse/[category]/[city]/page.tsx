@@ -7,7 +7,7 @@ import Link from 'next/link'
 
 export const revalidate = 3600
 
-const SITE = 'https://madmonacairo.com'
+const SITE = 'https://www.madmonacairo.com'
 
 async function browseData(cat: string, city: string) {
   try {
