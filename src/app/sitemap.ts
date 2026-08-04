@@ -33,6 +33,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: `${SITE_URL}/real-estate/market`,
+      lastModified,
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
       url: `${SITE_URL}/about`,
       lastModified,
       changeFrequency: 'monthly',
@@ -72,7 +78,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-    const [{ data: listings }, { data: categories }, { data: combos }] = await Promise.all([
+    const [{ data: listings }, { data: categories }, { data: combos }, { data: projects }] = await Promise.all([
       // @ts-expect-error
       supabase
         .from('listings')
@@ -87,6 +93,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .limit(200),
       // @ts-expect-error — pSEO combos (تصنيف × مدينة)
       supabase.rpc('seo_combos'),
+      // @ts-expect-error — مشاريع بورصة المطوّرين (عقارات)
+      supabase
+        .from('property_market_items')
+        .select('slug, updated_at')
+        .eq('status', 'published')
+        .eq('is_active', true)
+        .eq('embargoed', false)
+        .limit(2000),
     ])
 
     const listingUrls: MetadataRoute.Sitemap = (listings || []).map((l: { slug: string; updated_at: string }) => ({
@@ -111,7 +125,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.85,
     }))
 
-    return [...staticUrls, ...listingUrls, ...categoryUrls, ...comboUrls]
+    // مشاريع المطوّرين — صفحات /real-estate/projects/[slug] (عقارات)
+    const projectUrls: MetadataRoute.Sitemap = (projects || []).map((p: { slug: string; updated_at: string }) => ({
+      url: `${SITE_URL}/real-estate/projects/${encodeURIComponent(p.slug)}`,
+      lastModified: p.updated_at ? new Date(p.updated_at) : lastModified,
+      changeFrequency: 'weekly' as const,
+      priority: 0.85,
+    }))
+
+    return [...staticUrls, ...listingUrls, ...categoryUrls, ...comboUrls, ...projectUrls]
   } catch (e) {
     console.error('[sitemap] failed to fetch dynamic data:', e)
     return staticUrls
