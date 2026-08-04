@@ -10,6 +10,9 @@ const ReferralCapture = dynamic(() => import('./ReferralCapture'), { ssr: false 
 const AutoResubscribe = dynamic(() => import('./AutoResubscribe'), { ssr: false })
 const DailyMessageBanner = dynamic(() => import('./DailyMessageBanner'), { ssr: false })
 const MaridChatFab = dynamic(() => import('./MaridChatFab'), { ssr: false })
+// ⚡ (4 Aug 2026) PWA install prompt — @khmyznikov/pwa-install web component,
+// deferred + only loads CDN script if user isn't installed & hasn't dismissed
+const PwaInstallPrompt = dynamic(() => import('./PwaInstallPrompt'), { ssr: false })
 
 export default function DeferredWidgets() {
   return (
@@ -20,6 +23,7 @@ export default function DeferredWidgets() {
       <AutoResubscribe />
       <DailyMessageBanner />
       <MaridChatFab />
+      <PwaInstallPrompt />
     </>
   )
 }
