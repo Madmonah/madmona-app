@@ -137,8 +137,16 @@ async function saveMedia(
       (media.filename?.split('.').pop() || '').toLowerCase() ||
       (media.mimetype.split('/')[1] || 'bin').split(';')[0]
 
+    // 🆕 (4 Aug 2026) Add day-scoped sub-folder → `wa/{phone}/{YYYYMMDD}/{filename}`.
+    // Sender-level isolation was already here (nice!). The date bucket adds finer
+    // grouping so photos from the same sender's DIFFERENT projects/sessions can be
+    // separated by the publish pipeline (e.g. HDP sending Talda on Mon + coastal on Tue
+    // = two folders, so the intake never mixes them into one listing).
+    // See wa-inbound-photo-mismatch.md — this is the fix for the intra-supplier case
+    // that plain sender-scoping alone couldn't catch (Talda listing bug).
     const safePhone = (phone || 'unknown').replace(/\D/g, '') || 'unknown'
-    const path = `wa/${safePhone}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
+    const day = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+    const path = `wa/${safePhone}/${day}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
 
     const { error } = await supabaseUntyped.storage
       .from(bucket)

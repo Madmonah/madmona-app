@@ -398,11 +398,24 @@ async function fetchWAMedia(mediaId: string, maxBytes = 8 * 1024 * 1024): Promis
   } catch (_e) { return null }
 }
 
-async function persistInboundImage(b64: string, mime: string, waMsgId: string): Promise<string | null> {
+// 🆕 (4 Aug 2026) Sender-scoped path: `wa-inbound/{phoneLast8}/{YYYYMMDD}/{filename}`.
+// Was flat `wa-inbound/{timestamp}-{id}.{ext}` — every supplier's photos in one bucket.
+// A photo scraper for supplier A could accidentally link to supplier B's listing.
+// Real bug (Aug 4): Talda listing (مستقبل سيتي) got HDP's coastal-tower photos as primary.
+// Now: each sender's uploads live under their own folder, grouped by day, so intake
+// pipelines can only pull photos scoped to the actual sender.
+// Existing files at old flat paths keep working (public URLs unchanged) — this only
+// affects NEW uploads. See wa-inbound-photo-mismatch.md in project memory.
+async function persistInboundImage(
+  b64: string, mime: string, waMsgId: string, fromPhone: string,
+): Promise<string | null> {
   try {
     const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
     const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg'
-    const path = `wa-inbound/${Date.now()}-${waMsgId.slice(-10).replace(/[^\w]/g, '')}.${ext}`
+    const phone8 = (fromPhone || '').replace(/\D/g, '').slice(-8) || 'unknown'
+    const day = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+    const safeId = waMsgId.slice(-10).replace(/[^\w]/g, '')
+    const path = `wa-inbound/${phone8}/${day}/${Date.now()}-${safeId}.${ext}`
     const { error } = await sb().storage.from('content-images').upload(path, bytes, { contentType: mime, upsert: true })
     if (error) return null
     const { data } = sb().storage.from('content-images').getPublicUrl(path)
@@ -423,7 +436,7 @@ async function persistInboundImage(b64: string, mime: string, waMsgId: string): 
 const DOC_MAX_BYTES = 48 * 1024 * 1024
 
 async function fetchAndStoreDocument(
-  mediaId: string, waMsgId: string, filename?: string,
+  mediaId: string, waMsgId: string, fromPhone: string, filename?: string,
 ): Promise<{ url: string; size: number } | null> {
   try {
     const { token } = await getMetaCreds()
@@ -459,7 +472,10 @@ async function fetchAndStoreDocument(
     const mime = meta.mime_type || 'application/octet-stream'
     const safeName = (filename || 'file')
       .replace(/[^\w.\-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'file'
-    const path = `wa-inbound/${Date.now()}-${waMsgId.slice(-8).replace(/[^\w]/g, '')}-${safeName}`
+    // 🆕 (4 Aug 2026) Sender-scoped path (matches persistInboundImage above).
+    const phone8 = (fromPhone || '').replace(/\D/g, '').slice(-8) || 'unknown'
+    const day = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+    const path = `wa-inbound/${phone8}/${day}/${Date.now()}-${waMsgId.slice(-8).replace(/[^\w]/g, '')}-${safeName}`
 
     const { error } = await sb().storage.from('project-media')
       .upload(path, bytes, { contentType: mime, upsert: true })
@@ -1290,7 +1306,7 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
     const img = message.image as { id?: string; caption?: string } | undefined
     if (img?.id) inboundMediaId = img.id
     if (img?.id) imageData = await fetchWAMedia(img.id)
-    if (imageData) inboundImageUrl = await persistInboundImage(imageData.b64, imageData.mime, waMsgId)
+    if (imageData) inboundImageUrl = await persistInboundImage(imageData.b64, imageData.mime, waMsgId, fromPhone)
     const caption = img?.caption || ''
     text = caption || '(العميل بعت صورة من غير تعليق — بص على الصورة ورد على محتواها)'
     storedBody = `[صورة]${caption ? ' ' + caption : ''}`
@@ -1301,7 +1317,7 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
     // بنستخدم نفس مسار المستندات (bytes → storage مباشرة، من غير base64 عشان الميموري).
     inboundMediaId = vidMeta.id
     const vname = `video-${waMsgId.slice(-8).replace(/[^\w]/g, '')}.mp4`
-    const stored = await fetchAndStoreDocument(vidMeta.id, waMsgId, vname)
+    const stored = await fetchAndStoreDocument(vidMeta.id, waMsgId, fromPhone, vname)
     if (stored) inboundVideoUrl = stored.url
     else console.error('[video] ❌ FAILED TO SAVE from', fromPhone, 'media_id', vidMeta.id)
     const vcap = vidMeta.caption || ''
@@ -1315,7 +1331,7 @@ async function handleInboundMessage(message: Record<string, unknown>, contacts: 
     // وكلهم ضاعوا، والمارد قاله "البيانات اتسجلت". دلوقتي بنسجّل الفشل وننبّه الأدمن.
     inboundDocName = docMeta.filename || 'ملف'
     inboundMediaId = docMeta.id
-    const stored = await fetchAndStoreDocument(docMeta.id, waMsgId, docMeta.filename)
+    const stored = await fetchAndStoreDocument(docMeta.id, waMsgId, fromPhone, docMeta.filename)
     if (stored) inboundDocUrl = stored.url
     else {
       console.error('[doc] ❌ FAILED TO SAVE:', inboundDocName, 'from', fromPhone, 'media_id', docMeta.id)
