@@ -34,7 +34,6 @@ import {
 import { runOrchestrator } from './phase6-runners'
 
 import { runAutoPublisher } from './auto-publisher'
-import { runBufferPublisher } from './buffer-publisher'
 import { runReelPublisher } from './reel-publisher'
 
 async function logRun(args: {
@@ -281,9 +280,8 @@ const RUNNERS: Record<string, (args?: Record<string, unknown>) => Promise<Record
   'listing-photographer': runListingPhotographer as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
   // Phase 6 — Inter-Agent Communication
   'orchestrator': runOrchestrator as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
-  // Phase 7 — Auto Publisher (Instagram direct + Buffer)
+  // Phase 7 — Auto Publisher (Instagram direct)
   'auto-publisher': runAutoPublisher,
-  'buffer-publisher': runBufferPublisher,
   'reel-publisher': runReelPublisher,
 }
 
