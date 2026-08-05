@@ -154,6 +154,9 @@ export async function createBufferPost(args: {
   channelIds: string[]
   text: string
   imageUrl?: string
+  videoUrl?: string          // 🆕 (5 Aug 2026) auto-publish daily reels — Buffer treats
+                             //    videos with 9:16 aspect as Reels/Shorts on IG/TikTok/YT
+  videoThumbnailUrl?: string // optional custom thumbnail; Buffer picks first frame if absent
   scheduledAt?: Date  // if not provided + status='scheduled', goes to queue
   status?: 'draft' | 'scheduled' | 'queued' | 'posting'
 }): Promise<BufferPostResult> {
@@ -174,7 +177,16 @@ export async function createBufferPost(args: {
     status,
   }
 
-  if (args.imageUrl) {
+  if (args.videoUrl) {
+    // 🆕 Video (reels/shorts). Buffer's GraphQL v2 accepts `videos` array under media.
+    // Instagram + TikTok + YouTube auto-treat 9:16 videos as Reels/Shorts.
+    input.media = {
+      videos: [{
+        url: args.videoUrl,
+        ...(args.videoThumbnailUrl ? { thumbnail: { url: args.videoThumbnailUrl } } : {}),
+      }],
+    }
+  } else if (args.imageUrl) {
     input.media = {
       photos: [{ url: args.imageUrl, altText: '' }],
     }

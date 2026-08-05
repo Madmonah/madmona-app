@@ -316,6 +316,26 @@ def main():
         "status": "ready", "campaign_tag": f"daily-{day}",
     })[0]
     print(f"[reel] ✓ DONE — id={row['id']}  url={public_url}")
+
+    # 🚀 Push to Buffer (auto-publish to IG + FB Group) via app webhook.
+    site  = os.environ.get('MADMONA_SITE_URL', 'https://www.madmonacairo.com')
+    cron  = os.environ.get('CRON_SECRET', '')
+    if cron:
+        try:
+            payload = json.dumps({
+                "reel_id": row["id"],
+                "video_url": public_url,
+                "listing_titles": [l["title"] for l in listings],
+            }).encode()
+            req = urllib.request.Request(f"{site}/api/hooks/reel-generated",
+                data=payload, method='POST',
+                headers={'Content-Type':'application/json', 'x-madmona-secret': cron})
+            with urllib.request.urlopen(req, timeout=30) as r:
+                print(f"[reel] ✓ pushed to Buffer: {r.read().decode()[:200]}")
+        except Exception as e:
+            print(f"[reel] ⚠ Buffer push failed (reel still uploaded): {e}")
+    else:
+        print("[reel] ⚠ CRON_SECRET not set — skipping auto-publish. Reel saved to DB for manual review.")
     return row
 
 if __name__ == "__main__":
