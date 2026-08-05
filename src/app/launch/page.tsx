@@ -110,7 +110,7 @@ export default function LaunchPage() {
           </p>
 
           <div className="bg-white rounded-3xl shadow-luxe p-6 mb-6">
-            <p className="text-sm text-gray-500 mb-3">شارك مع أصحابك واكسب مكافآت:</p>
+            <p className="text-sm text-gray-500 mb-3">شارك مضمونة مع أصحابك:</p>
             <div className="flex flex-wrap gap-2 justify-center">
               <a
                 href={`https://wa.me/?text=${encodeURIComponent('شوف خدمات مضمونة 🟢 - أول منصة مصرية لكل اللي يتأجر https://madmonacairo.com/launch')}`}

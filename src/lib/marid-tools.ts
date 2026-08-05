@@ -1038,6 +1038,21 @@ async function getReferralCode(a: { phone: string; name?: string }): Promise<Too
   const phone = (a.phone || '').replace(/\D/g, '')
   if (!phone) return { ok: false, error: 'الرقم مطلوب' }
 
+  // «شير واكسب» مخفي عن العملاء حاليًا — البوابة الوحيدة referral_config.is_enabled.
+  // لو رجع مفعّل تاني، الأداة تشتغل زي الأول من غير أي تغيير. لو الفحص فشل، نعتبره موقوف احتياطيًا.
+  try {
+    const { data: cfg } = await db
+      .from('referral_config')
+      .select('is_enabled')
+      .eq('id', 'current')
+      .maybeSingle()
+    if (!cfg || cfg.is_enabled !== true) {
+      return { ok: true, قول_للعميل: 'برنامج «شير واكسب» موقوف مؤقتًا دلوقتي. تابعنا وهنعلن أول ما يرجع 🙏' }
+    }
+  } catch {
+    return { ok: true, قول_للعميل: 'برنامج «شير واكسب» موقوف مؤقتًا دلوقتي.' }
+  }
+
   try {
     const { data, error } = await db.rpc('get_or_create_referral_code', { p_phone: phone })
     if (error || !data) return { ok: false, error: error?.message || 'مش قادر أجيب الكود' }
