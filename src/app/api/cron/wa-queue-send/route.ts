@@ -75,13 +75,18 @@ export async function GET(request: NextRequest) {
   }
 
   // ── ٣) الرسايل المستحقة ──────────────────────────────────────────────
-  const { data: dueRaw } = await supabaseAdmin
+  const { data: dueRaw, error: dueErr } = await supabaseAdmin
     .from('whatsapp_campaign_messages')
     .select('id, recipient_phone, recipient_name, message_content, attempts')
     .eq('status', 'queued')
     .lte('scheduled_for', new Date().toISOString())
     .order('scheduled_for', { ascending: true })
     .limit(MAX_PER_RUN)
+
+  // 🔎 (5 Aug 2026) ماتبلعش الخطأ — ده كان مخبي عطل الطابور المتجمد
+  if (dueErr) {
+    return NextResponse.json({ ok: false, error: 'due query failed', detail: dueErr.message })
+  }
 
   const due = (dueRaw ?? []) as unknown as QueueRow[]
   if (due.length === 0) {
@@ -92,13 +97,18 @@ export async function GET(request: NextRequest) {
 
   for (const row of due) {
     // قفل متفائل — نحوّل الحالة قبل الإرسال عشان مانبعتش مرتين
-    const { data: locked } = await supabaseAdmin
+    const { data: locked, error: lockErr } = await supabaseAdmin
       .from('whatsapp_campaign_messages')
       .update({ status: 'sending', attempts: (row.attempts ?? 0) + 1 } as never)
       .eq('id', row.id)
       .eq('status', 'queued')
       .select('id')
 
+    // 🔎 (5 Aug 2026) لو القفل فشل بخطأ فعلي — سجّله في الرد بدل البلع
+    if (lockErr) {
+      results.push({ id: row.id, phone: row.recipient_phone, ok: false, error: 'lock: ' + lockErr.message })
+      continue
+    }
     if (!locked || locked.length === 0) continue // حد تاني خدها
 
     const conversationId = await upsertConversation({
