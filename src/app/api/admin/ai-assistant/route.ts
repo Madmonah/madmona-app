@@ -46,7 +46,6 @@ CREATIVE TEAM (7):
 - reel-script-writer: كتابة scripts للـ reels (15-30 sec)
 - listing-photographer: تنسيق صور الـ listings
 - instagram-publisher: نشر على Instagram (post/carousel/reel)
-- buffer-publisher: جدولة posts عبر Buffer (IG/FB/TikTok)
 - auto-publisher: نشر تلقائي multi-platform
 
 MARKETING TEAM (10):
