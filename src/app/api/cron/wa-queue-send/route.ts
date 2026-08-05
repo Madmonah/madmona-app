@@ -123,6 +123,9 @@ export async function GET(request: NextRequest) {
       conversationId: conversationId ?? undefined,
       agentName: 'المارد',
       aiGenerated: false,
+      // 🔧 (5 Aug 2026) من غير session بيقع على جسر Baileys الميت ويرجع 404
+      // (المصيدة المسجلة في الذاكرة) — لازم نحدد جلسة OpenWA صراحةً
+      session: process.env.WA_CAMPAIGN_SESSION || 'madmona-982',
     })
 
     await supabaseAdmin
