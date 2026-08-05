@@ -317,6 +317,44 @@ def main():
     })[0]
     print(f"[reel] ✓ DONE — id={row['id']}  url={public_url}")
 
+    # 📢 Post to Telegram channel via Bot API (fully autonomous, no browser needed).
+    #    Token stored in whatsapp_config table (key=telegram_bot_token).
+    try:
+        tg = sb_get('/rest/v1/whatsapp_config', {'select': 'key,value', 'key': 'in.(telegram_bot_token,telegram_channel_chat)'})
+        tg_map = {r['key']: r['value'] for r in tg}
+        token = tg_map.get('telegram_bot_token', '')
+        chat  = tg_map.get('telegram_channel_chat', '@madmona_cairo')
+        if token:
+            bullets = "\n".join(f"• {t[:60]}" for t in [l['title'] for l in listings][:5])
+            caption = (f"🚀 مضمونة — أحسن العروض اليوم:\n\n{bullets}\n\n"
+                       f"👇 كل التفاصيل والحجز في الأب\nmadmonacairo.com\n\n"
+                       f"أو كلّم المارد على واتساب: 0100 222 9982\n\n"
+                       f"#مضمونة #القاهرة_الجديدة #عقارات #ريلز")
+            body = urllib.parse.urlencode({
+                'chat_id': chat, 'video': public_url, 'caption': caption,
+                'parse_mode': 'HTML', 'supports_streaming': 'true',
+            }).encode()
+            req = urllib.request.Request(f"https://api.telegram.org/bot{token}/sendVideo", data=body, method='POST')
+            with urllib.request.urlopen(req, timeout=90) as r:
+                tg_res = json.loads(r.read())
+            if tg_res.get('ok'):
+                msg = tg_res['result']
+                tg_url = f"https://t.me/{chat.lstrip('@')}/{msg['message_id']}"
+                print(f"[reel] ✓ posted to Telegram: {tg_url}")
+                # Record telegram publish on the row via PATCH
+                try:
+                    req = urllib.request.Request(f"{SUPA_URL}/rest/v1/generated_reels?id=eq.{row['id']}",
+                        data=json.dumps({"status":"published","published_to":{"telegram":{"chat":chat,"message_id":msg['message_id'],"url":tg_url}}}).encode(),
+                        method='PATCH',
+                        headers={'apikey': SUPA_KEY, 'Authorization': f'Bearer {SUPA_KEY}',
+                                 'Content-Type':'application/json','Prefer':'return=minimal'})
+                    urllib.request.urlopen(req, timeout=10).read()
+                except Exception as _: pass
+            else:
+                print(f"[reel] ⚠ Telegram post failed: {tg_res}")
+    except Exception as e:
+        print(f"[reel] ⚠ Telegram push errored: {e}")
+
     # 🚀 Push to Buffer (auto-publish to IG + FB Group) via app webhook.
     site  = os.environ.get('MADMONA_SITE_URL', 'https://www.madmonacairo.com')
     cron  = os.environ.get('CRON_SECRET', '')
