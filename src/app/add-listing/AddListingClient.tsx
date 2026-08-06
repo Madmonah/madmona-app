@@ -640,6 +640,32 @@ function AddListingPageInner({
 
         {step === 1 && (
           <>
+            {/* 🧞 (٦ أغسطس ٢٠٢٦ — محمد) تابين: يكتب بنفسه، أو يسيب المارد يعملهاله
+                من الشات. المارد عنده أداة create_listing_draft فبيقدر يكمّل
+                الإعلان من كلام عادي أو صور منيو/بروشور. */}
+            <div className="flex gap-2 mb-6 p-1 rounded-2xl bg-[#F5F4F0] border border-[#E5E5E0]">
+              <span
+                className="flex-1 text-center py-2.5 px-3 rounded-xl bg-white text-[#1A2E26] text-sm font-bold shadow-sm cursor-default"
+                aria-current="page"
+              >
+                ✍️ اكتبها بنفسك
+              </span>
+              <a
+                href="/chat/marid?intent=add-listing"
+                onClick={() => trackEvent({ event_type: 'add_listing_via_marid_click', metadata: { step } })}
+                className="flex-1 text-center py-2.5 px-3 rounded-xl text-[#1F6F5F] text-sm font-bold no-underline hover:bg-white/70 transition-colors"
+              >
+                🧞 ضيّفها مع المارد
+              </a>
+            </div>
+            <p className="text-xs text-gray-500 -mt-4 mb-6 text-center">
+              مش فاضي تملا الفورم؟ ابعت التفاصيل أو صور المنيو/البروشور للمارد في{' '}
+              <a href="/chat/marid?intent=add-listing" className="text-[#1F6F5F] font-bold underline">
+                شات مضمونة
+              </a>{' '}
+              وهو يعملهالك.
+            </p>
+
             {/* 🧹 (٢٩ يوليو ٢٠٢٦ — محمد) شريط «ارفع إعلاناتك بالجملة» اتشال من فوق خالص. */}
             <StepCategory
               value={draft.category_slug}

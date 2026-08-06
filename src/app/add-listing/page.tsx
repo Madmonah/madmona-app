@@ -93,6 +93,26 @@ function StaticPageFallback() {
       </header>
 
       <main className="px-5 py-6 pb-8 max-w-2xl mx-auto">
+        {/* نفس التابين اللي في الويزارد — عشان مايظهروش فجأة بعد التحميل */}
+        <div className="flex gap-2 mb-6 p-1 rounded-2xl bg-[#F5F4F0] border border-[#E5E5E0]">
+          <span className="flex-1 text-center py-2.5 px-3 rounded-xl bg-white text-[#1A2E26] text-sm font-bold shadow-sm">
+            ✍️ اكتبها بنفسك
+          </span>
+          <a
+            href="/chat/marid?intent=add-listing"
+            className="flex-1 text-center py-2.5 px-3 rounded-xl text-[#1F6F5F] text-sm font-bold no-underline"
+          >
+            🧞 ضيّفها مع المارد
+          </a>
+        </div>
+        <p className="text-xs text-gray-500 -mt-4 mb-6 text-center">
+          مش فاضي تملا الفورم؟ ابعت التفاصيل أو صور المنيو/البروشور للمارد في{' '}
+          <a href="/chat/marid?intent=add-listing" className="text-[#1F6F5F] font-bold underline">
+            شات مضمونة
+          </a>{' '}
+          وهو يعملهالك.
+        </p>
+
         <h2 className="text-lg font-semibold mb-4">إيه اللي عايز تضيفه؟</h2>
 
         <div className="grid grid-cols-2 gap-3" aria-hidden>
