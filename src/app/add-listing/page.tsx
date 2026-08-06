@@ -43,75 +43,83 @@ const SAMPLE_CATEGORIES = [
 
 /**
  * Server-rendered HTML shown before client JS hydrates.
- * Matches the visual identity of the interactive wizard so users on slow
- * connections see a real page, not a "Loading..." placeholder.
+ *
+ * 🐞 (٦ أغسطس ٢٠٢٦ — بلاغ محمد: «خانة ضيف بتفتح التصميم القديم الأخضر الأول»)
+ *    الفولباك ده كان لسه بالثيم الأخضر الغامق القديم (`bg-[#1F6F5F]`) بينما
+ *    الويزارد نفسه (AddListingClient) اتعمله ريديزاين لثيم فاتح
+ *    (`bg-[#FAFAF7]` / `text-[#1A2E26]`). النتيجة: المستخدم يشوف صفحة خضرا
+ *    غامقة الأول وبعدين تتقلب فاتحة لما الـJS يحمّل — «فلاش» واضح ومزعج.
+ *
+ *    دلوقتي الفولباك بيطابق التصميم الجديد **بالظبط** (نفس الخلفية والهيدر
+ *    والعنوان وشريط التقدم)، فالانتقال بقى غير مرئي.
+ *
+ * ⚠️ قاعدة: أي تغيير في شكل هيدر `AddListingClient` لازم ينعكس هنا،
+ *    وإلا الفلاش هيرجع تاني.
  */
 function StaticPageFallback() {
   return (
     <div
       dir="rtl"
       lang="ar"
-      className="min-h-screen bg-[#1F6F5F] text-[#FAF7F0]"
+      className="min-h-screen bg-[#FAFAF7] text-[#1A2E26]"
     >
-      <header className="px-5 pt-8 pb-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-6">
-            <div className="text-4xl mb-3" aria-hidden>
-              📝
-            </div>
-            <h1 className="text-2xl md:text-3xl font-black mb-2">
-              أضف إعلانك في <span className="text-[#2FA084]">5 خطوات</span>
-            </h1>
-            <p className="text-[#FAF7F0]/80 text-sm md:text-base">
-              ابدأ من غير ما تعمل حساب — هنعملك واحد في الآخر تلقائيًا
-            </p>
+      {/* هيدر مطابق للويزارد */}
+      <header className="px-5 pt-6 pb-4 border-b border-[#E5E5E0]">
+        <div className="flex items-center justify-between max-w-2xl mx-auto">
+          <div className="flex items-center gap-3">
+            <div className="text-2xl font-bold tracking-tight">مضمونة</div>
+            <span className="text-xs text-[#1F6F5F] uppercase tracking-widest">MADMONA</span>
           </div>
+          <a href="/" className="text-xs text-gray-600 no-underline">
+            ← الرئيسية
+          </a>
+        </div>
+        <h1 className="text-xl font-semibold mt-5 max-w-2xl mx-auto">
+          ضيف منتجك في 60 ثانية
+        </h1>
+        <p className="text-sm text-gray-600 mt-1 max-w-2xl mx-auto">
+          خطوة واحدة من 5 — مش لازم تعمل حساب دلوقتي
+        </p>
 
-          {/* progress dots */}
-          <div className="grid grid-cols-5 gap-1 mb-2" aria-hidden>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <div
-                key={n}
-                className={`h-1.5 rounded-full ${n === 1 ? 'bg-[#2FA084]' : 'bg-[#FAF7F0]/15'}`}
-              />
-            ))}
+        {/* شريط التقدم — نفس مقاسات الويزارد (الخطوة 1 = 20%) */}
+        <div className="mt-4 max-w-2xl mx-auto">
+          <div className="h-1 bg-[#F5F4F0] rounded-full overflow-hidden">
+            <div className="h-full bg-[#1F6F5F]" style={{ width: '20%' }} />
           </div>
-          <p className="text-xs text-[#FAF7F0]/60 text-center">
-            الخطوة 1 من 5
-          </p>
+          <div className="text-xs text-gray-500 mt-2 text-center">
+            خطوة 1 من 5
+          </div>
         </div>
       </header>
 
-      <main className="px-5 pb-8 max-w-2xl mx-auto">
-        <h2 className="text-lg font-bold mb-4">إيه اللي عايز تضيفه؟ — اختار التصنيف</h2>
+      <main className="px-5 py-6 pb-8 max-w-2xl mx-auto">
+        <h2 className="text-lg font-semibold mb-4">إيه اللي عايز تضيفه؟</h2>
 
         <div className="grid grid-cols-2 gap-3" aria-hidden>
           {SAMPLE_CATEGORIES.map((c, i) => (
             <div
               key={i}
-              className="p-4 rounded-xl bg-[#FAF7F0]/5 border border-[#FAF7F0]/15 flex items-center gap-3"
+              className="p-4 rounded-xl bg-white border border-[#E5E5E0] flex items-center gap-3"
             >
               <span className="text-2xl">{c.emoji}</span>
-              <span>{c.label}</span>
+              <span className="text-sm">{c.label}</span>
             </div>
           ))}
         </div>
 
-        <div className="mt-6 text-center text-xs text-[#FAF7F0]/50">
-          <span className="inline-block animate-pulse">
-            جاري تحميل الفورم التفاعلي…
-          </span>
+        <div className="mt-6 text-center text-xs text-gray-400">
+          <span className="inline-block animate-pulse">جاري التحميل…</span>
         </div>
 
-        {/* JS-disabled escape hatch */}
+        {/* مخرج الطوارئ لو الـJS مقفول */}
         <noscript>
-          <div className="mt-6 p-4 rounded-xl bg-amber-900/30 border border-amber-700/40">
+          <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-[#1A2E26]">
             <p className="font-bold mb-1">⚠️ الفورم محتاج JavaScript</p>
             <p className="text-sm">
               لو الصفحة مش بتفتح،{' '}
               <a
                 href="https://wa.me/201002229982?text=عايز%20أضيف%20إعلان"
-                className="underline text-[#2FA084] font-bold"
+                className="underline text-[#1F6F5F] font-bold"
               >
                 كلمنا على واتس
               </a>{' '}
@@ -120,19 +128,18 @@ function StaticPageFallback() {
           </div>
         </noscript>
 
-        {/* Hydration-failure escape hatch (visible if JS loads but the
-            client wizard fails to render within ~5 seconds) */}
+        {/* مخرج لو الـJS حمّل بس الويزارد فشل */}
         <div className="mt-4 text-center">
           <a
             href="https://wa.me/201002229982?text=عايز%20أضيف%20إعلان%20والفورم%20مش%20شغال"
-            className="inline-block text-xs text-[#FAF7F0]/60 hover:text-[#2FA084] underline"
+            className="inline-block text-xs text-gray-500 hover:text-[#1F6F5F] underline"
           >
             عندك مشكلة في تحميل الصفحة؟ كلمنا واتس
           </a>
         </div>
       </main>
 
-      <footer className="px-5 pb-8 mt-4 max-w-2xl mx-auto text-center text-xs text-[#FAF7F0]/50">
+      <footer className="px-5 pb-8 mt-4 max-w-2xl mx-auto text-center text-xs text-gray-400">
         مضمونة — معاملاتك مضمونة
       </footer>
     </div>
