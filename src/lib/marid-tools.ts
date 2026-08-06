@@ -1624,13 +1624,48 @@ async function completeTask(a: { query: string }): Promise<ToolResult> {
     .limit(1)
     .maybeSingle()
   const task = found as { id: string; title: string } | null
-  if (!task) return { ok: false, error: `مالقيتش مهمة مفتوحة فيها «${query}»` }
   const now = new Date().toISOString()
+
+  // 🐞 (٦ أغسطس ٢٠٢٦) مهام الشات بتتسجّل في `daily_tasks` (عبر add_chat_task)
+  //    مش في `flow_tasks`، فالإقفال كان بيقول «مالقيتش مهمة» على مهمة
+  //    اتعملت من الشات نفسه. دلوقتي بندوّر في الاتنين.
+  if (!task) {
+    const { data: dt } = await db
+      .from('daily_tasks')
+      .select('id, title_ar')
+      .neq('status', 'done')
+      .ilike('title_ar', `%${query}%`)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    const daily = dt as { id: string; title_ar: string } | null
+    if (!daily) return { ok: false, error: `مالقيتش مهمة مفتوحة فيها «${query}»` }
+    const { error: dErr } = await db
+      .from('daily_tasks')
+      .update({ status: 'done', completed_at: now } as never)
+      .eq('id', daily.id)
+    if (dErr) return { ok: false, error: 'مقدرش أقفل المهمة', detail: dErr.message }
+    // نقفل نسخة العرض في flow_tasks كمان لو موجودة (add_chat_task بتعمل الاتنين)
+    await db
+      .from('flow_tasks')
+      .update({ status: 'done', completed_at: now, updated_at: now } as never)
+      .eq('title', daily.title_ar)
+      .neq('status', 'done')
+    return { ok: true, message: `تمام، اتقفلت المهمة: «${daily.title_ar}» ✅` }
+  }
+
   const { error } = await db
     .from('flow_tasks')
     .update({ status: 'done', completed_at: now, updated_at: now } as never)
     .eq('id', task.id)
   if (error) return { ok: false, error: 'مقدرش أقفل المهمة', detail: error.message }
+  // ونفس المهمة في قايمة الموظف اليومية لو دي مهمة شات
+  await db
+    .from('daily_tasks')
+    .update({ status: 'done', completed_at: now } as never)
+    .eq('title_ar', task.title)
+    .eq('task_kind', 'chat')
+    .neq('status', 'done')
   return { ok: true, message: `تمام، اتقفلت المهمة: «${task.title}» ✅` }
 }
 

@@ -54,7 +54,15 @@ async function generateForSupplier(supplierId: string, force: boolean) {
   const today = new Date().toISOString().slice(0, 10)
   const empIds = employees.map((e) => e.id)
 
-  // Idempotency: if AI (non-booking) tasks already generated today and not forced, skip
+  // Idempotency: if AI tasks already generated today and not forced, skip.
+  //
+  // 🐞 (٦ أغسطس ٢٠٢٦) الحارس ده كان **بيقفل التوليد بالكامل من ٤ أغسطس**:
+  //    كان بيعدّ أي مهمة `is_auto_generated` لليوم، والدالة `materialize_fixed_tasks`
+  //    بتنزّل مهام القوالب الثابتة (`task_kind='fixed'`, `is_auto_generated=true`)
+  //    حوالي ٣ص — يعني قبل الكرون ده بساعات. فكل يوم كان بيرجع
+  //    `skipped: already_generated_today` و`tasks_created: 0`، والموظفين
+  //    شايفين نفس القايمة الثابتة كل يوم من غير أي مهام ذكية.
+  //    الحل: نعدّ **مهام الوكيل بس** (`task_kind='variable'`) مش أي مهمة.
   if (!force) {
     const { count } = await supabaseAdmin
       .from('daily_tasks')
@@ -62,6 +70,7 @@ async function generateForSupplier(supplierId: string, force: boolean) {
       .eq('task_date', today)
       .is('source_booking_id', null)
       .eq('is_auto_generated', true)
+      .eq('task_kind', 'variable')
       .in('employee_id', empIds)
     if ((count ?? 0) > 0) return { supplier_id: supplierId, skipped: 'already_generated_today', tasks_created: 0 }
   }
@@ -126,7 +135,11 @@ ${roles.map((r) => `- ${r.role_ar} (${r.count})`).join('\n')}
         due_time: cleanTime(t.due_time),
         is_auto_generated: true,
         status: 'pending',
-        task_kind: 'fixed', // مهام يومية ثابتة مجدولة — «chat» محجوزة لمهام الشات الإضافية (add_chat_task)
+        // 🔑 «variable» = مهام الوكيل الذكية (المتغيرة كل يوم). «fixed» محجوزة
+        //    لقوالب `employee_fixed_tasks` عبر `materialize_fixed_tasks`،
+        //    و«chat» لمهام الشات (`add_chat_task`). التفرقة دي هي اللي بتخلي
+        //    حارس الـidempotency فوق يشتغل صح بدل ما يقفل التوليد.
+        task_kind: 'variable',
       })
     }
   }
