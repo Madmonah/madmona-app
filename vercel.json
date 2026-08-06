@@ -19,6 +19,7 @@
 
     { "path": "/api/cron/wa-queue-send", "schedule": "* 5-22 * * *" },
     { "path": "/api/cron/wa-queue-send", "schedule": "*/5 23,0-4 * * *" },
-    { "path": "/api/cron/wa-sync", "schedule": "*/10 * * * *" }
+    { "path": "/api/cron/wa-sync", "schedule": "*/10 * * * *" },
+    { "path": "/api/cron/wa-paced-send", "schedule": "*/3 * * * *" }
   ]
 }

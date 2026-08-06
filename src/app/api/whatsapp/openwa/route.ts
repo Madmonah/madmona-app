@@ -60,6 +60,29 @@ export async function POST(req: NextRequest) {
   //    (الميديا/الرقم المستقبِل) على أول رسايل حقيقية. نشيله بعد التثبيت.
   console.log('[openwa-relay] وارد', JSON.stringify({ event, keys: Object.keys(data), data }).slice(0, 2000))
 
+  // ✅ (٦ أغسطس ٢٠٢٦) إيصالات التسليم — `message.ack`
+  //    قبل كده كنا بنرمي كل حدث مش `message.received`، فمكانش عندنا **أي**
+  //    إثبات إن الرسالة الصادرة وصلت فعلًا (كل الصادر بيفضل `sent` للأبد).
+  //    مستويات الـack في whatsapp-web.js: 1 = وصلت السيرفر · 2 = اتسلّمت
+  //    للجهاز · 3 = اتقريت. بنسجّلها على `whatsapp_messages.wa_message_id`
+  //    عشان الإرسال المتدرّج (wa-paced-send) يقدر يستنى تأكيد وصول حقيقي.
+  if (event === 'message.ack') {
+    const waId = String(
+      (data.id as Record<string, unknown> | undefined)?._serialized ?? data.id ?? data.messageId ?? ''
+    )
+    const ack = Number(data.ack ?? data.ackLevel ?? 0)
+    if (waId && ack >= 2) {
+      await supabaseUntyped
+        .from('whatsapp_messages')
+        .update({
+          status: ack >= 3 ? 'read' : 'delivered',
+          status_updated_at: new Date().toISOString(),
+        })
+        .eq('wa_message_id', waId)
+    }
+    return NextResponse.json({ ok: true, event, ack, recorded: !!waId && ack >= 2 })
+  }
+
   // الوارد بس
   if (event && event !== 'message.received') {
     return NextResponse.json({ ok: true, skipped: 'not_received', event })
