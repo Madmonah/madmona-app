@@ -97,30 +97,20 @@ export async function GET(request: NextRequest) {
   }
 
   // ── ٢) الدفعة اللي فاتت وصلت؟ ───────────────────────────────────────
+  // البوابة بتقرا **صف الحملة نفسه**: ويبهوك `message.ack` بيحوّله من
+  // `sent` لـ`delivered`/`read`. فأي صف لسه `sent` = لسه ماوصلش.
   const { data: pendingAck } = await supabaseAdmin
     .from('whatsapp_campaign_messages')
     .select('id, whatsapp_msg_id, sent_at')
     .eq('status', 'sent')
-    .not('whatsapp_msg_id', 'is', null)
+    .eq('template_vars->>campaign_name', campaign)
     .gte('sent_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
     .order('sent_at', { ascending: false })
     .limit(20)
 
-  const recent = ((pendingAck ?? []) as Array<{ id: string; whatsapp_msg_id: string | null; sent_at: string }>)
-    .filter((r) => !!r.whatsapp_msg_id)
+  const waiting = (pendingAck ?? []) as Array<{ id: string; whatsapp_msg_id: string | null; sent_at: string }>
 
-  if (recent.length) {
-    const ids = recent.map((r) => r.whatsapp_msg_id as string)
-    const { data: acked } = await supabaseAdmin
-      .from('whatsapp_messages')
-      .select('wa_message_id, status')
-      .in('wa_message_id', ids)
-      .in('status', ['delivered', 'read'])
-    const ackedSet = new Set(
-      ((acked ?? []) as Array<{ wa_message_id: string }>).map((a) => a.wa_message_id)
-    )
-    const waiting = recent.filter((r) => !ackedSet.has(r.whatsapp_msg_id as string))
-
+  {
     if (waiting.length) {
       const oldest = waiting.reduce((a, b) => (a.sent_at < b.sent_at ? a : b))
       const ageMs = Date.now() - new Date(oldest.sent_at).getTime()

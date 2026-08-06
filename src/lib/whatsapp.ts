@@ -363,7 +363,12 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
         return { ok: false, error: `OpenWA: مفيش chatId للإرسال (to=${to || '—'})` }
       }
       const res = await sendTextViaOpenWa(params.session, chatId, params.body)
-      return res.ok ? { ok: true } : { ok: false, error: res.error }
+      // 🆔 (٦ أغسطس ٢٠٢٦) لازم نمرّر معرّف الرسالة لبرّه. كان بيتبلع هنا
+      //    (`{ ok: true }` من غير id)، فكل الصادر بيتسجّل بـwa_message_id فاضي
+      //    ويستحيل نطابق عليه إيصال التسليم.
+      return res.ok
+        ? { ok: true, wa_message_id: res.id }
+        : { ok: false, error: res.error }
     }
   }
 

@@ -72,13 +72,20 @@ export async function POST(req: NextRequest) {
     )
     const ack = Number(data.ack ?? data.ackLevel ?? 0)
     if (waId && ack >= 2) {
+      const status = ack >= 3 ? 'read' : 'delivered'
+      const now = new Date().toISOString()
+      // سجل الرسالة نفسه (لو اتسجّل)
       await supabaseUntyped
         .from('whatsapp_messages')
-        .update({
-          status: ack >= 3 ? 'read' : 'delivered',
-          status_updated_at: new Date().toISOString(),
-        })
+        .update({ status, status_updated_at: now })
         .eq('wa_message_id', waId)
+      // ✅ والأهم: صف الحملة — ده اللي `wa-paced-send` بيعتمد عليه كبوابة،
+      //    عشان مايكونش معتمد على إن الصادر اتسجّل في whatsapp_messages أصلًا.
+      await supabaseUntyped
+        .from('whatsapp_campaign_messages')
+        .update({ status, delivered_at: now, ...(ack >= 3 ? { read_at: now } : {}) })
+        .eq('whatsapp_msg_id', waId)
+        .in('status', ['sent', 'delivered'])
     }
     return NextResponse.json({ ok: true, event, ack, recorded: !!waId && ack >= 2 })
   }

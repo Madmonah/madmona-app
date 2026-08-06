@@ -80,8 +80,12 @@ export async function sendTextViaOpenWa(
       headers: jsonHeaders(),
       body: JSON.stringify({ chatId, text }),
     })
-    const d = (await r.json().catch(() => ({}))) as { id?: string; message?: string }
-    if (r.ok) return { ok: true, id: d.id }
+    // 🆔 (٦ أغسطس ٢٠٢٦) الردّ الحقيقي من OpenWA شكله `{"messageId":"3EB0…"}`
+    //    مش `{"id":…}`. كنا بنقرا `d.id` بس، فالمعرّف كان بيرجع دايمًا undefined
+    //    ومحدش يقدر يطابق إيصال التسليم (message.ack) على الرسالة — وده اللي
+    //    كان بيخلي بوابة «استنى تأكيد الوصول» في wa-paced-send مش شغالة أصلًا.
+    const d = (await r.json().catch(() => ({}))) as { id?: string; messageId?: string; message?: string }
+    if (r.ok) return { ok: true, id: d.messageId ?? d.id }
     if (isFalse500(r.status, String(d.message || ''))) return { ok: true }
     return { ok: false, error: d.message || `HTTP ${r.status}` }
   } catch (e) {
