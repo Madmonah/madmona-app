@@ -27,7 +27,9 @@ const money0 = (n: any) => Number(n || 0).toLocaleString('ar-EG')
 
 // ============ منطق حساب المستخلص ============
 function calcCertificate(project: any, inp: any, previousNet: number) {
-  const gross = num(inp.work_done_amount) + num(inp.materials_onsite) + num(inp.vo_amount) + num(inp.price_adjustment)
+  const supervision_pct = num(project?.supervision_pct)
+  const supervision_amount = (num(inp.work_done_amount) + num(inp.vo_amount)) * supervision_pct / 100  // إشراف على الأعمال المنفذة + الأوامر التغييرية
+  const gross = num(inp.work_done_amount) + num(inp.materials_onsite) + num(inp.vo_amount) + num(inp.price_adjustment) + supervision_amount
   const retention_pct = num(project?.retention_pct)
   const advance_pct = num(project?.advance_pct)
   const vat_pct = num(project?.vat_pct)
@@ -46,6 +48,7 @@ function calcCertificate(project: any, inp: any, previousNet: number) {
     gross_cumulative: gross, retention_amount, advance_recovery, net_cumulative,
     previous_net: previousNet, net_this_cert, vat_amount, withholding_tax, stamp_tax, net_payable,
     retention_pct, advance_pct, vat_pct, withholding_pct: WITHHOLDING_PCT, stamp_rate: STAMP_RATE,
+    supervision_pct, supervision_amount,
   }
 }
 
@@ -273,7 +276,8 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
               {/* Live breakdown */}
               <div className="bg-[#FAFAF7] rounded-2xl p-4">
                 <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1"><Calculator className="w-3.5 h-3.5" /> حساب المستخلص (تلقائي)</p>
-                <CalcRow label="الإجمالي التراكمي" value={livePreview.gross_cumulative} bold />
+                <CalcRow label={`(+) نسبة الإشراف ${livePreview.supervision_pct}%`} value={livePreview.supervision_amount} />
+                <CalcRow label="الإجمالي التراكمي (شامل الإشراف)" value={livePreview.gross_cumulative} bold />
                 <CalcRow label={`(−) محتجز ضمان ${livePreview.retention_pct}%`} value={-livePreview.retention_amount} />
                 <CalcRow label={`(−) استرداد دفعة مقدمة ${livePreview.advance_pct}%`} value={-livePreview.advance_recovery} />
                 <CalcRow label="= الصافي التراكمي" value={livePreview.net_cumulative} divider />
@@ -313,7 +317,8 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
                 <CalcRow label="مواد بالموقع" value={detail.materials_onsite} />
                 <CalcRow label="أوامر تغييرية" value={detail.vo_amount} />
                 <CalcRow label="فروق أسعار" value={detail.price_adjustment} />
-                <CalcRow label="الإجمالي التراكمي" value={detail.gross_cumulative} bold divider />
+                {num(detail.supervision_amount) > 0 && <CalcRow label={`(+) نسبة الإشراف ${detail.supervision_pct ?? 0}%`} value={num(detail.supervision_amount)} />}
+                <CalcRow label="الإجمالي التراكمي (شامل الإشراف)" value={detail.gross_cumulative} bold divider />
                 <CalcRow label={`(−) محتجز ضمان ${detail.retention_pct}%`} value={-num(detail.retention_amount)} />
                 <CalcRow label={`(−) استرداد دفعة مقدمة ${detail.advance_pct}%`} value={-num(detail.advance_recovery)} />
                 <CalcRow label="= الصافي التراكمي" value={detail.net_cumulative} divider />

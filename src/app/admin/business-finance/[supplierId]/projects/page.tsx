@@ -23,7 +23,7 @@ const statusMeta = (s: string) => STATUSES.find((x) => x.value === s) || STATUSE
 const emptyForm = {
   id: null as string | null,
   name: '', client_name: '', location: '',
-  contract_value: '', retention_pct: '5', advance_pct: '25', vat_pct: '14',
+  contract_value: '', retention_pct: '5', advance_pct: '25', vat_pct: '14', supervision_pct: '5',
   start_date: '', end_date: '', progress_pct: '0', status: 'active', notes: '',
 }
 
@@ -59,6 +59,7 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
       id: p.id, name: p.name || '', client_name: p.client_name || '', location: p.location || '',
       contract_value: String(p.contract_value ?? ''), retention_pct: String(p.retention_pct ?? '5'),
       advance_pct: String(p.advance_pct ?? '25'), vat_pct: String(p.vat_pct ?? '14'),
+      supervision_pct: String(p.supervision_pct ?? '5'),
       start_date: p.start_date || '', end_date: p.end_date || '',
       progress_pct: String(p.progress_pct ?? '0'), status: p.status || 'active', notes: p.notes || '',
     })
@@ -77,6 +78,7 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
       retention_pct: Number(form.retention_pct) || 0,
       advance_pct: Number(form.advance_pct) || 0,
       vat_pct: Number(form.vat_pct) || 0,
+      supervision_pct: Number(form.supervision_pct) || 0,
       start_date: form.start_date || null,
       end_date: form.end_date || null,
       progress_pct: Number(form.progress_pct) || 0,
@@ -179,7 +181,8 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
                     <div className="flex items-center gap-3 mt-2 text-[10px] text-[#6B7280]">
                       <span>محتجز {p.retention_pct}%</span>·
                       <span>مقدمة {p.advance_pct}%</span>·
-                      <span>ق.م {p.vat_pct}%</span>
+                      <span>ق.م {p.vat_pct}%</span>·
+                      <span>إشراف {p.supervision_pct ?? 5}%</span>
                     </div>
                   </div>
 
@@ -231,10 +234,11 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
               <Field label="قيمة التعاقد (ج) *">
                 <input type="number" value={form.contract_value} onChange={(e) => setForm({ ...form, contract_value: e.target.value })} className={inputCls} placeholder="0" />
               </Field>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Field label="محتجز %"><input type="number" value={form.retention_pct} onChange={(e) => setForm({ ...form, retention_pct: e.target.value })} className={inputCls} /></Field>
                 <Field label="مقدمة %"><input type="number" value={form.advance_pct} onChange={(e) => setForm({ ...form, advance_pct: e.target.value })} className={inputCls} /></Field>
                 <Field label="ق.م %"><input type="number" value={form.vat_pct} onChange={(e) => setForm({ ...form, vat_pct: e.target.value })} className={inputCls} /></Field>
+                <Field label="نسبة الإشراف %"><input type="number" value={form.supervision_pct} onChange={(e) => setForm({ ...form, supervision_pct: e.target.value })} className={inputCls} /></Field>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="تاريخ البدء"><input type="date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} className={inputCls} /></Field>

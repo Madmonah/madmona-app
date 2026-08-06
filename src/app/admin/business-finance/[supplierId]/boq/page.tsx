@@ -26,7 +26,7 @@ export default function BoqPage({ params }: { params: { supplierId: string } }) 
     (async () => {
       setLoading(true)
       // @ts-expect-error
-      const { data: list } = await supabase.from('bz_projects').select('id, code, name, contract_value').eq('supplier_id', supplierId).order('created_at', { ascending: false })
+      const { data: list } = await supabase.from('bz_projects').select('id, code, name, contract_value, supervision_pct').eq('supplier_id', supplierId).order('created_at', { ascending: false })
       setProjects(list || [])
       const urlP = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('project') : null
       setProjectId(urlP && (list || []).some((p: any) => p.id === urlP) ? urlP : ((list || [])[0]?.id || ''))
@@ -47,6 +47,9 @@ export default function BoqPage({ params }: { params: { supplierId: string } }) 
   const total = items.reduce((s, i) => s + num(i.amount), 0)
   const totalExecuted = items.reduce((s, i) => s + num(i.executed_qty) * num(i.unit_price), 0)
   const execPct = total > 0 ? (totalExecuted / total) * 100 : 0
+  const supervisionPct = num(project?.supervision_pct ?? 5)
+  const supervisionVal = total * supervisionPct / 100
+  const totalWithSupervision = total + supervisionVal
 
   function setExec(id: string, val: string) { setItems((prev) => prev.map((x) => x.id === id ? { ...x, executed_qty: val } : x)) }
   async function saveExec(it: any) {
@@ -102,9 +105,11 @@ export default function BoqPage({ params }: { params: { supplierId: string } }) 
           <Empty supplierId={supplierId} />
         ) : (
           <>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
               <Stat label="عدد البنود" value={String(items.length)} />
-              <Stat label="إجمالي الجدول" value={`${money0(total)} ج`} primary />
+              <Stat label="إجمالي الجدول" value={`${money0(total)} ج`} />
+              <Stat label={`قيمة الإشراف (${supervisionPct}%)`} value={`${money0(supervisionVal)} ج`} />
+              <Stat label="الإجمالي شامل الإشراف" value={`${money0(totalWithSupervision)} ج`} primary />
               <Stat label="قيمة المنفّذ" value={`${money0(totalExecuted)} ج`} />
               <Stat label="نسبة التنفيذ" value={`${execPct.toFixed(1)}%`} />
             </div>
@@ -154,6 +159,16 @@ export default function BoqPage({ params }: { params: { supplierId: string } }) 
                       <td colSpan={2} className="px-3 py-3 text-left font-black text-[#1A2E26]">المنفّذ ({execPct.toFixed(1)}%)</td>
                       <td className="px-3 py-3 text-left font-mono font-black text-[#2FA084]">{money0(totalExecuted)}</td>
                       <td></td>
+                    </tr>
+                    <tr className="bg-[#FAFAF7]">
+                      <td colSpan={5} className="px-3 py-2 text-left font-bold text-[#6B7280]">(+) نسبة الإشراف ({supervisionPct}%)</td>
+                      <td className="px-3 py-2 text-left font-mono font-bold text-[#1A2E26]">{money0(supervisionVal)}</td>
+                      <td colSpan={4}></td>
+                    </tr>
+                    <tr className="bg-[#FAFAF7] border-t border-[#1F6F5F]/20">
+                      <td colSpan={5} className="px-3 py-3 text-left font-black text-[#1A2E26]">الإجمالي شامل الإشراف</td>
+                      <td className="px-3 py-3 text-left font-mono font-black text-[#1F6F5F]">{money0(totalWithSupervision)}</td>
+                      <td colSpan={4}></td>
                     </tr>
                   </tfoot>
                 </table>

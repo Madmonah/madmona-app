@@ -50,7 +50,10 @@ const cairo = Cairo({
 
 // Runs before paint: reads the saved language and sets <html lang/dir>
 // so switching to English never flashes RTL first.
-const NO_FLASH_LANG = `(function(){try{var m=document.cookie.match(/(?:^|; )madmona_lang=(ar|en)/);var l=(safeStorage.get('madmona_lang')||(m&&m[1])||'ar');var e=document.documentElement;e.lang=l;e.dir=(l==='en'?'ltr':'rtl');}catch(e){}})();`
+// ⚠️ (6 Aug 2026) ده سكريبت inline بيتنفذ في المتصفح — مفيش imports هنا!
+//    كان فيه `safeStorage.get(...)` (متعرّفش في المتصفح) ⇒ ReferenceError صامت
+//    والسكريبت كان no-op من ساعتها. رجعناه localStorage مباشرة جوه try/catch.
+const NO_FLASH_LANG = `(function(){try{var m=document.cookie.match(/(?:^|; )madmona_lang=(ar|en)/);var s=null;try{s=window.localStorage.getItem('madmona_lang')}catch(e){}var l=(s||(m&&m[1])||'ar');var e=document.documentElement;e.lang=l;e.dir=(l==='en'?'ltr':'rtl');}catch(e){}})();`
 
 
 export const metadata: Metadata = {
@@ -219,7 +222,7 @@ const websiteJsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" className={`${tajawal.variable} ${inter.variable} ${cairo.variable}`}>
+    <html lang="ar" dir="rtl" suppressHydrationWarning className={`${tajawal.variable} ${inter.variable} ${cairo.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: NO_FLASH_LANG }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }} />

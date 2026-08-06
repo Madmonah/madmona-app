@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import {
   ArrowLeft, Compass, ShieldCheck, Clock, Zap, MapPin, MessageCircle, Star,
@@ -153,13 +154,15 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-[#FAFAF7] overflow-x-hidden pb-20 md:pb-0">
       {/* 📱 MOBILE — new "2a" focused home (30 يوليو 2026). الديسكتوب تحت من غير تغيير. */}
-      <div className="md:hidden"><MUACampaignBanner /></div>
+      {/* ⚠️ (6 Aug 2026) MUACampaignBanner بيستخدم useSearchParams — لازم Suspense حواليه
+          وإلا Next بتحقن BAILOUT_TO_CLIENT_SIDE_RENDERING في الـHTML الستاتيك وبتكسر الـhydration */}
+      <div className="md:hidden"><Suspense fallback={null}><MUACampaignBanner /></Suspense></div>
       <MobileHome categories={rootCategories} liveCounts={liveCounts} />
 
       {/* 🖥️ DESKTOP — الهوم الحالي زي ما هو */}
       <div className="hidden md:block">
       <TopNav />
-      <MUACampaignBanner />
+      <Suspense fallback={null}><MUACampaignBanner /></Suspense>
       <FinancialTicker />
 
       <main className="relative">
