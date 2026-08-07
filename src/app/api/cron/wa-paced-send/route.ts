@@ -161,13 +161,20 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // كلهم عدّوا المهلة — الرقم سلّم أي حاجة تانية في نفس الفترة؟
+    // كلهم عدّوا المهلة — **الرقم ده بالذات** سلّم أي حاجة في نفس الفترة؟
+    //
+    // 🐞 (٧ أغسطس) الفحص كان على الحملة كلها مش على الرقم. 337 بيسلّم 98%،
+    //    فكان بيغطّي على 1551 اللي بعت 12 رسالة و**صفر اتسلّم** (رقم راجع من
+    //    حظر ولسه مقيّد: الجلسة ready والـAPI بيقبل ويدّي ID والرسالة تروح في
+    //    الفراغ). النتيجة إن رقم ميت فضل يبعت وإحنا فاكرينه شغّال.
+    //    القياس دلوقتي **لكل رقم لوحده** عبر `whatsapp_messages.session_id`.
     const { count: deliveredCount } = await supabaseAdmin
-      .from('whatsapp_campaign_messages')
+      .from('whatsapp_messages')
       .select('id', { count: 'exact', head: true })
-      .eq('template_vars->>campaign_name', campaign)
+      .eq('direction', 'outbound')
+      .eq('session_id', session)
       .in('status', ['delivered', 'read'])
-      .gte('sent_at', new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString())
+      .gte('created_at', new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString())
 
     if (!deliveredCount) {
       await halt(
