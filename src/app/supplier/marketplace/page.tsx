@@ -29,6 +29,7 @@ type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'rejected' | 'ready
 interface SupplierState {
   id: string
   business_name: string
+  logo_url?: string | null
   kyc_status: 'pending' | 'approved' | 'rejected' | 'suspended'
   kyc_rejection_reason: string | null
 }
@@ -115,6 +116,59 @@ function SupplierMarketplaceContent() {
   const [pulseStats, setPulseStats] = useState(false)
   const supplierIdRef = useRef<string | null>(null)
 
+  // ⚙️ (٧ أغسطس ٢٠٢٦) إعدادات المتجر — المالك يعدّل اسم المتجر واللوجو بنفسه
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [savingSettings, setSavingSettings] = useState(false)
+  const [settingsError, setSettingsError] = useState<string | null>(null)
+  const [nameDraft, setNameDraft] = useState('')
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+
+  const openSettings = () => {
+    if (!supplier) return
+    setNameDraft(supplier.business_name || '')
+    setLogoFile(null)
+    setLogoPreview(null)
+    setSettingsError(null)
+    setSettingsOpen(true)
+  }
+
+  const saveStoreSettings = async () => {
+    if (!supplier) return
+    setSavingSettings(true)
+    setSettingsError(null)
+    try {
+      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      if (!session) throw new Error('سجّل دخولك تاني وجرّب')
+      let logoUrl: string | null = null
+      if (logoFile) {
+        const fd = new FormData()
+        fd.append('file', logoFile)
+        fd.append('supplierId', supplier.id)
+        fd.append('kind', 'logo')
+        const up = await fetch('/api/supplier/upload-media', { method: 'POST', body: fd }).then(r => r.json())
+        if (!up.success) throw new Error(up.error || 'فشل رفع اللوجو')
+        logoUrl = up.url
+      }
+      const res = await fetch('/api/supplier/store-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ supplierId: supplier.id, businessName: nameDraft.trim(), logoUrl }),
+      }).then(r => r.json())
+      if (!res.success) throw new Error(res.error || 'فشل الحفظ')
+      setSupplier({
+        ...supplier,
+        business_name: nameDraft.trim() || supplier.business_name,
+        logo_url: logoUrl || supplier.logo_url,
+      })
+      setSettingsOpen(false)
+    } catch (e: any) {
+      setSettingsError(e?.message || 'حصل خطأ — جرّب تاني')
+    } finally {
+      setSavingSettings(false)
+    }
+  }
+
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
@@ -129,7 +183,7 @@ function SupplierMarketplaceContent() {
       // @ts-expect-error new schema
       let { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
-        .select('id, business_name, kyc_status, kyc_rejection_reason')
+        .select('id, business_name, logo_url, kyc_status, kyc_rejection_reason')
         .eq('profile_id', userId)
         .maybeSingle()
 
@@ -145,7 +199,7 @@ function SupplierMarketplaceContent() {
             role_label,
             can_manage_listings, can_publish_listings, can_delete_listings,
             can_manage_bookings, can_view_analytics, can_manage_team,
-            supplier:marketplace_suppliers(id, business_name, kyc_status, kyc_rejection_reason)
+            supplier:marketplace_suppliers(id, business_name, logo_url, kyc_status, kyc_rejection_reason)
           `)
           .eq('profile_id', userId)
           .eq('is_active', true)
@@ -473,6 +527,15 @@ function SupplierMarketplaceContent() {
             </div>
           </div>
           <div className="flex items-center gap-1.5">
+            {access.isOwner && (
+              <button
+                onClick={openSettings}
+                className="text-xs font-bold text-gray-600 hover:bg-gray-100 px-2 py-1 rounded-lg flex items-center gap-1"
+                title="إعدادات المتجر — الاسم واللوجو"
+              >
+                ⚙️ المتجر
+              </button>
+            )}
             {access.canManageBookings && (
               <Link href="/supplier/marketplace/bookings" className="text-xs font-bold text-[#1F6F5F] hover:bg-[#1F6F5F]/10 px-2 py-1 rounded-lg flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5" />
@@ -497,6 +560,71 @@ function SupplierMarketplaceContent() {
           </div>
         </div>
       </header>
+
+      {/* ⚙️ مودال إعدادات المتجر — اسم + لوجو (المالك بس) */}
+      {settingsOpen && access.isOwner && supplier && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+          onClick={() => { if (!savingSettings) setSettingsOpen(false) }}
+        >
+          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-black text-gray-900 mb-4">⚙️ إعدادات المتجر</h2>
+
+            <label className="block text-xs font-bold text-gray-600 mb-1">اسم المتجر</label>
+            <input
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
+              maxLength={80}
+              placeholder="اسم متجرك زي ما هيظهر للعملاء"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-[#1F6F5F]/50 mb-4"
+            />
+
+            <label className="block text-xs font-bold text-gray-600 mb-1">لوجو المتجر</label>
+            <div className="flex items-center gap-3 mb-5">
+              <span className="w-16 h-16 rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center flex-shrink-0">
+                {(logoPreview || supplier.logo_url) ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={logoPreview || supplier.logo_url || ''} alt="لوجو المتجر" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-2xl">🏬</span>
+                )}
+              </span>
+              <label className="text-xs font-bold text-[#1F6F5F] bg-[#1F6F5F]/10 hover:bg-[#1F6F5F]/20 px-4 py-2 rounded-xl cursor-pointer transition-colors">
+                اختار صورة
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] || null
+                    setLogoFile(f)
+                    setLogoPreview(f ? URL.createObjectURL(f) : null)
+                  }}
+                />
+              </label>
+            </div>
+
+            {settingsError && <p className="text-xs font-bold text-red-600 mb-3">{settingsError}</p>}
+
+            <div className="flex gap-2">
+              <button
+                onClick={saveStoreSettings}
+                disabled={savingSettings}
+                className="flex-1 py-3 bg-[#1F6F5F] text-white rounded-xl text-sm font-bold disabled:opacity-50"
+              >
+                {savingSettings ? 'بيحفظ…' : 'حفظ'}
+              </button>
+              <button
+                onClick={() => setSettingsOpen(false)}
+                disabled={savingSettings}
+                className="px-5 py-3 bg-gray-100 text-gray-700 rounded-xl text-sm font-bold"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <BookingToast
         visible={toastVisible}
