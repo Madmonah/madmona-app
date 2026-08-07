@@ -1047,8 +1047,10 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           </div>
         )}
 
-        {/* 🏬 تبديل عرض السوق: منتجات ↔ متاجر (مخفي جوه صفحة متجر معيّن وجوه العقارات) */}
-        {!supplierFilter && !inPropertyZone && (
+        {/* 🏬 تبديل عرض السوق: منتجات ↔ متاجر — بيظهر بس بعد ما العميل يختار
+            قسم فرعي (طلب محمد ٧ أغسطس: «متعرضوش في الكل») — ومخفي جوه العقارات
+            وجوه صفحة متجر معيّن */}
+        {!supplierFilter && !inPropertyZone && !!(selectedGroupSlug || selectedCategorySlug) && (
           <div className="mb-5 inline-flex items-center gap-1 bg-white rounded-full p-1 shadow-soft border border-gray-100">
             <button
               onClick={() => switchView('products')}
@@ -1065,7 +1067,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           </div>
         )}
 
-        {!loading && (viewMode === 'products' || !!supplierFilter || inPropertyZone) && (
+        {!loading && (viewMode === 'products' || !!supplierFilter || inPropertyZone || !(selectedGroupSlug || selectedCategorySlug)) && (
           <div className="mb-6 flex items-end justify-between flex-wrap gap-2">
             <div>
               <h2 className="text-2xl md:text-3xl font-black text-gray-900">
@@ -1085,7 +1087,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           </div>
         )}
 
-        {viewMode === 'stores' && !supplierFilter && !inPropertyZone ? (
+        {viewMode === 'stores' && !supplierFilter && !inPropertyZone && !!(selectedGroupSlug || selectedCategorySlug) ? (
           stores === null ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3, 4, 5, 6].map(i => (
@@ -1126,11 +1128,17 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
             }
             const trackOk = (tr?: string | null) => activeTrack === 'all' || tr === activeTrack ||
               (activeTrack === 'rentals' && tr === 'hybrid') || (activeTrack === 'products' && tr === 'sales')
+            // (٧ أغسطس ٢٠٢٦ — محمد) المتاجر بتظهر بعد اختيار قسم فرعي — فبنفلتر
+            // السيكشنات على الجروب/القسم المختار بدل ما نعرض الكل على بعضه.
+            const selCat = selectedCategorySlug ? allCategories.find(c => c.slug === selectedCategorySlug) : null
+            const selRootId = selCat ? (rootOf(selCat.id)?.id || null) : null
             const sections = [...secMap.values()]
               .filter(sec => !sec.root || trackOk(sec.root.track))
               // (٧ أغسطس ٢٠٢٦ — محمد) «مش عايزين صفحة للمتاجر في العقارات» —
               // العقارات ليها المطور/ريسيل، فمفيش سيكشن عقارات جوه المتاجر.
               .filter(sec => !(sec.root && (sec.root.name_ar || '').includes('عقار')))
+              .filter(sec => !selectedGroupSlug || (sec.root && sec.root.group_slug === selectedGroupSlug))
+              .filter(sec => !selRootId || (sec.root && sec.root.id === selRootId))
               .sort((a, b) => b.arr.length - a.arr.length)
             if (sections.length === 0) return (
               <div className="bg-white rounded-3xl shadow-soft p-12 md:p-20 text-center">
