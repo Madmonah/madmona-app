@@ -1168,7 +1168,8 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                   const nn = nounFor(sec.root?.name_ar || '')
                   // (٧ أغسطس ٢٠٢٦ — محمد) أي حساب عارض أكتر من منتج/صنف في نفس
                   // القسم بيتعامل كتجاري حتى لو مسجل فرد (زي توب وود ومكتب ضاحي).
-                  const isBiz = (s: StoreCard) => s.acc !== 'individual' || (s.secCount ?? s.count) > 1
+                  const isBiz = (s: StoreCard) => s.acc !== 'individual' || (s.secCount ?? s.count) > 1 ||
+                    /(مطعم|مطاعم|شركة|شركه|مؤسسة|مؤسسه|معرض|مكتب|سنتر|مركز|سوبر|ماركت|أسواق|اسواق|سلسلة|سلسله|كافيه|قاعة|قاعه|صيدلية|صيدليه)/.test(s.name || '')
                   const halves = [
                     { key: 'biz', n: nn.biz, arr: sec.arr.filter(isBiz) },
                     { key: 'solo', n: nn.solo, arr: sec.arr.filter(s => !isBiz(s)) },
