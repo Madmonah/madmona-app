@@ -82,11 +82,16 @@ export async function GET(request: NextRequest) {
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean)
+  //
+  // 🐞 (٧ أغسطس — بلاغ محمد: «مفيش ولا رسالة خرجت من 1551») المؤشر كان
+  //    بيتقدّم **في كل تشغيلة للكرون**، حتى التشغيلات اللي بتقف تستنى تأكيد
+  //    الوصول وماتبعتش حاجة. فالنمط بقى: تشغيلة تبعت (337) ← تشغيلة تستنى
+  //    (وتاكل دور 1551) ← تشغيلة تبعت (337 تاني)… يعني **1551 عمره ما جه
+  //    دوره**. الحل: المؤشر مايتقدّمش غير بعد ما رسالة تخرج فعلًا (تحت).
+  const rotIdx = Number(cfg.paced_send_rotate_idx || 0)
   let session: string
   if (rotation.length > 1) {
-    const idx = Number(cfg.paced_send_rotate_idx || 0) % rotation.length
-    session = rotation[idx]
-    await setConfig('paced_send_rotate_idx', String((idx + 1) % rotation.length))
+    session = rotation[rotIdx % rotation.length]
   } else {
     session = rotation[0] || cfg.paced_send_session || '201026222337'
   }
@@ -237,6 +242,12 @@ export async function GET(request: NextRequest) {
       .eq('id', row.id)
 
     results.push({ phone: row.recipient_phone, ok: sent.ok, error: sent.error })
+  }
+
+  // ✅ دلوقتي بس نقدّم دور التناوب — بعد ما الدفعة خرجت فعلًا، فالرقم التاني
+  //    ياخد دوره كامل في الدفعة الجاية بدل ما ياكله انتظار تأكيد.
+  if (rotation.length > 1 && results.length > 0) {
+    await setConfig('paced_send_rotate_idx', String((rotIdx + 1) % rotation.length))
   }
 
   const failed = results.filter((r) => !r.ok)

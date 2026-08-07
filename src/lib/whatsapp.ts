@@ -363,6 +363,24 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
         return { ok: false, error: `OpenWA: مفيش chatId للإرسال (to=${to || '—'})` }
       }
       const res = await sendTextViaOpenWa(params.session, chatId, params.body)
+
+      // 📝 (٧ أغسطس ٢٠٢٦ — محمد: «مش شايف الحملة بتبعت لحد») مسار OpenWA كان
+      //    بيرجع من غير ما يسجّل الرسالة الصادرة خالص، فكل اللي بيخرج منه
+      //    **مالهوش أي أثر** في `whatsapp_messages` — لا في اللوحة ولا في أي
+      //    تقرير، ومستحيل تعرف أي رقم بعت إيه. دلوقتي بيتسجّل زي مسار Baileys
+      //    بالظبط، بالجلسة ومعرّف الرسالة.
+      await logOutboundMessage({
+        conversationId: params.conversationId,
+        to,
+        body: params.body,
+        agentName: params.agentName,
+        aiGenerated: params.aiGenerated ?? false,
+        status: res.ok ? 'sent' : 'failed',
+        wa_message_id: res.ok ? res.id : undefined,
+        errorMessage: res.ok ? undefined : res.error,
+        session: params.session,
+      })
+
       // 🆔 (٦ أغسطس ٢٠٢٦) لازم نمرّر معرّف الرسالة لبرّه. كان بيتبلع هنا
       //    (`{ ok: true }` من غير id)، فكل الصادر بيتسجّل بـwa_message_id فاضي
       //    ويستحيل نطابق عليه إيصال التسليم.
