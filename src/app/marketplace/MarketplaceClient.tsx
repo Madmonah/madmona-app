@@ -1131,10 +1131,10 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
             // للعربيات، مطاعم للأكل، مقدمي خدمات للخدمات — و«متاجر» للمنتجات بس.
             const nounFor = (name: string): { label: string; unit: string; visit: string } => {
               if (name.includes('عقار')) return { label: 'المطورين والمكاتب', unit: 'مطور', visit: 'شوف المطور' }
-              if (/(مطعم|مطاعم|مأكول|كافيه|حلويات|طبخ|سوبر|مشوي|جريل|برجر|آسيوي|سوشي|بدوي|شرقي)/.test(name)) return { label: 'المطاعم', unit: 'مطعم', visit: 'زور المطعم' }
-              if (/(مركب|عربي|سيار|موتوسيكل|بحري|نقل)/.test(name)) return { label: 'المعارض', unit: 'معرض', visit: 'زور المعرض' }
               if (name.includes('قاع')) return { label: 'القاعات', unit: 'قاعة', visit: 'زور القاعة' }
               if (/(خدم|تجميل|طبي|تعليم|طباع|استشار|عناي|صيان|احتفال|مناسب|معدات)/.test(name)) return { label: 'مقدمي الخدمات', unit: 'مقدم خدمة', visit: 'شوف الصفحة' }
+              if (/(مطعم|مطاعم|مأكول|كافيه|حلويات|طبخ|سوبر|مشوي|جريل|برجر|آسيوي|سوشي|بدوي|شرقي)/.test(name)) return { label: 'المطاعم', unit: 'مطعم', visit: 'زور المطعم' }
+              if (/(مركب|عربي|سيار|موتوسيكل|بحري|نقل)/.test(name)) return { label: 'المعارض', unit: 'معرض', visit: 'زور المعرض' }
               return { label: 'المتاجر', unit: 'متجر', visit: 'زور المتجر' }
             }
             const storeCatNames = (s: StoreCard) => {
