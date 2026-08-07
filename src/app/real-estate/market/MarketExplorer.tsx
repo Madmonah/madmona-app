@@ -110,7 +110,7 @@ function bannerTone(it: Item): string {
   if (/زايد|أكتوبر|اكتوبر|جيزة|october|zayed/i.test(s))
     return 'from-[#7C2D12] to-[#EA580C]' // غرب
   if (/تجمع|قاهرة الجديدة|مستقبل|شروق|عبور|مدينتي|new cairo/i.test(s))
-    return 'from-[#1F6F5F] to-[#2FA084]' // شرق — هوية مضمونة
+    return 'from-[#B8860B] to-[#D4A017]' // شرق — دهبي (٧ أغسطس: محمد مش عايز أي أخضر يشبه الجرين كارد)
   return 'from-[#334155] to-[#64748B]' // الباقي
 }
 

@@ -320,7 +320,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
                   </>
                 ) : (
                   <>
-                    <span className={`absolute inset-0 bg-gradient-to-br ${vm?.tone || 'from-[#1F6F5F] to-[#2FA084]'}`}>
+                    <span className={`absolute inset-0 bg-gradient-to-br ${vm?.tone || 'from-[#B8860B] to-[#D4A017]'}`}>
                       <span className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
                       <span className="absolute inset-x-0 top-[14%] text-center text-[42px] select-none">{g.emoji || '🏷️'}</span>
                     </span>

@@ -63,9 +63,9 @@ export default function ProjectGallery({
   if (urls.length === 0) {
     return (
       <>
-        <div className="w-full h-64 md:h-80 rounded-2xl bg-gradient-to-br from-[#1F6F5F] to-[#2FA084] flex flex-col items-center justify-center gap-3 text-center px-6">
-          <Building2 className="w-12 h-12 text-white/90" strokeWidth={1.5} />
-          <p className="text-white font-bold text-lg">{title}</p>
+        <div className="w-full h-64 md:h-80 rounded-2xl flex flex-col items-center justify-center gap-3 text-center px-6" style={{ background: '#12261F' }}>
+          <Building2 className="w-12 h-12 text-[#F4EFE4]/90" strokeWidth={1.5} />
+          <p className="text-[#F4EFE4] font-bold text-lg">{title}</p>
         </div>
         {videoUrl && (
           <VideoBlock embed={embed} url={videoUrl} playing={playing} setPlaying={setPlaying} />
