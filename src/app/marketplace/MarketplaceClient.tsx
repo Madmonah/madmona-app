@@ -268,6 +268,15 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   useEffect(() => {
     try { setSelectedGroupSlug(new URLSearchParams(window.location.search).get('group')) } catch { /* ssr */ }
   }, [])
+  // 🏗️ (٧ أغسطس ٢٠٢٦ — محمد) جوه العقارات مفيش تبديل «متاجر/منتجات» خالص —
+  // العقارات ليها فلترها الخاص (من المطور/ريسيل) والمتاجر مش منطقية هناك.
+  const inPropertyZone =
+    selectedGroupSlug === 'sale-property' || selectedGroupSlug === 'properties' ||
+    (!!selectedCategorySlug && (
+      selectedCategorySlug.startsWith('sale-properties') ||
+      selectedCategorySlug.startsWith('sale-tourism') ||
+      selectedCategorySlug.startsWith('properties')
+    ))
   const [cityFilter, setCityFilter] = useState<string | null>(null)
   const [sortMenuOpen, setSortMenuOpen] = useState(false)
   const [cityMenuOpen, setCityMenuOpen] = useState(false)
@@ -1038,8 +1047,8 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           </div>
         )}
 
-        {/* 🏬 تبديل عرض السوق: منتجات ↔ متاجر (مخفي جوه صفحة متجر معيّن) */}
-        {!supplierFilter && (
+        {/* 🏬 تبديل عرض السوق: منتجات ↔ متاجر (مخفي جوه صفحة متجر معيّن وجوه العقارات) */}
+        {!supplierFilter && !inPropertyZone && (
           <div className="mb-5 inline-flex items-center gap-1 bg-white rounded-full p-1 shadow-soft border border-gray-100">
             <button
               onClick={() => switchView('products')}
@@ -1056,7 +1065,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           </div>
         )}
 
-        {!loading && (viewMode === 'products' || !!supplierFilter) && (
+        {!loading && (viewMode === 'products' || !!supplierFilter || inPropertyZone) && (
           <div className="mb-6 flex items-end justify-between flex-wrap gap-2">
             <div>
               <h2 className="text-2xl md:text-3xl font-black text-gray-900">
@@ -1076,7 +1085,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           </div>
         )}
 
-        {viewMode === 'stores' && !supplierFilter ? (
+        {viewMode === 'stores' && !supplierFilter && !inPropertyZone ? (
           stores === null ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3, 4, 5, 6].map(i => (
@@ -1119,6 +1128,9 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
               (activeTrack === 'rentals' && tr === 'hybrid') || (activeTrack === 'products' && tr === 'sales')
             const sections = [...secMap.values()]
               .filter(sec => !sec.root || trackOk(sec.root.track))
+              // (٧ أغسطس ٢٠٢٦ — محمد) «مش عايزين صفحة للمتاجر في العقارات» —
+              // العقارات ليها المطور/ريسيل، فمفيش سيكشن عقارات جوه المتاجر.
+              .filter(sec => !(sec.root && (sec.root.name_ar || '').includes('عقار')))
               .sort((a, b) => b.arr.length - a.arr.length)
             if (sections.length === 0) return (
               <div className="bg-white rounded-3xl shadow-soft p-12 md:p-20 text-center">
