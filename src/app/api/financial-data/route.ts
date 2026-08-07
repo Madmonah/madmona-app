@@ -139,8 +139,10 @@ function calculateGoldPricesEGP(spotUsdPerOz: number, usdToEgp: number): GoldPri
   // 1 troy ounce = 31.1035 grams
   const pricePerGramUsd = spotUsdPerOz / 31.1035
   const pricePerGramEgp24K = pricePerGramUsd * usdToEgp
-  // Egypt market premium ~5-8% on top of spot for retail
-  const retailMultiplier = 1.06
+  // (٧ أغسطس ٢٠٢٦) الـ1.06 «بريميوم» اتشال — محمد لاحظ إن الأسعار أعلى من السوق،
+  // وبمقارنة لايف مع سوق الصاغة (isagha): سبوت×سعر الدولار = السوق المصري بالظبط
+  // (عيار 24 عندهم 6,943 وحسبتنا من غير البريميوم 6,952 — فرق 0.1%).
+  const retailMultiplier = 1.0
 
   return [
     {
