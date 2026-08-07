@@ -262,7 +262,9 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   const retriesRef = useRef(0)
   // 🗂️ (17 Jul 2026) drill-down: المستخدم يختار مجموعة الأول (عقارات/عربيات/بيت...)
   // وبعدها تظهر فئاتها بس — بدل شريط واحد فيه كل حاجة. بتتقرا من ?group= (الهوم بيبعتها).
-  const [selectedGroupSlug, setSelectedGroupSlug] = useState<string | null>(null)
+  // (٧ أغسطس ٢٠٢٦) دعم الدخول المباشر بـ?group= — كانت التابات من الهوم بتفتح
+  // على «الكل» لأن الجروب مكانش بيتقري من الـURL (الباج القديم المعروف).
+  const [selectedGroupSlug, setSelectedGroupSlug] = useState<string | null>(searchParams.get('group'))
   useEffect(() => {
     try { setSelectedGroupSlug(new URLSearchParams(window.location.search).get('group')) } catch { /* ssr */ }
   }, [])
