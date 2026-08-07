@@ -75,10 +75,17 @@ export async function GET(request: NextRequest) {
   }
 
   // ── ٣) الرسايل المستحقة ──────────────────────────────────────────────
+  // ⚠️ (٦ أغسطس ٢٠٢٦) الحملات اللي ليها مُرسِل متخصص لازم تتستثنى هنا.
+  //    `paced_20260806` بيديرها `/api/cron/wa-paced-send` بإيقاع 3 كل 3 دقايق
+  //    وبوابة تأكيد تسليم. الكرون ده كان بيخطف صفوفها ويبعتها 1/دقيقة من 982 —
+  //    يعني بيكسر الإيقاع والبوابة الاتنين، و15 رسالة فشلت كده لما 982 فصل.
+  const PACED_CAMPAIGNS = ['paced_20260806']
+
   const { data: dueRaw, error: dueErr } = await supabaseAdmin
     .from('whatsapp_campaign_messages')
     .select('id, recipient_phone, recipient_name, message_content, attempts')
     .eq('status', 'queued')
+    .not('template_vars->>campaign_name', 'in', `(${PACED_CAMPAIGNS.join(',')})`)
     .lte('scheduled_for', new Date().toISOString())
     .order('scheduled_for', { ascending: true })
     .limit(MAX_PER_RUN)

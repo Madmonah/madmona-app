@@ -104,6 +104,9 @@ export async function GET(request: NextRequest) {
     .select('id, whatsapp_msg_id, sent_at')
     .eq('status', 'sent')
     .eq('template_vars->>campaign_name', campaign)
+    // الصفوف اللي مالهاش معرّف رسالة **مستحيل** يجيلها ack (اتبعتت قبل إصلاح
+    // التقاط الـid) — فمنستنّاش عليها، وإلا البوابة بتتقفل للأبد على ماضٍ ميت.
+    .not('whatsapp_msg_id', 'is', null)
     .gte('sent_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
     .order('sent_at', { ascending: false })
     .limit(20)
