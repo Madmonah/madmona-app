@@ -136,28 +136,46 @@ export async function GET(request: NextRequest) {
 
   const waiting = (pendingAck ?? []) as Array<{ id: string; whatsapp_msg_id: string | null; sent_at: string }>
 
-  {
-    if (waiting.length) {
-      const oldest = waiting.reduce((a, b) => (a.sent_at < b.sent_at ? a : b))
-      const ageMs = Date.now() - new Date(oldest.sent_at).getTime()
-      if (ageMs > ACK_WAIT_MS) {
-        await halt(
-          `${waiting.length} رسالة مامجاش لها تأكيد تسليم خلال ${Math.round(ACK_WAIT_MS / 60000)} دقيقة — الجلسة ${session}`
-        )
-        return NextResponse.json({
-          ok: false,
-          halted: true,
-          error: 'مفيش تأكيد وصول — وقفت الإرسال لحماية الرقم',
-          waiting: waiting.length,
-        })
-      }
+  // 🩹 (٦ أغسطس ٢٠٢٦ — بعد أول تشغيل حقيقي) الشرط الأول كان «كل الدفعة
+  //    تتسلّم»، وده وقّف الحملة كلها لأن **عميل واحد** موبايله مقفول فمجاش
+  //    منه إيصال. ده غلط: إحنا عايزين نتأكد إن **الرقم بيسلّم**، مش إن كل
+  //    مستقبِل أونلاين. فالقاعدة بقت: لو حتى رسالة واحدة من الشباك اتسلّمت
+  //    → الرقم سليم، كمّل وسيب المتأخرين. الوقفة بتحصل بس لو **مفيش ولا
+  //    إيصال خالص** بعد المهلة — يعني الرقم نفسه مش بيوصّل.
+  if (waiting.length) {
+    const fresh = waiting.filter(
+      (w) => Date.now() - new Date(w.sent_at).getTime() <= ACK_WAIT_MS
+    )
+    if (fresh.length) {
+      const newest = fresh.reduce((a, b) => (a.sent_at > b.sent_at ? a : b))
       return NextResponse.json({
         ok: true,
         skipped: 'مستني تأكيد وصول الدفعة اللي فاتت',
-        waiting: waiting.length,
-        waited_sec: Math.round(ageMs / 1000),
+        waiting: fresh.length,
+        waited_sec: Math.round((Date.now() - new Date(newest.sent_at).getTime()) / 1000),
       })
     }
+
+    // كلهم عدّوا المهلة — الرقم سلّم أي حاجة تانية في نفس الفترة؟
+    const { count: deliveredCount } = await supabaseAdmin
+      .from('whatsapp_campaign_messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('template_vars->>campaign_name', campaign)
+      .in('status', ['delivered', 'read'])
+      .gte('sent_at', new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString())
+
+    if (!deliveredCount) {
+      await halt(
+        `${waiting.length} رسالة من غير أي تأكيد تسليم خلال ${Math.round(ACK_WAIT_MS / 60000)} دقيقة، ومفيش ولا إيصال في آخر 6 ساعات — الجلسة ${session}`
+      )
+      return NextResponse.json({
+        ok: false,
+        halted: true,
+        error: 'الرقم مش بيسلّم خالص — وقفت الإرسال',
+        waiting: waiting.length,
+      })
+    }
+    // فيه تسليم فعلي → المتأخرين دول موبايلاتهم مقفولة، مايوقفوش الحملة
   }
 
   // ── ٣) الدفعة الجاية (3 كحد أقصى) ───────────────────────────────────
