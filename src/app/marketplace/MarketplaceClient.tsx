@@ -191,7 +191,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   // 🏬 (7 Aug 2026) طلب محمد: «ستور لكل مورد وطريقة العرض بالستور أو بالمنتج».
   // كل مورد ليه صفحة متجر جاهزة أصلًا على ?supplier=<id> — هنا بنضيف
   // طريقة اكتشافها: تبديل عرض السوق «منتجات / متاجر» + كارت متجر لكل تاجر.
-  type StoreCard = { id: string; name: string; logo: string | null; kyc: string | null; count: number; catCounts: Record<string, number>; photo: string | null }
+  type StoreCard = { id: string; name: string; logo: string | null; kyc: string | null; acc: string | null; count: number; catCounts: Record<string, number>; photo: string | null }
   const [viewMode, setViewMode] = useState<'products' | 'stores'>(
     searchParams.get('view') === 'stores' ? 'stores' : 'products'
   )
@@ -205,7 +205,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
     ;(async () => {
       const { data } = await supabaseBrowser
         .from('listings')
-        .select('supplier_id, title, category_id, supplier:marketplace_suppliers(id, business_name, logo_url, kyc_status), photos:listing_photos(url, is_primary)')
+        .select('supplier_id, title, category_id, supplier:marketplace_suppliers(id, business_name, logo_url, kyc_status, account_type), photos:listing_photos(url, is_primary)')
         .eq('status', 'published')
         .eq('is_directory', false)
         .not('supplier_id', 'is', null)
@@ -217,7 +217,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         if (!s?.id || !s.business_name) continue
         if (INTERNAL_SUPPLIER_IDS.includes(s.id)) continue
         if (isDemoListing(row.title || '')) continue
-        const entry = map.get(s.id) || { id: s.id, name: s.business_name, logo: s.logo_url, kyc: s.kyc_status, count: 0, catCounts: {} as Record<string, number>, photo: null }
+        const entry = map.get(s.id) || { id: s.id, name: s.business_name, logo: s.logo_url, kyc: s.kyc_status, acc: s.account_type || null, count: 0, catCounts: {} as Record<string, number>, photo: null }
         entry.count++
         if (row.category_id) entry.catCounts[row.category_id] = (entry.catCounts[row.category_id] || 0) + 1
         if (!entry.photo) {
@@ -1139,15 +1139,22 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                 <p className="text-sm text-gray-500">جرّب تاب تاني أو ارجع لـ«الكل»</p>
               </div>
             )
-            // (٧ أغسطس ٢٠٢٦ — طلب محمد) الاسم حسب القسم: مطورين للعقارات، معارض
-            // للعربيات، مطاعم للأكل، مقدمي خدمات للخدمات — و«متاجر» للمنتجات بس.
-            const nounFor = (name: string): { label: string; unit: string; visit: string } => {
-              if (name.includes('عقار')) return { label: 'المطورين والمكاتب', unit: 'مطور', visit: 'شوف المطور' }
-              if (name.includes('قاع')) return { label: 'القاعات', unit: 'قاعة', visit: 'زور القاعة' }
-              if (/(خدم|تجميل|طبي|تعليم|طباع|استشار|عناي|صيان|احتفال|مناسب|معدات)/.test(name)) return { label: 'مقدمي الخدمات', unit: 'مقدم خدمة', visit: 'شوف الصفحة' }
-              if (/(مطعم|مطاعم|مأكول|كافيه|حلويات|طبخ|سوبر|مشوي|جريل|برجر|آسيوي|سوشي|بدوي|شرقي)/.test(name)) return { label: 'المطاعم', unit: 'مطعم', visit: 'زور المطعم' }
-              if (/(مركب|عربي|سيار|موتوسيكل|بحري|نقل)/.test(name)) return { label: 'المعارض', unit: 'معرض', visit: 'زور المعرض' }
-              return { label: 'المتاجر', unit: 'متجر', visit: 'زور المتجر' }
+            // (٧ أغسطس ٢٠٢٦ — طلب محمد) كل قسم ليه تسميته: بيزنس مقابل أفراد.
+            // «منتجات: متاجر أو معارض حسب الصنف · مركبات: معرض أو ريسيل ·
+            //  قطع غيار: متاجر أو أشخاص · خدمات: سنتر تعليمي أو محامي حر وهكذا»
+            type StoreNoun = { label: string; visit: string }
+            const nounFor = (name: string): { biz: StoreNoun; solo: StoreNoun } => {
+              if (name.includes('عقار')) return { biz: { label: 'المطورين والمكاتب', visit: 'شوف المطور' }, solo: { label: 'ريسيل — من المالك', visit: 'شوف الإعلانات' } }
+              if (/(قطع غيار|إكسسوار)/.test(name)) return { biz: { label: 'المتاجر', visit: 'زور المتجر' }, solo: { label: 'أشخاص — بيع مباشر', visit: 'شوف الإعلانات' } }
+              if (name.includes('قاع')) return { biz: { label: 'القاعات', visit: 'زور القاعة' }, solo: { label: 'منظمين أفراد', visit: 'شوف الصفحة' } }
+              if (name.includes('تعليم')) return { biz: { label: 'سناتر ومراكز تعليمية', visit: 'شوف السنتر' }, solo: { label: 'مدرسين ومستقلين', visit: 'شوف الصفحة' } }
+              if (/(محام|استشار|مهني|طباع)/.test(name)) return { biz: { label: 'مكاتب وشركات', visit: 'شوف المكتب' }, solo: { label: 'مستقلين وأحرار', visit: 'شوف الصفحة' } }
+              if (/(طبي|تجميل|عناي)/.test(name)) return { biz: { label: 'عيادات ومراكز', visit: 'شوف المركز' }, solo: { label: 'أخصائيين مستقلين', visit: 'شوف الصفحة' } }
+              if (/(صيان|منزلي|احتفال|مناسب|معدات|خدم)/.test(name)) return { biz: { label: 'شركات ومقدمي خدمات', visit: 'شوف الصفحة' }, solo: { label: 'صنايعية ومستقلين', visit: 'شوف الصفحة' } }
+              if (/(مطعم|مطاعم|مأكول|كافيه|حلويات|طبخ|سوبر|مشوي|جريل|برجر|آسيوي|سوشي|بدوي|شرقي)/.test(name)) return { biz: { label: 'المطاعم', visit: 'زور المطعم' }, solo: { label: 'مطابخ بيتية وأفراد', visit: 'شوف الإعلانات' } }
+              if (/(مركب|عربي|سيار|موتوسيكل|بحري|نقل)/.test(name)) return { biz: { label: 'المعارض', visit: 'زور المعرض' }, solo: { label: 'ريسيل — أفراد', visit: 'شوف الإعلانات' } }
+              if (name.includes('أثاث')) return { biz: { label: 'المعارض', visit: 'زور المعرض' }, solo: { label: 'أفراد — بيع مباشر', visit: 'شوف الإعلانات' } }
+              return { biz: { label: 'المتاجر', visit: 'زور المتجر' }, solo: { label: 'أفراد — بيع مباشر', visit: 'شوف الإعلانات' } }
             }
             const storeCatNames = (s: StoreCard) => {
               const names = Object.keys(s.catCounts)
@@ -1157,18 +1164,33 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
             }
             return (
               <div className="space-y-10">
-                {sections.map(sec => (
+                {sections.map(sec => {
+                  const nn = nounFor(sec.root?.name_ar || '')
+                  const halves = [
+                    { key: 'biz', n: nn.biz, arr: sec.arr.filter(s => s.acc !== 'individual') },
+                    { key: 'solo', n: nn.solo, arr: sec.arr.filter(s => s.acc === 'individual') },
+                  ].filter(h => h.arr.length > 0)
+                  return (
                   <section key={sec.root?.id || 'other'}>
                     <div className="flex items-center gap-2 mb-4">
                       <h3 className="text-lg md:text-xl font-black text-gray-900">
-                        {sec.root ? `${sec.root.icon || '🏷️'} ${catName(sec.root)} — ${nounFor(sec.root.name_ar).label}` : '🏷️ متاجر تانية'}
+                        {sec.root ? `${sec.root.icon || '🏷️'} ${catName(sec.root)}` : '🏷️ متاجر تانية'}
                       </h3>
                       <span className="text-[11px] font-bold text-gray-400 bg-gray-100 rounded-full px-2 py-0.5 tabular">
-                        {sec.arr.length} {sec.root ? nounFor(sec.root.name_ar).unit : 'متجر'}
+                        {sec.arr.length}
                       </span>
                     </div>
+                    <div className="space-y-6">
+                    {halves.map(h => (
+                    <div key={h.key}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className={`text-[11px] font-black rounded-full px-3 py-1 ${h.key === 'biz' ? 'bg-[#12261F] text-[#F4EFE4]' : 'bg-amber-50 text-amber-800 border border-amber-200'}`}>
+                        {h.n.label}
+                      </span>
+                      <span className="text-[11px] font-bold text-gray-400 tabular">{h.arr.length}</span>
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {sec.arr.map((s, i) => (
+                      {h.arr.map((s, i) => (
                         <Link
                           key={s.id}
                           href={`/marketplace?supplier=${s.id}`}
@@ -1201,15 +1223,19 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                           <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                             <span className="text-[11px] font-bold text-[#2FA084]">مضمون عن طريق مضمونة</span>
                             <span className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold text-xs group-hover:gap-2 transition-all">
-                              <span>{sec.root ? nounFor(sec.root.name_ar).visit : 'زور المتجر'}</span>
+                              <span>{h.n.visit}</span>
                               <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
                             </span>
                           </div>
                         </Link>
                       ))}
                     </div>
+                    </div>
+                    ))}
+                    </div>
                   </section>
-                ))}
+                  )
+                })}
               </div>
             )
           })()
