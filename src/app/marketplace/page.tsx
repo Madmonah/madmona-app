@@ -30,9 +30,9 @@ async function getInitialListings(): Promise<SSRListing[]> {
     const { data, error } = await supa
       .from('listings')
       .select(`
-        id, title, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification,
+        id, title, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification, price_egp,
         category:categories(name_ar, name_en, icon, slug),
-        supplier:marketplace_suppliers(business_name, logo_url),
+        supplier:marketplace_suppliers(id, business_name, logo_url, kyc_status),
         photos:listing_photos(url, is_primary),
         pricing:pricing_rules(price, is_active)
       `)
@@ -46,7 +46,7 @@ async function getInitialListings(): Promise<SSRListing[]> {
     if (error) console.error('[marketplace SSR] rich query failed:', error.message);
     const { data: basic } = await supa
       .from('listings')
-      .select('id, title, slug, city, category:categories(name_ar, name_en, icon, slug), photos:listing_photos(url, is_primary)')
+      .select('id, title, slug, city, price_egp, category:categories(name_ar, name_en, icon, slug), photos:listing_photos(url, is_primary), pricing:pricing_rules(price, is_active)')
       .eq('status', 'published')
       .eq('is_directory', false)
       .order('created_at', { ascending: false })

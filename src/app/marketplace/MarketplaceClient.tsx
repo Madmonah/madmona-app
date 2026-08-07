@@ -40,6 +40,7 @@ interface Listing {
   status: string
   created_at: string
   requires_id_verification: boolean | null
+  price_egp?: number | string | null
   category: { name_ar: string; name_en: string | null; icon: string | null; slug: string } | null
   supplier: { id?: string | null; business_name?: string | null; logo_url?: string | null; kyc_status: string | null } | null
   photos: { url: string; is_primary: boolean; quality_flag?: string | null; is_placeholder?: boolean | null }[] | null
@@ -409,7 +410,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       let query = supabaseBrowser
         .from('listings')
         .select(`
-          id, title, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification,
+          id, title, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification, price_egp,
           category:categories(name_ar, name_en, icon, slug),
           supplier:marketplace_suppliers(id, business_name, logo_url, kyc_status),
           photos:listing_photos(url, is_primary, quality_flag, is_placeholder),
@@ -538,7 +539,12 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       .filter(p => p.is_active)
       .map(p => Number(p.price))
       .filter(p => p > 0)
-    return activePrices.length > 0 ? Math.min(...activePrices) : Infinity
+    if (activePrices.length > 0) return Math.min(...activePrices)
+    // (7 Aug 2026) fallback على listings.price_egp — كان فيه 184 من 215 إعلان
+    // منشور ليهم سعر في price_egp من غير أي صف في pricing_rules، فكانت
+    // الكروت بتقول «السعر عند الطلب» والأسعار مش باينة في الماركت كله.
+    const base = Number(listing.price_egp)
+    return base > 0 ? base : Infinity
   }
 
   const cities = Array.from(
