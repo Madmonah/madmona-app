@@ -20,6 +20,7 @@ import T from '@/components/T'
 import MadmonaShowcase from '@/components/MadmonaShowcase'
 import PropertyMarketHomeSection from '@/components/PropertyMarketHomeSection'
 import MobileHome from '@/components/MobileHome'
+import HomeRedesign from '@/components/redesign/HomeRedesign'
 
 // ============================================================
 // Home page — Single brand: "خدمات مضمونة"
@@ -159,113 +160,10 @@ export default async function HomePage() {
       <div className="md:hidden"><Suspense fallback={null}><MUACampaignBanner /></Suspense></div>
       <MobileHome categories={rootCategories} liveCounts={liveCounts} />
 
-      {/* 🖥️ DESKTOP — الهوم الحالي زي ما هو */}
+      {/* DESKTOP - New design (7 Aug 2026) from Madmona Redesign file */}
       <div className="hidden md:block">
-      <TopNav />
-      <Suspense fallback={null}><MUACampaignBanner /></Suspense>
-      <FinancialTicker />
-
-      <main className="relative">
-        {/* GET IN TOUCH (تواصل معانا) — منقول لفوق خالص: بين شريط العملات والأخبار (28 يوليو 2026) */}
-        <ContactSection />
-
-        {/* 🔴 NEWS HUB — فوق خالص، بعرض ماجازين (27 Jul 2026) */}
-        <section className="pt-4 md:pt-5 pb-3">
-          <div className="max-w-7xl mx-auto px-4">
-            {/* موبايل: ستوري */}
-            <NewsStories />
-            {/* ديسكتوب: ماجازين */}
-            <div className="hidden md:block">
-              <CompactNewsTabs />
-            </div>
-          </div>
-        </section>
-
-        {/* قسم الواجهة المتحرك — Hero + 5 chips + counters */}
-        <MadmonaShowcase stats={stats} />
-
-        {/* 📊 بورصة عقارات مضمونة — بعد الأصناف الـ5 مباشرة (27 Jul 2026).
-            Server component بيقرأ property_market_items + شريط لوجوهات المطورين، وبيخفي نفسه لو مفيش داتا. */}
-        <PropertyMarketHomeSection />
-
-        {/* 📥 ZAR واحد كبير لتحميل التطبيق — استبدل الـ dual CTAs المكررة */}
-        <div className="max-w-7xl mx-auto px-4 pt-6">
-          <DownloadAppBig />
-        </div>
-
-        {/* 📅 Daily message card — retention feature (Phase X, May 18 2026).
-            Renders a tappable card with greeting/tip/announcement.
-            Hides itself if no message available or user dismissed it.
-            Logged-in users get rotating personalized messages; anonymous
-            users get weighted-random from active pool. */}
-        <div className="max-w-7xl mx-auto px-4">
-          <DailyMessageCard />
-        </div>
-
-        {/* (الأخبار اتنقلت لفوق خالص — أول قسم في main، بعرض ماجازين) */}
-
-        {/* CATEGORIES */}
-        <section className="py-16 md:py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-end justify-between mb-10 md:mb-14 flex-wrap gap-4">
-              <div>
-                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2FA084] mb-3">COLLECTIONS</p>
-                <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95]">
-                  <span className="block"><T k="home.cats.title1" /></span>
-                  <span className="block italic font-light gradient-text-green"><T k="home.cats.title2" /></span>
-                </h2>
-              </div>
-              <Link href="/marketplace" className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-gray-900 hover:text-[#1F6F5F] transition-colors no-underline">
-                <span><T k="home.see_all" /></span>
-                <ArrowLeft className="w-4 h-4 rtl:rotate-0 ltr:rotate-180" />
-              </Link>
-            </div>
-
-            {rootCategories.length === 0 ? (
-              <div className="text-center py-12 text-gray-400 text-sm">
-                <T k="home.cats.empty" /> <Link href="/marketplace" className="text-[#1F6F5F] font-bold no-underline"><T k="home.see_all" /></Link>
-              </div>
-            ) : (
-              <CategoryTrackTabs categories={rootCategories} />
-            )}
-
-            <Link href="/marketplace" className="md:hidden mt-6 inline-flex items-center gap-2 text-sm font-bold text-gray-900 no-underline">
-              <span><T k="home.see_all" /></span>
-              <ArrowLeft className="w-4 h-4 rtl:rotate-0 ltr:rotate-180" />
-            </Link>
-          </div>
-        </section>
-
-        {/* HOW IT WORKS (٣ خطوات) — اتشال من الهوم (28 يوليو 2026) */}
-
-        {/* CONTACT — اتنقل لأول main فوق (28 يوليو 2026) */}
-
-        {/* FEATURED (المختار بعناية) — اتشال من الهوم (28 يوليو 2026)؛ لسه متاح في /marketplace */}
-
-        {/* FOOTER */}
-        <footer className="py-12 md:py-16 border-t border-gray-200 bg-white">
-          <div className="max-w-7xl mx-auto px-4 text-center">
-            <p className="font-black text-3xl gradient-text-green mb-2"><T k="common.brand" /></p>
-            <p className="text-xs text-gray-500 mb-6 tracking-[0.2em] uppercase"><T k="footer.tagline" /></p>
-
-            {/* Social media icons — اتشالت من الفوتر (بقت في قسم تواصل معانا) 29 يوليو 2026 */}
-
-            <div className="flex justify-center items-center gap-3 text-xs flex-wrap mb-6 px-4">
-              <Link href="/about" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors"><T k="footer.about_link" /></Link>
-              <span className="text-gray-300">·</span>
-              <Link href="/marketplace" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors"><T k="footer.services_link" /></Link>
-              <span className="text-gray-300">·</span>
-              <Link href="/privacy" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors"><T k="footer.privacy" /></Link>
-              <span className="text-gray-300">·</span>
-              <Link href="/terms" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors"><T k="footer.terms" /></Link>
-              <span className="text-gray-300">·</span>
-              <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#1F6F5F] font-medium no-underline transition-colors"><T k="footer.whatsapp" /></a>
-            </div>
-            <p className="text-[10px] text-gray-400"><T k="footer.copyright" /></p>
-          </div>
-        </footer>
-      </main>
-      </div>{/* /desktop */}
+        <HomeRedesign categories={rootCategories} stats={stats} liveCounts={liveCounts} heroImage={HERO_IMAGE} />
+      </div>
 
       <BottomNav />
     </div>
