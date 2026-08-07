@@ -94,6 +94,10 @@ export default function DeveloperLogosMarquee({ multiRow = false }: { multiRow?:
 
       <style jsx>{`
         .marquee-mask {
+          /* (7 Aug 2026) الصفحة RTL فالشريط كان بيتزحلق بره حدود الماسك
+             ويفضل القسم شكله فاضي على الديسكتوب معظم الوقت — تثبيت اتجاه
+             الماسك LTR بيخلي أنيميشن translateX يشتغل زي ما اتصمم بالظبط. */
+          direction: ltr;
           -webkit-mask-image: linear-gradient(
             to right,
             transparent 0,

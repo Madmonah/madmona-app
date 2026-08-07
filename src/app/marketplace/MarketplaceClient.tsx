@@ -41,7 +41,7 @@ interface Listing {
   created_at: string
   requires_id_verification: boolean | null
   category: { name_ar: string; name_en: string | null; icon: string | null; slug: string } | null
-  supplier: { business_name?: string | null; logo_url?: string | null; kyc_status: string | null } | null
+  supplier: { id?: string | null; business_name?: string | null; logo_url?: string | null; kyc_status: string | null } | null
   photos: { url: string; is_primary: boolean; quality_flag?: string | null; is_placeholder?: boolean | null }[] | null
   pricing: { price: number | string; is_active: boolean }[] | null
 }
@@ -187,6 +187,50 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   const [searchQuery, setSearchQuery] = useState(initialQuery)
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(initialCategorySlug)
   const [supplierFilter] = useState<string | null>(initialSupplier)
+  // 🏬 (7 Aug 2026) طلب محمد: «ستور لكل مورد وطريقة العرض بالستور أو بالمنتج».
+  // كل مورد ليه صفحة متجر جاهزة أصلًا على ?supplier=<id> — هنا بنضيف
+  // طريقة اكتشافها: تبديل عرض السوق «منتجات / متاجر» + كارت متجر لكل تاجر.
+  type StoreCard = { id: string; name: string; logo: string | null; kyc: string | null; count: number; cats: string[] }
+  const [viewMode, setViewMode] = useState<'products' | 'stores'>(
+    searchParams.get('view') === 'stores' ? 'stores' : 'products'
+  )
+  const [stores, setStores] = useState<StoreCard[] | null>(null)
+
+  useEffect(() => {
+    if (viewMode !== 'stores' || stores !== null) return
+    let alive = true
+    ;(async () => {
+      const { data } = await supabaseBrowser
+        .from('listings')
+        .select('supplier_id, category:categories(name_ar), supplier:marketplace_suppliers(id, business_name, logo_url, kyc_status)')
+        .eq('status', 'published')
+        .eq('is_directory', false)
+        .not('supplier_id', 'is', null)
+        .limit(2000)
+      if (!alive) return
+      const map = new Map<string, StoreCard>()
+      for (const row of (data || []) as any[]) {
+        const s = row.supplier
+        if (!s?.id || !s.business_name) continue
+        const entry = map.get(s.id) || { id: s.id, name: s.business_name, logo: s.logo_url, kyc: s.kyc_status, count: 0, cats: [] as string[] }
+        entry.count++
+        const cn = row.category?.name_ar
+        if (cn && !entry.cats.includes(cn)) entry.cats.push(cn)
+        map.set(s.id, entry)
+      }
+      setStores([...map.values()].sort((a, b) => b.count - a.count))
+    })()
+    return () => { alive = false }
+  }, [viewMode, stores])
+
+  const switchView = (mode: 'products' | 'stores') => {
+    setViewMode(mode)
+    try {
+      const sp = new URLSearchParams(window.location.search)
+      if (mode === 'stores') sp.set('view', 'stores'); else sp.delete('view')
+      window.history.replaceState(null, '', `/marketplace${sp.toString() ? `?${sp.toString()}` : ''}`)
+    } catch { /* non-blocking */ }
+  }
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   // 🏗️ (17 Jul 2026) طلب محمد: العقارات تتفصل «بريمري من المطور | ريسيل».
   // البريمري = إعلان مرتبط بمشروع مطور (project_id موجود)، الريسيل = من غير مشروع.
@@ -367,7 +411,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         .select(`
           id, title, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification,
           category:categories(name_ar, name_en, icon, slug),
-          supplier:marketplace_suppliers(business_name, logo_url),
+          supplier:marketplace_suppliers(id, business_name, logo_url, kyc_status),
           photos:listing_photos(url, is_primary, quality_flag, is_placeholder),
           pricing:pricing_rules(price, is_active)
         `, { count: 'exact' })
@@ -975,10 +1019,29 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           <div className="mb-6 rounded-3xl bg-white shadow-soft border border-gray-100 p-5">
             <p className="text-[11px] font-bold text-[#2FA084] uppercase tracking-widest">منتجات التاجر · مضمون عن طريق مضمونة</p>
             <h2 className="text-xl md:text-2xl font-black text-gray-900">{supplierInfo?.business_name || 'المتجر'}</h2>
-            <p className="text-sm text-gray-500 mt-1">{supplierCatNames.length ? supplierCatNames.join(' · ') : 'موتوسيكلات · قطع غيار · إكسسوارات'}</p>
+            <p className="text-sm text-gray-500 mt-1">{supplierCatNames.length ? supplierCatNames.join(' · ') : 'منتجات وخدمات المتجر'}</p>
           </div>
         )}
-        {!loading && (
+
+        {/* 🏬 تبديل عرض السوق: منتجات ↔ متاجر (مخفي جوه صفحة متجر معيّن) */}
+        {!supplierFilter && (
+          <div className="mb-5 inline-flex items-center gap-1 bg-white rounded-full p-1 shadow-soft border border-gray-100">
+            <button
+              onClick={() => switchView('products')}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${viewMode === 'products' ? 'bg-[#1F6F5F] text-white shadow-soft' : 'text-gray-600 hover:bg-gray-50'}`}
+            >
+              🛍️ المنتجات
+            </button>
+            <button
+              onClick={() => switchView('stores')}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${viewMode === 'stores' ? 'bg-[#1F6F5F] text-white shadow-soft' : 'text-gray-600 hover:bg-gray-50'}`}
+            >
+              🏬 المتاجر
+            </button>
+          </div>
+        )}
+
+        {!loading && (viewMode === 'products' || !!supplierFilter) && (
           <div className="mb-6 flex items-end justify-between flex-wrap gap-2">
             <div>
               <h2 className="text-2xl md:text-3xl font-black text-gray-900">
@@ -998,7 +1061,67 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           </div>
         )}
 
-        {loading ? (
+        {viewMode === 'stores' && !supplierFilter ? (
+          stores === null ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="bg-white rounded-3xl p-6 shadow-soft">
+                  <div className="w-14 h-14 animate-shimmer rounded-2xl mb-4" />
+                  <div className="h-5 w-2/3 animate-shimmer rounded-full mb-2" />
+                  <div className="h-3 w-1/2 animate-shimmer rounded-full" />
+                </div>
+              ))}
+            </div>
+          ) : stores.length === 0 ? (
+            <div className="bg-white rounded-3xl shadow-soft p-12 md:p-20 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center text-3xl">🏬</div>
+              <h3 className="text-xl font-black text-gray-900 mb-2">لسه مفيش متاجر</h3>
+              <p className="text-sm text-gray-500">أول ما التجار ينضموا هتلاقي متاجرهم هنا</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {stores.map((s, i) => (
+                <Link
+                  key={s.id}
+                  href={`/marketplace?supplier=${s.id}`}
+                  className="group block bg-white rounded-3xl p-6 shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-500 no-underline animate-slide-up"
+                  style={{ animationDelay: `${Math.min(i * 50, 300)}ms` }}
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    {s.logo ? (
+                      <span className="w-14 h-14 rounded-2xl overflow-hidden border border-gray-100 flex items-center justify-center bg-white flex-shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={s.logo} alt={s.name} className="w-full h-full object-cover" loading="lazy" />
+                      </span>
+                    ) : (
+                      <span className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1F6F5F] to-[#2FA084] flex items-center justify-center text-2xl flex-shrink-0">🏬</span>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-black text-base text-gray-900 truncate group-hover:text-[#1F6F5F] transition-colors">{s.name}</h3>
+                      <p className="text-[11px] font-bold text-gray-400 mt-0.5 tabular">{s.count} {s.count === 1 ? 'إعلان' : 'إعلانات'}</p>
+                    </div>
+                    {s.kyc === 'approved' && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 border border-green-200 rounded-full text-[10px] font-bold text-green-700 flex-shrink-0">
+                        <CheckCircle className="w-2.5 h-2.5" />
+                        {t('market.verified')}
+                      </span>
+                    )}
+                  </div>
+                  {s.cats.length > 0 && (
+                    <p className="text-xs text-gray-500 line-clamp-1 mb-3">{s.cats.slice(0, 4).join(' · ')}</p>
+                  )}
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <span className="text-[11px] font-bold text-[#2FA084]">مضمون عن طريق مضمونة</span>
+                    <span className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold text-xs group-hover:gap-2 transition-all">
+                      <span>زور المتجر</span>
+                      <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )
+        ) : loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map(i => (
               <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-soft">
@@ -1134,6 +1257,22 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                     <h3 className="font-black text-base md:text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#1F6F5F] transition-colors">
                       {displayTitle}
                     </h3>
+
+                    {/* 🏬 لينك متجر التاجر — جوه كارت الإعلان */}
+                    {listing.supplier?.id && listing.supplier?.business_name && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault(); e.stopPropagation()
+                          const sid = listing.supplier?.id
+                          if (sid) window.location.href = `/marketplace?supplier=${sid}`
+                        }}
+                        className="mb-2 inline-flex items-center gap-1 px-2 py-0.5 bg-gray-50 hover:bg-[#1F6F5F]/10 border border-gray-200 rounded-full text-[10px] font-bold text-gray-600 hover:text-[#1F6F5F] transition-colors"
+                        title="زور متجر التاجر"
+                      >
+                        🏬 {listing.supplier.business_name}
+                      </button>
+                    )}
 
                     {/* Trust badges */}
                     {(listing.supplier?.kyc_status === 'approved' || listing.requires_id_verification) && (
