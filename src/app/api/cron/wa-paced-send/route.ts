@@ -37,7 +37,13 @@ async function readConfig(): Promise<Cfg> {
   const { data } = await supabaseAdmin
     .from('whatsapp_config')
     .select('key, value')
-    .in('key', ['paced_send_enabled', 'paced_send_session', 'paced_send_campaign'])
+    .in('key', [
+      'paced_send_enabled',
+      'paced_send_session',
+      'paced_send_sessions',
+      'paced_send_rotate_idx',
+      'paced_send_campaign',
+    ])
   const cfg: Cfg = {}
   for (const r of (data ?? []) as Array<{ key: string; value: string }>) cfg[r.key] = r.value
   return cfg
@@ -66,7 +72,24 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, skipped: 'متوقف (paced_send_enabled != 1)' })
   }
 
-  const session = cfg.paced_send_session || '201026222337'
+  // 🔄 (٦ أغسطس ٢٠٢٦ — محمد) توزيع الحمل على الرقمين بالتناوب.
+  //    كل دفعة بتخرج من رقم مختلف، فالإيقاع الفعلي لكل رقم بيبقى **النص**
+  //    (3 رسايل كل 6 دقايق للرقم الواحد بدل كل 3) — أأمن بكتير للأرقام
+  //    اللي واحد منها كان محظور قبل كده.
+  //    `paced_send_sessions` = أرقام مفصولة بفاصلة. لو فاضية بيقع على
+  //    `paced_send_session` القديم (رقم واحد) — متوافق مع القديم.
+  const rotation = (cfg.paced_send_sessions || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  let session: string
+  if (rotation.length > 1) {
+    const idx = Number(cfg.paced_send_rotate_idx || 0) % rotation.length
+    session = rotation[idx]
+    await setConfig('paced_send_rotate_idx', String((idx + 1) % rotation.length))
+  } else {
+    session = rotation[0] || cfg.paced_send_session || '201026222337'
+  }
   const campaign = cfg.paced_send_campaign || 'paced_20260806'
 
   // ── ١) الجلسة متصلة؟ ────────────────────────────────────────────────
