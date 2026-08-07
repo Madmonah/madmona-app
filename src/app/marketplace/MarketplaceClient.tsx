@@ -191,7 +191,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   // 🏬 (7 Aug 2026) طلب محمد: «ستور لكل مورد وطريقة العرض بالستور أو بالمنتج».
   // كل مورد ليه صفحة متجر جاهزة أصلًا على ?supplier=<id> — هنا بنضيف
   // طريقة اكتشافها: تبديل عرض السوق «منتجات / متاجر» + كارت متجر لكل تاجر.
-  type StoreCard = { id: string; name: string; logo: string | null; kyc: string | null; acc: string | null; count: number; catCounts: Record<string, number>; photo: string | null }
+  type StoreCard = { id: string; name: string; logo: string | null; kyc: string | null; acc: string | null; count: number; catCounts: Record<string, number>; photo: string | null; secCount?: number }
   const [viewMode, setViewMode] = useState<'products' | 'stores'>(
     searchParams.get('view') === 'stores' ? 'stores' : 'products'
   )
@@ -1122,7 +1122,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
               rc.forEach((n, k) => { if (n > bestN) { bestN = n; bestK = k } })
               const root = bestK === 'other' ? null : (catById.get(bestK) || null)
               if (!secMap.has(bestK)) secMap.set(bestK, { root, arr: [] })
-              secMap.get(bestK)!.arr.push(s)
+              secMap.get(bestK)!.arr.push({ ...s, secCount: bestN > 0 ? bestN : s.count })
             }
             const trackOk = (tr?: string | null) => activeTrack === 'all' || tr === activeTrack ||
               (activeTrack === 'rentals' && tr === 'hybrid') || (activeTrack === 'products' && tr === 'sales')
@@ -1166,9 +1166,12 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
               <div className="space-y-10">
                 {sections.map(sec => {
                   const nn = nounFor(sec.root?.name_ar || '')
+                  // (٧ أغسطس ٢٠٢٦ — محمد) أي حساب عارض أكتر من منتج/صنف في نفس
+                  // القسم بيتعامل كتجاري حتى لو مسجل فرد (زي توب وود ومكتب ضاحي).
+                  const isBiz = (s: StoreCard) => s.acc !== 'individual' || (s.secCount ?? s.count) > 1
                   const halves = [
-                    { key: 'biz', n: nn.biz, arr: sec.arr.filter(s => s.acc !== 'individual') },
-                    { key: 'solo', n: nn.solo, arr: sec.arr.filter(s => s.acc === 'individual') },
+                    { key: 'biz', n: nn.biz, arr: sec.arr.filter(isBiz) },
+                    { key: 'solo', n: nn.solo, arr: sec.arr.filter(s => !isBiz(s)) },
                   ].filter(h => h.arr.length > 0)
                   return (
                   <section key={sec.root?.id || 'other'}>
