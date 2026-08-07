@@ -191,7 +191,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   // 🏬 (7 Aug 2026) طلب محمد: «ستور لكل مورد وطريقة العرض بالستور أو بالمنتج».
   // كل مورد ليه صفحة متجر جاهزة أصلًا على ?supplier=<id> — هنا بنضيف
   // طريقة اكتشافها: تبديل عرض السوق «منتجات / متاجر» + كارت متجر لكل تاجر.
-  type StoreCard = { id: string; name: string; logo: string | null; kyc: string | null; count: number; cats: string[] }
+  type StoreCard = { id: string; name: string; logo: string | null; kyc: string | null; count: number; catCounts: Record<string, number>; photo: string | null }
   const [viewMode, setViewMode] = useState<'products' | 'stores'>(
     searchParams.get('view') === 'stores' ? 'stores' : 'products'
   )
@@ -200,10 +200,12 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   useEffect(() => {
     if (viewMode !== 'stores' || stores !== null) return
     let alive = true
+    // حسابات المنصة الداخلية — مش متاجر تجار فماتظهرش في الشبكة (طلب محمد ٧ أغسطس)
+    const INTERNAL_SUPPLIER_IDS = ['7310f6ef-e474-4ef8-8b8a-388b5e1f5694', '9da8212a-c321-48b5-8822-525f724bcd25']
     ;(async () => {
       const { data } = await supabaseBrowser
         .from('listings')
-        .select('supplier_id, category:categories(name_ar), supplier:marketplace_suppliers(id, business_name, logo_url, kyc_status)')
+        .select('supplier_id, title, category_id, supplier:marketplace_suppliers(id, business_name, logo_url, kyc_status), photos:listing_photos(url, is_primary)')
         .eq('status', 'published')
         .eq('is_directory', false)
         .not('supplier_id', 'is', null)
@@ -213,10 +215,15 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       for (const row of (data || []) as any[]) {
         const s = row.supplier
         if (!s?.id || !s.business_name) continue
-        const entry = map.get(s.id) || { id: s.id, name: s.business_name, logo: s.logo_url, kyc: s.kyc_status, count: 0, cats: [] as string[] }
+        if (INTERNAL_SUPPLIER_IDS.includes(s.id)) continue
+        if (isDemoListing(row.title || '')) continue
+        const entry = map.get(s.id) || { id: s.id, name: s.business_name, logo: s.logo_url, kyc: s.kyc_status, count: 0, catCounts: {} as Record<string, number>, photo: null }
         entry.count++
-        const cn = row.category?.name_ar
-        if (cn && !entry.cats.includes(cn)) entry.cats.push(cn)
+        if (row.category_id) entry.catCounts[row.category_id] = (entry.catCounts[row.category_id] || 0) + 1
+        if (!entry.photo) {
+          const ph = (row.photos || []).find((p: any) => p?.is_primary) || (row.photos || [])[0]
+          if (ph?.url) entry.photo = ph.url
+        }
         map.set(s.id, entry)
       }
       setStores([...map.values()].sort((a, b) => b.count - a.count))
@@ -1084,49 +1091,104 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
               <h3 className="text-xl font-black text-gray-900 mb-2">لسه مفيش متاجر</h3>
               <p className="text-sm text-gray-500">أول ما التجار ينضموا هتلاقي متاجرهم هنا</p>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {stores.map((s, i) => (
-                <Link
-                  key={s.id}
-                  href={`/marketplace?supplier=${s.id}`}
-                  className="group block bg-white rounded-3xl p-6 shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-500 no-underline animate-slide-up"
-                  style={{ animationDelay: `${Math.min(i * 50, 300)}ms` }}
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    {s.logo ? (
-                      <span className="w-14 h-14 rounded-2xl overflow-hidden border border-gray-100 flex items-center justify-center bg-white flex-shrink-0">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={s.logo} alt={s.name} className="w-full h-full object-cover" loading="lazy" />
+          ) : (() => {
+            // 🗂️ تجميع المتاجر بالقسم بتاعها (طلب محمد ٧ أغسطس: «مش كلهم على بعض»)
+            // كل متجر بيتحط تحت القسم الجذري اللي فيه أغلب إعلاناته، والتابات فوق بتفلتر.
+            const catById = new Map(allCategories.map(c => [c.id, c]))
+            const rootOf = (cid: string): Category | null => {
+              let c = catById.get(cid); let g = 0
+              while (c && c.parent_id && g++ < 6) { const p = catById.get(c.parent_id); if (!p) break; c = p }
+              return c || null
+            }
+            const secMap = new Map<string, { root: Category | null; arr: StoreCard[] }>()
+            for (const s of stores) {
+              const rc = new Map<string, number>()
+              for (const [cid, n] of Object.entries(s.catCounts)) {
+                const r = rootOf(cid); const k = r ? r.id : 'other'
+                rc.set(k, (rc.get(k) || 0) + n)
+              }
+              let bestK = 'other'; let bestN = -1
+              rc.forEach((n, k) => { if (n > bestN) { bestN = n; bestK = k } })
+              const root = bestK === 'other' ? null : (catById.get(bestK) || null)
+              if (!secMap.has(bestK)) secMap.set(bestK, { root, arr: [] })
+              secMap.get(bestK)!.arr.push(s)
+            }
+            const trackOk = (tr?: string | null) => activeTrack === 'all' || tr === activeTrack ||
+              (activeTrack === 'rentals' && tr === 'hybrid') || (activeTrack === 'products' && tr === 'sales')
+            const sections = [...secMap.values()]
+              .filter(sec => !sec.root || trackOk(sec.root.track))
+              .sort((a, b) => b.arr.length - a.arr.length)
+            if (sections.length === 0) return (
+              <div className="bg-white rounded-3xl shadow-soft p-12 md:p-20 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center text-3xl">🏬</div>
+                <h3 className="text-xl font-black text-gray-900 mb-2">مفيش متاجر في القسم ده لسه</h3>
+                <p className="text-sm text-gray-500">جرّب تاب تاني أو ارجع لـ«الكل»</p>
+              </div>
+            )
+            const storeCatNames = (s: StoreCard) => {
+              const names = Object.keys(s.catCounts)
+                .map(cid => { const c = catById.get(cid); return c ? catName(c) : null })
+                .filter(Boolean) as string[]
+              return [...new Set(names)]
+            }
+            return (
+              <div className="space-y-10">
+                {sections.map(sec => (
+                  <section key={sec.root?.id || 'other'}>
+                    <div className="flex items-center gap-2 mb-4">
+                      <h3 className="text-lg md:text-xl font-black text-gray-900">
+                        {sec.root ? `${sec.root.icon || '🏷️'} ${catName(sec.root)}` : '🏷️ متاجر تانية'}
+                      </h3>
+                      <span className="text-[11px] font-bold text-gray-400 bg-gray-100 rounded-full px-2 py-0.5 tabular">
+                        {sec.arr.length} {sec.arr.length === 1 ? 'متجر' : 'متاجر'}
                       </span>
-                    ) : (
-                      <span className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1F6F5F] to-[#2FA084] flex items-center justify-center text-2xl flex-shrink-0">🏬</span>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-black text-base text-gray-900 truncate group-hover:text-[#1F6F5F] transition-colors">{s.name}</h3>
-                      <p className="text-[11px] font-bold text-gray-400 mt-0.5 tabular">{s.count} {s.count === 1 ? 'إعلان' : 'إعلانات'}</p>
                     </div>
-                    {s.kyc === 'approved' && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 border border-green-200 rounded-full text-[10px] font-bold text-green-700 flex-shrink-0">
-                        <CheckCircle className="w-2.5 h-2.5" />
-                        {t('market.verified')}
-                      </span>
-                    )}
-                  </div>
-                  {s.cats.length > 0 && (
-                    <p className="text-xs text-gray-500 line-clamp-1 mb-3">{s.cats.slice(0, 4).join(' · ')}</p>
-                  )}
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                    <span className="text-[11px] font-bold text-[#2FA084]">مضمون عن طريق مضمونة</span>
-                    <span className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold text-xs group-hover:gap-2 transition-all">
-                      <span>زور المتجر</span>
-                      <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {sec.arr.map((s, i) => (
+                        <Link
+                          key={s.id}
+                          href={`/marketplace?supplier=${s.id}`}
+                          className="group block bg-white rounded-3xl p-6 shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-500 no-underline animate-slide-up"
+                          style={{ animationDelay: `${Math.min(i * 50, 300)}ms` }}
+                        >
+                          <div className="flex items-center gap-4 mb-4">
+                            {(s.logo || s.photo) ? (
+                              <span className="w-14 h-14 rounded-2xl overflow-hidden border border-gray-100 flex items-center justify-center bg-white flex-shrink-0">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={s.logo || s.photo || ''} alt={s.name} className="w-full h-full object-cover" loading="lazy" />
+                              </span>
+                            ) : (
+                              <span className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1F6F5F] to-[#2FA084] flex items-center justify-center text-2xl flex-shrink-0">🏬</span>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-black text-base text-gray-900 truncate group-hover:text-[#1F6F5F] transition-colors">{s.name}</h3>
+                              <p className="text-[11px] font-bold text-gray-400 mt-0.5 tabular">{s.count} {s.count === 1 ? 'إعلان' : 'إعلانات'}</p>
+                            </div>
+                            {s.kyc === 'approved' && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 border border-green-200 rounded-full text-[10px] font-bold text-green-700 flex-shrink-0">
+                                <CheckCircle className="w-2.5 h-2.5" />
+                                {t('market.verified')}
+                              </span>
+                            )}
+                          </div>
+                          {storeCatNames(s).length > 0 && (
+                            <p className="text-xs text-gray-500 line-clamp-1 mb-3">{storeCatNames(s).slice(0, 4).join(' · ')}</p>
+                          )}
+                          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                            <span className="text-[11px] font-bold text-[#2FA084]">مضمون عن طريق مضمونة</span>
+                            <span className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold text-xs group-hover:gap-2 transition-all">
+                              <span>زور المتجر</span>
+                              <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
+                            </span>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            )
+          })()
         ) : loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map(i => (
