@@ -1127,6 +1127,16 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                 <p className="text-sm text-gray-500">جرّب تاب تاني أو ارجع لـ«الكل»</p>
               </div>
             )
+            // (٧ أغسطس ٢٠٢٦ — طلب محمد) الاسم حسب القسم: مطورين للعقارات، معارض
+            // للعربيات، مطاعم للأكل، مقدمي خدمات للخدمات — و«متاجر» للمنتجات بس.
+            const nounFor = (name: string): { label: string; unit: string; visit: string } => {
+              if (name.includes('عقار')) return { label: 'المطورين والمكاتب', unit: 'مطور', visit: 'شوف المطور' }
+              if (/(مركب|عربي|سيار|موتوسيكل|بحري|نقل)/.test(name)) return { label: 'المعارض', unit: 'معرض', visit: 'زور المعرض' }
+              if (/(مطعم|مأكول|كافيه|حلويات|طبخ|سوبر|مشوي|جريل|برجر|آسيوي|سوشي|بدوي|شرقي)/.test(name)) return { label: 'المطاعم', unit: 'مطعم', visit: 'زور المطعم' }
+              if (name.includes('قاع')) return { label: 'القاعات', unit: 'قاعة', visit: 'زور القاعة' }
+              if (/(خدم|تجميل|طبي|تعليم|طباع|استشار|عناي|صيان|احتفال|مناسب|معدات)/.test(name)) return { label: 'مقدمي الخدمات', unit: 'مقدم خدمة', visit: 'شوف الصفحة' }
+              return { label: 'المتاجر', unit: 'متجر', visit: 'زور المتجر' }
+            }
             const storeCatNames = (s: StoreCard) => {
               const names = Object.keys(s.catCounts)
                 .map(cid => { const c = catById.get(cid); return c ? catName(c) : null })
@@ -1139,10 +1149,10 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                   <section key={sec.root?.id || 'other'}>
                     <div className="flex items-center gap-2 mb-4">
                       <h3 className="text-lg md:text-xl font-black text-gray-900">
-                        {sec.root ? `${sec.root.icon || '🏷️'} ${catName(sec.root)}` : '🏷️ متاجر تانية'}
+                        {sec.root ? `${sec.root.icon || '🏷️'} ${catName(sec.root)} — ${nounFor(sec.root.name_ar).label}` : '🏷️ متاجر تانية'}
                       </h3>
                       <span className="text-[11px] font-bold text-gray-400 bg-gray-100 rounded-full px-2 py-0.5 tabular">
-                        {sec.arr.length} {sec.arr.length === 1 ? 'متجر' : 'متاجر'}
+                        {sec.arr.length} {sec.root ? nounFor(sec.root.name_ar).unit : 'متجر'}
                       </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1160,7 +1170,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                                 <img src={s.logo || s.photo || ''} alt={s.name} className="w-full h-full object-cover" loading="lazy" />
                               </span>
                             ) : (
-                              <span className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1F6F5F] to-[#2FA084] flex items-center justify-center text-2xl flex-shrink-0">🏬</span>
+                              <span className="w-14 h-14 rounded-2xl bg-[#12261F] text-[#F4EFE4] flex items-center justify-center text-xl font-black flex-shrink-0">{(s.name || 'م').trim().charAt(0)}</span>
                             )}
                             <div className="min-w-0 flex-1">
                               <h3 className="font-black text-base text-gray-900 truncate group-hover:text-[#1F6F5F] transition-colors">{s.name}</h3>
@@ -1179,7 +1189,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                           <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                             <span className="text-[11px] font-bold text-[#2FA084]">مضمون عن طريق مضمونة</span>
                             <span className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold text-xs group-hover:gap-2 transition-all">
-                              <span>زور المتجر</span>
+                              <span>{sec.root ? nounFor(sec.root.name_ar).visit : 'زور المتجر'}</span>
                               <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
                             </span>
                           </div>
