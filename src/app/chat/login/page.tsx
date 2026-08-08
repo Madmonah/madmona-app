@@ -27,16 +27,32 @@ function ChatLoginInner() {
 
   // If already logged in, bounce back to chat home
   useEffect(() => {
-    const session = getMadmonaSession()
-    if (session) {
+    ;(async () => {
+      const session = getMadmonaSession()
+      if (session) {
+        const next = searchParams.get('next') || '/chat'
+        router.replace(next.startsWith('/') ? next : '/chat')
+        return
+      }
+      // 🔗 حساب واحد (8 Aug 2026): لو داخل بحساب مضمونة (Supabase) — حتى لو
+      // توكن الشات المحلي مش موجود — نولّده من whoami وندخّله من غير سؤال.
+      try {
+        const { supabaseBrowser } = await import('@/lib/supabase-browser')
+        const { data } = await supabaseBrowser.auth.getSession()
+        if (data.session) {
+          const { syncModuleSession } = await import('@/lib/madmonaSession')
+          await syncModuleSession()
+          const next = searchParams.get('next') || '/chat'
+          router.replace(next.startsWith('/') ? next : '/chat')
+          return
+        }
+      } catch {}
+      // Also save intended return path so /auth/magic can bring us back here
       const next = searchParams.get('next') || '/chat'
-      router.replace(next.startsWith('/') ? next : '/chat')
-    }
-    // Also save intended return path so /auth/magic can bring us back here
-    const next = searchParams.get('next') || '/chat'
-    try {
-      sessionStorage.setItem('madmona_return_to', next.startsWith('/') ? next : '/chat')
-    } catch {}
+      try {
+        sessionStorage.setItem('madmona_return_to', next.startsWith('/') ? next : '/chat')
+      } catch {}
+    })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

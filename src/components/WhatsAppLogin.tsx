@@ -73,6 +73,9 @@ export default function WhatsAppLogin({
             type: 'email', token_hash: fj.token_hash,
           })
           if (error) { setPhase('idle'); setErr('حصلت مشكلة في الدخول — جرب تاني'); return }
+          // 🔗 حساب واحد (8 Aug 2026): بعد ما جلسة Supabase اتثبتت، جدّد توكن
+          //    أقسام مضمونة (المارد/الإدارة) في الخلفية عشان كله يعرفك فورًا
+          import('@/lib/madmonaSession').then((m) => m.syncModuleSession()).catch(() => {})
           // 🔗 توحيد 100%: نفس الدخلة بتفتح كمان جلسات /me و/my-projects والحجوزات
           if (fj.madmona_token) { try { safeStorage.set('madmona_token', fj.madmona_token) } catch { /* */ } }
           setPhase('done')

@@ -35,6 +35,8 @@ export default function ChatHub() {
         if (!session?.user) return
         setLoggedIn(true)
         setUid(session.user.id)
+        // 🔗 حساب واحد (8 Aug 2026): جدّد توكن أقسام مضمونة في الخلفية
+        import('@/lib/madmonaSession').then((m) => m.syncModuleSession()).catch(() => {})
         // (31 Jul 2026) التلاتة دول مالهمش علاقة ببعض، وكانوا بيتنفّذوا ورا
         // بعض والمحادثات آخر واحدة — يعني القايمة كانت بتستنى نداءين على
         // الفاضي قبل ما تبدأ تحمّل أصلاً. دلوقتي بيطلعوا مع بعض.
