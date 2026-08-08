@@ -36,6 +36,7 @@ interface ProjectRow {
 
 interface ListingRow {
   id: string
+  slug: string | null
   title: string | null
   city: string | null
   district: string | null
@@ -123,7 +124,7 @@ export async function GET(request: NextRequest) {
         (p.developer ? `🏢 ${p.developer}\n` : '') +
         (p.price_from ? `💰 يبدأ من ${money(p.price_from)}\n` : '') +
         `\n🧞 اسأل المارد عن التفاصيل: https://t.me/Madmona_bot\n` +
-        `👇 التفاصيل كاملة\n${SITE}/borsa?utm_source=telegram&utm_medium=channel`
+        `👇 التفاصيل كاملة\n${SITE}/real-estate?utm_source=telegram&utm_medium=channel`
       const j = await sendPhoto(token, p.cover_url as string, caption)
       if (j.ok) {
         await markPosted(p.id, j.result?.message_id ?? null)
@@ -134,7 +135,7 @@ export async function GET(request: NextRequest) {
 
     const { data } = await supabaseUntyped
       .from('listings')
-      .select('id, title, city, district, price_egp, price_on_request')
+      .select('id, slug, title, city, district, price_egp, price_on_request')
       .eq('status', 'published')
       .limit(400)
     const fresh = ((data ?? []) as ListingRow[]).filter((l) => !used.has(l.id))
@@ -156,7 +157,7 @@ export async function GET(request: NextRequest) {
         (where ? `📍 ${where}\n` : '') +
         `💰 ${l.price_on_request ? 'السعر عند الطلب' : money(l.price_egp)}\n` +
         `\n🧞 اسأل المارد: https://t.me/Madmona_bot\n` +
-        `👇 اشتري أو احجز\n${SITE}/listing/${l.id}?utm_source=telegram&utm_medium=channel`
+        `👇 اشتري أو احجز\n${SITE}/marketplace/${encodeURIComponent(l.slug || `listing-${l.id}`)}?utm_source=telegram&utm_medium=channel`
       const j = await sendPhoto(token, photo, caption)
       if (j.ok) {
         await markPosted(l.id, j.result?.message_id ?? null)
