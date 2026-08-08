@@ -9,7 +9,7 @@ import {
   ArrowRight, Calendar, Building2, ShoppingBag,
   LogOut, Loader2, Lock, User, Phone, Crown, ChevronLeft,
   CheckCircle, Clock, AlertCircle, FolderTree, Edit2, Check, X, Heart,
-  BarChart3, Wallet, UtensilsCrossed, Star, PlusCircle, Users, Smartphone,
+  BarChart3, Wallet, UtensilsCrossed, Star, PlusCircle, Users, Smartphone, Mail,
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import PushNotificationCard from '@/components/PushNotificationCard'
@@ -383,6 +383,14 @@ export default function AccountPage() {
             iconBg="bg-teal-50 text-teal-600"
             title="الأجهزة المتصلة"
             subtitle="شوف مين فاتح حسابك واقفل أي جهاز"
+          />
+          <div className="h-px bg-gray-100 mx-6" />
+          <SectionLink
+            href="/account/email"
+            icon={<Mail className="w-5 h-5" />}
+            iconBg="bg-sky-50 text-sky-600"
+            title="الإيميل"
+            subtitle="ضيف أو غيّر إيميلك الحقيقي — عشان الأكواد توصلك"
           />
           <div className="h-px bg-gray-100 mx-6" />
           <SectionLink

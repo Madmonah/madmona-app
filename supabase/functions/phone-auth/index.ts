@@ -1,16 +1,26 @@
 // ============================================================================
 // phone-auth — Madmona phone + password authentication flows
 //
+// v2 (8 Aug 2026): synthetic-email awareness + real-email attach flow
+//   • forgot_start(email) refuses synthetic inboxes (digits@madmonacairo.com)
+//     → returns no_email_on_account so the UI steers users to WhatsApp
+//   • NEW authed actions (require Authorization: Bearer <user JWT>):
+//       email_change_start  { new_email }        -> sends 6-digit code via Brevo
+//       email_change_verify { new_email, code }  -> sets real, confirmed email
+//
 // Actions (POST { action, ... }):
-//   signup_start  { phone, full_name }            -> sends WA OTP via المارد bridge
-//   signup_verify { phone, code, password, full_name } -> creates confirmed user
-//   forgot_start  { phone, channel: 'whatsapp'|'email' } -> sends reset code
-//   forgot_reset  { phone, code, new_password }   -> sets the new password
+//   signup_start  { phone, full_name }
+//   signup_verify { phone, code, password, full_name }
+//   forgot_start  { phone, channel: 'whatsapp'|'email' }
+//   forgot_reset  { phone, code, new_password }
+//   email_change_start  { new_email }            [AUTH REQUIRED]
+//   email_change_verify { new_email, code }      [AUTH REQUIRED]
 //
 // Reuses existing rails: madmona_request_otp / madmona_verify_otp RPCs,
-// get_wa_bridge_secret vault RPC, Railway OpenWA bridge, Brevo for email.
-// Required secrets: BREVO_API_KEY (for the email channel), MADMONA_FROM_EMAIL.
-// Deployed to production 2026-08-08 (verify_jwt = false — pre-auth endpoints).
+// get_wa_bridge_secret vault RPC, Railway OpenWA bridge, Brevo for email,
+// email_change_requests table + email_in_use() helper (migration 20260808_04).
+// Required secrets: BREVO_API_KEY, MADMONA_FROM_EMAIL (optional).
+// verify_jwt = false — pre-auth endpoints; authed actions check JWT manually.
 // ============================================================================
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -23,6 +33,10 @@ const BRIDGE_URL = 'https://madmona-app-production.up.railway.app'
 const SESSION_ID = '201002229982'
 const FROM_EMAIL = Deno.env.get('MADMONA_FROM_EMAIL') ?? 'noreply@madmonacairo.com'
 const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? ''
+
+// إيميل مصطنع = أرقام فقط قبل @madmonacairo.com (حيلة phoneToEmail القديمة)
+const SYNTHETIC_EMAIL = /^[0-9]+@madmonacairo\.com$/i
+const VALID_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 const admin = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -46,6 +60,15 @@ function intlDigits(phone: string): string {
 function maskEmail(email: string): string {
   const [user, domain] = email.split('@')
   return `${user.slice(0, 2)}***@${domain}`
+}
+
+async function requireUser(req: Request) {
+  const auth = req.headers.get('Authorization') || ''
+  const token = auth.replace(/^Bearer\s+/i, '').trim()
+  if (!token) throw new Error('not_authenticated')
+  const { data, error } = await admin.auth.getUser(token)
+  if (error || !data?.user) throw new Error('not_authenticated')
+  return data.user
 }
 
 async function findUserByPhone(phone: string) {
@@ -105,16 +128,15 @@ async function sendBrevoEmail(to: string, subject: string, html: string, text: s
   }
 }
 
-const resetEmailHtml = (code: string) => `<!doctype html><html dir="rtl" lang="ar"><body
+const codeEmailHtml = (title: string, code: string, note: string) => `<!doctype html><html dir="rtl" lang="ar"><body
  style="margin:0;background:#f4f8f7;font-family:Tahoma,Arial,sans-serif">
 <div style="max-width:480px;margin:24px auto;background:#fff;border-radius:16px;
  padding:32px;text-align:center;border:1px solid #e3ece8">
 <h2 style="color:#184138;margin:0 0 8px">مضمونة</h2>
-<p style="color:#333;font-size:16px">كود استرجاع كلمة السر:</p>
+<p style="color:#333;font-size:16px">${title}</p>
 <div style="font-size:36px;font-weight:bold;letter-spacing:8px;color:#184138;
  background:#f4f8f7;border-radius:12px;padding:16px;margin:16px 0">${code}</div>
-<p style="color:#888;font-size:13px">الكود صالح لمدة 10 دقايق.
- لو مش انت اللي طلبته، تجاهل الرسالة دي.</p>
+<p style="color:#888;font-size:13px">${note}</p>
 </div></body></html>`
 
 Deno.serve(async (req) => {
@@ -167,20 +189,24 @@ Deno.serve(async (req) => {
       const user = await findUserByPhone(phone)
       if (!user) return json({ success: false, error: 'no_account_with_phone' })
 
-      const otp = await issueOtp(phone, null)
-
       if (channel === 'email') {
-        if (!user.email) return json({ success: false, error: 'no_email_on_account' })
+        // 🚫 v2: الإيميل المصطنع (2010...@madmonacairo.com) مش صندوق حقيقي —
+        //    زمان كنا بنبعت له والكود يضيع في الفراغ. دلوقتي بنرفض بوضوح.
+        if (!user.email || SYNTHETIC_EMAIL.test(user.email)) {
+          return json({ success: false, error: 'no_email_on_account' })
+        }
+        const otp = await issueOtp(phone, null)
         await sendBrevoEmail(
           user.email,
           'كود استرجاع كلمة السر — مضمونة',
-          resetEmailHtml(otp.code),
+          codeEmailHtml('كود استرجاع كلمة السر:', otp.code, 'الكود صالح لمدة 10 دقايق. لو مش انت اللي طلبته، تجاهل الرسالة دي.'),
           `كود استرجاع كلمة السر: ${otp.code} (صالح 10 دقايق)`,
         )
         return json({ success: true, channel: 'email', sent_to: maskEmail(user.email) })
       }
 
       // default: whatsapp via المارد
+      const otp = await issueOtp(phone, null)
       await sendWhatsapp(otp.wa_to, [
         '🔐 كود استرجاع كلمة السر في مضمونة:',
         `*${otp.code}*`,
@@ -207,9 +233,90 @@ Deno.serve(async (req) => {
       return json({ success: true })
     }
 
+    // ------------------------------------------------ email_change_start [AUTH]
+    if (action === 'email_change_start') {
+      const user = await requireUser(req)
+      const newEmail = String(body?.new_email || '').trim().toLowerCase()
+      if (!VALID_EMAIL.test(newEmail)) return json({ success: false, error: 'invalid_email' })
+      if (SYNTHETIC_EMAIL.test(newEmail)) return json({ success: false, error: 'invalid_email' })
+
+      const { data: taken, error: tErr } = await admin.rpc('email_in_use', {
+        p_email: newEmail,
+        p_exclude: user.id,
+      })
+      if (tErr) throw new Error(tErr.message)
+      if (taken) return json({ success: false, error: 'email_taken' })
+
+      const code = String(Math.floor(100000 + Math.random() * 900000))
+      const { error: upErr } = await admin.from('email_change_requests').upsert({
+        user_id: user.id,
+        new_email: newEmail,
+        code,
+        expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+        attempts: 0,
+        created_at: new Date().toISOString(),
+      })
+      if (upErr) throw new Error(upErr.message)
+
+      await sendBrevoEmail(
+        newEmail,
+        'كود تأكيد الإيميل — مضمونة',
+        codeEmailHtml('كود تأكيد إيميلك على مضمونة:', code, 'الكود صالح لمدة 10 دقايق. لو مش انت اللي طلب ربط الإيميل ده، تجاهل الرسالة.'),
+        `كود تأكيد الإيميل: ${code} (صالح 10 دقايق)`,
+      )
+      return json({ success: true, sent_to: maskEmail(newEmail) })
+    }
+
+    // ------------------------------------------------ email_change_verify [AUTH]
+    if (action === 'email_change_verify') {
+      const user = await requireUser(req)
+      const newEmail = String(body?.new_email || '').trim().toLowerCase()
+      const code = String(body?.code || '').trim()
+      if (!VALID_EMAIL.test(newEmail) || !code) return json({ success: false, error: 'missing_params' }, 400)
+
+      const { data: rows, error: qErr } = await admin
+        .from('email_change_requests')
+        .select('*')
+        .eq('user_id', user.id)
+        .limit(1)
+      if (qErr) throw new Error(qErr.message)
+      const reqRow = rows && rows[0]
+
+      const bad = async () => {
+        if (reqRow) {
+          await admin.from('email_change_requests')
+            .update({ attempts: (reqRow.attempts || 0) + 1 })
+            .eq('user_id', user.id)
+        }
+        return json({ success: false, error: 'invalid_code' })
+      }
+
+      if (!reqRow) return json({ success: false, error: 'invalid_code' })
+      if ((reqRow.attempts || 0) >= 5) return json({ success: false, error: 'invalid_code' })
+      if (new Date(reqRow.expires_at).getTime() < Date.now()) return json({ success: false, error: 'invalid_code' })
+      if (reqRow.new_email.toLowerCase() !== newEmail || reqRow.code !== code) return await bad()
+
+      const { error: updErr } = await admin.auth.admin.updateUserById(user.id, {
+        email: newEmail,
+        email_confirm: true,
+      })
+      if (updErr) {
+        const msg = updErr.message || ''
+        if (/already|registered|exists/i.test(msg)) return json({ success: false, error: 'email_taken' })
+        return json({ success: false, error: msg })
+      }
+
+      await admin.from('profiles').update({ email: newEmail }).eq('id', user.id)
+      await admin.from('email_change_requests').delete().eq('user_id', user.id)
+
+      return json({ success: true, email: newEmail })
+    }
+
     return json({ success: false, error: 'unknown_action' }, 400)
   } catch (e) {
     console.error('[phone-auth]', e)
-    return json({ success: false, error: String((e as Error)?.message || e) }, 200)
+    const msg = String((e as Error)?.message || e)
+    const status = msg === 'not_authenticated' ? 401 : 200
+    return json({ success: false, error: msg }, status)
   }
 })
