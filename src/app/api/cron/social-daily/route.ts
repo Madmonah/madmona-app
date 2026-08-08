@@ -77,104 +77,9 @@ async function alreadyPosted(): Promise<Set<string>> {
   return new Set(rows.map((r) => r.listing_id).filter((x): x is string => !!x))
 }
 
-// ============================================================================
-// 📘 فيسبوك (٨ أغسطس ٢٠٢٦ — محمد: «عايزين النشر يشتغل بقا بوستات مش ريلز»)
-// نفس نظام إعلانات تليجرام بالظبط بس على صفحة Madmona Cairo:
-// بوست صورة من إعلان/مشروع حقيقي، dedup منفصل في fb_page_posts
-// (عشان الفيسبوك ياخد كمان الإعلانات اللي اتنشرت قبل كده على تليجرام بس).
-// ============================================================================
-const FB_PAGE_ID = '920414804771355' // Madmona Cairo
-
-async function fbPageToken(): Promise<string | null> {
-  const { data } = await supabaseUntyped.rpc('get_vault_secret', { p_name: 'meta_page_access_token' })
-  return (data as string | null) || null
-}
-
-async function fbAlreadyPosted(): Promise<Set<string>> {
-  const { data } = await supabaseUntyped.from('fb_page_posts').select('listing_id')
-  const rows = (data ?? []) as Array<{ listing_id: string | null }>
-  return new Set(rows.map((r) => r.listing_id).filter((x): x is string => !!x))
-}
-
-async function fbPostPhoto(token: string, photo: string, message: string) {
-  const params = new URLSearchParams({ url: photo, message, published: 'true', access_token: token })
-  const r = await fetch(`https://graph.facebook.com/v21.0/${FB_PAGE_ID}/photos`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: params,
-  })
-  const data = (await r.json()) as { id?: string; post_id?: string; error?: { message?: string } }
-  return { ok: r.ok && !!(data.post_id || data.id), post_id: data.post_id || data.id || null, error: data.error?.message }
-}
-
-async function fbMarkPosted(id: string, postId: string | null) {
-  await supabaseUntyped.from('fb_page_posts').insert({ listing_id: id, post_id: postId })
-}
-
-/** ينشر إعلان أو مشروع واحد على صفحة الفيسبوك — نفس اختيار تليجرام بس بسجله الخاص. */
-async function publishFacebookOne(preferProject: boolean): Promise<Record<string, unknown>> {
-  const token = await fbPageToken()
-  if (!token) return { fb: false, error: 'مفيش meta_page_access_token في الفولت' }
-  const used = await fbAlreadyPosted()
-  const order: Array<'project' | 'listing'> = preferProject ? ['project', 'listing'] : ['listing', 'project']
-
-  for (const kind of order) {
-    if (kind === 'project') {
-      const { data } = await supabaseUntyped
-        .from('property_market_items')
-        .select('id, title, area, city, developer, price_from, cover_url')
-        .eq('is_active', true)
-        .not('cover_url', 'is', null)
-        .limit(200)
-      const fresh = ((data ?? []) as ProjectRow[]).filter((p) => !used.has(p.id) && !!p.cover_url)
-      if (!fresh.length) continue
-      const p = fresh[Math.floor(Math.random() * fresh.length)]
-      const where = [p.city, p.area].filter(Boolean).join(' — ')
-      const msg =
-        `🏗️ ${p.title ?? 'مشروع جديد'}\n` +
-        (where ? `📍 ${where}\n` : '') +
-        (p.developer ? `🏢 ${p.developer}\n` : '') +
-        (p.price_from ? `💰 يبدأ من ${money(p.price_from)}\n` : '') +
-        `\n✅ معاملاتك مضمونة\n👇 التفاصيل كاملة\n${SITE}/borsa?utm_source=facebook&utm_medium=page`
-      const r = await fbPostPhoto(token, p.cover_url as string, msg)
-      if (r.ok) {
-        await fbMarkPosted(p.id, r.post_id)
-        return { fb: true, kind, id: p.id, post_id: r.post_id }
-      }
-      continue
-    }
-
-    const { data } = await supabaseUntyped
-      .from('listings')
-      .select('id, title, city, district, price_egp, price_on_request')
-      .eq('status', 'published')
-      .limit(400)
-    const fresh = ((data ?? []) as ListingRow[]).filter((l) => !used.has(l.id))
-    if (!fresh.length) continue
-    const shuffled = fresh.sort(() => Math.random() - 0.5).slice(0, 25)
-    for (const l of shuffled) {
-      const { data: ph } = await supabaseUntyped
-        .from('listing_photos')
-        .select('url')
-        .eq('listing_id', l.id)
-        .limit(1)
-      const photo = ((ph ?? []) as Array<{ url: string }>)[0]?.url
-      if (!photo) continue
-      const where = [l.city, l.district].filter(Boolean).join(' — ')
-      const msg =
-        `🛍️ ${l.title ?? 'عرض جديد'}\n` +
-        (where ? `📍 ${where}\n` : '') +
-        `💰 ${l.price_on_request ? 'السعر عند الطلب' : money(l.price_egp)}\n` +
-        `\n✅ معاملاتك مضمونة\n👇 اشتري أو احجز\n${SITE}/listing/${l.id}?utm_source=facebook&utm_medium=page`
-      const r = await fbPostPhoto(token, photo, msg)
-      if (r.ok) {
-        await fbMarkPosted(l.id, r.post_id)
-        return { fb: true, kind, id: l.id, post_id: r.post_id }
-      }
-    }
-  }
-  return { fb: false, skipped: 'مفيش محتوى جديد للفيسبوك' }
-}
+// (٨ أغسطس ٢٠٢٦ — محمد: «شيل توكن فيسبوك من الداتابيز ومن المشروع كله»)
+// اتشال النشر على فيسبوك بالكامل: التوكنات كانت ميتة (التطبيق اتمسح من Meta)
+// والقرار إن النشر تليجرام بس. توكنات الفيسبوك اتمسحت من الفولت والإعدادات.
 
 async function markPosted(id: string, messageId: number | null) {
   await supabaseUntyped
@@ -222,8 +127,7 @@ export async function GET(request: NextRequest) {
       const j = await sendPhoto(token, p.cover_url as string, caption)
       if (j.ok) {
         await markPosted(p.id, j.result?.message_id ?? null)
-        const fb = await publishFacebookOne(preferProject)
-        return NextResponse.json({ ok: true, kind, id: p.id, message_id: j.result?.message_id, fb })
+        return NextResponse.json({ ok: true, kind, id: p.id, message_id: j.result?.message_id })
       }
       continue
     }
@@ -256,13 +160,10 @@ export async function GET(request: NextRequest) {
       const j = await sendPhoto(token, photo, caption)
       if (j.ok) {
         await markPosted(l.id, j.result?.message_id ?? null)
-        const fb = await publishFacebookOne(preferProject)
-        return NextResponse.json({ ok: true, kind, id: l.id, message_id: j.result?.message_id, fb })
+        return NextResponse.json({ ok: true, kind, id: l.id, message_id: j.result?.message_id })
       }
     }
   }
 
-  // حتى لو تليجرام ملقاش جديد — الفيسبوك ليه سجله الخاص فبنجرب ننشر عليه برضه
-  const fb = await publishFacebookOne(preferProject)
-  return NextResponse.json({ ok: true, skipped: 'مفيش محتوى جديد لتليجرام', fb })
+  return NextResponse.json({ ok: true, skipped: 'مفيش محتوى جديد ينفع ينشر النهاردة' })
 }

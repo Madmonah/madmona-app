@@ -80,7 +80,6 @@ const NAV: NavGroup[] = [
     { href: '/admin/wallets', label: 'المحافظ' },
     { href: '/admin/careers', label: 'الوظائف' },
     { href: '/admin/runbook', label: 'Runbook' },
-    { href: '/admin/refresh-fb-token', label: 'توكن فيسبوك' },
   ] },
 ]
 

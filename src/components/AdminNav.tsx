@@ -75,7 +75,6 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/subscriptions', label: 'الاشتراكات' },
     { href: '/admin/wallets', label: 'المحافظ' },
     { href: '/admin/careers', label: 'الوظائف' },
-    { href: '/admin/refresh-fb-token', label: 'توكن فيسبوك' },
   ] },
 ]
 

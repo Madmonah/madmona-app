@@ -717,7 +717,6 @@ export default function AdminDashboardV2() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
             <ToolCard href="/admin/runbook" icon={<BookOpen />} title="Runbook" sub="documentation + history" />
             <ToolCard href="/admin/workflows" icon={<Workflow />} title="Workflows" sub="Automation flows" />
-            <ToolCard href="/admin/refresh-fb-token" icon={<RefreshCw />} title="تجديد FB Token" sub="Meta API" />
           </div>
         </Section>
 
