@@ -112,6 +112,7 @@ export default function ChatPage() {
   const [name, setName] = useState('')
   const [started, setStarted] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
+  const [authedNoPhone, setAuthedNoPhone] = useState(false) // داخل بحساب مضمونة بس لسه مفيش رقم واتساب متسجّل (جوجل مثلًا)
   const [messages, setMessages] = useState<Msg[]>([])
   const [input, setInput] = useState('')
   const [pendingQ, setPendingQ] = useState<string | null>(null)   // سؤال جاي من هوم «اسأل المارد» (?q=)
@@ -177,9 +178,16 @@ export default function ChatPage() {
           const nm = ((prof as { full_name?: string } | null)?.full_name || '').trim()
           if (p && p.length >= 11) {
             setPhone(p); setName(nm); setStarted(true)
+            // 🔗 حساب واحد (8 Aug 2026): جدّد توكن أقسام مضمونة في الخلفية
+            import('@/lib/madmonaSession').then((m) => m.syncModuleSession()).catch(() => {})
             const hist = await loadHistory(session.access_token)
             if (hist.length) setMessages(hist)
             else welcome(nm)
+          } else {
+            // داخل بحساب مضمونة (جوجل غالبًا) بس لسه مسجّلش رقم واتساب —
+            // هنوجهه لتأكيد الرقم مرة واحدة بدل ما نسأله الاسم والرقم كل مرة
+            setName(nm)
+            setAuthedNoPhone(true)
           }
         }
       } catch {}
@@ -256,7 +264,8 @@ export default function ChatPage() {
     try { await subscribeToPush().then((r) => { if (r.ok) setNotifState('granted') }) } catch {}
   }
 
-  function start() { if (normEg(phone).length < 11) return; setStarted(true); welcome(name.trim()) }
+  // (8 Aug 2026) دالة start() القديمة اتشالت — مفيش تسجيل موازي بالاسم والرقم؛
+  // الدخول بقى حصريًا عبر حساب مضمونة الموحد (شوف بوابة !started تحت).
 
   async function submit(text: string, media: Attach | null, summonNow: boolean, replyToId?: string) {
     if ((!text && !media) || sending) return
@@ -391,6 +400,11 @@ export default function ChatPage() {
   if (!authChecked) return <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'linear-gradient(160deg,#14231E,#1F6F5F)', color: '#fff', fontFamily: 'system-ui' }}>لحظة…</div>
 
   if (!started) {
+    // 🔗 (8 Aug 2026) حساب واحد فقط: المارد بقى جزء من حساب مضمونة.
+    //    مفيش تسجيل موازي بالاسم والرقم — الزائر يدخل/يعمل حساب مضمونة،
+    //    واللي داخل من غير رقم (جوجل) يأكد رقمه مرة واحدة عبر /auth/complete-phone.
+    const backTo = '/chat/marid' + (pendingQ ? `?q=${encodeURIComponent(pendingQ)}` : '')
+    const go = (path: string) => `${path}?redirect=${encodeURIComponent(backTo)}`
     return (
       <div dir="rtl" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg,#1F6F5F 0%,#2FA084 100%)', padding: 16, fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
         <div style={{ background: '#FAFAF7', borderRadius: 22, padding: 30, width: '100%', maxWidth: 380, boxShadow: '0 18px 50px rgba(0,0,0,.28)' }}>
@@ -399,16 +413,31 @@ export default function ChatPage() {
             <img src={AVATAR_HD} alt="المارد" style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover' }} />
           </div>
           <h1 style={{ textAlign: 'center', margin: '0 0 4px', fontSize: 23, fontWeight: 800, color: '#1F6F5F' }}>شات مضمونة</h1>
-          <p style={{ textAlign: 'center', margin: '0 0 22px', color: '#667', fontSize: 14 }}>كلّم المارد مباشرة — مساعدك الشخصي ٢٤/٧</p>
+          <p style={{ textAlign: 'center', margin: '0 0 18px', color: '#667', fontSize: 14 }}>
+            {authedNoPhone
+              ? `أهلًا${name ? ' يا ' + name : ''} 👋 فاضل خطوة واحدة بس`
+              : 'حساب مضمونة واحد — للسوق والحجوزات والمارد'}
+          </p>
           {pendingQ && (
             <div style={{ background: 'rgba(47,160,132,.10)', border: '1px solid rgba(47,160,132,.25)', borderRadius: 14, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#1F6F5F', textAlign: 'center', lineHeight: 1.6 }}>
               💬 سؤالك محفوظ: «{pendingQ}»
-              <span style={{ display: 'block', fontSize: 11.5, color: '#667', marginTop: 2 }}>هيتبعت للمارد أول ما تبدأ — مش هتحتاج تكتبه تاني</span>
+              <span style={{ display: 'block', fontSize: 11.5, color: '#667', marginTop: 2 }}>هيتبعت للمارد لوحده بعد الدخول — مش هتكتبه تاني</span>
             </div>
           )}
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اسمك" style={inp} />
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="رقم موبايلك" inputMode="tel" style={inp} onKeyDown={(e) => e.key === 'Enter' && start()} />
-          <button onClick={start} style={{ ...btnPrimary, width: '100%', marginTop: 6 }}>ابدأ المحادثة</button>
+          {authedNoPhone ? (
+            <>
+              <p style={{ margin: '0 0 14px', color: '#556', fontSize: 13, lineHeight: 1.8, textAlign: 'center' }}>
+                عشان المارد يقدر يبعتلك ويحجزلك على واتساب، محتاجين نأكد رقمك مرة واحدة — وبعدها مش هنسألك تاني على أي جهاز.
+              </p>
+              <a href={go('/auth/complete-phone')} style={{ ...btnPrimary, width: '100%', display: 'block', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}>أكّد رقم الواتساب</a>
+            </>
+          ) : (
+            <>
+              <a href={go('/auth/login')} style={{ ...btnPrimary, width: '100%', display: 'block', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}>سجّل دخول</a>
+              <a href={go('/auth/signup')} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', width: '100%', boxSizing: 'border-box', marginTop: 10, padding: '13px 16px', borderRadius: 24, border: '2px solid rgba(31,111,95,.25)', color: '#1F6F5F', fontWeight: 800, fontSize: 15, background: '#fff' }}>أول مرة؟ اعمل حساب في دقيقة</a>
+              <p style={{ margin: '14px 0 0', color: '#889', fontSize: 11.5, textAlign: 'center', lineHeight: 1.7 }}>تدخل مرة واحدة — المارد يعرفك ويكمّل معاك من آخر كلام على أي جهاز.</p>
+            </>
+          )}
         </div>
       </div>
     )
@@ -750,7 +779,7 @@ export default function ChatPage() {
   )
 }
 
-const inp: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '12px 16px', margin: '0 0 12px', border: '1px solid #e3e3e3', borderRadius: 24, fontSize: 15, outline: 'none', background: '#fff', fontFamily: 'inherit' }
+// (8 Aug 2026) ستايل inp بتاع فورم الاسم/الرقم القديم اتشال مع الفورم نفسه
 const btnPrimary: React.CSSProperties = { background: 'linear-gradient(135deg,#F4C430 0%,#2FA084 55%,#1F6F5F 100%)', color: '#fff', border: 'none', borderRadius: 24, height: 48, fontSize: 18, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(31,111,95,.32)', fontFamily: 'inherit' }
 const hdrBtn: React.CSSProperties = { background: 'none', color: 'rgba(255,255,255,.85)', border: 'none', padding: 6, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center' }
 const actionBtn: React.CSSProperties = { width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,#1F6F5F,#2FA084)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, boxShadow: '0 8px 18px -6px rgba(31,111,95,.5)' }
