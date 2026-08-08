@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
 import { saveAccount } from '@/lib/saved-accounts'
+import { syncModuleSession } from '@/lib/madmonaSession'
 import { safeStorage } from '@/lib/safe-storage'
 import {
   ArrowRight, Phone, Lock, AlertCircle, Loader2, LogIn, Sparkles, KeyRound,
@@ -29,9 +30,10 @@ function LoginContent() {
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  // 🔑 (16 Jul 2026) الدخول اتوحّد: واتساب (أساسي) + جوجل. الباسورد بقى مطوي —
-  // للحسابات القديمة والموظفين بس. لو جاي من سويتشر الحسابات برقم → افتحه على طول.
-  const [showPassword, setShowPassword] = useState(!!prefilledPhone)
+  // 🔑 (8 Aug 2026) بقرار محمد: الدخول برقم + باسورد بقى ظاهر افتراضيًا
+  //    «زي باقي الدنيا» — بعد ما بقى فيه إنشاء حساب حقيقي بباسورد (phone-auth).
+  //    جوجل والواتساب فضلوا موجودين فوقه لمن يفضّلهم.
+  const [showPassword, setShowPassword] = useState(true)
 
   // Auto-fill phone from query param when account switcher redirects here
   useEffect(() => {
@@ -79,25 +81,38 @@ function LoginContent() {
       return
     }
 
-    // 2) Customer account login (phone -> email + password via Supabase Auth).
-    const email = phoneToEmail(normalized)
+    // 2) Customer login — native phone accounts first (created via the
+    //    phone-auth edge function, Aug 2026), then the legacy phone->email
+    //    trick for accounts created before that. Both use the same password.
+    let signInData: { user?: { id: string } | null } | null = null
 
-    const { error: signInErr, data: signInData } = await supabaseBrowser.auth.signInWithPassword({
-      email,
+    const { data: phoneData, error: phoneErr } = await supabaseBrowser.auth.signInWithPassword({
+      phone: normalized.slice(1), // '+2010...' -> '2010...'
       password,
     })
 
-    if (signInErr) {
-      console.error('[auth/login] sign in error:', signInErr)
-      if (signInErr.message.includes('Invalid login credentials')) {
-        setError(t('auth.err_invalid_creds'))
-      } else if (signInErr.message.includes('Email not confirmed')) {
-        setError(t('auth.err_not_confirmed'))
-      } else {
-        setError(signInErr.message || t('auth.err_generic'))
+    if (!phoneErr && phoneData?.user) {
+      signInData = phoneData
+    } else {
+      const email = phoneToEmail(normalized)
+      const { error: signInErr, data: emailData } = await supabaseBrowser.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (signInErr) {
+        console.error('[auth/login] sign in error:', signInErr)
+        if (signInErr.message.includes('Invalid login credentials')) {
+          setError(t('auth.err_invalid_creds'))
+        } else if (signInErr.message.includes('Email not confirmed')) {
+          setError(t('auth.err_not_confirmed'))
+        } else {
+          setError(signInErr.message || t('auth.err_generic'))
+        }
+        setSubmitting(false)
+        return
       }
-      setSubmitting(false)
-      return
+      signInData = emailData
     }
 
     // Save account to localStorage for fast switching later
@@ -120,6 +135,10 @@ function LoginContent() {
       // Silent fail — saving is nice-to-have
       console.warn('[auth/login] saveAccount failed:', e)
     }
+
+    // 🔗 Unify: mint/refresh the madmona module token so المارد والإدارة
+    //    and every other section recognize this login instantly.
+    try { await syncModuleSession() } catch { /* non-blocking */ }
 
     router.push(redirectTo)
     router.refresh()
@@ -265,9 +284,12 @@ function LoginContent() {
               </button>
             </form>
             )}
-            {/* مفيش «إنشاء حساب» منفصل — الواتساب/جوجل بيعملوا الحساب لوحدهم أول مرة */}
-            <p className="mt-6 pt-5 border-t border-gray-100 text-center text-xs text-gray-400 leading-relaxed">
-              أول مرة؟ نفس الزراير فوق بتعملك حساب تلقائي — مفيش فورم تسجيل.
+            {/* 🆕 (8 Aug 2026) إنشاء حساب حقيقي برقم + باسورد بقى موجود */}
+            <p className="mt-6 pt-5 border-t border-gray-100 text-center text-sm text-gray-500 leading-relaxed">
+              أول مرة في مضمونة؟{' '}
+              <Link href="/auth/signup" className="text-[#1F6F5F] font-bold hover:underline">
+                اعمل حساب جديد
+              </Link>
             </p>
           </div>
 

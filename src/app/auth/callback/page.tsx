@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { syncModuleSession } from '@/lib/madmonaSession'
 import { Loader2, AlertCircle } from 'lucide-react'
 
 // A real Egyptian number looks like +20XXXXXXXXXX. Anything else
@@ -36,6 +37,8 @@ function CallbackContent() {
         //    محتاجة رقم هي اللي تطلبه.
         const waVerified = user.user_metadata?.wa_verified === true
         void waVerified
+        // 🔗 وحّد جلسة المارد/الأقسام بعد دخول جوجل (whoami → module token)
+        try { await syncModuleSession() } catch { /* non-blocking */ }
         router.replace(redirectTo)
         router.refresh()
       } catch (e) {

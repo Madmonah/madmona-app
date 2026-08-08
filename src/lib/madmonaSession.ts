@@ -122,3 +122,37 @@ export function clearPendingLoginState(): void {
     sessionStorage.removeItem(KEYS.pendingLogin)
   } catch {}
 }
+
+// -----------------------------------------------------------------------------
+// 🔗 Unified session bridge (8 Aug 2026)
+// After ANY Supabase login (phone+password / Google / legacy email trick),
+// call syncModuleSession() once. It asks the server "whoami" which:
+//   - validates/reuses the cached madmona module token, or mints a fresh one
+//     (get_module_token) linked to the same account by normalized phone
+//   - returns the profile + roles from the SAME engine المارد uses
+// The token is stored via setMadmonaSession so كل الأقسام (المارد/الإدارة/
+// الماركت بليس) recognize the login without asking the user to sign in again.
+// Email-only accounts (no phone) get module_token = null → we just keep going.
+// -----------------------------------------------------------------------------
+export async function syncModuleSession(): Promise<MadmonaSession | null> {
+  if (typeof window === 'undefined') return null
+  try {
+    const { supabaseBrowser } = await import('@/lib/supabase-browser')
+    const cached = getMadmonaSession()
+    // @ts-expect-error rpc typing — whoami is not in the generated types yet
+    const { data, error } = await supabaseBrowser.rpc('whoami', {
+      p_module_token: cached?.token ?? null,
+    })
+    if (error || !data?.module_token) return cached
+    const session: MadmonaSession = {
+      token: data.module_token,
+      auth_user_id: data.user_id,
+      phone: data.profile?.phone || cached?.phone || '',
+      full_name: data.profile?.full_name ?? cached?.full_name ?? null,
+    }
+    setMadmonaSession(session)
+    return session
+  } catch {
+    return getMadmonaSession()
+  }
+}

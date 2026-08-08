@@ -9,7 +9,7 @@ import {
   ArrowRight, Calendar, Building2, ShoppingBag,
   LogOut, Loader2, Lock, User, Phone, Crown, ChevronLeft,
   CheckCircle, Clock, AlertCircle, FolderTree, Edit2, Check, X, Heart,
-  BarChart3, Wallet, UtensilsCrossed, Star, PlusCircle, Users,
+  BarChart3, Wallet, UtensilsCrossed, Star, PlusCircle, Users, Smartphone,
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import PushNotificationCard from '@/components/PushNotificationCard'
@@ -375,6 +375,14 @@ export default function AccountPage() {
             iconBg="bg-emerald-50 text-emerald-600"
             title="محفظتي"
             subtitle="الرصيد، الشحن، التحويل والسحب"
+          />
+          <div className="h-px bg-gray-100 mx-6" />
+          <SectionLink
+            href="/account/devices"
+            icon={<Smartphone className="w-5 h-5" />}
+            iconBg="bg-teal-50 text-teal-600"
+            title="الأجهزة المتصلة"
+            subtitle="شوف مين فاتح حسابك واقفل أي جهاز"
           />
           <div className="h-px bg-gray-100 mx-6" />
           <SectionLink
