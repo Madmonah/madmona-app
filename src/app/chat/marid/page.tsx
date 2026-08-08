@@ -140,6 +140,7 @@ export default function ChatPage() {
   const recRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
+  const qSentRef = useRef(false)   // يمنع إرسال سؤال الهوم (?q=) مرتين
 
   const welcome = useCallback((nm: string) => {
     setMessages([{ id: mkId(), role: 'sys', text: `أهلاً${nm ? ' يا ' + nm : ''} 👋 أنا المارد، مساعدك الشخصي على مضمونة — اسألني في أي حاجة.`, time: nowTime() }])
@@ -191,11 +192,15 @@ export default function ChatPage() {
     try { const qp = new URLSearchParams(window.location.search).get('q'); if (qp) setPendingQ(qp) } catch {}
   }, [])
   useEffect(() => {
-    if (!authChecked || !started || !pendingQ) return
+    if (!authChecked || !started || !pendingQ || qSentRef.current) return
+    // 🐛 (8 Aug 2026) الإصلاح: النسخة القديمة كانت بتعمل setPendingQ(null) فورًا،
+    //    وده بيغيّر الـdependency فبيشغّل الـcleanup اللي بيعمل clearTimeout —
+    //    فالتايمر كان بيتلغي قبل ما يبعت السؤال خالص. شيلنا الـcleanup وحطينا
+    //    ref يمنع الإرسال المزدوج.
+    qSentRef.current = true
     const t = pendingQ
     setPendingQ(null)
-    const id = setTimeout(() => { try { submit(t, null, maridOn) } catch {} }, 350)
-    return () => clearTimeout(id)
+    setTimeout(() => { try { submit(t, null, maridOn) } catch {} }, 350)
   }, [authChecked, started, pendingQ])
 
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }) }, [messages, sending])
@@ -395,6 +400,12 @@ export default function ChatPage() {
           </div>
           <h1 style={{ textAlign: 'center', margin: '0 0 4px', fontSize: 23, fontWeight: 800, color: '#1F6F5F' }}>شات مضمونة</h1>
           <p style={{ textAlign: 'center', margin: '0 0 22px', color: '#667', fontSize: 14 }}>كلّم المارد مباشرة — مساعدك الشخصي ٢٤/٧</p>
+          {pendingQ && (
+            <div style={{ background: 'rgba(47,160,132,.10)', border: '1px solid rgba(47,160,132,.25)', borderRadius: 14, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#1F6F5F', textAlign: 'center', lineHeight: 1.6 }}>
+              💬 سؤالك محفوظ: «{pendingQ}»
+              <span style={{ display: 'block', fontSize: 11.5, color: '#667', marginTop: 2 }}>هيتبعت للمارد أول ما تبدأ — مش هتحتاج تكتبه تاني</span>
+            </div>
+          )}
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اسمك" style={inp} />
           <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="رقم موبايلك" inputMode="tel" style={inp} onKeyDown={(e) => e.key === 'Enter' && start()} />
           <button onClick={start} style={{ ...btnPrimary, width: '100%', marginTop: 6 }}>ابدأ المحادثة</button>

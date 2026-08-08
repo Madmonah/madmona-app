@@ -163,6 +163,9 @@ export default async function HomePage() {
       {/* DESKTOP - New design (7 Aug 2026) from Madmona Redesign file */}
       <div className="hidden md:block">
         <HomeRedesign categories={rootCategories} stats={stats} liveCounts={liveCounts} heroImage={HERO_IMAGE} />
+        {/* 🔗 (8 Aug 2026) قسم «تواصل معانا» + أيقونات السوشيال رجع للديسكتوب —
+            كان اتشال بالغلط مع الريدزاين (الدالة كانت موجودة بس محدش بيرندرها) */}
+        <ContactSection />
       </div>
 
       <BottomNav />
