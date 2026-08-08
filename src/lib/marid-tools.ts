@@ -685,6 +685,93 @@ async function getMyOrders(a: { phone: string }): Promise<ToolResult> {
   return { found: rows.length, bookings: rows }
 }
 
+// ── تصنيف ذكي بالمعنى (٨ أغسطس ٢٠٢٦) ──────────────────────────────────────
+// بديل الفولباك القديم اللي كان بيدوّر بأول مقطع من الـslug بس ("sale-x" غير
+// موجود → "sale" → أول تصنيف بادئته "sale-" أيًا كان معناه). ده كان بيحط
+// إعلانات عقارية في "أثاث منزلي" لمجرد إن الاتنين تصنيفهم بيبدأ بـ"sale-".
+//
+// المنطق دلوقتي: نجيب كل التصنيفات الفعّالة، نطابق كلمات العنوان/الوصف
+// بكلمات اسم كل تصنيف (name_ar + slug مفكوك لكلمات)، ونختار الأعلى تطابقًا
+// بشرط نقاط > 0. لو مفيش أي تطابق: نعمل تصنيف جديد بدل ما نسيب الإعلان
+// في تصنيف عشوائي أو من غير تصنيف خالص — محمد قال صراحةً "لو مفيش كاتيجوري
+// ساعتها يبقى يعمل واحد جديد".
+const AR_STOPWORDS = new Set([
+  'في', 'من', 'على', 'مع', 'عن', 'الى', 'إلى', 'او', 'أو', 'و', 'ب', 'ل', 'ال',
+  'دي', 'ده', 'كام', 'جديد', 'جديدة', 'للبيع', 'للايجار', 'للإيجار', 'حصري',
+])
+
+function wordsOf(text: string): string[] {
+  return (text || '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .map((w) => w.trim())
+    .filter((w) => w.length >= 2 && !AR_STOPWORDS.has(w))
+}
+
+async function resolveCategorySlug(
+  hintSlug: string | undefined | null,
+  contextText: string,
+): Promise<string> {
+  const hint = hintSlug?.trim()
+
+  // ١) لو المارد بعت slug فعلي وموجود بالجدول — نستخدمه زي ما هو.
+  if (hint) {
+    const { data: exact } = await db.from('categories').select('slug').eq('slug', hint).eq('is_active', true).maybeSingle()
+    if (exact?.slug) return exact.slug as string
+  }
+
+  // ٢) مطابقة بالمعنى: كل التصنيفات الفعّالة، نسكّر كل واحدة حسب تشابه
+  //    كلماتها (name_ar + كلمات الـslug) مع كلمات العنوان/الوصف + الـhint
+  //    اللي بعته المارد (حتى لو مش slug حقيقي، غالبًا فيه كلمات مفيدة زي
+  //    "properties" أو "furniture").
+  const { data: all } = await db
+    .from('categories')
+    .select('slug, name_ar, group_name_ar')
+    .eq('is_active', true)
+    .limit(500)
+
+  const target = new Set([...wordsOf(contextText), ...wordsOf((hint || '').replace(/-/g, ' '))])
+
+  let best: { slug: string; score: number } | null = null
+  for (const c of (all ?? []) as Array<{ slug: string; name_ar: string; group_name_ar: string | null }>) {
+    const catWords = new Set([
+      ...wordsOf(c.name_ar),
+      ...wordsOf(c.group_name_ar || ''),
+      ...wordsOf(c.slug.replace(/-/g, ' ')),
+    ])
+    let score = 0
+    for (const w of target) if (catWords.has(w)) score += 1
+    if (score > 0 && (!best || score > best.score)) best = { slug: c.slug, score }
+  }
+  if (best) return best.slug
+
+  // ٣) مفيش أي تطابق — بدل ما نسيب الإعلان بلا تصنيف أو نحطه في تصنيف
+  //    عشوائي غلط: نعمل تصنيف جديد باسم مشتق من العنوان نفسه. بيتحط
+  //    is_active=true عشان يظهر فورًا، وdisplay_order كبير عشان يفضل
+  //    آخر القايمة لحد ما حد يراجعه ويرتبه صح.
+  const label = (hint ? hint.replace(/-/g, ' ') : contextText).trim().slice(0, 40) || 'تصنيف جديد'
+  const newSlug =
+    'auto-' +
+    (label.toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, '').trim().replace(/\s+/g, '-').slice(0, 40) || 'misc') +
+    '-' + Math.random().toString(36).slice(2, 6)
+
+  const { data: created, error: ce } = await db
+    .from('categories')
+    .insert({
+      slug: newSlug,
+      name_ar: label,
+      is_active: true,
+      display_order: 9999,
+    } as never)
+    .select('slug')
+    .maybeSingle()
+
+  // لو الإنشاء فشل لأي سبب (مثلًا تعارض نادر في الـslug) نرجّع null بدل
+  // ما نوقف تسجيل الإعلان بالكامل — publish-drafts هيسيبه needs_review.
+  return (created as { slug?: string } | null)?.slug ?? (ce ? '' : newSlug)
+}
+
 async function createListingDraft(a: {
   phone: string
   name?: string
@@ -702,21 +789,20 @@ async function createListingDraft(a: {
   //    يوم ٢٠ يوليو حط category_slug='restaurants' وهو مش في الجدول،
   //    فالمسودة وقفت عند «no category» ومحدش عرف.
   //    بنتحقق فعليًا بدل ما نستنى إنه يفتكر.
-  let slug = a.category_slug?.trim() || null
-  if (slug) {
-    const { data: cat } = await db.from('categories').select('slug').eq('slug', slug).maybeSingle()
-    if (!cat) {
-      // نجرّب أقرب تصنيف بنفس البادئة (food- · properties- …)
-      const prefix = slug.split('-')[0]
-      const { data: near } = await db
-        .from('categories')
-        .select('slug')
-        .ilike('slug', `${prefix}%`)
-        .limit(1)
-        .maybeSingle()
-      slug = (near as { slug?: string } | null)?.slug ?? null
-    }
-  }
+  //
+  // ⚠️⚠️ (٨ أغسطس ٢٠٢٦) الفولباك القديم كان بيدوّر بالبادئة الأولى بس
+  //    (slug.split('-')[0] + ilike prefix%) — ده كان بيوقع في تصنيف غلط
+  //    تمامًا لو أول مقطع اتصادف موجود في تصنيف تاني خالص، بلا أي علاقة
+  //    بالمعنى: "sale-real-estate" مش موجود → البادئة "sale" → أول تصنيف
+  //    بادئته "sale-" (بترتيب display_order) طلع "sale-furniture-home"،
+  //    فمشروع عقاري كامل (Dejoya) اتنشر كإعلان "أثاث منزلي". محمد لاحظها
+  //    ووصفها: "مش فاهم ايه موضوع المنتجات الي بتضاف في اثاث منزلي دي".
+  //
+  //    الحل: مطابقة بالمعنى مش بالبادئة — نقارن كلمات العنوان/الوصف
+  //    بأسماء وslugs كل التصنيفات الفعّالة ونختار الأعلى تطابقًا. لو
+  //    مفيش تطابق معقول (نقاط = صفر) نعمل تصنيف جديد بدل ما نسيب
+  //    الإعلان يقع في تصنيف عشوائي أو يفضل من غير تصنيف خالص.
+  let slug = await resolveCategorySlug(a.category_slug, `${a.title} ${a.description || ''}`)
 
   // 📸 صور العميل — بتتخزّن في المسودة عشان الكرون يقدر ينشرها.
   //    من غير الصور المسودة بتفضل عالقة (الماركتبليس بيرفض إعلان بلا صورة).
