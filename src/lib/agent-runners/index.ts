@@ -36,6 +36,14 @@ import { runOrchestrator } from './phase6-runners'
 import { runAutoPublisher } from './auto-publisher'
 import { runReelPublisher } from './reel-publisher'
 
+import {
+  runSupplierOnboardingReal,
+  runSupplierActivationReal,
+  runSupplierReactivationReal,
+} from './whatsapp-real-runners'
+import { runLeadQualifierReal } from './lead-qualifier-runner'
+import { runBookingCloserReal } from './booking-closer-runner'
+
 async function logRun(args: {
   agentName: string; triggerType: string;
   status: 'started' | 'success' | 'error';
@@ -116,11 +124,10 @@ async function runSupplierHunter(): Promise<Record<string, unknown>> {
   return parseJsonResponse<Record<string, unknown>>(text)
 }
 
-async function runSupplierOnboarding(): Promise<Record<string, unknown>> { return { skipped: true } }
-async function runSupplierActivation(): Promise<Record<string, unknown>> { return { skipped: true } }
-async function runSupplierReactivation(): Promise<Record<string, unknown>> { return { skipped: true } }
-async function runLeadQualifier(): Promise<Record<string, unknown>> { return { skipped: true } }
-async function runBookingCloser(): Promise<Record<string, unknown>> { return { skipped: true } }
+// ملاحظة: supplier-onboarding / supplier-activation / supplier-reactivation /
+// lead-qualifier / booking-closer بقى ليهم منطق حقيقي — الدوال متستوردة فوق
+// من whatsapp-real-runners.ts / lead-qualifier-runner.ts / booking-closer-runner.ts
+// ومربوطة في RUNNERS تحت مباشرة (مفيش حاجة هنا تتنفذ).
 async function runCartAbandoner(): Promise<Record<string, unknown>> { return { skipped: true } }
 async function runUpsell(): Promise<Record<string, unknown>> { return { skipped: true } }
 async function runFollowUp(): Promise<Record<string, unknown>> { return { skipped: true } }
@@ -236,11 +243,11 @@ const RUNNERS: Record<string, (args?: Record<string, unknown>) => Promise<Record
   'content-marketing': runContentMarketing,
   'analytics-reporter': runAnalyticsReporter,
   'supplier-hunter': runSupplierHunter,
-  'supplier-onboarding': runSupplierOnboarding,
-  'supplier-activation': runSupplierActivation,
-  'supplier-reactivation': runSupplierReactivation,
-  'lead-qualifier': runLeadQualifier,
-  'booking-closer': runBookingCloser,
+  'supplier-onboarding': runSupplierOnboardingReal,
+  'supplier-activation': runSupplierActivationReal,
+  'supplier-reactivation': runSupplierReactivationReal,
+  'lead-qualifier': runLeadQualifierReal,
+  'booking-closer': runBookingCloserReal,
   'cart-abandoner': runCartAbandoner,
   'upsell-agent': runUpsell,
   'follow-up-agent': runFollowUp,

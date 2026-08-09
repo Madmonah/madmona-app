@@ -66,6 +66,10 @@ scripts/*.jpg
 scripts/node_modules/
 scripts/tsc-all.log
 
+# ملف بروفايل كروم لسكريبتات الريلز — عمليًا نسخة كاملة من إكستنشنز
+# متصفح (آلاف الملفات)، ومحتمل فيها جلسات/كوكيز محلية. ما ينفعش يتكوميت.
+scripts/reels/playwright/chrome-social-profile/
+
 # Ù…Ù„ÙØ§Øª Ø§ØªÙ†Ø²Ù‘Ù„Øª Ù„Ù„ÙØ­Øµ
 *.pdf
 !public/**/*.pdf

@@ -1,14 +1,22 @@
 // src/lib/agent-runners/whatsapp-real-runners.ts
 // Real WhatsApp + outreach runners — replaces all the {skipped: true} stubs.
 //
-// These actually send messages via WhatsApp Cloud API and update lead status.
+// These actually send messages via WhatsApp (OpenWA — قناة المارد الوحيدة، شوف whatsapp.ts)
+// ورسايلهم اتولّدت بـClaude من نفس الـpersona/prompts المكتوبة أصلاً لكل agent
+// (src/lib/agent-prompts/*)، مش نصوص ثابتة — كل رسالة مخصّصة للمستلم.
 
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { callClaude, parseJsonResponse } from '@/lib/anthropic'
 import { sendText, normalizePhone, isWhatsAppConfigured } from '@/lib/whatsapp'
 import { WHATSAPP_BROADCASTER_PROMPT } from '@/lib/agent-prompts/whatsapp-broadcaster'
+import { SUPPLIER_ONBOARDING_PROMPT } from '@/lib/agent-prompts/supplier-onboarding'
+import { SUPPLIER_REACTIVATION_PROMPT } from '@/lib/agent-prompts/supplier-reactivation'
 
 const SEND_DELAY_MS = 1000
+
+// 🔧 (شوف wa-queue-send/route.ts) من غير session صريحة، sendText() بتقع على
+// جسر Baileys الميت وترجع 404 — لازم نحدد جلسة OpenWA شغالة دايمًا.
+const AGENT_WA_SESSION = process.env.WA_CAMPAIGN_SESSION || 'madmona-982'
 
 async function sleep(ms: number): Promise<void> {
   return new Promise(r => setTimeout(r, ms))
@@ -93,6 +101,7 @@ export async function runWhatsappBroadcasterReal(): Promise<Record<string, unkno
         body: messageBody,
         agentName: 'whatsapp-broadcaster',
         aiGenerated: true,
+        session: AGENT_WA_SESSION,
       })
       if (result.ok) {
         sent++
@@ -129,7 +138,7 @@ export async function runWhatsappBroadcasterReal(): Promise<Record<string, unkno
 }
 
 // ============================================================================
-// 2. Supplier Onboarding — welcome new pending suppliers
+// 2. Supplier Onboarding — welcome new pending suppliers (رسالة AI شخصية)
 // ============================================================================
 
 export async function runSupplierOnboardingReal(): Promise<Record<string, unknown>> {
@@ -137,21 +146,29 @@ export async function runSupplierOnboardingReal(): Promise<Record<string, unknow
     return { sent: 0, error: 'WhatsApp not configured' }
   }
 
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+  const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
 
   type Sup = {
     id: string
     business_name: string
     profile_id: string
     kyc_status: string
+    account_type?: string | null
+    created_at: string
     profiles: { full_name: string | null; phone: string | null } | null
   }
 
+  // دوره الحقيقي (شوف supplier-onboarding prompt): supplier سجّل من 2-6 ساعات
+  // ولسه مضافش listing — مش أي pending. لو مفيش created_at نطاق نرجع لكل pending
+  // حديث بدل ما نسيبها فاضية (fallback آمن).
   const { data: suppliers } = await supabaseAdmin
     .from('marketplace_suppliers')
-    .select('id, business_name, profile_id, kyc_status, profiles!inner(full_name, phone)')
+    .select('id, business_name, profile_id, kyc_status, created_at, listings_count, profiles!inner(full_name, phone)')
     .eq('kyc_status', 'pending')
-    .gte('created_at', sevenDaysAgo)
+    .eq('listings_count', 0)
+    .lte('created_at', twoHoursAgo)
+    .gte('created_at', sixHoursAgo)
     .limit(20)
 
   const targets = (suppliers ?? []) as unknown as Sup[]
@@ -167,26 +184,31 @@ export async function runSupplierOnboardingReal(): Promise<Record<string, unknow
     }
 
     const name = sup.profiles?.full_name ?? sup.business_name ?? 'صديقنا'
-    const body = `أهلاً ${name} 👋
-
-من فريق مضمونة. شكراً إنك سجلت معانا الـ ${sup.business_name}.
-
-عشان نخلص KYC ونفعّل حسابك بسرعة:
-1️⃣ ارفع البطاقة + السجل التجاري (لو فيه)
-2️⃣ ضيف إعلان واحد على الأقل عشان نراجع الحساب
-
-اللينك: madmonacairo.com/supplier/dashboard
-
-محتاج مساعدة؟ رد على الرسالة دي وأنا معاك.
-
-معاملاتك مضمونة 🤝`
+    const hoursSinceSignup = Math.round((Date.now() - new Date(sup.created_at).getTime()) / (60 * 60 * 1000))
 
     try {
+      const text = await callClaude({
+        systemPrompt: SUPPLIER_ONBOARDING_PROMPT,
+        userMessage: JSON.stringify({
+          full_name: name,
+          business_name: sup.business_name,
+          account_type: sup.account_type ?? 'supplier',
+          listings_count: 0,
+          hours_since_signup: hoursSinceSignup,
+        }),
+        maxTokens: 500,
+        temperature: 0.7,
+      })
+      const out = parseJsonResponse<{ message: string; next_action_link?: string }>(text)
+      const body = out.message?.trim()
+      if (!body) { failed++; continue }
+
       const result = await sendText({
         to: phone,
         body,
         agentName: 'supplier-onboarding',
-        aiGenerated: false,
+        aiGenerated: true,
+        session: AGENT_WA_SESSION,
       })
       if (result.ok) sent++
       else failed++
@@ -255,6 +277,7 @@ export async function runSupplierActivationReal(): Promise<Record<string, unknow
         body,
         agentName: 'supplier-activation',
         aiGenerated: false,
+        session: AGENT_WA_SESSION,
       })
       if (result.ok) sent++
       else failed++
@@ -269,7 +292,7 @@ export async function runSupplierActivationReal(): Promise<Record<string, unknow
 }
 
 // ============================================================================
-// 4. Supplier Reactivation
+// 4. Supplier Reactivation (رسالة AI شخصية)
 // ============================================================================
 
 export async function runSupplierReactivationReal(): Promise<Record<string, unknown>> {
@@ -309,21 +332,31 @@ export async function runSupplierReactivationReal(): Promise<Record<string, unkn
     }
 
     const name = sup.profiles?.full_name ?? sup.business_name ?? 'صديقنا'
-    const body = `أهلاً ${name} 👋
-
-من مضمونة. شفنا إنك مش داخل الحساب من فترة، وعايزين نفكرك إن إعلاناتك لسه شغّالة 📦
-
-دلوقتي فيه طلب متزايد على ${sup.business_name}. لو محتاج تحدث الأسعار أو تضيف إعلان جديد، اللينك:
-madmonacairo.com/supplier/dashboard
-
-سعداء برجوعك 🤝`
+    const daysInactive = Math.round((Date.now() - new Date(sup.updated_at).getTime()) / (24 * 60 * 60 * 1000))
 
     try {
+      const text = await callClaude({
+        systemPrompt: SUPPLIER_REACTIVATION_PROMPT,
+        userMessage: JSON.stringify({
+          full_name: name,
+          business_name: sup.business_name,
+          last_listing_date: sup.updated_at,
+          total_past_bookings: sup.bookings_count ?? 0,
+          days_inactive: daysInactive,
+        }),
+        maxTokens: 500,
+        temperature: 0.7,
+      })
+      const out = parseJsonResponse<{ message: string }>(text)
+      const body = out.message?.trim()
+      if (!body) { failed++; continue }
+
       const result = await sendText({
         to: phone,
         body,
         agentName: 'supplier-reactivation',
-        aiGenerated: false,
+        aiGenerated: true,
+        session: AGENT_WA_SESSION,
       })
       if (result.ok) sent++
       else failed++
@@ -338,7 +371,8 @@ madmonacairo.com/supplier/dashboard
 }
 
 // ============================================================================
-// 5. Cold Leads Outreach
+// 5. Cold Leads Outreach (مسار ثانوي — مش في الـ51 agent الحاليين، سايبينه
+//    كما هو لأي استخدام يدوي مستقبلي، بس مش موصّل في RUNNERS)
 // ============================================================================
 
 export async function runColdLeadsOutreachReal(): Promise<Record<string, unknown>> {
@@ -394,6 +428,7 @@ export async function runColdLeadsOutreachReal(): Promise<Record<string, unknown
         body,
         agentName: 'cold-leads-outreach',
         aiGenerated: false,
+        session: AGENT_WA_SESSION,
       })
       if (result.ok) {
         sent++
@@ -416,71 +451,4 @@ export async function runColdLeadsOutreachReal(): Promise<Record<string, unknown
   }
 
   return { sent, failed, found: targets.length }
-}
-
-// ============================================================================
-// 6. Lead Qualifier — score cold_leads with Claude
-// ============================================================================
-
-export async function runLeadQualifierReal(): Promise<Record<string, unknown>> {
-  type Lead = {
-    id: string
-    business_name: string
-    category: string | null
-    city: string | null
-    rating: number | null
-    review_count: number | null
-    notes: string | null
-  }
-
-  const { data: leads } = await supabaseAdmin
-    .from('cold_leads')
-    .select('id, business_name, category, city, rating, review_count, notes')
-    .in('status', ['new', 'contacted'])
-    .limit(10)
-
-  const targets = (leads ?? []) as Lead[]
-  if (targets.length === 0) return { qualified: 0, found: 0 }
-
-  let qualified = 0
-
-  for (const lead of targets) {
-    try {
-      const text = await callClaude({
-        systemPrompt: `أنت محلل leads لمنصة مضمونة (إيجار في مصر).
-تقيّم كل lead بسكور من 1 إلى 10 بناءً على:
-- جودة البيزنس (rating + review_count)
-- ملاءمة الكاتيجوري لمضمونة
-- الموقع (القاهرة/الجيزة الأفضل)
-
-ارجع JSON:
-{ "score": 1-10, "verdict": "hot" | "warm" | "cold", "reason": "سطر واحد" }`,
-        userMessage: JSON.stringify(lead),
-        maxTokens: 200,
-        temperature: 0.3,
-      })
-
-      const evaluation = parseJsonResponse<{
-        score: number
-        verdict: string
-        reason: string
-      }>(text)
-
-      await supabaseAdmin.from('agent_insights').insert({
-        agent_name: 'lead-qualifier',
-        insight_type: 'lead_score',
-        title: `${lead.business_name} — ${evaluation.verdict}`,
-        description: evaluation.reason,
-        priority: evaluation.score >= 7 ? 'high' : evaluation.score >= 4 ? 'medium' : 'low',
-        recommended_action: evaluation.score >= 7 ? 'reach_out' : 'monitor',
-        data_points: { lead_id: lead.id, ...evaluation },
-      } as never)
-
-      if (evaluation.score >= 7) qualified++
-    } catch {
-      // skip
-    }
-  }
-
-  return { qualified, found: targets.length }
 }
