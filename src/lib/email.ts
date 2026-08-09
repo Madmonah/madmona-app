@@ -40,7 +40,33 @@ function sanitizeRecipients(to: string | string[]): string[] {
   return Array.from(new Set(arr.map(s => s.trim()).filter(Boolean)))
 }
 
+// ============================================================================
+// Owner/admin notification kill-switch (Aug 9 2026)
+// -----------------------------------------------------------------------------
+// Every automated agent → owner email (daily-report, email-content-digest,
+// content-marketing, signup-concierge, ai-os-runners, phase4/5-runners,
+// leads/capture, listings/inquiry fallback) sends to this address. Mohamed
+// asked to stop ALL of these. Customer-facing emails (booking confirmation,
+// welcome, password reset) are NOT affected — they go to different recipients.
+// Flip OWNER_NOTIFICATIONS_ENABLED to true (or remove this block) to re-enable.
+// ============================================================================
+const OWNER_NOTIFICATIONS_ENABLED = false
+const OWNER_NOTIFICATION_ADDRESSES = new Set([
+  'madmona.admin@gmail.com',
+  (process.env.MADMONA_OWNER_EMAIL || '').trim().toLowerCase(),
+].filter(Boolean))
+
+function isOwnerNotificationOnly(recipients: string[]): boolean {
+  return recipients.length > 0 && recipients.every(r => OWNER_NOTIFICATION_ADDRESSES.has(r.trim().toLowerCase()))
+}
+
 export async function sendEmail(params: EmailParams): Promise<{ ok: boolean; id?: string; error?: string }> {
+  const recipientsPreview = sanitizeRecipients(params.to)
+  if (!OWNER_NOTIFICATIONS_ENABLED && isOwnerNotificationOnly(recipientsPreview)) {
+    console.log(`[email] skipped owner notification ("${params.subject}") — owner notifications are disabled`)
+    return { ok: false, error: 'owner_notifications_disabled' }
+  }
+
   const c = getClient()
   if (!c) {
     return { ok: false, error: 'Email not configured (RESEND_API_KEY missing)' }
