@@ -43,6 +43,13 @@ import {
 } from './whatsapp-real-runners'
 import { runLeadQualifierReal } from './lead-qualifier-runner'
 import { runBookingCloserReal } from './booking-closer-runner'
+import {
+  runCartAbandonerReal,
+  runUpsellReal,
+  runFollowUpReal,
+  runReviewGeneratorReal,
+  runReferralAgentReal,
+} from './booking-lifecycle-runners'
 
 async function logRun(args: {
   agentName: string; triggerType: string;
@@ -124,15 +131,10 @@ async function runSupplierHunter(): Promise<Record<string, unknown>> {
   return parseJsonResponse<Record<string, unknown>>(text)
 }
 
-// ملاحظة: supplier-onboarding / supplier-activation / supplier-reactivation /
-// lead-qualifier / booking-closer بقى ليهم منطق حقيقي — الدوال متستوردة فوق
-// من whatsapp-real-runners.ts / lead-qualifier-runner.ts / booking-closer-runner.ts
-// ومربوطة في RUNNERS تحت مباشرة (مفيش حاجة هنا تتنفذ).
-async function runCartAbandoner(): Promise<Record<string, unknown>> { return { skipped: true } }
-async function runUpsell(): Promise<Record<string, unknown>> { return { skipped: true } }
-async function runFollowUp(): Promise<Record<string, unknown>> { return { skipped: true } }
-async function runReviewGenerator(): Promise<Record<string, unknown>> { return { skipped: true } }
-async function runReferralAgent(): Promise<Record<string, unknown>> { return { sent: 0 } }
+// ملاحظة: كل الstubs التسعة (ما عدا customer-concierge) بقى ليهم منطق حقيقي موصّل
+// من whatsapp-real-runners.ts / lead-qualifier-runner.ts / booking-closer-runner.ts /
+// booking-lifecycle-runners.ts ومربوطة في RUNNERS تحت مباشرة.
+// customer-concierge لسة stub عمدي — دوره الحقيقي في خدمة منفصلة (wa-marid على Railway).
 async function runCustomerConcierge(): Promise<Record<string, unknown>> { return { skipped: true } }
 
 async function runListingOptimizer(): Promise<Record<string, unknown>> {
@@ -248,9 +250,9 @@ const RUNNERS: Record<string, (args?: Record<string, unknown>) => Promise<Record
   'supplier-reactivation': runSupplierReactivationReal,
   'lead-qualifier': runLeadQualifierReal,
   'booking-closer': runBookingCloserReal,
-  'cart-abandoner': runCartAbandoner,
-  'upsell-agent': runUpsell,
-  'follow-up-agent': runFollowUp,
+  'cart-abandoner': runCartAbandonerReal,
+  'upsell-agent': runUpsellReal,
+  'follow-up-agent': runFollowUpReal,
   'customer-concierge': runCustomerConcierge,
   'listing-optimizer': runListingOptimizer,
   'seo-agent': runSeoAgent,
@@ -258,8 +260,8 @@ const RUNNERS: Record<string, (args?: Record<string, unknown>) => Promise<Record
   'email-campaigner': runEmailCampaigner,
   'trend-spotter': runTrendSpotter,
   'competitor-watcher': runCompetitorWatcher,
-  'review-generator': runReviewGenerator,
-  'referral-agent': runReferralAgent,
+  'review-generator': runReviewGeneratorReal,
+  'referral-agent': runReferralAgentReal,
   // Phase 2
   'ad-designer': runAdDesigner as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
   'reel-script-writer': runReelScriptWriter as (args?: Record<string, unknown>) => Promise<Record<string, unknown>>,
