@@ -250,12 +250,27 @@ export async function runSupplierActivationReal(): Promise<Record<string, unknow
   let sent = 0
   let failed = 0
 
+  // ماتبعتش تاني لنفس المورد في آخر 7 أيام — من غير حارس ده كان هيبعت نفس
+  // الرسالة كل مرة يتشغل فيها الـagent طول ما listings_count فاضل صفر.
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+
   for (const sup of targets) {
     const phone = sup.profiles?.phone ? normalizePhone(sup.profiles.phone) : ''
     if (!phone) {
       failed++
       continue
     }
+
+    const { data: recentNudge } = await supabaseAdmin
+      .from('agent_insights')
+      .select('id')
+      .eq('agent_name', 'supplier-activation')
+      .eq('insight_type', 'activation_nudge_sent')
+      .gte('created_at', sevenDaysAgo)
+      .contains('data_points', { supplier_id: sup.id })
+      .limit(1)
+      .maybeSingle()
+    if (recentNudge) continue
 
     const name = sup.profiles?.full_name ?? sup.business_name ?? 'صديقنا'
     const body = `أهلاً ${name} ✓
@@ -279,8 +294,20 @@ export async function runSupplierActivationReal(): Promise<Record<string, unknow
         aiGenerated: false,
         session: AGENT_WA_SESSION,
       })
-      if (result.ok) sent++
-      else failed++
+      if (result.ok) {
+        sent++
+        await supabaseAdmin.from('agent_insights').insert({
+          agent_name: 'supplier-activation',
+          insight_type: 'activation_nudge_sent',
+          title: `تذكير تفعيل — ${sup.business_name}`,
+          description: null,
+          priority: 'low',
+          recommended_action: null,
+          data_points: { supplier_id: sup.id },
+        } as never)
+      } else {
+        failed++
+      }
     } catch {
       failed++
     }

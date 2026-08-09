@@ -57,11 +57,11 @@ export async function runLeadQualifierReal(): Promise<Record<string, unknown>> {
 
       const verdict = score >= HOT_THRESHOLD ? 'hot' : score >= WARM_THRESHOLD ? 'warm' : 'cold'
 
-      // نحدث حالة الـlead بالسكور — عشان اللوحة والتقارير التانية تشوفه محدّث.
-      await supabaseAdmin
-        .from('cold_leads')
-        .update({ status: 'contacted' } as never)
-        .eq('id', lead.id)
+      // ملاحظة: مبنحدّثش status هنا لكل الـleads اللي اتقيّمت — لو حدّثناه
+      // لـ'contacted' لمجرد إننا حسبنا السكور، الـlead هيختفي من فلتر
+      // status='new' فوق للأبد من غير ما حد يتواصل معاه فعلاً (خصوصًا
+      // الـcold اللي عمرها ما بتاخد أي إجراء). التحديث بس بيحصل لما فعلاً
+      // نبعت توصية تواصل (hot) — شوف تحت.
 
       // للـleads العالية بس (70+) — Claude يكتب توصية اتصال مختصرة مش سكور
       // (السكور مش شغل Claude، ده شغل الدالة اللي فوق).
@@ -97,6 +97,13 @@ export async function runLeadQualifierReal(): Promise<Record<string, unknown>> {
           recommended_action: out.suggested_agent ?? 'booking-closer',
           data_points: { lead_id: lead.id, score, verdict, ...out },
         } as never)
+
+        // الـlead ده فعلاً اتاخد فيه إجراء (توصية تواصل اتسجلت) — دلوقتي
+        // نعلّمه contacted عشان مايترجعش يتقيّم تاني كل مرة.
+        await supabaseAdmin
+          .from('cold_leads')
+          .update({ status: 'contacted' } as never)
+          .eq('id', lead.id)
 
         qualified++
       } else if (verdict === 'warm') {

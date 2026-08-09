@@ -84,6 +84,19 @@ export async function runCartAbandonerReal(): Promise<Record<string, unknown>> {
   let failed = 0
 
   for (const b of targets) {
+    // حارس تكرار — لو الـagent اشتغل قبل كده على نفس الحجز (نفس النافذة
+    // 1-3 ساعات ممكن تلقط نفس الصف أكتر من مرة لو اتشغل يدوي/تاني قبل ما
+    // الحجز يخرج من النطاق)، متبعتش تاني.
+    const { data: existingNudge } = await supabaseAdmin
+      .from('agent_insights')
+      .select('id')
+      .eq('agent_name', 'cart-abandoner')
+      .eq('insight_type', 'cart_nudge_sent')
+      .contains('data_points', { booking_id: b.id })
+      .limit(1)
+      .maybeSingle()
+    if (existingNudge) continue
+
     const contact = await resolveContact(b)
     if (!contact) { failed++; continue }
 
@@ -113,8 +126,20 @@ export async function runCartAbandonerReal(): Promise<Record<string, unknown>> {
       const result = await sendText({
         to: contact.phone, body, agentName: 'cart-abandoner', aiGenerated: true, session: AGENT_WA_SESSION,
       })
-      if (result.ok) sent++
-      else failed++
+      if (result.ok) {
+        sent++
+        await supabaseAdmin.from('agent_insights').insert({
+          agent_name: 'cart-abandoner',
+          insight_type: 'cart_nudge_sent',
+          title: `تذكير سلة متروكة — ${l.title}`,
+          description: null,
+          priority: 'low',
+          recommended_action: null,
+          data_points: { booking_id: b.id },
+        } as never)
+      } else {
+        failed++
+      }
     } catch {
       failed++
     }
@@ -154,13 +179,13 @@ export async function runUpsellReal(): Promise<Record<string, unknown>> {
     const { data: currentListing } = await supabaseAdmin
       .from('listings').select('id, title, category_id').eq('id', b.listing_id).maybeSingle()
     const cl = currentListing as ListingRow | null
-    if (!cl) { failed++; continue }
+    if (!cl || !cl.category_id) { failed++; continue }
 
     // ترشيح بسيط: إعلانات تانية في نفس الكاتيجوري لسه منشورة، غير الإعلان اللي حجزه
     const { data: recs } = await supabaseAdmin
       .from('listings')
       .select('id, title, category_id')
-      .eq('category_id', cl.category_id ?? '')
+      .eq('category_id', cl.category_id)
       .eq('status', 'published')
       .neq('id', cl.id)
       .limit(3)
