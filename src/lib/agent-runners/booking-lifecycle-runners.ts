@@ -296,8 +296,24 @@ export async function runFollowUpReal(): Promise<Record<string, unknown>> {
       const result = await sendText({
         to: contact.phone, body, agentName: 'follow-up-agent', aiGenerated: true, session: AGENT_WA_SESSION,
       })
-      if (result.ok) sent++
-      else failed++
+      if (result.ok) {
+        sent++
+        // 🔧 (مراجعة أغسطس 2026) بنسجل إن الحجز ده اتبعتله follow-up — review-generator
+        // بيقراه قبل ما يبعت تاني عشان العميل ماياخدش رسالتين متقاربة متشابهة
+        // لنفس الحجز (follow-up بيسأل "عجبك الحجز؟" وreview-generator بيطلب تقييم رسمي —
+        // دي نفس النية تقريبياً).
+        await supabaseAdmin.from('agent_insights').insert({
+          agent_name: 'follow-up-agent',
+          insight_type: 'follow_up_sent',
+          title: `متابعة بعد الحجز — ${l.title}`,
+          description: null,
+          priority: 'low',
+          recommended_action: null,
+          data_points: { booking_id: b.id },
+        } as never)
+      } else {
+        failed++
+      }
     } catch {
       failed++
     }
@@ -331,11 +347,29 @@ export async function runReviewGeneratorReal(): Promise<Record<string, unknown>>
   let sent = 0
   let failed = 0
 
+  // 🔧 (مراجعة أغسطس 2026) الحجوز اللي فيها follow-up-agent بعت رسالة في آخر 24 ساعة —
+  // لو المدة بين follow-up والحد 3 أيام قصيرة، منطقي مايطلبش review تاني فورياً
+  // لحد ما يفضل 4 أيام من آخر follow-up — عشان العميل ماياخدش رسالتين متقاربة بنفس النية.
+  const fourDaysAgo = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
+
   for (const b of targets) {
     // لو فيه review اتكتب على الحجز ده قبل كده، متبعتش تاني
     const { data: existingReview } = await supabaseAdmin
       .from('reviews').select('id').eq('booking_id', b.id).maybeSingle()
     if (existingReview) continue
+
+    // لو follow-up-agent بعت رسالة لنفس الحجز ده في آخر 4 أيام، استنى دلوقتي —
+    // هيرجع يتبعت لما يفضل مسافة أكبر في تشغيلة تانية.
+    const { data: recentFollowUp } = await supabaseAdmin
+      .from('agent_insights')
+      .select('id')
+      .eq('agent_name', 'follow-up-agent')
+      .eq('insight_type', 'follow_up_sent')
+      .gte('created_at', fourDaysAgo)
+      .contains('data_points', { booking_id: b.id })
+      .limit(1)
+      .maybeSingle()
+    if (recentFollowUp) continue
 
     const contact = await resolveContact(b)
     if (!contact) { failed++; continue }

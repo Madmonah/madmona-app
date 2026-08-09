@@ -259,39 +259,84 @@ export async function runQualityControl(): Promise<Record<string, unknown>> {
     const { data: existing } = await supabaseAdmin.from('qc_reports')
       .select('id').eq('listing_id', l.id).maybeSingle()
     if (existing) continue
-    const { count: photosCount } = await supabaseAdmin.from('listing_photos')
-      .select('*', { count: 'exact', head: true }).eq('listing_id', l.id)
+    // 🔧 (مراجعة أغسطس 2026) الـ prompt القديم كان بيسأل Claude يقيّم "جودة الصور"
+    // و"واقعية الصور (مش stock)" و"تغطية الزوايا" من غير ما يشوف صورة واحدة أصلاً
+    // (callClaude() بتبعت نص بس — مفيش vision content blocks). ده كان سبب رئيسي في
+    // نسبة الفشل ~97%. الحل الصح هنا: نبعت بيانات وصفية فعلية عن الصور
+    // (العدد، هل فيه صورة primary، أسماء الملفات) بدل ما نديه يخمّن جودة بصرية
+    // مالوشاهاش. لو حبينا تقييم بصري fully فعلي للصور، لازم callClaude يدعم
+    // image content blocks أول — ده خارج نطاق المراجعة دي ومحتاج قرار منفصل من محمد.
+    const { data: photosData } = await supabaseAdmin.from('listing_photos')
+      .select('id, url, is_primary, display_order').eq('listing_id', l.id)
+      .order('is_primary', { ascending: false }).order('display_order', { ascending: true })
+    const photos = (photosData ?? []) as Array<{ id: string; url: string; is_primary: boolean | null }>
     const { count: pricingCount } = await supabaseAdmin.from('pricing_rules')
       .select('*', { count: 'exact', head: true }).eq('listing_id', l.id)
     const text = await callClaude({
       systemPrompt: QUALITY_CONTROL_PROMPT,
       userMessage: JSON.stringify({
-        listing: { ...l, photos_count: photosCount ?? 0, has_pricing: (pricingCount ?? 0) > 0 },
+        listing: {
+          ...l,
+          photos_count: photos.length,
+          has_primary_photo: photos.some(p => p.is_primary),
+          has_pricing: (pricingCount ?? 0) > 0,
+        },
         category_avg_price: 250, category_avg_description_length: 200,
+        // ملاحظة: مفيش photo_urls/محتوى صور مبعوت هنا — الـ prompt تحته
+        // معدّل يقيّم بس الميتاداتا دي وممنوع يخمّن جودة بصرية.
       }),
       maxTokens: 2000, temperature: 0.3,
     })
-    const report = parseJsonResponse<Record<string, unknown>>(text)
+    const report = parseJsonResponse<{
+      title_quality_score?: number
+      description_quality_score?: number
+      photos_quality_score?: number
+      pricing_reasonable?: boolean
+      category_correct?: boolean
+      issues?: Array<Record<string, unknown>>
+      improvements?: Array<Record<string, unknown>>
+      human_review_needed?: boolean
+      feedback_to_supplier?: string
+    }>(text)
+
+    // 🔧 (مراجعة أغسطس 2026) overall_score وpass_status وrecommended_action كانو
+    // بيتطلبو من Claude مباشرة بجنب الـ sub-scores — ومكان يحصل تضارب (مثلاً
+    // overall_score عالي مع pass_status = 'fail' في نفس الرد). دلوقتي بنحسبهم
+    // ديترمينستيكلي في الكود من نفس الـ sub-scores عشان ميبقاش أي تضارب ممكن.
+    const titleScore = Number(report.title_quality_score ?? 0)
+    const descScore = Number(report.description_quality_score ?? 0)
+    const photosScore = Number(report.photos_quality_score ?? 0)
+    const overallScore = Math.round(
+      titleScore * 0.3 + descScore * 0.3 + photosScore * 0.25 +
+      (report.pricing_reasonable ? 100 : 0) * 0.075 +
+      (report.category_correct ? 100 : 0) * 0.075
+    )
+    const hasCritical = (report.issues ?? []).some(i => i.severity === 'critical')
+    const passStatus: 'pass' | 'fail' | 'needs_improvement' =
+      hasCritical || overallScore < 50 ? 'fail' : overallScore < 75 ? 'needs_improvement' : 'pass'
+    const recommendedAction: 'approve' | 'request_edits' | 'reject' =
+      passStatus === 'pass' ? 'approve' : passStatus === 'needs_improvement' ? 'request_edits' : 'reject'
+
     await supabaseAdmin.from('qc_reports').insert({
-      listing_id: l.id, overall_score: report.overall_score,
-      pass_status: report.pass_status,
-      title_quality_score: report.title_quality_score,
-      description_quality_score: report.description_quality_score,
-      photos_quality_score: report.photos_quality_score,
+      listing_id: l.id, overall_score: overallScore,
+      pass_status: passStatus,
+      title_quality_score: titleScore,
+      description_quality_score: descScore,
+      photos_quality_score: photosScore,
       pricing_reasonable: report.pricing_reasonable,
       category_correct: report.category_correct,
       issues: report.issues, improvements: report.improvements,
-      recommended_action: report.recommended_action,
+      recommended_action: recommendedAction,
       human_review_needed: report.human_review_needed,
     } as never)
-    if (report.pass_status === 'fail' || report.human_review_needed) {
+    if (passStatus === 'fail' || report.human_review_needed) {
       await supabaseAdmin.from('agent_insights').insert({
         agent_name: 'quality-control', insight_type: 'warning',
         title: `إعلان محتاج مراجعة: ${l.title}`,
-        description: `Score: ${report.overall_score}. ${(report.issues as Array<Record<string, unknown>> | null)?.length ?? 0} issues`,
-        priority: report.pass_status === 'fail' ? 'high' : 'medium',
-        recommended_action: report.recommended_action as string,
-        data_points: { listing_id: l.id, ...report },
+        description: `Score: ${overallScore}. ${(report.issues ?? []).length} issues`,
+        priority: passStatus === 'fail' ? 'high' : 'medium',
+        recommended_action: recommendedAction,
+        data_points: { listing_id: l.id, overall_score: overallScore, pass_status: passStatus, ...report },
       } as never)
     }
     reviewed++

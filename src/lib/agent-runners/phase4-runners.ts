@@ -63,6 +63,17 @@ export async function runComplaintResolver(args?: {
     escalation_reason: string | null;
   }>(text)
 
+  // 🔒 (مراجعة أغسطس 2026) لو الـ agent اقترح تعويض مالي فعلي (refund/discount/free_session)،
+  // لازم يتبعت مراجعة بشرية دايماً حتى لو الـ model مقررش human_review_needed
+  // بنفسه — وقبل كده كان ممكن يطلع status='response_sent' من غير أي إشعار لحد
+  // لو رقم تعويض مالي محدد اتذكر. الملاحظة: status='response_sent' هنا كانت
+  // مضللة أصلاً — الكود مبيبعتش الرد للعميل فعلياً، فالـ status الصح هو
+  // 'analyzed' دايماً لحد ما حد فعلياً يبعت الرد من /admin/complaints.
+  const hasMonetaryCompensation = ['refund', 'discount', 'free_session'].includes(
+    (result.suggested_compensation ?? '').toLowerCase()
+  )
+  const needsHumanReview = result.human_review_needed || hasMonetaryCompensation
+
   const { data: created } = await supabaseAdmin.from('complaint_resolutions').insert({
     complaint_source: args.source ?? 'whatsapp',
     customer_phone: args.customerPhone ?? null,
@@ -73,21 +84,34 @@ export async function runComplaintResolver(args?: {
     sentiment: result.sentiment,
     resolution_text: result.resolution_text,
     suggested_compensation: result.suggested_compensation,
+    compensation_details: result.compensation_details,
     policy_references: result.policy_references,
     next_steps: result.next_steps,
-    human_review_needed: result.human_review_needed,
-    status: result.human_review_needed ? 'analyzed' : 'response_sent',
+    human_review_needed: needsHumanReview,
+    // مفيش أي إرسال تلقائي للعميل في الكود دلوقتي — دايماً 'analyzed' لحد ما حد
+    // يراجع ويبعت يدويًا من /admin/complaints.
+    status: 'analyzed',
   } as never).select('id').single()
 
   const id = (created as { id?: string } | null)?.id
 
-  if (result.human_review_needed) {
+  if (needsHumanReview) {
     await sendEmail({
       to: OWNER_EMAIL,
-      subject: `🚨 شكوى تحتاج تدخل — ${result.severity}`,
+      subject: hasMonetaryCompensation
+        ? `💰 شكوى فيها تعويض مالي محتاجة موافقتك — ${result.severity}`
+        : `🚨 شكوى تحتاج تدخل — ${result.severity}`,
       html: `<div dir="rtl" style="font-family:Tahoma;padding:20px">
         <h2 style="color:#6FCF97">🚨 شكوى ${result.severity}</h2>
         <p><strong>الشكوى:</strong> ${args.complaintText}</p>
+        ${hasMonetaryCompensation ? `
+        <p style="background:#FAF7F0;padding:12px;border-radius:8px;border-right:4px solid #E07A5F">
+          <strong>⚠️ الـ AI اقترح تعويض مالي:</strong> ${result.suggested_compensation}<br/>
+          <strong>التفاصيل:</strong> ${result.compensation_details ?? '—'}<br/>
+          <em>محتاج موافقتك قبل ما يتبعت أي حاجة للعميل.</em>
+        </p>` : ''}
+        <p><strong>الرد المقترح:</strong></p>
+        <div style="background:#FAF7F0;padding:12px;border-radius:8px;white-space:pre-wrap">${result.resolution_text}</div>
         <p><strong>السبب للتصعيد:</strong> ${result.escalation_reason ?? '—'}</p>
         <p>راجع /admin/complaints لاتخاذ قرار</p>
       </div>`,
@@ -98,7 +122,7 @@ export async function runComplaintResolver(args?: {
     complaint_id: id,
     severity: result.severity,
     suggested_compensation: result.suggested_compensation,
-    needs_review: result.human_review_needed,
+    needs_review: needsHumanReview,
   }
 }
 
