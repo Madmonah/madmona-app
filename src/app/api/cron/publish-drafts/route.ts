@@ -303,7 +303,25 @@ export async function GET(req: Request) {
             price: d.price_egp, currency: 'EGP', is_active: true, display_order: 1,
           } as never)
         }
-        await supa.from('listings').update({ status: 'published', published_at: new Date().toISOString() } as never).eq('id', nl.id)
+        // 🐛 (١٠ أغسطس ٢٠٢٦ — محمد لاحظ إعلان قالله المارد "نزل رسمي" بس مش موجود):
+        // ده الـupdate اللي فعليًا بينشر الإعلان (status: draft → published). كان بيتنفّذ
+        // من غير ما حد يتحقق من نتيجته أو يفحص خطأه — لو فشل (RLS، قيد داتابيز، عطل شبكة
+        // مؤقت)، الكود كان بيكمل عادي ويضيف اللينك لـlinks[] ويبعت «مبروك! نزل رسمي» للعميل
+        // رغم إن الإعلان لسه status='draft' فعليًا وغير ظاهر على الموقع خالص. اتأكدت من
+        // حالة حقيقية: مورد الحجر الديكور (201145720639) استلم رسالة «مبروك» بلينك ميت،
+        // وإعلانه فضل draft. الحل: نتحقق من نجاح الـupdate فعليًا قبل ما نعتبره منشور —
+        // لو فشل، نسيب الدرافت needs_review عشان الكرون يعيد المحاولة تاني بدل ما نكدب
+        // على العميل.
+        const { data: pubRow, error: pubErr } = await supa.from('listings')
+          .update({ status: 'published', published_at: new Date().toISOString() } as never)
+          .eq('id', nl.id)
+          .select('id')
+          .maybeSingle()
+        if (pubErr || !pubRow) {
+          await supa.from('instant_listing_drafts').update({ status: 'needs_review' } as never).eq('id', d.id)
+          results.push({ phone, draft: d.id, error: 'publish_update_failed: ' + (pubErr?.message || 'no row updated') })
+          continue
+        }
         await supa.from('instant_listing_drafts').update({ status: 'published', published_listing_id: nl.id } as never).eq('id', d.id)
         links.push(`${SITE}/marketplace/${nl.slug}`)
       }
