@@ -10,7 +10,7 @@ interface Supplier {
   listings_count: number
   bookings_count: number
   created_at: string
-  profile: { full_name: string | null; phone: string | null } | null
+  profile: { full_name: string | null; phone: string | null; email: string | null } | null
 }
 
 export default function SimpleSuppliersPage() {
@@ -101,6 +101,11 @@ export default function SimpleSuppliersPage() {
               {s.profile?.phone && (
                 <div style={{fontSize:13,color:'#666'}}>
                   📱 <a href={`https://wa.me/${s.profile.phone.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer" style={{color:'#16a34a'}}>{s.profile.phone}</a>
+                </div>
+              )}
+              {s.profile?.email && (
+                <div style={{fontSize:13,color:'#666'}}>
+                  ✉️ <a href={`mailto:${s.profile.email}`} style={{color:'#2563eb'}}>{s.profile.email}</a>
                 </div>
               )}
               <div style={{fontSize:13,color:'#666',marginTop:6}}>
