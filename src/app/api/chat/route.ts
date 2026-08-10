@@ -237,16 +237,20 @@ export async function POST(request: NextRequest) {
     let mediaBlocks: Array<Record<string, unknown>> = []
     let savedMediaUrl: string | null = null
     let effectiveText = message
+    let mediaTranscript: string | null = null
     if (media) {
       const r = await processIncomingMedia(media, phone)
       mediaBlocks = r.blocks
       savedMediaUrl = r.savedUrl
       if (!effectiveText) effectiveText = r.textHint
+      if (media.type === 'audio' && r.textHint && !r.textHint.startsWith('[رسالة صوتية')) {
+        mediaTranscript = r.textHint
+      }
     }
 
     // ── ٣) تسجيل رسالة العميل ───────────────────────────────────────────
     const logBody = media
-      ? `[${media.type}${media.filename ? ': ' + media.filename : ''}]${message ? ' ' + message : ''}${savedMediaUrl ? ' ' + savedMediaUrl : ''}`
+      ? `[${media.type}${media.filename ? ': ' + media.filename : ''}]${mediaTranscript ? ' ' + mediaTranscript : message ? ' ' + message : ''}${savedMediaUrl ? ' ' + savedMediaUrl : ''}`
       : message
     const { data: myInbound } = await supabaseUntyped.from('whatsapp_messages').insert({
       conversation_id: conversationId,
