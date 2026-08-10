@@ -778,7 +778,19 @@ export async function POST(request: NextRequest) {
       // نحفظ الأول — الملف بيضيع لو ماحفظناهوش دلوقتي
       savedMediaUrl = await saveMedia(body.media, body.type, phone)
 
-      if (body.type === 'audio') {
+      // 🐛 (١٠ أغسطس ٢٠٢٦ — محمد لاحظ رسايل صوت من غير تفريغ): الشرط كان
+      // `body.type === 'audio'` بس. فلتر الضوضاء فوق (٠ص) بيعرف كمان
+      // 'voice' و'ptt' كأنواع ميديا صوتية — يعني Baileys فعليا بيبعتهم
+      // بالقيمة دي أحيانا (رسايل push-to-talk تحديداً). الرسايل دي كانت
+      // بتعدّي الفلتر (isMediaType بيقبلها) بس بتقع في الـelse تحت وتتسجّل
+      // كـ`[voice — voice.webm]` من غير أي تفريغ فعلي — المارد كان بيرد
+      // من غير ما يعرف العميل قال إيه خالص. اتأكدت من الداتا: 6 رسايل صوت
+      // في آخر يومين اتسجّلوا كده من غير نص. الحل: نتحقق من الـmimetype
+      // (audio/*) كمان، مش بس body.type، عشان أي تسمية يبعتها Baileys تتمسك.
+      const isAudioType = body.type === 'audio' || mt.startsWith('audio/') ||
+        ['voice', 'ptt'].includes(String(body.type || ''))
+
+      if (isAudioType) {
         // ⏱️ (٢٨ يوليو) time-box التفريغ بـ٢٠ث — لو Groq بطيء/واقع مايعلّقش الطلب كله
         const transcript = await Promise.race([
           transcribeAudio(body.media),
@@ -810,8 +822,11 @@ export async function POST(request: NextRequest) {
     // تبقى فيها الدلالة. (ON CONFLICT DO UPDATE مابيعيدش تفجير تريجرات
     // الـINSERT، فمفيش تصنيف/مطابقة مكرّرة.)
     if (body.media) {
+      const mtLog = body.media.mimetype || ''
+      const isAudioLog = body.type === 'audio' || mtLog.startsWith('audio/') ||
+        ['voice', 'ptt'].includes(String(body.type || ''))
       const logBody = [
-        body.type === 'audio'
+        isAudioLog
           ? '[صوت]'
           : body.type === 'image'
           ? '[صورة]'
