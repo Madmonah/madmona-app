@@ -254,22 +254,18 @@ export default function ChatPage() {
     }
   }
 
-  const askedNotifRef = useRef(false)
-  async function maybeAutoEnableNotifs() {
-    if (askedNotifRef.current) return
-    if (!isPushSupported()) return
-    const perm = getNotificationPermission()
-    if (perm !== 'default') return
-    askedNotifRef.current = true
-    try { await subscribeToPush().then((r) => { if (r.ok) setNotifState('granted') }) } catch {}
-  }
+  // (11 Aug 2026) اتشال الطلب التلقائي لإذن التنبيهات من هنا — كان بيتفعّل
+  // كـ side effect لإرسال أول رسالة شات، وده بالظبط النمط اللي كروم بيحسبه
+  // "abusive notification request" (طلب إذن مش مربوط بإيماءة مستخدم واضحة ومباشرة)
+  // وده سبب رسالة "possible spam" اللي كانت بتظهر. التفعيل بقى فقط عبر زرار
+  // "🔔 فعّل التنبيهات" الصريح في قايمة الكباب (enableNotifs تحت) — إيماءة
+  // مستخدم مباشرة وواضحة، متوافقة مع سياسة كروم.
 
   // (8 Aug 2026) دالة start() القديمة اتشالت — مفيش تسجيل موازي بالاسم والرقم؛
   // الدخول بقى حصريًا عبر حساب مضمونة الموحد (شوف بوابة !started تحت).
 
   async function submit(text: string, media: Attach | null, summonNow: boolean, replyToId?: string) {
     if ((!text && !media) || sending) return
-    void maybeAutoEnableNotifs()
     const myId = mkId()
     setMessages((m) => [...m, { id: myId, role: 'user', text, time: nowTime(), media: media || undefined, status: 'sent', replyToId }])
     setReplyTo(null)

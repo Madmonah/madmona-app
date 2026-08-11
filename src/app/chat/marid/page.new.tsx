@@ -213,22 +213,16 @@ export default function ChatPage() {
     }
   }
 
-  const askedNotifRef = useRef(false)
-  async function maybeAutoEnableNotifs() {
-    if (askedNotifRef.current) return
-    if (!isPushSupported()) return
-    const perm = getNotificationPermission()
-    if (perm !== 'default') return
-    askedNotifRef.current = true
-    try { await subscribeToPush().then((r) => { if (r.ok) setNotifState('granted') }) } catch {}
-  }
+  // (11 Aug 2026) اتشال الطلب التلقائي لإذن التنبيهات من هنا — نفس السبب
+  // المذكور في page.tsx: كان بيتفعّل كـ side effect لإرسال رسالة، وده اللي
+  // كروم بيحسبه "abusive notification request". التفعيل بقى فقط عبر زرار
+  // "🔔 فعّل التنبيهات" الصريح (enableNotifs تحت).
 
   function start() { if (normEg(phone).length < 11) return; setStarted(true); welcome(name.trim()) }
 
   // ── إرسال رسالة (بيدعم الرد على رسالة) ─────────────────────────────────
   async function submit(text: string, media: Attach | null, summonNow: boolean, replyToId?: string) {
     if ((!text && !media) || sending) return
-    void maybeAutoEnableNotifs()
     const myId = newId()
     setMessages((m) => [...m, { id: myId, role: 'user', text, time: nowTime(), media: media || undefined, status: 'sent', replyToId }])
     if (summonNow) setSending(true)
