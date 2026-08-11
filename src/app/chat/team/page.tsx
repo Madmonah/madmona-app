@@ -6,7 +6,6 @@ import { Plus, Smile, Mic, Send, Square, Phone, Video } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ChatBottomNav from '@/components/ChatBottomNav'
 import dynamic from 'next/dynamic'
-import { subscribeToPush, getNotificationPermission, isPushSupported } from '@/lib/push-subscription'
 import { playRing } from '@/lib/ringtone'
 
 // (31 Jul 2026) الثلاثة دول شاشات بتتفتح عند الطلب وكلهم conditional render،
@@ -149,17 +148,11 @@ export default function TeamPage() {
   const fileRef = useRef<HTMLInputElement>(null)
   const recRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
-  const askedNotifRef = useRef(false)
-
-  // تفعيل الإشعارات تلقائي أول ما المستخدم يفتح جروب/محادثة (اتفق عليه محمد 26 يوليو:
-  // «لمسة المحادثة»). لمسة فتح الغرفة = user gesture صالح للمتصفح. مرة واحدة، ولو default بس.
-  async function maybeAutoEnableNotifs() {
-    if (askedNotifRef.current) return
-    if (!isPushSupported()) return
-    if (getNotificationPermission() !== 'default') return // granted → مشترك · denied → مانضايقوش
-    askedNotifRef.current = true
-    try { await subscribeToPush() } catch {}
-  }
+  // (11 Aug 2026) اتشال الطلب التلقائي لإذن الإشعارات اللي كان بيتفعّل بمجرد فتح
+  // غرفة/جروب (كان قرار سابق بتاريخ 26 يوليو باعتبار فتح الغرفة "لمسة مستخدم" كفاية).
+  // اتضح إن ده مش كفاية بمعايير كروم: طلب إذن مرتبط بفعل غير مباشر (فتح غرفة) بدل
+  // زرار صريح لتفعيل التنبيهات هو بالظبط النمط اللي كروم بيصنّفه "abusive notification
+  // request" ويطلع بسببه تحذير "possible spam". التفعيل بقى فقط عبر الأزرار الصريحة.
 
   // (31 Jul 2026) استعلام واحد بدل ٤-٥ ورا بعض.
   // كان: الغرف ← أعضاء المحادثات الخاصة ← أسماء الطرف التاني ← صفوف عضويتي.
@@ -222,7 +215,6 @@ export default function TeamPage() {
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }) }, [messages])
 
   async function openRoom(room: Room) {
-    void maybeAutoEnableNotifs() // لمسة فتح الغرفة = فرصة نطلب إذن الإشعارات (مرة واحدة)
     setActive(room); setMenuOpen(false); setMembersOpen(false)
     if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null }
     // دوري في الغرفة (owner/member) — يحدّد خيارات القائمة
