@@ -87,26 +87,30 @@ async function getMarketTiles() {
   }
 }
 
-const ACCENTS = ['#B8860B', '#2FA084', '#C0563F', '#6D5ACF', '#0E332C']
-const TINTS = ['rgba(184,134,11,0.14)', 'rgba(47,160,132,0.14)', 'rgba(192,86,63,0.14)', 'rgba(109,90,207,0.14)', 'rgba(14,51,44,0.1)']
+const ACCENTS = ['#B8860B', '#2FA084', '#6D5ACF', '#0E332C']
+const TINTS = ['rgba(184,134,11,0.14)', 'rgba(47,160,132,0.14)', 'rgba(109,90,207,0.14)', 'rgba(14,51,44,0.1)']
 
-function buildGroups(categories: Cat[], liveCounts: Record<string, number>) {
-  const map = new Map<string, { slug: string; name: string; emoji: string; count: number; order: number; catCount: number; track: string }>()
-  for (const c of categories) {
-    const key = c.group_slug || c.track || 'other'
-    const g = map.get(key) || {
-      slug: key,
-      name: c.group_name_ar || c.name_ar,
-      emoji: c.group_emoji || c.icon || '🏷️',
-      count: liveCounts[key] || 0,
-      order: c.group_display_order ?? 99,
-      catCount: 0,
-      track: c.track || 'all',
+// (11 أغسطس 2026) الهيرو بقى 4 كروت ثابتة بس: بيع · إيجار · خدمات · بورصة
+// مضمونة العقارية — بدل الكروت الديناميكية الخمسة اللي كانت بتشمل المطاعم.
+type HeroCard = { slug: string; name: string; emoji: string; catCount: number; count: number; track: string; href: string }
+
+function buildGroups(categories: Cat[], liveCounts: Record<string, number>): HeroCard[] {
+  const countFor = (tracks: string[]) => {
+    let n = 0
+    for (const c of categories) {
+      const key = c.group_slug || c.track || 'other'
+      if (tracks.includes(c.track || '')) n += liveCounts[key] || 0
     }
-    g.catCount++
-    map.set(key, g)
+    return n
   }
-  return [...map.values()].sort((a, b) => (b.count - a.count) || (a.order - b.order)).slice(0, 5)
+  const catCountFor = (tracks: string[]) => categories.filter(c => tracks.includes(c.track || '')).length
+
+  return [
+    { slug: 'sale', name: 'بيع', emoji: '🏷️', track: 'products', tracks: ['products', 'sales'], href: '/marketplace?track=products' },
+    { slug: 'rentals', name: 'إيجار', emoji: '🔑', track: 'rentals', tracks: ['rentals', 'hybrid'], href: '/marketplace?track=rentals' },
+    { slug: 'services', name: 'خدمات', emoji: '🛠️', track: 'services', tracks: ['services'], href: '/marketplace?track=services' },
+  ].map(d => ({ slug: d.slug, name: d.name, emoji: d.emoji, track: d.track, href: d.href, catCount: catCountFor(d.tracks), count: countFor(d.tracks) }))
+    .concat([{ slug: 'bourse', name: 'بورصة مضمونة العقارية', emoji: '🏗️', track: 'bourse', href: '/real-estate/market', catCount: 0, count: 0 }])
 }
 
 export default async function HomeRedesign({ categories, stats, liveCounts, heroImage }: Props) {
@@ -160,10 +164,10 @@ a { text-decoration: none; }
             </span>
           </Link>
           <nav style={{ display: 'flex', alignItems: 'center', gap: 28, fontSize: 14, fontWeight: 500 }}>
-            <Link href="/marketplace" style={{ color: INK, borderBottom: `2px solid ${GOLD}`, paddingBottom: 2 }}>السوق</Link>
-            <Link className="rz-navlink" href="/marketplace?track=sales&group=sale-property" style={{ color: 'rgba(18,38,31,0.65)' }}>العقارات</Link>
-            <Link className="rz-navlink" href="/marketplace?track=services" style={{ color: 'rgba(18,38,31,0.65)' }}>الخدمات</Link>
-            <Link className="rz-navlink" href="/marketplace?track=restaurants" style={{ color: 'rgba(18,38,31,0.65)' }}>المطاعم</Link>
+            <Link className="rz-navlink" href="/marketplace?track=products" style={{ color: 'rgba(18,38,31,0.65)' }}>بيع</Link>
+            <Link className="rz-navlink" href="/marketplace?track=rentals" style={{ color: 'rgba(18,38,31,0.65)' }}>إيجار</Link>
+            <Link className="rz-navlink" href="/marketplace?track=services" style={{ color: 'rgba(18,38,31,0.65)' }}>خدمات</Link>
+            <Link href="/real-estate/market" style={{ color: INK, borderBottom: `2px solid ${GOLD}`, paddingBottom: 2 }}>بورصة مضمونة العقارية</Link>
             <Link className="rz-navlink" href="/chat/marid" style={{ color: 'rgba(18,38,31,0.65)' }}>اسأل الجني ✨</Link>
           </nav>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -211,22 +215,22 @@ a { text-decoration: none; }
             </div>
           </div>
 
-          {/* Arch collage */}
+          {/* Arch collage — (11 أغسطس 2026) بيع · إيجار · خدمات · بورصة مضمونة العقارية بس */}
           <div className="rz-rise-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-            <Link className="rz-lift" href="/marketplace?track=sales&group=sale-property" style={{ gridRow: 'span 2', position: 'relative', borderRadius: '160px 160px 20px 20px', overflow: 'hidden', minHeight: 380, display: 'block', border: `2px solid ${INK}` }}>
+            <Link className="rz-lift" href="/marketplace?track=products" style={{ gridRow: 'span 2', position: 'relative', borderRadius: '160px 160px 20px 20px', overflow: 'hidden', minHeight: 380, display: 'block', border: `2px solid ${INK}` }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={heroImage} alt="عقارات" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={heroImage} alt="بيع" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
               <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(14,51,44,0.9), rgba(14,51,44,0.05) 60%)' }} />
               <span style={{ position: 'absolute', bottom: 0, right: 0, left: 0, padding: 22, display: 'block' }}>
-                <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 24, color: CREAM }}>عقارات</span>
-                <span style={{ display: 'block', fontSize: 12, color: 'rgba(244,239,228,0.75)', marginTop: 2 }}>بيع · إيجار · مصايف</span>
+                <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 24, color: CREAM }}>بيع</span>
+                <span style={{ display: 'block', fontSize: 12, color: 'rgba(244,239,228,0.75)', marginTop: 2 }}>عقارات · عربيات · منتجات</span>
               </span>
               <span style={{ position: 'absolute', top: 18, left: 18, padding: '5px 14px', borderRadius: 999, background: GOLD, color: '#fff', fontSize: 11, fontWeight: 700 }}>الأكثر طلباً</span>
             </Link>
-            <Link className="rz-lift" href="/marketplace?track=sales&group=sale-vehicles" style={{ position: 'relative', borderRadius: '100px 100px 20px 20px', overflow: 'hidden', minHeight: 183, display: 'block', background: INK, border: `2px solid ${INK}` }}>
-              <span className="rz-float" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 54 }}>🚗</span>
+            <Link className="rz-lift" href="/marketplace?track=rentals" style={{ position: 'relative', borderRadius: '100px 100px 20px 20px', overflow: 'hidden', minHeight: 183, display: 'block', background: INK, border: `2px solid ${INK}` }}>
+              <span className="rz-float" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 54 }}>🔑</span>
               <span style={{ position: 'absolute', bottom: 0, right: 0, left: 0, padding: 16, display: 'block' }}>
-                <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 18, color: CREAM }}>عربيات</span>
+                <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 18, color: CREAM }}>إيجار</span>
               </span>
             </Link>
             <Link className="rz-lift" href="/marketplace?track=services" style={{ position: 'relative', borderRadius: '100px 100px 20px 20px', overflow: 'hidden', minHeight: 183, display: 'block', background: GOLD, border: `2px solid ${INK}` }}>
@@ -251,24 +255,27 @@ a { text-decoration: none; }
           </div>
           <Link href="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 14, color: INK, borderBottom: `2px solid ${GOLD}`, paddingBottom: 3 }}>كل الأقسام ←</Link>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
-          {groups.map((g, i) => (
-            <Link
-              key={g.slug}
-              className="rz-cat"
-              href={`/marketplace?track=${encodeURIComponent(g.track)}&group=${encodeURIComponent(g.slug)}`}
-              style={{ ['--acc' as string]: ACCENTS[i % ACCENTS.length], position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '36px 18px 26px', background: '#fff', border: `2px solid ${INK}`, borderRadius: '110px 110px 18px 18px', textAlign: 'center' }}
-            >
-              <span style={{ width: 64, height: 64, borderRadius: '50%', background: TINTS[i % TINTS.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30 }}>{g.emoji}</span>
-              <span style={{ display: 'block' }}>
-                <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 18, color: INK }}>{g.name}</span>
-                <span style={{ display: 'block', fontSize: 11.5, color: 'rgba(18,38,31,0.55)', marginTop: 4 }}>{g.catCount} قسم فرعي</span>
-              </span>
-              <span style={{ padding: '5px 16px', borderRadius: 999, background: ACCENTS[i % ACCENTS.length], color: '#fff', fontSize: 11, fontWeight: 700 }}>
-                {g.count > 0 ? `${g.count.toLocaleString('ar-EG')} إعلان` : 'استكشف'}
-              </span>
-            </Link>
-          ))}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+          {groups.map((g, i) => {
+            const isBourse = g.slug === 'bourse'
+            return (
+              <Link
+                key={g.slug}
+                className="rz-cat"
+                href={g.href}
+                style={{ ['--acc' as string]: ACCENTS[i % ACCENTS.length], position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '36px 18px 26px', background: isBourse ? INK : '#fff', border: `2px solid ${INK}`, borderRadius: '110px 110px 18px 18px', textAlign: 'center' }}
+              >
+                <span style={{ width: 64, height: 64, borderRadius: '50%', background: isBourse ? 'rgba(244,239,228,0.12)' : TINTS[i % TINTS.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30 }}>{g.emoji}</span>
+                <span style={{ display: 'block' }}>
+                  <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 18, color: isBourse ? CREAM : INK }}>{g.name}</span>
+                  {!isBourse && <span style={{ display: 'block', fontSize: 11.5, color: 'rgba(18,38,31,0.55)', marginTop: 4 }}>{g.catCount} قسم فرعي</span>}
+                </span>
+                <span style={{ padding: '5px 16px', borderRadius: 999, background: isBourse ? GOLD : ACCENTS[i % ACCENTS.length], color: '#fff', fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  {isBourse ? (<><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ADE80', display: 'inline-block' }} /> لايف</>) : (g.count > 0 ? `${g.count.toLocaleString('ar-EG')} إعلان` : 'استكشف')}
+                </span>
+              </Link>
+            )
+          })}
         </div>
       </section>
 
@@ -384,10 +391,10 @@ a { text-decoration: none; }
             <div style={{ display: 'flex', gap: 72, flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
                 <span style={{ fontWeight: 700, color: GOLD, fontSize: 12, letterSpacing: '0.15em' }}>السوق</span>
-                <Link href="/marketplace?track=sales&group=sale-property" style={{ color: 'rgba(244,239,228,0.75)' }}>عقارات</Link>
-                <Link href="/marketplace?track=sales&group=sale-vehicles" style={{ color: 'rgba(244,239,228,0.75)' }}>عربيات</Link>
+                <Link href="/marketplace?track=products" style={{ color: 'rgba(244,239,228,0.75)' }}>بيع</Link>
+                <Link href="/marketplace?track=rentals" style={{ color: 'rgba(244,239,228,0.75)' }}>إيجار</Link>
                 <Link href="/marketplace?track=services" style={{ color: 'rgba(244,239,228,0.75)' }}>خدمات</Link>
-                <Link href="/marketplace?track=restaurants" style={{ color: 'rgba(244,239,228,0.75)' }}>مطاعم</Link>
+                <Link href="/real-estate/market" style={{ color: 'rgba(244,239,228,0.75)' }}>بورصة مضمونة العقارية</Link>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
                 <span style={{ fontWeight: 700, color: GOLD, fontSize: 12, letterSpacing: '0.15em' }}>مضمونة</span>

@@ -35,22 +35,30 @@ type Category = {
   group_display_order?: number | null
 }
 
-type VKey = 'products' | 'rentals' | 'services' | 'restaurants' | 'daily'
+type VKey = 'products' | 'rentals' | 'services'
 
 const VERTICALS: { key: VKey; ar: string; en: string; emoji: string; tracks: string[]; tone: string; accent: string }[] = [
   { key: 'products',    ar: 'بيع',        en: 'Buy',         emoji: '🏷️', tracks: ['products', 'sales'],   tone: 'from-[#2C5F8D] to-[#5B9BD5]', accent: '#3D7BB6' },
   { key: 'rentals',     ar: 'إيجار',      en: 'Rent',        emoji: '🔑', tracks: ['rentals', 'hybrid'],   tone: 'from-[#1F6F5F] to-[#2FA084]', accent: '#1F6F5F' },
   { key: 'services',    ar: 'خدمات',      en: 'Services',    emoji: '🛠️', tracks: ['services'],            tone: 'from-[#8A6A0F] to-[#D4A017]', accent: '#B8860B' },
-  { key: 'restaurants', ar: 'مطاعم',      en: 'Restaurants', emoji: '🍽️', tracks: ['restaurants'],         tone: 'from-[#B4453A] to-[#E26D5C]', accent: '#D24C3E' },
-  { key: 'daily',       ar: 'سوبر ماركت', en: 'Groceries',   emoji: '🛒', tracks: ['daily'],               tone: 'from-[#5C3A7E] to-[#9B6FC4]', accent: '#7A4FA3' },
 ]
+
+// (11 أغسطس 2026) قسم «بورصة مضمونة العقارية» مش فئة داتا بيز — كارت ثابت
+// بيودّي على /real-estate/market، ظاهر جنب بيع/إيجار/خدمات في الهيرو.
+const BOURSE_CARD = {
+  key: 'bourse' as const,
+  ar: 'بورصة مضمونة العقارية',
+  en: 'Madmona Real Estate Exchange',
+  emoji: '🏗️',
+  tone: 'from-[#14231E] to-[#1F6F5F]',
+  accent: '#1F6F5F',
+  href: '/real-estate/market',
+}
 
 function trackToVkey(track: string | null): VKey {
   switch (track) {
     case 'rentals': case 'hybrid': return 'rentals'
     case 'services': return 'services'
-    case 'restaurants': return 'restaurants'
-    case 'daily': return 'daily'
     default: return 'products'
   }
 }
@@ -137,7 +145,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
     return () => { dead = true }
   }, [])
 
-  // all news (كل التصنيفات مدموجة ورا بعض — 29 Jul 2026)
+  // أهم خبر واحد بس في كل قسم — مش كاروسيل طويل (11 أغسطس 2026: ذي ديزاين الترباوية)
   useEffect(() => {
     let dead = false
     const cats = ['madmona', 'economy', 'real_estate', 'automotive', 'business', 'tourism', 'fashion', 'tech']
@@ -145,19 +153,12 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
       cats.map(c =>
         fetch(`/api/news-feed?category=${c}&_=${Date.now()}`, { cache: 'no-store' })
           .then(r => r.json())
-          .then(j => (j?.ok && Array.isArray(j.items) ? (j.items as NewsItem[]) : []))
-          .catch(() => [] as NewsItem[])
+          .then(j => (j?.ok && Array.isArray(j.items) && j.items.length > 0 ? (j.items[0] as NewsItem) : null))
+          .catch(() => null)
       )
-    ).then(lists => {
+    ).then(top => {
       if (dead) return
-      const seen = new Set<string>()
-      const merged = lists.flat().filter(n => {
-        if (!n?.link || seen.has(n.link)) return false
-        seen.add(n.link)
-        return true
-      })
-      merged.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
-      setNews(merged)
+      setNews(top.filter((n): n is NewsItem => !!n?.link))
     })
     return () => { dead = true }
   }, [])
@@ -294,42 +295,41 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
         </div>
       </div>
 
-      {/* 5. Categories */}
-      <section className="px-4 pt-[22px]">
-        <div className="flex items-baseline justify-between mb-3">
-          <h2 className="text-[17px] font-black text-[#0A0A0A]">{en ? 'Categories' : 'الأقسام'}</h2>
+      {/* 5. Categories — (11 أغسطس 2026) 4 كروت ثابتة بعرض الشاشة كامل، ذي ديزاين
+          الترباوية: بيع · إيجار · خدمات · بورصة مضمونة العقارية. مفيش مطاعم
+          ولا سوبر ماركت/صيدليات هنا خالص. */}
+      <section className="pt-[22px]">
+        <div className="flex items-baseline justify-between mb-3 px-4">
+          <h2 className="text-[17px] font-black text-[#0A0A0A]">{en ? 'Choose your section' : 'اختار قسمك'}</h2>
           <Link href="/marketplace" className="text-xs font-extrabold text-[#1F6F5F] no-underline">{en ? 'See all ←' : 'شوف الكل ←'}</Link>
         </div>
-        <div className="grid grid-cols-2 gap-2.5">
-          {catCards.map((g, gi) => {
-            const vm = VERTICALS.find(v => v.key === g.vkey)
-            // (29 Jul 2026) قسم رئيسي أقل من 5 إعلانات منشورة ← ضل + «قريبًا»
-            const soon = (liveCounts[g.key] ?? 0) < 5
+        <div className="flex flex-col gap-3 px-4">
+          {VERTICALS.map(v => {
+            const g = catCards.find(c => c.vkey === v.key)
+            const soon = g ? (liveCounts[g.key] ?? 0) < 5 : false
             return (
               <Link
-                key={g.key}
-                href={`/marketplace?track=${g.vkey}&group=${encodeURIComponent(g.key)}`}
-                className="relative block rounded-[18px] overflow-hidden aspect-[4/3] no-underline"
+                key={v.key}
+                href={`/marketplace?track=${v.key}${g ? `&group=${encodeURIComponent(g.key)}` : ''}`}
+                className="relative block rounded-[22px] overflow-hidden w-full aspect-[16/10] no-underline"
               >
-                {g.useImg && g.image_url ? (
+                {g?.useImg && g.image_url ? (
                   <>
-                    {/* ⚡ LCP fix (4 Aug): next/image AVIF بمقاس الكارت + priority لأول ٤ فوق الطية
-                        (كانوا JPG خام lazy من Supabase = عنصر الـLCP بـ5 ثواني) */}
-                    <Image src={g.image_url} alt={g.name_ar} fill sizes="(max-width: 768px) 50vw, 300px" className="object-cover" priority={gi < 4} />
-                    <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,25,20,.8), rgba(10,25,20,.05) 60%)' }} />
+                    <Image src={g.image_url} alt={v.ar} fill sizes="100vw" className="object-cover" priority />
+                    <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,25,20,.82), rgba(10,25,20,.1) 60%)' }} />
                   </>
                 ) : (
                   <>
-                    <span className={`absolute inset-0 bg-gradient-to-br ${vm?.tone || 'from-[#B8860B] to-[#D4A017]'}`}>
+                    <span className={`absolute inset-0 bg-gradient-to-br ${v.tone}`}>
                       <span className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
-                      <span className="absolute inset-x-0 top-[14%] text-center text-[42px] select-none">{g.emoji || '🏷️'}</span>
+                      <span className="absolute inset-x-0 top-[18%] text-center text-[56px] select-none">{v.emoji}</span>
                     </span>
-                    <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,25,20,.55), transparent)' }} />
+                    <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,25,20,.6), transparent)' }} />
                   </>
                 )}
-                <span className="absolute inset-x-0 bottom-0 p-3">
-                  <span className="block text-white text-base font-black leading-tight">{g.name_ar}</span>
-                  <span className="block text-white/75 text-[10.5px] font-bold mt-0.5">{g.count} {en ? 'sections' : 'قسم'}</span>
+                <span className="absolute inset-x-0 bottom-0 p-4">
+                  <span className="block text-white text-xl font-black leading-tight">{en ? v.en : v.ar}</span>
+                  {g && <span className="block text-white/75 text-[11px] font-bold mt-0.5">{g.count} {en ? 'sections' : 'قسم'}</span>}
                 </span>
                 {soon && (
                   <>
@@ -344,28 +344,29 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
               </Link>
             )
           })}
+
+          {/* بورصة مضمونة العقارية — كارت رابع ثابت بعرض الشاشة كامل */}
+          <Link
+            href={BOURSE_CARD.href}
+            className="relative block rounded-[22px] overflow-hidden w-full aspect-[16/10] no-underline"
+          >
+            <span className={`absolute inset-0 bg-gradient-to-br ${BOURSE_CARD.tone}`}>
+              <span className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
+              <span className="absolute inset-x-0 top-[18%] text-center text-[56px] select-none">{BOURSE_CARD.emoji}</span>
+            </span>
+            <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,25,20,.6), transparent)' }} />
+            <span className="absolute top-4 left-4 text-[9px] font-bold text-[#8FE3C8] bg-white/10 px-2 py-1 rounded-full">LIVE</span>
+            <span className="absolute inset-x-0 bottom-0 p-4">
+              <span className="block text-white text-xl font-black leading-tight">{en ? BOURSE_CARD.en : BOURSE_CARD.ar}</span>
+              <span className="block text-white/75 text-[11px] font-bold mt-0.5">{en ? 'Developer projects, prices & offers' : 'مشاريع المطوّرين وأسعارهم وعروضهم'}</span>
+            </span>
+          </Link>
         </div>
       </section>
 
-      {/* 6. Property market + developers grid */}
+      {/* 6. Developers grid — شريط البورصة القديم اتشال، دلوقتي جوه كروت
+          الهيرو فوق (11 Aug 2026). فاضل هنا شريط السوق ولوجوهات المطورين. */}
       <section className="px-4 pt-[22px]">
-        {/* شريط بورصة العقارات — فوق اللوجوهات وبيودّي على البورصة (29 Jul 2026) */}
-        <Link
-          href="/real-estate/market"
-          className="flex items-center gap-3 rounded-[18px] px-4 py-3.5 no-underline mb-3"
-          style={{ background: 'linear-gradient(118deg, #14231E, #1F6F5F)' }}
-        >
-          <span className="w-10 h-10 rounded-xl bg-white/12 flex items-center justify-center flex-shrink-0 text-xl">🏗️</span>
-          <span className="flex-1 min-w-0">
-            <span className="block text-white text-[15px] font-black">
-              {en ? 'Property market' : 'بورصة العقارات'}{' '}
-              <span className="text-[9px] font-bold text-[#8FE3C8] bg-white/10 px-1.5 py-0.5 rounded-full align-[2px]">LIVE</span>
-            </span>
-            <span className="block text-white/70 text-[11px] font-semibold mt-0.5">{en ? 'Developer projects, prices & offers' : 'مشاريع المطوّرين وأسعارهم وعروضهم'}</span>
-          </span>
-          <span className="text-white font-black text-[13px] flex-shrink-0">←</span>
-        </Link>
-
         {/* شريط اتجاه السوق */}
         <MarketTicker fin={fin} en={en} />
 

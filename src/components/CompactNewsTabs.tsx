@@ -3,16 +3,16 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   Newspaper, RefreshCw, ShieldCheck, DollarSign, Home, Car,
-  Briefcase, Plane, Sparkles, Camera, Clock, ChevronLeft, ChevronRight,
+  Briefcase, Plane, Sparkles, Camera, Clock,
 } from 'lucide-react'
 
 // ============================================================================
-// CompactNewsTabs — Magazine News Hub (redesigned 27 Jul 2026)
+// CompactNewsTabs — Top-story-per-section grid (redesigned 11 Aug 2026)
 //
-// Display: 1 large featured story (rotating) + a side column of headlines.
-// 8 tabs aligned to Madmona verticals. Auto-refresh every 3 min, auto-rotate
-// featured every 6s, auto-switch tabs every 9s (stops once user picks a tab).
-// Broken/missing images fall back to a branded placeholder (never a blank box).
+// (11 أغسطس 2026) بدل الكاروسيل الكبير بتاب واحد نشط، دلوقتي بيعرض أهم خبر
+// واحد بس من كل قسم من الـ8 أقسام في شبكة — ذي ديزاين الترباوية. يفضل الريفريش
+// كل 3 دقايق. الكود القديم (تابات + مميّز دوّار) متسيب تحت غير مستخدم لو
+// حبينا نرجعله.
 // ============================================================================
 
 type Tab = 'madmona' | 'economy' | 'real_estate' | 'automotive' | 'business' | 'tourism' | 'fashion' | 'tech'
@@ -46,99 +46,49 @@ const TABS: { id: Tab; label: string; icon: typeof Newspaper; accent: string }[]
 ]
 
 const REFRESH_INTERVAL = 3 * 60 * 1000   // 3 minutes
-const ROTATION_MS = 6000                  // featured story rotation
-const TAB_ROTATE_MS = 9000                // auto tab switch
 
 export default function CompactNewsTabs() {
-  const [activeTab, setActiveTab] = useState<Tab>('madmona')
-  const [items, setItems] = useState<Record<Tab, NewsItem[]>>({
-    madmona: [], economy: [], real_estate: [], automotive: [], business: [],
-    tourism: [], fashion: [], tech: [],
-  })
-  const [loading, setLoading] = useState<Record<Tab, boolean>>({
-    madmona: true, economy: false, real_estate: false, automotive: false, business: false,
-    tourism: false, fashion: false, tech: false,
-  })
-  const [featuredIndex, setFeaturedIndex] = useState(0)
-  const [paused, setPaused] = useState(false)
-  const [autoRotate, setAutoRotate] = useState(true)
-  const fetchingRef = useRef<Set<Tab>>(new Set())
+  // (11 أغسطس 2026) أهم خبر واحد بس لكل قسم — مفيش تابات ولا كاروسيل تاني
+  const [topByTab, setTopByTab] = useState<Partial<Record<Tab, NewsItem>>>({})
+  const [loading, setLoading] = useState(true)
+  const fetchingRef = useRef(false)
 
-  const fetchTab = async (tab: Tab) => {
-    if (fetchingRef.current.has(tab)) return
-    fetchingRef.current.add(tab)
-    setLoading(prev => ({ ...prev, [tab]: true }))
+  const fetchAll = async () => {
+    if (fetchingRef.current) return
+    fetchingRef.current = true
     try {
-      const res = await fetch(`/api/news-feed?category=${tab}&_=${Date.now()}`, {
-        cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache, no-store' },
-      })
-      const data: ApiResponse = await res.json()
-      if (data.ok && data.items.length > 0) {
-        setItems(prev => ({ ...prev, [tab]: data.items }))
-      }
-    } catch {
-      /* silent */
+      const results = await Promise.all(
+        TABS.map(async t => {
+          try {
+            const res = await fetch(`/api/news-feed?category=${t.id}&_=${Date.now()}`, {
+              cache: 'no-store',
+              headers: { 'Cache-Control': 'no-cache, no-store' },
+            })
+            const data: ApiResponse = await res.json()
+            return [t.id, data.ok && data.items.length > 0 ? data.items[0] : undefined] as const
+          } catch {
+            return [t.id, undefined] as const
+          }
+        })
+      )
+      setTopByTab(Object.fromEntries(results.filter(([, v]) => !!v)) as Partial<Record<Tab, NewsItem>>)
     } finally {
-      setLoading(prev => ({ ...prev, [tab]: false }))
-      fetchingRef.current.delete(tab)
+      setLoading(false)
+      fetchingRef.current = false
     }
   }
 
   useEffect(() => {
-    if (items[activeTab].length === 0) fetchTab(activeTab)
-    setFeaturedIndex(0)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab])
-
-  useEffect(() => {
-    const timer = setInterval(() => fetchTab(activeTab), REFRESH_INTERVAL)
+    fetchAll()
+    const timer = setInterval(fetchAll, REFRESH_INTERVAL)
     return () => clearInterval(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab])
+  }, [])
 
-  // Rotate featured story within the active tab
-  useEffect(() => {
-    const tabItems = items[activeTab]
-    if (tabItems.length <= 1 || paused) return
-    const t = setInterval(() => {
-      setFeaturedIndex(prev => (prev + 1) % tabItems.length)
-    }, ROTATION_MS)
-    return () => clearInterval(t)
-  }, [items, activeTab, paused])
-
-  // Auto-switch tabs for movement — stops once the user picks a tab
-  useEffect(() => {
-    if (!autoRotate || paused) return
-    const ids = TABS.map(tt => tt.id)
-    const tt = setInterval(() => {
-      setActiveTab(prev => ids[(ids.indexOf(prev) + 1) % ids.length])
-    }, TAB_ROTATE_MS)
-    return () => clearInterval(tt)
-  }, [autoRotate, paused])
-
-  const tabItems = items[activeTab]
-  const isLoading = loading[activeTab] && tabItems.length === 0
-  const activeCfg = TABS.find(t => t.id === activeTab)!
-  const featured = tabItems[featuredIndex]
-  const sideItems = tabItems.length > 1
-    ? Array.from({ length: Math.min(5, tabItems.length - 1) }).map(
-        (_, i) => tabItems[(featuredIndex + i + 1) % tabItems.length]
-      )
-    : []
-
-  const selectTab = (id: Tab) => { setAutoRotate(false); setActiveTab(id) }
-  const go = (dir: 1 | -1) => {
-    if (tabItems.length <= 1) return
-    setFeaturedIndex(prev => (prev + dir + tabItems.length) % tabItems.length)
-  }
+  const cards = TABS.map(t => ({ tab: t, item: topByTab[t.id] })).filter(c => !!c.item)
 
   return (
-    <div
-      className="bg-white rounded-3xl shadow-elevated overflow-hidden border border-gray-100"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
+    <div className="bg-white rounded-3xl shadow-elevated overflow-hidden border border-gray-100">
       {/* Header */}
       <div className="bg-gradient-to-l from-[#1F6F5F] via-[#268a70] to-[#1F6F5F] px-4 md:px-5 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -147,7 +97,7 @@ export default function CompactNewsTabs() {
           </div>
           <div className="leading-tight">
             <p className="text-sm font-black text-white tracking-wide">أخبار مضمونة</p>
-            <p className="text-[10px] font-bold text-white/70 mt-0.5">كل جديد في مجالك · يتجدد كل ٣ دقايق</p>
+            <p className="text-[10px] font-bold text-white/70 mt-0.5">أهم خبر في كل قسم · يتجدد كل ٣ دقايق</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5 bg-red-600 px-2.5 py-1 rounded-full flex-shrink-0">
@@ -159,137 +109,69 @@ export default function CompactNewsTabs() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 p-2 bg-gray-50 border-b border-gray-100 overflow-x-auto scrollbar-hide">
-        {TABS.map(tab => {
-          const Icon = tab.icon
-          const isActive = activeTab === tab.id
-          return (
-            <button
-              key={tab.id}
-              onClick={() => selectTab(tab.id)}
-              className={`flex-shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                isActive ? 'bg-white text-gray-900 shadow-card' : 'text-gray-500 hover:text-gray-800 hover:bg-white/70'
-              }`}
-              style={isActive ? { boxShadow: `inset 0 -2px 0 ${tab.accent}` } : undefined}
-            >
-              <Icon className="w-3.5 h-3.5" style={{ color: isActive ? tab.accent : undefined }} />
-              <span>{tab.label}</span>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Body */}
-      {isLoading ? (
+      {/* Body — شبكة أهم خبر لكل قسم */}
+      {loading && cards.length === 0 ? (
         <div className="p-16 text-center">
           <RefreshCw className="w-8 h-8 mx-auto text-gray-300 animate-spin" />
           <p className="text-sm text-gray-400 mt-4">جاري تحميل الأخبار...</p>
         </div>
-      ) : !featured ? (
+      ) : cards.length === 0 ? (
         <div className="p-16 text-center">
           <Newspaper className="w-8 h-8 mx-auto text-gray-300 mb-3" />
-          <p className="text-sm text-gray-500">مفيش أخبار دلوقتي في {activeCfg.label}</p>
+          <p className="text-sm text-gray-500">مفيش أخبار دلوقتي</p>
           <button
-            onClick={() => fetchTab(activeTab)}
+            onClick={() => fetchAll()}
             className="mt-4 text-xs font-bold text-[#1F6F5F] hover:underline inline-flex items-center gap-1 mx-auto"
           >
             <RefreshCw className="w-3 h-3" /> حاول تاني
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-5">
-          {/* Featured — large */}
-          <a
-            href={featured.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="lg:col-span-3 group relative block no-underline overflow-hidden aspect-[16/10] lg:aspect-auto lg:min-h-[360px]"
-          >
-            <NewsImage src={featured.image} alt={featured.title} accent={activeCfg.accent} big />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-            <div className="absolute top-3 right-3 flex items-center gap-1.5">
-              <span
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black text-white"
-                style={{ background: activeCfg.accent }}
-              >
-                <activeCfg.icon className="w-3 h-3" /> {activeCfg.label}
-              </span>
-              {featured.isEgyptian && (
-                <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-black/50 backdrop-blur text-white">🇪🇬 مصر</span>
-              )}
-            </div>
-            {tabItems.length > 1 && (
-              <div className="absolute top-3 left-3 flex items-center gap-1">
-                <button
-                  onClick={(e) => { e.preventDefault(); go(-1) }}
-                  aria-label="السابق"
-                  className="w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur flex items-center justify-center text-white"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={(e) => { e.preventDefault(); go(1) }}
-                  aria-label="التالي"
-                  className="w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur flex items-center justify-center text-white"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-            <div className="absolute inset-x-0 bottom-0 p-4 md:p-6">
-              <h3 className="text-white font-black text-lg md:text-2xl leading-snug line-clamp-3 drop-shadow">
-                {featured.title}
-              </h3>
-              <div className="flex items-center gap-2 mt-2.5 text-white/85 text-[11px] font-bold">
-                <span className="truncate">{featured.source}</span>
-                <span className="opacity-50">·</span>
-                <span className="inline-flex items-center gap-1 flex-shrink-0">
-                  <Clock className="w-3 h-3" /> {formatTime(featured.pubDate)}
-                </span>
-              </div>
-            </div>
-          </a>
-
-          {/* Side headlines */}
-          <div className="lg:col-span-2 divide-y divide-gray-100 border-t lg:border-t-0 lg:border-r border-gray-100">
-            {sideItems.map((item, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-gray-100">
+          {cards.map(({ tab, item }) => {
+            const Icon = tab.icon
+            return (
               <a
-                key={`${activeTab}-${item.link}-${i}`}
-                href={item.link}
+                key={tab.id}
+                href={item!.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors no-underline"
+                className="group relative block no-underline overflow-hidden aspect-[4/3] bg-white"
               >
-                <div className="relative w-20 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                  <NewsImage src={item.image} alt={item.title} accent={activeCfg.accent} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-xs md:text-sm font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-[#1F6F5F] transition-colors">
-                    {item.title}
-                  </h4>
-                  <div className="flex items-center gap-1.5 mt-1 text-[10px] text-gray-400">
-                    <span className="truncate">{item.source}</span>
-                    <span className="flex-shrink-0">·</span>
-                    <span className="flex-shrink-0">{formatTime(item.pubDate)}</span>
+                <NewsImage src={item!.image} alt={item!.title} accent={tab.accent} big />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+                <span
+                  className="absolute top-2.5 right-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black text-white"
+                  style={{ background: tab.accent }}
+                >
+                  <Icon className="w-3 h-3" /> {tab.label}
+                </span>
+                <div className="absolute inset-x-0 bottom-0 p-3 md:p-4">
+                  <h3 className="text-white font-black text-sm md:text-base leading-snug line-clamp-3 drop-shadow">
+                    {item!.title}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-2 text-white/85 text-[10px] font-bold">
+                    <span className="truncate">{item!.source}</span>
+                    <span className="opacity-50">·</span>
+                    <span className="inline-flex items-center gap-1 flex-shrink-0">
+                      <Clock className="w-3 h-3" /> {formatTime(item!.pubDate)}
+                    </span>
                   </div>
                 </div>
               </a>
-            ))}
-          </div>
+            )
+          })}
         </div>
       )}
 
       {/* Footer */}
-      {featured && (
+      {cards.length > 0 && (
         <div className="px-4 md:px-5 py-2.5 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-500">
           <span className="inline-flex items-center gap-1">
             <Clock className="w-3 h-3" /> يتجدد تلقائيًا كل ٣ دقايق
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span>{tabItems.length} خبر</span>
-            <span className="opacity-50">·</span>
-            <span>{TABS.length} تصنيف</span>
+            <span>{cards.length} قسم</span>
           </span>
         </div>
       )}
