@@ -226,47 +226,52 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
 
   return (
     <div className="md:hidden bg-[#FAFAF7] min-h-screen">
-      {/* 1. Compact header — برتقالي البراند #FA8125 (طلب محمد ١١ أغسطس: البرتقالي
-          يبقى الأساسي). paddingTop بيمدّ الخلفية البرتقالية لفوق تحت شريط
-          الحالة (status bar) نفسه — متطابق مع appleWebApp.statusBarStyle:
+      {/* 1+2. هيدر + عنوان الترحيب سوا جوّه بلوك برتقالي واحد — (طلب محمد
+          ١١ أغسطس: "زود البرتقالي مساحة أكبر في الهيدر") مش بس شريط ضيق،
+          دلوقتي المساحة البرتقالية بتمتد من شريط الحالة لحد تحت العنوان،
+          وبعدين تيجي كروت السيرش البيضا فوقها. paddingTop بيمدّ الخلفية
+          لفوق تحت شريط الحالة نفسه — متطابق مع appleWebApp.statusBarStyle:
           'black-translucent' + viewport-fit=cover في layout.tsx. */}
-      <header
-        className="flex items-center justify-between px-4 pb-1 bg-[#FA8125]"
+      <div
+        className="bg-[#FA8125] rounded-b-[28px] pb-5"
         style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
       >
-        <Link href="/" className="flex items-center gap-2.5 no-underline">
-          <span className="w-10 h-10 bg-white rounded-[14px] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(0,0,0,.06)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/madmona-logo.png" alt="مضمونة" className="w-[30px] h-[30px] object-contain" />
-          </span>
-          <span className="leading-none">
-            <span className="block text-[15px] font-black text-white leading-none">مضمونة</span>
-            <span className="block text-[8px] font-bold tracking-[0.25em] text-white/70 mt-0.5">MADMONA</span>
-          </span>
-        </Link>
-        <div className="flex gap-2">
-          <Link href="/account" aria-label="الإشعارات" className="relative w-10 h-10 bg-white/15 rounded-[14px] flex items-center justify-center no-underline">
-            <Bell className="w-[19px] h-[19px] text-white" strokeWidth={2} />
-            <span className="absolute top-[9px] left-[9px] w-[7px] h-[7px] rounded-full bg-[#E26D5C] border-[1.5px] border-[#FA8125]" />
+        <header className="flex items-center justify-between px-4 pb-1">
+          <Link href="/" className="flex items-center gap-2.5 no-underline">
+            <span className="w-10 h-10 bg-white rounded-[14px] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(0,0,0,.06)]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/madmona-logo.png" alt="مضمونة" className="w-[30px] h-[30px] object-contain" />
+            </span>
+            <span className="leading-none">
+              <span className="block text-[15px] font-black text-white leading-none">مضمونة</span>
+              <span className="block text-[8px] font-bold tracking-[0.25em] text-white/70 mt-0.5">MADMONA</span>
+            </span>
           </Link>
-          <button type="button" onClick={() => setMenuOpen(true)} aria-label="القائمة" className="w-10 h-10 bg-white/15 rounded-[14px] flex items-center justify-center">
-            <Menu className="w-[19px] h-[19px] text-white" strokeWidth={2} />
-          </button>
-        </div>
-      </header>
+          <div className="flex gap-2">
+            <Link href="/account" aria-label="الإشعارات" className="relative w-10 h-10 bg-white/15 rounded-[14px] flex items-center justify-center no-underline">
+              <Bell className="w-[19px] h-[19px] text-white" strokeWidth={2} />
+              <span className="absolute top-[9px] left-[9px] w-[7px] h-[7px] rounded-full bg-[#E26D5C] border-[1.5px] border-[#FA8125]" />
+            </Link>
+            <button type="button" onClick={() => setMenuOpen(true)} aria-label="القائمة" className="w-10 h-10 bg-white/15 rounded-[14px] flex items-center justify-center">
+              <Menu className="w-[19px] h-[19px] text-white" strokeWidth={2} />
+            </button>
+          </div>
+        </header>
 
-      {/* 2. Search hero */}
-      <div className="px-4 pt-3.5">
         {/* تاب تحميل التطبيق - في نفس سطر العنوان على الشمال (30 Jul 2026) */}
-        <div className="flex items-start justify-between gap-3 mb-3">
-        <h1 className="text-[22px] font-black text-[#0A0A0A] leading-[1.25] flex-1 min-w-0">
-          {en ? <>Find anything —<br/>you&apos;re <span className="text-[#FA8125]">covered</span></>
-              : <>دوّر على أي حاجة —<br/>معاملاتك <span className="text-[#FA8125]">مضمونة</span></>}
-        </h1>
+        <div className="flex items-start justify-between gap-3 px-4 pt-3.5">
+          <h1 className="text-[22px] font-black text-white leading-[1.25] flex-1 min-w-0">
+            {en ? <>Find anything —<br/>you&apos;re <span className="underline decoration-2 decoration-white/60 underline-offset-4">covered</span></>
+                : <>دوّر على أي حاجة —<br/>معاملاتك <span className="underline decoration-2 decoration-white/60 underline-offset-4">مضمونة</span></>}
+          </h1>
           <div className="flex-shrink-0 pt-1">
             <DownloadAppBig compact />
           </div>
         </div>
+      </div>
+
+      {/* 2. Search hero */}
+      <div className="px-4 pt-3.5 -mt-2.5 relative z-10">
         <form onSubmit={submitSearch} className="flex items-center gap-2.5 bg-white border-2 border-[#E5DFD3] rounded-2xl px-4 py-[13px] shadow-[0_4px_16px_rgba(20,40,34,.05)]">
           <Search className="w-[18px] h-[18px] text-[#7C8A84] flex-shrink-0" strokeWidth={2.5} />
           <input
