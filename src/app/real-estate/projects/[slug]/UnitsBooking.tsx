@@ -108,7 +108,7 @@ export default function UnitsBooking({
         <p className="flex items-center gap-1.5 text-[11px] font-semibold text-[#2FA084]">
           <Grid3X3 className="w-4 h-4" /> وحدات المشروع — احجز من الماستر بلان
         </p>
-        <span className="text-[11px] font-bold text-[#1F6F5F] bg-[#1F6F5F]/8 px-2 py-0.5 rounded-full">
+        <span className="text-[11px] font-bold text-[#2B4521] bg-[#2B4521]/8 px-2 py-0.5 rounded-full">
           {available} متاحة
         </span>
       </div>
@@ -126,7 +126,7 @@ export default function UnitsBooking({
             <div key={u.id} className={`flex items-center justify-between gap-3 px-4 py-3.5 ${i > 0 ? 'border-t border-gray-50' : ''}`}>
               <div className="min-w-0">
                 <p className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
-                  <span className="font-mono text-[#1F6F5F]">{u.unit_code}</span>
+                  <span className="font-mono text-[#2B4521]">{u.unit_code}</span>
                   {u.master_plan_ref && <span className="text-[10px] text-gray-400 font-normal">({u.master_plan_ref})</span>}
                 </p>
                 {specs && (
@@ -137,13 +137,13 @@ export default function UnitsBooking({
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 {u.price != null && (
-                  <p className="text-[#1F6F5F] font-bold text-sm whitespace-nowrap">{money(u.price)} ج</p>
+                  <p className="text-[#2B4521] font-bold text-sm whitespace-nowrap">{money(u.price)} ج</p>
                 )}
                 {st === 'available' && (
                   <button
                     onClick={() => hold(u)}
                     disabled={busy === u.id}
-                    className="flex items-center gap-1.5 bg-[#1F6F5F] text-white text-xs font-bold px-3.5 py-2 rounded-full hover:bg-[#175a4d] transition-colors disabled:opacity-60"
+                    className="flex items-center gap-1.5 bg-[#2B4521] text-white text-xs font-bold px-3.5 py-2 rounded-full hover:bg-[#175a4d] transition-colors disabled:opacity-60"
                   >
                     {busy === u.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Clock className="w-3.5 h-3.5" />}
                     احجزها ٤٨ ساعة
@@ -186,7 +186,7 @@ export default function UnitsBooking({
             <a
               href={`${WA}?text=${encodeURIComponent(`حجزت وحدة ${done.unit_code} في ${projectTitle} (${projectCode}) — عايز أكمل التعاقد`)}`}
               target="_blank" rel="noopener"
-              className="flex items-center justify-center gap-2 w-full bg-[#1F6F5F] text-white font-bold py-3.5 rounded-2xl"
+              className="flex items-center justify-center gap-2 w-full bg-[#2B4521] text-white font-bold py-3.5 rounded-2xl"
             >
               <MessageCircle className="w-4 h-4" /> كمّل التعاقد مع المارد
             </a>

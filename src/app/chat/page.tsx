@@ -89,7 +89,7 @@ export default function ChatHub() {
   return (
     <div dir="rtl" style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
       {/* هوية 4b: هيدر غامق متدرّج زي شات المارد */}
-      <header style={{ background: 'linear-gradient(135deg,#14231E,#1F6F5F)', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
+      <header style={{ background: 'linear-gradient(135deg,#14231E,#2B4521)', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
         <div style={{ fontSize: 18, fontWeight: 900, flex: 1 }}>شات مضمونة</div>
         <InviteContacts />
         <Link href="/chat/settings" aria-label="إعدادات" style={{ color: 'rgba(255,255,255,.85)', fontSize: 20, textDecoration: 'none' }}>⚙️</Link>
@@ -99,7 +99,7 @@ export default function ChatHub() {
         <Link href="/chat/marid" style={{ ...rowStyle, background: '#fff' }}>
           <span style={{ position: 'relative', flexShrink: 0 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={MARID_AVATAR} alt="المارد" style={{ ...avatarStyle, border: '2px solid rgba(31,111,95,.2)' }} />
+            <img src={MARID_AVATAR} alt="المارد" style={{ ...avatarStyle, border: '2px solid rgba(43, 69, 33,.2)' }} />
             <span style={{ position: 'absolute', bottom: 1, left: 1, width: 12, height: 12, borderRadius: '50%', background: '#6FCF97', border: '2px solid #fff' }} />
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -112,12 +112,12 @@ export default function ChatHub() {
         </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 16px 4px' }}>
-          <div style={{ flex: 1, fontSize: 11, fontWeight: 900, color: '#1F6F5F', letterSpacing: '.3px' }}>محادثاتك الخاصة</div>
+          <div style={{ flex: 1, fontSize: 11, fontWeight: 900, color: '#2B4521', letterSpacing: '.3px' }}>محادثاتك الخاصة</div>
           {/* 🐛 (٢ أغسطس ٢٠٢٦) كان لينك لـ/chat/team?new=dm — بينقلك لتاب
               الجروبات وبعدين يحاول يفتح prompt() اللي متصفحات الموبايل
               بتمنعها، فتفضل واقف في التاب الغلط ومش فاهم مطلوب منك إيه.
               دلوقتي شاشة بتفتح في مكانها. */}
-          <button onClick={() => setShowNewDM(true)} style={{ background: '#F1EEE6', color: '#1F6F5F', borderRadius: 999, padding: '5px 12px', fontSize: 11.5, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>➕ محادثة جديدة</button>
+          <button onClick={() => setShowNewDM(true)} style={{ background: '#F1EEE6', color: '#2B4521', borderRadius: 999, padding: '5px 12px', fontSize: 11.5, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>➕ محادثة جديدة</button>
         </div>
         {/* (31 Jul 2026) هيكل مؤقت بدل رسالة «مفيش محادثات» وهي لسه بتحمّل —
             كانت بتقول للمستخدم إنه مالوش محادثات قبل ما الداتا توصل أصلاً. */}
@@ -143,7 +143,7 @@ export default function ChatHub() {
           rooms.filter((r) => !hidden.has(r.id)).map((r) => (
             <div key={r.id} style={{ ...rowStyle, paddingLeft: 6 }}>
               <Link href={`/chat/team?room=${r.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, textDecoration: 'none' }}>
-                <div style={{ ...avatarStyle, background: 'radial-gradient(circle at 35% 30%,#2FA084,#1F6F5F)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 800 }}>{(r.name || '؟').trim().charAt(0)}</div>
+                <div style={{ ...avatarStyle, background: 'radial-gradient(circle at 35% 30%,#2FA084,#2B4521)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 800 }}>{(r.name || '؟').trim().charAt(0)}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                     <span style={{ fontWeight: 800, color: '#14231E' }}>{r.name}</span>

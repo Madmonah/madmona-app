@@ -132,7 +132,7 @@ export default function QuoteOrdersPage() {
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
           <div className="flex items-center gap-2 flex-1">
-            <ShoppingBasket className="w-5 h-5 text-[#1F6F5F]" />
+            <ShoppingBasket className="w-5 h-5 text-[#2B4521]" />
             <h1 className="text-lg font-black text-gray-900">طلبات التسعير</h1>
           </div>
           <button onClick={load} className="w-9 h-9 bg-white shadow-sm rounded-full flex items-center justify-center">
@@ -142,11 +142,11 @@ export default function QuoteOrdersPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-5 space-y-4">
-        {flash && <div className="bg-[#1F6F5F]/10 text-[#1F6F5F] text-sm font-bold px-4 py-3 rounded-2xl">{flash}</div>}
+        {flash && <div className="bg-[#2B4521]/10 text-[#2B4521] text-sm font-bold px-4 py-3 rounded-2xl">{flash}</div>}
         {err && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-2xl">{err === 'مالكش صلاحية' ? 'مالكش صلاحية على المحل ده.' : err}</div>}
 
         {loading && orders.length === 0 && (
-          <div className="text-center py-16"><Loader2 className="w-7 h-7 text-[#1F6F5F] animate-spin mx-auto" /></div>
+          <div className="text-center py-16"><Loader2 className="w-7 h-7 text-[#2B4521] animate-spin mx-auto" /></div>
         )}
 
         {!loading && orders.length === 0 && !err && (
@@ -165,7 +165,7 @@ export default function QuoteOrdersPage() {
         ))}
 
         {quoted.length > 0 && (
-          <p className="text-[11px] font-black tracking-widest uppercase text-[#1F6F5F] flex items-center gap-1.5 pt-2"><Send className="w-3.5 h-3.5" /> اتبعت للعميل ({quoted.length})</p>
+          <p className="text-[11px] font-black tracking-widest uppercase text-[#2B4521] flex items-center gap-1.5 pt-2"><Send className="w-3.5 h-3.5" /> اتبعت للعميل ({quoted.length})</p>
         )}
         {quoted.map(o => (
           <OrderCard key={o.id} o={o} draft={drafts[o.id]} busy={busy === o.id} editable={false}
@@ -184,7 +184,7 @@ function OrderCard({ o, draft, busy, editable, total, onPrice, onQty, onFee, onN
   onNote: (oid: string, v: string) => void
   onSend: () => void
 }) {
-  const fld = 'px-2 py-1.5 bg-[#FAFAF7] border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1F6F5F]/50 focus:bg-white'
+  const fld = 'px-2 py-1.5 bg-[#FAFAF7] border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#2B4521]/50 focus:bg-white'
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
@@ -193,7 +193,7 @@ function OrderCard({ o, draft, busy, editable, total, onPrice, onQty, onFee, onN
           <p className="text-xs text-gray-500 font-mono">{o.reference_code}</p>
         </div>
         {o.status === 'quoted' && (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1F6F5F] bg-[#1F6F5F]/10 px-2.5 py-1 rounded-full"><CheckCircle className="w-3 h-3" /> مسعّر</span>
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#2B4521] bg-[#2B4521]/10 px-2.5 py-1 rounded-full"><CheckCircle className="w-3 h-3" /> مسعّر</span>
         )}
       </div>
 
@@ -243,14 +243,14 @@ function OrderCard({ o, draft, busy, editable, total, onPrice, onQty, onFee, onN
         ) : (
           Number(o.delivery_fee) > 0 && <div className="flex items-center justify-between text-sm text-gray-500"><span>التوصيل</span><span className="tabular">{Number(o.delivery_fee).toLocaleString('ar-EG')} ج</span></div>
         )}
-        <div className="flex items-center justify-between font-black text-[#1F6F5F]">
+        <div className="flex items-center justify-between font-black text-[#2B4521]">
           <span>الإجمالي</span>
           <span className="tabular">{Number(total).toLocaleString('ar-EG')} ج</span>
         </div>
       </div>
 
       {editable && (
-        <button onClick={onSend} disabled={busy} className="mt-4 w-full flex items-center justify-center gap-2 bg-[#1F6F5F] text-white py-3 rounded-2xl font-bold text-sm shadow-sm hover:-translate-y-0.5 transition-all disabled:opacity-50">
+        <button onClick={onSend} disabled={busy} className="mt-4 w-full flex items-center justify-center gap-2 bg-[#2B4521] text-white py-3 rounded-2xl font-bold text-sm shadow-sm hover:-translate-y-0.5 transition-all disabled:opacity-50">
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           سعّر وابعت للعميل
         </button>

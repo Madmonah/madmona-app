@@ -105,12 +105,12 @@ export default function RatingsPage({
         <div className="max-w-7xl mx-auto px-4 py-4">
           <Link
             href={`/admin/business-finance/${supplierId}`}
-            className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2 transition-colors"
+            className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2 transition-colors"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             رجوع للـ finance
           </Link>
-          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">
+          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">
             CUSTOMER RATINGS
           </p>
           <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">
@@ -140,7 +140,7 @@ export default function RatingsPage({
                   key={f.v}
                   onClick={() => setRatingFilter(f.v)}
                   className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                    ratingFilter === f.v ? 'bg-[#1F6F5F] text-white' : 'text-[#6B7280]'
+                    ratingFilter === f.v ? 'bg-[#2B4521] text-white' : 'text-[#6B7280]'
                   }`}
                 >
                   {f.l}
@@ -163,7 +163,7 @@ export default function RatingsPage({
         {/* Ratings list */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-white rounded-3xl border border-dashed border-gray-300 p-12 text-center">
@@ -188,9 +188,9 @@ export default function RatingsPage({
 }
 
 function StatCard({ label, value, icon, tone, primary }: any) {
-  const t = tone === 'positive' ? 'text-[#1F6F5F]' : tone === 'negative' ? 'text-red-600' : 'text-[#1A2E26]'
+  const t = tone === 'positive' ? 'text-[#2B4521]' : tone === 'negative' ? 'text-red-600' : 'text-[#1A2E26]'
   return (
-    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'}`}>
+    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#2B4521] border-[#2B4521] text-white' : 'bg-white border-gray-100'}`}>
       <div className={`flex items-center gap-2 mb-1.5 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>
         {icon}
         <p className="text-[10px] font-bold tracking-wider uppercase">{label}</p>
@@ -212,7 +212,7 @@ function RatingCard({ r, branches }: { r: Rating; branches: Branch[] }) {
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className={`inline-grid place-items-center w-10 h-10 rounded-xl flex-shrink-0 ${
-            isLow ? 'bg-red-50 text-red-600' : 'bg-[#1F6F5F]/10 text-[#1F6F5F]'
+            isLow ? 'bg-red-50 text-red-600' : 'bg-[#2B4521]/10 text-[#2B4521]'
           }`}>
             <Star className="w-5 h-5 fill-current" />
           </div>
@@ -233,7 +233,7 @@ function RatingCard({ r, branches }: { r: Rating; branches: Branch[] }) {
         </div>
         <div className="text-left flex-shrink-0">
           <p className="text-[10px] text-[#6B7280]">{time}</p>
-          {branchName && <p className="text-[10px] font-bold text-[#1F6F5F]">{branchName}</p>}
+          {branchName && <p className="text-[10px] font-bold text-[#2B4521]">{branchName}</p>}
         </div>
       </div>
 

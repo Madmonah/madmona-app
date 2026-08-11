@@ -41,7 +41,7 @@ export default function VisitHub({ params }: { params: { branchCode: string } })
     })()
   }, [branchCode])
 
-  if (loading || checking) return <div className="min-h-screen bg-[#1F6F5F] flex items-center justify-center"><Loader2 className="w-9 h-9 text-white animate-spin" /></div>
+  if (loading || checking) return <div className="min-h-screen bg-[#2B4521] flex items-center justify-center"><Loader2 className="w-9 h-9 text-white animate-spin" /></div>
 
   if (!info?.branch) return (
     <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir={dir}>
@@ -61,7 +61,7 @@ export default function VisitHub({ params }: { params: { branchCode: string } })
       <style>{`
 @keyframes mdFadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes mdFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-@keyframes mdGlow{0%,100%{box-shadow:0 10px 26px -10px rgba(31,111,95,.55)}50%{box-shadow:0 16px 40px -8px rgba(31,111,95,.85)}}
+@keyframes mdGlow{0%,100%{box-shadow:0 10px 26px -10px rgba(43, 69, 33,.55)}50%{box-shadow:0 16px 40px -8px rgba(43, 69, 33,.85)}}
 .md-fade{animation:mdFadeUp .6s ease both}
 .md-float{animation:mdFloat 4.5s ease-in-out infinite}
 .md-glow{animation:mdGlow 2.8s ease-in-out infinite}
@@ -89,12 +89,12 @@ function Hero({ biz, branchName, tagline, authed, name, gallery = [], logo }: an
   }, [gallery.length])
 
   return (
-    <header className="relative bg-[#1F6F5F] text-white overflow-hidden">
+    <header className="relative bg-[#2B4521] text-white overflow-hidden">
       {gallery.map((src: string, i: number) => (
         <img key={i} src={src} alt="" aria-hidden="true"
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ${i === idx ? 'opacity-100' : 'opacity-0'}`} />
       ))}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1F6F5F]/70 via-[#1F6F5F]/55 to-[#1A2E26]/90" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#2B4521]/70 via-[#2B4521]/55 to-[#1A2E26]/90" />
       {gallery.length === 0 && <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, white 1.5px, transparent 1.5px)', backgroundSize: '22px 22px' }} />}
 
       {/* Language toggle */}
@@ -160,7 +160,7 @@ function Hub({ branchCode, info, branding, router }: any) {
       <div className="bg-white rounded-2xl border border-gray-100 p-1.5 flex gap-1 mb-4 shadow-[0_8px_24px_-14px_rgba(26,46,38,0.25)]">
         {tabs.map((tb: any) => (
           <button key={tb.k} onClick={() => setTab(tb.k)}
-            className={`flex-1 py-2.5 px-1 rounded-xl text-[12px] font-black flex items-center justify-center gap-1 transition-all ${tab === tb.k ? 'bg-[#1F6F5F] text-white shadow-md shadow-[#1F6F5F]/25' : 'text-[#6B7280] hover:text-[#1A2E26]'}`}>
+            className={`flex-1 py-2.5 px-1 rounded-xl text-[12px] font-black flex items-center justify-center gap-1 transition-all ${tab === tb.k ? 'bg-[#2B4521] text-white shadow-md shadow-[#2B4521]/25' : 'text-[#6B7280] hover:text-[#1A2E26]'}`}>
             <tb.icon className="w-3.5 h-3.5" /> {tb.label}
           </button>
         ))}
@@ -176,12 +176,12 @@ function Hub({ branchCode, info, branding, router }: any) {
 
 function BookTab({ branchCode, router, setPanel, hasProducts }: any) {
   const { t } = useT()
-  const tile = 'bg-white border border-gray-100 rounded-2xl p-4 text-start active:scale-[0.98] transition-all hover:border-[#1F6F5F]/40 hover:shadow-md hover:shadow-[#1A2E26]/5'
+  const tile = 'bg-white border border-gray-100 rounded-2xl p-4 text-start active:scale-[0.98] transition-all hover:border-[#2B4521]/40 hover:shadow-md hover:shadow-[#1A2E26]/5'
   return (
     <div className="space-y-4">
       {/* PRIMARY: book */}
       <button onClick={() => router.push(`/book/${branchCode}`)}
-        className="w-full bg-[#1F6F5F] text-white rounded-2xl p-5 flex items-center justify-between shadow-lg shadow-[#1F6F5F]/20 active:scale-[0.99] transition-transform md-glow">
+        className="w-full bg-[#2B4521] text-white rounded-2xl p-5 flex items-center justify-between shadow-lg shadow-[#2B4521]/20 active:scale-[0.99] transition-transform md-glow">
         <div className="flex items-center gap-3 text-start">
           <div className="w-11 h-11 rounded-xl bg-white/15 grid place-items-center"><CalendarPlus className="w-6 h-6" /></div>
           <div>
@@ -196,30 +196,30 @@ function BookTab({ branchCode, router, setPanel, hasProducts }: any) {
       <div className="grid grid-cols-2 gap-3">
         {hasProducts && (
           <button onClick={() => setPanel('products')} className={tile}>
-            <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center mb-2.5"><ShoppingBag className="w-5 h-5" /></div>
+            <div className="w-10 h-10 rounded-xl bg-[#2B4521]/10 text-[#2B4521] grid place-items-center mb-2.5"><ShoppingBag className="w-5 h-5" /></div>
             <p className="font-black text-sm text-[#1A2E26]">{t('visit.products')}</p>
             <p className="text-[11px] text-[#6B7280] mt-0.5">{t('visit.products_sub')}</p>
           </button>
         )}
         <button onClick={() => router.push('/home')} className={tile}>
-          <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center mb-2.5"><User className="w-5 h-5" /></div>
+          <div className="w-10 h-10 rounded-xl bg-[#2B4521]/10 text-[#2B4521] grid place-items-center mb-2.5"><User className="w-5 h-5" /></div>
           <p className="font-black text-sm text-[#1A2E26]">{t('visit.account')}</p>
           <p className="text-[11px] text-[#6B7280] mt-0.5">{t('visit.account_sub')}</p>
         </button>
       </div>
 
       {/* AFTER SERVICE: tip + rate */}
-      <div className="bg-[#1F6F5F]/[0.06] border border-[#1F6F5F]/15 rounded-2xl p-4">
-        <p className="text-[11px] font-black tracking-wider uppercase text-[#1F6F5F] mb-0.5 flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> {t('visit.after_service')}</p>
+      <div className="bg-[#2B4521]/[0.06] border border-[#2B4521]/15 rounded-2xl p-4">
+        <p className="text-[11px] font-black tracking-wider uppercase text-[#2B4521] mb-0.5 flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> {t('visit.after_service')}</p>
         <p className="text-[12px] text-[#6B7280] mb-3">{t('visit.after_service_sub')}</p>
         <div className="grid grid-cols-2 gap-3">
           <button onClick={() => setPanel('tip')} className={tile}>
-            <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center mb-2.5"><Gift className="w-5 h-5" /></div>
+            <div className="w-10 h-10 rounded-xl bg-[#2B4521]/10 text-[#2B4521] grid place-items-center mb-2.5"><Gift className="w-5 h-5" /></div>
             <p className="font-black text-sm text-[#1A2E26]">{t('visit.tip_title')}</p>
             <p className="text-[11px] text-[#6B7280] mt-0.5">{t('visit.tip_sub')}</p>
           </button>
           <button onClick={() => setPanel('rate')} className={tile}>
-            <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center mb-2.5"><Star className="w-5 h-5" /></div>
+            <div className="w-10 h-10 rounded-xl bg-[#2B4521]/10 text-[#2B4521] grid place-items-center mb-2.5"><Star className="w-5 h-5" /></div>
             <p className="font-black text-sm text-[#1A2E26]">{t('visit.rate_title')}</p>
             <p className="text-[11px] text-[#6B7280] mt-0.5">{t('visit.rate_sub')}</p>
           </button>
@@ -236,7 +236,7 @@ function ServicesTab({ services, branchCode, router }: any) {
     <div className="space-y-2.5">
       {services.map((s: any) => (
         <button key={s.id} onClick={() => router.push(`/book/${branchCode}?service=${s.id}`)}
-          className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between text-start active:scale-[0.99] transition-all hover:border-[#1F6F5F]/40 hover:shadow-md hover:shadow-[#1A2E26]/5">
+          className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between text-start active:scale-[0.99] transition-all hover:border-[#2B4521]/40 hover:shadow-md hover:shadow-[#1A2E26]/5">
           <div>
             <p className="font-black text-sm text-[#1A2E26]">{lang === 'en' && s.name_en ? s.name_en : s.name_ar}</p>
             <p className="text-[11px] text-[#6B7280] mt-0.5 flex items-center gap-2">
@@ -244,8 +244,8 @@ function ServicesTab({ services, branchCode, router }: any) {
             </p>
           </div>
           <div className="text-end flex items-center gap-2">
-            <span className="font-mono font-black text-[#1F6F5F] text-sm">{Number(s.price_egp || 0).toLocaleString('en-US')} {t('visit.egp')}</span>
-            <span className="w-7 h-7 rounded-lg bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center"><ChevronRight className="w-4 h-4 rtl:rotate-180" /></span>
+            <span className="font-mono font-black text-[#2B4521] text-sm">{Number(s.price_egp || 0).toLocaleString('en-US')} {t('visit.egp')}</span>
+            <span className="w-7 h-7 rounded-lg bg-[#2B4521]/10 text-[#2B4521] grid place-items-center"><ChevronRight className="w-4 h-4 rtl:rotate-180" /></span>
           </div>
         </button>
       ))}
@@ -263,19 +263,19 @@ function SocialTab({ social, branch }: any) {
         <a href={`https://instagram.com/${ig}`} target="_blank" rel="noopener noreferrer"
           className="flex items-center justify-between bg-white border border-gray-100 rounded-2xl p-4 active:scale-[0.99] transition-all hover:shadow-md hover:shadow-[#1A2E26]/5">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center"><Instagram className="w-6 h-6" /></div>
+            <div className="w-11 h-11 rounded-xl bg-[#2B4521]/10 text-[#2B4521] grid place-items-center"><Instagram className="w-6 h-6" /></div>
             <div>
               <p className="font-black text-sm text-[#1A2E26]">{t('visit.instagram')}</p>
               <p className="text-[12px] text-[#6B7280]" dir="ltr">@{ig}</p>
             </div>
           </div>
-          <span className="text-[12px] font-black text-[#1F6F5F]">{t('visit.follow_us')}</span>
+          <span className="text-[12px] font-black text-[#2B4521]">{t('visit.follow_us')}</span>
         </a>
       )}
 
       <a href={`https://wa.me/${WA}`} className="flex items-center justify-between bg-white border border-gray-100 rounded-2xl p-4 active:scale-[0.99] transition-all hover:shadow-md hover:shadow-[#1A2E26]/5">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center"><MessageCircle className="w-6 h-6" /></div>
+          <div className="w-11 h-11 rounded-xl bg-[#2B4521]/10 text-[#2B4521] grid place-items-center"><MessageCircle className="w-6 h-6" /></div>
           <div>
             <p className="font-black text-sm text-[#1A2E26]">{t('visit.whatsapp')}</p>
             <p className="text-[12px] text-[#6B7280]">{t('visit.whatsapp_sub')}</p>
@@ -310,17 +310,17 @@ function MadmonaTab({ router }: any) {
   ]
   return (
     <div className="space-y-3">
-      <div className="bg-[#1F6F5F] text-white rounded-2xl p-5 text-center shadow-lg shadow-[#1F6F5F]/20">
+      <div className="bg-[#2B4521] text-white rounded-2xl p-5 text-center shadow-lg shadow-[#2B4521]/20">
         <div className="inline-flex items-center gap-1.5 mb-1.5">
-          <span className="w-7 h-7 rounded-lg bg-white grid place-items-center text-[#1F6F5F] font-black">م</span>
+          <span className="w-7 h-7 rounded-lg bg-white grid place-items-center text-[#2B4521] font-black">م</span>
           <p className="font-black text-lg">{t('visit.md_brand')}</p>
         </div>
         <p className="text-[13px] text-white/85 leading-relaxed">{t('visit.md_desc')}</p>
       </div>
       {items.map((a: any, i: number) => (
-        <button key={i} onClick={a.onClick} className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between text-start active:scale-[0.99] transition-all hover:border-[#1F6F5F]/40 hover:shadow-md hover:shadow-[#1A2E26]/5">
+        <button key={i} onClick={a.onClick} className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between text-start active:scale-[0.99] transition-all hover:border-[#2B4521]/40 hover:shadow-md hover:shadow-[#1A2E26]/5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center"><a.icon className="w-5 h-5" /></div>
+            <div className="w-10 h-10 rounded-xl bg-[#2B4521]/10 text-[#2B4521] grid place-items-center"><a.icon className="w-5 h-5" /></div>
             <div>
               <p className="font-black text-sm text-[#1A2E26]">{a.title}</p>
               <p className="text-[11px] text-[#6B7280] mt-0.5">{a.sub}</p>
@@ -362,14 +362,14 @@ function TipFlow({ branchCode, stylists, onBack }: any) {
 
   if (done) return (
     <SuccessCard onBack={onBack} icon={Heart} title={t('visit.tip_done_title')}>
-      <p className="text-sm text-[#6B7280] mb-3">{t('visit.tip_recorded')} <b className="text-[#1F6F5F]">{Number(finalAmount).toLocaleString('en-US')} {egp}</b>{done.employee_name ? ` — ${done.employee_name}` : ''}.</p>
+      <p className="text-sm text-[#6B7280] mb-3">{t('visit.tip_recorded')} <b className="text-[#2B4521]">{Number(finalAmount).toLocaleString('en-US')} {egp}</b>{done.employee_name ? ` — ${done.employee_name}` : ''}.</p>
       {method === 'instapay' && done.payout_details
-        ? <div className="bg-[#FAFAF7] rounded-2xl p-4 text-sm border border-[#1F6F5F]/15">
+        ? <div className="bg-[#FAFAF7] rounded-2xl p-4 text-sm border border-[#2B4521]/15">
             <p className="text-[11px] font-bold text-[#6B7280] mb-2">{t('visit.transfer_to')}</p>
             <div className="space-y-1.5">
               <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">{t('visit.bank')}</span><span className="font-bold text-[#1A2E26]">{t('visit.bank_misr')}</span></div>
               <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">{t('visit.account_name')}</span><span className="font-bold text-[#1A2E26]">{t('visit.md_brand')}</span></div>
-              <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">{t('visit.account_or_instapay')}</span><span className="font-mono font-black text-[#1F6F5F] select-all" dir="ltr">{done.payout_details}</span></div>
+              <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">{t('visit.account_or_instapay')}</span><span className="font-mono font-black text-[#2B4521] select-all" dir="ltr">{done.payout_details}</span></div>
             </div>
           </div>
         : <p className="text-[12px] text-[#6B7280]">{t('visit.tip_cash_note')}</p>}
@@ -390,17 +390,17 @@ function TipFlow({ branchCode, stylists, onBack }: any) {
       <p className="text-xs font-bold text-[#1A2E26] mb-2">{t('visit.amount')}</p>
       <div className="grid grid-cols-4 gap-2 mb-2">
         {chips.map((c) => (
-          <button key={c} onClick={() => { setAmount(c); setCustom('') }} className={`py-2.5 rounded-xl font-black text-sm border transition-all ${amount === c ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' : 'bg-white text-[#1A2E26] border-gray-200'}`}>{c}</button>
+          <button key={c} onClick={() => { setAmount(c); setCustom('') }} className={`py-2.5 rounded-xl font-black text-sm border transition-all ${amount === c ? 'bg-[#2B4521] text-white border-[#2B4521]' : 'bg-white text-[#1A2E26] border-gray-200'}`}>{c}</button>
         ))}
       </div>
-      <input value={custom} onChange={(e) => { setCustom(e.target.value.replace(/[^0-9]/g, '')); setAmount(null) }} inputMode="numeric" placeholder={t('visit.custom_amount_ph')} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm mb-4 focus:border-[#1F6F5F] outline-none" />
+      <input value={custom} onChange={(e) => { setCustom(e.target.value.replace(/[^0-9]/g, '')); setAmount(null) }} inputMode="numeric" placeholder={t('visit.custom_amount_ph')} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm mb-4 focus:border-[#2B4521] outline-none" />
       <p className="text-xs font-bold text-[#1A2E26] mb-2">{t('visit.payment_method')}</p>
       <div className="grid grid-cols-2 gap-2 mb-4">
-        <button onClick={() => setMethod('instapay')} className={`py-2.5 rounded-xl font-bold text-sm border ${method === 'instapay' ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' : 'bg-white text-[#1A2E26] border-gray-200'}`}>{t('visit.instapay')}</button>
-        <button onClick={() => setMethod('cash')} className={`py-2.5 rounded-xl font-bold text-sm border ${method === 'cash' ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' : 'bg-white text-[#1A2E26] border-gray-200'}`}>{t('visit.cash')}</button>
+        <button onClick={() => setMethod('instapay')} className={`py-2.5 rounded-xl font-bold text-sm border ${method === 'instapay' ? 'bg-[#2B4521] text-white border-[#2B4521]' : 'bg-white text-[#1A2E26] border-gray-200'}`}>{t('visit.instapay')}</button>
+        <button onClick={() => setMethod('cash')} className={`py-2.5 rounded-xl font-bold text-sm border ${method === 'cash' ? 'bg-[#2B4521] text-white border-[#2B4521]' : 'bg-white text-[#1A2E26] border-gray-200'}`}>{t('visit.cash')}</button>
       </div>
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('visit.your_name_opt')} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm mb-4 focus:border-[#1F6F5F] outline-none" />
-      <button onClick={submit} disabled={busy || !finalAmount} className="w-full py-3.5 rounded-2xl bg-[#1F6F5F] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-40 shadow-lg shadow-[#1F6F5F]/20 active:scale-[0.99] transition-all">
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('visit.your_name_opt')} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm mb-4 focus:border-[#2B4521] outline-none" />
+      <button onClick={submit} disabled={busy || !finalAmount} className="w-full py-3.5 rounded-2xl bg-[#2B4521] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-40 shadow-lg shadow-[#2B4521]/20 active:scale-[0.99] transition-all">
         {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Gift className="w-4 h-4" />} {t('visit.pay_tip')} {finalAmount ? `· ${Number(finalAmount).toLocaleString('en-US')} ${egp}` : ''}
       </button>
     </Sheet>
@@ -444,12 +444,12 @@ function RateFlow({ branchCode, stylists, onBack }: any) {
       <p className="text-xs font-bold text-[#1A2E26] mb-2">{t('visit.your_rating')}</p>
       <div className="flex items-center justify-center gap-2 mb-5">
         {[1, 2, 3, 4, 5].map((n) => (
-          <button key={n} onClick={() => setRating(n)}><Star className={`w-9 h-9 transition-all ${n <= rating ? 'fill-[#1F6F5F] text-[#1F6F5F] scale-110' : 'text-gray-300'}`} /></button>
+          <button key={n} onClick={() => setRating(n)}><Star className={`w-9 h-9 transition-all ${n <= rating ? 'fill-[#2B4521] text-[#2B4521] scale-110' : 'text-gray-300'}`} /></button>
         ))}
       </div>
-      <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={3} placeholder={t('visit.comment_ph')} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm mb-3 focus:border-[#1F6F5F] outline-none resize-none" />
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('visit.your_name_opt')} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm mb-4 focus:border-[#1F6F5F] outline-none" />
-      <button onClick={submit} disabled={busy || rating < 1} className="w-full py-3.5 rounded-2xl bg-[#1F6F5F] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-40 shadow-lg shadow-[#1F6F5F]/20 active:scale-[0.99] transition-all">
+      <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={3} placeholder={t('visit.comment_ph')} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm mb-3 focus:border-[#2B4521] outline-none resize-none" />
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('visit.your_name_opt')} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm mb-4 focus:border-[#2B4521] outline-none" />
+      <button onClick={submit} disabled={busy || rating < 1} className="w-full py-3.5 rounded-2xl bg-[#2B4521] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-40 shadow-lg shadow-[#2B4521]/20 active:scale-[0.99] transition-all">
         {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} {t('visit.send_review')}
       </button>
     </Sheet>
@@ -465,17 +465,17 @@ function Products({ products, onBack, branch }: any) {
         {products.map((p: any) => (
           <div key={p.id} className="flex items-center justify-between bg-[#FAFAF7] rounded-xl px-3.5 py-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center"><ShoppingBag className="w-4 h-4" /></div>
+              <div className="w-9 h-9 rounded-lg bg-[#2B4521]/10 text-[#2B4521] grid place-items-center"><ShoppingBag className="w-4 h-4" /></div>
               <div>
                 <p className="font-bold text-sm text-[#1A2E26]">{lang === 'en' && p.name_en ? p.name_en : p.name_ar}</p>
                 {p.unit && <p className="text-[10px] text-[#6B7280]">{p.unit}</p>}
               </div>
             </div>
-            <p className="font-mono font-black text-[#1F6F5F] text-sm">{Number(p.selling_price_egp || 0).toLocaleString('en-US')} {t('visit.egp')}</p>
+            <p className="font-mono font-black text-[#2B4521] text-sm">{Number(p.selling_price_egp || 0).toLocaleString('en-US')} {t('visit.egp')}</p>
           </div>
         ))}
       </div>
-      <a href={`https://wa.me/${WA}?text=${encodeURIComponent('عايزة أطلب منتج من ' + branch)}`} className="w-full py-3.5 rounded-2xl bg-[#1F6F5F] text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#1F6F5F]/20">
+      <a href={`https://wa.me/${WA}?text=${encodeURIComponent('عايزة أطلب منتج من ' + branch)}`} className="w-full py-3.5 rounded-2xl bg-[#2B4521] text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#2B4521]/20">
         <MessageCircle className="w-4 h-4" /> {t('visit.order_whatsapp')}
       </a>
     </Sheet>
@@ -504,7 +504,7 @@ function SuccessCard({ icon: Icon, title, children, onBack }: any) {
   const { t } = useT()
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-7 text-center shadow-[0_8px_24px_-14px_rgba(26,46,38,0.25)]">
-      <div className="w-16 h-16 rounded-2xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center mx-auto mb-4"><Icon className="w-8 h-8" /></div>
+      <div className="w-16 h-16 rounded-2xl bg-[#2B4521]/10 text-[#2B4521] grid place-items-center mx-auto mb-4"><Icon className="w-8 h-8" /></div>
       <h2 className="text-xl font-black text-[#1A2E26] mb-2">{title}</h2>
       <div className="mb-5">{children}</div>
       <button onClick={onBack} className="w-full py-3 rounded-xl bg-[#FAFAF7] text-[#1A2E26] font-bold text-sm">{t('visit.back')}</button>
@@ -514,6 +514,6 @@ function SuccessCard({ icon: Icon, title, children, onBack }: any) {
 
 function Chip({ active, onClick, children }: any) {
   return (
-    <button onClick={onClick} className={`px-3 py-1.5 rounded-full text-[12px] font-bold border transition-all ${active ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' : 'bg-white text-[#1A2E26] border-gray-200'}`}>{children}</button>
+    <button onClick={onClick} className={`px-3 py-1.5 rounded-full text-[12px] font-bold border transition-all ${active ? 'bg-[#2B4521] text-white border-[#2B4521]' : 'bg-white text-[#1A2E26] border-gray-200'}`}>{children}</button>
   )
 }

@@ -10,13 +10,13 @@ export const revalidate = 0
 
 // ── Locked brand palette — 5 colors ONLY (no gold/amber/orange/red/blue) ──
 const C = {
-  green: '#1F6F5F',
+  green: '#2B4521',
   cream: '#FAFAF7',
   ink: '#1A2E26',
   gray: '#6B7280',
   white: '#FFFFFF',
 }
-const BORDER = '1px solid rgba(31,111,95,0.12)'
+const BORDER = '1px solid rgba(43, 69, 33,0.12)'
 
 type Agent = {
   agent_name: string; team: string; display_name: string; enabled: boolean

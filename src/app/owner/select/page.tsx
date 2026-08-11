@@ -39,12 +39,12 @@ export default function OwnerSelectPage() {
     router.push('/owner/login')
   }
 
-  if (loading) return <div className="min-h-screen bg-[#1F6F5F] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#2B4521] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
 
   const ROLE_LABELS: Record<string, string> = { owner: 'المالك', manager: 'مدير', accountant: 'محاسب', viewer: 'مشاهدة' }
 
   return (
-    <div className="min-h-screen bg-[#1F6F5F] flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-[#2B4521] flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-black text-white">اختار الشركة</h1>
@@ -57,7 +57,7 @@ export default function OwnerSelectPage() {
               onClick={() => router.push(`/owner/${a.supplier_id}`)}
               className="w-full bg-white rounded-2xl p-4 flex items-center gap-3 hover:shadow-xl transition-shadow text-right"
             >
-              <div className="w-11 h-11 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center"><Building2 className="w-5 h-5" /></div>
+              <div className="w-11 h-11 rounded-xl bg-[#2B4521]/10 text-[#2B4521] grid place-items-center"><Building2 className="w-5 h-5" /></div>
               <div className="flex-1">
                 <p className="text-sm font-black text-[#1A2E26]">{a.business_name}</p>
                 <p className="text-[10px] text-[#6B7280]">{ROLE_LABELS[a.role] || a.role}</p>

@@ -13,7 +13,7 @@ const fdate = (d: string | null) => d ? new Date(d).toLocaleDateString('ar-EG', 
 const TYPES = [
   { value: 'maintenance', label: 'صيانة',  color: 'bg-amber-50 text-amber-700' },
   { value: 'fuel',        label: 'سولار',  color: 'bg-blue-50 text-blue-700' },
-  { value: 'operation',   label: 'تشغيل',  color: 'bg-[#1F6F5F]/10 text-[#1F6F5F]' },
+  { value: 'operation',   label: 'تشغيل',  color: 'bg-[#2B4521]/10 text-[#2B4521]' },
 ]
 const tm = (t: string) => TYPES.find((x) => x.value === t) || TYPES[0]
 const emptyForm = { id: null as string | null, equipment_id: '', log_type: 'maintenance', log_date: '', cost: '', hours: '', liters: '', description: '', notes: '' }
@@ -71,20 +71,20 @@ export default function EquipmentLogsPage({ params }: { params: { supplierId: st
     load()
   }
 
-  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div>
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2"><ChevronLeft className="w-3.5 h-3.5" /> رجوع</Link>
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2"><ChevronLeft className="w-3.5 h-3.5" /> رجوع</Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">مقاولات · صيانة المعدات</p>
-              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2"><Fuel className="w-7 h-7 text-[#1F6F5F]" /> صيانة وسولار المعدات</h1>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">مقاولات · صيانة المعدات</p>
+              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2"><Fuel className="w-7 h-7 text-[#2B4521]" /> صيانة وسولار المعدات</h1>
             </div>
             <div className="flex gap-2 flex-wrap items-center">
-              <button onClick={openAdd} disabled={equipment.length === 0} className="px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold flex items-center gap-2 disabled:opacity-50"><Plus className="w-4 h-4" /> سجل</button>
+              <button onClick={openAdd} disabled={equipment.length === 0} className="px-4 py-2 rounded-xl bg-[#2B4521] text-white text-sm font-bold flex items-center gap-2 disabled:opacity-50"><Plus className="w-4 h-4" /> سجل</button>
               <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7] text-[#1A2E26]"><RefreshCw className="w-4 h-4" /></button>
             </div>
           </div>
@@ -148,11 +148,11 @@ export default function EquipmentLogsPage({ params }: { params: { supplierId: st
   )
 }
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F] bg-white'
+const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:outline-none focus:border-[#2B4521] bg-white'
 function Field({ label, children }: { label: string; children: ReactNode }) { return <div><label className="block text-[11px] font-bold text-[#6B7280] mb-1">{label}</label>{children}</div> }
 function Th({ children, className = '' }: { children?: ReactNode; className?: string }) { return <th className={`px-3 py-2.5 text-[10px] font-bold tracking-wider uppercase text-[#6B7280] ${className}`}>{children}</th> }
 function Stat({ label, value, primary }: { label: string; value: string; primary?: boolean }) {
-  return <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'}`}><p className={`text-[10px] font-bold tracking-wider uppercase ${primary ? 'text-white/80' : 'text-[#6B7280]'}`}>{label}</p><p className={`text-lg md:text-2xl font-black mt-1 ${primary ? 'text-white' : 'text-[#1A2E26]'}`}>{value}</p></div>
+  return <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#2B4521] border-[#2B4521] text-white' : 'bg-white border-gray-100'}`}><p className={`text-[10px] font-bold tracking-wider uppercase ${primary ? 'text-white/80' : 'text-[#6B7280]'}`}>{label}</p><p className={`text-lg md:text-2xl font-black mt-1 ${primary ? 'text-white' : 'text-[#1A2E26]'}`}>{value}</p></div>
 }
 function Modal({ title, children, onClose, onSave, saving, saveLabel }: { title: string; children: ReactNode; onClose: () => void; onSave: () => void; saving: boolean; saveLabel: string }) {
   return (
@@ -161,7 +161,7 @@ function Modal({ title, children, onClose, onSave, saving, saveLabel }: { title:
         <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between"><h2 className="text-lg font-black text-[#1A2E26]">{title}</h2><button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-5 h-5 text-[#6B7280]" /></button></div>
         <div className="p-5 space-y-4">{children}</div>
         <div className="sticky bottom-0 bg-white border-t border-gray-100 px-5 py-4 flex gap-2">
-          <button onClick={onSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-[#1F6F5F] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-60">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null} {saveLabel}</button>
+          <button onClick={onSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-[#2B4521] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-60">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null} {saveLabel}</button>
           <button onClick={onClose} className="px-5 py-3 rounded-xl bg-[#FAFAF7] text-[#1A2E26] font-bold text-sm">إلغاء</button>
         </div>
       </div>

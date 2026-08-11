@@ -241,7 +241,7 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
     return data
   }
 
-  if (loading) return <div className="min-h-screen bg-[#1F6F5F] flex items-center justify-center"><Loader2 className="w-9 h-9 text-white animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#2B4521] flex items-center justify-center"><Loader2 className="w-9 h-9 text-white animate-spin" /></div>
 
   if (!branch) return (
     <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
@@ -255,7 +255,7 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
   return (
     <div className="min-h-screen bg-[#FAFAF7] flex flex-col" dir="rtl">
       {/* header */}
-      <header className="bg-[#1F6F5F] text-white">
+      <header className="bg-[#2B4521] text-white">
         <div className="max-w-sm mx-auto px-5 pt-7 pb-8 text-center">
           <p className="text-[10px] font-bold tracking-[0.4em] uppercase text-white/55 mb-2">MADMONA · حضور الموظفين</p>
           {logo
@@ -271,7 +271,7 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
         ) : selfView ? (
           <SelfViewCard view={selfView} onToggle={toggleTask} onClose={closeSelf} liveBanner={liveBanner} onSubmitLeave={submitLeave} onSubmitAdvance={submitAdvance} />
         ) : (
-          <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-[0_10px_40px_-12px_rgba(31,111,95,0.25)]">
+          <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-[0_10px_40px_-12px_rgba(43, 69, 33,0.25)]">
             <p className="text-center text-sm font-bold text-[#1A2E26] mb-1">سجّل دخولك أو خروجك</p>
             <p className="text-center text-[12px] text-[#6B7280] mb-4">اكتب كود الـ PIN بتاعك أو رقم موبايلك</p>
 
@@ -279,7 +279,7 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
             <div className="flex items-center justify-center gap-2 h-14 mb-2" dir="ltr">
               {pin.length === 0
                 ? <span className="text-[#6B7280] text-sm">— — — —</span>
-                : pin.split('').map((_, i) => <span key={i} className="w-3.5 h-3.5 rounded-full bg-[#1F6F5F]" />)}
+                : pin.split('').map((_, i) => <span key={i} className="w-3.5 h-3.5 rounded-full bg-[#2B4521]" />)}
             </div>
 
             {err && (
@@ -293,24 +293,24 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
             <div className="grid grid-cols-3 gap-2.5">
               {['1','2','3','4','5','6','7','8','9'].map(d => (
                 <button key={d} onClick={() => press(d)} disabled={busy}
-                  className="h-14 rounded-2xl bg-[#FAFAF7] text-2xl font-black text-[#1A2E26] active:bg-[#1F6F5F]/10 active:scale-95 transition-all disabled:opacity-50">{d}</button>
+                  className="h-14 rounded-2xl bg-[#FAFAF7] text-2xl font-black text-[#1A2E26] active:bg-[#2B4521]/10 active:scale-95 transition-all disabled:opacity-50">{d}</button>
               ))}
               <button onClick={back} disabled={busy} className="h-14 rounded-2xl bg-[#FAFAF7] grid place-items-center text-[#6B7280] active:scale-95 transition-all disabled:opacity-50"><Delete className="w-6 h-6" /></button>
-              <button onClick={() => press('0')} disabled={busy} className="h-14 rounded-2xl bg-[#FAFAF7] text-2xl font-black text-[#1A2E26] active:bg-[#1F6F5F]/10 active:scale-95 transition-all disabled:opacity-50">0</button>
+              <button onClick={() => press('0')} disabled={busy} className="h-14 rounded-2xl bg-[#FAFAF7] text-2xl font-black text-[#1A2E26] active:bg-[#2B4521]/10 active:scale-95 transition-all disabled:opacity-50">0</button>
               <button onClick={submit} disabled={busy || pin.length < 3}
-                className="h-14 rounded-2xl bg-[#1F6F5F] text-white grid place-items-center active:scale-95 transition-all disabled:opacity-40 shadow-lg shadow-[#1F6F5F]/25">
+                className="h-14 rounded-2xl bg-[#2B4521] text-white grid place-items-center active:scale-95 transition-all disabled:opacity-40 shadow-lg shadow-[#2B4521]/25">
                 {busy ? <Loader2 className="w-6 h-6 animate-spin" /> : <LogIn className="w-6 h-6" />}
               </button>
             </div>
 
             <div className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-[#6B7280]">
-              <MapPin className="w-3.5 h-3.5 text-[#1F6F5F]" />
+              <MapPin className="w-3.5 h-3.5 text-[#2B4521]" />
               {phase === 'locating' ? 'بنتأكد إنك في الفرع...' : phase === 'sending' ? 'جاري التسجيل...' : (branch?.attendance_mode === 'geo_auto' ? 'الخروج بيتسجّل أوتوماتيك لما تسيب الفرع' : 'بنتحقق من موقعك وقت التسجيل')}
             </div>
 
             {/* secondary: view my tasks + status (no clocking) */}
             <button onClick={loadSelf} disabled={selfBusy || pin.length < 3}
-              className="mt-4 w-full h-12 rounded-2xl border border-[#1F6F5F]/25 bg-white text-[#1F6F5F] font-bold text-[13px] flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-40">
+              className="mt-4 w-full h-12 rounded-2xl border border-[#2B4521]/25 bg-white text-[#2B4521] font-bold text-[13px] flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-40">
               {selfBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <ClipboardList className="w-4 h-4" />}
               تاسكاتي وحالتي
             </button>
@@ -328,11 +328,11 @@ function ResultCard({ result, onDone }: any) {
   const t = result.timestamp ? new Date(result.timestamp).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : ''
   const emp = result.employee || {}
   return (
-    <div className="bg-white rounded-3xl border border-gray-100 p-7 text-center shadow-[0_10px_40px_-12px_rgba(31,111,95,0.25)]">
-      <div className={`w-20 h-20 rounded-2xl grid place-items-center mx-auto mb-4 ${isIn ? 'bg-[#1F6F5F]' : 'bg-[#1A2E26]'} text-white`}>
+    <div className="bg-white rounded-3xl border border-gray-100 p-7 text-center shadow-[0_10px_40px_-12px_rgba(43, 69, 33,0.25)]">
+      <div className={`w-20 h-20 rounded-2xl grid place-items-center mx-auto mb-4 ${isIn ? 'bg-[#2B4521]' : 'bg-[#1A2E26]'} text-white`}>
         {isIn ? <LogIn className="w-10 h-10" /> : <LogOut className="w-10 h-10" />}
       </div>
-      <p className="text-[13px] font-bold text-[#1F6F5F] mb-1">{isIn ? 'تم تسجيل الحضور ✅' : (result.auto ? 'تم تسجيل خروجك تلقائياً 👋' : 'تم تسجيل الانصراف 👋')}</p>
+      <p className="text-[13px] font-bold text-[#2B4521] mb-1">{isIn ? 'تم تسجيل الحضور ✅' : (result.auto ? 'تم تسجيل خروجك تلقائياً 👋' : 'تم تسجيل الانصراف 👋')}</p>
       {!isIn && result.auto && <p className="text-[11px] text-[#6B7280] mb-1">{result.reason === 'left_location' ? 'السبب: خرجت من مكان الفرع' : 'السبب: انقطع الاتصال'}</p>}
       <h2 className="text-2xl font-black text-[#1A2E26]">{emp.full_name || ''}</h2>
       {emp.role_ar && <p className="text-[12px] text-[#6B7280] mt-0.5">{emp.role_ar}</p>}
@@ -345,18 +345,18 @@ function ResultCard({ result, onDone }: any) {
         {!isIn && result.hours_worked != null && (
           <div className="flex items-center justify-between border-t border-gray-200 pt-2">
             <span className="text-[12px] text-[#6B7280]">ساعات الشغل النهارده</span>
-            <span className="font-mono font-black text-[#1F6F5F]" dir="ltr">{result.hours_worked} س</span>
+            <span className="font-mono font-black text-[#2B4521]" dir="ltr">{result.hours_worked} س</span>
           </div>
         )}
         {result.distance_m != null && (
           <div className="flex items-center justify-between border-t border-gray-200 pt-2">
-            <span className="text-[12px] text-[#6B7280] flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#1F6F5F]" /> الموقع متأكد</span>
+            <span className="text-[12px] text-[#6B7280] flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#2B4521]" /> الموقع متأكد</span>
             <span className="font-mono text-[12px] text-[#6B7280]" dir="ltr">{result.distance_m} م</span>
           </div>
         )}
       </div>
 
-      <button onClick={onDone} className="w-full mt-5 py-3.5 rounded-2xl bg-[#1F6F5F] text-white font-black text-sm shadow-lg shadow-[#1F6F5F]/20">تمام</button>
+      <button onClick={onDone} className="w-full mt-5 py-3.5 rounded-2xl bg-[#2B4521] text-white font-black text-sm shadow-lg shadow-[#2B4521]/20">تمام</button>
     </div>
   )
 }
@@ -419,10 +419,10 @@ function SelfViewCard({ view, onToggle, onClose, liveBanner, onSubmitLeave, onSu
     )
   } else if (att.present) {
     statusBox = (
-      <div className="rounded-2xl bg-[#1F6F5F]/8 border border-[#1F6F5F]/15 p-4 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-[#1F6F5F] grid place-items-center"><LogIn className="w-5 h-5 text-white" /></div>
+      <div className="rounded-2xl bg-[#2B4521]/8 border border-[#2B4521]/15 p-4 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-[#2B4521] grid place-items-center"><LogIn className="w-5 h-5 text-white" /></div>
         <div>
-          <p className="text-[13px] font-black text-[#1F6F5F]">🟢 إنت داخل دلوقتي</p>
+          <p className="text-[13px] font-black text-[#2B4521]">🟢 إنت داخل دلوقتي</p>
           <p className="text-[11px] text-[#6B7280]">من الساعة {fmtTime(att.clock_in_at)}{att.sessions > 1 ? ` · ${att.sessions} فترات` : ''}</p>
         </div>
       </div>
@@ -440,13 +440,13 @@ function SelfViewCard({ view, onToggle, onClose, liveBanner, onSubmitLeave, onSu
   }
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-[0_10px_40px_-12px_rgba(31,111,95,0.25)]">
+    <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-[0_10px_40px_-12px_rgba(43, 69, 33,0.25)]">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-lg font-black text-[#1A2E26]">{emp.full_name || ''}</h2>
           {emp.role_ar && <p className="text-[12px] text-[#6B7280]">{emp.role_ar}</p>}
         </div>
-        <button onClick={onClose} className="text-[12px] font-bold text-[#1F6F5F] flex items-center gap-1 active:scale-95"><ArrowRight className="w-4 h-4" /> رجوع</button>
+        <button onClick={onClose} className="text-[12px] font-bold text-[#2B4521] flex items-center gap-1 active:scale-95"><ArrowRight className="w-4 h-4" /> رجوع</button>
       </div>
 
       {liveBanner && (
@@ -457,7 +457,7 @@ function SelfViewCard({ view, onToggle, onClose, liveBanner, onSubmitLeave, onSu
       )}
 
       {view.justClockedIn && (
-        <div className="mb-3 rounded-2xl bg-[#1F6F5F] text-white p-3 text-center">
+        <div className="mb-3 rounded-2xl bg-[#2B4521] text-white p-3 text-center">
           <p className="text-[13px] font-black">✅ تم تسجيل حضورك — يوم موفّق 🌟</p>
         </div>
       )}
@@ -468,12 +468,12 @@ function SelfViewCard({ view, onToggle, onClose, liveBanner, onSubmitLeave, onSu
       <div className="mt-3 grid grid-cols-2 gap-2">
         <div className="rounded-2xl bg-[#FAFAF7] p-3 text-center">
           <p className="text-[10px] text-[#6B7280] flex items-center justify-center gap-1"><Coins className="w-3.5 h-3.5" /> عمولة الشهر</p>
-          <p className="text-[15px] font-black text-[#1F6F5F] mt-0.5" dir="ltr">{Math.round(view.commission_this_month || 0).toLocaleString('en-US')} ج</p>
+          <p className="text-[15px] font-black text-[#2B4521] mt-0.5" dir="ltr">{Math.round(view.commission_this_month || 0).toLocaleString('en-US')} ج</p>
           {view.commission_unpaid > 0 && <p className="text-[9px] text-[#6B7280] mt-0.5">منها {Math.round(view.commission_unpaid).toLocaleString('en-US')} لسه متدفعتش</p>}
         </div>
         <div className="rounded-2xl bg-[#FAFAF7] p-3 text-center">
           <p className="text-[10px] text-[#6B7280] flex items-center justify-center gap-1"><Gift className="w-3.5 h-3.5" /> إكراميات الشهر</p>
-          <p className="text-[15px] font-black text-[#1F6F5F] mt-0.5" dir="ltr">{Math.round((view.tips?.month_total) || 0).toLocaleString('en-US')} ج</p>
+          <p className="text-[15px] font-black text-[#2B4521] mt-0.5" dir="ltr">{Math.round((view.tips?.month_total) || 0).toLocaleString('en-US')} ج</p>
           {(view.tips?.pending_count || 0) > 0 && <p className="text-[9px] text-[#6B7280] mt-0.5">{view.tips.pending_count} في الانتظار</p>}
         </div>
       </div>
@@ -481,11 +481,11 @@ function SelfViewCard({ view, onToggle, onClose, liveBanner, onSubmitLeave, onSu
       {/* today's appointments assigned to this employee */}
       {Array.isArray(view.today) && view.today.length > 0 && (
         <div className="mt-5">
-          <p className="text-[13px] font-black text-[#1A2E26] flex items-center gap-1.5 mb-3"><Calendar className="w-4 h-4 text-[#1F6F5F]" /> مواعيدك النهاردة</p>
+          <p className="text-[13px] font-black text-[#1A2E26] flex items-center gap-1.5 mb-3"><Calendar className="w-4 h-4 text-[#2B4521]" /> مواعيدك النهاردة</p>
           <div className="space-y-2">
             {view.today.map((b: any) => (
               <div key={b.booking_id} className="rounded-2xl border border-gray-200 p-3 flex items-center gap-3">
-                <span className="font-mono font-black text-[#1F6F5F] text-[13px]" dir="ltr">{b.time}</span>
+                <span className="font-mono font-black text-[#2B4521] text-[13px]" dir="ltr">{b.time}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-bold text-[#1A2E26] truncate">{b.customer || 'عميل'}</p>
                   <p className="text-[11px] text-[#6B7280] truncate">{b.service}</p>
@@ -498,7 +498,7 @@ function SelfViewCard({ view, onToggle, onClose, liveBanner, onSubmitLeave, onSu
       )}
 
       <div className="mt-5 flex items-center justify-between">
-        <p className="text-[13px] font-black text-[#1A2E26] flex items-center gap-1.5"><ClipboardList className="w-4 h-4 text-[#1F6F5F]" /> تاسكات النهاردة</p>
+        <p className="text-[13px] font-black text-[#1A2E26] flex items-center gap-1.5"><ClipboardList className="w-4 h-4 text-[#2B4521]" /> تاسكات النهاردة</p>
         <span className="text-[11px] text-[#6B7280] font-bold">{done}/{tasks.length} خلصت</span>
       </div>
 
@@ -513,7 +513,7 @@ function SelfViewCard({ view, onToggle, onClose, liveBanner, onSubmitLeave, onSu
             <button key={t.id} onClick={() => onToggle(t.id, t.status)}
               className={`w-full text-right rounded-2xl border p-3 flex items-start gap-3 transition-all active:scale-[0.99] ${isDone ? 'bg-[#FAFAF7] border-gray-100' : 'bg-white border-gray-200'}`}>
               {isDone
-                ? <CheckCircle2 className="w-5 h-5 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
+                ? <CheckCircle2 className="w-5 h-5 text-[#2B4521] flex-shrink-0 mt-0.5" />
                 : <Circle className="w-5 h-5 text-[#6B7280] flex-shrink-0 mt-0.5" />}
               <div className="flex-1 min-w-0">
                 <p className={`text-[13px] font-bold leading-snug ${isDone ? 'text-[#6B7280] line-through' : 'text-[#1A2E26]'}`}>{t.title}</p>
@@ -529,35 +529,35 @@ function SelfViewCard({ view, onToggle, onClose, liveBanner, onSubmitLeave, onSu
 
       {/* ===== leave + advance self-service requests ===== */}
       <div className="mt-6 border-t border-gray-100 pt-4">
-        <p className="text-[13px] font-black text-[#1A2E26] flex items-center gap-1.5 mb-3"><Send className="w-4 h-4 text-[#1F6F5F]" /> طلباتي</p>
+        <p className="text-[13px] font-black text-[#1A2E26] flex items-center gap-1.5 mb-3"><Send className="w-4 h-4 text-[#2B4521]" /> طلباتي</p>
 
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div className="rounded-2xl bg-[#FAFAF7] p-3 text-center">
             <p className="text-[10px] text-[#6B7280]">رصيد الإجازة السنوية</p>
-            <p className="text-[15px] font-black text-[#1F6F5F] mt-0.5" dir="ltr">{Math.max(0, (bal.annual_total || 0) - (bal.annual_used || 0))}<span className="text-[10px] text-[#6B7280]"> / {bal.annual_total || 0}</span></p>
+            <p className="text-[15px] font-black text-[#2B4521] mt-0.5" dir="ltr">{Math.max(0, (bal.annual_total || 0) - (bal.annual_used || 0))}<span className="text-[10px] text-[#6B7280]"> / {bal.annual_total || 0}</span></p>
           </div>
           <div className="rounded-2xl bg-[#FAFAF7] p-3 text-center">
             <p className="text-[10px] text-[#6B7280]">رصيد العارضة</p>
-            <p className="text-[15px] font-black text-[#1F6F5F] mt-0.5" dir="ltr">{Math.max(0, (bal.casual_total || 0) - (bal.casual_used || 0))}<span className="text-[10px] text-[#6B7280]"> / {bal.casual_total || 0}</span></p>
+            <p className="text-[15px] font-black text-[#2B4521] mt-0.5" dir="ltr">{Math.max(0, (bal.casual_total || 0) - (bal.casual_used || 0))}<span className="text-[10px] text-[#6B7280]"> / {bal.casual_total || 0}</span></p>
           </div>
         </div>
 
         {!form && (
           <div className="grid grid-cols-2 gap-2">
-            <button onClick={() => { setForm('leave'); setReqMsg(null) }} className="h-12 rounded-2xl bg-[#1F6F5F]/10 text-[#1F6F5F] font-bold text-[13px] flex items-center justify-center gap-2 active:scale-95 transition-all"><CalendarDays className="w-4 h-4" /> اطلب إجازة</button>
-            <button onClick={() => { setForm('advance'); setReqMsg(null) }} className="h-12 rounded-2xl bg-[#1F6F5F]/10 text-[#1F6F5F] font-bold text-[13px] flex items-center justify-center gap-2 active:scale-95 transition-all"><Wallet className="w-4 h-4" /> اطلب سلفة</button>
+            <button onClick={() => { setForm('leave'); setReqMsg(null) }} className="h-12 rounded-2xl bg-[#2B4521]/10 text-[#2B4521] font-bold text-[13px] flex items-center justify-center gap-2 active:scale-95 transition-all"><CalendarDays className="w-4 h-4" /> اطلب إجازة</button>
+            <button onClick={() => { setForm('advance'); setReqMsg(null) }} className="h-12 rounded-2xl bg-[#2B4521]/10 text-[#2B4521] font-bold text-[13px] flex items-center justify-center gap-2 active:scale-95 transition-all"><Wallet className="w-4 h-4" /> اطلب سلفة</button>
           </div>
         )}
 
         {form === 'leave' && (
-          <div className="rounded-2xl border border-[#1F6F5F]/20 p-3 space-y-2.5">
+          <div className="rounded-2xl border border-[#2B4521]/20 p-3 space-y-2.5">
             <div className="flex items-center justify-between">
               <p className="text-[13px] font-black text-[#1A2E26]">طلب إجازة</p>
               <button onClick={() => setForm(null)} className="text-[#6B7280] active:scale-90"><X className="w-4 h-4" /></button>
             </div>
             <div className="grid grid-cols-3 gap-1.5">
               {[['annual', 'سنوية'], ['casual', 'عارضة'], ['sick', 'مرضية']].map(([v, l]) => (
-                <button key={v} onClick={() => setLvType(v)} className={`h-9 rounded-xl text-[12px] font-bold transition-all ${lvType === v ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#6B7280]'}`}>{l}</button>
+                <button key={v} onClick={() => setLvType(v)} className={`h-9 rounded-xl text-[12px] font-bold transition-all ${lvType === v ? 'bg-[#2B4521] text-white' : 'bg-[#FAFAF7] text-[#6B7280]'}`}>{l}</button>
               ))}
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -565,12 +565,12 @@ function SelfViewCard({ view, onToggle, onClose, liveBanner, onSubmitLeave, onSu
               <label className="text-[11px] text-[#6B7280]">لـ<input type="date" value={lvEnd} min={lvStart || today} onChange={(e) => setLvEnd(e.target.value)} className="w-full mt-1 h-10 rounded-xl border border-gray-200 px-2 text-[13px]" dir="ltr" /></label>
             </div>
             <input value={lvReason} onChange={(e) => setLvReason(e.target.value)} placeholder="السبب (اختياري)" className="w-full h-10 rounded-xl border border-gray-200 px-3 text-[13px]" />
-            <button onClick={doLeave} disabled={reqBusy} className="w-full h-11 rounded-2xl bg-[#1F6F5F] text-white font-black text-[13px] flex items-center justify-center gap-2 disabled:opacity-50">{reqBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} ابعت الطلب</button>
+            <button onClick={doLeave} disabled={reqBusy} className="w-full h-11 rounded-2xl bg-[#2B4521] text-white font-black text-[13px] flex items-center justify-center gap-2 disabled:opacity-50">{reqBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} ابعت الطلب</button>
           </div>
         )}
 
         {form === 'advance' && (
-          <div className="rounded-2xl border border-[#1F6F5F]/20 p-3 space-y-2.5">
+          <div className="rounded-2xl border border-[#2B4521]/20 p-3 space-y-2.5">
             <div className="flex items-center justify-between">
               <p className="text-[13px] font-black text-[#1A2E26]">طلب سلفة</p>
               <button onClick={() => setForm(null)} className="text-[#6B7280] active:scale-90"><X className="w-4 h-4" /></button>
@@ -580,25 +580,25 @@ function SelfViewCard({ view, onToggle, onClose, liveBanner, onSubmitLeave, onSu
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] text-[#6B7280]">ج</span>
             </div>
             <input value={advReason} onChange={(e) => setAdvReason(e.target.value)} placeholder="السبب (اختياري)" className="w-full h-10 rounded-xl border border-gray-200 px-3 text-[13px]" />
-            <button onClick={doAdvance} disabled={reqBusy} className="w-full h-11 rounded-2xl bg-[#1F6F5F] text-white font-black text-[13px] flex items-center justify-center gap-2 disabled:opacity-50">{reqBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} ابعت الطلب</button>
+            <button onClick={doAdvance} disabled={reqBusy} className="w-full h-11 rounded-2xl bg-[#2B4521] text-white font-black text-[13px] flex items-center justify-center gap-2 disabled:opacity-50">{reqBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} ابعت الطلب</button>
           </div>
         )}
 
         {reqMsg && (
-          <p className={`mt-2 text-[12px] font-bold text-center ${reqMsg.ok ? 'text-[#1F6F5F]' : 'text-red-600'}`}>{reqMsg.text}</p>
+          <p className={`mt-2 text-[12px] font-bold text-center ${reqMsg.ok ? 'text-[#2B4521]' : 'text-red-600'}`}>{reqMsg.text}</p>
         )}
 
         {(reqList.leave.length > 0 || reqList.advances.length > 0) && (
           <div className="mt-3 space-y-1.5">
             {reqList.leave.map((r: any) => (
               <div key={r.id} className="flex items-center justify-between rounded-xl bg-[#FAFAF7] px-3 py-2">
-                <span className="text-[12px] text-[#1A2E26] flex items-center gap-1.5"><CalendarDays className="w-3.5 h-3.5 text-[#1F6F5F]" /> إجازة {leaveTypeAr(r.type)} · {r.days} يوم</span>
+                <span className="text-[12px] text-[#1A2E26] flex items-center gap-1.5"><CalendarDays className="w-3.5 h-3.5 text-[#2B4521]" /> إجازة {leaveTypeAr(r.type)} · {r.days} يوم</span>
                 {statusChip(r.status)}
               </div>
             ))}
             {reqList.advances.map((r: any) => (
               <div key={r.id} className="flex items-center justify-between rounded-xl bg-[#FAFAF7] px-3 py-2">
-                <span className="text-[12px] text-[#1A2E26] flex items-center gap-1.5"><Wallet className="w-3.5 h-3.5 text-[#1F6F5F]" /> سلفة {Math.round(r.amount || 0).toLocaleString('en-US')} ج</span>
+                <span className="text-[12px] text-[#1A2E26] flex items-center gap-1.5"><Wallet className="w-3.5 h-3.5 text-[#2B4521]" /> سلفة {Math.round(r.amount || 0).toLocaleString('en-US')} ج</span>
                 {statusChip(r.status)}
               </div>
             ))}

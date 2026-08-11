@@ -180,10 +180,10 @@ export default async function ActivityFeed() {
       <div style={{ maxWidth: 800, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div>
-            <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 24 }}>⚡ النشاط المباشر</h1>
+            <h1 style={{ color: '#2B4521', margin: 0, fontSize: 24 }}>⚡ النشاط المباشر</h1>
             <p style={{ color: '#666', margin: '4px 0 0', fontSize: 13 }}>كل اللي بيحصل في آخر 24 ساعة</p>
           </div>
-          <a href="/admin/agents" style={{ color: '#1F6F5F', fontSize: 13, textDecoration: 'none' }}>← العودة للداشبورد</a>
+          <a href="/admin/agents" style={{ color: '#2B4521', fontSize: 13, textDecoration: 'none' }}>← العودة للداشبورد</a>
         </div>
 
         <meta httpEquiv="refresh" content="30" />
@@ -205,7 +205,7 @@ export default async function ActivityFeed() {
                 <div style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
-                    <strong style={{ color: '#1F6F5F', fontSize: 13 }}>{item.title}</strong>
+                    <strong style={{ color: '#2B4521', fontSize: 13 }}>{item.title}</strong>
                     <span style={{ fontSize: 11, color: '#999' }}>{formatTime(item.timestamp)}</span>
                   </div>
                   <div style={{

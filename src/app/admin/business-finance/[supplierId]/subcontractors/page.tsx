@@ -10,7 +10,7 @@ const num = (v: any) => Number(v) || 0
 const money0 = (n: any) => Number(n || 0).toLocaleString('ar-EG')
 
 const STATUSES = [
-  { value: 'active',     label: 'شغّال',  color: 'bg-[#1F6F5F]/10 text-[#1F6F5F]' },
+  { value: 'active',     label: 'شغّال',  color: 'bg-[#2B4521]/10 text-[#2B4521]' },
   { value: 'completed',  label: 'مكتمل',  color: 'bg-blue-50 text-blue-700' },
   { value: 'terminated', label: 'منتهي',  color: 'bg-gray-100 text-gray-600' },
 ]
@@ -80,24 +80,24 @@ export default function SubcontractorsPage({ params }: { params: { supplierId: s
     loadRows(projectId)
   }
 
-  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div>
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2"><ChevronLeft className="w-3.5 h-3.5" /> رجوع</Link>
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2"><ChevronLeft className="w-3.5 h-3.5" /> رجوع</Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">مقاولات · مقاولي الباطن</p>
-              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2"><HardHat className="w-7 h-7 text-[#1F6F5F]" /> مقاولي الباطن</h1>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">مقاولات · مقاولي الباطن</p>
+              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2"><HardHat className="w-7 h-7 text-[#2B4521]" /> مقاولي الباطن</h1>
             </div>
             <div className="flex gap-2 flex-wrap items-center">
               <select value={projectId} onChange={(e) => setProjectId(e.target.value)} className="text-sm font-bold text-[#1A2E26] bg-white border border-gray-200 rounded-xl px-4 py-2 max-w-[220px]">
                 {projects.length === 0 && <option value="">لا توجد مشاريع</option>}
                 {projects.map((p) => <option key={p.id} value={p.id}>{p.code} · {p.name}</option>)}
               </select>
-              <button onClick={openAdd} disabled={!project} className="px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold flex items-center gap-2 disabled:opacity-50"><Plus className="w-4 h-4" /> مقاول جديد</button>
+              <button onClick={openAdd} disabled={!project} className="px-4 py-2 rounded-xl bg-[#2B4521] text-white text-sm font-bold flex items-center gap-2 disabled:opacity-50"><Plus className="w-4 h-4" /> مقاول جديد</button>
               <button onClick={() => loadRows(projectId)} className="p-2 rounded-xl bg-[#FAFAF7] text-[#1A2E26]"><RefreshCw className="w-4 h-4" /></button>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function SubcontractorsPage({ params }: { params: { supplierId: s
                         <Row label="المدفوع" value={r.paid_to_date} />
                         <Row label="المتبقّي" value={remaining} bold />
                       </div>
-                      <div className="h-2 rounded-full bg-gray-100 overflow-hidden mt-3"><div className="h-full bg-[#1F6F5F] rounded-full" style={{ width: `${pct}%` }} /></div>
+                      <div className="h-2 rounded-full bg-gray-100 overflow-hidden mt-3"><div className="h-full bg-[#2B4521] rounded-full" style={{ width: `${pct}%` }} /></div>
                       <div className="flex items-center gap-2 mt-4">
                         <button onClick={() => openEdit(r)} className="flex-1 px-3 py-2 rounded-xl bg-[#FAFAF7] text-[#1A2E26] text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-gray-100"><Pencil className="w-3.5 h-3.5" /> تعديل / دفعة</button>
                         <button onClick={() => remove(r)} className="p-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100"><Trash2 className="w-3.5 h-3.5" /></button>
@@ -166,14 +166,14 @@ export default function SubcontractorsPage({ params }: { params: { supplierId: s
   )
 }
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F] bg-white'
+const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:outline-none focus:border-[#2B4521] bg-white'
 function Field({ label, children }: { label: string; children: ReactNode }) { return <div><label className="block text-[11px] font-bold text-[#6B7280] mb-1">{label}</label>{children}</div> }
-function Row({ label, value, bold }: { label: string; value: any; bold?: boolean }) { return <div className="flex items-center justify-between"><span className="text-[#6B7280]">{label}</span><span className={`font-mono ${bold ? 'font-black text-[#1F6F5F] text-sm' : 'text-[#1A2E26]'}`}>{money0(value)} ج</span></div> }
+function Row({ label, value, bold }: { label: string; value: any; bold?: boolean }) { return <div className="flex items-center justify-between"><span className="text-[#6B7280]">{label}</span><span className={`font-mono ${bold ? 'font-black text-[#2B4521] text-sm' : 'text-[#1A2E26]'}`}>{money0(value)} ج</span></div> }
 function Stat({ label, value, primary }: { label: string; value: string; primary?: boolean }) {
-  return <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'}`}><p className={`text-[10px] font-bold tracking-wider uppercase ${primary ? 'text-white/80' : 'text-[#6B7280]'}`}>{label}</p><p className={`text-lg md:text-xl font-black mt-1 ${primary ? 'text-white' : 'text-[#1A2E26]'}`}>{value}</p></div>
+  return <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#2B4521] border-[#2B4521] text-white' : 'bg-white border-gray-100'}`}><p className={`text-[10px] font-bold tracking-wider uppercase ${primary ? 'text-white/80' : 'text-[#6B7280]'}`}>{label}</p><p className={`text-lg md:text-xl font-black mt-1 ${primary ? 'text-white' : 'text-[#1A2E26]'}`}>{value}</p></div>
 }
 function Empty({ supplierId }: { supplierId: string }) {
-  return <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center"><FolderKanban className="w-12 h-12 text-[#6B7280] opacity-30 mx-auto mb-3" /><p className="text-sm font-bold text-[#1A2E26]">مفيش مشاريع لسه</p><Link href={`/admin/business-finance/${supplierId}/projects`} className="mt-4 px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold inline-flex items-center gap-2"><FolderKanban className="w-4 h-4" /> روح للمشاريع</Link></div>
+  return <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center"><FolderKanban className="w-12 h-12 text-[#6B7280] opacity-30 mx-auto mb-3" /><p className="text-sm font-bold text-[#1A2E26]">مفيش مشاريع لسه</p><Link href={`/admin/business-finance/${supplierId}/projects`} className="mt-4 px-4 py-2 rounded-xl bg-[#2B4521] text-white text-sm font-bold inline-flex items-center gap-2"><FolderKanban className="w-4 h-4" /> روح للمشاريع</Link></div>
 }
 function Modal({ title, children, onClose, onSave, saving, saveLabel }: { title: string; children: ReactNode; onClose: () => void; onSave: () => void; saving: boolean; saveLabel: string }) {
   return (
@@ -182,7 +182,7 @@ function Modal({ title, children, onClose, onSave, saving, saveLabel }: { title:
         <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between"><h2 className="text-lg font-black text-[#1A2E26]">{title}</h2><button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-5 h-5 text-[#6B7280]" /></button></div>
         <div className="p-5 space-y-4">{children}</div>
         <div className="sticky bottom-0 bg-white border-t border-gray-100 px-5 py-4 flex gap-2">
-          <button onClick={onSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-[#1F6F5F] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-60">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null} {saveLabel}</button>
+          <button onClick={onSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-[#2B4521] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-60">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null} {saveLabel}</button>
           <button onClick={onClose} className="px-5 py-3 rounded-xl bg-[#FAFAF7] text-[#1A2E26] font-bold text-sm">إلغاء</button>
         </div>
       </div>

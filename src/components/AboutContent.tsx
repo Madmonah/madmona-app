@@ -21,14 +21,14 @@ export default function AboutContent() {
       <main className="max-w-3xl mx-auto px-4 pb-12">
         {/* Hero */}
         <section className="py-10 md:py-16 text-center">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#1F6F5F]/10 rounded-full mb-4">
-            <Sparkles className="w-3 h-3 text-[#1F6F5F]" />
-            <span className="text-xs font-medium text-[#1F6F5F]">{t('about.eyebrow')}</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#2B4521]/10 rounded-full mb-4">
+            <Sparkles className="w-3 h-3 text-[#2B4521]" />
+            <span className="text-xs font-medium text-[#2B4521]">{t('about.eyebrow')}</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
             {t('about.hero_line1')}
             <br />
-            <span className="text-[#1F6F5F]">{t('about.hero_emph')}</span>
+            <span className="text-[#2B4521]">{t('about.hero_emph')}</span>
           </h1>
           <p className="text-base md:text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
             {t('about.hero_sub')}
@@ -55,7 +55,7 @@ export default function AboutContent() {
               icon={<Building2 className="w-5 h-5" />}
               title={t('about.offer_spaces_title')}
               description={t('about.offer_spaces_desc')}
-              accent="bg-[#1F6F5F]/10 text-[#1F6F5F]"
+              accent="bg-[#2B4521]/10 text-[#2B4521]"
               href="/browse"
               cta={t('about.offer_spaces_cta')}
             />
@@ -133,12 +133,12 @@ export default function AboutContent() {
         </section>
 
         {/* CTA */}
-        <section className="bg-[#1F6F5F] text-white rounded-2xl p-6 md:p-8 text-center mb-8">
+        <section className="bg-[#2B4521] text-white rounded-2xl p-6 md:p-8 text-center mb-8">
           <h3 className="text-xl md:text-2xl font-bold mb-2">{t('about.cta_title')}</h3>
           <p className="text-sm md:text-base text-white/85 mb-5">{t('about.cta_sub')}</p>
           <Link
             href="/browse"
-            className="inline-flex items-center gap-2 bg-white text-[#1F6F5F] px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 no-underline"
+            className="inline-flex items-center gap-2 bg-white text-[#2B4521] px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 no-underline"
           >
             {t('about.offer_spaces_cta')}
             <ArrowLeft className="w-4 h-4 ltr:rotate-180" />
@@ -146,7 +146,7 @@ export default function AboutContent() {
         </section>
 
         <footer className="text-center text-xs text-gray-500 py-6 border-t border-gray-100">
-          <p className="font-bold text-[#1F6F5F] text-sm mb-1">{t('common.brand')}</p>
+          <p className="font-bold text-[#2B4521] text-sm mb-1">{t('common.brand')}</p>
           <p>{t('about.footer_tagline')}</p>
         </footer>
       </main>
@@ -167,14 +167,14 @@ function FeatureCard({
   return (
     <Link
       href={href}
-      className="group block bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#1F6F5F]/30 hover:shadow-sm no-underline transition-all"
+      className="group block bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#2B4521]/30 hover:shadow-sm no-underline transition-all"
     >
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${accent}`}>
         {icon}
       </div>
       <h3 className="font-bold text-gray-900 mb-1">{title}</h3>
       <p className="text-sm text-gray-600 leading-relaxed mb-3">{description}</p>
-      <p className="text-xs text-[#1F6F5F] font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
+      <p className="text-xs text-[#2B4521] font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
         {cta}
         <ArrowLeft className="w-3 h-3 ltr:rotate-180" />
       </p>
@@ -191,7 +191,7 @@ function ValueRow({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="w-9 h-9 rounded-lg bg-[#1F6F5F]/10 text-[#1F6F5F] flex items-center justify-center flex-shrink-0">
+      <div className="w-9 h-9 rounded-lg bg-[#2B4521]/10 text-[#2B4521] flex items-center justify-center flex-shrink-0">
         {icon}
       </div>
       <div className="flex-1">

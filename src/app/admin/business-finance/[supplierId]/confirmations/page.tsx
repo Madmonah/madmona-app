@@ -68,12 +68,12 @@ export default function ConfirmationsPage({ params }: { params: { supplierId: st
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">B2B PARTNER · CONFIRMATIONS</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">B2B PARTNER · CONFIRMATIONS</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">التأكيدات</h1>
               <p className="text-sm text-[#6B7280] mt-1">{totalPending} حاجة بانتظار التأكيد</p>
             </div>
@@ -84,10 +84,10 @@ export default function ConfirmationsPage({ params }: { params: { supplierId: st
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {loading ? (
-          <div className="py-20 text-center"><Loader2 className="w-7 h-7 text-[#1F6F5F] animate-spin inline" /></div>
+          <div className="py-20 text-center"><Loader2 className="w-7 h-7 text-[#2B4521] animate-spin inline" /></div>
         ) : totalPending === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-            <CheckCircle2 className="w-12 h-12 text-[#1F6F5F] opacity-40 mx-auto mb-2" />
+            <CheckCircle2 className="w-12 h-12 text-[#2B4521] opacity-40 mx-auto mb-2" />
             <p className="text-sm font-bold text-[#1A2E26]">مفيش حاجة بانتظار التأكيد</p>
             <p className="text-xs text-[#6B7280] mt-1">كله متظبط 👌</p>
           </div>
@@ -143,7 +143,7 @@ export default function ConfirmationsPage({ params }: { params: { supplierId: st
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-[#1A2E26] flex items-center gap-2">
                       {j.full_name}
-                      {j.name_match && <span className="text-[9px] font-bold bg-[#1F6F5F]/10 text-[#1F6F5F] px-1.5 py-0.5 rounded">مطابق للمرتبات ✓</span>}
+                      {j.name_match && <span className="text-[9px] font-bold bg-[#2B4521]/10 text-[#2B4521] px-1.5 py-0.5 rounded">مطابق للمرتبات ✓</span>}
                     </p>
                     <p className="text-[11px] text-[#6B7280] mt-0.5 flex items-center gap-2 flex-wrap">
                       <span dir="ltr">{localPhone(j.phone)}</span>
@@ -171,8 +171,8 @@ function Section({ icon, title, count, children }: any) {
   return (
     <section>
       <h2 className="text-sm font-bold text-[#1A2E26] mb-3 flex items-center gap-2">
-        <span className="text-[#1F6F5F]">{icon}</span> {title}
-        <span className="text-[10px] font-bold bg-[#1F6F5F] text-white px-2 py-0.5 rounded-full">{count}</span>
+        <span className="text-[#2B4521]">{icon}</span> {title}
+        <span className="text-[10px] font-bold bg-[#2B4521] text-white px-2 py-0.5 rounded-full">{count}</span>
       </h2>
       <div className="space-y-2">{children}</div>
     </section>
@@ -186,7 +186,7 @@ function Card({ children }: any) {
 function Actions({ busy, onYes, onNo, yesLabel }: any) {
   return (
     <div className="flex items-center gap-2 flex-shrink-0">
-      <button onClick={onYes} disabled={busy} className="px-3 py-2 rounded-xl bg-[#1F6F5F] text-white text-xs font-bold flex items-center gap-1 disabled:opacity-50">
+      <button onClick={onYes} disabled={busy} className="px-3 py-2 rounded-xl bg-[#2B4521] text-white text-xs font-bold flex items-center gap-1 disabled:opacity-50">
         {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />} {yesLabel}
       </button>
       <button onClick={onNo} disabled={busy} className="px-3 py-2 rounded-xl bg-[#FAFAF7] text-[#6B7280] text-xs font-bold flex items-center gap-1 disabled:opacity-50 border border-gray-200">

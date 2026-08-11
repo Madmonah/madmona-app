@@ -73,15 +73,15 @@ export default function SupplierSignupPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center px-6 py-8" dir="rtl">
         <div className="max-w-md w-full bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-          <div className="flex items-center justify-center w-14 h-14 bg-[#1F6F5F]/10 rounded-full mx-auto mb-5">
-            <CheckCircle className="w-7 h-7 text-[#1F6F5F]" />
+          <div className="flex items-center justify-center w-14 h-14 bg-[#2B4521]/10 rounded-full mx-auto mb-5">
+            <CheckCircle className="w-7 h-7 text-[#2B4521]" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 text-center mb-2">تم استلام طلبك!</h1>
           <p className="text-sm text-gray-600 text-center leading-relaxed mb-6">
             هنراجع بياناتك ونتواصل معاك على الإيميل والموبايل خلال ٢٤-٤٨ ساعة.
             بعد الموافقة، هنبعتلك بيانات الدخول للوحة التحكم بتاعتك.
           </p>
-          <Link href="/" className="block text-center text-sm text-[#1F6F5F] hover:underline">
+          <Link href="/" className="block text-center text-sm text-[#2B4521] hover:underline">
             الرجوع للصفحة الرئيسية
           </Link>
         </div>
@@ -103,7 +103,7 @@ export default function SupplierSignupPage() {
 
       <main className="max-w-md mx-auto px-4 py-6 pb-12">
         {/* Hero pitch */}
-        <section className="mb-6 bg-gradient-to-br from-[#1F6F5F] to-[#1F6F5F]/90 text-white rounded-2xl p-6">
+        <section className="mb-6 bg-gradient-to-br from-[#2B4521] to-[#2B4521]/90 text-white rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-3">
             <span className="inline-flex items-center text-xs bg-[#2FA084] text-white px-2.5 py-1 rounded-full font-medium tracking-wide">
               أجر معانا
@@ -121,49 +121,49 @@ export default function SupplierSignupPage() {
             <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
               <Building2 className="w-4 h-4 text-gray-500" /> اسم النشاط <span className="text-red-500">*</span>
             </label>
-            <input type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="مثال: WorkStation Cairo" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F] text-right" />
+            <input type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="مثال: WorkStation Cairo" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521] text-right" />
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
               <User className="w-4 h-4 text-gray-500" /> اسم المسؤول <span className="text-red-500">*</span>
             </label>
-            <input type="text" value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="اسمك بالكامل" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F] text-right" autoComplete="name" />
+            <input type="text" value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="اسمك بالكامل" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521] text-right" autoComplete="name" />
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
               <Phone className="w-4 h-4 text-gray-500" /> رقم الموبايل <span className="text-red-500">*</span>
             </label>
-            <input type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value.replace(/[^\d+]/g, '').slice(0, 14))} placeholder="01xxxxxxxxx" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]" dir="ltr" style={{ textAlign: 'right' }} autoComplete="tel" inputMode="tel" />
+            <input type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value.replace(/[^\d+]/g, '').slice(0, 14))} placeholder="01xxxxxxxxx" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]" dir="ltr" style={{ textAlign: 'right' }} autoComplete="tel" inputMode="tel" />
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
               <Mail className="w-4 h-4 text-gray-500" /> البريد الإلكتروني <span className="text-red-500">*</span>
             </label>
-            <input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="email@example.com" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]" dir="ltr" style={{ textAlign: 'right' }} autoComplete="email" />
+            <input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="email@example.com" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]" dir="ltr" style={{ textAlign: 'right' }} autoComplete="email" />
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-gray-500" /> الحي <span className="text-xs text-gray-400 font-normal">(اختياري)</span>
             </label>
-            <input type="text" value={district} onChange={(e) => setDistrict(e.target.value)} placeholder="مثال: مصر الجديدة، الزمالك، التجمع الخامس..." className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F] text-right" />
+            <input type="text" value={district} onChange={(e) => setDistrict(e.target.value)} placeholder="مثال: مصر الجديدة، الزمالك، التجمع الخامس..." className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521] text-right" />
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-gray-500" /> العنوان التفصيلي <span className="text-xs text-gray-400 font-normal">(اختياري)</span>
             </label>
-            <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="رقم الشارع، المنطقة، علامة مميزة..." className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F] text-right" />
+            <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="رقم الشارع، المنطقة، علامة مميزة..." className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521] text-right" />
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
               <FileText className="w-4 h-4 text-gray-500" /> وصف مختصر <span className="text-xs text-gray-400 font-normal">(اختياري)</span>
             </label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="إيه المساحة بتاعتك بتقدمه؟ كم مكتب؟ كم غرفة اجتماعات؟" rows={3} className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F] text-right resize-none" />
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="إيه المساحة بتاعتك بتقدمه؟ كم مكتب؟ كم غرفة اجتماعات؟" rows={3} className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521] text-right resize-none" />
           </div>
 
           {error && (
@@ -173,7 +173,7 @@ export default function SupplierSignupPage() {
             </div>
           )}
 
-          <button type="button" onClick={handleSubmit} disabled={!canSubmit} className="w-full bg-[#1F6F5F] text-white py-3.5 px-6 rounded-xl font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2">
+          <button type="button" onClick={handleSubmit} disabled={!canSubmit} className="w-full bg-[#2B4521] text-white py-3.5 px-6 rounded-xl font-semibold hover:bg-[#2B4521]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2">
             {submitting ? 'جاري الإرسال...' : 'إرسال الطلب'}
           </button>
 

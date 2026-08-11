@@ -125,7 +125,7 @@ function CompletePhoneContent() {
   if (checkingSession) {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#2B4521] animate-spin" />
       </div>
     )
   }
@@ -146,7 +146,7 @@ function CompletePhoneContent() {
 
   return (
     <div className="min-h-screen gradient-mesh flex flex-col relative overflow-hidden" dir="rtl">
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1F6F5F]/5 rounded-full blur-3xl animate-float pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#2B4521]/5 rounded-full blur-3xl animate-float pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#2FA084]/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <main className="flex-1 flex items-center justify-center p-4 relative z-10">
@@ -212,24 +212,24 @@ function CompletePhoneContent() {
                       هيفتحلك واتساب برسالة جاهزة فيها الكود — <b>دوس إرسال بس</b> وارجع هنا.
                       <br />لو مفتحش، ابعت الكود ده يدوي لـ«المارد» على واتساب:
                     </p>
-                    <div className="inline-block bg-white border border-[#2FA084]/40 rounded-xl px-5 py-2 font-black text-xl tracking-[0.3em] text-[#1F6F5F] mb-3 select-all">
+                    <div className="inline-block bg-white border border-[#2FA084]/40 rounded-xl px-5 py-2 font-black text-xl tracking-[0.3em] text-[#2B4521] mb-3 select-all">
                       {code}
                     </div>
-                    <div className="flex items-center justify-center gap-2 text-[#1F6F5F] font-bold text-sm mb-1">
+                    <div className="flex items-center justify-center gap-2 text-[#2B4521] font-bold text-sm mb-1">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       مستنيين رسالتك…
                     </div>
                     <button
                       type="button"
                       onClick={begin}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1F6F5F] hover:underline mt-1"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2B4521] hover:underline mt-1"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                       جرّب تاني
                     </button>
                   </>
                 ) : (
-                  <div className="flex items-center justify-center gap-2 text-[#1F6F5F] font-bold text-sm">
+                  <div className="flex items-center justify-center gap-2 text-[#2B4521] font-bold text-sm">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     ثواني — بنوثّق رقمك…
                   </div>
@@ -260,7 +260,7 @@ export default function CompletePhonePage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#2B4521] animate-spin" />
       </div>
     }>
       <CompletePhoneContent />

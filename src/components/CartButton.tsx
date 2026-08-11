@@ -34,7 +34,7 @@ export default function CartButton({
       className={`relative inline-flex items-center justify-center no-underline transition-all ${className}`}
     >
       <ShoppingCart className={`${iconClass} ${iconColorClass}`} />
-      <span className="absolute -top-1.5 ltr:-right-1.5 rtl:-left-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#1F6F5F] text-white text-[10px] font-black flex items-center justify-center shadow-soft">
+      <span className="absolute -top-1.5 ltr:-right-1.5 rtl:-left-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#2B4521] text-white text-[10px] font-black flex items-center justify-center shadow-soft">
         {count > 99 ? '99+' : count}
       </span>
     </Link>

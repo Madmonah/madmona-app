@@ -41,7 +41,7 @@ export default function ProjectsAdmin({ initial }: { initial: Project[] }) {
       <div className="max-w-5xl mx-auto">
         <header className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-[#1F6F5F]">🏗️ مشاريع البورصة</h1>
+            <h1 className="text-2xl font-bold text-[#2B4521]">🏗️ مشاريع البورصة</h1>
             <p className="text-xs text-gray-500 mt-1">
               {rows.length} مشروع · {drafts.length} مسودة مستنية مراجعتك
             </p>
@@ -49,14 +49,14 @@ export default function ProjectsAdmin({ initial }: { initial: Project[] }) {
           <div className="flex gap-2">
             <Link
               href="/admin/projects/inquiries"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-[#1F6F5F]/40"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-[#2B4521]/40"
             >
               <MessageSquare className="w-4 h-4" />
               الاستفسارات
             </Link>
             <button
               onClick={() => { setAdding(true); setEditing(null) }}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1F6F5F] text-white text-sm font-bold"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#2B4521] text-white text-sm font-bold"
             >
               <Plus className="w-4 h-4" />
               مشروع جديد
@@ -101,7 +101,7 @@ export default function ProjectsAdmin({ initial }: { initial: Project[] }) {
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-bold text-gray-900 text-sm">{p.title}</p>
                   {p.developer && <span className="text-xs text-gray-500">· {p.developer}</span>}
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1F6F5F]/10 text-[#1F6F5F] font-semibold">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#2B4521]/10 text-[#2B4521] font-semibold">
                     {p.area_label}
                   </span>
                   {p.status !== 'published' && (
@@ -129,13 +129,13 @@ export default function ProjectsAdmin({ initial }: { initial: Project[] }) {
               <div className="flex items-center gap-1.5 shrink-0">
                 {p.brochure_url && (
                   <a href={p.brochure_url} target="_blank" rel="noopener"
-                    className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:border-[#1F6F5F]/40" title="البروشور">
+                    className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:border-[#2B4521]/40" title="البروشور">
                     <FileText className="w-4 h-4" />
                   </a>
                 )}
                 {p.video_url && (
                   <a href={p.video_url} target="_blank" rel="noopener"
-                    className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:border-[#1F6F5F]/40" title="الفيديو">
+                    className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:border-[#2B4521]/40" title="الفيديو">
                     <PlayCircle className="w-4 h-4" />
                   </a>
                 )}
@@ -143,13 +143,13 @@ export default function ProjectsAdmin({ initial }: { initial: Project[] }) {
                   onClick={() => patch(p.id, { status: p.status === 'published' ? 'draft' : 'published' })}
                   disabled={p.embargoed}
                   title={p.embargoed ? 'ممنوع النشر — فيه حظر على المشروع ده' : p.status === 'published' ? 'اخفيه' : 'انشره'}
-                  className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:border-[#1F6F5F]/40 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:border-[#2B4521]/40 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   {p.status === 'published' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
                 <button
                   onClick={() => { setEditing(p); setAdding(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-                  className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:border-[#1F6F5F]/40"
+                  className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:border-[#2B4521]/40"
                   title="عدّل"
                 >
                   <Pencil className="w-4 h-4" />

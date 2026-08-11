@@ -63,7 +63,7 @@ export default function AdBuilderClient({ listings }: { listings: ListingExtras[
     <div>
       {/* Step 1: Campaign settings */}
       <div style={cardStyle}>
-        <h3 style={{ color: '#1F6F5F', margin: '0 0 12px' }}>1️⃣ إعدادات الـ Campaign</h3>
+        <h3 style={{ color: '#2B4521', margin: '0 0 12px' }}>1️⃣ إعدادات الـ Campaign</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
           <div>
             <label style={labelStyle}>اسم الـ Campaign</label>
@@ -95,7 +95,7 @@ export default function AdBuilderClient({ listings }: { listings: ListingExtras[
           padding: 12,
           borderRadius: 8,
           marginTop: 12,
-          border: '1px dashed #1F6F5F',
+          border: '1px dashed #2B4521',
         }}>
           <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>
             🌐 لينك عام (لما الـ ad مش عن إعلان معين):
@@ -124,7 +124,7 @@ export default function AdBuilderClient({ listings }: { listings: ListingExtras[
 
       {/* Step 2: Pick a listing */}
       <div style={cardStyle}>
-        <h3 style={{ color: '#1F6F5F', margin: '0 0 12px' }}>2️⃣ اختار إعلان (اختياري)</h3>
+        <h3 style={{ color: '#2B4521', margin: '0 0 12px' }}>2️⃣ اختار إعلان (اختياري)</h3>
         <input
           type="text"
           placeholder="🔍 ابحث في الإعلانات..."
@@ -149,9 +149,9 @@ export default function AdBuilderClient({ listings }: { listings: ListingExtras[
                 key={l.id}
                 onClick={() => setSelectedSlug(selectedSlug === l.slug ? null : l.slug)}
                 style={{
-                  background: selectedSlug === l.slug ? '#1F6F5F' : '#fff',
+                  background: selectedSlug === l.slug ? '#2B4521' : '#fff',
                   color: selectedSlug === l.slug ? '#FAF7F0' : '#1a1a1a',
-                  border: `2px solid ${selectedSlug === l.slug ? '#1F6F5F' : '#eee'}`,
+                  border: `2px solid ${selectedSlug === l.slug ? '#2B4521' : '#eee'}`,
                   borderRadius: 12,
                   padding: 10,
                   textAlign: 'right',
@@ -197,7 +197,7 @@ export default function AdBuilderClient({ listings }: { listings: ListingExtras[
       {selected && listingLink && (
         <div style={{
           ...cardStyle,
-          background: '#1F6F5F',
+          background: '#2B4521',
           color: '#FAF7F0',
         }}>
           <h3 style={{ margin: '0 0 12px', color: '#FAF7F0' }}>3️⃣ الـ Ad Link جاهز ✨</h3>
@@ -277,7 +277,7 @@ const inputStyle: React.CSSProperties = {
 }
 
 const copyBtnStyle = (active: boolean): React.CSSProperties => ({
-  background: active ? '#28a745' : '#1F6F5F',
+  background: active ? '#28a745' : '#2B4521',
   color: '#fff',
   border: 'none',
   padding: '6px 14px',

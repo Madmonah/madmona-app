@@ -112,28 +112,28 @@ export default function CompanyOverviewPage() {
       <div className="pointer-events-none fixed inset-0 -z-10" style={{
         background:
           'radial-gradient(62% 50% at 86% -4%, rgba(47,160,132,0.12), transparent 60%),' +
-          'radial-gradient(52% 46% at 6% 8%, rgba(31,111,95,0.09), transparent 60%),' +
+          'radial-gradient(52% 46% at 6% 8%, rgba(43, 69, 33,0.09), transparent 60%),' +
           'radial-gradient(40% 38% at 50% 116%, rgba(212,160,23,0.06), transparent 60%)',
       }} />
 
       {/* ===== HEADER ===== */}
-      <header className="sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-[#1F6F5F]/10">
+      <header className="sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-[#2B4521]/10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href="/admin/dashboard" className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2">
+          <Link href="/admin/dashboard" className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع للداشبورد
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#1F6F5F] flex items-center justify-center shadow-lg shadow-[#1F6F5F]/20">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#2B4521] flex items-center justify-center shadow-lg shadow-[#2B4521]/20">
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-[10px] font-bold tracking-[0.3em] uppercase mb-0.5 bg-gradient-to-r from-[#D4A017] to-[#1F6F5F] bg-clip-text text-transparent">MADMONA · COMPANY</p>
+                <p className="text-[10px] font-bold tracking-[0.3em] uppercase mb-0.5 bg-gradient-to-r from-[#D4A017] to-[#2B4521] bg-clip-text text-transparent">MADMONA · COMPANY</p>
                 <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] leading-none">مضمونة كشركة</h1>
                 <p className="text-xs text-[#6B7280] mt-1.5 max-w-lg leading-relaxed">شركة تكنولوجيا — بنبني أنظمة إدارة أعمال (CRM/ERP) ومواقع، وبنشغّل منصّة مضمونة. ده مركز الشركة (ماليات · مخزون · توريدات · مستندات)، مش إدارة الأبليكيشن.</p>
               </div>
             </div>
-            <button onClick={load} className="p-2.5 rounded-xl bg-white border border-gray-100 text-[#1A2E26] shadow-sm hover:border-[#1F6F5F]/30">
+            <button onClick={load} className="p-2.5 rounded-xl bg-white border border-gray-100 text-[#1A2E26] shadow-sm hover:border-[#2B4521]/30">
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
           </div>
@@ -154,23 +154,23 @@ export default function CompanyOverviewPage() {
         {/* ===== Company products / systems ===== */}
         <Section title="منتجات الشركة وأنظمتها" subtitle="إيه اللي شركة مضمونة بتبنيه وبتشغّله">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Link href="/admin/dashboard" className="group rounded-3xl p-5 bg-white border border-gray-100 shadow-sm hover:border-[#1F6F5F]/30 transition-all">
+            <Link href="/admin/dashboard" className="group rounded-3xl p-5 bg-white border border-gray-100 shadow-sm hover:border-[#2B4521]/30 transition-all">
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 text-[#1F6F5F]"><LayoutGrid className="w-4 h-4" /><p className="text-[11px] font-bold tracking-wider uppercase text-[#6B7280]">المنتج الأساسي</p></div>
-                <ExternalLink className="w-3.5 h-3.5 text-[#6B7280] group-hover:text-[#1F6F5F]" />
+                <div className="flex items-center gap-2 text-[#2B4521]"><LayoutGrid className="w-4 h-4" /><p className="text-[11px] font-bold tracking-wider uppercase text-[#6B7280]">المنتج الأساسي</p></div>
+                <ExternalLink className="w-3.5 h-3.5 text-[#6B7280] group-hover:text-[#2B4521]" />
               </div>
               <p className="text-lg font-black text-[#1A2E26]">منصّة مضمونة (الأبليكيشن)</p>
               <p className="text-[11px] text-[#6B7280] mt-1">ماركتبليس التأجير والخدمات · إدارة الأبليكيشن من هنا</p>
             </Link>
             <div className="rounded-3xl p-5 bg-white border border-gray-100 shadow-sm">
-              <div className="flex items-center gap-2 text-[#1F6F5F] mb-2"><Bot className="w-4 h-4" /><p className="text-[11px] font-bold tracking-wider uppercase text-[#6B7280]">أنظمة بنقدّمها</p></div>
+              <div className="flex items-center gap-2 text-[#2B4521] mb-2"><Bot className="w-4 h-4" /><p className="text-[11px] font-bold tracking-wider uppercase text-[#6B7280]">أنظمة بنقدّمها</p></div>
               <p className="text-lg font-black text-[#1A2E26]">CRM / ERP للموردين</p>
               <p className="text-[11px] text-[#6B7280] mt-1">حجوزات · فريق · مخزون · ماليات — مجاناً لكل مورّد</p>
             </div>
-            <a href="https://madmonacairo.com" target="_blank" rel="noopener noreferrer" className="group rounded-3xl p-5 bg-white border border-gray-100 shadow-sm hover:border-[#1F6F5F]/30 transition-all">
+            <a href="https://madmonacairo.com" target="_blank" rel="noopener noreferrer" className="group rounded-3xl p-5 bg-white border border-gray-100 shadow-sm hover:border-[#2B4521]/30 transition-all">
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 text-[#1F6F5F]"><Globe className="w-4 h-4" /><p className="text-[11px] font-bold tracking-wider uppercase text-[#6B7280]">الموقع</p></div>
-                <ExternalLink className="w-3.5 h-3.5 text-[#6B7280] group-hover:text-[#1F6F5F]" />
+                <div className="flex items-center gap-2 text-[#2B4521]"><Globe className="w-4 h-4" /><p className="text-[11px] font-bold tracking-wider uppercase text-[#6B7280]">الموقع</p></div>
+                <ExternalLink className="w-3.5 h-3.5 text-[#6B7280] group-hover:text-[#2B4521]" />
               </div>
               <p className="text-lg font-black text-[#1A2E26]">madmonacairo.com</p>
               <p className="text-[11px] text-[#6B7280] mt-1">الموقع الرسمي للشركة والمنصّة</p>
@@ -180,7 +180,7 @@ export default function CompanyOverviewPage() {
 
         {/* ===== P&L ===== */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="md:col-span-1 rounded-3xl p-5 bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#1F6F5F] text-white shadow-xl shadow-[#1F6F5F]/20">
+          <div className="md:col-span-1 rounded-3xl p-5 bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#2B4521] text-white shadow-xl shadow-[#2B4521]/20">
             <div className="flex items-center gap-2 mb-2 opacity-90"><CircleDollarSign className="w-4 h-4" /><p className="text-[11px] font-bold tracking-wider uppercase">صافي الربح</p></div>
             <p className="text-4xl font-black font-mono">{fmt(o?.net_profit_egp)} <span className="text-lg">ج</span></p>
             <p className="text-[11px] opacity-80 mt-1">إيراد − مصاريف</p>
@@ -213,7 +213,7 @@ export default function CompanyOverviewPage() {
                         <p className={`text-lg font-black font-mono ${p.low ? 'text-red-600' : 'text-[#1A2E26]'}`}>{fmt(p.stock)}</p>
                         <p className="text-[10px] text-[#6B7280]">{p.unit || 'وحدة'}{p.reorder != null ? ` · حد ${fmt(p.reorder)}` : ''}</p>
                       </div>
-                      <button onClick={() => setAdjust(p)} className="p-2 rounded-xl bg-[#FAFAF7] border border-gray-200 text-[#1F6F5F] hover:border-[#1F6F5F]/40" title="تعديل الرصيد">
+                      <button onClick={() => setAdjust(p)} className="p-2 rounded-xl bg-[#FAFAF7] border border-gray-200 text-[#2B4521] hover:border-[#2B4521]/40" title="تعديل الرصيد">
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -243,7 +243,7 @@ export default function CompanyOverviewPage() {
                       </div>
                       <div className="flex items-center gap-2.5 flex-shrink-0">
                         {e.receipt_url
-                          ? <a href={e.receipt_url} target="_blank" rel="noreferrer" className="text-[11px] font-bold text-[#1F6F5F] inline-flex items-center gap-1 hover:underline"><Receipt className="w-3.5 h-3.5" /> الفاتورة</a>
+                          ? <a href={e.receipt_url} target="_blank" rel="noreferrer" className="text-[11px] font-bold text-[#2B4521] inline-flex items-center gap-1 hover:underline"><Receipt className="w-3.5 h-3.5" /> الفاتورة</a>
                           : <span className="text-[10px] text-[#6B7280]">بدون فاتورة</span>}
                         <p className="text-sm font-black font-mono text-[#1A2E26]">{fmt(e.amount)} ج</p>
                       </div>
@@ -261,7 +261,7 @@ export default function CompanyOverviewPage() {
                     <div key={i} className="flex items-center gap-3">
                       <span className="text-xs font-bold text-[#1A2E26] w-28 shrink-0 truncate">{x.category}</span>
                       <div className="flex-1 h-2.5 rounded-full bg-[#FAFAF7] overflow-hidden">
-                        <div className="h-full rounded-full bg-gradient-to-l from-[#D4A017] to-[#1F6F5F]" style={{ width: `${(Number(x.amount) / maxCat) * 100}%` }} />
+                        <div className="h-full rounded-full bg-gradient-to-l from-[#D4A017] to-[#2B4521]" style={{ width: `${(Number(x.amount) / maxCat) * 100}%` }} />
                       </div>
                       <span className="text-xs font-black font-mono text-[#1A2E26] w-16 text-left">{fmt(x.amount)}</span>
                     </div>
@@ -287,7 +287,7 @@ export default function CompanyOverviewPage() {
               {recentPOs.length === 0 ? <Empty text="مفيش توريدات مسجّلة لسه" /> : recentPOs.map((p, i) => (
                 <div key={i} className="flex items-center justify-between px-4 py-3 border-b border-gray-50 last:border-0">
                   <div><p className="text-sm font-bold text-[#1A2E26]">{p.vendor || 'مورّد'}</p><p className="text-[11px] text-[#6B7280]">{p.po_number || '—'} · {PO_AR[p.status] || p.status}</p></div>
-                  <p className="text-sm font-black font-mono text-[#1F6F5F]">{fmt(p.total)} ج</p>
+                  <p className="text-sm font-black font-mono text-[#2B4521]">{fmt(p.total)} ج</p>
                 </div>
               ))}
             </div>
@@ -311,14 +311,14 @@ export default function CompanyOverviewPage() {
                 {docs.map((d, i) => (
                   <div key={i} className="flex items-center justify-between gap-3 px-4 py-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] flex items-center justify-center flex-shrink-0"><FileText className="w-4 h-4" /></div>
+                      <div className="w-9 h-9 rounded-xl bg-[#2B4521]/10 text-[#2B4521] flex items-center justify-center flex-shrink-0"><FileText className="w-4 h-4" /></div>
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-[#1A2E26] truncate">{d.name}</p>
                         <p className="text-[11px] text-[#6B7280]">{DOC_AR[d.type] || d.type || 'مستند'}</p>
                       </div>
                     </div>
                     {d.url
-                      ? <a href={d.url} target="_blank" rel="noreferrer" className="text-[11px] font-bold text-[#1F6F5F] inline-flex items-center gap-1 hover:underline flex-shrink-0"><ExternalLink className="w-3.5 h-3.5" /> فتح</a>
+                      ? <a href={d.url} target="_blank" rel="noreferrer" className="text-[11px] font-bold text-[#2B4521] inline-flex items-center gap-1 hover:underline flex-shrink-0"><ExternalLink className="w-3.5 h-3.5" /> فتح</a>
                       : <span className="text-[10px] text-[#6B7280] flex-shrink-0">بدون ملف</span>}
                   </div>
                 ))}
@@ -342,7 +342,7 @@ export default function CompanyOverviewPage() {
                   <div key={i} className="flex items-center gap-3">
                     <span className="text-xs font-bold text-[#1A2E26] w-24 shrink-0">{SOURCE_AR[l.source] || l.source}</span>
                     <div className="flex-1 h-2.5 rounded-full bg-[#FAFAF7] overflow-hidden">
-                      <div className="h-full rounded-full bg-gradient-to-l from-[#2FA084] to-[#1F6F5F]" style={{ width: `${(Number(l.count) / maxLead) * 100}%` }} />
+                      <div className="h-full rounded-full bg-gradient-to-l from-[#2FA084] to-[#2B4521]" style={{ width: `${(Number(l.count) / maxLead) * 100}%` }} />
                     </div>
                     <span className="text-xs font-black font-mono text-[#1A2E26] w-10 text-left">{fmt(l.count)}</span>
                   </div>
@@ -367,7 +367,7 @@ export default function CompanyOverviewPage() {
                   <div key={i} className="flex items-center gap-3">
                     <span className="text-xs font-bold text-[#1A2E26] w-20 shrink-0">{TEAM_AR[t.team] || t.team}</span>
                     <div className="flex-1 h-2.5 rounded-full bg-[#FAFAF7] overflow-hidden">
-                      <div className="h-full rounded-full bg-gradient-to-l from-[#6FCF97] to-[#1F6F5F]" style={{ width: `${(Number(t.runs) / maxTeam) * 100}%` }} />
+                      <div className="h-full rounded-full bg-gradient-to-l from-[#6FCF97] to-[#2B4521]" style={{ width: `${(Number(t.runs) / maxTeam) * 100}%` }} />
                     </div>
                     <span className="text-[11px] text-[#6B7280] w-28 text-left shrink-0">{t.count} موظف · {fmt(t.runs)} مهمة</span>
                   </div>
@@ -386,7 +386,7 @@ export default function CompanyOverviewPage() {
                   <p className="text-sm font-bold text-[#1A2E26]">{r.business || '—'}</p>
                   <p className="text-[11px] text-[#6B7280]">{r.source === 'marketplace_commission' ? 'عمولة ماركت بليس' : 'عمولة نظام'}{' · '}{r.origin === 'marketplace' ? 'من الماركت بليس' : 'بره الماركت بليس'}</p>
                 </div>
-                <p className="text-sm font-black font-mono text-[#1F6F5F]">{fmt(r.amount)} ج</p>
+                <p className="text-sm font-black font-mono text-[#2B4521]">{fmt(r.amount)} ج</p>
               </div>
             ))}
           </div>
@@ -405,7 +405,7 @@ export default function CompanyOverviewPage() {
       {/* ===== TOAST ===== */}
       {toast && (
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50">
-          <div className={`flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl text-sm font-bold text-white ${toast.kind === 'ok' ? 'bg-[#1F6F5F]' : 'bg-red-600'}`}>
+          <div className={`flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl text-sm font-bold text-white ${toast.kind === 'ok' ? 'bg-[#2B4521]' : 'bg-red-600'}`}>
             {toast.kind === 'ok' ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
             {toast.msg}
           </div>
@@ -598,7 +598,7 @@ function DocumentForm({ onClose, onSaved, flash }: FormProps) {
 
 /* ============================================================ UI PRIMITIVES ============================================================ */
 type FormProps = { onClose: () => void; onSaved: (msg: string) => void; flash: (k: 'ok' | 'err', m: string) => void }
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:border-[#1F6F5F] focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/15 bg-white'
+const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:border-[#2B4521] focus:outline-none focus:ring-2 focus:ring-[#2B4521]/15 bg-white'
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return <div><label className="text-[11px] font-bold text-[#6B7280] mb-1 block">{label}</label>{children}</div>
@@ -626,13 +626,13 @@ function Attachment({ url, setUrl, flash, label }: { url: string; setUrl: (s: st
     <div>
       <label className="text-[11px] font-bold text-[#6B7280] mb-1 block">{label}</label>
       <div className="flex items-center gap-2">
-        <label className="cursor-pointer flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#FAFAF7] border border-gray-200 text-xs font-bold text-[#1A2E26] hover:border-[#1F6F5F]/40 flex-shrink-0">
+        <label className="cursor-pointer flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#FAFAF7] border border-gray-200 text-xs font-bold text-[#1A2E26] hover:border-[#2B4521]/40 flex-shrink-0">
           {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />} رفع صورة/PDF
           <input type="file" accept="image/*,application/pdf" className="hidden" onChange={onFile} disabled={busy} />
         </label>
         <input value={url} onChange={e => setUrl(e.target.value)} placeholder="أو الصق رابط" className={inputCls} dir="ltr" />
       </div>
-      {url && <a href={url} target="_blank" rel="noreferrer" className="text-[11px] text-[#1F6F5F] font-bold mt-1.5 inline-flex items-center gap-1"><Check className="w-3 h-3" /> مرفق جاهز — معاينة</a>}
+      {url && <a href={url} target="_blank" rel="noreferrer" className="text-[11px] text-[#2B4521] font-bold mt-1.5 inline-flex items-center gap-1"><Check className="w-3 h-3" /> مرفق جاهز — معاينة</a>}
     </div>
   )
 }
@@ -640,7 +640,7 @@ function Attachment({ url, setUrl, flash, label }: { url: string; setUrl: (s: st
 function SaveBar({ busy, onSave, onClose, saveLabel = 'حفظ' }: { busy: boolean; onSave: () => void; onClose: () => void; saveLabel?: string }) {
   return (
     <div className="flex items-center gap-2 pt-2">
-      <button onClick={onSave} disabled={busy} className="flex-1 py-2.5 rounded-xl bg-gradient-to-l from-[#D4A017] via-[#2FA084] to-[#1F6F5F] text-white text-sm font-black shadow-lg shadow-[#1F6F5F]/20 disabled:opacity-60 flex items-center justify-center gap-2">
+      <button onClick={onSave} disabled={busy} className="flex-1 py-2.5 rounded-xl bg-gradient-to-l from-[#D4A017] via-[#2FA084] to-[#2B4521] text-white text-sm font-black shadow-lg shadow-[#2B4521]/20 disabled:opacity-60 flex items-center justify-center gap-2">
         {busy && <Loader2 className="w-4 h-4 animate-spin" />} {saveLabel}
       </button>
       <button onClick={onClose} disabled={busy} className="px-4 py-2.5 rounded-xl bg-[#FAFAF7] border border-gray-200 text-sm font-bold text-[#6B7280]">إلغا</button>
@@ -665,14 +665,14 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 
 function HeaderAdd({ onClick, label, subtle }: { onClick: () => void; label: string; subtle?: boolean }) {
   return (
-    <button onClick={onClick} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${subtle ? 'bg-white border border-[#1F6F5F]/30 text-[#1F6F5F] hover:bg-[#1F6F5F]/5' : 'bg-gradient-to-l from-[#D4A017] to-[#1F6F5F] text-white shadow-sm hover:opacity-90'}`}>
+    <button onClick={onClick} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${subtle ? 'bg-white border border-[#2B4521]/30 text-[#2B4521] hover:bg-[#2B4521]/5' : 'bg-gradient-to-l from-[#D4A017] to-[#2B4521] text-white shadow-sm hover:opacity-90'}`}>
       <Plus className="w-3.5 h-3.5" /> {label}
     </button>
   )
 }
 function AddPill({ onClick, icon, label, primary }: { onClick: () => void; icon: ReactNode; label: string; primary?: boolean }) {
   return (
-    <button onClick={onClick} className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-black transition-all active:scale-95 ${primary ? 'bg-gradient-to-l from-[#D4A017] via-[#2FA084] to-[#1F6F5F] text-white shadow-md shadow-[#1F6F5F]/25' : 'bg-white border border-gray-200 text-[#1A2E26] hover:border-[#1F6F5F]/40 shadow-sm'}`}>
+    <button onClick={onClick} className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-black transition-all active:scale-95 ${primary ? 'bg-gradient-to-l from-[#D4A017] via-[#2FA084] to-[#2B4521] text-white shadow-md shadow-[#2B4521]/25' : 'bg-white border border-gray-200 text-[#1A2E26] hover:border-[#2B4521]/40 shadow-sm'}`}>
       {icon} {label}
     </button>
   )
@@ -681,7 +681,7 @@ function AddPill({ onClick, icon, label, primary }: { onClick: () => void; icon:
 function Stat({ icon: Icon, label, value, hint }: any) {
   return (
     <div className="rounded-3xl p-5 bg-white border border-gray-100 shadow-sm">
-      <div className="flex items-center gap-2 mb-2 text-[#1F6F5F]"><Icon className="w-4 h-4" /><p className="text-[11px] font-bold tracking-wider uppercase text-[#6B7280]">{label}</p></div>
+      <div className="flex items-center gap-2 mb-2 text-[#2B4521]"><Icon className="w-4 h-4" /><p className="text-[11px] font-bold tracking-wider uppercase text-[#6B7280]">{label}</p></div>
       <p className="text-3xl font-black text-[#1A2E26] font-mono">{value}</p>
       {hint && <p className="text-[11px] text-[#6B7280] mt-1">{hint}</p>}
     </div>
@@ -692,7 +692,7 @@ function Section({ title, subtitle, children, action }: { title: string; subtitl
     <section className="space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2.5">
-          <span className="mt-1 w-1 h-8 rounded-full bg-gradient-to-b from-[#D4A017] to-[#1F6F5F] flex-shrink-0" />
+          <span className="mt-1 w-1 h-8 rounded-full bg-gradient-to-b from-[#D4A017] to-[#2B4521] flex-shrink-0" />
           <div>
             <h2 className="text-lg font-black text-[#1A2E26]">{title}</h2>
             {subtitle && <p className="text-xs text-[#6B7280]">{subtitle}</p>}
@@ -705,4 +705,4 @@ function Section({ title, subtitle, children, action }: { title: string; subtitl
   )
 }
 function Empty({ text }: any) { return <div className="py-8 text-center text-sm font-bold text-[#6B7280]">{text}</div> }
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div> }

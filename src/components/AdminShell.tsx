@@ -121,11 +121,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800;900&display=swap');
         @keyframes msh-pulse { 0%,100% { opacity: 1 } 50% { opacity: .4 } }
         .msh-scroll::-webkit-scrollbar { width: 6px; height: 6px }
-        .msh-scroll::-webkit-scrollbar-thumb { background: rgba(31,111,95,.2); border-radius: 3px }
-        .msh-item:hover { background: #F0EFE8 !important; color: #1F6F5F !important }
+        .msh-scroll::-webkit-scrollbar-thumb { background: rgba(43, 69, 33,.2); border-radius: 3px }
+        .msh-item:hover { background: #F0EFE8 !important; color: #2B4521 !important }
         .msh-group:hover { color: #22322C !important }
         .msh-result:hover { background: #F7F6F1 }
-        .msh-search:focus { border-color: #1F6F5F !important; background: #fff !important }
+        .msh-search:focus { border-color: #2B4521 !important; background: #fff !important }
         .msh-alerts:hover { background: #FAEEDC !important }
       `}</style>
 
@@ -135,7 +135,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           <button onClick={() => setMobileNav((v) => !v)} aria-label="القائمة" style={{ width: 36, height: 36, border: '1px solid #E9E7DF', borderRadius: 10, background: '#fff', color: '#22322C', fontSize: 16, cursor: 'pointer', flex: 'none' }}>☰</button>
         )}
         <Link href="/admin/dashboard" style={{ display: 'flex', alignItems: 'baseline', gap: 8, flex: 'none', textDecoration: 'none' }}>
-          <span style={{ fontWeight: 900, fontSize: 16, color: '#1F6F5F' }}>مضمونة</span>
+          <span style={{ fontWeight: 900, fontSize: 16, color: '#2B4521' }}>مضمونة</span>
           <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.25em', color: '#A8A395' }}>ADMIN</span>
         </Link>
         <div style={{ flex: 1, maxWidth: 460, position: 'relative' }}>
@@ -217,7 +217,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                               display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px', marginRight: 8,
                               border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 12.5, fontWeight: 700,
                               textAlign: 'right', width: 'calc(100% - 8px)', textDecoration: 'none',
-                              ...(active ? { background: '#E8F1EE', color: '#1F6F5F' } : { background: 'none', color: '#5D6B64' }),
+                              ...(active ? { background: '#E8F1EE', color: '#2B4521' } : { background: 'none', color: '#5D6B64' }),
                             }}
                           >
                             <span style={{ flex: 1, textAlign: 'right' }}>{it.label}</span>

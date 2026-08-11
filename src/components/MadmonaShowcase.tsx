@@ -29,7 +29,7 @@ const DEFAULT_STATS: Stats = { listings: 0, categories: 0, suppliers: 0, cities:
 // 4 المجالات الكبيرة المتحركة (الترتيب: بيع · إيجار · خدمات · مطاعم — المناسبات جوه الإيجار)
 const VK_CATEGORIES = [
   { emoji: '🛍️', name: 'بيع', sub: 'عقارات · عربيات · منتجات', accent: '#3D7BB6', bg: '#D9E7F4', track: 'products' },
-  { emoji: '🏠', name: 'إيجار', sub: 'عقارات · عربيات · مناسبات · معدات', accent: '#1F6F5F', bg: '#E7F1ED', track: 'rentals' },
+  { emoji: '🏠', name: 'إيجار', sub: 'عقارات · عربيات · مناسبات · معدات', accent: '#2B4521', bg: '#E7F1ED', track: 'rentals' },
   { emoji: '🛠️', name: 'خدمات', sub: 'صيانة · جمال · استشارات', accent: '#D4A017', bg: '#FAEFD1', track: 'services' },
   { emoji: '🍽️', name: 'مطاعم', sub: 'دلفري · سفرة · حلويات', accent: '#E26D5C', bg: '#FAE1CB', track: 'restaurants' },
 ];
@@ -260,7 +260,7 @@ export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Sta
 
 const CSS = `
 .mdm-showcase{
-  --cream:#FAFAF7; --paper:#F3F1EA; --ink:#0A0A0A; --green:#1F6F5F; --green2:#2FA084;
+  --cream:#FAFAF7; --paper:#F3F1EA; --ink:#0A0A0A; --green:#2B4521; --green2:#2FA084;
   --muted:#7C8A84; --gold:#D4A017; --border:#E5DFD3;
   font-family:'Cairo','Inter',system-ui,sans-serif;
   background:var(--cream); color:var(--ink); overflow:hidden;
@@ -281,8 +281,8 @@ const CSS = `
   position:absolute; inset:0; pointer-events:none; opacity:.25; mix-blend-mode:multiply;
   background:
     radial-gradient(circle at 18% 28%, rgba(212,160,23,.06) 0, transparent 38%),
-    radial-gradient(circle at 82% 12%, rgba(31,111,95,.06) 0, transparent 42%),
-    radial-gradient(circle at 50% 95%, rgba(31,111,95,.04) 0, transparent 50%);
+    radial-gradient(circle at 82% 12%, rgba(43, 69, 33,.06) 0, transparent 42%),
+    radial-gradient(circle at 50% 95%, rgba(43, 69, 33,.04) 0, transparent 50%);
 }
 
 /* === أيقونات خلفية متحركة (VK stickers) === */
@@ -319,7 +319,7 @@ const CSS = `
 .mdm-h1-line{display:block;font-size:clamp(38px,7vw,72px);font-weight:300;letter-spacing:-2px}
 .mdm-h1-em{
   display:block;font-size:clamp(46px,9vw,96px);font-weight:900;font-style:italic;
-  background:linear-gradient(118deg,#1F6F5F 0%, #2FA084 50%, #D4A017 100%);
+  background:linear-gradient(118deg,#2B4521 0%, #2FA084 50%, #D4A017 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   margin-top:-6px;background-size:200% auto;animation:mdmShimmer 6s ease-in-out infinite alternate;
 }
@@ -338,7 +338,7 @@ const CSS = `
   box-shadow:0 4px 16px rgba(20,40,34,.06);
   transition:border-color .25s, box-shadow .25s;
 }
-.mdm-search:focus-within{border-color:var(--green); box-shadow:0 8px 24px rgba(31,111,95,.14)}
+.mdm-search:focus-within{border-color:var(--green); box-shadow:0 8px 24px rgba(43, 69, 33,.14)}
 .mdm-search-ico{font-size:18px; line-height:1; opacity:.7; flex-shrink:0}
 .mdm-search-input{
   flex:1; border:none; outline:none; background:transparent;
@@ -350,10 +350,10 @@ const CSS = `
   display:inline-flex; align-items:center; gap:6px; flex-shrink:0;
   padding:10px 20px; border:none; border-radius:999px; cursor:pointer;
   font-family:inherit; font-size:14px; font-weight:800; color:#fff;
-  background:linear-gradient(118deg,#1F6F5F 0%, #2FA084 55%, #D4A017 100%);
-  box-shadow:0 4px 12px rgba(31,111,95,.28); transition:.25s;
+  background:linear-gradient(118deg,#2B4521 0%, #2FA084 55%, #D4A017 100%);
+  box-shadow:0 4px 12px rgba(43, 69, 33,.28); transition:.25s;
 }
-.mdm-search-btn:hover{transform:translateY(-2px); box-shadow:0 8px 20px rgba(31,111,95,.36)}
+.mdm-search-btn:hover{transform:translateY(-2px); box-shadow:0 8px 20px rgba(43, 69, 33,.36)}
 @media(max-width:560px){
   .mdm-search{padding:5px 5px 5px 14px; margin:-4px auto 26px}
   .mdm-search-btn{padding:9px 14px; font-size:13px}
@@ -466,7 +466,7 @@ const CSS = `
 }
 .mdm-stat-pill:hover{
   background:#fff; transform:translateY(-3px);
-  border-color:var(--green); box-shadow:0 8px 20px rgba(31,111,95,.15);
+  border-color:var(--green); box-shadow:0 8px 20px rgba(43, 69, 33,.15);
 }
 .mdm-stat-pill-num{font-size:18px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1}
 .mdm-stat-pill-cap{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.05em}
@@ -476,19 +476,19 @@ const CSS = `
 .mdm-hero-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .mdm-pill{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:999px;font-size:14.5px;font-weight:800;letter-spacing:-.01em;transition:.25s;cursor:pointer;border:1.5px solid transparent}
 .mdm-pill-primary{
-  background:linear-gradient(118deg, #1F6F5F 0%, #2FA084 55%, #D4A017 100%);
+  background:linear-gradient(118deg, #2B4521 0%, #2FA084 55%, #D4A017 100%);
   color:#fff;
-  box-shadow:0 6px 18px rgba(31,111,95,.32);
+  box-shadow:0 6px 18px rgba(43, 69, 33,.32);
   position:relative;
   overflow:hidden;
 }
 .mdm-pill-primary::before{
   content:""; position:absolute; inset:0;
-  background:linear-gradient(118deg, #D4A017 0%, #2FA084 50%, #1F6F5F 100%);
+  background:linear-gradient(118deg, #D4A017 0%, #2FA084 50%, #2B4521 100%);
   opacity:0; transition:opacity .35s;
 }
 .mdm-pill-primary > *{position:relative; z-index:1}
-.mdm-pill-primary:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(31,111,95,.42)}
+.mdm-pill-primary:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(43, 69, 33,.42)}
 .mdm-pill-primary:hover::before{opacity:1}
 .mdm-pill-ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
 .mdm-pill-ghost:hover{background:var(--ink);color:var(--cream);transform:translateY(-3px)}

@@ -102,7 +102,7 @@ export default function WorldCupClient() {
   return (
     <div dir="rtl" lang="ar" className="min-h-screen bg-[#FAFAF7] text-[#0A0A0A] pb-16">
       {/* header */}
-      <header className="bg-gradient-to-l from-[#1F6F5F] via-[#2d7a52] to-[#2FA084] text-white">
+      <header className="bg-gradient-to-l from-[#2B4521] via-[#5A6E3A] to-[#2FA084] text-white">
         <div className="max-w-3xl mx-auto px-5 pt-6 pb-7">
           <div className="flex items-center justify-between gap-3">
             <Link href="/pulse" className="w-9 h-9 bg-white/15 hover:bg-white/25 rounded-full flex items-center justify-center transition">
@@ -139,7 +139,7 @@ export default function WorldCupClient() {
       <main className="max-w-3xl mx-auto px-4 -mt-3 space-y-5">
         {loading && (
           <div className="bg-white rounded-3xl shadow-soft p-10 text-center">
-            <RefreshCw className="w-6 h-6 text-[#1F6F5F] animate-spin mx-auto mb-2" />
+            <RefreshCw className="w-6 h-6 text-[#2B4521] animate-spin mx-auto mb-2" />
             <p className="text-sm font-bold text-gray-500">بنجيب النتايج...</p>
           </div>
         )}
@@ -153,7 +153,7 @@ export default function WorldCupClient() {
             </p>
             <button
               onClick={() => load()}
-              className="mt-4 inline-flex items-center gap-2 bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl text-sm font-black"
+              className="mt-4 inline-flex items-center gap-2 bg-[#2B4521] text-white px-5 py-2.5 rounded-xl text-sm font-black"
             >
               <RefreshCw className="w-4 h-4" /> حدّث
             </button>
@@ -173,16 +173,16 @@ export default function WorldCupClient() {
 
         {/* TODAY */}
         {groups.today.length > 0 && (
-          <Section icon={<CalendarDays className="w-4 h-4 text-[#1F6F5F]" />} title="ماتشات النهارده">
+          <Section icon={<CalendarDays className="w-4 h-4 text-[#2B4521]" />} title="ماتشات النهارده">
             {groups.today.map((m) => <MatchRow key={m.id} m={m} />)}
           </Section>
         )}
 
         {/* FOOD CROSS-SELL */}
-        <div className="bg-gradient-to-l from-[#d4a017]/15 via-[#2FA084]/10 to-[#1F6F5F]/10 border border-[#1F6F5F]/15 rounded-3xl p-5">
+        <div className="bg-gradient-to-l from-[#d4a017]/15 via-[#2FA084]/10 to-[#2B4521]/10 border border-[#2B4521]/15 rounded-3xl p-5">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-white rounded-2xl shadow-soft flex items-center justify-center flex-shrink-0">
-              <UtensilsCrossed className="w-6 h-6 text-[#1F6F5F]" />
+              <UtensilsCrossed className="w-6 h-6 text-[#2B4521]" />
             </div>
             <div className="flex-1">
               <h3 className="font-black text-sm text-gray-900">الماتش من غير أكل؟ 🍕</h3>
@@ -192,7 +192,7 @@ export default function WorldCupClient() {
             </div>
             <Link
               href="/marketplace?category=food-general"
-              className="bg-[#1F6F5F] text-white px-4 py-2.5 rounded-xl text-xs font-black shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all flex-shrink-0"
+              className="bg-[#2B4521] text-white px-4 py-2.5 rounded-xl text-xs font-black shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all flex-shrink-0"
             >
               اطلب دلوقتي
             </Link>
@@ -242,7 +242,7 @@ function MatchRow({ m, showDay = false }: { m: WcMatch; showDay?: boolean }) {
   const isEgypt = m.home.name_ar === 'مصر' || m.away.name_ar === 'مصر'
   const played = m.status !== 'scheduled'
   return (
-    <div className={`px-4 py-3.5 ${isEgypt ? 'bg-[#1F6F5F]/5' : ''}`}>
+    <div className={`px-4 py-3.5 ${isEgypt ? 'bg-[#2B4521]/5' : ''}`}>
       {(m.stage || m.group || showDay) && (
         <p className="text-[9px] font-black text-gray-400 uppercase tracking-wider mb-1.5 text-center">
           {[m.stage, m.group, showDay ? dayLabel(m.utc_date) : null].filter(Boolean).join(' · ')}
@@ -269,7 +269,7 @@ function MatchRow({ m, showDay = false }: { m: WcMatch; showDay?: boolean }) {
             </div>
           ) : (
             <div>
-              <p className="text-sm font-black text-[#1F6F5F] tabular">{timeStr(m.utc_date)}</p>
+              <p className="text-sm font-black text-[#2B4521] tabular">{timeStr(m.utc_date)}</p>
               <p className="text-[9px] font-bold text-gray-400 mt-0.5">لسه</p>
             </div>
           )}

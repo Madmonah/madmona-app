@@ -45,7 +45,7 @@ const SAMPLE_CATEGORIES = [
  * Server-rendered HTML shown before client JS hydrates.
  *
  * 🐞 (٦ أغسطس ٢٠٢٦ — بلاغ محمد: «خانة ضيف بتفتح التصميم القديم الأخضر الأول»)
- *    الفولباك ده كان لسه بالثيم الأخضر الغامق القديم (`bg-[#1F6F5F]`) بينما
+ *    الفولباك ده كان لسه بالثيم الأخضر الغامق القديم (`bg-[#2B4521]`) بينما
  *    الويزارد نفسه (AddListingClient) اتعمله ريديزاين لثيم فاتح
  *    (`bg-[#FAFAF7]` / `text-[#1A2E26]`). النتيجة: المستخدم يشوف صفحة خضرا
  *    غامقة الأول وبعدين تتقلب فاتحة لما الـJS يحمّل — «فلاش» واضح ومزعج.
@@ -68,7 +68,7 @@ function StaticPageFallback() {
         <div className="flex items-center justify-between max-w-2xl mx-auto">
           <div className="flex items-center gap-3">
             <div className="text-2xl font-bold tracking-tight">مضمونة</div>
-            <span className="text-xs text-[#1F6F5F] uppercase tracking-widest">MADMONA</span>
+            <span className="text-xs text-[#2B4521] uppercase tracking-widest">MADMONA</span>
           </div>
           <a href="/" className="text-xs text-gray-600 no-underline">
             ← الرئيسية
@@ -84,7 +84,7 @@ function StaticPageFallback() {
         {/* شريط التقدم — نفس مقاسات الويزارد (الخطوة 1 = 20%) */}
         <div className="mt-4 max-w-2xl mx-auto">
           <div className="h-1 bg-[#F5F4F0] rounded-full overflow-hidden">
-            <div className="h-full bg-[#1F6F5F]" style={{ width: '20%' }} />
+            <div className="h-full bg-[#2B4521]" style={{ width: '20%' }} />
           </div>
           <div className="text-xs text-gray-500 mt-2 text-center">
             خطوة 1 من 5
@@ -100,14 +100,14 @@ function StaticPageFallback() {
           </span>
           <a
             href="/chat/marid?intent=add-listing"
-            className="flex-1 text-center py-2.5 px-3 rounded-xl text-[#1F6F5F] text-sm font-bold no-underline"
+            className="flex-1 text-center py-2.5 px-3 rounded-xl text-[#2B4521] text-sm font-bold no-underline"
           >
             🧞 ضيّفها مع المارد
           </a>
         </div>
         <p className="text-xs text-gray-500 -mt-4 mb-6 text-center">
           مش فاضي تملا الفورم؟ ابعت التفاصيل أو صور المنيو/البروشور للمارد في{' '}
-          <a href="/chat/marid?intent=add-listing" className="text-[#1F6F5F] font-bold underline">
+          <a href="/chat/marid?intent=add-listing" className="text-[#2B4521] font-bold underline">
             شات مضمونة
           </a>{' '}
           وهو يعملهالك.
@@ -139,7 +139,7 @@ function StaticPageFallback() {
               لو الصفحة مش بتفتح،{' '}
               <a
                 href="https://wa.me/201002229982?text=عايز%20أضيف%20إعلان"
-                className="underline text-[#1F6F5F] font-bold"
+                className="underline text-[#2B4521] font-bold"
               >
                 كلمنا على واتس
               </a>{' '}
@@ -152,7 +152,7 @@ function StaticPageFallback() {
         <div className="mt-4 text-center">
           <a
             href="https://wa.me/201002229982?text=عايز%20أضيف%20إعلان%20والفورم%20مش%20شغال"
-            className="inline-block text-xs text-gray-500 hover:text-[#1F6F5F] underline"
+            className="inline-block text-xs text-gray-500 hover:text-[#2B4521] underline"
           >
             عندك مشكلة في تحميل الصفحة؟ كلمنا واتس
           </a>

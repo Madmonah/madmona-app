@@ -199,7 +199,7 @@ export default function AdminDailyMessagesPage() {
   if (stage === 'loading') {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#2B4521] animate-spin" />
       </div>
     )
   }
@@ -207,9 +207,9 @@ export default function AdminDailyMessagesPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#2B4521] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
-          <Link href="/auth/login?redirect=/admin/daily-messages" className="block bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold">دخول</Link>
+          <Link href="/auth/login?redirect=/admin/daily-messages" className="block bg-[#2B4521] text-white py-3 rounded-xl font-semibold">دخول</Link>
         </div>
       </div>
     )
@@ -232,12 +232,12 @@ export default function AdminDailyMessagesPage() {
           <Link href="/admin/dashboard" className="w-9 h-9 bg-white shadow rounded-full flex items-center justify-center">
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
-          <MessageSquare className="w-5 h-5 text-[#1F6F5F]" />
+          <MessageSquare className="w-5 h-5 text-[#2B4521]" />
           <h1 className="text-lg font-black text-gray-900 flex-1">رسائل الصفحة الرئيسية</h1>
           <button
             type="button"
             onClick={() => setEditing(EMPTY_DRAFT)}
-            className="bg-[#1F6F5F] text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-[#1F6F5F]/90"
+            className="bg-[#2B4521] text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-[#2B4521]/90"
           >
             <Plus className="w-4 h-4" /> رسالة جديدة
           </button>
@@ -254,7 +254,7 @@ export default function AdminDailyMessagesPage() {
           </div>
         )}
 
-        <div className="bg-gradient-to-l from-[#1F6F5F] to-[#2d7a52] text-white rounded-2xl p-5">
+        <div className="bg-gradient-to-l from-[#2B4521] to-[#5A6E3A] text-white rounded-2xl p-5">
           <h2 className="font-black text-lg mb-1">إدارة الرسائل اليومية</h2>
           <p className="text-sm text-white/80">
             الرسائل دي بتظهر للزوار على الصفحة الرئيسية فوق النيوز. كل يوزر بيشوف رسالة مختلفة من البول.
@@ -305,7 +305,7 @@ export default function AdminDailyMessagesPage() {
                   )}
                   {m.cta_url && (
                     <a href={m.cta_url} target="_blank" rel="noopener noreferrer"
-                       className="inline-flex items-center gap-1 mt-2 me-2 text-xs text-[#1F6F5F] hover:underline">
+                       className="inline-flex items-center gap-1 mt-2 me-2 text-xs text-[#2B4521] hover:underline">
                       <ExternalLink className="w-3 h-3" />
                       {m.cta_label || m.cta_url}
                     </a>
@@ -394,7 +394,7 @@ function EditModal({
                   onClick={() => onChange({ ...draft, category: c.value })}
                   className={`p-2 rounded-xl text-xs font-medium border transition-all ${
                     draft.category === c.value
-                      ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
+                      ? 'bg-[#2B4521] border-[#2B4521] text-white'
                       : 'bg-white border-gray-200 hover:border-gray-300'
                   }`}
                 >
@@ -412,7 +412,7 @@ function EditModal({
               value={draft.title || ''}
               onChange={e => onChange({ ...draft, title: e.target.value })}
               placeholder="مثلاً: مرحبا في مضمونة 👋"
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40"
             />
           </div>
 
@@ -425,7 +425,7 @@ function EditModal({
               rows={3}
               maxLength={300}
               placeholder="رسالة قصيرة جذابة..."
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40"
             />
             <p className="text-[10px] text-gray-400 mt-1">{(draft.body || '').length}/300</p>
           </div>
@@ -439,7 +439,7 @@ function EditModal({
                 value={draft.cta_label || ''}
                 onChange={e => onChange({ ...draft, cta_label: e.target.value || null })}
                 placeholder="مثلاً: اكتشف المتاح"
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40"
               />
             </div>
             <div>
@@ -449,7 +449,7 @@ function EditModal({
                 value={draft.cta_url || ''}
                 onChange={e => onChange({ ...draft, cta_url: e.target.value || null })}
                 placeholder="/marketplace أو https://..."
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 font-mono"
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40 font-mono"
                 dir="ltr"
                 style={{ textAlign: 'left' }}
               />
@@ -464,7 +464,7 @@ function EditModal({
               value={draft.deal_code || ''}
               onChange={e => onChange({ ...draft, deal_code: e.target.value || null })}
               placeholder="مثلاً: MADMONA20"
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 font-mono"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40 font-mono"
             />
           </div>
 
@@ -478,7 +478,7 @@ function EditModal({
                 onChange={e => onChange({ ...draft, priority: Number(e.target.value) || 0 })}
                 min={0}
                 max={20}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40"
               />
               <p className="text-[10px] text-gray-400 mt-1">أعلى = يظهر أكتر</p>
             </div>
@@ -508,7 +508,7 @@ function EditModal({
                 type="date"
                 value={draft.start_date || ''}
                 onChange={e => onChange({ ...draft, start_date: e.target.value || null })}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40"
               />
             </div>
             <div>
@@ -519,7 +519,7 @@ function EditModal({
                 type="date"
                 value={draft.end_date || ''}
                 onChange={e => onChange({ ...draft, end_date: e.target.value || null })}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40"
               />
             </div>
           </div>
@@ -586,7 +586,7 @@ function EditModal({
             type="button"
             onClick={onSave}
             disabled={saving || !draft.title || !draft.body}
-            className="flex-1 py-3 rounded-xl bg-[#1F6F5F] hover:bg-[#1F6F5F]/90 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            className="flex-1 py-3 rounded-xl bg-[#2B4521] hover:bg-[#2B4521]/90 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {saving ? 'جاري الحفظ...' : 'حفظ'}

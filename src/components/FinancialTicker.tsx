@@ -71,7 +71,7 @@ export default function FinancialTicker() {
 
   if (loading || !data) {
     return (
-      <div className="bg-gradient-to-l from-[#1F6F5F] to-[#2d7a52] text-white py-2 overflow-hidden">
+      <div className="bg-gradient-to-l from-[#2B4521] to-[#5A6E3A] text-white py-2 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 flex items-center gap-2 text-xs">
           <RefreshCw className="w-3 h-3 animate-spin" />
           <span className="font-bold">جاري تحميل أسعار الصرف والذهب...</span>
@@ -105,7 +105,7 @@ export default function FinancialTicker() {
 
   return (
     <div
-      className="bg-gradient-to-l from-[#1F6F5F] via-[#2d7a52] to-[#1F6F5F] text-white py-2.5 overflow-hidden border-b border-white/10"
+      className="bg-gradient-to-l from-[#2B4521] via-[#5A6E3A] to-[#2B4521] text-white py-2.5 overflow-hidden border-b border-white/10"
       dir="ltr"
     >
       <div className="max-w-full overflow-hidden relative">

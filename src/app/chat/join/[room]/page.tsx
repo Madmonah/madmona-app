@@ -34,7 +34,7 @@ export default function JoinRoom() {
   }, [params, router])
 
   return (
-    <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'linear-gradient(160deg,#14231E,#1F6F5F)', color: '#fff', fontFamily: 'system-ui', textAlign: 'center', padding: 20 }}>
+    <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'linear-gradient(160deg,#14231E,#2B4521)', color: '#fff', fontFamily: 'system-ui', textAlign: 'center', padding: 20 }}>
       <div>
         <div style={{ fontSize: 48, marginBottom: 10 }}>👥</div>
         <div style={{ fontSize: 16 }}>{msg}</div>

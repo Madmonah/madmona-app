@@ -16,7 +16,7 @@ const TABLES = [
 ]
 
 const ACTION_LABELS: Record<string, { label: string; icon: any; cls: string }> = {
-  insert: { label: 'إضافة', icon: Plus, cls: 'text-[#1F6F5F]' },
+  insert: { label: 'إضافة', icon: Plus, cls: 'text-[#2B4521]' },
   update: { label: 'تعديل', icon: Edit3, cls: 'text-amber-700' },
   delete: { label: 'حذف', icon: Trash2, cls: 'text-red-600' },
 }
@@ -54,12 +54,12 @@ export default function AuditLogPage({ params }: { params: { supplierId: string 
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">B2B PARTNER · AUDIT LOG</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">B2B PARTNER · AUDIT LOG</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">سجل التعديلات · {supplier?.business_name}</h1>
               <p className="text-sm text-[#6B7280] mt-1">آخر 7 أيام · {logs.length} حركة</p>
             </div>
@@ -74,7 +74,7 @@ export default function AuditLogPage({ params }: { params: { supplierId: string 
             <Filter className="w-3.5 h-3.5 text-[#6B7280]" />
             {TABLES.map(t => (
               <button key={t.value || 'all'} onClick={() => setTableFilter(t.value)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-                tableFilter === t.value ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
+                tableFilter === t.value ? 'bg-[#2B4521] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
               }`}>{t.label}</button>
             ))}
           </div>
@@ -83,7 +83,7 @@ export default function AuditLogPage({ params }: { params: { supplierId: string 
         <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <div className="divide-y divide-gray-100">
             {loading ? (
-              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin inline" /></div>
+              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#2B4521] animate-spin inline" /></div>
             ) : logs.length === 0 ? (
               <div className="py-12 text-center">
                 <FileText className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
@@ -122,4 +122,4 @@ export default function AuditLogPage({ params }: { params: { supplierId: string 
   )
 }
 
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div> }

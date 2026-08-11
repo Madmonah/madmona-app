@@ -15,14 +15,14 @@ import { subscribeToPush, getNotificationPermission, isPushSupported } from '@/l
 // ── هوية مضمونة اللونية ─────────────────────────────────────────────────
 const C = {
   cream: '#FAFAF7',
-  green: '#1F6F5F',
+  green: '#2B4521',
   greenDk: '#175449',
   greenLt: '#2FA084',
   mint: '#6FCF97',
   gold: '#E4B95B',
   ink: '#14201d',
   sub: '#6b7d78',
-  line: 'rgba(31,111,95,.10)',
+  line: 'rgba(43, 69, 33,.10)',
   bubbleMe: '#DCF0E8',   // فقاعة المستخدم — منت فاتح
   bubbleBot: '#FFFFFF',  // فقاعة المارد — أبيض ناصع
   bg: 'linear-gradient(170deg,#F3F6F2 0%,#E9F1EC 55%,#E3EEE8 100%)',
@@ -351,7 +351,7 @@ export default function ChatPage() {
       <div dir="rtl" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `radial-gradient(circle at 30% 20%, ${C.greenLt} 0%, ${C.greenDk} 70%)`, padding: 16, fontFamily: "'Cairo', system-ui, sans-serif" }}>
         <style>{"@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');"}</style>
         <div style={{ background: '#fff', borderRadius: 22, padding: 30, width: '100%', maxWidth: 380, boxShadow: '0 20px 60px rgba(0,0,0,.35)' }}>
-          <div style={{ width: 76, height: 76, borderRadius: '50%', margin: '0 auto 12px', background: `linear-gradient(135deg,${C.gold},${C.green})`, display: 'grid', placeItems: 'center', overflow: 'hidden', boxShadow: '0 8px 24px rgba(31,111,95,.35)' }}>
+          <div style={{ width: 76, height: 76, borderRadius: '50%', margin: '0 auto 12px', background: `linear-gradient(135deg,${C.gold},${C.green})`, display: 'grid', placeItems: 'center', overflow: 'hidden', boxShadow: '0 8px 24px rgba(43, 69, 33,.35)' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={MARID_AVATAR} alt="المارد" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
@@ -412,7 +412,7 @@ export default function ChatPage() {
         {messages.map((m) => {
           if (m.role === 'sys') return (
             <div key={m.id} style={{ textAlign: 'center', margin: '10px 0' }}>
-              <span style={{ background: 'rgba(31,111,95,.10)', color: C.greenDk, fontSize: 12, padding: '5px 12px', borderRadius: 12, display: 'inline-block', maxWidth: '85%' }}>{m.text}</span>
+              <span style={{ background: 'rgba(43, 69, 33,.10)', color: C.greenDk, fontSize: 12, padding: '5px 12px', borderRadius: 12, display: 'inline-block', maxWidth: '85%' }}>{m.text}</span>
             </div>
           )
           const mine = m.role === 'user'
@@ -437,7 +437,7 @@ export default function ChatPage() {
                 >
                   {/* اقتباس الرد */}
                   {q && !m.deleted && (
-                    <div style={{ borderInlineStart: `3px solid ${C.gold}`, background: 'rgba(31,111,95,.06)', borderRadius: 8, padding: '4px 8px', marginBottom: 6, fontSize: 12.5 }}>
+                    <div style={{ borderInlineStart: `3px solid ${C.gold}`, background: 'rgba(43, 69, 33,.06)', borderRadius: 8, padding: '4px 8px', marginBottom: 6, fontSize: 12.5 }}>
                       <div style={{ color: C.green, fontWeight: 700, marginBottom: 1 }}>{q.role === 'user' ? 'أنت' : 'المارد'}</div>
                       <div style={{ color: C.sub, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{snippet(q)}</div>
                     </div>
@@ -489,7 +489,7 @@ export default function ChatPage() {
               {!m.deleted && (
                 <div style={{ display: 'flex', justifyContent: 'space-around', padding: '10px 8px', borderBottom: `1px solid ${C.line}`, background: C.cream }}>
                   {REACTIONS.map((e) => (
-                    <button key={e} onClick={() => actReact(m, e)} style={{ border: 'none', background: m.reaction === e ? 'rgba(31,111,95,.14)' : 'none', borderRadius: '50%', width: 38, height: 38, fontSize: 22, cursor: 'pointer', transition: 'transform .1s' }}>{e}</button>
+                    <button key={e} onClick={() => actReact(m, e)} style={{ border: 'none', background: m.reaction === e ? 'rgba(43, 69, 33,.14)' : 'none', borderRadius: '50%', width: 38, height: 38, fontSize: 22, cursor: 'pointer', transition: 'transform .1s' }}>{e}</button>
                   ))}
                 </div>
               )}
@@ -562,7 +562,7 @@ export default function ChatPage() {
 
 // ── ستايلات ──────────────────────────────────────────────────────────────
 const inp: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '12px 16px', margin: '0 0 12px', border: `1px solid ${C.line}`, borderRadius: 24, fontSize: 15, outline: 'none', background: '#fff', fontFamily: "'Cairo', system-ui, sans-serif" }
-const btnMain: React.CSSProperties = { background: `linear-gradient(135deg,${C.greenLt},${C.green})`, color: '#fff', border: 'none', borderRadius: '50%', height: 48, fontSize: 18, fontWeight: 700, cursor: 'pointer', boxShadow: '0 3px 10px rgba(31,111,95,.35)' }
+const btnMain: React.CSSProperties = { background: `linear-gradient(135deg,${C.greenLt},${C.green})`, color: '#fff', border: 'none', borderRadius: '50%', height: 48, fontSize: 18, fontWeight: 700, cursor: 'pointer', boxShadow: '0 3px 10px rgba(43, 69, 33,.35)' }
 const iconBtn: React.CSSProperties = { border: 'none', background: 'none', fontSize: 22, cursor: 'pointer', padding: 4, lineHeight: 1, transition: 'transform .15s' }
 const sheetBtn: React.CSSProperties = { border: `1px solid ${C.line}`, background: C.cream, borderRadius: 12, padding: '10px 16px', fontSize: 26, cursor: 'pointer', display: 'grid', placeItems: 'center', gap: 2 }
 const sheetLbl: React.CSSProperties = { fontSize: 12, color: C.sub }

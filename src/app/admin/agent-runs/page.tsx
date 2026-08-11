@@ -44,7 +44,7 @@ export default async function AgentRunsPage({
     <div dir="rtl" style={pageStyle}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <header style={{ marginBottom: 20, textAlign: 'center' }}>
-          <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>🔁 Agent Runs</h1>
+          <h1 style={{ color: '#2B4521', margin: 0, fontSize: 26 }}>🔁 Agent Runs</h1>
           <p style={{ color: '#666', marginTop: 6, fontSize: 13 }}>
             {totalCount ?? 0} run · {successCount ?? 0} success · {errorCount ?? 0} error · {pendingCount ?? 0} pending
           </p>
@@ -82,7 +82,7 @@ export default async function AgentRunsPage({
               {runs.map(r => (
                 <tr key={r.id} style={{ borderTop: '1px solid #E5E5E0' }}>
                   <td style={tdStyle}>
-                    <a href={`/admin/agent-runs?agent=${r.agent_name}`} style={{ color: '#1F6F5F', textDecoration: 'none' }}>
+                    <a href={`/admin/agent-runs?agent=${r.agent_name}`} style={{ color: '#2B4521', textDecoration: 'none' }}>
                       {r.agent_name}
                     </a>
                   </td>
@@ -105,9 +105,9 @@ export default async function AgentRunsPage({
 
         <div style={{ marginTop: 24, textAlign: 'center' }}>
           <a href="/admin/ai-os" style={{
-            color: '#1F6F5F', textDecoration: 'none', fontSize: 13,
+            color: '#2B4521', textDecoration: 'none', fontSize: 13,
             padding: '8px 16px', background: '#fff', borderRadius: 8,
-            border: '1px solid #1F6F5F', display: 'inline-block',
+            border: '1px solid #2B4521', display: 'inline-block',
           }}>← رجوع للداشبورد</a>
         </div>
       </div>
@@ -121,7 +121,7 @@ const pageStyle: React.CSSProperties = {
   padding: '24px 20px', color: '#1a1a1a',
 }
 const thStyle: React.CSSProperties = {
-  padding: 10, textAlign: 'right', fontWeight: 600, color: '#1F6F5F',
+  padding: 10, textAlign: 'right', fontWeight: 600, color: '#2B4521',
   borderBottom: '1px solid #E5E5E0',
 }
 const tdStyle: React.CSSProperties = {
@@ -130,10 +130,10 @@ const tdStyle: React.CSSProperties = {
 const chipStyle: React.CSSProperties = {
   fontSize: 12, padding: '6px 12px', background: '#fff',
   borderRadius: 20, border: '1px solid #E5E5E0',
-  color: '#1F6F5F', textDecoration: 'none',
+  color: '#2B4521', textDecoration: 'none',
 }
 const chipActiveStyle: React.CSSProperties = {
-  ...chipStyle, background: '#1F6F5F', color: '#fff', borderColor: '#1F6F5F',
+  ...chipStyle, background: '#2B4521', color: '#fff', borderColor: '#2B4521',
 }
 function statusBadgeStyle(status: string): React.CSSProperties {
   const colors: Record<string, string> = {

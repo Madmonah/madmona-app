@@ -39,8 +39,8 @@ type VKey = 'products' | 'rentals' | 'services'
 
 const VERTICALS: { key: VKey; ar: string; en: string; emoji: string; tracks: string[]; tone: string; accent: string }[] = [
   { key: 'products',    ar: 'بيع',        en: 'Buy',         emoji: '🏷️', tracks: ['products', 'sales'],   tone: 'from-[#2C5F8D] to-[#5B9BD5]', accent: '#3D7BB6' },
-  { key: 'rentals',     ar: 'إيجار',      en: 'Rent',        emoji: '🔑', tracks: ['rentals', 'hybrid'],   tone: 'from-[#1F6F5F] to-[#2FA084]', accent: '#1F6F5F' },
-  { key: 'services',    ar: 'خدمات',      en: 'Services',    emoji: '🛠️', tracks: ['services'],            tone: 'from-[#8A6A0F] to-[#D4A017]', accent: '#B8860B' },
+  { key: 'rentals',     ar: 'إيجار',      en: 'Rent',        emoji: '🔑', tracks: ['rentals', 'hybrid'],   tone: 'from-[#2B4521] to-[#2FA084]', accent: '#2B4521' },
+  { key: 'services',    ar: 'خدمات',      en: 'Services',    emoji: '🛠️', tracks: ['services'],            tone: 'from-[#8A6A0F] to-[#D4A017]', accent: '#FA8125' },
 ]
 
 // (11 أغسطس 2026) قسم «بورصة مضمونة العقارية» مش فئة داتا بيز — كارت ثابت
@@ -50,8 +50,8 @@ const BOURSE_CARD = {
   ar: 'بورصة مضمونة العقارية',
   en: 'Madmona Real Estate Exchange',
   emoji: '🏗️',
-  tone: 'from-[#14231E] to-[#1F6F5F]',
-  accent: '#1F6F5F',
+  tone: 'from-[#14231E] to-[#2B4521]',
+  accent: '#2B4521',
   href: '/real-estate/market',
 }
 
@@ -214,9 +214,9 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
 
   return (
     <div className="md:hidden bg-[#FAFAF7] min-h-screen">
-      {/* 1. Compact header — (11 Aug 2026) أخضر البراند #1F6F5F زي هيدر الديسكتوب،
+      {/* 1. Compact header — (11 Aug 2026) أخضر البراند #2B4521 زي هيدر الديسكتوب،
           نفس التصميم بالظبط بس بلون مختلف (طلب محمد) */}
-      <header className="flex items-center justify-between px-4 pt-3 pb-1 bg-[#1F6F5F]">
+      <header className="flex items-center justify-between px-4 pt-3 pb-1 bg-[#2B4521]">
         <Link href="/" className="flex items-center gap-2.5 no-underline">
           <span className="w-10 h-10 bg-white rounded-[14px] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(0,0,0,.06)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -230,7 +230,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
         <div className="flex gap-2">
           <Link href="/account" aria-label="الإشعارات" className="relative w-10 h-10 bg-white/15 rounded-[14px] flex items-center justify-center no-underline">
             <Bell className="w-[19px] h-[19px] text-white" strokeWidth={2} />
-            <span className="absolute top-[9px] left-[9px] w-[7px] h-[7px] rounded-full bg-[#E26D5C] border-[1.5px] border-[#1F6F5F]" />
+            <span className="absolute top-[9px] left-[9px] w-[7px] h-[7px] rounded-full bg-[#E26D5C] border-[1.5px] border-[#2B4521]" />
           </Link>
           <button type="button" onClick={() => setMenuOpen(true)} aria-label="القائمة" className="w-10 h-10 bg-white/15 rounded-[14px] flex items-center justify-center">
             <Menu className="w-[19px] h-[19px] text-white" strokeWidth={2} />
@@ -243,8 +243,8 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
         {/* تاب تحميل التطبيق - في نفس سطر العنوان على الشمال (30 Jul 2026) */}
         <div className="flex items-start justify-between gap-3 mb-3">
         <h1 className="text-[22px] font-black text-[#0A0A0A] leading-[1.25] flex-1 min-w-0">
-          {en ? <>Find anything —<br/>you&apos;re <span className="text-[#1F6F5F]">covered</span></>
-              : <>دوّر على أي حاجة —<br/>معاملاتك <span className="text-[#1F6F5F]">مضمونة</span></>}
+          {en ? <>Find anything —<br/>you&apos;re <span className="text-[#2B4521]">covered</span></>
+              : <>دوّر على أي حاجة —<br/>معاملاتك <span className="text-[#2B4521]">مضمونة</span></>}
         </h1>
           <div className="flex-shrink-0 pt-1">
             <DownloadAppBig compact />
@@ -258,13 +258,13 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
             placeholder={en ? 'Apartment · car · hall · service…' : 'شقة · عربية · قاعة · خدمة…'}
             className="flex-1 bg-transparent outline-none text-sm font-medium text-[#1A1A1A] placeholder:text-[#7C8A84] min-w-0"
           />
-          <button type="submit" aria-label="بحث" className="w-[34px] h-[34px] -my-1.5 -ms-2 rounded-[10px] bg-[#1F6F5F] flex items-center justify-center flex-shrink-0">
+          <button type="submit" aria-label="بحث" className="w-[34px] h-[34px] -my-1.5 -ms-2 rounded-[10px] bg-[#2B4521] flex items-center justify-center flex-shrink-0">
             <ArrowLeft className="w-4 h-4 text-white rtl:rotate-0 ltr:rotate-180" strokeWidth={2.5} />
           </button>
         </form>
 
         {/* 3. Ask Marid row — typeable; opens Marid chat with the message */}
-        <form onSubmit={submitMarid} className="flex items-center gap-2.5 bg-white border-[1.5px] border-[#E5DFD3] rounded-2xl px-4 py-3 mt-2.5 focus-within:border-[#1F6F5F] transition-colors">
+        <form onSubmit={submitMarid} className="flex items-center gap-2.5 bg-white border-[1.5px] border-[#E5DFD3] rounded-2xl px-4 py-3 mt-2.5 focus-within:border-[#2B4521] transition-colors">
           <span className="text-[20px] leading-none flex-shrink-0">🧞</span>
           <input
             value={marid}
@@ -273,7 +273,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
             className="flex-1 bg-transparent outline-none text-[13px] font-semibold text-[#1A1A1A] placeholder:text-[#4B5563] min-w-0"
           />
           <button type="submit" aria-label={en ? 'Ask' : 'اسأل'} className="flex-shrink-0">
-            <ArrowLeft className="w-4 h-4 text-[#1F6F5F] rtl:rotate-0 ltr:rotate-180" strokeWidth={2.5} />
+            <ArrowLeft className="w-4 h-4 text-[#2B4521] rtl:rotate-0 ltr:rotate-180" strokeWidth={2.5} />
           </button>
         </form>
 
@@ -286,7 +286,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
                 key={c.key}
                 type="button"
                 onClick={() => onChip(c.key)}
-                className={`flex-none inline-flex items-center gap-1.5 px-4 py-[9px] rounded-full text-[13px] font-extrabold transition-colors ${on ? 'bg-[#1F6F5F] text-white' : 'bg-white text-[#1A1A1A] border-[1.5px] border-[#E5DFD3]'}`}
+                className={`flex-none inline-flex items-center gap-1.5 px-4 py-[9px] rounded-full text-[13px] font-extrabold transition-colors ${on ? 'bg-[#2B4521] text-white' : 'bg-white text-[#1A1A1A] border-[1.5px] border-[#E5DFD3]'}`}
               >
                 {c.emoji && <span className="leading-none">{c.emoji}</span>}
                 <span>{c.label}</span>
@@ -302,7 +302,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
       <section className="pt-[22px]">
         <div className="flex items-baseline justify-between mb-3 px-4">
           <h2 className="text-[17px] font-black text-[#0A0A0A]">{en ? 'Choose your section' : 'اختار قسمك'}</h2>
-          <Link href="/marketplace" className="text-xs font-extrabold text-[#1F6F5F] no-underline">{en ? 'See all ←' : 'شوف الكل ←'}</Link>
+          <Link href="/marketplace" className="text-xs font-extrabold text-[#2B4521] no-underline">{en ? 'See all ←' : 'شوف الكل ←'}</Link>
         </div>
         <div className="flex flex-col gap-3 px-4">
           {VERTICALS.map(v => {
@@ -409,11 +409,11 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={n.image} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" loading="lazy" />
                 ) : (
-                  <span className="w-14 h-14 rounded-xl bg-[#1F6F5F]/10 flex items-center justify-center flex-shrink-0 text-xl">📰</span>
+                  <span className="w-14 h-14 rounded-xl bg-[#2B4521]/10 flex items-center justify-center flex-shrink-0 text-xl">📰</span>
                 )}
                 <span className="flex-1 min-w-0">
                   <span className="block text-[12.5px] font-extrabold text-[#111827] leading-[1.45] line-clamp-2">{n.title}</span>
-                  <span className="block text-[10px] font-bold text-[#1F6F5F] mt-0.5">{n.source} · {timeAgoAr(n.pubDate)}</span>
+                  <span className="block text-[10px] font-bold text-[#2B4521] mt-0.5">{n.source} · {timeAgoAr(n.pubDate)}</span>
                 </span>
               </a>
             ))}
@@ -423,12 +423,12 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
 
       {/* 8. Supplier CTA */}
       <section className="px-4 pt-6 pb-7">
-        <div className="rounded-[20px] px-5 py-[18px] flex items-center gap-3" style={{ background: 'linear-gradient(118deg, #1F6F5F, #2d7a52)' }}>
+        <div className="rounded-[20px] px-5 py-[18px] flex items-center gap-3" style={{ background: 'linear-gradient(118deg, #2B4521, #5A6E3A)' }}>
           <span className="flex-1">
             <span className="block text-white text-[15px] font-black">{en ? 'Have something to rent or sell?' : 'عندك حاجة تأجرها أو تبيعها؟'}</span>
             <span className="block text-white/75 text-[11px] font-semibold mt-0.5">{en ? 'List it free in 2 minutes — we market it for you' : 'ضيفها مجاناً في دقيقتين — إحنا بنسوّقلك'}</span>
           </span>
-          <Link href={`/add-listing${addTrack}`} className="bg-white text-[#1F6F5F] rounded-xl px-4 py-2.5 text-[13px] font-black flex-shrink-0 no-underline">{en ? 'List ←' : 'ضيف ←'}</Link>
+          <Link href={`/add-listing${addTrack}`} className="bg-white text-[#2B4521] rounded-xl px-4 py-2.5 text-[13px] font-black flex-shrink-0 no-underline">{en ? 'List ←' : 'ضيف ←'}</Link>
         </div>
       </section>
 
@@ -444,7 +444,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
                   <img src="/madmona-logo.png" alt="مضمونة" className="w-9 h-9 object-contain" />
                 </span>
                 <span>
-                  <span className="block font-black text-[#1F6F5F]">مضمونة</span>
+                  <span className="block font-black text-[#2B4521]">مضمونة</span>
                   <span className="block text-[9px] text-gray-500 font-bold tracking-[0.2em]">MADMONA</span>
                 </span>
               </div>
@@ -455,14 +455,14 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
             <nav className="flex-1 overflow-y-auto p-4 space-y-1">
               <DrawerLink href="/account" icon={<User className="w-5 h-5 text-gray-700" />} title={en ? 'Account' : 'حسابي'} desc={en ? 'Orders, favorites & wallet' : 'طلباتك ومفضّلتك والمحفظة'} onClose={() => setMenuOpen(false)} />
               <DrawerLink href={`/add-listing${addTrack}`} icon={<Plus className="w-5 h-5 text-[#d4a017]" strokeWidth={3} />} iconBg="bg-[#d4a017]/10" title={en ? 'Add a listing' : 'ضيف المنتج'} desc={en ? 'Start selling or renting' : 'ابدأ تبيع أو تؤجّر على مضمونة'} onClose={() => setMenuOpen(false)} />
-              <DrawerLink href="/careers" icon={<Briefcase className="w-5 h-5 text-[#1F6F5F]" />} iconBg="bg-[#1F6F5F]/10" title={en ? 'Careers' : 'التوظيف'} desc={en ? 'Join the Madmona team' : 'تقدّم لفرص العمل في مضمونة'} onClose={() => setMenuOpen(false)} />
+              <DrawerLink href="/careers" icon={<Briefcase className="w-5 h-5 text-[#2B4521]" />} iconBg="bg-[#2B4521]/10" title={en ? 'Careers' : 'التوظيف'} desc={en ? 'Join the Madmona team' : 'تقدّم لفرص العمل في مضمونة'} onClose={() => setMenuOpen(false)} />
               {loggedIn ? (
                 <button type="button" onClick={signOut} className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-red-50 text-right">
                   <span className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0"><LogOut className="w-5 h-5 text-red-500" /></span>
                   <span className="flex-1"><span className="block font-bold text-gray-900">{en ? 'Sign out' : 'تسجيل الخروج'}</span></span>
                 </button>
               ) : (
-                <DrawerLink href="/auth/login" icon={<LogIn className="w-5 h-5 text-[#1F6F5F]" />} iconBg="bg-[#1F6F5F]/10" title={en ? 'Log in' : 'تسجيل الدخول'} desc={en ? 'Access your account' : 'ادخل على حسابك'} onClose={() => setMenuOpen(false)} />
+                <DrawerLink href="/auth/login" icon={<LogIn className="w-5 h-5 text-[#2B4521]" />} iconBg="bg-[#2B4521]/10" title={en ? 'Log in' : 'تسجيل الدخول'} desc={en ? 'Access your account' : 'ادخل على حسابك'} onClose={() => setMenuOpen(false)} />
               )}
             </nav>
             <div className="p-4 border-t border-gray-100">
@@ -529,7 +529,7 @@ function MarketTicker({ fin, en }: { fin: FinData | null; en: boolean }) {
       {ticks.map((t, i) => (
         <span key={i} className="shrink-0 inline-flex items-baseline gap-1.5 bg-white border border-black/5 rounded-xl px-3 py-2">
           <span className="text-[10px] font-bold text-gray-500 whitespace-nowrap">{t.label}</span>
-          <span className="text-[12px] font-black text-[#1F6F5F] whitespace-nowrap">{t.value}</span>
+          <span className="text-[12px] font-black text-[#2B4521] whitespace-nowrap">{t.value}</span>
         </span>
       ))}
     </div>

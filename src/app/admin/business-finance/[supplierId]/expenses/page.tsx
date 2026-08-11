@@ -67,12 +67,12 @@ export default function ExpensesPage({ params }: { params: { supplierId: string 
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">B2B PARTNER · EXPENSES</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">B2B PARTNER · EXPENSES</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">المصاريف · {supplier?.business_name}</h1>
               {data?.stats && (
                 <p className="text-sm text-[#6B7280] mt-1">
@@ -81,7 +81,7 @@ export default function ExpensesPage({ params }: { params: { supplierId: string 
               )}
             </div>
             <div className="flex gap-2 flex-wrap">
-              <button onClick={() => setShowAdd(true)} className="px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold flex items-center gap-2">
+              <button onClick={() => setShowAdd(true)} className="px-4 py-2 rounded-xl bg-[#2B4521] text-white text-sm font-bold flex items-center gap-2">
                 <Plus className="w-4 h-4" /> اضف مصروف
               </button>
               <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7] text-[#1A2E26]"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
@@ -96,11 +96,11 @@ export default function ExpensesPage({ params }: { params: { supplierId: string 
           <div className="flex gap-2 flex-wrap items-center">
             <Filter className="w-3.5 h-3.5 text-[#6B7280]" />
             <button onClick={() => setBranchFilter(null)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-              !branchFilter ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
+              !branchFilter ? 'bg-[#2B4521] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
             }`}>كل الفروع</button>
             {branches.map(b => (
               <button key={b.id} onClick={() => setBranchFilter(b.id)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-                branchFilter === b.id ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
+                branchFilter === b.id ? 'bg-[#2B4521] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
               }`}>{b.name}</button>
             ))}
           </div>
@@ -132,12 +132,12 @@ export default function ExpensesPage({ params }: { params: { supplierId: string 
           </div>
           <div className="divide-y divide-gray-100">
             {loading ? (
-              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin inline" /></div>
+              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#2B4521] animate-spin inline" /></div>
             ) : data?.expenses?.length === 0 ? (
               <div className="py-12 text-center">
                 <Receipt className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
                 <p className="text-sm font-bold text-[#1A2E26]">مفيش مصاريف لسه</p>
-                <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold">أضف أول مصروف</button>
+                <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#2B4521] text-white text-sm font-bold">أضف أول مصروف</button>
               </div>
             ) : (data?.expenses || []).map((e: any) => (
               <div key={e.id} className="grid grid-cols-12 gap-3 px-4 py-3 items-center text-sm">
@@ -228,7 +228,7 @@ function AddExpenseModal({ supplierId, branches, onClose, onSaved }: any) {
             <div className="grid grid-cols-3 gap-1.5">
               {CATEGORIES.map(c => (
                 <button key={c.value} onClick={() => setForm({ ...form, category: c.value })} className={`px-2 py-1.5 rounded-lg text-xs font-bold ${
-                  form.category === c.value ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
+                  form.category === c.value ? 'bg-[#2B4521] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
                 }`}>{c.label}</button>
               ))}
             </div>
@@ -240,7 +240,7 @@ function AddExpenseModal({ supplierId, branches, onClose, onSaved }: any) {
             <div className="grid grid-cols-3 gap-1.5">
               {PAYMENT_METHODS.map(m => (
                 <button key={m.value} onClick={() => setForm({ ...form, payment_method: m.value })} className={`px-2 py-1.5 rounded-lg text-xs font-bold ${
-                  form.payment_method === m.value ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
+                  form.payment_method === m.value ? 'bg-[#2B4521] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
                 }`}>{m.label}</button>
               ))}
             </div>
@@ -259,7 +259,7 @@ function AddExpenseModal({ supplierId, branches, onClose, onSaved }: any) {
               <p className="text-xs font-bold text-red-700">{err}</p>
             </div>
           )}
-          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#1F6F5F] text-white font-black text-sm disabled:opacity-50">
+          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#2B4521] text-white font-black text-sm disabled:opacity-50">
             {saving ? 'جاري الحفظ...' : 'احفظ'}
           </button>
         </div>
@@ -278,5 +278,5 @@ function Field({ label, children }: any) {
 }
 
 function Loader() {
-  return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div>
+  return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div>
 }

@@ -263,7 +263,7 @@ export default function AdminNotificationsPage() {
   if (stage === 'loading') {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#2B4521] animate-spin" />
       </div>
     )
   }
@@ -272,11 +272,11 @@ export default function AdminNotificationsPage() {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#2B4521] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
           <Link
             href="/auth/login?redirect=/admin/notifications"
-            className="block bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold"
+            className="block bg-[#2B4521] text-white py-3 rounded-xl font-semibold"
           >
             دخول
           </Link>
@@ -292,7 +292,7 @@ export default function AdminNotificationsPage() {
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
           <h1 className="font-bold mb-2">مش مسموح</h1>
           <p className="text-sm text-gray-600 mb-4">الصفحة دي للأدمن فقط.</p>
-          <Link href="/account" className="inline-block bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold">
+          <Link href="/account" className="inline-block bg-[#2B4521] text-white px-5 py-2.5 rounded-xl font-semibold">
             ارجع للحساب
           </Link>
         </div>
@@ -315,7 +315,7 @@ export default function AdminNotificationsPage() {
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
           <div className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-[#1F6F5F]" />
+            <Bell className="w-5 h-5 text-[#2B4521]" />
             <h1 className="text-lg font-black text-gray-900">إرسال إشعارات</h1>
           </div>
         </div>
@@ -325,7 +325,7 @@ export default function AdminNotificationsPage() {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-white rounded-2xl shadow-soft p-4">
-            <div className="inline-flex items-center justify-center w-7 h-7 rounded-lg mb-2 bg-[#1F6F5F]/10 text-[#1F6F5F]">
+            <div className="inline-flex items-center justify-center w-7 h-7 rounded-lg mb-2 bg-[#2B4521]/10 text-[#2B4521]">
               <Users className="w-4 h-4" />
             </div>
             <p className="text-[11px] text-gray-500 mb-1">إجمالي المستخدمين</p>
@@ -352,7 +352,7 @@ export default function AdminNotificationsPage() {
         {/* Audience selection */}
         <div className="bg-white rounded-3xl shadow-soft p-5">
           <h2 className="font-black text-gray-900 mb-3 flex items-center gap-2">
-            <Users className="w-4 h-4 text-[#1F6F5F]" />
+            <Users className="w-4 h-4 text-[#2B4521]" />
             مين هيوصله الإشعار؟
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
@@ -399,13 +399,13 @@ export default function AdminNotificationsPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="ابحث بالاسم أو رقم الموبايل..."
-                    className="w-full pr-10 pl-3 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
+                    className="w-full pr-10 pl-3 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40"
                   />
                 </div>
                 <select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value as typeof roleFilter)}
-                  className="px-3 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-[#1F6F5F]/40"
+                  className="px-3 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-[#2B4521]/40"
                 >
                   <option value="all">الكل</option>
                   <option value="customer">عملاء</option>
@@ -434,12 +434,12 @@ export default function AdminNotificationsPage() {
                         }}
                         className={`w-full flex items-center gap-3 p-2.5 rounded-xl border transition-all text-right ${
                           isSelected
-                            ? 'border-[#1F6F5F] bg-[#1F6F5F]/5'
+                            ? 'border-[#2B4521] bg-[#2B4521]/5'
                             : 'border-gray-100 hover:border-gray-200 bg-white'
                         }`}
                       >
                         <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                          isSelected ? 'bg-[#1F6F5F] text-white' : 'bg-gray-100 text-gray-500'
+                          isSelected ? 'bg-[#2B4521] text-white' : 'bg-gray-100 text-gray-500'
                         }`}>
                           {isSelected ? <CheckCircle className="w-4 h-4" /> : <User className="w-4 h-4" />}
                         </div>
@@ -450,7 +450,7 @@ export default function AdminNotificationsPage() {
                             </p>
                             <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
                               user.role === 'admin' ? 'bg-[#2FA084]/10 text-[#2FA084]' :
-                              user.role === 'supplier' ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' :
+                              user.role === 'supplier' ? 'bg-[#2B4521]/10 text-[#2B4521]' :
                               'bg-gray-100 text-gray-600'
                             }`}>
                               {user.role === 'admin' ? 'أدمن' : user.role === 'supplier' ? 'مورد' : 'عميل'}
@@ -494,7 +494,7 @@ export default function AdminNotificationsPage() {
         {/* Message form */}
         <div className="bg-white rounded-3xl shadow-soft p-5 space-y-3">
           <h2 className="font-black text-gray-900 mb-1 flex items-center gap-2">
-            <MessageCircle className="w-4 h-4 text-[#1F6F5F]" />
+            <MessageCircle className="w-4 h-4 text-[#2B4521]" />
             محتوى الإشعار
           </h2>
 
@@ -506,7 +506,7 @@ export default function AdminNotificationsPage() {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="مثال: عرض جديد على Madmona ✨"
               maxLength={100}
-              className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
+              className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40"
             />
             <p className="text-[10px] text-gray-400 mt-1">{title.length}/100</p>
           </div>
@@ -519,7 +519,7 @@ export default function AdminNotificationsPage() {
               placeholder="مثال: عرض حصري على مساحاتنا - 20% خصم لفترة محدودة"
               maxLength={300}
               rows={3}
-              className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 resize-y"
+              className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40 resize-y"
             />
             <p className="text-[10px] text-gray-400 mt-1">{body.length}/300</p>
           </div>
@@ -531,7 +531,7 @@ export default function AdminNotificationsPage() {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="/marketplace أو /account/bookings"
-              className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40"
+              className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40"
               dir="ltr"
               style={{ textAlign: 'left' }}
             />
@@ -543,7 +543,7 @@ export default function AdminNotificationsPage() {
               <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-2">معاينة</p>
               <div className="bg-white rounded-xl p-3">
                 <div className="flex items-start gap-2">
-                  <div className="w-8 h-8 bg-[#1F6F5F] rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 bg-[#2B4521] rounded-lg flex items-center justify-center flex-shrink-0">
                     <Bell className="w-4 h-4 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -571,7 +571,7 @@ export default function AdminNotificationsPage() {
         )}
 
         {/* Send button */}
-        <div className="bg-gradient-to-l from-[#1F6F5F] to-[#2d7a52] text-white rounded-3xl p-5 shadow-luxe">
+        <div className="bg-gradient-to-l from-[#2B4521] to-[#5A6E3A] text-white rounded-3xl p-5 shadow-luxe">
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <div>
               <p className="text-xs text-white/70 uppercase tracking-widest font-bold">سيوصل لـ</p>
@@ -588,7 +588,7 @@ export default function AdminNotificationsPage() {
             <button
               onClick={handleSend}
               disabled={sending || recipientCount === 0 || !title.trim() || !body.trim()}
-              className="bg-white text-[#1F6F5F] px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="bg-white text-[#2B4521] px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
               {sending ? 'جاري الإرسال...' : 'ابعت الإشعار'}
@@ -623,12 +623,12 @@ function AudienceButton({
       onClick={onClick}
       className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
         active
-          ? 'border-[#1F6F5F] bg-[#1F6F5F]/5 text-[#1F6F5F]'
+          ? 'border-[#2B4521] bg-[#2B4521]/5 text-[#2B4521]'
           : 'border-gray-100 bg-white text-gray-600 hover:border-gray-200'
       }`}
     >
       <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
-        active ? 'bg-[#1F6F5F] text-white' : 'bg-gray-100 text-gray-500'
+        active ? 'bg-[#2B4521] text-white' : 'bg-gray-100 text-gray-500'
       }`}>
         {icon}
       </div>

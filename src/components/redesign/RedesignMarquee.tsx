@@ -42,7 +42,7 @@ export default function RedesignMarquee() {
       <div className="rz-mq" style={{ display: 'flex', gap: 48, width: 'max-content', paddingLeft: 48 }}>
         {loop.map((t, i) => (
           <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 14, whiteSpace: 'nowrap', fontWeight: 700, fontSize: 14, fontFamily: 'var(--font-alex), sans-serif' }}>
-            <span style={{ color: '#B8860B' }}>✦</span>
+            <span style={{ color: '#FA8125' }}>✦</span>
             <span>{t}</span>
           </span>
         ))}

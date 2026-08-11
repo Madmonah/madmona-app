@@ -89,15 +89,15 @@ export default async function InsightsDashboard({
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div>
-            <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>💡 AI Insights</h1>
+            <h1 style={{ color: '#2B4521', margin: 0, fontSize: 26 }}>💡 AI Insights</h1>
             <p style={{ color: '#666', margin: '4px 0 0', fontSize: 13 }}>
               كل الـ insights والفرص اللي اكتشفها الـ AI
             </p>
           </div>
           <div style={{ display: 'flex', gap: 12, fontSize: 13 }}>
-            <a href="/admin/marketing-hq" style={{ color: '#1F6F5F' }}>← HQ</a>
-            <a href="/admin/agents" style={{ color: '#1F6F5F' }}>← Agents</a>
-            <a href="/admin/leads-feed" style={{ color: '#1F6F5F' }}>← Leads</a>
+            <a href="/admin/marketing-hq" style={{ color: '#2B4521' }}>← HQ</a>
+            <a href="/admin/agents" style={{ color: '#2B4521' }}>← Agents</a>
+            <a href="/admin/leads-feed" style={{ color: '#2B4521' }}>← Leads</a>
           </div>
         </div>
 
@@ -111,7 +111,7 @@ export default async function InsightsDashboard({
           {[
             { label: '🔥 عالي الأولوية', val: highCount, color: '#6FCF97' },
             { label: '🆕 جديدة', val: newCount, color: '#2FA084' },
-            { label: '📊 إجمالي', val: stats.length, color: '#1F6F5F' },
+            { label: '📊 إجمالي', val: stats.length, color: '#2B4521' },
           ].map((s, i) => (
             <div key={i} style={{
               background: '#fff',
@@ -138,14 +138,14 @@ export default async function InsightsDashboard({
               key={f.value}
               href={`?filter=${f.value}${agentFilter !== 'all' ? `&agent=${agentFilter}` : ''}`}
               style={{
-                background: filter === f.value ? '#1F6F5F' : '#fff',
-                color: filter === f.value ? '#FAF7F0' : '#1F6F5F',
+                background: filter === f.value ? '#2B4521' : '#fff',
+                color: filter === f.value ? '#FAF7F0' : '#2B4521',
                 padding: '6px 14px',
                 borderRadius: 8,
                 textDecoration: 'none',
                 fontSize: 12,
                 fontWeight: 'bold',
-                border: '1px solid #1F6F5F',
+                border: '1px solid #2B4521',
               }}
             >
               {f.label}
@@ -159,17 +159,17 @@ export default async function InsightsDashboard({
             <span style={{ color: '#666', marginLeft: 8 }}>فلتر بالـ agent:</span>
             <a href={`?filter=${filter}`} style={{
               padding: '4px 10px',
-              background: agentFilter === 'all' ? '#1F6F5F' : '#fff',
-              color: agentFilter === 'all' ? '#FAF7F0' : '#1F6F5F',
+              background: agentFilter === 'all' ? '#2B4521' : '#fff',
+              color: agentFilter === 'all' ? '#FAF7F0' : '#2B4521',
               borderRadius: 6,
               textDecoration: 'none',
               marginLeft: 6,
-              border: '1px solid #1F6F5F',
+              border: '1px solid #2B4521',
             }}>الكل</a>
             {Array.from(agentCounts.entries()).map(([name, count]) => (
               <a key={name} href={`?filter=${filter}&agent=${name}`} style={{
                 padding: '4px 10px',
-                background: agentFilter === name ? '#1F6F5F' : '#fff',
+                background: agentFilter === name ? '#2B4521' : '#fff',
                 color: agentFilter === name ? '#FAF7F0' : '#666',
                 borderRadius: 6,
                 textDecoration: 'none',
@@ -216,7 +216,7 @@ export default async function InsightsDashboard({
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontSize: 24 }}>{icon}</span>
                       <div>
-                        <h3 style={{ margin: 0, color: '#1F6F5F', fontSize: 15 }}>
+                        <h3 style={{ margin: 0, color: '#2B4521', fontSize: 15 }}>
                           {insight.title}
                         </h3>
                         <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>
@@ -247,7 +247,7 @@ export default async function InsightsDashboard({
                       borderRadius: 8,
                       marginTop: 10,
                       fontSize: 12,
-                      color: '#1F6F5F',
+                      color: '#2B4521',
                     }}>
                       <strong>👉 الإجراء المقترح:</strong> {insight.recommended_action}
                     </div>

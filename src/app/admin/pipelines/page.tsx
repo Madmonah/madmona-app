@@ -69,7 +69,7 @@ interface RunDetail {
 // ============================================================================
 
 const PIPELINE_META: Record<string, { icon: typeof Megaphone; gradient: string; emoji: string; arabicName: string }> = {
-  'daily-content': { icon: Megaphone, gradient: 'from-[#1F6F5F] to-[#2d7a52]', emoji: '🎬', arabicName: 'محتوى اليوم' },
+  'daily-content': { icon: Megaphone, gradient: 'from-[#2B4521] to-[#5A6E3A]', emoji: '🎬', arabicName: 'محتوى اليوم' },
   'lead-funnel': { icon: Target, gradient: 'from-[#2FA084] to-[#d4a017]', emoji: '🎯', arabicName: 'تأهيل وقفل العملاء' },
   'quality-trust': { icon: Shield, gradient: 'from-[#6FCF97] to-[#ea580c]', emoji: '🛡️', arabicName: 'الجودة والأمان' },
   'pricing-strategy': { icon: DollarSign, gradient: 'from-purple-700 to-indigo-600', emoji: '💎', arabicName: 'استراتيجية التسعير' },
@@ -185,8 +185,8 @@ export default function PipelinesPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#FAF7F0] to-[#f5efe1] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-[#1F6F5F] animate-spin mx-auto mb-4" />
-          <p className="text-[#1F6F5F] font-bold">جاري تحميل النظام...</p>
+          <Loader2 className="w-12 h-12 text-[#2B4521] animate-spin mx-auto mb-4" />
+          <p className="text-[#2B4521] font-bold">جاري تحميل النظام...</p>
         </div>
       </div>
     )
@@ -201,7 +201,7 @@ export default function PipelinesPage() {
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => { sessionStorage.removeItem('madmona_admin_pw'); window.location.reload() }}
-            className="px-6 py-3 bg-[#1F6F5F] text-white rounded-xl font-bold hover:bg-[#164a30] transition-colors"
+            className="px-6 py-3 bg-[#2B4521] text-white rounded-xl font-bold hover:bg-[#164a30] transition-colors"
           >
             حاول تاني
           </button>
@@ -213,7 +213,7 @@ export default function PipelinesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FAF7F0] via-[#f5efe1] to-[#FAF7F0]" dir="rtl">
       {/* ============== HERO ============== */}
-      <header className="relative overflow-hidden bg-gradient-to-br from-[#0F3324] via-[#1F6F5F] to-[#2d7a52] text-white">
+      <header className="relative overflow-hidden bg-gradient-to-br from-[#0F3324] via-[#2B4521] to-[#5A6E3A] text-white">
         <div className="absolute inset-0 opacity-10" style={{
           backgroundImage: `radial-gradient(circle at 20% 50%, white 0, transparent 50%), radial-gradient(circle at 80% 80%, white 0, transparent 50%)`,
         }} />
@@ -268,7 +268,7 @@ export default function PipelinesPage() {
           </h2>
           <button
             onClick={() => fetchPipelines(adminPw)}
-            className="flex items-center gap-2 text-xs text-gray-500 hover:text-[#1F6F5F] transition-colors"
+            className="flex items-center gap-2 text-xs text-gray-500 hover:text-[#2B4521] transition-colors"
           >
             <RefreshCw className="w-3 h-3" /> تحديث
           </button>
@@ -380,7 +380,7 @@ function PipelineCard({ pipeline, onTrigger, triggering, onViewRun }: {
               <div key={i} className="flex items-center gap-1 flex-shrink-0">
                 <div className={`relative px-3 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap ${
                   step.required
-                    ? 'bg-[#1F6F5F] text-white'
+                    ? 'bg-[#2B4521] text-white'
                     : 'bg-gray-100 text-gray-700 border border-gray-200'
                 }`}>
                   {step.agent}
@@ -509,7 +509,7 @@ function RunDetailModal({ detail, loading, onClose }: { detail: RunDetail | null
       >
         {loading ? (
           <div className="p-20 text-center">
-            <Loader2 className="w-12 h-12 text-[#1F6F5F] animate-spin mx-auto mb-4" />
+            <Loader2 className="w-12 h-12 text-[#2B4521] animate-spin mx-auto mb-4" />
             <p className="text-gray-500">جاري التحميل...</p>
           </div>
         ) : detail ? (

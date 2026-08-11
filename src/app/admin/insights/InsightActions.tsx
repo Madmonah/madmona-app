@@ -100,7 +100,7 @@ export default function InsightActions({ insightId, currentStatus }: Props) {
           disabled={loading}
           style={{
             padding: '6px 12px',
-            background: '#1F6F5F',
+            background: '#2B4521',
             color: '#fff',
             border: 'none',
             borderRadius: 6,

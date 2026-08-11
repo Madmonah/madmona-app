@@ -9,7 +9,7 @@ import SiteFooter from '@/components/SiteFooter'
 // ============================================================================
 // HomeRedesign — (٧ أغسطس ٢٠٢٦) «التصميم الجديد» من ملف Madmona Redesign
 // اللي عمله محمد في Claude Design. ديسكتوب بس — الموبايل لسه MobileHome.
-// الهوية: كريمي #F4EFE4 · أخضر غامق #0E332C · دهبي #B8860B · خط Alexandria.
+// الهوية: كريمي #F4EFE4 · أخضر غامق #0E332C · دهبي #FA8125 · خط Alexandria.
 // كل الداتا حقيقية: إحصائيات + أقسام + بورصة property_market_items + مطورين.
 // ============================================================================
 
@@ -18,10 +18,10 @@ const ibm = IBM_Plex_Sans_Arabic({ subsets: ['arabic', 'latin'], weight: ['400',
 
 const INK = '#0E332C'
 const CREAM = '#F4EFE4'
-const GOLD = '#B8860B'
-// (11 Aug 2026) أخضر البراند القياسي للهيدر — نفس #1F6F5F بتاع TopNav/SiteFooter.
+const GOLD = '#FA8125'
+// (11 Aug 2026) أخضر البراند القياسي للهيدر — نفس #2B4521 بتاع TopNav/SiteFooter.
 // مش نفس INK (الأخضر الغامق الأصلي بتاع التصميم) — ده أخضر تاني مخصص للهيدر بس.
-const NAV_GREEN = '#1F6F5F'
+const NAV_GREEN = '#2B4521'
 
 type Cat = {
   id: string; name_ar: string; slug: string; icon: string | null; track: string | null
@@ -91,8 +91,8 @@ async function getMarketTiles() {
   }
 }
 
-const ACCENTS = ['#B8860B', '#2FA084', '#6D5ACF', '#0E332C']
-const TINTS = ['rgba(184,134,11,0.14)', 'rgba(47,160,132,0.14)', 'rgba(109,90,207,0.14)', 'rgba(14,51,44,0.1)']
+const ACCENTS = ['#FA8125', '#2FA084', '#6D5ACF', '#0E332C']
+const TINTS = ['rgba(250, 129, 37,0.14)', 'rgba(47,160,132,0.14)', 'rgba(109,90,207,0.14)', 'rgba(14,51,44,0.1)']
 
 // (11 أغسطس 2026) الهيرو بقى 4 كروت ثابتة بس: بيع · إيجار · خدمات · بورصة
 // مضمونة العقارية — بدل الكروت الديناميكية الخمسة اللي كانت بتشمل المطاعم.
@@ -158,7 +158,7 @@ a { text-decoration: none; }
       <div style={{ height: 4, background: `linear-gradient(90deg, ${GOLD}, ${INK} 30%, ${INK} 70%, ${GOLD})` }} />
 
       {/* ═══ Nav ═══ */}
-      {/* (11 Aug 2026) أخضر البراند #1F6F5F بدل الكريمي الشفاف القديم — نفس
+      {/* (11 Aug 2026) أخضر البراند #2B4521 بدل الكريمي الشفاف القديم — نفس
           التصميم/التخطيط بالظبط، بس عناصر بيضا بدل الأخضر الغامق (طلب محمد) */}
       <header style={{ position: 'sticky', top: 0, zIndex: 50, background: NAV_GREEN, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
         <div style={{ maxWidth: 1360, margin: '0 auto', padding: '14px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
@@ -194,7 +194,7 @@ a { text-decoration: none; }
             <h1 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 76, lineHeight: 1.12, letterSpacing: '-0.01em', color: INK }}>
               كل حاجة<br />
               <span style={{ color: 'transparent', WebkitTextStroke: `2px ${INK}` }}>تشتريها</span> أو<br />
-              تأجرها… <span style={{ position: 'relative', display: 'inline-block', color: GOLD }}>مضمونة<span style={{ position: 'absolute', right: 0, left: 0, bottom: 6, height: 10, background: 'rgba(184,134,11,0.18)', zIndex: -1, borderRadius: 4 }} /></span>
+              تأجرها… <span style={{ position: 'relative', display: 'inline-block', color: GOLD }}>مضمونة<span style={{ position: 'absolute', right: 0, left: 0, bottom: 6, height: 10, background: 'rgba(250, 129, 37,0.18)', zIndex: -1, borderRadius: 4 }} /></span>
             </h1>
             <p style={{ margin: '22px 0 0', maxWidth: 460, fontSize: 16, lineHeight: 1.9, color: 'rgba(18,38,31,0.7)' }}>
               عقارات، عربيات، خدمات، مطاعم — كل مورد متوثّق، وكل صفقة عليها ضمان مضمونة. دوّر، قارن، واحجز وانت مطمّن.
@@ -288,7 +288,7 @@ a { text-decoration: none; }
       {/* ═══ Live market (dark) ═══ */}
       {tiles.length > 0 && (
         <section style={{ background: INK, padding: '72px 28px', position: 'relative', overflow: 'hidden' }}>
-          <span style={{ position: 'absolute', top: -120, left: -80, width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(184,134,11,0.22), transparent 70%)', pointerEvents: 'none' }} />
+          <span style={{ position: 'absolute', top: -120, left: -80, width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(250, 129, 37,0.22), transparent 70%)', pointerEvents: 'none' }} />
           <div style={{ maxWidth: 1360, margin: '0 auto', position: 'relative' }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 36 }}>
               <div>
@@ -386,7 +386,7 @@ a { text-decoration: none; }
       </section>
 
       {/* (11 Aug 2026) الفوتر الأخضر الغامق القديم (INK #0E332C) اتبدّل بـ
-          SiteFooter الموحّد (#1F6F5F) — أول صفحة بتتجرّب عليها قبل التعميم
+          SiteFooter الموحّد (#2B4521) — أول صفحة بتتجرّب عليها قبل التعميم
           على باقي صفحات العميل (طلب محمد: الهيدر والفوتر أخضر). */}
       <SiteFooter />
     </div>

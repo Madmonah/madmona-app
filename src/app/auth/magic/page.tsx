@@ -137,7 +137,7 @@ export default function MagicLinkPage() {
 
         {status === 'verifying' && (
           <>
-            <h1 style={{ margin: '0 0 8px', fontSize: 22, color: '#1F6F5F' }}>
+            <h1 style={{ margin: '0 0 8px', fontSize: 22, color: '#2B4521' }}>
               مرحباً بك في مضمونة
             </h1>
             <p style={{ color: '#666', margin: 0 }}>جاري الدخول...</p>
@@ -157,7 +157,7 @@ export default function MagicLinkPage() {
 
         {status === 'success' && (
           <>
-            <h1 style={{ margin: '0 0 8px', fontSize: 22, color: '#1F6F5F' }}>
+            <h1 style={{ margin: '0 0 8px', fontSize: 22, color: '#2B4521' }}>
               تم الدخول ✓
             </h1>
             <p style={{ color: '#666', margin: 0 }}>جاري توجيهك...</p>
@@ -166,7 +166,7 @@ export default function MagicLinkPage() {
 
         {status === 'error' && (
           <>
-            <h1 style={{ margin: '0 0 12px', fontSize: 20, color: '#1F6F5F' }}>
+            <h1 style={{ margin: '0 0 12px', fontSize: 20, color: '#2B4521' }}>
               {errorMsg}
             </h1>
             <p style={{ margin: '0 0 24px', color: '#444', lineHeight: 1.6 }}>

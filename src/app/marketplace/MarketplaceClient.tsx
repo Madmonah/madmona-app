@@ -82,12 +82,12 @@ const TRACK_EMOJI: Record<TrackTab, string> = {
 
 // Per-vertical colours — same identity as the homepage hero/tabs.
 const TRACK_ACCENT: Record<TrackTab, { accent: string; bg: string }> = {
-  all:         { accent: '#1F6F5F', bg: '#E7F1ED' },
+  all:         { accent: '#2B4521', bg: '#E7F1ED' },
   products:    { accent: '#3D7BB6', bg: '#D9E7F4' },
-  rentals:     { accent: '#1F6F5F', bg: '#E7F1ED' },
+  rentals:     { accent: '#2B4521', bg: '#E7F1ED' },
   services:    { accent: '#D4A017', bg: '#FAEFD1' },
   restaurants: { accent: '#E26D5C', bg: '#FAE1CB' },
-  hybrid:      { accent: '#1F6F5F', bg: '#E7F1ED' },
+  hybrid:      { accent: '#2B4521', bg: '#E7F1ED' },
   daily:       { accent: '#7A4FA3', bg: '#EDE3F5' },
   sales:       { accent: '#3D7BB6', bg: '#D9E7F4' },
 }
@@ -638,7 +638,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
 
   return (
     <div className="min-h-screen gradient-mesh pb-20 md:pb-0" dir={dir}>
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#1F6F5F]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#2B4521]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
       <div className="fixed top-40 left-20 w-[300px] h-[300px] bg-[#2FA084]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
 
       <header className="relative z-40 glass border-b border-white/40">
@@ -670,7 +670,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
             ) : isAuthed === false ? (
               <Link
                 href="/auth/login?redirect=/marketplace"
-                className="inline-flex items-center gap-1 px-4 py-2 bg-[#1F6F5F] text-white rounded-full text-xs font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all flex-shrink-0"
+                className="inline-flex items-center gap-1 px-4 py-2 bg-[#2B4521] text-white rounded-full text-xs font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all flex-shrink-0"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 {t('market.login')}
@@ -686,7 +686,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('market.search_placeholder')}
-              className="w-full pr-12 pl-4 py-3.5 bg-white/80 backdrop-blur border border-gray-100 rounded-2xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all shadow-soft"
+              className="w-full pr-12 pl-4 py-3.5 bg-white/80 backdrop-blur border border-gray-100 rounded-2xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#2B4521]/40 focus:ring-4 focus:ring-[#2B4521]/10 transition-all shadow-soft"
             />
           </div>
 
@@ -873,7 +873,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                 onClick={() => setSelectedCategorySlug(selectedMid.slug)}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
                   selectedCategorySlug === selectedMid.slug
-                    ? 'bg-[#1F6F5F] text-white shadow-soft'
+                    ? 'bg-[#2B4521] text-white shadow-soft'
                     : 'bg-white/80 text-gray-600 hover:bg-white border border-gray-100'
                 }`}
               >
@@ -891,7 +891,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                       locked
                         ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed select-none'
                         : selectedCategorySlug === sub.slug
-                          ? 'bg-[#1F6F5F] text-white shadow-soft'
+                          ? 'bg-[#2B4521] text-white shadow-soft'
                           : 'bg-white/80 text-gray-700 hover:bg-white border border-gray-100'
                     }`}
                   >
@@ -960,7 +960,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                 onClick={() => { setSortMenuOpen(o => !o); setCityMenuOpen(false) }}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition-all shadow-soft hover:shadow-card ${
                   sortBy !== 'newest'
-                    ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
+                    ? 'bg-[#2B4521] border-[#2B4521] text-white'
                     : 'bg-white border-gray-100 text-gray-700 hover:border-gray-200'
                 }`}
               >
@@ -974,8 +974,8 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                     <button
                       key={option}
                       onClick={() => { setSortBy(option); setSortMenuOpen(false) }}
-                      className={`w-full text-start px-4 py-2.5 text-xs hover:bg-[#1F6F5F]/5 font-medium transition-colors ${
-                        sortBy === option ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'text-gray-700'
+                      className={`w-full text-start px-4 py-2.5 text-xs hover:bg-[#2B4521]/5 font-medium transition-colors ${
+                        sortBy === option ? 'bg-[#2B4521]/10 text-[#2B4521]' : 'text-gray-700'
                       }`}
                     >
                       {t(SORT_LABELS[option])}
@@ -991,7 +991,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                   onClick={() => { setCityMenuOpen(o => !o); setSortMenuOpen(false) }}
                   className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition-all shadow-soft hover:shadow-card ${
                     cityFilter
-                      ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white'
+                      ? 'bg-[#2B4521] border-[#2B4521] text-white'
                       : 'bg-white border-gray-100 text-gray-700 hover:border-gray-200'
                   }`}
                 >
@@ -1003,8 +1003,8 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                   <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-2xl shadow-luxe border border-gray-100 z-50 overflow-hidden max-h-72 overflow-y-auto animate-scale-in">
                     <button
                       onClick={() => { setCityFilter(null); setCityMenuOpen(false) }}
-                      className={`w-full text-start px-4 py-2.5 text-xs hover:bg-[#1F6F5F]/5 font-medium transition-colors ${
-                        !cityFilter ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'text-gray-700'
+                      className={`w-full text-start px-4 py-2.5 text-xs hover:bg-[#2B4521]/5 font-medium transition-colors ${
+                        !cityFilter ? 'bg-[#2B4521]/10 text-[#2B4521]' : 'text-gray-700'
                       }`}
                     >
                       {t('market.all_cities')}
@@ -1013,8 +1013,8 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                       <button
                         key={city}
                         onClick={() => { setCityFilter(city); setCityMenuOpen(false) }}
-                        className={`w-full text-start px-4 py-2.5 text-xs hover:bg-[#1F6F5F]/5 font-medium transition-colors ${
-                          cityFilter === city ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'text-gray-700'
+                        className={`w-full text-start px-4 py-2.5 text-xs hover:bg-[#2B4521]/5 font-medium transition-colors ${
+                          cityFilter === city ? 'bg-[#2B4521]/10 text-[#2B4521]' : 'text-gray-700'
                         }`}
                       >
                         {city}
@@ -1054,13 +1054,13 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           <div className="mb-5 inline-flex items-center gap-1 bg-white rounded-full p-1 shadow-soft border border-gray-100">
             <button
               onClick={() => switchView('products')}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${viewMode === 'products' ? 'bg-[#1F6F5F] text-white shadow-soft' : 'text-gray-600 hover:bg-gray-50'}`}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${viewMode === 'products' ? 'bg-[#2B4521] text-white shadow-soft' : 'text-gray-600 hover:bg-gray-50'}`}
             >
               🛍️ المنتجات
             </button>
             <button
               onClick={() => switchView('stores')}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${viewMode === 'stores' ? 'bg-[#1F6F5F] text-white shadow-soft' : 'text-gray-600 hover:bg-gray-50'}`}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${viewMode === 'stores' ? 'bg-[#2B4521] text-white shadow-soft' : 'text-gray-600 hover:bg-gray-50'}`}
             >
               🏬 المتاجر
             </button>
@@ -1219,7 +1219,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                               <span className="w-14 h-14 rounded-2xl bg-[#12261F] text-[#F4EFE4] flex items-center justify-center text-xl font-black flex-shrink-0">{(s.name || 'م').trim().charAt(0)}</span>
                             )}
                             <div className="min-w-0 flex-1">
-                              <h3 className="font-black text-base text-gray-900 truncate group-hover:text-[#1F6F5F] transition-colors">{s.name}</h3>
+                              <h3 className="font-black text-base text-gray-900 truncate group-hover:text-[#2B4521] transition-colors">{s.name}</h3>
                               <p className="text-[11px] font-bold text-gray-400 mt-0.5 tabular">{s.count} {s.count === 1 ? 'إعلان' : 'إعلانات'}</p>
                             </div>
                             {s.kyc === 'approved' && (
@@ -1234,7 +1234,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                           )}
                           <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                             <span className="text-[11px] font-bold text-[#2FA084]">مضمون عن طريق مضمونة</span>
-                            <span className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold text-xs group-hover:gap-2 transition-all">
+                            <span className="inline-flex items-center gap-1 text-[#2B4521] font-bold text-xs group-hover:gap-2 transition-all">
                               <span>{h.n.visit}</span>
                               <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
                             </span>
@@ -1271,7 +1271,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
             <p className="text-sm text-gray-500 mb-6">يمكن النت ضعيف شوية — جرّب تاني</p>
             <button
               onClick={() => { retriesRef.current = 0; setLoadError(false); setLoading(true); setReloadKey((k) => k + 1) }}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#1F6F5F] text-white rounded-2xl text-sm font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#2B4521] text-white rounded-2xl text-sm font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
             >
               🔄 جرّب تاني
             </button>
@@ -1286,7 +1286,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
             {hasFilters && (
               <button
                 onClick={clearAllFilters}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#1F6F5F] text-white rounded-2xl text-sm font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#2B4521] text-white rounded-2xl text-sm font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
               >
                 <Sparkles className="w-4 h-4" />
                 {t('market.clear_all_filters')}
@@ -1389,7 +1389,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                   </div>
 
                   <div className="p-5">
-                    <h3 className="font-black text-base md:text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#1F6F5F] transition-colors">
+                    <h3 className="font-black text-base md:text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#2B4521] transition-colors">
                       {displayTitle}
                     </h3>
 
@@ -1402,7 +1402,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                           const sid = listing.supplier?.id
                           if (sid) window.location.href = `/marketplace?supplier=${sid}`
                         }}
-                        className="mb-2 inline-flex items-center gap-1 px-2 py-0.5 bg-gray-50 hover:bg-[#1F6F5F]/10 border border-gray-200 rounded-full text-[10px] font-bold text-gray-600 hover:text-[#1F6F5F] transition-colors"
+                        className="mb-2 inline-flex items-center gap-1 px-2 py-0.5 bg-gray-50 hover:bg-[#2B4521]/10 border border-gray-200 rounded-full text-[10px] font-bold text-gray-600 hover:text-[#2B4521] transition-colors"
                         title="زور متجر التاجر"
                       >
                         🏬 {listing.supplier.business_name}
@@ -1444,7 +1444,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                         ) : startingPrice !== null ? (
                           <>
                             <p className="text-[10px] text-gray-500 font-medium">{t('market.starts_from')}</p>
-                            <p className="text-xl font-black text-[#1F6F5F] leading-none mt-0.5 tabular">
+                            <p className="text-xl font-black text-[#2B4521] leading-none mt-0.5 tabular">
                               {startingPrice.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
                               <span className="text-xs font-medium text-gray-500 ms-1">{t('common.egp')}</span>
                             </p>
@@ -1453,7 +1453,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                           <p className="text-xs text-gray-400 font-medium">{t('market.price_on_request')}</p>
                         )}
                       </div>
-                      <div className="inline-flex items-center gap-1 text-[#1F6F5F] font-bold text-xs group-hover:gap-2 transition-all">
+                      <div className="inline-flex items-center gap-1 text-[#2B4521] font-bold text-xs group-hover:gap-2 transition-all">
                         <span>{isDemo ? t('market.view_short') : t('market.details')}</span>
                         <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
                       </div>
@@ -1470,7 +1470,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
               <button
                 onClick={() => setVisibleLimit((v) => v + 60)}
                 disabled={loading}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#1F6F5F] border border-[#1F6F5F]/30 rounded-2xl text-sm font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#2B4521] border border-[#2B4521]/30 rounded-2xl text-sm font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all disabled:opacity-50"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                 {loading ? t('common.loading') : t('market.load_more')}
@@ -1516,7 +1516,7 @@ function CategoryPill({
       onClick={onClick}
       className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 shadow-soft ${
         active
-          ? 'bg-[#1F6F5F] text-white shadow-elevated'
+          ? 'bg-[#2B4521] text-white shadow-elevated'
           : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-card border border-gray-100'
       }`}
     >

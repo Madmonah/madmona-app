@@ -38,8 +38,8 @@ export default async function PromptVersionsPage() {
     <div dir="rtl" style={{ fontFamily: 'Tahoma', background: '#FAF7F0', minHeight: '100vh', padding: 24 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>🧠 Prompt Versions</h1>
-          <a href="/admin/performance" style={{ color: '#1F6F5F', fontSize: 13 }}>← Performance</a>
+          <h1 style={{ color: '#2B4521', margin: 0, fontSize: 26 }}>🧠 Prompt Versions</h1>
+          <a href="/admin/performance" style={{ color: '#2B4521', fontSize: 13 }}>← Performance</a>
         </div>
 
         <p style={{ color: '#666', fontSize: 14, marginBottom: 16 }}>
@@ -59,7 +59,7 @@ export default async function PromptVersionsPage() {
                 background: '#fff', padding: 20, borderRadius: 12,
                 border: '1px solid #eee',
               }}>
-                <h2 style={{ margin: 0, color: '#1F6F5F', fontSize: 18, marginBottom: 12 }}>
+                <h2 style={{ margin: 0, color: '#2B4521', fontSize: 18, marginBottom: 12 }}>
                   🎯 {agent} ({vs.length} versions)
                 </h2>
 
@@ -71,7 +71,7 @@ export default async function PromptVersionsPage() {
                       border: v.is_active ? '2px solid #28a745' : '1px solid #ddd',
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                        <strong style={{ color: '#1F6F5F' }}>
+                        <strong style={{ color: '#2B4521' }}>
                           v{v.version} {v.is_active ? '✅ Active' : '⏳ Pending'}
                         </strong>
                         <span style={{ fontSize: 11, color: '#666' }}>
@@ -95,7 +95,7 @@ export default async function PromptVersionsPage() {
 
                       {v.changes_summary && (
                         <details style={{ marginBottom: 8 }}>
-                          <summary style={{ cursor: 'pointer', color: '#1F6F5F', fontWeight: 'bold', fontSize: 13 }}>
+                          <summary style={{ cursor: 'pointer', color: '#2B4521', fontWeight: 'bold', fontSize: 13 }}>
                             🔧 التغييرات
                           </summary>
                           <div style={{
@@ -112,7 +112,7 @@ export default async function PromptVersionsPage() {
                           📜 الـ Prompt الكامل ({v.prompt_text.length} حرف)
                         </summary>
                         <pre style={{
-                          background: '#1F6F5F', color: '#FAF7F0',
+                          background: '#2B4521', color: '#FAF7F0',
                           padding: 12, borderRadius: 6, marginTop: 6,
                           fontSize: 11, overflow: 'auto', maxHeight: 300,
                           whiteSpace: 'pre-wrap', fontFamily: 'monospace',

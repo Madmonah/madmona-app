@@ -149,7 +149,7 @@ export default function CallOverlay({ roomId, uid, myName, video, onClose }: Pro
   const anyVideo = video || list.some(([, p]) => p.video)
 
   return (
-    <div dir="rtl" style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'linear-gradient(160deg,#14231E,#1F6F5F)', color: '#fff', display: 'flex', flexDirection: 'column', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
+    <div dir="rtl" style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'linear-gradient(160deg,#14231E,#2B4521)', color: '#fff', display: 'flex', flexDirection: 'column', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
       <div style={{ padding: '16px 18px', textAlign: 'center' }}>
         <div style={{ fontWeight: 900, fontSize: 17 }}>{anyVideo ? '🎥 مكالمة فيديو' : '📞 مكالمة صوتية'}</div>
         <div style={{ fontSize: 12.5, color: '#8FE3C8', fontWeight: 700, marginTop: 2 }}>
@@ -172,7 +172,7 @@ export default function CallOverlay({ roomId, uid, myName, video, onClose }: Pro
               <>
                 {p.stream && <audio autoPlay ref={(el) => { if (el && el.srcObject !== p.stream) el.srcObject = p.stream }} />}
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ width: 62, height: 62, margin: '0 auto 6px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#1F6F5F)', display: 'grid', placeItems: 'center', fontSize: 24, fontWeight: 900 }}>{(p.name || '؟').trim()[0]}</div>
+                  <div style={{ width: 62, height: 62, margin: '0 auto 6px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#2B4521)', display: 'grid', placeItems: 'center', fontSize: 24, fontWeight: 900 }}>{(p.name || '؟').trim()[0]}</div>
                   <div style={{ fontSize: 13, fontWeight: 800 }}>{p.name}</div>
                 </div>
               </>

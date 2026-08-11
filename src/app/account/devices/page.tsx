@@ -135,7 +135,7 @@ export default function DevicesPage() {
       <main className="max-w-md mx-auto px-4 py-6 pb-24">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
+            <Loader2 className="w-6 h-6 text-[#2B4521] animate-spin" />
           </div>
         ) : error ? (
           <div className="bg-white rounded-3xl shadow-soft p-6 text-center">
@@ -143,7 +143,7 @@ export default function DevicesPage() {
             <p className="text-sm text-gray-600 mb-4">{error}</p>
             <button
               onClick={() => { setLoading(true); load() }}
-              className="bg-[#1F6F5F] text-white px-6 py-2.5 rounded-2xl text-sm font-bold"
+              className="bg-[#2B4521] text-white px-6 py-2.5 rounded-2xl text-sm font-bold"
             >
               جرّب تاني
             </button>
@@ -151,10 +151,10 @@ export default function DevicesPage() {
         ) : (
           <div className="space-y-3 animate-slide-up">
             <div className="flex items-center gap-2 px-1 mb-1">
-              <ShieldCheck className="w-4 h-4 text-[#1F6F5F]" />
+              <ShieldCheck className="w-4 h-4 text-[#2B4521]" />
               <p className="text-xs text-gray-500">
                 شايف جهاز مش بتاعك؟ اقفله فورًا وغيّر كلمة السر من{' '}
-                <Link href="/auth/forgot-password" className="text-[#1F6F5F] font-bold hover:underline">
+                <Link href="/auth/forgot-password" className="text-[#2B4521] font-bold hover:underline">
                   هنا
                 </Link>
               </p>
@@ -166,12 +166,12 @@ export default function DevicesPage() {
                 <div
                   key={s.session_id}
                   className={`bg-white rounded-3xl shadow-soft p-5 flex items-center gap-4 ${
-                    s.is_current ? 'ring-2 ring-[#1F6F5F]/20' : ''
+                    s.is_current ? 'ring-2 ring-[#2B4521]/20' : ''
                   }`}
                 >
                   <div
                     className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-                      s.is_current ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'bg-gray-50 text-gray-500'
+                      s.is_current ? 'bg-[#2B4521]/10 text-[#2B4521]' : 'bg-gray-50 text-gray-500'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -181,7 +181,7 @@ export default function DevicesPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-bold text-gray-900 truncate">{name}</p>
                       {s.is_current && (
-                        <span className="text-[10px] font-black text-[#1F6F5F] bg-[#1F6F5F]/10 px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] font-black text-[#2B4521] bg-[#2B4521]/10 px-2 py-0.5 rounded-full">
                           الجهاز ده
                         </span>
                       )}

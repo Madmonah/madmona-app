@@ -13,7 +13,7 @@ import { supabase as supabaseAdmin } from './supabase'
 
 // Madmona brand colors
 const COLORS = {
-  green: '#1F6F5F',
+  green: '#2B4521',
   ivory: '#FAF7F0',
   gold: '#2FA084',
   rust: '#6FCF97',

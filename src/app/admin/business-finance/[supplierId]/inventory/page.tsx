@@ -73,7 +73,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  hair_color: 'bg-[#1F6F5F]/10 text-[#1F6F5F]',
+  hair_color: 'bg-[#2B4521]/10 text-[#2B4521]',
   bleach: 'bg-amber-50 text-amber-800',
   hair_treatment: 'bg-blue-50 text-blue-800',
   styling: 'bg-purple-50 text-purple-800',
@@ -84,7 +84,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   cleaning: 'bg-cyan-50 text-cyan-800',
   accessories: 'bg-orange-50 text-orange-800',
   general: 'bg-gray-100 text-gray-600',
-  spare_parts: 'bg-[#1F6F5F]/10 text-[#1F6F5F]',
+  spare_parts: 'bg-[#2B4521]/10 text-[#2B4521]',
   lubricants: 'bg-amber-50 text-amber-800',
   tires: 'bg-gray-100 text-gray-700',
   vehicle: 'bg-[#1A2E26]/10 text-[#1A2E26]',
@@ -142,7 +142,7 @@ export default function InventoryPage({ params }: { params: { supplierId: string
   if (!supplier && loading) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
       </div>
     )
   }
@@ -151,12 +151,12 @@ export default function InventoryPage({ params }: { params: { supplierId: string
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع للـ finance
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">B2B PARTNER · INVENTORY</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">B2B PARTNER · INVENTORY</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">المخزون · {supplier?.business_name}</h1>
               {stats && (
                 <p className="text-sm text-[#6B7280] mt-1">
@@ -166,10 +166,10 @@ export default function InventoryPage({ params }: { params: { supplierId: string
             </div>
             <div className="flex items-center gap-2">
               {/* 🆕 إضافة منتج واحد يدوي — من غير Excel */}
-              <button onClick={() => setAddOpen(true)} className="px-4 py-2 rounded-xl bg-[#1F6F5F] hover:bg-[#1A5D4F] text-sm font-bold text-white flex items-center gap-2">
+              <button onClick={() => setAddOpen(true)} className="px-4 py-2 rounded-xl bg-[#2B4521] hover:bg-[#1A5D4F] text-sm font-bold text-white flex items-center gap-2">
                 <Plus className="w-4 h-4" /> منتج جديد
               </button>
-              <button onClick={() => setImportOpen(true)} className="px-4 py-2 rounded-xl bg-white border border-[#1F6F5F]/30 hover:bg-[#1F6F5F]/5 text-sm font-bold text-[#1F6F5F] flex items-center gap-2">
+              <button onClick={() => setImportOpen(true)} className="px-4 py-2 rounded-xl bg-white border border-[#2B4521]/30 hover:bg-[#2B4521]/5 text-sm font-bold text-[#2B4521] flex items-center gap-2">
                 <FileSpreadsheet className="w-4 h-4" /> استيراد Excel
               </button>
               <button onClick={load} className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2">
@@ -210,7 +210,7 @@ export default function InventoryPage({ params }: { params: { supplierId: string
             <button
               onClick={() => setCategoryFilter(null)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-                categoryFilter === null ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-gray-100'
+                categoryFilter === null ? 'bg-[#2B4521] text-white' : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-gray-100'
               }`}
             >
               الكل ({stats?.total_products ?? 0})
@@ -220,7 +220,7 @@ export default function InventoryPage({ params }: { params: { supplierId: string
                 key={cat}
                 onClick={() => setCategoryFilter(cat)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-                  categoryFilter === cat ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-gray-100'
+                  categoryFilter === cat ? 'bg-[#2B4521] text-white' : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-gray-100'
                 }`}
               >
                 {CATEGORY_LABELS[cat] || cat} ({count})
@@ -233,7 +233,7 @@ export default function InventoryPage({ params }: { params: { supplierId: string
               type="checkbox"
               checked={lowStockOnly}
               onChange={(e) => setLowStockOnly(e.target.checked)}
-              className="w-4 h-4 rounded accent-[#1F6F5F]"
+              className="w-4 h-4 rounded accent-[#2B4521]"
             />
             <span className="text-[#1A2E26] font-medium">⚠️ المخزون القليل والنافد بس</span>
           </label>
@@ -242,7 +242,7 @@ export default function InventoryPage({ params }: { params: { supplierId: string
         {/* Products list */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
+            <Loader2 className="w-6 h-6 text-[#2B4521] animate-spin" />
           </div>
         ) : products.length === 0 ? (
           <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center">
@@ -379,7 +379,7 @@ function AddProductModal({
       <div className="bg-white w-full md:max-w-lg rounded-t-3xl md:rounded-3xl max-h-[92vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
           <h2 className="text-lg font-black text-[#1A2E26] flex items-center gap-2">
-            <Plus className="w-5 h-5 text-[#1F6F5F]" /> منتج جديد
+            <Plus className="w-5 h-5 text-[#2B4521]" /> منتج جديد
           </h2>
           <button onClick={onClose} className="w-9 h-9 hover:bg-gray-100 rounded-full flex items-center justify-center">
             <X className="w-5 h-5 text-gray-500" />
@@ -426,7 +426,7 @@ function AddProductModal({
             ) : (
               <label className="flex flex-col items-center justify-center gap-1.5 w-full h-24 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#2FA084] hover:bg-[#2FA084]/5 transition-colors">
                 {uploading ? (
-                  <Loader2 className="w-5 h-5 text-[#1F6F5F] animate-spin" />
+                  <Loader2 className="w-5 h-5 text-[#2B4521] animate-spin" />
                 ) : (
                   <>
                     <ImageIcon className="w-5 h-5 text-gray-400" />
@@ -466,7 +466,7 @@ function AddProductModal({
           <button
             onClick={save}
             disabled={saving || uploading}
-            className="flex-1 bg-[#1F6F5F] text-white py-3 rounded-xl font-bold text-sm hover:bg-[#1A5D4F] disabled:opacity-60 flex items-center justify-center gap-2"
+            className="flex-1 bg-[#2B4521] text-white py-3 rounded-xl font-bold text-sm hover:bg-[#1A5D4F] disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             {saving ? 'جاري الحفظ...' : 'أضف المنتج'}
@@ -589,7 +589,7 @@ function ImportModal({ supplierId, onClose, onDone }: { supplierId: string; onCl
       <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6" dir="rtl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-black text-[#1A2E26] flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5 text-[#1F6F5F]" /> استيراد مخزون من Excel
+            <FileSpreadsheet className="w-5 h-5 text-[#2B4521]" /> استيراد مخزون من Excel
           </h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-4 h-4" /></button>
         </div>
@@ -604,7 +604,7 @@ function ImportModal({ supplierId, onClose, onDone }: { supplierId: string; onCl
 
         <input
           type="file" accept=".xlsx,.xls,.csv"
-          className="w-full text-sm mb-4 file:ml-3 file:px-4 file:py-2 file:rounded-xl file:border-0 file:bg-[#1F6F5F] file:text-white file:font-bold file:cursor-pointer"
+          className="w-full text-sm mb-4 file:ml-3 file:px-4 file:py-2 file:rounded-xl file:border-0 file:bg-[#2B4521] file:text-white file:font-bold file:cursor-pointer"
           onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
         />
 
@@ -628,7 +628,7 @@ function ImportModal({ supplierId, onClose, onDone }: { supplierId: string; onCl
             </div>
             <button
               onClick={doImport} disabled={busy}
-              className="w-full py-3 rounded-xl bg-[#1F6F5F] hover:bg-[#1A5D4F] text-white font-bold flex items-center justify-center gap-2 disabled:opacity-60"
+              className="w-full py-3 rounded-xl bg-[#2B4521] hover:bg-[#1A5D4F] text-white font-bold flex items-center justify-center gap-2 disabled:opacity-60"
             >
               {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
               {busy ? 'جاري الاستيراد…' : `استيراد ${rows.length} صف`}
@@ -637,7 +637,7 @@ function ImportModal({ supplierId, onClose, onDone }: { supplierId: string; onCl
         )}
 
         {progress && <p className="mt-3 text-xs font-bold text-[#6B7280] flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" /> {progress}</p>}
-        {result && <p className="mt-3 text-sm font-bold text-[#1F6F5F]">{result}</p>}
+        {result && <p className="mt-3 text-sm font-bold text-[#2B4521]">{result}</p>}
         {error && <p className="mt-3 text-sm font-bold text-red-600">{error}</p>}
       </div>
     </div>
@@ -705,7 +705,7 @@ function ProductRow({ p }: { p: Product }) {
 
       <div className="col-span-2 text-center">
         {p.stock_value && p.stock_value > 0 ? (
-          <p className="text-sm font-black text-[#1F6F5F]">{Number(p.stock_value).toLocaleString()} ج</p>
+          <p className="text-sm font-black text-[#2B4521]">{Number(p.stock_value).toLocaleString()} ج</p>
         ) : (
           <span className="text-xs text-[#6B7280]">—</span>
         )}
@@ -716,7 +716,7 @@ function ProductRow({ p }: { p: Product }) {
           <span className={`text-xs font-bold ${
             p.margin_pct < 0 ? 'text-red-600' :
             p.margin_pct === 0 ? 'text-[#6B7280]' :
-            'text-[#1F6F5F]'
+            'text-[#2B4521]'
           }`}>{p.margin_pct}%</span>
         ) : (
           <span className="text-xs text-[#6B7280]">—</span>
@@ -738,10 +738,10 @@ function StatCard({
   const toneClass = 
     tone === 'warning' ? 'text-amber-700' :
     tone === 'danger' ? 'text-red-600' :
-    tone === 'positive' ? 'text-[#1F6F5F]' :
+    tone === 'positive' ? 'text-[#2B4521]' :
     'text-[#1A2E26]'
   return (
-    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'}`}>
+    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#2B4521] border-[#2B4521] text-white' : 'bg-white border-gray-100'}`}>
       <div className={`flex items-center gap-2 mb-1.5 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>
         {icon}
         <p className="text-[10px] font-bold tracking-wider uppercase">{label}</p>

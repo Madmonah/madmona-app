@@ -102,7 +102,7 @@ export default async function BrowseCityPage({ params }: P) {
   return (
     <main dir="rtl" className="min-h-screen bg-[#FAFAF7] pb-24" style={{ fontFamily: 'Cairo,sans-serif' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div className="bg-gradient-to-br from-[#1F6F5F] to-[#2d7a52] text-white px-5 pt-10 pb-8">
+      <div className="bg-gradient-to-br from-[#2B4521] to-[#5A6E3A] text-white px-5 pt-10 pb-8">
         <h1 className="text-2xl font-black leading-snug">{catAr} في {cityAr}</h1>
         <p className="text-sm text-white/85 mt-2 leading-relaxed">
           {listings.length > 0 ? `${listings.length} إعلان مضمون` : 'إعلانات مضمونة'} — حماية كاملة، دفع مستحقات سريع، ودعم مستمر على مضمونة.
@@ -119,7 +119,7 @@ export default async function BrowseCityPage({ params }: P) {
                   <p className="text-xs text-gray-500 mt-1">{[l.district, cityAr].filter(Boolean).join(' — ')}</p>
                 </div>
                 <div className="text-left flex-shrink-0">
-                  {l.price ? <p className="text-sm font-black text-[#1F6F5F]">{Number(l.price).toLocaleString('ar-EG')} ج.م</p> : <p className="text-xs font-bold text-[#d4a017]">السعر عند الطلب</p>}
+                  {l.price ? <p className="text-sm font-black text-[#2B4521]">{Number(l.price).toLocaleString('ar-EG')} ج.م</p> : <p className="text-xs font-bold text-[#d4a017]">السعر عند الطلب</p>}
                   {l.rating ? <p className="text-[11px] text-gray-500 mt-0.5">⭐ {l.rating}</p> : null}
                 </div>
               </div>
@@ -127,7 +127,7 @@ export default async function BrowseCityPage({ params }: P) {
           ))}
           {listings.length === 0 && (
             <div className="bg-white rounded-2xl p-6 text-center text-sm text-gray-600">
-              مفيش إعلانات منشورة هنا حاليًا — <Link href="/add-listing" className="text-[#1F6F5F] font-black">ضيف الليستنج بتاعك</Link> وكن أول واحد.
+              مفيش إعلانات منشورة هنا حاليًا — <Link href="/add-listing" className="text-[#2B4521] font-black">ضيف الليستنج بتاعك</Link> وكن أول واحد.
             </div>
           )}
         </div>
@@ -137,7 +137,7 @@ export default async function BrowseCityPage({ params }: P) {
             <h2 className="text-sm font-black text-[#14231E] mb-2">{catAr} في مدن تانية</h2>
             <div className="flex flex-wrap gap-2">
               {otherCities.slice(0, 20).map((c) => (
-                <Link key={c} href={`/browse/${encodeURIComponent(dec(category))}/${encodeURIComponent(c)}`} className="bg-white border border-[#1F6F5F]/25 text-[#1F6F5F] text-xs font-bold rounded-full px-3 py-1.5 no-underline">
+                <Link key={c} href={`/browse/${encodeURIComponent(dec(category))}/${encodeURIComponent(c)}`} className="bg-white border border-[#2B4521]/25 text-[#2B4521] text-xs font-bold rounded-full px-3 py-1.5 no-underline">
                   {catAr} في {c}
                 </Link>
               ))}

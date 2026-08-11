@@ -34,8 +34,8 @@ const INDUSTRIES = [
 // لون افتراضي لكل نشاط (داينمك — يتغيّر لكل عميل)
 const INDUSTRY_ACCENT: Record<string, string> = {
   vehicle_agency: '#E4002B', contracting: '#B45309', beauty_salon: '#B91C7B',
-  spa: '#B91C7B', clinic: '#0E7490', restaurant: '#C2410C', gym: '#1F6F5F',
-  retail_shop: '#1F6F5F', other: '#1F6F5F',
+  spa: '#B91C7B', clinic: '#0E7490', restaurant: '#C2410C', gym: '#2B4521',
+  retail_shop: '#2B4521', other: '#2B4521',
 }
 
 const CITIES = ['القاهرة', 'الجيزة', 'الإسكندرية', 'الساحل الشمالي', 'الغردقة', 'شرم الشيخ']
@@ -151,12 +151,12 @@ export default function NewBusinessPartnerPage() {
         <div className="max-w-3xl mx-auto px-4 py-5">
           <Link
             href="/admin/business-partners"
-            className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2 transition-colors"
+            className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2 transition-colors"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             رجوع للشركاء
           </Link>
-          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">
+          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">
             ONBOARDING · NEW B2B PARTNER
           </p>
           <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">
@@ -169,7 +169,7 @@ export default function NewBusinessPartnerPage() {
               <div
                 key={s}
                 className={`flex-1 h-1.5 rounded-full transition-colors ${
-                  s <= step ? 'bg-[#1F6F5F]' : 'bg-gray-200'
+                  s <= step ? 'bg-[#2B4521]' : 'bg-gray-200'
                 }`}
               />
             ))}
@@ -190,15 +190,15 @@ export default function NewBusinessPartnerPage() {
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
                 placeholder="مثلاً: Elite Beauty Salon"
-                className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F] transition-colors"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#2B4521] transition-colors"
               />
             </Field>
 
             <Field label="نوع النشاط" required>
               <select
                 value={industry}
-                onChange={(e) => { setIndustry(e.target.value); setAccent(INDUSTRY_ACCENT[e.target.value] || '#1F6F5F') }}
-                className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+                onChange={(e) => { setIndustry(e.target.value); setAccent(INDUSTRY_ACCENT[e.target.value] || '#2B4521') }}
+                className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
               >
                 {INDUSTRIES.map((i) => (
                   <option key={i.value} value={i.value}>{i.label}</option>
@@ -241,7 +241,7 @@ export default function NewBusinessPartnerPage() {
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
                   placeholder="مثلاً: محمد المالك"
-                  className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
                 />
               </Field>
 
@@ -251,7 +251,7 @@ export default function NewBusinessPartnerPage() {
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
                   placeholder="+201001234567"
-                  className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
                 />
               </Field>
             </div>
@@ -262,7 +262,7 @@ export default function NewBusinessPartnerPage() {
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
                 placeholder="optional@example.com"
-                className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
               />
             </Field>
 
@@ -271,7 +271,7 @@ export default function NewBusinessPartnerPage() {
                 <select
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
                 >
                   {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
@@ -282,7 +282,7 @@ export default function NewBusinessPartnerPage() {
                   value={district}
                   onChange={(e) => setDistrict(e.target.value)}
                   placeholder="مثلاً: مصر الجديدة"
-                  className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
                 />
               </Field>
             </div>
@@ -293,7 +293,7 @@ export default function NewBusinessPartnerPage() {
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="مثلاً: ١٥ شارع سليمان عزمي"
-                className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
               />
             </Field>
           </Section>
@@ -302,9 +302,9 @@ export default function NewBusinessPartnerPage() {
         {/* STEP 2: Commission */}
         {step === 2 && (
           <Section title="شروط الشراكة" subtitle="عمولة Madmona على gross bookings (مش net profit)">
-            <div className="bg-[#1F6F5F]/5 rounded-2xl p-4 mb-4 border border-[#1F6F5F]/20">
+            <div className="bg-[#2B4521]/5 rounded-2xl p-4 mb-4 border border-[#2B4521]/20">
               <div className="flex items-start gap-3">
-                <BadgePercent className="w-5 h-5 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
+                <BadgePercent className="w-5 h-5 text-[#2B4521] flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-[#1A2E26] leading-relaxed">
                   <span className="font-bold">العمولة على إجمالي الحجوزات (gross)</span> — مش بـ net profit. 
                   المصاريف (مرتبات، إيجار، مستلزمات) لا تؤثر على عمولة Madmona.
@@ -320,7 +320,7 @@ export default function NewBusinessPartnerPage() {
                 step="0.5"
                 value={commissionRate}
                 onChange={(e) => setCommissionRate(Number(e.target.value))}
-                className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F] font-mono"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#2B4521] font-mono"
               />
               <p className="text-[11px] text-[#6B7280] mt-1.5">
                 ⓘ 10% موحدة على الكل، 0% أثناء التفاوض
@@ -335,7 +335,7 @@ export default function NewBusinessPartnerPage() {
                 step="0.5"
                 value={commissionExtraRate}
                 onChange={(e) => setCommissionExtraRate(Number(e.target.value))}
-                className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F] font-mono"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#2B4521] font-mono"
               />
               <p className="text-[11px] text-[#6B7280] mt-1.5">
                 ⓘ % إضافية على bookings اللي تيجي عن طريق Madmona (سوشيال، marketing). إجمالي العمولة = أساسية + إضافية.
@@ -350,8 +350,8 @@ export default function NewBusinessPartnerPage() {
                     onClick={() => setContractStatus(s)}
                     className={`p-3 rounded-xl text-sm font-bold transition-all ${
                       contractStatus === s
-                        ? 'bg-[#1F6F5F] text-white'
-                        : 'bg-white border border-gray-200 text-[#6B7280] hover:border-[#1F6F5F]'
+                        ? 'bg-[#2B4521] text-white'
+                        : 'bg-white border border-gray-200 text-[#6B7280] hover:border-[#2B4521]'
                     }`}
                   >
                     {s === 'negotiating' ? 'قيد التفاوض' : s === 'signed' ? 'موقّع' : 'نشط'}
@@ -364,7 +364,7 @@ export default function NewBusinessPartnerPage() {
             <div className="mt-6 bg-white rounded-2xl p-5 border border-gray-100">
               <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-3">المعادلة</p>
               <p className="text-sm text-[#1A2E26] font-mono">
-                Madmona commission = gross_revenue × <span className="text-[#1F6F5F] font-black">
+                Madmona commission = gross_revenue × <span className="text-[#2B4521] font-black">
                   {(commissionRate + commissionExtraRate).toFixed(1)}%
                 </span>
               </p>
@@ -382,7 +382,7 @@ export default function NewBusinessPartnerPage() {
               {branches.map((b, i) => (
                 <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-xs font-bold tracking-wider uppercase text-[#1F6F5F]">
+                    <p className="text-xs font-bold tracking-wider uppercase text-[#2B4521]">
                       فرع {i + 1} {b.code && `· ${b.code}`}
                     </p>
                     {branches.length > 1 && (
@@ -400,42 +400,42 @@ export default function NewBusinessPartnerPage() {
                       value={b.name}
                       onChange={(e) => updateBranch(i, 'name', e.target.value)}
                       placeholder="اسم الفرع *"
-                      className="px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+                      className="px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
                     />
                     <input
                       type="text"
                       value={b.code}
                       onChange={(e) => updateBranch(i, 'code', e.target.value)}
                       placeholder="كود (HQ, BR2, إلخ)"
-                      className="px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F] font-mono"
+                      className="px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#2B4521] font-mono"
                     />
                     <input
                       type="text"
                       value={b.district}
                       onChange={(e) => updateBranch(i, 'district', e.target.value)}
                       placeholder="الحي"
-                      className="px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+                      className="px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
                     />
                     <input
                       type="tel"
                       value={b.phone}
                       onChange={(e) => updateBranch(i, 'phone', e.target.value)}
                       placeholder="هاتف الفرع"
-                      className="px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+                      className="px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
                     />
                     <input
                       type="text"
                       value={b.address}
                       onChange={(e) => updateBranch(i, 'address', e.target.value)}
                       placeholder="العنوان"
-                      className="md:col-span-2 px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+                      className="md:col-span-2 px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
                     />
                     <input
                       type="text"
                       value={b.manager_name}
                       onChange={(e) => updateBranch(i, 'manager_name', e.target.value)}
                       placeholder="اسم مدير الفرع (optional)"
-                      className="md:col-span-2 px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+                      className="md:col-span-2 px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
                     />
                   </div>
                 </div>
@@ -444,7 +444,7 @@ export default function NewBusinessPartnerPage() {
               {branches.length < 20 && (
                 <button
                   onClick={addBranch}
-                  className="w-full p-3 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#1F6F5F] text-[#6B7280] hover:text-[#1F6F5F] text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                  className="w-full p-3 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#2B4521] text-[#6B7280] hover:text-[#2B4521] text-sm font-bold transition-colors flex items-center justify-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   اضف فرع
@@ -482,7 +482,7 @@ export default function NewBusinessPartnerPage() {
           <button
             onClick={() => setStep(Math.max(1, step - 1))}
             disabled={step === 1 || submitting}
-            className="text-sm font-bold text-[#6B7280] hover:text-[#1F6F5F] disabled:opacity-30 disabled:pointer-events-none transition-colors px-4 py-2"
+            className="text-sm font-bold text-[#6B7280] hover:text-[#2B4521] disabled:opacity-30 disabled:pointer-events-none transition-colors px-4 py-2"
           >
             السابق
           </button>
@@ -491,7 +491,7 @@ export default function NewBusinessPartnerPage() {
             <button
               onClick={() => setStep(step + 1)}
               disabled={(step === 1 && !canContinue1) || (step === 2 && !canContinue2)}
-              className="px-6 py-3 rounded-xl bg-[#1F6F5F] text-white font-bold text-sm hover:shadow-md transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-3 rounded-xl bg-[#2B4521] text-white font-bold text-sm hover:shadow-md transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
             >
               التالي
             </button>
@@ -499,7 +499,7 @@ export default function NewBusinessPartnerPage() {
             <button
               onClick={createPartner}
               disabled={!canContinue3 || submitting}
-              className="px-6 py-3 rounded-xl bg-[#1F6F5F] text-white font-bold text-sm hover:shadow-md transition-shadow disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-3 rounded-xl bg-[#2B4521] text-white font-bold text-sm hover:shadow-md transition-shadow disabled:opacity-50 flex items-center gap-2"
             >
               {submitting ? (
                 <>

@@ -85,9 +85,9 @@ export default function ServicesCatalogPage({ params }: { params: { supplierId: 
   useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId])
 
   // per-business brand colour
-  const accent = supplier?.theme?.accent || '#1F6F5F'
-  const accentSoft = supplier?.theme?.accentSoft || 'rgba(31,111,95,.10)'
-  const accentLine = supplier?.theme?.accentLine || 'rgba(31,111,95,.20)'
+  const accent = supplier?.theme?.accent || '#2B4521'
+  const accentSoft = supplier?.theme?.accentSoft || 'rgba(43, 69, 33,.10)'
+  const accentLine = supplier?.theme?.accentLine || 'rgba(43, 69, 33,.20)'
 
   if (!supplier) return <Loader />
 
@@ -197,7 +197,7 @@ export default function ServicesCatalogPage({ params }: { params: { supplierId: 
   )
 }
 
-function ServiceModal({ supplierId, service, categories, isMenu, accent = '#1F6F5F', onClose, onSaved }: any) {
+function ServiceModal({ supplierId, service, categories, isMenu, accent = '#2B4521', onClose, onSaved }: any) {
   const isEdit = !!service
   const cats = categories || []
   const [form, setForm] = useState({
@@ -287,4 +287,4 @@ function ServiceModal({ supplierId, service, categories, isMenu, accent = '#1F6F
 }
 
 function Field({ label, children }: any) { return <div><label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">{label}</label>{children}</div> }
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div> }

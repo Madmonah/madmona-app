@@ -83,12 +83,12 @@ export default function MadmonaListingClaimer() {
           banner.style.cssText = [
             'position:fixed', 'bottom:24px', 'left:50%',
             'transform:translateX(-50%)',
-            'background:#1F6F5F', 'color:#FAF7F0',
+            'background:#2B4521', 'color:#FAF7F0',
             'padding:16px 24px', 'border-radius:14px',
             'box-shadow:0 12px 30px rgba(0,0,0,0.35)',
             'z-index:9999', 'font-family:system-ui,sans-serif',
             'font-size:14px', 'direction:rtl', 'text-align:center',
-            'max-width:90vw', 'border:1px solid rgba(184,134,11,0.4)',
+            'max-width:90vw', 'border:1px solid rgba(250, 129, 37,0.4)',
           ].join(';')
           banner.innerHTML =
             '🎉 <strong>تم ربط إعلانك بحسابك!</strong><br>' +

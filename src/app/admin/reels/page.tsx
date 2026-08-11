@@ -33,10 +33,10 @@ export default async function ReelsPage() {
     <div dir="rtl" style={{ fontFamily: 'Tahoma', background: '#FAF7F0', minHeight: '100vh', padding: 24 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>🎬 Reel Scripts</h1>
+          <h1 style={{ color: '#2B4521', margin: 0, fontSize: 26 }}>🎬 Reel Scripts</h1>
           <div style={{ display: 'flex', gap: 12, fontSize: 13 }}>
-            <a href="/admin/ai-os" style={{ color: '#1F6F5F' }}>← AI OS</a>
-            <a href="/admin/marketing-hq" style={{ color: '#1F6F5F' }}>← HQ</a>
+            <a href="/admin/ai-os" style={{ color: '#2B4521' }}>← AI OS</a>
+            <a href="/admin/marketing-hq" style={{ color: '#2B4521' }}>← HQ</a>
           </div>
         </div>
 
@@ -64,9 +64,9 @@ export default async function ReelsPage() {
                 border: '1px solid #eee', borderRight: '4px solid #6FCF97',
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <h2 style={{ margin: 0, color: '#1F6F5F', fontSize: 18 }}>{reel.title}</h2>
+                  <h2 style={{ margin: 0, color: '#2B4521', fontSize: 18 }}>{reel.title}</h2>
                   <span style={{
-                    background: reel.video_url ? '#1F6F5F' : reel.status === 'approved' ? '#d4edda' : '#fff3cd',
+                    background: reel.video_url ? '#2B4521' : reel.status === 'approved' ? '#d4edda' : '#fff3cd',
                     color: reel.video_url ? '#FAF7F0' : reel.status === 'approved' ? '#155724' : '#856404',
                     padding: '4px 12px', borderRadius: 12, fontSize: 11, fontWeight: 'bold',
                   }}>{reel.video_url ? '🎬 جاهز للنشر' : reel.status}</span>
@@ -81,7 +81,7 @@ export default async function ReelsPage() {
                       playsInline
                       style={{ width: '100%', display: 'block' }}
                     />
-                    <div style={{ padding: 8, background: '#1F6F5F', display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div style={{ padding: 8, background: '#2B4521', display: 'flex', gap: 8, alignItems: 'center' }}>
                       <a href={reel.video_url} download style={{ color: '#FAF7F0', fontSize: 12, textDecoration: 'underline' }}>
                         ⬇ تحميل MP4
                       </a>
@@ -95,7 +95,7 @@ export default async function ReelsPage() {
 
                 {/* Hook */}
                 <div style={{
-                  background: '#1F6F5F', color: '#FAF7F0', padding: 16,
+                  background: '#2B4521', color: '#FAF7F0', padding: 16,
                   borderRadius: 8, margin: '12px 0', fontSize: 16, fontWeight: 'bold',
                 }}>
                   💥 Hook: {reel.hook}
@@ -104,7 +104,7 @@ export default async function ReelsPage() {
                 {/* Scenes */}
                 {reel.scenes && reel.scenes.length > 0 && (
                   <details style={{ marginBottom: 8 }}>
-                    <summary style={{ cursor: 'pointer', color: '#1F6F5F', fontWeight: 'bold', fontSize: 13 }}>
+                    <summary style={{ cursor: 'pointer', color: '#2B4521', fontWeight: 'bold', fontSize: 13 }}>
                       🎞️ Scenes ({reel.scenes.length}) · {reel.total_duration_sec ?? '?'}s
                     </summary>
                     <div style={{ marginTop: 8 }}>
@@ -123,7 +123,7 @@ export default async function ReelsPage() {
                 {/* Caption */}
                 {reel.caption && (
                   <details style={{ marginBottom: 8 }}>
-                    <summary style={{ cursor: 'pointer', color: '#1F6F5F', fontWeight: 'bold', fontSize: 13 }}>
+                    <summary style={{ cursor: 'pointer', color: '#2B4521', fontWeight: 'bold', fontSize: 13 }}>
                       📝 Caption
                     </summary>
                     <div style={{ background: '#FAF7F0', padding: 12, borderRadius: 6, marginTop: 6, fontSize: 13, whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
@@ -141,7 +141,7 @@ export default async function ReelsPage() {
 
                 {/* Hashtags */}
                 {reel.hashtags && reel.hashtags.length > 0 && (
-                  <p style={{ fontSize: 11, color: '#1F6F5F', margin: '8px 0', wordSpacing: '4px' }}>
+                  <p style={{ fontSize: 11, color: '#2B4521', margin: '8px 0', wordSpacing: '4px' }}>
                     {reel.hashtags.join(' ')}
                   </p>
                 )}

@@ -199,11 +199,11 @@ function SignupContent() {
   }
 
   const inputCls =
-    'w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all'
+    'w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#2B4521]/40 focus:ring-4 focus:ring-[#2B4521]/10 transition-all'
 
   return (
     <div className="min-h-screen gradient-mesh flex flex-col relative overflow-hidden" dir={dir}>
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#1F6F5F]/5 rounded-full blur-3xl animate-float pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#2B4521]/5 rounded-full blur-3xl animate-float pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#2FA084]/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <header className="relative z-10">
@@ -249,7 +249,7 @@ function SignupContent() {
                 <form onSubmit={startSignup} className="space-y-5">
                   <div>
                     <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                      <User className="w-3.5 h-3.5 text-[#1F6F5F]" />
+                      <User className="w-3.5 h-3.5 text-[#2B4521]" />
                       الاسم
                     </label>
                     <input
@@ -265,7 +265,7 @@ function SignupContent() {
 
                   <div>
                     <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                      <Phone className="w-3.5 h-3.5 text-[#1F6F5F]" />
+                      <Phone className="w-3.5 h-3.5 text-[#2B4521]" />
                       رقم الموبايل (واتساب)
                     </label>
                     <input
@@ -283,7 +283,7 @@ function SignupContent() {
 
                   <div>
                     <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                      <Lock className="w-3.5 h-3.5 text-[#1F6F5F]" />
+                      <Lock className="w-3.5 h-3.5 text-[#2B4521]" />
                       كلمة السر
                     </label>
                     <input
@@ -301,7 +301,7 @@ function SignupContent() {
 
                   <div>
                     <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                      <Lock className="w-3.5 h-3.5 text-[#1F6F5F]" />
+                      <Lock className="w-3.5 h-3.5 text-[#2B4521]" />
                       تأكيد كلمة السر
                     </label>
                     <input
@@ -337,7 +337,7 @@ function SignupContent() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-[#1F6F5F] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-elevated transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-[#2B4521] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-elevated transition-all flex items-center justify-center gap-2"
                   >
                     {submitting ? (
                       <>
@@ -357,7 +357,7 @@ function SignupContent() {
 
             {step === 'code' && (
               <form onSubmit={verifyAndCreate} className="space-y-5">
-                <div className="flex items-center justify-center gap-2 p-3 bg-[#1F6F5F]/5 rounded-2xl text-sm text-[#1F6F5F] font-bold">
+                <div className="flex items-center justify-center gap-2 p-3 bg-[#2B4521]/5 rounded-2xl text-sm text-[#2B4521] font-bold">
                   <MessageCircle className="w-4 h-4" />
                   <span dir="ltr">{normalizedRef.current}</span>
                 </div>
@@ -389,7 +389,7 @@ function SignupContent() {
                 <button
                   type="submit"
                   disabled={submitting || code.length < 4}
-                  className="w-full bg-[#1F6F5F] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-elevated transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-[#2B4521] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-elevated transition-all flex items-center justify-center gap-2"
                 >
                   {submitting ? (
                     <>
@@ -408,7 +408,7 @@ function SignupContent() {
                   <button
                     type="button"
                     onClick={() => { setStep('form'); setCode(''); setError(null) }}
-                    className="font-bold text-gray-400 hover:text-[#1F6F5F] transition-colors flex items-center gap-1"
+                    className="font-bold text-gray-400 hover:text-[#2B4521] transition-colors flex items-center gap-1"
                   >
                     <PencilLine className="w-3.5 h-3.5" />
                     غيّر البيانات
@@ -417,7 +417,7 @@ function SignupContent() {
                     type="button"
                     onClick={resendCode}
                     disabled={resendIn > 0 || submitting}
-                    className="font-bold text-[#1F6F5F] disabled:text-gray-300 transition-colors flex items-center gap-1"
+                    className="font-bold text-[#2B4521] disabled:text-gray-300 transition-colors flex items-center gap-1"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     {resendIn > 0 ? `إعادة الإرسال بعد ${resendIn} ث` : 'ابعت الكود تاني'}
@@ -428,7 +428,7 @@ function SignupContent() {
 
             <p className="mt-6 pt-5 border-t border-gray-100 text-center text-sm text-gray-500 leading-relaxed">
               عندك حساب بالفعل؟{' '}
-              <Link href="/auth/login" className="text-[#1F6F5F] font-bold hover:underline">
+              <Link href="/auth/login" className="text-[#2B4521] font-bold hover:underline">
                 سجّل دخول
               </Link>
             </p>
@@ -436,9 +436,9 @@ function SignupContent() {
 
           <p className="text-center text-xs text-gray-500 mt-6">
             بإنشاء الحساب انت موافق على{' '}
-            <Link href="/terms" className="text-[#1F6F5F] font-semibold hover:underline">الشروط</Link>
+            <Link href="/terms" className="text-[#2B4521] font-semibold hover:underline">الشروط</Link>
             {' '}و{' '}
-            <Link href="/privacy" className="text-[#1F6F5F] font-semibold hover:underline">الخصوصية</Link>
+            <Link href="/privacy" className="text-[#2B4521] font-semibold hover:underline">الخصوصية</Link>
           </p>
         </div>
       </main>
@@ -452,7 +452,7 @@ export default function SignupPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#2B4521] animate-spin" />
       </div>
     }>
       <SignupContent />

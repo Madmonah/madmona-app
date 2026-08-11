@@ -15,8 +15,8 @@ const supabase = createClient(
 
 const TIER_LABELS: Record<string, { label: string; class: string; icon?: React.ReactNode }> = {
   platinum: { label: 'بلاتينيوم', class: 'bg-[#1A2E26] text-white', icon: <Crown className="w-3.5 h-3.5" /> },
-  vip: { label: 'VIP', class: 'bg-[#1F6F5F] text-white', icon: <Star className="w-3.5 h-3.5" /> },
-  regular: { label: 'منتظمة', class: 'bg-[#1F6F5F]/10 text-[#1F6F5F]' },
+  vip: { label: 'VIP', class: 'bg-[#2B4521] text-white', icon: <Star className="w-3.5 h-3.5" /> },
+  regular: { label: 'منتظمة', class: 'bg-[#2B4521]/10 text-[#2B4521]' },
   new: { label: 'جديدة', class: 'bg-[#FAFAF7] text-[#6B7280] border border-gray-200' },
   inactive: { label: 'غير نشطة', class: 'bg-gray-100 text-gray-500' },
 }
@@ -67,7 +67,7 @@ export default function CustomerDetailPage({ params }: { params: { supplierId: s
   if (loading || !data) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
       </div>
     )
   }
@@ -84,11 +84,11 @@ export default function CustomerDetailPage({ params }: { params: { supplierId: s
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}/customers`} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}/customers`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع للعملاء
           </Link>
           <div className="flex items-start gap-4">
-            <div className="inline-grid place-items-center w-16 h-16 rounded-2xl bg-[#1F6F5F]/10 text-[#1F6F5F] font-black text-2xl flex-shrink-0">
+            <div className="inline-grid place-items-center w-16 h-16 rounded-2xl bg-[#2B4521]/10 text-[#2B4521] font-black text-2xl flex-shrink-0">
               {c.full_name?.charAt(0)}
             </div>
             <div className="flex-1 min-w-0">
@@ -109,7 +109,7 @@ export default function CustomerDetailPage({ params }: { params: { supplierId: s
             </div>
             <div className="flex gap-2">
               <a href={`https://wa.me/${c.phone?.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener"
-                className="px-3 py-2 rounded-xl bg-[#1F6F5F] hover:opacity-90 text-white text-xs font-bold flex items-center gap-1.5">
+                className="px-3 py-2 rounded-xl bg-[#2B4521] hover:opacity-90 text-white text-xs font-bold flex items-center gap-1.5">
                 <MessageCircle className="w-3.5 h-3.5" /> واتساب
               </a>
               {!editing ? (
@@ -118,7 +118,7 @@ export default function CustomerDetailPage({ params }: { params: { supplierId: s
                 </button>
               ) : (
                 <>
-                  <button onClick={save} disabled={saving} className="px-3 py-2 rounded-xl bg-[#1F6F5F] hover:opacity-90 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50">
+                  <button onClick={save} disabled={saving} className="px-3 py-2 rounded-xl bg-[#2B4521] hover:opacity-90 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50">
                     <Save className="w-3.5 h-3.5" /> {saving ? 'حفظ...' : 'حفظ'}
                   </button>
                   <button onClick={() => setEditing(false)} className="p-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-[#1A2E26]">
@@ -144,7 +144,7 @@ export default function CustomerDetailPage({ params }: { params: { supplierId: s
         {ltv && ltv.total_visits > 0 && (
           <section className="bg-white rounded-2xl border border-gray-100 p-5">
             <h3 className="text-sm font-bold tracking-wider uppercase text-[#6B7280] mb-4 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-[#1F6F5F]" /> Customer Lifetime Value
+              <TrendingUp className="w-4 h-4 text-[#2B4521]" /> Customer Lifetime Value
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
               <div className="p-3 rounded-xl bg-[#FAFAF7]">
@@ -155,9 +155,9 @@ export default function CustomerDetailPage({ params }: { params: { supplierId: s
                 <p className="text-[10px] font-bold uppercase text-[#6B7280]">آخر زيارة</p>
                 <p className="text-sm font-black text-[#1A2E26] mt-1">{ltv.last_visit_at ? new Date(ltv.last_visit_at).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' }) : '—'}</p>
               </div>
-              <div className="p-3 rounded-xl bg-[#1F6F5F]/5 border border-[#1F6F5F]/20">
-                <p className="text-[10px] font-bold uppercase text-[#1F6F5F]">عميلة عندنا</p>
-                <p className="text-sm font-black text-[#1F6F5F] mt-1">{ltv.days_as_customer} يوم</p>
+              <div className="p-3 rounded-xl bg-[#2B4521]/5 border border-[#2B4521]/20">
+                <p className="text-[10px] font-bold uppercase text-[#2B4521]">عميلة عندنا</p>
+                <p className="text-sm font-black text-[#2B4521] mt-1">{ltv.days_as_customer} يوم</p>
               </div>
               <div className="p-3 rounded-xl bg-[#FAFAF7]">
                 <p className="text-[10px] font-bold uppercase text-[#6B7280]">حجوزات ملغية</p>
@@ -219,7 +219,7 @@ export default function CustomerDetailPage({ params }: { params: { supplierId: s
               {bookings.map((b: any) => (
                 <div key={b.id} className="p-4 flex items-start gap-3">
                   <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                    b.status === 'completed' ? 'bg-[#1F6F5F]' :
+                    b.status === 'completed' ? 'bg-[#2B4521]' :
                     b.status === 'scheduled' ? 'bg-amber-500' :
                     b.status === 'cancelled' ? 'bg-red-500' : 'bg-gray-300'
                   }`} />
@@ -234,7 +234,7 @@ export default function CustomerDetailPage({ params }: { params: { supplierId: s
                   <div className="text-left">
                     <p className="text-sm font-black text-[#1A2E26]">{Number(b.price_egp).toLocaleString()} ج</p>
                     <p className={`text-[10px] font-bold mt-0.5 ${
-                      b.status === 'completed' ? 'text-[#1F6F5F]' :
+                      b.status === 'completed' ? 'text-[#2B4521]' :
                       b.status === 'scheduled' ? 'text-amber-700' : 'text-gray-500'
                     }`}>
                       {b.status === 'completed' ? '✓ خلصت' : b.status === 'scheduled' ? '⏰ متحجزة' : b.status === 'cancelled' ? 'اتلغت' : b.status}
@@ -263,10 +263,10 @@ function Field({ label, icon, editing, value, onChange, display, type = 'text', 
       {editing ? (
         multiline ? (
           <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={2}
-            className="w-full px-3 py-2 bg-[#FAFAF7] rounded-lg text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]" />
+            className="w-full px-3 py-2 bg-[#FAFAF7] rounded-lg text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#2B4521]" />
         ) : (
           <input type={type} value={value} onChange={(e) => onChange(e.target.value)}
-            className="w-full px-3 py-2 bg-[#FAFAF7] rounded-lg text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]" />
+            className="w-full px-3 py-2 bg-[#FAFAF7] rounded-lg text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#2B4521]" />
         )
       ) : (
         <p className="text-sm text-[#1A2E26] font-medium">{display}</p>
@@ -276,9 +276,9 @@ function Field({ label, icon, editing, value, onChange, display, type = 'text', 
 }
 
 function StatCard({ label, value, icon, tone, primary }: { label: string; value: number | string; icon: React.ReactNode; tone?: 'positive' | 'negative'; primary?: boolean }) {
-  const toneClass = tone === 'positive' ? 'text-[#1F6F5F]' : 'text-[#1A2E26]'
+  const toneClass = tone === 'positive' ? 'text-[#2B4521]' : 'text-[#1A2E26]'
   return (
-    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'}`}>
+    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#2B4521] border-[#2B4521] text-white' : 'bg-white border-gray-100'}`}>
       <div className={`flex items-center gap-2 mb-1.5 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>{icon}<p className="text-[10px] font-bold tracking-wider uppercase">{label}</p></div>
       <p className={`text-xl md:text-2xl font-black ${primary ? 'text-white' : toneClass}`}>{value}</p>
     </div>

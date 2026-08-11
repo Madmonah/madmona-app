@@ -29,7 +29,7 @@ export default function AddProjectPage() {
       <main className="max-w-3xl mx-auto px-4 py-8 pb-16">
         <header className="text-center mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-            ضيف مشروعك في <span className="text-[#1F6F5F]">بورصة مضمونة</span>
+            ضيف مشروعك في <span className="text-[#2B4521]">بورصة مضمونة</span>
           </h1>
           <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
             ببلاش تماماً. املأ البيانات وارفع البروشور والفيديو — والمشروع هيظهر قدام آلاف
@@ -55,7 +55,7 @@ export default function AddProjectPage() {
           <ProjectForm mode="public" />
         </div>
 
-        <div className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/15 rounded-2xl p-5 text-center">
+        <div className="bg-[#2B4521]/5 border border-[#2B4521]/15 rounded-2xl p-5 text-center">
           <p className="text-sm text-gray-700 leading-relaxed">
             🧞 <strong>المارد</strong> — مساعد مضمونة الذكي — بيرد على كل استفسار عن مشروعك ٢٤/٧
             ويوصّلك بالعملاء الجادين.
@@ -65,7 +65,7 @@ export default function AddProjectPage() {
               href="https://wa.me/201002229982"
               target="_blank"
               rel="noopener"
-              className="text-[#1F6F5F] font-bold hover:underline"
+              className="text-[#2B4521] font-bold hover:underline"
             >
               01002229982
             </a>

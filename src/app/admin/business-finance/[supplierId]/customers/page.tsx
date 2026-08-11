@@ -37,8 +37,8 @@ type Stats = {
 
 const TIER_LABELS: Record<string, { label: string; class: string }> = {
   platinum: { label: 'بلاتينيوم', class: 'bg-[#1A2E26] text-white' },
-  vip: { label: 'VIP', class: 'bg-[#1F6F5F] text-white' },
-  regular: { label: 'منتظمة', class: 'bg-[#1F6F5F]/10 text-[#1F6F5F]' },
+  vip: { label: 'VIP', class: 'bg-[#2B4521] text-white' },
+  regular: { label: 'منتظمة', class: 'bg-[#2B4521]/10 text-[#2B4521]' },
   new: { label: 'جديدة', class: 'bg-[#FAFAF7] text-[#6B7280] border border-gray-200' },
   inactive: { label: 'غير نشطة', class: 'bg-gray-100 text-gray-500' },
 }
@@ -88,7 +88,7 @@ export default function CustomersPage({ params }: { params: { supplierId: string
   if (!supplier && loading) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
       </div>
     )
   }
@@ -97,12 +97,12 @@ export default function CustomersPage({ params }: { params: { supplierId: string
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع للـ finance
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">B2B PARTNER · CUSTOMER CRM</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">B2B PARTNER · CUSTOMER CRM</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">عملاء {supplier?.business_name}</h1>
               {stats && <p className="text-sm text-[#6B7280] mt-1">{stats.total_customers} عميلة · {stats.vip_count} VIP · {stats.birthdays_this_month} عيد ميلاد ده الشهر</p>}
             </div>
@@ -126,13 +126,13 @@ export default function CustomersPage({ params }: { params: { supplierId: string
         {birthdayCustomers.length > 0 && (
           <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
-              <Cake className="w-4 h-4 text-[#1F6F5F]" />
+              <Cake className="w-4 h-4 text-[#2B4521]" />
               <h3 className="text-sm font-black text-[#1A2E26]">أعياد الميلاد ده الشهر ({birthdayCustomers.length})</h3>
             </div>
             <div className="p-3 flex gap-3 overflow-x-auto">
               {birthdayCustomers.map((c) => (
                 <Link key={c.id} href={`/admin/business-finance/${supplierId}/customers/${c.id}`}
-                  className={`flex-shrink-0 px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all ${c.bday_today ? 'bg-[#1F6F5F] text-white hover:opacity-90' : 'bg-[#FAFAF7] hover:bg-gray-100 text-[#1A2E26]'}`}>
+                  className={`flex-shrink-0 px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all ${c.bday_today ? 'bg-[#2B4521] text-white hover:opacity-90' : 'bg-[#FAFAF7] hover:bg-gray-100 text-[#1A2E26]'}`}>
                   {c.bday_today && <Sparkles className="w-3.5 h-3.5" />}
                   <span className="text-sm font-bold whitespace-nowrap">{c.full_name}</span>
                   <span className={`text-[10px] ${c.bday_today ? 'text-white/80' : 'text-[#6B7280]'}`}>
@@ -161,7 +161,7 @@ export default function CustomersPage({ params }: { params: { supplierId: string
               { v: 'inactive', label: '⚠️ غير نشطة' },
             ].map((f) => (
               <button key={f.v ?? 'all'} onClick={() => setTierFilter(f.v)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${tierFilter === f.v ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-gray-100'}`}>
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${tierFilter === f.v ? 'bg-[#2B4521] text-white' : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-gray-100'}`}>
                 {f.label}
               </button>
             ))}
@@ -169,7 +169,7 @@ export default function CustomersPage({ params }: { params: { supplierId: string
         </section>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" /></div>
+          <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-[#2B4521] animate-spin" /></div>
         ) : customers.length === 0 ? (
           <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center">
             <Users className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
@@ -193,14 +193,14 @@ function CustomerCard({ c, supplierId }: { c: Customer; supplierId: string }) {
 
   return (
     <Link href={`/admin/business-finance/${supplierId}/customers/${c.id}`}
-      className="block bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md hover:border-[#1F6F5F] transition-all">
+      className="block bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md hover:border-[#2B4521] transition-all">
       <div className="flex items-start gap-3 mb-3">
-        <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] font-black text-base flex-shrink-0">{c.full_name.charAt(0)}</div>
+        <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#2B4521]/10 text-[#2B4521] font-black text-base flex-shrink-0">{c.full_name.charAt(0)}</div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <h4 className="text-sm font-black text-[#1A2E26] leading-tight truncate">{c.full_name}</h4>
             {c.bday_today && <Sparkles className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />}
-            {c.bday_this_month && !c.bday_today && <Cake className="w-3 h-3 text-[#1F6F5F] flex-shrink-0" />}
+            {c.bday_this_month && !c.bday_today && <Cake className="w-3 h-3 text-[#2B4521] flex-shrink-0" />}
           </div>
           <p className="text-[11px] text-[#6B7280] mt-0.5 font-mono">{c.phone}</p>
         </div>
@@ -209,7 +209,7 @@ function CustomerCard({ c, supplierId }: { c: Customer; supplierId: string }) {
       <div className="grid grid-cols-3 gap-2 pt-3 border-t border-gray-100">
         <div><p className="text-[9px] text-[#6B7280] tracking-wider uppercase mb-0.5">زيارات</p><p className="text-sm font-black text-[#1A2E26]">{c.total_visits}</p></div>
         <div><p className="text-[9px] text-[#6B7280] tracking-wider uppercase mb-0.5">اجمالي</p><p className="text-sm font-black text-[#1A2E26]">{Number(c.total_spent_egp).toLocaleString()} ج</p></div>
-        <div><p className="text-[9px] text-[#6B7280] tracking-wider uppercase mb-0.5">نقاط</p><p className="text-sm font-black text-[#1F6F5F]">{c.loyalty_points}</p></div>
+        <div><p className="text-[9px] text-[#6B7280] tracking-wider uppercase mb-0.5">نقاط</p><p className="text-sm font-black text-[#2B4521]">{c.loyalty_points}</p></div>
       </div>
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
         <div className="flex items-center gap-1 text-[10px] text-[#6B7280]"><Calendar className="w-3 h-3" /> آخر زيارة {lastVisit}</div>
@@ -220,9 +220,9 @@ function CustomerCard({ c, supplierId }: { c: Customer; supplierId: string }) {
 }
 
 function StatCard({ label, value, icon, tone, primary }: { label: string; value: number | string; icon: React.ReactNode; tone?: 'positive' | 'negative'; primary?: boolean }) {
-  const toneClass = tone === 'positive' ? 'text-[#1F6F5F]' : 'text-[#1A2E26]'
+  const toneClass = tone === 'positive' ? 'text-[#2B4521]' : 'text-[#1A2E26]'
   return (
-    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'}`}>
+    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#2B4521] border-[#2B4521] text-white' : 'bg-white border-gray-100'}`}>
       <div className={`flex items-center gap-2 mb-1.5 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>{icon}<p className="text-[10px] font-bold tracking-wider uppercase">{label}</p></div>
       <p className={`text-2xl md:text-3xl font-black ${primary ? 'text-white' : toneClass}`}>{value}</p>
     </div>

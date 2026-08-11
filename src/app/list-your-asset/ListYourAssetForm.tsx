@@ -170,16 +170,16 @@ export default function ListYourAssetForm() {
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-[#1F6F5F] rounded-full flex items-center justify-center text-white font-bold text-lg">م</div>
+            <div className="w-9 h-9 bg-[#2B4521] rounded-full flex items-center justify-center text-white font-bold text-lg">م</div>
             <span className="font-bold text-gray-900">مضمونة</span>
           </Link>
-          <Link href="/auth/login" className="text-sm text-[#1F6F5F] font-semibold hover:underline">
+          <Link href="/auth/login" className="text-sm text-[#2B4521] font-semibold hover:underline">
             عندك حساب؟ سجل دخول
           </Link>
         </div>
       </header>
 
-      <section className="bg-gradient-to-b from-[#1F6F5F] to-[#164d32] text-white">
+      <section className="bg-gradient-to-b from-[#2B4521] to-[#164d32] text-white">
         <div className="max-w-3xl mx-auto px-4 py-10 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold mb-3">أجر معانا في 60 ثانية</h1>
           <p className="text-white/90 text-base sm:text-lg mb-6 leading-relaxed">
@@ -211,7 +211,7 @@ export default function ListYourAssetForm() {
           {/* Step 1: Category */}
           <div className="bg-white rounded-2xl border border-gray-100 p-5">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 bg-[#1F6F5F] text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+              <div className="w-7 h-7 bg-[#2B4521] text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
               <h2 className="font-bold text-gray-900">إيه نوع الأصل؟</h2>
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -224,11 +224,11 @@ export default function ListYourAssetForm() {
                     type="button"
                     onClick={() => setCategory(c.slug)}
                     className={`p-3 rounded-xl border-2 text-center transition-all ${
-                      selected ? 'border-[#1F6F5F] bg-[#1F6F5F]/5' : 'border-gray-200 hover:border-gray-300 bg-white'
+                      selected ? 'border-[#2B4521] bg-[#2B4521]/5' : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
-                    <Icon className={`w-6 h-6 mx-auto mb-1.5 ${selected ? 'text-[#1F6F5F]' : 'text-gray-500'}`} />
-                    <div className={`text-sm font-semibold ${selected ? 'text-[#1F6F5F]' : 'text-gray-900'}`}>{c.label}</div>
+                    <Icon className={`w-6 h-6 mx-auto mb-1.5 ${selected ? 'text-[#2B4521]' : 'text-gray-500'}`} />
+                    <div className={`text-sm font-semibold ${selected ? 'text-[#2B4521]' : 'text-gray-900'}`}>{c.label}</div>
                     <div className="text-[11px] text-gray-500 mt-0.5">{c.example}</div>
                   </button>
                 )
@@ -239,7 +239,7 @@ export default function ListYourAssetForm() {
           {/* Step 2: Asset details */}
           <div className="bg-white rounded-2xl border border-gray-100 p-5">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 bg-[#1F6F5F] text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+              <div className="w-7 h-7 bg-[#2B4521] text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
               <h2 className="font-bold text-gray-900">تفاصيل الأصل</h2>
             </div>
             <div className="space-y-3">
@@ -250,7 +250,7 @@ export default function ListYourAssetForm() {
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   placeholder="مثلاً: شقة مفروشة في الساحل الشمالي"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1F6F5F]/50 focus:ring-2 focus:ring-[#1F6F5F]/10"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#2B4521]/50 focus:ring-2 focus:ring-[#2B4521]/10"
                   maxLength={100}
                   required
                 />
@@ -262,7 +262,7 @@ export default function ListYourAssetForm() {
                   onChange={e => setDescription(e.target.value)}
                   placeholder="حجم الأصل، الموجودات، الحالة..."
                   rows={3}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1F6F5F]/50 focus:ring-2 focus:ring-[#1F6F5F]/10 resize-none"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#2B4521]/50 focus:ring-2 focus:ring-[#2B4521]/10 resize-none"
                   maxLength={500}
                 />
               </div>
@@ -274,7 +274,7 @@ export default function ListYourAssetForm() {
                     value={price}
                     onChange={e => setPrice(e.target.value)}
                     placeholder="مثلاً 5000"
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1F6F5F]/50 focus:ring-2 focus:ring-[#1F6F5F]/10"
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#2B4521]/50 focus:ring-2 focus:ring-[#2B4521]/10"
                     min={0}
                   />
                 </div>
@@ -285,7 +285,7 @@ export default function ListYourAssetForm() {
                     value={location}
                     onChange={e => setLocation(e.target.value)}
                     placeholder="مدينة نصر، الساحل..."
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1F6F5F]/50 focus:ring-2 focus:ring-[#1F6F5F]/10"
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#2B4521]/50 focus:ring-2 focus:ring-[#2B4521]/10"
                     maxLength={80}
                   />
                 </div>
@@ -296,7 +296,7 @@ export default function ListYourAssetForm() {
           {/* Step 3: Account creation in same step */}
           <div className="bg-white rounded-2xl border border-gray-100 p-5">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 bg-[#1F6F5F] text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+              <div className="w-7 h-7 bg-[#2B4521] text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
               <h2 className="font-bold text-gray-900">بياناتك للحساب</h2>
             </div>
             <div className="space-y-3">
@@ -307,7 +307,7 @@ export default function ListYourAssetForm() {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder="محمد أحمد"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1F6F5F]/50 focus:ring-2 focus:ring-[#1F6F5F]/10"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#2B4521]/50 focus:ring-2 focus:ring-[#2B4521]/10"
                   required
                 />
               </div>
@@ -318,7 +318,7 @@ export default function ListYourAssetForm() {
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   placeholder="01XXXXXXXXX"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1F6F5F]/50 focus:ring-2 focus:ring-[#1F6F5F]/10"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#2B4521]/50 focus:ring-2 focus:ring-[#2B4521]/10"
                   dir="ltr"
                   required
                 />
@@ -330,7 +330,7 @@ export default function ListYourAssetForm() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1F6F5F]/50 focus:ring-2 focus:ring-[#1F6F5F]/10"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#2B4521]/50 focus:ring-2 focus:ring-[#2B4521]/10"
                   dir="ltr"
                   required
                 />
@@ -345,7 +345,7 @@ export default function ListYourAssetForm() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="6 حروف على الأقل"
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1F6F5F]/50 focus:ring-2 focus:ring-[#1F6F5F]/10"
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#2B4521]/50 focus:ring-2 focus:ring-[#2B4521]/10"
                     dir="ltr"
                     autoComplete="new-password"
                     minLength={6}
@@ -361,7 +361,7 @@ export default function ListYourAssetForm() {
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1F6F5F]/50 focus:ring-2 focus:ring-[#1F6F5F]/10"
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#2B4521]/50 focus:ring-2 focus:ring-[#2B4521]/10"
                     dir="ltr"
                     autoComplete="new-password"
                     minLength={6}
@@ -382,7 +382,7 @@ export default function ListYourAssetForm() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-[#1F6F5F] hover:bg-[#164d32] text-white py-3.5 rounded-xl font-bold text-base shadow-lg disabled:opacity-60 transition-all flex items-center justify-center gap-2"
+            className="w-full bg-[#2B4521] hover:bg-[#164d32] text-white py-3.5 rounded-xl font-bold text-base shadow-lg disabled:opacity-60 transition-all flex items-center justify-center gap-2"
           >
             {submitting ? (
               <>
@@ -404,17 +404,17 @@ export default function ListYourAssetForm() {
 
         <section className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
-            <CheckCircle className="w-5 h-5 text-[#1F6F5F] mx-auto mb-2" />
+            <CheckCircle className="w-5 h-5 text-[#2B4521] mx-auto mb-2" />
             <div className="text-sm font-semibold mb-0.5">الفلوس مضمونة</div>
             <div className="text-xs text-gray-500">الدفع أونلاين من العميل</div>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
-            <CheckCircle className="w-5 h-5 text-[#1F6F5F] mx-auto mb-2" />
+            <CheckCircle className="w-5 h-5 text-[#2B4521] mx-auto mb-2" />
             <div className="text-sm font-semibold mb-0.5">تيم بيشغّلك</div>
             <div className="text-xs text-gray-500">احنا بنقفل الصفقة</div>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
-            <CheckCircle className="w-5 h-5 text-[#1F6F5F] mx-auto mb-2" />
+            <CheckCircle className="w-5 h-5 text-[#2B4521] mx-auto mb-2" />
             <div className="text-sm font-semibold mb-0.5">دفع سريع</div>
             <div className="text-xs text-gray-500">بعد كل إيجار</div>
           </div>

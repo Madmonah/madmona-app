@@ -135,8 +135,8 @@ const AI_TEAM_META: Record<string, { label: string }> = {
 }
 
 const STEP_TYPE_META: Record<StepType, { label: string; icon: string; chip: string }> = {
-  agent: { label: 'موظف AI', icon: '🤖', chip: 'bg-[#1F6F5F]/10 text-[#1F6F5F]' },
-  ai: { label: 'مهمة AI', icon: '🧠', chip: 'bg-[#2FA084]/12 text-[#1F6F5F]' },
+  agent: { label: 'موظف AI', icon: '🤖', chip: 'bg-[#2B4521]/10 text-[#2B4521]' },
+  ai: { label: 'مهمة AI', icon: '🧠', chip: 'bg-[#2FA084]/12 text-[#2B4521]' },
   choice: { label: 'قرارك إنت', icon: '⏸', chip: 'bg-[#D4A017]/15 text-[#8a6a0a]' },
   email: { label: 'إيميل', icon: '📧', chip: 'bg-purple-50 text-purple-700' },
   drive: { label: 'حفظ Drive', icon: '💾', chip: 'bg-gray-100 text-[#6B7280]' },
@@ -341,7 +341,7 @@ export default function TeamOversightPage({
   if (loading && !supplier) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
       </div>
     )
   }
@@ -353,14 +353,14 @@ export default function TeamOversightPage({
         <div className="max-w-7xl mx-auto px-4 py-4">
           <Link
             href={`/admin/business-finance/${supplierId}`}
-            className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2 transition-colors"
+            className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2 transition-colors"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             رجوع للـ finance
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">
                 B2B PARTNER · TEAM OVERSIGHT
               </p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">
@@ -387,14 +387,14 @@ export default function TeamOversightPage({
             </Link>
             <Link
               href={`/admin/business-finance/${supplierId}/customers`}
-                className="px-4 py-2 rounded-xl bg-[#1F6F5F] hover:opacity-90 text-sm font-bold text-white flex items-center gap-2 transition-colors"
+                className="px-4 py-2 rounded-xl bg-[#2B4521] hover:opacity-90 text-sm font-bold text-white flex items-center gap-2 transition-colors"
               >
                 <Heart className="w-4 h-4" />
                 العملاء
               </Link>
               <Link
                 href={`/admin/business-finance/${supplierId}/appointments`}
-                className="px-4 py-2 rounded-xl bg-[#1F6F5F] hover:opacity-90 text-sm font-bold text-white flex items-center gap-2 transition-colors"
+                className="px-4 py-2 rounded-xl bg-[#2B4521] hover:opacity-90 text-sm font-bold text-white flex items-center gap-2 transition-colors"
               >
                 <Calendar className="w-4 h-4" />
                 المواعيد
@@ -448,8 +448,8 @@ export default function TeamOversightPage({
         )}
 
         {/* Hint banner */}
-        <div className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 rounded-2xl p-3 text-xs text-[#1A2E26] flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-[#1F6F5F] flex-shrink-0" />
+        <div className="bg-[#2B4521]/5 border border-[#2B4521]/20 rounded-2xl p-3 text-xs text-[#1A2E26] flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-[#2B4521] flex-shrink-0" />
           <span>اضغط على أي كارت موظف عشان تشوف مهامه + تقدر تشطبها</span>
         </div>
 
@@ -505,7 +505,7 @@ export default function TeamOversightPage({
               value={agentSearch}
               onChange={(e) => setAgentSearch(e.target.value)}
               placeholder="دوّر على موظف AI… (اسم / فريق / شغلانة)"
-              className="w-full pr-9 pl-9 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+              className="w-full pr-9 pl-9 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
             />
             {agentSearch && (
               <button onClick={() => setAgentSearch('')} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#1A2E26]">
@@ -517,7 +517,7 @@ export default function TeamOversightPage({
           {/* Brain node — العقل */}
           <div
             className="rounded-2xl p-4 mb-5 text-white flex items-center gap-3"
-            style={{ background: 'linear-gradient(135deg,#D4A017 0%,#2FA084 55%,#1F6F5F 100%)' }}
+            style={{ background: 'linear-gradient(135deg,#D4A017 0%,#2FA084 55%,#2B4521 100%)' }}
           >
             <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-white/20 flex-shrink-0 text-xl">🧠</div>
             <div className="flex-1 min-w-0">
@@ -586,7 +586,7 @@ export default function TeamOversightPage({
               </button>
               <button
                 onClick={() => setBuilderFlow('new')}
-                className="px-4 py-2 rounded-xl bg-[#1F6F5F] hover:opacity-90 text-sm font-bold text-white flex items-center gap-2"
+                className="px-4 py-2 rounded-xl bg-[#2B4521] hover:opacity-90 text-sm font-bold text-white flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" /> flow جديد
               </button>
@@ -594,7 +594,7 @@ export default function TeamOversightPage({
           </div>
 
           {flowMsg && (
-            <div className="mb-3 text-xs font-bold text-[#1A2E26] bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 rounded-xl px-3 py-2">{flowMsg}</div>
+            <div className="mb-3 text-xs font-bold text-[#1A2E26] bg-[#2B4521]/5 border border-[#2B4521]/20 rounded-xl px-3 py-2">{flowMsg}</div>
           )}
 
           {flows.length === 0 ? (
@@ -649,7 +649,7 @@ export default function TeamOversightPage({
             <section key={b.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="inline-grid place-items-center w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F]">
+                  <div className="inline-grid place-items-center w-10 h-10 rounded-xl bg-[#2B4521]/10 text-[#2B4521]">
                     <Building2 className="w-5 h-5" />
                   </div>
                   <div>
@@ -676,7 +676,7 @@ export default function TeamOversightPage({
         })}
 
         {/* Bottom Madmona positioning */}
-        <section className="bg-[#1F6F5F] text-white rounded-3xl p-6 md:p-8">
+        <section className="bg-[#2B4521] text-white rounded-3xl p-6 md:p-8">
           <div className="flex items-start gap-4">
             <div className="inline-grid place-items-center w-12 h-12 rounded-2xl bg-white/15 flex-shrink-0">
               <Crown className="w-6 h-6" />
@@ -852,7 +852,7 @@ function TaskModal({
       <div className="relative bg-[#FAFAF7] rounded-t-3xl md:rounded-3xl w-full md:max-w-2xl md:mx-4 max-h-[90vh] flex flex-col shadow-2xl">
         {/* Header */}
         <header className="px-5 py-4 border-b border-gray-100 bg-white rounded-t-3xl flex items-center gap-3">
-          <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] font-black text-base flex-shrink-0">
+          <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#2B4521]/10 text-[#2B4521] font-black text-base flex-shrink-0">
             {employee.avatar_initial || employee.full_name.charAt(0)}
           </div>
           <div className="flex-1 min-w-0">
@@ -877,7 +877,7 @@ function TaskModal({
           {/* Attendance widget */}
           <div className="bg-white rounded-2xl border border-gray-100 p-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <Clock className="w-4 h-4 text-[#1F6F5F]" />
+              <Clock className="w-4 h-4 text-[#2B4521]" />
               <div>
                 <p className="text-xs font-bold text-[#1A2E26]">
                   {attendance?.clock_in_at
@@ -893,7 +893,7 @@ function TaskModal({
               </div>
             </div>
             {!attendance?.clock_in_at ? (
-              <button onClick={clockIn} className="px-3 py-1.5 rounded-lg bg-[#1F6F5F] text-white text-xs font-bold flex items-center gap-1">
+              <button onClick={clockIn} className="px-3 py-1.5 rounded-lg bg-[#2B4521] text-white text-xs font-bold flex items-center gap-1">
                 <LogIn className="w-3.5 h-3.5" />
                 سجل حضور
               </button>
@@ -903,12 +903,12 @@ function TaskModal({
                 سجل انصراف
               </button>
             ) : (
-              <span className="text-[10px] font-bold text-[#1F6F5F]">اتسجل ✓</span>
+              <span className="text-[10px] font-bold text-[#2B4521]">اتسجل ✓</span>
             )}
           </div>
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
+              <Loader2 className="w-6 h-6 text-[#2B4521] animate-spin" />
             </div>
           ) : tasks.length === 0 ? (
             <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-8 text-center">
@@ -929,7 +929,7 @@ function TaskModal({
 
           {/* Add task */}
           {adding ? (
-            <div className="bg-white rounded-2xl border-2 border-[#1F6F5F] p-3 flex items-center gap-2">
+            <div className="bg-white rounded-2xl border-2 border-[#2B4521] p-3 flex items-center gap-2">
               <input
                 type="text"
                 value={newTaskTitle}
@@ -942,7 +942,7 @@ function TaskModal({
               <button
                 onClick={addTask}
                 disabled={!newTaskTitle.trim()}
-                className="px-3 py-1.5 rounded-lg bg-[#1F6F5F] text-white text-xs font-bold disabled:opacity-50"
+                className="px-3 py-1.5 rounded-lg bg-[#2B4521] text-white text-xs font-bold disabled:opacity-50"
               >
                 اضف
               </button>
@@ -956,7 +956,7 @@ function TaskModal({
           ) : (
             <button
               onClick={() => setAdding(true)}
-              className="w-full p-3 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#1F6F5F] text-[#6B7280] hover:text-[#1F6F5F] text-sm font-bold transition-colors flex items-center justify-center gap-2"
+              className="w-full p-3 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#2B4521] text-[#6B7280] hover:text-[#2B4521] text-sm font-bold transition-colors flex items-center justify-center gap-2"
             >
               <Plus className="w-4 h-4" />
               اضف مهمة
@@ -982,14 +982,14 @@ function TaskRow({ task, onToggle, onDelete }: { task: Task; onToggle: () => voi
 
   return (
     <div className={`bg-white rounded-2xl border p-3 md:p-4 flex items-start gap-3 group transition-all ${
-      isDone ? 'border-[#1F6F5F]/30 bg-[#1F6F5F]/5' : 'border-gray-100 hover:shadow-sm'
+      isDone ? 'border-[#2B4521]/30 bg-[#2B4521]/5' : 'border-gray-100 hover:shadow-sm'
     }`}>
       {/* Checkbox */}
       <button onClick={onToggle} className="flex-shrink-0 mt-0.5 transition-transform active:scale-90">
         {isDone ? (
-          <CheckCircle2 className="w-6 h-6 text-[#1F6F5F]" />
+          <CheckCircle2 className="w-6 h-6 text-[#2B4521]" />
         ) : (
-          <Circle className="w-6 h-6 text-gray-300 hover:text-[#1F6F5F] transition-colors" />
+          <Circle className="w-6 h-6 text-gray-300 hover:text-[#2B4521] transition-colors" />
         )}
       </button>
 
@@ -1007,7 +1007,7 @@ function TaskRow({ task, onToggle, onDelete }: { task: Task; onToggle: () => voi
           <p className="text-[10px] text-[#6B7280] mt-1 mr-3.5">يدوي</p>
         )}
         {task.completed_at && isDone && (
-          <p className="text-[10px] text-[#1F6F5F] mt-1 mr-3.5">
+          <p className="text-[10px] text-[#2B4521] mt-1 mr-3.5">
             ✓ {new Date(task.completed_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
           </p>
         )}
@@ -1053,13 +1053,13 @@ function HierNode({
       onClick={onClick}
       className={`flex items-center gap-3 rounded-2xl border w-full text-right ${
         accent
-          ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]'
-          : `bg-white text-[#1A2E26] border-gray-100 ${onClick ? 'hover:border-[#1F6F5F] hover:shadow-sm cursor-pointer' : ''}`
+          ? 'bg-[#2B4521] text-white border-[#2B4521]'
+          : `bg-white text-[#1A2E26] border-gray-100 ${onClick ? 'hover:border-[#2B4521] hover:shadow-sm cursor-pointer' : ''}`
       } ${compact ? 'p-3' : 'p-4'} transition-all`}
     >
       <div className={`inline-grid place-items-center rounded-xl flex-shrink-0 ${
         compact ? 'w-9 h-9' : 'w-11 h-11'
-      } ${accent ? 'bg-white/15 text-white' : 'bg-[#1F6F5F]/10 text-[#1F6F5F]'}`}>
+      } ${accent ? 'bg-white/15 text-white' : 'bg-[#2B4521]/10 text-[#2B4521]'}`}>
         {icon}
       </div>
       <div className="flex-1 min-w-0 text-right">
@@ -1076,7 +1076,7 @@ function HierNode({
       </div>
       {pct !== null && (
         <div className={`text-xs font-bold ${
-          accent ? 'text-white' : pct >= 70 ? 'text-[#1F6F5F]' : 'text-[#6B7280]'
+          accent ? 'text-white' : pct >= 70 ? 'text-[#2B4521]' : 'text-[#6B7280]'
         }`}>
           {pct}%
         </div>
@@ -1102,10 +1102,10 @@ function StatCard({
   tone?: 'positive' | 'negative'
   primary?: boolean
 }) {
-  const toneClass = tone === 'positive' ? 'text-[#1F6F5F]' : 'text-[#1A2E26]'
+  const toneClass = tone === 'positive' ? 'text-[#2B4521]' : 'text-[#1A2E26]'
   return (
     <div className={`rounded-2xl p-4 border ${
-      primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'
+      primary ? 'bg-[#2B4521] border-[#2B4521] text-white' : 'bg-white border-gray-100'
     }`}>
       <div className={`flex items-center gap-2 mb-1.5 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>
         {icon}
@@ -1125,17 +1125,17 @@ function EmployeeCard({ emp, onClick }: { emp: Employee; onClick: () => void }) 
   const initial = emp.avatar_initial || emp.full_name.charAt(0)
   const statusColor =
     pct === null ? 'bg-gray-100 text-gray-500' :
-    pct >= 80 ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' :
+    pct >= 80 ? 'bg-[#2B4521]/10 text-[#2B4521]' :
     pct >= 40 ? 'bg-amber-50 text-amber-700' :
     'bg-red-50 text-red-700'
 
   return (
     <button
       onClick={onClick}
-      className="w-full text-right rounded-2xl border border-gray-100 p-4 hover:shadow-md hover:border-[#1F6F5F] transition-all"
+      className="w-full text-right rounded-2xl border border-gray-100 p-4 hover:shadow-md hover:border-[#2B4521] transition-all"
     >
       <div className="flex items-start gap-3 mb-3">
-        <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] font-black text-base flex-shrink-0">
+        <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#2B4521]/10 text-[#2B4521] font-black text-base flex-shrink-0">
           {initial}
         </div>
         <div className="flex-1 min-w-0">
@@ -1158,7 +1158,7 @@ function EmployeeCard({ emp, onClick }: { emp: Employee; onClick: () => void }) 
         </div>
         {emp.today_total_tasks > 0 && (
           <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full bg-[#1F6F5F] transition-all" style={{ width: `${pct}%` }} />
+            <div className="h-full bg-[#2B4521] transition-all" style={{ width: `${pct}%` }} />
           </div>
         )}
       </div>
@@ -1180,7 +1180,7 @@ function ProgressRing({ pct }: { pct: number }) {
     <div className="relative w-12 h-12 flex-shrink-0">
       <svg className="w-12 h-12 -rotate-90" viewBox="0 0 44 44">
         <circle cx="22" cy="22" r="18" fill="none" stroke="#E5E7EB" strokeWidth="3" />
-        <circle cx="22" cy="22" r="18" fill="none" stroke="#1F6F5F" strokeWidth="3"
+        <circle cx="22" cy="22" r="18" fill="none" stroke="#2B4521" strokeWidth="3"
           strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" />
       </svg>
       <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-[#1A2E26]">
@@ -1207,18 +1207,18 @@ function AgentChip({ a, onToggle, onOpen }: {
   const subtitle = a.task && a.task !== a.display_name ? a.task : a.agent_name
   return (
     <div className={`rounded-2xl border p-3 flex items-start gap-2.5 transition-all ${
-      on ? 'bg-white border-[#1F6F5F]/30' : 'bg-[#FAFAF7] border-gray-100 opacity-70'
+      on ? 'bg-white border-[#2B4521]/30' : 'bg-[#FAFAF7] border-gray-100 opacity-70'
     }`}>
       <button
         onClick={onOpen}
         title="تعديل شغل الموظف"
         className={`inline-grid place-items-center w-9 h-9 rounded-lg flex-shrink-0 text-sm transition-transform active:scale-90 ${
-          on ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'bg-gray-100 text-[#6B7280]'
+          on ? 'bg-[#2B4521]/10 text-[#2B4521]' : 'bg-gray-100 text-[#6B7280]'
         }`}
       >🤖</button>
       <button onClick={onOpen} className="flex-1 min-w-0 text-right">
         <div className="flex items-center gap-1.5">
-          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${on ? 'bg-[#1F6F5F]' : 'bg-gray-300'}`} />
+          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${on ? 'bg-[#2B4521]' : 'bg-gray-300'}`} />
           <h4 className="text-sm font-black text-[#1A2E26] leading-tight truncate">{a.display_name || a.agent_name}</h4>
         </div>
         <p className="text-[10px] text-[#6B7280] mt-0.5 truncate" dir="ltr">{subtitle}</p>
@@ -1229,8 +1229,8 @@ function AgentChip({ a, onToggle, onOpen }: {
           title={on ? 'نوّم الـ agent' : 'شغّل الـ agent'}
           className={`px-2 py-1 rounded-lg text-[9px] font-bold flex items-center justify-center gap-1 transition-colors ${
             on
-              ? 'bg-[#1F6F5F]/10 text-[#1F6F5F] hover:bg-red-50 hover:text-red-600'
-              : 'bg-[#1F6F5F] text-white hover:opacity-90'
+              ? 'bg-[#2B4521]/10 text-[#2B4521] hover:bg-red-50 hover:text-red-600'
+              : 'bg-[#2B4521] text-white hover:opacity-90'
           }`}
         >
           {on ? <Pause className="w-3 h-3" /> : <Power className="w-3 h-3" />}
@@ -1341,7 +1341,7 @@ function AgentModal({ agentName, onClose, onChanged }: {
       <div className="relative bg-[#FAFAF7] rounded-t-3xl md:rounded-3xl w-full md:max-w-xl md:mx-4 max-h-[90vh] flex flex-col shadow-2xl">
         <header className="px-5 py-4 border-b border-gray-100 bg-white rounded-t-3xl flex items-center gap-3">
           <div className={`inline-grid place-items-center w-11 h-11 rounded-xl flex-shrink-0 text-lg ${
-            on ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'bg-gray-100 text-[#6B7280]'
+            on ? 'bg-[#2B4521]/10 text-[#2B4521]' : 'bg-gray-100 text-[#6B7280]'
           }`}>🤖</div>
           <div className="flex-1 min-w-0">
             <h2 className="text-base md:text-lg font-black text-[#1A2E26] truncate">{d?.display_name || agentName}</h2>
@@ -1353,7 +1353,7 @@ function AgentModal({ agentName, onClose, onChanged }: {
         </header>
 
         {loading || !d ? (
-          <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" /></div>
+          <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 text-[#2B4521] animate-spin" /></div>
         ) : (
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {/* Status + counters */}
@@ -1367,7 +1367,7 @@ function AgentModal({ agentName, onClose, onChanged }: {
               <button
                 onClick={toggle} disabled={saving}
                 className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 disabled:opacity-50 ${
-                  on ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-[#1F6F5F] text-white hover:opacity-90'
+                  on ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-[#2B4521] text-white hover:opacity-90'
                 }`}
               >
                 {on ? <Pause className="w-4 h-4" /> : <Power className="w-4 h-4" />}
@@ -1384,7 +1384,7 @@ function AgentModal({ agentName, onClose, onChanged }: {
                 <input
                   type="text" value={cron} onChange={(e) => setCron(e.target.value)} dir="ltr"
                   placeholder="@daily / @hourly / 0 6 * * *"
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F] font-mono"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#2B4521] font-mono"
                 />
               </div>
               <div>
@@ -1394,7 +1394,7 @@ function AgentModal({ agentName, onClose, onChanged }: {
                 <textarea
                   value={desc} onChange={(e) => setDesc(e.target.value)} rows={2}
                   placeholder="بيعمل إيه الموظف ده…"
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F] resize-none"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#2B4521] resize-none"
                 />
               </div>
               <button
@@ -1417,7 +1417,7 @@ function AgentModal({ agentName, onClose, onChanged }: {
                   t.active ? 'border-gray-100' : 'border-gray-100 opacity-50'
                 }`}>
                   <button onClick={() => toggleTask(t)} className="flex-shrink-0 active:scale-90 transition-transform">
-                    {t.active ? <CheckCircle2 className="w-5 h-5 text-[#1F6F5F]" /> : <Circle className="w-5 h-5 text-gray-300" />}
+                    {t.active ? <CheckCircle2 className="w-5 h-5 text-[#2B4521]" /> : <Circle className="w-5 h-5 text-gray-300" />}
                   </button>
                   <span className={`flex-1 text-sm ${t.active ? 'text-[#1A2E26] font-medium' : 'text-[#6B7280] line-through'}`}>{t.title_ar}</span>
                   <button onClick={() => delTask(t)} className="text-[#6B7280] hover:text-red-600 p-1 flex-shrink-0">
@@ -1430,10 +1430,10 @@ function AgentModal({ agentName, onClose, onChanged }: {
                   type="text" value={newTask} onChange={(e) => setNewTask(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') addTask() }}
                   placeholder="مهمة جديدة…"
-                  className="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+                  className="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
                 />
                 <button onClick={addTask} disabled={!newTask.trim() || saving}
-                  className="px-3 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold disabled:opacity-50 flex items-center gap-1">
+                  className="px-3 py-2 rounded-xl bg-[#2B4521] text-white text-sm font-bold disabled:opacity-50 flex items-center gap-1">
                   <Plus className="w-4 h-4" /> اضف
                 </button>
               </div>
@@ -1454,7 +1454,7 @@ function FlowCard({ f, running, onRun, onToggle, onEdit, onDelete }: {
 }) {
   const lr = f.last_run
   const lrColor = !lr ? 'text-[#6B7280] bg-gray-100'
-    : lr.status === 'completed' ? 'text-[#1F6F5F] bg-[#1F6F5F]/10'
+    : lr.status === 'completed' ? 'text-[#2B4521] bg-[#2B4521]/10'
     : lr.status === 'running' ? 'text-amber-700 bg-amber-50'
     : 'text-red-600 bg-red-50'
   const lrLabel = !lr ? 'ما اشتغلش'
@@ -1463,7 +1463,7 @@ function FlowCard({ f, running, onRun, onToggle, onEdit, onDelete }: {
     : lr.status === 'completed_with_errors' ? 'فيه أخطاء'
     : (lr.status || '—')
   return (
-    <div className={`rounded-2xl border p-4 ${f.enabled ? 'border-[#1F6F5F]/30 bg-white' : 'border-gray-100 bg-[#FAFAF7] opacity-80'}`}>
+    <div className={`rounded-2xl border p-4 ${f.enabled ? 'border-[#2B4521]/30 bg-white' : 'border-gray-100 bg-[#FAFAF7] opacity-80'}`}>
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-black text-[#1A2E26] truncate">{f.name}</h4>
@@ -1488,7 +1488,7 @@ function FlowCard({ f, running, onRun, onToggle, onEdit, onDelete }: {
       </div>
       <div className="flex items-center gap-1.5">
         <button onClick={onRun} disabled={running || f.steps.length === 0}
-          className="flex-1 px-3 py-2 rounded-xl bg-[#1F6F5F] text-white text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-50 hover:opacity-90">
+          className="flex-1 px-3 py-2 rounded-xl bg-[#2B4521] text-white text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-50 hover:opacity-90">
           {running ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
           {running ? 'بيشتغل…' : 'شغّل دلوقتي'}
         </button>
@@ -1584,14 +1584,14 @@ function FlowBuilder({ flow, agents, roster, onClose, onSaved }: {
     onSaved()
   }
 
-  const inputCls = 'w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]'
+  const inputCls = 'w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#2B4521]'
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" dir="rtl">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-[#FAFAF7] rounded-t-3xl md:rounded-3xl w-full md:max-w-2xl md:mx-4 max-h-[90vh] flex flex-col shadow-2xl">
         <header className="px-5 py-4 border-b border-gray-100 bg-white rounded-t-3xl flex items-center gap-3">
-          <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] flex-shrink-0"><Workflow className="w-5 h-5" /></div>
+          <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#2B4521]/10 text-[#2B4521] flex-shrink-0"><Workflow className="w-5 h-5" /></div>
           <div className="flex-1 min-w-0">
             <h2 className="text-base md:text-lg font-black text-[#1A2E26]">{flow ? 'تعديل flow' : 'flow جديد'}</h2>
             <p className="text-xs text-[#6B7280]">رتّب الخطوات: موظف AI · مهمة AI · قرارك · إيميل · حفظ</p>
@@ -1603,12 +1603,12 @@ function FlowBuilder({ flow, agents, roster, onClose, onSaved }: {
           <div>
             <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1 block">اسم الـ flow</label>
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="مثلاً: محرّك محتوى الماركتنج"
-              className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-white text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]" />
+              className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-white text-[#1A2E26] focus:outline-none focus:border-[#2B4521]" />
           </div>
           <div>
             <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1 block">وصف (اختياري)</label>
             <input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="بيعمل إيه الـ flow ده"
-              className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-white text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]" />
+              className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-white text-[#1A2E26] focus:outline-none focus:border-[#2B4521]" />
           </div>
 
           <div>
@@ -1619,7 +1619,7 @@ function FlowBuilder({ flow, agents, roster, onClose, onSaved }: {
                 return (
                   <div key={i} className="bg-white rounded-2xl border border-gray-100 p-3 space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="inline-grid place-items-center w-6 h-6 rounded-lg bg-[#1F6F5F]/10 text-[#1F6F5F] text-[10px] font-black flex-shrink-0">{i + 1}</span>
+                      <span className="inline-grid place-items-center w-6 h-6 rounded-lg bg-[#2B4521]/10 text-[#2B4521] text-[10px] font-black flex-shrink-0">{i + 1}</span>
                       <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold inline-flex items-center gap-1 ${m.chip}`}><span>{m.icon}</span>{m.label}</span>
                       <div className="flex-1" />
                       <div className="flex flex-col flex-shrink-0">
@@ -1660,7 +1660,7 @@ function FlowBuilder({ flow, agents, roster, onClose, onSaved }: {
                             return (
                               <button key={k} disabled={!p.email} onClick={() => p.email && toggleEmail(i, 'to', p.email)}
                                 title={p.email || 'محتاج إيميل'}
-                                className={`px-2 py-1 rounded-lg text-[10px] font-bold border ${!p.email ? 'opacity-40 border-gray-200 text-[#6B7280]' : sel ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' : 'bg-white border-gray-200 text-[#1A2E26] hover:border-[#1F6F5F]'}`}>
+                                className={`px-2 py-1 rounded-lg text-[10px] font-bold border ${!p.email ? 'opacity-40 border-gray-200 text-[#6B7280]' : sel ? 'bg-[#2B4521] text-white border-[#2B4521]' : 'bg-white border-gray-200 text-[#1A2E26] hover:border-[#2B4521]'}`}>
                                 {p.name}{!p.email && ' ⚠'}
                               </button>
                             )
@@ -1698,7 +1698,7 @@ function FlowBuilder({ flow, agents, roster, onClose, onSaved }: {
                 const m = STEP_TYPE_META[t]
                 return (
                   <button key={t} onClick={() => addStep(t)}
-                    className="p-2 rounded-xl border-2 border-dashed border-gray-300 hover:border-[#1F6F5F] text-[#6B7280] hover:text-[#1F6F5F] text-[11px] font-bold flex items-center justify-center gap-1">
+                    className="p-2 rounded-xl border-2 border-dashed border-gray-300 hover:border-[#2B4521] text-[#6B7280] hover:text-[#2B4521] text-[11px] font-bold flex items-center justify-center gap-1">
                     <span>{m.icon}</span> {m.label}
                   </button>
                 )
@@ -1707,7 +1707,7 @@ function FlowBuilder({ flow, agents, roster, onClose, onSaved }: {
           </div>
 
           {steps.length > 0 && (
-            <div className="bg-[#1F6F5F]/5 rounded-2xl p-3">
+            <div className="bg-[#2B4521]/5 rounded-2xl p-3">
               <p className="text-[10px] font-bold text-[#6B7280] mb-1">المعاينة</p>
               <div className="flex items-center flex-wrap gap-1">
                 {steps.map((s, i) => {
@@ -1729,7 +1729,7 @@ function FlowBuilder({ flow, agents, roster, onClose, onSaved }: {
         <footer className="px-5 py-3 border-t border-gray-100 bg-white flex items-center gap-2">
           <button onClick={onClose} className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-[#1A2E26] text-sm font-bold">إلغاء</button>
           <button onClick={save} disabled={saving}
-            className="flex-1 px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold flex items-center justify-center gap-1.5 disabled:opacity-50 hover:opacity-90">
+            className="flex-1 px-4 py-2 rounded-xl bg-[#2B4521] text-white text-sm font-bold flex items-center justify-center gap-1.5 disabled:opacity-50 hover:opacity-90">
             <Save className="w-4 h-4" /> {saving ? 'جاري الحفظ…' : (flow ? 'احفظ التعديلات' : 'اعمل الـ flow')}
           </button>
         </footer>
@@ -1766,8 +1766,8 @@ function ChoiceModal({ data, resuming, onPick, onClose }: {
             const label = o?.label ?? JSON.stringify(o)
             return (
               <button key={k} disabled={resuming} onClick={() => onPick(label)}
-                className="w-full text-right p-3 rounded-2xl border border-gray-200 bg-white hover:border-[#1F6F5F] hover:shadow-sm text-sm font-bold text-[#1A2E26] disabled:opacity-50 flex items-center gap-2">
-                <span className="inline-grid place-items-center w-6 h-6 rounded-lg bg-[#1F6F5F]/10 text-[#1F6F5F] text-[11px] font-black flex-shrink-0">{k + 1}</span>
+                className="w-full text-right p-3 rounded-2xl border border-gray-200 bg-white hover:border-[#2B4521] hover:shadow-sm text-sm font-bold text-[#1A2E26] disabled:opacity-50 flex items-center gap-2">
+                <span className="inline-grid place-items-center w-6 h-6 rounded-lg bg-[#2B4521]/10 text-[#2B4521] text-[11px] font-black flex-shrink-0">{k + 1}</span>
                 <span className="flex-1">{label}</span>
               </button>
             )
@@ -1775,9 +1775,9 @@ function ChoiceModal({ data, resuming, onPick, onClose }: {
           <div className="pt-2 flex items-center gap-2">
             <input value={custom} onChange={(e) => setCustom(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && custom.trim()) onPick(custom.trim()) }}
               placeholder="أو اكتب اختيارك…" disabled={resuming}
-              className="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-200 bg-white text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]" />
+              className="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-200 bg-white text-[#1A2E26] focus:outline-none focus:border-[#2B4521]" />
             <button onClick={() => custom.trim() && onPick(custom.trim())} disabled={resuming || !custom.trim()}
-              className="px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold disabled:opacity-50 flex items-center gap-1.5">
+              className="px-4 py-2 rounded-xl bg-[#2B4521] text-white text-sm font-bold disabled:opacity-50 flex items-center gap-1.5">
               {resuming ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />} كمّل
             </button>
           </div>
@@ -1823,7 +1823,7 @@ function CommsModal({ roster, onClose, onSaved }: {
     setSaving(false); onSaved()
   }
 
-  const inputCls = 'w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]'
+  const inputCls = 'w-full px-3 py-2 text-sm rounded-xl border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#2B4521]'
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" dir="rtl">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
@@ -1854,12 +1854,12 @@ function CommsModal({ roster, onClose, onSaved }: {
                   {e.role_ar && <p className="text-[10px] text-[#6B7280]">{e.role_ar}</p>}
                 </div>
                 <input value={emps[e.employee_id || ''] || ''} onChange={(ev) => setEmps((m) => ({ ...m, [e.employee_id || '']: ev.target.value }))}
-                  placeholder="إيميل" dir="ltr" className="w-40 px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]" />
-                <button onClick={() => saveEmp(e.employee_id || '')} disabled={saving} className="px-2.5 py-1.5 rounded-lg bg-[#1F6F5F] text-white text-xs font-bold disabled:opacity-50"><Save className="w-3.5 h-3.5" /></button>
+                  placeholder="إيميل" dir="ltr" className="w-40 px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-[#FAFAF7] text-[#1A2E26] focus:outline-none focus:border-[#2B4521]" />
+                <button onClick={() => saveEmp(e.employee_id || '')} disabled={saving} className="px-2.5 py-1.5 rounded-lg bg-[#2B4521] text-white text-xs font-bold disabled:opacity-50"><Save className="w-3.5 h-3.5" /></button>
               </div>
             ))}
           </div>
-          {msg && <p className="text-xs font-bold text-[#1F6F5F] text-center">{msg}</p>}
+          {msg && <p className="text-xs font-bold text-[#2B4521] text-center">{msg}</p>}
         </div>
       </div>
     </div>

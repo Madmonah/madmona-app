@@ -92,13 +92,13 @@ export default async function AgentsDashboard() {
     }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <header style={{ marginBottom: 32 }}>
-          <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 28 }}>🎯 فريق مضمونة الذكي</h1>
+          <h1 style={{ color: '#2B4521', margin: 0, fontSize: 28 }}>🎯 فريق مضمونة الذكي</h1>
           <p style={{ color: '#666', marginTop: 8 }}>20 AI agent بيشتغلوا في فرق sales و marketing</p>
         </header>
 
         {todayKpis && (
           <section style={{ marginBottom: 32 }}>
-            <h2 style={{ color: '#1F6F5F', fontSize: 18 }}>📊 أرقام النهارده</h2>
+            <h2 style={{ color: '#2B4521', fontSize: 18 }}>📊 أرقام النهارده</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginTop: 12 }}>
               {[
                 { label: 'تسجيلات', val: todayKpis.total_signups },
@@ -112,7 +112,7 @@ export default async function AgentsDashboard() {
                 { label: 'agent runs', val: todayKpis.agents_runs },
               ].map((k) => (
                 <div key={k.label} style={{ background: '#fff', padding: 16, borderRadius: 8, border: '1px solid #eee' }}>
-                  <div style={{ fontSize: 22, fontWeight: 'bold', color: '#1F6F5F' }}>{String(k.val ?? 0)}</div>
+                  <div style={{ fontSize: 22, fontWeight: 'bold', color: '#2B4521' }}>{String(k.val ?? 0)}</div>
                   <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{k.label}</div>
                 </div>
               ))}
@@ -121,7 +121,7 @@ export default async function AgentsDashboard() {
         )}
 
         <section style={{ marginBottom: 32 }}>
-          <h2 style={{ color: '#1F6F5F', fontSize: 20, borderBottom: '2px solid #1F6F5F', paddingBottom: 8 }}>
+          <h2 style={{ color: '#2B4521', fontSize: 20, borderBottom: '2px solid #2B4521', paddingBottom: 8 }}>
             👔 فريق Sales ({salesAgents.length})
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, marginTop: 16 }}>
@@ -132,7 +132,7 @@ export default async function AgentsDashboard() {
         </section>
 
         <section style={{ marginBottom: 32 }}>
-          <h2 style={{ color: '#1F6F5F', fontSize: 20, borderBottom: '2px solid #1F6F5F', paddingBottom: 8 }}>
+          <h2 style={{ color: '#2B4521', fontSize: 20, borderBottom: '2px solid #2B4521', paddingBottom: 8 }}>
             📢 فريق Marketing ({marketingAgents.length})
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, marginTop: 16 }}>
@@ -143,7 +143,7 @@ export default async function AgentsDashboard() {
         </section>
 
         <section>
-          <h2 style={{ color: '#1F6F5F', fontSize: 20, borderBottom: '2px solid #1F6F5F', paddingBottom: 8 }}>
+          <h2 style={{ color: '#2B4521', fontSize: 20, borderBottom: '2px solid #2B4521', paddingBottom: 8 }}>
             ⚡ آخر 20 تشغيل
           </h2>
           <div style={{ background: '#fff', borderRadius: 8, border: '1px solid #eee', overflow: 'hidden', marginTop: 16 }}>
@@ -189,10 +189,10 @@ function AgentCard({ agent }: { agent: AgentRow }) {
       borderRadius: 12,
       padding: 16,
       border: '1px solid #eee',
-      borderRight: `4px solid ${isHealthy ? '#1F6F5F' : '#6FCF97'}`,
+      borderRight: `4px solid ${isHealthy ? '#2B4521' : '#6FCF97'}`,
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-        <h3 style={{ margin: 0, fontSize: 15, color: '#1F6F5F' }}>{agent.display_name}</h3>
+        <h3 style={{ margin: 0, fontSize: 15, color: '#2B4521' }}>{agent.display_name}</h3>
         <span style={{
           fontSize: 11,
           padding: '2px 8px',
@@ -211,7 +211,7 @@ function AgentCard({ agent }: { agent: AgentRow }) {
         </div>
         <div>
           <div style={{ color: '#999' }}>نجاح</div>
-          <div style={{ fontWeight: 'bold', fontSize: 14, color: successRate >= 80 ? '#1F6F5F' : '#6FCF97' }}>
+          <div style={{ fontWeight: 'bold', fontSize: 14, color: successRate >= 80 ? '#2B4521' : '#6FCF97' }}>
             {successRate}%
           </div>
         </div>

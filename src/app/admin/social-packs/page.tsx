@@ -130,7 +130,7 @@ export default function SocialPacksAdmin() {
           <button
             onClick={triggerBatch}
             disabled={triggering}
-            className="bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
+            className="bg-[#2B4521] text-white px-5 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
           >
             {triggering ? '...بيشتغل' : 'شغّل دفعة (5)'}
           </button>
@@ -144,7 +144,7 @@ export default function SocialPacksAdmin() {
               onClick={() => setStatusFilter(statusFilter === s ? null : s)}
               className={`p-4 rounded-xl border-2 text-right transition-all ${
                 statusFilter === s
-                  ? 'border-[#1F6F5F] bg-white shadow-md'
+                  ? 'border-[#2B4521] bg-white shadow-md'
                   : 'border-gray-200 bg-white hover:border-gray-300'
               }`}
             >
@@ -160,11 +160,11 @@ export default function SocialPacksAdmin() {
             <p className="text-sm font-medium text-gray-700">
               التقدم: {counts.ready ?? 0} من أصل {total}
             </p>
-            <p className="text-sm font-bold text-[#1F6F5F]">{readyPct}%</p>
+            <p className="text-sm font-bold text-[#2B4521]">{readyPct}%</p>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-[#1F6F5F] h-full rounded-full transition-all"
+              className="bg-[#2B4521] h-full rounded-full transition-all"
               style={{ width: `${readyPct}%` }}
             />
           </div>
@@ -204,7 +204,7 @@ export default function SocialPacksAdmin() {
                       <td className="px-4 py-3">
                         <Link
                           href={`/admin/social-packs/${p.id}`}
-                          className="font-bold text-gray-900 hover:text-[#1F6F5F] no-underline"
+                          className="font-bold text-gray-900 hover:text-[#2B4521] no-underline"
                         >
                           {p.listing?.title || '—'}
                         </Link>
@@ -246,7 +246,7 @@ export default function SocialPacksAdmin() {
                         <div className="flex gap-2">
                           <Link
                             href={`/admin/social-packs/${p.id}`}
-                            className="text-[#1F6F5F] hover:underline text-xs font-medium"
+                            className="text-[#2B4521] hover:underline text-xs font-medium"
                           >
                             عرض
                           </Link>

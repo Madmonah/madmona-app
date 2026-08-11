@@ -257,7 +257,7 @@ function buildReportEmailHtml(report: ReportOutput, m: DailyMetrics): string {
 
   return `<div dir="rtl" style="font-family: Tahoma, Arial, sans-serif; line-height: 1.7; color: #1a1a1a; max-width: 680px; margin: 0 auto; padding: 24px;">
 
-  <div style="background: #1F6F5F; color: #FAF7F0; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
+  <div style="background: #2B4521; color: #FAF7F0; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
     <p style="margin: 0; opacity: 0.7; font-size: 12px;">📊 تقرير ${m.date}</p>
     <h2 style="margin: 8px 0 0 0; color: #FAF7F0; font-size: 22px;">${escapeHtml(report.headline)}</h2>
   </div>
@@ -266,7 +266,7 @@ function buildReportEmailHtml(report: ReportOutput, m: DailyMetrics): string {
     <p style="margin: 0; font-size: 15px;">${escapeHtml(report.summary)}</p>
   </div>
 
-  <h3 style="color: #1F6F5F; margin-top: 24px;">📈 أرقام النهارده</h3>
+  <h3 style="color: #2B4521; margin-top: 24px;">📈 أرقام النهارده</h3>
   <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
     <tr style="background: #FAF7F0;"><td style="padding: 8px;">مؤجرين جداد</td><td style="padding: 8px; font-weight: bold;">${m.today.new_suppliers}</td></tr>
     <tr><td style="padding: 8px;">مستأجرين جداد</td><td style="padding: 8px; font-weight: bold;">${m.today.new_customers}</td></tr>
@@ -275,16 +275,16 @@ function buildReportEmailHtml(report: ReportOutput, m: DailyMetrics): string {
     <tr style="background: #FAF7F0;"><td style="padding: 8px;">قيمة الحجوزات</td><td style="padding: 8px; font-weight: bold;">${m.today.bookings_value_egp.toLocaleString('en-US')} ج</td></tr>
   </table>
 
-  <h3 style="color: #1F6F5F; margin-top: 24px;">✅ Wins</h3>
+  <h3 style="color: #2B4521; margin-top: 24px;">✅ Wins</h3>
   <ul style="padding-right: 20px;">${wins}</ul>
 
   <h3 style="color: #6FCF97; margin-top: 24px;">⚠️ محتاج انتباه</h3>
   <ul style="padding-right: 20px;">${concerns}</ul>
 
-  <h3 style="color: #1F6F5F; margin-top: 24px;">🎯 Actions لبكره</h3>
+  <h3 style="color: #2B4521; margin-top: 24px;">🎯 Actions لبكره</h3>
   <ul style="padding-right: 20px;">${actions}</ul>
 
-  <h3 style="color: #1F6F5F; margin-top: 24px;">📌 Highlights</h3>
+  <h3 style="color: #2B4521; margin-top: 24px;">📌 Highlights</h3>
   <p><strong>أكبر تغير:</strong> ${escapeHtml(report.metrics_highlights.biggest_change)}</p>
   <p><strong>Trend Alert:</strong> ${escapeHtml(report.metrics_highlights.trend_alert)}</p>
 

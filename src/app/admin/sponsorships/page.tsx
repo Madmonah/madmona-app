@@ -82,7 +82,7 @@ export default async function AdminSponsorshipsPage() {
               <Link href="/admin" className="text-xs text-[#6B7280]">← لوحة الأدمن</Link>
               <h1 className="text-xl font-semibold mt-1">الإعلانات والرعاية</h1>
             </div>
-            <span className="text-[10px] font-bold text-[#1F6F5F] bg-[#1F6F5F]/8 px-2 py-0.5 rounded-full uppercase tracking-widest">
+            <span className="text-[10px] font-bold text-[#2B4521] bg-[#2B4521]/8 px-2 py-0.5 rounded-full uppercase tracking-widest">
               Revenue Ops
             </span>
           </div>
@@ -127,7 +127,7 @@ export default async function AdminSponsorshipsPage() {
             </div>
             <Link
               href="/admin/sponsorships/new"
-              className="text-xs bg-[#1F6F5F] text-white px-3 py-1.5 rounded-lg font-bold hover:bg-[#1F6F5F]/90"
+              className="text-xs bg-[#2B4521] text-white px-3 py-1.5 rounded-lg font-bold hover:bg-[#2B4521]/90"
             >
               + بيع slot جديد
             </Link>
@@ -138,14 +138,14 @@ export default async function AdminSponsorshipsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-bold">{item.name_ar}</span>
-                    <span className="text-[9px] font-bold text-[#1F6F5F] bg-[#1F6F5F]/8 px-1.5 py-0.5 rounded uppercase tracking-widest">
+                    <span className="text-[9px] font-bold text-[#2B4521] bg-[#2B4521]/8 px-1.5 py-0.5 rounded uppercase tracking-widest">
                       {item.placement.replace('_', ' ')}
                     </span>
                   </div>
                   <p className="text-xs text-[#6B7280]">{item.description_ar}</p>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <div className="text-lg font-black text-[#1F6F5F]">
+                  <div className="text-lg font-black text-[#2B4521]">
                     {item.price_egp.toLocaleString('ar-EG')}
                   </div>
                   <div className="text-[10px] text-[#9CA3AF]">ج.م / {item.duration === 'daily' ? 'يوم' : item.duration === 'weekly' ? 'أسبوع' : 'شهر'}</div>

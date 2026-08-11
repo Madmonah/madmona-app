@@ -132,11 +132,11 @@ export default function TeamManagementPage() {
   if (stage === 'unauthenticated') {
     return (
       <CenteredCard>
-        <Lock className="w-8 h-8 text-[#1F6F5F] mx-auto mb-3" />
+        <Lock className="w-8 h-8 text-[#2B4521] mx-auto mb-3" />
         <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
         <Link
           href="/auth/login?redirect=/supplier/team"
-          className="block w-full bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold"
+          className="block w-full bg-[#2B4521] text-white py-3 rounded-xl font-semibold"
         >
           دخول
         </Link>
@@ -150,7 +150,7 @@ export default function TeamManagementPage() {
         <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
         <h1 className="font-bold mb-2">مش مورد على Madmona</h1>
         <p className="text-sm text-gray-500 mb-4">صفحة إدارة الفريق متاحة بس للموردين.</p>
-        <Link href="/account" className="text-sm text-[#1F6F5F] hover:underline">
+        <Link href="/account" className="text-sm text-[#2B4521] hover:underline">
           ارجع للحساب
         </Link>
       </CenteredCard>
@@ -169,7 +169,7 @@ export default function TeamManagementPage() {
           </Link>
           <div className="flex-1">
             <h1 className="text-lg font-black text-gray-900 flex items-center gap-2">
-              <Users className="w-5 h-5 text-[#1F6F5F]" />
+              <Users className="w-5 h-5 text-[#2B4521]" />
               فريق العمل
             </h1>
             <p className="text-xs text-gray-500">{supplier?.business_name}</p>
@@ -179,7 +179,7 @@ export default function TeamManagementPage() {
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         {/* Owner banner */}
-        <div className="bg-gradient-to-l from-[#1F6F5F] to-[#2d7a52] text-white rounded-2xl p-5 mb-4 relative overflow-hidden">
+        <div className="bg-gradient-to-l from-[#2B4521] to-[#5A6E3A] text-white rounded-2xl p-5 mb-4 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
           <div className="relative flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-[#2FA084] flex items-center justify-center flex-shrink-0">
@@ -196,7 +196,7 @@ export default function TeamManagementPage() {
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setShowInviteModal(true)}
-            className="flex-1 flex items-center justify-center gap-2 bg-[#1F6F5F] text-white py-3 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
+            className="flex-1 flex items-center justify-center gap-2 bg-[#2B4521] text-white py-3 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
           >
             <UserPlus className="w-4 h-4" />
             ادعو موظف جديد
@@ -299,15 +299,15 @@ function StaffCard({
   return (
     <div className={`bg-white rounded-2xl border ${member.is_active ? 'border-gray-100' : 'border-gray-200 opacity-60'} shadow-soft p-4`}>
       <div className="flex items-start gap-3 mb-3">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1F6F5F]/20 to-[#2FA084]/20 flex items-center justify-center flex-shrink-0">
-          <User className="w-6 h-6 text-[#1F6F5F]" />
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#2B4521]/20 to-[#2FA084]/20 flex items-center justify-center flex-shrink-0">
+          <User className="w-6 h-6 text-[#2B4521]" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="font-bold text-gray-900 truncate">
               {member.display_name || member.profile?.full_name || 'موظف'}
             </p>
-            <span className="text-[10px] px-2 py-0.5 bg-[#1F6F5F]/10 text-[#1F6F5F] rounded-full font-bold">
+            <span className="text-[10px] px-2 py-0.5 bg-[#2B4521]/10 text-[#2B4521] rounded-full font-bold">
               {member.role_label}
             </span>
             {!member.is_active && (
@@ -462,7 +462,7 @@ function InviteModal({
       <div className="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-luxe animate-slide-up">
         <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
           <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-[#1F6F5F]" />
+            <UserPlus className="w-5 h-5 text-[#2B4521]" />
             دعوة موظف جديد
           </h2>
           <button onClick={onClose} className="w-8 h-8 hover:bg-gray-100 rounded-full flex items-center justify-center">
@@ -475,11 +475,11 @@ function InviteModal({
             <>
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-[#1F6F5F]" />
+                  <Phone className="w-3.5 h-3.5 text-[#2B4521]" />
                   رقم تليفون الموظف
                 </label>
                 <p className="text-xs text-gray-500 mb-2">
-                  لازم يكون عنده حساب على Madmona الأول. لو ما عندوش، اطلب منه يسجل عبر <Link href="/auth/signup" className="text-[#1F6F5F] underline">/auth/signup</Link>.
+                  لازم يكون عنده حساب على Madmona الأول. لو ما عندوش، اطلب منه يسجل عبر <Link href="/auth/signup" className="text-[#2B4521] underline">/auth/signup</Link>.
                 </p>
                 <div className="flex gap-2">
                   <input
@@ -487,14 +487,14 @@ function InviteModal({
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="01002229982"
-                    className="flex-1 px-4 py-3 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
+                    className="flex-1 px-4 py-3 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#2B4521]/40 focus:ring-4 focus:ring-[#2B4521]/10 transition-all"
                     dir="ltr"
                     style={{ textAlign: 'right' }}
                   />
                   <button
                     onClick={searchByPhone}
                     disabled={searching || !phone}
-                    className="px-4 bg-[#1F6F5F] text-white rounded-xl font-bold text-sm shadow-soft hover:shadow-card disabled:opacity-50"
+                    className="px-4 bg-[#2B4521] text-white rounded-xl font-bold text-sm shadow-soft hover:shadow-card disabled:opacity-50"
                   >
                     {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                   </button>
@@ -532,7 +532,7 @@ function InviteModal({
                   value={roleLabel}
                   onChange={(e) => setRoleLabel(e.target.value)}
                   placeholder="مثل: مدير، موظف استقبال، محاسب..."
-                  className="w-full px-4 py-3 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
+                  className="w-full px-4 py-3 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40 focus:ring-4 focus:ring-[#2B4521]/10 transition-all"
                 />
               </div>
 
@@ -547,7 +547,7 @@ function InviteModal({
                     <button
                       key={key}
                       onClick={() => applyPreset(key)}
-                      className="px-3 py-1.5 bg-[#1F6F5F]/5 hover:bg-[#1F6F5F]/10 border border-[#1F6F5F]/20 text-[#1F6F5F] rounded-full text-xs font-bold transition-colors"
+                      className="px-3 py-1.5 bg-[#2B4521]/5 hover:bg-[#2B4521]/10 border border-[#2B4521]/20 text-[#2B4521] rounded-full text-xs font-bold transition-colors"
                     >
                       {preset.label}
                     </button>
@@ -558,7 +558,7 @@ function InviteModal({
               {/* Permissions checklist */}
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 block flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-[#1F6F5F]" />
+                  <Shield className="w-3.5 h-3.5 text-[#2B4521]" />
                   الصلاحيات (Checklist)
                 </label>
                 <div className="space-y-2">
@@ -567,7 +567,7 @@ function InviteModal({
                       key={p.key}
                       className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                         permissions[p.key]
-                          ? 'bg-[#1F6F5F]/5 border-[#1F6F5F]/30'
+                          ? 'bg-[#2B4521]/5 border-[#2B4521]/30'
                           : 'bg-white border-gray-100 hover:border-gray-200'
                       }`}
                     >
@@ -575,7 +575,7 @@ function InviteModal({
                         type="checkbox"
                         checked={permissions[p.key]}
                         onChange={(e) => setPermissions({ ...permissions, [p.key]: e.target.checked })}
-                        className="mt-0.5 w-4 h-4 accent-[#1F6F5F]"
+                        className="mt-0.5 w-4 h-4 accent-[#2B4521]"
                       />
                       <div className="flex-1">
                         <p className="text-sm font-bold text-gray-900">{p.label}</p>
@@ -596,7 +596,7 @@ function InviteModal({
               <button
                 onClick={submitInvite}
                 disabled={submitting}
-                className="w-full bg-[#1F6F5F] text-white py-3.5 rounded-2xl font-black text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                className="w-full bg-[#2B4521] text-white py-3.5 rounded-2xl font-black text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
               >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
                 {submitting ? 'جاري الإضافة...' : 'أضف للفريق'}
@@ -672,7 +672,7 @@ function EditPermissionsModal({
       <div className="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-luxe animate-slide-up">
         <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
           <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
-            <Edit2 className="w-5 h-5 text-[#1F6F5F]" />
+            <Edit2 className="w-5 h-5 text-[#2B4521]" />
             تعديل صلاحيات
           </h2>
           <button onClick={onClose} className="w-8 h-8 hover:bg-gray-100 rounded-full flex items-center justify-center">
@@ -692,7 +692,7 @@ function EditPermissionsModal({
               type="text"
               value={roleLabel}
               onChange={(e) => setRoleLabel(e.target.value)}
-              className="w-full px-4 py-3 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 focus:ring-4 focus:ring-[#1F6F5F]/10 transition-all"
+              className="w-full px-4 py-3 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40 focus:ring-4 focus:ring-[#2B4521]/10 transition-all"
             />
           </div>
 
@@ -703,7 +703,7 @@ function EditPermissionsModal({
                 <button
                   key={key}
                   onClick={() => applyPreset(key)}
-                  className="px-3 py-1.5 bg-[#1F6F5F]/5 hover:bg-[#1F6F5F]/10 border border-[#1F6F5F]/20 text-[#1F6F5F] rounded-full text-xs font-bold transition-colors"
+                  className="px-3 py-1.5 bg-[#2B4521]/5 hover:bg-[#2B4521]/10 border border-[#2B4521]/20 text-[#2B4521] rounded-full text-xs font-bold transition-colors"
                 >
                   {preset.label}
                 </button>
@@ -719,7 +719,7 @@ function EditPermissionsModal({
                   key={p.key}
                   className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                     permissions[p.key]
-                      ? 'bg-[#1F6F5F]/5 border-[#1F6F5F]/30'
+                      ? 'bg-[#2B4521]/5 border-[#2B4521]/30'
                       : 'bg-white border-gray-100 hover:border-gray-200'
                   }`}
                 >
@@ -727,7 +727,7 @@ function EditPermissionsModal({
                     type="checkbox"
                     checked={permissions[p.key]}
                     onChange={(e) => setPermissions({ ...permissions, [p.key]: e.target.checked })}
-                    className="mt-0.5 w-4 h-4 accent-[#1F6F5F]"
+                    className="mt-0.5 w-4 h-4 accent-[#2B4521]"
                   />
                   <div className="flex-1">
                     <p className="text-sm font-bold text-gray-900">{p.label}</p>
@@ -748,7 +748,7 @@ function EditPermissionsModal({
           <button
             onClick={save}
             disabled={saving}
-            className="w-full bg-[#1F6F5F] text-white py-3.5 rounded-2xl font-black text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+            className="w-full bg-[#2B4521] text-white py-3.5 rounded-2xl font-black text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
             {saving ? 'جاري الحفظ...' : 'احفظ التغييرات'}
@@ -765,7 +765,7 @@ function EditPermissionsModal({
 function FullScreenLoader() {
   return (
     <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-      <Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin" />
+      <Loader2 className="w-6 h-6 text-[#2B4521] animate-spin" />
     </div>
   )
 }

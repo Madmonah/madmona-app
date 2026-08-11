@@ -320,7 +320,7 @@ export default function BulkAddEmployeesPage({
   if (!supplier) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
       </div>
     )
   }
@@ -331,14 +331,14 @@ export default function BulkAddEmployeesPage({
         <div className="max-w-5xl mx-auto px-4 py-4">
           <Link
             href={`/admin/business-finance/${supplierId}/team`}
-            className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2 transition-colors"
+            className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2 transition-colors"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             رجوع للفريق
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">
                 B2B PARTNER · BULK ADD EMPLOYEES
               </p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">
@@ -356,12 +356,12 @@ export default function BulkAddEmployeesPage({
         {/* Result banner */}
         {result && (
           <div className={`rounded-2xl p-4 border ${
-            result.success !== false ? 'bg-[#1F6F5F]/5 border-[#1F6F5F]/20' : 'bg-red-50 border-red-200'
+            result.success !== false ? 'bg-[#2B4521]/5 border-[#2B4521]/20' : 'bg-red-50 border-red-200'
           }`}>
             {result.success !== false ? (
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle2 className="w-5 h-5 text-[#1F6F5F]" />
+                  <CheckCircle2 className="w-5 h-5 text-[#2B4521]" />
                   <p className="text-sm font-black text-[#1A2E26]">
                     تم إضافة {result.inserted} موظف بنجاح
                     {result.skipped > 0 && ` · ${result.skipped} متخطي`}
@@ -371,7 +371,7 @@ export default function BulkAddEmployeesPage({
                   <div className="mt-3 text-xs text-[#6B7280] space-y-1 max-h-32 overflow-y-auto">
                     {result.inserted_employees.map((emp: any) => (
                       <div key={emp.id} className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3 h-3 text-[#1F6F5F]" />
+                        <CheckCircle2 className="w-3 h-3 text-[#2B4521]" />
                         <span>PIN {emp.pin} — {emp.name}</span>
                       </div>
                     ))}
@@ -388,7 +388,7 @@ export default function BulkAddEmployeesPage({
                 <div className="mt-3 flex gap-2">
                   <Link
                     href={`/admin/business-finance/${supplierId}/team`}
-                    className="px-3 py-1.5 rounded-lg bg-[#1F6F5F] text-white text-xs font-bold"
+                    className="px-3 py-1.5 rounded-lg bg-[#2B4521] text-white text-xs font-bold"
                   >
                     شوف الفريق
                   </Link>
@@ -424,8 +424,8 @@ export default function BulkAddEmployeesPage({
                 onClick={() => setSelectedBranch(b.id)}
                 className={`px-3 py-2.5 rounded-xl text-sm font-bold border transition-all text-right ${
                   selectedBranch === b.id
-                    ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]'
-                    : 'bg-[#FAFAF7] text-[#1A2E26] border-gray-100 hover:border-[#1F6F5F]'
+                    ? 'bg-[#2B4521] text-white border-[#2B4521]'
+                    : 'bg-[#FAFAF7] text-[#1A2E26] border-gray-100 hover:border-[#2B4521]'
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -444,7 +444,7 @@ export default function BulkAddEmployeesPage({
               onClick={() => setMode('paste')}
               className={`flex-1 px-4 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 ${
                 mode === 'paste'
-                  ? 'bg-[#1F6F5F]/5 text-[#1F6F5F] border-b-2 border-[#1F6F5F]'
+                  ? 'bg-[#2B4521]/5 text-[#2B4521] border-b-2 border-[#2B4521]'
                   : 'text-[#6B7280] hover:text-[#1A2E26]'
               }`}
             >
@@ -455,7 +455,7 @@ export default function BulkAddEmployeesPage({
               onClick={startManualMode}
               className={`flex-1 px-4 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 ${
                 mode === 'manual'
-                  ? 'bg-[#1F6F5F]/5 text-[#1F6F5F] border-b-2 border-[#1F6F5F]'
+                  ? 'bg-[#2B4521]/5 text-[#2B4521] border-b-2 border-[#2B4521]'
                   : 'text-[#6B7280] hover:text-[#1A2E26]'
               }`}
             >
@@ -466,7 +466,7 @@ export default function BulkAddEmployeesPage({
               onClick={() => setMode('excel')}
               className={`flex-1 px-4 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 ${
                 mode === 'excel'
-                  ? 'bg-[#1F6F5F]/5 text-[#1F6F5F] border-b-2 border-[#1F6F5F]'
+                  ? 'bg-[#2B4521]/5 text-[#2B4521] border-b-2 border-[#2B4521]'
                   : 'text-[#6B7280] hover:text-[#1A2E26]'
               }`}
             >
@@ -478,9 +478,9 @@ export default function BulkAddEmployeesPage({
           {/* EXCEL MODE */}
           {mode === 'excel' && (
             <div className="p-4 space-y-3">
-              <div className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 rounded-xl p-3 text-xs text-[#1A2E26]">
+              <div className="bg-[#2B4521]/5 border border-[#2B4521]/20 rounded-xl p-3 text-xs text-[#1A2E26]">
                 <div className="flex items-start gap-2">
-                  <Sparkles className="w-4 h-4 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
+                  <Sparkles className="w-4 h-4 text-[#2B4521] flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-bold mb-1">ارفع شيت (.xlsx / .csv) والأعمدة بتتقري تلقائي:</p>
                     <ul className="space-y-0.5 list-disc mr-4 text-[#6B7280]">
@@ -493,10 +493,10 @@ export default function BulkAddEmployeesPage({
               </div>
               <input
                 type="file" accept=".xlsx,.xls,.csv"
-                className="w-full text-sm file:ml-3 file:px-4 file:py-2 file:rounded-xl file:border-0 file:bg-[#1F6F5F] file:text-white file:font-bold file:cursor-pointer"
+                className="w-full text-sm file:ml-3 file:px-4 file:py-2 file:rounded-xl file:border-0 file:bg-[#2B4521] file:text-white file:font-bold file:cursor-pointer"
                 onChange={(e) => e.target.files?.[0] && onExcelFile(e.target.files[0])}
               />
-              {excelBusy && <p className="text-xs font-bold text-[#1F6F5F] flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" /> {excelBusy}</p>}
+              {excelBusy && <p className="text-xs font-bold text-[#2B4521] flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" /> {excelBusy}</p>}
               {excelFileName && <p className="text-xs text-[#6B7280]">📄 {excelFileName}</p>}
               {excelError && <p className="text-xs font-bold text-red-600">{excelError}</p>}
             </div>
@@ -505,9 +505,9 @@ export default function BulkAddEmployeesPage({
           {/* PASTE MODE */}
           {mode === 'paste' && (
             <div className="p-4 space-y-3">
-              <div className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 rounded-xl p-3 text-xs text-[#1A2E26]">
+              <div className="bg-[#2B4521]/5 border border-[#2B4521]/20 rounded-xl p-3 text-xs text-[#1A2E26]">
                 <div className="flex items-start gap-2">
-                  <Sparkles className="w-4 h-4 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
+                  <Sparkles className="w-4 h-4 text-[#2B4521] flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-bold mb-1">صيغ مدعومة (هـ يتعرف عليها تلقائياً):</p>
                     <ul className="space-y-0.5 list-disc mr-4 text-[#6B7280]">
@@ -526,14 +526,14 @@ export default function BulkAddEmployeesPage({
                 onChange={e => setPasteText(e.target.value)}
                 placeholder={"الصق هنا، اسم بسطر واحد:\n\nعمرو محمد 14000\nمحمود 13000\nابو حمزه 10000"}
                 rows={10}
-                className="w-full px-4 py-3 rounded-xl bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F] placeholder-[#6B7280] resize-y font-mono"
+                className="w-full px-4 py-3 rounded-xl bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#2B4521] placeholder-[#6B7280] resize-y font-mono"
                 dir="rtl"
               />
               
               <button
                 onClick={parsePasteText}
                 disabled={!pasteText.trim()}
-                className="w-full px-4 py-3 rounded-xl bg-[#1F6F5F] hover:opacity-90 text-sm font-black text-white flex items-center justify-center gap-2 disabled:opacity-40 transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-[#2B4521] hover:opacity-90 text-sm font-black text-white flex items-center justify-center gap-2 disabled:opacity-40 transition-all"
               >
                 <ArrowDownToLine className="w-4 h-4" />
                 حلّل + اعرض للمراجعة
@@ -550,7 +550,7 @@ export default function BulkAddEmployeesPage({
                   <p className="text-sm font-bold text-[#1A2E26]">ابدأ بإضافة موظف</p>
                   <button
                     onClick={addRow}
-                    className="mt-3 px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold inline-flex items-center gap-2"
+                    className="mt-3 px-4 py-2 rounded-xl bg-[#2B4521] text-white text-sm font-bold inline-flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" /> إضافة موظف
                   </button>
@@ -583,7 +583,7 @@ export default function BulkAddEmployeesPage({
                                   value={row.name}
                                   onChange={e => updateRow(row.id, { name: e.target.value })}
                                   placeholder="اسم الموظف"
-                                  className="w-full px-2 py-1.5 rounded-lg bg-[#FAFAF7] border border-transparent hover:border-gray-200 focus:border-[#1F6F5F] focus:outline-none text-sm text-[#1A2E26] placeholder-[#6B7280]"
+                                  className="w-full px-2 py-1.5 rounded-lg bg-[#FAFAF7] border border-transparent hover:border-gray-200 focus:border-[#2B4521] focus:outline-none text-sm text-[#1A2E26] placeholder-[#6B7280]"
                                 />
                               </div>
                             </td>
@@ -602,7 +602,7 @@ export default function BulkAddEmployeesPage({
                                   })
                                 }}
                                 placeholder="مرتب"
-                                className="w-full px-2 py-1.5 rounded-lg bg-[#FAFAF7] border border-transparent hover:border-gray-200 focus:border-[#1F6F5F] focus:outline-none text-sm text-[#1A2E26] placeholder-[#6B7280] font-mono"
+                                className="w-full px-2 py-1.5 rounded-lg bg-[#FAFAF7] border border-transparent hover:border-gray-200 focus:border-[#2B4521] focus:outline-none text-sm text-[#1A2E26] placeholder-[#6B7280] font-mono"
                               />
                             </td>
                             <td className="py-2 pl-2">
@@ -612,7 +612,7 @@ export default function BulkAddEmployeesPage({
                                   const [role, role_ar] = e.target.value.split(':')
                                   updateRow(row.id, { role, role_ar })
                                 }}
-                                className="w-full px-2 py-1.5 rounded-lg bg-[#FAFAF7] border border-transparent hover:border-gray-200 focus:border-[#1F6F5F] focus:outline-none text-sm text-[#1A2E26]"
+                                className="w-full px-2 py-1.5 rounded-lg bg-[#FAFAF7] border border-transparent hover:border-gray-200 focus:border-[#2B4521] focus:outline-none text-sm text-[#1A2E26]"
                               >
                                 {ROLE_PRESETS.map(p => (
                                   <option key={`${p.value}:${p.label_ar}`} value={`${p.value}:${p.label_ar}`}>
@@ -638,7 +638,7 @@ export default function BulkAddEmployeesPage({
                   
                   <button
                     onClick={addRow}
-                    className="w-full p-2.5 rounded-xl border-2 border-dashed border-gray-200 hover:border-[#1F6F5F] text-[#6B7280] hover:text-[#1F6F5F] text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                    className="w-full p-2.5 rounded-xl border-2 border-dashed border-gray-200 hover:border-[#2B4521] text-[#6B7280] hover:text-[#2B4521] text-sm font-bold transition-colors flex items-center justify-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
                     صف جديد
@@ -666,7 +666,7 @@ export default function BulkAddEmployeesPage({
               <button
                 onClick={handleSubmit}
                 disabled={submitting || validRowsCount === 0 || !selectedBranch}
-                className="px-6 py-3 rounded-xl bg-[#1F6F5F] hover:opacity-90 text-sm font-black text-white flex items-center gap-2 disabled:opacity-40 transition-all"
+                className="px-6 py-3 rounded-xl bg-[#2B4521] hover:opacity-90 text-sm font-black text-white flex items-center gap-2 disabled:opacity-40 transition-all"
               >
                 {submitting ? (
                   <>

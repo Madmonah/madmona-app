@@ -40,10 +40,10 @@ export default async function QCReportsPage() {
     <div dir="rtl" style={{ fontFamily: 'Tahoma', background: '#FAF7F0', minHeight: '100vh', padding: 24 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>✅ QC Reports</h1>
+          <h1 style={{ color: '#2B4521', margin: 0, fontSize: 26 }}>✅ QC Reports</h1>
           <div style={{ display: 'flex', gap: 12, fontSize: 13 }}>
-            <a href="/admin/ai-os" style={{ color: '#1F6F5F' }}>← AI OS</a>
-            <a href="/admin/marketing-hq" style={{ color: '#1F6F5F' }}>← HQ</a>
+            <a href="/admin/ai-os" style={{ color: '#2B4521' }}>← AI OS</a>
+            <a href="/admin/marketing-hq" style={{ color: '#2B4521' }}>← HQ</a>
           </div>
         </div>
 
@@ -70,7 +70,7 @@ export default async function QCReportsPage() {
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
                     <div>
-                      <h2 style={{ margin: 0, color: '#1F6F5F', fontSize: 16 }}>
+                      <h2 style={{ margin: 0, color: '#2B4521', fontSize: 16 }}>
                         {titleByListingId.get(r.listing_id) ?? r.listing_id}
                       </h2>
                     </div>
@@ -94,15 +94,15 @@ export default async function QCReportsPage() {
                   {/* Scores grid */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
                     <div style={{ background: '#FAF7F0', padding: 8, borderRadius: 6, textAlign: 'center' }}>
-                      <div style={{ fontSize: 16, fontWeight: 'bold', color: '#1F6F5F' }}>{r.title_quality_score ?? 0}</div>
+                      <div style={{ fontSize: 16, fontWeight: 'bold', color: '#2B4521' }}>{r.title_quality_score ?? 0}</div>
                       <div style={{ fontSize: 10, color: '#666' }}>عنوان</div>
                     </div>
                     <div style={{ background: '#FAF7F0', padding: 8, borderRadius: 6, textAlign: 'center' }}>
-                      <div style={{ fontSize: 16, fontWeight: 'bold', color: '#1F6F5F' }}>{r.description_quality_score ?? 0}</div>
+                      <div style={{ fontSize: 16, fontWeight: 'bold', color: '#2B4521' }}>{r.description_quality_score ?? 0}</div>
                       <div style={{ fontSize: 10, color: '#666' }}>وصف</div>
                     </div>
                     <div style={{ background: '#FAF7F0', padding: 8, borderRadius: 6, textAlign: 'center' }}>
-                      <div style={{ fontSize: 16, fontWeight: 'bold', color: '#1F6F5F' }}>{r.photos_quality_score ?? 0}</div>
+                      <div style={{ fontSize: 16, fontWeight: 'bold', color: '#2B4521' }}>{r.photos_quality_score ?? 0}</div>
                       <div style={{ fontSize: 10, color: '#666' }}>صور</div>
                     </div>
                   </div>
@@ -130,7 +130,7 @@ export default async function QCReportsPage() {
                   {/* Improvements */}
                   {r.improvements && r.improvements.length > 0 && (
                     <details>
-                      <summary style={{ cursor: 'pointer', color: '#1F6F5F', fontWeight: 'bold', fontSize: 13 }}>
+                      <summary style={{ cursor: 'pointer', color: '#2B4521', fontWeight: 'bold', fontSize: 13 }}>
                         💡 Improvements ({r.improvements.length})
                       </summary>
                       <div style={{ marginTop: 8 }}>
@@ -141,7 +141,7 @@ export default async function QCReportsPage() {
                           }}>
                             <strong>{String(imp.field ?? '')}</strong>:<br/>
                             <span style={{ color: '#666' }}>الحالي: {String(imp.current ?? '')}</span><br/>
-                            <span style={{ color: '#1F6F5F' }}>المقترح: {String(imp.suggested ?? '')}</span>
+                            <span style={{ color: '#2B4521' }}>المقترح: {String(imp.suggested ?? '')}</span>
                             {Boolean(imp.reason) && <><br/><em style={{ color: '#999' }}>{String(imp.reason)}</em></>}
                           </div>
                         ))}

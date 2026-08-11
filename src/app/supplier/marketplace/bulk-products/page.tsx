@@ -122,7 +122,7 @@ export default function BulkProductsPage() {
   if (stage === 'loading') {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
       </div>
     )
   }
@@ -155,14 +155,14 @@ export default function BulkProductsPage() {
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => setKind('listings')}
-            className={`text-right p-4 rounded-2xl border-2 transition-all ${kind === 'listings' ? 'border-[#1F6F5F] bg-[#1F6F5F]/5 shadow-card' : 'border-gray-200 bg-white'}`}
+            className={`text-right p-4 rounded-2xl border-2 transition-all ${kind === 'listings' ? 'border-[#2B4521] bg-[#2B4521]/5 shadow-card' : 'border-gray-200 bg-white'}`}
           >
             <p className="text-sm font-black text-gray-900">📑 إعلانات منفصلة</p>
             <p className="text-[11px] font-bold text-gray-500 mt-1 leading-relaxed">كل صف في الشيت = إعلان لوحده على الماركت (زي معرض عربيات/موتوسيكلات/أثاث)</p>
           </button>
           <button
             onClick={() => setKind('products')}
-            className={`text-right p-4 rounded-2xl border-2 transition-all ${kind === 'products' ? 'border-[#1F6F5F] bg-[#1F6F5F]/5 shadow-card' : 'border-gray-200 bg-white'}`}
+            className={`text-right p-4 rounded-2xl border-2 transition-all ${kind === 'products' ? 'border-[#2B4521] bg-[#2B4521]/5 shadow-card' : 'border-gray-200 bg-white'}`}
           >
             <p className="text-sm font-black text-gray-900">🗂️ كتالوج جوه إعلان واحد</p>
             <p className="text-[11px] font-bold text-gray-500 mt-1 leading-relaxed">منتجات كتير تحت إعلان واحد (زي سوبرماركت/صيدلية) + مزامنة ERP</p>
@@ -171,8 +171,8 @@ export default function BulkProductsPage() {
 
         <div className="bg-white rounded-3xl shadow-soft p-6">
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-12 h-12 rounded-2xl bg-[#1F6F5F]/10 flex items-center justify-center">
-              <FileSpreadsheet className="w-6 h-6 text-[#1F6F5F]" />
+            <div className="w-12 h-12 rounded-2xl bg-[#2B4521]/10 flex items-center justify-center">
+              <FileSpreadsheet className="w-6 h-6 text-[#2B4521]" />
             </div>
             <div>
               <h2 className="font-black text-gray-900">{kind === 'listings' ? 'ضيف إعلاناتك كلها مرة واحدة' : 'ضيف كل منتجاتك مرة واحدة'}</h2>
@@ -189,7 +189,7 @@ export default function BulkProductsPage() {
                 <select
                   value={defaultCat}
                   onChange={(e) => setDefaultCat(e.target.value)}
-                  className="w-full appearance-none px-4 py-3.5 rounded-2xl border-2 border-gray-200 focus:border-[#1F6F5F] outline-none text-sm font-bold bg-white"
+                  className="w-full appearance-none px-4 py-3.5 rounded-2xl border-2 border-gray-200 focus:border-[#2B4521] outline-none text-sm font-bold bg-white"
                 >
                   <option value="">— من غير فئة افتراضية (لازم عمود الفئة يبقى متملي) —</option>
                   {cats.map((c) => (
@@ -203,7 +203,7 @@ export default function BulkProductsPage() {
 
               <button
                 onClick={() => setShowImport(true)}
-                className="mt-4 w-full py-4 rounded-2xl bg-[#1F6F5F] text-white font-black text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                className="mt-4 w-full py-4 rounded-2xl bg-[#2B4521] text-white font-black text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
               >
                 <FileSpreadsheet className="w-5 h-5" /> ارفع شيت الإعلانات (Excel)
               </button>
@@ -223,7 +223,7 @@ export default function BulkProductsPage() {
               </p>
               <Link
                 href="/supplier/marketplace/new"
-                className="inline-flex items-center gap-2 bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl text-sm font-black"
+                className="inline-flex items-center gap-2 bg-[#2B4521] text-white px-5 py-2.5 rounded-xl text-sm font-black"
               >
                 <Plus className="w-4 h-4" /> اعمل الإعلان الأول
               </Link>
@@ -236,7 +236,7 @@ export default function BulkProductsPage() {
                 <select
                   value={selected}
                   onChange={(e) => setSelected(e.target.value)}
-                  className="w-full appearance-none px-4 py-3.5 rounded-2xl border-2 border-gray-200 focus:border-[#1F6F5F] outline-none text-sm font-bold bg-white"
+                  className="w-full appearance-none px-4 py-3.5 rounded-2xl border-2 border-gray-200 focus:border-[#2B4521] outline-none text-sm font-bold bg-white"
                 >
                   {listings.map((l) => (
                     <option key={l.id} value={l.id}>
@@ -250,7 +250,7 @@ export default function BulkProductsPage() {
               <button
                 onClick={() => setShowImport(true)}
                 disabled={!selected}
-                className="mt-4 w-full py-4 rounded-2xl bg-[#1F6F5F] text-white font-black text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="mt-4 w-full py-4 rounded-2xl bg-[#2B4521] text-white font-black text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 <FileSpreadsheet className="w-5 h-5" /> ارفع شيت Excel
               </button>
@@ -258,7 +258,7 @@ export default function BulkProductsPage() {
               {chosen && (
                 <Link
                   href={`/supplier/marketplace/${chosen.id}/products`}
-                  className="mt-3 flex items-center justify-center gap-1.5 text-xs font-black text-[#1F6F5F] hover:underline"
+                  className="mt-3 flex items-center justify-center gap-1.5 text-xs font-black text-[#2B4521] hover:underline"
                 >
                   <ExternalLink className="w-3.5 h-3.5" /> افتح إدارة منتجات «{chosen.title}» (تعديل / حذف / مخزون)
                 </Link>
@@ -321,7 +321,7 @@ function Blocked({ title, sub, href, label }: { title: string; sub: string; href
         </div>
         <h1 className="font-black text-xl mb-2">{title}</h1>
         <p className="text-sm text-gray-500 mb-5">{sub}</p>
-        <Link href={href} className="inline-flex items-center gap-2 bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-bold shadow-soft">
+        <Link href={href} className="inline-flex items-center gap-2 bg-[#2B4521] text-white px-5 py-2.5 rounded-xl font-bold shadow-soft">
           {label}
         </Link>
       </div>

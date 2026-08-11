@@ -89,7 +89,7 @@ export default function NotificationButton({ variant = 'icon-only' }: Props) {
     subscribed: {
       icon: <BellRing className="w-5 h-5" strokeWidth={2.25} />,
       bg: 'bg-white',
-      text: 'text-[#1F6F5F]',
+      text: 'text-[#2B4521]',
       pulse: false,
       label: t('comp.nb.cfg_subscribed'),
     },
@@ -143,7 +143,7 @@ export default function NotificationButton({ variant = 'icon-only' }: Props) {
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                    status === 'subscribed' ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]'
+                    status === 'subscribed' ? 'bg-[#2B4521]/10 text-[#2B4521]'
                       : status === 'denied' ? 'bg-red-100 text-red-600'
                       : 'bg-[#2FA084]/10 text-[#2FA084]'
                   }`}>
@@ -170,26 +170,26 @@ export default function NotificationButton({ variant = 'icon-only' }: Props) {
 
               {status === 'idle' && (
                 <>
-                  <div className="bg-gradient-to-l from-[#1F6F5F]/5 to-[#2FA084]/5 rounded-2xl p-4 mb-4">
+                  <div className="bg-gradient-to-l from-[#2B4521]/5 to-[#2FA084]/5 rounded-2xl p-4 mb-4">
                     <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                       <span className="text-lg">🔔</span>
                       {t('comp.nb.idle_when')}
                     </h3>
                     <ul className="space-y-2 text-sm text-gray-700 pr-2">
                       <li className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
+                        <CheckCircle className="w-4 h-4 text-[#2B4521] flex-shrink-0 mt-0.5" />
                         <span>{t('comp.nb.benefit1')}</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
+                        <CheckCircle className="w-4 h-4 text-[#2B4521] flex-shrink-0 mt-0.5" />
                         <span>{t('comp.nb.benefit2')}</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
+                        <CheckCircle className="w-4 h-4 text-[#2B4521] flex-shrink-0 mt-0.5" />
                         <span>{t('comp.nb.benefit3')}</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
+                        <CheckCircle className="w-4 h-4 text-[#2B4521] flex-shrink-0 mt-0.5" />
                         <span>{t('comp.nb.benefit4')}</span>
                       </li>
                     </ul>
@@ -199,7 +199,7 @@ export default function NotificationButton({ variant = 'icon-only' }: Props) {
                     type="button"
                     onClick={handleEnable}
                     disabled={busy}
-                    className="w-full bg-[#1F6F5F] hover:bg-[#1F6F5F]/90 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50 transition-colors shadow-elevated"
+                    className="w-full bg-[#2B4521] hover:bg-[#2B4521]/90 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50 transition-colors shadow-elevated"
                   >
                     {busy ? <><Loader2 className="w-5 h-5 animate-spin" /><span>{t('comp.nb.enabling')}</span></>
                       : <><Bell className="w-5 h-5" /><span>{t('comp.nb.enable_now')}</span></>}

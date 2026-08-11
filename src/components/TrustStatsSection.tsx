@@ -62,7 +62,7 @@ export default function TrustStatsSection() {
   return (
     <section className="py-16 md:py-20 relative overflow-hidden">
       {/* Decorative background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#1F6F5F]/3 via-white to-[#2FA084]/3" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#2B4521]/3 via-white to-[#2FA084]/3" />
 
       <div className="max-w-7xl mx-auto px-4 relative z-10">
         <div className="text-center mb-10 md:mb-14">
@@ -85,8 +85,8 @@ export default function TrustStatsSection() {
             suffix="+"
             label="خدمة متاحة"
             sublabel="موثقة وجاهزة"
-            color="from-[#1F6F5F]/10 to-[#1F6F5F]/5"
-            iconColor="bg-[#1F6F5F]/15 text-[#1F6F5F]"
+            color="from-[#2B4521]/10 to-[#2B4521]/5"
+            iconColor="bg-[#2B4521]/15 text-[#2B4521]"
             loaded={loaded}
             delay={0}
           />

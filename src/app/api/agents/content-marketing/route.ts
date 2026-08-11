@@ -175,33 +175,33 @@ function buildContentEmailHtml(post: ContentOutput, date: string, contentId?: st
   const hashtagsLine = post.hashtags.join(' ')
   return `<div dir="rtl" style="font-family: Tahoma, Arial, sans-serif; line-height: 1.8; color: #1a1a1a; max-width: 640px; margin: 0 auto; padding: 24px;">
 
-  <div style="border-right: 4px solid #1F6F5F; padding-right: 16px; margin-bottom: 24px;">
-    <h2 style="color: #1F6F5F; margin: 0 0 4px 0;">📝 بوست النهارده</h2>
+  <div style="border-right: 4px solid #2B4521; padding-right: 16px; margin-bottom: 24px;">
+    <h2 style="color: #2B4521; margin: 0 0 4px 0;">📝 بوست النهارده</h2>
     <p style="color: #666; margin: 0; font-size: 14px;">${date} — فئة ${post.category}</p>
     ${contentId ? `<p style="color: #999; margin: 4px 0 0; font-size: 11px;">Content ID: ${contentId}</p>` : ''}
   </div>
 
   <div style="background: #FAF7F0; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-    <h3 style="color: #1F6F5F; margin: 0 0 8px 0; font-size: 16px;">الموضوع</h3>
+    <h3 style="color: #2B4521; margin: 0 0 8px 0; font-size: 16px;">الموضوع</h3>
     <p style="margin: 0; font-size: 15px;">${escapeHtml(post.topic)}</p>
   </div>
 
-  <div style="background: #1F6F5F; color: #FAF7F0; padding: 24px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+  <div style="background: #2B4521; color: #FAF7F0; padding: 24px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
     <p style="margin: 0 0 4px 0; opacity: 0.7; font-size: 12px;">الـ Headline في التصميم</p>
     <h2 style="margin: 0; font-size: 24px; color: #FAF7F0;">${escapeHtml(post.headline)}</h2>
   </div>
 
-  <h3 style="color: #1F6F5F; margin-top: 24px;">الكابشن (انسخه واستخدمه زي ما هو)</h3>
+  <h3 style="color: #2B4521; margin-top: 24px;">الكابشن (انسخه واستخدمه زي ما هو)</h3>
   <div style="background: #fff; border: 1px solid #ddd; padding: 16px; border-radius: 8px; white-space: pre-wrap; font-size: 15px;">${escapeHtml(post.caption)}
 
 ${escapeHtml(post.cta)}
 
 ${escapeHtml(hashtagsLine)}</div>
 
-  <h3 style="color: #1F6F5F; margin-top: 24px;">📐 الـ Design Brief (للـ Canva)</h3>
+  <h3 style="color: #2B4521; margin-top: 24px;">📐 الـ Design Brief (للـ Canva)</h3>
   <div style="background: #fff; border: 1px solid #ddd; padding: 16px; border-radius: 8px; font-family: Consolas, monospace; font-size: 13px; direction: ltr; text-align: left;">${escapeHtml(post.design_brief)}</div>
 
-  <h3 style="color: #1F6F5F; margin-top: 24px;">⏰ أحسن وقت للنشر</h3>
+  <h3 style="color: #2B4521; margin-top: 24px;">⏰ أحسن وقت للنشر</h3>
   <p>${translatePostingTime(post.best_posting_time)}</p>
 
   <hr style="border: none; border-top: 1px solid #ddd; margin: 32px 0;">

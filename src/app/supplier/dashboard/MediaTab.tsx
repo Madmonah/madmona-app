@@ -148,31 +148,31 @@ export default function MediaTab({ supplier, branches, employees, onSaved }: Pro
       ))}
 
       <style jsx>{`
-        .mt-intro { font-size: 13px; color: #41504A; line-height: 1.7; background: linear-gradient(135deg, rgba(212,160,23,.07), rgba(47,160,132,.07)); border: 1px solid rgba(31,111,95,.15); border-radius: 12px; padding: 12px 14px; margin: 0 0 22px; }
+        .mt-intro { font-size: 13px; color: #41504A; line-height: 1.7; background: linear-gradient(135deg, rgba(212,160,23,.07), rgba(47,160,132,.07)); border: 1px solid rgba(43, 69, 33,.15); border-radius: 12px; padding: 12px 14px; margin: 0 0 22px; }
         .mt-h { font-size: 15px; font-weight: 800; margin: 24px 0 12px; color: #0A0A0A; }
         .mt-h:first-of-type { margin-top: 0; }
         .mt-cover { display: flex; flex-direction: column; gap: 10px; }
         .mt-cover-img { width: 100%; height: 150px; border-radius: 14px; background-size: cover; background-position: center; background-image: linear-gradient(135deg,#1d6253,#2FA084 70%,#6FCF97); display: grid; place-items: center; }
         .mt-ph { color: rgba(255,255,255,.9); font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-        .mt-btn { font-family: inherit; font-size: 13px; font-weight: 700; padding: 9px 14px; border-radius: 10px; border: 1px solid rgba(31,111,95,.3); background: white; color: #1F6F5F; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; align-self: flex-start; }
+        .mt-btn { font-family: inherit; font-size: 13px; font-weight: 700; padding: 9px 14px; border-radius: 10px; border: 1px solid rgba(43, 69, 33,.3); background: white; color: #2B4521; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; align-self: flex-start; }
         .mt-btn:hover { background: #F3F7F5; }
-        .mt-btn-primary { background: linear-gradient(100deg,#d4a017,#2FA084 55%,#1F6F5F); color: white; border: none; }
+        .mt-btn-primary { background: linear-gradient(100deg,#d4a017,#2FA084 55%,#2B4521); color: white; border: none; }
         .mt-gal { display: flex; flex-wrap: wrap; gap: 10px; }
         .mt-gal-item { position: relative; width: 116px; height: 88px; border-radius: 12px; background-size: cover; background-position: center; background-color: #E7F1ED; }
         .mt-gal-del { position: absolute; top: 5px; left: 5px; width: 26px; height: 26px; border-radius: 8px; border: none; background: rgba(153,27,27,.92); color: white; cursor: pointer; display: grid; place-items: center; }
-        .mt-gal-add { width: 116px; height: 88px; border-radius: 12px; border: 2px dashed rgba(31,111,95,.3); background: #FAFAF7; color: #1F6F5F; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+        .mt-gal-add { width: 116px; height: 88px; border-radius: 12px; border: 2px dashed rgba(43, 69, 33,.3); background: #FAFAF7; color: #2B4521; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
         .mt-gal-add:hover { background: #F3F7F5; }
         .mt-list { display: flex; flex-direction: column; gap: 8px; }
         .mt-row { background: white; border: 1px solid rgba(10,10,10,.05); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; gap: 12px; }
-        .mt-thumb { width: 52px; height: 52px; border-radius: 10px; background-size: cover; background-position: center; background-image: linear-gradient(135deg,rgba(31,111,95,.12),rgba(212,160,23,.14)); display: grid; place-items: center; color: #1F6F5F; flex: none; }
+        .mt-thumb { width: 52px; height: 52px; border-radius: 10px; background-size: cover; background-position: center; background-image: linear-gradient(135deg,rgba(43, 69, 33,.12),rgba(212,160,23,.14)); display: grid; place-items: center; color: #2B4521; flex: none; }
         .mt-row-name { flex: 1; font-size: 14px; font-weight: 800; min-width: 0; }
         .mt-grp { margin-bottom: 18px; }
-        .mt-grp-h { font-size: 12px; font-weight: 800; color: #1F6F5F; margin-bottom: 10px; }
+        .mt-grp-h { font-size: 12px; font-weight: 800; color: #2B4521; margin-bottom: 10px; }
         .mt-grp-h span { color: #7C8A84; font-weight: 700; }
         .mt-emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 14px 8px; }
         .mt-emp { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; text-align: center; }
         .mt-emp-av { position: relative; width: 64px; height: 64px; border-radius: 50%; background-size: cover; background-position: center; background-image: linear-gradient(135deg,#1d6253,#2FA084 70%,#6FCF97); display: grid; place-items: center; color: white; font-weight: 800; font-size: 20px; }
-        .mt-emp-cam { position: absolute; bottom: -2px; left: -2px; width: 24px; height: 24px; border-radius: 50%; background: #1F6F5F; color: white; display: grid; place-items: center; border: 2px solid white; }
+        .mt-emp-cam { position: absolute; bottom: -2px; left: -2px; width: 24px; height: 24px; border-radius: 50%; background: #2B4521; color: white; display: grid; place-items: center; border: 2px solid white; }
         .mt-emp-name { font-size: 11px; font-weight: 700; color: #0A0A0A; line-height: 1.3; max-width: 78px; }
         .mt-spin { animation: mt-spin 1s linear infinite; }
         @keyframes mt-spin { to { transform: rotate(360deg); } }

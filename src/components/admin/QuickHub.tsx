@@ -109,11 +109,11 @@ export function QuickHub() {
       <style jsx>{`
         .qhub-sec{margin:0 0 28px}
         .qhub-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
-        .qhub-kicker{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.08em;color:#1F6F5F;margin-bottom:6px}
-        .qhub-kicker::before{content:"";width:6px;height:6px;border-radius:50%;background:linear-gradient(118deg,#D4A017,#2FA084,#1F6F5F)}
+        .qhub-kicker{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.08em;color:#2B4521;margin-bottom:6px}
+        .qhub-kicker::before{content:"";width:6px;height:6px;border-radius:50%;background:linear-gradient(118deg,#D4A017,#2FA084,#2B4521)}
         .qhub-head h2{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0;color:#0A0A0A}
         .qhub-head p{font-size:13px;color:#7C8A84;font-weight:500;margin:3px 0 0}
-        .qhub-loading{width:18px;height:18px;border-radius:50%;border:2.5px solid #E7F1ED;border-top-color:#1F6F5F;animation:qhsp 1s linear infinite}
+        .qhub-loading{width:18px;height:18px;border-radius:50%;border:2.5px solid #E7F1ED;border-top-color:#2B4521;animation:qhsp 1s linear infinite}
         @keyframes qhsp{to{transform:rotate(360deg)}}
 
         .qhub-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
@@ -130,10 +130,10 @@ export function QuickHub() {
         }
         .qhub-tile::before{
           content:"";position:absolute;top:0;inset-inline-start:0;width:5px;height:100%;
-          background:var(--ax,#1F6F5F);border-start-end-radius:18px;border-end-end-radius:18px;
+          background:var(--ax,#2B4521);border-start-end-radius:18px;border-end-end-radius:18px;
           opacity:.85;transition:width .22s;
         }
-        .qhub-tile:hover{transform:translateY(-4px);box-shadow:0 22px 50px -22px rgba(16,40,34,.28);border-color:var(--ax,#1F6F5F)}
+        .qhub-tile:hover{transform:translateY(-4px);box-shadow:0 22px 50px -22px rgba(16,40,34,.28);border-color:var(--ax,#2B4521)}
         .qhub-tile:hover::before{width:7px}
         @keyframes qhrise{to{opacity:1;transform:translateY(0)}}
 
@@ -148,15 +148,15 @@ export function QuickHub() {
         .qhub-sub{font-size:11.5px;color:#7C8A84;font-weight:600;line-height:1.35;margin-bottom:8px;
           overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .qhub-stat{display:flex;align-items:baseline;gap:6px}
-        .qhub-stat b{font-size:18px;font-weight:700;color:var(--ax,#1F6F5F);font-family:var(--font-inter),system-ui,sans-serif}
+        .qhub-stat b{font-size:18px;font-weight:700;color:var(--ax,#2B4521);font-family:var(--font-inter),system-ui,sans-serif}
         .qhub-stat span{font-size:10.5px;color:#7C8A84;font-weight:600}
 
         .qhub-arrow{color:#7C8A84;opacity:.5;transition:.22s;flex:none}
         .qhub-arrow svg{width:18px;height:18px}
-        .qhub-tile:hover .qhub-arrow{opacity:1;color:var(--ax,#1F6F5F);transform:translateX(-3px)}
+        .qhub-tile:hover .qhub-arrow{opacity:1;color:var(--ax,#2B4521);transform:translateX(-3px)}
 
         /* accent palette per tile */
-        .a-green   { --ax:#1F6F5F; --bg:linear-gradient(135deg,#E7F1ED,#F3F1EA) }
+        .a-green   { --ax:#2B4521; --bg:linear-gradient(135deg,#E7F1ED,#F3F1EA) }
         .a-gold    { --ax:#D4A017; --bg:linear-gradient(135deg,#FAEFD1,#F3F1EA) }
         .a-teal    { --ax:#2FA084; --bg:linear-gradient(135deg,#D7EFE6,#F3F1EA) }
         .a-blue    { --ax:#3D7BB6; --bg:linear-gradient(135deg,#D9E7F4,#F3F1EA) }

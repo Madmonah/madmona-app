@@ -27,15 +27,15 @@ export const THEMES: Record<ThemeKey, Theme> = {
   // هوية مضمونة الافتراضية — مطابقة للقديم بالظبط (مايتغيّرش حاجة لباقي العملاء)
   default: {
     pageBg: '#FAFAF7',
-    barBg: '#FFFFFF', barBorder: 'rgba(31,111,95,.10)', barText: '#1F6F5F', barTag: '#1F6F5F',
-    accent: '#1F6F5F', accentSoft: 'rgba(31,111,95,.10)', accentLine: 'rgba(31,111,95,.20)',
-    gCta: 'linear-gradient(100deg,#d4a017 0%,#2FA084 55%,#1F6F5F 100%)',
+    barBg: '#FFFFFF', barBorder: 'rgba(43, 69, 33,.10)', barText: '#2B4521', barTag: '#2B4521',
+    accent: '#2B4521', accentSoft: 'rgba(43, 69, 33,.10)', accentLine: 'rgba(43, 69, 33,.20)',
+    gCta: 'linear-gradient(100deg,#d4a017 0%,#2FA084 55%,#2B4521 100%)',
     gCover: 'linear-gradient(135deg,#1d6253 0%,#2FA084 70%,#6FCF97 100%)',
-    gSoft: 'linear-gradient(135deg,rgba(31,111,95,.10),rgba(212,160,23,.13))',
+    gSoft: 'linear-gradient(135deg,rgba(43, 69, 33,.10),rgba(212,160,23,.13))',
     gHero: 'linear-gradient(120deg,#1d6253 0%,#2FA084 100%)',
     heroOverlay: 'linear-gradient(180deg,rgba(8,26,21,.18) 0%,rgba(8,26,21,.10) 35%,rgba(8,26,21,.80) 100%)',
-    trustBg: '#FFFFFF', trustBorder: 'rgba(31,111,95,.15)', trustText: '#6B7280', trustStrong: '#1A2E26',
-    trustIcoBg: 'rgba(31,111,95,.10)', trustIco: '#1F6F5F',
+    trustBg: '#FFFFFF', trustBorder: 'rgba(43, 69, 33,.15)', trustText: '#6B7280', trustStrong: '#1A2E26',
+    trustIcoBg: 'rgba(43, 69, 33,.10)', trustIco: '#2B4521',
     stepActive: '#d4a017',
   },
   // هوية سعداوي — أسود/أحمر أوتوموتيف

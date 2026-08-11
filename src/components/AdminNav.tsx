@@ -87,7 +87,7 @@ export default function AdminNav() {
       <button
         onClick={() => setOpen(true)}
         aria-label="قائمة الأدمن"
-        className="fixed bottom-5 left-5 z-[90] w-12 h-12 rounded-full bg-[#1F6F5F] text-white shadow-lg flex items-center justify-center hover:bg-[#175c4f] transition-colors"
+        className="fixed bottom-5 left-5 z-[90] w-12 h-12 rounded-full bg-[#2B4521] text-white shadow-lg flex items-center justify-center hover:bg-[#175c4f] transition-colors"
       >
         <Menu className="w-5 h-5" />
       </button>
@@ -96,7 +96,7 @@ export default function AdminNav() {
         <div className="fixed inset-0 z-[95]" dir="rtl">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
           <div className="absolute inset-y-0 right-0 w-[280px] max-w-[85vw] bg-white shadow-2xl overflow-y-auto">
-            <div className="sticky top-0 bg-[#1F6F5F] text-white px-4 py-3 flex items-center justify-between z-10">
+            <div className="sticky top-0 bg-[#2B4521] text-white px-4 py-3 flex items-center justify-between z-10">
               <span className="font-black text-sm">مضمونة · الأدمن</span>
               <button onClick={() => setOpen(false)} aria-label="إغلاق" className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center">
                 <X className="w-5 h-5" />
@@ -108,7 +108,7 @@ export default function AdminNav() {
                 return (
                   <div key={group.title} className="mb-1">
                     <div className="flex items-center gap-2 px-3 pt-3 pb-1">
-                      <GIcon className="w-3.5 h-3.5 text-[#1F6F5F]" />
+                      <GIcon className="w-3.5 h-3.5 text-[#2B4521]" />
                       <span className="text-[11px] font-black text-gray-400 tracking-wide">{group.title}</span>
                     </div>
                     {group.items.map((it) => {
@@ -118,7 +118,7 @@ export default function AdminNav() {
                           key={it.href}
                           href={it.href}
                           onClick={() => setOpen(false)}
-                          className={`flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-sm no-underline transition-colors ${active ? 'bg-[#1F6F5F] text-white font-bold' : 'text-gray-700 hover:bg-gray-100'}`}
+                          className={`flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-sm no-underline transition-colors ${active ? 'bg-[#2B4521] text-white font-bold' : 'text-gray-700 hover:bg-gray-100'}`}
                         >
                           <span>{it.label}</span>
                           <ChevronLeft className="w-4 h-4 opacity-40" />

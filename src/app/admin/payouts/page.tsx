@@ -206,8 +206,8 @@ export default function AdminPayoutsPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-          <div className="flex items-center justify-center w-12 h-12 bg-[#1F6F5F]/10 rounded-full mb-4 mx-auto">
-            <Lock className="w-5 h-5 text-[#1F6F5F]" />
+          <div className="flex items-center justify-center w-12 h-12 bg-[#2B4521]/10 rounded-full mb-4 mx-auto">
+            <Lock className="w-5 h-5 text-[#2B4521]" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 text-center mb-1">تسويات الموردين</h1>
           <p className="text-sm text-gray-500 text-center mb-6">إدخال كلمة السر</p>
@@ -217,14 +217,14 @@ export default function AdminPayoutsPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="كلمة السر"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F] text-right"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521] text-right"
               autoFocus
             />
             {authError && <p className="text-sm text-red-600 text-center">{authError}</p>}
             <button
               type="submit"
               disabled={loading || !password}
-              className="w-full bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50"
+              className="w-full bg-[#2B4521] text-white py-3 rounded-xl font-semibold hover:bg-[#2B4521]/90 disabled:opacity-50"
             >
               {loading ? 'جاري التحقق...' : 'دخول'}
             </button>
@@ -271,7 +271,7 @@ export default function AdminPayoutsPage() {
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-                  filter === f ? 'bg-[#1F6F5F] text-white' : 'bg-gray-100 text-gray-700'
+                  filter === f ? 'bg-[#2B4521] text-white' : 'bg-gray-100 text-gray-700'
                 }`}
               >
                 {labels[f]}
@@ -368,7 +368,7 @@ export default function AdminPayoutsPage() {
                     <button
                       onClick={() => markAllPaidForSupplier(group)}
                       disabled={actioning === group.supplier_id}
-                      className="w-full px-3 py-2 bg-[#1F6F5F] text-white rounded-lg text-sm font-medium hover:bg-[#1F6F5F]/90 disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="w-full px-3 py-2 bg-[#2B4521] text-white rounded-lg text-sm font-medium hover:bg-[#2B4521]/90 disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       <Wallet className="w-4 h-4" />
                       دفع كل المستحقات: {formatPrice(group.unpaid_total)}

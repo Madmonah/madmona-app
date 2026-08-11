@@ -30,7 +30,7 @@ import {
    ============================================================ */
 
 const PALETTE = {
-  green: '#1F6F5F',
+  green: '#2B4521',
   cream: '#FAFAF7',
   dark: '#1A2E26',
   gray: '#6B7280',
@@ -303,7 +303,7 @@ export default function BusinessFinancePage({
   if (loading && !supplier) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
       </div>
     )
   }
@@ -549,7 +549,7 @@ export default function BusinessFinancePage({
         {!isMadmona && (
         <section className="bg-white rounded-2xl border border-gray-100 p-5">
           <h3 className="text-sm font-bold text-[#1A2E26] mb-3 flex items-center gap-2">
-            <BadgePercent className="w-4 h-4 text-[#1F6F5F]" />
+            <BadgePercent className="w-4 h-4 text-[#2B4521]" />
             شروط الـ Partnership
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -577,7 +577,7 @@ function ContractBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; color: string }> = {
     negotiating: { label: 'قيد التفاوض', color: 'bg-amber-50 text-amber-700' },
     signed: { label: 'موقّع', color: 'bg-blue-50 text-blue-700' },
-    active: { label: 'نشط', color: 'bg-[#1F6F5F]/10 text-[#1F6F5F]' },
+    active: { label: 'نشط', color: 'bg-[#2B4521]/10 text-[#2B4521]' },
     paused: { label: 'متوقف', color: 'bg-gray-100 text-gray-600' },
     terminated: { label: 'منتهي', color: 'bg-red-50 text-red-600' },
   }
@@ -590,7 +590,7 @@ function ContractBadge({ status }: { status: string }) {
 }
 
 function StatCard({
-  icon, label, amount, tone, primary, note, accent = '#1F6F5F',
+  icon, label, amount, tone, primary, note, accent = '#2B4521',
 }: {
   icon: ReactNode
   label: string
@@ -606,7 +606,7 @@ function StatCard({
     primary ? '#FFFFFF' :
     tone === 'negative' ? '#DC2626' :
     tone === 'neutral' ? '#1A2E26' :
-    '#1F6F5F'
+    '#2B4521'
 
   return (
     <div className={`rounded-2xl p-4 md:p-5 border transition-shadow ${primary ? '' : 'bg-white border-gray-100 hover:shadow-sm'}`}
@@ -675,7 +675,7 @@ function Row({
   bold?: boolean
   tiny?: boolean
 }) {
-  const color = tone === 'positive' ? 'text-[#1F6F5F]' : tone === 'negative' ? 'text-red-600' : 'text-[#1F6F5F]'
+  const color = tone === 'positive' ? 'text-[#2B4521]' : tone === 'negative' ? 'text-red-600' : 'text-[#2B4521]'
   return (
     <div className={`flex items-center justify-between ${tiny ? 'text-[10px]' : 'text-xs'}`}>
       <span className={tiny ? 'text-[#6B7280]' : 'text-[#6B7280]'}>{label}</span>
@@ -705,7 +705,7 @@ function TxnRow({ t }: { t: Transaction }) {
       <td className="px-3 py-2.5 text-xs text-[#1A2E26]">{t.branch_name}</td>
       <td className="px-3 py-2.5">
         <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${
-          t.direction === 'in' ? 'text-[#1F6F5F]' : 'text-red-600'
+          t.direction === 'in' ? 'text-[#2B4521]' : 'text-red-600'
         }`}>
           {t.direction === 'in' ? <ArrowDownCircle className="w-3 h-3" /> : <ArrowUpCircle className="w-3 h-3" />}
           {t.direction === 'in' ? 'داخل' : 'خارج'}
@@ -716,7 +716,7 @@ function TxnRow({ t }: { t: Transaction }) {
         {t.description || t.customer_name || '—'}
       </td>
       <td className={`px-3 py-2.5 text-sm text-left font-bold font-mono ${
-        t.direction === 'in' ? 'text-[#1F6F5F]' : 'text-red-600'
+        t.direction === 'in' ? 'text-[#2B4521]' : 'text-red-600'
       }`}>
         {t.direction === 'in' ? '+' : '-'}{Number(t.amount_egp).toLocaleString('ar-EG')} ج
       </td>
@@ -738,7 +738,7 @@ function KV({ label, value }: { label: string; value: string }) {
   )
 }
 
-function ModuleCard({ href, icon, label, primary, accent = '#1F6F5F' }: { href: string; icon: ReactNode; label: string; primary?: boolean; accent?: string }) {
+function ModuleCard({ href, icon, label, primary, accent = '#2B4521' }: { href: string; icon: ReactNode; label: string; primary?: boolean; accent?: string }) {
   return (
     <Link
       href={href}

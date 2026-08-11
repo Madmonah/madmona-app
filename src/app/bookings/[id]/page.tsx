@@ -303,7 +303,7 @@ function BookingDetailContent() {
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-3" />
           <h1 className="font-bold mb-4">{error || t('bdetail.not_found')}</h1>
-          <Link href="/" className="bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-semibold">
+          <Link href="/" className="bg-[#2B4521] text-white px-5 py-2.5 rounded-xl font-semibold">
             {t('bdetail.home')}
           </Link>
         </div>
@@ -385,7 +385,7 @@ function BookingDetailContent() {
         </div>
 
         {showPaymentBlock && (
-          <div className="bg-gradient-to-br from-[#1F6F5F] to-[#2d7a52] text-white rounded-2xl shadow-elevated overflow-hidden mb-4">
+          <div className="bg-gradient-to-br from-[#2B4521] to-[#5A6E3A] text-white rounded-2xl shadow-elevated overflow-hidden mb-4">
             <div className="p-5">
               <div className="flex items-center gap-2 mb-1">
                 <CreditCard className="w-5 h-5" />
@@ -407,7 +407,7 @@ function BookingDetailContent() {
                   <p className="text-base font-black tabular tracking-wider" dir="ltr">{INSTAPAY_ACCOUNT}</p>
                   <button
                     onClick={copyAccountNumber}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-white text-[#1F6F5F] rounded-lg text-xs font-bold hover:bg-gray-50 flex-shrink-0"
+                    className="flex items-center gap-1 px-3 py-1.5 bg-white text-[#2B4521] rounded-lg text-xs font-bold hover:bg-gray-50 flex-shrink-0"
                   >
                     {copiedAccount ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                     {copiedAccount ? t('bdetail.copied') : t('bdetail.copy')}
@@ -483,7 +483,7 @@ function BookingDetailContent() {
 
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
           <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-[#1F6F5F]" /> {t('bdetail.schedule')}
+            <Calendar className="w-4 h-4 text-[#2B4521]" /> {t('bdetail.schedule')}
           </h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -499,7 +499,7 @@ function BookingDetailContent() {
 
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
           <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <CreditCard className="w-4 h-4 text-[#1F6F5F]" /> {t('bdetail.price_title')}
+            <CreditCard className="w-4 h-4 text-[#2B4521]" /> {t('bdetail.price_title')}
           </h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -508,7 +508,7 @@ function BookingDetailContent() {
             </div>
             <div className="flex justify-between font-bold pt-2 border-t border-gray-100 text-base">
               <span>{t('booking.total')}</span>
-              <span className="text-[#1F6F5F]">{Number(booking.total_amount).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {booking.currency}</span>
+              <span className="text-[#2B4521]">{Number(booking.total_amount).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {booking.currency}</span>
             </div>
           </div>
         </div>
@@ -537,7 +537,7 @@ function BookingDetailContent() {
               <button
                 onClick={() => updateBookingStatus('confirmed')}
                 disabled={actioning}
-                className="bg-[#1F6F5F] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50 flex items-center justify-center gap-1"
+                className="bg-[#2B4521] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#2B4521]/90 disabled:opacity-50 flex items-center justify-center gap-1"
               >
                 <CheckCircle className="w-4 h-4" /> {t('bdetail.confirm_booking')}
               </button>
@@ -557,7 +557,7 @@ function BookingDetailContent() {
             <button
               onClick={() => updateBookingStatus('completed')}
               disabled={actioning}
-              className="w-full bg-[#1F6F5F] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50"
+              className="w-full bg-[#2B4521] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#2B4521]/90 disabled:opacity-50"
             >
               <CheckCircle className="w-4 h-4 inline-block ml-1" /> {t('bdetail.mark_completed')}
             </button>
@@ -614,7 +614,7 @@ function BookingDetailContent() {
               placeholder={cancelDialog.byRole === 'supplier' ? t('bdetail.reason_ph_supplier') : t('bdetail.reason_ph_customer')}
               rows={2}
               maxLength={300}
-              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:bg-white focus:border-[#1F6F5F]/40 resize-none mb-4"
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:bg-white focus:border-[#2B4521]/40 resize-none mb-4"
               autoFocus
             />
             <div className="grid grid-cols-2 gap-2">
@@ -643,7 +643,7 @@ function BookingDetailContent() {
 function PaymentStep({ num, text }: { num: string; text: string }) {
   return (
     <div className="flex items-start gap-2.5">
-      <div className="w-5 h-5 rounded-full bg-white text-[#1F6F5F] flex items-center justify-center flex-shrink-0 text-[10px] font-black tabular">
+      <div className="w-5 h-5 rounded-full bg-white text-[#2B4521] flex items-center justify-center flex-shrink-0 text-[10px] font-black tabular">
         {num}
       </div>
       <p className="text-xs text-white/95 leading-relaxed">{text}</p>

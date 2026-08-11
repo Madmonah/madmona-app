@@ -35,8 +35,8 @@ export default async function DemandForecastPage() {
     <div dir="rtl" style={{ fontFamily: 'Tahoma', background: '#FAF7F0', minHeight: '100vh', padding: 24 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h1 style={{ color: '#1F6F5F', margin: 0, fontSize: 26 }}>📈 Demand Forecast</h1>
-          <a href="/admin/ai-os" style={{ color: '#1F6F5F', fontSize: 13 }}>← AI OS</a>
+          <h1 style={{ color: '#2B4521', margin: 0, fontSize: 26 }}>📈 Demand Forecast</h1>
+          <a href="/admin/ai-os" style={{ color: '#2B4521', fontSize: 13 }}>← AI OS</a>
         </div>
 
         <p style={{ color: '#666', fontSize: 14, marginBottom: 16 }}>
@@ -56,10 +56,10 @@ export default async function DemandForecastPage() {
               return (
                 <div key={f.id} style={{
                   background: '#fff', padding: 16, borderRadius: 12,
-                  borderRight: `4px solid ${isUrgent ? '#6FCF97' : '#1F6F5F'}`,
+                  borderRight: `4px solid ${isUrgent ? '#6FCF97' : '#2B4521'}`,
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                    <h2 style={{ margin: 0, color: '#1F6F5F', fontSize: 16 }}>
+                    <h2 style={{ margin: 0, color: '#2B4521', fontSize: 16 }}>
                       {isUrgent ? '🔥' : '📊'} {f.category}
                     </h2>
                     <span style={{
@@ -74,15 +74,15 @@ export default async function DemandForecastPage() {
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
                     <div style={{ background: '#FAF7F0', padding: 10, borderRadius: 6, textAlign: 'center' }}>
-                      <div style={{ fontSize: 18, fontWeight: 'bold', color: '#1F6F5F' }}>{f.predicted_searches ?? 0}</div>
+                      <div style={{ fontSize: 18, fontWeight: 'bold', color: '#2B4521' }}>{f.predicted_searches ?? 0}</div>
                       <div style={{ fontSize: 10, color: '#666' }}>بحث متوقع</div>
                     </div>
                     <div style={{ background: '#FAF7F0', padding: 10, borderRadius: 6, textAlign: 'center' }}>
-                      <div style={{ fontSize: 18, fontWeight: 'bold', color: '#1F6F5F' }}>{f.predicted_bookings ?? 0}</div>
+                      <div style={{ fontSize: 18, fontWeight: 'bold', color: '#2B4521' }}>{f.predicted_bookings ?? 0}</div>
                       <div style={{ fontSize: 10, color: '#666' }}>حجز متوقع</div>
                     </div>
                     <div style={{ background: '#FAF7F0', padding: 10, borderRadius: 6, textAlign: 'center' }}>
-                      <div style={{ fontSize: 18, fontWeight: 'bold', color: '#1F6F5F' }}>{f.current_supply ?? 0}</div>
+                      <div style={{ fontSize: 18, fontWeight: 'bold', color: '#2B4521' }}>{f.current_supply ?? 0}</div>
                       <div style={{ fontSize: 10, color: '#666' }}>عرض حالي</div>
                     </div>
                     <div style={{
@@ -105,7 +105,7 @@ export default async function DemandForecastPage() {
 
                   {f.recommended_action && (
                     <div style={{
-                      background: isUrgent ? '#6FCF97' : '#1F6F5F',
+                      background: isUrgent ? '#6FCF97' : '#2B4521',
                       color: '#FAF7F0',
                       padding: 10, borderRadius: 6, fontSize: 12,
                     }}>

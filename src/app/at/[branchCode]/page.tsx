@@ -178,7 +178,7 @@ export default function CustomerVisitPage({
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
       </div>
     )
   }
@@ -197,7 +197,7 @@ export default function CustomerVisitPage({
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       {/* Branch header */}
-      <header className="bg-[#1F6F5F] text-white">
+      <header className="bg-[#2B4521] text-white">
         <div className="max-w-2xl mx-auto px-4 py-6">
           <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/70 mb-1">
             MADMONA · الحجز الفوري
@@ -262,7 +262,7 @@ export default function CustomerVisitPage({
           <div className="max-w-2xl mx-auto">
             <button
               onClick={() => setStep('review')}
-              className="w-full bg-[#1F6F5F] text-white rounded-2xl px-5 py-3.5 font-black flex items-center justify-between"
+              className="w-full bg-[#2B4521] text-white rounded-2xl px-5 py-3.5 font-black flex items-center justify-between"
             >
               <span className="flex items-center gap-2">
                 <ShoppingBag className="w-5 h-5" />
@@ -283,7 +283,7 @@ export default function CustomerVisitPage({
 function PhoneStep({ phone, setPhone, name, setName, onContinue, submitting }: any) {
   return (
     <div className="bg-white rounded-3xl p-6 md:p-8">
-      <div className="inline-grid place-items-center w-14 h-14 rounded-2xl bg-[#1F6F5F]/10 text-[#1F6F5F] mb-4">
+      <div className="inline-grid place-items-center w-14 h-14 rounded-2xl bg-[#2B4521]/10 text-[#2B4521] mb-4">
         <Phone className="w-6 h-6" />
       </div>
       <h2 className="text-xl font-black text-[#1A2E26] mb-1">أهلاً بيكي!</h2>
@@ -296,7 +296,7 @@ function PhoneStep({ phone, setPhone, name, setName, onContinue, submitting }: a
             type="tel" inputMode="tel" autoFocus
             value={phone} onChange={(e) => setPhone(e.target.value)}
             placeholder="+201xxxxxxxxx"
-            className="w-full px-4 py-3 rounded-xl bg-[#FAFAF7] border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F] font-mono text-lg"
+            className="w-full px-4 py-3 rounded-xl bg-[#FAFAF7] border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#2B4521] font-mono text-lg"
           />
         </div>
         <div>
@@ -305,13 +305,13 @@ function PhoneStep({ phone, setPhone, name, setName, onContinue, submitting }: a
             type="text"
             value={name} onChange={(e) => setName(e.target.value)}
             placeholder="مثلاً: سارة"
-            className="w-full px-4 py-3 rounded-xl bg-[#FAFAF7] border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F]"
+            className="w-full px-4 py-3 rounded-xl bg-[#FAFAF7] border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#2B4521]"
           />
         </div>
         <button
           onClick={onContinue}
           disabled={phone.length < 8 || submitting}
-          className="w-full bg-[#1F6F5F] text-white rounded-xl px-5 py-3.5 font-black flex items-center justify-center gap-2 disabled:opacity-50 transition-shadow hover:shadow-md mt-2"
+          className="w-full bg-[#2B4521] text-white rounded-xl px-5 py-3.5 font-black flex items-center justify-center gap-2 disabled:opacity-50 transition-shadow hover:shadow-md mt-2"
         >
           {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
             <>متابعة <ChevronLeft className="w-4 h-4 rotate-180" /></>
@@ -349,7 +349,7 @@ function MenuStep({ services, products, tab, setTab, cart, addToCart, updateQuan
         <button
           onClick={() => setTab('services')}
           className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-            tab === 'services' ? 'bg-[#1F6F5F] text-white' : 'text-[#6B7280]'
+            tab === 'services' ? 'bg-[#2B4521] text-white' : 'text-[#6B7280]'
           }`}
         >
           الخدمات ({services.length})
@@ -358,7 +358,7 @@ function MenuStep({ services, products, tab, setTab, cart, addToCart, updateQuan
           <button
             onClick={() => setTab('products')}
             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              tab === 'products' ? 'bg-[#1F6F5F] text-white' : 'text-[#6B7280]'
+              tab === 'products' ? 'bg-[#2B4521] text-white' : 'text-[#6B7280]'
             }`}
           >
             المنتجات ({products.length})
@@ -382,7 +382,7 @@ function MenuStep({ services, products, tab, setTab, cart, addToCart, updateQuan
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-black text-[#1A2E26] mb-0.5">{item.name_ar}</h3>
                     <p className="text-xs text-[#6B7280] flex items-center gap-2">
-                      <span className="font-mono font-bold text-[#1F6F5F]">{item.price_egp} ج</span>
+                      <span className="font-mono font-bold text-[#2B4521]">{item.price_egp} ج</span>
                       {item.duration_minutes && (
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" /> {item.duration_minutes}د
@@ -393,18 +393,18 @@ function MenuStep({ services, products, tab, setTab, cart, addToCart, updateQuan
                   {qty === 0 ? (
                     <button
                       onClick={() => addToCart(item)}
-                      className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-[#1F6F5F] hover:text-white text-[#1F6F5F] text-sm font-black flex items-center gap-1 transition-colors"
+                      className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-[#2B4521] hover:text-white text-[#2B4521] text-sm font-black flex items-center gap-1 transition-colors"
                     >
                       <Plus className="w-4 h-4" />
                       اضف
                     </button>
                   ) : (
-                    <div className="flex items-center gap-2 bg-[#1F6F5F]/10 rounded-xl px-2 py-1">
-                      <button onClick={() => updateQuantity(item.id, -1)} className="w-7 h-7 rounded-lg bg-white text-[#1F6F5F] grid place-items-center">
+                    <div className="flex items-center gap-2 bg-[#2B4521]/10 rounded-xl px-2 py-1">
+                      <button onClick={() => updateQuantity(item.id, -1)} className="w-7 h-7 rounded-lg bg-white text-[#2B4521] grid place-items-center">
                         <Minus className="w-3.5 h-3.5" />
                       </button>
-                      <span className="text-sm font-black text-[#1F6F5F] min-w-[20px] text-center">{qty}</span>
-                      <button onClick={() => updateQuantity(item.id, 1)} className="w-7 h-7 rounded-lg bg-[#1F6F5F] text-white grid place-items-center">
+                      <span className="text-sm font-black text-[#2B4521] min-w-[20px] text-center">{qty}</span>
+                      <button onClick={() => updateQuantity(item.id, 1)} className="w-7 h-7 rounded-lg bg-[#2B4521] text-white grid place-items-center">
                         <Plus className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -451,7 +451,7 @@ function ReviewStep({ cart, cartTotal, updateQuantity, onBack, onSubmit, submitt
                   <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <p className="text-sm font-black font-mono text-[#1F6F5F]">{(c.price_egp * c.quantity).toLocaleString('ar-EG')} ج</p>
+              <p className="text-sm font-black font-mono text-[#2B4521]">{(c.price_egp * c.quantity).toLocaleString('ar-EG')} ج</p>
             </div>
           </div>
         ))}
@@ -468,7 +468,7 @@ function ReviewStep({ cart, cartTotal, updateQuantity, onBack, onSubmit, submitt
       <button
         onClick={onSubmit}
         disabled={submitting || cart.length === 0}
-        className="w-full bg-[#1F6F5F] text-white rounded-2xl px-5 py-4 font-black flex items-center justify-center gap-2 disabled:opacity-50 hover:shadow-md transition-shadow"
+        className="w-full bg-[#2B4521] text-white rounded-2xl px-5 py-4 font-black flex items-center justify-center gap-2 disabled:opacity-50 hover:shadow-md transition-shadow"
       >
         {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
           <>
@@ -484,7 +484,7 @@ function ReviewStep({ cart, cartTotal, updateQuantity, onBack, onSubmit, submitt
 function SuccessStep({ branchName, bookingIds, total }: { branchName: string; bookingIds: string[]; total: number }) {
   return (
     <div className="bg-white rounded-3xl p-6 md:p-8 text-center">
-      <div className="inline-grid place-items-center w-16 h-16 rounded-2xl bg-[#1F6F5F]/10 text-[#1F6F5F] mb-4">
+      <div className="inline-grid place-items-center w-16 h-16 rounded-2xl bg-[#2B4521]/10 text-[#2B4521] mb-4">
         <Check className="w-8 h-8" />
       </div>
       <h2 className="text-2xl font-black text-[#1A2E26] mb-1">طلبك تأكد ✨</h2>
@@ -497,7 +497,7 @@ function SuccessStep({ branchName, bookingIds, total }: { branchName: string; bo
         </p>
         <div className="mt-3 pt-3 border-t border-gray-200">
           <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-0.5">الإجمالي</p>
-          <p className="text-xl font-black font-mono text-[#1F6F5F]">{total.toLocaleString('ar-EG')} ج</p>
+          <p className="text-xl font-black font-mono text-[#2B4521]">{total.toLocaleString('ar-EG')} ج</p>
         </div>
       </div>
 

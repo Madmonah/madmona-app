@@ -67,17 +67,17 @@ export default function PnlPage({ params }: { params: { supplierId: string } }) 
   const tMargin = tRevenue > 0 ? (tProfit / tRevenue) * 100 : 0
   const tCollected = rows.reduce((s, r) => s + r.collected, 0)
 
-  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div>
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2"><ChevronLeft className="w-3.5 h-3.5" /> رجوع</Link>
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2"><ChevronLeft className="w-3.5 h-3.5" /> رجوع</Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">مقاولات · الربحية</p>
-              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2"><BarChart3 className="w-7 h-7 text-[#1F6F5F]" /> ربحية المشاريع</h1>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">مقاولات · الربحية</p>
+              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2"><BarChart3 className="w-7 h-7 text-[#2B4521]" /> ربحية المشاريع</h1>
             </div>
             <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7] text-[#1A2E26]"><RefreshCw className="w-4 h-4" /></button>
           </div>
@@ -93,7 +93,7 @@ export default function PnlPage({ params }: { params: { supplierId: string } }) 
           <Stat label="المحصّل فعليًا" value={`${money0(tCollected)} ج`} />
         </div>
 
-        <div className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/15 rounded-2xl p-4 text-xs text-[#1A2E26] leading-relaxed">
+        <div className="bg-[#2B4521]/5 border border-[#2B4521]/15 rounded-2xl p-4 text-xs text-[#1A2E26] leading-relaxed">
           <b>طريقة الحساب:</b> الإيراد = إجمالي الأعمال المنفّذة من آخر مستخلص لكل مشروع · التكاليف = مصروفات المشروع المباشرة + المدفوع لمقاولي الباطن + تكاليف المعدات (صيانة/سولار) · صافي الربح = الإيراد − التكاليف.
         </div>
 
@@ -106,14 +106,14 @@ export default function PnlPage({ params }: { params: { supplierId: string } }) 
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.id} className="border-b border-gray-50 hover:bg-[#FAFAF7]/50">
-                    <td className="px-3 py-2.5"><Link href={`/admin/business-finance/${supplierId}/projects/${r.id}`} className="font-bold text-[#1A2E26] hover:text-[#1F6F5F]">{r.name}</Link><span className="block text-[10px] text-[#6B7280] font-mono">{r.code}</span></td>
+                    <td className="px-3 py-2.5"><Link href={`/admin/business-finance/${supplierId}/projects/${r.id}`} className="font-bold text-[#1A2E26] hover:text-[#2B4521]">{r.name}</Link><span className="block text-[10px] text-[#6B7280] font-mono">{r.code}</span></td>
                     <td className="px-3 py-2.5 text-left font-mono text-[#1A2E26]">{money0(r.revenue)}</td>
                     <td className="px-3 py-2.5 text-left font-mono text-[#6B7280]">{money0(r.expenses)}</td>
                     <td className="px-3 py-2.5 text-left font-mono text-[#6B7280]">{money0(r.subs)}</td>
                     <td className="px-3 py-2.5 text-left font-mono text-[#6B7280]">{money0(r.equip)}</td>
                     <td className="px-3 py-2.5 text-left font-mono text-red-600">{money0(r.cost)}</td>
-                    <td className={`px-3 py-2.5 text-left font-mono font-black ${r.profit >= 0 ? 'text-[#1F6F5F]' : 'text-red-600'}`}>{money0(r.profit)}</td>
-                    <td className={`px-3 py-2.5 text-left font-mono font-bold ${r.margin >= 0 ? 'text-[#1F6F5F]' : 'text-red-600'}`}>{r.margin.toFixed(1)}%</td>
+                    <td className={`px-3 py-2.5 text-left font-mono font-black ${r.profit >= 0 ? 'text-[#2B4521]' : 'text-red-600'}`}>{money0(r.profit)}</td>
+                    <td className={`px-3 py-2.5 text-left font-mono font-bold ${r.margin >= 0 ? 'text-[#2B4521]' : 'text-red-600'}`}>{r.margin.toFixed(1)}%</td>
                     <td className="px-3 py-2.5 text-left font-mono text-[#6B7280]">{money0(r.collected)}</td>
                   </tr>
                 ))}
@@ -128,5 +128,5 @@ export default function PnlPage({ params }: { params: { supplierId: string } }) 
 
 function Th({ children, className = '' }: { children?: ReactNode; className?: string }) { return <th className={`px-3 py-2.5 text-[10px] font-bold tracking-wider uppercase text-[#6B7280] ${className}`}>{children}</th> }
 function Stat({ label, value, primary }: { label: string; value: string; primary?: boolean }) {
-  return <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'}`}><p className={`text-[10px] font-bold tracking-wider uppercase ${primary ? 'text-white/80' : 'text-[#6B7280]'}`}>{label}</p><p className={`text-lg md:text-2xl font-black mt-1 ${primary ? 'text-white' : 'text-[#1A2E26]'}`}>{value}</p></div>
+  return <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#2B4521] border-[#2B4521] text-white' : 'bg-white border-gray-100'}`}><p className={`text-[10px] font-bold tracking-wider uppercase ${primary ? 'text-white/80' : 'text-[#6B7280]'}`}>{label}</p><p className={`text-lg md:text-2xl font-black mt-1 ${primary ? 'text-white' : 'text-[#1A2E26]'}`}>{value}</p></div>
 }

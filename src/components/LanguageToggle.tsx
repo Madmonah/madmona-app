@@ -7,8 +7,8 @@ import { useT } from '@/lib/i18n/LanguageProvider'
 
 export default function LanguageToggle({
   className = '',
-  activeClass = 'bg-[#1F6F5F] text-white',
-  inactiveClass = 'bg-transparent text-[#1F6F5F]',
+  activeClass = 'bg-[#2B4521] text-white',
+  inactiveClass = 'bg-transparent text-[#2B4521]',
 }: {
   className?: string
   activeClass?: string

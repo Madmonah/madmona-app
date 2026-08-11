@@ -52,12 +52,12 @@ export default function ShiftsPage({ params }: { params: { supplierId: string } 
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">B2B PARTNER · SHIFTS</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">B2B PARTNER · SHIFTS</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">مواعيد العمل · {supplier?.business_name}</h1>
               <p className="text-sm text-[#6B7280] mt-1">جدول الورديات الأسبوعي لكل موظف</p>
             </div>
@@ -71,9 +71,9 @@ export default function ShiftsPage({ params }: { params: { supplierId: string } 
         <section className="bg-white rounded-2xl border border-gray-100 p-4">
           <div className="flex gap-2 flex-wrap items-center">
             <Building2 className="w-3.5 h-3.5 text-[#6B7280]" />
-            <button onClick={() => setBranchFilter(null)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${!branchFilter ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'}`}>كل الفروع</button>
+            <button onClick={() => setBranchFilter(null)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${!branchFilter ? 'bg-[#2B4521] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'}`}>كل الفروع</button>
             {branches.map(b => (
-              <button key={b.id} onClick={() => setBranchFilter(b.id)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${branchFilter === b.id ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'}`}>{b.name}</button>
+              <button key={b.id} onClick={() => setBranchFilter(b.id)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${branchFilter === b.id ? 'bg-[#2B4521] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'}`}>{b.name}</button>
             ))}
           </div>
         </section>
@@ -85,17 +85,17 @@ export default function ShiftsPage({ params }: { params: { supplierId: string } 
           </div>
           <div className="divide-y divide-gray-100">
             {loading ? (
-              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin inline" /></div>
+              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#2B4521] animate-spin inline" /></div>
             ) : employees.length === 0 ? (
               <div className="py-12 text-center"><Users className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" /><p className="text-sm font-bold text-[#1A2E26]">مفيش موظفين</p></div>
             ) : employees.map(e => (
               <button key={e.id} onClick={() => setEditingEmployee(e)} className="w-full text-right px-4 py-3 flex items-center gap-3 hover:bg-[#FAFAF7]/50 transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 text-[#1F6F5F] grid place-items-center font-black">{e.full_name.charAt(0)}</div>
+                <div className="w-10 h-10 rounded-xl bg-[#2B4521]/10 text-[#2B4521] grid place-items-center font-black">{e.full_name.charAt(0)}</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-[#1A2E26]">{e.full_name}</p>
                   <p className="text-[10px] text-[#6B7280]">{e.role_ar} · {branches.find(b => b.id === e.branch_id)?.name || '—'}</p>
                 </div>
-                <span className="px-3 py-1.5 rounded-lg bg-[#FAFAF7] text-[#1F6F5F] text-xs font-bold flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> الورديات</span>
+                <span className="px-3 py-1.5 rounded-lg bg-[#FAFAF7] text-[#2B4521] text-xs font-bold flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> الورديات</span>
               </button>
             ))}
           </div>
@@ -160,14 +160,14 @@ function ShiftsModal({ supplierId, employee, onClose }: any) {
       <div className="relative bg-white rounded-t-3xl md:rounded-3xl w-full md:max-w-lg md:mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
         <header className="px-5 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white">
           <div>
-            <p className="text-[10px] font-bold tracking-wider uppercase text-[#1F6F5F]">مواعيد العمل</p>
+            <p className="text-[10px] font-bold tracking-wider uppercase text-[#2B4521]">مواعيد العمل</p>
             <h2 className="text-lg font-black text-[#1A2E26]">{employee.full_name}</h2>
           </div>
           <button onClick={onClose}><X className="w-5 h-5 text-[#6B7280]" /></button>
         </header>
         <div className="p-5 space-y-2">
           {loading ? (
-            <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#1F6F5F] animate-spin inline" /></div>
+            <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#2B4521] animate-spin inline" /></div>
           ) : (
             <>
               {DAYS.map(d => {
@@ -185,14 +185,14 @@ function ShiftsModal({ supplierId, employee, onClose }: any) {
                           <input type="time" value={shift.end} onChange={e => updateDay(d.idx, { end: e.target.value })} className="px-2 py-1 rounded-lg bg-[#FAFAF7] text-xs font-mono" />
                         </div>
                       )}
-                      <button onClick={() => updateDay(d.idx, { off: !shift.off })} className={`px-2 py-1 rounded-lg text-[10px] font-bold ${shift.off ? 'bg-[#1F6F5F] text-white' : 'bg-[#FAFAF7] text-[#6B7280]'}`}>
+                      <button onClick={() => updateDay(d.idx, { off: !shift.off })} className={`px-2 py-1 rounded-lg text-[10px] font-bold ${shift.off ? 'bg-[#2B4521] text-white' : 'bg-[#FAFAF7] text-[#6B7280]'}`}>
                         {shift.off ? 'شغّال' : 'إجازة'}
                       </button>
                     </div>
                   </div>
                 )
               })}
-              <button onClick={save} disabled={saving} className="w-full mt-3 py-3 rounded-xl bg-[#1F6F5F] text-white font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
+              <button onClick={save} disabled={saving} className="w-full mt-3 py-3 rounded-xl bg-[#2B4521] text-white font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
                 {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري الحفظ...</> : <><Save className="w-4 h-4" /> احفظ الجدول</>}
               </button>
             </>
@@ -203,4 +203,4 @@ function ShiftsModal({ supplierId, employee, onClose }: any) {
   )
 }
 
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div> }

@@ -421,7 +421,7 @@ export default function ListingDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir={dir}>
-        <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
       </div>
     )
   }
@@ -437,7 +437,7 @@ export default function ListingDetailPage() {
           <p className="text-sm text-gray-500 mb-5">{t('listing.not_found_sub')}</p>
           <Link
             href="/marketplace"
-            className="inline-flex items-center gap-2 bg-[#1F6F5F] text-white px-5 py-2.5 rounded-xl font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
+            className="inline-flex items-center gap-2 bg-[#2B4521] text-white px-5 py-2.5 rounded-xl font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
           >
             {t('listing.browse_marketplace')}
           </Link>
@@ -609,7 +609,7 @@ export default function ListingDetailPage() {
                   onClick={() => setPhotoIndex(i)}
                   className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden transition-all ${
                     i === photoIndex
-                      ? 'ring-2 ring-[#1F6F5F] ring-offset-2 scale-105'
+                      ? 'ring-2 ring-[#2B4521] ring-offset-2 scale-105'
                       : 'opacity-60 hover:opacity-100'
                   }`}
                 >
@@ -628,9 +628,9 @@ export default function ListingDetailPage() {
             {/* Title section */}
             <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up">
               {listing.category && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#1F6F5F]/10 rounded-full mb-4">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#2B4521]/10 rounded-full mb-4">
                   <span className="text-sm">{listing.category.icon}</span>
-                  <span className="text-xs font-bold text-[#1F6F5F]">{lang === 'en' && listing.category.name_en ? listing.category.name_en : listing.category.name_ar}</span>
+                  <span className="text-xs font-bold text-[#2B4521]">{lang === 'en' && listing.category.name_en ? listing.category.name_en : listing.category.name_ar}</span>
                 </div>
               )}
               <h1 className="text-2xl md:text-4xl font-black text-gray-900 leading-tight mb-4 tracking-tight">
@@ -679,7 +679,7 @@ export default function ListingDetailPage() {
               <div className="flex flex-wrap items-center gap-4 text-sm">
                 {(listing.district || listing.city) && (
                   <span className="flex items-center gap-1.5 text-gray-600 font-medium">
-                    <MapPin className="w-4 h-4 text-[#1F6F5F]" />
+                    <MapPin className="w-4 h-4 text-[#2B4521]" />
                     {[listing.district, listing.city].filter(Boolean).join(lang === 'ar' ? '، ' : ', ')}
                   </span>
                 )}
@@ -692,7 +692,7 @@ export default function ListingDetailPage() {
                 )}
                 {listing.min_booking_hours && (
                   <span className="flex items-center gap-1.5 text-gray-600 font-medium">
-                    <Clock className="w-4 h-4 text-[#1F6F5F]" />
+                    <Clock className="w-4 h-4 text-[#2B4521]" />
                     {t('listing.min_hours', { n: listing.min_booking_hours })}
                   </span>
                 )}
@@ -740,7 +740,7 @@ export default function ListingDetailPage() {
                   {listing.stock_quantity !== null && listing.stock_quantity !== undefined && !noDelivery && (
                     <div className="flex items-center justify-between p-3 bg-[#FAFAF7] rounded-xl">
                       <span className="text-xs font-medium text-gray-500">المتاح</span>
-                      <span className={`text-sm font-bold ${listing.stock_quantity > 0 ? 'text-[#1F6F5F]' : 'text-red-600'}`}>
+                      <span className={`text-sm font-bold ${listing.stock_quantity > 0 ? 'text-[#2B4521]' : 'text-red-600'}`}>
                         {listing.stock_quantity > 0 ? `${listing.stock_quantity} قطعة` : 'نفد المخزون'}
                       </span>
                     </div>
@@ -769,7 +769,7 @@ export default function ListingDetailPage() {
                   {listing.branches.map((b, i) => (
                     <div key={i} className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
                       <div className="flex items-center gap-2 mb-1">
-                        <MapPin className="w-3.5 h-3.5 text-[#1F6F5F] flex-shrink-0" />
+                        <MapPin className="w-3.5 h-3.5 text-[#2B4521] flex-shrink-0" />
                         <span className="text-sm font-bold text-gray-900">{b.name || `فرع ${i + 1}`}</span>
                       </div>
                       {(b.address || b.city) && (
@@ -778,7 +778,7 @@ export default function ListingDetailPage() {
                         </div>
                       )}
                       {b.phone && (
-                        <a href={`tel:${b.phone}`} className="inline-block mt-2 pr-5 text-xs font-semibold text-[#1F6F5F] hover:underline" dir="ltr">
+                        <a href={`tel:${b.phone}`} className="inline-block mt-2 pr-5 text-xs font-semibold text-[#2B4521] hover:underline" dir="ltr">
                           {b.phone}
                         </a>
                       )}
@@ -810,14 +810,14 @@ export default function ListingDetailPage() {
                 <button
                   onClick={toggleFavorite}
                   disabled={togglingFav}
-                  className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm transition-all ${isFavorite ? 'bg-rose-50 text-rose-600 border-2 border-rose-200' : 'bg-[#1F6F5F] text-white shadow-elevated'}`}
+                  className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm transition-all ${isFavorite ? 'bg-rose-50 text-rose-600 border-2 border-rose-200' : 'bg-[#2B4521] text-white shadow-elevated'}`}
                 >
                   <Heart className={`w-4 h-4 ${isFavorite ? 'fill-rose-500 text-rose-500' : ''}`} />
                   {isFavorite ? 'محفوظ في المفضلة' : 'أضف للمفضلة'}
                 </button>
                 <Link
                   href="/real-estate"
-                  className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm bg-white text-[#1F6F5F] border-2 border-[#1F6F5F] no-underline"
+                  className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm bg-white text-[#2B4521] border-2 border-[#2B4521] no-underline"
                 >
                   <Building2 className="w-4 h-4" />
                   المنصة العقارية — قارن وشوف كل المشاريع
@@ -881,7 +881,7 @@ export default function ListingDetailPage() {
                     {attributes.length > 0 && (
                       <div>
                         <h3 className="text-sm font-black text-gray-900 mb-3 flex items-center gap-2">
-                          <Tag className="w-4 h-4 text-[#1F6F5F]" />
+                          <Tag className="w-4 h-4 text-[#2B4521]" />
                           {t('listing.specs_title')}
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -904,12 +904,12 @@ export default function ListingDetailPage() {
                           {pricing.map(rule => (
                             <div
                               key={rule.id}
-                              className="flex items-center justify-between p-4 bg-gradient-to-l from-[#1F6F5F]/5 to-transparent rounded-xl border border-[#1F6F5F]/10"
+                              className="flex items-center justify-between p-4 bg-gradient-to-l from-[#2B4521]/5 to-transparent rounded-xl border border-[#2B4521]/10"
                             >
                               <span className="text-sm font-bold text-gray-700">
                                 {PERIOD_LABELS[rule.period_type] ? t(PERIOD_LABELS[rule.period_type]) : rule.period_type}
                               </span>
-                              <span className="text-lg font-black text-[#1F6F5F] tabular">
+                              <span className="text-lg font-black text-[#2B4521] tabular">
                                 {Number(rule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
                                 <span className="text-xs font-normal text-gray-500 ms-1">{t('common.egp')}</span>
                               </span>
@@ -925,7 +925,7 @@ export default function ListingDetailPage() {
                   <div>
                     {listing.address && (
                       <p className="text-sm md:text-base text-gray-700 mb-4 flex items-start gap-2">
-                        <MapPin className="w-5 h-5 text-[#1F6F5F] flex-shrink-0 mt-0.5" />
+                        <MapPin className="w-5 h-5 text-[#2B4521] flex-shrink-0 mt-0.5" />
                         <span>{listing.address}</span>
                       </p>
                     )}
@@ -946,7 +946,7 @@ export default function ListingDetailPage() {
                           href={`https://www.google.com/maps/dir/?api=1&destination=${listing.latitude},${listing.longitude}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-[#1F6F5F] text-white rounded-xl font-bold text-sm hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
+                          className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-[#2B4521] text-white rounded-xl font-bold text-sm hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
                         >
                           <ExternalLink className="w-4 h-4" />
                           {t('listing.open_directions')}
@@ -971,8 +971,8 @@ export default function ListingDetailPage() {
                           <div key={r.id} className="border-b border-gray-100 pb-5 last:border-b-0 last:pb-0">
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-2">
-                                <div className="w-9 h-9 bg-[#1F6F5F]/10 rounded-full flex items-center justify-center flex-shrink-0">
-                                  <User className="w-4 h-4 text-[#1F6F5F]" />
+                                <div className="w-9 h-9 bg-[#2B4521]/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                  <User className="w-4 h-4 text-[#2B4521]" />
                                 </div>
                                 <div>
                                   <p className="text-sm font-bold text-gray-900">
@@ -999,10 +999,10 @@ export default function ListingDetailPage() {
                             )}
 
                             {r.supplier_response && (
-                              <div className="mt-3 mr-11 bg-gradient-to-l from-[#1F6F5F]/5 to-transparent border border-[#1F6F5F]/10 rounded-2xl p-4">
+                              <div className="mt-3 mr-11 bg-gradient-to-l from-[#2B4521]/5 to-transparent border border-[#2B4521]/10 rounded-2xl p-4">
                                 <div className="flex items-center gap-2 mb-2">
-                                  <Building2 className="w-3.5 h-3.5 text-[#1F6F5F]" />
-                                  <span className="text-xs font-bold text-[#1F6F5F]">
+                                  <Building2 className="w-3.5 h-3.5 text-[#2B4521]" />
+                                  <span className="text-xs font-bold text-[#2B4521]">
                                     {t('listing.reply_by')} {listing.supplier?.business_name || t('listing.owner_label')}
                                   </span>
                                 </div>
@@ -1028,7 +1028,7 @@ export default function ListingDetailPage() {
                 {startingPrice !== null ? (
                   <>
                     <p className="text-xs font-bold text-[#2FA084] uppercase tracking-widest mb-1">{t('market.starts_from')}</p>
-                    <p className="text-3xl font-black text-[#1F6F5F] tabular mb-1">
+                    <p className="text-3xl font-black text-[#2B4521] tabular mb-1">
                       {startingPrice.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
                       <span className="text-base font-medium text-gray-500 ms-1">{t('common.egp')}</span>
                     </p>
@@ -1044,7 +1044,7 @@ export default function ListingDetailPage() {
                   {canBook && (
                     <Link
                       href={`/marketplace/${listing.slug}/book`}
-                      className="flex items-center justify-center gap-2 bg-[#1F6F5F] text-white py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline w-full"
+                      className="flex items-center justify-center gap-2 bg-[#2B4521] text-white py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline w-full"
                     >
                       <Calendar className="w-4 h-4" />
                       {t('market.book_now')}
@@ -1062,7 +1062,7 @@ export default function ListingDetailPage() {
                     <button
                       onClick={handleInquiry}
                       disabled={inquiring}
-                      className="flex items-center justify-center gap-2 bg-[#1F6F5F] text-white py-3.5 rounded-2xl font-bold text-sm shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all w-full disabled:opacity-60"
+                      className="flex items-center justify-center gap-2 bg-[#2B4521] text-white py-3.5 rounded-2xl font-bold text-sm shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all w-full disabled:opacity-60"
                     >
                       <MessageCircle className="w-4 h-4" />
                       {inquiring ? 'جاري الإرسال…' : 'استفسر عن الإعلان'}
@@ -1093,7 +1093,7 @@ export default function ListingDetailPage() {
                       href={`https://wa.me/201002229982?text=${claimMessage}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 bg-[#1F6F5F] text-white py-2.5 rounded-2xl font-bold text-xs no-underline w-full"
+                      className="flex items-center justify-center gap-2 bg-[#2B4521] text-white py-2.5 rounded-2xl font-bold text-xs no-underline w-full"
                     >
                       هو ده نشاطك؟ استلمه
                     </a>
@@ -1111,14 +1111,14 @@ export default function ListingDetailPage() {
                   <button
                     onClick={toggleFavorite}
                     disabled={togglingFav}
-                    className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm transition-all ${isFavorite ? 'bg-rose-50 text-rose-600 border-2 border-rose-200' : 'bg-[#1F6F5F] text-white shadow-elevated hover:shadow-luxe hover:-translate-y-0.5'}`}
+                    className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm transition-all ${isFavorite ? 'bg-rose-50 text-rose-600 border-2 border-rose-200' : 'bg-[#2B4521] text-white shadow-elevated hover:shadow-luxe hover:-translate-y-0.5'}`}
                   >
                     <Heart className={`w-4 h-4 ${isFavorite ? 'fill-rose-500 text-rose-500' : ''}`} />
                     {isFavorite ? 'محفوظ في المفضلة' : 'أضف للمفضلة'}
                   </button>
                   <Link
                     href="/real-estate"
-                    className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm bg-white text-[#1F6F5F] border-2 border-[#1F6F5F] no-underline hover:bg-[#1F6F5F]/5"
+                    className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm bg-white text-[#2B4521] border-2 border-[#2B4521] no-underline hover:bg-[#2B4521]/5"
                   >
                     <Building2 className="w-4 h-4" />
                     المنصة العقارية — قارن وشوف كل المشاريع
@@ -1143,7 +1143,7 @@ export default function ListingDetailPage() {
                 <div className="bg-white rounded-3xl shadow-soft p-6">
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">{t('listing.owner_label')}</p>
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1F6F5F] to-[#2d7a52] flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#2B4521] to-[#5A6E3A] flex items-center justify-center flex-shrink-0">
                       <Building2 className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -1168,7 +1168,7 @@ export default function ListingDetailPage() {
             {startingPrice !== null ? (
               <>
                 <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('market.starts_from')}</p>
-                <p className="text-xl font-black text-[#1F6F5F] tabular leading-tight">
+                <p className="text-xl font-black text-[#2B4521] tabular leading-tight">
                   {startingPrice.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
                   <span className="text-xs font-medium text-gray-500 ms-1">{t('common.egp')}</span>
                 </p>
@@ -1193,7 +1193,7 @@ export default function ListingDetailPage() {
           {canBook ? (
             <Link
               href={`/marketplace/${listing.slug}/book`}
-              className="flex items-center gap-1.5 bg-[#1F6F5F] text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all flex-shrink-0"
+              className="flex items-center gap-1.5 bg-[#2B4521] text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all flex-shrink-0"
             >
               <Calendar className="w-4 h-4" />
               {t('listing.book_short')}
@@ -1208,7 +1208,7 @@ export default function ListingDetailPage() {
               href={phoneClean ? `https://wa.me/${phoneClean}?text=${whatsappMessage}` : 'https://wa.me/201002229982'}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 bg-[#1F6F5F] text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-elevated flex-shrink-0"
+              className="flex items-center gap-1.5 bg-[#2B4521] text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-elevated flex-shrink-0"
             >
               <MessageCircle className="w-4 h-4" />
               {t('listing.contact_short')}
@@ -1230,12 +1230,12 @@ function TabButton({ active, onClick, label }: { active: boolean; onClick: () =>
     <button
       onClick={onClick}
       className={`relative px-4 py-3 text-sm font-bold transition-colors ${
-        active ? 'text-[#1F6F5F]' : 'text-gray-500 hover:text-gray-700'
+        active ? 'text-[#2B4521]' : 'text-gray-500 hover:text-gray-700'
       }`}
     >
       {label}
       {active && (
-        <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#1F6F5F] rounded-full" />
+        <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#2B4521] rounded-full" />
       )}
     </button>
   )

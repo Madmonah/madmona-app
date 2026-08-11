@@ -113,7 +113,7 @@ export default function ClinicDemoPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-12 h-12 animate-spin text-[#1F6F5F]" />
+        <Loader2 className="w-12 h-12 animate-spin text-[#2B4521]" />
       </div>
     )
   }
@@ -123,7 +123,7 @@ export default function ClinicDemoPage() {
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
         <div className="text-center p-8">
           <p className="text-red-600 mb-4">{error || 'لم يتم العثور على البيانات'}</p>
-          <Link href="/" className="text-[#1F6F5F] underline">ارجع للرئيسية</Link>
+          <Link href="/" className="text-[#2B4521] underline">ارجع للرئيسية</Link>
         </div>
       </div>
     )
@@ -137,18 +137,18 @@ export default function ClinicDemoPage() {
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-[#1F6F5F] font-black text-xl">
-            <span className="inline-block w-9 h-9 rounded-xl bg-[#1F6F5F] text-white grid place-items-center font-black">م</span>
+          <Link href="/" className="flex items-center gap-2 text-[#2B4521] font-black text-xl">
+            <span className="inline-block w-9 h-9 rounded-xl bg-[#2B4521] text-white grid place-items-center font-black">م</span>
             مضمونة
           </Link>
           <a href="https://wa.me/201002229982" target="_blank" rel="noreferrer"
-            className="text-sm font-bold bg-[#1F6F5F] text-white px-4 py-2 rounded-xl hover:bg-[#175a4d]">
+            className="text-sm font-bold bg-[#2B4521] text-white px-4 py-2 rounded-xl hover:bg-[#175a4d]">
             تواصل معانا
           </a>
         </div>
       </header>
 
-      <section className="bg-gradient-to-br from-[#1F6F5F] via-[#2d7a52] to-[#2FA084] text-white py-16">
+      <section className="bg-gradient-to-br from-[#2B4521] via-[#5A6E3A] to-[#2FA084] text-white py-16">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-full text-sm font-bold mb-6">
             <Sparkles className="w-4 h-4" />
@@ -172,13 +172,13 @@ export default function ClinicDemoPage() {
 
       <section className="max-w-6xl mx-auto px-4 py-12">
         <h2 className="text-2xl font-black text-[#0A0A0A] mb-6 flex items-center gap-2">
-          <Building2 className="w-6 h-6 text-[#1F6F5F]" /> الفروع ({data.branches.length})
+          <Building2 className="w-6 h-6 text-[#2B4521]" /> الفروع ({data.branches.length})
         </h2>
         <div className="grid md:grid-cols-3 gap-4">
           {data.branches.map((b) => (
             <div key={b.branch_code} className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
               <div className="w-10 h-10 rounded-xl bg-emerald-50 grid place-items-center mb-3">
-                <Building2 className="w-5 h-5 text-[#1F6F5F]" />
+                <Building2 className="w-5 h-5 text-[#2B4521]" />
               </div>
               <h3 className="font-bold text-[#0A0A0A] mb-1">{b.branch_name}</h3>
               {b.city && <p className="text-sm text-gray-600 flex items-center gap-1 mb-1">
@@ -193,12 +193,12 @@ export default function ClinicDemoPage() {
       <section className="bg-white border-y border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-12">
           <h2 className="text-2xl font-black text-[#0A0A0A] mb-6 flex items-center gap-2">
-            <Stethoscope className="w-6 h-6 text-[#1F6F5F]" /> الأطباء ({data.kpis.doctors_count})
+            <Stethoscope className="w-6 h-6 text-[#2B4521]" /> الأطباء ({data.kpis.doctors_count})
           </h2>
           <div className="space-y-8">
             {data.specialties.map((sp) => (
               <div key={sp.specialty_label_ar}>
-                <h3 className="text-lg font-bold text-[#1F6F5F] mb-3">{sp.specialty_label_ar}</h3>
+                <h3 className="text-lg font-bold text-[#2B4521] mb-3">{sp.specialty_label_ar}</h3>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {sp.doctors.map((d) => (
                     <div key={d.employee_id} className="bg-[#FAFAF7] rounded-2xl p-4 border border-gray-100">
@@ -209,7 +209,7 @@ export default function ClinicDemoPage() {
                         </span>
                       </div>
                       <div className="text-sm text-gray-600 mb-2">
-                        كشف: <span className="font-bold text-[#1F6F5F]">{d.consultation_fee_egp} ج</span>
+                        كشف: <span className="font-bold text-[#2B4521]">{d.consultation_fee_egp} ج</span>
                       </div>
                       {d.accepted_insurance && d.accepted_insurance.length > 0 && (
                         <div className="text-xs text-gray-500">تأمين: {d.accepted_insurance.join('، ')}</div>
@@ -227,7 +227,7 @@ export default function ClinicDemoPage() {
       {data.recent_bookings && data.recent_bookings.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 py-12">
           <h2 className="text-2xl font-black text-[#0A0A0A] mb-6 flex items-center gap-2">
-            <Activity className="w-6 h-6 text-[#1F6F5F]" /> آخر الحجوزات
+            <Activity className="w-6 h-6 text-[#2B4521]" /> آخر الحجوزات
           </h2>
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             {data.recent_bookings.map((b, i) => (
@@ -258,7 +258,7 @@ export default function ClinicDemoPage() {
         <section className="bg-white border-y border-gray-100">
           <div className="max-w-6xl mx-auto px-4 py-12">
             <h2 className="text-2xl font-black text-[#0A0A0A] mb-6 flex items-center gap-2">
-              <BarChart3 className="w-6 h-6 text-[#1F6F5F]" /> إيرادات الفروع
+              <BarChart3 className="w-6 h-6 text-[#2B4521]" /> إيرادات الفروع
             </h2>
             <div className="space-y-3">
               {data.pnl.map((p) => {
@@ -271,7 +271,7 @@ export default function ClinicDemoPage() {
                       <span className="text-sm text-gray-600">{p.bookings_count} حجز · {p.revenue_egp.toLocaleString('ar-EG')} ج</span>
                     </div>
                     <div className="h-2 bg-white rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-l from-[#1F6F5F] to-[#2FA084]" style={{ width: `${pct}%` }} />
+                      <div className="h-full bg-gradient-to-l from-[#2B4521] to-[#2FA084]" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 )
@@ -290,7 +290,7 @@ export default function ClinicDemoPage() {
             return (
               <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 grid place-items-center mb-3">
-                  <Icon className="w-5 h-5 text-[#1F6F5F]" />
+                  <Icon className="w-5 h-5 text-[#2B4521]" />
                 </div>
                 <h3 className="font-bold text-[#0A0A0A] mb-1">{f.title}</h3>
                 <p className="text-sm text-gray-600 leading-relaxed">{f.desc}</p>
@@ -300,7 +300,7 @@ export default function ClinicDemoPage() {
         </div>
       </section>
 
-      <section className="bg-gradient-to-br from-[#1F6F5F] to-[#2FA084] text-white py-12">
+      <section className="bg-gradient-to-br from-[#2B4521] to-[#2FA084] text-white py-12">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-black mb-4">سعرنا واضح</h2>
           <div className="bg-white/10 backdrop-blur rounded-2xl p-8 border border-white/20">
@@ -322,11 +322,11 @@ export default function ClinicDemoPage() {
         <div className="flex gap-3 justify-center flex-wrap">
           <a href="https://wa.me/201002229982?text=أنا%20من%20عيادة%20وحابب%20أعرف%20أكتر%20عن%20مضمونة"
             target="_blank" rel="noreferrer"
-            className="inline-flex items-center gap-2 bg-[#1F6F5F] text-white px-8 py-4 rounded-xl font-black text-lg hover:bg-[#175a4d] transition-colors shadow-lg">
+            className="inline-flex items-center gap-2 bg-[#2B4521] text-white px-8 py-4 rounded-xl font-black text-lg hover:bg-[#175a4d] transition-colors shadow-lg">
             <MessageSquare className="w-5 h-5" /> كلّمنا على واتساب
           </a>
           <Link href={`/clinic/${slug}`}
-            className="inline-flex items-center gap-2 bg-white border-2 border-[#1F6F5F] text-[#1F6F5F] px-8 py-4 rounded-xl font-black text-lg hover:bg-emerald-50 transition-colors">
+            className="inline-flex items-center gap-2 bg-white border-2 border-[#2B4521] text-[#2B4521] px-8 py-4 rounded-xl font-black text-lg hover:bg-emerald-50 transition-colors">
             شوف صفحة الحجز <ExternalLink className="w-5 h-5" />
           </Link>
         </div>
@@ -346,7 +346,7 @@ export default function ClinicDemoPage() {
 function KpiCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
   return (
     <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-      <Icon className="w-5 h-5 text-[#1F6F5F] mb-2" />
+      <Icon className="w-5 h-5 text-[#2B4521] mb-2" />
       <div className="text-xs text-gray-500 mb-1">{label}</div>
       <div className="text-xl md:text-2xl font-black text-[#0A0A0A]">{value}</div>
     </div>

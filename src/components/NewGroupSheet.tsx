@@ -103,7 +103,7 @@ export default function NewGroupSheet({
             return (
               <button key={f.friend_id} onClick={() => toggle(f.friend_id)}
                 style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 4px', width: '100%', background: on ? '#F0F7F4' : 'none', border: 'none', borderBottom: '1px solid #F4F1E8', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 8 }}>
-                <span style={{ width: 22, height: 22, borderRadius: 6, border: on ? 'none' : '2px solid #D9D3C4', background: on ? '#1F6F5F' : 'transparent', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 13, fontWeight: 900, flexShrink: 0 }}>
+                <span style={{ width: 22, height: 22, borderRadius: 6, border: on ? 'none' : '2px solid #D9D3C4', background: on ? '#2B4521' : 'transparent', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 13, fontWeight: 900, flexShrink: 0 }}>
                   {on ? '✓' : ''}
                 </span>
                 {f.friend_avatar ? (
@@ -111,7 +111,7 @@ export default function NewGroupSheet({
                   <img src={f.friend_avatar} alt={f.friend_name} loading="lazy" decoding="async"
                        style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                 ) : (
-                  <span style={{ width: 36, height: 36, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#1F6F5F)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 15, fontWeight: 800, flexShrink: 0 }}>
+                  <span style={{ width: 36, height: 36, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#2B4521)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 15, fontWeight: 800, flexShrink: 0 }}>
                     {(f.friend_name || '؟').trim()[0]}
                   </span>
                 )}
@@ -124,7 +124,7 @@ export default function NewGroupSheet({
         </div>
 
         <button onClick={create} disabled={busy || picked.size === 0 || name.trim().length < 2}
-          style={{ marginTop: 12, width: '100%', background: '#1F6F5F', color: '#fff', border: 'none', borderRadius: 14, padding: '13px', fontWeight: 900, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit', opacity: (busy || picked.size === 0 || name.trim().length < 2) ? .5 : 1 }}>
+          style={{ marginTop: 12, width: '100%', background: '#2B4521', color: '#fff', border: 'none', borderRadius: 14, padding: '13px', fontWeight: 900, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit', opacity: (busy || picked.size === 0 || name.trim().length < 2) ? .5 : 1 }}>
           {busy ? 'بنعمله…' : `اعمل الجروب${picked.size ? ` (${picked.size})` : ''}`}
         </button>
       </div>

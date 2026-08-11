@@ -28,7 +28,7 @@ const MESSAGES = [
     badge: 'لـ أجر مننا',
     text: 'كاش باك ٥٠ ج على أول حجز',
     sublabel: 'ساري لأول ١٠٠ من أجر مننا',
-    color: 'from-[#1F6F5F] via-[#2d7a52] to-[#1F6F5F]',
+    color: 'from-[#2B4521] via-[#5A6E3A] to-[#2B4521]',
     cta: 'احجز دلوقتي',
   },
   {

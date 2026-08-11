@@ -60,7 +60,7 @@ export default function SupplierLoginPage() {
             </a>
             <Link
               href="/"
-              className="block text-center text-sm text-gray-500 hover:text-[#1F6F5F] py-2 no-underline"
+              className="block text-center text-sm text-gray-500 hover:text-[#2B4521] py-2 no-underline"
             >
               العودة للصفحة الرئيسية
             </Link>
@@ -84,8 +84,8 @@ export default function SupplierLoginPage() {
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-            <div className="flex items-center justify-center w-12 h-12 bg-[#1F6F5F]/10 rounded-full mb-4 mx-auto">
-              <Building2 className="w-5 h-5 text-[#1F6F5F]" />
+            <div className="flex items-center justify-center w-12 h-12 bg-[#2B4521]/10 rounded-full mb-4 mx-auto">
+              <Building2 className="w-5 h-5 text-[#2B4521]" />
             </div>
             <h2 className="text-xl font-bold text-gray-900 text-center mb-1">أهلاً بعودتك</h2>
             <p className="text-sm text-gray-500 text-center mb-6">سجل دخولك لإدارة مساحاتك</p>
@@ -101,7 +101,7 @@ export default function SupplierLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="example@domain.com"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   autoComplete="email"
@@ -119,7 +119,7 @@ export default function SupplierLoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/30 focus:border-[#1F6F5F]"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   autoComplete="current-password"
@@ -137,7 +137,7 @@ export default function SupplierLoginPage() {
               <button
                 type="submit"
                 disabled={submitting || !email || !password}
-                className="w-full bg-[#1F6F5F] text-white py-3 rounded-xl font-semibold hover:bg-[#1F6F5F]/90 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full bg-[#2B4521] text-white py-3 rounded-xl font-semibold hover:bg-[#2B4521]/90 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {submitting ? (
                   <>
@@ -154,7 +154,7 @@ export default function SupplierLoginPage() {
               <p className="text-sm text-gray-600 mb-2">لسه ما عندكش حساب؟</p>
               <Link
                 href="/supplier/signup"
-                className="inline-block text-[#1F6F5F] font-semibold hover:underline no-underline"
+                className="inline-block text-[#2B4521] font-semibold hover:underline no-underline"
               >
                 سجل مساحتك معانا
               </Link>

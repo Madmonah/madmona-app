@@ -57,12 +57,12 @@ export default async function InquiriesPage() {
       <div className="max-w-5xl mx-auto">
         <header className="flex items-center justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-[#1F6F5F]">📩 استفسارات المشاريع</h1>
+            <h1 className="text-2xl font-bold text-[#2B4521]">📩 استفسارات المشاريع</h1>
             <p className="text-xs text-gray-500 mt-1">{rows.length} استفسار</p>
           </div>
           <Link
             href="/admin/projects"
-            className="px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-[#1F6F5F]/40"
+            className="px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-[#2B4521]/40"
           >
             ← المشاريع
           </Link>
@@ -75,10 +75,10 @@ export default async function InquiriesPage() {
               {top.map(([title, count]) => (
                 <span
                   key={title}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1F6F5F]/8 text-[#1F6F5F] text-xs font-semibold"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#2B4521]/8 text-[#2B4521] text-xs font-semibold"
                 >
                   {title}
-                  <span className="bg-[#1F6F5F] text-white rounded-full px-1.5 text-[10px]">{count}</span>
+                  <span className="bg-[#2B4521] text-white rounded-full px-1.5 text-[10px]">{count}</span>
                 </span>
               ))}
             </div>
@@ -112,7 +112,7 @@ export default async function InquiriesPage() {
                     href={`https://wa.me/${r.contact_phone.replace(/\D/g, '')}`}
                     target="_blank"
                     rel="noopener"
-                    className="text-xs text-[#1F6F5F] font-semibold hover:underline"
+                    className="text-xs text-[#2B4521] font-semibold hover:underline"
                     dir="ltr"
                   >
                     {r.contact_phone}

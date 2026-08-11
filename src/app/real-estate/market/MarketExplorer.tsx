@@ -110,7 +110,7 @@ function bannerTone(it: Item): string {
   if (/زايد|أكتوبر|اكتوبر|جيزة|october|zayed/i.test(s))
     return 'from-[#7C2D12] to-[#EA580C]' // غرب
   if (/تجمع|قاهرة الجديدة|مستقبل|شروق|عبور|مدينتي|new cairo/i.test(s))
-    return 'from-[#B8860B] to-[#D4A017]' // شرق — دهبي (٧ أغسطس: محمد مش عايز أي أخضر يشبه الجرين كارد)
+    return 'from-[#FA8125] to-[#D4A017]' // شرق — دهبي (٧ أغسطس: محمد مش عايز أي أخضر يشبه الجرين كارد)
   return 'from-[#334155] to-[#64748B]' // الباقي
 }
 
@@ -249,7 +249,7 @@ export default function MarketExplorer({
           <div className="min-w-0">
             <h1 className="text-[16px] font-black text-[#0A0A0A] leading-[1.2]">
               بورصة مشاريع المطوّرين{' '}
-              <span className="align-[2px] text-[9px] font-bold text-[#1F6F5F] bg-[#1F6F5F]/10 px-[7px] py-[2px] rounded-full">
+              <span className="align-[2px] text-[9px] font-bold text-[#2B4521] bg-[#2B4521]/10 px-[7px] py-[2px] rounded-full">
                 LIVE
               </span>
             </h1>
@@ -288,12 +288,12 @@ export default function MarketExplorer({
 
         <div className="grid grid-cols-2 gap-2 mt-2.5">
           <label className="relative flex items-center">
-            <MapPin className="w-3.5 h-3.5 text-[#1F6F5F] absolute right-3.5 pointer-events-none" strokeWidth={2.5} />
+            <MapPin className="w-3.5 h-3.5 text-[#2B4521] absolute right-3.5 pointer-events-none" strokeWidth={2.5} />
             <select
               value={areaF}
               onChange={(e) => setAreaF(e.target.value)}
               aria-label="المنطقة"
-              className="w-full appearance-none bg-white border-[1.5px] border-[#E5DFD3] rounded-full py-[9px] pr-9 pl-8 text-[12px] font-extrabold text-[#1A1A1A] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1F6F5F]/25"
+              className="w-full appearance-none bg-white border-[1.5px] border-[#E5DFD3] rounded-full py-[9px] pr-9 pl-8 text-[12px] font-extrabold text-[#1A1A1A] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2B4521]/25"
             >
               <option value="all">كل المناطق ({arNum(areas.length)})</option>
               {areas.map((a) => (
@@ -341,8 +341,8 @@ export default function MarketExplorer({
 
       {/* 🔗 بادج فلتر المطوّر الجاي من رصّة اللوجوهات (?dev=) */}
       {devSlug && findDeveloperBySlug(devSlug) && (
-        <div className="mx-4 mt-3 flex items-center justify-between bg-white border border-[#1F6F5F]/20 rounded-2xl px-4 py-2.5">
-          <span className="text-[13px] font-black text-[#1F6F5F]">
+        <div className="mx-4 mt-3 flex items-center justify-between bg-white border border-[#2B4521]/20 rounded-2xl px-4 py-2.5">
+          <span className="text-[13px] font-black text-[#2B4521]">
             مشاريع {findDeveloperBySlug(devSlug)!.name}
           </span>
           <button
@@ -363,12 +363,12 @@ export default function MarketExplorer({
 
       {totalResults === 0 ? (
         <section className="mx-4 mt-6 bg-white rounded-[18px] border border-black/5 p-10 text-center text-[#7C8A84] text-[13px] font-semibold">
-          <Clock className="w-8 h-8 mx-auto mb-3 text-[#1F6F5F]" />
+          <Clock className="w-8 h-8 mx-auto mb-3 text-[#2B4521]" />
           مفيش نتايج للبحث ده — جرب كلمة تانية أو شيل الفلاتر 🙏
           <div className="mt-4">
             <button
               onClick={() => { setQ(''); setAreaF('all'); setDevF('all'); setChip('all'); setDevSlug('') }}
-              className="px-5 py-2 rounded-full bg-[#1F6F5F] text-white text-sm font-bold"
+              className="px-5 py-2 rounded-full bg-[#2B4521] text-white text-sm font-bold"
             >
               اعرض كل حاجة
             </button>
@@ -383,7 +383,7 @@ export default function MarketExplorer({
             return (
               <section key={areaDef.label} className="px-4 pt-[22px] scroll-mt-32">
                 <div className="flex items-center gap-2.5 mb-3">
-                  <span className="w-[38px] h-[38px] rounded-[13px] bg-[#1F6F5F] flex items-center justify-center shrink-0">
+                  <span className="w-[38px] h-[38px] rounded-[13px] bg-[#2B4521] flex items-center justify-center shrink-0">
                     <MapPin className="w-[18px] h-[18px] text-white" strokeWidth={2} />
                   </span>
                   <h2 className="text-[17px] font-black text-[#0A0A0A]">{areaDef.label}</h2>
@@ -402,7 +402,7 @@ export default function MarketExplorer({
           {filteredOps.length > 0 && (
             <section id="opportunities" className="px-4 pt-6 scroll-mt-32">
               <div className="flex items-center gap-2.5 mb-1.5">
-                <span className="w-[38px] h-[38px] rounded-[13px] bg-[#1F6F5F] flex items-center justify-center text-[17px]">🔥</span>
+                <span className="w-[38px] h-[38px] rounded-[13px] bg-[#2B4521] flex items-center justify-center text-[17px]">🔥</span>
                 <h2 className="text-[17px] font-black text-[#0A0A0A]">فرص معروضة دلوقتي</h2>
               </div>
               <p className="text-[11px] font-semibold text-[#7C8A84] leading-[1.6] mb-3">
@@ -420,14 +420,14 @@ export default function MarketExplorer({
 
       {/* ─── 6) بانر المطوّرين + الديسكليمر ─── */}
       <section className="px-4 pt-6 pb-2">
-        <div className="bg-[linear-gradient(118deg,#1F6F5F,#2d7a52)] rounded-[20px] px-5 py-[18px] flex items-center gap-3">
+        <div className="bg-[linear-gradient(118deg,#2B4521,#5A6E3A)] rounded-[20px] px-5 py-[18px] flex items-center gap-3">
           <span className="flex-1 min-w-0">
             <span className="block text-white text-[15px] font-black">انت مطوّر أو مسوّق عقاري؟</span>
             <span className="block text-white/75 text-[11px] font-semibold mt-0.5 leading-relaxed">
               ضيف مشروعك ببلاش — بروشور وفيديو واستفسارات موصولة بيك
             </span>
           </span>
-          <Link href={ADD_PROJECT} className="bg-white text-[#1F6F5F] rounded-xl px-4 py-2.5 text-[13px] font-black shrink-0">
+          <Link href={ADD_PROJECT} className="bg-white text-[#2B4521] rounded-xl px-4 py-2.5 text-[13px] font-black shrink-0">
             ضيف ←
           </Link>
         </div>
@@ -446,7 +446,7 @@ function ChipBtn({ active, onClick, children }: { active: boolean; onClick: () =
     <button
       onClick={onClick}
       className={`flex-none px-[15px] py-2 rounded-full text-[12.5px] font-extrabold whitespace-nowrap transition-colors ${
-        active ? 'bg-[#1F6F5F] text-white' : 'bg-white text-[#1A1A1A] border-[1.5px] border-[#E5DFD3]'
+        active ? 'bg-[#2B4521] text-white' : 'bg-white text-[#1A1A1A] border-[1.5px] border-[#E5DFD3]'
       }`}
     >
       {children}
@@ -592,7 +592,7 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
         )}
 
         {price && (
-          <span className="absolute top-2.5 left-2.5 bg-white/95 text-[#1F6F5F] text-[11.5px] font-black px-3 py-1.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,.15)]">
+          <span className="absolute top-2.5 left-2.5 bg-white/95 text-[#2B4521] text-[11.5px] font-black px-3 py-1.5 rounded-full shadow-[0_1px_4px_rgba(0,0,0,.15)]">
             {price}
           </span>
         )}
@@ -642,7 +642,7 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
         <div className="mt-auto flex gap-2">
           <Link
             href={`/real-estate/projects/${it.slug}`}
-            className="flex-1 inline-flex items-center justify-center py-2.5 rounded-full border-2 border-[#1F6F5F]/20 text-[#1F6F5F] text-[12px] font-extrabold"
+            className="flex-1 inline-flex items-center justify-center py-2.5 rounded-full border-2 border-[#2B4521]/20 text-[#2B4521] text-[12px] font-extrabold"
           >
             التفاصيل
           </Link>
@@ -651,7 +651,7 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
             onClick={logInquiry}
             target="_blank"
             rel="noopener"
-            className="flex-1 inline-flex items-center justify-center py-2.5 rounded-full bg-[#1F6F5F] text-white text-[12px] font-extrabold"
+            className="flex-1 inline-flex items-center justify-center py-2.5 rounded-full bg-[#2B4521] text-white text-[12px] font-extrabold"
           >
             اسأل عنه 🧞
           </a>
@@ -674,13 +674,13 @@ function OppCard({ op }: { op: Opportunity }) {
       <div className="flex items-center justify-between gap-2">
         <span
           className={`text-[9.5px] font-extrabold px-[9px] py-[3px] rounded-full whitespace-nowrap ${
-            sale ? 'text-[#1F6F5F] bg-[#1F6F5F]/10' : 'text-[#D4A017] bg-[#D4A017]/[.12]'
+            sale ? 'text-[#2B4521] bg-[#2B4521]/10' : 'text-[#D4A017] bg-[#D4A017]/[.12]'
           }`}
         >
           {KIND_LABEL[op.kind] || 'عقار'} · {sale ? 'للبيع' : 'للإيجار'}
         </span>
         {op.price_label && (
-          <span className="text-[13px] font-black text-[#1F6F5F] whitespace-nowrap">{op.price_label}</span>
+          <span className="text-[13px] font-black text-[#2B4521] whitespace-nowrap">{op.price_label}</span>
         )}
       </div>
       <p className="text-[12.5px] font-extrabold text-[#111827] leading-[1.45] line-clamp-3">
@@ -691,7 +691,7 @@ function OppCard({ op }: { op: Opportunity }) {
         href={`https://wa.me/201002229982?text=${encodeURIComponent(waMsg)}`}
         target="_blank"
         rel="noopener"
-        className="mt-auto inline-flex items-center justify-center py-[9px] rounded-full bg-[#1F6F5F] text-white text-[11.5px] font-extrabold"
+        className="mt-auto inline-flex items-center justify-center py-[9px] rounded-full bg-[#2B4521] text-white text-[11.5px] font-extrabold"
       >
         اسأل عن الوحدة دي
       </a>

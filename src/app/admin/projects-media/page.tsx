@@ -99,7 +99,7 @@ export default function ProjectsMediaAdmin() {
               onClick={() => setFilter(k)}
               className={`px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${
                 filter === k
-                  ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]'
+                  ? 'bg-[#2B4521] text-white border-[#2B4521]'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
               }`}
             >
@@ -110,7 +110,7 @@ export default function ProjectsMediaAdmin() {
 
         {loading ? (
           <div className="flex justify-center py-16">
-            <Loader2 className="w-6 h-6 animate-spin text-[#1F6F5F]" />
+            <Loader2 className="w-6 h-6 animate-spin text-[#2B4521]" />
           </div>
         ) : shown.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
@@ -172,7 +172,7 @@ export default function ProjectsMediaAdmin() {
                                   src={m.url}
                                   alt=""
                                   className={`w-32 h-24 object-cover rounded-lg border-2 ${
-                                    isCover ? 'border-[#1F6F5F]' : 'border-gray-100'
+                                    isCover ? 'border-[#2B4521]' : 'border-gray-100'
                                   }`}
                                 />
                               ) : (
@@ -181,7 +181,7 @@ export default function ProjectsMediaAdmin() {
                                   target="_blank"
                                   rel="noopener"
                                   className={`w-32 h-24 rounded-lg border-2 flex flex-col items-center justify-center gap-1 bg-gray-50 ${
-                                    isPdf ? 'border-[#1F6F5F]' : 'border-gray-100'
+                                    isPdf ? 'border-[#2B4521]' : 'border-gray-100'
                                   }`}
                                 >
                                   <FileText className="w-5 h-5 text-gray-400" />
@@ -191,7 +191,7 @@ export default function ProjectsMediaAdmin() {
                                 </a>
                               )}
                               {(isCover || isPdf) && (
-                                <span className="absolute top-1 right-1 bg-[#1F6F5F] text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold">
+                                <span className="absolute top-1 right-1 bg-[#2B4521] text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold">
                                   {isCover ? 'Cover' : 'بروشور'}
                                 </span>
                               )}
@@ -201,7 +201,7 @@ export default function ProjectsMediaAdmin() {
                                 <button
                                   onClick={() => link(p, m, 'cover_url')}
                                   disabled={b}
-                                  className="flex-1 text-[10px] font-semibold py-1 rounded bg-gray-100 hover:bg-[#1F6F5F] hover:text-white disabled:opacity-50 transition-colors"
+                                  className="flex-1 text-[10px] font-semibold py-1 rounded bg-gray-100 hover:bg-[#2B4521] hover:text-white disabled:opacity-50 transition-colors"
                                 >
                                   {b ? '...' : 'اعملها Cover'}
                                 </button>
@@ -210,7 +210,7 @@ export default function ProjectsMediaAdmin() {
                                 <button
                                   onClick={() => link(p, m, 'brochure_url')}
                                   disabled={b}
-                                  className="flex-1 text-[10px] font-semibold py-1 rounded bg-gray-100 hover:bg-[#1F6F5F] hover:text-white disabled:opacity-50 transition-colors"
+                                  className="flex-1 text-[10px] font-semibold py-1 rounded bg-gray-100 hover:bg-[#2B4521] hover:text-white disabled:opacity-50 transition-colors"
                                 >
                                   {b ? '...' : 'بروشور'}
                                 </button>

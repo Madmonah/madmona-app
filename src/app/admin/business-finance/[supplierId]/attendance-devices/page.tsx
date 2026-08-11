@@ -49,17 +49,17 @@ export default function AttendanceDevicesPage({ params }: { params: { supplierId
 
   const bound = rows.filter((r) => r.has_device).length
 
-  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div>
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2"><ChevronLeft className="w-3.5 h-3.5" /> رجوع</Link>
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2"><ChevronLeft className="w-3.5 h-3.5" /> رجوع</Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F] mb-1">الحضور · مكافحة التحايل</p>
-              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2"><Smartphone className="w-7 h-7 text-[#1F6F5F]" /> أجهزة البصم</h1>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">الحضور · مكافحة التحايل</p>
+              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2"><Smartphone className="w-7 h-7 text-[#2B4521]" /> أجهزة البصم</h1>
               <p className="text-sm text-[#6B7280] mt-1">{bound} من {rows.length} موظف مربوطين بأجهزتهم</p>
             </div>
             <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7] text-[#1A2E26]"><RefreshCw className="w-4 h-4" /></button>
@@ -68,7 +68,7 @@ export default function AttendanceDevicesPage({ params }: { params: { supplierId
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-3">
-        <div className="bg-[#1F6F5F]/8 border border-[#1F6F5F]/15 rounded-2xl p-4 text-[13px] text-[#1A2E26] leading-relaxed">
+        <div className="bg-[#2B4521]/8 border border-[#2B4521]/15 rounded-2xl p-4 text-[13px] text-[#1A2E26] leading-relaxed">
           كل موظف مربوط بتليفون واحد بس للبصم — مايقدرش حد يبصم لزميله. لو موظف غيّر موبايله، اعمل <span className="font-black">reset</span> وأول ما يبصم من الجديد يتربط أوتوماتيك.
         </div>
 
@@ -79,7 +79,7 @@ export default function AttendanceDevicesPage({ params }: { params: { supplierId
             {rows.map((r) => (
               <div key={r.employee_id} className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className={`w-10 h-10 rounded-xl grid place-items-center ${r.has_device ? 'bg-[#1F6F5F]/10 text-[#1F6F5F]' : 'bg-amber-50 text-amber-600'}`}>
+                  <div className={`w-10 h-10 rounded-xl grid place-items-center ${r.has_device ? 'bg-[#2B4521]/10 text-[#2B4521]' : 'bg-amber-50 text-amber-600'}`}>
                     {r.has_device ? <ShieldCheck className="w-5 h-5" /> : <ShieldAlert className="w-5 h-5" />}
                   </div>
                   <div className="min-w-0">

@@ -247,7 +247,7 @@ export default function CheckoutPage() {
   if (!hydrated || isAuthed === null) {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
       </div>
     )
   }
@@ -276,10 +276,10 @@ export default function CheckoutPage() {
         <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-black text-gray-900 flex items-center gap-2">
-              <ShoppingBag className="w-4 h-4 text-[#1F6F5F]" />
+              <ShoppingBag className="w-4 h-4 text-[#2B4521]" />
               ملخّص الطلب
             </h2>
-            <Link href="/cart" className="text-xs font-bold text-[#1F6F5F] hover:underline">
+            <Link href="/cart" className="text-xs font-bold text-[#2B4521] hover:underline">
               تعديل السلة
             </Link>
           </div>
@@ -313,7 +313,7 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between pt-2 border-t border-gray-100">
               <span className="text-sm font-black text-gray-900">الإجمالي</span>
-              <span className="text-xl font-black text-[#1F6F5F] tabular">
+              <span className="text-xl font-black text-[#2B4521] tabular">
                 {total.toLocaleString('ar-EG')} ج.م
               </span>
             </div>
@@ -325,7 +325,7 @@ export default function CheckoutPage() {
         {!isAuthed && (
           <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-75">
             <p className="text-xs text-gray-600 mb-3 leading-relaxed">
-              <b className="text-[#1F6F5F]">عندك حساب أو أول مرة؟</b> ادخل بالواتساب في ثانية —
+              <b className="text-[#2B4521]">عندك حساب أو أول مرة؟</b> ادخل بالواتساب في ثانية —
               هيتفعّلك رصيد «شير واكسب» والمحفظة وتتبّع أوردراتك.
             </p>
             <WhatsAppLogin
@@ -338,7 +338,7 @@ export default function CheckoutPage() {
         {/* Contact info */}
         <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-100">
           <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
-            <User className="w-4 h-4 text-[#1F6F5F]" />
+            <User className="w-4 h-4 text-[#2B4521]" />
             بياناتك
           </h2>
           <div className="space-y-3">
@@ -352,7 +352,7 @@ export default function CheckoutPage() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="اسمك الكامل"
                 disabled={!!isAuthed && !!profileName}
-                className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#1F6F5F] focus:ring-2 focus:ring-[#1F6F5F]/20 outline-none transition-all text-sm font-medium disabled:bg-gray-50 disabled:text-gray-500"
+                className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#2B4521] focus:ring-2 focus:ring-[#2B4521]/20 outline-none transition-all text-sm font-medium disabled:bg-gray-50 disabled:text-gray-500"
               />
             </div>
             <div>
@@ -367,7 +367,7 @@ export default function CheckoutPage() {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="01x xxxx xxxx"
                   dir="ltr"
-                  className="w-full ps-4 pe-10 py-3 rounded-2xl border border-gray-200 focus:border-[#1F6F5F] focus:ring-2 focus:ring-[#1F6F5F]/20 outline-none transition-all text-sm font-medium tabular text-right"
+                  className="w-full ps-4 pe-10 py-3 rounded-2xl border border-gray-200 focus:border-[#2B4521] focus:ring-2 focus:ring-[#2B4521]/20 outline-none transition-all text-sm font-medium tabular text-right"
                 />
               </div>
             </div>
@@ -377,7 +377,7 @@ export default function CheckoutPage() {
         {/* Delivery address */}
         <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-200">
           <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-[#1F6F5F]" />
+            <MapPin className="w-4 h-4 text-[#2B4521]" />
             عنوان التوصيل
           </h2>
           <div className="space-y-3">
@@ -390,7 +390,7 @@ export default function CheckoutPage() {
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="الشارع + اسم العمارة + رقم الشقة + علامة مميزة"
                 rows={3}
-                className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#1F6F5F] focus:ring-2 focus:ring-[#1F6F5F]/20 outline-none transition-all text-sm font-medium resize-none"
+                className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#2B4521] focus:ring-2 focus:ring-[#2B4521]/20 outline-none transition-all text-sm font-medium resize-none"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -401,7 +401,7 @@ export default function CheckoutPage() {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="القاهرة"
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#1F6F5F] focus:ring-2 focus:ring-[#1F6F5F]/20 outline-none transition-all text-sm font-medium"
+                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#2B4521] focus:ring-2 focus:ring-[#2B4521]/20 outline-none transition-all text-sm font-medium"
                 />
               </div>
               <div>
@@ -411,7 +411,7 @@ export default function CheckoutPage() {
                   value={district}
                   onChange={(e) => setDistrict(e.target.value)}
                   placeholder="مصر الجديدة"
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#1F6F5F] focus:ring-2 focus:ring-[#1F6F5F]/20 outline-none transition-all text-sm font-medium"
+                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#2B4521] focus:ring-2 focus:ring-[#2B4521]/20 outline-none transition-all text-sm font-medium"
                 />
               </div>
             </div>
@@ -424,7 +424,7 @@ export default function CheckoutPage() {
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="مثلا: اتصل قبل الوصول، البواب اسمه عم محمود..."
                 rows={2}
-                className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#1F6F5F] focus:ring-2 focus:ring-[#1F6F5F]/20 outline-none transition-all text-sm font-medium resize-none"
+                className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#2B4521] focus:ring-2 focus:ring-[#2B4521]/20 outline-none transition-all text-sm font-medium resize-none"
               />
             </div>
           </div>
@@ -433,7 +433,7 @@ export default function CheckoutPage() {
         {/* Payment method. InstaPay always; COD shown for restaurant (food) orders only. */}
         <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-300">
           <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
-            <CreditCard className="w-4 h-4 text-[#1F6F5F]" />
+            <CreditCard className="w-4 h-4 text-[#2B4521]" />
             طريقة الدفع
           </h2>
           <div className="space-y-3">
@@ -447,7 +447,7 @@ export default function CheckoutPage() {
                   walletBalance < total
                     ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
                     : payment === 'wallet'
-                      ? 'border-[#1F6F5F] bg-[#1F6F5F]/5'
+                      ? 'border-[#2B4521] bg-[#2B4521]/5'
                       : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
               >
@@ -461,7 +461,7 @@ export default function CheckoutPage() {
                     {walletBalance < total ? ' — رصيد غير كافٍ' : ' — خصم فوري'}
                   </p>
                 </div>
-                {payment === 'wallet' && <CheckCircle className="w-5 h-5 text-[#1F6F5F] flex-shrink-0" />}
+                {payment === 'wallet' && <CheckCircle className="w-5 h-5 text-[#2B4521] flex-shrink-0" />}
               </button>
             )}
 
@@ -472,11 +472,11 @@ export default function CheckoutPage() {
               onClick={() => setPayment('instapay')}
               className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-right transition-all ${
                 payment === 'instapay'
-                  ? 'border-[#1F6F5F] bg-[#1F6F5F]/5'
+                  ? 'border-[#2B4521] bg-[#2B4521]/5'
                   : 'border-gray-200 bg-white hover:border-gray-300'
               }`}
             >
-              <div className="w-10 h-10 rounded-xl bg-[#1F6F5F] text-white flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#2B4521] text-white flex items-center justify-center flex-shrink-0">
                 <CreditCard className="w-5 h-5" />
               </div>
               <div className="flex-1">
@@ -485,7 +485,7 @@ export default function CheckoutPage() {
                   تحويل على مضمونة، وفلوسك محمية لحد ما يوصلك الأوردر سليم
                 </p>
               </div>
-              {payment === 'instapay' && <CheckCircle className="w-5 h-5 text-[#1F6F5F] flex-shrink-0" />}
+              {payment === 'instapay' && <CheckCircle className="w-5 h-5 text-[#2B4521] flex-shrink-0" />}
             </button>
             )}
 
@@ -496,7 +496,7 @@ export default function CheckoutPage() {
                 onClick={() => setPayment('cod')}
                 className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-right transition-all ${
                   payment === 'cod'
-                    ? 'border-[#1F6F5F] bg-[#1F6F5F]/5'
+                    ? 'border-[#2B4521] bg-[#2B4521]/5'
                     : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
               >
@@ -509,7 +509,7 @@ export default function CheckoutPage() {
                     {foodCodOnly ? 'ادفع كاش وقت ما يوصلك الأوردر — الدفع الأونلاين للمطاعم راجع قريبًا' : 'ادفع كاش للمندوب وقت ما يوصلك الأوردر — للمطاعم بس'}
                   </p>
                 </div>
-                {payment === 'cod' && <CheckCircle className="w-5 h-5 text-[#1F6F5F] flex-shrink-0" />}
+                {payment === 'cod' && <CheckCircle className="w-5 h-5 text-[#2B4521] flex-shrink-0" />}
               </button>
             )}
 
@@ -520,10 +520,10 @@ export default function CheckoutPage() {
                   type="checkbox"
                   checked={useCredit}
                   onChange={(e) => setUseCredit(e.target.checked)}
-                  className="w-4 h-4 accent-[#1F6F5F]"
+                  className="w-4 h-4 accent-[#2B4521]"
                 />
                 <span className="text-xs text-gray-700 leading-relaxed">
-                  <b className="text-[#1F6F5F]">استخدم رصيد «شير واكسب»</b> لو متاح — خصم تلقائي من إجمالي الطلب (بحد أقصى عمولة مضمونة في الطلب)
+                  <b className="text-[#2B4521]">استخدم رصيد «شير واكسب»</b> لو متاح — خصم تلقائي من إجمالي الطلب (بحد أقصى عمولة مضمونة في الطلب)
                 </span>
               </label>
             )}
@@ -531,7 +531,7 @@ export default function CheckoutPage() {
         </section>
 
         {/* Trust note */}
-        <div className="bg-gradient-to-l from-[#1F6F5F]/5 to-transparent border border-[#1F6F5F]/10 rounded-2xl p-4 flex items-start gap-3">
+        <div className="bg-gradient-to-l from-[#2B4521]/5 to-transparent border border-[#2B4521]/10 rounded-2xl p-4 flex items-start gap-3">
           <CheckCircle className="w-5 h-5 text-[#2FA084] flex-shrink-0 mt-0.5" />
           <div className="text-xs text-gray-700 leading-relaxed">
             <p className="font-bold mb-1">حماية كاملة من مضمونة</p>
@@ -552,7 +552,7 @@ export default function CheckoutPage() {
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="inline-flex items-center gap-2 bg-[#1F6F5F] text-white px-10 py-4 rounded-2xl font-bold shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 bg-[#2B4521] text-white px-10 py-4 rounded-2xl font-bold shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {submitting ? (
               <>
@@ -575,7 +575,7 @@ export default function CheckoutPage() {
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="w-full flex items-center justify-center gap-2 bg-[#1F6F5F] text-white py-4 rounded-2xl font-bold shadow-elevated hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 bg-[#2B4521] text-white py-4 rounded-2xl font-bold shadow-elevated hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {submitting ? (
               <>

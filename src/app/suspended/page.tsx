@@ -7,11 +7,11 @@ export default function SuspendedPage() {
     }}>
       <div style={{
         maxWidth: 480, textAlign: 'center', background: 'rgba(255,255,255,.9)',
-        borderRadius: 20, padding: '40px 32px', boxShadow: '0 4px 24px rgba(31,111,95,.1)',
-        border: '1px solid rgba(31,111,95,.12)',
+        borderRadius: 20, padding: '40px 32px', boxShadow: '0 4px 24px rgba(43, 69, 33,.1)',
+        border: '1px solid rgba(43, 69, 33,.12)',
       }}>
         <div style={{ fontSize: 52, marginBottom: 12 }}>⏸️</div>
-        <h1 style={{ color: '#1F6F5F', fontSize: 22, fontWeight: 800, margin: '0 0 8px' }}>
+        <h1 style={{ color: '#2B4521', fontSize: 22, fontWeight: 800, margin: '0 0 8px' }}>
           هذا الحساب موقوف مؤقتاً
         </h1>
         <p style={{ color: '#555', lineHeight: 1.8, margin: '0 0 20px' }}>
@@ -19,7 +19,7 @@ export default function SuspendedPage() {
           <br />لو أنت صاحب النشاط، تواصل معانا لإعادة التفعيل فوراً.
         </p>
         <a href="https://wa.me/201026222337" style={{
-          display: 'inline-block', background: 'linear-gradient(90deg,#2FA084,#1F6F5F)',
+          display: 'inline-block', background: 'linear-gradient(90deg,#2FA084,#2B4521)',
           color: '#fff', borderRadius: 999, padding: '12px 32px', fontWeight: 700,
           textDecoration: 'none',
         }}>تواصل واتساب</a>

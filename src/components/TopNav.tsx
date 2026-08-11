@@ -61,7 +61,7 @@ export default function TopNav() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 bg-[#1F6F5F] ${
+        className={`sticky top-0 z-50 transition-all duration-300 bg-[#2B4521] ${
           scrolled ? 'shadow-soft' : ''
         }`}
       >
@@ -109,7 +109,7 @@ export default function TopNav() {
             </Link>
             <LanguageToggle
               className="bg-white/15"
-              activeClass="bg-white text-[#1F6F5F]"
+              activeClass="bg-white text-[#2B4521]"
               inactiveClass="bg-transparent text-white"
             />
             <NotificationButton variant="icon-only" />
@@ -150,7 +150,7 @@ export default function TopNav() {
                   />
                 </div>
                 <div>
-                  <p className="font-black text-[#1F6F5F]">مضمونة</p>
+                  <p className="font-black text-[#2B4521]">مضمونة</p>
                   <p className="text-[9px] text-gray-500 font-bold tracking-[0.2em]">
                     MADMONA
                   </p>
@@ -210,8 +210,8 @@ export default function TopNav() {
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline group transition-colors"
               >
-                <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 flex items-center justify-center flex-shrink-0">
-                  <Briefcase className="w-5 h-5 text-[#1F6F5F]" />
+                <div className="w-10 h-10 rounded-xl bg-[#2B4521]/10 flex items-center justify-center flex-shrink-0">
+                  <Briefcase className="w-5 h-5 text-[#2B4521]" />
                 </div>
                 <div className="flex-1">
                   <p className="font-bold text-gray-900">التوظيف</p>
@@ -239,8 +239,8 @@ export default function TopNav() {
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline group transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-[#1F6F5F]/10 flex items-center justify-center flex-shrink-0">
-                    <LogIn className="w-5 h-5 text-[#1F6F5F]" />
+                  <div className="w-10 h-10 rounded-xl bg-[#2B4521]/10 flex items-center justify-center flex-shrink-0">
+                    <LogIn className="w-5 h-5 text-[#2B4521]" />
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-gray-900">{t('nav.login')}</p>

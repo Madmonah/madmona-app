@@ -27,14 +27,14 @@ export default function CoworkingContent() {
     <div className="min-h-screen bg-[#FAFAF7] overflow-x-hidden pb-20 md:pb-0" dir={dir}>
       <TopNav />
       <main className="relative">
-        <section className="relative pt-8 pb-12 md:pt-16 md:pb-20 bg-gradient-to-br from-[#1F6F5F]/8 via-[#FAFAF7] to-[#2FA084]/8 overflow-hidden">
+        <section className="relative pt-8 pb-12 md:pt-16 md:pb-20 bg-gradient-to-br from-[#2B4521]/8 via-[#FAFAF7] to-[#2FA084]/8 overflow-hidden">
           <div className="absolute -top-20 -right-20 w-96 h-96 bg-[#2FA084]/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 -left-20 w-72 h-72 bg-[#1F6F5F]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 -left-20 w-72 h-72 bg-[#2B4521]/10 rounded-full blur-3xl pointer-events-none" />
           <div className="max-w-7xl mx-auto px-4 relative z-10">
             <div className="text-center mb-8">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white shadow-soft border border-gray-100 mb-5">
                 <Sparkles className="w-3.5 h-3.5 text-[#2FA084]" />
-                <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#1F6F5F]">{t('cowork.exclusive')}</span>
+                <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2B4521]">{t('cowork.exclusive')}</span>
               </div>
               <h1 className="text-4xl md:text-7xl font-black text-gray-900 leading-[0.95] tracking-tight mb-5">
                 <span className="block mb-2">{t('cowork.h1_line1')}</span>
@@ -46,11 +46,11 @@ export default function CoworkingContent() {
             </div>
             <div className="flex items-center justify-center gap-3 flex-wrap mt-6">
               <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-white px-3 py-1.5 rounded-full border border-gray-100">
-                <MapPin className="w-3 h-3 text-[#1F6F5F]" />
+                <MapPin className="w-3 h-3 text-[#2B4521]" />
                 {t('cowork.addr_short')}
               </span>
               <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-white px-3 py-1.5 rounded-full border border-gray-100">
-                <Clock className="w-3 h-3 text-[#1F6F5F]" />
+                <Clock className="w-3 h-3 text-[#2B4521]" />
                 {t('cowork.hours')}
               </span>
               <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-white px-3 py-1.5 rounded-full border border-gray-100">
@@ -64,9 +64,9 @@ export default function CoworkingContent() {
         <section className="py-12 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-10">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1F6F5F]/10 mb-4">
-                <GraduationCap className="w-4 h-4 text-[#1F6F5F]" />
-                <span className="text-xs font-black tracking-widest uppercase text-[#1F6F5F]">{t('cowork.students_badge')}</span>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2B4521]/10 mb-4">
+                <GraduationCap className="w-4 h-4 text-[#2B4521]" />
+                <span className="text-xs font-black tracking-widest uppercase text-[#2B4521]">{t('cowork.students_badge')}</span>
               </div>
               <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight">{t('cowork.discount_pre')} <span className="gradient-text-green italic font-light">50%</span></h2>
               <p className="text-sm md:text-base text-gray-600 mt-3 max-w-xl mx-auto">{t('cowork.story_pre')} <strong>@madmona.cairo</strong> {t('cowork.story_post')}</p>
@@ -75,13 +75,13 @@ export default function CoworkingContent() {
               {STUDENT_OFFERS.map((offer, i) => {
                 const Icon = offer.icon
                 return (
-                  <div key={i} className="relative bg-gradient-to-br from-[#1F6F5F]/5 to-[#FAFAF7] border border-[#1F6F5F]/15 rounded-3xl p-7 md:p-8 hover:shadow-card transition-all">
+                  <div key={i} className="relative bg-gradient-to-br from-[#2B4521]/5 to-[#FAFAF7] border border-[#2B4521]/15 rounded-3xl p-7 md:p-8 hover:shadow-card transition-all">
                     <div className="absolute top-4 left-4 inline-flex items-center gap-1 px-3 py-1 bg-[#2FA084] text-white rounded-full text-[10px] font-black tracking-widest uppercase">-50%</div>
-                    <div className="w-14 h-14 rounded-2xl bg-[#1F6F5F]/10 flex items-center justify-center mb-5"><Icon className="w-7 h-7 text-[#1F6F5F]" /></div>
+                    <div className="w-14 h-14 rounded-2xl bg-[#2B4521]/10 flex items-center justify-center mb-5"><Icon className="w-7 h-7 text-[#2B4521]" /></div>
                     <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-2">{offer.type}</h3>
                     <p className="text-sm text-gray-600 leading-relaxed mb-5">{t(offer.descKey)}</p>
                     <div className="flex items-baseline gap-3">
-                      <span className="text-4xl md:text-5xl font-black text-[#1F6F5F]">{offer.price}</span>
+                      <span className="text-4xl md:text-5xl font-black text-[#2B4521]">{offer.price}</span>
                       <span className="text-sm text-gray-500 line-through">{offer.original} {t('common.egp')}</span>
                       <span className="text-sm text-gray-600">{t('cowork.per_day')}</span>
                     </div>
@@ -114,7 +114,7 @@ export default function CoworkingContent() {
                 const Icon = f.icon
                 return (
                   <div key={i} className="bg-white rounded-2xl p-5 text-center border border-gray-100 hover:shadow-card transition-all">
-                    <div className="w-12 h-12 rounded-2xl bg-[#1F6F5F]/10 flex items-center justify-center mx-auto mb-3"><Icon className="w-6 h-6 text-[#1F6F5F]" /></div>
+                    <div className="w-12 h-12 rounded-2xl bg-[#2B4521]/10 flex items-center justify-center mx-auto mb-3"><Icon className="w-6 h-6 text-[#2B4521]" /></div>
                     <p className="font-bold text-gray-900 text-sm md:text-base mb-1">{t(f.labelKey)}</p>
                     <p className="text-xs text-gray-500 leading-relaxed">{t(f.descKey)}</p>
                   </div>
@@ -122,7 +122,7 @@ export default function CoworkingContent() {
               })}
             </div>
             <div className="text-center">
-              <a href="https://wa.me/201002229982?text=أهلاً!%20عاوز%20أحجز%20كوورك%20بـ120%20جنيه" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-4 bg-[#1F6F5F] text-white text-base font-black rounded-2xl shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline">
+              <a href="https://wa.me/201002229982?text=أهلاً!%20عاوز%20أحجز%20كوورك%20بـ120%20جنيه" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-4 bg-[#2B4521] text-white text-base font-black rounded-2xl shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline">
                 <Calendar className="w-5 h-5" />
                 <span>{t('cowork.book_day')}</span>
                 <ArrowLeft className="w-4 h-4 ltr:rotate-180" />
@@ -131,7 +131,7 @@ export default function CoworkingContent() {
           </div>
         </section>
 
-        <section className="py-12 md:py-16 bg-gradient-to-br from-[#1F6F5F] to-[#0f3a26] text-white">
+        <section className="py-12 md:py-16 bg-gradient-to-br from-[#2B4521] to-[#0f3a26] text-white">
           <div className="max-w-4xl mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-5xl font-black mb-4 leading-tight">
               <span className="block">{t('cowork.cta_line1')}</span>
@@ -143,7 +143,7 @@ export default function CoworkingContent() {
                 <MessageCircle className="w-5 h-5" />
                 <span>{t('cowork.wa_instant')}</span>
               </a>
-              <a href="https://share.google/QbWskGlQ49AUTJrTc" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#1F6F5F] text-base font-black rounded-2xl shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline">
+              <a href="https://share.google/QbWskGlQ49AUTJrTc" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#2B4521] text-base font-black rounded-2xl shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline">
                 <MapPin className="w-5 h-5" />
                 <span>{t('cowork.map')}</span>
               </a>

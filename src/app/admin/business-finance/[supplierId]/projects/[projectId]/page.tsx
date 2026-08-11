@@ -16,7 +16,7 @@ const money0 = (n: any) => Number(n || 0).toLocaleString('ar-EG')
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   planned:    { label: 'مخطط',      color: 'bg-gray-100 text-gray-600' },
-  active:     { label: 'جاري التنفيذ', color: 'bg-[#1F6F5F]/10 text-[#1F6F5F]' },
+  active:     { label: 'جاري التنفيذ', color: 'bg-[#2B4521]/10 text-[#2B4521]' },
   on_hold:    { label: 'متوقف',     color: 'bg-amber-50 text-amber-700' },
   completed:  { label: 'مكتمل',     color: 'bg-blue-50 text-blue-700' },
   cancelled:  { label: 'ملغي',      color: 'bg-red-50 text-red-600' },
@@ -129,11 +129,11 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
     load()
   }
 
-  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#1F6F5F] animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div>
   if (!project) return (
     <div className="min-h-screen bg-[#FAFAF7] flex flex-col items-center justify-center gap-3" dir="rtl">
       <p className="text-[#6B7280] font-bold">المشروع مش موجود</p>
-      <Link href={`/admin/business-finance/${supplierId}/projects`} className="px-4 py-2 rounded-xl bg-[#1F6F5F] text-white text-sm font-bold">رجوع للمشاريع</Link>
+      <Link href={`/admin/business-finance/${supplierId}/projects`} className="px-4 py-2 rounded-xl bg-[#2B4521] text-white text-sm font-bold">رجوع للمشاريع</Link>
     </div>
   )
 
@@ -150,14 +150,14 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}/projects`} className="text-xs font-bold text-[#6B7280] hover:text-[#1F6F5F] flex items-center gap-1 mb-2"><ChevronLeft className="w-3.5 h-3.5" /> كل المشاريع</Link>
+          <Link href={`/admin/business-finance/${supplierId}/projects`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2"><ChevronLeft className="w-3.5 h-3.5" /> كل المشاريع</Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#1F6F5F]">{project.code}</p>
+                <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521]">{project.code}</p>
                 <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${st.color}`}>{st.label}</span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2"><Building2 className="w-7 h-7 text-[#1F6F5F]" /> {project.name}</h1>
+              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2"><Building2 className="w-7 h-7 text-[#2B4521]" /> {project.name}</h1>
               <div className="flex items-center gap-4 mt-2 text-xs text-[#6B7280] flex-wrap">
                 {project.client_name && <span className="flex items-center gap-1"><User className="w-3.5 h-3.5" /> {project.client_name}</span>}
                 {project.location && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {project.location}</span>}
@@ -171,7 +171,7 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* ===== الملخص المالي المتكامل ===== */}
         <section>
-          <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-[#1F6F5F]" /> الملخص المالي</h2>
+          <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-[#2B4521]" /> الملخص المالي</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <Stat label="قيمة التعاقد الأصلية" value={`${money0(project.contract_value)} ج`} />
             <Stat label="أوامر التغيير المعتمدة" value={`${money0(agg.voApproved)} ج`} />
@@ -186,9 +186,9 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
           <div className="bg-white rounded-2xl border border-gray-100 p-5 mt-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-[#6B7280]">نسبة الإنجاز المالي (المستخلَص ÷ القيمة المعدّلة)</span>
-              <span className="text-lg font-black text-[#1F6F5F]">{progress.toFixed(1)}%</span>
+              <span className="text-lg font-black text-[#2B4521]">{progress.toFixed(1)}%</span>
             </div>
-            <div className="h-3 rounded-full bg-gray-100 overflow-hidden"><div className="h-full bg-gradient-to-l from-[#2FA084] to-[#1F6F5F] rounded-full transition-all" style={{ width: `${progress}%` }} /></div>
+            <div className="h-3 rounded-full bg-gray-100 overflow-hidden"><div className="h-full bg-gradient-to-l from-[#2FA084] to-[#2B4521] rounded-full transition-all" style={{ width: `${progress}%` }} /></div>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
@@ -224,8 +224,8 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
         {/* ===== المستندات ===== */}
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-black text-[#1A2E26] flex items-center gap-2"><FileText className="w-4 h-4 text-[#1F6F5F]" /> مستندات المشروع</h2>
-            <button onClick={() => setShowDoc(true)} className="px-3 py-1.5 rounded-xl bg-[#1F6F5F] text-white text-xs font-bold flex items-center gap-1.5"><Plus className="w-3.5 h-3.5" /> مستند</button>
+            <h2 className="text-sm font-black text-[#1A2E26] flex items-center gap-2"><FileText className="w-4 h-4 text-[#2B4521]" /> مستندات المشروع</h2>
+            <button onClick={() => setShowDoc(true)} className="px-3 py-1.5 rounded-xl bg-[#2B4521] text-white text-xs font-bold flex items-center gap-1.5"><Plus className="w-3.5 h-3.5" /> مستند</button>
           </div>
           {docs.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center"><FileText className="w-8 h-8 text-[#6B7280] opacity-30 mx-auto mb-2" /><p className="text-xs text-[#6B7280]">مفيش مستندات — ضيف عقود/رخص/مخططات (لينك)</p></div>
@@ -233,12 +233,12 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
             <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50">
               {docs.map((d) => (
                 <div key={d.id} className="flex items-center gap-3 px-4 py-3">
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#1F6F5F]/10 text-[#1F6F5F] shrink-0">{docLabel(d.doc_type)}</span>
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#2B4521]/10 text-[#2B4521] shrink-0">{docLabel(d.doc_type)}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-[#1A2E26] truncate">{d.name}</p>
                     {d.notes && <p className="text-[11px] text-[#6B7280] truncate">{d.notes}</p>}
                   </div>
-                  {d.url && <a href={d.url} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg bg-[#FAFAF7] text-[#1F6F5F] hover:bg-gray-100"><ExternalLink className="w-3.5 h-3.5" /></a>}
+                  {d.url && <a href={d.url} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg bg-[#FAFAF7] text-[#2B4521] hover:bg-gray-100"><ExternalLink className="w-3.5 h-3.5" /></a>}
                   <button onClick={() => removeDoc(d)} className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
               ))}
@@ -265,7 +265,7 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
               <Field label="ملاحظات"><input value={docForm.notes} onChange={(e) => setDocForm({ ...docForm, notes: e.target.value })} className={inputCls} /></Field>
             </div>
             <div className="border-t border-gray-100 px-5 py-4 flex gap-2">
-              <button onClick={saveDoc} disabled={savingDoc} className="flex-1 py-3 rounded-xl bg-[#1F6F5F] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-60">{savingDoc ? <Loader2 className="w-4 h-4 animate-spin" /> : null} إضافة</button>
+              <button onClick={saveDoc} disabled={savingDoc} className="flex-1 py-3 rounded-xl bg-[#2B4521] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-60">{savingDoc ? <Loader2 className="w-4 h-4 animate-spin" /> : null} إضافة</button>
               <button onClick={() => setShowDoc(false)} className="px-5 py-3 rounded-xl bg-[#FAFAF7] text-[#1A2E26] font-bold text-sm">إلغاء</button>
             </div>
           </div>
@@ -275,15 +275,15 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
   )
 }
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:outline-none focus:border-[#1F6F5F] bg-white'
+const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:outline-none focus:border-[#2B4521] bg-white'
 function Field({ label, children }: { label: string; children: ReactNode }) { return <div><label className="block text-[11px] font-bold text-[#6B7280] mb-1">{label}</label>{children}</div> }
 function Stat({ label, value, primary }: { label: string; value: string; primary?: boolean }) {
-  return <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100'}`}><p className={`text-[10px] font-bold tracking-wider uppercase ${primary ? 'text-white/80' : 'text-[#6B7280]'}`}>{label}</p><p className={`text-lg md:text-xl font-black mt-1 ${primary ? 'text-white' : 'text-[#1A2E26]'}`}>{value}</p></div>
+  return <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#2B4521] border-[#2B4521] text-white' : 'bg-white border-gray-100'}`}><p className={`text-[10px] font-bold tracking-wider uppercase ${primary ? 'text-white/80' : 'text-[#6B7280]'}`}>{label}</p><p className={`text-lg md:text-xl font-black mt-1 ${primary ? 'text-white' : 'text-[#1A2E26]'}`}>{value}</p></div>
 }
 function ModLink({ href, icon, label, hint, primary }: { href: string; icon: ReactNode; label: string; hint: string; primary?: boolean }) {
   return (
-    <Link href={href} className={`rounded-2xl p-4 border transition-all hover:shadow-md ${primary ? 'bg-[#1F6F5F] border-[#1F6F5F] text-white' : 'bg-white border-gray-100 hover:border-[#1F6F5F]/30'}`}>
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2 [&_svg]:w-5 [&_svg]:h-5 ${primary ? 'bg-white/15 text-white' : 'bg-[#1F6F5F]/10 text-[#1F6F5F]'}`}>{icon}</div>
+    <Link href={href} className={`rounded-2xl p-4 border transition-all hover:shadow-md ${primary ? 'bg-[#2B4521] border-[#2B4521] text-white' : 'bg-white border-gray-100 hover:border-[#2B4521]/30'}`}>
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2 [&_svg]:w-5 [&_svg]:h-5 ${primary ? 'bg-white/15 text-white' : 'bg-[#2B4521]/10 text-[#2B4521]'}`}>{icon}</div>
       <p className={`text-sm font-black ${primary ? 'text-white' : 'text-[#1A2E26]'}`}>{label}</p>
       <p className={`text-[11px] font-bold mt-0.5 ${primary ? 'text-white/80' : 'text-[#6B7280]'}`}>{hint}</p>
     </Link>

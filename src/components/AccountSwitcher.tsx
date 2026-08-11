@@ -40,7 +40,7 @@ const ROLE_LABELS: Record<string, string> = {
 const ROLE_COLORS: Record<string, string> = {
   admin: 'bg-purple-100 text-purple-700',
   supplier: 'bg-[#2FA084]/15 text-[#2FA084]',
-  customer: 'bg-[#1F6F5F]/10 text-[#1F6F5F]',
+  customer: 'bg-[#2B4521]/10 text-[#2B4521]',
 }
 
 const ROLE_ICONS: Record<string, React.ReactNode> = {
@@ -89,8 +89,8 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
   return (
     <div className="bg-white rounded-3xl shadow-soft p-5 md:p-6">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-2xl bg-[#1F6F5F]/10 flex items-center justify-center flex-shrink-0">
-          <Users className="w-5 h-5 text-[#1F6F5F]" />
+        <div className="w-10 h-10 rounded-2xl bg-[#2B4521]/10 flex items-center justify-center flex-shrink-0">
+          <Users className="w-5 h-5 text-[#2B4521]" />
         </div>
         <div className="flex-1 min-w-0">
           <h2 className="font-black text-gray-900 text-base">{t('comp.as.title')}</h2>
@@ -100,9 +100,9 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
 
       {/* Current account card */}
       {currentPhone && (
-        <div className="bg-[#1F6F5F]/5 border border-[#1F6F5F]/20 rounded-2xl p-3 mb-3 flex items-center gap-3">
+        <div className="bg-[#2B4521]/5 border border-[#2B4521]/20 rounded-2xl p-3 mb-3 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-white shadow-soft flex items-center justify-center flex-shrink-0">
-            <Check className="w-5 h-5 text-[#1F6F5F]" />
+            <Check className="w-5 h-5 text-[#2B4521]" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5 flex-wrap">
@@ -118,7 +118,7 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
               {currentPhone}
             </p>
           </div>
-          <span className="text-[10px] font-black text-[#1F6F5F] bg-white px-2 py-1 rounded-full whitespace-nowrap">
+          <span className="text-[10px] font-black text-[#2B4521] bg-white px-2 py-1 rounded-full whitespace-nowrap">
             {t('comp.as.active_now')}
           </span>
         </div>
@@ -181,7 +181,7 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
                       type="button"
                       onClick={() => handleSwitch(account)}
                       disabled={isSwitching || !!switching}
-                      className="inline-flex items-center gap-1 bg-[#1F6F5F] hover:bg-[#1F6F5F]/90 text-white text-xs font-bold px-3 py-1.5 rounded-lg disabled:opacity-50 transition-colors"
+                      className="inline-flex items-center gap-1 bg-[#2B4521] hover:bg-[#2B4521]/90 text-white text-xs font-bold px-3 py-1.5 rounded-lg disabled:opacity-50 transition-colors"
                     >
                       {isSwitching ? (
                         <>
@@ -223,7 +223,7 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
             }
             router.push('/auth/login')
           }}
-          className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-200 hover:border-[#1F6F5F] hover:bg-[#1F6F5F]/5 hover:text-[#1F6F5F] text-gray-600 rounded-2xl text-sm font-bold transition-all"
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-200 hover:border-[#2B4521] hover:bg-[#2B4521]/5 hover:text-[#2B4521] text-gray-600 rounded-2xl text-sm font-bold transition-all"
         >
           <Plus className="w-4 h-4" />
           {t('comp.as.login_another')}
@@ -231,7 +231,7 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
       ) : (
         <Link
           href="/auth/login"
-          className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-[#1F6F5F] text-white rounded-2xl text-sm font-bold no-underline hover:bg-[#1F6F5F]/90 transition-colors"
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-[#2B4521] text-white rounded-2xl text-sm font-bold no-underline hover:bg-[#2B4521]/90 transition-colors"
         >
           <Plus className="w-4 h-4" />
           {t('comp.as.add_account')}

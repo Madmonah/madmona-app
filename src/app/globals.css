@@ -50,7 +50,7 @@
     border-radius: 100px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #1F6F5F;
+    background: #2B4521;
   }
 }
 
@@ -58,8 +58,8 @@
    Brand utilities
    ============================================================================ */
 @layer utilities {
-  .text-brand-green { color: #1F6F5F; }
-  .bg-brand-green { background-color: #1F6F5F; }
+  .text-brand-green { color: #2B4521; }
+  .bg-brand-green { background-color: #2B4521; }
   .text-brand-gold { color: #2FA084; }
   .bg-brand-gold { background-color: #2FA084; }
   .text-brand-orange { color: #6FCF97; }
@@ -74,14 +74,14 @@
   }
 
   .glass-dark {
-    background: rgba(31, 111, 95, 0.85);
+    background: rgba(43, 69, 33, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
 
   /* Premium gradients */
   .gradient-green {
-    background: linear-gradient(135deg, #1F6F5F 0%, #2d7a52 50%, #1F6F5F 100%);
+    background: linear-gradient(135deg, #2B4521 0%, #5A6E3A 50%, #2B4521 100%);
   }
 
   .gradient-gold {
@@ -91,14 +91,14 @@
   .gradient-mesh {
     background-color: #FAFAF7;
     background-image:
-      radial-gradient(at 20% 0%, rgba(31, 111, 95, 0.08) 0px, transparent 50%),
+      radial-gradient(at 20% 0%, rgba(43, 69, 33, 0.08) 0px, transparent 50%),
       radial-gradient(at 80% 0%, rgba(47, 160, 132, 0.06) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, rgba(31, 111, 95, 0.04) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgba(43, 69, 33, 0.04) 0px, transparent 50%),
       radial-gradient(at 100% 100%, rgba(111, 207, 151, 0.04) 0px, transparent 50%);
   }
 
   .gradient-text-green {
-    background: linear-gradient(135deg, #1F6F5F 0%, #2d7a52 100%);
+    background: linear-gradient(135deg, #2B4521 0%, #5A6E3A 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -119,13 +119,13 @@
     box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.06), 0 16px 40px -12px rgba(0, 0, 0, 0.08);
   }
   .shadow-elevated {
-    box-shadow: 0 8px 24px -8px rgba(31, 111, 95, 0.16), 0 24px 60px -12px rgba(31, 111, 95, 0.12);
+    box-shadow: 0 8px 24px -8px rgba(43, 69, 33, 0.16), 0 24px 60px -12px rgba(43, 69, 33, 0.12);
   }
   .shadow-luxe {
     box-shadow:
       0 1px 2px rgba(0, 0, 0, 0.02),
       0 8px 24px -4px rgba(0, 0, 0, 0.06),
-      0 32px 64px -16px rgba(31, 111, 95, 0.10);
+      0 32px 64px -16px rgba(43, 69, 33, 0.10);
   }
 
   /* Hover lift */
@@ -264,7 +264,7 @@
    ============================================================================ */
 @layer components {
   .btn-primary {
-    @apply bg-[#1F6F5F] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#1F6F5F]/90 transition-all duration-300 shadow-soft hover:shadow-elevated;
+    @apply bg-[#2B4521] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#2B4521]/90 transition-all duration-300 shadow-soft hover:shadow-elevated;
   }
 
   .card-hover {
@@ -273,14 +273,14 @@
 
   .btn-luxe {
     @apply relative inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold text-white overflow-hidden transition-all duration-300;
-    background: linear-gradient(135deg, #1F6F5F, #2d7a52);
-    box-shadow: 0 4px 12px -2px rgba(31, 111, 95, 0.4);
+    background: linear-gradient(135deg, #2B4521, #5A6E3A);
+    box-shadow: 0 4px 12px -2px rgba(43, 69, 33, 0.4);
   }
   .btn-luxe::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, #2d7a52, #1F6F5F);
+    background: linear-gradient(135deg, #5A6E3A, #2B4521);
     opacity: 0;
     transition: opacity 0.3s;
   }
@@ -289,7 +289,7 @@
   }
   .btn-luxe:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px -4px rgba(31, 111, 95, 0.5);
+    box-shadow: 0 8px 24px -4px rgba(43, 69, 33, 0.5);
   }
   .btn-luxe > * {
     position: relative;
