@@ -214,25 +214,26 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
 
   return (
     <div className="md:hidden bg-[#FAFAF7] min-h-screen">
-      {/* 1. Compact header */}
-      <header className="flex items-center justify-between px-4 pt-3 pb-1">
+      {/* 1. Compact header — (11 Aug 2026) أخضر البراند #1F6F5F زي هيدر الديسكتوب،
+          نفس التصميم بالظبط بس بلون مختلف (طلب محمد) */}
+      <header className="flex items-center justify-between px-4 pt-3 pb-1 bg-[#1F6F5F]">
         <Link href="/" className="flex items-center gap-2.5 no-underline">
           <span className="w-10 h-10 bg-white rounded-[14px] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(0,0,0,.06)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/madmona-logo.png" alt="مضمونة" className="w-[30px] h-[30px] object-contain" />
           </span>
           <span className="leading-none">
-            <span className="block text-[15px] font-black text-[#1F6F5F] leading-none">مضمونة</span>
-            <span className="block text-[8px] font-bold tracking-[0.25em] text-[#9CA3AF] mt-0.5">MADMONA</span>
+            <span className="block text-[15px] font-black text-white leading-none">مضمونة</span>
+            <span className="block text-[8px] font-bold tracking-[0.25em] text-white/70 mt-0.5">MADMONA</span>
           </span>
         </Link>
         <div className="flex gap-2">
-          <Link href="/account" aria-label="الإشعارات" className="relative w-10 h-10 bg-white rounded-[14px] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(0,0,0,.06)] no-underline">
-            <Bell className="w-[19px] h-[19px] text-[#374151]" strokeWidth={2} />
-            <span className="absolute top-[9px] left-[9px] w-[7px] h-[7px] rounded-full bg-[#E26D5C] border-[1.5px] border-white" />
+          <Link href="/account" aria-label="الإشعارات" className="relative w-10 h-10 bg-white/15 rounded-[14px] flex items-center justify-center no-underline">
+            <Bell className="w-[19px] h-[19px] text-white" strokeWidth={2} />
+            <span className="absolute top-[9px] left-[9px] w-[7px] h-[7px] rounded-full bg-[#E26D5C] border-[1.5px] border-[#1F6F5F]" />
           </Link>
-          <button type="button" onClick={() => setMenuOpen(true)} aria-label="القائمة" className="w-10 h-10 bg-white rounded-[14px] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(0,0,0,.06)]">
-            <Menu className="w-[19px] h-[19px] text-[#374151]" strokeWidth={2} />
+          <button type="button" onClick={() => setMenuOpen(true)} aria-label="القائمة" className="w-10 h-10 bg-white/15 rounded-[14px] flex items-center justify-center">
+            <Menu className="w-[19px] h-[19px] text-white" strokeWidth={2} />
           </button>
         </div>
       </header>

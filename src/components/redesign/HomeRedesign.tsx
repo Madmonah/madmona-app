@@ -19,6 +19,9 @@ const ibm = IBM_Plex_Sans_Arabic({ subsets: ['arabic', 'latin'], weight: ['400',
 const INK = '#0E332C'
 const CREAM = '#F4EFE4'
 const GOLD = '#B8860B'
+// (11 Aug 2026) أخضر البراند القياسي للهيدر — نفس #1F6F5F بتاع TopNav/SiteFooter.
+// مش نفس INK (الأخضر الغامق الأصلي بتاع التصميم) — ده أخضر تاني مخصص للهيدر بس.
+const NAV_GREEN = '#1F6F5F'
 
 type Cat = {
   id: string; name_ar: string; slug: string; icon: string | null; track: string | null
@@ -142,9 +145,9 @@ export default async function HomeRedesign({ categories, stats, liveCounts, hero
 .rz-inkbtn:hover { background: ${GOLD} !important; }
 .rz-goldbtn { transition: background 0.25s ease, color 0.25s ease; }
 .rz-goldbtn:hover { background: ${CREAM} !important; color: ${INK} !important; }
-.rz-ghost:hover { background: rgba(14,51,44,0.06); }
+.rz-ghost:hover { background: rgba(255,255,255,0.12); }
 .rz-navlink { transition: color 0.2s ease; }
-.rz-navlink:hover { color: ${INK} !important; }
+.rz-navlink:hover { color: #fff !important; }
 .rz-newsrow:hover { background: ${CREAM}; }
 a { text-decoration: none; }
 `,
@@ -155,25 +158,27 @@ a { text-decoration: none; }
       <div style={{ height: 4, background: `linear-gradient(90deg, ${GOLD}, ${INK} 30%, ${INK} 70%, ${GOLD})` }} />
 
       {/* ═══ Nav ═══ */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(244,239,228,0.88)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(18,38,31,0.12)' }}>
+      {/* (11 Aug 2026) أخضر البراند #1F6F5F بدل الكريمي الشفاف القديم — نفس
+          التصميم/التخطيط بالظبط، بس عناصر بيضا بدل الأخضر الغامق (طلب محمد) */}
+      <header style={{ position: 'sticky', top: 0, zIndex: 50, background: NAV_GREEN, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
         <div style={{ maxWidth: 1360, margin: '0 auto', padding: '14px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ width: 42, height: 48, background: INK, borderRadius: '21px 21px 6px 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: CREAM, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 20, paddingTop: 4 }}>م</span>
+            <span style={{ width: 42, height: 48, background: '#fff', borderRadius: '21px 21px 6px 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: NAV_GREEN, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 20, paddingTop: 4 }}>م</span>
             <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-              <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 21, color: INK }}>مضمونة</span>
-              <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.42em', color: GOLD }}>MADMONA</span>
+              <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 21, color: '#fff' }}>مضمونة</span>
+              <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.42em', color: 'rgba(255,255,255,0.75)' }}>MADMONA</span>
             </span>
           </Link>
           <nav style={{ display: 'flex', alignItems: 'center', gap: 28, fontSize: 14, fontWeight: 500 }}>
-            <Link className="rz-navlink" href="/marketplace?track=products" style={{ color: 'rgba(18,38,31,0.65)' }}>بيع</Link>
-            <Link className="rz-navlink" href="/marketplace?track=rentals" style={{ color: 'rgba(18,38,31,0.65)' }}>إيجار</Link>
-            <Link className="rz-navlink" href="/marketplace?track=services" style={{ color: 'rgba(18,38,31,0.65)' }}>خدمات</Link>
-            <Link href="/real-estate/market" style={{ color: INK, borderBottom: `2px solid ${GOLD}`, paddingBottom: 2 }}>بورصة مضمونة العقارية</Link>
-            <Link className="rz-navlink" href="/chat/marid" style={{ color: 'rgba(18,38,31,0.65)' }}>اسأل الجني ✨</Link>
+            <Link className="rz-navlink" href="/marketplace?track=products" style={{ color: 'rgba(255,255,255,0.75)' }}>بيع</Link>
+            <Link className="rz-navlink" href="/marketplace?track=rentals" style={{ color: 'rgba(255,255,255,0.75)' }}>إيجار</Link>
+            <Link className="rz-navlink" href="/marketplace?track=services" style={{ color: 'rgba(255,255,255,0.75)' }}>خدمات</Link>
+            <Link href="/real-estate/market" style={{ color: '#fff', borderBottom: `2px solid ${GOLD}`, paddingBottom: 2 }}>بورصة مضمونة العقارية</Link>
+            <Link className="rz-navlink" href="/chat/marid" style={{ color: 'rgba(255,255,255,0.75)' }}>اسأل الجني ✨</Link>
           </nav>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Link className="rz-ghost" href="/auth/login" style={{ height: 42, padding: '0 18px', borderRadius: 999, border: `1.5px solid ${INK}`, background: 'transparent', color: INK, fontWeight: 700, fontSize: 13, display: 'inline-flex', alignItems: 'center' }}>دخول</Link>
-            <Link className="rz-inkbtn" href="/list-your-asset" style={{ height: 42, padding: '0 20px', borderRadius: 999, background: INK, color: CREAM, fontWeight: 700, fontSize: 13, display: 'inline-flex', alignItems: 'center', boxShadow: '0 8px 20px -8px rgba(14,51,44,0.5)' }}>ضيف إعلانك</Link>
+            <Link className="rz-ghost" href="/auth/login" style={{ height: 42, padding: '0 18px', borderRadius: 999, border: '1.5px solid rgba(255,255,255,0.6)', background: 'transparent', color: '#fff', fontWeight: 700, fontSize: 13, display: 'inline-flex', alignItems: 'center' }}>دخول</Link>
+            <Link className="rz-inkbtn" href="/list-your-asset" style={{ height: 42, padding: '0 20px', borderRadius: 999, background: '#fff', color: NAV_GREEN, fontWeight: 700, fontSize: 13, display: 'inline-flex', alignItems: 'center', boxShadow: '0 8px 20px -8px rgba(0,0,0,0.35)' }}>ضيف إعلانك</Link>
           </div>
         </div>
       </header>
