@@ -554,6 +554,76 @@ export async function POST(request: NextRequest) {
     // الخلفية بـwaitUntil — من غير ما تنتظر رد الـHTTP خالص.
     waitUntil((async () => {
       try {
+    // ── ٠ج·٥) حفظ وتخصيب الميديا — قبل فحص الإيقاف عمدًا ─────────────────
+    // 🐛 (١١ أغسطس ٢٠٢٦): كانت الميديا بتترفع وتتخصّب (خطوة ٢/٣ الأصلية)
+    // **بعد** فحص "المحادثة موقوفة؟" تحت. يعني أي عميل بيبعت صورة/صوت/فيديو
+    // في محادثة status='paused' أو 'blocked'، الميديا مكانتش بترفع خالص على
+    // Storage ولا بتتسجّل بالرابط — كانت بتتسجّل خام (`[image]` أو رقم سعر
+    // مجرّد لو مفيش نص) من خطوة ١·٥ فوق، والصورة نفسها ضايعة تمامًا.
+    // اتأكد من الداتا: محادثة 201125080210 (paused) — 11 صورة اتسجّلت
+    // كأرقام أسعار من غير رابط بين 11:05–11:07.
+    //
+    // الحل: نرفع الميديا ونخصّب التسجيل **قبل** فحص الإيقاف. المارد لسه
+    // مش بيرد لو المحادثة موقوفة (الفحص تحت باقي زي ما هو) — بس دلوقتي
+    // الصورة/الصوت/الفيديو بيتحفظوا ويبان رابطهم في السجل حتى لو مافيش
+    // رد، عشان الأدمن يقدر يرجع يشوفهم لما يفعّل المحادثة تاني.
+    let userText = body.text || ''
+    const mediaBlocks: Array<Record<string, unknown>> = []
+    let savedMediaUrl: string | null = null
+
+    if (body.media) {
+      const mt = body.media.mimetype || ''
+
+      // نحفظ الأول — الملف بيضيع لو ماحفظناهوش دلوقتي
+      savedMediaUrl = await saveMedia(body.media, body.type, phone)
+
+      const isAudioType = body.type === 'audio' || mt.startsWith('audio/') ||
+        ['voice', 'ptt'].includes(String(body.type || ''))
+
+      if (isAudioType) {
+        // ⏱️ (٢٨ يوليو) time-box التفريغ بـ٢٠ث — لو Groq بطيء/واقع مايعلّقش الطلب كله
+        const transcript = await Promise.race([
+          transcribeAudio(body.media),
+          new Promise<string | null>((resolve) => setTimeout(() => resolve(null), 20000)),
+        ])
+        userText = transcript || body.text || '[رسالة صوتية — مش قادر أفرّغها دلوقتي]'
+      } else if (body.type === 'image' && mt.startsWith('image/')) {
+        mediaBlocks.push({ type: 'image', source: { type: 'base64', media_type: mt, data: body.media.data_base64 } })
+        if (!userText.trim()) userText = 'العميل بعت الصورة دي — شوفها ورد عليه.'
+      } else if (mt === 'application/pdf') {
+        mediaBlocks.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: body.media.data_base64 } })
+        if (!userText.trim()) userText = 'العميل بعت الملف ده — اقراه ورد عليه.'
+      } else {
+        userText = body.text || `[${body.type} — ${body.media.filename || mt}]`
+      }
+
+      // نخصّب سجل الرسالة فورًا بالرابط المحفوظ — بغض النظر هيرد المارد
+      // ولا لأ. (upsert idempotent على wa_message_id.)
+      const mtLog = body.media.mimetype || ''
+      const isAudioLog = isAudioType
+      const logBody = [
+        isAudioLog
+          ? '[صوت]'
+          : body.type === 'image'
+          ? '[صورة]'
+          : body.type === 'video'
+          ? '[فيديو]'
+          : `[ملف: ${body.media.filename || mtLog}]`,
+        userText.startsWith('العميل بعت') ? '' : userText,
+        savedMediaUrl ?? '',
+      ]
+        .filter(Boolean)
+        .join(' ')
+
+      await logInboundMessage({
+        conversationId,
+        wa_message_id: body.message_id,
+        body: logBody,
+        messageType: body.type,
+        session: body.session_id,
+      })
+    }
+
     // ── ٠ج) المحادثة موقوفة؟ ────────────────────────────────────────────
     // لو الأدمن أوقف المحادثة، المارد يسكت خالص. النظام القديم كان
     // بيعمل كده وضاع في الترحيل — فأي محادثة محمد أوقفها كان المارد
@@ -566,7 +636,8 @@ export async function POST(request: NextRequest) {
         .maybeSingle()
 
       if (conv?.status === 'paused' || conv?.status === 'blocked') {
-        // الرسالة اتسجّلت فوق (خطوة ١·٥) — بنكتفي بإننا مانردّش
+        // الرسالة اتسجّلت فوق (خطوة ١·٥ + الميديا اتخصّبت فوق كمان) —
+        // بنكتفي بإننا مانردّش
         return NextResponse.json({ ok: true, logged: true, replied: false, reason: conv.status })
       }
     }
@@ -767,88 +838,12 @@ export async function POST(request: NextRequest) {
       intent: null,
     })
 
-    // ── ٢) فهم المحتوى ──────────────────────────────────────────────────
-    let userText = body.text || ''
-    const mediaBlocks: Array<Record<string, unknown>> = []
-    let savedMediaUrl: string | null = null
+    // ── ٢/٣) فهم المحتوى والتسجيل ────────────────────────────────────────
+    // 🐛 (١١ أغسطس ٢٠٢٦): انتقل لفوق (خطوة ٠ج·٥) — قبل فحص "المحادثة
+    // موقوفة؟" — عشان الميديا تترفع وتتسجّل بالرابط حتى لو المارد
+    // مش هيرد. userText / mediaBlocks / savedMediaUrl محسوبين فوق بالفعل.
 
-    if (body.media) {
-      const mt = body.media.mimetype || ''
-
-      // نحفظ الأول — الملف بيضيع لو ماحفظناهوش دلوقتي
-      savedMediaUrl = await saveMedia(body.media, body.type, phone)
-
-      // 🐛 (١٠ أغسطس ٢٠٢٦ — محمد لاحظ رسايل صوت من غير تفريغ): الشرط كان
-      // `body.type === 'audio'` بس. فلتر الضوضاء فوق (٠ص) بيعرف كمان
-      // 'voice' و'ptt' كأنواع ميديا صوتية — يعني Baileys فعليا بيبعتهم
-      // بالقيمة دي أحيانا (رسايل push-to-talk تحديداً). الرسايل دي كانت
-      // بتعدّي الفلتر (isMediaType بيقبلها) بس بتقع في الـelse تحت وتتسجّل
-      // كـ`[voice — voice.webm]` من غير أي تفريغ فعلي — المارد كان بيرد
-      // من غير ما يعرف العميل قال إيه خالص. اتأكدت من الداتا: 6 رسايل صوت
-      // في آخر يومين اتسجّلوا كده من غير نص. الحل: نتحقق من الـmimetype
-      // (audio/*) كمان، مش بس body.type، عشان أي تسمية يبعتها Baileys تتمسك.
-      const isAudioType = body.type === 'audio' || mt.startsWith('audio/') ||
-        ['voice', 'ptt'].includes(String(body.type || ''))
-
-      if (isAudioType) {
-        // ⏱️ (٢٨ يوليو) time-box التفريغ بـ٢٠ث — لو Groq بطيء/واقع مايعلّقش الطلب كله
-        const transcript = await Promise.race([
-          transcribeAudio(body.media),
-          new Promise<string | null>((resolve) => setTimeout(() => resolve(null), 20000)),
-        ])
-        userText = transcript || body.text || '[رسالة صوتية — مش قادر أفرّغها دلوقتي]'
-      } else if (body.type === 'image' && mt.startsWith('image/')) {
-        mediaBlocks.push({ type: 'image', source: { type: 'base64', media_type: mt, data: body.media.data_base64 } })
-        if (!userText.trim()) userText = 'العميل بعت الصورة دي — شوفها ورد عليه.'
-      } else if (mt === 'application/pdf') {
-        mediaBlocks.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: body.media.data_base64 } })
-        if (!userText.trim()) userText = 'العميل بعت الملف ده — اقراه ورد عليه.'
-      } else {
-        userText = body.text || `[${body.type} — ${body.media.filename || mt}]`
-      }
-    }
-
-    // ── ٣) التسجيل ──────────────────────────────────────────────────────
-    //
-    // ⚠️ اللي بنخزّنه هنا هو ذاكرة المارد للرسايل الجاية.
-    // لو خزّنّا «العميل بعت الملف ده»، الرسالة اللي بعدها مش هيبقى
-    // عارف الملف كان فيه إيه — وده اللي خلّاه يسأل عبده أسئلة بديهية
-    // عن ملف «Pharmacy 154m» كان قدامه.
-    //
-    // فبنخزّن اسم الملف والتعليق — على الأقل يفضل فيه دلالة.
-    // الرسالة النصية اتسجّلت خام في خطوة ١·٥ فوق. هنا بنخصّب الميديا بس:
-    // دلوقتي بقى عندنا الرابط المحفوظ والتفريغ، فبنحدّث نفس الصف (upsert
-    // على wa_message_id) بالنسخة الغنية عشان ذاكرة المارد للرسايل الجاية
-    // تبقى فيها الدلالة. (ON CONFLICT DO UPDATE مابيعيدش تفجير تريجرات
-    // الـINSERT، فمفيش تصنيف/مطابقة مكرّرة.)
-    if (body.media) {
-      const mtLog = body.media.mimetype || ''
-      const isAudioLog = body.type === 'audio' || mtLog.startsWith('audio/') ||
-        ['voice', 'ptt'].includes(String(body.type || ''))
-      const logBody = [
-        isAudioLog
-          ? '[صوت]'
-          : body.type === 'image'
-          ? '[صورة]'
-          : body.type === 'video'
-          ? '[فيديو]'
-          : `[ملف: ${body.media.filename || body.media.mimetype}]`,
-        userText.startsWith('العميل بعت') ? '' : userText,
-        savedMediaUrl ?? '',
-      ]
-        .filter(Boolean)
-        .join(' ')
-
-      await logInboundMessage({
-        conversationId,
-        wa_message_id: body.message_id,
-        body: logBody,
-        messageType: body.type,
-        session: body.session_id,
-      })
-    }
-
-    // ── جمع الدفعة ────────────────────────────────────────────────────
+    // ── جمع الدفعة ────────────────────────────────────────
     // دلوقتي بس — بعد ما الرسالة اتسجّلت — نقدر نستنى ونشوف إخواتها.
     //
     // الناس بتبعت على دفعات: سلام، وبعده المنيو، وبعده الأسعار، وبعده
