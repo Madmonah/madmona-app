@@ -273,7 +273,7 @@ export default function EditListingPage() {
           </p>
           <Link
             href="/supplier/marketplace"
-            className="inline-block bg-[#2B4521] text-white px-5 py-2.5 rounded-xl font-semibold"
+            className="inline-block bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold"
           >
             ارجع للوحة
           </Link>
@@ -292,7 +292,7 @@ export default function EditListingPage() {
           </h1>
           <Link
             href={mode === 'admin' ? '/admin/listings' : '/supplier/marketplace'}
-            className="inline-block bg-[#2B4521] text-white px-5 py-2.5 rounded-xl font-semibold"
+            className="inline-block bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold"
           >
             ارجع
           </Link>

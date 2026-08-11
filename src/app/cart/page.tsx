@@ -53,7 +53,7 @@ export default function CartPage() {
             </p>
             <Link
               href="/marketplace"
-              className="inline-flex items-center gap-2 bg-[#2B4521] text-white px-6 py-3 rounded-2xl font-bold shadow-elevated hover:-translate-y-0.5 hover:shadow-luxe transition-all"
+              className="inline-flex items-center gap-2 bg-[#FA8125] text-white px-6 py-3 rounded-2xl font-bold shadow-elevated hover:-translate-y-0.5 hover:shadow-luxe transition-all"
             >
               تصفح الماركت بليس
               <ChevronLeft className="w-4 h-4" />
@@ -91,7 +91,7 @@ export default function CartPage() {
         {/* Supplier banner */}
         {cart.supplier_name && (
           <div className="bg-white rounded-2xl shadow-soft p-4 flex items-center gap-3 animate-slide-up">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2B4521] to-[#5A6E3A] flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FA8125] to-[#F98F2A] flex items-center justify-center flex-shrink-0">
               <Store className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
@@ -156,7 +156,7 @@ export default function CartPage() {
 
                     {/* Line total + remove */}
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-black text-[#2B4521] tabular">
+                      <p className="text-sm font-black text-[#FA8125] tabular">
                         {(item.unit_price * item.quantity).toLocaleString('ar-EG')}
                         <span className="text-[10px] font-medium text-gray-500 ms-1">ج.م</span>
                       </p>
@@ -175,10 +175,10 @@ export default function CartPage() {
           </div>
 
           {/* Subtotal */}
-          <div className="bg-gradient-to-l from-[#2B4521]/5 to-transparent border-t border-[#2B4521]/10 px-4 py-5">
+          <div className="bg-gradient-to-l from-[#FA8125]/5 to-transparent border-t border-[#FA8125]/10 px-4 py-5">
             <div className="flex items-center justify-between">
               <span className="text-sm font-bold text-gray-700">المجموع الفرعي</span>
-              <span className="text-2xl font-black text-[#2B4521] tabular">
+              <span className="text-2xl font-black text-[#FA8125] tabular">
                 {subtotal.toLocaleString('ar-EG')}
                 <span className="text-sm font-medium text-gray-500 ms-1">ج.م</span>
               </span>
@@ -193,14 +193,14 @@ export default function CartPage() {
         <div className="hidden lg:flex justify-between items-center pt-2">
           <Link
             href="/marketplace"
-            className="inline-flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-[#2B4521] transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-[#FA8125] transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             كمّل تسوّق
           </Link>
           <button
             onClick={() => router.push('/checkout')}
-            className="inline-flex items-center gap-2 bg-[#2B4521] text-white px-8 py-4 rounded-2xl font-bold shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
+            className="inline-flex items-center gap-2 bg-[#FA8125] text-white px-8 py-4 rounded-2xl font-bold shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
           >
             كمّل لتأكيد الطلب
             <ChevronLeft className="w-4 h-4" />
@@ -213,14 +213,14 @@ export default function CartPage() {
         <div className="max-w-3xl mx-auto p-3 flex items-center gap-3">
           <div className="flex-1">
             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">المجموع</p>
-            <p className="text-xl font-black text-[#2B4521] tabular leading-tight">
+            <p className="text-xl font-black text-[#FA8125] tabular leading-tight">
               {subtotal.toLocaleString('ar-EG')}
               <span className="text-xs font-medium text-gray-500 ms-1">ج.م</span>
             </p>
           </div>
           <button
             onClick={() => router.push('/checkout')}
-            className="flex items-center gap-1.5 bg-[#2B4521] text-white px-6 py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
+            className="flex items-center gap-1.5 bg-[#FA8125] text-white px-6 py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
           >
             تأكيد الطلب
             <ChevronLeft className="w-4 h-4" />

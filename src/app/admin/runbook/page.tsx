@@ -77,7 +77,7 @@ export default async function RunbookPage({
           {entries.map(e => (
             <article key={e.id} style={cardStyle}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 12 }}>
-                <h3 style={{ margin: 0, color: '#2B4521', fontSize: 16 }}>{e.title}</h3>
+                <h3 style={{ margin: 0, color: '#FA8125', fontSize: 16 }}>{e.title}</h3>
                 <span style={statusBadgeStyle(e.status)}>{e.status}</span>
               </div>
               <div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>
@@ -98,7 +98,7 @@ export default async function RunbookPage({
               {(e.blocker || e.next_steps) && (
                 <div style={{ marginTop: 8, fontSize: 12 }}>
                   {e.blocker && <div style={{ color: '#6FCF97' }}><strong>blocker:</strong> {e.blocker}</div>}
-                  {e.next_steps && <div style={{ color: '#2B4521' }}><strong>next:</strong> {e.next_steps}</div>}
+                  {e.next_steps && <div style={{ color: '#FA8125' }}><strong>next:</strong> {e.next_steps}</div>}
                 </div>
               )}
             </article>
@@ -114,7 +114,7 @@ export default async function RunbookPage({
 function Header({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <header style={{ marginBottom: 20, textAlign: 'center' }}>
-      <h1 style={{ color: '#2B4521', margin: 0, fontSize: 26 }}>{title}</h1>
+      <h1 style={{ color: '#FA8125', margin: 0, fontSize: 26 }}>{title}</h1>
       <p style={{ color: '#666', marginTop: 6, fontSize: 13 }}>{subtitle}</p>
     </header>
   )
@@ -124,9 +124,9 @@ function BackToDashboard() {
   return (
     <div style={{ marginTop: 24, textAlign: 'center' }}>
       <a href="/admin/ai-os" style={{
-        color: '#2B4521', textDecoration: 'none', fontSize: 13,
+        color: '#FA8125', textDecoration: 'none', fontSize: 13,
         padding: '8px 16px', background: '#fff', borderRadius: 8,
-        border: '1px solid #2B4521', display: 'inline-block',
+        border: '1px solid #FA8125', display: 'inline-block',
       }}>← رجوع للداشبورد</a>
     </div>
   )
@@ -144,10 +144,10 @@ const cardStyle: React.CSSProperties = {
 const chipStyle: React.CSSProperties = {
   fontSize: 12, padding: '6px 12px', background: '#fff',
   borderRadius: 20, border: '1px solid #E5E5E0',
-  color: '#2B4521', textDecoration: 'none',
+  color: '#FA8125', textDecoration: 'none',
 }
 const chipActiveStyle: React.CSSProperties = {
-  ...chipStyle, background: '#2B4521', color: '#fff', borderColor: '#2B4521',
+  ...chipStyle, background: '#FA8125', color: '#fff', borderColor: '#FA8125',
 }
 const emptyStyle: React.CSSProperties = {
   textAlign: 'center', padding: 40, color: '#888',

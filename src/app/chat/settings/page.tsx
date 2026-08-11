@@ -69,7 +69,7 @@ export default function ChatSettings() {
 
   return (
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
-      <header style={{ background: 'linear-gradient(135deg,#14231E,#2B4521)', color: '#fff', padding: '14px 16px', fontSize: 17, fontWeight: 900, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>الإعدادات ⚙️</header>
+      <header style={{ background: 'linear-gradient(135deg,#14231E,#FA8125)', color: '#fff', padding: '14px 16px', fontSize: 17, fontWeight: 900, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>الإعدادات ⚙️</header>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
         {loggedIn && (
@@ -86,13 +86,13 @@ export default function ChatSettings() {
           <button onClick={toggleNotif} disabled={!notifSupported || busy} style={rowBtn}>
             <span style={{ fontSize: 20 }}>🔔</span>
             <span style={{ flex: 1, textAlign: 'start', fontWeight: 700, color: '#14231E' }}>تنبيهات ردود المارد</span>
-            <span style={{ fontSize: 13, color: notifOn ? '#2B4521' : '#8A9690', fontWeight: 800 }}>{!notifSupported ? 'مش مدعوم' : notifOn ? 'مفعّلة' : 'متوقفة'}</span>
+            <span style={{ fontSize: 13, color: notifOn ? '#FA8125' : '#8A9690', fontWeight: 800 }}>{!notifSupported ? 'مش مدعوم' : notifOn ? 'مفعّلة' : 'متوقفة'}</span>
           </button>
           {installEvt && (
             <button onClick={installApp} style={{ ...rowBtn, borderTop: '1px solid #F4F1E8' }}>
               <span style={{ fontSize: 20 }}>📲</span>
               <span style={{ flex: 1, textAlign: 'start', fontWeight: 700, color: '#14231E' }}>ثبّت شات مضمونة على التليفون</span>
-              <span style={{ fontSize: 13, color: '#2B4521', fontWeight: 800 }}>ثبّت</span>
+              <span style={{ fontSize: 13, color: '#FA8125', fontWeight: 800 }}>ثبّت</span>
             </button>
           )}
           <Link href="/account" style={{ ...rowBtn, borderTop: '1px solid #F4F1E8', textDecoration: 'none' }}>
@@ -102,7 +102,7 @@ export default function ChatSettings() {
           </Link>
         </div>
 
-        {msg && <div style={{ fontSize: 13, color: '#2B4521', fontWeight: 700, textAlign: 'center', marginBottom: 14 }}>{msg}</div>}
+        {msg && <div style={{ fontSize: 13, color: '#FA8125', fontWeight: 700, textAlign: 'center', marginBottom: 14 }}>{msg}</div>}
 
         {loggedIn && (
           <button onClick={signOut} style={{ width: '100%', background: '#fff', border: '1px solid rgba(226,109,92,.4)', color: '#E26D5C', borderRadius: 16, padding: '13px', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>تسجيل الخروج</button>

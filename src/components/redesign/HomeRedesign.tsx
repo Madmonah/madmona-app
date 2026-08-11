@@ -9,7 +9,7 @@ import SiteFooter from '@/components/SiteFooter'
 // ============================================================================
 // HomeRedesign — (٧ أغسطس ٢٠٢٦) «التصميم الجديد» من ملف Madmona Redesign
 // اللي عمله محمد في Claude Design. ديسكتوب بس — الموبايل لسه MobileHome.
-// الهوية: كريمي #F4EFE4 · أخضر غامق #0E332C · دهبي #FA8125 · خط Alexandria.
+// الهوية: كريمي #F4EFE4 · أخضر غامق #0E332C · دهبي #2B4521 · خط Alexandria.
 // كل الداتا حقيقية: إحصائيات + أقسام + بورصة property_market_items + مطورين.
 // ============================================================================
 
@@ -18,10 +18,10 @@ const ibm = IBM_Plex_Sans_Arabic({ subsets: ['arabic', 'latin'], weight: ['400',
 
 const INK = '#0E332C'
 const CREAM = '#F4EFE4'
-const GOLD = '#FA8125'
-// (11 Aug 2026) أخضر البراند القياسي للهيدر — نفس #2B4521 بتاع TopNav/SiteFooter.
+const GOLD = '#2B4521'
+// (11 Aug 2026) أخضر البراند القياسي للهيدر — نفس #FA8125 بتاع TopNav/SiteFooter.
 // مش نفس INK (الأخضر الغامق الأصلي بتاع التصميم) — ده أخضر تاني مخصص للهيدر بس.
-const NAV_GREEN = '#2B4521'
+const NAV_GREEN = '#FA8125'
 
 type Cat = {
   id: string; name_ar: string; slug: string; icon: string | null; track: string | null
@@ -91,8 +91,8 @@ async function getMarketTiles() {
   }
 }
 
-const ACCENTS = ['#FA8125', '#2FA084', '#6D5ACF', '#0E332C']
-const TINTS = ['rgba(250, 129, 37,0.14)', 'rgba(47,160,132,0.14)', 'rgba(109,90,207,0.14)', 'rgba(14,51,44,0.1)']
+const ACCENTS = ['#2B4521', '#2FA084', '#6D5ACF', '#0E332C']
+const TINTS = ['rgba(43, 69, 33,0.14)', 'rgba(47,160,132,0.14)', 'rgba(109,90,207,0.14)', 'rgba(14,51,44,0.1)']
 
 // (11 أغسطس 2026) الهيرو بقى 4 كروت ثابتة بس: بيع · إيجار · خدمات · بورصة
 // مضمونة العقارية — بدل الكروت الديناميكية الخمسة اللي كانت بتشمل المطاعم.
@@ -114,7 +114,10 @@ function buildGroups(categories: Cat[], liveCounts: Record<string, number>): Her
     { slug: 'rentals', name: 'إيجار', emoji: '🔑', track: 'rentals', tracks: ['rentals', 'hybrid'], href: '/marketplace?track=rentals' },
     { slug: 'services', name: 'خدمات', emoji: '🛠️', track: 'services', tracks: ['services'], href: '/marketplace?track=services' },
   ].map(d => ({ slug: d.slug, name: d.name, emoji: d.emoji, track: d.track, href: d.href, catCount: catCountFor(d.tracks), count: countFor(d.tracks) }))
-    .concat([{ slug: 'bourse', name: 'بورصة مضمونة العقارية', emoji: '🏗️', track: 'bourse', href: '/real-estate/market', catCount: 0, count: 0 }])
+    .concat([
+      { slug: 'bourse', name: 'بورصة مضمونة العقارية', emoji: '🏗️', track: 'bourse', href: '/real-estate/market', catCount: 0, count: 0 },
+      { slug: 'business', name: 'بورضة رجال الأعمال', emoji: '📈', track: 'business', href: '/business-lounge', catCount: 0, count: 0 },
+    ])
 }
 
 export default async function HomeRedesign({ categories, stats, liveCounts, heroImage }: Props) {
@@ -158,7 +161,7 @@ a { text-decoration: none; }
       <div style={{ height: 4, background: `linear-gradient(90deg, ${GOLD}, ${INK} 30%, ${INK} 70%, ${GOLD})` }} />
 
       {/* ═══ Nav ═══ */}
-      {/* (11 Aug 2026) أخضر البراند #2B4521 بدل الكريمي الشفاف القديم — نفس
+      {/* (11 Aug 2026) أخضر البراند #FA8125 بدل الكريمي الشفاف القديم — نفس
           التصميم/التخطيط بالظبط، بس عناصر بيضا بدل الأخضر الغامق (طلب محمد) */}
       <header style={{ position: 'sticky', top: 0, zIndex: 50, background: NAV_GREEN, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
         <div style={{ maxWidth: 1360, margin: '0 auto', padding: '14px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
@@ -174,6 +177,7 @@ a { text-decoration: none; }
             <Link className="rz-navlink" href="/marketplace?track=rentals" style={{ color: 'rgba(255,255,255,0.75)' }}>إيجار</Link>
             <Link className="rz-navlink" href="/marketplace?track=services" style={{ color: 'rgba(255,255,255,0.75)' }}>خدمات</Link>
             <Link href="/real-estate/market" style={{ color: '#fff', borderBottom: `2px solid ${GOLD}`, paddingBottom: 2 }}>بورصة مضمونة العقارية</Link>
+            <Link className="rz-navlink" href="/business-lounge" style={{ color: 'rgba(255,255,255,0.75)' }}>بورضة رجال الأعمال</Link>
             <Link className="rz-navlink" href="/chat/marid" style={{ color: 'rgba(255,255,255,0.75)' }}>اسأل الجني ✨</Link>
           </nav>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -194,7 +198,7 @@ a { text-decoration: none; }
             <h1 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 76, lineHeight: 1.12, letterSpacing: '-0.01em', color: INK }}>
               كل حاجة<br />
               <span style={{ color: 'transparent', WebkitTextStroke: `2px ${INK}` }}>تشتريها</span> أو<br />
-              تأجرها… <span style={{ position: 'relative', display: 'inline-block', color: GOLD }}>مضمونة<span style={{ position: 'absolute', right: 0, left: 0, bottom: 6, height: 10, background: 'rgba(250, 129, 37,0.18)', zIndex: -1, borderRadius: 4 }} /></span>
+              تأجرها… <span style={{ position: 'relative', display: 'inline-block', color: GOLD }}>مضمونة<span style={{ position: 'absolute', right: 0, left: 0, bottom: 6, height: 10, background: 'rgba(43, 69, 33,0.18)', zIndex: -1, borderRadius: 4 }} /></span>
             </h1>
             <p style={{ margin: '22px 0 0', maxWidth: 460, fontSize: 16, lineHeight: 1.9, color: 'rgba(18,38,31,0.7)' }}>
               عقارات، عربيات، خدمات، مطاعم — كل مورد متوثّق، وكل صفقة عليها ضمان مضمونة. دوّر، قارن، واحجز وانت مطمّن.
@@ -261,23 +265,23 @@ a { text-decoration: none; }
           </div>
           <Link href="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 14, color: INK, borderBottom: `2px solid ${GOLD}`, paddingBottom: 3 }}>كل الأقسام ←</Link>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
           {groups.map((g, i) => {
-            const isBourse = g.slug === 'bourse'
+            const isDark = g.slug === 'bourse' || g.slug === 'business'
             return (
               <Link
                 key={g.slug}
                 className="rz-cat"
                 href={g.href}
-                style={{ ['--acc' as string]: ACCENTS[i % ACCENTS.length], position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '36px 18px 26px', background: isBourse ? INK : '#fff', border: `2px solid ${INK}`, borderRadius: '110px 110px 18px 18px', textAlign: 'center' }}
+                style={{ ['--acc' as string]: ACCENTS[i % ACCENTS.length], position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '36px 18px 26px', background: isDark ? INK : '#fff', border: `2px solid ${INK}`, borderRadius: '110px 110px 18px 18px', textAlign: 'center' }}
               >
-                <span style={{ width: 64, height: 64, borderRadius: '50%', background: isBourse ? 'rgba(244,239,228,0.12)' : TINTS[i % TINTS.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30 }}>{g.emoji}</span>
+                <span style={{ width: 64, height: 64, borderRadius: '50%', background: isDark ? 'rgba(244,239,228,0.12)' : TINTS[i % TINTS.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30 }}>{g.emoji}</span>
                 <span style={{ display: 'block' }}>
-                  <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 18, color: isBourse ? CREAM : INK }}>{g.name}</span>
-                  {!isBourse && <span style={{ display: 'block', fontSize: 11.5, color: 'rgba(18,38,31,0.55)', marginTop: 4 }}>{g.catCount} قسم فرعي</span>}
+                  <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 18, color: isDark ? CREAM : INK }}>{g.name}</span>
+                  {!isDark && <span style={{ display: 'block', fontSize: 11.5, color: 'rgba(18,38,31,0.55)', marginTop: 4 }}>{g.catCount} قسم فرعي</span>}
                 </span>
-                <span style={{ padding: '5px 16px', borderRadius: 999, background: isBourse ? GOLD : ACCENTS[i % ACCENTS.length], color: '#fff', fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  {isBourse ? (<><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ADE80', display: 'inline-block' }} /> لايف</>) : (g.count > 0 ? `${g.count.toLocaleString('ar-EG')} إعلان` : 'استكشف')}
+                <span style={{ padding: '5px 16px', borderRadius: 999, background: isDark ? GOLD : ACCENTS[i % ACCENTS.length], color: '#fff', fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  {isDark ? (<><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ADE80', display: 'inline-block' }} /> لايف</>) : (g.count > 0 ? `${g.count.toLocaleString('ar-EG')} إعلان` : 'استكشف')}
                 </span>
               </Link>
             )
@@ -288,7 +292,7 @@ a { text-decoration: none; }
       {/* ═══ Live market (dark) ═══ */}
       {tiles.length > 0 && (
         <section style={{ background: INK, padding: '72px 28px', position: 'relative', overflow: 'hidden' }}>
-          <span style={{ position: 'absolute', top: -120, left: -80, width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(250, 129, 37,0.22), transparent 70%)', pointerEvents: 'none' }} />
+          <span style={{ position: 'absolute', top: -120, left: -80, width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(43, 69, 33,0.22), transparent 70%)', pointerEvents: 'none' }} />
           <div style={{ maxWidth: 1360, margin: '0 auto', position: 'relative' }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 36 }}>
               <div>
@@ -386,7 +390,7 @@ a { text-decoration: none; }
       </section>
 
       {/* (11 Aug 2026) الفوتر الأخضر الغامق القديم (INK #0E332C) اتبدّل بـ
-          SiteFooter الموحّد (#2B4521) — أول صفحة بتتجرّب عليها قبل التعميم
+          SiteFooter الموحّد (#FA8125) — أول صفحة بتتجرّب عليها قبل التعميم
           على باقي صفحات العميل (طلب محمد: الهيدر والفوتر أخضر). */}
       <SiteFooter />
     </div>

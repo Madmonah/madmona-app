@@ -268,7 +268,7 @@ export default function UnitForm({ mode, password, initialData }: UnitFormProps)
   if (loadingMeta) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 text-[#2B4521] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#FA8125] animate-spin" />
       </div>
     )
   }
@@ -294,7 +294,7 @@ export default function UnitForm({ mode, password, initialData }: UnitFormProps)
           <select
             value={form.supplier_id}
             onChange={(e) => setForm((f) => ({ ...f, supplier_id: e.target.value }))}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
             disabled={mode === 'edit'}
           >
             <option value="">اختار المورد...</option>
@@ -321,7 +321,7 @@ export default function UnitForm({ mode, password, initialData }: UnitFormProps)
                   onClick={() => setForm((f) => ({ ...f, category_slug: c.slug }))}
                   className={`px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
                     selected
-                      ? 'border-[#2B4521] bg-[#2B4521] text-white'
+                      ? 'border-[#FA8125] bg-[#FA8125] text-white'
                       : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -349,7 +349,7 @@ export default function UnitForm({ mode, password, initialData }: UnitFormProps)
             value={form.name_ar}
             onChange={(e) => setForm((f) => ({ ...f, name_ar: e.target.value }))}
             placeholder="مثال: مكتب رقم ١، غرفة الفجر، Hot Desk A"
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521] text-right"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125] text-right"
             maxLength={100}
             required
           />
@@ -362,7 +362,7 @@ export default function UnitForm({ mode, password, initialData }: UnitFormProps)
             onChange={(e) => setForm((f) => ({ ...f, description_ar: e.target.value }))}
             placeholder="اوصف الوحدة: الموقع، المميزات، إيه اللي بيميزها"
             rows={3}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521] text-right resize-none"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125] text-right resize-none"
             maxLength={1000}
           />
         </div>
@@ -378,7 +378,7 @@ export default function UnitForm({ mode, password, initialData }: UnitFormProps)
             max={500}
             value={form.capacity}
             onChange={(e) => setForm((f) => ({ ...f, capacity: parseInt(e.target.value) || 1 }))}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
           />
         </div>
       </section>
@@ -433,7 +433,7 @@ export default function UnitForm({ mode, password, initialData }: UnitFormProps)
           <div className={`flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
             uploading
               ? 'border-gray-200 bg-gray-50 text-gray-400'
-              : 'border-gray-300 bg-[#FAFAF7] text-gray-700 hover:border-[#2B4521] hover:bg-[#2B4521]/5'
+              : 'border-gray-300 bg-[#FAFAF7] text-gray-700 hover:border-[#FA8125] hover:bg-[#FA8125]/5'
           }`}>
             {uploading ? (
               <>
@@ -508,7 +508,7 @@ export default function UnitForm({ mode, password, initialData }: UnitFormProps)
               onChange={(e) =>
                 setForm((f) => ({ ...f, operating_start_hour: parseInt(e.target.value) }))
               }
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
             >
               {Array.from({ length: 24 }, (_, i) => i).map((h) => (
                 <option key={h} value={h}>
@@ -524,7 +524,7 @@ export default function UnitForm({ mode, password, initialData }: UnitFormProps)
               onChange={(e) =>
                 setForm((f) => ({ ...f, operating_end_hour: parseInt(e.target.value) }))
               }
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
             >
               {Array.from({ length: 24 }, (_, i) => i + 1).map((h) => (
                 <option key={h} value={h}>
@@ -542,7 +542,7 @@ export default function UnitForm({ mode, password, initialData }: UnitFormProps)
         <button
           type="submit"
           disabled={submitting || uploading}
-          className="flex-1 flex items-center justify-center gap-2 bg-[#2B4521] text-white py-3 rounded-xl font-semibold hover:bg-[#2B4521]/90 disabled:opacity-50"
+          className="flex-1 flex items-center justify-center gap-2 bg-[#FA8125] text-white py-3 rounded-xl font-semibold hover:bg-[#FA8125]/90 disabled:opacity-50"
         >
           {submitting ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -597,7 +597,7 @@ function PriceField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="—"
-          className="w-full px-3 py-2.5 pl-12 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
+          className="w-full px-3 py-2.5 pl-12 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
         />
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">
           ج.م

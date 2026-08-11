@@ -159,7 +159,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" />
       </div>
     )
   }
@@ -170,13 +170,13 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
         <div className="max-w-5xl mx-auto px-4 py-4">
           <Link
             href={`/admin/business-finance/${supplierId}/team`}
-            className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2 transition-colors"
+            className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2 transition-colors"
           >
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع للفريق
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">
                 إدارة الموظفين
               </p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">
@@ -200,15 +200,15 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="ابحث بالاسم أو الرقم أو الـPIN..."
-              className="w-full bg-[#FAFAF7] rounded-xl pr-10 pl-4 py-2.5 text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 border border-gray-200 placeholder-[#6B7280]"
+              className="w-full bg-[#FAFAF7] rounded-xl pr-10 pl-4 py-2.5 text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 border border-gray-200 placeholder-[#6B7280]"
             />
           </div>
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        <div className="bg-[#2B4521]/5 border border-[#2B4521]/20 rounded-2xl p-3 text-xs text-[#1A2E26] flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-[#2B4521] flex-shrink-0" />
+        <div className="bg-[#FA8125]/5 border border-[#FA8125]/20 rounded-2xl p-3 text-xs text-[#1A2E26] flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-[#FA8125] flex-shrink-0" />
           <span>عدّل أي خانة وزرار الحفظ هينوّر. النقل بين الفروع من القائمة المنسدلة. الـPIN لازم يكون فريد للشركة.</span>
         </div>
 
@@ -217,7 +217,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
           .map(([branchKey, rows]) => (
           <section key={branchKey} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-3 bg-[#FAFAF7]/50">
-              <div className="inline-grid place-items-center w-9 h-9 rounded-xl bg-[#2B4521]/10 text-[#2B4521]">
+              <div className="inline-grid place-items-center w-9 h-9 rounded-xl bg-[#FA8125]/10 text-[#FA8125]">
                 <Building2 className="w-5 h-5" />
               </div>
               <div>
@@ -234,7 +234,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
                 return (
                   <div key={e.employee_id} className="px-4 py-3 flex flex-col md:flex-row md:items-center gap-3">
                     <div className="flex items-center gap-3 md:w-56 flex-shrink-0">
-                      <div className="inline-grid place-items-center w-10 h-10 rounded-xl bg-[#2B4521]/10 text-[#2B4521] font-black flex-shrink-0">
+                      <div className="inline-grid place-items-center w-10 h-10 rounded-xl bg-[#FA8125]/10 text-[#FA8125] font-black flex-shrink-0">
                         {e.full_name.charAt(0)}
                       </div>
                       <div className="min-w-0">
@@ -251,7 +251,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
                           onChange={(ev) => setDraft(e.employee_id, { phone: ev.target.value })}
                           placeholder="رقم الموبايل"
                           inputMode="tel"
-                          className="w-full bg-[#FAFAF7] rounded-lg pr-8 pl-2 py-2 text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 border border-gray-200 placeholder-[#6B7280]"
+                          className="w-full bg-[#FAFAF7] rounded-lg pr-8 pl-2 py-2 text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 border border-gray-200 placeholder-[#6B7280]"
                         />
                       </label>
                       <label className="relative">
@@ -261,13 +261,13 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
                           onChange={(ev) => setDraft(e.employee_id, { pin: ev.target.value })}
                           placeholder="PIN"
                           inputMode="numeric"
-                          className="w-full bg-[#FAFAF7] rounded-lg pr-8 pl-2 py-2 text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 border border-gray-200 placeholder-[#6B7280]"
+                          className="w-full bg-[#FAFAF7] rounded-lg pr-8 pl-2 py-2 text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 border border-gray-200 placeholder-[#6B7280]"
                         />
                       </label>
                       <select
                         value={d?.branch_id ?? ''}
                         onChange={(ev) => setDraft(e.employee_id, { branch_id: ev.target.value })}
-                        className="w-full bg-[#FAFAF7] rounded-lg px-2 py-2 text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 border border-gray-200"
+                        className="w-full bg-[#FAFAF7] rounded-lg px-2 py-2 text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 border border-gray-200"
                       >
                         <option value="">بدون فرع</option>
                         {branches.map((b) => (
@@ -278,7 +278,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
 
                     <div className="flex items-center gap-2 md:w-32 justify-end flex-shrink-0">
                       {st?.msg && (
-                        <span className={`text-[11px] font-bold ${st.err ? 'text-red-600' : 'text-[#2B4521]'}`}>
+                        <span className={`text-[11px] font-bold ${st.err ? 'text-red-600' : 'text-[#FA8125]'}`}>
                           {st.msg}
                         </span>
                       )}
@@ -287,7 +287,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
                         disabled={!dirty || st?.saving}
                         className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
                           dirty
-                            ? 'bg-[#2B4521] text-white hover:opacity-90'
+                            ? 'bg-[#FA8125] text-white hover:opacity-90'
                             : 'bg-[#FAFAF7] text-[#6B7280] border border-gray-200 cursor-default'
                         }`}
                       >

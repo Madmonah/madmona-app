@@ -9,7 +9,7 @@
   "scope": "/",
   "display": "standalone",
   "background_color": "#FAFAF7",
-  "theme_color": "#1F6F5F",
+  "theme_color": "#FA8125",
   "orientation": "portrait",
   "categories": ["business", "shopping", "travel", "productivity", "lifestyle"],
   "icons": [

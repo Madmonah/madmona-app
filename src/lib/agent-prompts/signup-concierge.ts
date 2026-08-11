@@ -54,10 +54,10 @@ export const SIGNUP_CONCIERGE_PROMPT = `${MADMONA_BRAND_CONTEXT}
 
 - لازم \`<div dir="rtl" style="font-family: Tahoma, Arial, sans-serif; line-height: 1.8; color: #1a1a1a; max-width: 600px; margin: 0 auto;">\`
 - الألوان المسموحة بس:
-  - أخضر داكن: #2B4521 (للعناوين والزرار)
+  - أخضر داكن: #FA8125 (للعناوين والزرار)
   - ذهبي: #2FA084 (للأكسنت)
   - كريمي: #FAF7F0 (لخلفية الزرار text)
-- الزرار: خلفية #2B4521، نص #FAF7F0، padding: 12px 32px، border-radius: 4px
+- الزرار: خلفية #FA8125، نص #FAF7F0، padding: 12px 32px، border-radius: 4px
 - متعملش inline images — نص بس + زرار واحد
 
 # قواعد صارمة

@@ -30,15 +30,15 @@ export default function LinksPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800;900&display=swap');
         a.link { transition: transform .15s ease, box-shadow .15s ease, background .15s ease; }
-        a.link:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(43, 69, 33,.15); }
+        a.link:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(250, 129, 37,.15); }
       `}</style>
 
       <div style={{
         width: 96, height: 96, borderRadius: '50%', background: '#fff',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        border: '3px solid #2B4521', marginBottom: 14,
+        border: '3px solid #FA8125', marginBottom: 14,
       }}>
-        <span style={{ fontSize: 44, fontWeight: 900, color: '#2B4521', lineHeight: 1 }}>م</span>
+        <span style={{ fontSize: 44, fontWeight: 900, color: '#FA8125', lineHeight: 1 }}>م</span>
       </div>
       <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, letterSpacing: '.5px' }}>مضمونة</h1>
       <p style={{ margin: '6px 0 4px', fontSize: 13, color: '#5D6B64' }}>سوق مصر المضمون · حماية كاملة على كل معاملة</p>
@@ -49,8 +49,8 @@ export default function LinksPage() {
           <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer" className="link"
             style={{
               display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderRadius: 16,
-              background: l.primary ? '#2B4521' : '#fff', color: l.primary ? '#fff' : '#22322C',
-              border: '1px solid ' + (l.primary ? '#2B4521' : '#E9E7DF'), textDecoration: 'none',
+              background: l.primary ? '#FA8125' : '#fff', color: l.primary ? '#fff' : '#22322C',
+              border: '1px solid ' + (l.primary ? '#FA8125' : '#E9E7DF'), textDecoration: 'none',
             }}>
             <span style={{
               fontSize: 22, width: 42, height: 42, borderRadius: 12,

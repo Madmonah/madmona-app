@@ -199,7 +199,7 @@ export function RestaurantMenu({
                           {desc}
                         </p>
                       )}
-                      <p className="text-sm font-black text-[#2B4521] mt-2 tabular">
+                      <p className="text-sm font-black text-[#FA8125] mt-2 tabular">
                         {hasSizes && (
                           <span className="text-xs font-normal text-gray-500">
                             {lang === 'en' ? 'from ' : 'يبدأ من '}
@@ -228,7 +228,7 @@ export function RestaurantMenu({
                               >
                                 <span className="text-xs font-bold text-gray-700">
                                   {sz.name_ar}
-                                  <span className="text-[#2B4521] font-black mr-2 tabular">
+                                  <span className="text-[#FA8125] font-black mr-2 tabular">
                                     {' '}{sz.price.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
                                   </span>
                                 </span>
@@ -241,7 +241,7 @@ export function RestaurantMenu({
                                 ) : (
                                   <button
                                     onClick={() => attemptAdd(mi, sz)}
-                                    className="bg-[#2B4521] text-white w-7 h-7 rounded-lg flex items-center justify-center shadow-soft hover:shadow-card transition-all flex-shrink-0"
+                                    className="bg-[#FA8125] text-white w-7 h-7 rounded-lg flex items-center justify-center shadow-soft hover:shadow-card transition-all flex-shrink-0"
                                     aria-label={`${t('order.add')} ${sz.name_ar}`}
                                   >
                                     {pendingId === `${mi.id}:${sz.id}` ? (
@@ -268,7 +268,7 @@ export function RestaurantMenu({
                         ) : (
                           <button
                             onClick={() => attemptAdd(mi)}
-                            className="bg-[#2B4521] text-white px-3 py-2 rounded-xl text-xs font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all flex items-center gap-1"
+                            className="bg-[#FA8125] text-white px-3 py-2 rounded-xl text-xs font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all flex items-center gap-1"
                           >
                             {pendingId === mi.id ? (
                               <Check className="w-3.5 h-3.5" />
@@ -407,7 +407,7 @@ export function MartProductsCatalog({
                       {p.description_ar && (
                         <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">{p.description_ar}</p>
                       )}
-                      <p className="text-sm font-black text-[#2B4521] mt-2 tabular">
+                      <p className="text-sm font-black text-[#FA8125] mt-2 tabular">
                         {p.price.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}{' '}
                         <span className="text-xs font-normal text-gray-500">{t('common.egp')}</span>
                         {p.compare_at_price && p.compare_at_price > p.price && (
@@ -431,7 +431,7 @@ export function MartProductsCatalog({
                       ) : (
                         <button
                           onClick={() => attemptAdd(p)}
-                          className="bg-[#2B4521] text-white px-3 py-2 rounded-xl text-xs font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all flex items-center gap-1"
+                          className="bg-[#FA8125] text-white px-3 py-2 rounded-xl text-xs font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all flex items-center gap-1"
                         >
                           {pendingId === p.id ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
                           {pendingId === p.id ? t('order.added') : t('order.add')}
@@ -529,7 +529,7 @@ export function ProductBuyBox({
         <p className="text-xs font-bold text-[#2FA084] uppercase tracking-widest mb-1">
           {t('order.price')}
         </p>
-        <p className="text-3xl font-black text-[#2B4521] tabular leading-tight">
+        <p className="text-3xl font-black text-[#FA8125] tabular leading-tight">
           {price.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
           <span className="text-base font-medium text-gray-500 ms-1">
             {t('common.egp')}
@@ -548,7 +548,7 @@ export function ProductBuyBox({
 
       <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
         <p className="text-sm font-medium text-gray-600">{t('order.total')}</p>
-        <p className="text-xl font-black text-[#2B4521] tabular">
+        <p className="text-xl font-black text-[#FA8125] tabular">
           {(price * qty).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}{' '}
           <span className="text-xs font-normal text-gray-500">
             {t('common.egp')}
@@ -558,7 +558,7 @@ export function ProductBuyBox({
 
       <button
         onClick={() => attemptAdd(false)}
-        className="w-full bg-[#2B4521] text-white py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+        className="w-full bg-[#FA8125] text-white py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
       >
         {pending ? (
           <Check className="w-4 h-4" />
@@ -574,7 +574,7 @@ export function ProductBuyBox({
 
       <button
         onClick={() => attemptAdd(true)}
-        className="w-full bg-white border-2 border-[#2B4521] text-[#2B4521] py-3 rounded-2xl font-bold text-sm hover:bg-[#2B4521]/5 transition-all flex items-center justify-center gap-2"
+        className="w-full bg-white border-2 border-[#FA8125] text-[#FA8125] py-3 rounded-2xl font-bold text-sm hover:bg-[#FA8125]/5 transition-all flex items-center justify-center gap-2"
       >
         <ShoppingCart className="w-4 h-4" />
         {t('order.buy_now')}
@@ -587,7 +587,7 @@ export function ProductBuyBox({
           </span>
           <button
             onClick={() => router.push('/cart')}
-            className="font-bold text-[#2B4521] hover:underline"
+            className="font-bold text-[#FA8125] hover:underline"
           >
             {t('order.view_cart')} ←
           </button>
@@ -628,7 +628,7 @@ export function CartCheckoutBar({ supplierId }: { supplierId: string }) {
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
             {t('order.cart_total')} · {count} {t('order.items')}
           </p>
-          <p className="text-xl font-black text-[#2B4521] tabular leading-tight">
+          <p className="text-xl font-black text-[#FA8125] tabular leading-tight">
             {subtotal.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}{' '}
             <span className="text-xs font-normal text-gray-500">
               {t('common.egp')}
@@ -637,7 +637,7 @@ export function CartCheckoutBar({ supplierId }: { supplierId: string }) {
         </div>
         <button
           onClick={() => router.push('/cart')}
-          className="bg-[#2B4521] text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-elevated hover:-translate-y-0.5 transition-all flex items-center gap-2"
+          className="bg-[#FA8125] text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-elevated hover:-translate-y-0.5 transition-all flex items-center gap-2"
         >
           <ShoppingCart className="w-4 h-4" />
           {t('order.checkout_now')}
@@ -673,7 +673,7 @@ function QtyStepper({
       </span>
       <button
         onClick={onInc}
-        className="w-7 h-7 bg-[#2B4521] text-white rounded-lg flex items-center justify-center hover:bg-[#2B4521]/90 transition shadow-soft"
+        className="w-7 h-7 bg-[#FA8125] text-white rounded-lg flex items-center justify-center hover:bg-[#FA8125]/90 transition shadow-soft"
         type="button"
       >
         <Plus className="w-3 h-3" />

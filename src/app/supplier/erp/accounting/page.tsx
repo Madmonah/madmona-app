@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 // below, so it is loaded on demand instead of shipping in this page's initial
 // bundle (this page was 292KB First Load JS).
 
-const G = { dark: '#2B4521', mid: '#5A6E3A', teal: '#2FA084', light: '#6FCF97', bg: '#FAFAF7', ink: '#0A0A0A' };
+const G = { dark: '#FA8125', mid: '#F98F2A', teal: '#2FA084', light: '#6FCF97', bg: '#FAFAF7', ink: '#0A0A0A' };
 
 type Account = { id: string; code: string; name_ar: string; account_type: string; is_postable: boolean; parent_id: string | null };
 type TBRow = { code: string; name_ar: string; account_type: string; balance_debit: number; balance_credit: number };
@@ -157,9 +157,9 @@ export default function ErpAccountingPage() {
   };
 
   // ---------- UI ----------
-  const card: React.CSSProperties = { background: 'rgba(255,255,255,.85)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: 20, boxShadow: '0 4px 24px rgba(43, 69, 33,.08)', border: '1px solid rgba(43, 69, 33,.1)' };
+  const card: React.CSSProperties = { background: 'rgba(255,255,255,.85)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: 20, boxShadow: '0 4px 24px rgba(250, 129, 37,.08)', border: '1px solid rgba(250, 129, 37,.1)' };
   const btn: React.CSSProperties = { background: `linear-gradient(90deg, ${G.teal}, ${G.dark})`, color: '#fff', border: 0, borderRadius: 999, padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' };
-  const inp: React.CSSProperties = { border: `1px solid rgba(43, 69, 33,.25)`, borderRadius: 12, padding: '8px 12px', fontFamily: 'inherit', background: '#fff', width: '100%' };
+  const inp: React.CSSProperties = { border: `1px solid rgba(250, 129, 37,.25)`, borderRadius: 12, padding: '8px 12px', fontFamily: 'inherit', background: '#fff', width: '100%' };
   const th: React.CSSProperties = { padding: '10px 12px', textAlign: 'right', fontSize: 13, color: G.dark, borderBottom: `2px solid ${G.teal}` };
   const td: React.CSSProperties = { padding: '8px 12px', borderBottom: '1px solid rgba(0,0,0,.06)', fontSize: 14 };
   const postable = accounts.filter(a => a.is_postable);

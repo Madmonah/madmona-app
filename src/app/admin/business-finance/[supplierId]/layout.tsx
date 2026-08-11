@@ -124,7 +124,7 @@ export default function BusinessFinanceLayout({
   if (state === 'checking') {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" />
       </div>
     )
   }
@@ -160,7 +160,7 @@ export default function BusinessFinanceLayout({
             <p className="text-sm text-[#6B7280] mb-6 leading-relaxed">
               تم إيقاف الوصول للوحة الإدارة بسبب اشتراك متأخر. برجاء سداد الاشتراك لإعادة التفعيل فوراً.
             </p>
-            <a href="https://wa.me/201002229982" className="w-full py-3 rounded-xl bg-[#2B4521] text-white font-black text-sm flex items-center justify-center gap-2">
+            <a href="https://wa.me/201002229982" className="w-full py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm flex items-center justify-center gap-2">
               تواصل مع مضمونة للسداد
             </a>
           </div>
@@ -172,10 +172,10 @@ export default function BusinessFinanceLayout({
 
   // Gate screen (no session or not authorized)
   return (
-    <div className="min-h-screen bg-[#2B4521] flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-[#FA8125] flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-md text-center">
         <div className="w-16 h-16 rounded-2xl bg-white grid place-items-center mx-auto mb-4">
-          <Lock className="w-7 h-7 text-[#2B4521]" />
+          <Lock className="w-7 h-7 text-[#FA8125]" />
         </div>
         <div className="bg-white rounded-3xl p-8 shadow-2xl">
           {state === 'no_session' ? (
@@ -184,7 +184,7 @@ export default function BusinessFinanceLayout({
               <p className="text-sm text-[#6B7280] mb-6 leading-relaxed">
                 لازم تسجّل دخول الأول عشان تشوف الصفحة دي. الدخول بالموبايل + كود واتساب.
               </p>
-              <Link href="/login" className="w-full py-3 rounded-xl bg-[#2B4521] text-white font-black text-sm flex items-center justify-center gap-2">
+              <Link href="/login" className="w-full py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm flex items-center justify-center gap-2">
                 <LogIn className="w-4 h-4" /> تسجيل الدخول
               </Link>
             </>

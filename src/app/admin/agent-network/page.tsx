@@ -13,7 +13,7 @@ type Message = { from_agent: string; to_agent: string }
 type Capability = { agent_name: string; can_be_called_by_agents: boolean }
 
 const TEAM_COLORS: Record<string, string> = {
-  sales: '#2B4521',
+  sales: '#FA8125',
   marketing: '#2FA084',
   creative: '#6FCF97',
   intelligence: '#0EA5E9',
@@ -88,7 +88,7 @@ export default async function AgentNetworkPage() {
     <div dir="rtl" style={pageStyle}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <header style={{ marginBottom: 20, textAlign: 'center' }}>
-          <h1 style={{ color: '#2B4521', margin: 0, fontSize: 26 }}>🕸️ Agent Network</h1>
+          <h1 style={{ color: '#FA8125', margin: 0, fontSize: 26 }}>🕸️ Agent Network</h1>
           <p style={{ color: '#666', marginTop: 6, fontSize: 13 }}>
             {connectedCount} متربط · <span style={{ color: '#DC2626' }}>{orphanCount} orphan</span> · {pipelines.length} pipeline · {messages.length} message
           </p>
@@ -170,9 +170,9 @@ export default async function AgentNetworkPage() {
 
         <div style={{ marginTop: 24, textAlign: 'center' }}>
           <a href="/admin/ai-os" style={{
-            color: '#2B4521', textDecoration: 'none', fontSize: 13,
+            color: '#FA8125', textDecoration: 'none', fontSize: 13,
             padding: '8px 16px', background: '#fff', borderRadius: 8,
-            border: '1px solid #2B4521', display: 'inline-block',
+            border: '1px solid #FA8125', display: 'inline-block',
           }}>← رجوع للداشبورد</a>
         </div>
       </div>

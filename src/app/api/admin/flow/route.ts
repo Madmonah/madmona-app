@@ -121,14 +121,14 @@ function brandedEmail(subject: string, bodyText: string, meta: { flow?: string; 
   const html = `<!doctype html><html dir="rtl" lang="ar"><body style="margin:0;background:#FAFAF7;font-family:Tahoma,Arial,sans-serif;color:#1A2E26">
   <div style="max-width:560px;margin:0 auto;padding:24px">
     <div style="border-radius:20px;overflow:hidden;border:1px solid #e7e7e1;background:#fff">
-      <div style="background:linear-gradient(135deg,#D4A017 0%,#2FA084 55%,#2B4521 100%);padding:20px 24px;color:#fff">
+      <div style="background:linear-gradient(135deg,#D4A017 0%,#2FA084 55%,#FA8125 100%);padding:20px 24px;color:#fff">
         <div style="font-size:12px;letter-spacing:2px;opacity:.9">MADMONA · مضمونة</div>
         <div style="font-size:19px;font-weight:800;margin-top:4px">${subject}</div>
         ${meta.flow ? `<div style="font-size:12px;opacity:.92;margin-top:6px">سلسلة: ${meta.flow}${meta.stage ? ` · ${meta.stage}` : ''}</div>` : ''}
       </div>
       <div style="padding:22px 24px;font-size:15px;line-height:1.9">${safe}</div>
       <div style="padding:14px 24px;border-top:1px solid #f0f0ec;font-size:12px;color:#6B7280">
-        مضمونة · سوق التأجير والخدمات · <a href="https://madmonacairo.com" style="color:#2B4521;text-decoration:none">madmonacairo.com</a>
+        مضمونة · سوق التأجير والخدمات · <a href="https://madmonacairo.com" style="color:#FA8125;text-decoration:none">madmonacairo.com</a>
       </div>
     </div>
   </div></body></html>`

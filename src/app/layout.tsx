@@ -110,7 +110,7 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
   },
-  appleWebApp: { capable: true, title: 'مضمونة', statusBarStyle: 'default' },
+  appleWebApp: { capable: true, title: 'مضمونة', statusBarStyle: 'black-translucent' },
   category: 'business',
   other: {
     // build marker — bump to verify which deployment actually serves the domain
@@ -124,7 +124,8 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: '#2B4521',
+  themeColor: '#FA8125',
+  viewportFit: 'cover',
 }
 
 const businessJsonLd = {

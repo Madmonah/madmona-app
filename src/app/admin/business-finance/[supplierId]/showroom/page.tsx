@@ -11,7 +11,7 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env
 
 const STATUS: Record<string, { label: string; color: string }> = {
   in_transit: { label: 'في الطريق', color: 'bg-amber-50 text-amber-700' },
-  in_stock: { label: 'في المعرض', color: 'bg-[#2B4521]/10 text-[#2B4521]' },
+  in_stock: { label: 'في المعرض', color: 'bg-[#FA8125]/10 text-[#FA8125]' },
   reserved: { label: 'محجوزة', color: 'bg-blue-50 text-blue-700' },
   sold: { label: 'مباعة', color: 'bg-gray-100 text-gray-500' },
 }
@@ -50,7 +50,7 @@ export default function ShowroomPage({ params }: { params: { supplierId: string 
 
   if (!supplier) return <Loader />
 
-  const accent = supplier?.theme?.accent || '#2B4521'
+  const accent = supplier?.theme?.accent || '#FA8125'
   const counts = units.reduce((a: any, u: any) => { a[u.status] = (a[u.status] || 0) + 1; return a }, {})
   const shown = filter === 'all' ? units : units.filter((u) => u.status === filter)
 
@@ -58,7 +58,7 @@ export default function ShowroomPage({ params }: { params: { supplierId: string 
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -141,7 +141,7 @@ export default function ShowroomPage({ params }: { params: { supplierId: string 
   )
 }
 
-function SellModal({ unit, accent = '#2B4521', onClose, onSaved }: any) {
+function SellModal({ unit, accent = '#FA8125', onClose, onSaved }: any) {
   const [form, setForm] = useState({ sale_price_egp: unit.sale_price_egp || '', customer_name: '', customer_phone: '' })
   const [saving, setSaving] = useState(false)
   async function save() {
@@ -175,7 +175,7 @@ function SellModal({ unit, accent = '#2B4521', onClose, onSaved }: any) {
   )
 }
 
-function AddModal({ supplierId, accent = '#2B4521', onClose, onSaved }: any) {
+function AddModal({ supplierId, accent = '#FA8125', onClose, onSaved }: any) {
   const [form, setForm] = useState({ vehicle_type: 'motorcycle', brand: '', model: '', model_year: '', color: '', sale_price_egp: '', chassis_no: '', engine_no: '', image_url: '' })
   const [saving, setSaving] = useState(false)
   async function save() {
@@ -243,4 +243,4 @@ function AddModal({ supplierId, accent = '#2B4521', onClose, onSaved }: any) {
 }
 
 function Field({ label, children }: any) { return <div><label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">{label}</label>{children}</div> }
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div> }

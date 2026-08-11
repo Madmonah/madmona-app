@@ -12,8 +12,8 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 // RPCs: claim_get_by_token (display), claim_mark_by_token (claim).
 // ============================================================
 
-const GREEN_GRAD = 'linear-gradient(135deg,#143A33 0%,#2B4521 52%,#2FA084 100%)'
-const GOLD_GRAD = 'linear-gradient(120deg,#d4a017,#2FA084,#2B4521)'
+const GREEN_GRAD = 'linear-gradient(135deg,#143A33 0%,#FA8125 52%,#2FA084 100%)'
+const GOLD_GRAD = 'linear-gradient(120deg,#d4a017,#2FA084,#FA8125)'
 const WA = 'https://wa.me/201002229982'
 
 type ClaimData = {
@@ -79,7 +79,7 @@ export default function ClaimPage() {
 
       <div style={{ width: '100%', maxWidth: 520, padding: '0 16px', marginTop: 22 }}>
         {loading && (
-          <div style={{ textAlign: 'center', color: '#2B4521', fontWeight: 700, padding: '60px 0' }}>جاري التحميل…</div>
+          <div style={{ textAlign: 'center', color: '#FA8125', fontWeight: 700, padding: '60px 0' }}>جاري التحميل…</div>
         )}
 
         {!loading && invalid && (
@@ -97,7 +97,7 @@ export default function ClaimPage() {
               <img src={data.hero} alt={data.title || ''} style={{ width: '100%', borderRadius: 16, marginBottom: 16, boxShadow: '0 8px 24px rgba(0,0,0,.12)' }} />
             )}
             <h1 style={{ fontWeight: 900, fontSize: 24, color: '#0A0A0A', margin: '0 0 4px' }}>{data.title}</h1>
-            {data.cuisine && <div style={{ color: '#2B4521', fontWeight: 700, marginBottom: 14 }}>{data.cuisine}</div>}
+            {data.cuisine && <div style={{ color: '#FA8125', fontWeight: 700, marginBottom: 14 }}>{data.cuisine}</div>}
 
             {!claimed && (
               <>
@@ -124,7 +124,7 @@ export default function ClaimPage() {
             {claimed && (
               <div style={{ textAlign: 'center', paddingTop: 6 }}>
                 <div style={{ fontSize: 48, marginBottom: 6 }}>✅</div>
-                <h2 style={{ fontWeight: 900, color: '#2B4521', margin: '0 0 6px' }}>تم استلام صفحتك!</h2>
+                <h2 style={{ fontWeight: 900, color: '#FA8125', margin: '0 0 6px' }}>تم استلام صفحتك!</h2>
                 <p style={{ color: '#555', margin: '0 0 18px', lineHeight: 1.9 }}>هنتواصل معاك قريب جداً تكمّل بياناتك (لوجو/منيو/أسعار). مبروك انضمامك لمضمونة 💚</p>
                 {data.slug && <a href={`/marketplace/${data.slug}`} style={{ ...goldBtn, width: '100%' }}>شوف صفحتك</a>}
                 <a href={WA} style={{ ...ghostBtn, width: '100%', marginTop: 10 }}>كلّمنا واتساب 💬</a>
@@ -134,7 +134,7 @@ export default function ClaimPage() {
         )}
 
         <div style={{ textAlign: 'center', color: '#9aa', fontSize: 13, marginTop: 22 }}>
-          معاملاتك مضمونة • <a href="https://www.madmonacairo.com" style={{ color: '#2B4521', textDecoration: 'none', fontWeight: 700 }}>madmonacairo.com</a>
+          معاملاتك مضمونة • <a href="https://www.madmonacairo.com" style={{ color: '#FA8125', textDecoration: 'none', fontWeight: 700 }}>madmonacairo.com</a>
         </div>
       </div>
     </div>
@@ -143,4 +143,4 @@ export default function ClaimPage() {
 
 const cardStyle: React.CSSProperties = { background: '#fff', borderRadius: 22, padding: 20, boxShadow: '0 10px 40px rgba(20,58,51,.10)', textAlign: 'center' }
 const goldBtn: React.CSSProperties = { display: 'inline-block', background: GOLD_GRAD, color: '#fff', fontWeight: 900, fontSize: 17, padding: '14px 22px', borderRadius: 999, textDecoration: 'none', boxShadow: '0 12px 30px rgba(212,160,23,.30)', textAlign: 'center' }
-const ghostBtn: React.CSSProperties = { display: 'inline-block', background: '#fff', color: '#2B4521', fontWeight: 800, fontSize: 16, padding: '12px 22px', borderRadius: 999, textDecoration: 'none', border: '1.5px solid #2B4521', textAlign: 'center' }
+const ghostBtn: React.CSSProperties = { display: 'inline-block', background: '#fff', color: '#FA8125', fontWeight: 800, fontSize: 16, padding: '12px 22px', borderRadius: 999, textDecoration: 'none', border: '1.5px solid #FA8125', textAlign: 'center' }

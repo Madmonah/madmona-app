@@ -45,11 +45,11 @@ export default function BookingToast({ visible, bookingId, onDismiss }: BookingT
     >
       <Link
         href={href}
-        className="block bg-white border border-[#2B4521]/20 rounded-2xl shadow-lg p-4 hover:shadow-xl no-underline"
+        className="block bg-white border border-[#FA8125]/20 rounded-2xl shadow-lg p-4 hover:shadow-xl no-underline"
       >
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 bg-[#2B4521]/10 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse">
-            <Bell className="w-5 h-5 text-[#2B4521]" />
+          <div className="w-10 h-10 bg-[#FA8125]/10 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse">
+            <Bell className="w-5 h-5 text-[#FA8125]" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-bold text-gray-900 text-sm">حجز جديد!</p>

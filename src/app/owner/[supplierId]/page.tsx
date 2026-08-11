@@ -61,7 +61,7 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
     router.push('/owner/login')
   }
 
-  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div>
 
   if (denied) {
     return (
@@ -70,7 +70,7 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
           <AlertCircle className="w-14 h-14 text-red-500 mx-auto mb-3" />
           <h2 className="text-xl font-black text-[#1A2E26]">مالكش صلاحية</h2>
           <p className="text-sm text-[#6B7280] mt-2">حسابك مش مربوط بالشركة دي. تواصل مع إدارة مضمونة.</p>
-          <button onClick={logout} className="mt-4 px-5 py-2.5 rounded-xl bg-[#2B4521] text-white text-sm font-bold">تسجيل خروج</button>
+          <button onClick={logout} className="mt-4 px-5 py-2.5 rounded-xl bg-[#FA8125] text-white text-sm font-bold">تسجيل خروج</button>
         </div>
       </div>
     )
@@ -100,10 +100,10 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
       <div className="pointer-events-none fixed inset-0 -z-10" style={{
         background:
           'radial-gradient(60% 50% at 88% -6%, rgba(47,160,132,0.12), transparent 60%),' +
-          'radial-gradient(52% 46% at 6% 6%, rgba(43, 69, 33,0.10), transparent 60%),' +
+          'radial-gradient(52% 46% at 6% 6%, rgba(250, 129, 37,0.10), transparent 60%),' +
           'radial-gradient(42% 40% at 50% 116%, rgba(212,160,23,0.07), transparent 60%)',
       }} />
-      <header className="relative overflow-hidden text-white bg-gradient-to-l from-[#D4A017] via-[#2FA084] to-[#2B4521]">
+      <header className="relative overflow-hidden text-white bg-gradient-to-l from-[#D4A017] via-[#2FA084] to-[#FA8125]">
         <div className="absolute -top-10 -left-10 w-44 h-44 bg-white/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative max-w-6xl mx-auto px-4 py-5">
           <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -138,9 +138,9 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
               <Link
                 key={m.href}
                 href={`/admin/business-finance/${supplierId}/${m.href}`}
-                className="group bg-white rounded-2xl p-4 border border-black/5 shadow-sm shadow-black/[0.04] flex flex-col items-center gap-2 hover:shadow-md hover:border-[#2B4521]/30 hover:-translate-y-0.5 transition-all"
+                className="group bg-white rounded-2xl p-4 border border-black/5 shadow-sm shadow-black/[0.04] flex flex-col items-center gap-2 hover:shadow-md hover:border-[#FA8125]/30 hover:-translate-y-0.5 transition-all"
               >
-                <div className="w-11 h-11 rounded-xl bg-[#2B4521]/10 text-[#2B4521] flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-[#2FA084] group-hover:to-[#2B4521] group-hover:text-white transition-colors"><div className="w-5 h-5">{m.icon}</div></div>
+                <div className="w-11 h-11 rounded-xl bg-[#FA8125]/10 text-[#FA8125] flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-[#2FA084] group-hover:to-[#FA8125] group-hover:text-white transition-colors"><div className="w-5 h-5">{m.icon}</div></div>
                 <span className="text-xs font-bold text-[#1A2E26] text-center">{m.label}</span>
               </Link>
             ))}
@@ -155,7 +155,7 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
               {(kpis?.top_services || []).slice(0, 5).map((s: any, i: number) => (
                 <div key={i} className="flex items-center justify-between text-sm">
                   <span className="text-[#1A2E26] font-bold">{s.service}</span>
-                  <span className="font-mono text-[#2B4521] font-bold">{Number(s.revenue || 0).toLocaleString()} ج</span>
+                  <span className="font-mono text-[#FA8125] font-bold">{Number(s.revenue || 0).toLocaleString()} ج</span>
                 </div>
               ))}
               {(!kpis?.top_services || kpis.top_services.length === 0) && <p className="text-xs text-[#6B7280]">لا توجد بيانات بعد</p>}
@@ -167,7 +167,7 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
               {(kpis?.by_branch || []).map((b: any, i: number) => (
                 <div key={i} className="flex items-center justify-between text-sm">
                   <span className="text-[#1A2E26] font-bold">{b.branch}</span>
-                  <span className="font-mono text-[#2B4521] font-bold">{Number(b.revenue || 0).toLocaleString()} ج</span>
+                  <span className="font-mono text-[#FA8125] font-bold">{Number(b.revenue || 0).toLocaleString()} ج</span>
                 </div>
               ))}
               {(!kpis?.by_branch || kpis.by_branch.length === 0) && <p className="text-xs text-[#6B7280]">لا توجد بيانات بعد</p>}
@@ -175,8 +175,8 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
           </div>
         </section>
 
-        <section className="bg-[#2B4521]/5 border border-[#2B4521]/20 rounded-2xl p-4 flex items-start gap-2">
-          <ShieldCheck className="w-4 h-4 text-[#2B4521] flex-shrink-0 mt-0.5" />
+        <section className="bg-[#FA8125]/5 border border-[#FA8125]/20 rounded-2xl p-4 flex items-start gap-2">
+          <ShieldCheck className="w-4 h-4 text-[#FA8125] flex-shrink-0 mt-0.5" />
           <p className="text-[10px] text-[#6B7280] leading-relaxed">
             دي بوابتك الخاصة كـ {ROLE_LABELS[access?.role]}. بتشوف بيانات شركتك بس. أي استفسار، تواصل مع إدارة مضمونة على madmonacairo.com.
           </p>
@@ -188,7 +188,7 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
 
 function OwnerStat({ icon, label, value, primary }: any) {
   return (
-    <div className={`rounded-2xl p-4 border transition-all ${primary ? 'bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#2B4521] border-transparent text-white shadow-lg shadow-[#2B4521]/25' : 'bg-white border-black/5 shadow-sm shadow-black/[0.04]'}`}>
+    <div className={`rounded-2xl p-4 border transition-all ${primary ? 'bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#FA8125] border-transparent text-white shadow-lg shadow-[#FA8125]/25' : 'bg-white border-black/5 shadow-sm shadow-black/[0.04]'}`}>
       <div className={`flex items-center gap-2 mb-1.5 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>
         <div className="w-4 h-4">{icon}</div>
         <p className="text-[10px] font-bold tracking-wider uppercase">{label}</p>

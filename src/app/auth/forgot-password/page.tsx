@@ -182,11 +182,11 @@ function ForgotContent() {
   }
 
   const inputCls =
-    'w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#2B4521]/40 focus:ring-4 focus:ring-[#2B4521]/10 transition-all'
+    'w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#FA8125]/40 focus:ring-4 focus:ring-[#FA8125]/10 transition-all'
 
   return (
     <div className="min-h-screen gradient-mesh flex flex-col relative overflow-hidden" dir={dir}>
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#2B4521]/5 rounded-full blur-3xl animate-float pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#FA8125]/5 rounded-full blur-3xl animate-float pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#2FA084]/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <header className="relative z-10">
@@ -223,7 +223,7 @@ function ForgotContent() {
               <form onSubmit={(e) => sendCode('whatsapp', e)} className="space-y-5">
                 <div>
                   <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Phone className="w-3.5 h-3.5 text-[#2B4521]" />
+                    <Phone className="w-3.5 h-3.5 text-[#FA8125]" />
                     رقم الموبايل
                   </label>
                   <input
@@ -272,12 +272,12 @@ function ForgotContent() {
                   type="button"
                   onClick={() => sendCode('email')}
                   disabled={submitting || !phone}
-                  className="w-full bg-white border-2 border-gray-100 text-gray-700 py-4 rounded-2xl font-bold text-base hover:border-[#2B4521]/30 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-white border-2 border-gray-100 text-gray-700 py-4 rounded-2xl font-bold text-base hover:border-[#FA8125]/30 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
                 >
                   {submitting && channel === 'email' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Mail className="w-4 h-4 text-[#2B4521]" />
+                    <Mail className="w-4 h-4 text-[#FA8125]" />
                   )}
                   كود على الإيميل
                 </button>
@@ -286,7 +286,7 @@ function ForgotContent() {
 
             {step === 'reset' && (
               <form onSubmit={resetPassword} className="space-y-5">
-                <div className="flex items-center justify-center gap-2 p-3 bg-[#2B4521]/5 rounded-2xl text-sm text-[#2B4521] font-bold">
+                <div className="flex items-center justify-center gap-2 p-3 bg-[#FA8125]/5 rounded-2xl text-sm text-[#FA8125] font-bold">
                   {channel === 'whatsapp' ? <MessageCircle className="w-4 h-4" /> : <Mail className="w-4 h-4" />}
                   <span dir="ltr">{sentTo}</span>
                 </div>
@@ -310,7 +310,7 @@ function ForgotContent() {
 
                 <div>
                   <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Lock className="w-3.5 h-3.5 text-[#2B4521]" />
+                    <Lock className="w-3.5 h-3.5 text-[#FA8125]" />
                     كلمة السر الجديدة
                   </label>
                   <input
@@ -328,7 +328,7 @@ function ForgotContent() {
 
                 <div>
                   <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Lock className="w-3.5 h-3.5 text-[#2B4521]" />
+                    <Lock className="w-3.5 h-3.5 text-[#FA8125]" />
                     تأكيد كلمة السر
                   </label>
                   <input
@@ -354,7 +354,7 @@ function ForgotContent() {
                 <button
                   type="submit"
                   disabled={submitting || code.length < 4 || !newPassword}
-                  className="w-full bg-[#2B4521] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-[#FA8125] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
                 >
                   {submitting ? (
                     <>
@@ -373,7 +373,7 @@ function ForgotContent() {
                   <button
                     type="button"
                     onClick={() => { setStep('phone'); setCode(''); setError(null) }}
-                    className="font-bold text-gray-400 hover:text-[#2B4521] transition-colors flex items-center gap-1"
+                    className="font-bold text-gray-400 hover:text-[#FA8125] transition-colors flex items-center gap-1"
                   >
                     <PencilLine className="w-3.5 h-3.5" />
                     غيّر الرقم / القناة
@@ -382,7 +382,7 @@ function ForgotContent() {
                     type="button"
                     onClick={resendCode}
                     disabled={resendIn > 0 || submitting}
-                    className="font-bold text-[#2B4521] disabled:text-gray-300 transition-colors flex items-center gap-1"
+                    className="font-bold text-[#FA8125] disabled:text-gray-300 transition-colors flex items-center gap-1"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     {resendIn > 0 ? `إعادة الإرسال بعد ${resendIn} ث` : 'ابعت الكود تاني'}
@@ -393,8 +393,8 @@ function ForgotContent() {
 
             {step === 'done' && (
               <div className="text-center py-6">
-                <div className="w-16 h-16 bg-[#2B4521]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-8 h-8 text-[#2B4521]" />
+                <div className="w-16 h-16 bg-[#FA8125]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-[#FA8125]" />
                 </div>
                 <p className="text-sm text-gray-600">كلمة السر اتغيّرت ودخلت على حسابك ✓</p>
               </div>
@@ -403,7 +403,7 @@ function ForgotContent() {
             {step !== 'done' && (
               <p className="mt-6 pt-5 border-t border-gray-100 text-center text-sm text-gray-500 leading-relaxed">
                 افتكرتها؟{' '}
-                <Link href="/auth/login" className="text-[#2B4521] font-bold hover:underline">
+                <Link href="/auth/login" className="text-[#FA8125] font-bold hover:underline">
                   ارجع لتسجيل الدخول
                 </Link>
               </p>
@@ -421,7 +421,7 @@ export default function ForgotPasswordPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#2B4521] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#FA8125] animate-spin" />
       </div>
     }>
       <ForgotContent />

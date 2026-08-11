@@ -58,7 +58,7 @@ export default function FriendsSheet({ onOpenDM, onClose, onOpenBook }: {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
           <div style={{ fontWeight: 900, fontSize: 16, color: '#14231E', flex: 1 }}>🤝 أصحابي {rows.length ? `(${rows.length})` : ''}</div>
           {onOpenBook && (
-            <button onClick={() => { onClose(); onOpenBook() }} style={{ background: 'linear-gradient(118deg,#2B4521,#5A6E3A)', color: '#fff', border: 'none', borderRadius: 999, padding: '7px 14px', fontWeight: 800, fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit' }}>📕 دفتري</button>
+            <button onClick={() => { onClose(); onOpenBook() }} style={{ background: 'linear-gradient(118deg,#FA8125,#F98F2A)', color: '#fff', border: 'none', borderRadius: 999, padding: '7px 14px', fontWeight: 800, fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit' }}>📕 دفتري</button>
           )}
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#8A9690' }}>✕</button>
         </div>
@@ -90,7 +90,7 @@ export default function FriendsSheet({ onOpenDM, onClose, onOpenBook }: {
               <div style={{ fontWeight: 800, color: '#14231E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.friend_name}</div>
               <div style={{ fontSize: 11, color: '#8A9690', direction: 'ltr', textAlign: 'right' }}>{r.friend_phone}</div>
             </div>
-            <button onClick={() => onOpenDM(r.friend_phone)} style={{ ...pill, background: '#2B4521', color: '#fff' }}>💬 كلّمه</button>
+            <button onClick={() => onOpenDM(r.friend_phone)} style={{ ...pill, background: '#FA8125', color: '#fff' }}>💬 كلّمه</button>
             <button onClick={() => remove(r)} style={{ ...pill, background: '#F1EEE6', color: '#5A6660' }}>شيل</button>
             <button onClick={() => block(r)} title="بلوك" style={{ ...pill, background: '#FCEEEE', color: '#B4423A', padding: '6px 9px' }}>🚫</button>
           </div>
@@ -101,5 +101,5 @@ export default function FriendsSheet({ onOpenDM, onClose, onOpenBook }: {
 }
 
 const row: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, padding: '9px 2px', borderBottom: '1px solid #F4F1E8' }
-const ava: React.CSSProperties = { width: 40, height: 40, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#2B4521)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 16, fontWeight: 800, flexShrink: 0 }
+const ava: React.CSSProperties = { width: 40, height: 40, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#FA8125)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 16, fontWeight: 800, flexShrink: 0 }
 const pill: React.CSSProperties = { border: 'none', borderRadius: 999, padding: '6px 12px', fontSize: 12, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'inherit' }

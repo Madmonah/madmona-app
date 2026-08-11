@@ -83,7 +83,7 @@ export default async function AdminTrafficPage() {
               ويب + مارد واتساب + بورصة · توقيت القاهرة · اتولّد {new Date(r.generated_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
             </p>
           </div>
-          <a href="/admin/traffic" className="text-xs font-bold text-white bg-[#2B4521] px-4 py-2 rounded-full">🔄 تحديث</a>
+          <a href="/admin/traffic" className="text-xs font-bold text-white bg-[#FA8125] px-4 py-2 rounded-full">🔄 تحديث</a>
         </div>
       </header>
 
@@ -123,7 +123,7 @@ export default async function AdminTrafficPage() {
               {r.top_pages.map(p => (
                 <div key={p.page} className="grid grid-cols-[1fr_60px_40px] items-center gap-2 text-[11px]">
                   <span className="font-bold text-gray-700 truncate" dir="ltr">{pageLabel(p.page)}</span>
-                  <Bar v={p.visitors} max={maxPage} color="bg-[#2B4521]" />
+                  <Bar v={p.visitors} max={maxPage} color="bg-[#FA8125]" />
                   <span className="tabular-nums font-bold text-gray-500">{p.visitors}</span>
                 </div>
               ))}

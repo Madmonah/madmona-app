@@ -68,12 +68,12 @@ export default async function LeadsFeed() {
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div>
-            <h1 style={{ color: '#2B4521', margin: 0, fontSize: 26 }}>🎯 Leads Feed</h1>
+            <h1 style={{ color: '#FA8125', margin: 0, fontSize: 26 }}>🎯 Leads Feed</h1>
             <p style={{ color: '#666', margin: '4px 0 0', fontSize: 13 }}>كل الـ leads جاية من الـ landing page</p>
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
-            <a href="/admin/agents" style={{ color: '#2B4521', fontSize: 13 }}>← الفريق</a>
-            <a href="/admin/activity" style={{ color: '#2B4521', fontSize: 13 }}>← النشاط</a>
+            <a href="/admin/agents" style={{ color: '#FA8125', fontSize: 13 }}>← الفريق</a>
+            <a href="/admin/activity" style={{ color: '#FA8125', fontSize: 13 }}>← النشاط</a>
           </div>
         </div>
 
@@ -82,7 +82,7 @@ export default async function LeadsFeed() {
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
           {[
-            { label: 'إجمالي الـ Leads', val: total, color: '#2B4521' },
+            { label: 'إجمالي الـ Leads', val: total, color: '#FA8125' },
             { label: 'النهارده', val: today, color: '#2FA084' },
             { label: '🔥 عالي النية', val: highPriority, color: '#6FCF97' },
           ].map((s) => (
@@ -116,7 +116,7 @@ export default async function LeadsFeed() {
               }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: 'flex', gap: 12, alignItems: 'baseline', marginBottom: 4 }}>
-                    <strong style={{ color: '#2B4521', fontSize: 16 }}>{lead.contact_name ?? 'مجهول'}</strong>
+                    <strong style={{ color: '#FA8125', fontSize: 16 }}>{lead.contact_name ?? 'مجهول'}</strong>
                     <span style={{
                       fontSize: 11,
                       padding: '2px 8px',

@@ -11,7 +11,7 @@ import ChatBottomNav from '@/components/ChatBottomNav'
 import { subscribeToPush, getNotificationPermission, isPushSupported } from '@/lib/push-subscription'
 
 // ── شات المارد — إعادة تصميم 4b (29 Jul 2026) من design_handoff_bourse_marid ──
-// هوية مضمونة، مش واتساب ولا تليجرام: هيدر متدرّج غامق #14231E→#2B4521،
+// هوية مضمونة، مش واتساب ولا تليجرام: هيدر متدرّج غامق #14231E→#FA8125،
 // أرضية الشات #F1EEE6 بنقشة نقط خضرا، فقاعة المستخدم متدرّج أخضر بعلامات
 // قراءة #8FE3C8، فقاعة المارد بيضا مع أفاتار الجني، والكل معلّق من اليمين
 // (فقاعة المستخدم مزاحة ٣٦px عشان تتحاذى مع عمود الأفاتار — زي الموك بالظبط).
@@ -93,7 +93,7 @@ function normEg(raw: string) {
 function linkify(text: string, onDark = false): React.ReactNode[] {
   return (text || '').split(/(https?:\/\/[^\s]+)/g).map((p, i) =>
     /^https?:\/\//.test(p) ? (
-      <a key={i} href={p} target="_blank" rel="noopener noreferrer" style={{ color: onDark ? '#CDEFE2' : '#2B4521', fontWeight: 600, textDecoration: 'underline', wordBreak: 'break-all' }}>{p}</a>
+      <a key={i} href={p} target="_blank" rel="noopener noreferrer" style={{ color: onDark ? '#CDEFE2' : '#FA8125', fontWeight: 600, textDecoration: 'underline', wordBreak: 'break-all' }}>{p}</a>
     ) : (
       <span key={i}>{p}</span>
     )
@@ -393,7 +393,7 @@ export default function ChatPage() {
     } catch { alert('مش قادر أوصل للمايك') }
   }
 
-  if (!authChecked) return <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'linear-gradient(160deg,#14231E,#2B4521)', color: '#fff', fontFamily: 'system-ui' }}>لحظة…</div>
+  if (!authChecked) return <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'linear-gradient(160deg,#14231E,#FA8125)', color: '#fff', fontFamily: 'system-ui' }}>لحظة…</div>
 
   if (!started) {
     // 🔗 (8 Aug 2026) حساب واحد فقط: المارد بقى جزء من حساب مضمونة.
@@ -402,20 +402,20 @@ export default function ChatPage() {
     const backTo = '/chat/marid' + (pendingQ ? `?q=${encodeURIComponent(pendingQ)}` : '')
     const go = (path: string) => `${path}?redirect=${encodeURIComponent(backTo)}`
     return (
-      <div dir="rtl" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg,#2B4521 0%,#2FA084 100%)', padding: 16, fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
+      <div dir="rtl" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg,#FA8125 0%,#2FA084 100%)', padding: 16, fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
         <div style={{ background: '#FAFAF7', borderRadius: 22, padding: 30, width: '100%', maxWidth: 380, boxShadow: '0 18px 50px rgba(0,0,0,.28)' }}>
           <div style={{ width: 84, height: 84, margin: '0 auto 12px', borderRadius: '50%', background: 'linear-gradient(135deg,#F4C430,#2FA084)', display: 'grid', placeItems: 'center', boxShadow: '0 8px 22px rgba(47,160,132,.35)' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={AVATAR_HD} alt="المارد" style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover' }} />
           </div>
-          <h1 style={{ textAlign: 'center', margin: '0 0 4px', fontSize: 23, fontWeight: 800, color: '#2B4521' }}>شات مضمونة</h1>
+          <h1 style={{ textAlign: 'center', margin: '0 0 4px', fontSize: 23, fontWeight: 800, color: '#FA8125' }}>شات مضمونة</h1>
           <p style={{ textAlign: 'center', margin: '0 0 18px', color: '#667', fontSize: 14 }}>
             {authedNoPhone
               ? `أهلًا${name ? ' يا ' + name : ''} 👋 فاضل خطوة واحدة بس`
               : 'حساب مضمونة واحد — للسوق والحجوزات والمارد'}
           </p>
           {pendingQ && (
-            <div style={{ background: 'rgba(47,160,132,.10)', border: '1px solid rgba(47,160,132,.25)', borderRadius: 14, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#2B4521', textAlign: 'center', lineHeight: 1.6 }}>
+            <div style={{ background: 'rgba(47,160,132,.10)', border: '1px solid rgba(47,160,132,.25)', borderRadius: 14, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#FA8125', textAlign: 'center', lineHeight: 1.6 }}>
               💬 سؤالك محفوظ: «{pendingQ}»
               <span style={{ display: 'block', fontSize: 11.5, color: '#667', marginTop: 2 }}>هيتبعت للمارد لوحده بعد الدخول — مش هتكتبه تاني</span>
             </div>
@@ -430,7 +430,7 @@ export default function ChatPage() {
           ) : (
             <>
               <a href={go('/auth/login')} style={{ ...btnPrimary, width: '100%', display: 'block', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}>سجّل دخول</a>
-              <a href={go('/auth/signup')} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', width: '100%', boxSizing: 'border-box', marginTop: 10, padding: '13px 16px', borderRadius: 24, border: '2px solid rgba(43, 69, 33,.25)', color: '#2B4521', fontWeight: 800, fontSize: 15, background: '#fff' }}>أول مرة؟ اعمل حساب في دقيقة</a>
+              <a href={go('/auth/signup')} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', width: '100%', boxSizing: 'border-box', marginTop: 10, padding: '13px 16px', borderRadius: 24, border: '2px solid rgba(250, 129, 37,.25)', color: '#FA8125', fontWeight: 800, fontSize: 15, background: '#fff' }}>أول مرة؟ اعمل حساب في دقيقة</a>
               <p style={{ margin: '14px 0 0', color: '#889', fontSize: 11.5, textAlign: 'center', lineHeight: 1.7 }}>تدخل مرة واحدة — المارد يعرفك ويكمّل معاك من آخر كلام على أي جهاز.</p>
             </>
           )}
@@ -456,14 +456,14 @@ export default function ChatPage() {
         .mchat-hs::-webkit-scrollbar{display:none}
       `}</style>
 
-      {/* ─── الهيدر: متدرّج غامق #14231E→#2B4521 + شريط المثبّتات جوّاه ─── */}
-      <header style={{ background: 'linear-gradient(135deg,#14231E,#2B4521)', color: '#fff', paddingBottom: 12, position: 'relative', zIndex: 25, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
+      {/* ─── الهيدر: متدرّج غامق #14231E→#FA8125 + شريط المثبّتات جوّاه ─── */}
+      <header style={{ background: 'linear-gradient(135deg,#14231E,#FA8125)', color: '#fff', paddingBottom: 12, position: 'relative', zIndex: 25, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 16px 0' }}>
           <Link href="/chat" aria-label="رجوع" style={{ color: '#fff', display: 'flex', flexShrink: 0, padding: 2 }}>
             <ArrowRight size={20} strokeWidth={2.5} />
           </Link>
           <span style={{ position: 'relative', flexShrink: 0 }}>
-            <span style={{ width: 42, height: 42, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#2B4521)', border: '2px solid rgba(255,255,255,.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            <span style={{ width: 42, height: 42, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#FA8125)', border: '2px solid rgba(255,255,255,.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={AVATAR_HD} alt="المارد" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
             </span>
@@ -519,7 +519,7 @@ export default function ChatPage() {
         <div style={{ maxHeight: 180, overflowY: 'auto', background: '#fff', borderBottom: '1px solid rgba(0,0,0,.06)' }}>
           {pinnedList.map((pm) => (
             <div key={pm.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderBottom: '1px solid #F4F1E8', fontSize: 13 }}>
-              <span style={{ fontSize: 10.5, fontWeight: 800, color: pm.role === 'user' ? '#2FA084' : '#2B4521', flexShrink: 0 }}>{pm.role === 'user' ? 'انت' : 'المارد'}</span>
+              <span style={{ fontSize: 10.5, fontWeight: 800, color: pm.role === 'user' ? '#2FA084' : '#FA8125', flexShrink: 0 }}>{pm.role === 'user' ? 'انت' : 'المارد'}</span>
               <span style={{ flex: 1, minWidth: 0, color: '#5A6660', fontWeight: 600, fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{snippet(pm)}</span>
               <button onClick={() => togglePin(pm.id)} title="إلغاء التثبيت" style={{ border: 'none', background: 'none', color: '#E26D5C', cursor: 'pointer', fontSize: 13, flexShrink: 0 }}>✕</button>
             </div>
@@ -533,7 +533,7 @@ export default function ChatPage() {
           {installEvt ? (
             <>
               <span style={{ flex: 1 }}>ثبّت شات مضمونة على تليفونك — أيقونة مستقلة، رد فوري بضغطة.</span>
-              <button onClick={installApp} style={{ background: '#2B4521', color: '#fff', border: 'none', borderRadius: 16, padding: '6px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>ثبّت</button>
+              <button onClick={installApp} style={{ background: '#FA8125', color: '#fff', border: 'none', borderRadius: 16, padding: '6px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>ثبّت</button>
             </>
           ) : (
             <span style={{ flex: 1 }}>عايز الشات كأيقونة؟ اضغط زر المشاركة ⬆️ في سفاري واختار «إضافة إلى الشاشة الرئيسية».</span>
@@ -546,7 +546,7 @@ export default function ChatPage() {
       <div
         ref={scrollRef}
         onClick={() => { setMenuFor(null); setShowMenu(false) }}
-        style={{ flex: 1, overflowY: 'auto', padding: '16px 14px 8px', background: '#F1EEE6', backgroundImage: 'radial-gradient(circle at 1.5px 1.5px, rgba(43, 69, 33,.07) 1.5px, transparent 0)', backgroundSize: '26px 26px' }}
+        style={{ flex: 1, overflowY: 'auto', padding: '16px 14px 8px', background: '#F1EEE6', backgroundImage: 'radial-gradient(circle at 1.5px 1.5px, rgba(250, 129, 37,.07) 1.5px, transparent 0)', backgroundSize: '26px 26px' }}
       >
         {visible.map((m, i) => {
           const showDay = !q && (i === 0 || dayOf(visible[i - 1]) !== dayOf(m))
@@ -574,7 +574,7 @@ export default function ChatPage() {
               {/* الكل معلّق من اليمين (RTL): المارد بأفاتاره، والمستخدم مزاح ٣٦px */}
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', justifyContent: 'flex-start', marginBottom: m.reactions?.length ? 18 : 10 }}>
                 {!mine && (
-                  <span style={{ width: 28, height: 28, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#2B4521)', overflow: 'hidden', flexShrink: 0 }}>
+                  <span style={{ width: 28, height: 28, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#FA8125)', overflow: 'hidden', flexShrink: 0 }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={AVATAR_SM} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </span>
@@ -583,11 +583,11 @@ export default function ChatPage() {
                   <div
                     onClick={(e) => { e.stopPropagation(); setShowMenu(false); if (!m.deleted) setMenuFor(menuFor === m.id ? null : m.id) }}
                     style={{
-                      background: m.deleted ? '#ECE9DF' : mine ? 'linear-gradient(118deg,#2B4521,#5A6E3A)' : '#fff',
+                      background: m.deleted ? '#ECE9DF' : mine ? 'linear-gradient(118deg,#FA8125,#F98F2A)' : '#fff',
                       color: m.deleted ? '#8A9690' : mine ? '#fff' : '#14231E',
                       borderRadius: mine ? '18px 18px 5px 18px' : '18px 18px 18px 5px',
                       padding: '11px 14px',
-                      boxShadow: m.deleted ? 'none' : mine ? '0 6px 16px -8px rgba(43, 69, 33,.45)' : '0 1px 2px rgba(20,35,30,.06)',
+                      boxShadow: m.deleted ? 'none' : mine ? '0 6px 16px -8px rgba(250, 129, 37,.45)' : '0 1px 2px rgba(20,35,30,.06)',
                       outline: menuFor === m.id ? '1.5px solid #2FA084' : 'none',
                       fontSize: 13, fontWeight: 600, lineHeight: 1.65,
                       whiteSpace: 'pre-wrap', wordBreak: 'break-word',
@@ -595,8 +595,8 @@ export default function ChatPage() {
                     }}
                   >
                     {parent && (
-                      <div style={{ background: mine ? 'rgba(255,255,255,.15)' : 'rgba(43, 69, 33,.06)', borderRight: mine ? '3px solid rgba(255,255,255,.85)' : '3px solid #2B4521', borderRadius: 8, padding: '6px 10px', marginBottom: 8 }}>
-                        <div style={{ fontSize: 9.5, fontWeight: 800, color: mine ? '#fff' : '#2B4521' }}>{parent.role === 'user' ? 'انت' : 'المارد'}</div>
+                      <div style={{ background: mine ? 'rgba(255,255,255,.15)' : 'rgba(250, 129, 37,.06)', borderRight: mine ? '3px solid rgba(255,255,255,.85)' : '3px solid #FA8125', borderRadius: 8, padding: '6px 10px', marginBottom: 8 }}>
+                        <div style={{ fontSize: 9.5, fontWeight: 800, color: mine ? '#fff' : '#FA8125' }}>{parent.role === 'user' ? 'انت' : 'المارد'}</div>
                         <div style={{ fontSize: 10.5, fontWeight: 600, color: mine ? 'rgba(255,255,255,.8)' : '#5A6660', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{snippet(parent)}</div>
                       </div>
                     )}
@@ -615,7 +615,7 @@ export default function ChatPage() {
                         {url && (
                           <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginTop: 8, textDecoration: 'none', border: mine ? '1px solid rgba(255,255,255,.25)' : '1px solid #EAE5D9', borderRadius: 14, overflow: 'hidden', background: mine ? 'rgba(255,255,255,.12)' : '#FAFAF7' }}>
                             <div style={{ padding: '8px 11px' }}>
-                              <div style={{ fontSize: 9.5, fontWeight: 800, color: mine ? '#CDEFE2' : '#2B4521' }}>🔗 {domainOf(url)}</div>
+                              <div style={{ fontSize: 9.5, fontWeight: 800, color: mine ? '#CDEFE2' : '#FA8125' }}>🔗 {domainOf(url)}</div>
                               <div style={{ fontSize: 10.5, fontWeight: 600, color: mine ? 'rgba(255,255,255,.85)' : '#5A6660', wordBreak: 'break-all', marginTop: 1 }}>{url.slice(0, 70)}</div>
                             </div>
                           </a>
@@ -682,7 +682,7 @@ export default function ChatPage() {
         <div style={{ padding: '8px 14px 0', background: '#F1EEE6' }}>
           <div className="mchat-hs" style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 8 }}>
             {QUICKS.map((qq) => (
-              <button key={qq} onClick={() => sendQuick(qq)} style={{ flex: 'none', background: '#fff', border: '1.5px solid rgba(43, 69, 33,.25)', color: '#2B4521', fontSize: 11.5, fontWeight: 800, padding: '8px 14px', borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{qq}</button>
+              <button key={qq} onClick={() => sendQuick(qq)} style={{ flex: 'none', background: '#fff', border: '1.5px solid rgba(250, 129, 37,.25)', color: '#FA8125', fontSize: 11.5, fontWeight: 800, padding: '8px 14px', borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{qq}</button>
             ))}
           </div>
         </div>
@@ -707,12 +707,12 @@ export default function ChatPage() {
       {/* شريط الرد/التعديل فوق خانة الكتابة — بستايل الاقتباس */}
       {(replyTo || editingId) && (
         <div style={{ background: '#fff', borderTop: '1px solid rgba(0,0,0,.05)', padding: '8px 12px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(43, 69, 33,.06)', borderRight: '3px solid #2B4521', borderRadius: 8, padding: '6px 10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(250, 129, 37,.06)', borderRight: '3px solid #FA8125', borderRadius: 8, padding: '6px 10px' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 9.5, fontWeight: 800, color: '#2B4521' }}>{editingId ? '✏️ تعديل الرسالة' : `↩️ رد على ${replyTo?.role === 'user' ? 'نفسك' : 'المارد'}`}</div>
+              <div style={{ fontSize: 9.5, fontWeight: 800, color: '#FA8125' }}>{editingId ? '✏️ تعديل الرسالة' : `↩️ رد على ${replyTo?.role === 'user' ? 'نفسك' : 'المارد'}`}</div>
               <div style={{ fontSize: 10.5, fontWeight: 600, color: '#5A6660', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{editingId ? (messages.find((x) => x.id === editingId)?.text || '') : snippet(replyTo || undefined)}</div>
             </div>
-            <button onClick={() => { setReplyTo(null); setEditingId(null); if (editingId) setInput('') }} aria-label="إلغاء" style={{ border: 'none', background: 'none', color: '#2B4521', cursor: 'pointer', fontSize: 17, lineHeight: 1, flexShrink: 0 }}>✕</button>
+            <button onClick={() => { setReplyTo(null); setEditingId(null); if (editingId) setInput('') }} aria-label="إلغاء" style={{ border: 'none', background: 'none', color: '#FA8125', cursor: 'pointer', fontSize: 17, lineHeight: 1, flexShrink: 0 }}>✕</button>
           </div>
         </div>
       )}
@@ -760,11 +760,11 @@ export default function ChatPage() {
       {forwardMsg && (
         <div onClick={() => setForwardMsg(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', display: 'grid', placeItems: 'center', zIndex: 50, padding: 20 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 18, padding: 20, width: '100%', maxWidth: 340, boxShadow: '0 18px 50px rgba(0,0,0,.3)' }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#2B4521', marginBottom: 10 }}>↗️ تحويل الرسالة</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#FA8125', marginBottom: 10 }}>↗️ تحويل الرسالة</div>
             <div style={{ background: '#FAFAF7', border: '1px solid #EAE5D9', borderRadius: 10, padding: '10px 12px', fontSize: 13.5, color: '#5A6660', maxHeight: 120, overflowY: 'auto', marginBottom: 16 }}>{snippet(forwardMsg) || '📎 ملف'}</div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setForwardMsg(null)} style={{ flex: 1, background: '#F1EEE6', color: '#5A6660', border: 'none', borderRadius: 12, padding: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>إلغاء</button>
-              <button onClick={() => doForward(forwardMsg)} style={{ flex: 1, background: 'linear-gradient(135deg,#2B4521,#2FA084)', color: '#fff', border: 'none', borderRadius: 12, padding: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>حوّل هنا</button>
+              <button onClick={() => doForward(forwardMsg)} style={{ flex: 1, background: 'linear-gradient(135deg,#FA8125,#2FA084)', color: '#fff', border: 'none', borderRadius: 12, padding: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>حوّل هنا</button>
             </div>
           </div>
         </div>
@@ -776,10 +776,10 @@ export default function ChatPage() {
 }
 
 // (8 Aug 2026) ستايل inp بتاع فورم الاسم/الرقم القديم اتشال مع الفورم نفسه
-const btnPrimary: React.CSSProperties = { background: 'linear-gradient(135deg,#F4C430 0%,#2FA084 55%,#2B4521 100%)', color: '#fff', border: 'none', borderRadius: 24, height: 48, fontSize: 18, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(43, 69, 33,.32)', fontFamily: 'inherit' }
+const btnPrimary: React.CSSProperties = { background: 'linear-gradient(135deg,#F4C430 0%,#2FA084 55%,#FA8125 100%)', color: '#fff', border: 'none', borderRadius: 24, height: 48, fontSize: 18, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(250, 129, 37,.32)', fontFamily: 'inherit' }
 const hdrBtn: React.CSSProperties = { background: 'none', color: 'rgba(255,255,255,.85)', border: 'none', padding: 6, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center' }
-const actionBtn: React.CSSProperties = { width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,#2B4521,#2FA084)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, boxShadow: '0 8px 18px -6px rgba(43, 69, 33,.5)' }
-const typDot: React.CSSProperties = { width: 6, height: 6, borderRadius: '50%', background: '#2B4521', display: 'inline-block' }
+const actionBtn: React.CSSProperties = { width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,#FA8125,#2FA084)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, boxShadow: '0 8px 18px -6px rgba(250, 129, 37,.5)' }
+const typDot: React.CSSProperties = { width: 6, height: 6, borderRadius: '50%', background: '#FA8125', display: 'inline-block' }
 const sheetBtn: React.CSSProperties = { border: '1px solid #EAE5D9', background: '#FAFAF7', borderRadius: 12, padding: '10px 16px', fontSize: 26, cursor: 'pointer', display: 'grid', placeItems: 'center', gap: 2, fontFamily: 'inherit' }
 const sheetLbl: React.CSSProperties = { fontSize: 12, color: '#5A6660', fontWeight: 600 }
 const menuItem: React.CSSProperties = { display: 'block', width: '100%', textAlign: 'start', background: 'none', border: 'none', padding: '10px 14px', fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', color: '#14231E', borderBottom: '1px solid #F4F1E8' }

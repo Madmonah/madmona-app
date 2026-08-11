@@ -145,15 +145,15 @@ export default function WelcomeMessagesPage() {
 
   if (stage === 'loading') {
     return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-      <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
+      <Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" />
     </div>
   }
 
   if (stage === 'unauthenticated') {
     return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
       <div className="bg-white rounded-3xl p-8 text-center max-w-sm">
-        <Lock className="w-8 h-8 text-[#2B4521] mx-auto mb-3" />
-        <Link href="/auth/login?redirect=/admin/welcome-messages" className="block bg-[#2B4521] text-white py-3 rounded-xl font-bold mt-3">
+        <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
+        <Link href="/auth/login?redirect=/admin/welcome-messages" className="block bg-[#FA8125] text-white py-3 rounded-xl font-bold mt-3">
           دخول
         </Link>
       </div>
@@ -174,7 +174,7 @@ export default function WelcomeMessagesPage() {
       <div className="bg-white rounded-3xl p-8 text-center max-w-sm">
         <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
         <p className="text-sm text-[#6B7280] mb-4">{error || 'مفيش data'}</p>
-        <button onClick={load} className="bg-[#2B4521] text-white px-5 py-2.5 rounded-xl font-bold">حاول تاني</button>
+        <button onClick={load} className="bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-bold">حاول تاني</button>
       </div>
     </div>
   }
@@ -194,7 +194,7 @@ export default function WelcomeMessagesPage() {
               <ArrowRight className="w-4 h-4 text-[#6B7280]" />
             </Link>
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521]">MADMONA · WELCOME</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125]">MADMONA · WELCOME</p>
               <h1 className="text-base md:text-lg font-black text-[#1A2E26] leading-none">💌 الرسائل الترحيبية</h1>
             </div>
           </div>
@@ -207,7 +207,7 @@ export default function WelcomeMessagesPage() {
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-6 pb-12">
         {feedback && (
           <div className={`rounded-2xl p-3.5 text-sm font-bold flex items-center gap-2 ${
-            feedback.type === 'success' ? 'bg-[#2B4521]/10 text-[#2B4521]' : 'bg-red-50 text-red-700'
+            feedback.type === 'success' ? 'bg-[#FA8125]/10 text-[#FA8125]' : 'bg-red-50 text-red-700'
           }`}>
             {feedback.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
             {feedback.msg}
@@ -257,13 +257,13 @@ export default function WelcomeMessagesPage() {
         {/* TEST BOX */}
         <section className="bg-white rounded-2xl border border-gray-100 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <TestTube className="w-4 h-4 text-[#2B4521]" />
+            <TestTube className="w-4 h-4 text-[#FA8125]" />
             <h2 className="text-sm font-black text-[#1A2E26]">جرّب الترحيب على إيميلك</h2>
           </div>
           <p className="text-xs text-[#6B7280] mb-3">اكتب إيميل، اضغط "Test" تحت — هـ يـ queue الرسالة فورًا.</p>
           <input type="email" value={testEmail} onChange={(e) => setTestEmail(e.target.value)}
             placeholder="your-email@example.com"
-            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:border-[#2B4521] focus:outline-none text-sm font-mono" />
+            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:border-[#FA8125] focus:outline-none text-sm font-mono" />
         </section>
 
         {/* EMAIL TEMPLATES */}
@@ -275,7 +275,7 @@ export default function WelcomeMessagesPage() {
               <div key={t.template_key} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
                 <div className="px-4 py-3 bg-[#FAFAF7] border-b border-gray-100 flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-[#2B4521]/10 text-[#2B4521] flex items-center justify-center flex-shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-[#FA8125]/10 text-[#FA8125] flex items-center justify-center flex-shrink-0">
                       <Mail className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
@@ -285,16 +285,16 @@ export default function WelcomeMessagesPage() {
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${
-                      t.is_active ? 'bg-[#2B4521]/10 text-[#2B4521]' : 'bg-gray-100 text-gray-600'
+                      t.is_active ? 'bg-[#FA8125]/10 text-[#FA8125]' : 'bg-gray-100 text-gray-600'
                     }`}>{t.is_active ? '✓ نشط' : '✗ معطل'}</span>
                     <button onClick={() => toggleTemplate(t.template_key, t.is_active)} disabled={toggling === t.template_key}
                       className={`text-[10px] font-bold px-3 py-1.5 rounded-lg ${
-                        t.is_active ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-[#2B4521] text-white hover:bg-[#185547]'
+                        t.is_active ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-[#FA8125] text-white hover:bg-[#185547]'
                       } disabled:opacity-50`}>
                       {toggling === t.template_key ? '...' : (t.is_active ? 'وقف' : 'فعّل')}
                     </button>
                     <button onClick={() => sendTest(t.template_key)} disabled={testingKey === t.template_key || !testEmail}
-                      className="text-[10px] font-bold bg-[#2B4521] text-white px-3 py-1.5 rounded-lg hover:bg-[#185547] flex items-center gap-1 disabled:opacity-50">
+                      className="text-[10px] font-bold bg-[#FA8125] text-white px-3 py-1.5 rounded-lg hover:bg-[#185547] flex items-center gap-1 disabled:opacity-50">
                       {testingKey === t.template_key ? <Loader2 className="w-3 h-3 animate-spin" /> : <><TestTube className="w-3 h-3" /> Test</>}
                     </button>
                   </div>
@@ -381,7 +381,7 @@ export default function WelcomeMessagesPage() {
                       </div>
                       <div className="text-left flex-shrink-0">
                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                          r.status === 'sent' ? 'bg-[#2B4521]/10 text-[#2B4521]' :
+                          r.status === 'sent' ? 'bg-[#FA8125]/10 text-[#FA8125]' :
                           r.status === 'failed' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
                         }`}>{r.status}</span>
                         {r.sent_at && <p className="text-[9px] text-[#6B7280] mt-0.5">
@@ -409,7 +409,7 @@ export default function WelcomeMessagesPage() {
                       <div className="flex items-center justify-between gap-2 mb-0.5">
                         <p className="text-xs font-bold text-[#1A2E26] truncate">{r.recipient_name || r.recipient_phone}</p>
                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${
-                          r.status === 'sent' ? 'bg-[#2B4521]/10 text-[#2B4521]' :
+                          r.status === 'sent' ? 'bg-[#FA8125]/10 text-[#FA8125]' :
                           r.status === 'failed' || r.status === 'blocked' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
                         }`}>{r.status}</span>
                       </div>
@@ -451,7 +451,7 @@ export default function WelcomeMessagesPage() {
 }
 
 function Kpi({ icon, label, value, note, tone }: { icon: ReactNode; label: string; value: number | string; note?: string; tone?: 'positive' | 'negative' | 'neutral' }) {
-  const t = tone === 'positive' ? 'text-[#2B4521]' : tone === 'negative' ? 'text-red-600' : 'text-[#1A2E26]'
+  const t = tone === 'positive' ? 'text-[#FA8125]' : tone === 'negative' ? 'text-red-600' : 'text-[#1A2E26]'
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-3">
       <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
@@ -465,7 +465,7 @@ function Kpi({ icon, label, value, note, tone }: { icon: ReactNode; label: strin
 }
 
 function Stat({ label, value, tone }: { label: string; value: number | string; tone?: 'positive' | 'negative' | 'neutral' }) {
-  const t = tone === 'positive' ? 'text-[#2B4521]' : tone === 'negative' ? 'text-red-600' : 'text-[#1A2E26]'
+  const t = tone === 'positive' ? 'text-[#FA8125]' : tone === 'negative' ? 'text-red-600' : 'text-[#1A2E26]'
   return (
     <div className="px-3 py-2.5 text-center">
       <p className="text-[10px] font-bold uppercase text-[#6B7280] mb-1">{label}</p>
@@ -479,20 +479,20 @@ function WaCard({ title, subtitle, sent, blocked, today, month, icon, status }: 
     <div className="bg-white rounded-2xl border border-gray-100 p-4">
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-[#2B4521]/10 text-[#2B4521] flex items-center justify-center flex-shrink-0">{icon}</div>
+          <div className="w-9 h-9 rounded-xl bg-[#FA8125]/10 text-[#FA8125] flex items-center justify-center flex-shrink-0">{icon}</div>
           <div className="min-w-0">
             <p className="text-xs font-mono font-bold text-[#1A2E26] truncate">{title}</p>
             <p className="text-[10px] text-[#6B7280]">{subtitle}</p>
           </div>
         </div>
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
-          status === 'active' ? 'bg-[#2B4521]/10 text-[#2B4521]' : 'bg-gray-100 text-gray-500'
+          status === 'active' ? 'bg-[#FA8125]/10 text-[#FA8125]' : 'bg-gray-100 text-gray-500'
         }`}>{status}</span>
       </div>
       <div className="grid grid-cols-3 gap-2">
         <div className="bg-[#FAFAF7] rounded-lg p-2 text-center">
           <p className="text-[9px] font-bold uppercase text-[#6B7280]">إجمالي</p>
-          <p className="text-base font-black text-[#2B4521]">{sent}</p>
+          <p className="text-base font-black text-[#FA8125]">{sent}</p>
         </div>
         <div className="bg-[#FAFAF7] rounded-lg p-2 text-center">
           <p className="text-[9px] font-bold uppercase text-[#6B7280]">الشهر</p>
@@ -510,13 +510,13 @@ function WaCard({ title, subtitle, sent, blocked, today, month, icon, status }: 
 function TriggerStatus({ label, exists, fix, warning, note }: { label: string; exists: boolean; fix?: string; warning?: string; note?: string }) {
   return (
     <div className="flex items-start gap-2.5">
-      <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${exists ? 'bg-[#2B4521]/10 text-[#2B4521]' : 'bg-red-50 text-red-600'}`}>
+      <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${exists ? 'bg-[#FA8125]/10 text-[#FA8125]' : 'bg-red-50 text-red-600'}`}>
         {exists ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-[#1A2E26]">{label}</p>
         {warning && <p className="text-[11px] text-amber-700 mt-0.5">⚠️ {warning}</p>}
-        {note && <p className="text-[11px] text-[#2B4521] mt-0.5">✓ {note}</p>}
+        {note && <p className="text-[11px] text-[#FA8125] mt-0.5">✓ {note}</p>}
         {!exists && fix && <p className="text-[11px] text-[#6B7280] mt-0.5">📌 {fix}</p>}
       </div>
     </div>
@@ -525,8 +525,8 @@ function TriggerStatus({ label, exists, fix, warning, note }: { label: string; e
 
 function QuickLink({ href, icon, title }: { href: string; icon: ReactNode; title: string }) {
   return (
-    <Link href={href} className="bg-white rounded-2xl border border-gray-100 hover:border-[#2B4521] p-3 transition-colors group">
-      <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#FAFAF7] text-[#2B4521] mb-2 group-hover:bg-[#2B4521] group-hover:text-white transition-colors">
+    <Link href={href} className="bg-white rounded-2xl border border-gray-100 hover:border-[#FA8125] p-3 transition-colors group">
+      <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#FAFAF7] text-[#FA8125] mb-2 group-hover:bg-[#FA8125] group-hover:text-white transition-colors">
         <span className="w-4 h-4 inline-flex">{icon}</span>
       </div>
       <p className="text-sm font-bold text-[#1A2E26]">{title}</p>

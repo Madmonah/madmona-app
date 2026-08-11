@@ -25,7 +25,7 @@ type Charts = { monthly: Monthly[]; by_category: CatRow[]; listings_by_category:
 
 /* ---------- helpers ---------- */
 const NUM = 'var(--font-inter), system-ui, sans-serif'
-const PALETTE = ['#2B4521', '#2FA084', '#D4A017', '#6FCF97', '#5A6E3A', '#B8861A', '#CBD6D0', '#175C4F', '#E9C45A']
+const PALETTE = ['#FA8125', '#2FA084', '#D4A017', '#6FCF97', '#F98F2A', '#B8861A', '#CBD6D0', '#175C4F', '#E9C45A']
 const AR_MONTHS = ['ينا', 'فبر', 'مار', 'أبر', 'ماي', 'يون', 'يول', 'أغس', 'سبت', 'أكت', 'نوف', 'ديس']
 
 function monthAr(m: string) {
@@ -292,7 +292,7 @@ export default function AdminOverview() {
                     <circle cx="24" cy="24" r="20" fill="none" stroke="#E7F1ED" strokeWidth="6" />
                     <circle cx="24" cy="24" r="20" fill="none" stroke="url(#hg)" strokeWidth="6" strokeLinecap="round"
                       strokeDasharray={2 * Math.PI * 20} strokeDashoffset={(2 * Math.PI * 20) * (1 - healthScore / 100)} transform="rotate(-90 24 24)" />
-                    <defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#D4A017" /><stop offset="1" stopColor="#2B4521" /></linearGradient></defs>
+                    <defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#D4A017" /><stop offset="1" stopColor="#FA8125" /></linearGradient></defs>
                   </svg>
                   <b style={{ fontFamily: NUM }}>{healthScore}</b>
                 </div>
@@ -529,7 +529,7 @@ function AreaChart({ monthly }: { monthly: Monthly[] }) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', marginTop: 6 }}>
       <defs><linearGradient id="ovarea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2FA084" stopOpacity=".28" /><stop offset="1" stopColor="#2FA084" stopOpacity="0" /></linearGradient></defs>
-      <g stroke="#2B4521" strokeOpacity=".08" strokeDasharray="3 5">{grid.map((gy, i) => <line key={i} x1={padL} y1={gy} x2={W - padR} y2={gy} />)}</g>
+      <g stroke="#FA8125" strokeOpacity=".08" strokeDasharray="3 5">{grid.map((gy, i) => <line key={i} x1={padL} y1={gy} x2={W - padR} y2={gy} />)}</g>
       <path d={areaD} fill="url(#ovarea)" />
       <polyline points={gmvPts} fill="none" stroke="#2FA084" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
       <polyline points={comPts} fill="none" stroke="#D4A017" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -583,20 +583,20 @@ const styles = `
 .ov{
   --cream:#FAFAF7; --cream-2:#F3F1EA; --paper:#FFFFFF;
   --ink:#0A0A0A; --ink-soft:#41504A; --ink-mute:#7C8A84;
-  --green-deep:#2B4521; --green-700:#175C4F; --green-mid:#2FA084; --green-soft:#6FCF97; --green-fog:#E7F1ED;
+  --green-deep:#FA8125; --green-700:#175C4F; --green-mid:#2FA084; --green-soft:#6FCF97; --green-fog:#E7F1ED;
   --gold:#D4A017; --gold-soft:#E9C45A; --gold-deep:#B8861A;
-  --line-2:rgba(10,10,10,.07); --line-3:rgba(43, 69, 33,.07);
+  --line-2:rgba(10,10,10,.07); --line-3:rgba(250, 129, 37,.07);
   --shadow-sm:0 1px 2px rgba(16,40,34,.05);
   --shadow:0 1px 2px rgba(16,40,34,.04), 0 10px 34px -12px rgba(16,40,34,.16);
   --shadow-lg:0 24px 60px -22px rgba(16,40,34,.30);
-  --grad-cta:linear-gradient(118deg,#D4A017 0%,#2FA084 56%,#2B4521 100%);
-  --grad-ink:linear-gradient(110deg,#0A0A0A,#2B4521);
+  --grad-cta:linear-gradient(118deg,#D4A017 0%,#2FA084 56%,#FA8125 100%);
+  --grad-ink:linear-gradient(110deg,#0A0A0A,#FA8125);
   color:var(--ink); min-height:100vh;
   background-color:var(--cream);
   background-image:
     radial-gradient(680px 420px at 92% -6%, rgba(212,160,23,.10), transparent 60%),
     radial-gradient(720px 520px at 6% 0%, rgba(47,160,132,.12), transparent 58%),
-    radial-gradient(900px 700px at 80% 110%, rgba(43, 69, 33,.08), transparent 60%);
+    radial-gradient(900px 700px at 80% 110%, rgba(250, 129, 37,.08), transparent 60%);
 }
 .ov *{box-sizing:border-box}
 .ov svg{display:block}
@@ -610,23 +610,23 @@ const styles = `
 .side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;
   background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(248,248,244,.7));
   backdrop-filter:blur(14px);border-inline-start:1px solid var(--line-2);padding:24px 16px 16px}
-.side-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding-inline-end:4px;scrollbar-width:thin;scrollbar-color:rgba(43, 69, 33,.18) transparent}
+.side-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding-inline-end:4px;scrollbar-width:thin;scrollbar-color:rgba(250, 129, 37,.18) transparent}
 .side-scroll::-webkit-scrollbar{width:6px}
 .side-scroll::-webkit-scrollbar-track{background:transparent}
-.side-scroll::-webkit-scrollbar-thumb{background:rgba(43, 69, 33,.18);border-radius:99px}
-.side-scroll::-webkit-scrollbar-thumb:hover{background:rgba(43, 69, 33,.32)}
+.side-scroll::-webkit-scrollbar-thumb{background:rgba(250, 129, 37,.18);border-radius:99px}
+.side-scroll::-webkit-scrollbar-thumb:hover{background:rgba(250, 129, 37,.32)}
 .brand{display:flex;align-items:center;gap:11px;padding:4px 8px 20px}
-.brand .mark{width:38px;height:38px;border-radius:12px;background:var(--grad-cta);display:grid;place-items:center;color:#fff;font-weight:900;font-size:20px;box-shadow:0 8px 18px -8px rgba(43, 69, 33,.6)}
+.brand .mark{width:38px;height:38px;border-radius:12px;background:var(--grad-cta);display:grid;place-items:center;color:#fff;font-weight:900;font-size:20px;box-shadow:0 8px 18px -8px rgba(250, 129, 37,.6)}
 .brand h1{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0}
 .brand p{font-size:10.5px;color:var(--ink-mute);font-weight:600;margin:1px 0 0}
 .nav-group{margin:12px 0 4px}
 .nav-group .lbl{font-size:10px;font-weight:700;color:var(--ink-mute);letter-spacing:.1em;padding:0 12px 7px}
 .nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:11px;color:var(--ink-soft);font-weight:600;font-size:13px;position:relative;transition:.18s;margin-bottom:1px}
 .nav-item svg{width:17px;height:17px;stroke-width:1.7;opacity:.8;flex:none}
-.nav-item:hover{background:rgba(43, 69, 33,.06);color:var(--green-deep)}
-.nav-item.active{background:var(--green-fog);color:var(--green-deep);box-shadow:inset 0 0 0 1px rgba(43, 69, 33,.1)}
+.nav-item:hover{background:rgba(250, 129, 37,.06);color:var(--green-deep)}
+.nav-item.active{background:var(--green-fog);color:var(--green-deep);box-shadow:inset 0 0 0 1px rgba(250, 129, 37,.1)}
 .nav-item.active::before{content:"";position:absolute;inset-inline-end:-16px;top:50%;transform:translateY(-50%);width:4px;height:22px;border-radius:4px;background:var(--grad-cta)}
-.side .cta{margin:16px 6px 10px;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:14px;background:var(--grad-cta);color:#fff;font-weight:800;font-size:14px;box-shadow:0 14px 26px -12px rgba(43, 69, 33,.6);transition:.2s}
+.side .cta{margin:16px 6px 10px;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:14px;background:var(--grad-cta);color:#fff;font-weight:800;font-size:14px;box-shadow:0 14px 26px -12px rgba(250, 129, 37,.6);transition:.2s}
 .side .cta:hover{transform:translateY(-2px)}
 .side .cta svg{width:17px;height:17px;stroke-width:2.2}
 .profile{margin-top:auto;display:flex;align-items:center;gap:11px;padding:11px;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid var(--line-2)}
@@ -682,7 +682,7 @@ const styles = `
 .pillar .metric span{font-size:11.5px;color:var(--ink-mute);font-weight:600}
 .pillar .rank{position:absolute;top:18px;inset-inline-end:18px;font-size:12px;font-weight:700;color:var(--green-soft);background:var(--green-fog);width:24px;height:24px;border-radius:8px;display:grid;place-items:center}
 
-.b2b{margin-top:16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:18px 22px;border-radius:18px;background:linear-gradient(115deg,#175C4F,#2B4521 45%,#2FA084 115%);color:#fff;box-shadow:0 22px 50px -24px rgba(43, 69, 33,.7);position:relative;overflow:hidden}
+.b2b{margin-top:16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:18px 22px;border-radius:18px;background:linear-gradient(115deg,#175C4F,#FA8125 45%,#2FA084 115%);color:#fff;box-shadow:0 22px 50px -24px rgba(250, 129, 37,.7);position:relative;overflow:hidden}
 .b2b::before{content:"";position:absolute;inset-inline-end:-40px;top:-60px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(212,160,23,.34),transparent 65%)}
 .b2b .lead{display:flex;align-items:center;gap:13px}
 .b2b .lead .bdg{font-size:10px;font-weight:800;letter-spacing:.14em;background:rgba(255,255,255,.16);padding:5px 11px;border-radius:999px}
@@ -753,7 +753,7 @@ const styles = `
 .opc .rowline .v{font-weight:700;color:var(--ink)}
 .opc .rowline .v.warn{color:var(--gold-deep)}
 .minibtn{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--green-deep);background:var(--green-fog);padding:7px 12px;border-radius:9px;margin-top:14px;transition:.18s}
-.minibtn:hover{background:rgba(43, 69, 33,.13)}
+.minibtn:hover{background:rgba(250, 129, 37,.13)}
 .bar{height:7px;border-radius:99px;background:var(--green-fog);overflow:hidden;margin-top:8px}
 .bar i{display:block;height:100%;border-radius:99px;background:var(--grad-cta)}
 
@@ -761,7 +761,7 @@ const styles = `
 .tbl{width:100%;border-collapse:collapse}
 .tbl th{text-align:start;font-size:10.5px;font-weight:800;color:var(--ink-mute);letter-spacing:.04em;padding:0 10px 12px}
 .tbl td{padding:12px 10px;border-top:1px solid var(--line-3);font-size:12.5px;font-weight:600;color:var(--ink-soft)}
-.tbl tr:hover td{background:rgba(43, 69, 33,.03)}
+.tbl tr:hover td{background:rgba(250, 129, 37,.03)}
 .tbl .who{display:flex;align-items:center;gap:10px;color:var(--ink);font-weight:700}
 .tbl .who .ava{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:11px;background:var(--cream-2);border:1px solid var(--line-3);flex:none;color:var(--green-deep)}
 .tbl .amt{font-weight:700;color:var(--ink);white-space:nowrap}

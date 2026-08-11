@@ -70,7 +70,7 @@ function MUABannerInner() {
 
   return (
     <div
-      className={`relative bg-gradient-to-br from-[#2B4521] via-[#5A6E3A] to-[#2B4521] text-white overflow-hidden transition-all duration-300 ${
+      className={`relative bg-gradient-to-br from-[#FA8125] via-[#F98F2A] to-[#FA8125] text-white overflow-hidden transition-all duration-300 ${
         animatingOut ? 'opacity-0 -translate-y-2' : 'opacity-100'
       }`}
       dir="rtl"
@@ -136,10 +136,10 @@ function MUABannerInner() {
           {/* CTA 2: Browse the studio */}
           <Link
             href={`/marketplace/${STUDIO_SLUG}?utm_source=meta&utm_campaign=mua&utm_content=banner`}
-            className="group flex items-center gap-3 bg-white text-[#2B4521] hover:bg-gray-50 p-4 rounded-2xl no-underline shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all"
+            className="group flex items-center gap-3 bg-white text-[#FA8125] hover:bg-gray-50 p-4 rounded-2xl no-underline shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all"
           >
-            <div className="w-11 h-11 rounded-xl bg-[#2B4521]/10 flex items-center justify-center flex-shrink-0">
-              <ShoppingBag className="w-5 h-5 text-[#2B4521]" />
+            <div className="w-11 h-11 rounded-xl bg-[#FA8125]/10 flex items-center justify-center flex-shrink-0">
+              <ShoppingBag className="w-5 h-5 text-[#FA8125]" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-black text-sm md:text-base leading-tight">
@@ -149,7 +149,7 @@ function MUABannerInner() {
                 مصر الجديدة · من ٣٠٠ج/ساعة
               </p>
             </div>
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform flex-shrink-0 text-[#2B4521]" />
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform flex-shrink-0 text-[#FA8125]" />
           </Link>
         </div>
 

@@ -139,8 +139,8 @@ export default function CareersPage() {
       <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
         <header className="bg-white border-b border-gray-100">
           <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 text-[#2B4521] font-black text-xl">
-              <span className="inline-block w-9 h-9 rounded-xl bg-[#2B4521] text-white grid place-items-center font-black">م</span>
+            <Link href="/" className="flex items-center gap-2 text-[#FA8125] font-black text-xl">
+              <span className="inline-block w-9 h-9 rounded-xl bg-[#FA8125] text-white grid place-items-center font-black">م</span>
               مضمونة
             </Link>
           </div>
@@ -154,7 +154,7 @@ export default function CareersPage() {
             وصلنا طلبك ✨
           </h1>
           <p className="text-lg text-gray-700 mb-2">
-            شكرًا إنك حابب تنضم لفريق <span className="font-bold text-[#2B4521]">مضمونة</span>.
+            شكرًا إنك حابب تنضم لفريق <span className="font-bold text-[#FA8125]">مضمونة</span>.
           </p>
           <p className="text-base text-gray-600 mb-8">
             هنراجع طلبك ونتواصل معاك خلال <span className="font-bold">٤٨ ساعة</span> على نفس الرقم اللي بعتّه.
@@ -165,15 +165,15 @@ export default function CareersPage() {
               <Sparkles className="w-5 h-5 text-amber-500" /> في الانتظار:
             </h3>
             <ul className="space-y-2 text-gray-700 text-sm">
-              <li className="flex gap-2"><span className="text-[#2B4521]">•</span> اتأكد إن رقم الواتساب اللي بعتّه شغّال</li>
-              <li className="flex gap-2"><span className="text-[#2B4521]">•</span> لو في CV أو LinkedIn، ابعتهم لنا على واتساب ٠١٠٠٢٢٢٩٩٨٢</li>
-              <li className="flex gap-2"><span className="text-[#2B4521]">•</span> اعرف أكتر عن مضمونة من الموقع الرئيسي</li>
+              <li className="flex gap-2"><span className="text-[#FA8125]">•</span> اتأكد إن رقم الواتساب اللي بعتّه شغّال</li>
+              <li className="flex gap-2"><span className="text-[#FA8125]">•</span> لو في CV أو LinkedIn، ابعتهم لنا على واتساب ٠١٠٠٢٢٢٩٩٨٢</li>
+              <li className="flex gap-2"><span className="text-[#FA8125]">•</span> اعرف أكتر عن مضمونة من الموقع الرئيسي</li>
             </ul>
           </div>
 
           <Link
             href="/"
-            className="inline-flex items-center gap-2 bg-[#2B4521] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#175a4d] transition-colors"
+            className="inline-flex items-center gap-2 bg-[#FA8125] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#175a4d] transition-colors"
           >
             <ArrowLeft className="w-4 h-4 rotate-180" />
             ارجع للرئيسية
@@ -188,15 +188,15 @@ export default function CareersPage() {
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-[#2B4521] font-black text-xl">
-            <span className="inline-block w-9 h-9 rounded-xl bg-[#2B4521] text-white grid place-items-center font-black">م</span>
+          <Link href="/" className="flex items-center gap-2 text-[#FA8125] font-black text-xl">
+            <span className="inline-block w-9 h-9 rounded-xl bg-[#FA8125] text-white grid place-items-center font-black">م</span>
             مضمونة
           </Link>
           <a
             href="https://wa.me/201002229982"
             target="_blank"
             rel="noreferrer"
-            className="text-sm font-bold text-gray-600 hover:text-[#2B4521]"
+            className="text-sm font-bold text-gray-600 hover:text-[#FA8125]"
           >
             تواصل معانا
           </a>
@@ -204,7 +204,7 @@ export default function CareersPage() {
       </header>
 
       {/* HERO */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#2B4521] via-[#5A6E3A] to-[#2FA084] text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#FA8125] via-[#F98F2A] to-[#2FA084] text-white">
         <div className="absolute inset-0 opacity-10" style={{
           backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)',
           backgroundSize: '50px 50px',
@@ -241,7 +241,7 @@ export default function CareersPage() {
             return (
               <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow">
                 <div className="w-12 h-12 rounded-xl bg-emerald-50 grid place-items-center mb-4">
-                  <Icon className="w-6 h-6 text-[#2B4521]" />
+                  <Icon className="w-6 h-6 text-[#FA8125]" />
                 </div>
                 <h3 className="text-xl font-black text-[#0A0A0A] mb-2">{p.title}</h3>
                 <p className="text-gray-600 leading-relaxed">{p.desc}</p>
@@ -277,7 +277,7 @@ export default function CareersPage() {
                   }}
                   className={`text-right p-5 rounded-2xl border-2 transition-all hover:shadow-md ${
                     position === p.value
-                      ? 'border-[#2B4521] bg-emerald-50'
+                      ? 'border-[#FA8125] bg-emerald-50'
                       : 'border-gray-100 bg-white hover:border-emerald-200'
                   }`}
                 >
@@ -303,12 +303,12 @@ export default function CareersPage() {
                 <div
                   key={s.slug}
                   className={`p-5 rounded-2xl border-2 transition-all ${
-                    position === s.name ? 'border-[#2B4521] bg-emerald-50' : 'border-gray-100 bg-white hover:border-emerald-200 hover:shadow-md'
+                    position === s.name ? 'border-[#FA8125] bg-emerald-50' : 'border-gray-100 bg-white hover:border-emerald-200 hover:shadow-md'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <span className="text-3xl">{s.icon}</span>
-                    <span className="text-[10px] font-bold text-[#2B4521] bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full whitespace-nowrap">{s.pay}</span>
+                    <span className="text-[10px] font-bold text-[#FA8125] bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full whitespace-nowrap">{s.pay}</span>
                   </div>
                   <div className="font-bold text-[#0A0A0A] mb-1">{s.name}</div>
                   <div className="text-xs text-gray-500 leading-relaxed mb-4">{s.eg}</div>
@@ -318,13 +318,13 @@ export default function CareersPage() {
                         setPosition(s.name)
                         document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth' })
                       }}
-                      className="flex-1 bg-[#2B4521] text-white text-xs font-bold py-2.5 rounded-xl hover:bg-[#185a4f] transition-colors"
+                      className="flex-1 bg-[#FA8125] text-white text-xs font-bold py-2.5 rounded-xl hover:bg-[#185a4f] transition-colors"
                     >
                       قدّم دلوقتي
                     </button>
                     <Link
                       href={`/marketplace?category=${s.slug}`}
-                      className="text-xs font-bold text-[#2B4521] px-3 py-2.5 rounded-xl border border-gray-200 hover:border-[#2B4521] no-underline whitespace-nowrap transition-colors"
+                      className="text-xs font-bold text-[#FA8125] px-3 py-2.5 rounded-xl border border-gray-200 hover:border-[#FA8125] no-underline whitespace-nowrap transition-colors"
                     >
                       شوف القسم ←
                     </Link>
@@ -340,7 +340,7 @@ export default function CareersPage() {
       <section id="apply" className="max-w-3xl mx-auto px-4 py-16">
         <div className="bg-white rounded-3xl p-6 md:p-10 border border-gray-100 shadow-sm">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-emerald-50 text-[#2B4521] px-3 py-1 rounded-full text-sm font-bold mb-4">
+            <div className="inline-flex items-center gap-2 bg-emerald-50 text-[#FA8125] px-3 py-1 rounded-full text-sm font-bold mb-4">
               <Briefcase className="w-4 h-4" />
               قدّم طلبك
             </div>
@@ -361,7 +361,7 @@ export default function CareersPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="مثلاً: محمد أحمد علي"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2B4521] focus:border-transparent text-right"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FA8125] focus:border-transparent text-right"
                 required
               />
             </div>
@@ -377,7 +377,7 @@ export default function CareersPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="01XXXXXXXXX"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2B4521] focus:border-transparent text-right"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FA8125] focus:border-transparent text-right"
                 required
                 dir="ltr"
               />
@@ -393,7 +393,7 @@ export default function CareersPage() {
               <select
                 value={position}
                 onChange={(e) => setPosition(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2B4521] focus:border-transparent text-right bg-white"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FA8125] focus:border-transparent text-right bg-white"
                 required
               >
                 <option value="">-- اختار وظيفة --</option>
@@ -422,7 +422,7 @@ export default function CareersPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2B4521] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FA8125] focus:border-transparent"
                   dir="ltr"
                 />
               </div>
@@ -436,7 +436,7 @@ export default function CareersPage() {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="مثلاً: القاهرة، الجيزة، الإسكندرية"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2B4521] focus:border-transparent text-right"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FA8125] focus:border-transparent text-right"
                 />
               </div>
             </div>
@@ -449,7 +449,7 @@ export default function CareersPage() {
               <select
                 value={experience}
                 onChange={(e) => setExperience(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2B4521] focus:border-transparent text-right bg-white"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FA8125] focus:border-transparent text-right bg-white"
               >
                 <option value="">-- اختار --</option>
                 <option value="0">من غير خبرة (Fresh)</option>
@@ -479,7 +479,7 @@ export default function CareersPage() {
                     min="0"
                     max="500000"
                     step="100"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2B4521] focus:border-transparent bg-white"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FA8125] focus:border-transparent bg-white"
                     dir="ltr"
                   />
                   <p className="text-xs text-gray-500 mt-1">سيبها فاضية لو إنت Fresh</p>
@@ -496,7 +496,7 @@ export default function CareersPage() {
                     min="1000"
                     max="500000"
                     step="100"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2B4521] focus:border-transparent bg-white"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FA8125] focus:border-transparent bg-white"
                     dir="ltr"
                     required
                   />
@@ -515,7 +515,7 @@ export default function CareersPage() {
                 onChange={(e) => setWhyJoin(e.target.value)}
                 placeholder="اكتب باختصار ليه تحب تنضم لنا وإيه اللي تقدر تضيفه..."
                 rows={4}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2B4521] focus:border-transparent text-right resize-none"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FA8125] focus:border-transparent text-right resize-none"
               />
             </div>
 
@@ -529,7 +529,7 @@ export default function CareersPage() {
                 value={cvUrl}
                 onChange={(e) => setCvUrl(e.target.value)}
                 placeholder="https://linkedin.com/in/..."
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2B4521] focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FA8125] focus:border-transparent"
                 dir="ltr"
               />
               <p className="text-xs text-gray-500 mt-1">أو ابعت الـ CV على واتساب ٠١٠٠٢٢٢٩٩٨٢</p>
@@ -544,7 +544,7 @@ export default function CareersPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-gradient-to-l from-[#2B4521] to-[#2FA084] text-white px-6 py-4 rounded-xl font-black text-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-l from-[#FA8125] to-[#2FA084] text-white px-6 py-4 rounded-xl font-black text-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {submitting ? (
                 <>

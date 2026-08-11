@@ -217,10 +217,10 @@ export default function DownloadAppBig({ compact = false }: { compact?: boolean 
           display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
           padding:8px 13px; border:none; border-radius:999px; cursor:pointer;
           font-family:inherit; font-size:12.5px; font-weight:800; color:#fff;
-          background:linear-gradient(118deg,#2B4521 0%, #2FA084 55%, #D4A017 100%);
-          box-shadow:0 4px 12px rgba(43, 69, 33,.28); transition:.25s;
+          background:linear-gradient(118deg,#FA8125 0%, #2FA084 55%, #D4A017 100%);
+          box-shadow:0 4px 12px rgba(250, 129, 37,.28); transition:.25s;
         }
-        .da-pill:hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(43, 69, 33,.34)}
+        .da-pill:hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(250, 129, 37,.34)}
         .da-pill-icon{width:14px;height:14px;flex-shrink:0}
       `}</style>
     </>
@@ -236,7 +236,7 @@ function Step({ n, text }: { n: string; text: string }) {
       <span>{text}</span>
       <style jsx>{`
         .da-step{display:flex;align-items:center;gap:12px;padding:14px;background:#FAFAF7;border-radius:14px;font-size:14px;font-weight:600;color:#0A0A0A}
-        .da-step-n{width:28px;height:28px;border-radius:50%;background:#2B4521;color:#fff;display:grid;place-items:center;font-weight:800;flex:none;font-size:13px}
+        .da-step-n{width:28px;height:28px;border-radius:50%;background:#FA8125;color:#fff;display:grid;place-items:center;font-weight:800;flex:none;font-size:13px}
       `}</style>
     </div>
   )
@@ -268,7 +268,7 @@ function Modal({ children, onClose, title }: { children: React.ReactNode; onClos
         .da-qr img{border-radius:16px;border:1px solid #E5DFD3}
         .da-desktop-intro{font-size:14px;color:#7C8A84;margin:0 0 12px;text-align:center;line-height:1.6}
         .da-desktop-link{font-size:12px;color:#7C8A84;margin:12px 0 0;text-align:center}
-        .da-desktop-link code{background:#FAFAF7;padding:2px 8px;border-radius:6px;font-family:monospace;color:#2B4521;font-weight:700}
+        .da-desktop-link code{background:#FAFAF7;padding:2px 8px;border-radius:6px;font-family:monospace;color:#FA8125;font-weight:700}
         .da-ios-steps{display:flex;flex-direction:column;gap:10px}
         .da-ios-note{font-size:12.5px;color:#7C8A84;margin:14px 0 0;text-align:center;line-height:1.6}
       `}</style>
@@ -283,10 +283,10 @@ const BIG_CSS = `
   position:relative; width:100%; cursor:pointer;
   display:grid; grid-template-columns:auto 1fr auto; gap:18px; align-items:center;
   padding:22px 26px;
-  background:linear-gradient(118deg, #2B4521 0%, #2a7a52 50%, #2FA084 100%);
+  background:linear-gradient(118deg, #FA8125 0%, #2a7a52 50%, #2FA084 100%);
   border:none; border-radius:24px; color:#fff;
   text-align:right; overflow:hidden;
-  box-shadow:0 10px 30px -8px rgba(43, 69, 33,.45), 0 1px 0 rgba(255,255,255,.10) inset;
+  box-shadow:0 10px 30px -8px rgba(250, 129, 37,.45), 0 1px 0 rgba(255,255,255,.10) inset;
   transition:transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s;
 }
 .da-big::before{
@@ -295,7 +295,7 @@ const BIG_CSS = `
     radial-gradient(circle at 90% 20%, rgba(212,160,23,.25) 0, transparent 40%),
     radial-gradient(circle at 10% 80%, rgba(111,207,151,.20) 0, transparent 45%);
 }
-.da-big:hover{transform:translateY(-3px);box-shadow:0 22px 50px -10px rgba(43, 69, 33,.55), 0 1px 0 rgba(255,255,255,.15) inset}
+.da-big:hover{transform:translateY(-3px);box-shadow:0 22px 50px -10px rgba(250, 129, 37,.55), 0 1px 0 rgba(255,255,255,.15) inset}
 .da-big:active{transform:translateY(-1px)}
 
 /* Floating decoration emojis */
@@ -329,7 +329,7 @@ const BIG_CSS = `
 
 /* Right: CTA button */
 .da-right{position:relative;z-index:2;flex:none}
-.da-cta{display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:#FAFAF7;color:#2B4521;border-radius:999px;font-size:15px;font-weight:900;letter-spacing:-.01em;box-shadow:0 6px 18px rgba(0,0,0,.18);transition:.25s}
+.da-cta{display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:#FAFAF7;color:#FA8125;border-radius:999px;font-size:15px;font-weight:900;letter-spacing:-.01em;box-shadow:0 6px 18px rgba(0,0,0,.18);transition:.25s}
 .da-big:hover .da-cta{background:#FAD56B;color:#0A0A0A;transform:translateX(-3px)}
 .da-cta-icon{width:18px;height:18px;flex:none}
 .da-cta-arrow{width:16px;height:16px;flex:none;transition:.25s}
@@ -353,10 +353,10 @@ const INSTALLED_CSS = `
 .da-installed{
   display:flex;align-items:center;gap:14px;
   padding:16px 20px;
-  background:#E7F1ED;border:1px solid rgba(43, 69, 33,.20);
+  background:#E7F1ED;border:1px solid rgba(250, 129, 37,.20);
   border-radius:20px;
 }
-.da-installed-icon{width:28px;height:28px;color:#2B4521;flex:none}
+.da-installed-icon{width:28px;height:28px;color:#FA8125;flex:none}
 .da-installed-title{font-size:14.5px;font-weight:800;color:#0A0A0A;line-height:1.2}
 .da-installed-sub{font-size:11.5px;color:#7C8A84;margin-top:2px;letter-spacing:.02em}
 `

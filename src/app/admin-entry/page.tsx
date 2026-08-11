@@ -9,7 +9,7 @@
 import { useState } from 'react'
 
 const C = {
-  green: '#2B4521', greenMid: '#2FA084', gold: '#d4a017',
+  green: '#FA8125', greenMid: '#2FA084', gold: '#d4a017',
   cream: '#FAFAF7', ink: '#0A0A0A', gray: '#6B7280', line: '#e8e6df', white: '#FFFFFF', red: '#d9534f',
 }
 
@@ -44,7 +44,7 @@ export default function AdminEntryPage() {
 
   return (
     <div dir="rtl" style={{ fontFamily: 'Cairo, Tahoma, sans-serif', background: C.cream, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 380, background: C.white, border: `1px solid ${C.line}`, borderRadius: 22, padding: '32px 26px', boxShadow: '0 14px 44px rgba(43, 69, 33,0.13)' }}>
+      <div style={{ width: '100%', maxWidth: 380, background: C.white, border: `1px solid ${C.line}`, borderRadius: 22, padding: '32px 26px', boxShadow: '0 14px 44px rgba(250, 129, 37,0.13)' }}>
 
         <div style={{ width: 62, height: 62, borderRadius: 18, margin: '0 auto 16px', background: `linear-gradient(135deg, ${C.gold}, ${C.greenMid}, ${C.green})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>
           🔒

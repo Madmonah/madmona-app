@@ -93,14 +93,14 @@ export default function RealEstateLanding() {
       <main className="max-w-4xl mx-auto px-4 pb-16">
         {/* Hero */}
         <section className="py-12 md:py-20 text-center">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#2B4521]/10 rounded-full mb-4">
-            <Sparkles className="w-3 h-3 text-[#2B4521]" />
-            <span className="text-xs font-medium text-[#2B4521]">شقق · فيلات · شاليهات · مكاتب</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FA8125]/10 rounded-full mb-4">
+            <Sparkles className="w-3 h-3 text-[#FA8125]" />
+            <span className="text-xs font-medium text-[#FA8125]">شقق · فيلات · شاليهات · مكاتب</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
             عقارك يشتغللك —
             <br />
-            <span className="text-[#2B4521]">من غير قلق النصب</span>
+            <span className="text-[#FA8125]">من غير قلق النصب</span>
           </h1>
           <p className="text-base md:text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto mb-8">
             ضيف عقارك على مضمونة ببلاش — إيجار أو بيع — واحنا نجيبلك الطرف الجاد بمعاملة محمية بالكامل.
@@ -110,7 +110,7 @@ export default function RealEstateLanding() {
             <Link
               href={ADD_LISTING}
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-white font-bold text-lg shadow-lg hover:opacity-95 transition-opacity"
-              style={{ background: 'linear-gradient(135deg, #d4a017 0%, #2FA084 55%, #2B4521 100%)' }}
+              style={{ background: 'linear-gradient(135deg, #d4a017 0%, #2FA084 55%, #FA8125 100%)' }}
             >
               <KeyRound className="w-5 h-5" />
               ضيف الليستنج
@@ -119,7 +119,7 @@ export default function RealEstateLanding() {
               href={WA_LINK}
               target="_blank"
               rel="noopener"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#2B4521]/30 text-[#2B4521] font-semibold hover:bg-[#2B4521]/5 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#FA8125]/30 text-[#FA8125] font-semibold hover:bg-[#FA8125]/5 transition-colors"
             >
               <MessageCircle className="w-5 h-5" />
               كلمنا واتساب
@@ -134,7 +134,7 @@ export default function RealEstateLanding() {
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
           {PILLARS.map((p) => (
             <div key={p.title} className="bg-white rounded-2xl border border-gray-100 p-6 text-center shadow-sm">
-              <div className="w-11 h-11 rounded-full bg-[#2B4521]/10 text-[#2B4521] flex items-center justify-center mx-auto mb-3">
+              <div className="w-11 h-11 rounded-full bg-[#FA8125]/10 text-[#FA8125] flex items-center justify-center mx-auto mb-3">
                 <p.icon className="w-5 h-5" />
               </div>
               <h3 className="font-bold text-gray-900 mb-1.5">{p.title}</h3>
@@ -145,9 +145,9 @@ export default function RealEstateLanding() {
 
         {/* جدول العمولات الشفاف */}
         <section className="mb-10">
-          <div className="bg-white rounded-2xl border-2 border-[#2B4521]/20 p-6 md:p-8">
+          <div className="bg-white rounded-2xl border-2 border-[#FA8125]/20 p-6 md:p-8">
             <div className="flex items-center gap-2 mb-4">
-              <Banknote className="w-5 h-5 text-[#2B4521]" />
+              <Banknote className="w-5 h-5 text-[#FA8125]" />
               <h2 className="text-xl font-bold text-gray-900">العمولة — بشفافية كاملة</h2>
             </div>
             <p className="text-sm text-gray-600 mb-5">
@@ -158,7 +158,7 @@ export default function RealEstateLanding() {
                 <div key={t.label} className="border border-gray-100 rounded-xl p-4 bg-[#FAFAF7]">
                   <p className="text-xs text-gray-500 mb-1">{t.detail}</p>
                   <p className="font-bold text-gray-900 mb-2">{t.label}</p>
-                  <p className="text-2xl font-black text-[#2B4521] leading-none">{t.rate}</p>
+                  <p className="text-2xl font-black text-[#FA8125] leading-none">{t.rate}</p>
                   <p className="text-xs text-gray-600 mt-1">{t.unit}</p>
                 </div>
               ))}
@@ -173,7 +173,7 @@ export default function RealEstateLanding() {
         <section className="mb-10">
           <Link
             href="/real-estate/market"
-            className="flex items-center justify-between gap-3 bg-[#2B4521] rounded-2xl p-5 md:p-6 hover:opacity-95 transition-opacity"
+            className="flex items-center justify-between gap-3 bg-[#FA8125] rounded-2xl p-5 md:p-6 hover:opacity-95 transition-opacity"
           >
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-white/15 text-white flex items-center justify-center shrink-0">
@@ -196,7 +196,7 @@ export default function RealEstateLanding() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {STEPS.map((s) => (
               <div key={s.n} className="text-center md:text-right">
-                <div className="w-9 h-9 rounded-full bg-[#2B4521] text-white font-bold flex items-center justify-center mx-auto md:mx-0 md:mr-0 mb-3">
+                <div className="w-9 h-9 rounded-full bg-[#FA8125] text-white font-bold flex items-center justify-center mx-auto md:mx-0 md:mr-0 mb-3">
                   {s.n}
                 </div>
                 <h3 className="font-bold text-gray-900 mb-1">{s.title}</h3>
@@ -221,14 +221,14 @@ export default function RealEstateLanding() {
                 'مستحقاتك بتوصلك بسرعة بعد كل معاملة',
               ].map((li) => (
                 <li key={li} className="flex items-start gap-2 text-sm text-gray-700">
-                  <CheckCircle2 className="w-4 h-4 text-[#2B4521] mt-0.5 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-[#FA8125] mt-0.5 shrink-0" />
                   {li}
                 </li>
               ))}
             </ul>
           </div>
           <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8">
-            <div className="w-11 h-11 rounded-full bg-[#2B4521]/10 text-[#2B4521] flex items-center justify-center mb-4">
+            <div className="w-11 h-11 rounded-full bg-[#FA8125]/10 text-[#FA8125] flex items-center justify-center mb-4">
               <Users className="w-5 h-5" />
             </div>
             <h3 className="text-lg font-bold text-gray-900 mb-3">لو انت سمسار أو مكتب عقاري</h3>
@@ -240,7 +240,7 @@ export default function RealEstateLanding() {
                 'دعم أولوية لشركائنا من المكاتب',
               ].map((li) => (
                 <li key={li} className="flex items-start gap-2 text-sm text-gray-700">
-                  <CheckCircle2 className="w-4 h-4 text-[#2B4521] mt-0.5 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-[#FA8125] mt-0.5 shrink-0" />
                   {li}
                 </li>
               ))}
@@ -283,14 +283,14 @@ export default function RealEstateLanding() {
         </section>
 
         {/* CTA نهائي */}
-        <section className="text-center bg-[#2B4521] rounded-2xl p-8 md:p-12">
+        <section className="text-center bg-[#FA8125] rounded-2xl p-8 md:p-12">
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">جاهز تأجّر أو تبيع وانت مضمون؟</h2>
           <p className="text-white/80 mb-6 max-w-xl mx-auto">
             ضيف عقارك دلوقتي في ٥ دقايق — واحنا نتصرف في الباقي.
           </p>
           <Link
             href={ADD_LISTING}
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-white text-[#2B4521] font-bold text-lg shadow-lg hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-white text-[#FA8125] font-bold text-lg shadow-lg hover:bg-gray-50 transition-colors"
           >
             <KeyRound className="w-5 h-5" />
             ضيف الليستنج

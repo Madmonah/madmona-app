@@ -100,8 +100,8 @@ export default function ListingDraftsAdminPage() {
   };
 
   return (
-    <div dir="rtl" lang="ar" className="min-h-screen bg-[#2B4521] text-[#FAF7F0]">
-      <header className="border-b border-[#FAF7F0]/10 px-5 py-4 sticky top-0 bg-[#2B4521]/95 backdrop-blur z-10">
+    <div dir="rtl" lang="ar" className="min-h-screen bg-[#FA8125] text-[#FAF7F0]">
+      <header className="border-b border-[#FAF7F0]/10 px-5 py-4 sticky top-0 bg-[#FA8125]/95 backdrop-blur z-10">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-xl font-bold">لوحة الـ Drafts</h1>
@@ -119,7 +119,7 @@ export default function ListingDraftsAdminPage() {
             </label>
             <button
               onClick={load}
-              className="px-3 py-1.5 rounded-lg bg-[#2FA084] text-[#2B4521] text-xs font-semibold hover:bg-[#2FA084]/90"
+              className="px-3 py-1.5 rounded-lg bg-[#2FA084] text-[#FA8125] text-xs font-semibold hover:bg-[#2FA084]/90"
             >
               {loading ? '...' : 'تحديث الآن'}
             </button>
@@ -155,7 +155,7 @@ export default function ListingDraftsAdminPage() {
               onClick={() => setFilter(t.key)}
               className={`px-4 py-2 rounded-xl text-sm whitespace-nowrap transition-all ${
                 filter === t.key
-                  ? 'bg-[#2FA084] text-[#2B4521] font-semibold'
+                  ? 'bg-[#2FA084] text-[#FA8125] font-semibold'
                   : 'bg-[#FAF7F0]/5 border border-[#FAF7F0]/10 hover:bg-[#FAF7F0]/10'
               }`}
             >
@@ -312,7 +312,7 @@ function DraftCard({ draft, onUpdate }: { draft: Draft; onUpdate: () => void }) 
             <button
               onClick={sendWhatsApp}
               disabled={busy}
-              className="px-3 py-1.5 rounded-lg bg-[#2FA084] text-[#2B4521] text-xs font-semibold hover:bg-[#2FA084]/90 disabled:opacity-50"
+              className="px-3 py-1.5 rounded-lg bg-[#2FA084] text-[#FA8125] text-xs font-semibold hover:bg-[#2FA084]/90 disabled:opacity-50"
             >
               تذكير على الواتس اب
             </button>

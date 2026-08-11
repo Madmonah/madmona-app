@@ -233,8 +233,8 @@ export default function AdminCategoriesPage() {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-sm bg-white rounded-3xl shadow-luxe p-8">
-          <div className="flex items-center justify-center w-12 h-12 bg-[#2B4521]/10 rounded-2xl mb-4 mx-auto">
-            <Lock className="w-5 h-5 text-[#2B4521]" />
+          <div className="flex items-center justify-center w-12 h-12 bg-[#FA8125]/10 rounded-2xl mb-4 mx-auto">
+            <Lock className="w-5 h-5 text-[#FA8125]" />
           </div>
           <h1 className="text-xl font-black text-gray-900 text-center mb-1">إدارة الفئات والخصائص</h1>
           <p className="text-sm text-gray-500 text-center mb-6">إدخال كلمة السر للوصول</p>
@@ -244,14 +244,14 @@ export default function AdminCategoriesPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="كلمة السر"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521] text-right"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125] text-right"
               autoFocus
             />
             {authError && <p className="text-sm text-red-600 text-center">{authError}</p>}
             <button
               type="submit"
               disabled={loading || !password}
-              className="w-full bg-[#2B4521] text-white py-3 rounded-xl font-bold hover:bg-[#2B4521]/90 disabled:opacity-50"
+              className="w-full bg-[#FA8125] text-white py-3 rounded-xl font-bold hover:bg-[#FA8125]/90 disabled:opacity-50"
             >
               {loading ? 'جاري التحقق...' : 'دخول'}
             </button>
@@ -311,8 +311,8 @@ export default function AdminCategoriesPage() {
         )}
 
         {/* Help card */}
-        <div className="mb-4 p-4 bg-gradient-to-l from-[#2B4521]/5 to-transparent border border-[#2B4521]/10 rounded-2xl text-xs text-gray-700 leading-relaxed">
-          💡 <strong className="text-[#2B4521]">إزاي تستعمل الصفحة:</strong>
+        <div className="mb-4 p-4 bg-gradient-to-l from-[#FA8125]/5 to-transparent border border-[#FA8125]/10 rounded-2xl text-xs text-gray-700 leading-relaxed">
+          💡 <strong className="text-[#FA8125]">إزاي تستعمل الصفحة:</strong>
           <br />• اضغط <strong>السهم</strong> لفتح أي فئة وشوف فئاتها الفرعية والخصائص.
           <br />• <strong>زرار &quot;+ ضيف فئة فرعية&quot;</strong> داخل الفئة المفتوحة بيضيف فئة فرعية تحتها.
           <br />• كل فئة فرعية ممكن يكون عندها خصائصها (specs زي السعة، الحمولة، إلخ).
@@ -322,7 +322,7 @@ export default function AdminCategoriesPage() {
         <div className="mb-4">
           <button
             onClick={() => setShowCatForm({ parentId: null })}
-            className="flex items-center gap-2 px-5 py-3 bg-[#2B4521] text-white rounded-2xl text-sm font-bold hover:bg-[#2B4521]/90 shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
+            className="flex items-center gap-2 px-5 py-3 bg-[#FA8125] text-white rounded-2xl text-sm font-bold hover:bg-[#FA8125]/90 shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
           >
             <Plus className="w-4 h-4" />
             ضيف فئة رئيسية جديدة
@@ -330,9 +330,9 @@ export default function AdminCategoriesPage() {
         </div>
 
         {showCatForm && showCatForm.parentId === null && !showCatForm.editId && (
-          <div className="mb-4 p-4 bg-white rounded-2xl border-2 border-[#2B4521]/20 shadow-card">
+          <div className="mb-4 p-4 bg-white rounded-2xl border-2 border-[#FA8125]/20 shadow-card">
             <h3 className="text-sm font-black text-gray-900 mb-3 flex items-center gap-2">
-              <FolderPlus className="w-4 h-4 text-[#2B4521]" /> فئة رئيسية جديدة
+              <FolderPlus className="w-4 h-4 text-[#FA8125]" /> فئة رئيسية جديدة
             </h3>
             <CategoryForm
               parentId={null}
@@ -449,7 +449,7 @@ function CategoryNode(props: CategoryNodeProps) {
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-bold text-gray-900 truncate">{category.name_ar}</h3>
             {children.length > 0 && (
-              <span className="text-[10px] px-2 py-0.5 bg-[#2B4521]/10 text-[#2B4521] rounded-full font-bold">
+              <span className="text-[10px] px-2 py-0.5 bg-[#FA8125]/10 text-[#FA8125] rounded-full font-bold">
                 {children.length} فرعية
               </span>
             )}
@@ -471,8 +471,8 @@ function CategoryNode(props: CategoryNodeProps) {
 
       {/* Edit form (inline replaces the row) */}
       {isEditing && (
-        <div className="border-t border-gray-100 p-4 bg-gradient-to-l from-[#2B4521]/5 to-transparent">
-          <h4 className="text-xs font-bold text-[#2B4521] mb-3 flex items-center gap-1.5">
+        <div className="border-t border-gray-100 p-4 bg-gradient-to-l from-[#FA8125]/5 to-transparent">
+          <h4 className="text-xs font-bold text-[#FA8125] mb-3 flex items-center gap-1.5">
             <Edit2 className="w-3.5 h-3.5" /> تعديل الفئة
           </h4>
           <CategoryForm
@@ -491,7 +491,7 @@ function CategoryNode(props: CategoryNodeProps) {
           {children.length > 0 && (
             <div>
               <h4 className="text-xs font-black text-gray-700 mb-2 px-1 flex items-center gap-1.5">
-                <FolderPlus className="w-3.5 h-3.5 text-[#2B4521]" />
+                <FolderPlus className="w-3.5 h-3.5 text-[#FA8125]" />
                 الفئات الفرعية ({children.length})
               </h4>
               <div className="space-y-2">
@@ -504,7 +504,7 @@ function CategoryNode(props: CategoryNodeProps) {
           {!isAddingChildHere && (
             <button
               onClick={onAddChild}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-white border-2 border-dashed border-[#2B4521]/30 hover:border-[#2B4521]/60 hover:bg-[#2B4521]/5 rounded-2xl text-sm font-bold text-[#2B4521] transition-all"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-white border-2 border-dashed border-[#FA8125]/30 hover:border-[#FA8125]/60 hover:bg-[#FA8125]/5 rounded-2xl text-sm font-bold text-[#FA8125] transition-all"
             >
               <FolderPlus className="w-4 h-4" />
               + ضيف فئة فرعية تحت &quot;{category.name_ar}&quot;
@@ -513,8 +513,8 @@ function CategoryNode(props: CategoryNodeProps) {
 
           {/* Inline form for adding child here */}
           {isAddingChildHere && (
-            <div className="p-4 bg-white rounded-2xl border-2 border-[#2B4521]/20 shadow-card">
-              <h4 className="text-sm font-black text-[#2B4521] mb-3 flex items-center gap-1.5">
+            <div className="p-4 bg-white rounded-2xl border-2 border-[#FA8125]/20 shadow-card">
+              <h4 className="text-sm font-black text-[#FA8125] mb-3 flex items-center gap-1.5">
                 <FolderPlus className="w-4 h-4" />
                 فئة فرعية جديدة تحت &quot;{category.name_ar}&quot;
               </h4>
@@ -674,7 +674,7 @@ function CategoryForm({
             value={nameAr}
             onChange={(e) => setNameAr(e.target.value)}
             required
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
             placeholder="مثلاً: مكتب فردي"
           />
         </div>
@@ -684,7 +684,7 @@ function CategoryForm({
             type="text"
             value={nameEn}
             onChange={(e) => setNameEn(e.target.value)}
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
             placeholder="Hot desk"
             dir="ltr"
           />
@@ -697,7 +697,7 @@ function CategoryForm({
             onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
             required
             pattern="[a-z0-9-]+"
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
             placeholder="hot-desk"
             dir="ltr"
           />
@@ -710,7 +710,7 @@ function CategoryForm({
             value={icon}
             onChange={(e) => setIcon(e.target.value)}
             maxLength={4}
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
             placeholder="🪑"
           />
         </div>
@@ -720,7 +720,7 @@ function CategoryForm({
             type="number"
             value={displayOrder}
             onChange={(e) => setDisplayOrder(Number(e.target.value))}
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
           />
         </div>
       </div>
@@ -728,7 +728,7 @@ function CategoryForm({
         <button
           type="submit"
           disabled={submitting || !nameAr || !slug}
-          className="flex items-center gap-1.5 px-5 py-2.5 bg-[#2B4521] text-white rounded-xl text-sm font-bold hover:bg-[#2B4521]/90 disabled:opacity-50 shadow-soft hover:shadow-card transition-all"
+          className="flex items-center gap-1.5 px-5 py-2.5 bg-[#FA8125] text-white rounded-xl text-sm font-bold hover:bg-[#FA8125]/90 disabled:opacity-50 shadow-soft hover:shadow-card transition-all"
         >
           <Save className="w-4 h-4" />
           {submitting ? 'جاري الحفظ...' : 'حفظ'}
@@ -811,7 +811,7 @@ function AttributeForm({
             value={nameAr}
             onChange={(e) => setNameAr(e.target.value)}
             required
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
             placeholder="مثلاً: عدد المقاعد"
           />
         </div>
@@ -821,7 +821,7 @@ function AttributeForm({
             type="text"
             value={nameEn}
             onChange={(e) => setNameEn(e.target.value)}
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
             placeholder="Seats"
             dir="ltr"
           />
@@ -835,7 +835,7 @@ function AttributeForm({
             required
             disabled={!!initial}
             pattern="[a-z0-9_]+"
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 disabled:bg-gray-50"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 disabled:bg-gray-50"
             placeholder="seats"
             dir="ltr"
           />
@@ -846,7 +846,7 @@ function AttributeForm({
             value={fieldType}
             onChange={(e) => setFieldType(e.target.value as FieldType)}
             disabled={!!initial}
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 disabled:bg-gray-50"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 disabled:bg-gray-50"
           >
             {Object.entries(FIELD_TYPE_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
@@ -859,7 +859,7 @@ function AttributeForm({
             type="text"
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
             placeholder="م² / كجم / HP"
           />
         </div>
@@ -869,7 +869,7 @@ function AttributeForm({
             type="number"
             value={displayOrder}
             onChange={(e) => setDisplayOrder(Number(e.target.value))}
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
           />
         </div>
       </div>
@@ -879,7 +879,7 @@ function AttributeForm({
           type="checkbox"
           checked={isRequired}
           onChange={(e) => setIsRequired(e.target.checked)}
-          className="w-4 h-4 accent-[#2B4521]"
+          className="w-4 h-4 accent-[#FA8125]"
         />
         <span className="text-sm font-medium text-gray-700">إلزامي (لازم المورد يدخله)</span>
       </label>
@@ -917,7 +917,7 @@ function AttributeForm({
             <button
               type="button"
               onClick={addOption}
-              className="text-xs text-[#2B4521] font-bold hover:underline flex items-center gap-1"
+              className="text-xs text-[#FA8125] font-bold hover:underline flex items-center gap-1"
             >
               <Plus className="w-3 h-3" /> ضيف اختيار
             </button>

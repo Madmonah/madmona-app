@@ -126,14 +126,14 @@ export default function ListQuoteOrderBox({
     }
   }
 
-  const fld = 'w-full px-3 py-2.5 bg-[#FAFAF7] border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#2B4521]/50 focus:bg-white'
+  const fld = 'w-full px-3 py-2.5 bg-[#FAFAF7] border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#FA8125]/50 focus:bg-white'
 
   // ---------- SENT / QUOTED / PAID ----------
   if (step !== 'list') {
     return (
       <div className="bg-white rounded-3xl shadow-card p-6">
         <div className="flex items-center gap-2 mb-1">
-          <ShoppingBasket className="w-5 h-5 text-[#2B4521]" />
+          <ShoppingBasket className="w-5 h-5 text-[#FA8125]" />
           <h3 className="font-black text-gray-900">طلبك من {listingTitle}</h3>
         </div>
         {ref && <p className="text-xs text-gray-500 mb-4">رقم الطلب: <b className="font-mono">{ref}</b></p>}
@@ -145,7 +145,7 @@ export default function ListQuoteOrderBox({
             </div>
             <p className="text-sm font-bold text-gray-900 mb-1">استلمنا طلبك ✅</p>
             <p className="text-xs text-gray-500 leading-relaxed mb-4">المحل بيراجع الطلب وهيسعّرلك ويبعتلك الإجمالي. سيب الصفحة مفتوحة أو ارجعلها بعد شوية.</p>
-            <button onClick={() => orderId && ref && refresh(orderId, ref)} className="inline-flex items-center gap-2 text-xs font-bold text-[#2B4521] hover:underline">
+            <button onClick={() => orderId && ref && refresh(orderId, ref)} className="inline-flex items-center gap-2 text-xs font-bold text-[#FA8125] hover:underline">
               <RefreshCw className="w-3.5 h-3.5" /> حدّث الحالة
             </button>
           </div>
@@ -164,21 +164,21 @@ export default function ListQuoteOrderBox({
             <div className="space-y-1 text-sm mb-4">
               <div className="flex justify-between text-gray-500"><span>المجموع</span><span className="tabular">{Number(order.subtotal_amount).toLocaleString('ar-EG')} ج</span></div>
               {Number(order.delivery_fee) > 0 && <div className="flex justify-between text-gray-500"><span>التوصيل</span><span className="tabular">{Number(order.delivery_fee).toLocaleString('ar-EG')} ج</span></div>}
-              <div className="flex justify-between font-black text-[#2B4521] text-base pt-1 border-t border-gray-100"><span>الإجمالي</span><span className="tabular">{Number(order.total_amount).toLocaleString('ar-EG')} ج</span></div>
+              <div className="flex justify-between font-black text-[#FA8125] text-base pt-1 border-t border-gray-100"><span>الإجمالي</span><span className="tabular">{Number(order.total_amount).toLocaleString('ar-EG')} ج</span></div>
             </div>
 
             {step === 'quoted' && (
-              <button onClick={accept} disabled={busy} className="w-full flex items-center justify-center gap-2 bg-[#2B4521] text-white py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:-translate-y-0.5 transition-all disabled:opacity-50">
+              <button onClick={accept} disabled={busy} className="w-full flex items-center justify-center gap-2 bg-[#FA8125] text-white py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:-translate-y-0.5 transition-all disabled:opacity-50">
                 {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wallet className="w-4 h-4" />}
                 اقبل وادفع
               </button>
             )}
 
             {step === 'paid' && (
-              <div className="bg-[#2B4521]/5 border border-[#2B4521]/15 rounded-2xl p-4">
+              <div className="bg-[#FA8125]/5 border border-[#FA8125]/15 rounded-2xl p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle className="w-4 h-4 text-[#2B4521]" />
-                  <p className="text-sm font-black text-[#2B4521]">اتأكد الطلب — باقي الدفع</p>
+                  <CheckCircle className="w-4 h-4 text-[#FA8125]" />
+                  <p className="text-sm font-black text-[#FA8125]">اتأكد الطلب — باقي الدفع</p>
                 </div>
                 <p className="text-xs text-gray-600 leading-relaxed mb-2">حوّل <b>{Number(order.total_amount).toLocaleString('ar-EG')} ج</b> على إنستاباي:</p>
                 <p className="font-mono font-black text-lg text-gray-900 select-all bg-white rounded-xl py-2 text-center border border-gray-100" dir="ltr">{INSTAPAY}</p>
@@ -197,7 +197,7 @@ export default function ListQuoteOrderBox({
   return (
     <div className="bg-white rounded-3xl shadow-card p-6">
       <div className="flex items-center gap-2 mb-1">
-        <ShoppingBasket className="w-5 h-5 text-[#2B4521]" />
+        <ShoppingBasket className="w-5 h-5 text-[#FA8125]" />
         <h3 className="font-black text-gray-900">اطلب من {listingTitle}</h3>
       </div>
       <p className="text-xs text-gray-500 mb-4 leading-relaxed">اكتب اللي عايزه والمحل هيسعّرلك ويبعتلك الإجمالي — تدفع بعد ما توافق.</p>
@@ -213,7 +213,7 @@ export default function ListQuoteOrderBox({
           </div>
         ))}
       </div>
-      <button onClick={addLine} className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2B4521] hover:underline mb-4">
+      <button onClick={addLine} className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FA8125] hover:underline mb-4">
         <Plus className="w-3.5 h-3.5" /> ضيف صنف
       </button>
 
@@ -232,7 +232,7 @@ export default function ListQuoteOrderBox({
 
       {err && <p className="text-xs text-red-600 mt-3">{err}</p>}
 
-      <button onClick={submit} disabled={busy} className="mt-4 w-full flex items-center justify-center gap-2 bg-[#2B4521] text-white py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all disabled:opacity-50">
+      <button onClick={submit} disabled={busy} className="mt-4 w-full flex items-center justify-center gap-2 bg-[#FA8125] text-white py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all disabled:opacity-50">
         {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShoppingBasket className="w-4 h-4" />}
         ابعت الطلب للمحل
       </button>

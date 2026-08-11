@@ -59,17 +59,17 @@ export default function ImportPage({ params }: { params: { supplierId: string } 
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">VEHICLE AGENCY · IMPORT</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">VEHICLE AGENCY · IMPORT</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">الاستيراد · {supplier?.business_name}</h1>
               <p className="text-sm text-[#6B7280] mt-1">{rows.length} شحنة · proforma ← اعتماد L/C ← استمارة 4 ← نافذة ← شحن ← جمارك ← إفراج</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setShowAdd(true)} className="px-4 py-2 rounded-xl bg-[#2B4521] text-white text-sm font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> شحنة جديدة</button>
+              <button onClick={() => setShowAdd(true)} className="px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> شحنة جديدة</button>
               <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7]"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
             </div>
           </div>
@@ -78,12 +78,12 @@ export default function ImportPage({ params }: { params: { supplierId: string } 
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-3">
         {loading ? (
-          <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#2B4521] animate-spin inline" /></div>
+          <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin inline" /></div>
         ) : rows.length === 0 ? (
           <div className="py-12 text-center bg-white rounded-2xl border border-gray-100">
             <Ship className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
             <p className="text-sm font-bold text-[#1A2E26]">مفيش شحنات استيراد</p>
-            <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#2B4521] text-white text-sm font-bold">أضف أول شحنة</button>
+            <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold">أضف أول شحنة</button>
           </div>
         ) : rows.map((c: any) => {
           const ci = stageIndex(c.stage)
@@ -112,22 +112,22 @@ export default function ImportPage({ params }: { params: { supplierId: string } 
                   {STAGES.map(([k, label], i) => (
                     <div key={k} className="flex items-center gap-1 shrink-0">
                       <div className={`px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap ${
-                        i < ci ? 'bg-[#2B4521]/10 text-[#2B4521]' :
-                        i === ci ? 'bg-[#2B4521] text-white' :
+                        i < ci ? 'bg-[#FA8125]/10 text-[#FA8125]' :
+                        i === ci ? 'bg-[#FA8125] text-white' :
                         'bg-[#FAFAF7] text-[#6B7280]'
                       }`}>{label}</div>
-                      {i < STAGES.length - 1 && <div className={`w-3 h-0.5 ${i < ci ? 'bg-[#2B4521]' : 'bg-gray-200'}`} />}
+                      {i < STAGES.length - 1 && <div className={`w-3 h-0.5 ${i < ci ? 'bg-[#FA8125]' : 'bg-gray-200'}`} />}
                     </div>
                   ))}
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap">
                   {c.stage !== 'released' && (
-                    <button onClick={() => advance(c)} className="px-3 py-1.5 rounded-lg bg-[#2B4521] text-white text-xs font-bold flex items-center gap-1">
+                    <button onClick={() => advance(c)} className="px-3 py-1.5 rounded-lg bg-[#FA8125] text-white text-xs font-bold flex items-center gap-1">
                       <ArrowLeft className="w-3 h-3" /> المرحلة التالية
                     </button>
                   )}
-                  <button onClick={() => setEditFor(c)} className="px-3 py-1.5 rounded-lg bg-[#2B4521]/10 text-[#2B4521] text-xs font-bold flex items-center gap-1">
+                  <button onClick={() => setEditFor(c)} className="px-3 py-1.5 rounded-lg bg-[#FA8125]/10 text-[#FA8125] text-xs font-bold flex items-center gap-1">
                     <Pencil className="w-3 h-3" /> تعديل التفاصيل
                   </button>
                   <button onClick={() => setAddUnitFor(c.id)} className="px-3 py-1.5 rounded-lg bg-[#FAFAF7] text-[#1A2E26] text-xs font-bold flex items-center gap-1">
@@ -184,7 +184,7 @@ export default function ImportPage({ params }: { params: { supplierId: string } 
                   <div className="px-4 pb-2">
                     <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1 flex items-center justify-between">
                       <span>بنود الـ proforma (الوحدات)</span>
-                      <span className="font-mono text-[#2B4521]">إجمالي FOB: {c.total_fob ? `${num(c.total_fob)} ${c.currency || ''}` : '—'}</span>
+                      <span className="font-mono text-[#FA8125]">إجمالي FOB: {c.total_fob ? `${num(c.total_fob)} ${c.currency || ''}` : '—'}</span>
                     </p>
                   </div>
                   <div className="border-t border-gray-100 divide-y divide-gray-100">
@@ -197,7 +197,7 @@ export default function ImportPage({ params }: { params: { supplierId: string } 
                           <span className="text-[#6B7280]"> · {u.model_year || ''} {u.color ? `· ${u.color}` : ''}</span>
                           {u.chassis_no && <span className="text-[#6B7280] font-mono block text-[10px]">شاسيه: {u.chassis_no}</span>}
                         </div>
-                        <span className="font-mono text-[#2B4521] font-bold">{u.unit_fob ? `${num(u.unit_fob)} fob` : '—'}</span>
+                        <span className="font-mono text-[#FA8125] font-bold">{u.unit_fob ? `${num(u.unit_fob)} fob` : '—'}</span>
                       </div>
                     ))}
                   </div>
@@ -252,7 +252,7 @@ function AddConsignmentModal({ supplierId, onClose, onSaved }: any) {
         <Field label="قيمة الـ proforma"><input type="number" value={form.proforma_amount} onChange={e => setForm({ ...form, proforma_amount: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" /></Field>
       </div>
       <p className="text-[10px] text-[#6B7280]">باقي التفاصيل (L/C · استمارة ٤ · نافذة · شحن · جمارك) تتسجّل من «تعديل التفاصيل» بعد الإنشاء.</p>
-      <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#2B4521] text-white font-black text-sm disabled:opacity-50">{saving ? 'جاري الحفظ...' : 'احفظ'}</button>
+      <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50">{saving ? 'جاري الحفظ...' : 'احفظ'}</button>
     </Modal>
   )
 }
@@ -346,7 +346,7 @@ function EditDetailsModal({ consignment: c, onClose, onSaved }: any) {
       </Group>
 
       <Field label="ملاحظات"><textarea value={f.notes} onChange={set('notes')} rows={2} className={inp} /></Field>
-      <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#2B4521] text-white font-black text-sm disabled:opacity-50 sticky bottom-0">{saving ? 'جاري الحفظ...' : 'احفظ التفاصيل'}</button>
+      <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50 sticky bottom-0">{saving ? 'جاري الحفظ...' : 'احفظ التفاصيل'}</button>
     </Modal>
   )
 }
@@ -386,7 +386,7 @@ function AddUnitModal({ consignmentId, onClose, onSaved }: any) {
         <Field label="تكلفة FOB"><input type="number" value={form.unit_fob} onChange={e => setForm({ ...form, unit_fob: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" /></Field>
         <Field label="سعر البيع (ج)"><input type="number" value={form.sale_price_egp} onChange={e => setForm({ ...form, sale_price_egp: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" /></Field>
       </div>
-      <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#2B4521] text-white font-black text-sm disabled:opacity-50">{saving ? 'جاري الحفظ...' : 'احفظ'}</button>
+      <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50">{saving ? 'جاري الحفظ...' : 'احفظ'}</button>
     </Modal>
   )
 }
@@ -397,7 +397,7 @@ const inpMono = 'w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono'
 function Group({ title, children }: any) {
   return (
     <div className="rounded-2xl border border-gray-100 p-3 space-y-3">
-      <p className="text-[11px] font-black text-[#2B4521]">{title}</p>
+      <p className="text-[11px] font-black text-[#FA8125]">{title}</p>
       {children}
     </div>
   )
@@ -405,7 +405,7 @@ function Group({ title, children }: any) {
 function Section({ title, icon, children }: any) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-3">
-      <p className="text-[10px] font-black tracking-wider uppercase text-[#2B4521] mb-2 flex items-center gap-1">{icon} {title}</p>
+      <p className="text-[10px] font-black tracking-wider uppercase text-[#FA8125] mb-2 flex items-center gap-1">{icon} {title}</p>
       <div className="space-y-1">{children}</div>
     </div>
   )
@@ -435,4 +435,4 @@ function Modal({ title, onClose, children }: any) {
 }
 
 function Field({ label, children }: any) { return <div><label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">{label}</label>{children}</div> }
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div> }

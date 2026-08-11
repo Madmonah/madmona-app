@@ -950,15 +950,15 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-colors ${
                 s < step
-                  ? 'bg-[#2B4521] text-white'
+                  ? 'bg-[#FA8125] text-white'
                   : s === step
-                  ? 'bg-[#2B4521]/10 text-[#2B4521] ring-2 ring-[#2B4521]'
+                  ? 'bg-[#FA8125]/10 text-[#FA8125] ring-2 ring-[#FA8125]'
                   : 'bg-gray-100 text-gray-400'
               }`}
             >
               {s < step ? <Check className="w-4 h-4" /> : s}
             </div>
-            {s < 5 && <div className={`flex-1 h-0.5 mx-1 ${s < step ? 'bg-[#2B4521]' : 'bg-gray-200'}`} />}
+            {s < 5 && <div className={`flex-1 h-0.5 mx-1 ${s < step ? 'bg-[#FA8125]' : 'bg-gray-200'}`} />}
           </div>
         ))}
       </div>
@@ -976,7 +976,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         {step === 1 && (
           <div>
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <FolderTree className="w-5 h-5 text-[#2B4521]" /> اختار الفئة
+              <FolderTree className="w-5 h-5 text-[#FA8125]" /> اختار الفئة
             </h2>
             <p className="text-sm text-gray-500 mb-4">إيه نوع المنتج اللي بتضيفه؟</p>
 
@@ -998,7 +998,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                         onClick={() => { setPickTrack(tt.key); setPickGroup(null) }}
                         className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 ${
                           on
-                            ? 'bg-[#2B4521] border-[#2B4521] text-white'
+                            ? 'bg-[#FA8125] border-[#FA8125] text-white'
                             : 'bg-white border-gray-100 text-gray-700 hover:bg-gray-50'
                         }`}
                       >
@@ -1039,7 +1039,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                   <button
                     type="button"
                     onClick={() => setPickGroup(null)}
-                    className="text-xs font-bold text-[#2B4521] hover:underline"
+                    className="text-xs font-bold text-[#FA8125] hover:underline"
                   >
                     ← كل الأقسام
                   </button>
@@ -1056,7 +1056,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                           onClick={() => setForm(f => ({ ...f, category_id: rc.id, attributeValues: {} }))}
                           className={`p-4 rounded-xl border-2 text-center transition-colors ${
                             isSelected
-                              ? 'border-[#2B4521] bg-[#2B4521]/5'
+                              ? 'border-[#FA8125] bg-[#FA8125]/5'
                               : 'border-gray-100 hover:border-gray-200 bg-white'
                           }`}
                         >
@@ -1081,7 +1081,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                             onClick={() => setForm(f => ({ ...f, category_id: sc.id, attributeValues: {} }))}
                             className={`p-3 rounded-lg border text-center transition-colors ${
                               isSelected
-                                ? 'border-[#2B4521] bg-[#2B4521]/5 text-[#2B4521]'
+                                ? 'border-[#FA8125] bg-[#FA8125]/5 text-[#FA8125]'
                                 : 'border-gray-100 hover:border-gray-200 text-gray-700'
                             }`}
                           >
@@ -1108,7 +1108,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                             onClick={() => setForm(f => ({ ...f, category_id: sc.id, attributeValues: {} }))}
                             className={`p-3 rounded-lg border text-center transition-colors ${
                               isSelected
-                                ? 'border-[#2B4521] bg-[#2B4521]/5 text-[#2B4521]'
+                                ? 'border-[#FA8125] bg-[#FA8125]/5 text-[#FA8125]'
                                 : 'border-gray-100 hover:border-gray-200 text-gray-700'
                             }`}
                           >
@@ -1129,7 +1129,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         {step === 2 && (
           <div>
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <Info className="w-5 h-5 text-[#2B4521]" /> المعلومات الأساسية
+              <Info className="w-5 h-5 text-[#FA8125]" /> المعلومات الأساسية
             </h2>
             <p className="text-sm text-gray-500 mb-4">عرّف المنتج بشكل واضح</p>
 
@@ -1142,7 +1142,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                   onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                   maxLength={300}
                   required
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
                   placeholder="مثلاً: شاليه فاخر بإطلالة على البحر - مرسى علم"
                 />
               </div>
@@ -1153,7 +1153,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   rows={4}
                   maxLength={2000}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
                   placeholder="وصف تفصيلي يساعد العميل يفهم المنتج"
                 />
               </div>
@@ -1166,7 +1166,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                     value={form.city}
                     onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
                     required
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
                   />
                 </div>
                 <div>
@@ -1176,7 +1176,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                     value={form.district}
                     onChange={e => setForm(f => ({ ...f, district: e.target.value }))}
                     required
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
                     placeholder="مصر الجديدة"
                   />
                 </div>
@@ -1188,7 +1188,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                   type="text"
                   value={form.address}
                   onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
                   placeholder="(اختياري)"
                 />
               </div>
@@ -1201,7 +1201,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                     value={form.min_booking_hours ?? ''}
                     onChange={e => setForm(f => ({ ...f, min_booking_hours: e.target.value ? parseInt(e.target.value) : null }))}
                     min={1}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
                     placeholder="(اختياري)"
                   />
                 </div>
@@ -1212,7 +1212,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                     value={form.max_booking_hours ?? ''}
                     onChange={e => setForm(f => ({ ...f, max_booking_hours: e.target.value ? parseInt(e.target.value) : null }))}
                     min={1}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
                     placeholder="(اختياري)"
                   />
                 </div>
@@ -1253,7 +1253,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         {step === 3 && (
           <div>
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <Tag className="w-5 h-5 text-[#2B4521]" /> الخصائص
+              <Tag className="w-5 h-5 text-[#FA8125]" /> الخصائص
             </h2>
             <p className="text-sm text-gray-500 mb-4">
               تفاصيل خاصة بالفئة اللي اخترتها ({selectedCat?.name_ar})
@@ -1287,7 +1287,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         {step === 4 && (
           <div>
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-[#2B4521]" /> الصور
+              <ImageIcon className="w-5 h-5 text-[#FA8125]" /> الصور
             </h2>
             <p className="text-sm text-gray-500 mb-4">
               ارفع على الأقل صورة واحدة. الصور الكبيرة بيتم ضغطها تلقائياً (محتفظين بجودة عالية).
@@ -1308,7 +1308,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
               className={`block border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
                 processingImages
                   ? 'border-[#2FA084] bg-[#2FA084]/5 cursor-wait'
-                  : 'border-gray-300 hover:border-[#2B4521] hover:bg-[#2B4521]/5 cursor-pointer'
+                  : 'border-gray-300 hover:border-[#FA8125] hover:bg-[#FA8125]/5 cursor-pointer'
               }`}
             >
               {processingImages ? (
@@ -1376,7 +1376,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         {step === 5 && (
           <div>
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-[#2B4521]" /> الأسعار
+              <DollarSign className="w-5 h-5 text-[#FA8125]" /> الأسعار
             </h2>
             <p className="text-sm text-gray-500 mb-4">حدد السعر بفترات مختلفة (الأقل سعراً هيظهر للعميل)</p>
 
@@ -1421,7 +1421,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
               <button
                 type="button"
                 onClick={addPricingRule}
-                className="w-full py-2 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-600 hover:border-[#2B4521] hover:text-[#2B4521] flex items-center justify-center gap-1"
+                className="w-full py-2 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-600 hover:border-[#FA8125] hover:text-[#FA8125] flex items-center justify-center gap-1"
               >
                 <Plus className="w-4 h-4" /> ضيف فترة سعر تانية
               </button>
@@ -1445,7 +1445,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
               type="button"
               onClick={() => setStep(s => s + 1)}
               disabled={!canGoNext() || processingImages}
-              className="px-5 py-2 bg-[#2B4521] text-white rounded-lg text-sm font-semibold hover:bg-[#2B4521]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              className="px-5 py-2 bg-[#FA8125] text-white rounded-lg text-sm font-semibold hover:bg-[#FA8125]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
             >
               التالي <ChevronLeft className="w-4 h-4" />
             </button>
@@ -1463,7 +1463,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                 type="button"
                 onClick={() => handleSubmit(false)}
                 disabled={submitting || !canGoNext()}
-                className="px-5 py-2 bg-[#2B4521] text-white rounded-lg text-sm font-semibold hover:bg-[#2B4521]/90 disabled:opacity-50 flex items-center gap-1"
+                className="px-5 py-2 bg-[#FA8125] text-white rounded-lg text-sm font-semibold hover:bg-[#FA8125]/90 disabled:opacity-50 flex items-center gap-1"
               >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 {submitting ? 'جاري النشر...' : (isEditing ? 'حفظ التعديلات' : 'نشر المنتج')}
@@ -1507,7 +1507,7 @@ function DynamicField({
             value={value || ''}
             onChange={e => onChange(e.target.value)}
             placeholder={attribute.placeholder || ''}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
           />
         </div>
       )
@@ -1521,7 +1521,7 @@ function DynamicField({
             value={value ?? ''}
             onChange={e => onChange(e.target.value === '' ? null : parseFloat(e.target.value))}
             placeholder={attribute.placeholder || ''}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
           />
         </div>
       )
@@ -1546,7 +1546,7 @@ function DynamicField({
           <select
             value={value || ''}
             onChange={e => onChange(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
           >
             <option value="">— اختر —</option>
             {(attribute.options || []).map(opt => (
@@ -1587,7 +1587,7 @@ function DynamicField({
             type="date"
             value={value || ''}
             onChange={e => onChange(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
           />
         </div>
       )

@@ -21,7 +21,7 @@ import { safeStorage } from '@/lib/safe-storage'
 //   - /marketplace/[slug]/book (booking page) — primary placement
 //   - Can be extended to listing detail pages later
 //
-// Brand: deep green (#2B4521) + gold (#2FA084) + clean ivory
+// Brand: deep green (#FA8125) + gold (#2FA084) + clean ivory
 // ============================================================================
 
 interface Props {
@@ -198,9 +198,9 @@ export default function BookingHelper({
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-      <div className="bg-white rounded-2xl border-2 border-[#2B4521]/20 shadow-2xl overflow-hidden">
+      <div className="bg-white rounded-2xl border-2 border-[#FA8125]/20 shadow-2xl overflow-hidden">
         {/* Header bar */}
-        <div className="flex items-center justify-between gap-2 bg-gradient-to-l from-[#2B4521] to-[#2a7a52] px-4 py-2.5 text-white">
+        <div className="flex items-center justify-between gap-2 bg-gradient-to-l from-[#FA8125] to-[#2a7a52] px-4 py-2.5 text-white">
           <div className="flex items-center gap-2 min-w-0">
             <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
               <MessageCircle className="w-4 h-4" />
@@ -223,7 +223,7 @@ export default function BookingHelper({
               <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
                 <Check className="w-6 h-6 text-green-700" />
               </div>
-              <h3 className="font-bold text-[#2B4521] mb-1">{t('comp.bh.success_title')}</h3>
+              <h3 className="font-bold text-[#FA8125] mb-1">{t('comp.bh.success_title')}</h3>
               <p className="text-xs text-gray-600">{t('comp.bh.success_sub')}</p>
             </div>
           ) : isAuthenticated ? (
@@ -256,7 +256,7 @@ export default function BookingHelper({
                   value={phone}
                   onChange={e => setPhone(e.target.value.replace(/[^\d+]/g, '').slice(0, 14))}
                   placeholder={t('comp.bh.phone_ph')}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   inputMode="tel"
@@ -267,7 +267,7 @@ export default function BookingHelper({
                   value={name}
                   onChange={e => setName(e.target.value.slice(0, 60))}
                   placeholder={t('comp.bh.name_ph')}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B4521]/30 focus:border-[#2B4521]"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
                   autoComplete="name"
                 />
               </div>
@@ -277,7 +277,7 @@ export default function BookingHelper({
               <button
                 onClick={handleSubmit}
                 disabled={stage === 'submitting' || phone.length < 10}
-                className="w-full flex items-center justify-center gap-2 bg-[#2B4521] hover:bg-[#2B4521]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2.5 px-4 rounded-xl transition-colors"
+                className="w-full flex items-center justify-center gap-2 bg-[#FA8125] hover:bg-[#FA8125]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2.5 px-4 rounded-xl transition-colors"
               >
                 {stage === 'submitting' ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -288,7 +288,7 @@ export default function BookingHelper({
               </button>
               <button
                 onClick={handleWhatsAppClick}
-                className="w-full mt-2 text-xs text-[#2B4521] hover:underline"
+                className="w-full mt-2 text-xs text-[#FA8125] hover:underline"
               >
                 {t('comp.bh.or_wa')}
               </button>

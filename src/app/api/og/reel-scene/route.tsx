@@ -45,9 +45,9 @@ export async function GET(req: NextRequest) {
   const cairo = await loadCairoFont()
 
   const gradients: Record<string, string> = {
-    hook: 'linear-gradient(180deg, #0F3324 0%, #2B4521 100%)',
-    middle: `linear-gradient(${135 + sceneIndex * 15}deg, #2B4521 0%, #5A6E3A 100%)`,
-    cta: 'linear-gradient(180deg, #2B4521 0%, #2FA084 100%)',
+    hook: 'linear-gradient(180deg, #0F3324 0%, #FA8125 100%)',
+    middle: `linear-gradient(${135 + sceneIndex * 15}deg, #FA8125 0%, #F98F2A 100%)`,
+    cta: 'linear-gradient(180deg, #FA8125 0%, #2FA084 100%)',
   }
 
   const fonts = cairo
@@ -75,11 +75,11 @@ export async function GET(req: NextRequest) {
           {/* Decorative circles */}
           <div style={{
             position: 'absolute', top: -200, right: -200, width: 600, height: 600,
-            borderRadius: 999, background: 'rgba(250, 129, 37,0.18)', display: 'flex',
+            borderRadius: 999, background: 'rgba(43, 69, 33,0.18)', display: 'flex',
           }} />
           <div style={{
             position: 'absolute', bottom: -300, left: -300, width: 700, height: 700,
-            borderRadius: 999, background: 'rgba(250, 129, 37,0.12)', display: 'flex',
+            borderRadius: 999, background: 'rgba(43, 69, 33,0.12)', display: 'flex',
           }} />
 
           {/* Top brand */}
@@ -127,7 +127,7 @@ export async function GET(req: NextRequest) {
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
           }}>
             <div style={{
-              display: 'flex', background: 'rgba(250, 129, 37,0.95)',
+              display: 'flex', background: 'rgba(43, 69, 33,0.95)',
               color: '#0F3324', fontSize: 36, fontWeight: 800,
               padding: '14px 48px', borderRadius: 999,
             }}>
@@ -148,7 +148,7 @@ export async function GET(req: NextRequest) {
       (
         <div style={{
           width: '100%', height: '100%',
-          background: '#2B4521', color: '#FAF7F0',
+          background: '#FA8125', color: '#FAF7F0',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 120, fontWeight: 900, letterSpacing: 8,
         }}>

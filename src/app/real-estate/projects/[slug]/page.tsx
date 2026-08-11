@@ -200,7 +200,7 @@ export default async function ProjectPage(
       <main className="max-w-4xl mx-auto px-4 pb-24">
         <Link
           href="/real-estate/market"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-[#2B4521] mt-5 mb-4 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-[#FA8125] mt-5 mb-4 transition-colors"
         >
           <ArrowRight className="w-4 h-4" />
           رجوع لبورصة العقارات
@@ -218,7 +218,7 @@ export default async function ProjectPage(
         <section className="mt-6">
           <div className="flex flex-wrap items-center gap-2 mb-3">
             {type && (
-              <span className="inline-flex items-center gap-1 text-xs font-semibold bg-[#2B4521]/10 text-[#2B4521] px-2.5 py-1 rounded-full">
+              <span className="inline-flex items-center gap-1 text-xs font-semibold bg-[#FA8125]/10 text-[#FA8125] px-2.5 py-1 rounded-full">
                 {PROPERTY_TYPE_ICON[type]} {PROPERTY_TYPE_LABEL[type]}
               </span>
             )}
@@ -239,7 +239,7 @@ export default async function ProjectPage(
             </p>
           )}
 
-          {price && <p className="mt-4 text-xl font-bold text-[#2B4521]">{price}</p>}
+          {price && <p className="mt-4 text-xl font-bold text-[#FA8125]">{price}</p>}
         </section>
 
         {/* 📋 التفاصيل */}
@@ -288,7 +288,7 @@ export default async function ProjectPage(
               href={`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`}
               target="_blank"
               rel="noopener"
-              className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#2B4521] hover:underline"
+              className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#FA8125] hover:underline"
             >
               <MapPin className="w-3.5 h-3.5" />
               افتح الموقع في خرايط جوجل
@@ -313,7 +313,7 @@ export default async function ProjectPage(
             href={p.brochure_url}
             target="_blank"
             rel="noopener"
-            className="mt-5 flex items-center justify-center gap-2 w-full bg-white border-2 border-[#2B4521]/20 text-[#2B4521] font-semibold py-3.5 rounded-2xl hover:bg-[#2B4521]/5 hover:border-[#2B4521]/40 transition-all"
+            className="mt-5 flex items-center justify-center gap-2 w-full bg-white border-2 border-[#FA8125]/20 text-[#FA8125] font-semibold py-3.5 rounded-2xl hover:bg-[#FA8125]/5 hover:border-[#FA8125]/40 transition-all"
           >
             <FileText className="w-4 h-4" />
             حمّل بروشور المشروع (PDF)
@@ -325,7 +325,7 @@ export default async function ProjectPage(
           href={inquiryWaLink(p)}
           target="_blank"
           rel="noopener"
-          className="mt-3 flex items-center justify-center gap-2 w-full bg-[#2B4521] text-white font-bold py-4 rounded-2xl hover:bg-[#175a4d] shadow-sm hover:shadow-md transition-all"
+          className="mt-3 flex items-center justify-center gap-2 w-full bg-[#FA8125] text-white font-bold py-4 rounded-2xl hover:bg-[#175a4d] shadow-sm hover:shadow-md transition-all"
         >
           <MessageCircle className="w-5 h-5" />
           اسأل المارد عن المشروع ده

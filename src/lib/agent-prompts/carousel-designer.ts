@@ -40,7 +40,7 @@ OUTPUT (JSON only):
       "heading": "Hook قصير قوي",
       "body": "نص لا يزيد عن 30 كلمة",
       "visual_concept": "وصف visual",
-      "color_block": "#2B4521"
+      "color_block": "#FA8125"
     },
     ...
   ],

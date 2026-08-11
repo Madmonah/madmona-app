@@ -63,11 +63,11 @@ export default function ServicesPage() {
 
       <main className="relative">
         {/* HERO */}
-        <section className="relative py-12 md:py-20 bg-gradient-to-br from-[#2B4521]/5 via-[#FAFAF7] to-[#2FA084]/5">
+        <section className="relative py-12 md:py-20 bg-gradient-to-br from-[#FA8125]/5 via-[#FAFAF7] to-[#2FA084]/5">
           <div className="max-w-5xl mx-auto px-4 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white shadow-soft border border-gray-100 mb-5">
               <Sparkles className="w-3.5 h-3.5 text-[#2FA084]" />
-              <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2B4521]">خدمات مضمونة</span>
+              <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#FA8125]">خدمات مضمونة</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-black text-gray-900 leading-[0.95] tracking-tight">
               <span className="block">كل ما يتأجر،</span>
@@ -82,7 +82,7 @@ export default function ServicesPage() {
             <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
               <Link
                 href="/marketplace"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#2B4521] text-white font-black rounded-full shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#FA8125] text-white font-black rounded-full shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
               >
                 <ShoppingBag className="w-4 h-4" />
                 <span>أجر مننا</span>
@@ -118,18 +118,18 @@ export default function ServicesPage() {
                   <Link
                     key={cat.slug}
                     href={`/categories/${cat.slug}`}
-                    className="group bg-[#FAFAF7] hover:bg-white border border-gray-100 hover:border-[#2B4521]/20 hover:shadow-elevated rounded-2xl p-6 transition-all no-underline"
+                    className="group bg-[#FAFAF7] hover:bg-white border border-gray-100 hover:border-[#FA8125]/20 hover:shadow-elevated rounded-2xl p-6 transition-all no-underline"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-[#2B4521]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#2B4521]/20 group-hover:scale-105 transition-all">
-                        <Icon className="w-6 h-6 text-[#2B4521]" />
+                      <div className="w-12 h-12 rounded-2xl bg-[#FA8125]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#FA8125]/20 group-hover:scale-105 transition-all">
+                        <Icon className="w-6 h-6 text-[#FA8125]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-black text-gray-900 text-lg mb-1.5 group-hover:text-[#2B4521] transition-colors">
+                        <h3 className="font-black text-gray-900 text-lg mb-1.5 group-hover:text-[#FA8125] transition-colors">
                           {cat.name}
                         </h3>
                         <p className="text-sm text-gray-600 leading-relaxed">{cat.desc}</p>
-                        <div className="inline-flex items-center gap-1 mt-3 text-xs font-bold text-[#2B4521] group-hover:gap-2 transition-all">
+                        <div className="inline-flex items-center gap-1 mt-3 text-xs font-bold text-[#FA8125] group-hover:gap-2 transition-all">
                           <span>اتصفح</span>
                           <ArrowLeft className="w-3 h-3" />
                         </div>
@@ -143,10 +143,10 @@ export default function ServicesPage() {
         </section>
 
         {/* PLATFORM FEATURES — booking experience */}
-        <section className="py-14 md:py-20 bg-gradient-to-br from-[#2B4521]/5 to-[#2FA084]/5">
+        <section className="py-14 md:py-20 bg-gradient-to-br from-[#FA8125]/5 to-[#2FA084]/5">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-12">
-              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-3">تجربة الحجز</p>
+              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-3">تجربة الحجز</p>
               <h2 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight">من البحث للحجز</h2>
               <p className="text-sm md:text-base text-gray-600 mt-3 max-w-xl mx-auto">
                 كل خطوة مدروسة عشان تكون رحلتك سلسة — من أول ضغطة لحد التأكيد.
@@ -185,9 +185,9 @@ export default function ServicesPage() {
               {NEWS_FEATURES.map((f) => {
                 const Icon = f.icon
                 return (
-                  <div key={f.name} className="border border-gray-100 rounded-2xl p-6 hover:border-[#2B4521]/20 hover:shadow-soft transition-all">
-                    <div className="w-12 h-12 rounded-2xl bg-[#2B4521]/10 flex items-center justify-center mb-4">
-                      <Icon className="w-6 h-6 text-[#2B4521]" />
+                  <div key={f.name} className="border border-gray-100 rounded-2xl p-6 hover:border-[#FA8125]/20 hover:shadow-soft transition-all">
+                    <div className="w-12 h-12 rounded-2xl bg-[#FA8125]/10 flex items-center justify-center mb-4">
+                      <Icon className="w-6 h-6 text-[#FA8125]" />
                     </div>
                     <h3 className="font-black text-gray-900 text-lg mb-2">{f.name}</h3>
                     <p className="text-sm text-gray-600 leading-relaxed">{f.desc}</p>

@@ -213,20 +213,20 @@ ${chatUrl}
           ? `🔥 Lead عالي النية: ${body.name} (${scoringResult!.lead_score}/100)${subjectSuffix}`
           : `🎯 Lead جديد: ${body.name}${subjectSuffix}`,
         html: `<div dir="rtl" style="font-family:Tahoma;padding:20px;max-width:560px;margin:0 auto">
-          <h2 style="color:${isHigh ? '#6FCF97' : '#2B4521'};margin-top:0">${isHigh ? '🔥 Lead عالي النية!' : '🎯 Lead جديد!'}</h2>
+          <h2 style="color:${isHigh ? '#6FCF97' : '#FA8125'};margin-top:0">${isHigh ? '🔥 Lead عالي النية!' : '🎯 Lead جديد!'}</h2>
           
           <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
             <tr><td style="padding:6px 0;color:#666;width:120px">الاسم:</td><td style="padding:6px 0"><strong>${body.name}</strong></td></tr>
-            <tr><td style="padding:6px 0;color:#666">التليفون:</td><td style="padding:6px 0"><a href="https://wa.me/${phone}" style="color:#2B4521;font-weight:bold">+${phone}</a></td></tr>
+            <tr><td style="padding:6px 0;color:#666">التليفون:</td><td style="padding:6px 0"><a href="https://wa.me/${phone}" style="color:#FA8125;font-weight:bold">+${phone}</a></td></tr>
             ${body.email ? `<tr><td style="padding:6px 0;color:#666">الإيميل:</td><td style="padding:6px 0">${body.email}</td></tr>` : ''}
-            ${body.listing_title ? `<tr><td style="padding:6px 0;color:#666">الإعلان:</td><td style="padding:6px 0;color:#2B4521"><strong>${body.listing_title}</strong></td></tr>` : ''}
+            ${body.listing_title ? `<tr><td style="padding:6px 0;color:#666">الإعلان:</td><td style="padding:6px 0;color:#FA8125"><strong>${body.listing_title}</strong></td></tr>` : ''}
             ${categoryLabel ? `<tr><td style="padding:6px 0;color:#666">الفئة:</td><td style="padding:6px 0">${categoryLabel}</td></tr>` : ''}
             ${body.message ? `<tr><td style="padding:6px 0;color:#666;vertical-align:top">الرسالة:</td><td style="padding:6px 0">${body.message}</td></tr>` : ''}
           </table>
 
           ${scoringResult ? `<div style="background:#FAF7F0;padding:16px;border-radius:8px;border-right:4px solid ${isHigh ? '#6FCF97' : '#2FA084'};margin-bottom:20px">
             <p style="margin:0 0 4px;color:#666;font-size:12px">AI Lead Score</p>
-            <p style="margin:0 0 8px;font-size:32px;font-weight:bold;color:${isHigh ? '#6FCF97' : '#2B4521'}">${scoringResult.lead_score}/100</p>
+            <p style="margin:0 0 8px;font-size:32px;font-weight:bold;color:${isHigh ? '#6FCF97' : '#FA8125'}">${scoringResult.lead_score}/100</p>
             <p style="margin:0;font-size:13px;line-height:1.6">${scoringResult.reasoning}</p>
           </div>` : ''}
 

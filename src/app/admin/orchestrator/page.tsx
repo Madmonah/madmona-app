@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 const C = {
-  green: '#2B4521', greenMid: '#2FA084', gold: '#d4a017', cream: '#FAFAF7',
+  green: '#FA8125', greenMid: '#2FA084', gold: '#d4a017', cream: '#FAFAF7',
   ink: '#0A0A0A', gray: '#6B7280', line: '#e8e6df', white: '#FFFFFF', red: '#c0392b',
 }
 

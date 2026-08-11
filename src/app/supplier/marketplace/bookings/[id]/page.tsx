@@ -211,11 +211,11 @@ export default function SupplierBookingDetailPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#2B4521] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
           <Link
             href={`/auth/login?redirect=/supplier/marketplace/bookings/${bookingId}`}
-            className="block bg-[#2B4521] text-white py-3 rounded-xl font-semibold"
+            className="block bg-[#FA8125] text-white py-3 rounded-xl font-semibold"
           >
             تسجيل دخول
           </Link>
@@ -232,7 +232,7 @@ export default function SupplierBookingDetailPage() {
           <h1 className="font-bold mb-2">
             {stage === 'no-supplier' ? 'مش مورد' : 'الحجز ده مش موجود'}
           </h1>
-          <Link href="/supplier/marketplace/bookings" className="inline-block bg-[#2B4521] text-white px-5 py-2.5 rounded-xl font-semibold mt-4">
+          <Link href="/supplier/marketplace/bookings" className="inline-block bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold mt-4">
             ارجع للحجوزات
           </Link>
         </div>
@@ -314,7 +314,7 @@ export default function SupplierBookingDetailPage() {
                   <Phone className="w-4 h-4 text-gray-400" />
                   <a
                     href={`tel:${booking.customer.phone}`}
-                    className="font-medium text-[#2B4521]"
+                    className="font-medium text-[#FA8125]"
                     dir="ltr"
                   >
                     {booking.customer.phone}
@@ -382,7 +382,7 @@ export default function SupplierBookingDetailPage() {
           </div>
           <div className="flex justify-between font-bold pt-2 border-t border-gray-100">
             <span className="text-gray-900">صافيك</span>
-            <span className="text-[#2B4521]">{Number(booking.supplier_payout).toLocaleString('ar-EG')} ج.م</span>
+            <span className="text-[#FA8125]">{Number(booking.supplier_payout).toLocaleString('ar-EG')} ج.م</span>
           </div>
         </div>
 
@@ -459,7 +459,7 @@ export default function SupplierBookingDetailPage() {
         {booking.customer_notes && (
           <div className="bg-white rounded-2xl border border-gray-100 p-4">
             <h2 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#2B4521]" /> ملاحظات العميل
+              <FileText className="w-4 h-4 text-[#FA8125]" /> ملاحظات العميل
             </h2>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">{booking.customer_notes}</p>
           </div>
@@ -503,7 +503,7 @@ export default function SupplierBookingDetailPage() {
             <button
               onClick={() => updateStatus('confirmed')}
               disabled={updating}
-              className="w-full bg-[#2B4521] text-white py-3 rounded-xl font-semibold hover:bg-[#2B4521]/90 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-[#FA8125] text-white py-3 rounded-xl font-semibold hover:bg-[#FA8125]/90 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
               أكّد استلام الدفع

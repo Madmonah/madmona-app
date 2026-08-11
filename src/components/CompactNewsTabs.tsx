@@ -35,9 +35,9 @@ interface ApiResponse {
 }
 
 const TABS: { id: Tab; label: string; icon: typeof Newspaper; accent: string }[] = [
-  { id: 'madmona',     label: 'أخبار مضمونة', icon: ShieldCheck, accent: '#2B4521' },
+  { id: 'madmona',     label: 'أخبار مضمونة', icon: ShieldCheck, accent: '#FA8125' },
   { id: 'economy',     label: 'اقتصاد',       icon: DollarSign,  accent: '#10b981' },
-  { id: 'real_estate', label: 'عقارات',       icon: Home,        accent: '#2B4521' },
+  { id: 'real_estate', label: 'عقارات',       icon: Home,        accent: '#FA8125' },
   { id: 'automotive',  label: 'سيارات',       icon: Car,         accent: '#3b82f6' },
   { id: 'business',    label: 'أعمال',        icon: Briefcase,   accent: '#2FA084' },
   { id: 'tourism',     label: 'سياحة',        icon: Plane,       accent: '#06b6d4' },
@@ -90,7 +90,7 @@ export default function CompactNewsTabs() {
   return (
     <div className="bg-white rounded-3xl shadow-elevated overflow-hidden border border-gray-100">
       {/* Header */}
-      <div className="bg-gradient-to-l from-[#2B4521] via-[#268a70] to-[#2B4521] px-4 md:px-5 py-3 flex items-center justify-between">
+      <div className="bg-gradient-to-l from-[#FA8125] via-[#268a70] to-[#FA8125] px-4 md:px-5 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
             <Newspaper className="w-4 h-4 text-white" />
@@ -121,7 +121,7 @@ export default function CompactNewsTabs() {
           <p className="text-sm text-gray-500">مفيش أخبار دلوقتي</p>
           <button
             onClick={() => fetchAll()}
-            className="mt-4 text-xs font-bold text-[#2B4521] hover:underline inline-flex items-center gap-1 mx-auto"
+            className="mt-4 text-xs font-bold text-[#FA8125] hover:underline inline-flex items-center gap-1 mx-auto"
           >
             <RefreshCw className="w-3 h-3" /> حاول تاني
           </button>

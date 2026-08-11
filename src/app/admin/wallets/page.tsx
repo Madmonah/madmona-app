@@ -96,15 +96,15 @@ export default function AdminWalletsPage() {
     return (
       <div dir="rtl" className="min-h-screen grid place-items-center bg-[#FAF7F2] px-6">
         <form onSubmit={handleLogin} className="bg-white rounded-3xl shadow-soft p-6 w-full max-w-sm text-center">
-          <Wallet className="w-10 h-10 mx-auto text-[#2B4521] mb-2" />
+          <Wallet className="w-10 h-10 mx-auto text-[#FA8125] mb-2" />
           <h1 className="font-bold text-lg mb-4">إدارة المحافظ</h1>
           <div className="relative mb-3">
             <Lock className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="كلمة سر الأدمن"
-              className="w-full border border-gray-200 rounded-2xl pr-9 pl-4 py-3 outline-none focus:border-[#2B4521]" />
+              className="w-full border border-gray-200 rounded-2xl pr-9 pl-4 py-3 outline-none focus:border-[#FA8125]" />
           </div>
           {authError && <p className="text-rose-500 text-sm mb-3">{authError}</p>}
-          <button className="w-full bg-[#2B4521] text-white py-3 rounded-2xl font-bold">دخول</button>
+          <button className="w-full bg-[#FA8125] text-white py-3 rounded-2xl font-bold">دخول</button>
         </form>
       </div>
     )
@@ -118,7 +118,7 @@ export default function AdminWalletsPage() {
       <div className="sticky top-0 z-30 bg-white border-b border-gray-100">
         <div className="max-w-3xl mx-auto flex items-center gap-3 px-4 py-3">
           <Link href="/admin" className="p-2 -mr-2 text-gray-600 no-underline"><ArrowRight className="w-5 h-5" /></Link>
-          <h1 className="font-bold text-lg flex items-center gap-2"><Wallet className="w-5 h-5 text-[#2B4521]" /> المحافظ</h1>
+          <h1 className="font-bold text-lg flex items-center gap-2"><Wallet className="w-5 h-5 text-[#FA8125]" /> المحافظ</h1>
           <button onClick={() => fetchData(password)} className="mr-auto p-2 text-gray-500"><RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} /></button>
         </div>
       </div>
@@ -128,7 +128,7 @@ export default function AdminWalletsPage() {
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white rounded-2xl shadow-soft p-4">
             <p className="text-xs text-gray-500">إجمالي الرصيد النقدي</p>
-            <p className="text-2xl font-black text-[#2B4521]">{formatMoney(totals.cash)}</p>
+            <p className="text-2xl font-black text-[#FA8125]">{formatMoney(totals.cash)}</p>
           </div>
           <div className="bg-white rounded-2xl shadow-soft p-4">
             <p className="text-xs text-gray-500">إجمالي الكريدت</p>
@@ -138,8 +138,8 @@ export default function AdminWalletsPage() {
 
         {/* Tabs */}
         <div className="flex gap-2">
-          <button onClick={() => setTab('wallets')} className={`flex-1 py-2 rounded-2xl font-bold text-sm ${tab === 'wallets' ? 'bg-[#2B4521] text-white' : 'bg-white text-gray-600'}`}>المحافظ ({wallets.length})</button>
-          <button onClick={() => setTab('withdrawals')} className={`flex-1 py-2 rounded-2xl font-bold text-sm ${tab === 'withdrawals' ? 'bg-[#2B4521] text-white' : 'bg-white text-gray-600'}`}>
+          <button onClick={() => setTab('wallets')} className={`flex-1 py-2 rounded-2xl font-bold text-sm ${tab === 'wallets' ? 'bg-[#FA8125] text-white' : 'bg-white text-gray-600'}`}>المحافظ ({wallets.length})</button>
+          <button onClick={() => setTab('withdrawals')} className={`flex-1 py-2 rounded-2xl font-bold text-sm ${tab === 'withdrawals' ? 'bg-[#FA8125] text-white' : 'bg-white text-gray-600'}`}>
             طلبات السحب{pendingCount > 0 ? ` (${pendingCount})` : ''}
           </button>
         </div>
@@ -149,7 +149,7 @@ export default function AdminWalletsPage() {
             <div className="relative">
               <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && fetchData(password)}
-                placeholder="ابحث بالاسم أو رقم الموبايل" className="w-full bg-white border border-gray-200 rounded-2xl pr-9 pl-4 py-2.5 outline-none focus:border-[#2B4521]" />
+                placeholder="ابحث بالاسم أو رقم الموبايل" className="w-full bg-white border border-gray-200 rounded-2xl pr-9 pl-4 py-2.5 outline-none focus:border-[#FA8125]" />
             </div>
             <div className="space-y-2">
               {wallets.length === 0 && <p className="text-center text-gray-400 py-8 text-sm">لا توجد محافظ</p>}
@@ -160,12 +160,12 @@ export default function AdminWalletsPage() {
                       <p className="font-bold text-gray-800 truncate">{w.profile?.full_name || 'بدون اسم'}</p>
                       <p className="text-xs text-gray-400">{w.profile?.phone} · {w.profile?.role}</p>
                     </div>
-                    <button onClick={() => setAdjustFor(w)} className="text-xs bg-[#2B4521]/10 text-[#2B4521] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1">
+                    <button onClick={() => setAdjustFor(w)} className="text-xs bg-[#FA8125]/10 text-[#FA8125] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1">
                       <BadgeDollarSign className="w-3.5 h-3.5" /> تعديل
                     </button>
                   </div>
                   <div className="flex gap-4 mt-3 text-sm">
-                    <span className="font-bold text-[#2B4521]">نقدي: {formatMoney(w.balance_cash, w.currency)}</span>
+                    <span className="font-bold text-[#FA8125]">نقدي: {formatMoney(w.balance_cash, w.currency)}</span>
                     <span className="font-bold text-amber-600">كريدت: {formatMoney(w.balance_credit, w.currency)}</span>
                   </div>
                 </div>
@@ -262,16 +262,16 @@ function AdjustModal({ wallet, busy, onClose, onSubmit }: {
           <button onClick={() => setDirection('out')} className={`flex-1 py-2 rounded-xl font-bold text-sm flex items-center justify-center gap-1 ${direction === 'out' ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-600'}`}><Minus className="w-4 h-4" /> خصم</button>
         </div>
         <div className="flex gap-2 mb-3">
-          <button onClick={() => setKind('cash')} className={`flex-1 py-2 rounded-xl font-bold text-sm ${kind === 'cash' ? 'bg-[#2B4521] text-white' : 'bg-gray-100 text-gray-600'}`}>نقدي</button>
+          <button onClick={() => setKind('cash')} className={`flex-1 py-2 rounded-xl font-bold text-sm ${kind === 'cash' ? 'bg-[#FA8125] text-white' : 'bg-gray-100 text-gray-600'}`}>نقدي</button>
           <button onClick={() => setKind('credit')} className={`flex-1 py-2 rounded-xl font-bold text-sm flex items-center justify-center gap-1 ${kind === 'credit' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600'}`}><Gift className="w-4 h-4" /> كريدت</button>
         </div>
         <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^\d.]/g, ''))} inputMode="decimal" placeholder="المبلغ"
-          className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-lg font-bold mb-3 outline-none focus:border-[#2B4521]" />
+          className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-lg font-bold mb-3 outline-none focus:border-[#FA8125]" />
         <input value={reason} onChange={e => setReason(e.target.value)} placeholder="السبب (اختياري)"
-          className="w-full border border-gray-200 rounded-2xl px-4 py-3 mb-4 outline-none focus:border-[#2B4521]" />
+          className="w-full border border-gray-200 rounded-2xl px-4 py-3 mb-4 outline-none focus:border-[#FA8125]" />
         <div className="flex gap-2">
           <button onClick={onClose} className="flex-1 py-3 rounded-2xl font-bold bg-gray-100 text-gray-600">إلغاء</button>
-          <button disabled={busy} onClick={submit} className="flex-1 py-3 rounded-2xl font-bold bg-[#2B4521] text-white flex items-center justify-center gap-2 disabled:opacity-60">
+          <button disabled={busy} onClick={submit} className="flex-1 py-3 rounded-2xl font-bold bg-[#FA8125] text-white flex items-center justify-center gap-2 disabled:opacity-60">
             {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : null} تأكيد
           </button>
         </div>

@@ -81,14 +81,14 @@ function CallbackContent() {
             <p className="text-sm text-gray-700 mb-6">{error}</p>
             <button
               onClick={() => router.replace('/auth/login')}
-              className="bg-[#2B4521] text-white px-6 py-3 rounded-2xl font-bold shadow-elevated hover:-translate-y-0.5 transition-all"
+              className="bg-[#FA8125] text-white px-6 py-3 rounded-2xl font-bold shadow-elevated hover:-translate-y-0.5 transition-all"
             >
               ارجع لتسجيل الدخول
             </button>
           </>
         ) : (
           <>
-            <Loader2 className="w-7 h-7 text-[#2B4521] animate-spin mx-auto mb-4" />
+            <Loader2 className="w-7 h-7 text-[#FA8125] animate-spin mx-auto mb-4" />
             <p className="text-sm text-gray-600">ثانية واحدة، بنكمّل دخولك…</p>
           </>
         )}
@@ -103,7 +103,7 @@ export default function AuthCallbackPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#2B4521] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#FA8125] animate-spin" />
       </div>
     }>
       <CallbackContent />

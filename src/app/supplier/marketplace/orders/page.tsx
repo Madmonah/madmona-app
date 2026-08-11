@@ -167,7 +167,7 @@ export default function SupplierOrdersPage() {
 
   // ---- Stage guards ----
   if (stage === 'loading') {
-    return <Center><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></Center>
+    return <Center><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></Center>
   }
   if (stage === 'unauthenticated') {
     return <ErrorBlock title="سجل دخول الأول" href="/auth/login" hrefLabel="سجل دخول" />
@@ -195,7 +195,7 @@ export default function SupplierOrdersPage() {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="text-xs font-bold text-[#2B4521] px-3 py-1.5 rounded-full hover:bg-[#2B4521]/10 disabled:opacity-50 transition-all"
+            className="text-xs font-bold text-[#FA8125] px-3 py-1.5 rounded-full hover:bg-[#FA8125]/10 disabled:opacity-50 transition-all"
           >
             {refreshing ? '...' : 'حدّث'}
           </button>
@@ -212,7 +212,7 @@ export default function SupplierOrdersPage() {
                 onClick={() => setFilter(tab.key)}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                   filter === tab.key
-                    ? 'bg-[#2B4521] text-white shadow-card'
+                    ? 'bg-[#FA8125] text-white shadow-card'
                     : 'bg-white text-gray-600 hover:bg-gray-50'
                 }`}
               >
@@ -281,7 +281,7 @@ export default function SupplierOrdersPage() {
                         <ShoppingBag className="w-3.5 h-3.5" />
                         {o.items_count} صنف
                       </span>
-                      <span className="font-black text-[#2B4521] tabular">
+                      <span className="font-black text-[#FA8125] tabular">
                         {o.total_amount.toLocaleString('ar-EG')} ج.م
                       </span>
                     </div>
@@ -321,7 +321,7 @@ function ErrorBlock({ title, subtitle, href, hrefLabel }: { title: string; subti
         {subtitle && <p className="text-sm text-gray-500 mb-5">{subtitle}</p>}
         <Link
           href={href}
-          className="inline-flex items-center gap-2 bg-[#2B4521] text-white px-5 py-2.5 rounded-xl font-bold shadow-soft hover:shadow-card transition-all"
+          className="inline-flex items-center gap-2 bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-bold shadow-soft hover:shadow-card transition-all"
         >
           {hrefLabel}
         </Link>

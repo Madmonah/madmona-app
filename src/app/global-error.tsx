@@ -41,7 +41,7 @@ export default function GlobalError({
           <div className="space-y-2">
             <button
               onClick={reset}
-              className="flex items-center justify-center gap-2 w-full bg-[#2B4521] text-white py-3.5 px-6 rounded-2xl font-bold hover:bg-[#2B4521]/90 transition-all"
+              className="flex items-center justify-center gap-2 w-full bg-[#FA8125] text-white py-3.5 px-6 rounded-2xl font-bold hover:bg-[#FA8125]/90 transition-all"
             >
               <RefreshCw className="w-4 h-4" />
               حاول تاني

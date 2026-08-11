@@ -25,7 +25,7 @@ export default function WorldCupPage() {
 function Fallback() {
   return (
     <div dir="rtl" lang="ar" className="min-h-screen bg-[#FAFAF7] flex items-center justify-center">
-      <p className="text-sm font-bold text-[#2B4521]">⚽ بنجيب النتايج...</p>
+      <p className="text-sm font-bold text-[#FA8125]">⚽ بنجيب النتايج...</p>
     </div>
   )
 }

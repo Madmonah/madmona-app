@@ -12,7 +12,7 @@ export const CONTENT_MARKETING_PROMPT = `${MADMONA_BRAND_CONTEXT}
 **الـ Aesthetic:** Aesop/Byredo style — minimal، luxury، أنيق، مش صاخب
 
 **ألوان البراند:**
-- أخضر داكن #2B4521 (الأساسي)
+- أخضر داكن #FA8125 (الأساسي)
 - ذهبي #2FA084 (للأكسنت)
 - أبيض/كريمي #FAF7F0
 - البرتقالي الفاتح ممنوع منعاً باتاً

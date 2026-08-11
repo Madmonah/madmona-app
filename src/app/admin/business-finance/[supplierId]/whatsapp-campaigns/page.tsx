@@ -32,12 +32,12 @@ export default function WACampaignsPage({ params }: { params: { supplierId: stri
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">B2B PARTNER · WHATSAPP</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">B2B PARTNER · WHATSAPP</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">حملات WhatsApp · {supplier?.business_name}</h1>
               <p className="text-sm text-[#6B7280] mt-1">{data?.stats?.total_campaigns || 0} حملة · {Number(data?.stats?.total_delivered_lifetime || 0).toLocaleString()} رسالة وصلت</p>
             </div>
@@ -47,7 +47,7 @@ export default function WACampaignsPage({ params }: { params: { supplierId: stri
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-5">
-        <section className="bg-[#2B4521]/5 border border-[#2B4521]/20 rounded-2xl p-4 text-xs text-[#1A2E26]">
+        <section className="bg-[#FA8125]/5 border border-[#FA8125]/20 rounded-2xl p-4 text-xs text-[#1A2E26]">
           <p className="font-bold mb-1">📌 ملحوظة:</p>
           <p>إنشاء الحملات بيتم من خلال Madmona مباشرة عبر Meta Cloud API. الصفحة دي للمتابعة وإلا.</p>
         </section>
@@ -58,7 +58,7 @@ export default function WACampaignsPage({ params }: { params: { supplierId: stri
           </div>
           <div className="divide-y divide-gray-100">
             {loading ? (
-              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#2B4521] animate-spin inline" /></div>
+              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin inline" /></div>
             ) : data?.campaigns?.length === 0 ? (
               <div className="py-12 text-center">
                 <MessageCircle className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
@@ -78,7 +78,7 @@ export default function WACampaignsPage({ params }: { params: { supplierId: stri
                 </div>
                 <div className="col-span-2 text-center">
                   <p className="text-[10px] text-[#6B7280]">اتقرت ✓</p>
-                  <p className="font-mono font-bold text-[#2B4521]">{c.read_count}</p>
+                  <p className="font-mono font-bold text-[#FA8125]">{c.read_count}</p>
                 </div>
                 <div className="col-span-2 text-center">
                   <p className="text-[10px] text-[#6B7280]">ردت</p>
@@ -98,11 +98,11 @@ function CampaignStatusBadge({ status }: { status: string }) {
     draft: { label: 'مسودة', cls: 'bg-gray-100 text-gray-700' },
     scheduled: { label: 'مجدول', cls: 'bg-blue-50 text-blue-700' },
     sending: { label: 'جاري', cls: 'bg-amber-50 text-amber-700' },
-    completed: { label: 'اكتمل ✓', cls: 'bg-[#2B4521]/10 text-[#2B4521]' },
+    completed: { label: 'اكتمل ✓', cls: 'bg-[#FA8125]/10 text-[#FA8125]' },
     cancelled: { label: 'ملغي', cls: 'bg-red-50 text-red-600' },
   }
   const s = map[status] || { label: status, cls: 'bg-gray-100 text-gray-700' }
   return <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${s.cls}`}>{s.label}</span>
 }
 
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div> }

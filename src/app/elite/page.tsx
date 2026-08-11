@@ -58,7 +58,7 @@ export default function EliteHome() {
     }, { enableHighAccuracy: true, timeout: 8000 })
   }
 
-  if (loading) return <div className="min-h-screen bg-[#2B4521] flex items-center justify-center"><Loader2 className="w-9 h-9 text-white animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#FA8125] flex items-center justify-center"><Loader2 className="w-9 h-9 text-white animate-spin" /></div>
 
   const gallery: string[] = b?.gallery || []
   const tagline = b?.description_ar || ''
@@ -71,7 +71,7 @@ export default function EliteHome() {
       <style>{`
 @keyframes mdFadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes mdFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-@keyframes mdGlow{0%,100%{box-shadow:0 10px 26px -10px rgba(43, 69, 33,.55)}50%{box-shadow:0 16px 40px -8px rgba(43, 69, 33,.85)}}
+@keyframes mdGlow{0%,100%{box-shadow:0 10px 26px -10px rgba(250, 129, 37,.55)}50%{box-shadow:0 16px 40px -8px rgba(250, 129, 37,.85)}}
 .md-fade{animation:mdFadeUp .6s ease both}
 .md-float{animation:mdFloat 4.5s ease-in-out infinite}
 .md-glow{animation:mdGlow 2.8s ease-in-out infinite}
@@ -83,7 +83,7 @@ export default function EliteHome() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_10px_30px_-18px_rgba(26,46,38,0.35)] p-3 flex items-center justify-around text-center">
           {[{ i: ShieldCheck, t: 'أمان كامل' }, { i: Clock, t: 'حجز فوري' }, { i: Star, t: 'خدمة احترافية' }].map((x, k) => (
             <div key={k} className="flex flex-col items-center gap-1 flex-1">
-              <x.i className="w-5 h-5 text-[#2B4521]" />
+              <x.i className="w-5 h-5 text-[#FA8125]" />
               <span className="text-[11px] font-bold text-[#1A2E26]">{x.t}</span>
             </div>
           ))}
@@ -94,7 +94,7 @@ export default function EliteHome() {
           <h2 className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> اختاري فرعك وابدئي</h2>
 
           <button onClick={nearest} disabled={geoBusy}
-            className="w-full bg-[#2B4521] text-white rounded-2xl p-4 flex items-center justify-between shadow-lg shadow-[#2B4521]/20 active:scale-[0.99] transition-transform disabled:opacity-70 mb-3 md-glow">
+            className="w-full bg-[#FA8125] text-white rounded-2xl p-4 flex items-center justify-between shadow-lg shadow-[#FA8125]/20 active:scale-[0.99] transition-transform disabled:opacity-70 mb-3 md-glow">
             <div className="flex items-center gap-3 text-right">
               <div className="w-11 h-11 rounded-xl bg-white/15 grid place-items-center">
                 {geoBusy ? <Loader2 className="w-6 h-6 animate-spin" /> : <Navigation className="w-6 h-6" />}
@@ -111,15 +111,15 @@ export default function EliteHome() {
           <div className="space-y-2.5">
             {branches.map((br: any) => (
               <button key={br.code} onClick={() => router.push(`/v/${br.code}`)}
-                className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between text-right active:scale-[0.99] transition-all hover:border-[#2B4521]/40 hover:shadow-md hover:shadow-[#1A2E26]/5 shadow-[0_8px_24px_-16px_rgba(26,46,38,0.3)]">
+                className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between text-right active:scale-[0.99] transition-all hover:border-[#FA8125]/40 hover:shadow-md hover:shadow-[#1A2E26]/5 shadow-[0_8px_24px_-16px_rgba(26,46,38,0.3)]">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-[#2B4521]/10 text-[#2B4521] grid place-items-center"><MapPin className="w-5 h-5" /></div>
+                  <div className="w-11 h-11 rounded-xl bg-[#FA8125]/10 text-[#FA8125] grid place-items-center"><MapPin className="w-5 h-5" /></div>
                   <div>
                     <p className="font-black text-sm text-[#1A2E26]">{cleanName(br.name)}</p>
                     <p className="text-[11px] text-[#6B7280]">احجزي · اكرامية · تقييم · منتجات</p>
                   </div>
                 </div>
-                <span className="w-8 h-8 rounded-lg bg-[#2B4521]/10 text-[#2B4521] grid place-items-center"><CalendarPlus className="w-4 h-4" /></span>
+                <span className="w-8 h-8 rounded-lg bg-[#FA8125]/10 text-[#FA8125] grid place-items-center"><CalendarPlus className="w-4 h-4" /></span>
               </button>
             ))}
           </div>
@@ -133,18 +133,18 @@ export default function EliteHome() {
               <a href={`https://instagram.com/${ig}`} target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-between bg-white border border-gray-100 rounded-2xl p-4 active:scale-[0.99] transition-all hover:shadow-md hover:shadow-[#1A2E26]/5 shadow-[0_8px_24px_-16px_rgba(26,46,38,0.3)]">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-[#2B4521]/10 text-[#2B4521] grid place-items-center"><Instagram className="w-6 h-6" /></div>
+                  <div className="w-11 h-11 rounded-xl bg-[#FA8125]/10 text-[#FA8125] grid place-items-center"><Instagram className="w-6 h-6" /></div>
                   <div>
                     <p className="font-black text-sm text-[#1A2E26]">إنستجرام</p>
                     <p className="text-[12px] text-[#6B7280]" dir="ltr">@{ig}</p>
                   </div>
                 </div>
-                <span className="text-[12px] font-black text-[#2B4521]">تابعينا</span>
+                <span className="text-[12px] font-black text-[#FA8125]">تابعينا</span>
               </a>
             )}
             <a href={`https://wa.me/${WA}`} className="flex items-center justify-between bg-white border border-gray-100 rounded-2xl p-4 active:scale-[0.99] transition-all hover:shadow-md hover:shadow-[#1A2E26]/5 shadow-[0_8px_24px_-16px_rgba(26,46,38,0.3)]">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-[#2B4521]/10 text-[#2B4521] grid place-items-center"><MessageCircle className="w-6 h-6" /></div>
+                <div className="w-11 h-11 rounded-xl bg-[#FA8125]/10 text-[#FA8125] grid place-items-center"><MessageCircle className="w-6 h-6" /></div>
                 <div>
                   <p className="font-black text-sm text-[#1A2E26]">واتساب</p>
                   <p className="text-[12px] text-[#6B7280]">أي استفسار أو حجز</p>
@@ -167,7 +167,7 @@ export default function EliteHome() {
         <div className="flex flex-col items-center gap-2 pt-2">
           <div className="flex items-center gap-2 text-[#6B7280]">
             <span className="text-[11px]">على منصّة</span>
-            <span className="w-6 h-6 rounded-lg bg-[#2B4521] text-white grid place-items-center text-[13px] font-black">م</span>
+            <span className="w-6 h-6 rounded-lg bg-[#FA8125] text-white grid place-items-center text-[13px] font-black">م</span>
             <span className="text-[12px] font-black text-[#1A2E26]">مضمونة</span>
           </div>
           <p className="text-[11px] text-[#6B7280]">madmonacairo.com · اللي بتأجره مضمون</p>
@@ -187,12 +187,12 @@ function Hero({ logo, gallery = [], tagline, bizName }: any) {
   }, [gallery.length])
 
   return (
-    <header className="relative bg-[#2B4521] text-white overflow-hidden">
+    <header className="relative bg-[#FA8125] text-white overflow-hidden">
       {gallery.map((src: string, i: number) => (
         <img key={i} src={src} alt="" aria-hidden="true"
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ${i === idx ? 'opacity-100' : 'opacity-0'}`} />
       ))}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#2B4521]/75 via-[#2B4521]/55 to-[#1A2E26]/92" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#FA8125]/75 via-[#FA8125]/55 to-[#1A2E26]/92" />
       {gallery.length === 0 && <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, white 1.5px, transparent 1.5px)', backgroundSize: '22px 22px' }} />}
 
       <div className="relative max-w-md mx-auto px-5 pt-12 pb-16 text-center">

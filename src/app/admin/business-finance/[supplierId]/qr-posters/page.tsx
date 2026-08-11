@@ -76,7 +76,7 @@ export default function QRPostersPage({
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" />
       </div>
     )
   }
@@ -88,14 +88,14 @@ export default function QRPostersPage({
         <div className="max-w-7xl mx-auto px-4 py-4">
           <Link
             href={`/admin/business-finance/${supplierId}`}
-            className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2 transition-colors"
+            className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2 transition-colors"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             رجوع للـ finance
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">
                 QR POSTERS · PRINTABLE
               </p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">
@@ -107,7 +107,7 @@ export default function QRPostersPage({
             </div>
             <button
               onClick={() => window.print()}
-              className="px-5 py-2.5 rounded-xl bg-[#2B4521] text-white text-sm font-bold flex items-center gap-2 hover:shadow-md transition-shadow"
+              className="px-5 py-2.5 rounded-xl bg-[#FA8125] text-white text-sm font-bold flex items-center gap-2 hover:shadow-md transition-shadow"
             >
               <Printer className="w-4 h-4" />
               طباعة
@@ -122,14 +122,14 @@ export default function QRPostersPage({
           <h2 className="text-sm font-bold text-[#1A2E26] mb-3">💡 طريقة الاستخدام</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-[#6B7280]">
             <div className="flex items-start gap-3">
-              <ShoppingBag className="w-4 h-4 text-[#2B4521] mt-0.5 flex-shrink-0" />
+              <ShoppingBag className="w-4 h-4 text-[#FA8125] mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-bold text-[#1A2E26] mb-1">QR العملاء</p>
                 <p>علقه عند الاستقبال. العميل بـ يـ scan ويختار الخدمات.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Clock className="w-4 h-4 text-[#2B4521] mt-0.5 flex-shrink-0" />
+              <Clock className="w-4 h-4 text-[#FA8125] mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-bold text-[#1A2E26] mb-1">QR الموظفين</p>
                 <p>علقه عند مدخل الموظفين. كل موظف بـ يدخل PIN بتاعه.</p>
@@ -175,7 +175,7 @@ function BranchPoster({
   return (
     <div className="branch-poster bg-white rounded-3xl border border-gray-100 overflow-hidden print:rounded-none print:border-none">
       {/* Branch header */}
-      <div className="bg-[#2B4521] text-white p-6 print:p-8 text-center">
+      <div className="bg-[#FA8125] text-white p-6 print:p-8 text-center">
         <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/70 mb-1">
           MADMONA · {branch.code}
         </p>
@@ -216,7 +216,7 @@ function BranchPoster({
                     <p className="text-xs font-bold text-[#1A2E26] truncate">{p.full_name}</p>
                     <p className="text-[10px] text-[#6B7280] truncate">{p.role_ar}</p>
                   </div>
-                  <span className="text-base font-mono font-black text-[#2B4521] tracking-wider flex-shrink-0">
+                  <span className="text-base font-mono font-black text-[#FA8125] tracking-wider flex-shrink-0">
                     {p.pin_code}
                   </span>
                 </div>
@@ -258,10 +258,10 @@ function QRCard({
 
   return (
     <div className={`rounded-2xl border p-5 text-center ${
-      accent ? 'border-[#2B4521] bg-[#2B4521]/5' : 'border-gray-200 bg-white'
+      accent ? 'border-[#FA8125] bg-[#FA8125]/5' : 'border-gray-200 bg-white'
     }`}>
       <div className={`inline-grid place-items-center w-12 h-12 rounded-xl mb-3 ${
-        accent ? 'bg-[#2B4521] text-white' : 'bg-[#FAFAF7] text-[#2B4521]'
+        accent ? 'bg-[#FA8125] text-white' : 'bg-[#FAFAF7] text-[#FA8125]'
       }`}>
         {icon}
       </div>

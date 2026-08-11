@@ -37,7 +37,7 @@ export default async function WorkflowsPage({
     <div dir="rtl" style={pageStyle}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <header style={{ marginBottom: 20, textAlign: 'center' }}>
-          <h1 style={{ color: '#2B4521', margin: 0, fontSize: 26 }}>🌊 Agent Workflows</h1>
+          <h1 style={{ color: '#FA8125', margin: 0, fontSize: 26 }}>🌊 Agent Workflows</h1>
           <p style={{ color: '#666', marginTop: 6, fontSize: 13 }}>
             {flows.length} workflow · orchestrated multi-step tasks
           </p>
@@ -62,7 +62,7 @@ export default async function WorkflowsPage({
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 8 }}>
                   <div style={{ minWidth: 0, flex: 1 }}>
-                    <h3 style={{ margin: 0, color: '#2B4521', fontSize: 14 }}>{w.workflow_name}</h3>
+                    <h3 style={{ margin: 0, color: '#FA8125', fontSize: 14 }}>{w.workflow_name}</h3>
                     {w.goal && <p style={{ margin: '4px 0 0', fontSize: 13, color: '#333' }}>{w.goal}</p>}
                     <div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>
                       {w.triggered_by && <span>triggered by: {w.triggered_by} · </span>}
@@ -110,9 +110,9 @@ function BackBtn() {
   return (
     <div style={{ marginTop: 24, textAlign: 'center' }}>
       <a href="/admin/ai-os" style={{
-        color: '#2B4521', textDecoration: 'none', fontSize: 13,
+        color: '#FA8125', textDecoration: 'none', fontSize: 13,
         padding: '8px 16px', background: '#fff', borderRadius: 8,
-        border: '1px solid #2B4521', display: 'inline-block',
+        border: '1px solid #FA8125', display: 'inline-block',
       }}>← رجوع للداشبورد</a>
     </div>
   )
@@ -130,10 +130,10 @@ const cardStyle: React.CSSProperties = {
 const chipStyle: React.CSSProperties = {
   fontSize: 12, padding: '6px 12px', background: '#fff',
   borderRadius: 20, border: '1px solid #E5E5E0',
-  color: '#2B4521', textDecoration: 'none',
+  color: '#FA8125', textDecoration: 'none',
 }
 const chipActiveStyle: React.CSSProperties = {
-  ...chipStyle, background: '#2B4521', color: '#fff', borderColor: '#2B4521',
+  ...chipStyle, background: '#FA8125', color: '#fff', borderColor: '#FA8125',
 }
 const badge: React.CSSProperties = {
   fontSize: 10, padding: '3px 8px', borderRadius: 12,

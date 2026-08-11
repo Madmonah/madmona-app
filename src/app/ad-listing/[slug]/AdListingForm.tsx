@@ -67,10 +67,10 @@ function FormInner({ listingId, listingTitle, categoryName }: Props) {
         padding: 24,
         borderRadius: 16,
         textAlign: 'center',
-        border: '2px solid #2B4521',
+        border: '2px solid #FA8125',
       }}>
         <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
-        <h2 style={{ color: '#2B4521', margin: '0 0 8px' }}>تم! استلمنا طلبك</h2>
+        <h2 style={{ color: '#FA8125', margin: '0 0 8px' }}>تم! استلمنا طلبك</h2>
         <p style={{ color: '#666', fontSize: 14, marginBottom: 16 }}>
           هنتواصل معاك في أقل من ساعة عن <strong>{listingTitle}</strong>
         </p>
@@ -101,7 +101,7 @@ function FormInner({ listingId, listingTitle, categoryName }: Props) {
       borderRadius: 16,
       boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
     }}>
-      <h2 style={{ color: '#2B4521', fontSize: 18, margin: '0 0 4px' }}>
+      <h2 style={{ color: '#FA8125', fontSize: 18, margin: '0 0 4px' }}>
         احجز أو اطلب تفاصيل
       </h2>
       <p style={{ color: '#666', fontSize: 13, margin: '0 0 16px' }}>
@@ -150,7 +150,7 @@ function FormInner({ listingId, listingTitle, categoryName }: Props) {
           disabled={submitting}
           style={{
             width: '100%',
-            background: submitting ? '#999' : '#2B4521',
+            background: submitting ? '#999' : '#FA8125',
             color: '#FAF7F0',
             padding: '14px',
             borderRadius: 10,

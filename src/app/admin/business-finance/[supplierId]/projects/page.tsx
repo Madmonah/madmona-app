@@ -11,7 +11,7 @@ import {
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 const STATUSES = [
-  { value: 'active',    label: 'شغّال',        color: 'bg-[#2B4521]/10 text-[#2B4521]' },
+  { value: 'active',    label: 'شغّال',        color: 'bg-[#FA8125]/10 text-[#FA8125]' },
   { value: 'on_hold',   label: 'متوقف مؤقت',   color: 'bg-amber-50 text-amber-700' },
   { value: 'completed', label: 'مكتمل',        color: 'bg-blue-50 text-blue-700' },
   { value: 'cancelled', label: 'ملغي',         color: 'bg-red-50 text-red-600' },
@@ -111,7 +111,7 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
   const activeCount = projects.filter((p) => p.status === 'active').length
 
   if (loading && !supplier) {
-    return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" /></div>
+    return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div>
   }
 
   return (
@@ -119,21 +119,21 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
       {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">مقاولات · المشاريع</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">مقاولات · المشاريع</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2">
-                <FolderKanban className="w-7 h-7 text-[#2B4521]" /> المشاريع
+                <FolderKanban className="w-7 h-7 text-[#FA8125]" /> المشاريع
               </h1>
               <p className="text-sm text-[#6B7280] mt-1">
                 {projects.length} مشروع · {activeCount} شغّال · إجمالي التعاقدات {EGP(totalValue)} ج
               </p>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <button onClick={openAdd} className="px-4 py-2 rounded-xl bg-[#2B4521] text-white text-sm font-bold flex items-center gap-2 hover:shadow-md transition-shadow">
+              <button onClick={openAdd} className="px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold flex items-center gap-2 hover:shadow-md transition-shadow">
                 <Plus className="w-4 h-4" /> مشروع جديد
               </button>
               <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7] text-[#1A2E26]"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
@@ -149,7 +149,7 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
             <FolderKanban className="w-12 h-12 text-[#6B7280] opacity-30 mx-auto mb-3" />
             <p className="text-sm font-bold text-[#1A2E26]">لسه مفيش مشاريع</p>
             <p className="text-xs text-[#6B7280] mt-1">ابدأ بإضافة أول مشروع مقاولات</p>
-            <button onClick={openAdd} className="mt-4 px-4 py-2 rounded-xl bg-[#2B4521] text-white text-sm font-bold inline-flex items-center gap-2">
+            <button onClick={openAdd} className="mt-4 px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold inline-flex items-center gap-2">
               <Plus className="w-4 h-4" /> مشروع جديد
             </button>
           </div>
@@ -176,7 +176,7 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
                   <div className="rounded-xl bg-[#FAFAF7] p-3 mb-3">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] flex items-center gap-1"><Wallet className="w-3.5 h-3.5" /> قيمة التعاقد</span>
-                      <span className="text-lg font-black text-[#2B4521] font-mono">{EGP(p.contract_value)} <span className="text-xs font-medium text-[#6B7280]">ج</span></span>
+                      <span className="text-lg font-black text-[#FA8125] font-mono">{EGP(p.contract_value)} <span className="text-xs font-medium text-[#6B7280]">ج</span></span>
                     </div>
                     <div className="flex items-center gap-3 mt-2 text-[10px] text-[#6B7280]">
                       <span>محتجز {p.retention_pct}%</span>·
@@ -192,14 +192,14 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
                       <span>نسبة الإنجاز</span><span className="text-[#1A2E26]">{prog}%</span>
                     </div>
                     <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-                      <div className="h-full bg-[#2B4521] rounded-full transition-all" style={{ width: `${prog}%` }} />
+                      <div className="h-full bg-[#FA8125] rounded-full transition-all" style={{ width: `${prog}%` }} />
                     </div>
                   </div>
 
                   <div className="mt-auto flex items-center gap-2">
                     <Link
                       href={`/admin/business-finance/${supplierId}/projects/${p.id}`}
-                      className="flex-1 px-3 py-2 rounded-xl bg-[#2B4521] text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:shadow-md transition-shadow"
+                      className="flex-1 px-3 py-2 rounded-xl bg-[#FA8125] text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:shadow-md transition-shadow"
                     >
                       <Layers className="w-3.5 h-3.5" /> تفاصيل المشروع
                     </Link>
@@ -219,7 +219,7 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
           <div className="bg-white w-full md:max-w-lg rounded-t-3xl md:rounded-3xl max-h-[92vh] overflow-y-auto" dir="rtl" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between">
               <h2 className="text-lg font-black text-[#1A2E26] flex items-center gap-2">
-                <Layers className="w-5 h-5 text-[#2B4521]" /> {form.id ? 'تعديل مشروع' : 'مشروع جديد'}
+                <Layers className="w-5 h-5 text-[#FA8125]" /> {form.id ? 'تعديل مشروع' : 'مشروع جديد'}
               </h2>
               <button onClick={() => setShowForm(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-5 h-5 text-[#6B7280]" /></button>
             </div>
@@ -255,7 +255,7 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
               <Field label="ملاحظات"><textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className={inputCls} rows={2} /></Field>
             </div>
             <div className="sticky bottom-0 bg-white border-t border-gray-100 px-5 py-4 flex gap-2">
-              <button onClick={save} disabled={saving} className="flex-1 py-3 rounded-xl bg-[#2B4521] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-60">
+              <button onClick={save} disabled={saving} className="flex-1 py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-60">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null} {form.id ? 'حفظ التعديلات' : 'إضافة المشروع'}
               </button>
               <button onClick={() => setShowForm(false)} className="px-5 py-3 rounded-xl bg-[#FAFAF7] text-[#1A2E26] font-bold text-sm">إلغاء</button>
@@ -267,7 +267,7 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
   )
 }
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:outline-none focus:border-[#2B4521] bg-white'
+const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:outline-none focus:border-[#FA8125] bg-white'
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (

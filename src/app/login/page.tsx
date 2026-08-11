@@ -75,14 +75,14 @@ export default function MadmonaLoginPage() {
     router.push('/me')
   }
 
-  if (checking) return <div className="min-h-screen bg-[#2B4521] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
+  if (checking) return <div className="min-h-screen bg-[#FA8125] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
 
   return (
-    <div className="min-h-screen bg-[#2B4521] flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-[#FA8125] flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-white grid place-items-center mx-auto mb-4">
-            <span className="text-3xl font-black text-[#2B4521]">م</span>
+            <span className="text-3xl font-black text-[#FA8125]">م</span>
           </div>
           <h1 className="text-2xl font-black text-white">مضمونة</h1>
           <p className="text-sm text-white/80 mt-1">معاملاتك مضمونة</p>
@@ -91,8 +91,8 @@ export default function MadmonaLoginPage() {
         <div className="bg-white rounded-3xl p-6 shadow-2xl">
           {mode === 'pin' ? (
             <>
-              <button onClick={() => { setMode('wa'); setError('') }} className="text-xs font-bold text-[#6B7280] hover:text-[#2B4521] flex items-center gap-1 mb-3"><ArrowLeft className="w-3.5 h-3.5" /> دخول عادي بواتساب</button>
-              <h2 className="text-lg font-black text-[#1A2E26] mb-1 flex items-center gap-1.5"><Briefcase className="w-4 h-4 text-[#2B4521]" /> دخول الموظفين</h2>
+              <button onClick={() => { setMode('wa'); setError('') }} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-3"><ArrowLeft className="w-3.5 h-3.5" /> دخول عادي بواتساب</button>
+              <h2 className="text-lg font-black text-[#1A2E26] mb-1 flex items-center gap-1.5"><Briefcase className="w-4 h-4 text-[#FA8125]" /> دخول الموظفين</h2>
               <p className="text-sm text-[#6B7280] mb-5">برقم تليفونك والـ <b>PIN</b> (نفس الأربع أرقام بتاعت البصمة)</p>
 
               <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">رقم الموبايل</label>
@@ -108,7 +108,7 @@ export default function MadmonaLoginPage() {
               </div>
 
               {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
-              <button onClick={employeeLogin} disabled={sending || !phone || pin.length < 3} className="w-full mt-4 py-3 rounded-xl bg-[#2B4521] text-white font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
+              <button onClick={employeeLogin} disabled={sending || !phone || pin.length < 3} className="w-full mt-4 py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
                 {sending ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري الدخول...</> : <><CheckCircle2 className="w-4 h-4" /> دخول لحسابي</>}
               </button>
             </>
@@ -119,14 +119,14 @@ export default function MadmonaLoginPage() {
                 من غير باسورد ولا كود بيتبعتلك — رقمك اللي بتبعت منه هو إثبات هويتك.
               </p>
               <WhatsAppLogin onDone={() => { router.push(nextPath()); router.refresh() }} />
-              <button onClick={() => { setMode('pin'); setError('') }} className="w-full mt-3 py-2.5 rounded-xl border border-[#2B4521]/25 text-[#2B4521] font-bold text-[13px] flex items-center justify-center gap-1.5">
+              <button onClick={() => { setMode('pin'); setError('') }} className="w-full mt-3 py-2.5 rounded-xl border border-[#FA8125]/25 text-[#FA8125] font-bold text-[13px] flex items-center justify-center gap-1.5">
                 <Briefcase className="w-4 h-4" /> أنا موظف — دخول بالـPIN
               </button>
             </>
           )}
 
           <div className="mt-5 pt-4 border-t border-gray-100 flex items-start gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#2B4521] flex-shrink-0 mt-0.5" />
+            <ShieldCheck className="w-4 h-4 text-[#FA8125] flex-shrink-0 mt-0.5" />
             <p className="text-[10px] text-[#6B7280] leading-relaxed">
               {mode === 'pin'
                 ? 'دخول الموظفين بالـPIN بتاع البصمة. لو نسيت الـPIN كلّم إدارة الفرع. حساب واحد على مضمونة يخدمك كعميل، موظف، أو لعرض وتأجير أي حاجة.'

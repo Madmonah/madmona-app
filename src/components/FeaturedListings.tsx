@@ -155,7 +155,7 @@ export default function FeaturedListings() {
         </div>
         <Link
           href="/marketplace"
-          className="hidden sm:inline-flex items-center gap-1.5 text-sm text-[#2B4521] font-bold hover:gap-2.5 transition-all no-underline"
+          className="hidden sm:inline-flex items-center gap-1.5 text-sm text-[#FA8125] font-bold hover:gap-2.5 transition-all no-underline"
         >
           <span>{t('comp.fl.browse_all')}</span>
           <ArrowLeft className="w-4 h-4" />
@@ -221,7 +221,7 @@ export default function FeaturedListings() {
               </div>
 
               <div className="p-5">
-                <h3 className="font-black text-base md:text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#2B4521] transition-colors">
+                <h3 className="font-black text-base md:text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#FA8125] transition-colors">
                   {displayTitle}
                 </h3>
 
@@ -237,7 +237,7 @@ export default function FeaturedListings() {
                     {startingPrice !== null ? (
                       <>
                         <p className="text-[10px] text-gray-500 font-medium">{t('market.starts_from')}</p>
-                        <p className="text-xl font-black text-[#2B4521] leading-none mt-0.5 tabular">
+                        <p className="text-xl font-black text-[#FA8125] leading-none mt-0.5 tabular">
                           {startingPrice.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
                           <span className="text-xs font-medium text-gray-500 ms-1">{t('common.egp')}</span>
                         </p>
@@ -246,7 +246,7 @@ export default function FeaturedListings() {
                       <p className="text-xs text-gray-400 font-medium">{t('market.price_on_request')}</p>
                     )}
                   </div>
-                  <div className="inline-flex items-center gap-1 text-[#2B4521] font-bold text-xs group-hover:gap-2 transition-all">
+                  <div className="inline-flex items-center gap-1 text-[#FA8125] font-bold text-xs group-hover:gap-2 transition-all">
                     <span>{t('comp.fl.learn_more')}</span>
                     <ArrowLeft className="w-3.5 h-3.5" />
                   </div>
@@ -262,7 +262,7 @@ export default function FeaturedListings() {
 
       <Link
         href="/marketplace"
-        className="sm:hidden mt-6 flex items-center justify-center gap-2 px-5 py-3 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-[#2B4521] no-underline"
+        className="sm:hidden mt-6 flex items-center justify-center gap-2 px-5 py-3 bg-white border border-gray-100 rounded-2xl text-sm font-bold text-[#FA8125] no-underline"
       >
         <span>{t('comp.fl.browse_all')}</span>
         <ArrowLeft className="w-4 h-4" />

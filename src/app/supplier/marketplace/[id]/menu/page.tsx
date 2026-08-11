@@ -299,7 +299,7 @@ export default function SupplierMenuPage() {
   if (stage === 'loading') {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" />
       </div>
     )
   }
@@ -329,7 +329,7 @@ export default function SupplierMenuPage() {
           </div>
           <button
             onClick={() => setShowImport(true)}
-            className="inline-flex items-center gap-1.5 bg-white border border-[#2B4521]/30 text-[#2B4521] px-3 py-2 rounded-xl font-bold text-xs shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
+            className="inline-flex items-center gap-1.5 bg-white border border-[#FA8125]/30 text-[#FA8125] px-3 py-2 rounded-xl font-bold text-xs shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
             title="استيراد المنيو من ملف Excel"
           >
             <FileSpreadsheet className="w-4 h-4" />
@@ -337,7 +337,7 @@ export default function SupplierMenuPage() {
           </button>
           <button
             onClick={openNew}
-            className="inline-flex items-center gap-1.5 bg-[#2B4521] text-white px-4 py-2 rounded-xl font-bold text-xs shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
+            className="inline-flex items-center gap-1.5 bg-[#FA8125] text-white px-4 py-2 rounded-xl font-bold text-xs shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
           >
             <Plus className="w-4 h-4" />
             صنف جديد
@@ -357,7 +357,7 @@ export default function SupplierMenuPage() {
             </p>
             <button
               onClick={openNew}
-              className="inline-flex items-center gap-2 bg-[#2B4521] text-white px-6 py-3 rounded-2xl font-bold shadow-elevated hover:-translate-y-0.5 hover:shadow-luxe transition-all"
+              className="inline-flex items-center gap-2 bg-[#FA8125] text-white px-6 py-3 rounded-2xl font-bold shadow-elevated hover:-translate-y-0.5 hover:shadow-luxe transition-all"
             >
               <Plus className="w-4 h-4" />
               ضيف صنف أول
@@ -395,13 +395,13 @@ export default function SupplierMenuPage() {
                     {(it.sizes && it.sizes.length > 0) ? (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {it.sizes.map((s) => (
-                          <span key={s.id} className="text-[10px] font-black bg-[#2B4521]/8 text-[#2B4521] px-2 py-0.5 rounded-full tabular">
+                          <span key={s.id} className="text-[10px] font-black bg-[#FA8125]/8 text-[#FA8125] px-2 py-0.5 rounded-full tabular">
                             {s.name_ar} {s.price.toLocaleString('ar-EG')}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm font-black text-[#2B4521] tabular mt-1">
+                      <p className="text-sm font-black text-[#FA8125] tabular mt-1">
                         {it.price.toLocaleString('ar-EG')} <span className="text-[10px] font-medium text-gray-500">ج.م</span>
                       </p>
                     )}
@@ -468,7 +468,7 @@ export default function SupplierMenuPage() {
                       <button
                         type="button"
                         onClick={() => setForm({ ...form, sizes: SIZE_PRESETS.map((n) => ({ name_ar: n, price: '' })) })}
-                        className="text-[10px] font-black text-[#2B4521] bg-[#2B4521]/10 px-2.5 py-1 rounded-full"
+                        className="text-[10px] font-black text-[#FA8125] bg-[#FA8125]/10 px-2.5 py-1 rounded-full"
                       >
                         صغير/وسط/كبير
                       </button>
@@ -494,7 +494,7 @@ export default function SupplierMenuPage() {
                             setForm({ ...form, sizes: next })
                           }}
                           placeholder="اسم الحجم (صغير)"
-                          className="flex-1 px-3 py-2 rounded-xl border border-gray-200 focus:border-[#2B4521] outline-none text-xs font-bold"
+                          className="flex-1 px-3 py-2 rounded-xl border border-gray-200 focus:border-[#FA8125] outline-none text-xs font-bold"
                         />
                         <input
                           value={s.price}
@@ -505,7 +505,7 @@ export default function SupplierMenuPage() {
                           placeholder="السعر"
                           type="tel"
                           dir="ltr"
-                          className="w-20 px-3 py-2 rounded-xl border border-gray-200 focus:border-[#2B4521] outline-none text-xs font-bold text-center tabular"
+                          className="w-20 px-3 py-2 rounded-xl border border-gray-200 focus:border-[#FA8125] outline-none text-xs font-bold text-center tabular"
                         />
                         <button
                           type="button"
@@ -519,7 +519,7 @@ export default function SupplierMenuPage() {
                     <button
                       type="button"
                       onClick={() => setForm({ ...form, sizes: [...form.sizes, { name_ar: '', price: '' }] })}
-                      className="text-[11px] font-black text-[#2B4521] flex items-center gap-1"
+                      className="text-[11px] font-black text-[#FA8125] flex items-center gap-1"
                     >
                       <Plus className="w-3.5 h-3.5" /> ضيف حجم
                     </button>
@@ -568,7 +568,7 @@ export default function SupplierMenuPage() {
               <button
                 onClick={save}
                 disabled={saving}
-                className="flex-1 bg-[#2B4521] text-white py-3 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe disabled:opacity-60 transition-all flex items-center justify-center gap-2"
+                className="flex-1 bg-[#FA8125] text-white py-3 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe disabled:opacity-60 transition-all flex items-center justify-center gap-2"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                 {saving ? 'جاري الحفظ...' : 'حفظ'}
@@ -635,7 +635,7 @@ function Field({ label, value, onChange, placeholder, type = 'text', multiline =
           placeholder={placeholder}
           rows={3}
           dir={dir}
-          className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#2B4521] focus:ring-2 focus:ring-[#2B4521]/20 outline-none transition-all text-sm font-medium resize-none"
+          className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#FA8125] focus:ring-2 focus:ring-[#FA8125]/20 outline-none transition-all text-sm font-medium resize-none"
         />
       ) : (
         <input
@@ -644,7 +644,7 @@ function Field({ label, value, onChange, placeholder, type = 'text', multiline =
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           dir={dir}
-          className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#2B4521] focus:ring-2 focus:ring-[#2B4521]/20 outline-none transition-all text-sm font-medium"
+          className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#FA8125] focus:ring-2 focus:ring-[#FA8125]/20 outline-none transition-all text-sm font-medium"
         />
       )}
     </div>
@@ -662,7 +662,7 @@ function ErrorBlock({ title, subtitle, href, hrefLabel }: { title: string; subti
         {subtitle && <p className="text-sm text-gray-500 mb-5">{subtitle}</p>}
         <Link
           href={href}
-          className="inline-flex items-center gap-2 bg-[#2B4521] text-white px-5 py-2.5 rounded-xl font-bold shadow-soft hover:shadow-card transition-all"
+          className="inline-flex items-center gap-2 bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-bold shadow-soft hover:shadow-card transition-all"
         >
           {hrefLabel}
         </Link>

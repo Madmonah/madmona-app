@@ -210,7 +210,7 @@ export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () =>
   }
 
   const badge: Record<Status, { t: string; bg: string; c: string }> = {
-    friend: { t: '🤝 صاحب', bg: '#E4F3EC', c: '#2B4521' },
+    friend: { t: '🤝 صاحب', bg: '#E4F3EC', c: '#FA8125' },
     waiting: { t: '⏳ مستني يضيفك', bg: '#FDF3DA', c: '#8a6d1a' },
     not_on_madmona: { t: 'مش على مضمونة', bg: '#F1EEE6', c: '#8A9690' },
     blocked: { t: '🚫 متعمله بلوك', bg: '#FCEEEE', c: '#B4423A' },
@@ -233,7 +233,7 @@ export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () =>
     return qd.length > 0 && p.phone.replace(/\D/g, '').includes(qd)
   })
   const nSel = picked.reduce((a, _, i) => a + (checked[i] ? 1 : 0), 0)
-  const pill = { background: '#F1EEE6', color: '#2B4521', border: 'none', borderRadius: 999, padding: '6px 12px', fontSize: 11.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' } as const
+  const pill = { background: '#F1EEE6', color: '#FA8125', border: 'none', borderRadius: 999, padding: '6px 12px', fontSize: 11.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' } as const
 
   if (picked.length > 0) {
     return (
@@ -251,7 +251,7 @@ export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () =>
               <button onClick={() => { const a: Record<number, boolean> = {}; picked.forEach((_, i) => { a[i] = true }); setChecked(a) }} style={pill}>اختار الكل</button>
               <button onClick={() => setChecked({})} style={pill}>ألغي الكل</button>
               <span style={{ flex: 1 }} />
-              <span style={{ fontSize: 12.5, fontWeight: 900, color: '#2B4521' }}>{nSel} / {picked.length}</span>
+              <span style={{ fontSize: 12.5, fontWeight: 900, color: '#FA8125' }}>{nSel} / {picked.length}</span>
             </div>
           </div>
 
@@ -262,8 +262,8 @@ export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () =>
             {view.map(({ p, i }) => (
               <div key={i} onClick={() => setChecked((cc) => ({ ...cc, [i]: !cc[i] }))}
                 style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 2px', borderBottom: '1px solid #F1EEE6', cursor: 'pointer' }}>
-                <span style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, display: 'grid', placeItems: 'center', background: checked[i] ? 'linear-gradient(118deg,#2B4521,#5A6E3A)' : '#fff', border: checked[i] ? 'none' : '1.5px solid #D4D9D6', color: '#fff', fontSize: 13, fontWeight: 900 }}>{checked[i] ? '✓' : ''}</span>
-                <span style={{ width: 34, height: 34, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#2B4521)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 14, fontWeight: 800, flexShrink: 0 }}>{(p.name || '').trim()[0] || '؟'}</span>
+                <span style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, display: 'grid', placeItems: 'center', background: checked[i] ? 'linear-gradient(118deg,#FA8125,#F98F2A)' : '#fff', border: checked[i] ? 'none' : '1.5px solid #D4D9D6', color: '#fff', fontSize: 13, fontWeight: 900 }}>{checked[i] ? '✓' : ''}</span>
+                <span style={{ width: 34, height: 34, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#FA8125)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 14, fontWeight: 800, flexShrink: 0 }}>{(p.name || '').trim()[0] || '؟'}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13.5, fontWeight: 800, color: '#14231E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name || 'بدون اسم'}</div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: '#8A9690', direction: 'ltr', textAlign: 'right' }}>{p.phone}</div>
@@ -274,7 +274,7 @@ export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () =>
 
           <div style={{ padding: '11px 16px 16px', borderTop: '1px solid #F1EEE6' }}>
             <button onClick={confirmPicked} disabled={busy || nSel === 0}
-              style={{ width: '100%', background: 'linear-gradient(118deg,#2B4521,#5A6E3A)', color: '#fff', border: 'none', borderRadius: 999, padding: '13px 0', fontSize: 14.5, fontWeight: 900, cursor: 'pointer', opacity: busy || nSel === 0 ? 0.5 : 1, fontFamily: 'inherit' }}>
+              style={{ width: '100%', background: 'linear-gradient(118deg,#FA8125,#F98F2A)', color: '#fff', border: 'none', borderRadius: 999, padding: '13px 0', fontSize: 14.5, fontWeight: 900, cursor: 'pointer', opacity: busy || nSel === 0 ? 0.5 : 1, fontFamily: 'inherit' }}>
               ➕ ضيف المختارين ({nSel})
             </button>
             <div style={{ fontSize: 11, fontWeight: 600, color: '#8A9690', textAlign: 'center', marginTop: 8, lineHeight: 1.65 }}>
@@ -302,7 +302,7 @@ export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () =>
 
         {/* الطريق الأساسي: رابط الدعوة — بصفر أذونات وعلى كل جهاز */}
         <button onClick={inviteFriend} disabled={busy}
-          style={{ display: 'flex', alignItems: 'center', gap: 11, width: '100%', background: 'linear-gradient(118deg,#2B4521,#5A6E3A)', color: '#fff', border: 'none', borderRadius: 16, padding: '14px 16px', cursor: 'pointer', opacity: busy ? 0.6 : 1, fontFamily: 'inherit', textAlign: 'start', marginBottom: 8, boxShadow: '0 6px 18px -8px rgba(43, 69, 33,.5)' }}>
+          style={{ display: 'flex', alignItems: 'center', gap: 11, width: '100%', background: 'linear-gradient(118deg,#FA8125,#F98F2A)', color: '#fff', border: 'none', borderRadius: 16, padding: '14px 16px', cursor: 'pointer', opacity: busy ? 0.6 : 1, fontFamily: 'inherit', textAlign: 'start', marginBottom: 8, boxShadow: '0 6px 18px -8px rgba(250, 129, 37,.5)' }}>
           <span style={{ fontSize: 24, flexShrink: 0 }}>🔗</span>
           <span style={{ flex: 1, minWidth: 0 }}>
             <span style={{ display: 'block', fontSize: 14.5, fontWeight: 900 }}>ادعُ صاحبك بلينك</span>
@@ -320,12 +320,12 @@ export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () =>
             style={{ flex: 1, minWidth: 0, background: '#F1EEE6', border: 'none', borderRadius: 12, padding: '10px 13px', fontSize: 13.5, fontWeight: 600, color: '#14231E', outline: 'none', fontFamily: 'inherit', direction: 'ltr' }} />
         </div>
         <div style={{ display: 'flex', gap: 6, marginBottom: 9 }}>
-          <button onClick={addManual} disabled={busy || !phone.trim()} style={{ flex: 1, background: 'linear-gradient(118deg,#2B4521,#5A6E3A)', color: '#fff', border: 'none', borderRadius: 999, padding: '10px 0', fontSize: 13.5, fontWeight: 900, cursor: 'pointer', opacity: busy || !phone.trim() ? 0.55 : 1, fontFamily: 'inherit' }}>➕ ضيف للدفتر</button>
-          <button onClick={importFromPhone} disabled={busy} style={{ background: '#F1EEE6', color: '#2B4521', border: 'none', borderRadius: 999, padding: '10px 15px', fontSize: 13, fontWeight: 800, cursor: 'pointer', opacity: busy ? 0.55 : 1, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>📲 من تليفوني</button>
+          <button onClick={addManual} disabled={busy || !phone.trim()} style={{ flex: 1, background: 'linear-gradient(118deg,#FA8125,#F98F2A)', color: '#fff', border: 'none', borderRadius: 999, padding: '10px 0', fontSize: 13.5, fontWeight: 900, cursor: 'pointer', opacity: busy || !phone.trim() ? 0.55 : 1, fontFamily: 'inherit' }}>➕ ضيف للدفتر</button>
+          <button onClick={importFromPhone} disabled={busy} style={{ background: '#F1EEE6', color: '#FA8125', border: 'none', borderRadius: 999, padding: '10px 15px', fontSize: 13, fontWeight: 800, cursor: 'pointer', opacity: busy ? 0.55 : 1, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>📲 من تليفوني</button>
         </div>
         <input ref={vcfRef} type="file" accept=".vcf,text/vcard,text/x-vcard" style={{ display: 'none' }} onChange={onVcfFile} />
         <button onClick={() => vcfRef.current?.click()} disabled={busy}
-          style={{ display: 'block', width: '100%', background: '#fff', border: '1.5px dashed #2FA084', color: '#2B4521', borderRadius: 12, padding: '11px 0', fontSize: 13, fontWeight: 800, cursor: 'pointer', opacity: busy ? 0.55 : 1, fontFamily: 'inherit', marginBottom: 8 }}>
+          style={{ display: 'block', width: '100%', background: '#fff', border: '1.5px dashed #2FA084', color: '#FA8125', borderRadius: 12, padding: '11px 0', fontSize: 13, fontWeight: 800, cursor: 'pointer', opacity: busy ? 0.55 : 1, fontFamily: 'inherit', marginBottom: 8 }}>
           📂 استورد ملف جهات اتصال (.vcf)
         </button>
         <details style={{ marginBottom: 15 }}>
@@ -350,7 +350,7 @@ export default function ContactBookSheet({ onClose, onOpenDM }: { onClose: () =>
           const b = badge[s]
           return (
             <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 2px', borderBottom: '1px solid #F1EEE6' }}>
-              <span style={{ width: 38, height: 38, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#2B4521)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 15, fontWeight: 800, flexShrink: 0 }}>
+              <span style={{ width: 38, height: 38, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#FA8125)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 15, fontWeight: 800, flexShrink: 0 }}>
                 {(r.display_name || '؟').trim()[0]}
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>

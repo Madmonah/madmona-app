@@ -21,9 +21,9 @@ const HTML = `<!DOCTYPE html>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 body { font-family: 'Tajawal', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
-.gradient-green { background: linear-gradient(135deg, #2B4521 0%, #2A8B73 50%, #2B4521 100%); }
+.gradient-green { background: linear-gradient(135deg, #FA8125 0%, #2A8B73 50%, #FA8125 100%); }
 .gradient-gold { background: linear-gradient(135deg, #2FA084 0%, #6FCF97 50%, #2FA084 100%); }
-.gradient-hero { background: linear-gradient(160deg, #0F4A40 0%, #2B4521 45%, #2A8B73 100%); }
+.gradient-hero { background: linear-gradient(160deg, #0F4A40 0%, #FA8125 45%, #2A8B73 100%); }
 .shine { position: relative; overflow: hidden; }
 .shine::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); animation: shine 4s ease-in-out infinite; }
 @keyframes shine { 50%, 100% { left: 100%; } }
@@ -38,9 +38,9 @@ img { display: block; }
 <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
 <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between gap-3">
 <div class="flex items-center gap-2.5">
-<div class="w-10 h-10 bg-[#2B4521] rounded-xl flex items-center justify-center text-white font-black text-xl">م</div>
+<div class="w-10 h-10 bg-[#FA8125] rounded-xl flex items-center justify-center text-white font-black text-xl">م</div>
 <div>
-<p class="font-black text-[#2B4521] text-base leading-none">مضمونة</p>
+<p class="font-black text-[#FA8125] text-base leading-none">مضمونة</p>
 <p class="text-[10px] text-gray-500 tracking-[0.2em] mt-1">معاملاتك مضمونة</p>
 </div>
 </div>
@@ -150,7 +150,7 @@ img { display: block; }
 <p class="text-xs font-black text-red-700 mb-1">قبل مضمونة</p>
 <p class="text-sm text-gray-700">عميل يحجز، يدفع 500 ج مقدم، ويختفي قبل الحفل بأسبوع. قاعدتك خسرت يوم وميعاد.</p>
 <div class="gold-line h-px my-3"></div>
-<p class="text-xs font-black text-[#2B4521] mb-1">✓ مع مضمونة</p>
+<p class="text-xs font-black text-[#FA8125] mb-1">✓ مع مضمونة</p>
 <p class="text-sm text-gray-700">الدفع المقدم بيقعد عندنا. لو العميل ألغى، فلوسك مضمونة. لو الحفل اتعمل، تتحول لحسابك خلال 24 ساعة.</p>
 </div>
 </div>
@@ -163,7 +163,7 @@ img { display: block; }
 <p class="text-xs font-black text-red-700 mb-1">قبل مضمونة</p>
 <p class="text-sm text-gray-700">إعلانات على OLX وفيسبوك. عميل واحد كل ميعاد بيكلم 30 قاعة قبل ميقرر.</p>
 <div class="gold-line h-px my-3"></div>
-<p class="text-xs font-black text-[#2B4521] mb-1">✓ مع مضمونة</p>
+<p class="text-xs font-black text-[#FA8125] mb-1">✓ مع مضمونة</p>
 <p class="text-sm text-gray-700">العميل يحدد عدد المعازيم، الميزانية، والتاريخ. الـ AI بتاعنا بتطابقه مع قاعتك مباشرة. عملاء جاهزين للحجز.</p>
 </div>
 </div>
@@ -176,7 +176,7 @@ img { display: block; }
 <p class="text-xs font-black text-red-700 mb-1">قبل مضمونة</p>
 <p class="text-sm text-gray-700">عمولة 25-30٪ مع منصات تانية، أو شغل في الضلمة من غير حماية.</p>
 <div class="gold-line h-px my-3"></div>
-<p class="text-xs font-black text-[#2B4521] mb-1">✓ مع مضمونة</p>
+<p class="text-xs font-black text-[#FA8125] mb-1">✓ مع مضمونة</p>
 <p class="text-sm text-gray-700">عمولة 10٪ بس، و<span class="font-black text-[#2FA084]">صفر عمولة لأول 30 يوم</span>. كله شفاف، فلوسك تتحول لحسابك مباشرة.</p>
 </div>
 </div>
@@ -192,21 +192,21 @@ img { display: block; }
 
 <div class="space-y-2">
 <div class="bg-white rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-100">
-<div class="w-9 h-9 bg-[#2B4521] text-white rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0">١</div>
+<div class="w-9 h-9 bg-[#FA8125] text-white rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0">١</div>
 <div class="flex-1">
 <p class="font-black text-sm text-gray-900">سجّل قاعتك</p>
 <p class="text-xs text-gray-600">5 دقايق · صور · أسعار · سعة</p>
 </div>
 </div>
 <div class="bg-white rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-100">
-<div class="w-9 h-9 bg-[#2B4521] text-white rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0">٢</div>
+<div class="w-9 h-9 bg-[#FA8125] text-white rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0">٢</div>
 <div class="flex-1">
 <p class="font-black text-sm text-gray-900">عرسان جاهزة بتجيلك</p>
 <p class="text-xs text-gray-600">AI Matching · عملاء معاهم ميزانية وتاريخ</p>
 </div>
 </div>
 <div class="bg-white rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-100">
-<div class="w-9 h-9 bg-[#2B4521] text-white rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0">٣</div>
+<div class="w-9 h-9 bg-[#FA8125] text-white rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0">٣</div>
 <div class="flex-1">
 <p class="font-black text-sm text-gray-900">حجز محمي بدفع مقدم</p>
 <p class="text-xs text-gray-600">مضمونة بتحتفظ بالفلوس لحد الحفل</p>
@@ -258,17 +258,17 @@ img { display: block; }
 </section>
 
 <footer class="max-w-lg mx-auto px-5 py-8 text-center">
-<p class="font-black text-[#2B4521] text-2xl">مضمونة</p>
+<p class="font-black text-[#FA8125] text-2xl">مضمونة</p>
 <p class="text-xs text-gray-500 mt-1 tracking-[0.2em]">معاملاتك مضمونة</p>
 <div class="flex items-center justify-center gap-2 mt-4 text-[11px] text-gray-500">
 <span>٧ شارع سليمان عَزْمي، النزهة، مصر الجديدة، القاهرة</span>
 </div>
 <div class="flex items-center justify-center gap-3 mt-3 text-xs">
-<a href="https://www.instagram.com/madmona.cairo" class="text-gray-500 hover:text-[#2B4521]">Instagram</a>
+<a href="https://www.instagram.com/madmona.cairo" class="text-gray-500 hover:text-[#FA8125]">Instagram</a>
 <span class="text-gray-300">·</span>
-<a href="https://www.facebook.com/MadmonaCairo" class="text-gray-500 hover:text-[#2B4521]">Facebook</a>
+<a href="https://www.facebook.com/MadmonaCairo" class="text-gray-500 hover:text-[#FA8125]">Facebook</a>
 <span class="text-gray-300">·</span>
-<a href="https://madmonacairo.com" class="text-gray-500 hover:text-[#2B4521]">الموقع</a>
+<a href="https://madmonacairo.com" class="text-gray-500 hover:text-[#FA8125]">الموقع</a>
 </div>
 <p class="text-[10px] text-gray-400 mt-4">+20 100 222 9982 · madmona.admin@gmail.com</p>
 </footer>

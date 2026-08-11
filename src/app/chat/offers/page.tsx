@@ -39,7 +39,7 @@ export default function OffersScreen() {
 
   return (
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
-      <header style={{ background: 'linear-gradient(135deg,#14231E,#2B4521)', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
+      <header style={{ background: 'linear-gradient(135deg,#14231E,#FA8125)', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
         <div style={{ fontSize: 17, fontWeight: 900, flex: 1 }}>عروض مضمونة 🏷️</div>
         <Link href="/marketplace" style={{ color: '#6FCF97', fontSize: 12.5, fontWeight: 700, textDecoration: 'none' }}>السوق كامل ←</Link>
       </header>
@@ -51,7 +51,7 @@ export default function OffersScreen() {
           <div style={{ textAlign: 'center', padding: 40 }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>📡</div>
             <div style={{ color: '#5A6660', fontWeight: 600, marginBottom: 12 }}>مش قادرين نحمّل العروض دلوقتي</div>
-            <button onClick={() => setNonce((n) => n + 1)} style={{ background: '#2B4521', color: '#fff', border: 'none', borderRadius: 999, padding: '9px 18px', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>🔄 جرّب تاني</button>
+            <button onClick={() => setNonce((n) => n + 1)} style={{ background: '#FA8125', color: '#fff', border: 'none', borderRadius: 999, padding: '9px 18px', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>🔄 جرّب تاني</button>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
@@ -65,7 +65,7 @@ export default function OffersScreen() {
                 </div>
                 <div style={{ padding: 10 }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: '#14231E', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.title}</div>
-                  {o.price != null && <div style={{ fontSize: 13, color: '#2B4521', fontWeight: 900, marginTop: 2 }}>{o.price.toLocaleString('ar-EG')} ج.م</div>}
+                  {o.price != null && <div style={{ fontSize: 13, color: '#FA8125', fontWeight: 900, marginTop: 2 }}>{o.price.toLocaleString('ar-EG')} ج.م</div>}
                 </div>
               </Link>
             ))}

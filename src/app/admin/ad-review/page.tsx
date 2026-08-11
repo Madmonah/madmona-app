@@ -14,7 +14,7 @@ import {
 // Locked palette (system_context.brand v3): 5 colors only
 // ============================================================
 
-const LOCKED_PALETTE = ['#2B4521', '#FAFAF7', '#1A2E26', '#6B7280', '#FFFFFF']
+const LOCKED_PALETTE = ['#FA8125', '#FAFAF7', '#1A2E26', '#6B7280', '#FFFFFF']
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -160,7 +160,7 @@ export default function AdReviewPage() {
         <div className="max-w-7xl mx-auto px-4 py-5">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#2B4521] mb-1">PHASE Ω.14 · BRAND REVIEW</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">PHASE Ω.14 · BRAND REVIEW</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">مراجعة الإعلانات</h1>
               <p className="text-sm text-[#6B7280] mt-1">برتكول الـ palette المقفل · ٥ ألوان بس</p>
             </div>
@@ -171,7 +171,7 @@ export default function AdReviewPage() {
               </div>
               <div>
                 <p className="text-[10px] font-bold tracking-wider text-[#6B7280] uppercase">on-brand</p>
-                <p className="text-2xl font-black text-[#2B4521]">{stats.onBrand}</p>
+                <p className="text-2xl font-black text-[#FA8125]">{stats.onBrand}</p>
               </div>
               <div>
                 <p className="text-[10px] font-bold tracking-wider text-[#6B7280] uppercase">off-brand</p>
@@ -203,7 +203,7 @@ export default function AdReviewPage() {
                 onClick={() => setStatusFilter(t.key)}
                 className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   statusFilter === t.key
-                    ? 'bg-[#2B4521] text-white shadow-sm'
+                    ? 'bg-[#FA8125] text-white shadow-sm'
                     : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-gray-100'
                 }`}
               >
@@ -240,7 +240,7 @@ export default function AdReviewPage() {
       <main className="max-w-7xl mx-auto px-4 py-6">
         {loading && ads.length === 0 ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-[#2B4521] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
@@ -261,7 +261,7 @@ export default function AdReviewPage() {
                   <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
                     <div className="flex items-center gap-2">
                       <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase ${
-                        ad.status === 'approved' ? 'bg-[#2B4521]/10 text-[#2B4521]' :
+                        ad.status === 'approved' ? 'bg-[#FA8125]/10 text-[#FA8125]' :
                         ad.status === 'drafted' ? 'bg-blue-50 text-blue-700' :
                         ad.status === 'needs_revision' ? 'bg-red-50 text-red-700' :
                         'bg-gray-50 text-gray-700'
@@ -272,7 +272,7 @@ export default function AdReviewPage() {
                     </div>
                     <div className="flex items-center gap-1.5">
                       {onBrand ? (
-                        <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#2B4521]">
+                        <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#FA8125]">
                           <CheckCircle2 className="w-3 h-3" />
                           on-brand
                         </span>
@@ -324,7 +324,7 @@ export default function AdReviewPage() {
                     {(ad.cta_text || (ad.hashtags && ad.hashtags.length > 0)) && (
                       <div className="flex items-center gap-2 flex-wrap mb-3">
                         {ad.cta_text && (
-                          <span className="px-2.5 py-1 rounded-md bg-[#2B4521]/10 text-[#2B4521] text-[11px] font-bold">
+                          <span className="px-2.5 py-1 rounded-md bg-[#FA8125]/10 text-[#FA8125] text-[11px] font-bold">
                             ↳ {ad.cta_text}
                           </span>
                         )}
@@ -336,7 +336,7 @@ export default function AdReviewPage() {
 
                     <button
                       onClick={() => setExpandedId(isExpanded ? null : ad.id)}
-                      className="w-full flex items-center justify-center gap-1.5 text-xs font-bold text-[#6B7280] hover:text-[#2B4521] py-2 border-t border-gray-100 mt-2 transition-colors"
+                      className="w-full flex items-center justify-center gap-1.5 text-xs font-bold text-[#6B7280] hover:text-[#FA8125] py-2 border-t border-gray-100 mt-2 transition-colors"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       {isExpanded ? 'إخفاء التفاصيل' : 'عرض التفاصيل'}
@@ -378,7 +378,7 @@ export default function AdReviewPage() {
                     <button
                       onClick={() => approve(ad)}
                       disabled={busy || ad.status === 'approved' || !onBrand}
-                      className="flex items-center justify-center gap-1.5 py-3 text-xs font-bold text-[#2B4521] hover:bg-[#2B4521]/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      className="flex items-center justify-center gap-1.5 py-3 text-xs font-bold text-[#FA8125] hover:bg-[#FA8125]/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       اعتماد

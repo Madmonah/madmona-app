@@ -133,14 +133,14 @@ export default function NewsTabsSection() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-shrink-0 flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 rounded-full text-sm font-bold transition-all duration-300 ${
                   isActive
-                    ? 'bg-[#2B4521] text-white shadow-elevated scale-105'
+                    ? 'bg-[#FA8125] text-white shadow-elevated scale-105'
                     : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow-card'
                 }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
                 {items[tab.id].length > 0 && !isActive && (
-                  <span className="text-[10px] bg-[#2B4521]/10 text-[#2B4521] px-1.5 py-0.5 rounded-full font-black">
+                  <span className="text-[10px] bg-[#FA8125]/10 text-[#FA8125] px-1.5 py-0.5 rounded-full font-black">
                     {items[tab.id].length}
                   </span>
                 )}
@@ -173,7 +173,7 @@ export default function NewsTabsSection() {
             <p className="text-sm text-gray-500 mb-4">جرّب تاني بعد شوية</p>
             <button
               onClick={() => fetchTab(activeTab)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#2B4521] text-white rounded-full text-sm font-bold hover:shadow-elevated"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FA8125] text-white rounded-full text-sm font-bold hover:shadow-elevated"
             >
               <RefreshCw className="w-4 h-4" />
               حاول تاني
@@ -222,7 +222,7 @@ export default function NewsTabsSection() {
 
                 {/* Content */}
                 <div className="p-4 md:p-5">
-                  <h3 className="font-black text-sm md:text-base text-gray-900 leading-snug line-clamp-3 mb-3 group-hover:text-[#2B4521] transition-colors">
+                  <h3 className="font-black text-sm md:text-base text-gray-900 leading-snug line-clamp-3 mb-3 group-hover:text-[#FA8125] transition-colors">
                     {item.title}
                   </h3>
                   <div className="flex items-center justify-between text-[11px] text-gray-500 pt-2 border-t border-gray-100">
@@ -230,7 +230,7 @@ export default function NewsTabsSection() {
                       <Clock className="w-3 h-3" />
                       <span>{formatTime(item.pubDate)}</span>
                     </span>
-                    <span className="inline-flex items-center gap-1 text-[#2B4521] font-bold group-hover:gap-2 transition-all">
+                    <span className="inline-flex items-center gap-1 text-[#FA8125] font-bold group-hover:gap-2 transition-all">
                       اقرأ
                       <ExternalLink className="w-3 h-3" />
                     </span>

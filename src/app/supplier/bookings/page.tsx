@@ -128,11 +128,11 @@ export default function SupplierBookingsPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#2B4521] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
           <Link
             href={`/auth/login?redirect=${encodeURIComponent('/supplier/bookings')}`}
-            className="block w-full bg-[#2B4521] text-white py-3 rounded-xl font-semibold"
+            className="block w-full bg-[#FA8125] text-white py-3 rounded-xl font-semibold"
           >
             تسجيل دخول
           </Link>
@@ -147,7 +147,7 @@ export default function SupplierBookingsPage() {
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
           <h1 className="font-bold mb-2">مش مسجل كمورد</h1>
-          <Link href="/supplier/register" className="inline-block bg-[#2B4521] text-white px-5 py-2.5 rounded-xl font-semibold mt-4">
+          <Link href="/supplier/register" className="inline-block bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold mt-4">
             سجّل كمورد
           </Link>
         </div>
@@ -175,7 +175,7 @@ export default function SupplierBookingsPage() {
                 onClick={() => setFilter(f.key)}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                   filter === f.key
-                    ? 'bg-[#2B4521] text-white'
+                    ? 'bg-[#FA8125] text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -239,7 +239,7 @@ export default function SupplierBookingsPage() {
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
                         <div>
                           <p className="text-xs text-gray-500">صافي العائد</p>
-                          <p className="font-bold text-[#2B4521]">
+                          <p className="font-bold text-[#FA8125]">
                             {Number(b.supplier_payout).toLocaleString('ar-EG')} {b.currency}
                           </p>
                         </div>

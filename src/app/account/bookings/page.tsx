@@ -88,11 +88,11 @@ export default function CustomerBookingsPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir={dir}>
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#2B4521] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
           <h1 className="font-bold mb-4">{t('booking.login_first')}</h1>
           <Link
             href="/auth/login?redirect=/account/bookings"
-            className="block bg-[#2B4521] text-white py-3 rounded-xl font-semibold"
+            className="block bg-[#FA8125] text-white py-3 rounded-xl font-semibold"
           >
             {t('auth.login.title')}
           </Link>
@@ -123,7 +123,7 @@ export default function CustomerBookingsPage() {
             <p className="text-sm text-gray-500 mb-6">{t('account.bookings_empty_sub')}</p>
             <Link
               href="/marketplace"
-              className="inline-flex items-center gap-1 bg-[#2B4521] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#2B4521]/90"
+              className="inline-flex items-center gap-1 bg-[#FA8125] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#FA8125]/90"
             >
               {t('listing.browse_marketplace')}
             </Link>
@@ -201,7 +201,7 @@ export default function CustomerBookingsPage() {
 
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
                         <span className="text-sm">
-                          <strong className="text-[#2B4521]">{Number(booking.total_amount).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</strong>
+                          <strong className="text-[#FA8125]">{Number(booking.total_amount).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</strong>
                           <span className="text-xs text-gray-500"> {t('common.egp')}</span>
                         </span>
                         <ChevronLeft className="w-4 h-4 text-gray-400" />
