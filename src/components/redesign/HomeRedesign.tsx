@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { Alexandria, IBM_Plex_Sans_Arabic } from 'next/font/google'
-import CompactNewsTabs from '@/components/CompactNewsTabs'
 import RedesignMarquee from './RedesignMarquee'
 import SiteFooter from '@/components/SiteFooter'
 
@@ -320,19 +319,10 @@ a { text-decoration: none; }
         </section>
       )}
 
-      {/* ═══ News ═══ */}
-      <section style={{ maxWidth: 1360, margin: '0 auto', padding: '84px 28px 20px' }}>
-        <div style={{ marginBottom: 32 }}>
-          <p style={{ margin: '0 0 10px', display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, letterSpacing: '0.3em', color: GOLD }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#C0563F', display: 'inline-block' }} />
-            يتجدد كل ٣ دقايق
-          </p>
-          <h2 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 44, color: INK, letterSpacing: '-0.01em' }}>أخبار مضمونة</h2>
-        </div>
-        <div style={{ border: `2px solid ${INK}`, borderRadius: 24, overflow: 'hidden', background: '#fff', padding: 16 }}>
-          <CompactNewsTabs />
-        </div>
-      </section>
+      {/* ⚠️ (11 أغسطس 2026، طلب محمد) قسم «أخبار مضمونة» اتشال من هنا — الأخبار
+          + أسعار العملات والذهب اتنقلوا بالكامل لجوّه تاب "بورضة رجال الأعمال"
+          (/business-lounge). كارت البورضة في الشبكة فوق (buildGroups) هو اللي
+          بيودّي عليهم دلوقتي. */}
 
       {/* ═══ How it works ═══ */}
       <section style={{ maxWidth: 1360, margin: '0 auto', padding: '84px 28px' }}>

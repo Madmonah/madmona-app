@@ -213,15 +213,18 @@ export default function DownloadAppBig({ compact = false }: { compact?: boolean 
 
       <style jsx>{BIG_CSS}</style>
       <style jsx>{`
+        /* (11 أغسطس 2026، طلب محمد) تاب تحميل التطبيق بقى أبيض والكلام أخضر
+           بدل التدرّج البرتقالي/الأخضر/الدهبي القديم بالكتابة البيضا —
+           عشان يبان أوضح فوق خلفية الهيدر البرتقالية. */
         .da-pill{
           display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
           padding:8px 13px; border:none; border-radius:999px; cursor:pointer;
-          font-family:inherit; font-size:12.5px; font-weight:800; color:#fff;
-          background:linear-gradient(118deg,#FA8125 0%, #2FA084 55%, #D4A017 100%);
-          box-shadow:0 4px 12px rgba(250, 129, 37,.28); transition:.25s;
+          font-family:inherit; font-size:12.5px; font-weight:800; color:#2B4521;
+          background:#FFFFFF;
+          box-shadow:0 4px 12px rgba(10,10,10,.16); transition:.25s;
         }
-        .da-pill:hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(250, 129, 37,.34)}
-        .da-pill-icon{width:14px;height:14px;flex-shrink:0}
+        .da-pill:hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(10,10,10,.22)}
+        .da-pill-icon{width:14px;height:14px;flex-shrink:0;color:#2B4521}
       `}</style>
     </>
   )

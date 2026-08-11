@@ -9,9 +9,6 @@ import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
 import DownloadAppBig from '@/components/DownloadAppBig'
 import FeaturedListings from '@/components/FeaturedListings'
-import FinancialTicker from '@/components/FinancialTicker'
-import CompactNewsTabs from '@/components/CompactNewsTabs'
-import NewsStories from '@/components/NewsStories'
 import SocialLinks from '@/components/SocialLinks'
 import MUACampaignBanner from '@/components/MUACampaignBanner'
 import CategoryTrackTabs from '@/components/CategoryTrackTabs'
@@ -24,17 +21,19 @@ import HomeRedesign from '@/components/redesign/HomeRedesign'
 
 // ============================================================
 // Home page — Single brand: "خدمات مضمونة"
+// ⚠️ (11 أغسطس 2026) الأخبار وأسعار العملات/الذهب اتنقلوا بالكامل لتاب
+// "بورضة رجال الأعمال" (/business-lounge) — FinancialTicker/CompactNewsTabs/
+// NewsStories متشالوش من هنا لأنهم أصلاً كانوا imports ميتة (مش متستخدمين
+// في الـJSX) قبل التعديل ده.
 //
 // Layout (top to bottom):
 //   1. TopNav
-//   2. FinancialTicker
-//   3. Simple dual tabs (أجر مننا + أجر معانا)
-//   4. NEWS HUB
-//   5. Categories grid
-//   6. Featured listings
-//   7. How it works
-//   8. Contact
-//   9. Footer
+//   2. Simple dual tabs (أجر مننا + أجر معانا)
+//   3. Categories grid
+//   4. Featured listings
+//   5. How it works
+//   6. Contact
+//   7. Footer
 // ============================================================
 
 const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'

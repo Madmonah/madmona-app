@@ -4,8 +4,11 @@
 // MobileHome — mobile-only home (design option "2a": مركّز + اسأل مارد مضمونة)
 // Renders ONLY on mobile (parent gates with md:hidden). Desktop keeps the
 // existing homepage untouched. Reuses category grouping (buildGroups /
-// VERTICALS, same identity as CategoryTrackTabs), live FX/gold from
-// /api/financial-data, and top news from /api/news-feed.
+// VERTICALS, same identity as CategoryTrackTabs).
+// ⚠️ (11 أغسطس 2026، طلب محمد) الأخبار + أسعار العملات والذهب اتنقلوا من هنا
+// لجوّه تاب "بورضة رجال الأعمال" (/business-lounge) بالكامل — مفيش أي fetch
+// لـ/api/financial-data أو /api/news-feed في الملف ده تاني؛ كارت البورضة في
+// الهيرو تحت هو اللي بيودّي عليهم.
 // Handoff: "Madmona Home Improvements" → option 2a (29 Jul 2026).
 // ============================================================================
 
@@ -107,27 +110,6 @@ function buildGroups(cats: Category[]): CatGroup[] {
   return [...map.values()].sort((a, b) => a.order - b.order)
 }
 
-// ---- FX / news data shapes ----
-interface FinData {
-  ok: boolean
-  currencies: { code: string; name_ar: string; flag: string; rate: number }[]
-  gold: { karat: number; label: string; price_per_gram_egp: number }[]
-}
-interface NewsItem { title: string; link: string; image: string; source: string; pubDate: string; category: string }
-
-function timeAgoAr(iso: string): string {
-  try {
-    const then = new Date(iso).getTime()
-    const now = Date.now()
-    const mins = Math.max(1, Math.round((now - then) / 60000))
-    if (mins < 60) return `من ${mins} دقيقة`
-    const hrs = Math.round(mins / 60)
-    if (hrs < 24) return `من ${hrs} ساعة`
-    const days = Math.round(hrs / 24)
-    return `من ${days} يوم`
-  } catch { return '' }
-}
-
 export default function MobileHome({ categories, liveCounts = {} }: { categories: Category[]; liveCounts?: Record<string, number> }) {
   const { lang } = useT()
   const router = useRouter()
@@ -136,8 +118,6 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
   const [active, setActive] = useState<'all' | VKey>('all')
   const [menuOpen, setMenuOpen] = useState(false)
   const [loggedIn, setLoggedIn] = useState(false)
-  const [fin, setFin] = useState<FinData | null>(null)
-  const [news, setNews] = useState<NewsItem[]>([])
   const [q, setQ] = useState('')
   const [marid, setMarid] = useState('')
 
@@ -146,32 +126,6 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
     supabaseBrowser.auth.getSession().then(({ data }) => setLoggedIn(!!data.session))
     const { data: sub } = supabaseBrowser.auth.onAuthStateChange((_e, s) => setLoggedIn(!!s))
     return () => sub.subscription.unsubscribe()
-  }, [])
-
-  // live FX + gold
-  useEffect(() => {
-    let dead = false
-    fetch(`/api/financial-data?t=${Date.now()}`, { cache: 'no-store' })
-      .then(r => r.json()).then(j => { if (!dead && j?.ok) setFin(j) }).catch(() => {})
-    return () => { dead = true }
-  }, [])
-
-  // أهم خبر واحد بس في كل قسم — مش كاروسيل طويل (11 أغسطس 2026: ذي ديزاين الترباوية)
-  useEffect(() => {
-    let dead = false
-    const cats = ['madmona', 'economy', 'real_estate', 'automotive', 'business', 'tourism', 'fashion', 'tech']
-    Promise.all(
-      cats.map(c =>
-        fetch(`/api/news-feed?category=${c}&_=${Date.now()}`, { cache: 'no-store' })
-          .then(r => r.json())
-          .then(j => (j?.ok && Array.isArray(j.items) && j.items.length > 0 ? (j.items[0] as NewsItem) : null))
-          .catch(() => null)
-      )
-    ).then(top => {
-      if (dead) return
-      setNews(top.filter((n): n is NewsItem => !!n?.link))
-    })
-    return () => { dead = true }
   }, [])
 
   const onChip = (key: 'all' | VKey) => {
@@ -214,9 +168,6 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
     if (useImg && g.image_url) seenImg.add(g.image_url)
     return { ...g, useImg }
   })
-
-  const usd = fin?.currencies?.find(c => c.code === 'USD')?.rate
-  const gold21 = fin?.gold?.find(g => g.karat === 21)?.price_per_gram_egp
 
   const chips: { key: 'all' | VKey; label: string; emoji?: string }[] = [
     { key: 'all', label: en ? 'All' : 'الكل' },
@@ -403,40 +354,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
         </div>
       </section>
 
-      {/* 6. Market ticker — لوجوهات المطوّرين اتنقلت لجوّه شاشة البورصة العقارية
-          (١١ أغسطس ٢٠٢٦، طلب محمد) بدل ما تكون في الهوم — هنا فاضل شريط
-          اتجاه السوق بس. كارت "بورصة مضمونة العقارية" في الهيرو فوق بيودّي
-          عليها. */}
-      <section className="px-4 pt-[22px]">
-        <MarketTicker fin={fin} en={en} />
-      </section>
-
-      {/* 7. News list */}
-      {news.length > 0 && (
-        <section className="px-4 pt-[22px]">
-          <div className="mb-2.5">
-            <h2 className="text-[17px] font-black text-[#0A0A0A]">{en ? 'Madmona news' : 'أخبار مضمونة'}</h2>
-          </div>
-          <div className="flex flex-col gap-2">
-            {news.map((n, i) => (
-              <a key={i} href={n.link} target="_blank" rel="noopener noreferrer" className="flex gap-3 items-center bg-white rounded-2xl p-2.5 border border-black/5 no-underline">
-                {n.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={n.image} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" loading="lazy" />
-                ) : (
-                  <span className="w-14 h-14 rounded-xl bg-[#FA8125]/10 flex items-center justify-center flex-shrink-0 text-xl">📰</span>
-                )}
-                <span className="flex-1 min-w-0">
-                  <span className="block text-[12.5px] font-extrabold text-[#111827] leading-[1.45] line-clamp-2">{n.title}</span>
-                  <span className="block text-[10px] font-bold text-[#FA8125] mt-0.5">{n.source} · {timeAgoAr(n.pubDate)}</span>
-                </span>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 8. Supplier CTA */}
+      {/* 6. Supplier CTA */}
       <section className="px-4 pt-6 pb-7">
         <div className="rounded-[20px] px-5 py-[18px] flex items-center gap-3" style={{ background: 'linear-gradient(118deg, #FA8125, #F98F2A)' }}>
           <span className="flex-1">
@@ -497,17 +415,6 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
   )
 }
 
-function StatCard({ label, value, up }: { label: string; value: string; up?: boolean }) {
-  return (
-    <span className="flex-none bg-white border border-[#EAE4D7] rounded-[14px] px-3.5 py-2.5">
-      <span className="block text-[10px] font-extrabold text-[#7C8A84]">{label}</span>
-      <span className="block text-sm font-black text-[#0A0A0A] mt-0.5 whitespace-nowrap">
-        {value}{up && <span className="text-[#2FA084] text-[10px] ms-1">▲</span>}
-      </span>
-    </span>
-  )
-}
-
 function DrawerLink({ href, icon, iconBg = 'bg-gray-100', title, desc, onClose }: { href: string; icon: ReactNode; iconBg?: string; title: string; desc?: string; onClose: () => void }) {
   return (
     <Link href={href} onClick={onClose} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline transition-colors">
@@ -517,36 +424,5 @@ function DrawerLink({ href, icon, iconBg = 'bg-gray-100', title, desc, onClose }
         {desc && <span className="block text-xs text-gray-500 mt-0.5">{desc}</span>}
       </span>
     </Link>
-  )
-}
-
-// شريط اتجاه السوق — ثابت من غير حركة، بيتسحب بالإيد (29 Jul 2026: بلاش أنيميشن)
-function MarketTicker({ fin, en }: { fin: FinData | null; en: boolean }) {
-  const ticks: { label: string; value: string }[] = []
-  fin?.currencies?.forEach(c => {
-    if (c?.rate) ticks.push({ label: `${c.flag || ''} ${c.name_ar || c.code}`.trim(), value: `${c.rate.toFixed(2)} ج` })
-  })
-  fin?.gold?.forEach(g => {
-    if (g?.price_per_gram_egp) ticks.push({ label: g.label || `ذهب ${g.karat}`, value: `${g.price_per_gram_egp.toLocaleString('ar-EG')} ج` })
-  })
-
-  if (ticks.length === 0) {
-    return (
-      <div className="flex gap-2 overflow-x-auto pb-0.5 hide-scroll">
-        <StatCard label={en ? 'USD' : 'دولار'} value="…" />
-        <StatCard label={en ? 'Gold 21' : 'ذهب ٢١'} value="…" />
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex gap-2 overflow-x-auto pb-0.5 hide-scroll">
-      {ticks.map((t, i) => (
-        <span key={i} className="shrink-0 inline-flex items-baseline gap-1.5 bg-white border border-black/5 rounded-xl px-3 py-2">
-          <span className="text-[10px] font-bold text-gray-500 whitespace-nowrap">{t.label}</span>
-          <span className="text-[12px] font-black text-[#FA8125] whitespace-nowrap">{t.value}</span>
-        </span>
-      ))}
-    </div>
   )
 }
