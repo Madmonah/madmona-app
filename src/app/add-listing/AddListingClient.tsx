@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabase-browser';
 import { trackEvent } from '@/components/AnalyticsTracker';
 import BulkExcelDrafts from '@/components/BulkExcelDrafts';
+import SiteFooter from '@/components/SiteFooter';
 
 // ============================================================================
 // Madmona "Add Listing First" — public, no-auth multi-step form
@@ -797,10 +798,11 @@ function AddListingPageInner({
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="px-5 pb-8 mt-4 max-w-2xl mx-auto text-center text-xs text-gray-500">
+      {/* شريط الضمانات السريع فضل زي ما هو، وتحته الفوتر الموحّد (١١ أغسطس ٢٠٢٦) */}
+      <p className="px-5 pb-4 mt-4 max-w-2xl mx-auto text-center text-xs text-gray-500">
         ✅ الإضافة والنشر مجانًا • 🛡 حماية كاملة • 💰 دفع سريع • 📞 دعم 24/7
-      </footer>
+      </p>
+      <SiteFooter />
     </div>
   );
 }

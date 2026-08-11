@@ -3,6 +3,7 @@
 import { useState, useEffect, type ReactNode } from 'react'
 import Link from 'next/link'
 import { safeStorage } from '@/lib/safe-storage'
+import SiteFooter from '@/components/SiteFooter'
 import {
   Sparkles, Shield, Zap, Headphones, ArrowLeft, ArrowRight,
   ChevronLeft, Check, Building2, Search, Wand2, BadgePercent,
@@ -53,10 +54,8 @@ export default function WelcomePage() {
         {path === 'customer' && <CustomerFlow step={step} setStep={setStep} onBack={reset} />}
       </main>
 
-      {/* Footer slogan */}
-      <footer className="text-center py-6 text-xs text-[#6B7280]">
-        <span className="font-bold tracking-wider">معاملاتك مضمونة</span> · madmonacairo.com
-      </footer>
+      {/* فوتر موحّد (١١ أغسطس ٢٠٢٦) — بدل شعار "معاملاتك مضمونة" النصي، اتساقًا مع باقي صفحات العميل */}
+      <SiteFooter />
     </div>
   )
 }

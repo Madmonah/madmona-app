@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import SiteFooter from '@/components/SiteFooter'
 import {
   Loader2, MapPin, Calendar, Stethoscope, Building2,
   Users, CheckCircle2, Activity, Shield,
@@ -332,13 +333,8 @@ export default function ClinicDemoPage() {
         </div>
       </section>
 
-      <footer className="bg-[#0A0A0A] text-white/70 py-8">
-        <div className="max-w-6xl mx-auto px-4 text-center text-sm">
-          <p className="mb-2 font-bold text-white">مضمونة · معاملاتك مضمونة</p>
-          <p>منصة جديدة بتنمو بسرعة · ٢٠٢٦</p>
-          <p className="mt-2"><a href="https://wa.me/201002229982" className="underline">+20 100 222 9982</a></p>
-        </div>
-      </footer>
+      {/* فوتر موحّد (١١ أغسطس ٢٠٢٦) — بدل الفوتر الأسود القديم، اتساقًا مع باقي صفحات العميل */}
+      <SiteFooter />
     </div>
   )
 }

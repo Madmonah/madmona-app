@@ -9,6 +9,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import SiteFooter from '@/components/SiteFooter'
 import {
   Sparkles, CheckCircle2, Loader2, ArrowLeft, Rocket, Shield,
   TrendingUp, Users, Phone, Mail, MapPin, Briefcase, Send,
@@ -566,14 +567,8 @@ export default function CareersPage() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-[#0A0A0A] text-white/70 py-8 mt-8">
-        <div className="max-w-6xl mx-auto px-4 text-center text-sm">
-          <p className="mb-2 font-bold text-white">مضمونة · معاملاتك مضمونة</p>
-          <p>٧ شارع سليمان عَزْمي، النزهة، مصر الجديدة، القاهرة</p>
-          <p>للاستفسار: <a href="https://wa.me/201002229982" className="underline">٠١٠٠٢٢٢٩٩٨٢</a></p>
-        </div>
-      </footer>
+      {/* فوتر موحّد (١١ أغسطس ٢٠٢٦) — بدل الفوتر الأسود القديم، اتساقًا مع باقي صفحات العميل */}
+      <SiteFooter />
     </div>
   )
 }

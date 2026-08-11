@@ -15,6 +15,7 @@
 
 import { Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
+import SiteFooter from '@/components/SiteFooter';
 import AddListingClient, { type MainCategory, type BeautySchema } from './AddListingClient';
 
 // Force dynamic rendering so the Suspense fallback is rendered into SSR HTML.
@@ -159,9 +160,8 @@ function StaticPageFallback() {
         </div>
       </main>
 
-      <footer className="px-5 pb-8 mt-4 max-w-2xl mx-auto text-center text-xs text-gray-400">
-        مضمونة — معاملاتك مضمونة
-      </footer>
+      {/* فوتر موحّد (١١ أغسطس ٢٠٢٦) — نفس الفوتر بتاع AddListingClient عشان الانتقال يبقى سلس */}
+      <SiteFooter />
     </div>
   );
 }

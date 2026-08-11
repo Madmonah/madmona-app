@@ -6,6 +6,7 @@ import {
   Users, Building2, Compass, Sparkles, ExternalLink,
 } from 'lucide-react'
 import TopNav from '@/components/TopNav'
+import SiteFooter from '@/components/SiteFooter'
 import { useT } from '@/lib/i18n/LanguageProvider'
 
 const MADMONA_MAPS_URL = 'https://share.google/QbWskGlQ49AUTJrTc'
@@ -145,11 +146,10 @@ export default function AboutContent() {
           </Link>
         </section>
 
-        <footer className="text-center text-xs text-gray-500 py-6 border-t border-gray-100">
-          <p className="font-bold text-[#FA8125] text-sm mb-1">{t('common.brand')}</p>
-          <p>{t('about.footer_tagline')}</p>
-        </footer>
       </main>
+
+      {/* فوتر موحّد (١١ أغسطس ٢٠٢٦) — بدل الفوتر النصي القديم، اتساقًا مع باقي صفحات العميل */}
+      <SiteFooter />
     </div>
   )
 }
