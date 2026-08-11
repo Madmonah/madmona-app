@@ -18,7 +18,6 @@ import {
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { useT } from '@/lib/i18n/LanguageProvider'
-import { DEVELOPER_DIRECTORY } from '@/lib/developer-directory'
 import DownloadAppBig from '@/components/DownloadAppBig'
 
 type Category = {
@@ -404,35 +403,12 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
         </div>
       </section>
 
-      {/* 6. Developers grid — شريط البورصة القديم اتشال، دلوقتي جوه كروت
-          الهيرو فوق (11 Aug 2026). فاضل هنا شريط السوق ولوجوهات المطورين. */}
+      {/* 6. Market ticker — لوجوهات المطوّرين اتنقلت لجوّه شاشة البورصة العقارية
+          (١١ أغسطس ٢٠٢٦، طلب محمد) بدل ما تكون في الهوم — هنا فاضل شريط
+          اتجاه السوق بس. كارت "بورصة مضمونة العقارية" في الهيرو فوق بيودّي
+          عليها. */}
       <section className="px-4 pt-[22px]">
-        {/* شريط اتجاه السوق */}
         <MarketTicker fin={fin} en={en} />
-
-        {/* رصّة لوجوهات المطوّرين — ثابتة، كل لوجو بيودّي على مشاريع الشركة في البورصة */}
-        <div className="mt-3">
-          <div className="flex items-center gap-2 mb-2.5 px-1">
-            <span className="h-px flex-1 bg-gradient-to-l from-transparent to-gray-200" />
-            <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 whitespace-nowrap">نخبة المطورين المتعاقدين</p>
-            <span className="h-px flex-1 bg-gradient-to-r from-transparent to-gray-200" />
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {DEVELOPER_DIRECTORY.map((d) => (
-              <Link
-                key={d.slug}
-                href={`/real-estate/market?dev=${d.slug}`}
-                className="bg-white border border-black/5 rounded-2xl p-2 flex flex-col items-center justify-center gap-1 no-underline active:scale-95 transition-transform"
-              >
-                <span className="h-9 w-full flex items-center justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={d.logo} alt={d.name} className="max-h-9 max-w-full object-contain" loading="lazy" draggable={false} />
-                </span>
-                <span className="text-[9px] font-bold text-gray-500 text-center leading-tight line-clamp-1">{d.name}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* 7. News list */}

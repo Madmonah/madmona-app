@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { Alexandria, IBM_Plex_Sans_Arabic } from 'next/font/google'
-import { DEVELOPER_DIRECTORY } from '@/lib/developer-directory'
 import CompactNewsTabs from '@/components/CompactNewsTabs'
 import RedesignMarquee from './RedesignMarquee'
 import SiteFooter from '@/components/SiteFooter'
@@ -123,8 +122,6 @@ function buildGroups(categories: Cat[], liveCounts: Record<string, number>): Her
 export default async function HomeRedesign({ categories, stats, liveCounts, heroImage }: Props) {
   const { tiles, updated } = await getMarketTiles()
   const groups = buildGroups(categories, liveCounts)
-  const devs = DEVELOPER_DIRECTORY.slice(0, 14)
-  const devsLoop = [...devs, ...devs]
 
   return (
     <div dir="rtl" className={`${alex.variable} ${ibm.variable}`} style={{ minHeight: '100vh', background: CREAM, fontFamily: 'var(--font-ibm), sans-serif', color: '#12261F' }}>
@@ -318,20 +315,6 @@ a { text-decoration: none; }
                   <span style={{ position: 'relative', display: 'inline-flex', marginTop: 14, padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: 'rgba(74,222,128,0.15)', color: '#4ADE80' }}>محدث {updated}</span>
                 </div>
               ))}
-            </div>
-            {/* Developer pills */}
-            <div style={{ marginTop: 40, borderTop: '1px solid rgba(244,239,228,0.14)', paddingTop: 28 }}>
-              <p style={{ margin: '0 0 18px', fontSize: 12, fontWeight: 700, letterSpacing: '0.25em', color: 'rgba(244,239,228,0.5)', textAlign: 'center' }}>شركاء البورصة — كبار المطورين</p>
-              <div dir="ltr" style={{ overflow: 'hidden' }}>
-                <div className="rz-mq-slow" style={{ display: 'flex', gap: 16, width: 'max-content', paddingLeft: 16 }}>
-                  {devsLoop.map((d, i) => (
-                    <span key={`${d.slug}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap', padding: '10px 22px', borderRadius: 999, background: 'rgba(244,239,228,0.08)', border: '1px solid rgba(244,239,228,0.14)' }}>
-                      <span style={{ width: 26, height: 26, borderRadius: '50%', background: GOLD, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 12 }}>{d.name.trim().charAt(0)}</span>
-                      <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 700, fontSize: 13, color: 'rgba(244,239,228,0.85)' }}>{d.name}</span>
-                    </span>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </section>

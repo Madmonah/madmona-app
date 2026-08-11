@@ -17,7 +17,7 @@
 // =====================================================================
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import Link from 'next/link'
-import { findDeveloperBySlug } from '@/lib/developer-directory'
+import { DEVELOPER_DIRECTORY, findDeveloperBySlug, type LogoQuality } from '@/lib/developer-directory'
 import {
   ArrowRight, Building2, Search, X, MapPin, ChevronDown,
   FileText, PlayCircle, CalendarClock, Wallet, MessageCircle, Clock,
@@ -159,6 +159,18 @@ export default function MarketExplorer({
       if (s && findDeveloperBySlug(s)) setDevSlug(s)
     } catch { /* non-blocking */ }
   }, [])
+
+  // 🖼️ اختيار مطوّر من رصّة اللوجوهات (١١ أغسطس ٢٠٢٦) — بيحدّث الفلتر
+  // ورابط الصفحة (?dev=slug) من غير reload، وبيسكرول لنتايج المطوّر.
+  function selectDeveloper(slug: string) {
+    setDevSlug(slug)
+    try {
+      const sp = new URLSearchParams(window.location.search)
+      sp.set('dev', slug)
+      window.history.replaceState(null, '', `${window.location.pathname}?${sp.toString()}`)
+    } catch { /* non-blocking */ }
+    document.getElementById('bourse-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   const nq = norm(q.trim())
 
@@ -339,6 +351,13 @@ export default function MarketExplorer({
       {/* ─── 3) شريط المؤشرات: دولار · دهب ٢١ · متر العاصمة · متر التجمع ─── */}
       <IndicatorsBar items={items} />
 
+      {/* ─── 3.5) رصّة لوجوهات المطوّرين — اتنقلت هنا من الهوم (١١ أغسطس ٢٠٢٦)
+          بدل ما تكون في الهوم بلوجو صغير، دلوقتي بجودة أعلى وقابلة للضغط
+          (بتفلتر نتايج نفس الصفحة). كل لوجو ياخد مساحة عرض تناسب جودة
+          الملف الفعلية (quality في developer-directory.ts) بدل ما نكبّر
+          لوجو منخفض الدقة ويبان مبكسل. */}
+      <DeveloperLogosGrid onSelect={selectDeveloper} activeSlug={devSlug} />
+
       {/* 🔗 بادج فلتر المطوّر الجاي من رصّة اللوجوهات (?dev=) */}
       {devSlug && findDeveloperBySlug(devSlug) && (
         <div className="mx-4 mt-3 flex items-center justify-between bg-white border border-[#FA8125]/20 rounded-2xl px-4 py-2.5">
@@ -362,7 +381,7 @@ export default function MarketExplorer({
       )}
 
       {totalResults === 0 ? (
-        <section className="mx-4 mt-6 bg-white rounded-[18px] border border-black/5 p-10 text-center text-[#7C8A84] text-[13px] font-semibold">
+        <section id="bourse-results" className="mx-4 mt-6 bg-white rounded-[18px] border border-black/5 p-10 text-center text-[#7C8A84] text-[13px] font-semibold">
           <Clock className="w-8 h-8 mx-auto mb-3 text-[#FA8125]" />
           مفيش نتايج للبحث ده — جرب كلمة تانية أو شيل الفلاتر 🙏
           <div className="mt-4">
@@ -375,7 +394,7 @@ export default function MarketExplorer({
           </div>
         </section>
       ) : (
-        <>
+        <div id="bourse-results">
           {/* ─── 4) أقسام المناطق — كروت المشاريع ─── */}
           {visibleAreas.map((areaDef) => {
             const areaItems = filteredItems.filter((it) => it.area_label === areaDef.label)
@@ -415,7 +434,7 @@ export default function MarketExplorer({
               </div>
             </section>
           )}
-        </>
+        </div>
       )}
 
       {/* ─── 6) بانر المطوّرين + الديسكليمر ─── */}
@@ -451,6 +470,56 @@ function ChipBtn({ active, onClick, children }: { active: boolean; onClick: () =
     >
       {children}
     </button>
+  )
+}
+
+// =====================================================================
+// 🖼️ رصّة لوجوهات المطوّرين — اتنقلت من الهوم لجوّه البورصة العقارية
+// (طلب محمد ١١ أغسطس: "عايز كل اللوجو بتاع الشركات العقارية يكون ظاهر
+// وبجودة عالية ويتحط جوة شاشة البورصة العقارية مش في الهوم بيدج").
+// كل كارت بارتفاع موحّد، بس صندوق اللوجو جواه بيتغيّر بحسب جودة الملف
+// الفعلية (high/medium/low) — عشان لوجو منخفض الدقة ميتكبّرش ويبان مبكسل.
+// الضغط على أي لوجو بيفلتر نتايج نفس الصفحة (مش رابط لصفحة تانية).
+// =====================================================================
+const QUALITY_LOGO_BOX: Record<LogoQuality, string> = {
+  high: 'h-12',
+  medium: 'h-9',
+  low: 'h-6',
+}
+
+function DeveloperLogosGrid({ onSelect, activeSlug }: { onSelect: (slug: string) => void; activeSlug: string }) {
+  return (
+    <section className="px-4 pt-5">
+      <div className="flex items-center gap-2 mb-2.5 px-1">
+        <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#E5DFD3]" />
+        <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#9CA3AF] whitespace-nowrap">
+          نخبة المطورين المتعاقدين
+        </p>
+        <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#E5DFD3]" />
+      </div>
+      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2">
+        {DEVELOPER_DIRECTORY.map((d) => {
+          const active = activeSlug === d.slug
+          return (
+            <button
+              key={d.slug}
+              type="button"
+              onClick={() => onSelect(d.slug)}
+              aria-label={`مشاريع ${d.name}`}
+              className={`bg-white rounded-2xl p-2.5 h-[72px] flex flex-col items-center justify-center gap-1 transition-colors ${
+                active ? 'border-2 border-[#FA8125]' : 'border border-black/5'
+              }`}
+            >
+              <span className={`w-full flex items-center justify-center ${QUALITY_LOGO_BOX[d.quality]}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={d.logo} alt={d.name} className="max-h-full max-w-full object-contain" loading="lazy" draggable={false} />
+              </span>
+              <span className="text-[9px] font-bold text-[#7C8A84] text-center leading-tight line-clamp-1">{d.name}</span>
+            </button>
+          )
+        })}
+      </div>
+    </section>
   )
 }
 
