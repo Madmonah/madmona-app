@@ -61,8 +61,8 @@ export default function TopNav() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${
-          scrolled ? 'glass border-b border-white/40 shadow-soft' : 'bg-transparent'
+        className={`sticky top-0 z-50 transition-all duration-300 bg-[#1F6F5F] ${
+          scrolled ? 'shadow-soft' : ''
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
@@ -82,8 +82,8 @@ export default function TopNav() {
               />
             </div>
             <div className="hidden sm:block">
-              <p className="font-black text-[#1F6F5F] text-base leading-none">مضمونة</p>
-              <p className="text-[9px] text-gray-500 font-bold tracking-[0.25em] mt-0.5">
+              <p className="font-black text-white text-base leading-none">مضمونة</p>
+              <p className="text-[9px] text-white/70 font-bold tracking-[0.25em] mt-0.5">
                 MADMONA
               </p>
             </div>
@@ -96,7 +96,7 @@ export default function TopNav() {
             <Link
               href="/chat"
               aria-label="شات مضمونة"
-              className="w-11 h-11 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-2xl flex items-center justify-center transition-all overflow-hidden no-underline"
+              className="w-11 h-11 bg-white/15 hover:bg-white/25 hover:-translate-y-0.5 rounded-2xl flex items-center justify-center transition-all overflow-hidden no-underline"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -107,16 +107,23 @@ export default function TopNav() {
                 height={36}
               />
             </Link>
-            <LanguageToggle className="bg-white shadow-soft" />
+            <LanguageToggle
+              className="bg-white/15"
+              activeClass="bg-white text-[#1F6F5F]"
+              inactiveClass="bg-transparent text-white"
+            />
             <NotificationButton variant="icon-only" />
-            <CartButton className="w-11 h-11 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-2xl" />
+            <CartButton
+              className="w-11 h-11 bg-white/15 hover:bg-white/25 hover:-translate-y-0.5 rounded-2xl"
+              iconColorClass="text-white"
+            />
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="w-11 h-11 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-2xl flex items-center justify-center transition-all"
+              className="w-11 h-11 bg-white/15 hover:bg-white/25 hover:-translate-y-0.5 rounded-2xl flex items-center justify-center transition-all"
               aria-label={t('nav.menu')}
             >
-              <Menu className="w-5 h-5 text-gray-700" />
+              <Menu className="w-5 h-5 text-white" />
             </button>
           </div>
         </div>

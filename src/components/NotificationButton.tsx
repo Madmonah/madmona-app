@@ -81,22 +81,22 @@ export default function NotificationButton({ variant = 'icon-only' }: Props) {
   const cfg = {
     idle: {
       icon: <Bell className="w-5 h-5" strokeWidth={2.25} />,
-      bg: 'bg-white',
-      text: 'text-[#1F6F5F]',
+      bg: 'bg-white/15 hover:bg-white/25',
+      text: 'text-white',
       pulse: true,
       label: t('comp.nb.cfg_idle'),
     },
     subscribed: {
       icon: <BellRing className="w-5 h-5" strokeWidth={2.25} />,
-      bg: 'bg-[#1F6F5F]',
-      text: 'text-white',
+      bg: 'bg-white',
+      text: 'text-[#1F6F5F]',
       pulse: false,
       label: t('comp.nb.cfg_subscribed'),
     },
     denied: {
       icon: <BellOff className="w-5 h-5" strokeWidth={2.25} />,
-      bg: 'bg-red-50',
-      text: 'text-red-600',
+      bg: 'bg-red-500/20',
+      text: 'text-red-100',
       pulse: false,
       label: t('comp.nb.cfg_denied'),
     },

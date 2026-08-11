@@ -16,9 +16,11 @@ import { useCart, cartItemCount } from '@/lib/cart'
 export default function CartButton({
   className = '',
   iconClass = 'w-5 h-5',
+  iconColorClass = 'text-gray-700',
 }: {
   className?: string
   iconClass?: string
+  iconColorClass?: string
 }) {
   const cart = useCart()
   const count = cartItemCount(cart)
@@ -31,7 +33,7 @@ export default function CartButton({
       title="السلة"
       className={`relative inline-flex items-center justify-center no-underline transition-all ${className}`}
     >
-      <ShoppingCart className={`${iconClass} text-gray-700`} />
+      <ShoppingCart className={`${iconClass} ${iconColorClass}`} />
       <span className="absolute -top-1.5 ltr:-right-1.5 rtl:-left-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#1F6F5F] text-white text-[10px] font-black flex items-center justify-center shadow-soft">
         {count > 99 ? '99+' : count}
       </span>

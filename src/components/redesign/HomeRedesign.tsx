@@ -4,6 +4,7 @@ import { Alexandria, IBM_Plex_Sans_Arabic } from 'next/font/google'
 import { DEVELOPER_DIRECTORY } from '@/lib/developer-directory'
 import CompactNewsTabs from '@/components/CompactNewsTabs'
 import RedesignMarquee from './RedesignMarquee'
+import SiteFooter from '@/components/SiteFooter'
 
 // ============================================================================
 // HomeRedesign — (٧ أغسطس ٢٠٢٦) «التصميم الجديد» من ملف Madmona Redesign
@@ -379,40 +380,10 @@ a { text-decoration: none; }
         </div>
       </section>
 
-      {/* ═══ Footer ═══ */}
-      <footer style={{ background: INK, color: CREAM, padding: '64px 28px 36px' }}>
-        <div style={{ maxWidth: 1360, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 48, flexWrap: 'wrap', paddingBottom: 44, borderBottom: '1px solid rgba(244,239,228,0.15)' }}>
-            <div style={{ maxWidth: 320 }}>
-              <p style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 30 }}>مضمونة</p>
-              <p style={{ margin: '4px 0 0', fontSize: 10, fontWeight: 700, letterSpacing: '0.35em', color: GOLD }}>YOUR GUARANTEED MARKETPLACE</p>
-              <p style={{ margin: '18px 0 0', fontSize: 13, lineHeight: 1.9, color: 'rgba(244,239,228,0.6)' }}>سوق مصري كل حاجة فيه مضمونة — من المورد للسعر للاستلام.</p>
-            </div>
-            <div style={{ display: 'flex', gap: 72, flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
-                <span style={{ fontWeight: 700, color: GOLD, fontSize: 12, letterSpacing: '0.15em' }}>السوق</span>
-                <Link href="/marketplace?track=products" style={{ color: 'rgba(244,239,228,0.75)' }}>بيع</Link>
-                <Link href="/marketplace?track=rentals" style={{ color: 'rgba(244,239,228,0.75)' }}>إيجار</Link>
-                <Link href="/marketplace?track=services" style={{ color: 'rgba(244,239,228,0.75)' }}>خدمات</Link>
-                <Link href="/real-estate/market" style={{ color: 'rgba(244,239,228,0.75)' }}>بورصة مضمونة العقارية</Link>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
-                <span style={{ fontWeight: 700, color: GOLD, fontSize: 12, letterSpacing: '0.15em' }}>مضمونة</span>
-                <Link href="/about" style={{ color: 'rgba(244,239,228,0.75)' }}>عن المنصة</Link>
-                <Link href="/list-your-asset" style={{ color: 'rgba(244,239,228,0.75)' }}>ضيف إعلانك</Link>
-                <Link href="/chat/marid" style={{ color: 'rgba(244,239,228,0.75)' }}>اسأل الجني</Link>
-                <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(244,239,228,0.75)' }}>واتساب</a>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
-                <span style={{ fontWeight: 700, color: GOLD, fontSize: 12, letterSpacing: '0.15em' }}>قانوني</span>
-                <Link href="/privacy" style={{ color: 'rgba(244,239,228,0.75)' }}>الخصوصية</Link>
-                <Link href="/terms" style={{ color: 'rgba(244,239,228,0.75)' }}>الشروط</Link>
-              </div>
-            </div>
-          </div>
-          <p style={{ margin: '28px 0 0', textAlign: 'center', fontSize: 12, color: 'rgba(244,239,228,0.45)' }}>© {new Date().getFullYear()} مضمونة — معاملاتك مضمونة</p>
-        </div>
-      </footer>
+      {/* (11 Aug 2026) الفوتر الأخضر الغامق القديم (INK #0E332C) اتبدّل بـ
+          SiteFooter الموحّد (#1F6F5F) — أول صفحة بتتجرّب عليها قبل التعميم
+          على باقي صفحات العميل (طلب محمد: الهيدر والفوتر أخضر). */}
+      <SiteFooter />
     </div>
   )
 }

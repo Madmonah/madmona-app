@@ -5,12 +5,20 @@
 
 import { useT } from '@/lib/i18n/LanguageProvider'
 
-export default function LanguageToggle({ className = '' }: { className?: string }) {
+export default function LanguageToggle({
+  className = '',
+  activeClass = 'bg-[#1F6F5F] text-white',
+  inactiveClass = 'bg-transparent text-[#1F6F5F]',
+}: {
+  className?: string
+  activeClass?: string
+  inactiveClass?: string
+}) {
   const { lang, setLang } = useT()
 
   return (
     <div
-      className={`inline-flex items-center rounded-full border border-[#1F6F5F] overflow-hidden text-[13px] font-bold select-none ${className}`}
+      className={`inline-flex items-center rounded-full overflow-hidden text-[13px] font-bold select-none ${className}`}
       role="group"
       aria-label="Language"
     >
@@ -18,9 +26,7 @@ export default function LanguageToggle({ className = '' }: { className?: string 
         type="button"
         onClick={() => setLang('ar')}
         aria-pressed={lang === 'ar'}
-        className={`px-3 py-1.5 transition-colors ${
-          lang === 'ar' ? 'bg-[#1F6F5F] text-white' : 'bg-transparent text-[#1F6F5F]'
-        }`}
+        className={`px-3 py-1.5 transition-colors ${lang === 'ar' ? activeClass : inactiveClass}`}
       >
         عربي
       </button>
@@ -28,9 +34,7 @@ export default function LanguageToggle({ className = '' }: { className?: string 
         type="button"
         onClick={() => setLang('en')}
         aria-pressed={lang === 'en'}
-        className={`px-3 py-1.5 transition-colors ${
-          lang === 'en' ? 'bg-[#1F6F5F] text-white' : 'bg-transparent text-[#1F6F5F]'
-        }`}
+        className={`px-3 py-1.5 transition-colors ${lang === 'en' ? activeClass : inactiveClass}`}
       >
         EN
       </button>
