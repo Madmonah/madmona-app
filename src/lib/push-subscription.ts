@@ -119,12 +119,20 @@ export async function unsubscribeFromPush(): Promise<{ ok: boolean; error?: stri
     const endpoint = subscription.endpoint
     await subscription.unsubscribe()
 
-    // Inform server
-    await fetch('/api/push/unsubscribe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ endpoint }),
-    })
+    // Inform server — 🔒 (١٢ أغسطس ٢٠٢٦) المسار بقى محتاج Bearer
+    // وبيمسح صفوف صاحب التوكن بس. لو مفيش سيشن بنكتفي بالإلغاء المحلي —
+    // الصف اليتيم بيتنضف تلقائيًا أول ما إرسال ليه يفشل بـ410.
+    const { data: { session } } = await supabaseBrowser.auth.getSession()
+    if (session?.access_token) {
+      await fetch('/api/push/unsubscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ endpoint }),
+      })
+    }
 
     return { ok: true }
   } catch (e: unknown) {

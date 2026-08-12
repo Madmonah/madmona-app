@@ -116,17 +116,26 @@ async function handle(req: NextRequest) {
   const processedIds: string[] = []
   const failedIds: string[] = []
 
-  for (const item of queue as QueueItem[]) {
-    // Get all ACTIVE subscriptions for this user (skip ones the cleanup cron soft-deleted)
-    // @ts-expect-error
-    const { data: subs } = await adminClient
-      .from('push_subscriptions')
-      .select('endpoint, p256dh, auth')
-      .eq('profile_id', item.recipient_id)
-      .is('deactivated_at', null)
+  // ⚡ (١٢ أغسطس ٢٠٢٦ — تحديث موديول النوتيفيكيشن) كان بيعمل استعلام
+  // اشتراكات لكل عنصر في الطابور (N+1 — لحد ٥٠ استعلام في التشغيلة).
+  // دلوقتي استعلام واحد لكل المستلمين المميزين وتجميع في الذاكرة.
+  type SubRow = { endpoint: string; p256dh: string; auth: string }
+  const recipientIds = [...new Set((queue as QueueItem[]).map((q) => q.recipient_id))]
+  // @ts-expect-error
+  const { data: allSubs } = await adminClient
+    .from('push_subscriptions')
+    .select('profile_id, endpoint, p256dh, auth')
+    .in('profile_id', recipientIds)
+    .is('deactivated_at', null)
+  const subsByProfile = new Map<string, SubRow[]>()
+  for (const s of (allSubs || []) as Array<SubRow & { profile_id: string }>) {
+    const arr = subsByProfile.get(s.profile_id) || []
+    arr.push({ endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth })
+    subsByProfile.set(s.profile_id, arr)
+  }
 
-    type SubRow = { endpoint: string; p256dh: string; auth: string }
-    const subRows = (subs || []) as SubRow[]
+  for (const item of queue as QueueItem[]) {
+    const subRows = subsByProfile.get(item.recipient_id) || []
 
     if (subRows.length === 0) {
       // No active subscriptions — mark the queue item as processed but flag the
@@ -184,22 +193,14 @@ async function handle(req: NextRequest) {
   }
 
   // Increment failed_count for failed items
+  // ⚡ (١٢ أغسطس ٢٠٢٦) كان select ثم update لكل id (2×N نداء) —
+  // بقى RPC واحد ذرّي بيزوّد العداد للكل مرة واحدة.
   if (failedIds.length > 0) {
-    for (const fid of failedIds) {
-      // @ts-expect-error
-      const { data: row } = await adminClient
-        .from('notification_queue')
-        .select('failed_count')
-        .eq('id', fid)
-        .single()
-      if (row) {
-        // @ts-expect-error
-        await adminClient
-          .from('notification_queue')
-          .update({ failed_count: ((row as { failed_count: number }).failed_count || 0) + 1 })
-          .eq('id', fid)
-      }
-    }
+    // @ts-expect-error rpc typing not generated
+    const { error: bumpErr } = await adminClient.rpc('notification_queue_bump_failed', {
+      p_ids: failedIds,
+    })
+    if (bumpErr) console.error('[push] bump failed_count error:', bumpErr.message)
   }
 
   // Delete expired subscriptions
@@ -223,6 +224,29 @@ async function handle(req: NextRequest) {
       .in('endpoint', sentEndpoints)
   }
 
+  // 🧹 (١٢ أغسطس ٢٠٢٦) احتفاظ: الطابور كان بيكبر للأبد — امسح
+  // المتبعوت من أكتر من ٣٠ يوم والفاشل نهائيًا (failed_count>=3) من أكتر
+  // من ٧ أيام. best-effort — مايوقفش الرد.
+  let retentionDeleted = 0
+  try {
+    const d30 = new Date(Date.now() - 30 * 24 * 3600_000).toISOString()
+    const d7 = new Date(Date.now() - 7 * 24 * 3600_000).toISOString()
+    // @ts-expect-error
+    const { count: c1 } = await adminClient
+      .from('notification_queue')
+      .delete({ count: 'exact' })
+      .not('sent_at', 'is', null)
+      .lt('created_at', d30)
+    // @ts-expect-error
+    const { count: c2 } = await adminClient
+      .from('notification_queue')
+      .delete({ count: 'exact' })
+      .is('sent_at', null)
+      .gte('failed_count', 3)
+      .lt('created_at', d7)
+    retentionDeleted = (c1 || 0) + (c2 || 0)
+  } catch { /* best-effort */ }
+
   return NextResponse.json({
     ok: true,
     processed: queue.length,
@@ -230,5 +254,6 @@ async function handle(req: NextRequest) {
     failed: totalFailed,
     expiredCleaned: expiredEndpoints.length,
     lastUsedUpdated: sentEndpoints.length,
+    retentionDeleted,
   })
 }
