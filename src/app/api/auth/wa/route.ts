@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
 import { sendLoginWelcome } from '@/lib/wa-welcome'
+import { rateLimitOk, clientIp } from '@/lib/rate-limit'
 
 // =====================================================================
 // 🔑 الدخول بالواتساب — «ابعت الكود للمارد» (عكس الـOTP)
@@ -190,6 +191,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'bad_code' }, { status: 400 })
   }
   const sb = admin()
+  // 🔒 (١٢ أغسطس ٢٠٢٦) حد معدل: الـpoll الشرعي = كود واحد كل ~ثانيتين
+  // (~450 نداء في الـ15 دقيقة). 900/15د بيسمح بده ويقطع مسح الأكواد الجماعي.
+  if (!(await rateLimitOk(sb, `wa-poll:${clientIp(req)}`, 900, 900))) {
+    return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
+  }
   const { data } = await sb
     .from('wa_inbound_verifications')
     .select('id, verified, expires_at, session_minted_at')
@@ -243,6 +249,10 @@ export async function POST(req: NextRequest) {
 
   // ---- start: ولّد كود يبعته العميل للمارد
   if (body.action === 'start') {
+    // 🔒 حد معدل: مستخدم شرعي بيبدأ مرة-تلاتة. الإغراق بيملى الجدول.
+    if (!(await rateLimitOk(sb, `wa-start:${clientIp(req)}`, 15, 3600))) {
+      return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
+    }
     const code = genCode()
     const { error } = await sb.from('wa_inbound_verifications').insert({
       code, purpose: 'app_login', expected_phone: null,
@@ -258,6 +268,11 @@ export async function POST(req: NextRequest) {
 
   // ---- finish: الكود اتأكد من الويبهوك → سيشن
   if (body.action === 'finish') {
+    // 🔒 حد معدل: finish هو اللي بيصك سيشن — ده الهدف الحقيقي لأي brute
+    // force على الأكواد. مستخدم شرعي بيندهها مرة (أو مرتين لو الشبكة قطعت).
+    if (!(await rateLimitOk(sb, `wa-finish:${clientIp(req)}`, 10, 600))) {
+      return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
+    }
     const code = (body.code || '').toUpperCase()
     const { data: row } = await sb
       .from('wa_inbound_verifications')
@@ -307,6 +322,10 @@ export async function POST(req: NextRequest) {
 
   // ---- magic: لينك المارد المُغلّف /l/<token>
   if (body.action === 'magic') {
+    // 🔒 حد معدل: فتح لينك ممغنط = نداء واحد. التخمين الجماعي للتوكنات ممنوع.
+    if (!(await rateLimitOk(sb, `wa-magic:${clientIp(req)}`, 30, 600))) {
+      return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
+    }
     const token = body.token || ''
     if (!/^[0-9a-f-]{36}$/.test(token)) {
       return NextResponse.json({ error: 'bad_token' }, { status: 400 })

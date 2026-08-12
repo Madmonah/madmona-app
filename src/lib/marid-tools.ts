@@ -1538,22 +1538,53 @@ function notifyOwner(text: string): void {
 //   • مهلة ١٥ث عشان ما نعلّقش الرد
 //   • ٢٠٠ ألف حرف كحد أقصى (المنيوهات الكبيرة بتوصل ٥٠ألف)
 //   • النتيجة نص خام — المارد هو اللي بيفهمه ويطلع منه الأصناف
-async function readLink(a: { url?: string }): Promise<ToolResult> {
-  const url = (a.url || '').trim()
-  if (!/^https:\/\//i.test(url)) {
-    return { ok: false, error: 'اللينك لازم يبدأ بـ https' }
-  }
+// 🔒 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) فحص SSRF لكل قفزة:
+// الفلتر القديم كان substring على اللينك الأول بس — والـfetch بيتبع
+// redirects تلقائي، فلينك بريء ممكن يعمل 302 لعنوان داخلي (وكمان نطاق
+// 172.16-31 ماكانش في القايمة أصلًا). دلوقتي: بنمنع أي IP حرفي خالص
+// (مفيش سبب شرعي لمنيو على IP)، وأسماء داخلية، وبنتبع الـredirects
+// يدوي (٣ كحد أقصى) مع فحص كل وجهة قبل ما نطلبها.
+function linkBlocked(raw: string): string | null {
+  let u: URL
+  try { u = new URL(raw) } catch { return 'لينك مش مفهوم' }
+  if (u.protocol !== 'https:') return 'اللينك لازم يبدأ بـ https'
+  const h = u.hostname.toLowerCase()
+  if (!h.includes('.')) return 'لينك غير مسموح'
+  if (/^(localhost)$/.test(h) || h.endsWith('.local') || h.endsWith('.internal') || h.endsWith('.localhost')) return 'لينك غير مسموح'
+  // أي IP حرفي (v4 أو v6) ممنوع — بيغطي 10.x و172.16-31 و192.168 و169.254 و127 وغيرهم
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) return 'لينك غير مسموح'
+  if (h.includes(':') || h.startsWith('[')) return 'لينك غير مسموح'
+  return null
+}
 
-  // ⛔ ممنوع الشبكة الداخلية — لينك من عميل ماينفعش يوصل لخدماتنا
-  if (/localhost|127\.0\.0\.1|169\.254\.|10\.|192\.168\.|\.internal/i.test(url)) {
-    return { ok: false, error: 'لينك غير مسموح' }
+async function readLink(a: { url?: string }): Promise<ToolResult> {
+  let url = (a.url || '').trim()
+  {
+    const blocked = linkBlocked(url)
+    if (blocked) return { ok: false, error: blocked }
   }
 
   try {
-    const res = await fetch(url, {
-      headers: { 'user-agent': 'Mozilla/5.0 (compatible; MadmonaBot/1.0)' },
-      signal: AbortSignal.timeout(15_000),
-    })
+    // نتبع الـredirects يدوي — كل وجهة بتتفحص قبل الطلب
+    let res: Response | null = null
+    for (let hop = 0; hop < 4; hop++) {
+      res = await fetch(url, {
+        headers: { 'user-agent': 'Mozilla/5.0 (compatible; MadmonaBot/1.0)' },
+        signal: AbortSignal.timeout(15_000),
+        redirect: 'manual',
+      })
+      if (res.status >= 300 && res.status < 400) {
+        const loc = res.headers.get('location')
+        if (!loc) return { ok: false, error: `اللينك مش شغّال (${res.status})` }
+        const nextUrl = new URL(loc, url).toString()
+        const blocked = linkBlocked(nextUrl)
+        if (blocked) return { ok: false, error: blocked }
+        url = nextUrl
+        continue
+      }
+      break
+    }
+    if (!res) return { ok: false, error: 'اللينك مش شغّال' }
     if (!res.ok) return { ok: false, error: `اللينك مش شغّال (${res.status})` }
 
     const type = res.headers.get('content-type') || ''

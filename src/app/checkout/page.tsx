@@ -194,8 +194,12 @@ export default function CheckoutPage() {
 
       const result = data as { order_id?: string; reference_code?: string }
       if (!result?.order_id || !result?.reference_code) {
-        setError('الأوردر اتعمل لكن مفيش reference. كلّمنا على واتساب.')
-        setSubmitting(false)
+        // 🐛 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) الـRPC نجح غالبًا والأوردر
+        // موجود فعلًا — إعادة تفعيل الزرار هنا كانت بتخلّي العميل يدوس تاني
+        // ويتعمل أوردر تاني مطابق والمورد يجهّز الاتنين. الزرار يفضل متقفل
+        // والكارت يتمسح — والعميل يتوجّه لأوردراته/الواتساب بدل إعادة الإرسال.
+        clearCart()
+        setError('الأوردر اتسجّل بس حصلت مشكلة في التأكيد — شوف «أوردراتي» أو كلّمنا على واتساب. متعملش الأوردر تاني.')
         return
       }
 

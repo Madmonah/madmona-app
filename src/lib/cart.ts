@@ -115,10 +115,15 @@ export function addToCart(args: {
   }
 
   // Reset cart if force or switching supplier
+  // 🐛 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) كان بيتفحص supplier_id بس —
+  // سبلاير عنده مطعم + متجر: العميل يضيف صنف أكل وبعده منتج، فالكارت
+  // يفضل order_type='food' وفيه mart_product_id → create_order يتلغبط
+  // أو يعمل أوردر أكل فيه منتجات. تغيير نوع الأوردر = كارت جديد.
   const startFresh =
     args.force ||
     !current.supplier_id ||
-    current.supplier_id !== args.supplier_id
+    current.supplier_id !== args.supplier_id ||
+    (current.order_type !== null && current.order_type !== args.order_type)
 
   const next: Cart = startFresh
     ? {

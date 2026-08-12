@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { anthropic, CLAUDE_MODEL, parseJsonResponse } from '@/lib/anthropic'
+import { rateLimitOk, clientIp } from '@/lib/rate-limit'
 
 // ============================================================
 // POST /api/listing-drafts/extract — "استيراد ذكي" (Task 20, Jul 24 2026)
@@ -36,6 +38,25 @@ export async function POST(req: NextRequest) {
     } | null
 
     if (!body) return NextResponse.json({ ok: false, error: 'صيغة غير صحيحة' }, { status: 400 })
+
+    // 🔒 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) المسار مفتوح (بيخدم إضافة إعلان
+    // من غير حساب) وكل نداء بيحرق رصيد Anthropic — من غير حد كان أي سكريبت
+    // يقدر يستخدمه كبروكسي مجاني للـvision. مستخدم شرعي بيستورد قائمة
+    // أو اتنين — ١٠ في الساعة لكل IP كافية جدًا.
+    try {
+      const rl = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { persistSession: false } },
+      )
+      if (!(await rateLimitOk(rl, `extract:${clientIp(req)}`, 10, 3600))) {
+        return NextResponse.json(
+          { ok: false, error: 'جرّبت كتير في وقت قصير — استنى شوية وحاول تاني' },
+          { status: 429 },
+        )
+      }
+    } catch { /* fail-open */ }
+
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json({ ok: false, error: 'خدمة الاستخراج غير مفعّلة حالياً' }, { status: 503 })
     }

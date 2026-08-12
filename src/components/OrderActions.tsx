@@ -478,6 +478,25 @@ export function ProductBuyBox({
   const [crossWarn, setCrossWarn] = useState(false)
 
   const inCart = cart.items.find((it) => it.listing_id === listing.id)
+
+  // 🐛 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) منتج من غير قاعدة تسعير كان
+  // بيقع على سعر 0 — الكارت والتشيك-آوت يعرضوا ٠ ج.م ويتعمل أوردر بصفر
+  // فعلًا. السعر مش معروف = مفيش زرار شراء؛ «السعر عند الطلب» بلينك المارد.
+  // (بعد الـhooks عشان قواعد React)
+  if (!price || price <= 0) {
+    return (
+      <div className="bg-white rounded-3xl shadow-soft p-6 text-center">
+        <p className="font-bold text-[#1A2E26] mb-1">السعر عند الطلب</p>
+        <p className="text-sm text-gray-500 mb-4">كلّم المارد وهيجيبلك السعر والتفاصيل فورًا</p>
+        <a
+          href={`/chat/marid?listing=${listing.id}`}
+          className="inline-block bg-[#FA8125] text-white font-bold rounded-2xl px-6 py-3 hover:opacity-90 transition-opacity"
+        >
+          اسأل عن السعر
+        </a>
+      </div>
+    )
+  }
   const sameSupplier = cart.supplier_id === supplier.id
 
   function attemptAdd(goToCart: boolean) {

@@ -60,6 +60,10 @@ export async function POST(req: NextRequest) {
     }
 
     let allowed = false
+    // 🔒 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) نسجّل مين المستخدم — عشان نتأكد
+    // تحت إنه طرف في الحجز فعلًا. قبل كده أي JWT صالح كان يقدر يبعت إيميلات
+    // «تم تأكيد حجزك» لأي booking_id يخمّنه — سبام بإيميلات رسمية من دومينا.
+    let authedUserId: string | null = null
     if (CRON_SECRET && token === CRON_SECRET) {
       allowed = true
     } else {
@@ -72,6 +76,7 @@ export async function POST(req: NextRequest) {
       const { data: userData } = await userClient.auth.getUser()
       if (userData.user) {
         allowed = true
+        authedUserId = userData.user.id
       }
     }
 
@@ -118,6 +123,12 @@ export async function POST(req: NextRequest) {
     }
 
     const b = booking as BookingFull
+
+    // 🔒 المستخدم لازم يكون طرف في الحجز (العميل نفسه أو صاحب البيزنس) —
+    // الكرون (CRON_SECRET) مستثنى. غير كده 403.
+    if (authedUserId && authedUserId !== b.customer_id && authedUserId !== b.supplier?.profile_id) {
+      return NextResponse.json({ error: 'not_a_party' }, { status: 403 })
+    }
     const refCode = b.reference_code || b.id.slice(0, 8)
     const total = Number(b.total_amount)
     const startStr = formatDateTimeArabic(b.start_at)
