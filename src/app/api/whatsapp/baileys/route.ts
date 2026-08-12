@@ -657,6 +657,10 @@ export async function POST(request: NextRequest) {
             const statusLabel = conv.status === 'blocked' ? 'محظورة' : 'موقوفة'
             await sendText({
               to: owner,
+              // 📞 (١٢ أغسطس ٢٠٢٦) من غير session الإرسال بيقع على WA_SERVICE_URL
+              // (جسر Baileys القديم — جلساته كلها مقطوعة) والتنبيه يضيع في صمت.
+              // بنبعت من نفس الرقم اللي استقبل الرسالة (متسجّل في OpenWA أكيد).
+              session: body.session_id || owner,
               body:
                 `⏸️ *محادثة ${statusLabel} بتستقبل رسايل*\n\n` +
                 `${who} بعت رسالة والمارد ساكت لأن المحادثة ${statusLabel} (${conv.status}).\n\n` +
@@ -719,6 +723,8 @@ export async function POST(request: NextRequest) {
         const owner = process.env.OWNER_PHONE || '201002229982'
         await sendText({
           to: owner,
+          // 📞 نفس إصلاح session بتاع تنبيه المحادثة الموقوفة (١٢ أغسطس ٢٠٢٦)
+          session: body.session_id || owner,
           body:
             `⚠️ *حارس اللوب*\n\n` +
             `وقفت محادثة ${phone || replyJid} تلقائيًا — المارد بعت ${count} رسالة في ساعة.\n\n` +
@@ -847,6 +853,8 @@ export async function POST(request: NextRequest) {
         const owner = process.env.OWNER_PHONE || '201002229982'
         await sendText({
           to: owner,
+          // 📞 نفس إصلاح session بتاع تنبيه المحادثة الموقوفة (١٢ أغسطس ٢٠٢٦)
+          session: body.session_id || owner,
           body:
             `🔥 *ليد سخن*\n\n` +
             `${conv?.contact_name || phone} رد على المارد.\n\n` +
