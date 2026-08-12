@@ -167,11 +167,18 @@ export async function fetchInboundMediaByPhone(
       ? msgs.find((m) => (m?.waMessageId === waMessageId || m?.id === waMessageId) && isMedia(m))
       : null
     // 2) وإلا آخر رسالة ميديا من نفس الرقم
-    if (!hit) {
+    // 🐛 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) المطابقة القديمة كانت:
+    //   from.includes(wantDigits) || wantDigits.includes(from)
+    // لو `from` فاضي في صف من القايمة، `wantDigits.includes('')` = true
+    // دايمًا → بناخد أحدث ميديا من **أي راسل** وتتحفظ على العميل الغلط
+    // (نفس عيلة نمط «الصورة الغلط على المنتج»). دلوقتي: لازم `from` فيه
+    // ١٠ أرقام على الأقل ويطابق فعلًا — ولو مفيش رقم مطلوب مانطابقش خالص.
+    if (!hit && wantDigits) {
       hit = msgs.find((m) => {
         if (!isMedia(m)) return false
         const from = String(m?.from || '').replace(/\D/g, '')
-        return wantDigits ? from.includes(wantDigits) || wantDigits.includes(from) : true
+        if (from.length < 10) return false
+        return from.includes(wantDigits) || (wantDigits.length >= 10 && wantDigits.includes(from))
       })
     }
     if (!hit) return null

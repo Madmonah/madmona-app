@@ -30,13 +30,15 @@ async function handle(req: NextRequest) {
 
   let authorized = false
 
-  // Method 1: Vercel cron auto-auth (request originated from Vercel cron infrastructure)
-  if (vercelCron) {
-    authorized = true
-  }
+  // 🔒 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) كان مجرد **وجود** هيدر
+  // x-vercel-cron بيدّي صلاحية كاملة — والهيدر ده أي حد يقدر يبعته من
+  // برّه، فأي غريب كان يقدر يفضّي طابور البوش ويرسله وقت ما يحب.
+  // Vercel Cron بيبعت Authorization: Bearer CRON_SECRET تلقائيًا لما
+  // المتغير موجود — فده هو الفحص الوحيد الصح. (vercelCron بقى للّوج بس.)
+  void vercelCron
 
-  // Method 2: CRON_SECRET match
-  if (!authorized && CRON_SECRET && provided === CRON_SECRET) {
+  // Method 1: CRON_SECRET match (Vercel cron sends this automatically)
+  if (CRON_SECRET && provided === CRON_SECRET) {
     authorized = true
   }
 

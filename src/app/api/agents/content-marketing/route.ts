@@ -222,7 +222,8 @@ function translatePostingTime(t: string): string {
 
 export async function GET(request: NextRequest) {
   const cronSecret = request.headers.get('authorization')
-  if (process.env.CRON_SECRET && cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
+  // 🔒 (١٢ أغسطس ٢٠٢٦) fail-closed: لو CRON_SECRET مش متظبط المسار يقفل مش يفتح
+  if (!process.env.CRON_SECRET || cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {

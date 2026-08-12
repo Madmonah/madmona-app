@@ -26,7 +26,9 @@ export async function GET(request: NextRequest) {
   // Vercel Cron بيبعت الهيدر ده — أو سر يدوي
   const auth = request.headers.get('authorization')
   const secret = request.headers.get('x-madmona-secret')
-  const isVercelCron = auth === `Bearer ${process.env.CRON_SECRET}`
+  // 🔒 (١٢ أغسطس ٢٠٢٦) فحص وجود السر الأول — لو CRON_SECRET مش متظبط،
+  //    `Bearer undefined` كان بيعدّي. (wa-sync كان بيعملها صح — دي كانت ناقصة هنا)
+  const isVercelCron = !!process.env.CRON_SECRET && auth === `Bearer ${process.env.CRON_SECRET}`
   const isManual = process.env.WA_SERVICE_SECRET && secret === process.env.WA_SERVICE_SECRET
   if (!isVercelCron && !isManual) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
@@ -90,6 +92,22 @@ export async function GET(request: NextRequest) {
     .order('scheduled_for', { ascending: true })
     .limit(MAX_PER_RUN)
 
+  // 🧹 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) ريبر الرسايل العالقة:
+  // القفل المتفائل بيقلب الصف لـ'sending' قبل الإرسال — لو الدالة اتقطعت
+  // (timeout/crash) قبل ما تحدّث الحالة النهائية، الصف كان بيفضل 'sending'
+  // للأبد: لا بيتبعت ولا بيتعاد ولا بيبان في استعلام المستحق. أي صف
+  // 'sending' بقاله أكتر من ١٠ دقايق = تشغيلة ماتت في النص → نرجّعه
+  // 'queued' فيتعاد في التشغيلة الجاية. (attempts اتزادت وقت القفل فمش
+  // هيتكرر بلا حدود لو فيه فشل حقيقي متكرر.)
+  try {
+    const stuckCutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+    await supabaseAdmin
+      .from('whatsapp_campaign_messages')
+      .update({ status: 'queued' } as never)
+      .eq('status', 'sending')
+      .lt('locked_at', stuckCutoff)
+  } catch { /* الريبر مايوقفش الإرسال */ }
+
   // 🔎 (5 Aug 2026) ماتبلعش الخطأ — ده كان مخبي عطل الطابور المتجمد
   if (dueErr) {
     return NextResponse.json({ ok: false, error: 'due query failed', detail: dueErr.message })
@@ -106,7 +124,7 @@ export async function GET(request: NextRequest) {
     // قفل متفائل — نحوّل الحالة قبل الإرسال عشان مانبعتش مرتين
     const { data: locked, error: lockErr } = await supabaseAdmin
       .from('whatsapp_campaign_messages')
-      .update({ status: 'sending', attempts: (row.attempts ?? 0) + 1 } as never)
+      .update({ status: 'sending', attempts: (row.attempts ?? 0) + 1, locked_at: new Date().toISOString() } as never)
       .eq('id', row.id)
       .eq('status', 'queued')
       .select('id')

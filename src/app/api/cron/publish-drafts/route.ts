@@ -126,6 +126,19 @@ async function waNotify(_supa: ReturnType<typeof sb>, phone: string, body: strin
 }
 
 export async function GET(req: Request) {
+  // 🔒 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) كان الكرون الوحيد من غير أي
+  // سر — أي حد يقدر يدقّه ويجبر نشر مسودات ويطلق موجة إشعارات واتساب
+  // (نفس نمط حادثة rate-overlimit بتاعة ٢٠ يوليو). نفس بوابة باقي
+  // الكرونات: Bearer CRON_SECRET (Vercel بيبعته تلقائيًا) أو
+  // x-madmona-secret للتشغيل اليدوي.
+  const _auth = req.headers.get('authorization')
+  const _manual = req.headers.get('x-madmona-secret')
+  const _okCron = !!process.env.CRON_SECRET && _auth === `Bearer ${process.env.CRON_SECRET}`
+  const _okManual = !!process.env.WA_SERVICE_SECRET && _manual === process.env.WA_SERVICE_SECRET
+  if (!_okCron && !_okManual) {
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
+  }
+
   const supa = sb()
   // ?silent=1 → ينشر من غير ما يبعت واتساب. بنستخدمه لباك-فيل العالقين مرة واحدة
   // من غير ما نبعت دفعة إشعارات تكسر الرقم (درس rate-overlimit — ٢٠ يوليو).

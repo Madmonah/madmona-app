@@ -61,7 +61,8 @@ async function halt(reason: string) {
 export async function GET(request: NextRequest) {
   const auth = request.headers.get('authorization')
   const secret = request.headers.get('x-madmona-secret')
-  const isCron = auth === `Bearer ${process.env.CRON_SECRET}`
+  // 🔒 (١٢ أغسطس ٢٠٢٦) فحص وجود السر — نفس إصلاح wa-queue-send
+  const isCron = !!process.env.CRON_SECRET && auth === `Bearer ${process.env.CRON_SECRET}`
   const isManual = process.env.WA_SERVICE_SECRET && secret === process.env.WA_SERVICE_SECRET
   if (!isCron && !isManual) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
@@ -191,6 +192,22 @@ export async function GET(request: NextRequest) {
   }
 
   // ── ٣) الدفعة الجاية (3 كحد أقصى) ───────────────────────────────────
+  // 🧹 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) ريبر الرسايل العالقة:
+  // القفل المتفائل بيقلب الصف لـ'sending' قبل الإرسال — لو الدالة اتقطعت
+  // (timeout/crash) قبل ما تحدّث الحالة النهائية، الصف كان بيفضل 'sending'
+  // للأبد: لا بيتبعت ولا بيتعاد ولا بيبان في استعلام المستحق. أي صف
+  // 'sending' بقاله أكتر من ١٠ دقايق = تشغيلة ماتت في النص → نرجّعه
+  // 'queued' فيتعاد في التشغيلة الجاية. (attempts اتزادت وقت القفل فمش
+  // هيتكرر بلا حدود لو فيه فشل حقيقي متكرر.)
+  try {
+    const stuckCutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+    await supabaseAdmin
+      .from('whatsapp_campaign_messages')
+      .update({ status: 'queued' } as never)
+      .eq('status', 'sending')
+      .lt('locked_at', stuckCutoff)
+  } catch { /* الريبر مايوقفش الإرسال */ }
+
   const { data: dueRaw } = await supabaseAdmin
     .from('whatsapp_campaign_messages')
     .select('id, recipient_phone, recipient_name, message_content, attempts')
@@ -217,7 +234,7 @@ export async function GET(request: NextRequest) {
   for (const row of due) {
     const { data: locked } = await supabaseAdmin
       .from('whatsapp_campaign_messages')
-      .update({ status: 'sending', attempts: (row.attempts ?? 0) + 1 } as never)
+      .update({ status: 'sending', attempts: (row.attempts ?? 0) + 1, locked_at: new Date().toISOString() } as never)
       .eq('id', row.id)
       .eq('status', 'queued')
       .select('id')

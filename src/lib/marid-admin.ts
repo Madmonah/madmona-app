@@ -421,24 +421,30 @@ async function adminBroadcast(a: {
   }
 
   // ── الإرسال الفعلي ─────────────────────────────────────────────────
-  const url = process.env.WA_SERVICE_URL
-  const secret = process.env.WA_SERVICE_SECRET
-  if (!url || !secret) return { ok: false, error: 'خدمة الواتساب مش متظبطة' }
+  // 🚚 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) كان بيبعت مباشرة للجسر الميت
+  // (WA_SERVICE_URL) — كل البرودكاستات كانت بتضيع في صمت. دلوقتي بيمر
+  // بـsendText → OpenWA. وكمان: اللوب الطويل مع فاصل ٣–٧ث كان بيعدّي
+  // maxDuration بتاع الراوت (٣٠٠ث) مع ~٥٠ مستلم فيتقطع في النص من غير
+  // ما حد يعرف مين استلم — فبنحدّد ٣٠ مستلم كحد أقصى للنداء الواحد
+  // وبنقول لمحمد الباقي كام عشان يبعت تاني.
+  const { sendText } = await import('./whatsapp')
+  const session = process.env.OWNER_PHONE || '201002229982'
+
+  const BATCH_CAP = 30
+  const batch = recipients.slice(0, BATCH_CAP)
+  const remaining = recipients.length - batch.length
 
   let sent = 0
   let failed = 0
 
-  for (const r of recipients) {
+  for (const r of batch) {
     try {
-      const res = await fetch(`${url.replace(/\/$/, '')}/send`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-madmona-secret': secret },
-        body: JSON.stringify(
-          r.isGroup ? { jid: r.to, text: a.message } : { to: r.to, text: a.message }
-        ),
-      })
-      const j = await res.json().catch(() => ({}))
-      j?.ok ? sent++ : failed++
+      const res = await sendText(
+        r.isGroup
+          ? { jid: r.to, session, body: a.message }
+          : { to: r.to, session, body: a.message }
+      )
+      res.ok ? sent++ : failed++
     } catch {
       failed++
     }
@@ -446,7 +452,14 @@ async function adminBroadcast(a: {
     await new Promise((s) => setTimeout(s, 3000 + Math.random() * 4000))
   }
 
-  return { ok: true, اتبعت: sent, فشل: failed }
+  return {
+    ok: true,
+    اتبعت: sent,
+    فشل: failed,
+    ...(remaining > 0
+      ? { متبقي: remaining, ملاحظة: `اتبعت لأول ${batch.length} — ابعت نفس الأمر تاني للـ${remaining} الباقيين` }
+      : {}),
+  }
 }
 
 export async function runAdminTool(name: string, input: Record<string, unknown>): Promise<R> {

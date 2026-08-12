@@ -223,8 +223,10 @@ async function renderReel(reel: Reel, ffmpegPath: string): Promise<string> {
 async function handle(req: NextRequest) {
   const cronAuth = req.headers.get('authorization')
   const adminPw = req.headers.get('x-admin-pw')
-  const vercelCron = req.headers.get('x-vercel-cron')
-  const isCron = (cronAuth === `Bearer ${process.env.CRON_SECRET}`) || (vercelCron === '1')
+  // 🔒 (١٢ أغسطس ٢٠٢٦) شيلنا قبول `x-vercel-cron: 1` — هيدر أي حد يقدر
+  // يبعته من برّه ويشغّل رندر FFmpeg تقيل على حسابنا. Vercel Cron بيبعت
+  // Bearer CRON_SECRET تلقائيًا فمش محتاجين الهيدر أصلًا.
+  const isCron = !!process.env.CRON_SECRET && cronAuth === `Bearer ${process.env.CRON_SECRET}`
   const isAdmin = adminPw && adminPw === process.env.MADMONA_ADMIN_PW
 
   if (!isCron && !isAdmin) {

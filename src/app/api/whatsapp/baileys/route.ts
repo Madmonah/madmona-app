@@ -382,7 +382,11 @@ export async function POST(request: NextRequest) {
     // زيادة. الحارس الصح هو MARID_REPLY_ONLY في مسار الإرسال:
     // بيرد على اللي بيكلّمنا، وبيمنع البدء مع اللي ماكلّمناش.
     const sendPaused = process.env.MARID_SEND_PAUSED === '1'
-    if (sendPaused && body.text) {
+    // 🐛 (١٢ أغسطس ٢٠٢٦) كان `sendPaused && body.text` — رسالة ميديا من
+    // غير نص (صورة/فويس، شائعة جدًا من الموردين) كانت بتعدّي المفتاح
+    // وتتعالج ويترد عليها والمفتاح شغّال. دلوقتي أي رسالة فيها محتوى
+    // (نص أو ميديا) بتتسجّل من غير رد.
+    if (sendPaused && (body.text || body.media)) {
       const cid = await upsertConversation({
         phone,
         name: body.name ?? undefined,

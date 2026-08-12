@@ -964,6 +964,20 @@ async function createSupplierGroup(a: {
   supplier_id?: string
   listing_title?: string
 }): Promise<ToolResult> {
+  // 🚚 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) إنشاء الجروبات كان بيروح
+  // لـ/group-create على جسر Baileys القديم — جلساته كلها مقطوعة، يعني
+  // الأداة كانت بتوعد وتفشل (أو تسجّل جروب مش موجود). خدمة OpenWA الحالية
+  // مالهاش API لإنشاء جروبات، فبنرجّع رسالة صريحة بدل وعد كاذب —
+  // لحد ما تتضاف إمكانية الجروبات في openwa server ونرجّع الأداة.
+  return {
+    ok: false,
+    error:
+      'إنشاء جروبات الواتساب متوقف مؤقتًا (الخدمة الحالية ماتدعمهوش). ' +
+      'قول للمورد إن التواصل هيكمل في الشات المباشر، وقول لمحمد لو المورد محتاج جروب.',
+  }
+
+  /* eslint-disable no-unreachable */
+  // ⬇️ الكود الأصلي محفوظ لحد ما الجروبات ترجع في OpenWA
   const url = process.env.WA_SERVICE_URL
   const secret = process.env.WA_SERVICE_SECRET
   if (!url || !secret) return { ok: false, error: 'خدمة الواتساب مش متظبطة' }
@@ -1041,9 +1055,6 @@ async function forwardToSupplierGroup(a: {
     return { ok: false, error: 'المورد ده مالوش جروب متابعة لسه' }
   }
 
-  const url = process.env.WA_SERVICE_URL
-  const secret = process.env.WA_SERVICE_SECRET
-
   // ⚠️ ماننقلش رقم العميل للمورد. مضمونة هي الوسيط —
   // ده اللي بيحمي الطرفين وبيحافظ على دور المنصة.
   const text =
@@ -1053,15 +1064,16 @@ async function forwardToSupplierGroup(a: {
     `\nردّوا هنا وأنا هوصّل الرد للعميل.`
 
   try {
-    const res = await fetch(`${url!.replace(/\/$/, '')}/send`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-madmona-secret': secret! },
-      body: JSON.stringify({ jid: group.group_jid, text }),
-    })
-    const data = await res.json().catch(() => ({}))
-    return data?.ok
+    // 🚚 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) كان بيبعت للجسر الميت
+    // (WA_SERVICE_URL) وبياخد رد شكلي، فالمارد يقول للعميل «بعتّ طلبك
+    // للمورد» ومفيش حاجة اتبعتت فعليًا. دلوقتي بيمر بـsendText → OpenWA
+    // على jid الجروب نفسه، والنجاح بيتفحص بجد.
+    const { sendText } = await import('./whatsapp')
+    const session = process.env.OWNER_PHONE || '201002229982'
+    const res = await sendText({ jid: group.group_jid, session, body: text })
+    return res.ok
       ? { ok: true, sent_to: group.subject, قول_للعميل: 'بعتّ طلبك للمورد وهرجعلك برده 👌' }
-      : { ok: false, error: data?.error }
+      : { ok: false, error: res.error || 'فشل الإرسال للجروب' }
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'فشل التحويل' }
   }
@@ -1504,16 +1516,14 @@ export async function recordLead(a: {
 
 /** تنبيه لمحمد — مابيوقفش الرد أبدًا لو فشل */
 function notifyOwner(text: string): void {
-  const url = process.env.WA_SERVICE_URL
-  const secret = process.env.WA_SERVICE_SECRET
+  // 🚚 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) كان بيبعت مباشرة لـWA_SERVICE_URL
+  // (جسر Baileys القديم — جلساته كلها مقطوعة) فكل تنبيهات المالك من الأدوات
+  // كانت بتضيع في صمت. دلوقتي بيمر بـsendText → OpenWA من الرقم الأساسي.
+  // (import ديناميكي عشان نتفادى أي دورة استيراد مع whatsapp.ts)
   const owner = process.env.OWNER_PHONE || '201002229982'
-  if (!url || !secret) return
-
-  fetch(`${url.replace(/\/$/, '')}/send`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-madmona-secret': secret },
-    body: JSON.stringify({ to: owner, text }),
-  }).catch(() => {})
+  void import('./whatsapp')
+    .then(({ sendText }) => sendText({ to: owner, session: owner, body: text }))
+    .catch(() => {})
 }
 
 // ── الموزّع ──────────────────────────────────────────────────────────────
