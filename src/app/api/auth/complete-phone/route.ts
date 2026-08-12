@@ -179,12 +179,14 @@ export async function POST(req: NextRequest) {
     try { await supabase.from('users').update({ phone_number: e164 } as never).eq('id', userId) } catch { /* */ }
 
     // استلم أي مسوّدات إعلانات مربوطة بالرقم (زي التسجيل العادي) — best-effort
+    // 🔒 (١٢ أغسطس ٢٠٢٦) بقى نداء RPC مباشر بدل HTTP للمسار العام —
+    // المسار العام بقى محتاج Bearer المستخدم (مراجعة الأمان)، وإحنا هنا
+    // سيرفر معانا service client أصلًا فمفيش داعي للفة الـHTTP.
     try {
-      await fetch(new URL('/api/listing-drafts/claim-by-phone', req.url).toString(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: e164, profile_id: userId }),
-      })
+      await supabase.rpc('claim_all_drafts_for_phone', {
+        p_phone: e164,
+        p_profile_id: userId,
+      } as never)
     } catch (e) { console.warn('[complete-phone] claim-by-phone failed:', e) }
 
     // 7) رد ترحيب على رسالة الكود (رد مسموح) + اللينك اللي كان رايحه + شات المارد

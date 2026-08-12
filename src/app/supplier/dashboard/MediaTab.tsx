@@ -41,7 +41,12 @@ export default function MediaTab({ supplier, branches, employees, onSaved }: Pro
     try {
       const fd = new FormData()
       fd.append('file', file); fd.append('supplierId', supplier.id); fd.append('kind', kind)
-      const res = await fetch('/api/supplier/upload-media', { method: 'POST', body: fd })
+      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      const res = await fetch('/api/supplier/upload-media', {
+        method: 'POST',
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+        body: fd,
+      })
       const j = await res.json()
       if (!j.success) throw new Error(j.error || 'فشل الرفع')
       await setMedia(target, j.url, targetId)

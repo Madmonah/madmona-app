@@ -9,24 +9,42 @@ const supabase = createClient(
 
 // =====================================================
 // POST /api/listing-drafts/claim-by-phone
-// Body: { phone, profile_id }
-// Claims ALL submitted/draft listings matching the phone number under
-// the given profile. Use after signup so users with multiple drafts
-// (e.g. 3 cars on different days) get all of them linked at once.
+// Headers: Authorization: Bearer <supabase access token>   ← 🔒 مطلوب
+// Claims ALL submitted/draft listings matching the CALLER'S OWN verified
+// phone number (from their profile) under their own profile.
+//
+// 🔒 (١٢ أغسطس ٢٠٢٦ — مراجعة الأمان) المسار كان بياخد {phone, profile_id}
+// من البودي من غير أي auth — يعني مهاجم يبعت رقم تليفون ضحية + الـprofile
+// بتاعه هو، وياخد ملكية كل درافتات الضحية. دلوقتي: لازم Bearer token،
+// والرقم بيتقري من بروفايل صاحب التوكن نفسه — مفيش أي مدخلات من البودي.
+// (النداء الداخلي من complete-phone بقى بينده الـRPC مباشرة مش الـHTTP.)
 // =====================================================
 export async function POST(req: NextRequest) {
   try {
-    const { phone, profile_id } = await req.json();
-    if (!phone || !profile_id) {
-      return NextResponse.json(
-        { success: false, error: 'phone and profile_id required' },
-        { status: 400 }
-      );
+    const bearer = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+    if (!bearer) {
+      return NextResponse.json({ success: false, error: 'auth required' }, { status: 401 });
+    }
+    const { data: userData, error: userErr } = await supabase.auth.getUser(bearer);
+    if (userErr || !userData?.user) {
+      return NextResponse.json({ success: false, error: 'invalid token' }, { status: 401 });
+    }
+    const userId = userData.user.id;
+
+    // الرقم من بروفايل المستخدم نفسه — مش من البودي
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('phone')
+      .eq('id', userId)
+      .maybeSingle();
+    const phone = (profile as { phone?: string } | null)?.phone;
+    if (!phone) {
+      return NextResponse.json({ success: false, error: 'no phone on profile' }, { status: 400 });
     }
 
     const { data, error } = await supabase.rpc('claim_all_drafts_for_phone', {
       p_phone: phone,
-      p_profile_id: profile_id,
+      p_profile_id: userId,
     });
 
     if (error) {

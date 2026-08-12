@@ -146,7 +146,11 @@ function SupplierMarketplaceContent() {
         fd.append('file', logoFile)
         fd.append('supplierId', supplier.id)
         fd.append('kind', 'logo')
-        const up = await fetch('/api/supplier/upload-media', { method: 'POST', body: fd }).then(r => r.json())
+        const up = await fetch('/api/supplier/upload-media', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          body: fd,
+        }).then(r => r.json())
         if (!up.success) throw new Error(up.error || 'فشل رفع اللوجو')
         logoUrl = up.url
       }

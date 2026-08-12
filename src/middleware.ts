@@ -4,16 +4,28 @@
 // (2) حارس لوحة الإدارة — يعترض /admin/* ويحوّل لصفحة الدخول لو مفيش جلسة.
 //     استثناء: لينكات التجربة /admin/business-finance/<trialSupplierId>/*
 //     لبيزنس "تحت التفاوض" (is_trial_open_supplier) → تفتح بلا باسورد.
+// (3) 🔒 (١٢ أغسطس ٢٠٢٦) حارس مركزي على /api/admin/* — مراجعة الأمان لقت
+//     ٢٠ من ٥٢ مسار أدمن API من غير أي حماية (الحماية كانت اختيارية لكل
+//     ملف). دلوقتي الحماية مركزية هنا: أي مسار /api/admin/* لازم معاه
+//     واحدة من: كوكي جلسة الأدمن، أو هيدر x-admin-password صحيح، أو
+//     Bearer secret سيرفر-لسيرفر (CRON_SECRET / WA_SERVICE_SECRET).
+//     الفحوصات الداخلية في الملفات نفسها فضلت زي ما هي (دفاع مضاعف).
 // =====================================================================
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { ADMIN_COOKIE, ADMIN_SESSION_VALUE, ADMIN_ENTRY_PATH } from './lib/adminGate'
+import { ADMIN_COOKIE, ADMIN_SESSION_VALUE, ADMIN_ENTRY_PATH, ADMIN_PW_SHA256 } from './lib/adminGate'
 
 // كل subdomain تاجر → الـ slug بتاع ستورفرنته
 // إضافة تاجر جديد = سطر واحد هنا + ربط الـ DNS + الدومين في Vercel.
 const MERCHANT_SUBDOMAINS: Record<string, string> = {
   sa3dawy: 'sa3dawy',
+}
+
+// SHA-256 hex على الـedge (مفيش node:crypto هنا — WebCrypto بس)
+async function sha256Hex(s: string): Promise<string> {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s))
+  return Array.from(new Uint8Array(d)).map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
 // هل البيزنس ده "تجربة مفتوحة" (negotiating + ERP)؟ — يُستدعى على الـedge فقط
@@ -41,6 +53,26 @@ async function isTrialOpenSupplier(supplierId: string): Promise<boolean> {
   }
 }
 
+// هل الطلب معاه اعتماد أدمن/سيرفر صالح؟ (لمسارات /api/admin/*)
+async function hasAdminApiCredential(req: NextRequest): Promise<boolean> {
+  // (أ) كوكي جلسة الأدمن — المتصفح بيبعتها تلقائيًا مع نداءات اللوحة
+  const cookie = req.cookies.get(ADMIN_COOKIE)?.value
+  if (ADMIN_SESSION_VALUE && cookie === ADMIN_SESSION_VALUE) return true
+
+  // (ب) هيدر الباسورد — السكريبتات والأدوات القديمة بتستخدمه
+  const pw = req.headers.get('x-admin-password')
+  if (pw && ADMIN_PW_SHA256 && (await sha256Hex(pw)) === ADMIN_PW_SHA256) return true
+
+  // (ج) أسرار سيرفر-لسيرفر — الكرونات وEdge Functions
+  const bearer = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
+  const serverSecrets = [process.env.CRON_SECRET, process.env.WA_SERVICE_SECRET].filter(Boolean)
+  if (bearer && serverSecrets.includes(bearer)) return true
+  const maSecret = req.headers.get('x-madmona-secret')
+  if (maSecret && serverSecrets.includes(maSecret)) return true
+
+  return false
+}
+
 export async function middleware(req: NextRequest) {
   const host = (req.headers.get('host') || '').toLowerCase()
   const sub = host.split('.')[0]
@@ -53,10 +85,16 @@ export async function middleware(req: NextRequest) {
     return NextResponse.rewrite(url)
   }
 
+  // (3) حارس /api/admin/* — رد 401 JSON (مش redirect: دي API مش صفحة)
+  if (path.startsWith('/api/admin')) {
+    if (await hasAdminApiCredential(req)) return NextResponse.next()
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
+  }
+
   // (2) حارس لوحة الإدارة — على /admin فقط
   if (path.startsWith('/admin')) {
     const token = req.cookies.get(ADMIN_COOKIE)?.value
-    if (token === ADMIN_SESSION_VALUE) return NextResponse.next()
+    if (ADMIN_SESSION_VALUE && token === ADMIN_SESSION_VALUE) return NextResponse.next()
 
     // استثناء التجربة: /admin/business-finance/<uuid>[/...] لو البيزنس تحت التفاوض
     const m = path.match(/^\/admin\/business-finance\/([0-9a-fA-F-]{36})(?:\/|$)/)
@@ -74,7 +112,7 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next()
 }
 
-// يشتغل على الجذر (لكشف الـ subdomain) وعلى /admin (للحارس)
+// يشتغل على الجذر (لكشف الـ subdomain) وعلى /admin (للحارس) وعلى /api/admin (حارس الـAPI)
 export const config = {
-  matcher: ['/', '/admin/:path*'],
+  matcher: ['/', '/admin/:path*', '/api/admin/:path*'],
 }

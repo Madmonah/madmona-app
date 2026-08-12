@@ -375,71 +375,48 @@ export default function BookingPage() {
         return
       }
 
-      const commissionRate = Number(listing.supplier.commission_rate || 10)
-
-      const insertData: Record<string, unknown> = {
-        customer_id: userId,
-        listing_id: listing.id,
-        supplier_id: listing.supplier.id,
-        pricing_rule_id: selectedRule.id,
-        start_at: startIso,
-        end_at: endIso,
-        base_amount: pricing.baseAmount,
-        commission_rate: commissionRate,
-        commission_amount: pricing.commission,
-        tax_amount: 0,
-        total_amount: pricing.total,
-        supplier_payout: pricing.supplierPayout,
-        currency: selectedRule.currency || 'EGP',
-        // Always a valid mp_booking_status value. ID-verification state is tracked
-        // separately in id_verification_status. The enum has NO
-        // 'pending_id_verification' value, so inserting it used to throw
-        // (invalid enum) and silently killed every car / ID-required booking.
-        status: 'pending_payment',
-        // Phase Z (May 18 2026): freeze the selected add-ons + sum at booking time
-        selected_addons: selectedAddons,
-        addons_amount: addonsAmount,
-      }
-      if (customerNotes.trim()) insertData.customer_notes = customerNotes.trim()
-
-      // If listing requires ID verification, save the customer's ID (if provided).
-      // ID is now OPTIONAL at submit time — booking is created with status
-      // 'pending_id_verification' and customer is prompted for ID on next page
-      // if they didn't provide it here. This stops the "button disabled" friction
-      // that was killing conversion on car listings.
-      if (listing.requires_id_verification) {
-        if (providedNationalId.trim().length >= 14) {
-          insertData.id_verification_status = 'pending'
-          insertData.customer_national_id = providedNationalId.trim()
-          // Also save it on the user's profile for future bookings
-          try {
-            // @ts-expect-error
-            await supabaseBrowser
-              .from('profiles')
-              .update({ national_id: providedNationalId.trim() })
-              .eq('id', userId)
-          } catch {
-            // silent
-          }
-        } else {
-          // Booking submitted without ID — flag for follow-up
-          insertData.id_verification_status = 'awaiting_id'
+      // ---- MEMBER PATH ----
+      // 🔒 (١٢ أغسطس ٢٠٢٦ — مراجعة الأمان) كان بيتعمل INSERT مباشر من
+      // المتصفح بمبالغ محسوبة عند العميل (base/commission/total/payout) —
+      // يعني أي حد يقدر يعدّل الطلب ويحجز بأي سعر. دلوقتي بننده RPC بيحسب
+      // كل المبالغ سيرفر-سايد (نفس أسلوب مسار الضيوف create_guest_booking)
+      // — العميل مابيبعتش أي مبلغ خالص.
+      const providedId =
+        listing.requires_id_verification && providedNationalId.trim().length >= 14
+          ? providedNationalId.trim()
+          : null
+      if (providedId) {
+        // نحفظ الرقم القومي على البروفايل للحجوزات الجاية (best-effort)
+        try {
+          // @ts-expect-error
+          await supabaseBrowser
+            .from('profiles')
+            .update({ national_id: providedId })
+            .eq('id', userId)
+        } catch {
+          // silent
         }
       }
 
-      // @ts-expect-error
-      const { data: newBooking, error: insertErr } = await supabaseBrowser
-        .from('marketplace_bookings')
-        .insert(insertData)
-        .select('id, reference_code')
-        .single()
+      // @ts-expect-error - rpc typing not generated
+      const { data: rpcData2, error: insertErr } = await supabaseBrowser.rpc('create_member_booking', {
+        p_listing_id: listing.id,
+        p_pricing_rule_id: selectedRule.id,
+        p_start_at: startIso,
+        p_end_at: endIso,
+        p_customer_notes: customerNotes.trim() || null,
+        p_addon_slugs: selectedAddons.map(a => a.slug),
+        p_national_id: providedId,
+      })
 
       if (insertErr) throw insertErr
+      const newBooking = (rpcData2 ?? {}) as { booking_id?: string }
+      if (!newBooking.booking_id) throw new Error('booking_failed')
 
       // Fire email to supplier (non-blocking)
-      fireEmailNotification(newBooking.id, 'created')
+      fireEmailNotification(newBooking.booking_id, 'created')
 
-      router.push(`/bookings/${newBooking.id}?created=1`)
+      router.push(`/bookings/${newBooking.booking_id}?created=1`)
     } catch (e: unknown) {
       // Surface the REAL error — Supabase PostgrestError objects are not
       // instanceof Error, so the old code always fell through to the

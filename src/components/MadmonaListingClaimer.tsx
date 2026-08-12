@@ -42,10 +42,19 @@ export default function MadmonaListingClaimer() {
         const { data: { user } } = await supabaseBrowser.auth.getUser()
         if (cancelled || !user) return // user must be signed in for claim to succeed
 
+        // 🔒 (١٢ أغسطس ٢٠٢٦) مسارات الاستلام بقت محتاجة Bearer المستخدم —
+        // السيرفر بيربط الدرافت بصاحب التوكن نفسه (مش profile_id من البودي).
+        const { data: { session } } = await supabaseBrowser.auth.getSession()
+        const accessToken = session?.access_token
+        if (!accessToken) return
+
         const res = await fetch('/api/listing-drafts/claim', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, profile_id: user.id }),
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ token }),
         })
         const json = await res.json()
         if (cancelled) return
@@ -61,19 +70,15 @@ export default function MadmonaListingClaimer() {
           // Catches the case where a user submitted multiple drafts (e.g.
           // 3 cars on different days) — token-based claim only handles one.
           try {
-            const { data: profile } = await supabaseBrowser
-              .from('profiles')
-              .select('phone')
-              .eq('id', user.id)
-              .single()
-            const phone = (profile as { phone?: string } | null)?.phone
-            if (phone) {
-              await fetch('/api/listing-drafts/claim-by-phone', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone, profile_id: user.id }),
-              })
-            }
+            // السيرفر بيقرا رقم التليفون من بروفايل صاحب التوكن بنفسه
+            await fetch('/api/listing-drafts/claim-by-phone', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({}),
+            })
           } catch (e) {
             console.warn('[MadmonaListingClaimer] phone-bulk-claim skipped:', e)
           }
