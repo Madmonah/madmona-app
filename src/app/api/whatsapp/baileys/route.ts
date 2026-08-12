@@ -24,7 +24,7 @@ import {
 } from '@/lib/marid-admin'
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
 import { getNumberConfig, numberPromptSection, isMaridNumber } from '@/lib/wa-number-config'
-import { notifyAdminsMaridReply } from '@/lib/admin-notify'
+import { notifyAdminsMaridReply, notifyAdminsPausedInbound } from '@/lib/admin-notify'
 // 🧞 مخ المارد **المشترك** — كان فيه نسخة متكرّرة من الدالة دي هنا، واتشالت.
 //    نسخة واحدة بس دلوقتي، فأي تعليمة جديدة تسري على كل الماردة على طول
 //    (واتساب · المارد الرسمي على الموقع · أي مارد جديد).
@@ -631,11 +631,50 @@ export async function POST(request: NextRequest) {
     {
       const { data: conv } = await supabaseUntyped
         .from('whatsapp_conversations')
-        .select('status')
+        .select('status, metadata, contact_name')
         .eq('id', conversationId)
         .maybeSingle()
 
       if (conv?.status === 'paused' || conv?.status === 'blocked') {
+        // 🔔 (١٢ أغسطس ٢٠٢٦) محادثة موقوفة لسه بتستقبل رسايل = «ثقب أسود»:
+        // العميل بيبعت والمارد ساكت ومحدش واخد باله. حصلت فعلًا مع مورد ضاحي
+        // (201125080210): المحادثة اتقفلت ٧ أغسطس وفضل يبعت منتجات لحد ١١
+        // أغسطس من غير رد ولا تنبيه — واتكشفت بالصدفة بعدها بيوم.
+        // بننبّه محمد (واتساب + بوش) مرة كل ٦ ساعات كحد أقصى لكل محادثة
+        // (الطابع الزمني في metadata عبر wa_meta_merge الذرّي — نفس أسلوب
+        // wa_jid فوق، مايمسحش مفاتيح تانية). التنبيه best-effort ومايغيّرش
+        // السلوك: المارد يفضل ساكت لحد ما محمد يفعّل المحادثة بنفسه.
+        try {
+          const meta = (conv.metadata ?? {}) as Record<string, unknown>
+          const lastAlert = Date.parse(String(meta.paused_inbound_alert_at ?? '')) || 0
+          if (Date.now() - lastAlert > 6 * 3600_000) {
+            await supabaseUntyped.rpc('wa_meta_merge', {
+              p_conv: conversationId,
+              p_patch: { paused_inbound_alert_at: new Date().toISOString() },
+            })
+            const owner = process.env.OWNER_PHONE || '201002229982'
+            const who = (conv.contact_name || '').trim() || phone || replyJid || 'عميل'
+            const statusLabel = conv.status === 'blocked' ? 'محظورة' : 'موقوفة'
+            await sendText({
+              to: owner,
+              body:
+                `⏸️ *محادثة ${statusLabel} بتستقبل رسايل*\n\n` +
+                `${who} بعت رسالة والمارد ساكت لأن المحادثة ${statusLabel} (${conv.status}).\n\n` +
+                `«${(body.text || `[${body.type}]`).slice(0, 120)}»\n\n` +
+                `الرسايل والميديا بتتسجّل عادي — بس مفيش رد. ` +
+                `لو المفروض يرد، فعّل المحادثة من لوحة الأدمن:\n` +
+                `https://${SITE_HOST}/admin/wa-review`,
+            }).catch(() => {})
+            void notifyAdminsPausedInbound({
+              customerName: conv.contact_name,
+              customerPhone: phone,
+              status: conv.status,
+              preview: body.text || `[${body.type}]`,
+            })
+          }
+        } catch {
+          // التنبيه مايوقفش حاجة — الرسالة اتسجّلت فوق وده الأهم
+        }
         // الرسالة اتسجّلت فوق (خطوة ١·٥ + الميديا اتخصّبت فوق كمان) —
         // بنكتفي بإننا مانردّش
         return NextResponse.json({ ok: true, logged: true, replied: false, reason: conv.status })
