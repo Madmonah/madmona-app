@@ -81,6 +81,37 @@ export default function SupplierProductsPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  // 🐛 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) uploadingPhoto/uploadPhoto كانوا
+  // مستخدمين في فورم المنتج ومش معرّفين خالص — فتح الفورم كان بيضرب
+  // ReferenceError ويكسر الصفحة. الرفع بيمر بـ/api/supplier/upload-media
+  // (بتوكن المستخدم — السيرفر بيتأكد إنه صاحب السبلاير).
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+
+  const uploadPhoto = async (file: File) => {
+    if (!listing) return
+    setUploadingPhoto(true)
+    setFormError(null)
+    try {
+      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      if (!session) throw new Error('سجّل دخولك تاني وجرّب')
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('supplierId', listing.supplier_id)
+      fd.append('kind', 'inventory')
+      const res = await fetch('/api/supplier/upload-media', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: fd,
+      })
+      const j = await res.json().catch(() => null)
+      if (!j?.success || !j?.url) throw new Error(j?.error || 'فشل رفع الصورة')
+      setForm((f) => ({ ...f, photo_url: j.url as string }))
+    } catch (e) {
+      setFormError(e instanceof Error ? e.message : 'فشل رفع الصورة')
+    } finally {
+      setUploadingPhoto(false)
+    }
+  }
 
   useEffect(() => {
     const init = async () => {

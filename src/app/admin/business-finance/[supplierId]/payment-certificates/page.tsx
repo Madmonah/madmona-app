@@ -343,6 +343,13 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
 
 const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:outline-none focus:border-[#FA8125] bg-white'
 
+// 🐛 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) Th كانت مستخدمة في جدول
+// المستخلصات ومش معرّفة في الملف خالص (الصفحة كانت بتضرب ReferenceError
+// وقت الرندر). نفس تعريف إخواتها في company-docs/expenses-projects/tenders.
+function Th({ children, className = '' }: { children?: ReactNode; className?: string }) {
+  return <th className={`px-3 py-2.5 text-[10px] font-bold tracking-wider uppercase text-[#6B7280] ${className}`}>{children}</th>
+}
+
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return <div><label className="block text-[11px] font-bold text-[#6B7280] mb-1">{label}</label>{children}</div>
 }

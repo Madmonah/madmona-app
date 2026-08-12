@@ -620,6 +620,28 @@ function QuickLink({ href, icon, label }: { href: string; icon: React.ReactNode;
   )
 }
 
+// 🐛 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) FilterPill كانت مستخدمة في فلاتر
+// جدول الليدز ومش معرّفة خالص — الصفحة كانت بتضرب ReferenceError وقت الرندر.
+function FilterPill({ active, onClick, children }: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
+        active
+          ? 'bg-emerald-900 text-white'
+          : 'bg-white text-emerald-900 border border-emerald-200 hover:bg-emerald-50'
+      }`}
+    >
+      {children}
+    </button>
+  )
+}
+
 function LoadingScreen() {
   return (
     <div dir="rtl" className="flex min-h-screen items-center justify-center bg-stone-50">
