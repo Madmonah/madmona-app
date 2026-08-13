@@ -330,17 +330,19 @@ export default function BookingPage() {
       const startIso = new Date(startAt).toISOString()
       const endIso = new Date(endAt).toISOString()
 
-      // ⚠️ (١٢ أغسطس ٢٠٢٦) `check_booking_conflict` لسه مش في الأنواع المولّدة
-      // (src/types/supabase.ts قديمة) — التوجيه هنا على السطر اللي بيغلط فعلًا
-      // (نداء rpc نفسه) والنتيجة متكتبة صراحةً عشان المقارنة تحت تفضل صح.
-      // لما الأنواع تتولّد من جديد، التوجيه والكاست دول يتشالوا.
-      const { data: conflictData, error: conflictErr } = (await supabaseBrowser
-        // @ts-expect-error - RPC not in generated types yet
-        .rpc('check_booking_conflict', {
+      // 🐛 (١٣ أغسطس ٢٠٢٦) كان بينده `check_booking_conflict` — ودي **دالة
+      // تريجر** (بلا مدخلات، بترجّع trigger) مش RPC، فالنداء كان بيفشل
+      // **دايمًا** من أول يوم والكود بيبلع الفشل ويكمّل. الحماية من الحجز
+      // المزدوج نفسها ماكانتش ضايعة (تريجر على marketplace_bookings بيمنعه
+      // على مستوى الداتابيز) — اللي كان ضايع هو رسالة «الميعاد محجوز»
+      // اللطيفة قبل الإرسال. دلوقتي بنستخدم `booking_slot_taken` — دالة
+      // فحص حقيقية اتعملت للغرض ده وموجودة في الأنواع المولّدة.
+      const { data: conflictData, error: conflictErr } = await supabaseBrowser
+        .rpc('booking_slot_taken', {
           p_listing_id: listing.id,
           p_start_at: startIso,
           p_end_at: endIso,
-        })) as { data: boolean | null; error: { message: string } | null }
+        })
 
       if (conflictErr) {
         console.warn('Conflict check failed, continuing:', conflictErr.message)
@@ -397,7 +399,6 @@ export default function BookingPage() {
         }
       }
 
-      // @ts-expect-error - rpc typing not generated
       const { data: rpcData2, error: insertErr } = await supabaseBrowser.rpc('create_member_booking', {
         p_listing_id: listing.id,
         p_pricing_rule_id: selectedRule.id,

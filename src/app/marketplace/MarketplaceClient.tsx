@@ -453,10 +453,8 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       // 🛏️ مفروش/بدون فرش — بس جوه عقارات الإيجار (properties- مش sale-properties-)
       const inRentalProperties = activeTrack === 'rentals' && !!selectedCategorySlug && selectedCategorySlug.startsWith('properties-')
       if (inRentalProperties && furnishedFilter === 'furnished') {
-        // @ts-expect-error -- is_furnished مش في types/supabase.ts لسه (لحد ما نعمل regenerate)
         query = query.eq('is_furnished', true)
       } else if (inRentalProperties && furnishedFilter === 'unfurnished') {
-        // @ts-expect-error -- نفس الحكاية
         query = query.eq('is_furnished', false)
       }
 

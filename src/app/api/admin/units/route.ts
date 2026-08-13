@@ -71,9 +71,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'name_ar required' }, { status: 400 })
   }
 
-  // ⚠️ (١٢ أغسطس ٢٠٢٦) جدول `space_units` لسه مش في الأنواع المولّدة —
-  // كاست محصور على النداء ده بدل توجيه @ts-expect-error كان محطوط فوق
-  // السطر الغلط (فماكانش بيقمع حاجة). يتشال لما الأنواع تتولّد من جديد.
+  // 🚨 (١٣ أغسطس ٢٠٢٦ — اتكشف وقت توليد الأنواع) جدول `space_units`
+  // **مش موجود في الداتابيز خالص** (مش مجرد أنواع قديمة) — يعني المسار ده
+  // وكل ميزة «الوحدات» في الأدمن (UnitForm · /admin/units · unit-bookings)
+  // بتفشل وقت التشغيل. الكاست هنا بيمنع ضجيج الأنواع بس؛ **الميزة نفسها
+  // محتاجة قرار من محمد**: نعمل الجدول ولا نشيل الشاشات دي.
   const { data, error } = await (supabase as unknown as {
     from: (t: string) => {
       insert: (v: Record<string, unknown>) => {

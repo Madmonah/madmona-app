@@ -139,7 +139,6 @@ export async function syncModuleSession(): Promise<MadmonaSession | null> {
   try {
     const { supabaseBrowser } = await import('@/lib/supabase-browser')
     const cached = getMadmonaSession()
-    // @ts-expect-error rpc typing — whoami is not in the generated types yet
     const { data, error } = await supabaseBrowser.rpc('whoami', {
       p_module_token: cached?.token ?? null,
     })

@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -1061,6 +1061,396 @@ export type Database = {
         }
         Relationships: []
       }
+      _backup_dup_listings_20260808: {
+        Row: {
+          accepts_insurance: boolean | null
+          address: string | null
+          advance_booking_days: number | null
+          auto_accept_bookings: boolean | null
+          available_addons: Json | null
+          booking_deposit_pct: number | null
+          bookings_count: number | null
+          branches: Json | null
+          brand: string | null
+          cancellation_hours: number | null
+          category_id: string | null
+          city: string | null
+          contact_phone: string | null
+          country: string | null
+          created_at: string | null
+          description: string | null
+          directory_source: string | null
+          district: string | null
+          id: string | null
+          insurance_deposit_pct: number | null
+          insurance_partners: string[] | null
+          is_directory: boolean | null
+          is_furnished: boolean | null
+          latitude: number | null
+          longitude: number | null
+          max_booking_hours: number | null
+          min_booking_hours: number | null
+          model_name: string | null
+          needs_photo_audit: boolean | null
+          phone_verified_at: string | null
+          price_egp: number | null
+          price_on_request: boolean | null
+          product_condition: string | null
+          project_id: string | null
+          published_at: string | null
+          rating: number | null
+          rejection_reason: string | null
+          requires_id_verification: boolean | null
+          requires_security_deposit: boolean | null
+          reviews_count: number | null
+          security_deposit_amount: number | null
+          seller_type: string | null
+          shipping_available: boolean | null
+          shipping_cost: number | null
+          slug: string | null
+          source_url: string | null
+          status: Database["public"]["Enums"]["listing_status"] | null
+          stock_quantity: number | null
+          supplier_id: string | null
+          title: string | null
+          updated_at: string | null
+          views_count: number | null
+          wholesale_tiers: Json | null
+        }
+        Insert: {
+          accepts_insurance?: boolean | null
+          address?: string | null
+          advance_booking_days?: number | null
+          auto_accept_bookings?: boolean | null
+          available_addons?: Json | null
+          booking_deposit_pct?: number | null
+          bookings_count?: number | null
+          branches?: Json | null
+          brand?: string | null
+          cancellation_hours?: number | null
+          category_id?: string | null
+          city?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          directory_source?: string | null
+          district?: string | null
+          id?: string | null
+          insurance_deposit_pct?: number | null
+          insurance_partners?: string[] | null
+          is_directory?: boolean | null
+          is_furnished?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          max_booking_hours?: number | null
+          min_booking_hours?: number | null
+          model_name?: string | null
+          needs_photo_audit?: boolean | null
+          phone_verified_at?: string | null
+          price_egp?: number | null
+          price_on_request?: boolean | null
+          product_condition?: string | null
+          project_id?: string | null
+          published_at?: string | null
+          rating?: number | null
+          rejection_reason?: string | null
+          requires_id_verification?: boolean | null
+          requires_security_deposit?: boolean | null
+          reviews_count?: number | null
+          security_deposit_amount?: number | null
+          seller_type?: string | null
+          shipping_available?: boolean | null
+          shipping_cost?: number | null
+          slug?: string | null
+          source_url?: string | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          stock_quantity?: number | null
+          supplier_id?: string | null
+          title?: string | null
+          updated_at?: string | null
+          views_count?: number | null
+          wholesale_tiers?: Json | null
+        }
+        Update: {
+          accepts_insurance?: boolean | null
+          address?: string | null
+          advance_booking_days?: number | null
+          auto_accept_bookings?: boolean | null
+          available_addons?: Json | null
+          booking_deposit_pct?: number | null
+          bookings_count?: number | null
+          branches?: Json | null
+          brand?: string | null
+          cancellation_hours?: number | null
+          category_id?: string | null
+          city?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          directory_source?: string | null
+          district?: string | null
+          id?: string | null
+          insurance_deposit_pct?: number | null
+          insurance_partners?: string[] | null
+          is_directory?: boolean | null
+          is_furnished?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          max_booking_hours?: number | null
+          min_booking_hours?: number | null
+          model_name?: string | null
+          needs_photo_audit?: boolean | null
+          phone_verified_at?: string | null
+          price_egp?: number | null
+          price_on_request?: boolean | null
+          product_condition?: string | null
+          project_id?: string | null
+          published_at?: string | null
+          rating?: number | null
+          rejection_reason?: string | null
+          requires_id_verification?: boolean | null
+          requires_security_deposit?: boolean | null
+          reviews_count?: number | null
+          security_deposit_amount?: number | null
+          seller_type?: string | null
+          shipping_available?: boolean | null
+          shipping_cost?: number | null
+          slug?: string | null
+          source_url?: string | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          stock_quantity?: number | null
+          supplier_id?: string | null
+          title?: string | null
+          updated_at?: string | null
+          views_count?: number | null
+          wholesale_tiers?: Json | null
+        }
+        Relationships: []
+      }
+      _backup_dup_photos_20260808: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          display_order: number | null
+          id: string | null
+          is_placeholder: boolean | null
+          is_primary: boolean | null
+          listing_id: string | null
+          quality_flag: string | null
+          storage_path: string | null
+          url: string | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_placeholder?: boolean | null
+          is_primary?: boolean | null
+          listing_id?: string | null
+          quality_flag?: string | null
+          storage_path?: string | null
+          url?: string | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_placeholder?: boolean | null
+          is_primary?: boolean | null
+          listing_id?: string | null
+          quality_flag?: string | null
+          storage_path?: string | null
+          url?: string | null
+        }
+        Relationships: []
+      }
+      _backup_dup_pricing_20260808: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          display_order: number | null
+          id: string | null
+          is_active: boolean | null
+          label_ar: string | null
+          label_en: string | null
+          listing_id: string | null
+          max_periods: number | null
+          min_periods: number | null
+          period_count: number | null
+          period_type: Database["public"]["Enums"]["pricing_period"] | null
+          price: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          label_ar?: string | null
+          label_en?: string | null
+          listing_id?: string | null
+          max_periods?: number | null
+          min_periods?: number | null
+          period_count?: number | null
+          period_type?: Database["public"]["Enums"]["pricing_period"] | null
+          price?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          label_ar?: string | null
+          label_en?: string | null
+          listing_id?: string | null
+          max_periods?: number | null
+          min_periods?: number | null
+          period_count?: number | null
+          period_type?: Database["public"]["Enums"]["pricing_period"] | null
+          price?: number | null
+        }
+        Relationships: []
+      }
+      _backup_green_logos_20260807: {
+        Row: {
+          business_name: string | null
+          id: string | null
+          logo_url: string | null
+        }
+        Insert: {
+          business_name?: string | null
+          id?: string | null
+          logo_url?: string | null
+        }
+        Update: {
+          business_name?: string | null
+          id?: string | null
+          logo_url?: string | null
+        }
+        Relationships: []
+      }
+      _backup_green_photos_20260807: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          display_order: number | null
+          id: string | null
+          is_placeholder: boolean | null
+          is_primary: boolean | null
+          listing_id: string | null
+          quality_flag: string | null
+          storage_path: string | null
+          url: string | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_placeholder?: boolean | null
+          is_primary?: boolean | null
+          listing_id?: string | null
+          quality_flag?: string | null
+          storage_path?: string | null
+          url?: string | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_placeholder?: boolean | null
+          is_primary?: boolean | null
+          listing_id?: string | null
+          quality_flag?: string | null
+          storage_path?: string | null
+          url?: string | null
+        }
+        Relationships: []
+      }
+      _backup_listing_city_20260806: {
+        Row: {
+          backed_up_at: string | null
+          id: string | null
+          old_city: string | null
+        }
+        Insert: {
+          backed_up_at?: string | null
+          id?: string | null
+          old_city?: string | null
+        }
+        Update: {
+          backed_up_at?: string | null
+          id?: string | null
+          old_city?: string | null
+        }
+        Relationships: []
+      }
+      _backup_listing_city_full_20260806: {
+        Row: {
+          backed_up_at: string | null
+          id: string | null
+          old_city: string | null
+          old_district: string | null
+        }
+        Insert: {
+          backed_up_at?: string | null
+          id?: string | null
+          old_city?: string | null
+          old_district?: string | null
+        }
+        Update: {
+          backed_up_at?: string | null
+          id?: string | null
+          old_city?: string | null
+          old_district?: string | null
+        }
+        Relationships: []
+      }
+      _backup_listing_photos_20260804_stagea: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          display_order: number | null
+          id: string | null
+          is_placeholder: boolean | null
+          is_primary: boolean | null
+          listing_id: string | null
+          quality_flag: string | null
+          storage_path: string | null
+          url: string | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_placeholder?: boolean | null
+          is_primary?: boolean | null
+          listing_id?: string | null
+          quality_flag?: string | null
+          storage_path?: string | null
+          url?: string | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_placeholder?: boolean | null
+          is_primary?: boolean | null
+          listing_id?: string | null
+          quality_flag?: string | null
+          storage_path?: string | null
+          url?: string | null
+        }
+        Relationships: []
+      }
       _backup_noprice_listings_20260705: {
         Row: {
           accepts_insurance: boolean | null
@@ -1247,6 +1637,30 @@ export type Database = {
           listing_id?: string | null
           storage_path?: string | null
           url?: string | null
+        }
+        Relationships: []
+      }
+      _backup_paused_noprice_20260806: {
+        Row: {
+          category: string | null
+          id: string | null
+          old_status: string | null
+          paused_at: string | null
+          title: string | null
+        }
+        Insert: {
+          category?: string | null
+          id?: string | null
+          old_status?: string | null
+          paused_at?: string | null
+          title?: string | null
+        }
+        Update: {
+          category?: string | null
+          id?: string | null
+          old_status?: string | null
+          paused_at?: string | null
+          title?: string | null
         }
         Relationships: []
       }
@@ -1446,6 +1860,210 @@ export type Database = {
         Relationships: []
       }
       _backup_restaurant_logo_20260728: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          display_order: number | null
+          id: string | null
+          is_placeholder: boolean | null
+          is_primary: boolean | null
+          listing_id: string | null
+          quality_flag: string | null
+          storage_path: string | null
+          url: string | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_placeholder?: boolean | null
+          is_primary?: boolean | null
+          listing_id?: string | null
+          quality_flag?: string | null
+          storage_path?: string | null
+          url?: string | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_placeholder?: boolean | null
+          is_primary?: boolean | null
+          listing_id?: string | null
+          quality_flag?: string | null
+          storage_path?: string | null
+          url?: string | null
+        }
+        Relationships: []
+      }
+      _backup_stuck_listings_20260802: {
+        Row: {
+          accepts_insurance: boolean | null
+          address: string | null
+          advance_booking_days: number | null
+          auto_accept_bookings: boolean | null
+          available_addons: Json | null
+          booking_deposit_pct: number | null
+          bookings_count: number | null
+          branches: Json | null
+          brand: string | null
+          cancellation_hours: number | null
+          category_id: string | null
+          city: string | null
+          contact_phone: string | null
+          country: string | null
+          created_at: string | null
+          description: string | null
+          directory_source: string | null
+          district: string | null
+          id: string | null
+          insurance_deposit_pct: number | null
+          insurance_partners: string[] | null
+          is_directory: boolean | null
+          is_furnished: boolean | null
+          latitude: number | null
+          longitude: number | null
+          max_booking_hours: number | null
+          min_booking_hours: number | null
+          model_name: string | null
+          phone_verified_at: string | null
+          price_egp: number | null
+          price_on_request: boolean | null
+          product_condition: string | null
+          project_id: string | null
+          published_at: string | null
+          rating: number | null
+          rejection_reason: string | null
+          requires_id_verification: boolean | null
+          requires_security_deposit: boolean | null
+          reviews_count: number | null
+          security_deposit_amount: number | null
+          seller_type: string | null
+          shipping_available: boolean | null
+          shipping_cost: number | null
+          slug: string | null
+          source_url: string | null
+          status: Database["public"]["Enums"]["listing_status"] | null
+          stock_quantity: number | null
+          supplier_id: string | null
+          title: string | null
+          updated_at: string | null
+          views_count: number | null
+          wholesale_tiers: Json | null
+        }
+        Insert: {
+          accepts_insurance?: boolean | null
+          address?: string | null
+          advance_booking_days?: number | null
+          auto_accept_bookings?: boolean | null
+          available_addons?: Json | null
+          booking_deposit_pct?: number | null
+          bookings_count?: number | null
+          branches?: Json | null
+          brand?: string | null
+          cancellation_hours?: number | null
+          category_id?: string | null
+          city?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          directory_source?: string | null
+          district?: string | null
+          id?: string | null
+          insurance_deposit_pct?: number | null
+          insurance_partners?: string[] | null
+          is_directory?: boolean | null
+          is_furnished?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          max_booking_hours?: number | null
+          min_booking_hours?: number | null
+          model_name?: string | null
+          phone_verified_at?: string | null
+          price_egp?: number | null
+          price_on_request?: boolean | null
+          product_condition?: string | null
+          project_id?: string | null
+          published_at?: string | null
+          rating?: number | null
+          rejection_reason?: string | null
+          requires_id_verification?: boolean | null
+          requires_security_deposit?: boolean | null
+          reviews_count?: number | null
+          security_deposit_amount?: number | null
+          seller_type?: string | null
+          shipping_available?: boolean | null
+          shipping_cost?: number | null
+          slug?: string | null
+          source_url?: string | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          stock_quantity?: number | null
+          supplier_id?: string | null
+          title?: string | null
+          updated_at?: string | null
+          views_count?: number | null
+          wholesale_tiers?: Json | null
+        }
+        Update: {
+          accepts_insurance?: boolean | null
+          address?: string | null
+          advance_booking_days?: number | null
+          auto_accept_bookings?: boolean | null
+          available_addons?: Json | null
+          booking_deposit_pct?: number | null
+          bookings_count?: number | null
+          branches?: Json | null
+          brand?: string | null
+          cancellation_hours?: number | null
+          category_id?: string | null
+          city?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          directory_source?: string | null
+          district?: string | null
+          id?: string | null
+          insurance_deposit_pct?: number | null
+          insurance_partners?: string[] | null
+          is_directory?: boolean | null
+          is_furnished?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          max_booking_hours?: number | null
+          min_booking_hours?: number | null
+          model_name?: string | null
+          phone_verified_at?: string | null
+          price_egp?: number | null
+          price_on_request?: boolean | null
+          product_condition?: string | null
+          project_id?: string | null
+          published_at?: string | null
+          rating?: number | null
+          rejection_reason?: string | null
+          requires_id_verification?: boolean | null
+          requires_security_deposit?: boolean | null
+          reviews_count?: number | null
+          security_deposit_amount?: number | null
+          seller_type?: string | null
+          shipping_available?: boolean | null
+          shipping_cost?: number | null
+          slug?: string | null
+          source_url?: string | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          stock_quantity?: number | null
+          supplier_id?: string | null
+          title?: string | null
+          updated_at?: string | null
+          views_count?: number | null
+          wholesale_tiers?: Json | null
+        }
+        Relationships: []
+      }
+      _backup_talda_photos_20260804: {
         Row: {
           caption: string | null
           created_at: string | null
@@ -2195,6 +2813,45 @@ export type Database = {
         }
         Relationships: []
       }
+      _cron_final_snapshot_20260802: {
+        Row: {
+          active: boolean | null
+          command: string | null
+          database: string | null
+          jobid: number | null
+          jobname: string | null
+          nodename: string | null
+          nodeport: number | null
+          schedule: string | null
+          snapshot_at: string | null
+          username: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          command?: string | null
+          database?: string | null
+          jobid?: number | null
+          jobname?: string | null
+          nodename?: string | null
+          nodeport?: number | null
+          schedule?: string | null
+          snapshot_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          command?: string | null
+          database?: string | null
+          jobid?: number | null
+          jobname?: string | null
+          nodename?: string | null
+          nodeport?: number | null
+          schedule?: string | null
+          snapshot_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       _cron_pause_log: {
         Row: {
           id: number
@@ -2465,6 +3122,51 @@ export type Database = {
         }
         Relationships: []
       }
+      account_deletion_requests: {
+        Row: {
+          id: string
+          note: string | null
+          profile_id: string
+          reason: string | null
+          requested_at: string
+          snapshot: Json | null
+          status: string
+        }
+        Insert: {
+          id?: string
+          note?: string | null
+          profile_id: string
+          reason?: string | null
+          requested_at?: string
+          snapshot?: Json | null
+          status?: string
+        }
+        Update: {
+          id?: string
+          note?: string | null
+          profile_id?: string
+          reason?: string | null
+          requested_at?: string
+          snapshot?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_deletion_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_deletion_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ad_creatives: {
         Row: {
           ad_type: string
@@ -2563,6 +3265,27 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ad_creatives_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ad_creatives_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ad_creatives_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -3323,12 +4046,14 @@ export type Database = {
           display_name: string
           enabled: boolean
           error_count: number
+          event_source: string | null
           last_run_at: string | null
           next_run_at: string | null
           run_count: number
           schedule_cron: string | null
           success_count: number
           team: string
+          trigger_type: string
           updated_at: string
         }
         Insert: {
@@ -3339,12 +4064,14 @@ export type Database = {
           display_name: string
           enabled?: boolean
           error_count?: number
+          event_source?: string | null
           last_run_at?: string | null
           next_run_at?: string | null
           run_count?: number
           schedule_cron?: string | null
           success_count?: number
           team: string
+          trigger_type?: string
           updated_at?: string
         }
         Update: {
@@ -3355,12 +4082,14 @@ export type Database = {
           display_name?: string
           enabled?: boolean
           error_count?: number
+          event_source?: string | null
           last_run_at?: string | null
           next_run_at?: string | null
           run_count?: number
           schedule_cron?: string | null
           success_count?: number
           team?: string
+          trigger_type?: string
           updated_at?: string
         }
         Relationships: []
@@ -3544,6 +4273,33 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_budget_guard: {
+        Row: {
+          daily_cap_usd: number
+          guard_enabled: boolean
+          halt_categories: string[]
+          id: boolean
+          last_halt_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          daily_cap_usd?: number
+          guard_enabled?: boolean
+          halt_categories?: string[]
+          id?: boolean
+          last_halt_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          daily_cap_usd?: number
+          guard_enabled?: boolean
+          halt_categories?: string[]
+          id?: boolean
+          last_halt_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_credit_alerts: {
         Row: {
           alerted_at: string
@@ -3562,6 +4318,84 @@ export type Database = {
           conversation_id?: string | null
           error_text?: string | null
           id?: string
+        }
+        Relationships: []
+      }
+      ai_model_pricing: {
+        Row: {
+          cache_read_per_mtok: number
+          cache_write_1h: number
+          cache_write_5m: number
+          input_per_mtok: number
+          model: string
+          output_per_mtok: number
+        }
+        Insert: {
+          cache_read_per_mtok: number
+          cache_write_1h: number
+          cache_write_5m: number
+          input_per_mtok: number
+          model: string
+          output_per_mtok: number
+        }
+        Update: {
+          cache_read_per_mtok?: number
+          cache_write_1h?: number
+          cache_write_5m?: number
+          input_per_mtok?: number
+          model?: string
+          output_per_mtok?: number
+        }
+        Relationships: []
+      }
+      ai_usage_log: {
+        Row: {
+          agent_name: string
+          cache_creation_input_tokens: number
+          cache_read_input_tokens: number
+          cache_ttl: string | null
+          channel: string | null
+          conversation_id: string | null
+          created_at: string
+          id: string
+          input_tokens: number
+          is_final: boolean | null
+          latency_ms: number | null
+          model: string
+          output_tokens: number
+          turn: number | null
+        }
+        Insert: {
+          agent_name: string
+          cache_creation_input_tokens?: number
+          cache_read_input_tokens?: number
+          cache_ttl?: string | null
+          channel?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          input_tokens?: number
+          is_final?: boolean | null
+          latency_ms?: number | null
+          model: string
+          output_tokens?: number
+          turn?: number | null
+        }
+        Update: {
+          agent_name?: string
+          cache_creation_input_tokens?: number
+          cache_read_input_tokens?: number
+          cache_ttl?: string | null
+          channel?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          input_tokens?: number
+          is_final?: boolean | null
+          latency_ms?: number | null
+          model?: string
+          output_tokens?: number
+          turn?: number | null
         }
         Relationships: []
       }
@@ -3610,6 +4444,24 @@ export type Database = {
           purpose?: string | null
           request_id?: number | null
           status_code?: number | null
+        }
+        Relationships: []
+      }
+      api_rate_limits: {
+        Row: {
+          count: number
+          key: string
+          window_start: string
+        }
+        Insert: {
+          count?: number
+          key: string
+          window_start?: string
+        }
+        Update: {
+          count?: number
+          key?: string
+          window_start?: string
         }
         Relationships: []
       }
@@ -4107,6 +4959,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "availability_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "availability_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "availability_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_availability_booking"
             columns: ["booking_id"]
             isOneToOne: false
@@ -4243,6 +5116,45 @@ export type Database = {
             referencedColumns: ["supplier_id"]
           },
         ]
+      }
+      blog_posts: {
+        Row: {
+          category: string | null
+          content_md: string
+          cover_url: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          published_at: string
+          slug: string
+          status: string
+          title: string
+        }
+        Insert: {
+          category?: string | null
+          content_md: string
+          cover_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published_at?: string
+          slug: string
+          status?: string
+          title: string
+        }
+        Update: {
+          category?: string | null
+          content_md?: string
+          cover_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published_at?: string
+          slug?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
       }
       booking_decisions: {
         Row: {
@@ -5745,6 +6657,8 @@ export type Database = {
           stamp_rate: number
           stamp_tax: number
           status: string
+          supervision_amount: number | null
+          supervision_pct: number | null
           supplier_id: string
           vat_amount: number
           vat_pct: number
@@ -5776,6 +6690,8 @@ export type Database = {
           stamp_rate?: number
           stamp_tax?: number
           status?: string
+          supervision_amount?: number | null
+          supervision_pct?: number | null
           supplier_id: string
           vat_amount?: number
           vat_pct?: number
@@ -5807,6 +6723,8 @@ export type Database = {
           stamp_rate?: number
           stamp_tax?: number
           status?: string
+          supervision_amount?: number | null
+          supervision_pct?: number | null
           supplier_id?: string
           vat_amount?: number
           vat_pct?: number
@@ -5882,6 +6800,7 @@ export type Database = {
           retention_pct: number
           start_date: string | null
           status: string
+          supervision_pct: number | null
           supplier_id: string
           updated_at: string
           vat_pct: number
@@ -5901,6 +6820,7 @@ export type Database = {
           retention_pct?: number
           start_date?: string | null
           status?: string
+          supervision_pct?: number | null
           supplier_id: string
           updated_at?: string
           vat_pct?: number
@@ -5920,6 +6840,7 @@ export type Database = {
           retention_pct?: number
           start_date?: string | null
           status?: string
+          supervision_pct?: number | null
           supplier_id?: string
           updated_at?: string
           vat_pct?: number
@@ -6497,6 +7418,13 @@ export type Database = {
             foreignKeyName: "category_landings_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_landings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -6568,6 +7496,53 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_blocks: {
+        Row: {
+          blocked: string
+          blocker: string
+          created_at: string
+        }
+        Insert: {
+          blocked: string
+          blocker: string
+          created_at?: string
+        }
+        Update: {
+          blocked?: string
+          blocker?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_blocks_blocked_fkey"
+            columns: ["blocked"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_blocks_blocked_fkey"
+            columns: ["blocked"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_blocks_blocker_fkey"
+            columns: ["blocker"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_blocks_blocker_fkey"
+            columns: ["blocker"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_call_participants: {
         Row: {
           audio_on: boolean
@@ -6605,6 +7580,13 @@ export type Database = {
             columns: ["call_id"]
             isOneToOne: false
             referencedRelation: "chat_calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_call_participants_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
             referencedColumns: ["id"]
           },
           {
@@ -6665,6 +7647,65 @@ export type Database = {
             foreignKeyName: "chat_calls_started_by_fkey"
             columns: ["started_by"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_calls_started_by_fkey"
+            columns: ["started_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_contact_leak_log: {
+        Row: {
+          created_at: string
+          hit_types: string[]
+          id: string
+          masked: string
+          original: string
+          room_id: string | null
+          sender_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          hit_types?: string[]
+          id?: string
+          masked: string
+          original: string
+          room_id?: string | null
+          sender_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          hit_types?: string[]
+          id?: string
+          masked?: string
+          original?: string
+          room_id?: string | null
+          sender_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_contact_leak_log_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_contact_leak_log_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_contact_leak_log_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -6696,6 +7737,13 @@ export type Database = {
           source?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "chat_contacts_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "chat_contacts_owner_id_fkey"
             columns: ["owner_id"]
@@ -6735,6 +7783,13 @@ export type Database = {
             foreignKeyName: "chat_friends_addressee_fkey"
             columns: ["addressee"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_friends_addressee_fkey"
+            columns: ["addressee"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -6742,6 +7797,70 @@ export type Database = {
             foreignKeyName: "chat_friends_requester_fkey"
             columns: ["requester"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_friends_requester_fkey"
+            columns: ["requester"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_hidden_rooms: {
+        Row: {
+          hidden_at: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          hidden_at?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          hidden_at?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chat_invite_tokens: {
+        Row: {
+          created_at: string
+          profile_id: string
+          rotated_at: string | null
+          token: string
+          uses: number
+        }
+        Insert: {
+          created_at?: string
+          profile_id: string
+          rotated_at?: string | null
+          token: string
+          uses?: number
+        }
+        Update: {
+          created_at?: string
+          profile_id?: string
+          rotated_at?: string | null
+          token?: string
+          uses?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_invite_tokens_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_invite_tokens_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -6775,6 +7894,13 @@ export type Database = {
             foreignKeyName: "chat_message_hides_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_message_hides_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -6802,6 +7928,13 @@ export type Database = {
             columns: ["message_id"]
             isOneToOne: false
             referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_message_stars_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
             referencedColumns: ["id"]
           },
           {
@@ -6882,6 +8015,13 @@ export type Database = {
             foreignKeyName: "chat_messages_pinned_by_fkey"
             columns: ["pinned_by"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_pinned_by_fkey"
+            columns: ["pinned_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -6897,6 +8037,13 @@ export type Database = {
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
             referencedColumns: ["id"]
           },
           {
@@ -6933,6 +8080,13 @@ export type Database = {
             columns: ["poll_id"]
             isOneToOne: false
             referencedRelation: "chat_polls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_poll_votes_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
             referencedColumns: ["id"]
           },
           {
@@ -6985,6 +8139,13 @@ export type Database = {
           room_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "chat_polls_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "chat_polls_created_by_fkey"
             columns: ["created_by"]
@@ -7066,6 +8227,13 @@ export type Database = {
           room_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "chat_room_members_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "chat_room_members_profile_id_fkey"
             columns: ["profile_id"]
@@ -7213,6 +8381,27 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: true
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_pressure_campaign_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_pressure_campaign_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_pressure_campaign_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -7388,6 +8577,13 @@ export type Database = {
           status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "cold_leads_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cold_leads_added_by_fkey"
             columns: ["added_by"]
@@ -7857,6 +9053,24 @@ export type Database = {
         }
         Relationships: []
       }
+      cron_allowlist: {
+        Row: {
+          added_at: string
+          jobname: string
+          reason: string
+        }
+        Insert: {
+          added_at?: string
+          jobname: string
+          reason: string
+        }
+        Update: {
+          added_at?: string
+          jobname?: string
+          reason?: string
+        }
+        Relationships: []
+      }
       custody_events: {
         Row: {
           amount: number | null
@@ -8188,6 +9402,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "customer_email_outbox_to_profile_id_fkey"
+            columns: ["to_profile_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "customer_email_outbox_to_profile_id_fkey"
             columns: ["to_profile_id"]
@@ -8536,6 +9757,27 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "daily_drops_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_drops_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_drops_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
         ]
       }
       daily_kpis: {
@@ -8811,6 +10053,89 @@ export type Database = {
         }
         Relationships: []
       }
+      design_clip_posts: {
+        Row: {
+          clip_id: string | null
+          id: string
+          platform: string
+          posted_at: string | null
+          target_url: string | null
+        }
+        Insert: {
+          clip_id?: string | null
+          id?: string
+          platform: string
+          posted_at?: string | null
+          target_url?: string | null
+        }
+        Update: {
+          clip_id?: string | null
+          id?: string
+          platform?: string
+          posted_at?: string | null
+          target_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "design_clip_posts_clip_id_fkey"
+            columns: ["clip_id"]
+            isOneToOne: false
+            referencedRelation: "design_clips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      design_clips: {
+        Row: {
+          active: boolean | null
+          caption_text: string | null
+          categories: string[] | null
+          created_at: string | null
+          design_file: string | null
+          duration_sec: number | null
+          id: string
+          last_used_at: string | null
+          size_bytes: number | null
+          slug: string
+          storage_path: string
+          times_used: number | null
+          title: string
+          video_url: string
+        }
+        Insert: {
+          active?: boolean | null
+          caption_text?: string | null
+          categories?: string[] | null
+          created_at?: string | null
+          design_file?: string | null
+          duration_sec?: number | null
+          id?: string
+          last_used_at?: string | null
+          size_bytes?: number | null
+          slug: string
+          storage_path: string
+          times_used?: number | null
+          title: string
+          video_url: string
+        }
+        Update: {
+          active?: boolean | null
+          caption_text?: string | null
+          categories?: string[] | null
+          created_at?: string | null
+          design_file?: string | null
+          duration_sec?: number | null
+          id?: string
+          last_used_at?: string | null
+          size_bytes?: number | null
+          slug?: string
+          storage_path?: string
+          times_used?: number | null
+          title?: string
+          video_url?: string
+        }
+        Relationships: []
+      }
       directory_import_staging: {
         Row: {
           address: string | null
@@ -8975,6 +10300,36 @@ export type Database = {
         }
         Relationships: []
       }
+      draft_ttl_config: {
+        Row: {
+          enabled: boolean
+          id: boolean
+          last_deleted: number | null
+          last_run_at: string | null
+          total_deleted: number
+          ttl_hours: number
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          id?: boolean
+          last_deleted?: number | null
+          last_run_at?: string | null
+          total_deleted?: number
+          ttl_hours?: number
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          id?: boolean
+          last_deleted?: number | null
+          last_run_at?: string | null
+          total_deleted?: number
+          ttl_hours?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       elite_inbox_map: {
         Row: {
           created_at: string
@@ -8996,6 +10351,33 @@ export type Database = {
           customer_phone?: string
           supplier_id?: string | null
           tg_message_id?: number
+        }
+        Relationships: []
+      }
+      email_change_requests: {
+        Row: {
+          attempts: number
+          code: string
+          created_at: string
+          expires_at: string
+          new_email: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          code: string
+          created_at?: string
+          expires_at: string
+          new_email: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          code?: string
+          created_at?: string
+          expires_at?: string
+          new_email?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -10068,6 +11450,13 @@ export type Database = {
             foreignKeyName: "favorites_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -10083,6 +11472,27 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -10634,6 +12044,60 @@ export type Database = {
         }
         Relationships: []
       }
+      generated_reels: {
+        Row: {
+          campaign_tag: string | null
+          duration_sec: number
+          error_message: string | null
+          generated_at: string
+          id: string
+          listing_ids: string[]
+          listing_titles: string[]
+          music_file: string | null
+          published_to: Json | null
+          size_bytes: number | null
+          status: string
+          theme: string | null
+          utm_tag: string | null
+          video_storage_path: string
+          video_url: string
+        }
+        Insert: {
+          campaign_tag?: string | null
+          duration_sec: number
+          error_message?: string | null
+          generated_at?: string
+          id?: string
+          listing_ids: string[]
+          listing_titles: string[]
+          music_file?: string | null
+          published_to?: Json | null
+          size_bytes?: number | null
+          status?: string
+          theme?: string | null
+          utm_tag?: string | null
+          video_storage_path: string
+          video_url: string
+        }
+        Update: {
+          campaign_tag?: string | null
+          duration_sec?: number
+          error_message?: string | null
+          generated_at?: string
+          id?: string
+          listing_ids?: string[]
+          listing_titles?: string[]
+          music_file?: string | null
+          published_to?: Json | null
+          size_bytes?: number | null
+          status?: string
+          theme?: string | null
+          utm_tag?: string | null
+          video_storage_path?: string
+          video_url?: string
+        }
+        Relationships: []
+      }
       genie_listing_leads: {
         Row: {
           channel: string
@@ -10684,6 +12148,27 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genie_listing_leads_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genie_listing_leads_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genie_listing_leads_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -10988,6 +12473,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "import_consignment_units_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_consignment_units_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_consignment_units_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "import_consignment_units_supplier_id_fkey"
             columns: ["supplier_id"]
             isOneToOne: false
@@ -11189,6 +12695,7 @@ export type Database = {
           description: string | null
           id: string
           image_urls: Json | null
+          is_furnished: boolean | null
           period: string | null
           price_egp: number | null
           published_listing_id: string | null
@@ -11205,6 +12712,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_urls?: Json | null
+          is_furnished?: boolean | null
           period?: string | null
           price_egp?: number | null
           published_listing_id?: string | null
@@ -11221,6 +12729,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_urls?: Json | null
+          is_furnished?: boolean | null
           period?: string | null
           price_egp?: number | null
           published_listing_id?: string | null
@@ -12019,6 +13528,30 @@ export type Database = {
         }
         Relationships: []
       }
+      job_item_attempts: {
+        Row: {
+          attempts: number
+          first_at: string
+          item_key: string
+          job_key: string
+          last_at: string
+        }
+        Insert: {
+          attempts?: number
+          first_at?: string
+          item_key: string
+          job_key: string
+          last_at?: string
+        }
+        Update: {
+          attempts?: number
+          first_at?: string
+          item_key?: string
+          job_key?: string
+          last_at?: string
+        }
+        Relationships: []
+      }
       listing_claims: {
         Row: {
           claimed_at: string | null
@@ -12066,6 +13599,126 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_claims_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_claims_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_claims_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_content_gaps: {
+        Row: {
+          business_name: string | null
+          category_ar: string | null
+          created_at: string
+          gap_detail: string | null
+          gap_kind: string
+          id: string
+          is_house_account: boolean
+          last_request_at: string | null
+          listing_id: string
+          listing_title: string | null
+          notes: string | null
+          reach_phone: string | null
+          request_count: number
+          requested_at: string | null
+          resolved_at: string | null
+          status: string
+          supplier_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          business_name?: string | null
+          category_ar?: string | null
+          created_at?: string
+          gap_detail?: string | null
+          gap_kind: string
+          id?: string
+          is_house_account?: boolean
+          last_request_at?: string | null
+          listing_id: string
+          listing_title?: string | null
+          notes?: string | null
+          reach_phone?: string | null
+          request_count?: number
+          requested_at?: string | null
+          resolved_at?: string | null
+          status?: string
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          business_name?: string | null
+          category_ar?: string | null
+          created_at?: string
+          gap_detail?: string | null
+          gap_kind?: string
+          id?: string
+          is_house_account?: boolean
+          last_request_at?: string | null
+          listing_id?: string
+          listing_title?: string | null
+          notes?: string | null
+          reach_phone?: string | null
+          request_count?: number
+          requested_at?: string | null
+          resolved_at?: string | null
+          status?: string
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_content_gaps_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "listing_pricing_outliers"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "listing_content_gaps_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_content_gaps_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_content_gaps_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_content_gaps_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -12216,6 +13869,13 @@ export type Database = {
             foreignKeyName: "listing_drafts_claimed_by_profile_id_fkey"
             columns: ["claimed_by_profile_id"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_drafts_claimed_by_profile_id_fkey"
+            columns: ["claimed_by_profile_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -12231,6 +13891,27 @@ export type Database = {
             columns: ["converted_listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_drafts_converted_listing_id_fkey"
+            columns: ["converted_listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_drafts_converted_listing_id_fkey"
+            columns: ["converted_listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_drafts_converted_listing_id_fkey"
+            columns: ["converted_listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -12367,6 +14048,13 @@ export type Database = {
             foreignKeyName: "listing_inquiries_inquirer_id_fkey"
             columns: ["inquirer_id"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_inquiries_inquirer_id_fkey"
+            columns: ["inquirer_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -12385,6 +14073,34 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "listing_inquiries_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_inquiries_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_inquiries_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_inquiries_owner_profile_id_fkey"
+            columns: ["owner_profile_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "listing_inquiries_owner_profile_id_fkey"
             columns: ["owner_profile_id"]
             isOneToOne: false
@@ -12396,6 +14112,81 @@ export type Database = {
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_photo_candidates: {
+        Row: {
+          business_name: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          image_url: string
+          received_at: string | null
+          source: string
+          status: string
+          suggested_for_listing_id: string | null
+          supplier_id: string | null
+        }
+        Insert: {
+          business_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          received_at?: string | null
+          source?: string
+          status?: string
+          suggested_for_listing_id?: string | null
+          supplier_id?: string | null
+        }
+        Update: {
+          business_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          received_at?: string | null
+          source?: string
+          status?: string
+          suggested_for_listing_id?: string | null
+          supplier_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_photo_candidates_suggested_for_listing_id_fkey"
+            columns: ["suggested_for_listing_id"]
+            isOneToOne: false
+            referencedRelation: "listing_pricing_outliers"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "listing_photo_candidates_suggested_for_listing_id_fkey"
+            columns: ["suggested_for_listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_photo_candidates_suggested_for_listing_id_fkey"
+            columns: ["suggested_for_listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_photo_candidates_suggested_for_listing_id_fkey"
+            columns: ["suggested_for_listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_photo_candidates_suggested_for_listing_id_fkey"
+            columns: ["suggested_for_listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -12452,7 +14243,133 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "listing_photos_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_photos_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_photos_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      listing_publish_outreach: {
+        Row: {
+          awaiting_photo: boolean
+          created_at: string
+          last_missing: string[] | null
+          last_request_at: string | null
+          listing_id: string
+          notes: string | null
+          owner_phone: string
+          photo_attached_at: string | null
+          published_at: string | null
+          request_count: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          awaiting_photo?: boolean
+          created_at?: string
+          last_missing?: string[] | null
+          last_request_at?: string | null
+          listing_id: string
+          notes?: string | null
+          owner_phone: string
+          photo_attached_at?: string | null
+          published_at?: string | null
+          request_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          awaiting_photo?: boolean
+          created_at?: string
+          last_missing?: string[] | null
+          last_request_at?: string | null
+          listing_id?: string
+          notes?: string | null
+          owner_phone?: string
+          photo_attached_at?: string | null
+          published_at?: string | null
+          request_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_publish_outreach_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "listing_pricing_outliers"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "listing_publish_outreach_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_publish_outreach_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_publish_outreach_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_publish_outreach_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_reap_tombstones: {
+        Row: {
+          listing_id: string | null
+          project_id: string
+          reaped_at: string
+          reason: string | null
+          title: string | null
+        }
+        Insert: {
+          listing_id?: string | null
+          project_id: string
+          reaped_at?: string
+          reason?: string | null
+          title?: string | null
+        }
+        Update: {
+          listing_id?: string | null
+          project_id?: string
+          reaped_at?: string
+          reason?: string | null
+          title?: string | null
+        }
+        Relationships: []
       }
       listing_values: {
         Row: {
@@ -12492,6 +14409,27 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "listing_values_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_values_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_values_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
         ]
       }
       listings: {
@@ -12518,11 +14456,13 @@ export type Database = {
           insurance_deposit_pct: number | null
           insurance_partners: string[] | null
           is_directory: boolean
+          is_furnished: boolean | null
           latitude: number | null
           longitude: number | null
           max_booking_hours: number | null
           min_booking_hours: number | null
           model_name: string | null
+          needs_photo_audit: boolean | null
           phone_verified_at: string | null
           price_egp: number | null
           price_on_request: boolean
@@ -12535,6 +14475,7 @@ export type Database = {
           requires_security_deposit: boolean
           reviews_count: number
           security_deposit_amount: number | null
+          seller_type: string | null
           shipping_available: boolean | null
           shipping_cost: number | null
           slug: string | null
@@ -12570,11 +14511,13 @@ export type Database = {
           insurance_deposit_pct?: number | null
           insurance_partners?: string[] | null
           is_directory?: boolean
+          is_furnished?: boolean | null
           latitude?: number | null
           longitude?: number | null
           max_booking_hours?: number | null
           min_booking_hours?: number | null
           model_name?: string | null
+          needs_photo_audit?: boolean | null
           phone_verified_at?: string | null
           price_egp?: number | null
           price_on_request?: boolean
@@ -12587,6 +14530,7 @@ export type Database = {
           requires_security_deposit?: boolean
           reviews_count?: number
           security_deposit_amount?: number | null
+          seller_type?: string | null
           shipping_available?: boolean | null
           shipping_cost?: number | null
           slug?: string | null
@@ -12622,11 +14566,13 @@ export type Database = {
           insurance_deposit_pct?: number | null
           insurance_partners?: string[] | null
           is_directory?: boolean
+          is_furnished?: boolean | null
           latitude?: number | null
           longitude?: number | null
           max_booking_hours?: number | null
           min_booking_hours?: number | null
           model_name?: string | null
+          needs_photo_audit?: boolean | null
           phone_verified_at?: string | null
           price_egp?: number | null
           price_on_request?: boolean
@@ -12639,6 +14585,7 @@ export type Database = {
           requires_security_deposit?: boolean
           reviews_count?: number
           security_deposit_amount?: number | null
+          seller_type?: string | null
           shipping_available?: boolean | null
           shipping_cost?: number | null
           slug?: string | null
@@ -12743,6 +14690,27 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_activity_events_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_activity_events_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_activity_events_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -12881,6 +14849,63 @@ export type Database = {
         }
         Relationships: []
       }
+      marid_contact_card: {
+        Row: {
+          account_type: string | null
+          assets_count: number
+          bookings_count: number | null
+          business_name: string | null
+          customer_since: string | null
+          display_name: string | null
+          has_erp_crm: boolean | null
+          is_partner: boolean | null
+          is_supplier: boolean
+          kyc_status: string | null
+          listings_count: number | null
+          phone: string
+          profile_id: string | null
+          rating: number | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_type?: string | null
+          assets_count?: number
+          bookings_count?: number | null
+          business_name?: string | null
+          customer_since?: string | null
+          display_name?: string | null
+          has_erp_crm?: boolean | null
+          is_partner?: boolean | null
+          is_supplier?: boolean
+          kyc_status?: string | null
+          listings_count?: number | null
+          phone: string
+          profile_id?: string | null
+          rating?: number | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_type?: string | null
+          assets_count?: number
+          bookings_count?: number | null
+          business_name?: string | null
+          customer_since?: string | null
+          display_name?: string | null
+          has_erp_crm?: boolean | null
+          is_partner?: boolean | null
+          is_supplier?: boolean
+          kyc_status?: string | null
+          listings_count?: number | null
+          phone?: string
+          profile_id?: string | null
+          rating?: number | null
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       marid_notifications: {
         Row: {
           body: string | null
@@ -12914,6 +14939,33 @@ export type Database = {
           ref_table?: string | null
           seen?: boolean
           title?: string
+        }
+        Relationships: []
+      }
+      marid_pulse: {
+        Row: {
+          beat_at: string
+          id: number
+          jobs_error: number
+          jobs_ok: number
+          jobs_ran: number
+          last_trigger: string | null
+        }
+        Insert: {
+          beat_at?: string
+          id?: number
+          jobs_error?: number
+          jobs_ok?: number
+          jobs_ran?: number
+          last_trigger?: string | null
+        }
+        Update: {
+          beat_at?: string
+          id?: number
+          jobs_error?: number
+          jobs_ok?: number
+          jobs_ran?: number
+          last_trigger?: string | null
         }
         Relationships: []
       }
@@ -13190,7 +15242,21 @@ export type Database = {
             foreignKeyName: "marketplace_bookings_cancelled_by_fkey"
             columns: ["cancelled_by"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_bookings_cancelled_by_fkey"
+            columns: ["cancelled_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_bookings_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
             referencedColumns: ["id"]
           },
           {
@@ -13212,6 +15278,27 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_bookings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_bookings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_bookings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
           {
@@ -13306,6 +15393,27 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_order_items_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_order_items_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_order_items_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
           {
@@ -13487,6 +15595,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "marketplace_orders_primary_listing_id_fkey"
+            columns: ["primary_listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_orders_primary_listing_id_fkey"
+            columns: ["primary_listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_orders_primary_listing_id_fkey"
+            columns: ["primary_listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "marketplace_orders_supplier_id_fkey"
             columns: ["supplier_id"]
             isOneToOne: false
@@ -13658,7 +15787,21 @@ export type Database = {
             foreignKeyName: "marketplace_suppliers_kyc_reviewed_by_fkey"
             columns: ["kyc_reviewed_by"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_suppliers_kyc_reviewed_by_fkey"
+            columns: ["kyc_reviewed_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_suppliers_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "chat_directory"
             referencedColumns: ["id"]
           },
           {
@@ -13818,6 +15961,27 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mart_products_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mart_products_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mart_products_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -14101,6 +16265,35 @@ export type Database = {
           },
         ]
       }
+      orchestrator_job_locks: {
+        Row: {
+          job_key: string
+          locked_at: string
+          locked_by: string
+          reason: string | null
+        }
+        Insert: {
+          job_key: string
+          locked_at?: string
+          locked_by?: string
+          reason?: string | null
+        }
+        Update: {
+          job_key?: string
+          locked_at?: string
+          locked_by?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orchestrator_job_locks_job_key_fkey"
+            columns: ["job_key"]
+            isOneToOne: true
+            referencedRelation: "orchestrator_jobs"
+            referencedColumns: ["job_key"]
+          },
+        ]
+      }
       orchestrator_job_runs: {
         Row: {
           detail: string | null
@@ -14136,16 +16329,23 @@ export type Database = {
           category: string | null
           command: string
           config: Json
+          consecutive_runs: number
           enabled: boolean
           error_count: number
+          item_query: string | null
           job_key: string
           last_run_at: string | null
           last_status: string | null
           managed: boolean
+          max_consecutive_runs: number | null
+          max_item_attempts: number
+          max_runs_per_hour: number | null
           policy_cron: string | null
           run_count: number
           source_jobid: number | null
           title: string | null
+          tripped_at: string | null
+          tripped_reason: string | null
           updated_at: string
           work_check: string | null
         }
@@ -14153,16 +16353,23 @@ export type Database = {
           category?: string | null
           command: string
           config?: Json
+          consecutive_runs?: number
           enabled?: boolean
           error_count?: number
+          item_query?: string | null
           job_key: string
           last_run_at?: string | null
           last_status?: string | null
           managed?: boolean
+          max_consecutive_runs?: number | null
+          max_item_attempts?: number
+          max_runs_per_hour?: number | null
           policy_cron?: string | null
           run_count?: number
           source_jobid?: number | null
           title?: string | null
+          tripped_at?: string | null
+          tripped_reason?: string | null
           updated_at?: string
           work_check?: string | null
         }
@@ -14170,16 +16377,23 @@ export type Database = {
           category?: string | null
           command?: string
           config?: Json
+          consecutive_runs?: number
           enabled?: boolean
           error_count?: number
+          item_query?: string | null
           job_key?: string
           last_run_at?: string | null
           last_status?: string | null
           managed?: boolean
+          max_consecutive_runs?: number | null
+          max_item_attempts?: number
+          max_runs_per_hour?: number | null
           policy_cron?: string | null
           run_count?: number
           source_jobid?: number | null
           title?: string | null
+          tripped_at?: string | null
+          tripped_reason?: string | null
           updated_at?: string
           work_check?: string | null
         }
@@ -14704,6 +16918,102 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_call_events: {
+        Row: {
+          caller_k: string | null
+          caller_raw: string | null
+          created_at: string
+          id: string
+          matched: string | null
+          source: string | null
+        }
+        Insert: {
+          caller_k?: string | null
+          caller_raw?: string | null
+          created_at?: string
+          id?: string
+          matched?: string | null
+          source?: string | null
+        }
+        Update: {
+          caller_k?: string | null
+          caller_raw?: string | null
+          created_at?: string
+          id?: string
+          matched?: string | null
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phone_call_events_matched_fkey"
+            columns: ["matched"]
+            isOneToOne: false
+            referencedRelation: "phone_call_verifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phone_call_verifications: {
+        Row: {
+          caller_raw: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          issued_number_id: string | null
+          phone: string
+          phone_k: string
+          profile_id: string
+          status: string
+          verified_at: string | null
+        }
+        Insert: {
+          caller_raw?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          issued_number_id?: string | null
+          phone: string
+          phone_k: string
+          profile_id: string
+          status?: string
+          verified_at?: string | null
+        }
+        Update: {
+          caller_raw?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          issued_number_id?: string | null
+          phone?: string
+          phone_k?: string
+          profile_id?: string
+          status?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phone_call_verifications_issued_number_id_fkey"
+            columns: ["issued_number_id"]
+            isOneToOne: false
+            referencedRelation: "verify_call_numbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phone_call_verifications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phone_call_verifications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       phone_captures: {
         Row: {
           capture_context: string | null
@@ -14771,6 +17081,27 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "phone_captures_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phone_captures_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phone_captures_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
         ]
       }
       phone_verifications: {
@@ -14823,6 +17154,27 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phone_verifications_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phone_verifications_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phone_verifications_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -14880,6 +17232,27 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_briefs_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_briefs_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_briefs_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -14943,6 +17316,27 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photoshoot_briefs_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photoshoot_briefs_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photoshoot_briefs_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -15254,6 +17648,27 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pricing_rules_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pricing_rules_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pricing_rules_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
         ]
       }
       pricing_suggestions: {
@@ -15318,6 +17733,27 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pricing_suggestions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pricing_suggestions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pricing_suggestions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -15425,6 +17861,42 @@ export type Database = {
           preferred_language?: string
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      project_change_log: {
+        Row: {
+          action: string
+          actor: string
+          area: string
+          at: string
+          detail: string | null
+          id: number
+          notified_at: string | null
+          object_name: string | null
+          severity: string
+        }
+        Insert: {
+          action: string
+          actor?: string
+          area: string
+          at?: string
+          detail?: string | null
+          id?: number
+          notified_at?: string | null
+          object_name?: string | null
+          severity?: string
+        }
+        Update: {
+          action?: string
+          actor?: string
+          area?: string
+          at?: string
+          detail?: string | null
+          id?: number
+          notified_at?: string | null
+          object_name?: string | null
+          severity?: string
         }
         Relationships: []
       }
@@ -16116,6 +18588,27 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "qc_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qc_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qc_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
         ]
       }
       recurring_bills: {
@@ -16403,6 +18896,27 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reel_scripts_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reel_scripts_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reel_scripts_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -16715,6 +19229,27 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "restaurant_menu_items_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_menu_items_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_menu_items_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
         ]
       }
       revenue_attribution: {
@@ -16870,6 +19405,13 @@ export type Database = {
             foreignKeyName: "reviews_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -16885,6 +19427,27 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
           {
@@ -17085,6 +19648,27 @@ export type Database = {
             columns: ["interested_listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_leads_interested_listing_id_fkey"
+            columns: ["interested_listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_leads_interested_listing_id_fkey"
+            columns: ["interested_listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_leads_interested_listing_id_fkey"
+            columns: ["interested_listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -17422,6 +20006,34 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "site_events_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_events_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_events_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_events_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "site_events_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
@@ -17450,6 +20062,13 @@ export type Database = {
           value?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "site_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "site_settings_updated_by_fkey"
             columns: ["updated_by"]
@@ -17784,7 +20403,52 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "social_packs_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_packs_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_packs_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      social_photo_posts: {
+        Row: {
+          id: number
+          listing_id: string
+          platform: string
+          posted_at: string
+          target_url: string | null
+        }
+        Insert: {
+          id?: never
+          listing_id: string
+          platform: string
+          posted_at?: string
+          target_url?: string | null
+        }
+        Update: {
+          id?: never
+          listing_id?: string
+          platform?: string
+          posted_at?: string
+          target_url?: string | null
+        }
+        Relationships: []
       }
       static_pages: {
         Row: {
@@ -18624,7 +21288,21 @@ export type Database = {
             foreignKeyName: "supplier_staff_invited_by_fkey"
             columns: ["invited_by"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_staff_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_staff_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
             referencedColumns: ["id"]
           },
           {
@@ -18865,6 +21543,13 @@ export type Database = {
             foreignKeyName: "system_context_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "system_context_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -18968,6 +21653,60 @@ export type Database = {
           title_ar?: string
         }
         Relationships: []
+      }
+      telegram_channel_posts: {
+        Row: {
+          listing_id: string
+          message_id: number | null
+          posted_at: string
+        }
+        Insert: {
+          listing_id: string
+          message_id?: number | null
+          posted_at?: string
+        }
+        Update: {
+          listing_id?: string
+          message_id?: number | null
+          posted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telegram_channel_posts_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "listing_pricing_outliers"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "telegram_channel_posts_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "telegram_channel_posts_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "telegram_channel_posts_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "telegram_channel_posts_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       telegram_conversations: {
         Row: {
@@ -19358,6 +22097,34 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "user_daily_picks_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_publish_blockers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_daily_picks_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_reap_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_daily_picks_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_postiz_safe_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_daily_picks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "user_daily_picks_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -19434,6 +22201,13 @@ export type Database = {
             foreignKeyName: "user_streaks_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_streaks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -19453,6 +22227,13 @@ export type Database = {
           visit_date?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_visits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_visits_user_id_fkey"
             columns: ["user_id"]
@@ -19531,6 +22312,42 @@ export type Database = {
             referencedColumns: ["supplier_id"]
           },
         ]
+      }
+      verify_call_numbers: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string
+          last_call_at: string | null
+          last_heartbeat_at: string | null
+          phone: string
+          priority: number
+          source_key: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          last_call_at?: string | null
+          last_heartbeat_at?: string | null
+          phone: string
+          priority?: number
+          source_key: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          last_call_at?: string | null
+          last_heartbeat_at?: string | null
+          phone?: string
+          priority?: number
+          source_key?: string
+        }
+        Relationships: []
       }
       wa_delivery_alert_log: {
         Row: {
@@ -19685,6 +22502,24 @@ export type Database = {
         }
         Relationships: []
       }
+      wa_opt_outs: {
+        Row: {
+          created_at: string
+          phone: string
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          phone: string
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          phone?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       wa_reply_claims: {
         Row: {
           claimed_at: string
@@ -19753,6 +22588,13 @@ export type Database = {
           wallet_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "wallet_topups_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "wallet_topups_profile_id_fkey"
             columns: ["profile_id"]
@@ -19842,6 +22684,13 @@ export type Database = {
             foreignKeyName: "wallet_transactions_counterparty_id_fkey"
             columns: ["counterparty_id"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_transactions_counterparty_id_fkey"
+            columns: ["counterparty_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -19849,7 +22698,21 @@ export type Database = {
             foreignKeyName: "wallet_transactions_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_transactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_transactions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
             referencedColumns: ["id"]
           },
           {
@@ -19926,7 +22789,21 @@ export type Database = {
             foreignKeyName: "wallet_withdrawals_processed_by_fkey"
             columns: ["processed_by"]
             isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_withdrawals_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_withdrawals_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
             referencedColumns: ["id"]
           },
           {
@@ -19984,6 +22861,13 @@ export type Database = {
             foreignKeyName: "wallets_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: true
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallets_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -19999,6 +22883,7 @@ export type Database = {
           delivered_at: string | null
           error_message: string | null
           id: string
+          locked_at: string | null
           message_content: string | null
           read_at: string | null
           recipient_name: string | null
@@ -20019,6 +22904,7 @@ export type Database = {
           delivered_at?: string | null
           error_message?: string | null
           id?: string
+          locked_at?: string | null
           message_content?: string | null
           read_at?: string | null
           recipient_name?: string | null
@@ -20039,6 +22925,7 @@ export type Database = {
           delivered_at?: string | null
           error_message?: string | null
           id?: string
+          locked_at?: string | null
           message_content?: string | null
           read_at?: string | null
           recipient_name?: string | null
@@ -20277,6 +23164,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "whatsapp_conversations_related_profile_id_fkey"
+            columns: ["related_profile_id"]
+            isOneToOne: false
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "whatsapp_conversations_related_profile_id_fkey"
             columns: ["related_profile_id"]
@@ -20550,6 +23444,39 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_directory: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          i_blocked_them: boolean | null
+          id: string | null
+          is_friend: boolean | null
+          last_seen_at: string | null
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+        }
+        Insert: {
+          avatar_url?: never
+          full_name?: never
+          i_blocked_them?: never
+          id?: string | null
+          is_friend?: never
+          last_seen_at?: string | null
+          phone?: never
+          role?: Database["public"]["Enums"]["user_role"] | null
+        }
+        Update: {
+          avatar_url?: never
+          full_name?: never
+          i_blocked_them?: never
+          id?: string | null
+          is_friend?: never
+          last_seen_at?: string | null
+          phone?: never
+          role?: Database["public"]["Enums"]["user_role"] | null
+        }
+        Relationships: []
+      }
       funnel_7d: {
         Row: {
           clicked_add_listing: number | null
@@ -20683,6 +23610,13 @@ export type Database = {
             foreignKeyName: "marketplace_suppliers_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: true
+            referencedRelation: "chat_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_suppliers_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -20691,9 +23625,11 @@ export type Database = {
       v_agent_health: {
         Row: {
           agent_name: string | null
+          description: string | null
           display_name: string | null
           enabled: boolean | null
           error_count: number | null
+          event_source: string | null
           health_status: string | null
           hours_since_last_run: number | null
           last_run_at: string | null
@@ -20704,6 +23640,45 @@ export type Database = {
           success_pct: number | null
           suggested_action: string | null
           team: string | null
+          trigger_type: string | null
+        }
+        Relationships: []
+      }
+      v_ai_cost_per_message: {
+        Row: {
+          agent_name: string | null
+          api_calls: number | null
+          cache_reads_tok: number | null
+          cache_writes_tok: number | null
+          calls_per_message: number | null
+          channel: string | null
+          conversations: number | null
+          cost_usd: number | null
+          customer_messages: number | null
+          day: string | null
+          output_tok: number | null
+          uncached_tok: number | null
+          usd_per_message: number | null
+        }
+        Relationships: []
+      }
+      v_ai_usage_cost: {
+        Row: {
+          agent_name: string | null
+          cache_creation_input_tokens: number | null
+          cache_read_input_tokens: number | null
+          cache_ttl: string | null
+          channel: string | null
+          conversation_id: string | null
+          cost_usd: number | null
+          created_at: string | null
+          id: string | null
+          input_tokens: number | null
+          is_final: boolean | null
+          latency_ms: number | null
+          model: string | null
+          output_tokens: number | null
+          turn: number | null
         }
         Relationships: []
       }
@@ -21176,6 +24151,108 @@ export type Database = {
         }
         Relationships: []
       }
+      v_listing_publish_blockers: {
+        Row: {
+          attrs_missing: boolean | null
+          category_id: string | null
+          city: string | null
+          contact_phone: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          is_directory: boolean | null
+          m_attrs: boolean | null
+          m_category: boolean | null
+          m_city: boolean | null
+          m_desc: boolean | null
+          m_phone: boolean | null
+          m_photo: boolean | null
+          m_price: boolean | null
+          m_slug: boolean | null
+          m_title: boolean | null
+          m_verify: boolean | null
+          missing_ar: string[] | null
+          missing_internal_ar: string[] | null
+          missing_owner_ar: string[] | null
+          owner_phone: string | null
+          phone_verified_at: string | null
+          photo_count: number | null
+          price_count: number | null
+          reachable_owner: boolean | null
+          ready_to_publish: boolean | null
+          real_photo_count: number | null
+          slug: string | null
+          status: Database["public"]["Enums"]["listing_status"] | null
+          supplier_id: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listings_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "category_demand_view"
+            referencedColumns: ["category_id"]
+          },
+          {
+            foreignKeyName: "listings_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listings_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_weekly_performance"
+            referencedColumns: ["supplier_id"]
+          },
+          {
+            foreignKeyName: "listings_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "v_outreach_leads_funnel"
+            referencedColumns: ["supplier_id"]
+          },
+        ]
+      }
+      v_listing_reap_candidates: {
+        Row: {
+          created_at: string | null
+          directory_source: string | null
+          id: string | null
+          last_request_at: string | null
+          last_touch: string | null
+          missing_ar: string[] | null
+          outreach_status: string | null
+          owner_phone: string | null
+          project_id: string | null
+          reachable_owner: boolean | null
+          reap_clock_from: string | null
+          reap_reason: string | null
+          request_count: number | null
+          title: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "property_market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_live_transactions_feed: {
         Row: {
           amount_egp: number | null
@@ -21330,6 +24407,15 @@ export type Database = {
         }
         Relationships: []
       }
+      v_marid_health: {
+        Row: {
+          name: string | null
+          note: string | null
+          status: string | null
+          value: number | null
+        }
+        Relationships: []
+      }
       v_outreach_funnel_summary: {
         Row: {
           business_count: number | null
@@ -21382,6 +24468,43 @@ export type Database = {
           sub: string | null
         }
         Relationships: []
+      }
+      v_postiz_safe_listings: {
+        Row: {
+          category: string | null
+          city: string | null
+          district: string | null
+          id: string | null
+          price_egp: number | null
+          primary_photo_url: string | null
+          slug: string | null
+          status: Database["public"]["Enums"]["listing_status"] | null
+          supplier_id: string | null
+          title: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listings_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_weekly_performance"
+            referencedColumns: ["supplier_id"]
+          },
+          {
+            foreignKeyName: "listings_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "v_outreach_leads_funnel"
+            referencedColumns: ["supplier_id"]
+          },
+        ]
       }
       v_ratings_summary: {
         Row: {
@@ -21469,6 +24592,62 @@ export type Database = {
         }
         Relationships: []
       }
+      v_stuck_items: {
+        Row: {
+          attempts: number | null
+          category: string | null
+          first_at: string | null
+          item_key: string | null
+          job_key: string | null
+          last_at: string | null
+          max_item_attempts: number | null
+          title: string | null
+        }
+        Relationships: []
+      }
+      v_stuck_work: {
+        Row: {
+          آخر_حركة: string | null
+          المعرف: string | null
+          النوع: string | null
+        }
+        Relationships: []
+      }
+      v_wa_duplicate_sends: {
+        Row: {
+          ai_generated: boolean | null
+          body_snippet: string | null
+          conversation_id: string | null
+          copies: number | null
+          first_sent: string | null
+          gap: string | null
+          last_sent: string | null
+          wa_message_ids: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "lifecycle_view"
+            referencedColumns: ["conv_id"]
+          },
+          {
+            foreignKeyName: "whatsapp_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "v_outreach_leads_funnel"
+            referencedColumns: ["conversation_id"]
+          },
+          {
+            foreignKeyName: "whatsapp_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       visitor_intelligence: {
         Row: {
           auth_visits: number | null
@@ -21555,6 +24734,18 @@ export type Database = {
         Returns: Json
       }
       active_cron_count: { Args: never; Returns: number }
+      add_chat_task: {
+        Args: {
+          p_assigned_by?: string
+          p_description?: string
+          p_due_time?: string
+          p_employee_id: string
+          p_priority?: string
+          p_task_date?: string
+          p_title_ar: string
+        }
+        Returns: Json
+      }
       add_cold_lead: {
         Args: {
           p_business_name: string
@@ -22427,6 +25618,7 @@ export type Database = {
         Args: { p_is_active: boolean; p_template_key: string }
         Returns: Json
       }
+      admin_traffic_report: { Args: never; Returns: Json }
       admin_transfer_to_branch: {
         Args: {
           p_branch_id: string
@@ -22503,6 +25695,7 @@ export type Database = {
         Args: { p_status: string; p_waitlist_id: string }
         Returns: Json
       }
+      ai_spend_today_usd: { Args: never; Returns: number }
       anthropic_credit_watchdog_check: { Args: never; Returns: Json }
       apply_referral: {
         Args: {
@@ -22516,6 +25709,7 @@ export type Database = {
       }
       approve_ad_creative: { Args: { p_ad_id: string }; Returns: undefined }
       approve_strategy_play: { Args: { p_play_id: string }; Returns: undefined }
+      are_friends: { Args: { a: string; b: string }; Returns: boolean }
       ask_madmona: {
         Args: { p_context?: Json; p_question: string }
         Returns: string
@@ -22558,6 +25752,15 @@ export type Database = {
           p_reference?: string
         }
         Returns: Json
+      }
+      booking_slot_taken: {
+        Args: {
+          p_end_at: string
+          p_exclude_booking_id?: string
+          p_listing_id: string
+          p_start_at: string
+        }
+        Returns: boolean
       }
       bookings_watchdog_check: { Args: never; Returns: Json }
       brand_sanitize_text: { Args: { p_text: string }; Returns: string }
@@ -22603,10 +25806,12 @@ export type Database = {
         }
         Returns: string
       }
+      category_root: { Args: { cid: string }; Returns: string }
       category_to_image_keywords: {
         Args: { p_category: string }
         Returns: string
       }
+      chat_block: { Args: { _other: string }; Returns: boolean }
       chat_call_answer: { Args: { p_call: string }; Returns: undefined }
       chat_call_decline: { Args: { p_call: string }; Returns: undefined }
       chat_call_leave: { Args: { p_call: string }; Returns: undefined }
@@ -22643,11 +25848,24 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          other_id: string
           phone_e164: string
           source: string
           status: string
         }[]
       }
+      chat_create_group: {
+        Args: { _members: string[]; _name: string }
+        Returns: string
+      }
+      chat_invite_accept: { Args: { p_token: string }; Returns: Json }
+      chat_invite_accept_as: {
+        Args: { p_profile: string; p_token: string }
+        Returns: Json
+      }
+      chat_invite_gen_token: { Args: never; Returns: string }
+      chat_invite_link: { Args: never; Returns: string }
+      chat_invite_rotate: { Args: never; Returns: string }
       chat_link_mutual_friends: { Args: { p_profile: string }; Returns: number }
       chat_msg_delete: {
         Args: { p_for_all?: boolean; p_msg: string }
@@ -22694,6 +25912,7 @@ export type Database = {
         Args: { p_option: number; p_poll: string }
         Returns: undefined
       }
+      chat_profile_for_phone: { Args: { p_phone: string }; Returns: string }
       chat_room_archive: {
         Args: { p_on?: boolean; p_room: string }
         Returns: undefined
@@ -22707,6 +25926,37 @@ export type Database = {
         Args: { p_on?: boolean; p_room: string }
         Returns: undefined
       }
+      chat_rooms_for_me:
+        | {
+            Args: never
+            Returns: {
+              archived_at: string
+              id: string
+              kind: string
+              marid_enabled: boolean
+              member_role: string
+              muted_until: string
+              name: string
+              other_name: string
+              pinned_at: string
+            }[]
+          }
+        | {
+            Args: { p_kind?: string }
+            Returns: {
+              archived_at: string
+              id: string
+              kind: string
+              last_at: string
+              last_body: string
+              marid_enabled: boolean
+              member_role: string
+              muted_until: string
+              name: string
+              other_name: string
+              pinned_at: string
+            }[]
+          }
       chat_search: {
         Args: { p_limit?: number; p_q: string; p_room: string }
         Returns: {
@@ -22717,6 +25967,7 @@ export type Database = {
           sender_name: string
         }[]
       }
+      chat_unblock: { Args: { _other: string }; Returns: boolean }
       check_all_agents_health: { Args: never; Returns: Json }
       check_and_send_study_sprint: { Args: never; Returns: Json }
       check_storage_orphan_health: { Args: never; Returns: Json }
@@ -22864,6 +26115,18 @@ export type Database = {
         }
         Returns: Json
       }
+      create_member_booking: {
+        Args: {
+          p_addon_slugs?: string[]
+          p_customer_notes?: string
+          p_end_at: string
+          p_listing_id: string
+          p_national_id?: string
+          p_pricing_rule_id: string
+          p_start_at: string
+        }
+        Returns: Json
+      }
       create_order: {
         Args: {
           p_customer_notes?: string
@@ -22943,6 +26206,7 @@ export type Database = {
       }
       daily_tasks_autoclose: { Args: { p_grace_days?: number }; Returns: Json }
       dedupe_market_products: { Args: never; Returns: number }
+      delete_my_account: { Args: { p_reason?: string }; Returns: Json }
       delete_room: { Args: { _room: string }; Returns: boolean }
       dispatch_orchestrator_next_actions: { Args: never; Returns: Json }
       dispatch_reel_cloud_render: { Args: never; Returns: undefined }
@@ -22971,6 +26235,15 @@ export type Database = {
           schedule: Json
           title: string
         }[]
+      }
+      edge_fn_headers: { Args: { p_extra?: Json }; Returns: Json }
+      edge_fn_secret_header: {
+        Args: { p_header: string; p_name: string }
+        Returns: Json
+      }
+      email_in_use: {
+        Args: { p_email: string; p_exclude: string }
+        Returns: boolean
       }
       email_watchdog_check: { Args: never; Returns: Json }
       employee_clock_via_qr: {
@@ -23175,6 +26448,7 @@ export type Database = {
       escalate_chronic_failures: { Args: never; Returns: Json }
       exec_admin_readonly_sql: { Args: { p_sql: string }; Returns: Json }
       expire_ghost_drafts: { Args: never; Returns: Json }
+      expire_stale_call_verifications: { Args: never; Returns: number }
       expire_stale_project_drafts: { Args: { p_days?: number }; Returns: Json }
       fanout_partnership_intro_v2: { Args: never; Returns: Json }
       fanout_supplier_approved_v2: { Args: never; Returns: Json }
@@ -23186,6 +26460,13 @@ export type Database = {
           p_uid: string
         }
         Returns: Json
+      }
+      find_auth_user_by_phone: {
+        Args: { p_phone: string }
+        Returns: {
+          email: string
+          user_id: string
+        }[]
       }
       find_list_quote_shop: {
         Args: { p_city?: string; p_query: string }
@@ -23249,11 +26530,10 @@ export type Database = {
       friends_list: {
         Args: never
         Returns: {
-          direction: string
+          friend_avatar: string
           friend_id: string
           friend_name: string
           friend_phone: string
-          request_id: string
           status: string
         }[]
       }
@@ -23262,6 +26542,7 @@ export type Database = {
         Args: { p_date?: string; p_employee_id: string }
         Returns: number
       }
+      generate_daily_tasks_pulse: { Args: never; Returns: Json }
       generate_post_visual: { Args: { p_post_id: string }; Returns: Json }
       generate_recurring_tasks: { Args: { p_date?: string }; Returns: Json }
       generate_tasks_for_supplier_today: {
@@ -23389,6 +26670,7 @@ export type Database = {
       get_meta_token: { Args: never; Returns: string }
       get_meta_user_token: { Args: never; Returns: string }
       get_metricool_token: { Args: never; Returns: string }
+      get_module_token: { Args: never; Returns: string }
       get_or_create_referral_code: {
         Args: {
           p_label?: string
@@ -24042,10 +27324,52 @@ export type Database = {
       }
       madmona_webapp_aesthetic_brief: { Args: never; Returns: string }
       make_self_heal: { Args: never; Returns: Json }
+      marid_alerts_janitor: { Args: never; Returns: Json }
+      marid_attach_inbound_photos: { Args: { p_limit?: number }; Returns: Json }
+      marid_contact_block: {
+        Args: { p_name?: string; p_phone: string }
+        Returns: string
+      }
+      marid_cron_guard: { Args: never; Returns: Json }
+      marid_health_check: { Args: { p_alert?: boolean }; Returns: Json }
       marid_heartbeat_watchdog: { Args: never; Returns: Json }
+      marid_never_ran_count: { Args: never; Returns: number }
       marid_orchestrate: {
         Args: { p_max?: number; p_trigger?: string }
         Returns: Json
+      }
+      marid_phone_canon: { Args: { p_raw: string }; Returns: string }
+      marid_phone_variants: { Args: { p_raw: string }; Returns: string[] }
+      marid_project_change_digest: { Args: never; Returns: Json }
+      marid_publish_ready_listings: {
+        Args: { p_limit?: number }
+        Returns: Json
+      }
+      marid_pulse_age_seconds: { Args: never; Returns: number }
+      marid_reap_dead_listings: {
+        Args: {
+          p_days?: number
+          p_dry_run?: boolean
+          p_limit?: number
+          p_never_reached_days?: number
+        }
+        Returns: Json
+      }
+      marid_record_attempts: {
+        Args: { p_item_query: string; p_job_key: string }
+        Returns: number
+      }
+      marid_refresh_contact_card: {
+        Args: { p_phone: string }
+        Returns: undefined
+      }
+      marid_request_listing_completion: {
+        Args: { p_limit?: number; p_send?: boolean }
+        Returns: Json
+      }
+      marid_retry_item: {
+        Args: { p_item_key?: string; p_job_key: string }
+        Returns: string
       }
       marid_run_job: {
         Args: { p_job_key: string; p_trigger?: string }
@@ -24086,6 +27410,17 @@ export type Database = {
         Args: { p_message_id: string; p_response_payload?: Json }
         Returns: undefined
       }
+      mask_contact_info: {
+        Args: { t: string }
+        Returns: {
+          hits: string[]
+          masked: string
+        }[]
+      }
+      match_incoming_call: {
+        Args: { p_caller: string; p_source?: string }
+        Returns: string
+      }
       materialize_fixed_tasks: {
         Args: { p_date?: string; p_supplier_id: string }
         Returns: number
@@ -24093,6 +27428,10 @@ export type Database = {
       mdm_slugify: { Args: { txt: string }; Returns: string }
       merge_lid_conversation: {
         Args: { p_lid: string; p_phone: string }
+        Returns: Json
+      }
+      merge_oauth_into_existing: {
+        Args: { p_orphan_user_id: string; p_phone: string }
         Returns: Json
       }
       metricool_mark_failed: {
@@ -24105,9 +27444,16 @@ export type Database = {
       }
       my_assets: { Args: { p_wa_token?: string }; Returns: Json }
       my_meeting: { Args: { p_phone: string }; Returns: Json }
+      my_sessions: { Args: never; Returns: Json }
       my_supplier_links: { Args: never; Returns: Json }
+      norm_listing_title: { Args: { t: string }; Returns: string }
+      normalize_digits: { Args: { t: string }; Returns: string }
       normalize_eg_phone: { Args: { p: string }; Returns: string }
       normalize_phone: { Args: { p: string }; Returns: string }
+      notification_queue_bump_failed: {
+        Args: { p_ids: string[] }
+        Returns: number
+      }
       notify_employee_push: {
         Args: {
           p_body: string
@@ -24171,9 +27517,7 @@ export type Database = {
       owns_listing: { Args: { listing_uuid: string }; Returns: boolean }
       owns_supplier: { Args: { supplier_uuid: string }; Returns: boolean }
       pg_buf_caption: { Args: { p_id: string }; Returns: string }
-      pg_buffer_publish_batch: { Args: never; Returns: Json }
-      pg_buffer_publish_check: { Args: never; Returns: Json }
-      pg_buffer_publish_one: { Args: never; Returns: Json }
+      phone_key: { Args: { p: string }; Returns: string }
       pick_due_agents: {
         Args: { p_max?: number }
         Returns: {
@@ -24188,6 +27532,15 @@ export type Database = {
           id: string
           public_url: string
           title: string
+        }[]
+      }
+      pick_verify_number: {
+        Args: { p_exclude?: string }
+        Returns: {
+          healthy: boolean
+          id: string
+          label: string
+          phone: string
         }[]
       }
       poll_ad_regen_responses: { Args: never; Returns: number }
@@ -24306,6 +27659,7 @@ export type Database = {
       publish_post_to_facebook: { Args: { p_post_id: string }; Returns: number }
       publish_unclaimed_draft: { Args: { p_draft_id: string }; Returns: Json }
       publishing_watchdog_check: { Args: never; Returns: Json }
+      purge_stale_drafts: { Args: never; Returns: Json }
       push_all_scheduled_to_now: { Args: never; Returns: number }
       qc_approve:
         | { Args: { p_id: string }; Returns: Json }
@@ -24324,7 +27678,14 @@ export type Database = {
           queued: number
         }[]
       }
-      reconcile_buffer_queue: { Args: never; Returns: Json }
+      rate_limit_hit: {
+        Args: { p_key: string; p_max: number; p_window_seconds: number }
+        Returns: boolean
+      }
+      record_call_source_heartbeat: {
+        Args: { p_source: string }
+        Returns: boolean
+      }
       record_user_visit: { Args: { p_user_id: string }; Returns: Json }
       recurring_task_add: {
         Args: {
@@ -24364,6 +27725,13 @@ export type Database = {
         Returns: Json
       }
       refresh_lead_intelligence: { Args: never; Returns: Json }
+      refresh_listing_content_gaps: {
+        Args: never
+        Returns: {
+          closed: number
+          inserted: number
+        }[]
+      }
       refresh_property_opportunities: { Args: never; Returns: number }
       refresh_whatsapp_token_tick: { Args: never; Returns: Json }
       regenerate_one_ad_creative: {
@@ -24383,6 +27751,7 @@ export type Database = {
         Returns: Json
       }
       resolve_all_pending_alerts: { Args: never; Returns: Json }
+      revoke_session: { Args: { p_session_id: string }; Returns: boolean }
       room_members: {
         Args: { _room: string }
         Returns: {
@@ -24391,6 +27760,10 @@ export type Database = {
           member_name: string
           member_role: string
         }[]
+      }
+      room_needs_masking: {
+        Args: { p_room: string; p_sender: string }
+        Returns: boolean
       }
       run_all_watchdogs: { Args: never; Returns: Json }
       run_daily_health_check_with_alert: { Args: never; Returns: Json }
@@ -24470,6 +27843,16 @@ export type Database = {
       send_daily_health_summary: { Args: never; Returns: Json }
       send_meeting_reminders: { Args: never; Returns: Json }
       send_rotating_push: { Args: never; Returns: Json }
+      seo_browse_data: {
+        Args: { p_cat: string; p_city: string }
+        Returns: Json
+      }
+      seo_combos: { Args: never; Returns: Json }
+      seo_norm_area: { Args: { t: string }; Returns: string }
+      set_agent_enabled: {
+        Args: { p_agent_name: string; p_enabled: boolean }
+        Returns: Json
+      }
       set_comms_settings: {
         Args: {
           p_always_cc?: string[]
@@ -24490,6 +27873,7 @@ export type Database = {
         Args: { p_employee_id: string; p_permissions: Json }
         Returns: Json
       }
+      set_my_avatar: { Args: { _url: string }; Returns: string }
       set_order_status: {
         Args: {
           p_new_status: Database["public"]["Enums"]["mp_order_status"]
@@ -24670,6 +28054,10 @@ export type Database = {
         Returns: undefined
       }
       trigger_email_sender: { Args: never; Returns: Json }
+      unlock_orchestrator_job: {
+        Args: { p_and_enable?: boolean; p_job_key: string }
+        Returns: string
+      }
       update_listing_views_from_events: { Args: never; Returns: Json }
       update_my_profile: {
         Args: {
@@ -24715,6 +28103,19 @@ export type Database = {
         Args: { p_description?: string; p_name: string; p_secret: string }
         Returns: string
       }
+      verify_numbers_health: {
+        Args: never
+        Returns: {
+          calls_24h: number
+          healthy: boolean
+          is_active: boolean
+          label: string
+          last_call_at: string
+          last_heartbeat_at: string
+          phone: string
+          source_key: string
+        }[]
+      }
       verify_phone_otp: {
         Args: { p_code: string; p_listing_id?: string; p_phone: string }
         Returns: Json
@@ -24739,6 +28140,7 @@ export type Database = {
           session_id: string
         }[]
       }
+      wa_inbound_watchdog: { Args: never; Returns: Json }
       wa_login_mint: {
         Args: { p_full_name?: string; p_phone: string }
         Returns: Json
@@ -25014,6 +28416,7 @@ export type Database = {
             Returns: string
           }
       whatsapp_watchdog_check: { Args: never; Returns: Json }
+      whoami: { Args: { p_module_token?: string }; Returns: Json }
     }
     Enums: {
       attribute_type:

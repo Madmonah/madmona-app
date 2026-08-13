@@ -155,7 +155,6 @@ export default function AgentHealthPage() {
     setToggling(agent_name)
     // Optimistic update
     setAgents(prev => prev.map(a => a.agent_name === agent_name ? { ...a, enabled: !currentlyEnabled } : a))
-    // @ts-expect-error
     const { data, error } = await supabaseBrowser.rpc('set_agent_enabled', {
       p_agent_name: agent_name,
       p_enabled: !currentlyEnabled,

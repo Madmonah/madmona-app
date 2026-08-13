@@ -71,7 +71,6 @@ export default function DevicesPage() {
         router.replace('/auth/login?redirect=/account/devices')
         return
       }
-      // @ts-expect-error rpc typing — my_sessions is not in the generated types yet
       const { data, error: rpcErr } = await supabaseBrowser.rpc('my_sessions')
       if (rpcErr) throw rpcErr
       const rows = (Array.isArray(data) ? data : []) as SessionRow[]
@@ -91,7 +90,6 @@ export default function DevicesPage() {
   const revoke = async (id: string) => {
     setRevoking(id)
     try {
-      // @ts-expect-error rpc typing — revoke_session is not in the generated types yet
       const { error: rpcErr } = await supabaseBrowser.rpc('revoke_session', {
         p_session_id: id,
       })
