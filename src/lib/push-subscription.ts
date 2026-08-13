@@ -49,21 +49,26 @@ export async function subscribeToPush(): Promise<{ ok: boolean; error?: string }
     // VAPID rotation fix (6 Jul 2026): لو الاشتراك القديم متسجل بمفتاح مختلف
     // عن المفتاح الحالي، لازم نفكّه ونشترك من جديد — وإلا كل الإشعارات بترجع 403.
     if (subscription) {
+      // 🐛 (١٣ أغسطس ٢٠٢٦) نمسك مرجع ثابت مش-null. جوه الـtry ممكن نعمل
+      // `subscription = null`، وساعتها لو رمى أي سطر بعدها كان الـcatch
+      // بينده `subscription.unsubscribe()` على null ويرمي TypeError
+      // **جوه معالج الأخطاء نفسه** — فيتحول فشل بسيط لكراش.
+      const existing = subscription
       try {
         const currentKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-        const existingKey = subscription.options?.applicationServerKey
-          ? new Uint8Array(subscription.options.applicationServerKey as ArrayBuffer)
+        const existingKey = existing.options?.applicationServerKey
+          ? new Uint8Array(existing.options.applicationServerKey as ArrayBuffer)
           : null
         const sameKey = !!existingKey
           && existingKey.length === currentKey.length
           && existingKey.every((b, i) => b === currentKey[i])
         if (!sameKey) {
-          await subscription.unsubscribe()
+          await existing.unsubscribe()
           subscription = null
         }
       } catch {
         // لو معرفناش نقارن — الأمان إننا نجدد الاشتراك
-        try { await subscription.unsubscribe() } catch { /* ignore */ }
+        try { await existing.unsubscribe() } catch { /* ignore */ }
         subscription = null
       }
     }
@@ -156,11 +161,14 @@ export async function isSubscribed(): Promise<boolean> {
 }
 
 // Helper: convert base64 URL-safe string to Uint8Array (required by pushManager.subscribe)
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
+// النوع مربوط بـ`ArrayBuffer` صراحةً: TS الحديث بيعمم `Uint8Array` على نوع
+// الـbuffer (`Uint8Array<ArrayBufferLike>`)، و`BufferSource` اللي
+// `pushManager.subscribe` بيطلبه مابيقبلش الشكل المعمّم ده.
+function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
   const rawData = atob(base64)
-  const outputArray = new Uint8Array(rawData.length)
+  const outputArray = new Uint8Array(new ArrayBuffer(rawData.length))
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i)
   }

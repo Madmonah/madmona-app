@@ -27,7 +27,9 @@ interface Category {
   // 🗂️ (٢٥ يوليو ٢٠٢٦ — محمد): «خلي التصنيفات تبان زي أضف وزي الماركت بليس».
   //    الأعمدة دي كانت بتتجاب أصلاً (`select('*')`) بس مكانتش متعرّفة هنا،
   //    فخطوة اختيار الفئة كانت **حيطة مسطّحة من ٩٠+ فئة** من غير تابات ولا مجموعات.
-  track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | null
+  // 'sales' موجود في قيد الداتابيز (categories_track_check) و71 تصنيف بيستعمله —
+  // كان ناقص من النوع المكتوب بالإيد هنا، فـTS كان بيعتبر مقارنته 'مقارنة مستحيلة'.
+  track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | 'sales' | null
   group_slug?: string | null
   group_name_ar?: string | null
   group_emoji?: string | null

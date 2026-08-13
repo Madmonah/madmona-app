@@ -21,7 +21,10 @@ interface Category {
   name_en?: string | null
   slug: string
   icon: string | null
-  track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | null
+  // 'sales' موجود في قيد الداتابيز (categories_track_check) و71 تصنيف بيستعمله.
+  // تبويب «منتجات» بيضم sales عن قصد (٦ تصنيفات نشطة) — النوع كان ناقص القيمة
+  // دي فـTS كان بيقول إن الشرط ده مستحيل، والحقيقة إنه شغال صح وقت التشغيل.
+  track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | 'sales' | null
   also_show_in?: string[] | null
   group_slug?: string | null
   group_name_ar?: string | null
@@ -108,6 +111,10 @@ const TRACK_NAME: Record<TrackTab, { ar: string; en: string }> = {
   restaurants: { ar: 'مطاعم',       en: 'Restaurants' },
   daily:       { ar: 'سوبر ماركت',  en: 'Groceries' },
   hybrid:      { ar: 'مناسبات',     en: 'Events' },
+  // `sales` مالوش تاب خاص — تصنيفاته بتتعرض جوه تاب «بيع» (شوف الفلترة فوق:
+  // `activeTrack === 'products' && c.track === 'sales'`). موجود هنا عشان
+  // النوع يكمل، وبنفس التسمية عشان لو اتعرض في أي مكان يبقى متسق.
+  sales:       { ar: 'بيع',         en: 'Buy' },
 }
 
 function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listing[] }) {
@@ -309,7 +316,10 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         .select('id, parent_id, name_ar, name_en, slug, icon, track, also_show_in, group_slug, group_name_ar, group_emoji, group_display_order')
         .eq('is_active', true)
         .order('display_order', { ascending: true })
-      setAllCategories(data || [])
+      // الأنواع المولّدة بتقول `track: string | null` (Supabase مابيحوّلش قيود
+      // CHECK لاتحادات)، بينما `Category` هنا بيسمّي القيم الفعلية. القيد
+      // `categories_track_check` في الداتابيز هو اللي بيضمن صحة القيم دي.
+      setAllCategories((data || []) as Category[])
       // Auto-activate the track tab matching an incoming ?category= slug
       // (so clicking a homepage category opens its specific track tab, not 'all')
       if (initialCategorySlug && data) {

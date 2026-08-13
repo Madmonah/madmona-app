@@ -27,7 +27,10 @@ export async function GET() {
       .in('content_id', ids)
       .order('shared_at', { ascending: false })
 
-    const sharesByPost: Record<string, typeof shares> = {}
+    // `typeof shares` بيشمل null (لأن الاستعلام ممكن يفشل)، فالقيمة في الماب
+    // كانت نوعها nullable و`.push` عليها بتقع. النوع الصح هو نوع **العنصر**.
+    type Share = NonNullable<typeof shares>[number]
+    const sharesByPost: Record<string, Share[]> = {}
     for (const s of shares ?? []) {
       if (!sharesByPost[s.content_id]) sharesByPost[s.content_id] = []
       sharesByPost[s.content_id].push(s)

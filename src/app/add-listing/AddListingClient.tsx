@@ -43,7 +43,8 @@ export type MainCategory = {
   slug: string;
   name_ar: string;
   emoji: string;
-  track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | null;
+  // 'sales' موجود في قيد الداتابيز (categories_track_check) و71 تصنيف بيستعمله.
+  track?: 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | 'sales' | null;
   subs: SubCategory[];
   // Phase G (May 18 2026): group metadata for visual grouping in StepCategory.
   // When null, the wizard falls back to flat rendering (zero-regression).
@@ -98,7 +99,7 @@ function getCategoryWizardMeta(
 function getCategoryTrack(
   categorySlug: string | undefined | null,
   categories: MainCategory[],
-): 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | null {
+): 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | 'sales' | null {
   if (!categorySlug) return null;
   const asMain = categories.find((m) => m.slug === categorySlug);
   if (asMain) return asMain.track ?? null;

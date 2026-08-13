@@ -1002,9 +1002,12 @@ async function createSupplierGroup(a: {
     `${MADMONA_LINKS.لوحة_المورد}`
 
   try {
-    const res = await fetch(`${url.replace(/\/$/, '')}/group-create`, {
+    // الكود ده تحت `return` مبكر (الجروبات متوقفة)، فتحليل التدفق في TS
+    // مش بيوصل لحراسة `if (!url)` فوق ولا بيضيّق النوع — التأكيد هنا
+    // بيوضّح النية من غير ما يغيّر أي سلوك وقت التشغيل.
+    const res = await fetch(`${(url as string).replace(/\/$/, '')}/group-create`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-madmona-secret': secret },
+      headers: { 'content-type': 'application/json', 'x-madmona-secret': secret as string },
       body: JSON.stringify({
         subject,
         participants: [a.supplier_phone, ...TEAM],
@@ -1034,7 +1037,11 @@ async function createSupplierGroup(a: {
       قول_للمورد: 'عملتلك جروب متابعة مع فريق مضمونة — هتلاقيه في الواتساب 👌',
     }
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : 'فشل إنشاء الجروب' }
+    // الكتلة دي كلها بعد `return` مبكر (الجروبات متوقفة)، فتحليل التدفق
+    // في TS متعطّل هنا ومش بيضيّق `e` عبر `instanceof`. التأكيد بيوضّح
+    // النية من غير أي تغيير في السلوك.
+    const err = e as Error
+    return { ok: false, error: err?.message || 'فشل إنشاء الجروب' }
   }
 }
 
@@ -1070,7 +1077,10 @@ async function forwardToSupplierGroup(a: {
     // على jid الجروب نفسه، والنجاح بيتفحص بجد.
     const { sendText } = await import('./whatsapp')
     const session = process.env.OWNER_PHONE || '201002229982'
-    const res = await sendText({ jid: group.group_jid, session, body: text })
+    // `to` مطلوب في SendTextParams، لكن جروبات الواتساب ملهاش رقم — الـJID
+    // هو المُعرّف الوحيد. `sendText` بيقدّم `jid` على `to` أصلًا، فبنمرر
+    // الـJID في الاتنين عشان النوع يبقى صح والسلوك ما يتغيّرش.
+    const res = await sendText({ to: group.group_jid, jid: group.group_jid, session, body: text })
     return res.ok
       ? { ok: true, sent_to: group.subject, قول_للعميل: 'بعتّ طلبك للمورد وهرجعلك برده 👌' }
       : { ok: false, error: res.error || 'فشل الإرسال للجروب' }
