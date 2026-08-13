@@ -242,7 +242,7 @@ function DashboardTab({ data, stats, setTab }: { data: HQData; stats: Record<str
                   </div>
                   <div style={{ fontSize: 11, color: '#666' }}>
                     👁 {String(l.views_count)}
-                    {l.rating && Number(l.rating) > 0 && ` · ⭐ ${Number(l.rating).toFixed(1)}`}
+                    {Number(l.rating) > 0 ? ` · ⭐ ${Number(l.rating).toFixed(1)}` : null}
                   </div>
                 </a>
               ))}
@@ -382,7 +382,9 @@ function MarketplaceTab({ data }: { data: HQData }) {
                       <td style={td}><code style={{ fontSize: 10 }}>{String(l.phone_number ?? '—')}</code></td>
                       <td style={td}>{String(l.intent ?? '—')}</td>
                       <td style={td}>
-                        <span style={{ background: Number(l.lead_score) >= 8 ? '#d4edda' : Number(l.lead_score) >= 5 ? '#fff3cd' : '#f8d7da', padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 'bold' }}>{String(l.lead_score ?? '?')}/10</span>
+                        {/* 🐛 sales_leads بتسجّل الدرجة من ١٠٠ مش من ١٠ — العتبات
+                            القديمة (٨ و٥) كانت هتخلّي كل ليد يبان أخضر غلط. */}
+                        <span style={{ background: Number(l.lead_score) >= 70 ? '#d4edda' : Number(l.lead_score) >= 40 ? '#fff3cd' : '#f8d7da', padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 'bold' }}>{String(l.lead_score ?? '?')}/100</span>
                       </td>
                       <td style={td}>{String(l.status ?? 'new')}</td>
                     </tr>
@@ -861,8 +863,9 @@ function GrowthTab({ partnerships, customerSuccess, photoBriefs, leadsRecent }: 
           {leadsRecent.length === 0 ? <Empty msg="مفيش leads" /> :
             leadsRecent.map((l, i) => (
               <div key={i} style={card('#10B981')}>
-                <strong style={{ fontSize: 13 }}>{String(l.full_name ?? '—')}</strong>
-                <span style={{ background: '#28a745', color: '#fff', padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 'bold', float: 'left' }}>{String(l.lead_score ?? '?')}/10</span>
+                {/* أغلب الليدز جاية من الواتساب من غير اسم — الموبايل أنفع من شرطة فاضية */}
+                <strong style={{ fontSize: 13 }}>{String(l.full_name ?? l.phone_number ?? '—')}</strong>
+                <span style={{ background: '#28a745', color: '#fff', padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 'bold', float: 'left' }}>{String(l.lead_score ?? '?')}/100</span>
                 <div style={{ fontSize: 11, color: '#666' }}>📞 {String(l.phone_number ?? '—')}</div>
               </div>
             ))}
@@ -1098,8 +1101,11 @@ function ToolsTab({ kpis, categories, payouts }: { kpis: KPIs; categories: Array
       {categories.length > 0 && (
         <>
           <h3 style={sectionHeader}>🗂️ الفئات ({categories.length})</h3>
+          {/* الشاشة دي اتكتبت وهي متوقعة قايمة صغيرة. الجدول الحقيقي فيه ٣٨١ فئة
+              نشطة — عرضهم كلهم في سطر واحد بيبقى حيطة نص. بنعرض أول ٣٠ والباقي عدد. */}
           <div style={{ background: '#fff', borderRadius: 10, padding: 12, fontSize: 11, color: '#666' }}>
-            {categories.map(c => String(c.name_ar)).join(' · ')}
+            {categories.slice(0, 30).map(c => String(c.name_ar)).join(' · ')}
+            {categories.length > 30 && ` … +${categories.length - 30} فئة`}
           </div>
         </>
       )}

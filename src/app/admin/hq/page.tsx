@@ -71,12 +71,23 @@ export default async function HQPage() {
     supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('reviews').select('rating').eq('is_published', true),
     supabaseAdmin.from('push_subscriptions').select('*', { count: 'exact', head: true }),
-    supabaseAdmin.from('lead_captures').select('*', { count: 'exact', head: true }),
-    supabaseAdmin.from('lead_captures').select('id, full_name, phone_number, intent, lead_score, status, created_at')
+    // 🐛 (١٣ أغسطس ٢٠٢٦ — جرد الكود مقابل الداتابيز) الأربع استعلامات دي كانت
+    // بتنده على جداول **مش موجودة خالص**: lead_captures / payouts / notifications
+    // / listing_categories. supabase-js بيرجّع الخطأ في `.error` مش بيرميه،
+    // و`Promise.all` هنا مش بيقع — فالصفحة كانت بتفتح عادي وتعرض **أصفار كاذبة**.
+    // ده أخطر من إنها تقع: «٠ فئة» و«٠ إشعار» كانوا بيبانوا كأنهم حقيقة،
+    // والواقع 415 فئة و4869 إشعار. اتوصلت بالجداول الحقيقية:
+    //   lead_captures      → sales_leads (مع alias عشان الواجهة ما تتغيّرش)
+    //   payouts            → supplier_payouts
+    //   notifications      → notification_queue
+    //   listing_categories → categories
+    supabaseAdmin.from('sales_leads').select('*', { count: 'exact', head: true }),
+    supabaseAdmin.from('sales_leads')
+      .select('id, full_name:contact_name, phone_number:contact_phone, intent, lead_score, created_at')
       .order('created_at', { ascending: false }).limit(15),
-    supabaseAdmin.from('payouts').select('*').order('created_at', { ascending: false }).limit(10),
-    supabaseAdmin.from('notifications').select('*', { count: 'exact', head: true }),
-    supabaseAdmin.from('listing_categories').select('id, name_ar, slug').order('display_order'),
+    supabaseAdmin.from('supplier_payouts').select('*').order('created_at', { ascending: false }).limit(10),
+    supabaseAdmin.from('notification_queue').select('*', { count: 'exact', head: true }),
+    supabaseAdmin.from('categories').select('id, name_ar, slug').eq('is_active', true).order('display_order'),
   ])
 
   type Booking = { status: string; total_amount: number | string; commission_amount: number | string; created_at: string }
