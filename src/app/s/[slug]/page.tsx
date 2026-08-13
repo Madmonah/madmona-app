@@ -223,7 +223,6 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
 
   useEffect(() => {
     (async () => {
-      // @ts-expect-error rpc typing
       const { data: d } = await supabase.rpc('public_salon_landing', { p_slug: slug })
       setData(d)
       setLoading(false)

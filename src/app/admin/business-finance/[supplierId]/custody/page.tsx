@@ -21,10 +21,8 @@ export default function CustodyPage({ params }: { params: { supplierId: string }
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: list } = await supabase.from('custody_items').select('*').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setItems(list || [])
     setLoading(false)
@@ -33,7 +31,6 @@ export default function CustodyPage({ params }: { params: { supplierId: string }
   useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId])
 
   async function markReturned(id: string) {
-    // @ts-expect-error
     await supabase.from('custody_items').update({ status: 'returned', returned_at: new Date().toISOString() }).eq('id', id)
     load()
   }
@@ -121,7 +118,6 @@ function AddCustodyModal({ supplierId, onClose, onSaved }: any) {
   async function save() {
     if (!form.title) return alert('اكتب وصف العهدة')
     setSaving(true)
-    // @ts-expect-error
     const { error } = await supabase.from('custody_items').insert({
       supplier_id: supplierId,
       kind: form.kind,

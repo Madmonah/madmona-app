@@ -124,10 +124,8 @@ export default function BulkAddEmployeesPage({
   // Load supplier + branches
   useEffect(() => {
     (async () => {
-      // @ts-expect-error
       const { data: sup } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
       setSupplier(sup as any)
-      // @ts-expect-error
       const { data: br } = await supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).order('code')
       setBranches((br || []) as Branch[])
       if (br && br.length > 0) setSelectedBranch(br[0].id)
@@ -293,7 +291,6 @@ export default function BulkAddEmployeesPage({
       },
     }))
     
-    // @ts-expect-error
     const { data, error } = await supabase.rpc('admin_bulk_add_employees', {
       p_supplier_id: supplierId,
       p_branch_id: selectedBranch,

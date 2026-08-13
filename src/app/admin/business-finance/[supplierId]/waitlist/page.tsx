@@ -29,13 +29,10 @@ export default function WaitlistPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name, contact_phone').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: br } = await supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).order('code')
     setBranches(br || [])
-    // @ts-expect-error
     const { data: result } = await supabase.rpc('admin_get_waitlist', {
       p_supplier_id: supplierId, p_branch_id: branchFilter, p_status: statusFilter,
     })
@@ -170,7 +167,6 @@ function ConvertModal({ entry, branches, supplierId, onClose, onDone }: any) {
       // find branch id from entry
       const branch = branches.find((b: any) => b.name === entry.branch_name)
       if (branch) {
-        // @ts-expect-error
         const { data } = await supabase.from('business_employees').select('id, full_name').eq('branch_id', branch.id).eq('status', 'active').order('full_name')
         setStylists(data || [])
       }
@@ -182,7 +178,6 @@ function ConvertModal({ entry, branches, supplierId, onClose, onDone }: any) {
     const scheduled = new Date(date)
     const [h, m] = time.split(':')
     scheduled.setHours(parseInt(h), parseInt(m), 0, 0)
-    // @ts-expect-error
     const { data, error } = await supabase.rpc('admin_convert_waitlist', {
       p_waitlist_id: entry.waitlist_id,
       p_scheduled_at: scheduled.toISOString(),

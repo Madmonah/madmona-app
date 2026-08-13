@@ -30,13 +30,10 @@ export default function ShiftsPage({ params }: { params: { supplierId: string } 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: br } = await supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).order('code')
     setBranches(br || [])
-    // @ts-expect-error
     let q = supabase.from('business_employees').select('id, full_name, role_ar, branch_id').eq('supplier_id', supplierId).eq('status', 'active')
     if (branchFilter) q = q.eq('branch_id', branchFilter)
     const { data: emp } = await q.order('full_name')
@@ -116,7 +113,6 @@ function ShiftsModal({ supplierId, employee, onClose }: any) {
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_get_employee_shifts', { p_employee_id: employee.id })
     const map: Record<number, { start: string; end: string; off: boolean }> = {}
     DAYS.forEach(d => { map[d.idx] = { start: '11:00', end: '23:00', off: false } })

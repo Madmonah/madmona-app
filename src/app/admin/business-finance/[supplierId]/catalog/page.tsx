@@ -31,13 +31,10 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error rpc typing
     const { data: s } = await supabase.from('suppliers').select('business_name, contact_phone').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error rpc typing
     const { data: c } = await supabase.rpc('admin_supplier_catalog_categories', { p_supplier_id: supplierId })
     setCats(Array.isArray(c) ? (c as Cat[]) : [])
-    // @ts-expect-error rpc typing
     const { data: l } = await supabase.rpc('admin_supplier_list_listings', { p_supplier_id: supplierId })
     setItems(Array.isArray(l) ? (l as Item[]) : [])
     setLoading(false)
@@ -49,7 +46,6 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
     if (!form.title.trim() || !form.category_id) return alert('اكتب الاسم واختر الفئة')
     if (!form.on_request && !form.price) return alert('اكتب السعر أو فعّل "اتصل للسعر"')
     setSaving(true)
-    // @ts-expect-error rpc typing
     const { error } = await supabase.rpc('admin_supplier_add_listing', {
       p_supplier_id: supplierId,
       p_title: form.title.trim(),

@@ -48,7 +48,6 @@ export default function MadmonaHome() {
     const map: Record<string, any[]> = {}
     for (const a of admins) {
       if (a.role !== 'owner' && a.role !== 'manager') continue
-      // @ts-expect-error rpc typing
       const { data } = await supabase.rpc('admin_list_employee_join_requests', { p_token: token, p_supplier_id: a.supplier_id })
       if (data?.ok && data.requests?.length) map[a.supplier_id] = data.requests
     }
@@ -58,7 +57,6 @@ export default function MadmonaHome() {
   async function init() {
     const token = safeStorage.get('madmona_token')
     if (!token) { router.push('/login'); return }
-    // @ts-expect-error rpc typing
     const { data, error } = await supabase.rpc('madmona_resolve', { p_token: token })
     // (27 يوليو 2026) فشل الاتصال لا يساوي توكن باطل — لو فيه error (شبكة/سيرفر)
     // ما نمسحش التوكن وما نطلّعش المستخدم؛ نسيبه مكانه. كان أي فشل مؤقت بيمسح
@@ -69,24 +67,18 @@ export default function MadmonaHome() {
     setMe(data)
 
     if (data.is_employee) {
-      // @ts-expect-error rpc typing
       const { data: emp } = await supabase.rpc('madmona_employee_summary', { p_token: token })
       if (emp?.ok) setEmpSummary(emp)
     }
     if (data.is_customer) {
-      // @ts-expect-error rpc typing
       const { data: cb } = await supabase.rpc('madmona_customer_bookings', { p_token: token })
       if (cb?.ok) setCustBookings(cb)
-      // @ts-expect-error rpc typing
       const { data: pr } = await supabase.rpc('madmona_customer_pending_reviews', { p_token: token })
       if (pr?.ok && pr.pending?.length) setPendingReviews(pr.pending)
-      // @ts-expect-error rpc typing
       const { data: tt } = await supabase.rpc('madmona_tip_targets', { p_token: token })
       if (tt?.ok && tt.targets?.length) setTipTargets(tt.targets)
-      // @ts-expect-error rpc typing
       const { data: pd } = await supabase.rpc('madmona_list_products', { p_token: token })
       if (pd?.ok && pd.products?.length) setProducts(pd.products)
-      // @ts-expect-error rpc typing
       const { data: bi } = await supabase.rpc('madmona_booking_info', { p_token: token })
       if (bi?.ok && bi.options?.length) {
         const brs = bi.options.flatMap((o: any) => (o.branches || []).map((b: any) => ({ ...b, business: o.business_name })))
@@ -127,7 +119,6 @@ export default function MadmonaHome() {
     if (!tipEmp || !tipAmount) return
     const token = safeStorage.get('madmona_token'); if (!token) return
     setTipBusy(true)
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('madmona_create_tip', {
       p_token: token, p_employee_id: tipEmp, p_amount: tipAmount, p_method: tipMethod,
     })
@@ -149,7 +140,6 @@ export default function MadmonaHome() {
     if (!items.length) return
     const token = safeStorage.get('madmona_token'); if (!token) return
     setOrderBusy(true)
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('madmona_create_product_order', {
       p_token: token, p_items: items, p_method: storeMethod,
     })

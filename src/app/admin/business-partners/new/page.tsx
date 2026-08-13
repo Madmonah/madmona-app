@@ -126,7 +126,6 @@ export default function NewBusinessPartnerPage() {
       }
 
       // Call SECURITY DEFINER RPC (bypasses RLS safely)
-      // @ts-expect-error
       const { data, error: rpcError } = await supabase.rpc('admin_create_b2b_partner', { payload })
 
       if (rpcError) {

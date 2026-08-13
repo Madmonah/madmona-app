@@ -42,13 +42,11 @@ export default function ManagerConsole() {
   const [bom, setBom] = useState<any>(null)   // { can_edit, services, products }; null = no BOM access
 
   const loadBom = useCallback(async () => {
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('madmona_mgr_bom', { p_token: token() })
     setBom(data?.ok ? data : null)
   }, [])
 
   const loadEmployees = useCallback(async () => {
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('madmona_mgr_employees', { p_token: token() })
     if (!data?.ok) { setDenied(true); return false }
     setMgr(data.manager); setBranches(data.branches || []); setEmployees(data.employees || [])
@@ -118,7 +116,6 @@ function AttendanceTab() {
 
   const load = useCallback(async (d: string) => {
     setLoading(true)
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('madmona_mgr_attendance', { p_token: token(), p_date: d })
     setRows(data?.rows || []); setLoading(false)
   }, [])
@@ -169,7 +166,6 @@ function AttendanceRow({ r, date, open, onOpen, onSaved }: any) {
 
   async function save(markAbsent: boolean) {
     setBusy(true)
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('madmona_mgr_set_attendance', {
       p_token: token(), p_employee_id: r.employee_id, p_date: date,
       p_clock_in: markAbsent ? null : (cin || null), p_clock_out: markAbsent ? null : (cout || null),
@@ -272,7 +268,6 @@ function EmployeeModal({ employee, branches, scope, canViewSalary, canEditSalary
   async function save() {
     if (!name.trim()) { setErr('اكتب الاسم'); return }
     setBusy(true); setErr('')
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('madmona_mgr_save_employee', {
       p_token: token(), p_employee_id: employee.id ?? null,
       p_full_name: name, p_phone: phone || null,
@@ -335,7 +330,6 @@ function ShiftModal({ employee, onClose }: any) {
 
   useEffect(() => {
     (async () => {
-      // @ts-expect-error rpc typing
       const { data } = await supabase.rpc('madmona_mgr_get_shifts', { p_token: token(), p_employee_id: employee.id })
       const map: Record<number, any> = {}
       ;(data?.shifts || []).forEach((s: any) => { map[s.dow] = s })
@@ -353,7 +347,6 @@ function ShiftModal({ employee, onClose }: any) {
     const payload = days
       .filter((d) => d.off || (d.start && d.end))
       .map((d) => ({ dow: d.dow, off: d.off, start: d.start, end: d.end }))
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('madmona_mgr_set_shifts', { p_token: token(), p_employee_id: employee.id, p_shifts: payload })
     setBusy(false); if (data?.ok) setSaved(true)
   }
@@ -407,7 +400,6 @@ function BomTab({ bom, reload }: any) {
 
   async function unlink(serviceId: string, productId: string) {
     setBusyKey(serviceId + productId)
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('madmona_mgr_unlink_product', { p_token: token(), p_service_id: serviceId, p_product_id: productId })
     setBusyKey(null)
     if (data?.ok) reload()
@@ -496,7 +488,6 @@ function AddProductModal({ service, products, onClose, onSaved }: any) {
     const n = Number(qty)
     if (!n || n <= 0) { setErr('اكتب كمية صح'); return }
     setBusy(true); setErr('')
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('madmona_mgr_link_product', {
       p_token: token(), p_service_id: service.id, p_product_id: productId, p_quantity: n, p_is_optional: optional,
     })

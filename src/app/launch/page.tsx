@@ -40,7 +40,6 @@ export default function LaunchPage() {
   useEffect(() => {
     (async () => {
       try {
-        // @ts-expect-error
         const { count } = await supabaseBrowser
           .from('profiles')
           .select('id', { count: 'exact', head: true })
@@ -65,7 +64,6 @@ export default function LaunchPage() {
     setSubmitting(true)
 
     try {
-      // @ts-expect-error
       const { error: dbErr } = await supabaseBrowser
         .from('leads')
         .insert({

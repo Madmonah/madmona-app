@@ -30,11 +30,8 @@ export default function TrustStatsSection() {
       try {
         // Fetch real numbers from DB
         const [listingsRes, suppliersRes, citiesRes] = await Promise.all([
-          // @ts-expect-error
           supabaseBrowser.from('listings').select('id', { count: 'exact', head: true }).eq('status', 'published'),
-          // @ts-expect-error
           supabaseBrowser.from('marketplace_suppliers').select('id', { count: 'exact', head: true }).eq('kyc_status', 'approved'),
-          // @ts-expect-error
           supabaseBrowser.from('listings').select('city').eq('status', 'published'),
         ])
 

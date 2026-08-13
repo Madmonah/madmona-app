@@ -19,10 +19,8 @@ export default function BranchesPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: br } = await supabase.from('supplier_branches')
       .select('*, business_employees(count)')
       .eq('supplier_id', supplierId)

@@ -53,7 +53,6 @@ export default function SupplierReviewsPage() {
       }
 
       // Owner check
-      // @ts-expect-error
       let { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id, business_name')
@@ -62,7 +61,6 @@ export default function SupplierReviewsPage() {
 
       // Staff fallback
       if (!sup) {
-        // @ts-expect-error
         const { data: staff } = await supabaseBrowser
           .from('supplier_staff')
           .select(`
@@ -88,7 +86,6 @@ export default function SupplierReviewsPage() {
       }
       setSupplierName(sup.business_name)
 
-      // @ts-expect-error
       const { data } = await supabaseBrowser
         .from('reviews')
         .select(`
@@ -131,7 +128,6 @@ export default function SupplierReviewsPage() {
       return
     }
     setSaving(true)
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('reviews')
       .update({

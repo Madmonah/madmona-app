@@ -131,7 +131,6 @@ async function getSocialUrls(): Promise<Record<string, string>> {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
-    // @ts-expect-error
     const { data } = await supabase
       .from('site_settings')
       .select('key, value')

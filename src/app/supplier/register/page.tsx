@@ -78,7 +78,6 @@ export default function SupplierRegisterPage() {
       setUserId(session.user.id)
 
       // Check if this user already has a supplier record
-      // @ts-expect-error new schema not in types
       const { data: supplier } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id, business_name, kyc_status, kyc_rejection_reason')
@@ -87,7 +86,6 @@ export default function SupplierRegisterPage() {
 
       if (supplier) {
         // Count their listings to know if they finished onboarding
-        // @ts-expect-error
         const { count } = await supabaseBrowser
           .from('listings')
           .select('id', { count: 'exact', head: true })
@@ -126,7 +124,6 @@ export default function SupplierRegisterPage() {
     if (commercialReg) insert.commercial_registration = commercialReg.trim()
     if (taxId) insert.tax_id = taxId.trim()
 
-    // @ts-expect-error
     const { error: insertError } = await supabaseBrowser
       .from('marketplace_suppliers')
       .insert(insert)

@@ -42,7 +42,6 @@ export default function ReportsPage({ params }: { params: { supplierId: string }
 
   useEffect(() => {
     (async () => {
-      // @ts-expect-error
       const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
       setSupplier(s)
     })()
@@ -56,7 +55,6 @@ export default function ReportsPage({ params }: { params: { supplierId: string }
 
   async function exportEmployees() {
     setExporting('employees')
-    // @ts-expect-error
     const { data } = await supabase.from('business_employees')
       .select('full_name, role_ar, pin_code, salary_egp, status, supplier_branches(name)')
       .eq('supplier_id', supplierId)
@@ -76,7 +74,6 @@ export default function ReportsPage({ params }: { params: { supplierId: string }
   async function exportExpenses() {
     setExporting('expenses')
     const { from, to } = periodRange()
-    // @ts-expect-error
     const { data } = await supabase.from('branch_expenses')
       .select('expense_date, category, amount_egp, payment_method, vendor_name, notes, supplier_branches(name)')
       .eq('supplier_id', supplierId)
@@ -97,7 +94,6 @@ export default function ReportsPage({ params }: { params: { supplierId: string }
   async function exportBookings() {
     setExporting('bookings')
     const { from, to } = periodRange()
-    // @ts-expect-error
     const { data } = await supabase.from('branch_bookings')
       .select('scheduled_at, customer_name, customer_phone, service_name_snapshot, price_egp, status, supplier_branches(name)')
       .eq('supplier_id', supplierId)
@@ -119,7 +115,6 @@ export default function ReportsPage({ params }: { params: { supplierId: string }
 
   async function exportInventory() {
     setExporting('inventory')
-    // @ts-expect-error
     const { data } = await supabase.from('inventory_products')
       .select('name_ar, category, current_stock, cost_price_egp, selling_price_egp, reorder_threshold')
       .eq('supplier_id', supplierId)
@@ -139,7 +134,6 @@ export default function ReportsPage({ params }: { params: { supplierId: string }
 
   async function exportCustomers() {
     setExporting('customers')
-    // @ts-expect-error
     const { data } = await supabase.from('customers')
       .select('full_name, phone, customer_tier, total_visits, total_spent_egp, loyalty_points')
       .eq('supplier_id', supplierId)

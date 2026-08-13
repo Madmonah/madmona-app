@@ -32,10 +32,8 @@ export default function CustomerDetailPage({ params }: { params: { supplierId: s
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: result } = await supabase.rpc('admin_get_customer_detail', { p_customer_id: customerId })
     setData(result)
-    // @ts-expect-error
     const { data: ltvData } = await supabase.rpc('admin_get_customer_ltv', { p_customer_id: customerId })
     setLtv(ltvData)
     if (result?.customer) {
@@ -57,7 +55,6 @@ export default function CustomerDetailPage({ params }: { params: { supplierId: s
 
   async function save() {
     setSaving(true)
-    // @ts-expect-error
     await supabase.from('customers').update(form).eq('id', customerId)
     setEditing(false)
     setSaving(false)

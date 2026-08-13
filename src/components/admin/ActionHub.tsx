@@ -45,7 +45,6 @@ export function ActionHub() {
 
   async function load() {
     try {
-      // @ts-expect-error - RPC type
       const { data: result, error } = await supabaseBrowser.rpc('get_admin_action_hub')
       if (error) throw error
       setData(result as ActionHubData)

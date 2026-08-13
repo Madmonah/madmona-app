@@ -76,23 +76,14 @@ export default function OperationsHub({
   async function loadAll() {
     setLoading(true)
     const [sup, br, emp, sv, it, bl, vd, tx, sm] = await Promise.all([
-      // @ts-expect-error
       supabase.from('suppliers').select('business_name, industry').eq('id', supplierId).single(),
-      // @ts-expect-error
       supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).eq('status', 'active').order('code'),
-      // @ts-expect-error
       supabase.from('business_employees').select('id, full_name, role_ar, branch_id').eq('supplier_id', supplierId).eq('status', 'active'),
-      // @ts-expect-error
       supabase.from('services_catalog').select('*').eq('supplier_id', supplierId).eq('status', 'active').order('category'),
-      // @ts-expect-error
       supabase.from('inventory_items').select('*').eq('supplier_id', supplierId).eq('status', 'active').order('name_ar'),
-      // @ts-expect-error
       supabase.from('recurring_bills').select('*').eq('supplier_id', supplierId).eq('status', 'active'),
-      // @ts-expect-error
       supabase.from('vendors').select('*').eq('supplier_id', supplierId).eq('status', 'active'),
-      // @ts-expect-error
       supabase.from('financial_transactions').select('id, direction, amount_egp, category_snapshot, description, customer_name, occurred_at, madmona_commission_amount').eq('supplier_id', supplierId).eq('is_void', false).order('occurred_at', { ascending: false }).limit(20),
-      // @ts-expect-error
       supabase.rpc('admin_get_operations_summary', { p_supplier_id: supplierId }),
     ])
     setSupplierName((sup.data as any)?.business_name || '')
@@ -400,7 +391,6 @@ function WalkInBookingModal({ supplierId, branches, services, employees, onClose
   async function submit() {
     if (!serviceId || price <= 0) return
     setSubmitting(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_log_walk_in_booking', {
       p_supplier_id: supplierId, p_branch_id: branchId, p_service_id: serviceId,
       p_price_egp: price, p_customer_name: customerName.trim() || null,
@@ -449,7 +439,6 @@ function TipModal({ supplierId, branches, employees, onClose, onSaved }: any) {
   async function submit() {
     if (amount <= 0) return
     setSubmitting(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_log_tip', {
       p_supplier_id: supplierId, p_branch_id: branchId, p_amount: amount,
       p_recipient_employee_id: employeeId || null, p_customer_name: customerName.trim() || null,
@@ -492,7 +481,6 @@ function WithdrawalModal({ supplierId, branches, employees, onClose, onSaved }: 
   async function submit() {
     if (amount <= 0 || !reason.trim()) return
     setSubmitting(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_log_withdrawal', {
       p_supplier_id: supplierId, p_branch_id: branchId, p_amount: amount,
       p_reason: reason.trim(), p_withdrawn_by: withdrawnBy || null,
@@ -534,7 +522,6 @@ function AdvanceModal({ employees, onClose, onSaved }: any) {
   async function submit() {
     if (!employeeId || amount <= 0) return
     setSubmitting(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_log_advance', {
       p_employee_id: employeeId, p_amount: amount, p_reason: reason.trim() || null,
     })
@@ -570,7 +557,6 @@ function BillPayModal({ bills, onClose, onSaved }: any) {
   async function submit() {
     if (!billId || amount <= 0) return
     setSubmitting(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_pay_bill', {
       p_recurring_bill_id: billId, p_amount_egp: amount, p_period: period,
       p_payment_method: 'cash', p_reference_number: referenceNumber.trim() || null,
@@ -620,7 +606,6 @@ function PurchaseModal({ supplierId, items, vendors, onClose, onSaved, onAddItem
   async function submit() {
     if (!itemId || quantity <= 0 || unitCost <= 0) return
     setSubmitting(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_record_inventory_purchase', {
       p_supplier_id: supplierId, p_item_id: itemId, p_quantity: quantity,
       p_unit_cost_egp: unitCost, p_vendor_id: vendorId || null,
@@ -685,7 +670,6 @@ function TransferModal({ supplierId, items, branches, onClose, onSaved }: any) {
   async function submit() {
     if (!itemId || !branchId || quantity <= 0) return
     setSubmitting(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_transfer_to_branch', {
       p_supplier_id: supplierId, p_item_id: itemId, p_branch_id: branchId, p_quantity: quantity,
     })
@@ -722,7 +706,6 @@ function ConsumptionModal({ supplierId, items, branches, onClose, onSaved }: any
   async function submit() {
     if (!itemId || quantity <= 0) return
     setSubmitting(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_record_consumption', {
       p_supplier_id: supplierId, p_item_id: itemId, p_branch_id: branchId,
       p_quantity: quantity, p_reason: reason.trim() || null,
@@ -765,7 +748,6 @@ function PaySalaryModal({ employees, isElite, onClose, onSaved }: any) {
   async function submit() {
     if (!employeeId || baseSalary <= 0) return
     setSubmitting(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_pay_salary', {
       p_employee_id: employeeId, p_period: period,
       p_base_salary: baseSalary, p_bonus: bonus,
@@ -830,7 +812,6 @@ function AddServiceModal({ supplierId, onClose, onSaved }: any) {
   async function submit() {
     if (!name.trim() || price <= 0) return
     setSubmitting(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_add_service', {
       p_supplier_id: supplierId, p_name_ar: name.trim(), p_price_egp: price,
       p_duration_minutes: duration, p_category: category, p_performer_commission_pct: commission,
@@ -876,7 +857,6 @@ function AddItemModal({ supplierId, onClose, onSaved }: any) {
   async function submit() {
     if (!name.trim()) return
     setSubmitting(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_add_inventory_item', {
       p_supplier_id: supplierId, p_name_ar: name.trim(), p_category: category, p_unit: unit,
       p_default_cost: cost, p_selling_price: forResale ? sellingPrice : null,
@@ -936,7 +916,6 @@ function AddVendorModal({ supplierId, onClose, onSaved }: any) {
   async function submit() {
     if (!name.trim()) return
     setSubmitting(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_add_vendor', {
       p_supplier_id: supplierId, p_name: name.trim(),
       p_category: category.trim() || null, p_phone: phone.trim() || null,

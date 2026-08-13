@@ -39,7 +39,6 @@ export async function POST(req: NextRequest) {
     )
 
     // 1. Look up token
-    // @ts-expect-error
     const { data: tokenRow } = await supa
       .from('password_reset_tokens')
       .select('user_id, email, expires_at, used')
@@ -82,7 +81,6 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Mark token as used
-    // @ts-expect-error
     await supa
       .from('password_reset_tokens')
       .update({ used: true })
@@ -117,7 +115,6 @@ export async function GET(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // @ts-expect-error
     const { data: tokenRow } = await supa
       .from('password_reset_tokens')
       .select('email, expires_at, used')

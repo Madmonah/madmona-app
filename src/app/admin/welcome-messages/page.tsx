@@ -83,7 +83,6 @@ export default function WelcomeMessagesPage() {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
       if (!session?.user) { setStage('unauthenticated'); return }
       setRefreshing(true)
-      // @ts-expect-error
       const { data: stats, error: e } = await supabaseBrowser.rpc('get_admin_welcome_messages')
       setRefreshing(false)
       if (e) {
@@ -108,7 +107,6 @@ export default function WelcomeMessagesPage() {
     }
     setTestingKey(templateKey)
     try {
-      // @ts-expect-error
       const { error: e } = await supabaseBrowser.rpc('admin_send_test_welcome', {
         p_template_key: templateKey,
         p_to_email: testEmail,
@@ -128,7 +126,6 @@ export default function WelcomeMessagesPage() {
   async function toggleTemplate(templateKey: string, currentActive: boolean) {
     setToggling(templateKey)
     try {
-      // @ts-expect-error
       const { error: e } = await supabaseBrowser.rpc('admin_toggle_email_template', {
         p_template_key: templateKey,
         p_is_active: !currentActive,

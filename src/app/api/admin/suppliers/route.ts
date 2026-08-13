@@ -16,7 +16,6 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const status = searchParams.get('status') || 'all'
 
-  // @ts-expect-error
   let query = supabase.from('suppliers').select('*').order('created_at', { ascending: false })
   if (status !== 'all') {
     query = query.eq('status', status)

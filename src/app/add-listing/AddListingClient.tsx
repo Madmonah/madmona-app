@@ -1243,7 +1243,6 @@ function StepBasics({
     setLoadingDistricts(true);
     (async () => {
       try {
-        // @ts-expect-error — RPC types not auto-generated yet
         const { data, error } = await supabaseBrowser.rpc('get_districts_by_governorate', { p_governorate: city });
         if (cancelled) return;
         if (error || !Array.isArray(data)) { setDistrictsList([]); return; }

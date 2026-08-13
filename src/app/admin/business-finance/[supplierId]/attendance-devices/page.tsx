@@ -27,7 +27,6 @@ export default function AttendanceDevicesPage({ params }: { params: { supplierId
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('admin_list_employee_devices', { p_supplier_id: supplierId })
     setRows(data?.devices || [])
     setLoading(false)

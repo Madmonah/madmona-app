@@ -243,32 +243,26 @@ export default function TeamOversightPage({
 
   async function loadAll() {
     setLoading(true)
-    // @ts-expect-error
     const { data: sup } = await supabase.from('suppliers')
       .select('id, business_name, industry, contract_status')
       .eq('id', supplierId).single()
     setSupplier(sup as Supplier)
 
-    // @ts-expect-error
     const { data: br } = await supabase.from('supplier_branches')
       .select('id, name, code, status')
       .eq('supplier_id', supplierId).order('code')
     setBranches((br || []) as Branch[])
 
-    // @ts-expect-error
     const { data: emp } = await supabase.from('v_business_team_oversight')
       .select('*').eq('supplier_id', supplierId)
     setEmployees((emp || []) as Employee[])
 
     // الـ AI workforce + flows + comms روستر = تيم مضمونة الداخلي بس
     if (supplierId === MADMONA_SUPPLIER_ID) {
-      // @ts-expect-error
       const { data: ai } = await supabase.rpc('get_agents_structure')
       setAiAgents((ai || []) as AiAgent[])
-      // @ts-expect-error
       const { data: fl } = await supabase.rpc('get_flows')
       setFlows((fl || []) as Flow[])
-      // @ts-expect-error
       const { data: rs } = await supabase.rpc('get_comms_roster')
       setRoster((rs || null) as Roster | null)
     } else {
@@ -287,7 +281,6 @@ export default function TeamOversightPage({
 
   async function regenerateTasks() {
     setGenerating(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('generate_tasks_for_supplier_today', {
       p_supplier_id: supplierId,
     })
@@ -772,7 +765,6 @@ function TaskModal({
   async function loadTasks() {
     setLoading(true)
     const today = new Date().toISOString().slice(0, 10)
-    // @ts-expect-error
     const { data } = await supabase.from('daily_tasks')
       .select('id, title_ar, description, priority, status, due_time, completed_at, notes, is_auto_generated')
       .eq('employee_id', employee.employee_id)
@@ -782,7 +774,6 @@ function TaskModal({
     setTasks((data || []) as Task[])
     
     // Load today's attendance
-    // @ts-expect-error
     const { data: att } = await supabase.from('attendance_logs')
       .select('clock_in_at, clock_out_at, hours_worked')
       .eq('employee_id', employee.employee_id)
@@ -831,7 +822,6 @@ function TaskModal({
 
   async function deleteTask(taskId: string) {
     if (!confirm('متأكد من حذف المهمة؟')) return
-    // @ts-expect-error
     await supabase.from('daily_tasks').delete().eq('id', taskId)
     await loadTasks()
     onRefresh()
@@ -1284,7 +1274,6 @@ function AgentModal({ agentName, onClose, onChanged }: {
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error rpc untyped
     const { data } = await supabase.rpc('get_agent_detail', { p_agent_name: agentName })
     const det = data as AgentDetail | null
     setD(det)

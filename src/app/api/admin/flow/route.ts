@@ -138,7 +138,6 @@ function brandedEmail(subject: string, bodyText: string, meta: { flow?: string; 
 
 // load comms defaults (owner email = reply_to, always_cc)
 async function commsDefaults(): Promise<{ ownerEmail: string | null; alwaysCc: string[] }> {
-  // @ts-expect-error untyped
   const { data } = await supabaseAdmin.from('comms_settings').select('owner_email, always_cc').eq('id', 'current').maybeSingle()
   const d = data as { owner_email?: string | null; always_cc?: string[] | null } | null
   return { ownerEmail: d?.owner_email || null, alwaysCc: Array.isArray(d?.always_cc) ? d!.always_cc! : [] }
@@ -190,14 +189,12 @@ async function insertFlowTasks(
     source: 'email',
     steps: tk.steps.map((tx, k) => ({ id: `st_${k + 1}`, text: tx, done: false })),
   }))
-  // @ts-expect-error untyped
   const { error } = await supabaseAdmin.from('flow_tasks').insert(rows as never)
   return error ? 0 : rows.length
 }
 
 // --- step_run logging ---
 async function startStep(runId: string, i: number, s: Step): Promise<string | undefined> {
-  // @ts-expect-error untyped
   const { data } = await supabaseAdmin.from('pipeline_step_runs').insert({
     pipeline_run_id: runId, step_index: i, agent_name: labelFor(s),
     status: 'running', started_at: new Date().toISOString(), output_key: s.output_key ?? null,
@@ -206,7 +203,6 @@ async function startStep(runId: string, i: number, s: Step): Promise<string | un
 }
 async function endStep(stepId: string | undefined, started: number, status: 'completed' | 'failed', output: unknown, error?: string) {
   if (!stepId) return
-  // @ts-expect-error untyped
   await supabaseAdmin.from('pipeline_step_runs').update({
     status, completed_at: new Date().toISOString(), duration_ms: Date.now() - started,
     output: (output ?? null) as never, error: error ?? null,
@@ -265,7 +261,6 @@ async function executeFrom(
         // pause the run; persist everything needed to resume
         ctx._choice = { index: i, output_key, options }
         ctx._resume_index = i + 1
-        // @ts-expect-error untyped
         await supabaseAdmin.from('pipeline_runs').update({
           status: 'awaiting_owner', current_step: i, shared_context: ctx as never,
         }).eq('id', runId)
@@ -276,7 +271,6 @@ async function executeFrom(
         if (comms.ownerEmail) {
           const lines = (options as Array<{ label?: string }>).map((o, k) => `${k + 1}. ${o?.label ?? JSON.stringify(o)}`).join('\n')
           const { html, text } = brandedEmail(`محتاج قرارك — ${pipelineName}`, `الـ flow وقف مستنّي اختيارك:\n\n${lines}\n\nادخل اللوحة واختار عشان يكمّل.`, { flow: pipelineName, stage: 'قرارك إنت' })
-          // @ts-expect-error untyped
           await supabaseAdmin.from('admin_email_outbox').insert({
             to_email: comms.ownerEmail, subject: `محتاج قرارك — ${pipelineName}`,
             body_html: html, body_text: text, from_label: 'Madmona Flow', source: 'flow', status: 'pending',
@@ -298,7 +292,6 @@ async function executeFrom(
           await endStep(stepId, t0, 'failed', null, 'no recipient')
           results.push({ index: i, type: s.type, label: labelFor(s), success: false, error: 'no recipient' })
         } else {
-          // @ts-expect-error untyped
           const { error } = await supabaseAdmin.from('admin_email_outbox').insert({
             to_email: toEmail, cc: cc.length ? cc : null, subject,
             body_html: html, body_text: text, reply_to: comms.ownerEmail,
@@ -320,7 +313,6 @@ async function executeFrom(
       else if (s.type === 'drive') {
         const title = interp(s.drive_title, ctx) || `${pipelineName} — مخرجات`
         const body = typeof ctx.last === 'string' ? ctx.last : JSON.stringify(ctx, null, 2)
-        // @ts-expect-error untyped
         await supabaseAdmin.from('flow_artifacts').insert({
           pipeline_run_id: runId, pipeline_name: pipelineName, title,
           body, schedule: (ctx.schedule ?? null) as never, context: ctx as never,
@@ -331,7 +323,6 @@ async function executeFrom(
       }
 
       // advance pointer
-      // @ts-expect-error untyped
       await supabaseAdmin.from('pipeline_runs').update({ current_step: i + 1 }).eq('id', runId)
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'unknown'
@@ -344,7 +335,6 @@ async function executeFrom(
 
 async function finalizeRun(runId: string, results: StepResult[], ctx: Ctx) {
   const anyFail = results.some((r) => !r.success)
-  // @ts-expect-error untyped
   await supabaseAdmin.from('pipeline_runs').update({
     status: anyFail ? 'completed_with_errors' : 'completed',
     completed_at: new Date().toISOString(), shared_context: ctx as never,
@@ -363,7 +353,6 @@ export async function POST(req: NextRequest) {
         const name = String(body.name || '').trim()
         if (!name) return NextResponse.json({ error: 'name required' }, { status: 400 })
         const steps = cleanSteps(body.steps)
-        // @ts-expect-error untyped
         const { data, error } = await supabaseAdmin.from('agent_pipelines').insert({
           name, description: String(body.description || ''), steps: steps as never, enabled: true,
         }).select('id').single()
@@ -386,7 +375,6 @@ export async function POST(req: NextRequest) {
 
       case 'toggle': {
         const id = String(body.id || '')
-        // @ts-expect-error untyped
         const { error } = await supabaseAdmin.from('agent_pipelines')
           .update({ enabled: Boolean(body.enabled), updated_at: new Date().toISOString() }).eq('id', id)
         if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -395,7 +383,6 @@ export async function POST(req: NextRequest) {
 
       case 'delete': {
         const id = String(body.id || '')
-        // @ts-expect-error untyped
         const { error } = await supabaseAdmin.from('agent_pipelines').delete().eq('id', id)
         if (error) return NextResponse.json({ error: error.message }, { status: 500 })
         return NextResponse.json({ success: true })
@@ -404,14 +391,12 @@ export async function POST(req: NextRequest) {
       case 'run': {
         const id = String(body.id || '')
         if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
-        // @ts-expect-error untyped
         const { data: pl } = await supabaseAdmin.from('agent_pipelines').select('id, name, steps').eq('id', id).single()
         const pipe = pl as { id: string; name: string; steps: unknown } | null
         if (!pipe) return NextResponse.json({ error: 'flow not found' }, { status: 404 })
         const steps = cleanSteps(pipe.steps)
         if (steps.length === 0) return NextResponse.json({ error: 'الـ flow مفيهوش خطوات صالحة' }, { status: 400 })
 
-        // @ts-expect-error untyped
         const { data: runRow } = await supabaseAdmin.from('pipeline_runs').insert({
           pipeline_id: pipe.id, pipeline_name: pipe.name, status: 'running',
           started_at: new Date().toISOString(), total_steps: steps.length, current_step: 0,
@@ -431,7 +416,6 @@ export async function POST(req: NextRequest) {
       case 'resume': {
         const run_id = String(body.run_id || '')
         if (!run_id) return NextResponse.json({ error: 'run_id required' }, { status: 400 })
-        // @ts-expect-error untyped
         const { data: r } = await supabaseAdmin.from('pipeline_runs').select('id, pipeline_id, pipeline_name, shared_context, status').eq('id', run_id).single()
         const run = r as { id: string; pipeline_id: string; pipeline_name: string; shared_context: Ctx; status: string } | null
         if (!run) return NextResponse.json({ error: 'run not found' }, { status: 404 })
@@ -443,12 +427,10 @@ export async function POST(req: NextRequest) {
         if (choiceInfo?.output_key) ctx[choiceInfo.output_key] = choice
         delete ctx._choice; delete ctx._resume_index
 
-        // @ts-expect-error untyped
         const { data: pl } = await supabaseAdmin.from('agent_pipelines').select('name, steps').eq('id', run.pipeline_id).single()
         const pipe = pl as { name: string; steps: unknown } | null
         const steps = cleanSteps(pipe?.steps)
 
-        // @ts-expect-error untyped
         await supabaseAdmin.from('pipeline_runs').update({ status: 'running', shared_context: ctx as never }).eq('id', run_id)
 
         const comms = await commsDefaults()

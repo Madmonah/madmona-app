@@ -105,7 +105,6 @@ export default function CareersPage() {
 
     setSubmitting(true)
     try {
-      // @ts-expect-error - RPC type
       const { data, error: rpcErr } = await supabaseBrowser.rpc('submit_careers_application', {
         p_full_name: fullName.trim(),
         p_phone: phone.trim(),

@@ -19,7 +19,6 @@ export async function GET(req: Request) {
     const statusFilter = url.searchParams.get('status') // 'pending' | 'generating' | 'ready' | 'error' | null (all)
     const limit = Math.min(Number(url.searchParams.get('limit') ?? 100), 500)
 
-    // @ts-expect-error generated types not in sync with new tables
     let query = supabase
       .from('social_packs')
       .select(`
@@ -39,7 +38,6 @@ export async function GET(req: Request) {
     if (error) throw error
 
     // Aggregate stats
-    // @ts-expect-error
     const { data: statsRaw } = await supabase
       .from('social_packs')
       .select('status')
@@ -67,7 +65,6 @@ export async function POST(req: Request) {
 
     if (packId) {
       // Reset to pending first so the builder can claim it
-      // @ts-expect-error
       await supabase
         .from('social_packs')
         .update({ status: 'pending', error_message: null, updated_at: new Date().toISOString() })

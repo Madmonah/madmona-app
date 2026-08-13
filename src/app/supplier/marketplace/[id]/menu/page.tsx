@@ -96,7 +96,6 @@ export default function SupplierMenuPage() {
       if (!session?.user) { setStage('unauthenticated'); return }
 
       // Load listing (with track + supplier_id) to verify ownership + category type
-      // @ts-expect-error
       const { data: l } = await supabaseBrowser
         .from('listings')
         .select('id, title, supplier_id, category:categories(track)')
@@ -113,7 +112,6 @@ export default function SupplierMenuPage() {
       }
 
       // Ownership check: either supplier owner OR staff with can_manage_listings
-      // @ts-expect-error
       const { data: ownerSup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id')
@@ -123,7 +121,6 @@ export default function SupplierMenuPage() {
 
       let allowed = !!ownerSup
       if (!allowed) {
-        // @ts-expect-error
         const { data: staff } = await supabaseBrowser
           .from('supplier_staff')
           .select('can_manage_listings, supplier_id')
@@ -144,7 +141,6 @@ export default function SupplierMenuPage() {
   }, [listingId])
 
   const loadItems = async (lid: string) => {
-    // @ts-expect-error
     const { data } = await supabaseBrowser
       .from('restaurant_menu_items')
       .select('*')
@@ -153,7 +149,6 @@ export default function SupplierMenuPage() {
       .order('created_at', { ascending: true })
     const arr = (data || []) as MenuItem[]
     if (arr.length > 0) {
-      // @ts-expect-error
       const { data: szs } = await supabaseBrowser
         .from('restaurant_menu_item_sizes')
         .select('*')
@@ -226,7 +221,6 @@ export default function SupplierMenuPage() {
 
       let itemId = form.id
       if (form.id) {
-        // @ts-expect-error
         const { error } = await supabaseBrowser
           .from('restaurant_menu_items')
           .update({ ...payload, updated_at: new Date().toISOString() })
@@ -235,7 +229,6 @@ export default function SupplierMenuPage() {
       } else {
         // assign next display_order
         const nextOrder = items.length === 0 ? 1 : Math.max(...items.map(i => i.display_order)) + 1
-        // @ts-expect-error
         const { data: inserted, error } = await supabaseBrowser
           .from('restaurant_menu_items')
           .insert({ ...payload, display_order: nextOrder })
@@ -247,10 +240,8 @@ export default function SupplierMenuPage() {
 
       // sizes: full replace
       if (itemId) {
-        // @ts-expect-error
         await supabaseBrowser.from('restaurant_menu_item_sizes').delete().eq('menu_item_id', itemId)
         if (hasSizes) {
-          // @ts-expect-error
           const { error: szErr } = await supabaseBrowser
             .from('restaurant_menu_item_sizes')
             .insert(cleanSizes.map((s, i) => ({
@@ -275,7 +266,6 @@ export default function SupplierMenuPage() {
   }
 
   const toggleAvailable = async (it: MenuItem) => {
-    // @ts-expect-error
     await supabaseBrowser
       .from('restaurant_menu_items')
       .update({ is_available: !it.is_available, updated_at: new Date().toISOString() })
@@ -286,7 +276,6 @@ export default function SupplierMenuPage() {
   const doDelete = async (id: string) => {
     setDeletingId(id)
     try {
-      // @ts-expect-error
       await supabaseBrowser.from('restaurant_menu_items').delete().eq('id', id)
       await loadItems(listingId)
     } finally {

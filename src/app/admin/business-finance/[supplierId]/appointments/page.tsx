@@ -57,7 +57,6 @@ export default function AppointmentsPage({ params }: { params: { supplierId: str
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const [{ data: sup }, { data: br }, { data: sv }, { data: emp }] = await Promise.all([
       supabase.from('suppliers').select('business_name').eq('id', supplierId).single(),
       supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).order('code'),
@@ -70,7 +69,6 @@ export default function AppointmentsPage({ params }: { params: { supplierId: str
     setEmployees((emp || []) as Employee[])
 
     const dateStr = date.toISOString().slice(0, 10)
-    // @ts-expect-error
     const { data: result } = await supabase.rpc('admin_get_appointments', {
       p_supplier_id: supplierId,
       p_branch_id: selectedBranch,
@@ -237,7 +235,6 @@ function AppointmentCard({ a, onUpdate }: { a: Appointment; onUpdate: () => void
   const time = new Date(a.scheduled_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
 
   async function updateStatus(newStatus: string) {
-    // @ts-expect-error
     await supabase.from('branch_bookings').update({
       status: newStatus,
       completed_at: newStatus === 'completed' ? new Date().toISOString() : null,
@@ -292,7 +289,6 @@ function NewAppointmentModal({ supplierId, branches, services, employees, onClos
     }
     setSaving(true); setError('')
     try {
-      // @ts-expect-error
       const { error: rpcErr } = await supabase.rpc('admin_create_appointment', {
         p_supplier_id: supplierId,
         p_branch_id: form.branch_id,

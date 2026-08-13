@@ -33,10 +33,8 @@ export default function ExpensesProjectsPage({ params }: { params: { supplierId:
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: list } = await supabase.from('bz_projects').select('id, name').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setProjects(list || [])
-    // @ts-expect-error
     const { data } = await supabase.from('bz_expenses').select('*').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setRows(data || [])
     setLoading(false)
@@ -59,17 +57,14 @@ export default function ExpensesProjectsPage({ params }: { params: { supplierId:
       payment_method: form.payment_method.trim() || null, notes: form.notes.trim() || null,
     }
     if (form.id) {
-      // @ts-expect-error
       await supabase.from('bz_expenses').update(payload).eq('id', form.id)
     } else {
-      // @ts-expect-error
       await supabase.from('bz_expenses').insert(payload)
     }
     setSaving(false); setShowForm(false); load()
   }
   async function remove(r: any) {
     if (!confirm('حذف المصروف؟')) return
-    // @ts-expect-error
     await supabase.from('bz_expenses').delete().eq('id', r.id)
     load()
   }

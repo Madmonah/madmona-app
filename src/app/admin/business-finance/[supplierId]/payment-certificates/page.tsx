@@ -74,10 +74,8 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
   useEffect(() => {
     (async () => {
       setLoading(true)
-      // @ts-expect-error
       const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
       setSupplier(s)
-      // @ts-expect-error
       const { data: list } = await supabase.from('bz_projects').select('*').eq('supplier_id', supplierId).order('created_at', { ascending: false })
       setProjects(list || [])
       const urlProject = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('project') : null
@@ -90,7 +88,6 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
 
   async function loadCerts(pid: string) {
     if (!pid) { setCerts([]); return }
-    // @ts-expect-error
     const { data } = await supabase.from('bz_payment_certificates').select('*').eq('project_id', pid).order('seq', { ascending: false })
     setCerts(data || [])
   }
@@ -124,7 +121,6 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
       status: 'draft',
       notes: form.notes.trim() || null,
     }
-    // @ts-expect-error
     await supabase.from('bz_payment_certificates').insert(payload)
     setSaving(false)
     setShowForm(false)
@@ -133,13 +129,11 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
   }
 
   async function setStatus(cert: any, status: string) {
-    // @ts-expect-error
     await supabase.from('bz_payment_certificates').update({ status }).eq('id', cert.id)
     loadCerts(projectId)
   }
   async function remove(cert: any) {
     if (!confirm(`متأكد تمسح المستخلص ${cert.cert_no}؟`)) return
-    // @ts-expect-error
     await supabase.from('bz_payment_certificates').delete().eq('id', cert.id)
     loadCerts(projectId)
   }

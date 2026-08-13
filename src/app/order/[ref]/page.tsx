@@ -116,7 +116,6 @@ export default function OrderTrackingPage() {
       return
     }
     try {
-      // @ts-expect-error
       const { data, error: rpcError } = await supabaseBrowser.rpc('get_order_public', {
         p_order_id: orderId,
         p_reference_code: ref,

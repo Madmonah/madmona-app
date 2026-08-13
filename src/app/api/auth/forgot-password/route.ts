@@ -53,7 +53,6 @@ export async function POST(req: NextRequest) {
       query = query.eq('phone', phone)
     }
 
-    // @ts-expect-error
     const { data: profile } = await query.maybeSingle()
 
     // SECURITY: Never reveal whether the lookup succeeded.
@@ -92,7 +91,6 @@ export async function POST(req: NextRequest) {
     const expiresAt = new Date(Date.now() + RESET_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000)
 
     // Store token in DB
-    // @ts-expect-error
     const { error: insertErr } = await supa
       .from('password_reset_tokens')
       .insert({

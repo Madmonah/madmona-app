@@ -89,7 +89,6 @@ function BookingDetailContent() {
       // ---- Authenticated read (owner customer / supplier / staff) via RLS ----
       if (session?.user) {
         setUserId(session.user.id)
-        // @ts-expect-error
         const { data } = await supabaseBrowser
           .from('marketplace_bookings')
           .select(`
@@ -108,7 +107,6 @@ function BookingDetailContent() {
           setIsOwnerCustomer(data.customer_id === session.user.id)
 
           // Check ownership OR staff with can_manage_bookings
-          // @ts-expect-error
           const { data: sup } = await supabaseBrowser
             .from('marketplace_suppliers')
             .select('id')
@@ -119,7 +117,6 @@ function BookingDetailContent() {
           if (sup) {
             setIsOwnerSupplier(true)
           } else {
-            // @ts-expect-error
             const { data: staff } = await supabaseBrowser
               .from('supplier_staff')
               .select('can_manage_bookings, supplier_id')
@@ -141,7 +138,6 @@ function BookingDetailContent() {
 
       // ---- Guest read via reference_code capability token (?ref=) ----
       if (refParam) {
-        // @ts-expect-error - rpc typing not generated
         const { data: pub } = await supabaseBrowser.rpc('get_booking_public', {
           p_booking_id: bookingId,
           p_reference_code: refParam,
@@ -230,7 +226,6 @@ function BookingDetailContent() {
     }
 
     // Single roundtrip: UPDATE + return enriched row via .select()
-    // @ts-expect-error
     const { data: refreshed, error: updateErr } = await supabaseBrowser
       .from('marketplace_bookings')
       .update(update)

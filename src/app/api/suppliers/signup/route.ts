@@ -61,7 +61,6 @@ export async function POST(request: Request) {
       : null
 
   // ---- Insert ----
-  // @ts-expect-error - new tables
   const { data, error } = await supabase
     .from('suppliers')
     .insert({

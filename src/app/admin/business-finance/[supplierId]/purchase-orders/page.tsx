@@ -32,16 +32,12 @@ export default function PurchaseOrdersPage({ params }: { params: { supplierId: s
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: br } = await supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).order('code')
     setBranches(br || [])
-    // @ts-expect-error
     const { data: pr } = await supabase.from('inventory_products').select('id, name_ar, current_stock, unit_cost_egp').eq('supplier_id', supplierId).order('name_ar')
     setProducts(pr || [])
-    // @ts-expect-error
     const { data: list } = await supabase.rpc('admin_list_purchase_orders', { p_supplier_id: supplierId, p_status: statusFilter })
     setData(list)
     setLoading(false)
@@ -165,7 +161,6 @@ function CreatePOModal({ supplierId, branches, products, onClose, onSaved }: any
   async function save() {
     if (!vendor || items.length === 0) return alert('اكمل البيانات')
     setSaving(true)
-    // @ts-expect-error
     const { data, error } = await supabase.rpc('admin_create_purchase_order', {
       p_supplier_id: supplierId,
       p_branch_id: branchId,

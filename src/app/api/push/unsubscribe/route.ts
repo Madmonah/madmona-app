@@ -35,7 +35,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'missing_endpoint' }, { status: 400 })
     }
 
-    // @ts-expect-error
     const { error } = await adminClient
       .from('push_subscriptions')
       .delete()

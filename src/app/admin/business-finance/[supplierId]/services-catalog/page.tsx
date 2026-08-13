@@ -62,10 +62,8 @@ export default function ServicesCatalogPage({ params }: { params: { supplierId: 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name, industry, theme').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: svc } = await supabase.from('services_catalog')
       .select('*')
       .eq('supplier_id', supplierId)

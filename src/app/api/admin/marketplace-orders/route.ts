@@ -23,7 +23,6 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const statusFilter = searchParams.get('status')
 
-  // @ts-expect-error
   let query = supabase
     .from('marketplace_orders')
     .select(`
@@ -87,7 +86,6 @@ export async function PATCH(request: Request) {
     targetStatus = 'paid'
     // Persist payment_reference first if provided
     if (typeof payment_reference === 'string' && payment_reference.trim()) {
-      // @ts-expect-error
       const { error: refError } = await supabase
         .from('marketplace_orders')
         .update({ payment_reference: payment_reference.trim() })
@@ -119,7 +117,6 @@ export async function PATCH(request: Request) {
   // Call set_order_status RPC.
   // NOTE: the DB function param is `p_reason` (not `p_cancellation_reason`).
   // Pre-deploy bug discovered May 29 2026 — Supabase RPCs match by named arg.
-  // @ts-expect-error
   const { error: rpcError } = await supabase.rpc('set_order_status', {
     p_order_id: id,
     p_new_status: targetStatus,

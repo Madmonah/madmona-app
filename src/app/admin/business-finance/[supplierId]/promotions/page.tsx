@@ -24,10 +24,8 @@ export default function PromotionsPage({ params }: { params: { supplierId: strin
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: list } = await supabase.rpc('admin_list_promotions', { p_supplier_id: supplierId })
     setPromos(list?.promotions || [])
     setLoading(false)
@@ -114,7 +112,6 @@ function AddPromoModal({ supplierId, onClose, onSaved }: any) {
   async function save() {
     if (!form.code || !form.name_ar || !form.value) return alert('اكمل البيانات')
     setSaving(true)
-    // @ts-expect-error
     const { error } = await supabase.rpc('admin_create_promotion', {
       p_supplier_id: supplierId,
       p_code: form.code.toUpperCase(),

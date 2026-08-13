@@ -85,7 +85,6 @@ export default function SupplierBookingsPage() {
       }
 
       // Check ownership
-      // @ts-expect-error
       let { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id, business_name')
@@ -94,7 +93,6 @@ export default function SupplierBookingsPage() {
 
       // If not owner, check staff with can_manage_bookings
       if (!sup) {
-        // @ts-expect-error
         const { data: staff } = await supabaseBrowser
           .from('supplier_staff')
           .select(`
@@ -134,7 +132,6 @@ export default function SupplierBookingsPage() {
   }, [])
 
   const loadBookings = async (supId: string) => {
-    // @ts-expect-error
     const { data } = await supabaseBrowser
       .from('marketplace_bookings')
       .select(`

@@ -72,7 +72,6 @@ export default function AdminNewsPage() {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
     if (!session?.user) { setStage('unauthenticated'); return }
 
-    // @ts-expect-error
     const { data: prof } = await supabaseBrowser
       .from('profiles')
       .select('role')
@@ -86,7 +85,6 @@ export default function AdminNewsPage() {
   }
 
   const loadItems = async () => {
-    // @ts-expect-error
     const { data } = await supabaseBrowser
       .from('admin_news')
       .select('*')
@@ -151,7 +149,6 @@ export default function AdminNewsPage() {
     }
 
     if (editing) {
-      // @ts-expect-error
       const { error } = await supabaseBrowser
         .from('admin_news')
         .update(payload)
@@ -160,7 +157,6 @@ export default function AdminNewsPage() {
       showMsg(true, 'تم تحديث الخبر')
     } else {
       const { data: { user } } = await supabaseBrowser.auth.getUser()
-      // @ts-expect-error
       const { error } = await supabaseBrowser
         .from('admin_news')
         .insert({ ...payload, created_by: user?.id, pub_date: new Date().toISOString() })
@@ -174,7 +170,6 @@ export default function AdminNewsPage() {
   }
 
   const togglePin = async (row: AdminNewsRow) => {
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('admin_news')
       .update({ is_pinned: !row.is_pinned })
@@ -184,7 +179,6 @@ export default function AdminNewsPage() {
   }
 
   const togglePublished = async (row: AdminNewsRow) => {
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('admin_news')
       .update({ is_published: !row.is_published })
@@ -195,7 +189,6 @@ export default function AdminNewsPage() {
 
   const handleDelete = async (row: AdminNewsRow) => {
     if (!confirm(`متأكد تحذف "${row.title.slice(0, 60)}..."؟`)) return
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('admin_news')
       .delete()
@@ -212,7 +205,6 @@ export default function AdminNewsPage() {
     try {
       const ext = file.name.split('.').pop() || 'jpg'
       const fileName = `news-${Date.now()}.${ext}`
-      // @ts-expect-error
       const { error: upErr } = await supabaseBrowser.storage
         .from('site-assets')
         .upload(fileName, file, { cacheControl: '3600', upsert: false })

@@ -79,21 +79,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
     const [{ data: listings }, { data: categories }, { data: combos }, { data: projects }] = await Promise.all([
-      // @ts-expect-error
       supabase
         .from('listings')
         .select('id, slug, updated_at')
         .eq('status', 'published')
         .limit(50000),
-      // @ts-expect-error
       supabase
         .from('categories')
         .select('slug')
         .eq('is_active', true)
         .limit(200),
-      // @ts-expect-error — pSEO combos (تصنيف × مدينة)
       supabase.rpc('seo_combos'),
-      // @ts-expect-error — مشاريع بورصة المطوّرين (عقارات)
       supabase
         .from('property_market_items')
         .select('slug, updated_at')

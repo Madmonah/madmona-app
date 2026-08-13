@@ -28,10 +28,8 @@ export default function MaterialRequestsPage({ params }: { params: { supplierId:
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: list } = await supabase.from('bz_projects').select('id, name').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setProjects(list || [])
-    // @ts-expect-error
     const { data } = await supabase.from('bz_material_requests').select('*').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setRows(data || [])
     setLoading(false)
@@ -53,22 +51,18 @@ export default function MaterialRequestsPage({ params }: { params: { supplierId:
       request_date: form.request_date || null, status: form.status, notes: form.notes.trim() || null,
     }
     if (form.id) {
-      // @ts-expect-error
       await supabase.from('bz_material_requests').update(payload).eq('id', form.id)
     } else {
-      // @ts-expect-error
       await supabase.from('bz_material_requests').insert(payload)
     }
     setSaving(false); setShowForm(false); load()
   }
   async function setStatus(r: any, status: string) {
-    // @ts-expect-error
     await supabase.from('bz_material_requests').update({ status }).eq('id', r.id)
     load()
   }
   async function remove(r: any) {
     if (!confirm('حذف الطلب؟')) return
-    // @ts-expect-error
     await supabase.from('bz_material_requests').delete().eq('id', r.id)
     load()
   }

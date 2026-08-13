@@ -45,7 +45,6 @@ export function AgentDirectives() {
 
   async function load() {
     try {
-      // @ts-expect-error - RPC type
       const { data: result, error } = await supabaseBrowser.rpc('get_agent_directives', { p_scope: 'global' })
       if (error) throw error
       setData(result as Directives)
@@ -62,7 +61,6 @@ export function AgentDirectives() {
   async function handleSave() {
     setSaving(true)
     try {
-      // @ts-expect-error - RPC type
       const { data: result, error } = await supabaseBrowser.rpc('upsert_agent_directives', {
         p_scope: 'global',
         p_current_trend: form.current_trend || null,

@@ -50,7 +50,6 @@ export default function BulkProductsPage() {
       if (!session?.user) { setStage('unauthenticated'); return }
 
       // owner supplier — or staff with listings permission
-      // @ts-expect-error
       const { data: own } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id')
@@ -59,7 +58,6 @@ export default function BulkProductsPage() {
 
       let supplierId: string | null = own?.id ?? null
       if (!supplierId) {
-        // @ts-expect-error
         const { data: staff } = await supabaseBrowser
           .from('supplier_staff')
           .select('supplier_id, can_manage_listings')
@@ -71,7 +69,6 @@ export default function BulkProductsPage() {
       }
       if (!supplierId) { setStage('no-supplier'); return }
 
-      // @ts-expect-error
       const { data: ls } = await supabaseBrowser
         .from('listings')
         .select('id, title, status, category:categories(track)')
@@ -87,7 +84,6 @@ export default function BulkProductsPage() {
 
       // products count per listing (for the dropdown labels)
       if (nonRest.length > 0) {
-        // @ts-expect-error
         const { data: counts } = await supabaseBrowser
           .from('mart_products')
           .select('listing_id')
@@ -104,7 +100,6 @@ export default function BulkProductsPage() {
       if (nonRest.length > 0) setSelected(nonRest[0].id)
 
       // categories for the listings-mode default dropdown (non-restaurant, active)
-      // @ts-expect-error
       const { data: allCats } = await supabaseBrowser
         .from('categories')
         .select('id, name_ar, group_name_ar, track, is_active')

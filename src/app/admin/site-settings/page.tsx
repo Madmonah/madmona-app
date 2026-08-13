@@ -257,7 +257,6 @@ export default function SiteSettingsPage() {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
     if (!session?.user) { setStage('unauthenticated'); return }
 
-    // @ts-expect-error
     const { data: prof } = await supabaseBrowser
       .from('profiles')
       .select('role')
@@ -271,7 +270,6 @@ export default function SiteSettingsPage() {
   }
 
   const loadSettings = async () => {
-    // @ts-expect-error
     const { data } = await supabaseBrowser
       .from('site_settings')
       .select('key, value')
@@ -294,7 +292,6 @@ export default function SiteSettingsPage() {
     try {
       const { data: { user } } = await supabaseBrowser.auth.getUser()
 
-      // @ts-expect-error
       const { error } = await supabaseBrowser
         .from('site_settings')
         .upsert(
@@ -685,7 +682,6 @@ function ImageSettingField({
       const ext = file.name.split('.').pop() || 'jpg'
       const fileName = `${field.key}-${Date.now()}.${ext}`
 
-      // @ts-expect-error
       const { error: uploadErr } = await supabaseBrowser
         .storage
         .from('site-assets')

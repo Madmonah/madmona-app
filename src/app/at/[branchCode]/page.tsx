@@ -81,7 +81,6 @@ export default function CustomerVisitPage({
   // Load branch + menu
   useEffect(() => {
     async function loadBranch() {
-      // @ts-expect-error
       const { data } = await supabase.rpc('public_get_branch_by_code', {
         p_branch_code: branchCode,
       })
@@ -89,7 +88,6 @@ export default function CustomerVisitPage({
       if (r?.ok && r.branch) {
         setBranch(r.branch)
         // Load menu
-        // @ts-expect-error
         const { data: menu } = await supabase.rpc('public_get_branch_menu', {
           p_supplier_id: r.branch.supplier_id,
         })
@@ -105,7 +103,6 @@ export default function CustomerVisitPage({
   async function continueFromPhone() {
     if (phone.length < 8) return
     setSubmittingPhone(true)
-    // @ts-expect-error
     const { data: c } = await supabase.rpc('customer_upsert', {
       p_phone: phone, p_name: name.trim() || null,
     })
@@ -117,7 +114,6 @@ export default function CustomerVisitPage({
     }
     setCustomerId(cust.customer_id!)
 
-    // @ts-expect-error
     const { data: s } = await supabase.rpc('customer_start_visit', {
       p_customer_id: cust.customer_id, p_branch_id: branch!.branch_id,
     })
@@ -161,7 +157,6 @@ export default function CustomerVisitPage({
         service_id: c.service_id, price_egp: c.price_egp,
       }))
     )
-    // @ts-expect-error
     const { data } = await supabase.rpc('customer_submit_order', {
       p_session_id: sessionId, p_cart: cartPayload, p_payment_method: 'cash',
     })

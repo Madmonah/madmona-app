@@ -96,7 +96,6 @@ export default function TeamManagementPage() {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
     if (!session?.user) { setStage('unauthenticated'); return }
 
-    // @ts-expect-error
     const { data: sup } = await supabaseBrowser
       .from('marketplace_suppliers')
       .select('id, business_name, profile_id')
@@ -112,7 +111,6 @@ export default function TeamManagementPage() {
   }
 
   const loadStaff = async (supplierId: string) => {
-    // @ts-expect-error
     const { data } = await supabaseBrowser
       .from('supplier_staff')
       .select(`
@@ -268,7 +266,6 @@ function StaffCard({
   const remove = async () => {
     if (!confirm(`هل تريد إزالة ${member.profile?.full_name || 'الموظف'} من الفريق؟`)) return
     setBusy(true)
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('supplier_staff')
       .delete()
@@ -283,7 +280,6 @@ function StaffCard({
 
   const toggleActive = async () => {
     setBusy(true)
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('supplier_staff')
       .update({ is_active: !member.is_active })
@@ -398,7 +394,6 @@ function InviteModal({
     const email = phoneToEmail(norm)
 
     // Search profile by synthetic email or phone
-    // @ts-expect-error
     const { data, error } = await supabaseBrowser
       .from('profiles')
       .select('id, full_name, phone')
@@ -434,7 +429,6 @@ function InviteModal({
     setSubmitting(true)
     setSubmitError(null)
 
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('supplier_staff')
       .insert({
@@ -649,7 +643,6 @@ function EditPermissionsModal({
   const save = async () => {
     setSaving(true)
     setError(null)
-    // @ts-expect-error
     const { error: updateErr } = await supabaseBrowser
       .from('supplier_staff')
       .update({

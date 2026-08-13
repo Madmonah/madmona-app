@@ -18,19 +18,12 @@ export default function PnlPage({ params }: { params: { supplierId: string } }) 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: projects } = await supabase.from('bz_projects').select('id, code, name, contract_value').eq('supplier_id', supplierId).order('created_at', { ascending: false })
-    // @ts-expect-error
     const { data: certs } = await supabase.from('bz_payment_certificates').select('project_id, gross_cumulative, seq').eq('supplier_id', supplierId)
-    // @ts-expect-error
     const { data: exp } = await supabase.from('bz_expenses').select('project_id, amount').eq('supplier_id', supplierId)
-    // @ts-expect-error
     const { data: subs } = await supabase.from('bz_subcontractors').select('project_id, paid_to_date').eq('supplier_id', supplierId)
-    // @ts-expect-error
     const { data: equip } = await supabase.from('bz_equipment').select('id, project_id').eq('supplier_id', supplierId)
-    // @ts-expect-error
     const { data: eqLogs } = await supabase.from('bz_equipment_logs').select('equipment_id, cost').eq('supplier_id', supplierId)
-    // @ts-expect-error
     const { data: cols } = await supabase.from('bz_collections').select('project_id, amount').eq('supplier_id', supplierId)
 
     const eqProject: Record<string, string | null> = {}

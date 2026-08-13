@@ -22,7 +22,6 @@ export default function DailyReportsPage({ params }: { params: { supplierId: str
   const [form, setForm] = useState({ ...emptyForm })
 
   async function loadProjects() {
-    // @ts-expect-error
     const { data } = await supabase.from('bz_projects').select('id, name').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setProjects(data || [])
     const urlP = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('project') : null
@@ -33,7 +32,6 @@ export default function DailyReportsPage({ params }: { params: { supplierId: str
   async function loadRows(pid: string) {
     if (!pid) { setRows([]); return }
     setLoading(true)
-    // @ts-expect-error
     const { data } = await supabase.from('bz_daily_reports').select('*').eq('project_id', pid).order('report_date', { ascending: false })
     setRows(data || [])
     setLoading(false)
@@ -54,17 +52,14 @@ export default function DailyReportsPage({ params }: { params: { supplierId: str
       issues: form.issues.trim() || null, notes: form.notes.trim() || null,
     }
     if (form.id) {
-      // @ts-expect-error
       await supabase.from('bz_daily_reports').update(payload).eq('id', form.id)
     } else {
-      // @ts-expect-error
       await supabase.from('bz_daily_reports').insert(payload)
     }
     setSaving(false); setShowForm(false); loadRows(selected)
   }
   async function remove(r: any) {
     if (!confirm('حذف اليومية؟')) return
-    // @ts-expect-error
     await supabase.from('bz_daily_reports').delete().eq('id', r.id)
     loadRows(selected)
   }

@@ -30,10 +30,8 @@ export default function AtRiskCustomersPage({ params }: { params: { supplierId: 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: result } = await supabase.rpc('admin_get_at_risk_customers', {
       p_supplier_id: supplierId,
       p_days_threshold: days,

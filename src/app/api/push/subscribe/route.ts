@@ -37,7 +37,6 @@ export async function POST(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // @ts-expect-error
     const { error } = await adminClient
       .from('push_subscriptions')
       .upsert(

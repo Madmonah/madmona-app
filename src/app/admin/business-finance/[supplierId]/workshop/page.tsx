@@ -15,10 +15,8 @@ export default function WorkshopPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: list } = await supabase.rpc('admin_list_workshop', { p_supplier_id: supplierId })
     setServices(Array.isArray(list) ? list : [])
     setLoading(false)

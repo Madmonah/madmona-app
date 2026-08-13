@@ -26,14 +26,12 @@ export default function DashboardPage({ params }: { params: { supplierId: string
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
 
     const today = new Date()
     const from = new Date()
     from.setDate(from.getDate() - period)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_dashboard_kpis', {
       p_supplier_id: supplierId,
       p_date_from: from.toISOString().slice(0, 10),

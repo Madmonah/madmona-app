@@ -34,10 +34,8 @@ export default function ImportPage({ params }: { params: { supplierId: string } 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: list } = await supabase.rpc('admin_list_import_consignments', { p_supplier_id: supplierId })
     setRows(Array.isArray(list) ? list : [])
     setLoading(false)

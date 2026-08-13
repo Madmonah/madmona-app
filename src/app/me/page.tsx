@@ -49,11 +49,9 @@ export default function MyDashboard() {
   const load = useCallback(async () => {
     const t = token()
     if (!t) { router.push('/login'); return }
-    // @ts-expect-error rpc typing
     const { data: s } = await supabase.rpc('madmona_employee_summary', { p_token: t })
     if (!s?.ok) { setNotEmployee(true); setLoading(false); return }
     setData(s)
-    // @ts-expect-error rpc typing
     const { data: n } = await supabase.rpc('madmona_employee_notifications', { p_token: t })
     if (n?.ok) { setNotifs(n.notifications || []); setUnread(n.unread_count || 0) }
     setLoading(false)
@@ -65,7 +63,6 @@ export default function MyDashboard() {
     setClocking(true); setClockMsg(null)
     try {
       const loc = await getLocation()
-      // @ts-expect-error rpc typing
       const { data: r } = await supabase.rpc('madmona_employee_clock', {
         p_token: token(), p_lat: loc.lat, p_lng: loc.lng, p_accuracy_m: Math.round(loc.acc),
       })

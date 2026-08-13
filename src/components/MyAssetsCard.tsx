@@ -80,7 +80,6 @@ export default function MyAssetsCard() {
         const waToken =
           typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null
 
-        // @ts-expect-error — أنواع الـRPC المولّدة لسه متعرفش my_assets
         const { data: res } = await supabaseBrowser.rpc('my_assets', {
           p_wa_token: waToken || null,
         })

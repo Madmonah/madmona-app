@@ -30,10 +30,8 @@ export default function AssignmentsPage({ params }: { params: { supplierId: stri
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: list } = await supabase.from('bz_projects').select('id, name').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setProjects(list || [])
-    // @ts-expect-error
     const { data } = await supabase.from('bz_assignments').select('*').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setRows(data || [])
     setLoading(false)
@@ -47,7 +45,6 @@ export default function AssignmentsPage({ params }: { params: { supplierId: stri
   async function save() {
     if (!form.person_name.trim()) { alert('اكتب اسم الشخص'); return }
     setSaving(true)
-    // @ts-expect-error
     await supabase.from('bz_assignments').insert({
       supplier_id: supplierId, project_id: form.project_id || null, person_name: form.person_name.trim(),
       task: form.task.trim() || null, location: form.location.trim() || null,
@@ -57,13 +54,11 @@ export default function AssignmentsPage({ params }: { params: { supplierId: stri
     setSaving(false); setShowForm(false); setForm({ ...emptyForm }); load()
   }
   async function setStatus(r: any, status: string) {
-    // @ts-expect-error
     await supabase.from('bz_assignments').update({ status }).eq('id', r.id)
     load()
   }
   async function remove(r: any) {
     if (!confirm('حذف المأمورية؟')) return
-    // @ts-expect-error
     await supabase.from('bz_assignments').delete().eq('id', r.id)
     load()
   }

@@ -25,7 +25,6 @@ export default function BoqPage({ params }: { params: { supplierId: string } }) 
   useEffect(() => {
     (async () => {
       setLoading(true)
-      // @ts-expect-error
       const { data: list } = await supabase.from('bz_projects').select('id, code, name, contract_value, supervision_pct').eq('supplier_id', supplierId).order('created_at', { ascending: false })
       setProjects(list || [])
       const urlP = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('project') : null
@@ -37,7 +36,6 @@ export default function BoqPage({ params }: { params: { supplierId: string } }) 
 
   async function loadItems(pid: string) {
     if (!pid) { setItems([]); return }
-    // @ts-expect-error
     const { data } = await supabase.from('bz_boq_items').select('*').eq('project_id', pid).order('sort_order').order('created_at')
     setItems(data || [])
   }
@@ -53,7 +51,6 @@ export default function BoqPage({ params }: { params: { supplierId: string } }) 
 
   function setExec(id: string, val: string) { setItems((prev) => prev.map((x) => x.id === id ? { ...x, executed_qty: val } : x)) }
   async function saveExec(it: any) {
-    // @ts-expect-error
     await supabase.from('bz_boq_items').update({ executed_qty: num(it.executed_qty) }).eq('id', it.id)
   }
 
@@ -61,7 +58,6 @@ export default function BoqPage({ params }: { params: { supplierId: string } }) 
     if (!project) return
     if (!form.description.trim()) { alert('اكتب وصف البند'); return }
     setSaving(true)
-    // @ts-expect-error
     await supabase.from('bz_boq_items').insert({
       supplier_id: supplierId, project_id: project.id,
       item_no: form.item_no.trim() || null, section: form.section.trim() || null,
@@ -72,7 +68,6 @@ export default function BoqPage({ params }: { params: { supplierId: string } }) 
   }
   async function remove(it: any) {
     if (!confirm('حذف البند؟')) return
-    // @ts-expect-error
     await supabase.from('bz_boq_items').delete().eq('id', it.id); loadItems(projectId)
   }
 

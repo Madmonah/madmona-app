@@ -93,7 +93,6 @@ export default function ClinicDemoPage() {
     let alive = true
     ;(async () => {
       try {
-        // @ts-expect-error - RPC type
         const { data: snap, error: rpcErr } = await supabaseBrowser.rpc('public_clinic_demo_snapshot', {
           p_slug: slug,
         })

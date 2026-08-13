@@ -184,7 +184,6 @@ function SupplierMarketplaceContent() {
       const userId = session.user.id
 
       // First, try as owner
-      // @ts-expect-error new schema
       let { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id, business_name, logo_url, kyc_status, kyc_rejection_reason')
@@ -196,7 +195,6 @@ function SupplierMarketplaceContent() {
 
       // If not owner, check if active staff
       if (!sup) {
-        // @ts-expect-error
         const { data: staff } = await supabaseBrowser
           .from('supplier_staff')
           .select(`
@@ -290,7 +288,6 @@ function SupplierMarketplaceContent() {
 
   const loadListings = async (supId: string) => {
     setLoadingListings(true)
-    // @ts-expect-error
     const { data } = await supabaseBrowser
       .from('listings')
       .select(`
@@ -310,7 +307,6 @@ function SupplierMarketplaceContent() {
     const monthAgo = new Date()
     monthAgo.setMonth(monthAgo.getMonth() - 1)
 
-    // @ts-expect-error
     const { data: bookings } = await supabaseBrowser
       .from('marketplace_bookings')
       .select('status, total_amount, supplier_payout, created_at')
@@ -322,7 +318,6 @@ function SupplierMarketplaceContent() {
     const monthBookings = arr.filter(b => new Date(b.created_at) > monthAgo).length
     const pending = arr.filter(b => b.status === 'pending_payment').length
 
-    // @ts-expect-error
     const { data: rev } = await supabaseBrowser
       .from('reviews')
       .select('id, supplier_response')
@@ -348,7 +343,6 @@ function SupplierMarketplaceContent() {
     }
     setActioningId(listing.id)
     const newStatus = listing.status === 'published' ? 'paused' : 'published'
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('listings')
       .update({ status: newStatus })
@@ -368,7 +362,6 @@ function SupplierMarketplaceContent() {
     }
     if (!confirm(`متأكد من حذف "${listing.title}"؟ ده مش هيتراجع.`)) return
     setActioningId(listing.id)
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('listings')
       .delete()
@@ -387,7 +380,6 @@ function SupplierMarketplaceContent() {
       return
     }
     setActioningId(listing.id)
-    // @ts-expect-error
     const { data: orig } = await supabaseBrowser
       .from('listings')
       .select('*')
@@ -425,7 +417,6 @@ function SupplierMarketplaceContent() {
     delete newListing.created_at
     delete newListing.updated_at
 
-    // @ts-expect-error
     const { data: dup, error } = await supabaseBrowser
       .from('listings')
       .insert(newListing)

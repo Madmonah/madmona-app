@@ -50,7 +50,6 @@ export async function PATCH(
         return NextResponse.json({ error: 'invalid action' }, { status: 400 })
     }
 
-    // @ts-expect-error
     const { data, error } = await supabase
       .from('social_pack_group_posts')
       .update(updates)

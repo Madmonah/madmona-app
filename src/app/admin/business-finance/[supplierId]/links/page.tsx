@@ -24,10 +24,8 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
   useEffect(() => {
     if (typeof window !== 'undefined') setOrigin(window.location.origin)
     ;(async () => {
-      // @ts-expect-error rpc typing
       const { data: s } = await supabase.from('suppliers').select('business_name, join_slug').eq('id', supplierId).single()
       setSupplier(s)
-      // @ts-expect-error rpc typing
       const { data: br } = await supabase.from('supplier_branches').select('code, name').eq('supplier_id', supplierId).order('code')
       setBranches(br || [])
       setLoading(false)

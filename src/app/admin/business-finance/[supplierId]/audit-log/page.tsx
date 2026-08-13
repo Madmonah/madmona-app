@@ -37,10 +37,8 @@ export default function AuditLogPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: list } = await supabase.rpc('admin_get_audit_log', { p_table_name: tableFilter })
     setLogs(list || [])
     setLoading(false)

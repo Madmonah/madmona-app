@@ -35,13 +35,10 @@ export default function BookingsPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: br } = await supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).order('code')
     setBranches(br || [])
-    // @ts-expect-error
     const { data: result } = await supabase.rpc('admin_get_bookings', {
       p_supplier_id: supplierId,
       p_branch_id: branchFilter,
@@ -211,7 +208,6 @@ function WalkinModal({ supplierId, branches, onClose, onSaved }: any) {
 
   useEffect(() => {
     (async () => {
-      // @ts-expect-error
       const { data: svc } = await supabase.from('services_catalog').select('id, name_ar, price_egp').eq('supplier_id', supplierId).eq('status', 'active').order('name_ar')
       setServices(svc || [])
     })()
@@ -220,7 +216,6 @@ function WalkinModal({ supplierId, branches, onClose, onSaved }: any) {
   useEffect(() => {
     if (!form.branch_id) return
     (async () => {
-      // @ts-expect-error
       const { data: emp } = await supabase.from('business_employees').select('id, full_name').eq('branch_id', form.branch_id).eq('status', 'active').order('full_name')
       setStylists(emp || [])
     })()

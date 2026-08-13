@@ -63,7 +63,6 @@ export default function DailyMessageBanner() {
 
     async function load() {
       try {
-        // @ts-expect-error
         const { data, error } = await supabaseBrowser.rpc('get_todays_daily_message')
         if (error || !data || !mounted) return
 

@@ -18,7 +18,6 @@ export async function GET(request: Request) {
   }
 
   const [suppliersRes, categoriesRes] = await Promise.all([
-    // @ts-expect-error - new tables
     supabase
       .from('suppliers')
       .select('id, business_name, district, status, commission_rate')

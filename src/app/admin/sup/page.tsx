@@ -24,7 +24,6 @@ export default function SimpleSuppliersPage() {
         const { data: { session } } = await supabaseBrowser.auth.getSession()
         if (!session?.user) { setState('unauth'); return }
 
-        // @ts-expect-error
         const { data, error } = await supabaseBrowser.rpc('get_marketplace_suppliers_admin')
         if (error) {
           const msg = (error.message || '').toLowerCase()
@@ -42,7 +41,6 @@ export default function SimpleSuppliersPage() {
   }, [])
 
   const updateStatus = async (id: string, kycStatus: string, reason?: string) => {
-    // @ts-expect-error
     const { error } = await supabaseBrowser.rpc('update_supplier_kyc_admin', {
       p_supplier_id: id,
       p_kyc_status: kycStatus,

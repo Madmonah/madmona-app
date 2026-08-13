@@ -118,7 +118,6 @@ export default function SupplierProductsPage() {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
       if (!session?.user) { setStage('unauthenticated'); return }
 
-      // @ts-expect-error
       const { data: l } = await supabaseBrowser
         .from('listings')
         .select('id, title, supplier_id, category:categories(track)')
@@ -135,7 +134,6 @@ export default function SupplierProductsPage() {
       }
 
       // Ownership: supplier owner OR staff with can_manage_listings
-      // @ts-expect-error
       const { data: ownerSup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id')
@@ -145,7 +143,6 @@ export default function SupplierProductsPage() {
 
       let allowed = !!ownerSup
       if (!allowed) {
-        // @ts-expect-error
         const { data: staff } = await supabaseBrowser
           .from('supplier_staff')
           .select('can_manage_listings, supplier_id')
@@ -159,7 +156,6 @@ export default function SupplierProductsPage() {
       if (!allowed) { setStage('no-permission'); return }
 
       // ERP subscriber? (products auto-sync)
-      // @ts-expect-error
       const { data: erp } = await supabaseBrowser
         .from('erp_settings')
         .select('supplier_id')
@@ -175,7 +171,6 @@ export default function SupplierProductsPage() {
   }, [listingId])
 
   const loadProducts = async (lid: string) => {
-    // @ts-expect-error
     const { data } = await supabaseBrowser
       .from('mart_products')
       .select('*')
@@ -229,7 +224,6 @@ export default function SupplierProductsPage() {
         description_ar: form.description_ar.trim() || null,
         photo_url: form.photo_url.trim() || null,
       }
-      // @ts-expect-error rpc typing
       const { data, error } = await supabaseBrowser.rpc('supplier_bulk_import_products', {
         p_listing_id: listingId,
         p_items: [item],
@@ -240,7 +234,6 @@ export default function SupplierProductsPage() {
 
       // in_stock toggle is a direct field (not part of import semantics)
       if (form.id) {
-        // @ts-expect-error
         await supabaseBrowser.from('mart_products')
           .update({ in_stock: form.in_stock, updated_at: new Date().toISOString() })
           .eq('id', form.id)
@@ -257,7 +250,6 @@ export default function SupplierProductsPage() {
   }
 
   const toggleStock = async (p: Product) => {
-    // @ts-expect-error
     await supabaseBrowser.from('mart_products')
       .update({ in_stock: !p.in_stock, updated_at: new Date().toISOString() })
       .eq('id', p.id)
@@ -265,7 +257,6 @@ export default function SupplierProductsPage() {
   }
 
   const toggleAvailable = async (p: Product) => {
-    // @ts-expect-error
     await supabaseBrowser.from('mart_products')
       .update({ is_available: !p.is_available, updated_at: new Date().toISOString() })
       .eq('id', p.id)
@@ -275,7 +266,6 @@ export default function SupplierProductsPage() {
   const doDelete = async (id: string) => {
     setDeletingId(id)
     try {
-      // @ts-expect-error
       await supabaseBrowser.from('mart_products').delete().eq('id', id)
       await loadProducts(listingId)
     } finally {

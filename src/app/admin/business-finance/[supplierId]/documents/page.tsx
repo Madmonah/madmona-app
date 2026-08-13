@@ -27,10 +27,8 @@ export default function DocumentsPage({ params }: { params: { supplierId: string
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: list } = await supabase.from('supplier_documents').select('*').eq('supplier_id', supplierId).eq('is_active', true).order('created_at', { ascending: false })
     setDocs(list || [])
     setLoading(false)
@@ -39,7 +37,6 @@ export default function DocumentsPage({ params }: { params: { supplierId: string
   useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId])
 
   async function downloadDoc(filePath: string, fileName: string) {
-    // @ts-expect-error
     const { data, error } = await supabase.storage.from('supplier-documents').createSignedUrl(filePath, 60)
     if (error) {
       alert('فشل تحميل الملف: ' + error.message)
@@ -183,7 +180,6 @@ function UploadDocModal({ supplierId, onClose, onSaved }: any) {
       const fileExt = file.name.split('.').pop()
       const filePath = `${supplierId}/${form.document_type}/${Date.now()}.${fileExt}`
       
-      // @ts-expect-error
       const { error: uploadError } = await supabase.storage
         .from('supplier-documents')
         .upload(filePath, file)
@@ -195,7 +191,6 @@ function UploadDocModal({ supplierId, onClose, onSaved }: any) {
       }
       
       // Save metadata
-      // @ts-expect-error
       const { error } = await supabase.from('supplier_documents').insert({
         supplier_id: supplierId,
         document_type: form.document_type,

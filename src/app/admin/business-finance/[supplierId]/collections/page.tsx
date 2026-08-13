@@ -31,14 +31,11 @@ export default function CollectionsPage({ params }: { params: { supplierId: stri
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: list } = await supabase.from('bz_projects').select('id, name').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setProjects(list || [])
-    // @ts-expect-error
     const { data } = await supabase.from('bz_collections').select('*').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setRows(data || [])
     // certs payable per project (for AR)
-    // @ts-expect-error
     const { data: certs } = await supabase.from('bz_payment_certificates').select('project_id, net_payable').eq('supplier_id', supplierId)
     const ct: Record<string, number> = {}
     ;(certs || []).forEach((c: any) => { if (c.project_id) ct[c.project_id] = (ct[c.project_id] || 0) + num(c.net_payable) })
@@ -64,17 +61,14 @@ export default function CollectionsPage({ params }: { params: { supplierId: stri
       reference: form.reference.trim() || null, notes: form.notes.trim() || null,
     }
     if (form.id) {
-      // @ts-expect-error
       await supabase.from('bz_collections').update(payload).eq('id', form.id)
     } else {
-      // @ts-expect-error
       await supabase.from('bz_collections').insert(payload)
     }
     setSaving(false); setShowForm(false); load()
   }
   async function remove(r: any) {
     if (!confirm('حذف التحصيل؟')) return
-    // @ts-expect-error
     await supabase.from('bz_collections').delete().eq('id', r.id)
     load()
   }

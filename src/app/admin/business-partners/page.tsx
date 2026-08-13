@@ -82,7 +82,6 @@ export default function BusinessPartnersIndexPage() {
 
   async function loadPartners() {
     setLoading(true)
-    // @ts-expect-error
     const { data: suppliers } = await supabase
       .from('suppliers')
       .select('id, business_name, industry, business_type, contract_status, commission_rate, commission_extra_rate, contact_phone, city, district')
@@ -128,14 +127,12 @@ export default function BusinessPartnersIndexPage() {
   }
 
   async function loadLeads() {
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_list_b2b_candidates')
     setLeads((data || []) as Lead[])
   }
 
   async function convertLead(lead: Lead, numBranches: number) {
     setConvertingLeadId(lead.lead_id)
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_convert_lead_to_b2b_partner', {
       p_lead_id: lead.lead_id,
       p_industry: lead.detected_industry === 'other' ? null : lead.detected_industry,

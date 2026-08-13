@@ -31,7 +31,6 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
       return
     }
     // Verify access via session token
-    // @ts-expect-error
     const { data: acc } = await supabase.rpc('owner_check_by_token', { p_token: token, p_supplier_id: supplierId })
     if (!acc?.allowed) {
       setDenied(true)
@@ -41,10 +40,8 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
     setAccess(acc)
 
     // Load supplier + KPIs
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name, industry, contact_phone').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: k } = await supabase.rpc('admin_dashboard_kpis', { p_supplier_id: supplierId })
     setKpis(k)
     setLoading(false)

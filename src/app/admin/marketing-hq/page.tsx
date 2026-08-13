@@ -34,7 +34,6 @@ type Dash = {
 }
 
 async function getDash(): Promise<Dash | null> {
-  // @ts-expect-error rpc typing
   const { data } = await supabaseAdmin.rpc('madmona_marketing_dashboard')
   return (data as Dash) ?? null
 }

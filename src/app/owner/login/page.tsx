@@ -22,7 +22,6 @@ export default function OwnerLoginPage() {
     (async () => {
       const token = safeStorage.get('madmona_owner_token')
       if (token) {
-        // @ts-expect-error rpc typing
         const { data } = await supabase.rpc('owner_resolve_by_token', { p_token: token })
         const access = data?.access || []
         if (access.length === 1) { router.push(`/owner/${access[0].supplier_id}`); return }
@@ -39,7 +38,6 @@ export default function OwnerLoginPage() {
   async function handleVerified(_r: WaLoginResult) {
     setError(''); setSending(true)
     try {
-      // @ts-expect-error rpc typing
       const { data, error: e } = await supabaseBrowser.rpc('owner_mint_session_from_auth')
       const ok = !e && data?.success
       if (!ok) {
@@ -53,7 +51,6 @@ export default function OwnerLoginPage() {
       }
       const token = (data as { token: string }).token
       safeStorage.set('madmona_owner_token', token)
-      // @ts-expect-error rpc typing
       const { data: acc } = await supabase.rpc('owner_resolve_by_token', { p_token: token })
       const access = acc?.access || []
       if (access.length === 1) router.push(`/owner/${access[0].supplier_id}`)

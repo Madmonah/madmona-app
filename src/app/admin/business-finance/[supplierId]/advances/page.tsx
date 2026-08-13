@@ -28,10 +28,8 @@ export default function AdvancesPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: list } = await supabase.from('bz_projects').select('id, name').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setProjects(list || [])
-    // @ts-expect-error
     const { data } = await supabase.from('bz_advances').select('*').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setRows(data || [])
     setLoading(false)
@@ -55,17 +53,14 @@ export default function AdvancesPage({ params }: { params: { supplierId: string 
       status: form.status, notes: form.notes.trim() || null,
     }
     if (form.id) {
-      // @ts-expect-error
       await supabase.from('bz_advances').update(payload).eq('id', form.id)
     } else {
-      // @ts-expect-error
       await supabase.from('bz_advances').insert(payload)
     }
     setSaving(false); setShowForm(false); load()
   }
   async function remove(r: any) {
     if (!confirm('حذف السلفة؟')) return
-    // @ts-expect-error
     await supabase.from('bz_advances').delete().eq('id', r.id)
     load()
   }

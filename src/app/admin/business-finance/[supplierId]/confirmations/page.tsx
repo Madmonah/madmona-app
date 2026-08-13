@@ -31,11 +31,8 @@ export default function ConfirmationsPage({ params }: { params: { supplierId: st
     const t = token()
     if (!t) { setLoading(false); return }
     const [tp, od, jn] = await Promise.all([
-      // @ts-expect-error rpc typing
       supabase.rpc('admin_list_pending_tips', { p_token: t, p_supplier_id: supplierId }),
-      // @ts-expect-error rpc typing
       supabase.rpc('admin_list_pending_orders', { p_token: t, p_supplier_id: supplierId }),
-      // @ts-expect-error rpc typing
       supabase.rpc('admin_list_employee_join_requests', { p_token: t, p_supplier_id: supplierId }),
     ])
     setTips(tp.data?.ok ? tp.data.tips : [])

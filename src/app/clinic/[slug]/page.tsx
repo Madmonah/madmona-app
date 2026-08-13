@@ -33,7 +33,6 @@ export default function ClinicLandingPage({ params }: { params: { slug: string }
 
   useEffect(() => {
     (async () => {
-      // @ts-expect-error rpc typing
       const { data: d } = await supabase.rpc('public_clinic_landing', { p_slug: slug })
       setData(d); setLoading(false)
     })()
@@ -42,7 +41,6 @@ export default function ClinicLandingPage({ params }: { params: { slug: string }
   async function loadSlots(d: Date) {
     if (!doctor) return
     setLoadingSlots(true)
-    // @ts-expect-error rpc typing
     const { data: r } = await supabase.rpc('public_get_available_slots', {
       p_branch_code: doctor.branch_code, p_date: d.toISOString().slice(0, 10), p_stylist_id: doctor.employee_id,
     })
@@ -54,7 +52,6 @@ export default function ClinicLandingPage({ params }: { params: { slug: string }
     if (!doctor || !date || !time || !name || !phone) return
     setSubmitting(true)
     const sched = new Date(date); const [h, m] = time.split(':'); sched.setHours(parseInt(h), parseInt(m), 0, 0)
-    // @ts-expect-error rpc typing
     const { data: r, error } = await supabase.rpc('public_create_booking', {
       p_branch_code: doctor.branch_code, p_service_id: doctor.consultation_service_id,
       p_customer_name: name, p_customer_phone: phone, p_scheduled_at: sched.toISOString(),

@@ -21,13 +21,10 @@ export default function AttendancePage({ params }: { params: { supplierId: strin
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: br } = await supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).order('code')
     setBranches(br || [])
-    // @ts-expect-error
     const { data: att } = await supabase.rpc('admin_get_attendance', {
       p_supplier_id: supplierId,
       p_branch_id: branchFilter,

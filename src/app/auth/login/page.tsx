@@ -61,7 +61,6 @@ function LoginContent() {
     // 1) Employee login first: phone + PIN (e.g. the 4-digit clock-in PIN) -> /me.
     //    Employees have NO minimum-length rule — any PIN works.
     try {
-      // @ts-expect-error rpc typing
       const { data: emp } = await supabaseBrowser.rpc('employee_login_phone_pin', {
         p_phone: normalized, p_pin: password,
       })
@@ -118,7 +117,6 @@ function LoginContent() {
     // Save account to localStorage for fast switching later
     try {
       if (signInData?.user?.id) {
-        // @ts-expect-error
         const { data: profile } = await supabaseBrowser
           .from('profiles')
           .select('full_name, role')

@@ -71,8 +71,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'name_ar required' }, { status: 400 })
   }
 
-  // @ts-expect-error - new tables
-  const { data, error } = await supabase
+  // ⚠️ (١٢ أغسطس ٢٠٢٦) جدول `space_units` لسه مش في الأنواع المولّدة —
+  // كاست محصور على النداء ده بدل توجيه @ts-expect-error كان محطوط فوق
+  // السطر الغلط (فماكانش بيقمع حاجة). يتشال لما الأنواع تتولّد من جديد.
+  const { data, error } = await (supabase as unknown as {
+    from: (t: string) => {
+      insert: (v: Record<string, unknown>) => {
+        select: (c: string) => { single: () => Promise<{ data: { id: string } | null; error: { message: string } | null }> }
+      }
+    }
+  })
     .from('space_units')
     .insert({
       supplier_id,

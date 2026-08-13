@@ -44,7 +44,6 @@ export async function DELETE(
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
-  // @ts-expect-error
   const { data: prof } = await userClient
     .from('profiles')
     .select('role')
@@ -62,7 +61,6 @@ export async function DELETE(
   )
 
   // 3. Check if listing exists & if it has any bookings
-  // @ts-expect-error
   const { data: listing, error: fetchErr } = await adminClient
     .from('listings')
     .select('id, title, status')
@@ -73,7 +71,6 @@ export async function DELETE(
     return NextResponse.json({ error: 'listing_not_found' }, { status: 404 })
   }
 
-  // @ts-expect-error
   const { count: bookingsCount } = await adminClient
     .from('marketplace_bookings')
     .select('id', { count: 'exact', head: true })
@@ -83,7 +80,6 @@ export async function DELETE(
 
   // 4. SOFT DELETE if bookings exist (preserve history)
   if (hasBookings) {
-    // @ts-expect-error
     const { error: updateErr } = await adminClient
       .from('listings')
       .update({
@@ -113,7 +109,6 @@ export async function DELETE(
   // Helper to attempt deletion of dependent rows
   const tryDelete = async (table: string, column: string = 'listing_id') => {
     try {
-      // @ts-expect-error
       const { error } = await adminClient
         .from(table)
         .delete()
@@ -126,7 +121,6 @@ export async function DELETE(
   }
 
   // First, fetch storage paths for photos so we can delete files
-  // @ts-expect-error
   const { data: photos } = await adminClient
     .from('listing_photos')
     .select('storage_path')
@@ -147,7 +141,6 @@ export async function DELETE(
   // Try to delete storage files (best-effort, doesn't block listing deletion)
   if (storagePaths.length > 0) {
     try {
-      // @ts-expect-error
       await adminClient.storage.from('listing-photos').remove(storagePaths)
     } catch (e) {
       // Log but don't fail
@@ -156,7 +149,6 @@ export async function DELETE(
   }
 
   // 6. Finally, delete the listing itself
-  // @ts-expect-error
   const { error: deleteErr } = await adminClient
     .from('listings')
     .delete()

@@ -50,7 +50,6 @@ export async function DELETE(
 ) {
   if (!checkAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // @ts-expect-error
   const { error } = await supabase.from('attributes').delete().eq('id', params.id)
   if (error) {
     console.error('[admin/attributes/DELETE] error:', error)

@@ -257,7 +257,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     const loadPhone = async () => {
       const { data: { user } } = await supabaseBrowser.auth.getUser()
       if (!user) return
-      // @ts-expect-error
       const { data: profile } = await supabaseBrowser
         .from('profiles')
         .select('phone')
@@ -274,7 +273,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
   // Load categories
   useEffect(() => {
     const load = async () => {
-      // @ts-expect-error new schema not in types
       const { data } = await supabaseBrowser
         .from('categories')
         .select('*')
@@ -313,7 +311,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     }
     const load = async () => {
       setLoadingAttrs(true)
-      // @ts-expect-error
       const { data } = await supabaseBrowser
         .from('attributes')
         .select('*')
@@ -486,7 +483,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     // Check if phone is already verified in last 30 days
     if (otpPhone) {
       try {
-        // @ts-expect-error
         const { data: alreadyVerified } = await supabaseBrowser.rpc('is_phone_verified', {
           p_phone: otpPhone,
         })
@@ -538,14 +534,12 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     let listingId = existingId
 
     if (isEditing) {
-      // @ts-expect-error
       const { error: updateErr } = await supabaseBrowser
         .from('listings')
         .update(listingPayload)
         .eq('id', existingId)
       if (updateErr) throw updateErr
     } else {
-      // @ts-expect-error
       const { data: newListing, error: insertErr } = await supabaseBrowser
         .from('listings')
         .insert(listingPayload)
@@ -586,18 +580,15 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       })
     }
     if (isEditing) {
-      // @ts-expect-error
       await supabaseBrowser.from('listing_photos').delete().eq('listing_id', listingId)
     }
     if (photosToInsert.length > 0) {
-      // @ts-expect-error
       const { error: photosErr } = await supabaseBrowser.from('listing_photos').insert(photosToInsert)
       if (photosErr) throw photosErr
     }
 
     // Save attribute values
     if (isEditing) {
-      // @ts-expect-error
       await supabaseBrowser.from('listing_values').delete().eq('listing_id', listingId)
     }
     const valuesToInsert: any[] = []
@@ -608,13 +599,11 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       }
     }
     if (valuesToInsert.length > 0) {
-      // @ts-expect-error
       await supabaseBrowser.from('listing_values').insert(valuesToInsert)
     }
 
     // Save pricing rules
     if (isEditing) {
-      // @ts-expect-error
       await supabaseBrowser.from('pricing_rules').delete().eq('listing_id', listingId)
     }
     const pricingToInsert = form.pricing
@@ -633,7 +622,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         return row
       })
     if (pricingToInsert.length > 0) {
-      // @ts-expect-error
       await supabaseBrowser.from('pricing_rules').insert(pricingToInsert)
     }
 
@@ -648,7 +636,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       // Persist as draft first to make sure all rows exist
       const listingId = await persistListingAsDraft()
       // Flip to published — set contact_phone + phone_verified_at
-      // @ts-expect-error
       const { error: pubErr } = await supabaseBrowser
         .from('listings')
         .update({
@@ -705,7 +692,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     setOtpVerifying(true)
     try {
       // Call verify_phone_otp RPC — it sets contact_phone + phone_verified_at on the listing
-      // @ts-expect-error
       const { data: verifyResult, error: verifyErr } = await supabaseBrowser.rpc(
         'verify_phone_otp',
         {
@@ -719,7 +705,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         throw new Error(verifyResult?.error || 'الكود غلط')
       }
       // Now update status to 'published' — trigger will pass
-      // @ts-expect-error
       const { error: pubErr } = await supabaseBrowser
         .from('listings')
         .update({ status: 'published', published_at: new Date().toISOString() })
@@ -768,14 +753,12 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       let listingId = existingId
 
       if (isEditing) {
-        // @ts-expect-error
         const { error: updateErr } = await supabaseBrowser
           .from('listings')
           .update(listingPayload)
           .eq('id', existingId)
         if (updateErr) throw updateErr
       } else {
-        // @ts-expect-error
         const { data: newListing, error: insertErr } = await supabaseBrowser
           .from('listings')
           .insert(listingPayload)
@@ -824,7 +807,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         await supabaseBrowser.from('listing_photos').delete().eq('listing_id', listingId)
       }
       if (photosToInsert.length > 0) {
-        // @ts-expect-error
         const { error: photosErr } = await supabaseBrowser.from('listing_photos').insert(photosToInsert)
         if (photosErr) throw photosErr
       }
@@ -846,7 +828,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         }
       }
       if (valuesToInsert.length > 0) {
-        // @ts-expect-error
         const { error: valuesErr } = await supabaseBrowser.from('listing_values').insert(valuesToInsert)
         if (valuesErr) throw valuesErr
       }
@@ -874,7 +855,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
           return row
         })
       if (pricingToInsert.length > 0) {
-        // @ts-expect-error
         const { error: pricingErr } = await supabaseBrowser.from('pricing_rules').insert(pricingToInsert)
         if (pricingErr) throw pricingErr
       }

@@ -15,10 +15,8 @@ export default function WACampaignsPage({ params }: { params: { supplierId: stri
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: list } = await supabase.rpc('admin_list_whatsapp_campaigns', { p_supplier_id: supplierId })
     setData(list)
     setLoading(false)

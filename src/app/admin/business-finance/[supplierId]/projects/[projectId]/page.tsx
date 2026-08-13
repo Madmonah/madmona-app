@@ -39,46 +39,28 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: p } = await supabase.from('bz_projects').select('*').eq('id', projectId).eq('supplier_id', supplierId).single()
     setProject(p || null)
 
-    // @ts-expect-error
     const { data: boq } = await supabase.from('bz_boq_items').select('amount').eq('project_id', projectId)
-    // @ts-expect-error
     const { data: vos } = await supabase.from('bz_variation_orders').select('amount, status').eq('project_id', projectId)
-    // @ts-expect-error
     const { data: certs } = await supabase.from('bz_payment_certificates').select('net_cumulative, gross_cumulative, net_payable, seq').eq('project_id', projectId).order('seq', { ascending: false })
-    // @ts-expect-error
     const { data: guars } = await supabase.from('bz_guarantees').select('amount, status').eq('project_id', projectId)
-    // @ts-expect-error
     const { data: subs } = await supabase.from('bz_subcontractors').select('contract_value, paid_to_date').eq('project_id', projectId)
-    // @ts-expect-error
     const { data: asg } = await supabase.from('bz_assignments').select('allowance_amount').eq('project_id', projectId)
-    // @ts-expect-error
     const { data: cus } = await supabase.from('bz_custody').select('amount, settled_amount, status').eq('project_id', projectId)
-    // @ts-expect-error
     const { data: adv } = await supabase.from('bz_advances').select('amount, repaid_amount, status').eq('project_id', projectId)
-    // @ts-expect-error
     const { data: eq } = await supabase.from('bz_equipment').select('id').eq('project_id', projectId)
-    // @ts-expect-error
     const { data: dlist } = await supabase.from('bz_project_documents').select('*').eq('project_id', projectId).order('created_at', { ascending: false })
-    // @ts-expect-error
     const { data: exp } = await supabase.from('bz_expenses').select('amount').eq('project_id', projectId)
-    // @ts-expect-error
     const { data: cols } = await supabase.from('bz_collections').select('amount').eq('project_id', projectId)
-    // @ts-expect-error
     const { data: miles } = await supabase.from('bz_milestones').select('weight_pct, status').eq('project_id', projectId)
-    // @ts-expect-error
     const { data: dreports } = await supabase.from('bz_daily_reports').select('id').eq('project_id', projectId)
-    // @ts-expect-error
     const { data: mreqs } = await supabase.from('bz_material_requests').select('id').eq('project_id', projectId)
-    // @ts-expect-error
     const { data: insps } = await supabase.from('bz_inspections').select('id').eq('project_id', projectId)
     const eqIds = (eq || []).map((e: any) => e.id)
     let equipCost = 0
     if (eqIds.length > 0) {
-      // @ts-expect-error
       const { data: eqlogs } = await supabase.from('bz_equipment_logs').select('cost').in('equipment_id', eqIds)
       equipCost = (eqlogs || []).reduce((s: number, l: any) => s + num(l.cost), 0)
     }
@@ -118,13 +100,11 @@ export default function ProjectDetailPage({ params }: { params: { supplierId: st
   async function saveDoc() {
     if (!docForm.name.trim()) { alert('اكتب اسم المستند'); return }
     setSavingDoc(true)
-    // @ts-expect-error
     await supabase.from('bz_project_documents').insert({ supplier_id: supplierId, project_id: projectId, name: docForm.name.trim(), doc_type: docForm.doc_type, url: docForm.url.trim() || null, notes: docForm.notes.trim() || null })
     setSavingDoc(false); setShowDoc(false); setDocForm({ name: '', doc_type: 'other', url: '', notes: '' }); load()
   }
   async function removeDoc(d: any) {
     if (!confirm('حذف المستند؟')) return
-    // @ts-expect-error
     await supabase.from('bz_project_documents').delete().eq('id', d.id)
     load()
   }

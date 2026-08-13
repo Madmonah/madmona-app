@@ -65,7 +65,6 @@ export default function AccountPage() {
         return
       }
 
-      // @ts-expect-error
       const { data: prof } = await supabaseBrowser
         .from('profiles')
         .select('id, phone, full_name, role')
@@ -74,7 +73,6 @@ export default function AccountPage() {
 
       setProfile(prof as Profile | null)
 
-      // @ts-expect-error
       const { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id, business_name, kyc_status')
@@ -114,7 +112,6 @@ export default function AccountPage() {
         }
       }
 
-      // @ts-expect-error
       const { count: bCount } = await supabaseBrowser
         .from('marketplace_bookings')
         .select('id', { count: 'exact', head: true })
@@ -122,7 +119,6 @@ export default function AccountPage() {
 
       setBookingsCount(bCount || 0)
 
-      // @ts-expect-error
       const { count: oCount } = await supabaseBrowser
         .from('marketplace_orders')
         .select('id', { count: 'exact', head: true })
@@ -130,7 +126,6 @@ export default function AccountPage() {
 
       setOrdersCount(oCount || 0)
 
-      // @ts-expect-error
       const { count: fCount } = await supabaseBrowser
         .from('favorites')
         .select('listing_id', { count: 'exact', head: true })
@@ -169,7 +164,6 @@ export default function AccountPage() {
     }
     setSavingName(true)
     setNameError(null)
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('profiles')
       .update({ full_name: trimmed })

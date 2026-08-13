@@ -294,7 +294,6 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       setIsAuthed(!!session?.user)
       if (session?.user) {
         setUserId(session.user.id)
-        // @ts-expect-error
         const { data: favs } = await supabaseBrowser
           .from('favorites')
           .select('listing_id')
@@ -305,7 +304,6 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
     checkAuth().catch(() => setIsAuthed(false))
 
     const load = async () => {
-      // @ts-expect-error
       const { data } = await supabaseBrowser
         .from('categories')
         .select('id, parent_id, name_ar, name_en, slug, icon, track, also_show_in, group_slug, group_name_ar, group_emoji, group_display_order')
@@ -322,7 +320,6 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
 
       // Published-listing counts per category (RPC) — sections with zero data
       // render locked with a "قريباً / Coming soon" badge.
-      // @ts-expect-error - RPC type
       const { data: counts } = await supabaseBrowser.rpc('get_marketplace_category_counts')
       if (counts) {
         const map: Record<string, number> = {}
@@ -345,7 +342,6 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
 
       let categoryIds: string[] | null = null
       if (selectedCategorySlug) {
-        // @ts-expect-error
         const { data: rootCat } = await supabaseBrowser
           .from('categories')
           .select('id, parent_id')
@@ -355,7 +351,6 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         if (rootCat) {
           if (rootCat.parent_id) {
             // 🚗 (18 Jul 2026) فئة فرعية: هي + أطفالها (لو ليها — زي عربيات زيرو → سيارة)
-            // @ts-expect-error
             const { data: kidCats } = await supabaseBrowser
               .from('categories')
               .select('id')
@@ -365,12 +360,10 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           } else {
             // Root tab clicked: show all subcategories + cross-listed categories
             const [subsRes, crossRes] = await Promise.all([
-              // @ts-expect-error
               supabaseBrowser
                 .from('categories')
                 .select('id')
                 .eq('parent_id', rootCat.id),
-              // @ts-expect-error
               supabaseBrowser
                 .from('categories')
                 .select('id')
@@ -393,7 +386,6 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         const groupRoots = rootCategories.filter(c => (c.group_slug || c.slug) === selectedGroupSlug)
         const groupRootIds = groupRoots.map(c => c.id)
         if (groupRootIds.length > 0) {
-          // @ts-expect-error
           const { data: childCats } = await supabaseBrowser
             .from('categories')
             .select('id')
@@ -407,14 +399,12 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         // Mohamed (Jun 12 2026): المناسبات (hybrid) اتحطت جوه الإيجار (rentals)،
         // فتصفح الإيجار بيورّي المناسبات كمان.
         const tracksToMatch = activeTrack === 'rentals' ? ['rentals', 'hybrid'] : activeTrack === 'products' ? ['products', 'sales'] : [activeTrack];
-        // @ts-expect-error
         const { data: trackRoots } = await supabaseBrowser
           .from('categories')
           .select('id')
           .in('track', tracksToMatch)
         const rootIds = (trackRoots || []).map((c: { id: string }) => c.id)
         if (rootIds.length > 0) {
-          // @ts-expect-error
           const { data: childCats } = await supabaseBrowser
             .from('categories')
             .select('id')
@@ -424,7 +414,6 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         }
       }
 
-      // @ts-expect-error
       let query = supabaseBrowser
         .from('listings')
         .select(`
@@ -529,7 +518,6 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
     const isFav = favorites.has(listingId)
 
     if (isFav) {
-      // @ts-expect-error
       const { error } = await supabaseBrowser
         .from('favorites')
         .delete()
@@ -541,7 +529,6 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         setFavorites(newFavs)
       }
     } else {
-      // @ts-expect-error
       const { error } = await supabaseBrowser
         .from('favorites')
         .insert({ customer_id: userId, listing_id: listingId })

@@ -66,7 +66,6 @@ async function getRootCategories(): Promise<DBCategory[]> {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
-    // @ts-expect-error
     const { data } = await supabase
       .from('categories')
       .select('id, name_ar, name_en, slug, icon, image_url, display_order, track, group_slug, group_name_ar, group_emoji, group_display_order')
@@ -89,7 +88,6 @@ async function getGroupLiveCounts(): Promise<Record<string, number>> {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
-    // @ts-expect-error
     const { data } = await supabase.rpc('home_group_live_counts')
     const out: Record<string, number> = {}
     for (const row of (data || []) as { gkey: string; live: number }[]) out[row.gkey] = Number(row.live)
@@ -105,7 +103,6 @@ async function getSiteSettings(): Promise<Record<string, string>> {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
-    // @ts-expect-error
     const { data } = await supabase
       .from('site_settings')
       .select('key, value')
@@ -127,7 +124,6 @@ async function getSiteStats(): Promise<{ listings: number; categories: number; s
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
-    // @ts-expect-error untyped rpc
     const { data } = await supabase.rpc('home_stats')
     const s = (data || {}) as { listings?: number; categories?: number; suppliers?: number; cities?: number }
     return {

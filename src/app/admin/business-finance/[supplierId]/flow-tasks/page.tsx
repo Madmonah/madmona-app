@@ -22,14 +22,11 @@ export default function FlowTasksPage({ params }: { params: { supplierId: string
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
 
     // فروع وموظفي المورّد (daily_tasks مربوطة بالفرع/الموظف مش بالمورّد مباشرة)
-    // @ts-expect-error
     const { data: branches } = await supabase.from('supplier_branches').select('id').eq('supplier_id', supplierId)
-    // @ts-expect-error
     const { data: emps } = await supabase.from('business_employees').select('id, full_name').eq('supplier_id', supplierId)
     const branchIds = (branches || []).map((b: any) => b.id)
     const empIds = (emps || []).map((e: any) => e.id)
@@ -39,12 +36,10 @@ export default function FlowTasksPage({ params }: { params: { supplierId: string
 
     const rows: Record<string, any> = {}
     if (branchIds.length) {
-      // @ts-expect-error
       const { data } = await supabase.from('daily_tasks').select('*').in('branch_id', branchIds).order('task_date', { ascending: false }).limit(500)
       ;(data || []).forEach((t: any) => { rows[t.id] = t })
     }
     if (empIds.length) {
-      // @ts-expect-error
       const { data } = await supabase.from('daily_tasks').select('*').in('employee_id', empIds).order('task_date', { ascending: false }).limit(500)
       ;(data || []).forEach((t: any) => { rows[t.id] = t })
     }
@@ -55,7 +50,6 @@ export default function FlowTasksPage({ params }: { params: { supplierId: string
   useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId])
 
   async function markDone(id: string) {
-    // @ts-expect-error
     await supabase.from('daily_tasks').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', id)
     load()
   }

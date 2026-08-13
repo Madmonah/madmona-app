@@ -125,7 +125,6 @@ export default function ListYourAssetForm() {
     // Save recovery email on the profile (best-effort)
     if (authData?.user?.id) {
       try {
-        // @ts-expect-error — profiles types may lag
         await supabaseBrowser.from('profiles').update({ email: trimmedEmail }).eq('id', authData.user.id)
       } catch {
         /* non-fatal */
@@ -135,7 +134,6 @@ export default function ListYourAssetForm() {
     // ── Step 2: Save asset draft to cold_leads ───────────────────
     // The ops team converts these into proper listings via /admin.
     try {
-      // @ts-expect-error — cold_leads types may lag
       await supabaseBrowser.from('cold_leads').insert({
         business_name: title.trim().slice(0, 100),
         phone: fullPhone,

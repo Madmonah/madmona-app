@@ -152,7 +152,6 @@ export default function BusinessFinancePage({
     setLoading(true)
 
     // Supplier
-    // @ts-expect-error
     const { data: sup } = await supabase
       .from('suppliers')
       .select('id, business_name, logo_url, industry, business_type, contract_status, commission_rate, commission_extra_rate, contact_phone, theme')
@@ -161,7 +160,6 @@ export default function BusinessFinancePage({
     setSupplier(sup as Supplier)
 
     // Branches
-    // @ts-expect-error
     const { data: br } = await supabase
       .from('supplier_branches')
       .select('id, name, code, address, district, status, phone')
@@ -170,7 +168,6 @@ export default function BusinessFinancePage({
     setBranches((br || []) as Branch[])
 
     // Transactions (last 200)
-    // @ts-expect-error
     const { data: txns } = await supabase
       .from('financial_transactions')
       .select('id, branch_id, direction, amount_egp, category_snapshot, payment_method, description, customer_name, occurred_at, madmona_commission_amount, is_void, supplier_branches(name)')
@@ -186,7 +183,6 @@ export default function BusinessFinancePage({
     setTransactions(txnsWithBranch as Transaction[])
 
     // Daily summaries (last 30 days)
-    // @ts-expect-error
     const { data: sums } = await supabase
       .from('v_business_daily_summary')
       .select('*')
@@ -196,7 +192,6 @@ export default function BusinessFinancePage({
     setSummaries((sums || []) as DailySummary[])
 
     // Per-supplier module overrides (supplier_modules table) — empty = registry defaults
-    // @ts-expect-error
     const { data: mods } = await supabase.rpc('admin_supplier_modules', { p_supplier_id: supplierId })
     const omap: Record<string, any> = {}
     ;(Array.isArray(mods) ? mods : []).forEach((r: any) => { omap[r.module_href] = r })

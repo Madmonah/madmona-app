@@ -102,7 +102,6 @@ export default function EditListingPage() {
         }
 
         // Fetch listing without supplier_id filter
-        // @ts-expect-error
         const { data: listing, error: listingErr } = await supabaseBrowser
           .from('listings')
           .select('*')
@@ -136,7 +135,6 @@ export default function EditListingPage() {
       setUserId(session.user.id)
 
       // Check ownership first
-      // @ts-expect-error
       let { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id, kyc_status')
@@ -147,7 +145,6 @@ export default function EditListingPage() {
         setMode('owner')
       } else {
         // 3. Check STAFF MODE
-        // @ts-expect-error
         const { data: staff } = await supabaseBrowser
           .from('supplier_staff')
           .select(`
@@ -177,7 +174,6 @@ export default function EditListingPage() {
       setSupplierId(sup.id)
 
       // Fetch listing — restricted to supplier's own listings
-      // @ts-expect-error
       const { data: listing, error: listingErr } = await supabaseBrowser
         .from('listings')
         .select('*')
@@ -197,7 +193,6 @@ export default function EditListingPage() {
     // Helper to load photos, pricing, and attribute values
     async function loadListingExtras(listing: any) {
       // Photos
-      // @ts-expect-error
       const { data: photos } = await supabaseBrowser
         .from('listing_photos')
         .select('*')
@@ -205,7 +200,6 @@ export default function EditListingPage() {
         .order('display_order', { ascending: true })
 
       // Pricing
-      // @ts-expect-error
       const { data: pricing } = await supabaseBrowser
         .from('pricing_rules')
         .select('*')
@@ -213,7 +207,6 @@ export default function EditListingPage() {
         .order('display_order', { ascending: true })
 
       // Attribute values
-      // @ts-expect-error
       const { data: values } = await supabaseBrowser
         .from('listing_values')
         .select('*')

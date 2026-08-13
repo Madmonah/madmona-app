@@ -29,10 +29,8 @@ export default function EquipmentLogsPage({ params }: { params: { supplierId: st
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: eq } = await supabase.from('bz_equipment').select('id, name, asset_no').eq('supplier_id', supplierId).order('name', { ascending: true })
     setEquipment(eq || [])
-    // @ts-expect-error
     const { data } = await supabase.from('bz_equipment_logs').select('*').eq('supplier_id', supplierId).order('log_date', { ascending: false }).order('created_at', { ascending: false })
     setRows(data || [])
     setLoading(false)
@@ -56,17 +54,14 @@ export default function EquipmentLogsPage({ params }: { params: { supplierId: st
       description: form.description.trim() || null, notes: form.notes.trim() || null,
     }
     if (form.id) {
-      // @ts-expect-error
       await supabase.from('bz_equipment_logs').update(payload).eq('id', form.id)
     } else {
-      // @ts-expect-error
       await supabase.from('bz_equipment_logs').insert(payload)
     }
     setSaving(false); setShowForm(false); load()
   }
   async function remove(r: any) {
     if (!confirm('حذف السجل؟')) return
-    // @ts-expect-error
     await supabase.from('bz_equipment_logs').delete().eq('id', r.id)
     load()
   }

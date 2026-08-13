@@ -49,7 +49,6 @@ export default function FavoritesPage() {
       }
       setUserId(session.user.id)
 
-      // @ts-expect-error
       const { data } = await supabaseBrowser
         .from('favorites')
         .select(`
@@ -77,7 +76,6 @@ export default function FavoritesPage() {
     e.stopPropagation()
     if (!userId) return
     setRemovingId(listingId)
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('favorites')
       .delete()

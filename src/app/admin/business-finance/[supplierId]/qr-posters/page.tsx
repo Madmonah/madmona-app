@@ -51,18 +51,15 @@ export default function QRPostersPage({
 
   useEffect(() => {
     async function load() {
-      // @ts-expect-error
       const { data: sup } = await supabase.from('suppliers')
         .select('business_name').eq('id', supplierId).single()
       setSupplierName((sup as any)?.business_name || '')
 
-      // @ts-expect-error
       const { data: br } = await supabase.from('supplier_branches')
         .select('id, name, code, district')
         .eq('supplier_id', supplierId).eq('status', 'active').order('code')
       setBranches((br || []) as Branch[])
 
-      // @ts-expect-error
       const { data: pinData } = await supabase.rpc('admin_get_employee_pins', {
         p_supplier_id: supplierId,
       })

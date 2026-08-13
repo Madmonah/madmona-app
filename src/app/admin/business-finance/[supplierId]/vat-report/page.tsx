@@ -20,10 +20,8 @@ export default function VATReportPage({ params }: { params: { supplierId: string
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: result } = await supabase.rpc('admin_get_vat_report', {
       p_supplier_id: supplierId,
       p_month: month,

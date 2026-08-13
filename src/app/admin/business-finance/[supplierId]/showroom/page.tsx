@@ -32,10 +32,8 @@ export default function ShowroomPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name, theme').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: list } = await supabase.rpc('admin_list_vehicle_units', { p_supplier_id: supplierId })
     setUnits(Array.isArray(list) ? list : [])
     setLoading(false)
@@ -181,7 +179,6 @@ function AddModal({ supplierId, accent = '#FA8125', onClose, onSaved }: any) {
   async function save() {
     if (!form.brand && !form.model) return alert('اكتب الماركة أو الموديل على الأقل')
     setSaving(true)
-    // @ts-expect-error
     const { error } = await supabase.rpc('admin_add_vehicle_unit', {
       p_supplier_id: supplierId,
       p_vehicle_type: form.vehicle_type,

@@ -18,7 +18,6 @@ export default function VisitRouter() {
   const [branches, setBranches] = useState<any[]>([])
 
   async function loadBranches() {
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('public_list_branches')
     setBranches(data || [])
   }
@@ -28,7 +27,6 @@ export default function VisitRouter() {
     if (typeof navigator === 'undefined' || !navigator.geolocation) { loadBranches(); setState({ s: 'picker' }); return }
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        // @ts-expect-error rpc typing
         const { data } = await supabase.rpc('public_nearest_branch', { p_lat: pos.coords.latitude, p_lng: pos.coords.longitude })
         if (data?.ok && data.branch) {
           setState({ s: 'found', code: data.branch.code, name: data.branch.name, business: data.branch.business_name, dist: data.branch.distance_m })

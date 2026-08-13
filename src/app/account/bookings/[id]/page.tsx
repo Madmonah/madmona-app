@@ -123,7 +123,6 @@ export default function CustomerBookingDetailPage() {
         return
       }
 
-      // @ts-expect-error
       const { data: b, error } = await supabaseBrowser
         .from('marketplace_bookings')
         .select(`
@@ -149,7 +148,6 @@ export default function CustomerBookingDetailPage() {
       setBooking(b as BookingDetail)
 
       // Fetch existing review
-      // @ts-expect-error
       const { data: rev } = await supabaseBrowser
         .from('reviews')
         .select('id, rating, comment, created_at')
@@ -165,7 +163,6 @@ export default function CustomerBookingDetailPage() {
   const handleCancelBooking = async () => {
     if (!booking) return
     setCancelling(true)
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('marketplace_bookings')
       .update({
@@ -195,7 +192,6 @@ export default function CustomerBookingDetailPage() {
     }
 
     setSubmittingReview(true)
-    // @ts-expect-error
     const { data: newReview, error } = await supabaseBrowser
       .from('reviews')
       .insert({

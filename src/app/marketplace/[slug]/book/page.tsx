@@ -149,7 +149,6 @@ export default function BookingPage() {
       // Look up the listing WITHOUT filtering on status — we want to differentiate
       // between truly missing listings and ones that are paused/draft/etc, so we
       // can show the correct gate message.
-      // @ts-expect-error
       const { data: l, error: listingErr } = await supabaseBrowser
         .from('listings')
         .select(`
@@ -193,7 +192,6 @@ export default function BookingPage() {
         return
       }
 
-      // @ts-expect-error
       const { data: rules } = await supabaseBrowser
         .from('pricing_rules')
         .select('*')
@@ -211,7 +209,6 @@ export default function BookingPage() {
       // Column may not exist in all DBs (migration: ALTER TABLE profiles ADD COLUMN national_id TEXT;)
       if (sessionUserId) {
         try {
-          // @ts-expect-error
           const { data: profile } = await supabaseBrowser
             .from('profiles')
             .select('national_id')
@@ -333,13 +330,17 @@ export default function BookingPage() {
       const startIso = new Date(startAt).toISOString()
       const endIso = new Date(endAt).toISOString()
 
-      // @ts-expect-error
-      const { data: conflictData, error: conflictErr } = await supabaseBrowser
+      // ⚠️ (١٢ أغسطس ٢٠٢٦) `check_booking_conflict` لسه مش في الأنواع المولّدة
+      // (src/types/supabase.ts قديمة) — التوجيه هنا على السطر اللي بيغلط فعلًا
+      // (نداء rpc نفسه) والنتيجة متكتبة صراحةً عشان المقارنة تحت تفضل صح.
+      // لما الأنواع تتولّد من جديد، التوجيه والكاست دول يتشالوا.
+      const { data: conflictData, error: conflictErr } = (await supabaseBrowser
+        // @ts-expect-error - RPC not in generated types yet
         .rpc('check_booking_conflict', {
           p_listing_id: listing.id,
           p_start_at: startIso,
           p_end_at: endIso,
-        })
+        })) as { data: boolean | null; error: { message: string } | null }
 
       if (conflictErr) {
         console.warn('Conflict check failed, continuing:', conflictErr.message)
@@ -354,7 +355,6 @@ export default function BookingPage() {
       // (client amounts are not trusted). Redirects to the public confirmation
       // page using ?ref=<reference_code> as a capability token.
       if (isGuest) {
-        // @ts-expect-error - rpc typing not generated
         const { data: rpcData, error: rpcErr } = await supabaseBrowser.rpc('create_guest_booking', {
           p_listing_id: listing.id,
           p_pricing_rule_id: selectedRule.id,
@@ -388,7 +388,6 @@ export default function BookingPage() {
       if (providedId) {
         // نحفظ الرقم القومي على البروفايل للحجوزات الجاية (best-effort)
         try {
-          // @ts-expect-error
           await supabaseBrowser
             .from('profiles')
             .update({ national_id: providedId })

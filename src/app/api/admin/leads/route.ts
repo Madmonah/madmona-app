@@ -62,7 +62,6 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
   }
 
-  // @ts-expect-error - Supabase JS v2.45+ generic type quirk
   const { error } = await supabase
     .from('booking_leads')
     .update({ status })

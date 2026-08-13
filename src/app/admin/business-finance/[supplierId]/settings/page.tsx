@@ -82,11 +82,8 @@ export default function SettingsPage({
   async function loadAll() {
     setLoading(true)
     const [supRes, brRes, empRes] = await Promise.all([
-      // @ts-expect-error
       supabase.from('suppliers').select('*').eq('id', supplierId).single(),
-      // @ts-expect-error
       supabase.from('supplier_branches').select('*').eq('supplier_id', supplierId).order('code'),
-      // @ts-expect-error
       supabase.from('business_employees').select('*').eq('supplier_id', supplierId).order('role'),
     ])
     setSupplier(supRes.data as Supplier)
@@ -95,7 +92,6 @@ export default function SettingsPage({
 
     // Load role templates for this industry
     if (supRes.data?.industry) {
-      // @ts-expect-error
       const { data: rt } = await supabase
         .from('employee_role_templates')
         .select('role, role_ar')
@@ -220,7 +216,6 @@ function GeneralTab({ supplier, onSaved }: { supplier: Supplier; onSaved: () => 
 
   async function save() {
     setSaving(true)
-    // @ts-expect-error
     await supabase.from('suppliers').update({
       business_name: name.trim(),
       contact_name: contactName.trim() || null,
@@ -273,7 +268,6 @@ function BranchesTab({
   const [adding, setAdding] = useState(false)
 
   async function addBranch(b: Partial<Branch>) {
-    // @ts-expect-error
     await supabase.from('supplier_branches').insert({
       supplier_id: supplierId,
       name: b.name?.trim() || 'فرع جديد',
@@ -291,7 +285,6 @@ function BranchesTab({
   }
 
   async function updateBranch(id: string, updates: Partial<Branch>) {
-    // @ts-expect-error
     await supabase.from('supplier_branches').update({
       ...updates,
       updated_at: new Date().toISOString(),
@@ -302,7 +295,6 @@ function BranchesTab({
 
   async function deleteBranch(id: string) {
     if (!confirm('متأكد؟ الـ branch هيتمسح + كل الموظفين عليه هيتنقلوا لـ "بدون فرع"')) return
-    // @ts-expect-error
     await supabase.from('supplier_branches').delete().eq('id', id)
     onChanged()
   }
@@ -519,7 +511,6 @@ function EmployeesTab({
 
   async function addEmployee(e: Partial<Employee>) {
     const role = roles.find((r) => r.role === e.role)
-    // @ts-expect-error
     await supabase.from('business_employees').insert({
       supplier_id: supplierId,
       branch_id: e.branch_id || null,
@@ -541,7 +532,6 @@ function EmployeesTab({
       const role = roles.find((r) => r.role === updates.role)
       if (role) payload.role_ar = role.role_ar
     }
-    // @ts-expect-error
     await supabase.from('business_employees').update(payload).eq('id', id)
     setEditingId(null)
     onChanged()
@@ -549,7 +539,6 @@ function EmployeesTab({
 
   async function deleteEmployee(id: string) {
     if (!confirm('متأكد من حذف الموظف؟ كل tasks بتاعته هتتمسح كمان')) return
-    // @ts-expect-error
     await supabase.from('business_employees').delete().eq('id', id)
     onChanged()
   }
@@ -763,7 +752,6 @@ function CommissionTab({ supplier, onSaved }: { supplier: Supplier; onSaved: () 
     if (status === 'signed' || status === 'active') {
       payload.contract_signed_at = new Date().toISOString()
     }
-    // @ts-expect-error
     await supabase.from('suppliers').update(payload).eq('id', supplier.id)
     setSaving(false)
     onSaved()
@@ -834,7 +822,6 @@ function ModulesTab({ supplier, supplierId }: { supplier: Supplier; supplierId: 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data } = await supabase.from('supplier_modules').select('module_href, enabled').eq('supplier_id', supplierId)
     const map: Record<string, { enabled: boolean }> = {}
     ;(data || []).forEach((r: any) => { map[r.module_href] = { enabled: r.enabled } })

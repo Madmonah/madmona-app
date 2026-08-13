@@ -24,10 +24,8 @@ export default function BrandsPage({ params }: { params: { supplierId: string } 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: list } = await supabase.rpc('admin_list_agency_brands', { p_supplier_id: supplierId })
     setBrands(Array.isArray(list) ? list : [])
     setLoading(false)

@@ -92,7 +92,6 @@ export default function AdminNotificationsPage() {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
     if (!session?.user) { setStage('unauthenticated'); return }
 
-    // @ts-expect-error
     const { data: prof } = await supabaseBrowser
       .from('profiles')
       .select('role')
@@ -106,7 +105,6 @@ export default function AdminNotificationsPage() {
   }
 
   const loadUsers = async () => {
-    // @ts-expect-error
     const { data: profiles } = await supabaseBrowser
       .from('profiles')
       .select('id, full_name, phone, role')
@@ -114,7 +112,6 @@ export default function AdminNotificationsPage() {
       .limit(500)
 
     // Get push subscription presence
-    // @ts-expect-error
     const { data: subs } = await supabaseBrowser
       .from('push_subscriptions')
       .select('profile_id')
@@ -202,7 +199,6 @@ export default function AdminNotificationsPage() {
         data: { source: 'admin_broadcast' },
       }))
 
-      // @ts-expect-error
       const { error } = await supabaseBrowser
         .from('notification_queue')
         .insert(rows)

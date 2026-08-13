@@ -57,10 +57,8 @@ export default function VendorsPage({ params }: { params: { supplierId: string }
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name, industry').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: list } = await supabase.rpc('admin_list_vendors', { p_supplier_id: supplierId })
     setData(list)
     setLoading(false)

@@ -42,7 +42,6 @@ export default function ClaimPage() {
     setLoading(true)
     setErr('')
     try {
-      // @ts-expect-error rpc name not in generated types
       const { data: res, error } = await supabaseBrowser.rpc('claim_get_by_token', { p_token: token })
       if (error || !res || res.error === 'invalid_token') { setInvalid(true); setLoading(false); return }
       setData(res as ClaimData)
@@ -58,7 +57,6 @@ export default function ClaimPage() {
   async function handleClaim() {
     setClaiming(true); setErr('')
     try {
-      // @ts-expect-error rpc name not in generated types
       const { data: res, error } = await supabaseBrowser.rpc('claim_mark_by_token', { p_token: token })
       if (error || !res?.ok) { setErr('حصل خطأ، حاول تاني أو كلّمنا واتساب.'); setClaiming(false); return }
       setClaimed(true)

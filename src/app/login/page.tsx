@@ -50,7 +50,6 @@ export default function MadmonaLoginPage() {
     (async () => {
       const token = safeStorage.get('madmona_token')
       if (token) {
-        // @ts-expect-error rpc typing
         const { data, error } = await supabase.rpc('madmona_resolve', { p_token: token })
         if (data?.authenticated) { router.push(nextPath()); return }
         // (27 يوليو 2026) نمسح التوكن فقط لو الـresolve أكّد إنه باطل.
@@ -66,7 +65,6 @@ export default function MadmonaLoginPage() {
   async function employeeLogin() {
     if (!phone || pin.length < 3) return
     setError(''); setSending(true)
-    // @ts-expect-error rpc typing
     const { data, error: err } = await supabase.rpc('employee_login_phone_pin', {
       p_phone: cleanPhone(phone), p_pin: pin,
     })

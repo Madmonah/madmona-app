@@ -77,7 +77,6 @@ export default function AdminDailyMessagesPage() {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
     if (!session?.user) { setStage('unauthenticated'); return }
 
-    // @ts-expect-error
     const { data: prof } = await supabaseBrowser
       .from('profiles')
       .select('role')
@@ -90,7 +89,6 @@ export default function AdminDailyMessagesPage() {
   }
 
   async function loadMessages() {
-    // @ts-expect-error
     const { data, error } = await supabaseBrowser
       .from('daily_messages')
       .select('*')
@@ -104,7 +102,6 @@ export default function AdminDailyMessagesPage() {
     setMessages((data || []) as DailyMessage[])
 
     // Aggregate view stats per message (lightweight summary)
-    // @ts-expect-error
     const { data: views } = await supabaseBrowser
       .from('user_message_views')
       .select('message_id, dismissed_at')
@@ -147,14 +144,12 @@ export default function AdminDailyMessagesPage() {
 
     try {
       if (editing.id) {
-        // @ts-expect-error
         const { error } = await supabaseBrowser
           .from('daily_messages')
           .update(payload)
           .eq('id', editing.id)
         if (error) throw error
       } else {
-        // @ts-expect-error
         const { error } = await supabaseBrowser
           .from('daily_messages')
           .insert(payload)
@@ -173,7 +168,6 @@ export default function AdminDailyMessagesPage() {
 
   async function handleDelete(msg: DailyMessage) {
     if (!confirm(`تأكد إنك عاوز تشيل "${msg.title}"؟`)) return
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('daily_messages')
       .delete()
@@ -188,7 +182,6 @@ export default function AdminDailyMessagesPage() {
   }
 
   async function toggleActive(msg: DailyMessage) {
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('daily_messages')
       .update({ is_active: !msg.is_active, updated_at: new Date().toISOString() })

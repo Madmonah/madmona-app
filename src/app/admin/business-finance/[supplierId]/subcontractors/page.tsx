@@ -30,7 +30,6 @@ export default function SubcontractorsPage({ params }: { params: { supplierId: s
   useEffect(() => {
     (async () => {
       setLoading(true)
-      // @ts-expect-error
       const { data: list } = await supabase.from('bz_projects').select('id, code, name').eq('supplier_id', supplierId).order('created_at', { ascending: false })
       setProjects(list || [])
       const urlP = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('project') : null
@@ -42,7 +41,6 @@ export default function SubcontractorsPage({ params }: { params: { supplierId: s
 
   async function loadRows(pid: string) {
     if (!pid) { setRows([]); return }
-    // @ts-expect-error
     const { data } = await supabase.from('bz_subcontractors').select('*').eq('project_id', pid).order('created_at', { ascending: false })
     setRows(data || [])
   }
@@ -65,17 +63,14 @@ export default function SubcontractorsPage({ params }: { params: { supplierId: s
       status: form.status, notes: form.notes.trim() || null,
     }
     if (form.id) {
-      // @ts-expect-error
       await supabase.from('bz_subcontractors').update(payload).eq('id', form.id)
     } else {
-      // @ts-expect-error
       await supabase.from('bz_subcontractors').insert(payload)
     }
     setSaving(false); setShowForm(false); loadRows(projectId)
   }
   async function remove(r: any) {
     if (!confirm('حذف المقاول؟')) return
-    // @ts-expect-error
     await supabase.from('bz_subcontractors').delete().eq('id', r.id)
     loadRows(projectId)
   }

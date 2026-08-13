@@ -20,7 +20,6 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     for (const k of ['category_slug', 'group_name', 'group_url', 'platform', 'members_count', 'posting_rules', 'notes', 'is_active']) {
       if (k in body) updates[k] = body[k]
     }
-    // @ts-expect-error
     const { data, error } = await supabase
       .from('social_groups_catalog')
       .update(updates)
@@ -37,7 +36,6 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await ctx.params
-    // @ts-expect-error
     const { error } = await supabase.from('social_groups_catalog').delete().eq('id', id)
     if (error) throw error
     return NextResponse.json({ ok: true })

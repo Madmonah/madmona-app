@@ -49,17 +49,14 @@ export default function RatingsPage({
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: sup } = await supabase.from('suppliers')
       .select('business_name').eq('id', supplierId).single()
     setSupplierName((sup as any)?.business_name || '')
 
-    // @ts-expect-error
     const { data: br } = await supabase.from('supplier_branches')
       .select('id, name, code').eq('supplier_id', supplierId).order('code')
     setBranches((br || []) as Branch[])
 
-    // @ts-expect-error
     const { data: r } = await supabase.from('service_ratings')
       .select('id, rating, comment, customer_name_snapshot, service_name_snapshot, employee_name_snapshot, branch_id, service_id, employee_id, created_at')
       .eq('supplier_id', supplierId)

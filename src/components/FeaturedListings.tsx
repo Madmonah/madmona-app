@@ -47,7 +47,6 @@ export default function FeaturedListings() {
 
   useEffect(() => {
     const load = async () => {
-      // @ts-expect-error supabase types
       const { data } = await supabaseBrowser
         .from('listings')
         .select(`

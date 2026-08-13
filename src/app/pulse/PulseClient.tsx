@@ -97,7 +97,6 @@ export default function PulseClient() {
       if (userId && !visitRecordedRef.current) {
         visitRecordedRef.current = true;
         try {
-          // @ts-expect-error rpc type
           const { data: visitResult } = await supabaseBrowser.rpc('record_user_visit', { p_user_id: userId });
           if (visitResult?.new_reward) {
             // Schedule modal to appear after page paints
@@ -498,7 +497,6 @@ function DailyPicks({ picks, isSignedIn }: { picks: Pick[]; isSignedIn: boolean 
     if (picks.length > 0) return;
     setLoadingTrending(true);
     (async () => {
-      // @ts-expect-error
       const { data } = await supabaseBrowser
         .from('listings')
         .select(`

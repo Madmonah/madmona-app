@@ -29,7 +29,6 @@ export default function RequestsPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('admin_list_pending_requests', { p_supplier_id: supplierId })
     setLeave(data?.leave || [])
     setAdvances(data?.advances || [])

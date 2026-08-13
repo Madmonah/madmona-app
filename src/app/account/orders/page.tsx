@@ -71,7 +71,6 @@ export default function CustomerOrdersPage() {
         // Non-fatal — function may not exist yet in some envs
       }
 
-      // @ts-expect-error
       const { data } = await supabaseBrowser
         .from('marketplace_orders')
         .select(`

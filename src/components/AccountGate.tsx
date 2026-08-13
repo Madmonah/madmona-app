@@ -29,7 +29,6 @@ export function useMadmonaAuth() {
     (async () => {
       const t = typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null
       if (t) {
-        // @ts-expect-error rpc typing
         const { data } = await supabase.rpc('madmona_resolve', { p_token: t })
         if (data?.authenticated) {
           setAuthed(true)
@@ -44,10 +43,8 @@ export function useMadmonaAuth() {
       try {
         const { data: { session } } = await supabaseBrowser.auth.getSession()
         if (session?.user) {
-          // @ts-expect-error rpc typing
           const { data: ok } = await supabaseBrowser.rpc('is_admin')
           if (ok === true) {
-            // @ts-expect-error rpc typing
             const { data: prof } = await supabaseBrowser.from('profiles').select('full_name').eq('id', session.user.id).maybeSingle()
             setAuthed(true)
             setProfile({ name: prof?.full_name || 'مضمونة', phone: session.user.phone ? '0' + String(session.user.phone).slice(-10) : undefined })

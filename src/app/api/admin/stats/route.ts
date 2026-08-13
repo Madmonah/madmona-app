@@ -31,9 +31,7 @@ export async function GET(request: Request) {
     bookingsAll,
     payoutsUnpaid,
   ] = await Promise.all([
-    // @ts-expect-error new tables not in generated types
     supabase.from('suppliers').select('status'),
-    // @ts-expect-error
     supabase.from('suppliers').select('status'),
     // @ts-expect-error
     supabase.from('space_units').select('id, is_active, category_slug'),

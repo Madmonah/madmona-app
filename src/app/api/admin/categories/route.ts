@@ -13,7 +13,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // @ts-expect-error new schema not yet in types
   const { data, error } = await supabase
     .from('categories')
     .select('*')

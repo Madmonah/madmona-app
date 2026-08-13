@@ -38,10 +38,8 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error rpc/select typing
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: list } = await supabase
       .from('bz_projects')
       .select('*')
@@ -88,11 +86,9 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
 
     if (form.id) {
       payload.updated_at = new Date().toISOString()
-      // @ts-expect-error
       await supabase.from('bz_projects').update(payload).eq('id', form.id)
     } else {
       payload.code = 'PRJ-' + String(projects.length + 1).padStart(4, '0')
-      // @ts-expect-error
       await supabase.from('bz_projects').insert(payload)
     }
     setSaving(false)
@@ -102,7 +98,6 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
 
   async function remove(p: any) {
     if (!confirm(`متأكد تمسح مشروع "${p.name}"؟ هيتمسح معاه كل المستخلصات بتاعته.`)) return
-    // @ts-expect-error
     await supabase.from('bz_projects').delete().eq('id', p.id)
     load()
   }

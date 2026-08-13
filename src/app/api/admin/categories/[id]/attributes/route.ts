@@ -16,7 +16,6 @@ export async function GET(
 ) {
   if (!checkAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // @ts-expect-error
   const { data, error } = await supabase
     .from('attributes')
     .select('*')

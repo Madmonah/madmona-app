@@ -21,7 +21,6 @@ async function verifyAdmin(authHeader: string | null): Promise<{ ok: boolean; us
     const { data: { user } } = await sb.auth.getUser(token)
     if (!user) return { ok: false, reason: 'not_authenticated' }
 
-    // @ts-expect-error new schema not in types
     const { data: profile } = await supabaseAdmin
       .from('profiles').select('role').eq('id', user.id).maybeSingle()
 
@@ -51,7 +50,6 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const status = searchParams.get('status') || 'all'
 
-  // @ts-expect-error new schema not in types
   let query = supabaseAdmin
     .from('marketplace_suppliers')
     .select('*, profile:profiles!marketplace_suppliers_profile_id_fkey(id, phone, email, full_name, avatar_url)')
@@ -127,7 +125,6 @@ export async function PATCH(request: Request) {
 
   update.updated_at = new Date().toISOString()
 
-  // @ts-expect-error new schema not in types
   const { error } = await supabaseAdmin
     .from('marketplace_suppliers')
     .update(update)

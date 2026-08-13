@@ -86,7 +86,6 @@ export default function SupplierBookingDetailPage() {
       }
       setSupplierProfileId(session.user.id)
 
-      // @ts-expect-error
       const { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id')
@@ -98,7 +97,6 @@ export default function SupplierBookingDetailPage() {
         return
       }
 
-      // @ts-expect-error
       const { data: b, error } = await supabaseBrowser
         .from('marketplace_bookings')
         .select(`
@@ -136,7 +134,6 @@ export default function SupplierBookingDetailPage() {
       update.cancelled_at = new Date().toISOString()
     }
 
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('marketplace_bookings')
       .update(update)
@@ -154,7 +151,6 @@ export default function SupplierBookingDetailPage() {
   const saveSupplierNotes = async () => {
     if (!booking) return
     setUpdating(true)
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('marketplace_bookings')
       .update({ supplier_notes: supplierNotes.trim() || null })
@@ -185,7 +181,6 @@ export default function SupplierBookingDetailPage() {
       update.cancellation_reason = 'رفض التحقق من بيانات البطاقة'
     }
 
-    // @ts-expect-error
     const { error } = await supabaseBrowser
       .from('marketplace_bookings')
       .update(update)

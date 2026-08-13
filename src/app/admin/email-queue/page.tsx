@@ -68,7 +68,6 @@ export default function EmailQueuePage() {
   async function init() {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
     if (!session?.user) { setStage('unauthenticated'); return }
-    // @ts-expect-error
     const { data: prof } = await supabaseBrowser.from('profiles').select('role').eq('id', session.user.id).maybeSingle()
     if (prof?.role !== 'admin') { setStage('forbidden'); return }
     await loadRows()
@@ -80,7 +79,6 @@ export default function EmailQueuePage() {
     const all: QueueRow[] = []
 
     if (queue === 'both' || queue === 'admin') {
-      // @ts-expect-error
       let q = supabaseBrowser.from('admin_email_outbox')
         .select('id, to_email, subject, status, attempts, error, scheduled_at, sent_at, created_at, source')
         .order('created_at', { ascending: false }).limit(50)
@@ -95,7 +93,6 @@ export default function EmailQueuePage() {
     }
 
     if (queue === 'both' || queue === 'customer') {
-      // @ts-expect-error
       let q = supabaseBrowser.from('customer_email_outbox')
         .select('id, to_email, to_name, subject, status, attempts, error, scheduled_at, sent_at, created_at, template_key, category')
         .order('created_at', { ascending: false }).limit(50)
@@ -116,7 +113,6 @@ export default function EmailQueuePage() {
 
   async function fireProcessor() {
     setFiring(true)
-    // @ts-expect-error
     const { data, error } = await supabaseBrowser.rpc('process_email_outbox', { p_limit: 10 })
     setFiring(false)
     if (error) {
@@ -132,7 +128,6 @@ export default function EmailQueuePage() {
   async function retryRow(row: QueueRow) {
     setRetrying(row.id)
     const table = row.queue === 'admin' ? 'admin_email_outbox' : 'customer_email_outbox'
-    // @ts-expect-error
     const { error } = await supabaseBrowser.from(table).update({
       status: 'pending', error: null, attempts: 0,
       ...(row.queue === 'customer' ? { provider_request_id: null, updated_at: new Date().toISOString() } : { provider_request_id: null }),

@@ -51,7 +51,6 @@ export async function DELETE(
   if (!checkAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   // Check listings using this category
-  // @ts-expect-error
   const { count, error: countErr } = await supabase
     .from('listings')
     .select('id', { count: 'exact', head: true })
@@ -69,7 +68,6 @@ export async function DELETE(
   }
 
   // Check sub-categories
-  // @ts-expect-error
   const { count: subCount } = await supabase
     .from('categories')
     .select('id', { count: 'exact', head: true })
@@ -82,7 +80,6 @@ export async function DELETE(
     )
   }
 
-  // @ts-expect-error
   const { error } = await supabase.from('categories').delete().eq('id', params.id)
   if (error) {
     console.error('[admin/categories/DELETE] error:', error)

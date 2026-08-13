@@ -70,7 +70,6 @@ export default function SupplierBookingsPage() {
         return
       }
 
-      // @ts-expect-error
       const { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id, kyc_status')
@@ -90,7 +89,6 @@ export default function SupplierBookingsPage() {
 
   const loadBookings = async (supId: string, currentFilter: string) => {
     setLoading(true)
-    // @ts-expect-error
     let query = supabaseBrowser
       .from('marketplace_bookings')
       .select(`

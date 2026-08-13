@@ -20,7 +20,6 @@ export default function ReviewPage({ params }: { params: { bookingId: string } }
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data } = await supabase.rpc('public_get_booking_for_review', { p_booking_id: bookingId })
     setBooking(data)
     setLoading(false)
@@ -31,7 +30,6 @@ export default function ReviewPage({ params }: { params: { bookingId: string } }
   async function submit() {
     if (rating === 0) return
     setSubmitting(true)
-    // @ts-expect-error
     const { data, error } = await supabase.rpc('public_submit_review', {
       p_booking_id: bookingId,
       p_rating: rating,

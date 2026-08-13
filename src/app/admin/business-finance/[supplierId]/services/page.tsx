@@ -18,10 +18,8 @@ export default function ServicesPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name, industry').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: svc } = await supabase.from('services_catalog').select('id, name_ar, price_egp, duration_minutes, performer_commission_pct').eq('supplier_id', supplierId).order('name_ar')
     setServices(svc || [])
     setLoading(false)
@@ -102,10 +100,8 @@ function ServiceMappingModal({ supplierId, service, onClose }: any) {
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: prods } = await supabase.from('inventory_products').select('id, name_ar, current_stock, cost_price_egp').eq('supplier_id', supplierId).order('name_ar')
     setProducts(prods || [])
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_list_service_products', { p_service_id: service.id })
     setMappings((data?.products || []).map((m: any) => ({
       product_id: m.product_id,

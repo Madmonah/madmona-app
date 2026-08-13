@@ -16,7 +16,6 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   try {
     const { id } = await ctx.params
 
-    // @ts-expect-error
     const { data: pack, error } = await supabase
       .from('social_packs')
       .select(`
@@ -33,7 +32,6 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     if (!pack) return NextResponse.json({ error: 'not found' }, { status: 404 })
 
     // Group posts joined with catalog details
-    // @ts-expect-error
     const { data: groupPosts } = await supabase
       .from('social_pack_group_posts')
       .select(`

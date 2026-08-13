@@ -52,7 +52,6 @@ async function handle(req: NextRequest) {
       )
       const { data: { user } } = await userClient.auth.getUser()
       if (user) {
-        // @ts-expect-error
         const { data: prof } = await userClient
           .from('profiles')
           .select('role')
@@ -81,7 +80,6 @@ async function handle(req: NextRequest) {
   )
 
   // Pull next 50 unsent items
-  // @ts-expect-error
   const { data: queue, error: queueErr } = await adminClient
     .from('notification_queue')
     .select('*')
@@ -121,7 +119,6 @@ async function handle(req: NextRequest) {
   // دلوقتي استعلام واحد لكل المستلمين المميزين وتجميع في الذاكرة.
   type SubRow = { endpoint: string; p256dh: string; auth: string }
   const recipientIds = [...new Set((queue as QueueItem[]).map((q) => q.recipient_id))]
-  // @ts-expect-error
   const { data: allSubs } = await adminClient
     .from('push_subscriptions')
     .select('profile_id, endpoint, p256dh, auth')
@@ -143,7 +140,6 @@ async function handle(req: NextRequest) {
       // Design note (26 Jul 2026): before this change, no-subs items were marked
       // with sent_at just like real sends — silently dropping them and creating
       // fake "delivered" data. Now we record why nothing was sent.
-      // @ts-expect-error
       await adminClient
         .from('notification_queue')
         .update({
@@ -185,7 +181,6 @@ async function handle(req: NextRequest) {
 
   // Mark sent
   if (processedIds.length > 0) {
-    // @ts-expect-error
     await adminClient
       .from('notification_queue')
       .update({ sent_at: new Date().toISOString() })
@@ -196,7 +191,6 @@ async function handle(req: NextRequest) {
   // ⚡ (١٢ أغسطس ٢٠٢٦) كان select ثم update لكل id (2×N نداء) —
   // بقى RPC واحد ذرّي بيزوّد العداد للكل مرة واحدة.
   if (failedIds.length > 0) {
-    // @ts-expect-error rpc typing not generated
     const { error: bumpErr } = await adminClient.rpc('notification_queue_bump_failed', {
       p_ids: failedIds,
     })
@@ -205,7 +199,6 @@ async function handle(req: NextRequest) {
 
   // Delete expired subscriptions
   if (expiredEndpoints.length > 0) {
-    // @ts-expect-error
     await adminClient
       .from('push_subscriptions')
       .delete()
@@ -217,7 +210,6 @@ async function handle(req: NextRequest) {
   // client re-subscribe, so cleanup_stale_push_subscriptions was deactivating
   // perfectly-working endpoints just because the user hadn't reopened the site.
   if (sentEndpoints.length > 0) {
-    // @ts-expect-error
     await adminClient
       .from('push_subscriptions')
       .update({ last_used_at: new Date().toISOString() })
@@ -231,13 +223,11 @@ async function handle(req: NextRequest) {
   try {
     const d30 = new Date(Date.now() - 30 * 24 * 3600_000).toISOString()
     const d7 = new Date(Date.now() - 7 * 24 * 3600_000).toISOString()
-    // @ts-expect-error
     const { count: c1 } = await adminClient
       .from('notification_queue')
       .delete({ count: 'exact' })
       .not('sent_at', 'is', null)
       .lt('created_at', d30)
-    // @ts-expect-error
     const { count: c2 } = await adminClient
       .from('notification_queue')
       .delete({ count: 'exact' })

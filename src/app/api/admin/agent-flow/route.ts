@@ -24,7 +24,6 @@ function gate(): boolean {
 
 // resolve the ai_agent employee row for a given agent_name
 async function employeeIdForAgent(agentName: string): Promise<string | null> {
-  // @ts-expect-error untyped
   const { data } = await supabaseAdmin
     .from('business_employees')
     .select('id')
@@ -50,7 +49,6 @@ export async function POST(req: NextRequest) {
         const active = Boolean(body.active)
         if (!agent_name) return NextResponse.json({ error: 'agent_name required' }, { status: 400 })
 
-        // @ts-expect-error untyped
         const { error: e1 } = await supabaseAdmin.from('agent_registry').update({
           enabled: active,
           next_run_at: active ? new Date().toISOString() : null,
@@ -59,7 +57,6 @@ export async function POST(req: NextRequest) {
         if (e1) return NextResponse.json({ error: e1.message }, { status: 500 })
 
         // mirror to the employee row (status active/on_leave)
-        // @ts-expect-error untyped
         await supabaseAdmin.from('business_employees')
           .update({ status: active ? 'active' : 'on_leave' })
           .eq('supplier_id', MADMONA_SUPPLIER)
@@ -89,7 +86,6 @@ export async function POST(req: NextRequest) {
         if (!agent_name || !title_ar) return NextResponse.json({ error: 'agent_name + title_ar required' }, { status: 400 })
         const empId = await employeeIdForAgent(agent_name)
         if (!empId) return NextResponse.json({ error: 'employee row not found for agent' }, { status: 404 })
-        // @ts-expect-error untyped
         const { error } = await supabaseAdmin.from('employee_fixed_tasks').insert({
           employee_id: empId,
           supplier_id: MADMONA_SUPPLIER,
@@ -106,7 +102,6 @@ export async function POST(req: NextRequest) {
       case 'update_task': {
         const task_id = String(body.task_id || '')
         if (!task_id) return NextResponse.json({ error: 'task_id required' }, { status: 400 })
-        // @ts-expect-error untyped
         const { error } = await supabaseAdmin.from('employee_fixed_tasks')
           .update({ active: Boolean(body.active) }).eq('id', task_id)
         if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -117,7 +112,6 @@ export async function POST(req: NextRequest) {
       case 'delete_task': {
         const task_id = String(body.task_id || '')
         if (!task_id) return NextResponse.json({ error: 'task_id required' }, { status: 400 })
-        // @ts-expect-error untyped
         const { error } = await supabaseAdmin.from('employee_fixed_tasks').delete().eq('id', task_id)
         if (error) return NextResponse.json({ error: error.message }, { status: 500 })
         return NextResponse.json({ success: true })

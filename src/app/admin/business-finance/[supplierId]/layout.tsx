@@ -18,7 +18,6 @@ async function isPlatformAdmin(): Promise<boolean> {
   try {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
     if (!session?.user) return false
-    // @ts-expect-error rpc typing
     const { data: ok } = await supabaseBrowser.rpc('is_admin')
     return ok === true
   } catch { return false }
@@ -29,7 +28,6 @@ async function isPlatformAdmin(): Promise<boolean> {
 // This lets sales share a live trial link. Contracted/real suppliers stay gated.
 async function isTrialOpenSupplier(supplierId: string): Promise<boolean> {
   try {
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('is_trial_open_supplier', { p_supplier_id: supplierId })
     return data === true
   } catch { return false }
@@ -59,7 +57,6 @@ export default function BusinessFinanceLayout({
       const token = typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null
       // 1) Owner/manager path (WhatsApp-OTP token) — e.g. Ahmed for Elite
       if (token) {
-        // @ts-expect-error rpc typing
         const { data } = await supabase.rpc('admin_check_finance_access', {
           p_token: token, p_supplier_id: supplierId,
         })

@@ -14,7 +14,6 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    // @ts-expect-error generated types not in sync
     const { data: groups, error } = await supabase
       .from('social_groups_catalog')
       .select('*')
@@ -44,7 +43,6 @@ export async function POST(req: Request) {
     if (!body.category_slug || !body.group_name || !body.group_url) {
       return NextResponse.json({ error: 'category_slug, group_name, and group_url required' }, { status: 400 })
     }
-    // @ts-expect-error
     const { data, error } = await supabase
       .from('social_groups_catalog')
       .insert({

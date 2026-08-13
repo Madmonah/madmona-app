@@ -45,17 +45,14 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
 
   async function loadAll() {
     setLoading(true)
-    // @ts-expect-error rpc typing
     const { data: sup } = await supabase.from('suppliers')
       .select('business_name').eq('id', supplierId).single()
     setSupplierName((sup as any)?.business_name || '')
 
-    // @ts-expect-error rpc typing
     const { data: br } = await supabase.from('supplier_branches')
       .select('id, name, code').eq('supplier_id', supplierId).order('code')
     setBranches((br || []) as Branch[])
 
-    // @ts-expect-error rpc typing
     const { data: emp } = await supabase.rpc('admin_list_employees_for_manage', {
       p_supplier_id: supplierId,
     })
@@ -99,7 +96,6 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
     setRowState((p) => ({ ...p, [e.employee_id]: { saving: true, msg: '', err: false } }))
 
     if (d.phone !== (e.phone || '') || d.pin !== (e.pin_code || '')) {
-      // @ts-expect-error rpc typing
       const { data: r1 } = await supabase.rpc('admin_update_employee_contact', {
         p_employee_id: e.employee_id, p_phone: d.phone, p_pin: d.pin,
       })
@@ -109,7 +105,6 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
       }
     }
     if (d.branch_id !== (e.branch_id || '')) {
-      // @ts-expect-error rpc typing
       const { data: r2 } = await supabase.rpc('admin_move_employee_branch', {
         p_employee_id: e.employee_id, p_branch_id: d.branch_id || null,
       })

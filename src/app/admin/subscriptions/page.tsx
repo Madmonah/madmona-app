@@ -15,7 +15,6 @@ export default function SubscriptionsPage() {
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('admin_list_subscriptions')
     setRows(data || [])
     setLoading(false)
@@ -26,7 +25,6 @@ export default function SubscriptionsPage() {
     const reason = window.prompt(`سبب إيقاف "${name}"؟ (اختياري)`, 'اشتراك متأخر')
     if (reason === null) return
     setBusy(id)
-    // @ts-expect-error rpc typing
     const { error } = await supabase.rpc('admin_suspend_supplier', { p_supplier_id: id, p_reason: reason || null })
     setBusy(null)
     if (error) return alert('فشل الإيقاف: ' + error.message)
@@ -37,7 +35,6 @@ export default function SubscriptionsPage() {
     const paid = window.prompt(`إعادة تفعيل "${name}". تاريخ السداد لحد امتى؟ (YYYY-MM-DD اختياري)`, '')
     if (paid === null) return
     setBusy(id)
-    // @ts-expect-error rpc typing
     const { error } = await supabase.rpc('admin_reactivate_supplier', { p_supplier_id: id, p_paid_until: paid || null })
     setBusy(null)
     if (error) return alert('فشل التفعيل: ' + error.message)

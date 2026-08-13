@@ -49,11 +49,9 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
 
   useEffect(() => {
     (async () => {
-      // @ts-expect-error rpc typing
       const { data: bi } = await supabase.rpc('public_get_branch_info', { p_branch_code: branchCode })
       setBranch(bi?.branch || null)
       if (bi?.branch?.supplier_id) {
-        // @ts-expect-error rpc typing
         const { data: br } = await supabase.rpc('public_get_supplier_branding', { p_supplier_id: bi.branch.supplier_id })
         if (br?.logo_url) setLogo(br.logo_url)
       }
@@ -78,7 +76,6 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
     let stopped = false
     const tick = async () => {
       if (typeof document !== 'undefined' && document.hidden) return
-      // @ts-expect-error rpc typing
       const { data } = await supabase.rpc('employee_self_view_by_pin', {
         p_branch_code: branchCode, p_phone_or_pin: selfPin,
       })
@@ -116,7 +113,6 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
     const beat = async () => {
       if (typeof document !== 'undefined' && document.hidden) return
       const pos = await getPos()
-      // @ts-expect-error rpc typing
       const { data } = await supabase.rpc('employee_geo_heartbeat', {
         p_branch_code: branchCode, p_phone_or_pin: clockedPin,
         p_lat: pos?.lat ?? null, p_lng: pos?.lng ?? null, p_accuracy_m: pos?.acc ?? null,
@@ -155,7 +151,6 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
     setBusy(true); setErr(null); setPhase('locating')
     const pos = await getPos()
     setPhase('sending')
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('employee_clock_via_qr', {
       p_branch_code: branchCode,
       p_phone_or_pin: pin,
@@ -170,7 +165,6 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
       if (data.action === 'clock_in' || data.action === 'already_in') {
         // after clock-in (or re-scan on auto-checkout branches), open the personal page
         const usedPin = pin
-        // @ts-expect-error rpc typing
         const { data: sv } = await supabase.rpc('employee_self_view_by_pin', {
           p_branch_code: branchCode, p_phone_or_pin: usedPin,
         })
@@ -190,7 +184,6 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
   async function loadSelf() {
     if (pin.length < 3 || selfBusy) return
     setSelfBusy(true); setErr(null)
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('employee_self_view_by_pin', {
       p_branch_code: branchCode, p_phone_or_pin: pin,
     })
@@ -203,7 +196,6 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
     const next = currentStatus === 'completed' ? 'pending' : 'completed'
     // optimistic update
     setSelfView((v: any) => v ? { ...v, tasks: v.tasks.map((t: any) => t.id === taskId ? { ...t, status: next } : t) } : v)
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('employee_complete_task_by_pin', {
       p_branch_code: branchCode, p_phone_or_pin: selfPin, p_task_id: taskId, p_status: next,
     })
@@ -216,13 +208,11 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
   function closeSelf() { setSelfView(null); setSelfPin('') }
 
   async function refreshSelfNow() {
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('employee_self_view_by_pin', { p_branch_code: branchCode, p_phone_or_pin: selfPin })
     if (data?.ok) setSelfView((prev: any) => prev ? { ...data, justClockedIn: prev.justClockedIn } : data)
   }
 
   async function submitLeave(p: any) {
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('employee_request_leave_by_pin', {
       p_branch_code: branchCode, p_phone_or_pin: selfPin,
       p_leave_type: p.type, p_start_date: p.start, p_end_date: p.end, p_reason: p.reason || null,
@@ -232,7 +222,6 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
   }
 
   async function submitAdvance(p: any) {
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('employee_request_advance_by_pin', {
       p_branch_code: branchCode, p_phone_or_pin: selfPin,
       p_amount: p.amount, p_reason: p.reason || null,

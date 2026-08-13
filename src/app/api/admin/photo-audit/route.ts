@@ -23,7 +23,6 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(Number(url.searchParams.get('limit') || 20), 50)
   const cursor = url.searchParams.get('cursor') // last id from previous page
 
-  // @ts-expect-error — public schema not typed
   let q = supabase
     .from('listings')
     .select('id, title, slug, city, district, price_egp, status, created_at, supplier_id, category_id')
@@ -46,21 +45,17 @@ export async function GET(req: NextRequest) {
   )
 
   const [photosR, suppliersR, categoriesR, totalR] = await Promise.all([
-    // @ts-expect-error
     supabase.from('listing_photos')
       .select('id, listing_id, url, is_primary, display_order, created_at')
       .in('listing_id', ids)
       .order('is_primary', { ascending: false })
       .order('display_order', { ascending: true }),
     supIds.length
-      // @ts-expect-error
       ? supabase.from('suppliers').select('id, business_name').in('id', supIds)
       : Promise.resolve({ data: [] }),
     catIds.length
-      // @ts-expect-error
       ? supabase.from('categories').select('id, name_ar').in('id', catIds)
       : Promise.resolve({ data: [] }),
-    // @ts-expect-error
     supabase.from('listings').select('id', { count: 'exact', head: true }).eq('needs_photo_audit', true),
   ])
 
@@ -116,9 +111,7 @@ export async function POST(req: NextRequest) {
   }
 
   // demote all photos on this listing → then promote the chosen one to primary
-  // @ts-expect-error
   await supabase.from('listing_photos').update({ is_primary: false }).eq('listing_id', listing_id)
-  // @ts-expect-error
   const { error: promErr } = await supabase.from('listing_photos')
     .update({ is_primary: true, display_order: 1 })
     .eq('id', primary_photo_id)
@@ -128,7 +121,6 @@ export async function POST(req: NextRequest) {
   // hide bad photos → push to display_order=99+
   if (hide_photo_ids.length > 0) {
     for (let i = 0; i < hide_photo_ids.length; i++) {
-      // @ts-expect-error
       await supabase.from('listing_photos')
         .update({ is_primary: false, display_order: 90 + i })
         .eq('id', hide_photo_ids[i])
@@ -138,7 +130,6 @@ export async function POST(req: NextRequest) {
 
   // clear the audit flag → listing joins v_postiz_safe_listings
   if (clear_flag) {
-    // @ts-expect-error
     await supabase.from('listings').update({ needs_photo_audit: false }).eq('id', listing_id)
   }
 

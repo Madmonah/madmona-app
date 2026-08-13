@@ -30,9 +30,7 @@ export default function EliteHome() {
   useEffect(() => {
     (async () => {
       const [{ data: br }, { data: list }] = await Promise.all([
-        // @ts-expect-error rpc typing
         supabase.rpc('public_get_supplier_branding', { p_supplier_id: ELITE_ID }),
-        // @ts-expect-error rpc typing
         supabase.rpc('public_list_branches', { p_supplier_id: ELITE_ID }),
       ])
       setB(br)
@@ -48,7 +46,6 @@ export default function EliteHome() {
     }
     navigator.geolocation.getCurrentPosition(async (pos) => {
       const { latitude, longitude } = pos.coords
-      // @ts-expect-error rpc typing
       const { data } = await supabase.rpc('public_nearest_branch', { p_lat: latitude, p_lng: longitude, p_supplier_id: ELITE_ID })
       setGeoBusy(false)
       if (data?.code) router.push(`/v/${data.code}`)

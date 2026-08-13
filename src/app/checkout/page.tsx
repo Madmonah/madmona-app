@@ -83,7 +83,6 @@ export default function CheckoutPage() {
         const { data: { session } } = await supabaseBrowser.auth.getSession()
         if (session?.user) {
           setIsAuthed(true)
-          // @ts-expect-error
           const { data: profile } = await supabaseBrowser
             .from('profiles')
             .select('full_name, phone')

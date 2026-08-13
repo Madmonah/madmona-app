@@ -44,13 +44,10 @@ export default function ExpensesPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: br } = await supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).order('code')
     setBranches(br || [])
-    // @ts-expect-error
     const { data: list } = await supabase.rpc('admin_list_expenses', {
       p_supplier_id: supplierId,
       p_branch_id: branchFilter,
@@ -193,7 +190,6 @@ function AddExpenseModal({ supplierId, branches, onClose, onSaved }: any) {
     if (!form.amount || Number(form.amount) <= 0) return setErr('اكتب المبلغ')
     if (!form.branch_id) return setErr('اختار الفرع')
     setSaving(true)
-    // @ts-expect-error
     const { error } = await supabase.rpc('admin_record_expense', {
       p_supplier_id: supplierId,
       p_branch_id: form.branch_id,

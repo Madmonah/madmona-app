@@ -52,7 +52,6 @@ export default function EmailTemplatesPage() {
   async function init() {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
     if (!session?.user) { setStage('unauthenticated'); return }
-    // @ts-expect-error
     const { data: prof } = await supabaseBrowser.from('profiles').select('role').eq('id', session.user.id).maybeSingle()
     if (prof?.role !== 'admin') { setStage('forbidden'); return }
     await loadTemplates()
@@ -60,7 +59,6 @@ export default function EmailTemplatesPage() {
   }
 
   async function loadTemplates() {
-    // @ts-expect-error
     const { data } = await supabaseBrowser.from('email_templates').select('*').order('category').order('template_key')
     setTemplates((data as EmailTemplate[]) || [])
   }
@@ -68,7 +66,6 @@ export default function EmailTemplatesPage() {
   async function save() {
     if (!editing) return
     setSaving(true)
-    // @ts-expect-error
     const { error } = await supabaseBrowser.from('email_templates').update({
       subject_template: editing.subject_template,
       body_html_template: editing.body_html_template,
@@ -89,7 +86,6 @@ export default function EmailTemplatesPage() {
   }
 
   async function toggleActive(t: EmailTemplate) {
-    // @ts-expect-error
     await supabaseBrowser.from('email_templates').update({
       is_active: !t.is_active, updated_at: new Date().toISOString(),
     }).eq('template_key', t.template_key)
@@ -102,7 +98,6 @@ export default function EmailTemplatesPage() {
     // Build sample vars from required_vars
     const vars: Record<string, string> = {}
     t.required_vars.forEach(v => { vars[v] = `[${v}]` })
-    // @ts-expect-error
     const { error } = await supabaseBrowser.rpc('send_customer_email', {
       p_to_email: testEmail,
       p_template_key: t.template_key,

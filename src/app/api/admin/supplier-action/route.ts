@@ -28,7 +28,6 @@ export async function POST(request: NextRequest) {
   }
 
   // Check admin role using service role client
-  // @ts-expect-error new schema not in types
   const { data: profile } = await supabaseAdmin
     .from('profiles').select('role').eq('id', user.id).maybeSingle()
 
@@ -68,7 +67,6 @@ export async function POST(request: NextRequest) {
     updateData.kyc_rejection_reason = body.reason
   }
 
-  // @ts-expect-error new schema not in types
   const { data, error } = await supabaseAdmin
     .from('marketplace_suppliers')
     .update(updateData)

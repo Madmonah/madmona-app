@@ -104,7 +104,6 @@ export default function AgentHealthPage() {
   async function init() {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
     if (!session?.user) { setStage('unauthenticated'); return }
-    // @ts-expect-error
     const { data: prof } = await supabaseBrowser.from('profiles').select('role').eq('id', session.user.id).maybeSingle()
     if (prof?.role !== 'admin') { setStage('forbidden'); return }
     await loadAgents()
@@ -113,7 +112,6 @@ export default function AgentHealthPage() {
 
   async function loadAgents() {
     setRefreshing(true)
-    // @ts-expect-error
     const { data, error } = await supabaseBrowser
       .from('v_agent_health')
       .select('*')
@@ -126,7 +124,6 @@ export default function AgentHealthPage() {
 
   async function wakeOne(agent_name: string) {
     setWaking(agent_name)
-    // @ts-expect-error
     const { error } = await supabaseBrowser.rpc('wake_agent', { p_agent_name: agent_name })
     setWaking(null)
     if (error) {
@@ -141,7 +138,6 @@ export default function AgentHealthPage() {
   async function wakeAllStale() {
     if (!confirm('هتـ wake كل الـ stale agents (٣+ أيام). متأكد؟')) return
     setWakingAll(true)
-    // @ts-expect-error
     const { data, error } = await supabaseBrowser.rpc('wake_all_stale_agents')
     setWakingAll(false)
     if (error) {

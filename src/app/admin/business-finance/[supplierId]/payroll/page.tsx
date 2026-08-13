@@ -28,20 +28,16 @@ export default function PayrollPage({ params }: { params: { supplierId: string }
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(s)
-    // @ts-expect-error
     const { data: rs } = await supabase.rpc('admin_list_payroll_runs', { p_supplier_id: supplierId })
     setRuns(rs?.runs || [])
-    // @ts-expect-error
     const { data: emp } = await supabase.from('business_employees').select('id, full_name, role_ar, salary_egp').eq('supplier_id', supplierId).eq('status', 'active').order('salary_egp', { ascending: false })
     setEmployees(emp || [])
     setLoading(false)
   }
 
   async function loadRun(runId: string) {
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_get_payroll_run', { p_run_id: runId })
     setSelectedRun(data)
   }
@@ -153,7 +149,6 @@ function SalariesSection({ supplierId, employees, loading, onChanged }: any) {
     const newSalary = parseFloat(val)
     if (isNaN(newSalary) || newSalary < 0) { setMsg({ text: 'مبلغ غير صالح', ok: false }); return }
     setSaving(true)
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('admin_set_employee_salary', {
       p_token: token, p_employee_id: empId, p_new_salary: newSalary,
     })
@@ -254,7 +249,6 @@ function SalaryHistoryModal({ supplierId, onClose }: any) {
     (async () => {
       const token = typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null
       if (!token) { setLoading(false); return }
-      // @ts-expect-error rpc typing
       const { data } = await supabase.rpc('admin_list_salary_history', { p_token: token, p_supplier_id: supplierId })
       setHist(data?.ok ? data.history : [])
       setLoading(false)
@@ -391,7 +385,6 @@ function StartRunModal({ supplierId, onClose, onSaved }: any) {
 
   async function start() {
     setSaving(true)
-    // @ts-expect-error
     const { data, error } = await supabase.rpc('admin_start_payroll_run', { p_supplier_id: supplierId, p_month: month, p_year: year })
     if (error) alert(error.message)
     else if (data?.success) onSaved()

@@ -72,7 +72,6 @@ export default function AdReviewPage() {
     setLoading(true)
     let query = supabase.from('ad_creatives').select('*').order('updated_at', { ascending: false }).limit(200)
     if (statusFilter !== 'all') query = query.eq('status', statusFilter)
-    // @ts-expect-error
     const { data, error } = await query
     if (!error) setAds((data || []) as AdCreative[])
     setLoading(false)
@@ -116,7 +115,6 @@ export default function AdReviewPage() {
       return
     }
     setBusy(ad.id, true)
-    // @ts-expect-error
     await supabase.from('ad_creatives').update({ status: 'approved', updated_at: new Date().toISOString() }).eq('id', ad.id)
     setBusy(ad.id, false)
     setMessage(`✅ Approved: ${ad.headline?.slice(0, 50) || ad.id.slice(0, 8)}`)
@@ -126,7 +124,6 @@ export default function AdReviewPage() {
 
   async function requestRevision(ad: AdCreative) {
     setBusy(ad.id, true)
-    // @ts-expect-error
     await supabase.from('ad_creatives').update({ status: 'needs_revision', updated_at: new Date().toISOString() }).eq('id', ad.id)
     setBusy(ad.id, false)
     setMessage(`🔄 اترسل للمراجعة`)
@@ -136,9 +133,7 @@ export default function AdReviewPage() {
 
   async function regenerate(ad: AdCreative) {
     setBusy(ad.id, true)
-    // @ts-expect-error
     await supabase.from('ad_creatives').update({ status: 'needs_revision', updated_at: new Date().toISOString() }).eq('id', ad.id)
-    // @ts-expect-error
     const { error } = await supabase.rpc('regenerate_one_ad_creative')
     if (error) {
       setMessage(`❌ ${error.message}`)

@@ -18,7 +18,6 @@ export default function BranchQR({ params }: { params: { branchCode: string } })
 
   useEffect(() => {
     (async () => {
-      // @ts-expect-error rpc typing
       const { data } = await supabase.rpc('public_get_branch_by_code', { p_branch_code: branchCode })
       if (data?.ok && data.branch) setBranch(data.branch)
       try {

@@ -29,11 +29,9 @@ export default function VisitHub({ params }: { params: { branchCode: string } })
 
   useEffect(() => {
     (async () => {
-      // @ts-expect-error rpc typing
       const { data: bi } = await supabase.rpc('public_get_branch_info', { p_branch_code: branchCode })
       setInfo(bi)
       if (bi?.branch?.supplier_id) {
-        // @ts-expect-error rpc typing
         const { data: br } = await supabase.rpc('public_get_supplier_branding', { p_supplier_id: bi.branch.supplier_id })
         setBranding(br)
       }
@@ -351,7 +349,6 @@ function TipFlow({ branchCode, stylists, onBack }: any) {
   async function submit() {
     if (!finalAmount || finalAmount <= 0) return
     setBusy(true)
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('public_create_tip', {
       p_branch_code: branchCode, p_employee_id: emp, p_amount: finalAmount,
       p_method: method, p_customer_name: name || null, p_customer_phone: null,
@@ -420,7 +417,6 @@ function RateFlow({ branchCode, stylists, onBack }: any) {
   async function submit() {
     if (rating < 1) return
     setBusy(true)
-    // @ts-expect-error rpc typing
     const { data } = await supabase.rpc('public_rate_visit', { p_branch_code: branchCode, p_rating: rating, p_employee_id: emp, p_comment: comment || null, p_customer_name: name || null })
     setBusy(false)
     if (data?.ok) setDone(true)

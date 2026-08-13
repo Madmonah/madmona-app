@@ -77,7 +77,6 @@ export default function CompanyOverviewPage() {
   async function load() {
     setLoading(true)
     try {
-      // @ts-expect-error rpc types not generated
       const { data: res, error } = await supabaseBrowser.rpc('get_madmona_company_overview')
       if (error) throw error
       setData(res)

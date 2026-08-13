@@ -24,7 +24,6 @@ export default function JoinPage({ params }: { params: { code: string } }) {
 
   useEffect(() => {
     (async () => {
-      // @ts-expect-error rpc typing
       const { data } = await supabase.rpc('madmona_join_info', { p_slug: code })
       if (data?.ok) { setInfo(data); if (data.branches?.length === 1) setBranchId(data.branches[0].id) }
       setLoadingInfo(false)
@@ -40,7 +39,6 @@ export default function JoinPage({ params }: { params: { code: string } }) {
     const token = r.madmona_token
     if (!token) { setError('حصلت مشكلة في تأكيد رقمك — جرب تاني'); return }
     setStep('joining')
-    // @ts-expect-error rpc typing
     const { data: j, error: je } = await supabase.rpc('madmona_submit_employee_join', {
       p_token: token, p_supplier_id: info.supplier_id, p_branch_id: branchId, p_job_title: job || null,
     })

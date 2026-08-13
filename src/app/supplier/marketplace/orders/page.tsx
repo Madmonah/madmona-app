@@ -99,7 +99,6 @@ export default function SupplierOrdersPage() {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
       if (!session?.user) { setStage('unauthenticated'); return }
 
-      // @ts-expect-error
       let { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id, business_name')
@@ -108,7 +107,6 @@ export default function SupplierOrdersPage() {
 
       if (!sup) {
         // staff fallback
-        // @ts-expect-error
         const { data: staff } = await supabaseBrowser
           .from('supplier_staff')
           .select(`
@@ -135,7 +133,6 @@ export default function SupplierOrdersPage() {
   }, [])
 
   const loadOrders = async (supId: string) => {
-    // @ts-expect-error
     const { data } = await supabaseBrowser
       .from('marketplace_orders')
       .select(`

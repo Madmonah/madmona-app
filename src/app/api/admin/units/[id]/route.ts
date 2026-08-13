@@ -56,7 +56,6 @@ export async function DELETE(
   }
 
   // Refuse to delete if any bookings reference this unit.
-  // @ts-expect-error - new tables
   const { count } = await supabase
     .from('unit_bookings')
     .select('id', { count: 'exact', head: true })

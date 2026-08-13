@@ -30,7 +30,6 @@ export default function VariationOrdersPage({ params }: { params: { supplierId: 
   useEffect(() => {
     (async () => {
       setLoading(true)
-      // @ts-expect-error
       const { data: list } = await supabase.from('bz_projects').select('id, code, name, contract_value').eq('supplier_id', supplierId).order('created_at', { ascending: false })
       setProjects(list || [])
       const urlP = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('project') : null
@@ -42,7 +41,6 @@ export default function VariationOrdersPage({ params }: { params: { supplierId: 
 
   async function loadRows(pid: string) {
     if (!pid) { setRows([]); return }
-    // @ts-expect-error
     const { data } = await supabase.from('bz_variation_orders').select('*').eq('project_id', pid).order('created_at', { ascending: false })
     setRows(data || [])
   }
@@ -56,7 +54,6 @@ export default function VariationOrdersPage({ params }: { params: { supplierId: 
     if (!project) return
     if (!form.description.trim()) { alert('اكتب وصف الأمر'); return }
     setSaving(true)
-    // @ts-expect-error
     await supabase.from('bz_variation_orders').insert({
       supplier_id: supplierId, project_id: project.id,
       vo_no: form.vo_no.trim() || 'VO-' + String(rows.length + 1).padStart(3, '0'),
@@ -66,12 +63,10 @@ export default function VariationOrdersPage({ params }: { params: { supplierId: 
     setSaving(false); setShowForm(false); setForm({ ...emptyForm }); loadRows(projectId)
   }
   async function setStatus(r: any, status: string) {
-    // @ts-expect-error
     await supabase.from('bz_variation_orders').update({ status }).eq('id', r.id); loadRows(projectId)
   }
   async function remove(r: any) {
     if (!confirm('حذف الأمر؟')) return
-    // @ts-expect-error
     await supabase.from('bz_variation_orders').delete().eq('id', r.id)
     loadRows(projectId)
   }

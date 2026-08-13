@@ -30,7 +30,6 @@ export default function CompanyDocsPage({ params }: { params: { supplierId: stri
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data } = await supabase.from('bz_company_docs').select('*').eq('supplier_id', supplierId).order('expiry_date', { ascending: true, nullsFirst: false })
     setRows(data || [])
     setLoading(false)
@@ -53,17 +52,14 @@ export default function CompanyDocsPage({ params }: { params: { supplierId: stri
       status: form.status, notes: form.notes.trim() || null,
     }
     if (form.id) {
-      // @ts-expect-error
       await supabase.from('bz_company_docs').update(payload).eq('id', form.id)
     } else {
-      // @ts-expect-error
       await supabase.from('bz_company_docs').insert(payload)
     }
     setSaving(false); setShowForm(false); load()
   }
   async function remove(r: any) {
     if (!confirm('حذف المستند؟')) return
-    // @ts-expect-error
     await supabase.from('bz_company_docs').delete().eq('id', r.id)
     load()
   }

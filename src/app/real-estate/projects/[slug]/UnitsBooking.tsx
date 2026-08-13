@@ -56,7 +56,6 @@ export default function UnitsBooking({
   useEffect(() => {
     ;(async () => {
       try {
-        // @ts-expect-error table not in generated types yet
         const { data } = await supabaseBrowser
           .from('project_units')
           .select('id, unit_code, unit_type, area_m2, floor_label, bedrooms, price, status, held_until, master_plan_ref')
@@ -77,7 +76,6 @@ export default function UnitsBooking({
         window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname + '#units')}`
         return
       }
-      // @ts-expect-error rpc typing
       const { data, error } = await supabaseBrowser.rpc('hold_unit_48h', {
         p_unit_id: u.id,
         p_phone: session.user.user_metadata?.phone || session.user.email || '',

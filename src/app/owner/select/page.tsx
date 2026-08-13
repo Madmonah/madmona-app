@@ -19,7 +19,6 @@ export default function OwnerSelectPage() {
     (async () => {
       const token = safeStorage.get('madmona_owner_token')
       if (!token) { router.push('/owner/login'); return }
-      // @ts-expect-error
       const { data } = await supabase.rpc('owner_resolve_by_token', { p_token: token })
       const acc = data?.access || []
       if (acc.length === 0) { router.push('/owner/login'); return }

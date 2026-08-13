@@ -54,11 +54,9 @@ export default function CustomersPage({ params }: { params: { supplierId: string
 
   async function load() {
     setLoading(true)
-    // @ts-expect-error
     const { data: sup } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
     setSupplier(sup as any)
 
-    // @ts-expect-error
     const { data } = await supabase.rpc('admin_list_customers', {
       p_supplier_id: supplierId,
       p_filter: search || null,

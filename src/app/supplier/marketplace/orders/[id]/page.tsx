@@ -121,7 +121,6 @@ export default function SupplierOrderDetailPage() {
   const [copySuccess, setCopySuccess] = useState<string | null>(null)
 
   const loadOrder = useCallback(async (oid: string, supId: string) => {
-    // @ts-expect-error
     const { data } = await supabaseBrowser
       .from('marketplace_orders')
       .select(`
@@ -146,7 +145,6 @@ export default function SupplierOrderDetailPage() {
       if (!session?.user) { setStage('unauthenticated'); return }
 
       // Find supplier (owner OR staff with can_manage_bookings)
-      // @ts-expect-error
       let { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id')
@@ -154,7 +152,6 @@ export default function SupplierOrderDetailPage() {
         .maybeSingle()
 
       if (!sup) {
-        // @ts-expect-error
         const { data: staff } = await supabaseBrowser
           .from('supplier_staff')
           .select(`can_manage_bookings, supplier:marketplace_suppliers(id)`)
@@ -181,7 +178,6 @@ export default function SupplierOrderDetailPage() {
     setUpdating(true)
     try {
       // NOTE: DB function param is `p_reason` (not `p_cancellation_reason`).
-      // @ts-expect-error
       const { error: rpcError } = await supabaseBrowser.rpc('set_order_status', {
         p_order_id: order.id,
         p_new_status: next,
@@ -206,7 +202,6 @@ export default function SupplierOrderDetailPage() {
     setUpdating(true)
     try {
       // NOTE: DB function param is `p_reason` (not `p_cancellation_reason`).
-      // @ts-expect-error
       const { error: rpcError } = await supabaseBrowser.rpc('set_order_status', {
         p_order_id: order.id,
         p_new_status: 'cancelled',
@@ -231,7 +226,6 @@ export default function SupplierOrderDetailPage() {
     setNotesSaving(true)
     setNotesSaved(false)
     try {
-      // @ts-expect-error
       await supabaseBrowser
         .from('marketplace_orders')
         .update({ supplier_notes: supplierNotes.trim() || null, updated_at: new Date().toISOString() })

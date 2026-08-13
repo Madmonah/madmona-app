@@ -149,7 +149,6 @@ export default function ListingDetailPage() {
         // ده كان بيكسر أي لينك إعلان متبعوت (واتساب مثلاً) لأي حد مش داخل بحسابه.
         // الحل: كويري أساسي بأعمدة آمنة (بيشتغل دايمًا)، والمورّد/التواصل best-effort
         // بيتدرّج: المسجّل بياخد الهاتف؛ الزائر بياخد اسم المورّد بس (يسجّل علشان يتواصل).
-        // @ts-expect-error
         const { data: l, error } = await supabaseBrowser
           .from('listings')
           .select(`
@@ -176,7 +175,6 @@ export default function ListingDetailPage() {
         // المورّد + التواصل (best-effort): للمسجّل بيرجّع الهاتف؛ للزائر بيتدرّج لاسم المورّد بس.
         let supplier: ListingDetail['supplier'] = null
         if (l.supplier_id) {
-          // @ts-expect-error
           const { data: supFull } = await supabaseBrowser
             .from('marketplace_suppliers')
             .select('id, business_name, profile:profiles!marketplace_suppliers_profile_id_fkey(phone, full_name)')
@@ -186,7 +184,6 @@ export default function ListingDetailPage() {
             supplier = supFull as ListingDetail['supplier']
           } else {
             // anon مايقدرش يقرأ profile_id فالـjoin بيتمنع → نجيب اسم المورّد بس
-            // @ts-expect-error
             const { data: supBasic } = await supabaseBrowser
               .from('marketplace_suppliers')
               .select('id, business_name')
@@ -199,7 +196,6 @@ export default function ListingDetailPage() {
         // contact_phone ممنوع على anon → نجيبه best-effort (للمسجّل غالبًا، ولإعلانات الدليل)
         let contactPhone: string | null = null
         if (l.is_directory) {
-          // @ts-expect-error
           const { data: cp } = await supabaseBrowser
             .from('listings')
             .select('contact_phone')
@@ -281,7 +277,6 @@ export default function ListingDetailPage() {
         // Restaurant menu items (only when track === 'restaurants') + sizes
         const trackForMenu = (l as { category?: { track?: string | null } | null }).category?.track
         if (trackForMenu === 'restaurants') {
-          // @ts-expect-error
           const { data: mi } = await supabaseBrowser
             .from('restaurant_menu_items')
             .select('*')
@@ -290,7 +285,6 @@ export default function ListingDetailPage() {
             .order('display_order', { ascending: true })
           const itemsArr = (mi || []) as MenuItem[]
           if (itemsArr.length > 0) {
-            // @ts-expect-error
             const { data: szs } = await supabaseBrowser
               .from('restaurant_menu_item_sizes')
               .select('id, menu_item_id, name_ar, price, display_order, is_available')
@@ -311,7 +305,6 @@ export default function ListingDetailPage() {
 
         // Supplier products catalog (mart_products) — any non-restaurant listing
         if (trackForMenu !== 'restaurants') {
-          // @ts-expect-error
           const { data: mp } = await supabaseBrowser
             .from('mart_products')
             .select('id, name_ar, name_en, description_ar, price, compare_at_price, unit, brand, category, photo_url, in_stock, is_available, display_order')
@@ -330,7 +323,6 @@ export default function ListingDetailPage() {
         const lid = resolvedListingId
         setTimeout(() => {
           try {
-            // @ts-expect-error
             supabaseBrowser.rpc('increment_view_count', { listing_id: lid })
               .then(() => {}, () => {})
           } catch {}
@@ -377,7 +369,6 @@ export default function ListingDetailPage() {
     }
     setTogglingFav(true)
     if (isFavorite) {
-      // @ts-expect-error
       const { error } = await supabaseBrowser
         .from('favorites')
         .delete()
@@ -385,7 +376,6 @@ export default function ListingDetailPage() {
         .eq('listing_id', listing.id)
       if (!error) setIsFavorite(false)
     } else {
-      // @ts-expect-error
       const { error } = await supabaseBrowser
         .from('favorites')
         .insert({ customer_id: userId, listing_id: listing.id })

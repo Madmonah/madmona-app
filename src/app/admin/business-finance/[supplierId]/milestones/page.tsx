@@ -29,7 +29,6 @@ export default function MilestonesPage({ params }: { params: { supplierId: strin
   const [form, setForm] = useState({ ...emptyForm })
 
   async function loadProjects() {
-    // @ts-expect-error
     const { data } = await supabase.from('bz_projects').select('id, name').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setProjects(data || [])
     const urlP = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('project') : null
@@ -40,7 +39,6 @@ export default function MilestonesPage({ params }: { params: { supplierId: strin
   async function loadRows(pid: string) {
     if (!pid) { setRows([]); return }
     setLoading(true)
-    // @ts-expect-error
     const { data } = await supabase.from('bz_milestones').select('*').eq('project_id', pid).order('sort_order', { ascending: true }).order('created_at', { ascending: true })
     setRows(data || [])
     setLoading(false)
@@ -67,22 +65,18 @@ export default function MilestonesPage({ params }: { params: { supplierId: strin
       status: form.status, sort_order: num(form.sort_order), notes: form.notes.trim() || null,
     }
     if (form.id) {
-      // @ts-expect-error
       await supabase.from('bz_milestones').update(payload).eq('id', form.id)
     } else {
-      // @ts-expect-error
       await supabase.from('bz_milestones').insert(payload)
     }
     setSaving(false); setShowForm(false); loadRows(selected)
   }
   async function setStatus(r: any, status: string) {
-    // @ts-expect-error
     await supabase.from('bz_milestones').update({ status }).eq('id', r.id)
     loadRows(selected)
   }
   async function remove(r: any) {
     if (!confirm('حذف المرحلة؟')) return
-    // @ts-expect-error
     await supabase.from('bz_milestones').delete().eq('id', r.id)
     loadRows(selected)
   }

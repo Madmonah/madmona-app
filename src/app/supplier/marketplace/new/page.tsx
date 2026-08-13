@@ -74,7 +74,6 @@ export default function NewListingPage() {
         // Admin still uses approved-only suppliers (admin assigns to verified
         // owners). This stays strict because admin is curating; the relaxed
         // gate only matters for self-service supplier creation.
-        // @ts-expect-error
         const { data: sups } = await supabaseBrowser
           .from('marketplace_suppliers')
           .select('id, business_name, kyc_status')
@@ -108,7 +107,6 @@ export default function NewListingPage() {
       setUserId(session.user.id)
 
       // Owner check
-      // @ts-expect-error
       let { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id, kyc_status')
@@ -119,7 +117,6 @@ export default function NewListingPage() {
         setMode('owner')
       } else {
         // 3. Staff check
-        // @ts-expect-error
         const { data: staff } = await supabaseBrowser
           .from('supplier_staff')
           .select(`

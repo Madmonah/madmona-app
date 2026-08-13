@@ -57,7 +57,6 @@ export default function CustomerBookingsPage() {
         return
       }
 
-      // @ts-expect-error
       const { data } = await supabaseBrowser
         .from('marketplace_bookings')
         .select(`

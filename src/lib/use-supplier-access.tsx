@@ -92,7 +92,6 @@ export function useSupplierAccess(explicitSupplierId?: string): SupplierAccess {
       // Try owner path first
       let supplierData: { id: string; business_name: string } | null = null
       if (explicitSupplierId) {
-        // @ts-expect-error
         const { data } = await supabaseBrowser
           .from('marketplace_suppliers')
           .select('id, business_name, profile_id')
@@ -109,7 +108,6 @@ export function useSupplierAccess(explicitSupplierId?: string): SupplierAccess {
           }
         }
       } else {
-        // @ts-expect-error
         const { data } = await supabaseBrowser
           .from('marketplace_suppliers')
           .select('id, business_name')
@@ -124,7 +122,6 @@ export function useSupplierAccess(explicitSupplierId?: string): SupplierAccess {
       }
 
       // Not the owner — check staff status
-      // @ts-expect-error
       const { data: staffRow } = await supabaseBrowser
         .from('supplier_staff')
         .select(`

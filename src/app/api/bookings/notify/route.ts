@@ -103,7 +103,6 @@ export async function POST(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // @ts-expect-error
     const { data: booking } = await adminClient
       .from('marketplace_bookings')
       .select(`
