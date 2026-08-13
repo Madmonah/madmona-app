@@ -22,7 +22,6 @@ export async function GET(
     return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
   }
 
-  // @ts-expect-error - new tables
   const { data, error } = await supabase
     .from('space_units')
     .select(`
@@ -68,7 +67,6 @@ export async function DELETE(
     )
   }
 
-  // @ts-expect-error
   const { error } = await supabase.from('space_units').delete().eq('id', id)
   if (error) {
     console.error('[admin/units/:id] delete error:', error)

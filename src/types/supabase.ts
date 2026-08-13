@@ -20450,6 +20450,125 @@ export type Database = {
         }
         Relationships: []
       }
+      space_blocks: {
+        Row: {
+          block_date: string
+          created_at: string
+          created_by: string | null
+          end_hour: number
+          id: string
+          reason: string | null
+          space_slug: string
+          start_hour: number
+        }
+        Insert: {
+          block_date: string
+          created_at?: string
+          created_by?: string | null
+          end_hour: number
+          id?: string
+          reason?: string | null
+          space_slug: string
+          start_hour: number
+        }
+        Update: {
+          block_date?: string
+          created_at?: string
+          created_by?: string | null
+          end_hour?: number
+          id?: string
+          reason?: string | null
+          space_slug?: string
+          start_hour?: number
+        }
+        Relationships: []
+      }
+      space_units: {
+        Row: {
+          capacity: number
+          category_slug: string
+          created_at: string
+          description_ar: string | null
+          id: string
+          is_active: boolean
+          name_ar: string
+          operating_end_hour: number
+          operating_start_hour: number
+          photo_urls: string[]
+          price_daily: number | null
+          price_hourly: number | null
+          price_monthly: number | null
+          price_package_10: number | null
+          supplier_id: string
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number
+          category_slug: string
+          created_at?: string
+          description_ar?: string | null
+          id?: string
+          is_active?: boolean
+          name_ar: string
+          operating_end_hour?: number
+          operating_start_hour?: number
+          photo_urls?: string[]
+          price_daily?: number | null
+          price_hourly?: number | null
+          price_monthly?: number | null
+          price_package_10?: number | null
+          supplier_id: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          category_slug?: string
+          created_at?: string
+          description_ar?: string | null
+          id?: string
+          is_active?: boolean
+          name_ar?: string
+          operating_end_hour?: number
+          operating_start_hour?: number
+          photo_urls?: string[]
+          price_daily?: number | null
+          price_hourly?: number | null
+          price_monthly?: number | null
+          price_package_10?: number | null
+          supplier_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "space_units_category_slug_fkey"
+            columns: ["category_slug"]
+            isOneToOne: false
+            referencedRelation: "unit_categories"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "space_units_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "space_units_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "v_branch_pnl"
+            referencedColumns: ["supplier_id"]
+          },
+          {
+            foreignKeyName: "space_units_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "v_business_daily_summary"
+            referencedColumns: ["supplier_id"]
+          },
+        ]
+      }
       static_pages: {
         Row: {
           description: string | null
@@ -22056,6 +22175,104 @@ export type Database = {
           region?: string
           source?: string | null
           track?: string
+        }
+        Relationships: []
+      }
+      unit_bookings: {
+        Row: {
+          booking_date: string
+          commission_amount: number
+          created_at: string
+          customer_name: string | null
+          customer_phone: string | null
+          end_hour: number
+          id: string
+          notes: string | null
+          payment_status: string
+          payout_paid_at: string | null
+          payout_status: string
+          start_hour: number
+          status: string
+          supplier_payout: number
+          total_price_egp: number
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          booking_date: string
+          commission_amount?: number
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          end_hour: number
+          id?: string
+          notes?: string | null
+          payment_status?: string
+          payout_paid_at?: string | null
+          payout_status?: string
+          start_hour: number
+          status?: string
+          supplier_payout?: number
+          total_price_egp?: number
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          booking_date?: string
+          commission_amount?: number
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          end_hour?: number
+          id?: string
+          notes?: string | null
+          payment_status?: string
+          payout_paid_at?: string | null
+          payout_status?: string
+          start_hour?: number
+          status?: string
+          supplier_payout?: number
+          total_price_egp?: number
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_bookings_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "space_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unit_categories: {
+        Row: {
+          created_at: string
+          display_order: number
+          icon: string | null
+          is_active: boolean
+          name_ar: string
+          name_en: string | null
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          icon?: string | null
+          is_active?: boolean
+          name_ar: string
+          name_en?: string | null
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          icon?: string | null
+          is_active?: boolean
+          name_ar?: string
+          name_en?: string | null
+          slug?: string
         }
         Relationships: []
       }

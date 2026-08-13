@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import type { Database } from '@/types/supabase'
+
+type BookingUpdate = Database['public']['Tables']['unit_bookings']['Update']
 
 function checkAuth(request: Request): boolean {
   const expected = process.env.ADMIN_PASSWORD
@@ -16,7 +19,6 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const payoutStatus = searchParams.get('payout_status') // 'unpaid' | 'paid' | null
 
-  // @ts-expect-error - new tables
   let query = supabase
     .from('unit_bookings')
     .select(`
@@ -57,7 +59,9 @@ export async function PATCH(request: Request) {
   const allowedPayment = ['pending', 'verified', 'rejected', 'refunded']
   const allowedPayout = ['unpaid', 'paid']
 
-  const update: Record<string, unknown> = {}
+  // ✅ الأنواع بقت حقيقية بعد إنشاء الجدول — القيم دي متحققة فوق بالقوايم
+  // البيضا، والنوع المولّد بيضمن إن الأعمدة نفسها موجودة فعلًا.
+  const update: BookingUpdate = {}
   if (typeof status === 'string' && allowedStatus.includes(status)) update.status = status
   if (typeof payment_status === 'string' && allowedPayment.includes(payment_status)) update.payment_status = payment_status
   if (typeof payout_status === 'string' && allowedPayout.includes(payout_status)) {
@@ -69,7 +73,6 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
   }
 
-  // @ts-expect-error
   const { error } = await supabase.from('unit_bookings').update(update).eq('id', id)
   if (error) {
     console.error('[admin/unit-bookings] update error:', error)

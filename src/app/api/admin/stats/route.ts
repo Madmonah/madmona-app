@@ -33,11 +33,8 @@ export async function GET(request: Request) {
   ] = await Promise.all([
     supabase.from('suppliers').select('status'),
     supabase.from('suppliers').select('status'),
-    // @ts-expect-error
     supabase.from('space_units').select('id, is_active, category_slug'),
-    // @ts-expect-error - fetch all bookings with relevant fields
     supabase.from('unit_bookings').select('total_price_egp, commission_amount, supplier_payout, booking_date, status, payout_status, created_at'),
-    // @ts-expect-error
     supabase.from('unit_bookings').select('supplier_payout').eq('payout_status', 'unpaid').neq('status', 'cancelled'),
   ])
 

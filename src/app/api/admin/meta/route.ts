@@ -22,7 +22,6 @@ export async function GET(request: Request) {
       .from('suppliers')
       .select('id, business_name, district, status, commission_rate')
       .order('business_name', { ascending: true }),
-    // @ts-expect-error - new tables
     supabase
       .from('unit_categories')
       .select('slug, name_ar, name_en, icon, display_order, is_active')

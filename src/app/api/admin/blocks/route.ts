@@ -17,7 +17,6 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const from = searchParams.get('from') || new Date().toISOString().split('T')[0]
 
-  // @ts-expect-error
   const { data, error } = await supabase
     .from('space_blocks')
     .select('*')
@@ -71,7 +70,6 @@ export async function POST(request: Request) {
   const reasonClean =
     typeof reason === 'string' && reason.length <= 500 ? reason.trim() || null : null
 
-  // @ts-expect-error
   const { data, error } = await supabase
     .from('space_blocks')
     .insert({
@@ -106,7 +104,6 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'id required' }, { status: 400 })
   }
 
-  // @ts-expect-error
   const { error } = await supabase.from('space_blocks').delete().eq('id', id)
 
   if (error) {

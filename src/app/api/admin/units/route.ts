@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import type { Database } from '@/types/supabase'
+
+type UnitUpdate = Database['public']['Tables']['space_units']['Update']
 
 function checkAuth(request: Request): boolean {
   const expected = process.env.ADMIN_PASSWORD
@@ -13,7 +16,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // @ts-expect-error - new tables
   const { data, error } = await supabase
     .from('space_units')
     .select(`
@@ -71,18 +73,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'name_ar required' }, { status: 400 })
   }
 
-  // 🚨 (١٣ أغسطس ٢٠٢٦ — اتكشف وقت توليد الأنواع) جدول `space_units`
-  // **مش موجود في الداتابيز خالص** (مش مجرد أنواع قديمة) — يعني المسار ده
-  // وكل ميزة «الوحدات» في الأدمن (UnitForm · /admin/units · unit-bookings)
-  // بتفشل وقت التشغيل. الكاست هنا بيمنع ضجيج الأنواع بس؛ **الميزة نفسها
-  // محتاجة قرار من محمد**: نعمل الجدول ولا نشيل الشاشات دي.
-  const { data, error } = await (supabase as unknown as {
-    from: (t: string) => {
-      insert: (v: Record<string, unknown>) => {
-        select: (c: string) => { single: () => Promise<{ data: { id: string } | null; error: { message: string } | null }> }
-      }
-    }
-  })
+  // ✅ (١٣ أغسطس ٢٠٢٦) جدول `space_units` كان **مش موجود في الداتابيز خالص**
+  // فالمسار ده وكل ميزة «الوحدات» كانت بتفشل وقت التشغيل، والكاست اليدوي
+  // اللي كان هنا كان بيخفي ده عن الأنواع. الجداول الأربعة اتعملت
+  // (space_units · unit_bookings · unit_categories · space_blocks) بـRLS
+  // وفهارس ومنع حجز مزدوج، فالكاست اتشال والأنواع بقت حقيقية.
+  const { data, error } = await supabase
     .from('space_units')
     .insert({
       supplier_id,
@@ -124,21 +120,28 @@ export async function PATCH(request: Request) {
   const { id, ...updates } = body as Record<string, unknown>
   if (typeof id !== 'string') return NextResponse.json({ error: 'id required' }, { status: 400 })
 
-  const allowedFields = [
-    'category_slug', 'name_ar', 'description_ar', 'photo_urls', 'capacity',
-    'price_hourly', 'price_daily', 'price_package_10', 'price_monthly',
-    'operating_start_hour', 'operating_end_hour', 'is_active',
-  ]
-  const cleanUpdates: Record<string, unknown> = {}
-  for (const key of allowedFields) {
-    if (key in updates) cleanUpdates[key] = updates[key]
-  }
+  // ✅ بعد ما الجدول اتعمل بقت الأنواع حقيقية، فبناء التحديث بقى مكتوب صراحةً
+  // بدل لوب على مصفوفة نصوص. الفايدة: لو عمود اتشال أو اتغيّر اسمه في
+  // الداتابيز، ده هيقع **وقت البناء** بدل ما يفضل يبعت عمود وهمي بصمت.
+  const u = updates as Record<string, unknown>
+  const cleanUpdates: UnitUpdate = {}
+  if ('category_slug' in u) cleanUpdates.category_slug = u.category_slug as string
+  if ('name_ar' in u) cleanUpdates.name_ar = u.name_ar as string
+  if ('description_ar' in u) cleanUpdates.description_ar = u.description_ar as string | null
+  if ('photo_urls' in u) cleanUpdates.photo_urls = u.photo_urls as string[]
+  if ('capacity' in u) cleanUpdates.capacity = u.capacity as number
+  if ('price_hourly' in u) cleanUpdates.price_hourly = u.price_hourly as number | null
+  if ('price_daily' in u) cleanUpdates.price_daily = u.price_daily as number | null
+  if ('price_package_10' in u) cleanUpdates.price_package_10 = u.price_package_10 as number | null
+  if ('price_monthly' in u) cleanUpdates.price_monthly = u.price_monthly as number | null
+  if ('operating_start_hour' in u) cleanUpdates.operating_start_hour = u.operating_start_hour as number
+  if ('operating_end_hour' in u) cleanUpdates.operating_end_hour = u.operating_end_hour as number
+  if ('is_active' in u) cleanUpdates.is_active = u.is_active as boolean
 
   if (Object.keys(cleanUpdates).length === 0) {
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
   }
 
-  // @ts-expect-error
   const { error } = await supabase.from('space_units').update(cleanUpdates).eq('id', id)
   if (error) {
     console.error('[admin/units] update error:', error)
