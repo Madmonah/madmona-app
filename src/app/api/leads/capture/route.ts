@@ -8,6 +8,7 @@ import { sendEmail } from '@/lib/email'
 import { callClaude, parseJsonResponse } from '@/lib/anthropic'
 import { LEAD_QUALIFIER_PROMPT } from '@/lib/agent-prompts/lead-qualifier'
 import { sendText, isWhatsAppConfigured, upsertConversation } from '@/lib/whatsapp'
+import { rateLimitOk, clientIp } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -62,19 +63,38 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'رقم تليفون مصري غير صحيح' }, { status: 400 })
   }
 
+  // 🔒 (١٣ أغسطس ٢٠٢٦) المسار ده عام تمامًا وكل نداء بيصرف فلوس حقيقية:
+  // نداء كلود للتقييم + رسالة واتساب + إيميل للمالك. من غير حد معدل أي حد
+  // يقدر يفضّي الرصيد ويغرق المالك برسايل. الحد على الـIP وعلى الموبايل
+  // (عشان تغيير الـIP ما يعديش نفس الرقم مية مرة). fail-open زي باقي الحدود.
+  const ip = clientIp(request)
+  const [ipOk, phoneOk] = await Promise.all([
+    rateLimitOk(supabaseAdmin, `leads_capture:${ip}`, 5, 600),
+    rateLimitOk(supabaseAdmin, `leads_capture_phone:${phone}`, 3, 3600),
+  ])
+  if (!ipOk || !phoneOk) {
+    return NextResponse.json(
+      { error: 'سجّلت بياناتك بالفعل — هنتواصل معاك قريب 🙏' },
+      { status: 429 },
+    )
+  }
+
   const sourceLabel = body.listing_id ? 'listing_direct' : 'landing_page'
 
   try {
     const { data: leadIdRaw, error } = await supabaseAdmin.rpc('capture_lead', {
       p_name: body.name.trim(),
       p_phone: phone,
-      p_email: body.email?.trim() || null,
-      p_category: body.category?.trim() || null,
-      p_message: body.message?.trim() || null,
+      // الأنواع المولّدة بتعلن الباراميترات دي `string | undefined`، بس الدالة
+      // في الداتابيز بتقبل NULL عادي وده السلوك الصح للقيمة الفاضية.
+      // `?? undefined` بيرضّي الأنواع من غير ما يغيّر أي حاجة وقت التشغيل.
+      p_email: body.email?.trim() || undefined,
+      p_category: body.category?.trim() || undefined,
+      p_message: body.message?.trim() || undefined,
       p_source: sourceLabel,
-      p_utm_source: body.utm_source || null,
-      p_utm_campaign: body.utm_campaign || null,
-      p_listing_id: body.listing_id || null,
+      p_utm_source: body.utm_source || undefined,
+      p_utm_campaign: body.utm_campaign || undefined,
+      p_listing_id: body.listing_id || undefined,
     })
 
     if (error) {

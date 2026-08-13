@@ -64,18 +64,32 @@ export default function LaunchPage() {
     setSubmitting(true)
 
     try {
-      const { error: dbErr } = await supabaseBrowser
-        .from('leads')
-        .insert({
+      // 🐛 (١٣ أغسطس ٢٠٢٦ — جرد الكود مقابل الداتابيز) الفورم ده كان بيعمل
+      // insert في جدول اسمه `leads` **مش موجود في الداتابيز خالص**، والكود كان
+      // مبتلع الفشل عمدًا (`!dbErr.message.includes('does not exist')`) وبيوري
+      // المستخدم «تم تسجيلك بنجاح! هنتواصل معاك خلال ٢٤ ساعة».
+      // يعني كل ليد من الصفحة دي كان **بيضيع بهدوء** والوعد ما يتنفذش.
+      // دلوقتي بيروح على /api/leads/capture — نفس المسار اللي بتستعمله صفحات
+      // الإعلانات: بيكتب في sales_leads (service-role، فمينفعش من المتصفح)
+      // + تقييم بالـAI + واتساب ترحيبي + إيميل للمالك.
+      const res = await fetch('/api/leads/capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name: name.trim(),
-          email: email.trim() || null,
           phone: phone.trim(),
-          source: 'launch_page',
-          notes: `Type: ${type === 'supplier' ? 'أجر معانا محتمل' : 'أجر مننا محتمل'}`,
-        })
+          email: email.trim() || undefined,
+          message: type === 'supplier' ? 'مهتم يأجّر معانا (مورد محتمل)' : 'مهتم يأجّر مننا (عميل محتمل)',
+          utm_source: 'launch_page',
+          utm_campaign: type === 'supplier' ? 'launch_supplier' : 'launch_customer',
+        }),
+      })
 
-      if (dbErr && !dbErr.message.includes('does not exist')) {
-        throw dbErr
+      const json = (await res.json().catch(() => null)) as { error?: string } | null
+
+      // 429 = سجّل قبل كده بالفعل — مش خطأ يستاهل نوتره بيه
+      if (!res.ok && res.status !== 429) {
+        throw new Error(json?.error || 'حصل خطأ، حاول تاني')
       }
 
       setSuccess(true)
