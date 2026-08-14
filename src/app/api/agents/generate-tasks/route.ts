@@ -56,36 +56,6 @@ async function generateForSupplier(supplierId: string, force: boolean) {
   let employees = (emps ?? []) as EmpRow[]
   if (employees.length === 0) return { supplier_id: supplierId, skipped: 'no_employees', tasks_created: 0 }
 
-  // 👥 (١٤ أغسطس ٢٠٢٦ — قاعدة محمد بالنص)
-  //    «مفيش مهام لحد ملوش بصمة — إلا لو شغّال ريموتلي وبيفتح الأبليكيشن»
-  //
-  //    الترجمة لإشارات موجودة فعلًا (دالة active_task_employees):
-  //      ١) بصم           → صف في attendance_logs
-  //      ٢) ريموت          → محاولة بصمة اترفضت جغرافيًا — دي بالظبط اللي
-  //                          بيفتح الأبليكيشن من بره الفرع
-  //      ٣) علّم مهمة      → daily_tasks بحالة completed
-  //
-  //    ليه ده مهم: ١٧٥ موظف نشط، ٥٦ بس عليهم أي إشارة. يعني كنا بنولّد
-  //    شغل يومي لـ١١٩ واحد مالهمش أي أثر — وده اللي طلّع ٢٨٬١٦٩ مهمة
-  //    مقابل ٥٦ اتعملت (٠٫٢٪).
-  {
-    const { data: live } = await supabaseAdmin
-      .rpc('active_task_employees' as never, { p_supplier_id: supplierId } as never)
-    const allowed = new Set(
-      ((live ?? []) as Array<{ employee_id: string }>).map((r) => r.employee_id),
-    )
-    const before = employees.length
-    employees = employees.filter((e) => allowed.has(e.id))
-    if (employees.length === 0) {
-      return {
-        supplier_id: supplierId,
-        skipped: 'no_employee_uses_the_app',
-        employees_skipped: before,
-        tasks_created: 0,
-      }
-    }
-  }
-
   const today = new Date().toISOString().slice(0, 10)
   const empIds = employees.map((e) => e.id)
 
@@ -181,51 +151,48 @@ ${chunk.map((r) => `- ${r.role_ar} (${r.count})`).join('\n')}
     }
   }
 
-  // Existing titles today (dedupe) — one query
-  const { data: existing } = await supabaseAdmin
-    .from('daily_tasks')
-    .select('employee_id, title_ar')
-    .eq('task_date', today)
-    .in('employee_id', empIds)
-  const seen = new Set(
-    ((existing ?? []) as Array<{ employee_id: string; title_ar: string | null }>).map(
-      (x) => `${x.employee_id}|${(x.title_ar || '').trim()}`
-    )
-  )
-
-  const rows: Record<string, unknown>[] = []
-  for (const e of employees) {
-    const r = (e.role_ar || e.role || 'موظف').trim()
-    const tasks = roleTasks.get(r) ?? []
-    for (const t of tasks.slice(0, 6)) {
+  // ⏰ (١٤ أغسطس ٢٠٢٦ — قرار محمد) الكرون بقى **يحضّر مخزن** بس، مايوزّعش.
+  //    التوزيع بيحصل لما الموظف يبصم (تريجر trg_tasks_on_clock_in على
+  //    attendance_logs → materialize_tasks_for_employee).
+  //
+  //    ليه: قبل كده كنا بنكتب صف لكل موظف × كل مهمة سواء جه شغل ولا لأ —
+  //    ٢٨٬١٦٩ مهمة مقابل ٥٦ اتعملت (٠٫٢٪). دلوقتي عدد الصفوف هنا =
+  //    عدد الأدوار (إيليت: ~٣٠ صف بدل ٤٣٠)، ومحدش بياخد مهمة إلا لما يحضر.
+  const poolRows: Record<string, unknown>[] = []
+  const seenPool = new Set<string>()
+  for (const [roleAr, tasks] of roleTasks) {
+    for (const t of (tasks ?? []).slice(0, 6)) {
       const title = (t?.title_ar || '').trim()
       if (!title) continue
-      const key = `${e.id}|${title}`
-      if (seen.has(key)) continue
-      seen.add(key)
-      rows.push({
-        employee_id: e.id,
-        branch_id: e.branch_id,
+      const key = `${roleAr}|${title}`
+      if (seenPool.has(key)) continue
+      seenPool.add(key)
+      poolRows.push({
+        supplier_id: supplierId,
+        role_ar: roleAr,
         task_date: today,
         title_ar: title.slice(0, 200),
         priority: VALID_PRIORITY.includes(t.priority) ? t.priority : 'medium',
         due_time: cleanTime(t.due_time),
-        is_auto_generated: true,
-        status: 'pending',
-        // 🔑 «variable» = مهام الوكيل الذكية (المتغيرة كل يوم). «fixed» محجوزة
-        //    لقوالب `employee_fixed_tasks` عبر `materialize_fixed_tasks`،
-        //    و«chat» لمهام الشات (`add_chat_task`). التفرقة دي هي اللي بتخلي
-        //    حارس الـidempotency فوق يشتغل صح بدل ما يقفل التوليد.
-        task_kind: 'variable',
       })
     }
   }
 
   let created = 0
-  if (rows.length > 0) {
-    const { error } = await supabaseAdmin.from('daily_tasks').insert(rows as never)
-    if (error) throw new Error(`insert failed: ${error.message}`)
-    created = rows.length
+  if (poolRows.length > 0) {
+    // نفس اليوم + نفس الدور + نفس العنوان = صف واحد (قيد UNIQUE على الجدول)
+    // الجدول جديد ولسه مش في ملف الأنواع المولّد → cast موضعي
+    const sb = supabaseAdmin as unknown as {
+      from: (t: string) => {
+        upsert: (rows: unknown, o: Record<string, unknown>) => Promise<{ error: { message: string } | null }>
+      }
+    }
+    const { error } = await sb.from('daily_task_pool').upsert(poolRows, {
+      onConflict: 'supplier_id,role_ar,task_date,title_ar',
+      ignoreDuplicates: true,
+    })
+    if (error) throw new Error(`pool upsert failed: ${error.message}`)
+    created = poolRows.length
   }
 
   return {
@@ -233,7 +200,8 @@ ${chunk.map((r) => `- ${r.role_ar} (${r.count})`).join('\n')}
     business_name: supplier.business_name,
     roles: roles.length,
     employees: employees.length,
-    tasks_created: created,
+    pool_rows: created,
+    note: 'التوزيع بيحصل عند تسجيل الحضور',
     // بنطلّع الدفعات الفاشلة صراحةً — نجاح جزئي لازم يبان في التقرير
     // مش يعدّي كأنه نجاح كامل.
     ...(failedChunks > 0 ? { failed_chunks: failedChunks, role_chunks: roleChunks.length } : {}),
@@ -269,7 +237,9 @@ async function runAgent(opts: { supplierId?: string; force?: boolean }) {
     // (الحارس `already_generated_today` بيمنع التكرار للي اتعمل).
     const TIME_BUDGET_MS = 240_000
     const results = []
-    let totalCreated = 0
+    // 📦 بنعدّ صفوف **المخزن** دلوقتي، مش المهام الموزّعة — التوزيع بقى
+    //    على البصمة. (المسارات المتخطّاة لسه بترجّع tasks_created: 0)
+    let totalPoolRows = 0
     let timedOutAfter: number | null = null
     const failedSuppliers: Array<{ supplier_id: string; error: string }> = []
     for (const [i, sid] of supplierIds.entries()) {
@@ -282,7 +252,7 @@ async function runAgent(opts: { supplierId?: string; force?: boolean }) {
       try {
         const res = await generateForSupplier(sid, opts.force ?? Boolean(opts.supplierId))
         results.push(res)
-        totalCreated += res.tasks_created ?? 0
+        totalPoolRows += (res as { pool_rows?: number }).pool_rows ?? 0
       } catch (err) {
         const msg = (err as Error).message
         failedSuppliers.push({ supplier_id: sid, error: msg.slice(0, 300) })
@@ -300,7 +270,7 @@ async function runAgent(opts: { supplierId?: string; force?: boolean }) {
           output_summary: {
             suppliers: supplierIds.length,
             processed: results.length,
-            tasks_created: totalCreated,
+            pool_rows: totalPoolRows,
             // ⚠️ الموردين الفاشلين لازم يبانوا في التقرير — من غير كده
             //    «success» بيغطّي على شغل ناقص في صمت.
             ...(failedSuppliers.length > 0
@@ -319,7 +289,8 @@ async function runAgent(opts: { supplierId?: string; force?: boolean }) {
     }
     return {
       success: true, suppliers: supplierIds.length, processed: results.length,
-      tasks_created: totalCreated,
+      pool_rows: totalPoolRows,
+      note: 'الكرون بيحضّر المخزن — التوزيع بيحصل عند تسجيل الحضور',
       ...(failedSuppliers.length > 0 ? { failed_suppliers: failedSuppliers.length } : {}),
       ...(timedOutAfter !== null ? { partial: true, remaining: supplierIds.length - results.length } : {}),
       results,
