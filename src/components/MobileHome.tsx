@@ -115,7 +115,9 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
   const router = useRouter()
   const en = lang === 'en'
 
-  const [active, setActive] = useState<'all' | VKey>('all')
+  // بعد شيل شريط التابات مافيش حاجة بتغيّر ده — القيمة ثابتة 'all'
+  // (سايبينها متغير عشان `groups` و`addTrack` تحت يفضلوا زي ما هما).
+  const active: 'all' | VKey = 'all'
   const [menuOpen, setMenuOpen] = useState(false)
   const [loggedIn, setLoggedIn] = useState(false)
   const [q, setQ] = useState('')
@@ -127,15 +129,6 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
     const { data: sub } = supabaseBrowser.auth.onAuthStateChange((_e, s) => setLoggedIn(!!s))
     return () => sub.subscription.unsubscribe()
   }, [])
-
-  const onChip = (key: 'all' | VKey) => {
-    setActive(key)
-    try {
-      const sp = new URLSearchParams(window.location.search)
-      if (key === 'all') { sp.delete('track') } else { sp.set('track', key) }
-      window.history.replaceState(null, '', `${window.location.pathname}${sp.toString() ? '?' + sp.toString() : ''}`)
-    } catch { /* non-blocking */ }
-  }
 
   const submitSearch = (e: FormEvent) => {
     e.preventDefault()
@@ -191,11 +184,6 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
       || catCards.find(c => c.vkey === k)
     return { cats: cats.length, live, card }
   }
-
-  const chips: { key: 'all' | VKey; label: string; emoji?: string }[] = [
-    { key: 'all', label: en ? 'All' : 'الكل' },
-    ...VERTICALS.map(v => ({ key: v.key, label: en ? v.en : v.ar, emoji: v.emoji })),
-  ]
 
   return (
     <div className="md:hidden bg-[#FAFAF7] min-h-screen">
@@ -272,23 +260,12 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
           </button>
         </form>
 
-        {/* 4. Vertical chips */}
-        <div className="flex gap-2 overflow-x-auto mt-3 pb-0.5 hide-scroll">
-          {chips.map(c => {
-            const on = active === c.key
-            return (
-              <button
-                key={c.key}
-                type="button"
-                onClick={() => onChip(c.key)}
-                className={`flex-none inline-flex items-center gap-1.5 px-4 py-[9px] rounded-full text-[13px] font-extrabold transition-colors ${on ? 'bg-[#FA8125] text-white' : 'bg-white text-[#1A1A1A] border-[1.5px] border-[#E5DFD3]'}`}
-              >
-                {c.emoji && <span className="leading-none">{c.emoji}</span>}
-                <span>{c.label}</span>
-              </button>
-            )
-          })}
-        </div>
+        {/* 4. ⛔ (١٤ أغسطس ٢٠٢٦، طلب محمد) شريط التابات (الكل · بيع · إيجار ·
+            خدمات) اللي كان تحت خانة «اسأل مارد مضمونة» **اتشال**.
+            سببين: (١) كان مكرّر — نفس التلات أقسام ظاهرة ككروت كبيرة تحته
+            على طول. (٢) كان بيكسر الكروت: أول ما تدوس تاب، الكروت التانية
+            بتفقد صورتها وعدد أقسامها لأن الفلترة بتشيل مجموعاتها.
+            الدخول للأقسام بقى من الكروت نفسها. */}
       </div>
 
       {/* 5. Categories — (11 أغسطس 2026) 4 كروت ثابتة بعرض الشاشة كامل، ذي ديزاين
