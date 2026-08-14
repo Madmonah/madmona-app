@@ -26,6 +26,11 @@ const MAX_PER_DAY = Number(process.env.WA_MAX_PER_DAY || 25)
 const MAX_PER_RUN = Number(process.env.WA_MAX_PER_RUN || 1)
 // نفس مهلة wa-paced-send — ٩ دقايق قبل ما نعتبر الرسالة متأخرة
 const ACK_WAIT_MS = Number(process.env.WA_QUEUE_ACK_WAIT_MS || 9 * 60 * 1000)
+// ⏳ (١٤ أغسطس ٢٠٢٦ — محمد) «لو العميل أو المورد قافل تليفونه لازم يستنى
+//    ٣ دقايق قبل إعادة الإرسال بعد التحقق من الحالة».
+//    التحقق = الصف لسه `sent` ومفيهوش `delivered_at` ولا `read_at`.
+const RETRY_AFTER_MS = Number(process.env.WA_RETRY_AFTER_MS || 3 * 60 * 1000)
+const MAX_ATTEMPTS = Number(process.env.WA_MAX_ATTEMPTS || 3)
 const QUEUE_SESSION = process.env.WA_CAMPAIGN_SESSION || 'madmona-982'
 
 async function setConfig(key: string, value: string) {
@@ -98,7 +103,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, skipped: 'فشل فحص صحة المارد', sent: 0 })
   }
 
-  // ── ٢) السقف اليومي ──────────────────────────────────────────────────
+  // 📨 (١٤ أغسطس ٢٠٢٦ — محمد: «افتح حد الإرسال بس رسالة رسالة») الحملات
+  //    المعاملاتية مالهاش علاقة بالسقف التسويقي. السقف ده اتحط عشان
+  //    مانغرقش الناس بدعاية — مش عشان نمنع مورد يعرف إن عنده حجز بـ٢٥ ألف.
+  //
+  //    ⚠️ «افتح الحد» ≠ «افتح الحنفية». الرسايل دي بتعدّي من **نفس** بوابة
+  //    التأكيد تحت (`ackGate`) و**نفس** MAX_PER_RUN=1. يعني لسه رسالة
+  //    واحدة في المرة، وماحدش بياخد رسالة قبل ما اللي قبلها توصل فعلًا.
+  //    اللي اتفتح هو السقف اليومي بس، مش الإيقاع.
+  const TRANSACTIONAL_CAMPAIGNS = ['booking_alert']
+
+  // ── ٢) السقف اليومي — للتسويق بس ─────────────────────────────────────
   const dayStart = new Date()
   dayStart.setHours(0, 0, 0, 0)
   const { data: todayRaw } = await supabaseAdmin
@@ -106,11 +121,11 @@ export async function GET(request: NextRequest) {
     .select('id')
     .eq('status', 'sent')
     .gte('sent_at', dayStart.toISOString())
+    .not('template_vars->>campaign_name', 'in', `(${TRANSACTIONAL_CAMPAIGNS.join(',')})`)
 
   const sentToday = (todayRaw ?? []).length
-  if (sentToday >= MAX_PER_DAY) {
-    return NextResponse.json({ ok: true, skipped: 'السقف اليومي اتوصل', sent_today: sentToday })
-  }
+  // لو السقف اتوصل مانوقفش خالص — بنقفل التسويق ونسيب المعاملاتي يعدّي
+  const marketingCapped = sentToday >= MAX_PER_DAY
 
   // ── ٣) الرسايل المستحقة ──────────────────────────────────────────────
   // ⚠️ (٦ أغسطس ٢٠٢٦) الحملات اللي ليها مُرسِل متخصص لازم تتستثنى هنا.
@@ -118,6 +133,62 @@ export async function GET(request: NextRequest) {
   //    وبوابة تأكيد تسليم. الكرون ده كان بيخطف صفوفها ويبعتها 1/دقيقة من 982 —
   //    يعني بيكسر الإيقاع والبوابة الاتنين، و15 رسالة فشلت كده لما 982 فصل.
   const PACED_CAMPAIGNS = ['paced_20260806']
+
+  // ── ٣.٢) 🔁 إعادة إرسال اللي ماوصلش — قاعدة الـ٣ دقايق ───────────────
+  //    الرقم المقفول بيقبل الرسالة من الـAPI (فبترجع ok) بس مابيجيلهاش
+  //    إيصال. بنستنى ٣ دقايق، **نتحقق من الحالة** (لسه `sent` ومفيش
+  //    `delivered_at` ولا `read_at`)، وساعتها بس نرجّعها للطابور.
+  //
+  //    السقف ٣ محاولات — بعد كده الرقم يتعلّم `failed` بدل ما نفضل
+  //    نطبطب على تليفون مقفول للأبد.
+  const retried: Array<{ id: string; attempts: number; action: string }> = []
+  try {
+    const staleCutoff = new Date(Date.now() - RETRY_AFTER_MS).toISOString()
+    const { data: staleRaw } = await supabaseAdmin
+      .from('whatsapp_campaign_messages')
+      .select('id, attempts, recipient_phone')
+      .eq('status', 'sent')
+      .not('whatsapp_msg_id', 'is', null)
+      .is('delivered_at', null)
+      .is('read_at', null)
+      .lte('sent_at', staleCutoff)
+      // 🚨 لازم شبّاك زمني. من غير السطر ده الاستعلام بيلقط الـ٦٧ رسالة
+      //    القديمة (٥–٨ أغسطس) اللي حالتها لسه `sent` من غير إيصال —
+      //    وكان هيعيد إرسالها لـ٦٧ واحد دفعة واحدة. المحاولات الـ٣ كلها
+      //    بتخلص في ٩ دقايق، فساعة شبّاك أكتر من كفاية.
+      .gte('sent_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
+      .not('template_vars->>campaign_name', 'in', `(${PACED_CAMPAIGNS.join(',')})`)
+      .order('sent_at', { ascending: true })
+      .limit(5)
+
+    for (const row of (staleRaw ?? []) as Array<{ id: string; attempts: number | null }>) {
+      const n = row.attempts ?? 0
+      if (n >= MAX_ATTEMPTS) {
+        await supabaseAdmin
+          .from('whatsapp_campaign_messages')
+          .update({
+            status: 'failed',
+            error_message: `ماوصلتش بعد ${MAX_ATTEMPTS} محاولات — الرقم غالبًا مقفول`,
+          } as never)
+          .eq('id', row.id)
+          .eq('status', 'sent')
+        retried.push({ id: row.id, attempts: n, action: 'failed' })
+      } else {
+        await supabaseAdmin
+          .from('whatsapp_campaign_messages')
+          .update({
+            status: 'queued',
+            scheduled_for: new Date().toISOString(),
+            whatsapp_msg_id: null,
+            sent_at: null,
+            error_message: 'ماوصلتش خلال ٣ دقايق — إعادة إرسال',
+          } as never)
+          .eq('id', row.id)
+          .eq('status', 'sent')
+        retried.push({ id: row.id, attempts: n, action: 'requeued' })
+      }
+    }
+  } catch { /* إعادة الإرسال مايوقفش الطابور */ }
 
   // ── ٣.٥) 🚦 بوابة تأكيد الوصول — البروتوكول المعتمد ──────────────────
   //    مايتبعتش رسالة جديدة قبل ما اللي قبلها يجيلها إيصال من OpenWA.
@@ -140,14 +211,37 @@ export async function GET(request: NextRequest) {
     }, gate.halted ? { status: 200 } : undefined)
   }
 
-  const { data: dueRaw, error: dueErr } = await supabaseAdmin
+  // 🥇 المعاملاتي الأول دايمًا: حجز جديد مايستناش ورا طابور دعاية.
+  //    بنجيبه لوحده، ولو مفيش نرجع للطابور العادي.
+  const nowIso = new Date().toISOString()
+  const COLS = 'id, recipient_phone, recipient_name, message_content, attempts'
+
+  let { data: dueRaw, error: dueErr } = await supabaseAdmin
     .from('whatsapp_campaign_messages')
-    .select('id, recipient_phone, recipient_name, message_content, attempts')
+    .select(COLS)
     .eq('status', 'queued')
-    .not('template_vars->>campaign_name', 'in', `(${PACED_CAMPAIGNS.join(',')})`)
-    .lte('scheduled_for', new Date().toISOString())
+    .in('template_vars->>campaign_name', TRANSACTIONAL_CAMPAIGNS)
+    .lte('scheduled_for', nowIso)
     .order('scheduled_for', { ascending: true })
     .limit(MAX_PER_RUN)
+
+  if (!dueErr && (dueRaw ?? []).length === 0) {
+    if (marketingCapped) {
+      return NextResponse.json({
+        ok: true, sent: 0,
+        skipped: 'السقف اليومي للتسويق اتوصل (المعاملاتي مفتوح ومفيش منه حاجة مستحقة)',
+        sent_today: sentToday,
+      })
+    }
+    ;({ data: dueRaw, error: dueErr } = await supabaseAdmin
+      .from('whatsapp_campaign_messages')
+      .select(COLS)
+      .eq('status', 'queued')
+      .not('template_vars->>campaign_name', 'in', `(${PACED_CAMPAIGNS.join(',')})`)
+      .lte('scheduled_for', nowIso)
+      .order('scheduled_for', { ascending: true })
+      .limit(MAX_PER_RUN))
+  }
 
   // 🧹 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) ريبر الرسايل العالقة:
   // القفل المتفائل بيقلب الصف لـ'sending' قبل الإرسال — لو الدالة اتقطعت
@@ -227,6 +321,7 @@ export async function GET(request: NextRequest) {
     ok: true,
     sent: results.filter((r) => r.ok).length,
     failed: results.filter((r) => !r.ok).length,
+    ...(retried.length > 0 ? { retried } : {}),
     sent_today: sentToday + results.filter((r) => r.ok).length,
     daily_cap: MAX_PER_DAY,
     results,
