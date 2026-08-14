@@ -52,6 +52,10 @@ const BOURSE_CARD = {
   ar: 'بورصة مضمونة العقارية',
   en: 'Madmona Real Estate Exchange',
   emoji: '🏗️',
+  // 🖼️ (١٤ أغسطس ٢٠٢٦) الكارتين دول كانوا **بدون صورة خالص** — إيموجي على
+  //    تدرج لوني بس، لأنهم مش فئات في الداتابيز (متكتوبين هنا يدوي) فمحدش
+  //    كان بيدّيهم صورة. دلوقتي بقى ليهم صور بالهوية الخضرا الجديدة.
+  img: '/hero/bourse.jpg',
   tone: 'from-[#14231E] to-[#34D399]',
   accent: '#059669',
   href: '/real-estate/market',
@@ -64,6 +68,7 @@ const BUSINESS_CARD = {
   ar: 'بورضة رجال الأعمال',
   en: 'Business Lounge',
   emoji: '📈',
+  img: '/hero/business-lounge.jpg',
   tone: 'from-[#2B4521] to-[#34D399]',
   accent: '#059669',
   href: '/business-lounge',
@@ -327,11 +332,8 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
             href={BOURSE_CARD.href}
             className="relative block rounded-[22px] overflow-hidden w-full aspect-[16/10] no-underline"
           >
-            <span className={`absolute inset-0 bg-gradient-to-br ${BOURSE_CARD.tone}`}>
-              <span className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
-              <span className="absolute inset-x-0 top-[18%] text-center text-[56px] select-none">{BOURSE_CARD.emoji}</span>
-            </span>
-            <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,25,20,.6), transparent)' }} />
+            <Image src={BOURSE_CARD.img} alt={BOURSE_CARD.ar} fill sizes="100vw" className="object-cover" />
+            <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,25,20,.82), rgba(10,25,20,.1) 60%)' }} />
             <span className="absolute top-4 left-4 text-[9px] font-bold text-[#8FE3C8] bg-white/10 px-2 py-1 rounded-full">LIVE</span>
             <span className="absolute inset-x-0 bottom-0 p-4">
               <span className="block text-white text-xl font-black leading-tight">{en ? BOURSE_CARD.en : BOURSE_CARD.ar}</span>
@@ -344,11 +346,8 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
             href={BUSINESS_CARD.href}
             className="relative block rounded-[22px] overflow-hidden w-full aspect-[16/10] no-underline"
           >
-            <span className={`absolute inset-0 bg-gradient-to-br ${BUSINESS_CARD.tone}`}>
-              <span className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
-              <span className="absolute inset-x-0 top-[18%] text-center text-[56px] select-none">{BUSINESS_CARD.emoji}</span>
-            </span>
-            <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,25,20,.6), transparent)' }} />
+            <Image src={BUSINESS_CARD.img} alt={BUSINESS_CARD.ar} fill sizes="100vw" className="object-cover" />
+            <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,25,20,.82), rgba(10,25,20,.1) 60%)' }} />
             <span className="absolute top-4 left-4 text-[9px] font-bold text-[#8FE3C8] bg-white/10 px-2 py-1 rounded-full">LIVE</span>
             <span className="absolute inset-x-0 bottom-0 p-4">
               <span className="block text-white text-xl font-black leading-tight">{en ? BUSINESS_CARD.en : BUSINESS_CARD.ar}</span>
