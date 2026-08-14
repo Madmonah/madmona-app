@@ -430,21 +430,8 @@ export default function AdminDashboardV2() {
           </div>
         </Section>
 
-        {/* ============ ELITE PARTNER LINKS ============ */}
-        <Section title="💇‍♀️ Elite Beauty Salon & Spa" subtitle="كل لينكات إيليت — صفحات العملاء، الحجز، حضور الموظفين، والإدارة">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-            <ToolCard href="/elite" icon={<Sparkles />} title="صفحة إيليت" sub="الهوم بيدج للعملاء" />
-            <ToolCard href="/admin/business-finance/93eaa8cf-1def-4101-bca6-8fa33450cdce" icon={<Wallet />} title="إدارة إيليت" sub="فاينانس · فريق · حضور · QR" />
-            <ToolCard href="/v/HQ" icon={<QrCode />} title="زيارة · مصر الجديدة" sub="/v/HQ" />
-            <ToolCard href="/v/GOLF" icon={<QrCode />} title="زيارة · الجولف" sub="/v/GOLF" />
-            <ToolCard href="/v/HIJAB" icon={<QrCode />} title="زيارة · المحجبات" sub="/v/HIJAB" />
-            <ToolCard href="/v/TAGAMOA" icon={<QrCode />} title="زيارة · التجمع" sub="/v/TAGAMOA" />
-            <ToolCard href="/clock/HQ" icon={<Clock />} title="حضور · مصر الجديدة" sub="/clock/HQ" />
-            <ToolCard href="/clock/GOLF" icon={<Clock />} title="حضور · الجولف" sub="/clock/GOLF" />
-            <ToolCard href="/clock/HIJAB" icon={<Clock />} title="حضور · المحجبات" sub="/clock/HIJAB" />
-            <ToolCard href="/clock/TAGAMOA" icon={<Clock />} title="حضور · التجمع" sub="/clock/TAGAMOA" />
-          </div>
-        </Section>
+        {/* ============ PARTNER OPERATING LINKS (من الداتا مش مكتوبة بالإيد) ============ */}
+        <PartnerLinks />
 
         {/* ============ B2C MARKETPLACE ============ */}
         <Section title="🛍️ Marketplace (B2C)" subtitle="رنتال + بيع منتجات · مفتوح للعملاء">
@@ -1011,6 +998,131 @@ function SectionNav() {
         ))}
       </div>
     </div>
+  )
+}
+
+/* ============================================================
+   روابط تشغيل الشركاء — كانت مكتوبة بالإيد لشريك واحد (إيليت) مع
+   أكواد فروع ثابتة. دلوقتي بتتقرا من get_b2b_partner_links()، يعني
+   أي شريك جديد بيظهر لوحده وأكواده بتيجي من الداتابيز مش من الذاكرة.
+   ============================================================ */
+type BranchLink = { id: string; name: string; code: string; status: string; employees: number }
+type PartnerLink = {
+  id: string; business_name: string; industry: string | null; contract_status: string
+  join_slug: string | null; branches: number; employees: number; branch_list: BranchLink[]
+}
+
+function PartnerLinks() {
+  const [rows, setRows] = useState<PartnerLink[]>([])
+  const [err, setErr] = useState('')
+  const [open, setOpen] = useState<string | null>(null)
+
+  useEffect(() => {
+    (async () => {
+      // الـ RPC دي أحدث من ملف الأنواع المولّد (src/types/supabase.ts، ٩١٣KB)،
+      // فبنعدّي عليها بـ cast موضعي بدل ما نعيد توليد الملف كله.
+      const rpc = supabaseBrowser.rpc as unknown as
+        (fn: string) => Promise<{ data: unknown; error: { message: string } | null }>
+      const { data, error } = await rpc('get_b2b_partner_links')
+      if (error) { setErr(error.message); return }
+      setRows((data as PartnerLink[]) || [])
+    })()
+  }, [])
+
+  const withBranches = rows.filter((p) => p.branches > 0)
+  const noBranches = rows.filter((p) => p.branches === 0)
+
+  return (
+    <Section
+      title="🔗 روابط تشغيل الشركاء"
+      subtitle={err
+        ? `مش قادر يحمّل: ${err}`
+        : `${rows.length} شريك · ${withBranches.reduce((s, p) => s + p.branches, 0)} فرع — QR الزيارة والحضور لكل فرع`}
+    >
+      {rows.length === 0 && !err ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center text-sm text-[#6B7280]">
+          <Loader2 className="w-4 h-4 animate-spin inline-block ml-2" /> بنحمّل الشركاء…
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {withBranches.map((p) => {
+            const isOpen = open === p.id
+            return (
+              <div key={p.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                <button
+                  onClick={() => setOpen(isOpen ? null : p.id)}
+                  className="w-full flex items-center justify-between gap-3 p-3.5 text-right hover:bg-[#FAFAF7] transition-colors"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <Building2 className="w-4 h-4 text-[#059669] shrink-0" />
+                    <span className="font-black text-[#1A2E26] truncate">{p.business_name}</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAFAF7] border border-gray-100 text-[#6B7280] shrink-0">
+                      {p.contract_status}
+                    </span>
+                  </div>
+                  <span className="text-xs text-[#6B7280] shrink-0">
+                    {p.branches} فرع · {p.employees} موظف
+                  </span>
+                </button>
+
+                {isOpen && (
+                  <div className="border-t border-gray-100 p-3 space-y-2 bg-[#FAFAF7]">
+                    <div className="flex flex-wrap gap-2">
+                      <Link href={`/admin/business-finance/${p.id}`}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl bg-[#34D399] text-[#04352A]">
+                        <Wallet className="w-3.5 h-3.5" /> إدارة الشريك
+                      </Link>
+                      {p.join_slug && (
+                        <Link href={`/s/${p.join_slug}`}
+                          className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl bg-white border border-gray-200 text-[#1A2E26]">
+                          <Sparkles className="w-3.5 h-3.5" /> واجهة العملاء /s/{p.join_slug}
+                        </Link>
+                      )}
+                    </div>
+                    {p.branch_list.map((b) => (
+                      <div key={b.id} className="bg-white rounded-xl border border-gray-100 p-2.5 flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-bold text-[#1A2E26] min-w-[140px] truncate">{b.name}</span>
+                        <code className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#FAFAF7] text-[#6B7280]">{b.code}</code>
+                        {b.status !== 'active' && (
+                          <span className="text-[10px] font-bold text-amber-700">({b.status})</span>
+                        )}
+                        <span className="text-[10px] text-[#6B7280]">{b.employees} موظف</span>
+                        <div className="flex items-center gap-1.5 mr-auto">
+                          <Link href={`/v/${b.code}`}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-[#D1FAE5] text-[#04352A]">
+                            <QrCode className="w-3 h-3" /> زيارة
+                          </Link>
+                          <Link href={`/clock/${b.code}`}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-[#FAFAF7] border border-gray-200 text-[#1A2E26]">
+                            <Clock className="w-3 h-3" /> حضور
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+
+          {noBranches.length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-3.5">
+              <p className="text-[11px] font-bold text-amber-700 mb-2">
+                {noBranches.length} شريك من غير أي فرع — مالهمش QR ولا حضور
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {noBranches.map((p) => (
+                  <Link key={p.id} href={`/admin/business-finance/${p.id}`}
+                    className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-[#FAFAF7] border border-gray-100 text-[#1A2E26]">
+                    {p.business_name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </Section>
   )
 }
 

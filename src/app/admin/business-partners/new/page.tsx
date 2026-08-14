@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
@@ -74,8 +74,15 @@ export default function NewBusinessPartnerPage() {
 
   // Step 3: Branches
   const [branches, setBranches] = useState<Branch[]>([
-    { name: '', code: 'HQ', address: '', district: '', phone: '', manager_name: '' },
+    { name: '', code: '', address: '', district: '', phone: '', manager_name: '' },
   ])
+
+  // اقتراح كود للفرع الأول من اسم الشريك — الكود النهائي بيتعمله
+  // uniquify في admin_create_b2b_partner، فمفيش تصادم حتى لو اتساب فاضي.
+  const suggestedCode = useMemo(() => {
+    const base = (slug || businessName).replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 10)
+    return base ? `${base}-HQ` : ''
+  }, [slug, businessName])
 
   function addBranch() {
     if (branches.length >= 20) return
@@ -405,7 +412,7 @@ export default function NewBusinessPartnerPage() {
                       type="text"
                       value={b.code}
                       onChange={(e) => updateBranch(i, 'code', e.target.value)}
-                      placeholder="كود (HQ, BR2, إلخ)"
+                      placeholder={i === 0 ? `كود — سيبه فاضي وهيتولّد (${suggestedCode || 'HQ'})` : 'كود الفرع'}
                       className="px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#059669] font-mono"
                     />
                     <input
