@@ -169,6 +169,29 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
     return { ...g, useImg }
   })
 
+  // 🐞 (١٤ أغسطس ٢٠٢٦) كارت القسم كان بياخد كل حاجته من **أول مجموعة فرعية
+  //    بالصدفة** (`catCards.find(vkey === …)`) — وده كان بيعمل ٣ مشاكل:
+  //
+  //    ١) الضغط على «بيع» كان بيفتح `?track=products&group=sale-property`،
+  //       فالماركتبليس بيدخل جوّه **العقارات** على طول والمستخدم مش شايف
+  //       باقي أقسام البيع (عربيات · بيت وأثاث · بحري …).
+  //    ٢) حجاب «قريبًا» كان بيتحسب من عدّاد المجموعة دي لوحدها: «خدمات»
+  //       كان متغطّي لأن أول مجموعة فيه «خدمات طبية وتجميل» = صفر إعلان،
+  //       مع إن القسم كله فيه شغل.
+  //    ٣) «N قسم» كان عدد فئات المجموعة الواحدة مش القسم كله.
+  //
+  //    الصح: نحسب على **مستوى الـtrack كله**.
+  const trackOf = (k: VKey) => VERTICALS.find(v => v.key === k)?.tracks || []
+  const trackStats = (k: VKey) => {
+    const cats = categories.filter(c => trackOf(k).includes(c.track || ''))
+    const gkeys = new Set(cats.map(c => c.group_slug || c.slug))
+    const live = [...gkeys].reduce((s, gk) => s + (liveCounts[gk] ?? 0), 0)
+    // الصورة: أول مجموعة في القسم عندها صورة (مع نفس حارس عدم التكرار)
+    const card = catCards.find(c => c.vkey === k && c.useImg && c.image_url)
+      || catCards.find(c => c.vkey === k)
+    return { cats: cats.length, live, card }
+  }
+
   const chips: { key: 'all' | VKey; label: string; emoji?: string }[] = [
     { key: 'all', label: en ? 'All' : 'الكل' },
     ...VERTICALS.map(v => ({ key: v.key, label: en ? v.en : v.ar, emoji: v.emoji })),
@@ -278,12 +301,16 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
         </div>
         <div className="flex flex-col gap-3 px-4">
           {VERTICALS.map(v => {
-            const g = catCards.find(c => c.vkey === v.key)
-            const soon = g ? (liveCounts[g.key] ?? 0) < 5 : false
+            const st = trackStats(v.key)
+            const g = st.card
+            const soon = st.live < 5
             return (
               <Link
                 key={v.key}
-                href={`/marketplace?track=${v.key}${g ? `&group=${encodeURIComponent(g.key)}` : ''}`}
+                // 🔑 من غير `&group=` — بنفتح **القسم كله** والماركتبليس بيعرض
+                //    كروت المجموعات الفرعية فوق (drill-down المستوى الأول).
+                //    لو بعتنا group بيدخل جوّه مجموعة واحدة على طول.
+                href={`/marketplace?track=${v.key}`}
                 className="relative block rounded-[22px] overflow-hidden w-full aspect-[16/10] no-underline"
               >
                 {g?.useImg && g.image_url ? (
@@ -302,7 +329,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
                 )}
                 <span className="absolute inset-x-0 bottom-0 p-4">
                   <span className="block text-white text-xl font-black leading-tight">{en ? v.en : v.ar}</span>
-                  {g && <span className="block text-white/75 text-[11px] font-bold mt-0.5">{g.count} {en ? 'sections' : 'قسم'}</span>}
+                  {st.cats > 0 && <span className="block text-white/75 text-[11px] font-bold mt-0.5">{st.cats} {en ? 'sections' : 'قسم'}</span>}
                 </span>
                 {soon && (
                   <>
