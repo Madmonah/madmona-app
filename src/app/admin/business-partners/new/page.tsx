@@ -3,7 +3,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseBrowser as supabase } from '@/lib/supabase-browser'
 import {
   Building2, ChevronLeft, Plus, X, Trash2, Loader2, Check,
   Sparkles, AlertCircle, BadgePercent,
@@ -14,10 +14,8 @@ import {
    Wizard: business info → branches → review → create
    ============================================================ */
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+// 🔐 (١٤ أغسطس ٢٠٢٦) كان بيعمل عميل anon جديد هنا — والدوال بقت مقفولة
+//    قدام anon، فلازم العميل اللي معاه جلسة الأدمن.
 
 const INDUSTRIES = [
   { value: 'beauty_salon', label: 'صالون تجميل / Beauty Salon' },

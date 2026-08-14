@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseBrowser as supabase } from '@/lib/supabase-browser'
 import {
   Building2, Users, Plus, ArrowLeft, Loader2,
   Search, BadgePercent, Sparkles, Star,
@@ -13,10 +13,8 @@ import {
    + Convert from cold_leads (one-click, zero typing)
    ============================================================ */
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+// 🔐 (١٤ أغسطس ٢٠٢٦) كان بيعمل عميل anon جديد هنا — والدوال بقت مقفولة
+//    قدام anon، فلازم العميل اللي معاه جلسة الأدمن.
 
 type Partner = {
   id: string
@@ -135,7 +133,8 @@ export default function BusinessPartnersIndexPage() {
     setConvertingLeadId(lead.lead_id)
     const { data } = await supabase.rpc('admin_convert_lead_to_b2b_partner', {
       p_lead_id: lead.lead_id,
-      p_industry: lead.detected_industry === 'other' ? null : lead.detected_industry,
+      // العميل المطبوع بيقبل undefined مش null للوسيط الاختياري ده
+      p_industry: lead.detected_industry === 'other' ? undefined : lead.detected_industry,
       p_num_branches: numBranches,
     })
     const result = data as { ok: boolean; supplier_id?: string; error?: string }
