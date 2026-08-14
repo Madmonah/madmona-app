@@ -9,7 +9,7 @@ import {
   Building2, Users, Wallet, TrendingUp, BadgePercent, Star,
   Clock, MapPin, Heart, Receipt, ShieldCheck, QrCode, ShieldAlert,
   // B2C
-  Package, Calendar, Phone, Eye, Rss, FolderTree,
+  Package, Calendar, Phone, Eye, Rss, FolderTree, ShoppingBag,
   // AI
   Bot, Sparkles, Brain, GitBranch, Activity, Zap, Network,
   // WA
@@ -128,6 +128,11 @@ type DashboardData = {
     bookings_total: number
     bookings_month: number
     bookings_pending: number
+    orders_total: number
+    orders_month: number
+    orders_pending: number
+    gmv_bookings_month: number
+    gmv_orders_month: number
     gmv_month: number
     commission_month: number
     suppliers_approved: number
@@ -442,11 +447,16 @@ export default function AdminDashboardV2() {
         </Section>
 
         {/* ============ B2C MARKETPLACE ============ */}
-        <Section title="🛍️ Marketplace (B2C)" subtitle="رنتال مفتوح للعملاء">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <Section title="🛍️ Marketplace (B2C)" subtitle="رنتال + بيع منتجات · مفتوح للعملاء">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
             <SubKpi label="حجوزات الشهر" value={data.b2c.bookings_month}
               note={`${data.b2c.bookings_total} إجمالي`} />
-            <SubKpi label="GMV الشهر" value={`${Number(data.b2c.gmv_month).toLocaleString('ar-EG')} ج`} />
+            <SubKpi label="طلبات منتجات الشهر" value={data.b2c.orders_month}
+              note={data.b2c.orders_pending > 0
+                ? `⚠ ${data.b2c.orders_pending} مستني دفع`
+                : `${data.b2c.orders_total} إجمالي`} />
+            <SubKpi label="GMV الشهر" value={`${Number(data.b2c.gmv_month).toLocaleString('ar-EG')} ج`}
+              note={`حجوزات ${Number(data.b2c.gmv_bookings_month).toLocaleString('ar-EG')} · طلبات ${Number(data.b2c.gmv_orders_month).toLocaleString('ar-EG')}`} />
             <SubKpi label="إعلانات منشورة" value={data.b2c.listings_published}
               note={data.b2c.listings_draft > 0 ? `${data.b2c.listings_draft} مسودة` : ''} />
             <SubKpi label="عملاء + reviews" value={data.b2c.total_customers}
@@ -459,6 +469,8 @@ export default function AdminDashboardV2() {
             <ToolCard href="/admin/sup" icon={<Users />} title="الموردين" sub={`${data.b2c.suppliers_approved} متعمد`}
               badge={data.b2c.suppliers_pending || undefined} />
             <ToolCard href="/admin/marketplace-bookings" icon={<Calendar />} title="الحجوزات" sub={`${data.b2c.bookings_pending} بانتظار`} />
+            <ToolCard href="/admin/marketplace-orders" icon={<ShoppingBag />} title="طلبات المنتجات" sub={`${data.b2c.orders_total} طلب`}
+              badge={data.b2c.orders_pending || undefined} />
             <ToolCard href="/admin/categories" icon={<FolderTree />} title="الفئات" sub="Categories + attrs" />
             <ToolCard href="/admin/payouts" icon={<Wallet />} title="المدفوعات" sub="Payouts" />
             <ToolCard href="/admin/listing-performance" icon={<FileBarChart />} title="أداء الإعلانات" sub="Performance" />
@@ -763,20 +775,25 @@ export default function AdminDashboardV2() {
               <CompactLink href="/admin/ai-assistant" label="ai-assistant" />
               <CompactLink href="/admin/ai-os" label="ai-os" />
               <CompactLink href="/admin/alerts" label="alerts" />
+              <CompactLink href="/admin/bookings" label="bookings" />
               <CompactLink href="/admin/business-finance" label="business-finance" />
               <CompactLink href="/admin/business-partners" label="business-partners" />
               <CompactLink href="/admin/business-partners/new" label="business-partners/new" />
               <CompactLink href="/admin/capabilities" label="capabilities" />
+              <CompactLink href="/admin/careers" label="careers" />
               <CompactLink href="/admin/categories" label="categories" />
               <CompactLink href="/admin/ceo-briefs" label="ceo-briefs" />
+              <CompactLink href="/admin/cockpit" label="cockpit" />
               <CompactLink href="/admin/collaborations" label="collaborations" />
               <CompactLink href="/admin/command-center" label="command-center" />
               <CompactLink href="/admin/company" label="company ⭐" />
+              <CompactLink href="/admin/custody" label="custody" />
               <CompactLink href="/admin/daily-messages" label="daily-messages" />
-              <CompactLink href="/admin/dashboard" label="dashboard (أنت هنا)" muted />
+              <CompactLink href="/admin/dashboard" label="dashboard" />
               <CompactLink href="/admin/demand-forecast" label="demand-forecast" />
               <CompactLink href="/admin/email-queue" label="email-queue" />
               <CompactLink href="/admin/email-templates" label="email-templates" />
+              <CompactLink href="/admin/flow-tasks" label="flow-tasks" />
               <CompactLink href="/admin/fraud-alerts" label="fraud-alerts" />
               <CompactLink href="/admin/funnel" label="funnel" />
               <CompactLink href="/admin/hq" label="hq" />
@@ -786,47 +803,51 @@ export default function AdminDashboardV2() {
               <CompactLink href="/admin/listing-drafts" label="listing-drafts" />
               <CompactLink href="/admin/listing-performance" label="listing-performance" />
               <CompactLink href="/admin/listings" label="listings ⭐ فلتر + دليل" />
+              <CompactLink href="/admin/madmona" label="madmona" />
+              <CompactLink href="/admin/manage" label="manage" />
+              <CompactLink href="/admin/marid" label="marid" />
+              <CompactLink href="/admin/marid-monitor" label="marid-monitor" />
               <CompactLink href="/admin/marketing-hq" label="marketing-hq" />
               <CompactLink href="/admin/marketplace-bookings" label="marketplace-bookings" />
+              <CompactLink href="/admin/marketplace-orders" label="marketplace-orders ⭐" />
               <CompactLink href="/admin/messages" label="messages" />
               <CompactLink href="/admin/news" label="news" />
               <CompactLink href="/admin/notifications" label="notifications" />
+              <CompactLink href="/admin/onboard" label="onboard" />
+              <CompactLink href="/admin/orchestrator" label="orchestrator" />
               <CompactLink href="/admin/outreach-leads" label="outreach-leads ⭐ NEW" />
+              <CompactLink href="/admin/overview" label="overview (أنت هنا)" muted />
               <CompactLink href="/admin/partnerships" label="partnerships" />
-              <CompactLink href="/admin/marketplace-suppliers" label="marketplace-suppliers" />
-              <CompactLink href="/admin/marketplace-orders" label="marketplace-orders" />
-              <CompactLink href="/admin/custody" label="custody" />
-              <CompactLink href="/admin/flow-tasks" label="flow-tasks" />
-              <CompactLink href="/admin/madmona" label="madmona" />
-              <CompactLink href="/admin/suppliers" label="suppliers" />
-              <CompactLink href="/admin/suppliers-v2" label="suppliers-v2" />
-              <CompactLink href="/admin/units" label="units" />
-              <CompactLink href="/admin/bookings" label="bookings" />
-              <CompactLink href="/admin/cockpit" label="cockpit" />
-              <CompactLink href="/admin/agent-extras" label="agent-extras" />
               <CompactLink href="/admin/payouts" label="payouts" />
               <CompactLink href="/admin/performance" label="performance" />
               <CompactLink href="/admin/permissions" label="permissions ⭐" />
+              <CompactLink href="/admin/photo-audit" label="photo-audit" />
               <CompactLink href="/admin/pipelines" label="pipelines" />
               <CompactLink href="/admin/policy-rules" label="policy-rules" />
+              <CompactLink href="/admin/projects" label="projects" />
+              <CompactLink href="/admin/projects-media" label="projects-media" />
               <CompactLink href="/admin/prompt-versions" label="prompt-versions" />
               <CompactLink href="/admin/qc-reports" label="qc-reports" />
               <CompactLink href="/admin/reels" label="reels" />
-              <CompactLink href="/admin/refresh-fb-token" label="refresh-fb-token" />
               <CompactLink href="/admin/runbook" label="runbook" />
               <CompactLink href="/admin/site-settings" label="site-settings" />
               <CompactLink href="/admin/social-groups" label="social-groups" />
               <CompactLink href="/admin/social-packs" label="social-packs" />
               <CompactLink href="/admin/sponsorships" label="sponsorships" />
               <CompactLink href="/admin/strategy" label="strategy" />
-              <CompactLink href="/admin/sup" label="sup" />
+              <CompactLink href="/admin/subscriptions" label="subscriptions ⭐ NEW" />
+              <CompactLink href="/admin/sup" label="sup ⭐ الموردين" />
               <CompactLink href="/admin/supplier-posts" label="supplier-posts" />
+              <CompactLink href="/admin/traffic" label="traffic" />
+              <CompactLink href="/admin/units" label="units" />
+              <CompactLink href="/admin/wa-numbers" label="wa-numbers" />
               <CompactLink href="/admin/wa-review" label="wa-review" />
+              <CompactLink href="/admin/wallets" label="wallets ⭐ NEW" />
               <CompactLink href="/admin/welcome-messages" label="welcome-messages" />
               <CompactLink href="/admin/workflows" label="workflows" />
             </div>
             <p className="text-[10px] text-[#6B7280] mt-3 pt-3 border-t border-gray-100">
-              📊 73 صفحة admin
+              📊 81 صفحة admin · الفهرس مولّد من الصفحات الموجودة فعلًا
             </p>
           </div>
         </Section>
