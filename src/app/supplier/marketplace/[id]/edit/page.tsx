@@ -50,7 +50,9 @@ interface InitialData {
   address: string
   min_booking_hours: number
   max_booking_hours: number
-  status: string
+  // القيم دي بتيجي من الداتابيز وهي فعلًا محصورة في الاتحادات دي — النوع
+  // كان واسع (string) فما كانش بيطابق `ListingFormData` اللي الفورم بيطلبه.
+  status: 'draft' | 'published'
   existingPhotos: Array<{
     id: string
     url: string
@@ -61,7 +63,7 @@ interface InitialData {
   }>
   existingPricing: Array<{
     id: string
-    period_type: string
+    period_type: 'hourly' | 'daily' | 'weekly' | 'monthly' | 'per_event'
     price: string
     min_periods: number
     is_active: boolean
@@ -135,6 +137,9 @@ export default function EditListingPage() {
       setUserId(session.user.id)
 
       // Check ownership first
+      // النوع مسمّى صراحةً: جوه الـelse بيبقى TS ضيّق `sup` لـ`null`،
+      // فـ`as typeof sup` كان بيتحول لـ`as null` ويفشل.
+      type SupRef = { id: string; kyc_status: 'rejected' | 'pending' | 'approved' | 'suspended' } | null
       let { data: sup } = await supabaseBrowser
         .from('marketplace_suppliers')
         .select('id, kyc_status')
@@ -161,7 +166,7 @@ export default function EditListingPage() {
             setStage('no-permission')
             return
           }
-          sup = staff.supplier as typeof sup
+          sup = staff.supplier as unknown as SupRef
           setMode('staff')
           setRoleLabel(staff.role_label)
         }
@@ -221,7 +226,7 @@ export default function EditListingPage() {
         address: listing.address || '',
         min_booking_hours: listing.min_booking_hours,
         max_booking_hours: listing.max_booking_hours,
-        status: listing.status,
+        status: listing.status as 'draft' | 'published',
         existingPhotos: ((photos || []) as ListingPhotoRow[]).map((p) => ({
           id: p.id,
           url: p.url,
@@ -232,7 +237,7 @@ export default function EditListingPage() {
         })),
         existingPricing: ((pricing || []) as PricingRuleRow[]).map((p) => ({
           id: p.id,
-          period_type: p.period_type,
+          period_type: p.period_type as 'hourly' | 'daily' | 'weekly' | 'monthly' | 'per_event',
           price: String(p.price),
           min_periods: p.min_periods,
           is_active: p.is_active,

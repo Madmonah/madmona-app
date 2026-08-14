@@ -14,6 +14,7 @@ import {
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { GoogleSignInButton } from '@/components/GoogleSignInButton'
 import WhatsAppLogin from '@/components/WhatsAppLogin'
+import { jsonObj } from '@/lib/rpc'
 
 // ⛔ دخول فيسبوك اتشال نهائياً (٢ أغسطس ٢٠٢٦) — كان متقفل بفلاج من زمان
 //    ومحدش استخدمه ولا مرة (صفر هوية facebook في auth.identities)، وقرار
@@ -64,8 +65,10 @@ function LoginContent() {
       const { data: emp } = await supabaseBrowser.rpc('employee_login_phone_pin', {
         p_phone: normalized, p_pin: password,
       })
-      if (emp?.success) {
-        safeStorage.set('madmona_token', emp.token)
+      // employee_login_phone_pin بترجّع jsonb: { success, token? }
+      const empR = jsonObj<{ success: boolean; token: string }>(emp)
+      if (empR.success && empR.token) {
+        safeStorage.set('madmona_token', empR.token)
         router.push('/me')
         return
       }

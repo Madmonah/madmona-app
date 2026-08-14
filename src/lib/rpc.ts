@@ -56,3 +56,28 @@ export async function rpcOrThrow<T = any>(
   }
   return data as T
 }
+
+// =====================================================================
+// 📦 (١٣ أغسطس ٢٠٢٦) قراءة نتايج الـRPCs اللي بترجّع jsonb
+//
+// كل دالة بترجّع `jsonb` بيتولّد نوعها `Json` — اتحاد واسع
+// (`string | number | boolean | {…} | Json[]`). فأي `data.ok` أو
+// `data.error` بيدّي TS2339 «الخاصية مش موجودة»، وده كان **31 خطأ في 8 ملفات**.
+//
+// الحل مش كاست في كل سطر. `jsonObj` بيضيّق القيمة لكائن **مرة واحدة**
+// وبيتحقق إنها فعلًا كائن (مش array ولا نص) — يعني بيحمي وقت التشغيل كمان
+// من `null` أو شكل غير متوقع، مش بس بيسكّت المترجم.
+//
+//     const r = jsonObj<{ ok: boolean; error?: string }>(data)
+//     if (r.ok) … else flash('err', r.error || 'حصل خطأ')
+// =====================================================================
+
+/** بيضيّق نتيجة jsonb لكائن. لو مش كائن (null/array/نص) بيرجّع {} فاضي. */
+export function jsonObj<T extends Record<string, any> = Record<string, any>>(
+  data: unknown,
+): Partial<T> {
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
+    return data as Partial<T>
+  }
+  return {}
+}

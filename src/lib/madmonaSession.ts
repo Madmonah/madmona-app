@@ -140,14 +140,22 @@ export async function syncModuleSession(): Promise<MadmonaSession | null> {
     const { supabaseBrowser } = await import('@/lib/supabase-browser')
     const cached = getMadmonaSession()
     const { data, error } = await supabaseBrowser.rpc('whoami', {
-      p_module_token: cached?.token ?? null,
+      // الباراميتر uuid وبيقبل NULL، بس النوع المولّد بيقول `string | undefined`.
+      p_module_token: cached?.token ?? undefined,
     })
-    if (error || !data?.module_token) return cached
+    // `whoami` بترجّع jsonb: { user_id, profile, module_token }
+    const { jsonObj } = await import('@/lib/rpc')
+    const r = jsonObj<{
+      user_id: string
+      module_token: string
+      profile: { phone?: string; full_name?: string | null } | null
+    }>(data)
+    if (error || !r.module_token) return cached
     const session: MadmonaSession = {
-      token: data.module_token,
-      auth_user_id: data.user_id,
-      phone: data.profile?.phone || cached?.phone || '',
-      full_name: data.profile?.full_name ?? cached?.full_name ?? null,
+      token: r.module_token,
+      auth_user_id: r.user_id ?? '',
+      phone: r.profile?.phone || cached?.phone || '',
+      full_name: r.profile?.full_name ?? cached?.full_name ?? null,
     }
     setMadmonaSession(session)
     return session

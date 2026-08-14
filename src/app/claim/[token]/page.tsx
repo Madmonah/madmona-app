@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { jsonObj } from '@/lib/rpc'
 
 // ============================================================
 // /claim/[token] — Listing claim landing page
@@ -43,9 +44,11 @@ export default function ClaimPage() {
     setErr('')
     try {
       const { data: res, error } = await supabaseBrowser.rpc('claim_get_by_token', { p_token: token })
-      if (error || !res || res.error === 'invalid_token') { setInvalid(true); setLoading(false); return }
-      setData(res as ClaimData)
-      if (res.status === 'claimed') setClaimed(true)
+      // بترجّع jsonb — نضيّقها لكائن مرة واحدة بدل كاست في كل سطر
+      const r = jsonObj<{ error: string; status: string }>(res)
+      if (error || !res || r.error === 'invalid_token') { setInvalid(true); setLoading(false); return }
+      setData(res as unknown as ClaimData)
+      if (r.status === 'claimed') setClaimed(true)
     } catch {
       setInvalid(true)
     }
@@ -58,7 +61,7 @@ export default function ClaimPage() {
     setClaiming(true); setErr('')
     try {
       const { data: res, error } = await supabaseBrowser.rpc('claim_mark_by_token', { p_token: token })
-      if (error || !res?.ok) { setErr('حصل خطأ، حاول تاني أو كلّمنا واتساب.'); setClaiming(false); return }
+      if (error || !jsonObj<{ ok: boolean }>(res).ok) { setErr('حصل خطأ، حاول تاني أو كلّمنا واتساب.'); setClaiming(false); return }
       setClaimed(true)
     } catch {
       setErr('حصل خطأ، حاول تاني أو كلّمنا واتساب.')

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabase-browser';
+import { jsonObj } from '@/lib/rpc';
 
 // =====================================================================
 // PULSE CLIENT (May 16 2026)
@@ -98,16 +99,17 @@ export default function PulseClient() {
         visitRecordedRef.current = true;
         try {
           const { data: visitResult } = await supabaseBrowser.rpc('record_user_visit', { p_user_id: userId });
-          if (visitResult?.new_reward) {
+          // بترجّع jsonb — نضيّقها لكائن قبل ما نقرا منها
+          const vr = jsonObj<{ new_reward: unknown }>(visitResult);
+          if (vr.new_reward) {
             // Schedule modal to appear after page paints
-            setTimeout(() => setShowRewardModal(visitResult.new_reward), 800);
+            setTimeout(() => setShowRewardModal(vr.new_reward as never), 800);
           }
         } catch (e) { /* non-fatal */ }
       }
 
-      // @ts-expect-error rpc type
-      const { data } = await supabaseBrowser.rpc('get_pulse_feed', { p_user_id: userId });
-      setFeed(data as PulseFeed);
+      const { data } = await supabaseBrowser.rpc('get_pulse_feed', { p_user_id: userId ?? undefined });
+      setFeed(data as unknown as PulseFeed);
       setLoading(false);
     })();
   }, []);
@@ -507,10 +509,15 @@ function DailyPicks({ picks, isSignedIn }: { picks: Pick[]; isSignedIn: boolean 
         .order('created_at', { ascending: false })
         .limit(3);
 
-      const fallback: Pick[] = (data || []).map((l: { id: string; title: string; slug: string; city: string | null; photos: { url: string; is_primary: boolean }[] }, i: number) => ({
+      // slug في الداتابيز nullable — النوع هنا كان بيقول string فبيتعارض
+      // مع اللي بيرجع فعلًا. بنستعمل الشكل الحقيقي وبنسقّط الصفوف بدون slug.
+      const fallback: Pick[] = (data || [])
+        // الإعلان من غير slug مالوش لينك يتفتح — نسقّطه بدل ما نعرضه مكسور
+        .filter((l: { slug: string | null }) => !!l.slug)
+        .map((l: { id: string; title: string; slug: string | null; city: string | null; photos: { url: string; is_primary: boolean }[] }, i: number) => ({
         listing_id: l.id,
         title: l.title,
-        slug: l.slug,
+        slug: l.slug as string,
         city: l.city,
         rank: i + 1,
         reason_ar: 'الأحدث على المنصة',

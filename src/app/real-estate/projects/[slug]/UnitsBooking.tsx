@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { jsonObj } from '@/lib/rpc'
 import {
   Grid3X3, Loader2, Lock, CheckCircle2, Clock, MessageCircle, BedDouble, Ruler,
 } from 'lucide-react'
@@ -81,14 +82,16 @@ export default function UnitsBooking({
         p_phone: session.user.user_metadata?.phone || session.user.email || '',
         p_name: session.user.user_metadata?.full_name || null,
       })
-      if (error || !data?.success) {
-        setErr(data?.error === 'not_available' ? 'الوحدة دي اتحجزت لسه — جرب وحدة تانية' : 'حصلت مشكلة، جرب تاني')
+      // hold_unit_48h بترجّع jsonb: { success, error?, held_until? }
+      const r = jsonObj<{ success: boolean; error: string; held_until: string }>(data)
+      if (error || !r.success) {
+        setErr(r.error === 'not_available' ? 'الوحدة دي اتحجزت لسه — جرب وحدة تانية' : 'حصلت مشكلة، جرب تاني')
         setBusy(null)
         return
       }
-      setDone({ ...u, status: 'held', held_until: data.held_until })
+      setDone({ ...u, status: 'held', held_until: r.held_until ?? null })
       setUnits((prev) => prev?.map((x) => x.id === u.id
-        ? { ...x, status: 'held' as const, held_until: data.held_until }
+        ? { ...x, status: 'held' as const, held_until: r.held_until ?? null }
         : x) || null)
     } catch {
       setErr('حصلت مشكلة، جرب تاني')

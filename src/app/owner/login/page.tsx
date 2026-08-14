@@ -7,6 +7,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import { Loader2, ShieldCheck } from 'lucide-react'
 import { safeStorage } from '@/lib/safe-storage'
 import WhatsAppLogin, { WaLoginResult } from '@/components/WhatsAppLogin'
+import { jsonObj } from '@/lib/rpc'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabase = createClient(SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -39,7 +40,8 @@ export default function OwnerLoginPage() {
     setError(''); setSending(true)
     try {
       const { data, error: e } = await supabaseBrowser.rpc('owner_mint_session_from_auth')
-      const ok = !e && data?.success
+      // owner_mint_session_from_auth بترجّع jsonb: { success, error? }
+      const ok = !e && jsonObj<{ success: boolean }>(data).success
       if (!ok) {
         const code = (data as { error?: string } | null)?.error
         setError(

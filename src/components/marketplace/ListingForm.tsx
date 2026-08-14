@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { jsonObj } from '@/lib/rpc'
 import {
   ChevronLeft, ChevronRight, Check, X, Plus, Upload, Trash2, Star,
   Loader2, AlertCircle, Tag, MapPin, DollarSign, Image as ImageIcon,
@@ -280,7 +281,10 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         .select('*')
         .eq('is_active', true)
         .order('display_order', { ascending: true })
-      setCategories(data || [])
+      // الأنواع المولّدة بتوصف أعمدة الجدول كلها بأنواع واسعة (track: string|null)
+      // بينما `Category` هنا بيسمّي القيم الفعلية — قيود CHECK في الداتابيز هي
+      // اللي بتضمن صحتها. الكاست على الحدود بس.
+      setCategories((data || []) as unknown as Category[])
       setLoadingCategories(false)
     }
     load()
@@ -311,19 +315,22 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       setAttributes([])
       return
     }
+    // الحارس فوق بيضمن إنها مش null، بس TS مش بيحافظ على التضييق جوه
+    // الدالة غير المتزامنة — فبنمسك القيمة المتحقق منها في ثابت.
+    const categoryId = form.category_id
     const load = async () => {
       setLoadingAttrs(true)
       const { data } = await supabaseBrowser
         .from('attributes')
         .select('*')
-        .eq('category_id', form.category_id)
+        .eq('category_id', categoryId)
         .order('display_order', { ascending: true })
-      setAttributes(data || [])
+      setAttributes((data || []) as unknown as Attribute[])
 
       if (initialData?.existingAttributes && Object.keys(form.attributeValues).length === 0) {
         const valuesMap: Record<string, any> = {}
         for (const ea of initialData.existingAttributes) {
-          const attr = (data || []).find((a: Attribute) => a.id === ea.attribute_id)
+          const attr = ((data || []) as unknown as Attribute[]).find((a) => a.id === ea.attribute_id)
           if (attr) valuesMap[attr.field_key] = ea.value
         }
         setForm(f => ({ ...f, attributeValues: valuesMap }))
@@ -691,6 +698,14 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       setOtpError('اكتب الكود الـ 6 أرقام')
       return
     }
+    // 🐛 (١٣ أغسطس ٢٠٢٦) مكانش فيه حارس هنا: لو الحالة اتصفّرت (إعادة تحميل
+    // أو رجوع خطوة)، الكود كان بيبعت `null` كـ listing_id للـRPC وبعدين يعمل
+    // `update … .eq('id', null)` — يعني **مفيش صف بيتحدّث** والمستخدم يشوف
+    // نجاح كاذب والإعلان يفضل مش منشور. دلوقتي بيقف برسالة واضحة.
+    if (!otpDraftListingId) {
+      setOtpError('حصلت مشكلة في الجلسة — اقفل وافتح الخطوة تاني')
+      return
+    }
     setOtpVerifying(true)
     try {
       // Call verify_phone_otp RPC — it sets contact_phone + phone_verified_at on the listing
@@ -703,8 +718,10 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         }
       )
       if (verifyErr) throw verifyErr
-      if (!verifyResult || verifyResult.verified !== true) {
-        throw new Error(verifyResult?.error || 'الكود غلط')
+      // بترجّع jsonb: { verified, error? }
+      const vr = jsonObj<{ verified: boolean; error: string }>(verifyResult)
+      if (vr.verified !== true) {
+        throw new Error(vr.error || 'الكود غلط')
       }
       // Now update status to 'published' — trigger will pass
       const { error: pubErr } = await supabaseBrowser

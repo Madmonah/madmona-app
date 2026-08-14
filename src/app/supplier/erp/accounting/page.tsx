@@ -1,6 +1,7 @@
 'use client';
 // Madmona ERP — المحاسبة (شجرة حسابات · قيود · قوائم مالية · استيراد Excel)
 import { supabaseBrowser as supabase } from '@/lib/supabase-browser';
+import { jsonObj } from '@/lib/rpc';
 import { useEffect, useMemo, useState } from 'react';
 // PERF: xlsx (~430KB raw / ~110KB gzipped) is only used by the import flow
 // below, so it is loaded on demand instead of shipping in this page's initial
@@ -46,7 +47,9 @@ export default function ErpAccountingPage() {
     const p = new URLSearchParams(window.location.search).get('supplier');
     if (p) { setSupplierId(p); return; }
     const { data } = await supabase.rpc('my_supplier_links');
-    if (Array.isArray(data) && data[0]?.supplier_id) setSupplierId(data[0].supplier_id);
+    // الدالة بترجّع jsonb، فالعناصر جواها Json مش كائنات مكتوبة.
+    const links = (Array.isArray(data) ? data : []).map(x => jsonObj<{ supplier_id: string }>(x));
+    if (links[0]?.supplier_id) setSupplierId(links[0].supplier_id);
   })(); }, []);
 
   const loadAccounts = async () => {
@@ -60,8 +63,9 @@ export default function ErpAccountingPage() {
 
   const seedCoa = async () => {
     const { data } = await supabase.rpc('erp_seed_default_coa', { p_supplier_id: supplierId });
-    if (data?.ok) { flash('ok', `تم إنشاء ${data.accounts_created} حساب`); loadAccounts(); }
-    else flash('err', data?.error || 'حصل خطأ');
+    const r = jsonObj<{ ok: boolean; error: string; accounts_created: number }>(data);
+    if (r.ok) { flash('ok', `تم إنشاء ${r.accounts_created} حساب`); loadAccounts(); }
+    else flash('err', r.error || 'حصل خطأ');
   };
 
   // ---------- قيد يدوي ----------
@@ -75,9 +79,10 @@ export default function ErpAccountingPage() {
       .map(l => ({ account_id: l.account_id, debit: +l.debit || 0, credit: +l.credit || 0 }));
     const { data } = await supabase.rpc('erp_create_entry', {
       p_supplier_id: supplierId, p_entry_date: entryDate, p_memo: entryMemo, p_lines: payload, p_auto_post: true });
-    if (data?.ok) { flash('ok', `تم ترحيل القيد رقم ${data.entry_no}`);
+    const r = jsonObj<{ ok: boolean; error: string; entry_no: string }>(data);
+    if (r.ok) { flash('ok', `تم ترحيل القيد رقم ${r.entry_no}`);
       setLines([{ account_id: '', debit: '', credit: '' }, { account_id: '', debit: '', credit: '' }]); setEntryMemo(''); }
-    else flash('err', data?.error || 'حصل خطأ');
+    else flash('err', r.error || 'حصل خطأ');
   };
 
   // ---------- التقارير ----------
@@ -139,11 +144,16 @@ export default function ErpAccountingPage() {
           p_supplier_id: supplierId, p_entity_type: impType, p_file_name: impFile,
           p_mapping: mapping, p_rows: chunk,
           p_target: impType === 'mart_products' ? { listing_id: listingId } : {} });
-        if (!sub?.ok) throw new Error(sub?.error || 'فشل رفع الدفعة');
-        batchId = sub.batch_id;
+        const subR = jsonObj<{ ok: boolean; error: string; batch_id: string }>(sub);
+        if (!subR.ok) throw new Error(subR.error || 'فشل رفع الدفعة');
+        // لو `ok` صحيحة فالدالة رجّعت batch_id — نتحقق صراحةً بدل ما نمرر
+        // قيمة فاضية للمعالجة وتفشل برسالة غامضة.
+        if (!subR.batch_id) throw new Error('الرفع نجح بس مرجعش رقم الدفعة');
+        batchId = subR.batch_id;
         const { data: proc } = await supabase.rpc('erp_import_process', { p_batch_id: batchId });
-        if (!proc?.ok) throw new Error(proc?.error || 'فشل المعالجة');
-        total.ok += proc.ok_rows; total.fail += proc.failed_rows;
+        const procR = jsonObj<{ ok: boolean; error: string; ok_rows: number; failed_rows: number }>(proc);
+        if (!procR.ok) throw new Error(procR.error || 'فشل المعالجة');
+        total.ok += procR.ok_rows ?? 0; total.fail += procR.failed_rows ?? 0;
       }
       setImpResult(total);
       if (total.fail > 0 && batchId) {
