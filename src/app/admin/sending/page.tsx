@@ -25,10 +25,21 @@ interface NumberRow {
 }
 interface Waiting { phone: string; name: string | null; campaign: string | null; sent_at: string; mins: number }
 interface Recent { phone: string; name: string | null; campaign: string; status: string; at: string; error: string | null }
+interface Device {
+  id: string; name: string; phone: string | null
+  status: string; connected: boolean; used_by: string[]
+}
+interface Sender {
+  name: string; session: string; source: string
+  device_status: string; connected: boolean; device_phone: string | null
+}
 interface Overview {
   generated_at: string
   channels: Channel[]; numbers: NumberRow[]
   waiting: Waiting[]; recent: Recent[]
+  openwa?: { reachable: boolean; error: string | null }
+  devices?: Device[]
+  senders?: Sender[]
 }
 
 const STATUS_AR: Record<string, string> = {
@@ -134,6 +145,59 @@ export default function SendingPage() {
         {error && (
           <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-xs text-red-700 break-words">{error}</div>
         )}
+
+        {/* ⓪ الأجهزة المتصلة دلوقتي — من OpenWA مباشرة */}
+        <h2 className="text-sm font-black text-gray-700 mb-2">
+          الأجهزة المتصلة دلوقتي
+          <span className="font-normal text-gray-400 text-[11px] mr-2">حي من OpenWA، مش من الداتابيز</span>
+        </h2>
+        {d?.openwa && !d.openwa.reachable && (
+          <div className="mb-3 p-3 rounded-xl bg-red-50 border border-red-100 text-xs text-red-700">
+            ماقدرناش نوصل لـOpenWA: {d.openwa.error || 'سبب غير معروف'}
+          </div>
+        )}
+        <div className="grid gap-2 sm:grid-cols-2 mb-4">
+          {(d?.devices ?? []).map((dev) => (
+            <div key={dev.id} className={`bg-white rounded-2xl border p-3 ${
+              dev.connected ? 'border-emerald-200' : 'border-red-200'
+            }`}>
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-black text-sm text-gray-900 truncate">{dev.name}</p>
+                  {dev.phone && <p className="text-[12px] text-gray-500 font-mono" dir="ltr">+{dev.phone}</p>}
+                </div>
+                <span className={`px-2 py-0.5 rounded-full text-[11px] font-black whitespace-nowrap ${
+                  dev.connected ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'
+                }`}>{dev.connected ? '🟢 متصل' : `🔴 ${dev.status}`}</span>
+              </div>
+              <p className="mt-1.5 text-[11px] text-gray-500">
+                {dev.used_by.length > 0
+                  ? <>بيبعت منه: <b className="text-gray-700">{dev.used_by.join(' · ')}</b></>
+                  : 'مفيش حاجة بتبعت منه'}
+              </p>
+            </div>
+          ))}
+          {(d?.devices ?? []).length === 0 && d?.openwa?.reachable && (
+            <p className="text-xs text-gray-400 col-span-2">مفيش أجهزة مربوطة على OpenWA خالص.</p>
+          )}
+        </div>
+
+        {/* 🔗 اللينك: كل مُرسِل وحالة جهازه */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-6">
+          <p className="font-black text-sm text-gray-900 mb-2">كل مُرسِل بيستخدم أنهي جهاز</p>
+          {(d?.senders ?? []).map((sn, i) => (
+            <div key={i} className="flex items-center justify-between gap-2 py-2 border-t border-gray-50 text-[12px]">
+              <span className="font-bold text-gray-800">{sn.name}</span>
+              <span className="font-mono text-gray-500 truncate" dir="ltr">{sn.session}</span>
+              <span className={`px-2 py-0.5 rounded-full text-[11px] font-black whitespace-nowrap ${
+                sn.connected ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'
+              }`}>{sn.connected ? 'متصل' : sn.device_status}</span>
+            </div>
+          ))}
+          <p className="mt-2 text-[11px] text-gray-500">
+            لو مكتوب «مش موجود على OpenWA» يبقى المُرسِل بيحاول يبعت من جهاز مش مربوط — وكل رسايله هتفشل.
+          </p>
+        </div>
 
         {/* ① القنوات */}
         <h2 className="text-sm font-black text-gray-700 mb-2">القنوات</h2>
