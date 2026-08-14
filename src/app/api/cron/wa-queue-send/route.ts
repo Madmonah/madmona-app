@@ -3,16 +3,39 @@
 //
 // أمان: بيبعت رسالة واحدة في كل تشغيلة كحد أقصى، وبيحترم السقف اليومي،
 // وبيقف فورًا لو المارد مش متصل.
+//
+// 🚦 (١٤ أغسطس ٢٠٢٦ — محمد) البروتوكول المعتمد للإرسال الجماعي بقى مطبَّق
+//    هنا كمان: **مايبعتش رسالة جديدة قبل ما اللي قبلها تتأكد إنها وصلت**.
+//    قبل كده الكرون ده كان بيعلّم `sent` على أساس رد الـAPI بس — يعني رقم
+//    ميت (بيقبل الرسالة ويرميها في الفراغ) كان يفضل يبعت ٢٥ رسالة/يوم
+//    وإحنا فاكرينه شغّال. البوابة نفسها في `@/lib/wa-ack-gate`.
+//
+//    مفاتيح `whatsapp_config`:
+//      queue_send_enabled   : '0' يوقفه · أي حاجة تانية (أو غياب المفتاح) = شغّال
+//      queue_send_halt_note : سبب آخر وقفة (بيتكتب أوتوماتيك)
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { sendText, upsertConversation } from '@/lib/whatsapp'
+import { ackGate } from '@/lib/wa-ack-gate'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
 const MAX_PER_DAY = Number(process.env.WA_MAX_PER_DAY || 25)
 const MAX_PER_RUN = Number(process.env.WA_MAX_PER_RUN || 1)
+// نفس مهلة wa-paced-send — ٩ دقايق قبل ما نعتبر الرسالة متأخرة
+const ACK_WAIT_MS = Number(process.env.WA_QUEUE_ACK_WAIT_MS || 9 * 60 * 1000)
+const QUEUE_SESSION = process.env.WA_CAMPAIGN_SESSION || 'madmona-982'
+
+async function setConfig(key: string, value: string) {
+  await supabaseAdmin.from('whatsapp_config').upsert({ key, value } as never, { onConflict: 'key' })
+}
+
+async function haltQueue(reason: string) {
+  await setConfig('queue_send_enabled', '0')
+  await setConfig('queue_send_halt_note', `${new Date().toISOString()} — ${reason}`)
+}
 
 interface QueueRow {
   id: string
@@ -32,6 +55,19 @@ export async function GET(request: NextRequest) {
   const isManual = process.env.WA_SERVICE_SECRET && secret === process.env.WA_SERVICE_SECRET
   if (!isVercelCron && !isManual) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
+  }
+
+  // ── ٠) مفتاح الإيقاف — بيتكتب أوتوماتيك لو الرقم بطّل يسلّم ─────────
+  //    غياب المفتاح = شغّال (عشان نشرة جديدة ماتوقفش الطابور من غير قصد)
+  {
+    const { data: cfgRow } = await supabaseAdmin
+      .from('whatsapp_config')
+      .select('value')
+      .eq('key', 'queue_send_enabled')
+      .maybeSingle()
+    if ((cfgRow as { value?: string } | null)?.value === '0') {
+      return NextResponse.json({ ok: true, skipped: 'الطابور موقوف (queue_send_enabled=0)' })
+    }
   }
 
   // ── ١) المارد متصل؟ لو لأ منبعتش خالص ────────────────────────────────
@@ -82,6 +118,27 @@ export async function GET(request: NextRequest) {
   //    وبوابة تأكيد تسليم. الكرون ده كان بيخطف صفوفها ويبعتها 1/دقيقة من 982 —
   //    يعني بيكسر الإيقاع والبوابة الاتنين، و15 رسالة فشلت كده لما 982 فصل.
   const PACED_CAMPAIGNS = ['paced_20260806']
+
+  // ── ٣.٥) 🚦 بوابة تأكيد الوصول — البروتوكول المعتمد ──────────────────
+  //    مايتبعتش رسالة جديدة قبل ما اللي قبلها يجيلها إيصال من OpenWA.
+  //    بنقيس على نفس نطاق الكرون ده (كل الحملات ما عدا اللي ليها مُرسِل
+  //    متخصص) وعلى جلسة الإرسال بتاعته لوحدها.
+  const gate = await ackGate({
+    session: QUEUE_SESSION,
+    ackWaitMs: ACK_WAIT_MS,
+    excludeCampaigns: PACED_CAMPAIGNS,
+    onHalt: haltQueue,
+  })
+  if (!gate.proceed) {
+    return NextResponse.json({
+      ok: !gate.halted,
+      sent: 0,
+      halted: gate.halted || undefined,
+      skipped: gate.reason,
+      waiting: gate.waiting,
+      waited_sec: gate.waited_sec,
+    }, gate.halted ? { status: 200 } : undefined)
+  }
 
   const { data: dueRaw, error: dueErr } = await supabaseAdmin
     .from('whatsapp_campaign_messages')
