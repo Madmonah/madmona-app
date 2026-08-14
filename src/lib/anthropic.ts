@@ -162,6 +162,45 @@ export function parseJsonResponse<T = unknown>(text: string): T {
     }
   } catch {}
 
+  // Repair strategy 5: قصّ آخر عنصر **ناقص** وأقفل من عند آخر عنصر كامل
+  //
+  // 🐞 (١٤ أغسطس ٢٠٢٦) دي اللي كانت ناقصة وخلّت `generate-tasks` يقع كل يوم.
+  //    لما الرد يتقطع في نص **مفتاح** (مثال حقيقي: `…{"tit`) استراتيجية ٣
+  //    بتقفل الستring فيطلع `{"tit"}` — JSON باطل. واستراتيجية ٤ بتدوّر على
+  //    عمق صفر وهو عمره ما بيوصله في رد مقطوع، فبترجع بلا نتيجة.
+  //    الحل: نرجع لآخر قوس **قافل فعلًا** جوه الشجرة (يعني آخر مهمة كاملة)،
+  //    نقص اللي بعده، ونقفل الباقي. بنخسر آخر عنصر ناقص بس — مش الرد كله.
+  try {
+    const s = cleaned
+      .replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')
+      .replace(/:\s*'([^'\\]*(\\.[^'\\]*)*)'/g, ': "$1"')
+    const stack: string[] = []
+    let inString = false
+    let escape = false
+    let lastComplete = -1
+    let stackAtLastComplete: string[] = []
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i]
+      if (escape) { escape = false; continue }
+      if (c === '\\') { escape = true; continue }
+      if (c === '"') { inString = !inString; continue }
+      if (inString) continue
+      if (c === '{') stack.push('}')
+      else if (c === '[') stack.push(']')
+      else if (c === '}' || c === ']') {
+        stack.pop()
+        // بنسجّل بس الأقواس اللي **جوه** الشجرة — لو رجعنا لعمق صفر يبقى
+        // الرد أصلًا كامل والمحاولات اللي فوق كانت هتنجح.
+        if (stack.length > 0) { lastComplete = i; stackAtLastComplete = [...stack] }
+      }
+    }
+    if (lastComplete > 0) {
+      let t = s.slice(0, lastComplete + 1).replace(/,\s*$/, '')
+      while (stackAtLastComplete.length > 0) t += stackAtLastComplete.pop()
+      return JSON.parse(t) as T
+    }
+  } catch {}
+
   throw new Error(
     `Failed to parse Claude response as JSON after all repair attempts.\n\nFirst 500 chars:\n${text.slice(0, 500)}\n\nLast 200 chars:\n${text.slice(-200)}`
   )

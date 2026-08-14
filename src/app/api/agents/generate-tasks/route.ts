@@ -102,7 +102,10 @@ async function generateForSupplier(supplierId: string, force: boolean) {
   // ⚠️ `parseJsonResponse` عندها إصلاحات للنص المقطوع، بس آخر إستراتيجية
   //    بتدوّر على **كائن أعلى مستوى مكتمل** — وده مابيحصلش أبدًا في رد
   //    مقطوع، فبتفشل. عشان كده بنمنع القطع من أصله.
-  const ROLES_PER_CALL = 8
+  // 🐞 (١٤ أغسطس ٢٠٢٦) كان ٨ أدوار × ٦ مهام في ٤٠٠٠ توكن — والرد بيتقطع
+  //    في نص مهمة كل يوم (تشغيلة ١٤ أغسطس وقعت عند `{"tit`). العربي غالي
+  //    بالتوكن، فنزّلنا الدفعة لـ٤ ورفعنا السقف لـ٨٠٠٠: هامش ×٤ تقريبًا.
+  const ROLES_PER_CALL = 4
   const roleChunks: Array<typeof roles> = []
   for (let i = 0; i < roles.length; i += ROLES_PER_CALL) {
     roleChunks.push(roles.slice(i, i + ROLES_PER_CALL))
@@ -125,7 +128,7 @@ ${chunk.map((r) => `- ${r.role_ar} (${r.count})`).join('\n')}
       const claudeText = await callClaude({
         systemPrompt: TASK_GENERATOR_PROMPT,
         userMessage,
-        maxTokens: 4000,
+        maxTokens: 8000,
         temperature: 0.6,
       })
       const parsed = parseJsonResponse<GenOutput>(claudeText)
@@ -164,6 +167,10 @@ ${chunk.map((r) => `- ${r.role_ar} (${r.count})`).join('\n')}
     for (const t of (tasks ?? []).slice(0, 6)) {
       const title = (t?.title_ar || '').trim()
       if (!title) continue
+      // 🛡️ مهمة اتقطعت في نصّها: `parseJsonResponse` بينقذ اللي قبلها لكن
+      //    الأخيرة بتطلع بعنوان مبتور من غير باقي المفاتيح. بنرميها بدل
+      //    ما الموظف يشوف «مراجعة الفوات» في قايمته.
+      if (t.priority === undefined && t.due_time === undefined) continue
       const key = `${roleAr}|${title}`
       if (seenPool.has(key)) continue
       seenPool.add(key)
