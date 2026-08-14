@@ -53,8 +53,35 @@ async function generateForSupplier(supplierId: string, force: boolean) {
     .select('id, full_name, role, role_ar, branch_id')
     .eq('supplier_id', supplierId)
     .eq('status', 'active')
-  const employees = (emps ?? []) as EmpRow[]
+  let employees = (emps ?? []) as EmpRow[]
   if (employees.length === 0) return { supplier_id: supplierId, skipped: 'no_employees', tasks_created: 0 }
+
+  // 🧹 (١٤ أغسطس ٢٠٢٦ — محمد) بلاش نولّد مهام لفروع محدش بصم فيها **ولا مرة**.
+  //    الأرقام اللي كشفت ده: ٢٨٬١٦٩ مهمة اتولدت، ٥٦ بس اتعملت (٠٫٢٪)،
+  //    و٢٥٬٢٨٧ اتساب. وفي فروع زي «بوليكلينك مضمونة (نموذج)» و«مضمونة ماركت»
+  //    و«DRA» بتاخد مهام كل يوم و`attendance_logs` بتاعتها **فاضية تمامًا**
+  //    — يعني بنولّد شغل لناس مش موجودة.
+  //    الفرع اللي فيه بصمة واحدة على الأقل بيفضل يتولّدله عادي.
+  const branchIds = Array.from(new Set(employees.map((e) => e.branch_id).filter(Boolean))) as string[]
+  if (branchIds.length > 0) {
+    const { data: seen } = await supabaseAdmin
+      .from('attendance_logs')
+      .select('branch_id')
+      .in('branch_id', branchIds)
+      .limit(1000)
+    const liveBranches = new Set((seen ?? []).map((r) => (r as { branch_id: string }).branch_id))
+    const before = employees.length
+    // موظف من غير فرع بيفضل — مش كل الأنشطة ليها فروع
+    employees = employees.filter((e) => !e.branch_id || liveBranches.has(e.branch_id))
+    if (employees.length === 0) {
+      return {
+        supplier_id: supplierId,
+        skipped: 'no_branch_ever_used_attendance',
+        employees_skipped: before,
+        tasks_created: 0,
+      }
+    }
+  }
 
   const today = new Date().toISOString().slice(0, 10)
   const empIds = employees.map((e) => e.id)
