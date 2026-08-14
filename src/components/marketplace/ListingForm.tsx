@@ -608,7 +608,12 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       }
     }
     if (valuesToInsert.length > 0) {
-      await supabaseBrowser.from('listing_values').insert(valuesToInsert)
+      // 🐛 (١٤ أغسطس ٢٠٢٦) الفشل هنا كان **بيتبلع**: الـdelete فوق بيمسح
+      // القديم، وبعدين لو الـinsert فشل الإعلان بيفضل من غير مواصفات ولا
+      // أسعار — والمورد يشوف «تم الحفظ». `handleSubmit` كان بيفحص الأخطاء
+      // دي فعلًا، والمسار ده (نشر بعد OTP) لأ. بقوا متساويين.
+      const { error: valuesErr } = await supabaseBrowser.from('listing_values').insert(valuesToInsert)
+      if (valuesErr) throw valuesErr
     }
 
     // Save pricing rules
@@ -631,7 +636,10 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         return row
       })
     if (pricingToInsert.length > 0) {
-      await supabaseBrowser.from('pricing_rules').insert(pricingToInsert)
+      // نفس الحكاية: الأسعار بتتمسح الأول، فلو الإضافة فشلت الإعلان بيتنشر
+      // **من غير سعر خالص** والمورد مش عارف.
+      const { error: pricingErr } = await supabaseBrowser.from('pricing_rules').insert(pricingToInsert)
+      if (pricingErr) throw pricingErr
     }
 
     return listingId
