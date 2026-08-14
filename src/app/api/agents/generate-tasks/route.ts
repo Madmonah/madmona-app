@@ -14,7 +14,12 @@ import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { TASK_GENERATOR_PROMPT } from '@/lib/agent-prompts/task-generator'
 
 export const runtime = 'nodejs'
-export const maxDuration = 60
+// 🐞 (١٤ أغسطس ٢٠٢٦) كان 60 ثانية. الوكيل بيلف على **كل مورد** بنداء كلود
+// منفصل (51 مورد دلوقتي وبيزيدوا)، فمن ٧ أغسطس بقى بيتقتل في النص:
+// المهام بتتعمل فعلًا (232 مهمة كل يوم الساعة 04:02) بس التشغيلة بتفضل
+// عالقة على `started` — لا success ولا error. يعني المراقبة بتقول إن
+// الوكيل «واقف من ٦ أيام» وهو شغال — ولو وقف فعلًا مش هنعرف الفرق.
+export const maxDuration = 300
 
 type Priority = 'low' | 'medium' | 'high'
 interface GenTask { title_ar: string; priority: Priority; due_time: string | null }
@@ -183,9 +188,16 @@ async function runAgent(opts: { supplierId?: string; force?: boolean }) {
       )
     }
 
+    // ⏱️ ميزانية وقت: بنوقف قبل الحد الأقصى بهامش عشان **نلحق نسجّل النتيجة**.
+    // من غير ده الدالة بتتقتل جوه اللوب والتشغيلة تفضل عالقة على `started`
+    // للأبد — وده بالظبط اللي كان بيحصل. الباقي بيتعمل في تشغيلة بكرة
+    // (الحارس `already_generated_today` بيمنع التكرار للي اتعمل).
+    const TIME_BUDGET_MS = 240_000
     const results = []
     let totalCreated = 0
-    for (const sid of supplierIds) {
+    let timedOutAfter: number | null = null
+    for (const [i, sid] of supplierIds.entries()) {
+      if (Date.now() - runStart > TIME_BUDGET_MS) { timedOutAfter = i; break }
       const res = await generateForSupplier(sid, opts.force ?? Boolean(opts.supplierId))
       results.push(res)
       totalCreated += res.tasks_created ?? 0
@@ -198,11 +210,27 @@ async function runAgent(opts: { supplierId?: string; force?: boolean }) {
           status: 'success',
           finished_at: new Date().toISOString(),
           duration_ms: Date.now() - runStart,
-          output_summary: { suppliers: supplierIds.length, tasks_created: totalCreated, results },
+          output_summary: {
+            suppliers: supplierIds.length,
+            processed: results.length,
+            tasks_created: totalCreated,
+            // لو الميزانية خلصت بنقول ده صراحةً بدل ما نسجّل «نجاح» كامل
+            // على شغل ناقص — الباقي بيتعمل بكرة.
+            ...(timedOutAfter !== null
+              ? { partial: true, stopped_at_supplier_index: timedOutAfter,
+                  remaining: supplierIds.length - results.length }
+              : {}),
+            results,
+          },
         } as never)
         .eq('id', runId)
     }
-    return { success: true, suppliers: supplierIds.length, tasks_created: totalCreated, results }
+    return {
+      success: true, suppliers: supplierIds.length, processed: results.length,
+      tasks_created: totalCreated,
+      ...(timedOutAfter !== null ? { partial: true, remaining: supplierIds.length - results.length } : {}),
+      results,
+    }
   } catch (err) {
     const error = err as Error
     if (runId) {
