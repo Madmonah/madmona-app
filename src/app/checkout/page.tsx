@@ -87,9 +87,36 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null)
 
   const subtotal = cartSubtotal(cart)
-  // Delivery fee: TBD - placeholder 0 for MVP. Supplier-set delivery fees
-  // will be added later via supplier dashboard config.
-  const deliveryFee = 0
+
+  // 🛵 (١٤ أغسطس ٢٠٢٦ — محمد) سعر التوصيل. كان `const deliveryFee = 0`
+  //    مكتوب في الكود ومعاه تعليق "MVP placeholder"، يعني **كل** أوردر كان
+  //    توصيل مجاني — رغم إن `delivery_fee` مربوط صح في كل حتة بعد كده
+  //    (صفحة المورد · الأدمن · الـintegrations · عروض الأسعار).
+  //    دلوقتي بييجي من get_delivery_fee(supplier, subtotal): سعر المورد،
+  //    وإلا الافتراضي من site_settings.default_delivery_fee، ومجانًا لو
+  //    الأوردر عدّى free_delivery_over.
+  const [deliveryFee, setDeliveryFee] = useState(0)
+  const [freeOver, setFreeOver] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!cart.supplier_id) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const rpc = supabaseBrowser.rpc as unknown as
+          (fn: string, a: Record<string, unknown>) => Promise<{ data: unknown }>
+        const { data } = await rpc('get_delivery_fee', {
+          p_supplier_id: cart.supplier_id, p_subtotal: subtotal,
+        })
+        if (cancelled) return
+        const d = data as { fee?: number; free_over?: number | null } | null
+        setDeliveryFee(Number(d?.fee ?? 0))
+        setFreeOver(d?.free_over ?? null)
+      } catch { /* لو فشل، التوصيل يفضل صفر — مانوقفش الأوردر */ }
+    })()
+    return () => { cancelled = true }
+  }, [cart.supplier_id, subtotal])
+
   const total = subtotal + deliveryFee
 
   // If wallet becomes unavailable or insufficient for the total, fall back to instapay.
@@ -345,7 +372,9 @@ export default function CheckoutPage() {
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">التوصيل</span>
               <span className="font-bold tabular text-gray-500">
-                {deliveryFee === 0 ? 'يتحدد لاحقًا' : `${deliveryFee.toLocaleString('ar-EG')} ج.م`}
+                {deliveryFee === 0
+                  ? (freeOver !== null && subtotal >= freeOver ? 'مجانًا 🎉' : 'مجانًا')
+                  : `${Number(deliveryFee).toLocaleString('ar-EG')} ج.م`}
               </span>
             </div>
             <div className="flex justify-between pt-2 border-t border-gray-100">
