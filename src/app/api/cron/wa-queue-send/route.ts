@@ -31,7 +31,28 @@ const ACK_WAIT_MS = Number(process.env.WA_QUEUE_ACK_WAIT_MS || 9 * 60 * 1000)
 //    التحقق = الصف لسه `sent` ومفيهوش `delivered_at` ولا `read_at`.
 const RETRY_AFTER_MS = Number(process.env.WA_RETRY_AFTER_MS || 3 * 60 * 1000)
 const MAX_ATTEMPTS = Number(process.env.WA_MAX_ATTEMPTS || 3)
-const QUEUE_SESSION = process.env.WA_CAMPAIGN_SESSION || 'madmona-982'
+// 🔀 (١٥ أغسطس ٢٠٢٦) الجلسة بقت تتقري من `whatsapp_config.queue_send_session`
+//    الأول، وبعدين متغيّر البيئة، وبعدين الافتراضي. السبب: تغيير الرقم
+//    اللي بنبعت منه كان محتاج ديبلوي على Vercel — دلوقتي سطر SQL واحد،
+//    زي `paced_send_session` بالظبط.
+//
+//    ليه ده مهم: اختبار ١٥ أغسطس فشل بـ«Session is not connected» من
+//    `madmona-982`، وطلع إن `madmona-337` (+201026222337) بيسلّم ٩٥٪
+//    مقابل ١٥٪ للـ982. من غير ده كنا هنستنى ديبلوي عشان نوجّه الإرسال.
+const QUEUE_SESSION_FALLBACK = process.env.WA_CAMPAIGN_SESSION || 'madmona-982'
+
+async function resolveSession(): Promise<string> {
+  try {
+    const { data } = await supabaseAdmin
+      .from('whatsapp_config')
+      .select('value')
+      .eq('key', 'queue_send_session')
+      .maybeSingle()
+    const v = (data as { value?: string } | null)?.value?.trim()
+    if (v) return v
+  } catch { /* لو القراية فشلت بنكمّل بالافتراضي */ }
+  return QUEUE_SESSION_FALLBACK
+}
 
 async function setConfig(key: string, value: string) {
   await supabaseAdmin.from('whatsapp_config').upsert({ key, value } as never, { onConflict: 'key' })
@@ -194,6 +215,7 @@ export async function GET(request: NextRequest) {
   //    مايتبعتش رسالة جديدة قبل ما اللي قبلها يجيلها إيصال من OpenWA.
   //    بنقيس على نفس نطاق الكرون ده (كل الحملات ما عدا اللي ليها مُرسِل
   //    متخصص) وعلى جلسة الإرسال بتاعته لوحدها.
+  const QUEUE_SESSION = await resolveSession()
   const gate = await ackGate({
     session: QUEUE_SESSION,
     ackWaitMs: ACK_WAIT_MS,
@@ -301,7 +323,9 @@ export async function GET(request: NextRequest) {
       aiGenerated: false,
       // 🔧 (5 Aug 2026) من غير session بيقع على جسر Baileys الميت ويرجع 404
       // (المصيدة المسجلة في الذاكرة) — لازم نحدد جلسة OpenWA صراحةً
-      session: process.env.WA_CAMPAIGN_SESSION || 'madmona-982',
+      // (١٥ أغسطس) نفس الجلسة اللي البوابة قاستها — مش قراية تانية للـenv،
+      // عشان مايحصلش إن البوابة تقيس رقم والإرسال يطلع من رقم تاني.
+      session: QUEUE_SESSION,
     })
 
     await supabaseAdmin
@@ -322,6 +346,7 @@ export async function GET(request: NextRequest) {
     sent: results.filter((r) => r.ok).length,
     failed: results.filter((r) => !r.ok).length,
     ...(retried.length > 0 ? { retried } : {}),
+    session: QUEUE_SESSION,
     sent_today: sentToday + results.filter((r) => r.ok).length,
     daily_cap: MAX_PER_DAY,
     results,
