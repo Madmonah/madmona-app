@@ -42,12 +42,18 @@ export default function CheckoutPage() {
   // Wallet (authenticated users only): balance + access token for /api/wallet/pay-order
   const [walletBalance, setWalletBalance] = useState<number | null>(null)
   const [accessToken, setAccessToken] = useState<string>('')
-  // COD (cash on delivery) is offered for restaurant (food) orders only.
-  const codAllowed = cart.order_type === 'food'
+  // 💵 (١٤ أغسطس ٢٠٢٦ — محمد) الكاش عند الاستلام بقى **متاح على كل الأقسام**
+  //    كأوبشن، مش للمطاعم بس. السبب مش تفضيل — ده اللي بيخلّي الأوردر يمشي:
+  //    في create_order/create_guest_order، الكاش بيدخل الأوردر بحالة `paid`
+  //    فورًا ويروح لطابور المورد، أما InstaPay بيسيبه `pending_payment`
+  //    مستني تحويل يدوي. كل الـ٦ أوردرات القديمة واقفة على `pending_payment`
+  //    من ٤ يونيو عشان كده بالظبط.
+  const codAllowed = true
+  const isFoodOrder = cart.order_type === 'food'
   // ⚠️ مؤقتًا (قرار محمد 6 يوليو 2026): أوردرات المطاعم = كاش عند الاستلام فقط.
   // للرجوع: خلي FOOD_COD_ONLY = false ويرجع InstaPay/المحفظة للأكل عادي.
   const FOOD_COD_ONLY = true
-  const foodCodOnly = FOOD_COD_ONLY && codAllowed
+  const foodCodOnly = FOOD_COD_ONLY && isFoodOrder
   // Safety: if cart type changes away from food, force back to instapay.
   useEffect(() => {
     if (!codAllowed && payment === 'cod') setPayment('instapay')
@@ -59,6 +65,23 @@ export default function CheckoutPage() {
 
   // «شير واكسب»: استخدام رصيد المحفظة كخصم (بحد أقصى عمولة الأوردر) — للمسجلين
   const [useCredit, setUseCredit] = useState(true)
+
+  // 📍 (١٤ أغسطس ٢٠٢٦ — محمد) لوكيشن التوصيل. الأعمدة (delivery_lat/lng)
+  //    موجودة في الجدول من الأول بس مكانش في حاجة بتملاها — المندوب كان
+  //    بياخد عنوان مكتوب وبس. بيتبعت بعد إنشاء الأوردر عن طريق
+  //    set_order_location (محمية بالـreference_code).
+  const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null)
+  const [geoState, setGeoState] = useState<'idle' | 'loading' | 'denied' | 'unsupported'>('idle')
+
+  function shareLocation() {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) { setGeoState('unsupported'); return }
+    setGeoState('loading')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { setGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setGeoState('idle') },
+      () => setGeoState('denied'),
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 },
+    )
+  }
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -200,6 +223,17 @@ export default function CheckoutPage() {
         clearCart()
         setError('الأوردر اتسجّل بس حصلت مشكلة في التأكيد — شوف «أوردراتي» أو كلّمنا على واتساب. متعملش الأوردر تاني.')
         return
+      }
+
+      // 📍 اللوكيشن (لو العميل شاركه) — بعد ما الأوردر يتعمل ونبقى معانا
+      //    الـreference_code. فشلها مايوقفش الأوردر بأي حال.
+      if (geo) {
+        try {
+          await (supabaseBrowser.rpc as unknown as (fn: string, a: Record<string, unknown>) => Promise<unknown>)(
+            'set_order_location',
+            { p_order_id: result.order_id, p_reference_code: result.reference_code, p_lat: geo.lat, p_lng: geo.lng },
+          )
+        } catch { /* اللوكيشن إضافة، مش شرط */ }
       }
 
       // Wallet payment: charge the order from the wallet (atomic, server-side).
@@ -396,6 +430,36 @@ export default function CheckoutPage() {
                 className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#059669] focus:ring-2 focus:ring-[#059669]/20 outline-none transition-all text-sm font-medium resize-none"
               />
             </div>
+
+            {/* 📍 شارك موقعك — بيتسجّل مع الأوردر عشان المندوب يوصل بالظبط */}
+            <button
+              type="button"
+              onClick={shareLocation}
+              disabled={geoState === 'loading'}
+              className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border-2 text-right transition-all ${
+                geo ? 'border-[#059669] bg-[#34D399]/5' : 'border-dashed border-gray-300 bg-white hover:border-gray-400'
+              }`}
+            >
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                geo ? 'bg-[#34D399] text-[#04352A]' : 'bg-gray-100 text-gray-500'
+              }`}>
+                <MapPin className="w-4 h-4" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-sm text-gray-900">
+                  {geo ? 'موقعك اتسجّل ✓' : 'شارك موقعك (اختياري)'}
+                </p>
+                <p className="text-[11px] text-gray-500">
+                  {geoState === 'loading' ? 'بنحدد موقعك…'
+                    : geoState === 'denied' ? 'مسمحتش للمتصفح — اكتب العنوان بالتفصيل وهنوصلك'
+                    : geoState === 'unsupported' ? 'متصفحك مش بيدعم تحديد الموقع'
+                    : geo ? 'المندوب هيلاقيك على الخريطة'
+                    : 'بيوصل المندوب أسرع وأدق'}
+                </p>
+              </div>
+              {geo && <CheckCircle className="w-5 h-5 text-[#059669] flex-shrink-0" />}
+            </button>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-gray-600 mb-1.5">المدينة</label>
@@ -492,7 +556,7 @@ export default function CheckoutPage() {
             </button>
             )}
 
-            {/* Cash on delivery — restaurants only */}
+            {/* كاش عند الاستلام — متاح على كل الأقسام */}
             {codAllowed && (
               <button
                 type="button"
@@ -509,7 +573,7 @@ export default function CheckoutPage() {
                 <div className="flex-1">
                   <p className="font-bold text-sm text-gray-900">كاش عند الاستلام</p>
                   <p className="text-[11px] text-gray-500">
-                    {foodCodOnly ? 'ادفع كاش وقت ما يوصلك الأوردر — الدفع الأونلاين للمطاعم راجع قريبًا' : 'ادفع كاش للمندوب وقت ما يوصلك الأوردر — للمطاعم بس'}
+                    {foodCodOnly ? 'ادفع كاش وقت ما يوصلك الأوردر — الدفع الأونلاين للمطاعم راجع قريبًا' : 'ادفع كاش للمندوب وقت ما يوصلك الأوردر'}
                   </p>
                 </div>
                 {payment === 'cod' && <CheckCircle className="w-5 h-5 text-[#059669] flex-shrink-0" />}
