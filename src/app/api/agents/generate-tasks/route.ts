@@ -88,25 +88,67 @@ async function generateForSupplier(supplierId: string, force: boolean) {
   }
   const roles = Array.from(roleSet.entries()).map(([role_ar, count]) => ({ role_ar, count }))
 
-  const userMessage = `النشاط: ${supplier.business_name}${supplier.industry ? ` (${supplier.industry})` : ''}
+  // 🐞 (١٤ أغسطس ٢٠٢٦) **الرد كان بيتقطع فيموت التوليد كله.**
+  //
+  // كان نداء واحد لكل مورد بكل أدواره و`maxTokens: 3500`. ده اشتغل مع
+  // الموردين الصغيرين (٦ أدوار وأقل)، لكن `Elite Beauty Salon & Spa`
+  // عنده **٣٠ دور / ٨٦ موظف**: ٣٠ دور × ٦ مهام بالعربي بتعدّي السقف
+  // بكتير، فرد كلود بيتقطع في النص و`parseJsonResponse` بترمي
+  // «Failed to parse … after all repair attempts» (حصل ٨ و١٤ أغسطس).
+  //
+  // ورفع السقف لوحده **مش حل**: العدد بيكبر مع كل موظف جديد فالمشكلة
+  // هترجع. الحل إننا نقسّم الأدوار على نداءات صغيرة مضمونة الحجم.
+  //
+  // ⚠️ `parseJsonResponse` عندها إصلاحات للنص المقطوع، بس آخر إستراتيجية
+  //    بتدوّر على **كائن أعلى مستوى مكتمل** — وده مابيحصلش أبدًا في رد
+  //    مقطوع، فبتفشل. عشان كده بنمنع القطع من أصله.
+  const ROLES_PER_CALL = 8
+  const roleChunks: Array<typeof roles> = []
+  for (let i = 0; i < roles.length; i += ROLES_PER_CALL) {
+    roleChunks.push(roles.slice(i, i + ROLES_PER_CALL))
+  }
+
+  const roleTasks = new Map<string, GenTask[]>()
+  let failedChunks = 0
+  for (const chunk of roleChunks) {
+    const userMessage = `النشاط: ${supplier.business_name}${supplier.industry ? ` (${supplier.industry})` : ''}
 التاريخ: ${today}
 
 الأدوار في الفرع وعدد الموظفين في كل دور:
-${roles.map((r) => `- ${r.role_ar} (${r.count})`).join('\n')}
+${chunk.map((r) => `- ${r.role_ar} (${r.count})`).join('\n')}
 
 اعملي قائمة مهام يومية تشغيلية لكل دور من دول.`
 
-  const claudeText = await callClaude({
-    systemPrompt: TASK_GENERATOR_PROMPT,
-    userMessage,
-    maxTokens: 3500,
-    temperature: 0.6,
-  })
-  const parsed = parseJsonResponse<GenOutput>(claudeText)
+    // 🛡️ كل دفعة معزولة: لو واحدة فشلت الباقي بيكمّل، بدل ما المورد كله
+    //    يضيع — وقبل كده كان المورد الواحد بيوقّع التشغيلة كلها.
+    try {
+      const claudeText = await callClaude({
+        systemPrompt: TASK_GENERATOR_PROMPT,
+        userMessage,
+        maxTokens: 4000,
+        temperature: 0.6,
+      })
+      const parsed = parseJsonResponse<GenOutput>(claudeText)
+      for (const rt of parsed.roles ?? []) {
+        if (rt && rt.role_ar && Array.isArray(rt.tasks)) roleTasks.set(rt.role_ar.trim(), rt.tasks)
+      }
+    } catch (err) {
+      failedChunks++
+      console.error(
+        `[generate-tasks] دفعة أدوار فشلت — ${supplier.business_name}:`,
+        (err as Error).message,
+      )
+    }
+  }
 
-  const roleTasks = new Map<string, GenTask[]>()
-  for (const rt of parsed.roles ?? []) {
-    if (rt && rt.role_ar && Array.isArray(rt.tasks)) roleTasks.set(rt.role_ar.trim(), rt.tasks)
+  if (roleTasks.size === 0) {
+    return {
+      supplier_id: supplierId,
+      business_name: supplier.business_name,
+      skipped: 'all_role_chunks_failed',
+      failed_chunks: failedChunks,
+      tasks_created: 0,
+    }
   }
 
   // Existing titles today (dedupe) — one query
@@ -162,6 +204,9 @@ ${roles.map((r) => `- ${r.role_ar} (${r.count})`).join('\n')}
     roles: roles.length,
     employees: employees.length,
     tasks_created: created,
+    // بنطلّع الدفعات الفاشلة صراحةً — نجاح جزئي لازم يبان في التقرير
+    // مش يعدّي كأنه نجاح كامل.
+    ...(failedChunks > 0 ? { failed_chunks: failedChunks, role_chunks: roleChunks.length } : {}),
   }
 }
 
@@ -196,11 +241,23 @@ async function runAgent(opts: { supplierId?: string; force?: boolean }) {
     const results = []
     let totalCreated = 0
     let timedOutAfter: number | null = null
+    const failedSuppliers: Array<{ supplier_id: string; error: string }> = []
     for (const [i, sid] of supplierIds.entries()) {
       if (Date.now() - runStart > TIME_BUDGET_MS) { timedOutAfter = i; break }
-      const res = await generateForSupplier(sid, opts.force ?? Boolean(opts.supplierId))
-      results.push(res)
-      totalCreated += res.tasks_created ?? 0
+      // 🛡️ (١٤ أغسطس ٢٠٢٦) **عزل كل مورد.**
+      // قبل كده أي استثناء من `generateForSupplier` كان بيطلع لبرّه اللوب
+      // ويقتل التشغيلة كلها. يوم ١٤ أغسطس مورد واحد (Elite Beauty) رد كلود
+      // بتاعه اتقطع → التشغيلة ماتت → **٥١ مورد كلهم بصفر مهام**
+      // (fixed=787 صح، variable=0). مورد باظ لازم يتسجّل والباقي يكمّل.
+      try {
+        const res = await generateForSupplier(sid, opts.force ?? Boolean(opts.supplierId))
+        results.push(res)
+        totalCreated += res.tasks_created ?? 0
+      } catch (err) {
+        const msg = (err as Error).message
+        failedSuppliers.push({ supplier_id: sid, error: msg.slice(0, 300) })
+        console.error(`[generate-tasks] مورد فشل (بنكمّل) ${sid}:`, msg)
+      }
     }
 
     if (runId) {
@@ -214,6 +271,11 @@ async function runAgent(opts: { supplierId?: string; force?: boolean }) {
             suppliers: supplierIds.length,
             processed: results.length,
             tasks_created: totalCreated,
+            // ⚠️ الموردين الفاشلين لازم يبانوا في التقرير — من غير كده
+            //    «success» بيغطّي على شغل ناقص في صمت.
+            ...(failedSuppliers.length > 0
+              ? { failed_suppliers: failedSuppliers.length, failures: failedSuppliers.slice(0, 10) }
+              : {}),
             // لو الميزانية خلصت بنقول ده صراحةً بدل ما نسجّل «نجاح» كامل
             // على شغل ناقص — الباقي بيتعمل بكرة.
             ...(timedOutAfter !== null
@@ -228,6 +290,7 @@ async function runAgent(opts: { supplierId?: string; force?: boolean }) {
     return {
       success: true, suppliers: supplierIds.length, processed: results.length,
       tasks_created: totalCreated,
+      ...(failedSuppliers.length > 0 ? { failed_suppliers: failedSuppliers.length } : {}),
       ...(timedOutAfter !== null ? { partial: true, remaining: supplierIds.length - results.length } : {}),
       results,
     }
