@@ -37,12 +37,16 @@ type Category = {
   group_display_order?: number | null
 }
 
-type VKey = 'products' | 'rentals' | 'services'
+type VKey = 'products' | 'rentals' | 'services' | 'restaurants'
 
 const VERTICALS: { key: VKey; ar: string; en: string; emoji: string; tracks: string[]; tone: string; accent: string }[] = [
   { key: 'products',    ar: 'بيع',        en: 'Buy',         emoji: '🏷️', tracks: ['products', 'sales'],   tone: 'from-[#2C5F8D] to-[#5B9BD5]', accent: '#3D7BB6' },
   { key: 'rentals',     ar: 'إيجار',      en: 'Rent',        emoji: '🔑', tracks: ['rentals', 'hybrid'],   tone: 'from-[#34D399] to-[#2FA084]', accent: '#059669' },
   { key: 'services',    ar: 'خدمات',      en: 'Services',    emoji: '🛠️', tracks: ['services'],            tone: 'from-[#8A6A0F] to-[#D4A017]', accent: '#2B4521' },
+  // 🍽️ (١٤ أغسطس ٢٠٢٦ — محمد) رجوع المطاعم. الـ track ده كان موجود في
+  //    الداتابيز طول الوقت (١٣ تصنيف · ٢٦ مطعم منشور · ١٬٥٨٤ صنف منيو)،
+  //    بس التصنيفات كانت is_active=false فمكانش ليه تاب هنا.
+  { key: 'restaurants', ar: 'مطاعم',      en: 'Restaurants', emoji: '🍽️', tracks: ['restaurants'],         tone: 'from-[#7C2D12] to-[#EA9A3E]', accent: '#9A3412' },
 ]
 
 // (11 أغسطس 2026) قسم «بورصة مضمونة العقارية» مش فئة داتا بيز — كارت ثابت
@@ -78,6 +82,7 @@ function trackToVkey(track: string | null): VKey {
   switch (track) {
     case 'rentals': case 'hybrid': return 'rentals'
     case 'services': return 'services'
+    case 'restaurants': return 'restaurants'
     default: return 'products'
   }
 }
