@@ -364,12 +364,12 @@ export default function BookingPage() {
           p_end_at: endIso,
           p_guest_name: guestName.trim(),
           p_guest_phone: guestPhone.replace(/\D/g, ''),
-          p_customer_notes: customerNotes.trim() || null,
+          p_customer_notes: customerNotes.trim() || undefined,
           p_addon_slugs: selectedAddons.map(a => a.slug),
           p_guest_national_id:
             listing.requires_id_verification && providedNationalId.trim().length >= 14
               ? providedNationalId.trim()
-              : null,
+              : undefined,
         })
         if (rpcErr) throw rpcErr
         const out = (rpcData ?? {}) as { booking_id?: string; reference_code?: string }
@@ -404,9 +404,9 @@ export default function BookingPage() {
         p_pricing_rule_id: selectedRule.id,
         p_start_at: startIso,
         p_end_at: endIso,
-        p_customer_notes: customerNotes.trim() || null,
+        p_customer_notes: customerNotes.trim() || undefined,
         p_addon_slugs: selectedAddons.map(a => a.slug),
-        p_national_id: providedId,
+        p_national_id: providedId ?? undefined,
       })
 
       if (insertErr) throw insertErr

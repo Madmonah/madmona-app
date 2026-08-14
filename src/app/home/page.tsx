@@ -100,7 +100,13 @@ export default function MadmonaHome() {
   }
 
   function setRate(bid: string, field: 'service' | 'stylist' | 'comment', val: any) {
-    setRatings(prev => ({ ...prev, [bid]: { service: 0, stylist: 0, comment: '', ...prev[bid], [field]: val } }))
+    // الافتراضيات الأول والقيم المحفوظة بعدها — الترتيب ده **مقصود**
+    // (`...prev[bid]` بيغطّي على الافتراضيات). TS بيحذّر من التكرار، فبنكتبها
+    // صريحة بدل ما نسيب تحذير دايم على سلوك سليم.
+    setRatings(prev => {
+      const cur = prev[bid] ?? { service: 0, stylist: 0, comment: '' }
+      return { ...prev, [bid]: { ...cur, [field]: val } }
+    })
   }
 
   async function submitReview(bid: string) {

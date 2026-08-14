@@ -181,7 +181,7 @@ export default function SupplierOrderDetailPage() {
       const { error: rpcError } = await supabaseBrowser.rpc('set_order_status', {
         p_order_id: order.id,
         p_new_status: next,
-        p_reason: null,
+        p_reason: undefined,
       })
       if (rpcError) {
         setError(rpcError.message || 'حصل خطأ')

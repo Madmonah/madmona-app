@@ -63,10 +63,10 @@ export function AgentDirectives() {
     try {
       const { data: result, error } = await supabaseBrowser.rpc('upsert_agent_directives', {
         p_scope: 'global',
-        p_current_trend: form.current_trend || null,
+        p_current_trend: form.current_trend || undefined,
         p_focus_areas: form.focus_areas || [],
         p_target_audience: form.target_audience || null,
-        p_tips_text: form.tips_text || null,
+        p_tips_text: form.tips_text || undefined,
         p_excluded_categories: form.excluded_categories || ['coworking'],
       })
       if (error) throw error

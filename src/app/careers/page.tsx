@@ -108,12 +108,12 @@ export default function CareersPage() {
       const { data, error: rpcErr } = await supabaseBrowser.rpc('submit_careers_application', {
         p_full_name: fullName.trim(),
         p_phone: phone.trim(),
-        p_email: email.trim() || null,
+        p_email: email.trim() || undefined,
         p_position: position,
-        p_city: city.trim() || null,
+        p_city: city.trim() || undefined,
         p_experience_years: experience ? parseInt(experience, 10) : null,
-        p_why_join: whyJoin.trim() || null,
-        p_cv_url: cvUrl.trim() || null,
+        p_why_join: whyJoin.trim() || undefined,
+        p_cv_url: cvUrl.trim() || undefined,
         p_last_salary_egp: lastSalary ? parseInt(lastSalary, 10) : null,
         p_expected_salary_egp: expectedSalary ? parseInt(expectedSalary, 10) : null,
       })

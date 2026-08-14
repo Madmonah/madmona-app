@@ -95,9 +95,9 @@ export default function BookingHelper({
         p_event_type: 'booking_helper_shown',
         p_visitor_id: getVisitorId(),
         p_session_id: getSessionId(),
-        p_listing_id: listingId || null,
-        p_category: null,
-        p_page_url: typeof window !== 'undefined' ? window.location.pathname : null,
+        p_listing_id: listingId || undefined,
+        p_category: undefined,
+        p_page_url: typeof window !== 'undefined' ? window.location.pathname : undefined,
         p_metadata: { mode: isAuthenticated ? 'concierge' : 'phone_capture' },
       }).then(() => { /* ok */ }, () => { /* ignore */ })
     }, ms)
@@ -114,9 +114,9 @@ export default function BookingHelper({
       p_event_type: 'booking_helper_dismissed',
       p_visitor_id: getVisitorId(),
       p_session_id: getSessionId(),
-      p_listing_id: listingId || null,
-      p_category: null,
-      p_page_url: typeof window !== 'undefined' ? window.location.pathname : null,
+      p_listing_id: listingId || undefined,
+      p_category: undefined,
+      p_page_url: typeof window !== 'undefined' ? window.location.pathname : undefined,
       p_metadata: { reason },
     }).then(() => { /* ok */ }, () => { /* ignore */ })
   }, [listingId])
@@ -136,11 +136,11 @@ export default function BookingHelper({
         p_phone: cleaned,
         p_visitor_id: getVisitorId(),
         p_session_id: getSessionId(),
-        p_page_url: typeof window !== 'undefined' ? window.location.pathname : null,
-        p_listing_id: listingId || null,
+        p_page_url: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        p_listing_id: listingId || undefined,
         p_capture_context: 'booking_helper',
-        p_user_name: name.trim() || null,
-        p_notes: null,
+        p_user_name: name.trim() || undefined,
+        p_notes: undefined,
         p_metadata: { listing_title: listingTitle, listing_slug: listingSlug },
       })
       if (rpcErr) throw new Error(rpcErr.message)
@@ -150,9 +150,9 @@ export default function BookingHelper({
         p_event_type: 'phone_captured',
         p_visitor_id: getVisitorId(),
         p_session_id: getSessionId(),
-        p_listing_id: listingId || null,
-        p_category: null,
-        p_page_url: typeof window !== 'undefined' ? window.location.pathname : null,
+        p_listing_id: listingId || undefined,
+        p_category: undefined,
+        p_page_url: typeof window !== 'undefined' ? window.location.pathname : undefined,
         p_metadata: { source: 'booking_helper' },
       }).then(() => { /* ok */ }, () => { /* ignore */ })
       // Auto-dismiss after showing success for 4 seconds
@@ -171,9 +171,9 @@ export default function BookingHelper({
       p_event_type: 'whatsapp_click',
       p_visitor_id: getVisitorId(),
       p_session_id: getSessionId(),
-      p_listing_id: listingId || null,
-      p_category: null,
-      p_page_url: typeof window !== 'undefined' ? window.location.pathname : null,
+      p_listing_id: listingId || undefined,
+      p_category: undefined,
+      p_page_url: typeof window !== 'undefined' ? window.location.pathname : undefined,
       p_metadata: { source: 'booking_helper' },
     }).then(() => { /* ok */ }, () => { /* ignore */ })
     window.open(

@@ -44,7 +44,7 @@ export default function SimpleSuppliersPage() {
     const { error } = await supabaseBrowser.rpc('update_supplier_kyc_admin', {
       p_supplier_id: id,
       p_kyc_status: kycStatus,
-      p_rejection_reason: reason || null,
+      p_rejection_reason: reason || undefined,
     })
     if (error) { alert('فشل: ' + error.message); return }
     location.reload()

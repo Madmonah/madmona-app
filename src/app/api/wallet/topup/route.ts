@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     p_amount: amount,
     p_kind: kind,
     p_provider: provider,
-    p_reference: body.reference ?? null,
+    p_reference: body.reference ?? undefined,
     p_description: kind === 'credit' ? 'إضافة كريدت' : 'شحن المحفظة',
     p_actor: auth.user!.id,
   })

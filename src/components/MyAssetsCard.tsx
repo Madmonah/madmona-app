@@ -81,7 +81,7 @@ export default function MyAssetsCard() {
           typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null
 
         const { data: res } = await supabaseBrowser.rpc('my_assets', {
-          p_wa_token: waToken || null,
+          p_wa_token: waToken || undefined,
         })
         setData(res as unknown as MyAssets | null)
       } catch {

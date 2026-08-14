@@ -594,12 +594,12 @@ export async function upsertConversation(args: {
 
   const { data, error } = await supabaseAdmin.rpc('whatsapp_upsert_conversation', {
     p_phone: phone,
-    p_name: args.name ?? null,
+    p_name: args.name ?? undefined,
     p_contact_type: args.contactType ?? 'unknown',
-    p_supplier_id: args.supplierId ?? null,
-    p_profile_id: args.profileId ?? null,
-    p_agent_name: args.agentName ?? null,
-    p_session_id: args.session ?? null,
+    p_supplier_id: args.supplierId ?? undefined,
+    p_profile_id: args.profileId ?? undefined,
+    p_agent_name: args.agentName ?? undefined,
+    p_session_id: args.session ?? undefined,
   })
 
   if (error) {

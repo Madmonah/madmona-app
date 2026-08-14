@@ -42,7 +42,7 @@ async function handle(caller: string, source: string | null) {
   // @ts-ignore rpc not in generated types
   const { data, error } = await supabaseAdmin.rpc('match_incoming_call', {
     p_caller: caller,
-    p_source: source,
+    p_source: source ?? undefined,
   })
 
   if (error) {

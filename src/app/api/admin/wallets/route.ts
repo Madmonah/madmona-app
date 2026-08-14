@@ -94,7 +94,7 @@ export async function POST(request: Request) {
       p_kind: kind,
       p_direction: direction,
       p_reason: body.reason || (action === 'grant_credit' ? 'منح كريدت' : 'تعديل يدوي'),
-      p_admin: adminId,
+      p_admin: adminId ?? undefined,
     })
     if (error) {
       const msg = error.message || 'adjust_failed'
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
     const { data, error } = await supabaseAdmin.rpc('wallet_process_withdrawal', {
       p_withdrawal: body.withdrawal_id,
       p_action: body.decision,
-      p_admin: adminId,
+      p_admin: adminId ?? undefined,
       p_notes: body.notes || null,
     })
     if (error) return NextResponse.json({ error: error.message || 'process_failed' }, { status: 400 })

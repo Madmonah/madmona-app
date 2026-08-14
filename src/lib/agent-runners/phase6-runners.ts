@@ -28,8 +28,8 @@ export async function sendAgentMessage(args: {
     p_payload: args.payload as never,
     p_response_required: args.responseRequired ?? false,
     p_priority: args.priority ?? 'normal',
-    p_thread_id: args.threadId ?? null,
-    p_parent_message_id: args.parentMessageId ?? null,
+    p_thread_id: args.threadId ?? undefined,
+    p_parent_message_id: args.parentMessageId ?? undefined,
   })
 
   if (error) {

@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     p_code: code,
     p_referred_phone: (prof as { phone?: string }).phone || ('profile:' + profileId),
     p_referred_profile_id: profileId,
-    p_referred_name: (prof as { full_name?: string }).full_name || null,
+    p_referred_name: (prof as { full_name?: string }).full_name || undefined,
     p_kind: 'customer',
   })
   if (error) return NextResponse.json({ error: error.message.slice(0, 120) }, { status: 400 })

@@ -75,8 +75,8 @@ export async function trackEvent(eventType: string, opts: TrackOptions = {}): Pr
       p_event_type: eventType,
       p_visitor_id: visitor_id,
       p_session_id: session_id,
-      p_listing_id: opts.listing_id ?? null,
-      p_category: opts.category ?? null,
+      p_listing_id: opts.listing_id ?? undefined,
+      p_category: opts.category ?? undefined,
       p_page_url: page_url,
       p_metadata: opts.metadata ?? {},
     })

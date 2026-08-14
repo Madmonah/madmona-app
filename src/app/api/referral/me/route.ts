@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   // @ts-ignore rpc not in generated types
   const { data: codeRes, error } = await supabaseAdmin.rpc('get_or_create_referral_code', {
     p_owner_profile_id: profileId,
-    p_owner_phone: (prof as { phone?: string } | null)?.phone || null,
+    p_owner_phone: (prof as { phone?: string } | null)?.phone || undefined,
     p_owner_type: 'customer',
   })
   if (error) return NextResponse.json({ error: error.message.slice(0, 120) }, { status: 400 })

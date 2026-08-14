@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
   // @ts-ignore rpc not in generated types
   const { data: picked, error: pickErr } = await supabaseAdmin
-    .rpc('pick_verify_number', { p_exclude: body.exclude || null })
+    .rpc('pick_verify_number', { p_exclude: body.exclude || undefined })
   const number = Array.isArray(picked) ? picked[0] : picked
   if (pickErr || !number?.phone) {
     console.error('[verify-call] مفيش رقم متاح', pickErr)

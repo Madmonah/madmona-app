@@ -120,7 +120,7 @@ export async function PATCH(request: Request) {
   const { error: rpcError } = await supabase.rpc('set_order_status', {
     p_order_id: id,
     p_new_status: targetStatus,
-    p_reason: reasonForCancel,
+    p_reason: reasonForCancel ?? undefined,
   })
 
   if (rpcError) {

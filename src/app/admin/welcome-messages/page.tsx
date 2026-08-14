@@ -110,7 +110,7 @@ export default function WelcomeMessagesPage() {
       const { error: e } = await supabaseBrowser.rpc('admin_send_test_welcome', {
         p_template_key: templateKey,
         p_to_email: testEmail,
-        p_to_phone: null,
+        p_to_phone: undefined,
         p_recipient_name: 'Mohamed (Test)',
       })
       if (e) throw e

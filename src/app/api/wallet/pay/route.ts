@@ -26,8 +26,8 @@ export async function POST(request: Request) {
   const { data, error } = await supabaseAdmin.rpc('wallet_pay', {
     p_profile: auth.user!.id,
     p_amount: amount,
-    p_reference_type: body.reference_type ?? null,
-    p_reference_id: body.reference_id ?? null,
+    p_reference_type: body.reference_type ?? undefined,
+    p_reference_id: body.reference_id ?? undefined,
     p_description: body.description ?? 'دفع من المحفظة',
     p_source: source,
   })
