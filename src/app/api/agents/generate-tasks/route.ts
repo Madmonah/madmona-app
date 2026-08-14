@@ -56,27 +56,30 @@ async function generateForSupplier(supplierId: string, force: boolean) {
   let employees = (emps ?? []) as EmpRow[]
   if (employees.length === 0) return { supplier_id: supplierId, skipped: 'no_employees', tasks_created: 0 }
 
-  // 🧹 (١٤ أغسطس ٢٠٢٦ — محمد) بلاش نولّد مهام لفروع محدش بصم فيها **ولا مرة**.
-  //    الأرقام اللي كشفت ده: ٢٨٬١٦٩ مهمة اتولدت، ٥٦ بس اتعملت (٠٫٢٪)،
-  //    و٢٥٬٢٨٧ اتساب. وفي فروع زي «بوليكلينك مضمونة (نموذج)» و«مضمونة ماركت»
-  //    و«DRA» بتاخد مهام كل يوم و`attendance_logs` بتاعتها **فاضية تمامًا**
-  //    — يعني بنولّد شغل لناس مش موجودة.
-  //    الفرع اللي فيه بصمة واحدة على الأقل بيفضل يتولّدله عادي.
-  const branchIds = Array.from(new Set(employees.map((e) => e.branch_id).filter(Boolean))) as string[]
-  if (branchIds.length > 0) {
-    const { data: seen } = await supabaseAdmin
-      .from('attendance_logs')
-      .select('branch_id')
-      .in('branch_id', branchIds)
-      .limit(1000)
-    const liveBranches = new Set((seen ?? []).map((r) => (r as { branch_id: string }).branch_id))
+  // 👥 (١٤ أغسطس ٢٠٢٦ — قاعدة محمد بالنص)
+  //    «مفيش مهام لحد ملوش بصمة — إلا لو شغّال ريموتلي وبيفتح الأبليكيشن»
+  //
+  //    الترجمة لإشارات موجودة فعلًا (دالة active_task_employees):
+  //      ١) بصم           → صف في attendance_logs
+  //      ٢) ريموت          → محاولة بصمة اترفضت جغرافيًا — دي بالظبط اللي
+  //                          بيفتح الأبليكيشن من بره الفرع
+  //      ٣) علّم مهمة      → daily_tasks بحالة completed
+  //
+  //    ليه ده مهم: ١٧٥ موظف نشط، ٥٦ بس عليهم أي إشارة. يعني كنا بنولّد
+  //    شغل يومي لـ١١٩ واحد مالهمش أي أثر — وده اللي طلّع ٢٨٬١٦٩ مهمة
+  //    مقابل ٥٦ اتعملت (٠٫٢٪).
+  {
+    const { data: live } = await supabaseAdmin
+      .rpc('active_task_employees' as never, { p_supplier_id: supplierId } as never)
+    const allowed = new Set(
+      ((live ?? []) as Array<{ employee_id: string }>).map((r) => r.employee_id),
+    )
     const before = employees.length
-    // موظف من غير فرع بيفضل — مش كل الأنشطة ليها فروع
-    employees = employees.filter((e) => !e.branch_id || liveBranches.has(e.branch_id))
+    employees = employees.filter((e) => allowed.has(e.id))
     if (employees.length === 0) {
       return {
         supplier_id: supplierId,
-        skipped: 'no_branch_ever_used_attendance',
+        skipped: 'no_employee_uses_the_app',
         employees_skipped: before,
         tasks_created: 0,
       }
