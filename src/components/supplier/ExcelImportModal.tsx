@@ -304,8 +304,8 @@ export default function ExcelImportModal({
       <div className="bg-white w-full sm:max-w-2xl sm:rounded-3xl rounded-t-3xl shadow-2xl max-h-[92vh] flex flex-col">
         {/* header */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
-          <div className="w-10 h-10 rounded-2xl bg-[#FA8125]/10 flex items-center justify-center">
-            <FileSpreadsheet className="w-5 h-5 text-[#FA8125]" />
+          <div className="w-10 h-10 rounded-2xl bg-[#34D399]/10 flex items-center justify-center">
+            <FileSpreadsheet className="w-5 h-5 text-[#059669]" />
           </div>
           <div className="flex-1">
             <h2 className="text-sm font-black text-gray-900">
@@ -330,15 +330,15 @@ export default function ExcelImportModal({
             <div className="space-y-4">
               <button
                 onClick={() => downloadTemplate(mode)}
-                className="w-full flex items-center gap-3 p-4 rounded-2xl border-2 border-dashed border-[#FA8125]/30 bg-[#FA8125]/5 hover:bg-[#FA8125]/10 transition"
+                className="w-full flex items-center gap-3 p-4 rounded-2xl border-2 border-dashed border-[#059669]/30 bg-[#34D399]/5 hover:bg-[#34D399]/10 transition"
               >
-                <Download className="w-5 h-5 text-[#FA8125]" />
-                <span className="text-sm font-bold text-[#FA8125]">نزّل القالب الجاهز (Excel)</span>
+                <Download className="w-5 h-5 text-[#059669]" />
+                <span className="text-sm font-bold text-[#059669]">نزّل القالب الجاهز (Excel)</span>
               </button>
 
               <div
                 onClick={() => fileRef.current?.click()}
-                className="cursor-pointer border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-[#FA8125]/40 hover:bg-gray-50 transition"
+                className="cursor-pointer border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-[#059669]/40 hover:bg-gray-50 transition"
               >
                 <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                 <p className="text-sm font-bold text-gray-700">اضغط لاختيار ملف Excel</p>
@@ -387,8 +387,8 @@ export default function ExcelImportModal({
           {(step === 'preview' || step === 'importing') && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs font-bold text-gray-600">
-                <FileSpreadsheet className="w-4 h-4 text-[#FA8125]" />
-                {fileName} — <span className="text-[#FA8125]">{validRows.length} صف جاهز</span>
+                <FileSpreadsheet className="w-4 h-4 text-[#059669]" />
+                {fileName} — <span className="text-[#059669]">{validRows.length} صف جاهز</span>
                 {badRows.length > 0 && <span className="text-red-500">· {badRows.length} صف فيه مشكلة</span>}
               </div>
 
@@ -443,12 +443,12 @@ export default function ExcelImportModal({
           {/* STEP: done */}
           {step === 'done' && result && (
             <div className="text-center py-6 space-y-3">
-              <div className="w-16 h-16 mx-auto rounded-full bg-[#FA8125]/10 flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-[#FA8125]" />
+              <div className="w-16 h-16 mx-auto rounded-full bg-[#34D399]/10 flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-[#059669]" />
               </div>
               <h3 className="text-lg font-black text-gray-900">تم الاستيراد 🎉</h3>
               <div className="flex items-center justify-center gap-2 flex-wrap text-xs font-black">
-                <span className="bg-[#FA8125]/10 text-[#FA8125] px-3 py-1.5 rounded-full">{result.inserted} جديد</span>
+                <span className="bg-[#34D399]/10 text-[#059669] px-3 py-1.5 rounded-full">{result.inserted} جديد</span>
                 {mode !== 'listings' && (
                   <span className="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full">{result.updated || 0} اتحدث</span>
                 )}
@@ -496,7 +496,7 @@ export default function ExcelImportModal({
               <button
                 onClick={runImport}
                 disabled={step === 'importing' || validRows.length === 0}
-                className="flex-1 py-3 rounded-xl bg-[#FA8125] text-white text-sm font-black disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-black disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {step === 'importing' ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> جاري الاستيراد...</>
@@ -507,7 +507,7 @@ export default function ExcelImportModal({
             </>
           )}
           {step === 'done' && (
-            <button onClick={onClose} className="flex-1 py-3 rounded-xl bg-[#FA8125] text-white text-sm font-black">تمام</button>
+            <button onClick={onClose} className="flex-1 py-3 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-black">تمام</button>
           )}
         </div>
       </div>

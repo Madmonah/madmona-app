@@ -193,7 +193,7 @@ export default function SocialGroupsAdmin() {
               setShowAdd(true)
               setEditing(null)
             }}
-            className="bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-md"
+            className="bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-md"
           >
             + ضيف جروب
           </button>
@@ -223,7 +223,7 @@ export default function SocialGroupsAdmin() {
           <button
             onClick={() => setCategoryFilter(null)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-              !categoryFilter ? 'bg-[#FA8125] text-white' : 'bg-white border border-gray-300 text-gray-700'
+              !categoryFilter ? 'bg-[#34D399] text-[#04352A]' : 'bg-white border border-gray-300 text-gray-700'
             }`}
           >
             الكل ({groups.length})
@@ -236,7 +236,7 @@ export default function SocialGroupsAdmin() {
                 key={cat}
                 onClick={() => setCategoryFilter(cat === categoryFilter ? null : cat)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-                  categoryFilter === cat ? 'bg-[#FA8125] text-white' : 'bg-white border border-gray-300 text-gray-700'
+                  categoryFilter === cat ? 'bg-[#34D399] text-[#04352A]' : 'bg-white border border-gray-300 text-gray-700'
                 }`}
               >
                 {CATEGORY_NAMES_AR[cat]} ({count}){placeholders > 0 && <span className="text-amber-500"> ⚠</span>}
@@ -254,7 +254,7 @@ export default function SocialGroupsAdmin() {
 
         {/* Add/Edit form */}
         {(showAdd || editing) && (
-          <div className="bg-white rounded-xl shadow-sm p-5 mb-6 border-2 border-[#FA8125]">
+          <div className="bg-white rounded-xl shadow-sm p-5 mb-6 border-2 border-[#059669]">
             <h2 className="font-bold text-gray-900 mb-3">{editing ? 'تعديل جروب' : 'جروب جديد'}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
@@ -333,7 +333,7 @@ export default function SocialGroupsAdmin() {
             <div className="flex gap-2 mt-4">
               <button
                 onClick={() => (editing ? saveEdit(editing) : saveNew())}
-                className="px-5 py-2 bg-[#FA8125] text-white rounded-lg font-bold text-sm hover:opacity-90"
+                className="px-5 py-2 bg-[#34D399] text-[#04352A] rounded-lg font-bold text-sm hover:opacity-90"
               >
                 {editing ? 'حفظ التعديل' : 'إضافة'}
               </button>
@@ -382,7 +382,7 @@ export default function SocialGroupsAdmin() {
                           href={g.group_url}
                           target="_blank"
                           className={`text-xs no-underline ${
-                            isPlaceholder ? 'text-amber-600' : 'text-[#FA8125]'
+                            isPlaceholder ? 'text-amber-600' : 'text-[#059669]'
                           } hover:underline break-all`}
                           dir="ltr"
                         >
@@ -396,7 +396,7 @@ export default function SocialGroupsAdmin() {
                       <div className="flex gap-2 flex-shrink-0">
                         <button
                           onClick={() => startEdit(g)}
-                          className="text-xs px-3 py-1.5 bg-[#FA8125] text-white rounded-lg font-medium hover:opacity-90"
+                          className="text-xs px-3 py-1.5 bg-[#34D399] text-[#04352A] rounded-lg font-medium hover:opacity-90"
                         >
                           تعديل
                         </button>

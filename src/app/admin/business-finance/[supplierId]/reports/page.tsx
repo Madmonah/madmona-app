@@ -164,11 +164,11 @@ export default function ReportsPage({ params }: { params: { supplierId: string }
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div>
-            <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">B2B PARTNER · REPORTS EXPORT</p>
+            <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">B2B PARTNER · REPORTS EXPORT</p>
             <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">تصدير التقارير · {supplier?.business_name}</h1>
             <p className="text-sm text-[#6B7280] mt-1">صدّر بياناتك Excel/CSV — يفتح في Excel و Google Sheets بالعربي</p>
           </div>
@@ -191,23 +191,23 @@ export default function ReportsPage({ params }: { params: { supplierId: string }
           {reports.map(r => (
             <div key={r.id} className="bg-white rounded-2xl border border-gray-100 p-5">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-11 h-11 rounded-xl bg-[#FA8125]/10 text-[#FA8125] grid place-items-center"><div className="w-5 h-5">{r.icon}</div></div>
+                <div className="w-11 h-11 rounded-xl bg-[#34D399]/10 text-[#059669] grid place-items-center"><div className="w-5 h-5">{r.icon}</div></div>
                 <div className="flex-1">
                   <h3 className="text-sm font-black text-[#1A2E26]">{r.label}</h3>
                   <p className="text-[10px] text-[#6B7280] mt-0.5">{r.desc}</p>
                 </div>
               </div>
-              {r.hasPeriod && <p className="text-[10px] text-[#FA8125] font-bold mb-2">📅 {MONTHS_AR[month-1]} {year}</p>}
-              <button onClick={r.action} disabled={exporting === r.id} className="w-full py-2.5 rounded-xl bg-[#FA8125] text-white text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2">
+              {r.hasPeriod && <p className="text-[10px] text-[#059669] font-bold mb-2">📅 {MONTHS_AR[month-1]} {year}</p>}
+              <button onClick={r.action} disabled={exporting === r.id} className="w-full py-2.5 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2">
                 {exporting === r.id ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري التصدير...</> : <><Download className="w-4 h-4" /> تصدير CSV</>}
               </button>
             </div>
           ))}
         </section>
 
-        <section className="bg-[#FA8125]/5 border border-[#FA8125]/20 rounded-2xl p-4 text-xs text-[#1A2E26]">
+        <section className="bg-[#34D399]/5 border border-[#059669]/20 rounded-2xl p-4 text-xs text-[#1A2E26]">
           <div className="flex items-start gap-2">
-            <FileSpreadsheet className="w-4 h-4 text-[#FA8125] flex-shrink-0 mt-0.5" />
+            <FileSpreadsheet className="w-4 h-4 text-[#059669] flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-bold mb-1">📊 الملفات بـ صيغة CSV:</p>
               <p className="text-[#6B7280]">تفتح مباشرة في Microsoft Excel و Google Sheets و Numbers. النصوص العربية بـ تظهر صح (UTF-8 BOM). تقدر تطبعها أو تبعتها للمحاسب.</p>
@@ -219,4 +219,4 @@ export default function ReportsPage({ params }: { params: { supplierId: string }
   )
 }
 
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div> }

@@ -10,7 +10,7 @@ export const revalidate = 0
 
 // ── Locked brand palette — 5 colors ONLY (no gold/amber/orange/red/blue) ──
 const C = {
-  green: '#FA8125',
+  green: '#059669',
   cream: '#FAFAF7',
   ink: '#1A2E26',
   gray: '#6B7280',

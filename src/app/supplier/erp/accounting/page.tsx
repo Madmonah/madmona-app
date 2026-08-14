@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 // below, so it is loaded on demand instead of shipping in this page's initial
 // bundle (this page was 292KB First Load JS).
 
-const G = { dark: '#FA8125', mid: '#F98F2A', teal: '#2FA084', light: '#6FCF97', bg: '#FAFAF7', ink: '#0A0A0A' };
+const G = { dark: '#059669', mid: '#34D399', teal: '#2FA084', light: '#6FCF97', bg: '#FAFAF7', ink: '#0A0A0A' };
 
 type Account = { id: string; code: string; name_ar: string; account_type: string; is_postable: boolean; parent_id: string | null };
 type TBRow = { code: string; name_ar: string; account_type: string; balance_debit: number; balance_credit: number };

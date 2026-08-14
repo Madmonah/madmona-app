@@ -152,7 +152,7 @@ export default function DailyMessageBanner() {
         }`}
       dir="rtl"
     >
-      <div className="relative overflow-hidden bg-gradient-to-l from-[#FA8125] to-[#185547] text-white rounded-2xl p-4 shadow-xl border border-white/10">
+      <div className="relative overflow-hidden bg-gradient-to-l from-[#34D399] to-[#185547] text-white rounded-2xl p-4 shadow-xl border border-white/10">
         {/* Background flourish */}
         <div className="absolute -top-12 -left-12 w-32 h-32 bg-white/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-white/5 rounded-full blur-3xl pointer-events-none" />
@@ -187,7 +187,7 @@ export default function DailyMessageBanner() {
               <Link
                 href={message.cta_url}
                 onClick={onCtaClick}
-                className="mt-2.5 inline-flex items-center gap-1.5 bg-white text-[#FA8125] px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white/90 transition-colors"
+                className="mt-2.5 inline-flex items-center gap-1.5 bg-white text-[#059669] px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white/90 transition-colors"
               >
                 {message.cta_label}
                 <ArrowLeft className="w-3 h-3" />

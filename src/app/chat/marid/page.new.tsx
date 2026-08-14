@@ -15,7 +15,7 @@ import { subscribeToPush, getNotificationPermission, isPushSupported } from '@/l
 // ── هوية مضمونة اللونية ─────────────────────────────────────────────────
 const C = {
   cream: '#FAFAF7',
-  green: '#FA8125',
+  green: '#059669',
   greenDk: '#175449',
   greenLt: '#2FA084',
   mint: '#6FCF97',

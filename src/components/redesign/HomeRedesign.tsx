@@ -17,9 +17,9 @@ const ibm = IBM_Plex_Sans_Arabic({ subsets: ['arabic', 'latin'], weight: ['400',
 const INK = '#0E332C'
 const CREAM = '#F4EFE4'
 const GOLD = '#2B4521'
-// (11 Aug 2026) أخضر البراند القياسي للهيدر — نفس #FA8125 بتاع TopNav/SiteFooter.
+// (11 Aug 2026) أخضر البراند القياسي للهيدر — نفس #059669 بتاع TopNav/SiteFooter.
 // مش نفس INK (الأخضر الغامق الأصلي بتاع التصميم) — ده أخضر تاني مخصص للهيدر بس.
-const NAV_GREEN = '#FA8125'
+const NAV_GREEN = '#059669'
 
 type Cat = {
   id: string; name_ar: string; slug: string; icon: string | null; track: string | null
@@ -157,7 +157,7 @@ a { text-decoration: none; }
       <div style={{ height: 4, background: `linear-gradient(90deg, ${GOLD}, ${INK} 30%, ${INK} 70%, ${GOLD})` }} />
 
       {/* ═══ Nav ═══ */}
-      {/* (11 Aug 2026) أخضر البراند #FA8125 بدل الكريمي الشفاف القديم — نفس
+      {/* (11 Aug 2026) أخضر البراند #059669 بدل الكريمي الشفاف القديم — نفس
           التصميم/التخطيط بالظبط، بس عناصر بيضا بدل الأخضر الغامق (طلب محمد) */}
       <header style={{ position: 'sticky', top: 0, zIndex: 50, background: NAV_GREEN, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
         <div style={{ maxWidth: 1360, margin: '0 auto', padding: '14px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
@@ -363,7 +363,7 @@ a { text-decoration: none; }
       </section>
 
       {/* (11 Aug 2026) الفوتر الأخضر الغامق القديم (INK #0E332C) اتبدّل بـ
-          SiteFooter الموحّد (#FA8125) — أول صفحة بتتجرّب عليها قبل التعميم
+          SiteFooter الموحّد (#059669) — أول صفحة بتتجرّب عليها قبل التعميم
           على باقي صفحات العميل (طلب محمد: الهيدر والفوتر أخضر). */}
       <SiteFooter />
     </div>

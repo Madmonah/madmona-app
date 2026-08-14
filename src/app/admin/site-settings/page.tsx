@@ -203,7 +203,7 @@ const FIELD_GROUPS: FieldGroup[] = [
     title: 'صور الأقسام (Categories)',
     subtitle: 'الصور اللي بتظهر فوق كل قسم في الصفحة الرئيسية',
     icon: <FolderTree className="w-4 h-4" />,
-    iconColor: 'bg-[#FA8125]/10 text-[#FA8125]',
+    iconColor: 'bg-[#34D399]/10 text-[#059669]',
     fields: [
       {
         key: 'category_spaces_image_url',
@@ -322,7 +322,7 @@ export default function SiteSettingsPage() {
   if (stage === 'loading') {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#FA8125] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#059669] animate-spin" />
       </div>
     )
   }
@@ -331,9 +331,9 @@ export default function SiteSettingsPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#059669] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
-          <Link href="/auth/login?redirect=/admin/site-settings" className="block bg-[#FA8125] text-white py-3 rounded-xl font-semibold">
+          <Link href="/auth/login?redirect=/admin/site-settings" className="block bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold">
             دخول
           </Link>
         </div>
@@ -348,7 +348,7 @@ export default function SiteSettingsPage() {
           <ShieldAlert className="w-8 h-8 text-red-500 mx-auto mb-3" />
           <h1 className="font-bold mb-2">مش مسموح</h1>
           <p className="text-sm text-gray-600 mb-4">الصفحة دي للأدمن فقط.</p>
-          <Link href="/account" className="inline-block bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold">
+          <Link href="/account" className="inline-block bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-semibold">
             ارجع للحساب
           </Link>
         </div>
@@ -392,7 +392,7 @@ export default function SiteSettingsPage() {
         </Link>
 
         {/* Hero info */}
-        <div className="bg-gradient-to-l from-[#FA8125] to-[#F98F2A] text-white rounded-3xl p-6 shadow-luxe">
+        <div className="bg-gradient-to-l from-[#34D399] to-[#34D399] text-white rounded-3xl p-6 shadow-luxe">
           <h2 className="text-xl font-black mb-2">صور الصفحة الرئيسية</h2>
           <p className="text-sm text-white/85 leading-relaxed">
             من هنا تقدر تغيّر كل الصور اللي بتظهر في صفحة madmonacairo.com بدون ما تحتاج تعدّل في الكود.
@@ -488,7 +488,7 @@ export default function SiteSettingsPage() {
             Customer-facing payment box on the booking page reads these. */}
         <div className="space-y-3">
           <div className="flex items-center gap-3 px-1 pt-2">
-            <div className="w-9 h-9 rounded-xl bg-[#FA8125]/10 text-[#FA8125] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#34D399]/10 text-[#059669] flex items-center justify-center">
               <CreditCard className="w-4 h-4" />
             </div>
             <div>
@@ -555,7 +555,7 @@ function PaymentSettingField({
   const isDirty = value !== originalValue
   return (
     <div className="flex items-center gap-3">
-      <div className="w-11 h-11 rounded-2xl bg-[#FA8125]/10 text-[#FA8125] flex items-center justify-center flex-shrink-0">
+      <div className="w-11 h-11 rounded-2xl bg-[#34D399]/10 text-[#059669] flex items-center justify-center flex-shrink-0">
         <Building2 className="w-5 h-5" />
       </div>
       <div className="flex-1 min-w-0">
@@ -566,7 +566,7 @@ function PaymentSettingField({
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder}
           dir={field.dir || 'rtl'}
-          className={`w-full px-3 py-2 bg-[#FAFAF7] border border-gray-100 rounded-xl text-xs focus:outline-none focus:bg-white focus:border-[#FA8125]/40 ${field.mono ? 'font-mono' : ''}`}
+          className={`w-full px-3 py-2 bg-[#FAFAF7] border border-gray-100 rounded-xl text-xs focus:outline-none focus:bg-white focus:border-[#059669]/40 ${field.mono ? 'font-mono' : ''}`}
           style={field.dir === 'ltr' ? { textAlign: 'left' } : undefined}
         />
         <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">{field.hint}</p>
@@ -575,7 +575,7 @@ function PaymentSettingField({
         type="button"
         onClick={onSave}
         disabled={!isDirty || saving}
-        className="px-3 py-2 bg-[#FA8125] hover:bg-[#FA8125]/90 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+        className="px-3 py-2 bg-[#34D399] hover:bg-[#34D399]/90 text-[#04352A] font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex-shrink-0"
         title={!isDirty ? 'مفيش تغييرات' : 'حفظ'}
       >
         {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
@@ -618,7 +618,7 @@ function SocialField({
               href={value}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] text-gray-400 hover:text-[#FA8125] flex items-center gap-1 no-underline"
+              className="text-[10px] text-gray-400 hover:text-[#059669] flex items-center gap-1 no-underline"
             >
               <ExternalLink className="w-2.5 h-2.5" />
               اختبر
@@ -630,7 +630,7 @@ function SocialField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={platform.placeholder}
-          className="w-full px-3 py-2 bg-[#FAFAF7] border border-gray-100 rounded-xl text-xs focus:outline-none focus:bg-white focus:border-[#FA8125]/40 font-mono"
+          className="w-full px-3 py-2 bg-[#FAFAF7] border border-gray-100 rounded-xl text-xs focus:outline-none focus:bg-white focus:border-[#059669]/40 font-mono"
           dir="ltr"
           style={{ textAlign: 'left' }}
         />
@@ -641,7 +641,7 @@ function SocialField({
         type="button"
         onClick={onSave}
         disabled={!isDirty || saving || (hasValue && !isValidUrl)}
-        className="px-3 py-2 bg-[#FA8125] hover:bg-[#FA8125]/90 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+        className="px-3 py-2 bg-[#34D399] hover:bg-[#34D399]/90 text-[#04352A] font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex-shrink-0"
         title={!isDirty ? 'مفيش تغييرات' : (hasValue && !isValidUrl) ? 'الرابط لازم يبدأ بـ https://' : 'حفظ'}
       >
         {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
@@ -756,7 +756,7 @@ function ImageSettingField({
               value={value}
               onChange={(e) => onChange(e.target.value)}
               placeholder="https://images.unsplash.com/..."
-              className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#FA8125]/40 font-mono"
+              className="w-full px-4 py-2.5 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-[#059669]/40 font-mono"
               dir="ltr"
               style={{ textAlign: 'left' }}
             />
@@ -777,7 +777,7 @@ function ImageSettingField({
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="w-full px-4 py-2.5 bg-[#FAFAF7] hover:bg-gray-100 border-2 border-dashed border-gray-300 hover:border-[#FA8125]/40 rounded-xl text-sm font-bold text-gray-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full px-4 py-2.5 bg-[#FAFAF7] hover:bg-gray-100 border-2 border-dashed border-gray-300 hover:border-[#059669]/40 rounded-xl text-sm font-bold text-gray-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {uploading ? (
                 <>
@@ -804,7 +804,7 @@ function ImageSettingField({
               type="button"
               onClick={onSave}
               disabled={!isDirty || !isValidUrl || saving}
-              className="flex-1 px-4 py-2.5 bg-[#FA8125] hover:bg-[#FA8125]/90 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-4 py-2.5 bg-[#34D399] hover:bg-[#34D399]/90 text-[#04352A] font-bold rounded-xl text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {saving ? (
                 <>

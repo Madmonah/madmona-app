@@ -45,12 +45,12 @@ export default function VATReportPage({ params }: { params: { supplierId: string
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10 print:hidden">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">B2B PARTNER · VAT REPORT</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">B2B PARTNER · VAT REPORT</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">تقرير ضريبة القيمة المضافة · {supplier?.business_name}</h1>
               <p className="text-sm text-[#6B7280] mt-1">حساب VAT 14% (المعدل المصري) — للإقرار الشهري</p>
             </div>
@@ -83,9 +83,9 @@ export default function VATReportPage({ params }: { params: { supplierId: string
         </div>
 
         {/* VAT Payable Hero */}
-        <section className={`rounded-3xl p-6 border-2 ${vatPayable > 0 ? 'bg-amber-50 border-amber-300' : 'bg-[#FA8125]/5 border-[#FA8125]/30'}`}>
+        <section className={`rounded-3xl p-6 border-2 ${vatPayable > 0 ? 'bg-amber-50 border-amber-300' : 'bg-[#34D399]/5 border-[#059669]/30'}`}>
           <p className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mb-2">المستحق سدادها للمصلحة</p>
-          <p className={`text-5xl font-black font-mono ${vatPayable > 0 ? 'text-amber-800' : 'text-[#FA8125]'}`}>
+          <p className={`text-5xl font-black font-mono ${vatPayable > 0 ? 'text-amber-800' : 'text-[#059669]'}`}>
             {vatPayable.toLocaleString()} ج
           </p>
           <p className="text-sm text-[#6B7280] mt-2">
@@ -95,14 +95,14 @@ export default function VATReportPage({ params }: { params: { supplierId: string
           {vatPayable > 0 ? (
             <p className="text-xs text-amber-800 mt-2 font-bold">⚠️ مستحق على الشركة</p>
           ) : (
-            <p className="text-xs text-[#FA8125] mt-2 font-bold">✓ المصلحة مدينة لك (استرداد)</p>
+            <p className="text-xs text-[#059669] mt-2 font-bold">✓ المصلحة مدينة لك (استرداد)</p>
           )}
         </section>
 
         {/* Output VAT (Revenue) */}
         <section className="bg-white rounded-2xl border border-gray-100 p-5">
           <h3 className="text-sm font-bold tracking-wider uppercase text-[#6B7280] mb-4 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-[#FA8125]" /> VAT المحصلة (Output VAT)
+            <TrendingUp className="w-4 h-4 text-[#059669]" /> VAT المحصلة (Output VAT)
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <KV label="إجمالي الإيرادات" value={`${Number(outputVat.total_revenue || 0).toLocaleString()} ج`} />
@@ -157,7 +157,7 @@ export default function VATReportPage({ params }: { params: { supplierId: string
                   <tr key={i}>
                     <td className="px-4 py-2 font-bold text-[#1A2E26]">{b.branch}</td>
                     <td className="px-4 py-2 text-center font-mono">{Number(b.revenue || 0).toLocaleString()} ج</td>
-                    <td className="px-4 py-2 text-center font-mono font-bold text-[#FA8125]">{Number(b.vat_collected || 0).toLocaleString()} ج</td>
+                    <td className="px-4 py-2 text-center font-mono font-bold text-[#059669]">{Number(b.vat_collected || 0).toLocaleString()} ج</td>
                   </tr>
                 ))}
               </tbody>
@@ -176,11 +176,11 @@ export default function VATReportPage({ params }: { params: { supplierId: string
 
 function KV({ label, value, highlight }: any) {
   return (
-    <div className={`p-3 rounded-xl ${highlight ? 'bg-[#FA8125]/5 border border-[#FA8125]/20' : 'bg-[#FAFAF7]'}`}>
+    <div className={`p-3 rounded-xl ${highlight ? 'bg-[#34D399]/5 border border-[#059669]/20' : 'bg-[#FAFAF7]'}`}>
       <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280]">{label}</p>
-      <p className={`text-lg font-black font-mono mt-1 ${highlight ? 'text-[#FA8125]' : 'text-[#1A2E26]'}`}>{value}</p>
+      <p className={`text-lg font-black font-mono mt-1 ${highlight ? 'text-[#059669]' : 'text-[#1A2E26]'}`}>{value}</p>
     </div>
   )
 }
 
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div> }

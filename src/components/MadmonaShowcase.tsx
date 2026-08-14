@@ -29,7 +29,7 @@ const DEFAULT_STATS: Stats = { listings: 0, categories: 0, suppliers: 0, cities:
 // 4 المجالات الكبيرة المتحركة (الترتيب: بيع · إيجار · خدمات · مطاعم — المناسبات جوه الإيجار)
 const VK_CATEGORIES = [
   { emoji: '🛍️', name: 'بيع', sub: 'عقارات · عربيات · منتجات', accent: '#3D7BB6', bg: '#D9E7F4', track: 'products' },
-  { emoji: '🏠', name: 'إيجار', sub: 'عقارات · عربيات · مناسبات · معدات', accent: '#FA8125', bg: '#E7F1ED', track: 'rentals' },
+  { emoji: '🏠', name: 'إيجار', sub: 'عقارات · عربيات · مناسبات · معدات', accent: '#059669', bg: '#E7F1ED', track: 'rentals' },
   { emoji: '🛠️', name: 'خدمات', sub: 'صيانة · جمال · استشارات', accent: '#D4A017', bg: '#FAEFD1', track: 'services' },
   { emoji: '🍽️', name: 'مطاعم', sub: 'دلفري · سفرة · حلويات', accent: '#E26D5C', bg: '#FAE1CB', track: 'restaurants' },
 ];
@@ -260,7 +260,7 @@ export default function MadmonaShowcase({ stats = DEFAULT_STATS }: { stats?: Sta
 
 const CSS = `
 .mdm-showcase{
-  --cream:#FAFAF7; --paper:#F3F1EA; --ink:#0A0A0A; --green:#FA8125; --green2:#2FA084;
+  --cream:#FAFAF7; --paper:#F3F1EA; --ink:#0A0A0A; --green:#059669; --green2:#2FA084;
   --muted:#7C8A84; --gold:#D4A017; --border:#E5DFD3;
   font-family:'Cairo','Inter',system-ui,sans-serif;
   background:var(--cream); color:var(--ink); overflow:hidden;
@@ -319,7 +319,7 @@ const CSS = `
 .mdm-h1-line{display:block;font-size:clamp(38px,7vw,72px);font-weight:300;letter-spacing:-2px}
 .mdm-h1-em{
   display:block;font-size:clamp(46px,9vw,96px);font-weight:900;font-style:italic;
-  background:linear-gradient(118deg,#FA8125 0%, #2FA084 50%, #D4A017 100%);
+  background:linear-gradient(118deg,#059669 0%, #2FA084 50%, #D4A017 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   margin-top:-6px;background-size:200% auto;animation:mdmShimmer 6s ease-in-out infinite alternate;
 }
@@ -350,7 +350,7 @@ const CSS = `
   display:inline-flex; align-items:center; gap:6px; flex-shrink:0;
   padding:10px 20px; border:none; border-radius:999px; cursor:pointer;
   font-family:inherit; font-size:14px; font-weight:800; color:#fff;
-  background:linear-gradient(118deg,#FA8125 0%, #2FA084 55%, #D4A017 100%);
+  background:linear-gradient(118deg,#059669 0%, #2FA084 55%, #D4A017 100%);
   box-shadow:0 4px 12px rgba(250, 129, 37,.28); transition:.25s;
 }
 .mdm-search-btn:hover{transform:translateY(-2px); box-shadow:0 8px 20px rgba(250, 129, 37,.36)}
@@ -476,7 +476,7 @@ const CSS = `
 .mdm-hero-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .mdm-pill{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:999px;font-size:14.5px;font-weight:800;letter-spacing:-.01em;transition:.25s;cursor:pointer;border:1.5px solid transparent}
 .mdm-pill-primary{
-  background:linear-gradient(118deg, #FA8125 0%, #2FA084 55%, #D4A017 100%);
+  background:linear-gradient(118deg, #059669 0%, #2FA084 55%, #D4A017 100%);
   color:#fff;
   box-shadow:0 6px 18px rgba(250, 129, 37,.32);
   position:relative;
@@ -484,7 +484,7 @@ const CSS = `
 }
 .mdm-pill-primary::before{
   content:""; position:absolute; inset:0;
-  background:linear-gradient(118deg, #D4A017 0%, #2FA084 50%, #FA8125 100%);
+  background:linear-gradient(118deg, #D4A017 0%, #2FA084 50%, #059669 100%);
   opacity:0; transition:opacity .35s;
 }
 .mdm-pill-primary > *{position:relative; z-index:1}

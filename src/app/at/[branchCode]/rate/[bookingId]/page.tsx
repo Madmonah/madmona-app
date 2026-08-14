@@ -39,8 +39,8 @@ export default function RatePage({
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-3xl p-8 text-center max-w-sm">
-          <div className="inline-grid place-items-center w-16 h-16 rounded-2xl bg-[#FA8125]/10 text-[#FA8125] mb-4">
-            <Heart className="w-8 h-8 fill-[#FA8125]" />
+          <div className="inline-grid place-items-center w-16 h-16 rounded-2xl bg-[#34D399]/10 text-[#059669] mb-4">
+            <Heart className="w-8 h-8 fill-[#059669]" />
           </div>
           <h1 className="text-2xl font-black text-[#1A2E26] mb-2">شكراً ليكي ❤️</h1>
           <p className="text-sm text-[#6B7280] leading-relaxed">
@@ -55,7 +55,7 @@ export default function RatePage({
     <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
       <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full">
         <div className="text-center mb-6">
-          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">
+          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">
             تقييم الخدمة
           </p>
           <h1 className="text-2xl font-black text-[#1A2E26]">إيه رأيك في تجربتك؟</h1>
@@ -102,14 +102,14 @@ export default function RatePage({
             onChange={(e) => setComment(e.target.value)}
             placeholder="شاركينا تجربتك..."
             rows={3}
-            className="w-full px-4 py-3 rounded-xl bg-[#FAFAF7] border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#FA8125] resize-none text-sm"
+            className="w-full px-4 py-3 rounded-xl bg-[#FAFAF7] border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#059669] resize-none text-sm"
           />
         </div>
 
         <button
           onClick={submit}
           disabled={rating === 0 || submitting}
-          className="w-full bg-[#FA8125] text-white rounded-xl px-5 py-3.5 font-black disabled:opacity-50 hover:shadow-md transition-shadow flex items-center justify-center gap-2"
+          className="w-full bg-[#34D399] text-[#04352A] rounded-xl px-5 py-3.5 font-black disabled:opacity-50 hover:shadow-md transition-shadow flex items-center justify-center gap-2"
         >
           {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
             <>

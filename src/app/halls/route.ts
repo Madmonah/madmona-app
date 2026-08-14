@@ -21,9 +21,9 @@ const HTML = `<!DOCTYPE html>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 body { font-family: 'Tajawal', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
-.gradient-green { background: linear-gradient(135deg, #FA8125 0%, #2A8B73 50%, #FA8125 100%); }
+.gradient-green { background: linear-gradient(135deg, #059669 0%, #2A8B73 50%, #059669 100%); }
 .gradient-gold { background: linear-gradient(135deg, #2FA084 0%, #6FCF97 50%, #2FA084 100%); }
-.gradient-hero { background: linear-gradient(160deg, #0F4A40 0%, #FA8125 45%, #2A8B73 100%); }
+.gradient-hero { background: linear-gradient(160deg, #0F4A40 0%, #059669 45%, #2A8B73 100%); }
 .shine { position: relative; overflow: hidden; }
 .shine::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); animation: shine 4s ease-in-out infinite; }
 @keyframes shine { 50%, 100% { left: 100%; } }
@@ -38,9 +38,9 @@ img { display: block; }
 <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
 <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between gap-3">
 <div class="flex items-center gap-2.5">
-<div class="w-10 h-10 bg-[#FA8125] rounded-xl flex items-center justify-center text-white font-black text-xl">م</div>
+<div class="w-10 h-10 bg-[#34D399] rounded-xl flex items-center justify-center text-[#04352A] font-black text-xl">م</div>
 <div>
-<p class="font-black text-[#FA8125] text-base leading-none">مضمونة</p>
+<p class="font-black text-[#059669] text-base leading-none">مضمونة</p>
 <p class="text-[10px] text-gray-500 tracking-[0.2em] mt-1">معاملاتك مضمونة</p>
 </div>
 </div>
@@ -51,7 +51,7 @@ img { display: block; }
 </div>
 </header>
 
-<section class="gradient-hero text-white relative overflow-hidden">
+<section class="gradient-hero text-[#04352A] relative overflow-hidden">
 <div class="absolute top-0 right-0 w-64 h-64 bg-[#2FA084] opacity-10 rounded-full blur-3xl"></div>
 <div class="absolute bottom-0 left-0 w-64 h-64 bg-[#2FA084] opacity-5 rounded-full blur-3xl"></div>
 <div class="max-w-lg mx-auto px-5 py-10 relative">
@@ -76,7 +76,7 @@ img { display: block; }
 
 <section class="max-w-lg mx-auto px-5 -mt-5 relative z-10 space-y-3">
 
-<a href="https://madmonacairo.com/add-listing?category=weddings-halls&utm_source=whatsapp&utm_campaign=halls&utm_content=cta_register" class="scale-on-active shine block gradient-gold text-white p-5 rounded-2xl shadow-2xl relative">
+<a href="https://madmonacairo.com/add-listing?category=weddings-halls&utm_source=whatsapp&utm_campaign=halls&utm_content=cta_register" class="scale-on-active shine block gradient-gold text-[#04352A] p-5 rounded-2xl shadow-2xl relative">
 <div class="flex items-start gap-4 relative z-10">
 <div class="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center flex-shrink-0">
 <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
@@ -93,7 +93,7 @@ img { display: block; }
 </div>
 </a>
 
-<a href="https://wa.me/201002229982?text=أهلاً،%20عندي%20قاعة%20أفراح%20وحابب%20أعرف%20تفاصيل%20الشراكة%20مع%20مضمونة" class="scale-on-active shine block gradient-green text-white p-5 rounded-2xl shadow-lg relative">
+<a href="https://wa.me/201002229982?text=أهلاً،%20عندي%20قاعة%20أفراح%20وحابب%20أعرف%20تفاصيل%20الشراكة%20مع%20مضمونة" class="scale-on-active shine block gradient-green text-[#04352A] p-5 rounded-2xl shadow-lg relative">
 <div class="flex items-start gap-4 relative z-10">
 <div class="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center flex-shrink-0">
 <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/></svg>
@@ -150,7 +150,7 @@ img { display: block; }
 <p class="text-xs font-black text-red-700 mb-1">قبل مضمونة</p>
 <p class="text-sm text-gray-700">عميل يحجز، يدفع 500 ج مقدم، ويختفي قبل الحفل بأسبوع. قاعدتك خسرت يوم وميعاد.</p>
 <div class="gold-line h-px my-3"></div>
-<p class="text-xs font-black text-[#FA8125] mb-1">✓ مع مضمونة</p>
+<p class="text-xs font-black text-[#059669] mb-1">✓ مع مضمونة</p>
 <p class="text-sm text-gray-700">الدفع المقدم بيقعد عندنا. لو العميل ألغى، فلوسك مضمونة. لو الحفل اتعمل، تتحول لحسابك خلال 24 ساعة.</p>
 </div>
 </div>
@@ -163,7 +163,7 @@ img { display: block; }
 <p class="text-xs font-black text-red-700 mb-1">قبل مضمونة</p>
 <p class="text-sm text-gray-700">إعلانات على OLX وفيسبوك. عميل واحد كل ميعاد بيكلم 30 قاعة قبل ميقرر.</p>
 <div class="gold-line h-px my-3"></div>
-<p class="text-xs font-black text-[#FA8125] mb-1">✓ مع مضمونة</p>
+<p class="text-xs font-black text-[#059669] mb-1">✓ مع مضمونة</p>
 <p class="text-sm text-gray-700">العميل يحدد عدد المعازيم، الميزانية، والتاريخ. الـ AI بتاعنا بتطابقه مع قاعتك مباشرة. عملاء جاهزين للحجز.</p>
 </div>
 </div>
@@ -176,7 +176,7 @@ img { display: block; }
 <p class="text-xs font-black text-red-700 mb-1">قبل مضمونة</p>
 <p class="text-sm text-gray-700">عمولة 25-30٪ مع منصات تانية، أو شغل في الضلمة من غير حماية.</p>
 <div class="gold-line h-px my-3"></div>
-<p class="text-xs font-black text-[#FA8125] mb-1">✓ مع مضمونة</p>
+<p class="text-xs font-black text-[#059669] mb-1">✓ مع مضمونة</p>
 <p class="text-sm text-gray-700">عمولة 10٪ بس، و<span class="font-black text-[#2FA084]">صفر عمولة لأول 30 يوم</span>. كله شفاف، فلوسك تتحول لحسابك مباشرة.</p>
 </div>
 </div>
@@ -192,28 +192,28 @@ img { display: block; }
 
 <div class="space-y-2">
 <div class="bg-white rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-100">
-<div class="w-9 h-9 bg-[#FA8125] text-white rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0">١</div>
+<div class="w-9 h-9 bg-[#34D399] text-[#04352A] rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0">١</div>
 <div class="flex-1">
 <p class="font-black text-sm text-gray-900">سجّل قاعتك</p>
 <p class="text-xs text-gray-600">5 دقايق · صور · أسعار · سعة</p>
 </div>
 </div>
 <div class="bg-white rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-100">
-<div class="w-9 h-9 bg-[#FA8125] text-white rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0">٢</div>
+<div class="w-9 h-9 bg-[#34D399] text-[#04352A] rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0">٢</div>
 <div class="flex-1">
 <p class="font-black text-sm text-gray-900">عرسان جاهزة بتجيلك</p>
 <p class="text-xs text-gray-600">AI Matching · عملاء معاهم ميزانية وتاريخ</p>
 </div>
 </div>
 <div class="bg-white rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-100">
-<div class="w-9 h-9 bg-[#FA8125] text-white rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0">٣</div>
+<div class="w-9 h-9 bg-[#34D399] text-[#04352A] rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0">٣</div>
 <div class="flex-1">
 <p class="font-black text-sm text-gray-900">حجز محمي بدفع مقدم</p>
 <p class="text-xs text-gray-600">مضمونة بتحتفظ بالفلوس لحد الحفل</p>
 </div>
 </div>
 <div class="bg-white rounded-xl p-4 flex items-center gap-3 shadow-sm border border-gray-100">
-<div class="w-9 h-9 bg-[#2FA084] text-white rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0">٤</div>
+<div class="w-9 h-9 bg-[#2FA084] text-[#04352A] rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0">٤</div>
 <div class="flex-1">
 <p class="font-black text-sm text-gray-900">فلوسك في حسابك خلال 24س</p>
 <p class="text-xs text-gray-600">بعد الحفل · من غير تعقيد</p>
@@ -223,7 +223,7 @@ img { display: block; }
 </section>
 
 <section class="max-w-lg mx-auto px-5 py-6">
-<div class="gradient-green text-white rounded-2xl p-6 shadow-xl">
+<div class="gradient-green text-[#04352A] rounded-2xl p-6 shadow-xl">
 <p class="text-[10px] font-black text-[#6FCF97] uppercase tracking-[0.3em] mb-2">ليه مضمونة؟</p>
 <h2 class="text-xl font-black mb-4 leading-tight">منصة مصرية. تقنية عالمية.</h2>
 <div class="grid grid-cols-2 gap-3 text-sm">
@@ -248,7 +248,7 @@ img { display: block; }
 </section>
 
 <section class="max-w-lg mx-auto px-5 py-6">
-<a href="https://wa.me/201002229982?text=أهلاً،%20عندي%20قاعة%20أفراح%20وحابب%20أعرف%20تفاصيل%20الشراكة%20مع%20مضمونة" class="block bg-[#25D366] text-white p-5 rounded-2xl shadow-lg text-center scale-on-active shine">
+<a href="https://wa.me/201002229982?text=أهلاً،%20عندي%20قاعة%20أفراح%20وحابب%20أعرف%20تفاصيل%20الشراكة%20مع%20مضمونة" class="block bg-[#25D366] text-[#04352A] p-5 rounded-2xl shadow-lg text-center scale-on-active shine">
 <div class="flex items-center justify-center gap-2 mb-1 relative z-10">
 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"></path></svg>
 <p class="font-black text-lg">احجز مكالمة مع فريقنا</p>
@@ -258,22 +258,22 @@ img { display: block; }
 </section>
 
 <footer class="max-w-lg mx-auto px-5 py-8 text-center">
-<p class="font-black text-[#FA8125] text-2xl">مضمونة</p>
+<p class="font-black text-[#059669] text-2xl">مضمونة</p>
 <p class="text-xs text-gray-500 mt-1 tracking-[0.2em]">معاملاتك مضمونة</p>
 <div class="flex items-center justify-center gap-2 mt-4 text-[11px] text-gray-500">
 <span>٧ شارع سليمان عَزْمي، النزهة، مصر الجديدة، القاهرة</span>
 </div>
 <div class="flex items-center justify-center gap-3 mt-3 text-xs">
-<a href="https://www.instagram.com/madmona.cairo" class="text-gray-500 hover:text-[#FA8125]">Instagram</a>
+<a href="https://www.instagram.com/madmona.cairo" class="text-gray-500 hover:text-[#059669]">Instagram</a>
 <span class="text-gray-300">·</span>
-<a href="https://www.facebook.com/MadmonaCairo" class="text-gray-500 hover:text-[#FA8125]">Facebook</a>
+<a href="https://www.facebook.com/MadmonaCairo" class="text-gray-500 hover:text-[#059669]">Facebook</a>
 <span class="text-gray-300">·</span>
-<a href="https://madmonacairo.com" class="text-gray-500 hover:text-[#FA8125]">الموقع</a>
+<a href="https://madmonacairo.com" class="text-gray-500 hover:text-[#059669]">الموقع</a>
 </div>
 <p class="text-[10px] text-gray-400 mt-4">+20 100 222 9982 · madmona.admin@gmail.com</p>
 </footer>
 
-<a href="https://wa.me/201002229982?text=أهلاً،%20عندي%20قاعة%20أفراح%20وحابب%20أعرف%20تفاصيل%20الشراكة%20مع%20مضمونة" class="fixed bottom-5 left-5 w-14 h-14 bg-[#25D366] rounded-full shadow-2xl flex items-center justify-center text-white z-50 scale-on-active" style="box-shadow: 0 10px 30px rgba(37,211,102,0.5);">
+<a href="https://wa.me/201002229982?text=أهلاً،%20عندي%20قاعة%20أفراح%20وحابب%20أعرف%20تفاصيل%20الشراكة%20مع%20مضمونة" class="fixed bottom-5 left-5 w-14 h-14 bg-[#25D366] rounded-full shadow-2xl flex items-center justify-center text-[#04352A] z-50 scale-on-active" style="box-shadow: 0 10px 30px rgba(37,211,102,0.5);">
 <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"></path></svg>
 </a>
 

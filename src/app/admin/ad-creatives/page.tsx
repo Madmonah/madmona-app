@@ -31,10 +31,10 @@ export default async function AdCreativesPage() {
     <div dir="rtl" style={{ fontFamily: 'Tahoma', background: '#FAF7F0', minHeight: '100vh', padding: 24 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h1 style={{ color: '#FA8125', margin: 0, fontSize: 26 }}>🎨 Ad Creatives</h1>
+          <h1 style={{ color: '#059669', margin: 0, fontSize: 26 }}>🎨 Ad Creatives</h1>
           <div style={{ display: 'flex', gap: 12, fontSize: 13 }}>
-            <a href="/admin/ai-os" style={{ color: '#FA8125' }}>← AI OS</a>
-            <a href="/admin/marketing-hq" style={{ color: '#FA8125' }}>← HQ</a>
+            <a href="/admin/ai-os" style={{ color: '#059669' }}>← AI OS</a>
+            <a href="/admin/marketing-hq" style={{ color: '#059669' }}>← HQ</a>
           </div>
         </div>
 
@@ -53,7 +53,7 @@ export default async function AdCreativesPage() {
             {all.map(ad => (
               <div key={ad.id} style={{ background: '#fff', padding: 20, borderRadius: 12, border: '1px solid #eee' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <h2 style={{ margin: 0, color: '#FA8125', fontSize: 18 }}>
+                  <h2 style={{ margin: 0, color: '#059669', fontSize: 18 }}>
                     {ad.headline ?? '(بدون عنوان)'}
                   </h2>
                   <span style={{
@@ -77,7 +77,7 @@ export default async function AdCreativesPage() {
                 )}
                 {ad.visual_concept && (
                   <details style={{ marginTop: 12, fontSize: 12 }}>
-                    <summary style={{ cursor: 'pointer', color: '#FA8125' }}>🎨 Visual Concept</summary>
+                    <summary style={{ cursor: 'pointer', color: '#059669' }}>🎨 Visual Concept</summary>
                     <p style={{ background: '#f9f9f9', padding: 10, marginTop: 6, borderRadius: 6, color: '#444' }}>
                       {ad.visual_concept}
                     </p>

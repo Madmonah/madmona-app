@@ -190,8 +190,8 @@ export default function BulkExcelDrafts({
     <div className="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" dir="rtl">
       <div className="bg-white w-full sm:max-w-2xl sm:rounded-3xl rounded-t-3xl shadow-2xl max-h-[92vh] flex flex-col">
         <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
-          <div className="w-10 h-10 rounded-2xl bg-[#FA8125]/10 flex items-center justify-center">
-            <FileSpreadsheet className="w-5 h-5 text-[#FA8125]" />
+          <div className="w-10 h-10 rounded-2xl bg-[#34D399]/10 flex items-center justify-center">
+            <FileSpreadsheet className="w-5 h-5 text-[#059669]" />
           </div>
           <div className="flex-1">
             <h2 className="text-sm font-black text-gray-900">ضيف كل أصنافك مرة واحدة (Excel)</h2>
@@ -205,9 +205,9 @@ export default function BulkExcelDrafts({
         <div className="flex-1 overflow-y-auto p-5">
           {step === 'pick' && (
             <div className="space-y-4">
-              <button onClick={() => template(track)} className="w-full flex items-center gap-3 p-4 rounded-2xl border-2 border-dashed border-[#FA8125]/30 bg-[#FA8125]/5 hover:bg-[#FA8125]/10 transition">
-                <Download className="w-5 h-5 text-[#FA8125]" />
-                <span className="text-sm font-bold text-[#FA8125]">
+              <button onClick={() => template(track)} className="w-full flex items-center gap-3 p-4 rounded-2xl border-2 border-dashed border-[#059669]/30 bg-[#34D399]/5 hover:bg-[#34D399]/10 transition">
+                <Download className="w-5 h-5 text-[#059669]" />
+                <span className="text-sm font-bold text-[#059669]">
                   {track === 'services' ? 'نزّل قالب الخدمات الجاهز (Excel)' : 'نزّل القالب الجاهز (Excel)'}
                 </span>
               </button>
@@ -220,7 +220,7 @@ export default function BulkExcelDrafts({
               </p>
               <div
                 onClick={() => fileRef.current?.click()}
-                className="cursor-pointer border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-[#FA8125]/40 hover:bg-gray-50 transition"
+                className="cursor-pointer border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-[#059669]/40 hover:bg-gray-50 transition"
               >
                 <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                 <p className="text-sm font-bold text-gray-700">اضغط لاختيار ملف Excel</p>
@@ -235,8 +235,8 @@ export default function BulkExcelDrafts({
           {(step === 'preview' || step === 'sending') && (
             <div className="space-y-4">
               <p className="text-xs font-bold text-gray-600">
-                <FileSpreadsheet className="inline w-4 h-4 text-[#FA8125] ml-1" />
-                {fileName} — <span className="text-[#FA8125]">{valid.length} صنف جاهز</span>
+                <FileSpreadsheet className="inline w-4 h-4 text-[#059669] ml-1" />
+                {fileName} — <span className="text-[#059669]">{valid.length} صنف جاهز</span>
                 {bad.length > 0 && <span className="text-red-500"> · {bad.length} صف فيه مشكلة (هيتخطى)</span>}
               </p>
 
@@ -264,11 +264,11 @@ export default function BulkExcelDrafts({
               <div className="bg-[#FAFAF7] rounded-2xl p-4 space-y-3">
                 <p className="text-xs font-black text-gray-700">بيانات التواصل (عشان نفعّل الأصناف ونبعتلك)</p>
                 <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اسمك *"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#FA8125] outline-none text-sm font-bold bg-white" />
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#059669] outline-none text-sm font-bold bg-white" />
                 <input value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^\d+]/g, ''))} placeholder="رقم الواتساب * (01xxxxxxxxx)" dir="ltr"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#FA8125] outline-none text-sm font-bold bg-white text-left" />
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#059669] outline-none text-sm font-bold bg-white text-left" />
                 <input value={biz} onChange={(e) => setBiz(e.target.value)} placeholder="اسم النشاط / المعرض (اختياري)"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#FA8125] outline-none text-sm font-bold bg-white" />
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#059669] outline-none text-sm font-bold bg-white" />
               </div>
 
               {err && <p className="flex items-center gap-2 text-red-600 bg-red-50 rounded-xl p-3 text-xs font-bold"><AlertCircle className="w-4 h-4" /> {err}</p>}
@@ -277,8 +277,8 @@ export default function BulkExcelDrafts({
 
           {step === 'done' && result && (
             <div className="text-center py-6 space-y-3">
-              <div className="w-16 h-16 mx-auto rounded-full bg-[#FA8125]/10 flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-[#FA8125]" />
+              <div className="w-16 h-16 mx-auto rounded-full bg-[#34D399]/10 flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-[#059669]" />
               </div>
               <h3 className="text-lg font-black text-gray-900">استلمنا {result.created} صنف 🎉</h3>
               <p className="text-sm font-bold text-gray-500 leading-relaxed">
@@ -300,13 +300,13 @@ export default function BulkExcelDrafts({
               <button onClick={() => { setRows([]); setErr(null); setStep('pick') }} disabled={step === 'sending'}
                 className="py-3 px-4 rounded-xl bg-gray-100 text-gray-600 text-sm font-black disabled:opacity-50">غيّر الملف</button>
               <button onClick={submit} disabled={step === 'sending' || valid.length === 0}
-                className="flex-1 py-3 rounded-xl bg-[#FA8125] text-white text-sm font-black disabled:opacity-50 flex items-center justify-center gap-2">
+                className="flex-1 py-3 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-black disabled:opacity-50 flex items-center justify-center gap-2">
                 {step === 'sending' ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري الإرسال...</> : <><ArrowRight className="w-4 h-4" /> ابعت {valid.length} صنف</>}
               </button>
             </>
           )}
           {step === 'done' && (
-            <button onClick={onClose} className="flex-1 py-3 rounded-xl bg-[#FA8125] text-white text-sm font-black">تمام</button>
+            <button onClick={onClose} className="flex-1 py-3 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-black">تمام</button>
           )}
         </div>
       </div>

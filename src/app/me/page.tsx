@@ -108,7 +108,7 @@ export default function MyDashboard() {
     await rpcSafe(supabase, 'madmona_employee_mark_notifications_read', { p_token: token() })
   }
 
-  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div>
 
   if (notEmployee) return (
     <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
@@ -116,7 +116,7 @@ export default function MyDashboard() {
         <Briefcase className="w-12 h-12 text-[#6B7280] opacity-30 mx-auto mb-3" />
         <p className="font-black text-[#1A2E26] mb-1">مفيش لوحة موظف لحسابك</p>
         <p className="text-sm text-[#6B7280] mb-5">لو إنت موظف، اطلب من الإدارة تفعيل حسابك.</p>
-        <Link href="/home" className="inline-block px-5 py-2.5 rounded-xl bg-[#FA8125] text-white font-bold text-sm">ارجع للرئيسية</Link>
+        <Link href="/home" className="inline-block px-5 py-2.5 rounded-xl bg-[#34D399] text-[#04352A] font-bold text-sm">ارجع للرئيسية</Link>
       </div>
     </div>
   )
@@ -129,7 +129,7 @@ export default function MyDashboard() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <header className="bg-[#FA8125] text-white">
+      <header className="bg-[#34D399] text-[#04352A]">
         <div className="max-w-2xl mx-auto px-4 py-5 flex items-center justify-between">
           <div>
             <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/70">لوحة شغلي</p>
@@ -146,7 +146,7 @@ export default function MyDashboard() {
 
         {/* ===== MANAGER ENTRY (admin / branch_manager only) ===== */}
         {data.is_manager && (
-          <Link href="/me/team" className="flex items-center justify-between bg-[#FA8125] text-white rounded-2xl p-4 active:scale-[0.99] transition-all">
+          <Link href="/me/team" className="flex items-center justify-between bg-[#34D399] text-[#04352A] rounded-2xl p-4 active:scale-[0.99] transition-all">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-white/15 grid place-items-center"><Briefcase className="w-5 h-5" /></div>
               <div>
@@ -163,17 +163,17 @@ export default function MyDashboard() {
           <section className="bg-white rounded-2xl border border-gray-100 p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-1.5">
-                <Bell className="w-4 h-4 text-[#FA8125]" />
+                <Bell className="w-4 h-4 text-[#059669]" />
                 <p className="text-sm font-black text-[#1A2E26]">الإشعارات</p>
-                {unread > 0 && <span className="text-[10px] font-black bg-[#FA8125] text-white rounded-full min-w-[18px] text-center px-1.5 py-0.5">{fmt(unread)}</span>}
+                {unread > 0 && <span className="text-[10px] font-black bg-[#34D399] text-[#04352A] rounded-full min-w-[18px] text-center px-1.5 py-0.5">{fmt(unread)}</span>}
               </div>
-              {unread > 0 && <button onClick={markAllRead} className="text-[11px] font-bold text-[#FA8125]">تعليم الكل كمقروء</button>}
+              {unread > 0 && <button onClick={markAllRead} className="text-[11px] font-bold text-[#059669]">تعليم الكل كمقروء</button>}
             </div>
             <div className="space-y-2">
               {notifs.map((n: any) => (
-                <div key={n.id} className={`p-3 rounded-xl border ${n.read ? 'bg-white border-gray-100' : 'bg-[#FA8125]/5 border-[#FA8125]/30'}`}>
+                <div key={n.id} className={`p-3 rounded-xl border ${n.read ? 'bg-white border-gray-100' : 'bg-[#34D399]/5 border-[#059669]/30'}`}>
                   <div className="flex items-start gap-2.5">
-                    {!n.read && <span className="w-2 h-2 rounded-full bg-[#FA8125] flex-shrink-0 mt-1.5" />}
+                    {!n.read && <span className="w-2 h-2 rounded-full bg-[#34D399] flex-shrink-0 mt-1.5" />}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-[#1A2E26]">{n.title}</p>
                       {n.body && <p className="text-[13px] text-[#1A2E26] mt-0.5">{n.body}</p>}
@@ -188,24 +188,24 @@ export default function MyDashboard() {
 
         {/* ===== ATTENDANCE (QR + location) ===== */}
         <section className="bg-white rounded-2xl border border-gray-100 p-5">
-          <div className="flex items-center gap-1.5 mb-3"><MapPin className="w-4 h-4 text-[#FA8125]" /><p className="text-sm font-black text-[#1A2E26]">الحضور والانصراف</p></div>
+          <div className="flex items-center gap-1.5 mb-3"><MapPin className="w-4 h-4 text-[#059669]" /><p className="text-sm font-black text-[#1A2E26]">الحضور والانصراف</p></div>
 
           {att?.clock_in_at && (
             <div className="flex items-center gap-4 text-sm mb-3 bg-[#FAFAF7] rounded-xl p-3">
-              <div><p className="text-[10px] text-[#6B7280]">حضور</p><p className="font-mono font-bold text-[#FA8125]" dir="ltr">{new Date(att.clock_in_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</p></div>
+              <div><p className="text-[10px] text-[#6B7280]">حضور</p><p className="font-mono font-bold text-[#059669]" dir="ltr">{new Date(att.clock_in_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</p></div>
               {att.clock_out_at && <div><p className="text-[10px] text-[#6B7280]">انصراف</p><p className="font-mono font-bold text-[#1A2E26]" dir="ltr">{new Date(att.clock_out_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</p></div>}
               {att.hours_worked && <div><p className="text-[10px] text-[#6B7280]">ساعات</p><p className="font-mono font-bold text-[#1A2E26]">{att.hours_worked}</p></div>}
             </div>
           )}
 
           {clockMsg && (
-            <div className={`mb-3 px-3 py-2 rounded-xl text-xs font-bold ${clockMsg.ok ? 'bg-[#FA8125]/10 text-[#FA8125]' : 'bg-red-50 text-red-600'}`}>{clockMsg.text}</div>
+            <div className={`mb-3 px-3 py-2 rounded-xl text-xs font-bold ${clockMsg.ok ? 'bg-[#34D399]/10 text-[#059669]' : 'bg-red-50 text-red-600'}`}>{clockMsg.text}</div>
           )}
 
           {clockState === 'done' ? (
-            <div className="text-center py-2 text-sm font-bold text-[#FA8125] flex items-center justify-center gap-2"><CheckCircle2 className="w-5 h-5" /> خلصت يومك · شكراً 🙌</div>
+            <div className="text-center py-2 text-sm font-bold text-[#059669] flex items-center justify-center gap-2"><CheckCircle2 className="w-5 h-5" /> خلصت يومك · شكراً 🙌</div>
           ) : (
-            <button onClick={doClock} disabled={clocking} className="w-full py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
+            <button onClick={doClock} disabled={clocking} className="w-full py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
               {clocking ? <><Loader2 className="w-4 h-4 animate-spin" /> بيتأكد من موقعك...</>
                 : clockState === 'in' ? <><LogIn className="w-4 h-4" /> سجّل حضور</>
                 : <><LogOut className="w-4 h-4" /> سجّل انصراف</>}
@@ -216,7 +216,7 @@ export default function MyDashboard() {
 
         {/* ===== EARNINGS (commission + tips) ===== */}
         <section className="grid grid-cols-2 gap-3">
-          <div className="bg-[#FA8125] text-white rounded-2xl p-4">
+          <div className="bg-[#34D399] text-[#04352A] rounded-2xl p-4">
             <div className="flex items-center gap-1.5 text-white/90 mb-1"><Wallet className="w-4 h-4" /><p className="text-[10px] font-bold uppercase tracking-wider">عمولة الشهر</p></div>
             <p className="text-2xl font-black">{fmt(data.commission_this_month)} <span className="text-sm">ج</span></p>
           </div>
@@ -229,10 +229,10 @@ export default function MyDashboard() {
         {/* ===== TIPS ===== */}
         <section className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-1.5"><Gift className="w-4 h-4 text-[#FA8125]" /><p className="text-sm font-black text-[#1A2E26]">البقشيش</p></div>
+            <div className="flex items-center gap-1.5"><Gift className="w-4 h-4 text-[#059669]" /><p className="text-sm font-black text-[#1A2E26]">البقشيش</p></div>
             <div className="text-left">
               <p className="text-[10px] text-[#6B7280]">الشهر ده</p>
-              <p className="font-black font-mono text-[#FA8125]">{fmt(tips.month_total)} ج</p>
+              <p className="font-black font-mono text-[#059669]">{fmt(tips.month_total)} ج</p>
             </div>
           </div>
           {tips.pending_count > 0 && (
@@ -245,11 +245,11 @@ export default function MyDashboard() {
               {tips.recent.map((t: any, i: number) => (
                 <div key={i} className="flex items-center justify-between text-sm border-b border-gray-50 pb-2 last:border-0">
                   <div className="flex items-center gap-2">
-                    <Coins className="w-3.5 h-3.5 text-[#FA8125]" />
+                    <Coins className="w-3.5 h-3.5 text-[#059669]" />
                     <span className="font-bold text-[#1A2E26]">{fmt(t.amount)} ج</span>
                     <span className="text-[11px] text-[#6B7280]">{t.method === 'instapay' ? 'إنستاباي' : 'كاش'}</span>
                   </div>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${t.status === 'received' ? 'bg-[#FA8125]/10 text-[#FA8125]' : t.status === 'rejected' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'}`}>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${t.status === 'received' ? 'bg-[#34D399]/10 text-[#059669]' : t.status === 'rejected' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'}`}>
                     {t.status === 'received' ? 'مستلم ✓' : t.status === 'rejected' ? 'مرفوض' : 'بانتظار'}
                   </span>
                 </div>
@@ -261,7 +261,7 @@ export default function MyDashboard() {
         {/* ===== TODAY BOOKINGS ===== */}
         <section>
           <div className="flex items-center justify-between mb-3 px-1">
-            <div className="flex items-center gap-1.5"><CalendarCheck className="w-4 h-4 text-[#FA8125]" /><p className="text-sm font-black text-[#1A2E26]">مواعيدي النهاردة</p></div>
+            <div className="flex items-center gap-1.5"><CalendarCheck className="w-4 h-4 text-[#059669]" /><p className="text-sm font-black text-[#1A2E26]">مواعيدي النهاردة</p></div>
             {data.today?.length > 0 && <span className="text-[11px] font-bold text-[#6B7280]">{data.today.filter((b: any) => b.status === 'completed').length}/{data.today.length} خلص</span>}
           </div>
           {data.today?.length > 0 ? (
@@ -281,7 +281,7 @@ export default function MyDashboard() {
         {/* ===== DAILY TASKS ===== */}
         <section className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-1.5"><ListChecks className="w-4 h-4 text-[#FA8125]" /><p className="text-sm font-black text-[#1A2E26]">تاسكات اليوم</p></div>
+            <div className="flex items-center gap-1.5"><ListChecks className="w-4 h-4 text-[#059669]" /><p className="text-sm font-black text-[#1A2E26]">تاسكات اليوم</p></div>
             <span className="text-[11px] font-bold text-[#6B7280]">{tasksDone}/{tasks.length}</span>
           </div>
           {tasks.length > 0 ? (
@@ -290,9 +290,9 @@ export default function MyDashboard() {
                 const done = t.status === 'completed'
                 return (
                   <button key={t.id} onClick={() => toggleTask(t.id, t.status)} disabled={taskBusy === t.id}
-                    className={`w-full text-right flex items-start gap-3 p-3 rounded-xl border transition-all ${done ? 'bg-[#FA8125]/5 border-[#FA8125]/30' : 'bg-white border-gray-100 hover:border-[#FA8125]'}`}>
-                    {taskBusy === t.id ? <Loader2 className="w-5 h-5 text-[#FA8125] animate-spin flex-shrink-0 mt-0.5" />
-                      : done ? <CheckCircle2 className="w-5 h-5 text-[#FA8125] flex-shrink-0 mt-0.5" />
+                    className={`w-full text-right flex items-start gap-3 p-3 rounded-xl border transition-all ${done ? 'bg-[#34D399]/5 border-[#059669]/30' : 'bg-white border-gray-100 hover:border-[#059669]'}`}>
+                    {taskBusy === t.id ? <Loader2 className="w-5 h-5 text-[#059669] animate-spin flex-shrink-0 mt-0.5" />
+                      : done ? <CheckCircle2 className="w-5 h-5 text-[#059669] flex-shrink-0 mt-0.5" />
                       : <Circle className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />}
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-medium ${done ? 'text-[#6B7280] line-through' : 'text-[#1A2E26]'}`}>{t.title}</p>
@@ -326,10 +326,10 @@ function BookingCard({ b, onAction, onPrep, busy, prepBusyKey }: any) {
   const done = b.status === 'completed'
   const running = b.status === 'in_progress'
   return (
-    <div className={`rounded-2xl border p-4 transition-all ${done ? 'bg-[#FA8125]/5 border-[#FA8125]/30' : running ? 'border-[#FA8125] shadow-sm bg-white' : 'border-gray-100 bg-white'}`}>
+    <div className={`rounded-2xl border p-4 transition-all ${done ? 'bg-[#34D399]/5 border-[#059669]/30' : running ? 'border-[#059669] shadow-sm bg-white' : 'border-gray-100 bg-white'}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="px-2.5 py-1 rounded-lg bg-[#FA8125] text-white font-mono font-black text-sm" dir="ltr">{b.time}</div>
+          <div className="px-2.5 py-1 rounded-lg bg-[#34D399] text-[#04352A] font-mono font-black text-sm" dir="ltr">{b.time}</div>
           <div>
             <p className="font-black text-[#1A2E26] text-sm">{b.service}</p>
             <p className="text-[11px] text-[#6B7280] mt-0.5 flex items-center gap-2">
@@ -339,8 +339,8 @@ function BookingCard({ b, onAction, onPrep, busy, prepBusyKey }: any) {
           </div>
         </div>
         <div className="text-left flex-shrink-0">
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${done ? 'bg-[#FA8125] text-white' : running ? 'bg-amber-100 text-amber-700' : 'bg-[#FAFAF7] text-[#6B7280]'}`}>{STATUS_AR[b.status] || b.status}</span>
-          <p className="font-mono font-black text-[#FA8125] text-sm mt-1">{fmt(b.price)} ج</p>
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${done ? 'bg-[#34D399] text-[#04352A]' : running ? 'bg-amber-100 text-amber-700' : 'bg-[#FAFAF7] text-[#6B7280]'}`}>{STATUS_AR[b.status] || b.status}</span>
+          <p className="font-mono font-black text-[#059669] text-sm mt-1">{fmt(b.price)} ج</p>
         </div>
       </div>
 
@@ -353,8 +353,8 @@ function BookingCard({ b, onAction, onPrep, busy, prepBusyKey }: any) {
               const isBusy = prepBusyKey === b.booking_id + it.key
               return (
                 <button key={it.key} onClick={() => onPrep(b.booking_id, it.key, !isDone)} disabled={isBusy} className="w-full text-right flex items-center gap-2.5 group">
-                  {isBusy ? <Loader2 className="w-5 h-5 text-[#FA8125] animate-spin flex-shrink-0" />
-                    : <span className={`w-5 h-5 rounded-md grid place-items-center flex-shrink-0 transition-all ${isDone ? 'bg-[#FA8125] text-white' : 'border border-gray-300 text-transparent group-hover:border-[#FA8125]'}`}><Check className="w-3.5 h-3.5" /></span>}
+                  {isBusy ? <Loader2 className="w-5 h-5 text-[#059669] animate-spin flex-shrink-0" />
+                    : <span className={`w-5 h-5 rounded-md grid place-items-center flex-shrink-0 transition-all ${isDone ? 'bg-[#34D399] text-[#04352A]' : 'border border-gray-300 text-transparent group-hover:border-[#059669]'}`}><Check className="w-3.5 h-3.5" /></span>}
                   {it.kind === 'product' ? <ShoppingBag className="w-3.5 h-3.5 text-[#6B7280] flex-shrink-0" /> : <Sparkles className="w-3.5 h-3.5 text-[#6B7280] flex-shrink-0" />}
                   <span className={`text-sm ${isDone ? 'text-[#6B7280] line-through' : 'text-[#1A2E26]'}`}>{it.label}</span>
                 </button>
@@ -369,17 +369,17 @@ function BookingCard({ b, onAction, onPrep, busy, prepBusyKey }: any) {
       {!done ? (
         <div className="mt-3">
           {running ? (
-            <button onClick={() => onAction(b.booking_id, 'complete')} disabled={busy === b.booking_id} className="w-full py-2.5 rounded-xl bg-[#FA8125] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+            <button onClick={() => onAction(b.booking_id, 'complete')} disabled={busy === b.booking_id} className="w-full py-2.5 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm flex items-center justify-center gap-2 disabled:opacity-50">
               {busy === b.booking_id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} خلّصت الموعد
             </button>
           ) : (
-            <button onClick={() => onAction(b.booking_id, 'start')} disabled={busy === b.booking_id} className="w-full py-2.5 rounded-xl bg-[#FA8125]/10 text-[#FA8125] font-black text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+            <button onClick={() => onAction(b.booking_id, 'start')} disabled={busy === b.booking_id} className="w-full py-2.5 rounded-xl bg-[#34D399]/10 text-[#059669] font-black text-sm flex items-center justify-center gap-2 disabled:opacity-50">
               {busy === b.booking_id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />} ابدأ الموعد
             </button>
           )}
         </div>
       ) : (
-        <div className="mt-3 text-center text-xs font-bold text-[#FA8125] flex items-center justify-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> اتعمل ✓</div>
+        <div className="mt-3 text-center text-xs font-bold text-[#059669] flex items-center justify-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> اتعمل ✓</div>
       )}
     </div>
   )

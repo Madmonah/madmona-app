@@ -41,7 +41,7 @@ type VKey = 'products' | 'rentals' | 'services'
 
 const VERTICALS: { key: VKey; ar: string; en: string; emoji: string; tracks: string[]; tone: string; accent: string }[] = [
   { key: 'products',    ar: 'بيع',        en: 'Buy',         emoji: '🏷️', tracks: ['products', 'sales'],   tone: 'from-[#2C5F8D] to-[#5B9BD5]', accent: '#3D7BB6' },
-  { key: 'rentals',     ar: 'إيجار',      en: 'Rent',        emoji: '🔑', tracks: ['rentals', 'hybrid'],   tone: 'from-[#FA8125] to-[#2FA084]', accent: '#FA8125' },
+  { key: 'rentals',     ar: 'إيجار',      en: 'Rent',        emoji: '🔑', tracks: ['rentals', 'hybrid'],   tone: 'from-[#34D399] to-[#2FA084]', accent: '#059669' },
   { key: 'services',    ar: 'خدمات',      en: 'Services',    emoji: '🛠️', tracks: ['services'],            tone: 'from-[#8A6A0F] to-[#D4A017]', accent: '#2B4521' },
 ]
 
@@ -52,8 +52,8 @@ const BOURSE_CARD = {
   ar: 'بورصة مضمونة العقارية',
   en: 'Madmona Real Estate Exchange',
   emoji: '🏗️',
-  tone: 'from-[#14231E] to-[#FA8125]',
-  accent: '#FA8125',
+  tone: 'from-[#14231E] to-[#34D399]',
+  accent: '#059669',
   href: '/real-estate/market',
 }
 
@@ -64,8 +64,8 @@ const BUSINESS_CARD = {
   ar: 'بورضة رجال الأعمال',
   en: 'Business Lounge',
   emoji: '📈',
-  tone: 'from-[#2B4521] to-[#FA8125]',
-  accent: '#FA8125',
+  tone: 'from-[#2B4521] to-[#34D399]',
+  accent: '#059669',
   href: '/business-lounge',
 }
 
@@ -194,7 +194,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
           لفوق تحت شريط الحالة نفسه — متطابق مع appleWebApp.statusBarStyle:
           'black-translucent' + viewport-fit=cover في layout.tsx. */}
       <div
-        className="bg-[#FA8125] rounded-b-[28px] pb-5"
+        className="bg-[#34D399] rounded-b-[28px] pb-5"
         style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
       >
         <header className="flex items-center justify-between px-4 pb-1">
@@ -211,7 +211,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
           <div className="flex gap-2">
             <Link href="/account" aria-label="الإشعارات" className="relative w-10 h-10 bg-white/15 rounded-[14px] flex items-center justify-center no-underline">
               <Bell className="w-[19px] h-[19px] text-white" strokeWidth={2} />
-              <span className="absolute top-[9px] left-[9px] w-[7px] h-[7px] rounded-full bg-[#E26D5C] border-[1.5px] border-[#FA8125]" />
+              <span className="absolute top-[9px] left-[9px] w-[7px] h-[7px] rounded-full bg-[#E26D5C] border-[1.5px] border-[#059669]" />
             </Link>
             <button type="button" onClick={() => setMenuOpen(true)} aria-label="القائمة" className="w-10 h-10 bg-white/15 rounded-[14px] flex items-center justify-center">
               <Menu className="w-[19px] h-[19px] text-white" strokeWidth={2} />
@@ -241,13 +241,13 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
             placeholder={en ? 'Apartment · car · hall · service…' : 'شقة · عربية · قاعة · خدمة…'}
             className="flex-1 bg-transparent outline-none text-sm font-medium text-[#1A1A1A] placeholder:text-[#7C8A84] min-w-0"
           />
-          <button type="submit" aria-label="بحث" className="w-[34px] h-[34px] -my-1.5 -ms-2 rounded-[10px] bg-[#FA8125] flex items-center justify-center flex-shrink-0">
+          <button type="submit" aria-label="بحث" className="w-[34px] h-[34px] -my-1.5 -ms-2 rounded-[10px] bg-[#34D399] flex items-center justify-center flex-shrink-0">
             <ArrowLeft className="w-4 h-4 text-white rtl:rotate-0 ltr:rotate-180" strokeWidth={2.5} />
           </button>
         </form>
 
         {/* 3. Ask Marid row — typeable; opens Marid chat with the message */}
-        <form onSubmit={submitMarid} className="flex items-center gap-2.5 bg-white border-[1.5px] border-[#E5DFD3] rounded-2xl px-4 py-3 mt-2.5 focus-within:border-[#FA8125] transition-colors">
+        <form onSubmit={submitMarid} className="flex items-center gap-2.5 bg-white border-[1.5px] border-[#E5DFD3] rounded-2xl px-4 py-3 mt-2.5 focus-within:border-[#059669] transition-colors">
           <span className="text-[20px] leading-none flex-shrink-0">🧞</span>
           <input
             value={marid}
@@ -256,7 +256,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
             className="flex-1 bg-transparent outline-none text-[13px] font-semibold text-[#1A1A1A] placeholder:text-[#4B5563] min-w-0"
           />
           <button type="submit" aria-label={en ? 'Ask' : 'اسأل'} className="flex-shrink-0">
-            <ArrowLeft className="w-4 h-4 text-[#FA8125] rtl:rotate-0 ltr:rotate-180" strokeWidth={2.5} />
+            <ArrowLeft className="w-4 h-4 text-[#059669] rtl:rotate-0 ltr:rotate-180" strokeWidth={2.5} />
           </button>
         </form>
 
@@ -274,7 +274,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
       <section className="pt-[22px]">
         <div className="flex items-baseline justify-between mb-3 px-4">
           <h2 className="text-[17px] font-black text-[#0A0A0A]">{en ? 'Choose your section' : 'اختار قسمك'}</h2>
-          <Link href="/marketplace" className="text-xs font-extrabold text-[#FA8125] no-underline">{en ? 'See all ←' : 'شوف الكل ←'}</Link>
+          <Link href="/marketplace" className="text-xs font-extrabold text-[#059669] no-underline">{en ? 'See all ←' : 'شوف الكل ←'}</Link>
         </div>
         <div className="flex flex-col gap-3 px-4">
           {VERTICALS.map(v => {
@@ -360,12 +360,12 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
 
       {/* 6. Supplier CTA */}
       <section className="px-4 pt-6 pb-7">
-        <div className="rounded-[20px] px-5 py-[18px] flex items-center gap-3" style={{ background: 'linear-gradient(118deg, #FA8125, #F98F2A)' }}>
+        <div className="rounded-[20px] px-5 py-[18px] flex items-center gap-3" style={{ background: 'linear-gradient(118deg, #059669, #34D399)' }}>
           <span className="flex-1">
             <span className="block text-white text-[15px] font-black">{en ? 'Have something to rent or sell?' : 'عندك حاجة تأجرها أو تبيعها؟'}</span>
             <span className="block text-white/75 text-[11px] font-semibold mt-0.5">{en ? 'List it free in 2 minutes — we market it for you' : 'ضيفها مجاناً في دقيقتين — إحنا بنسوّقلك'}</span>
           </span>
-          <Link href={`/add-listing${addTrack}`} className="bg-white text-[#FA8125] rounded-xl px-4 py-2.5 text-[13px] font-black flex-shrink-0 no-underline">{en ? 'List ←' : 'ضيف ←'}</Link>
+          <Link href={`/add-listing${addTrack}`} className="bg-white text-[#059669] rounded-xl px-4 py-2.5 text-[13px] font-black flex-shrink-0 no-underline">{en ? 'List ←' : 'ضيف ←'}</Link>
         </div>
       </section>
 
@@ -381,7 +381,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
                   <img src="/madmona-logo.png" alt="مضمونة" className="w-9 h-9 object-contain" />
                 </span>
                 <span>
-                  <span className="block font-black text-[#FA8125]">مضمونة</span>
+                  <span className="block font-black text-[#059669]">مضمونة</span>
                   <span className="block text-[9px] text-gray-500 font-bold tracking-[0.2em]">MADMONA</span>
                 </span>
               </div>
@@ -392,14 +392,14 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
             <nav className="flex-1 overflow-y-auto p-4 space-y-1">
               <DrawerLink href="/account" icon={<User className="w-5 h-5 text-gray-700" />} title={en ? 'Account' : 'حسابي'} desc={en ? 'Orders, favorites & wallet' : 'طلباتك ومفضّلتك والمحفظة'} onClose={() => setMenuOpen(false)} />
               <DrawerLink href={`/add-listing${addTrack}`} icon={<Plus className="w-5 h-5 text-[#d4a017]" strokeWidth={3} />} iconBg="bg-[#d4a017]/10" title={en ? 'Add a listing' : 'ضيف المنتج'} desc={en ? 'Start selling or renting' : 'ابدأ تبيع أو تؤجّر على مضمونة'} onClose={() => setMenuOpen(false)} />
-              <DrawerLink href="/careers" icon={<Briefcase className="w-5 h-5 text-[#FA8125]" />} iconBg="bg-[#FA8125]/10" title={en ? 'Careers' : 'التوظيف'} desc={en ? 'Join the Madmona team' : 'تقدّم لفرص العمل في مضمونة'} onClose={() => setMenuOpen(false)} />
+              <DrawerLink href="/careers" icon={<Briefcase className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title={en ? 'Careers' : 'التوظيف'} desc={en ? 'Join the Madmona team' : 'تقدّم لفرص العمل في مضمونة'} onClose={() => setMenuOpen(false)} />
               {loggedIn ? (
                 <button type="button" onClick={signOut} className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-red-50 text-right">
                   <span className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0"><LogOut className="w-5 h-5 text-red-500" /></span>
                   <span className="flex-1"><span className="block font-bold text-gray-900">{en ? 'Sign out' : 'تسجيل الخروج'}</span></span>
                 </button>
               ) : (
-                <DrawerLink href="/auth/login" icon={<LogIn className="w-5 h-5 text-[#FA8125]" />} iconBg="bg-[#FA8125]/10" title={en ? 'Log in' : 'تسجيل الدخول'} desc={en ? 'Access your account' : 'ادخل على حسابك'} onClose={() => setMenuOpen(false)} />
+                <DrawerLink href="/auth/login" icon={<LogIn className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title={en ? 'Log in' : 'تسجيل الدخول'} desc={en ? 'Access your account' : 'ادخل على حسابك'} onClose={() => setMenuOpen(false)} />
               )}
             </nav>
             <div className="p-4 border-t border-gray-100">

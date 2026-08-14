@@ -170,8 +170,8 @@ export default function SupplierRegisterPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8 shadow-sm text-center">
-          <div className="flex items-center justify-center w-12 h-12 bg-[#FA8125]/10 rounded-full mb-4 mx-auto">
-            <Lock className="w-5 h-5 text-[#FA8125]" />
+          <div className="flex items-center justify-center w-12 h-12 bg-[#34D399]/10 rounded-full mb-4 mx-auto">
+            <Lock className="w-5 h-5 text-[#059669]" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 mb-1">سجّل دخول الأول</h1>
           <p className="text-sm text-gray-500 mb-6">
@@ -179,13 +179,13 @@ export default function SupplierRegisterPage() {
           </p>
           <Link
             href={`/auth/login?redirect=${encodeURIComponent('/supplier/register')}`}
-            className="inline-block w-full bg-[#FA8125] text-white py-3 rounded-xl font-semibold hover:bg-[#FA8125]/90"
+            className="inline-block w-full bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold hover:bg-[#34D399]/90"
           >
             تسجيل دخول
           </Link>
           <Link
             href={`/auth/signup?redirect=${encodeURIComponent('/supplier/register')}`}
-            className="inline-block mt-2 text-sm text-gray-600 hover:text-[#FA8125]"
+            className="inline-block mt-2 text-sm text-gray-600 hover:text-[#059669]"
           >
             مفيش حساب؟ اعمل حساب جديد
           </Link>
@@ -206,7 +206,7 @@ export default function SupplierRegisterPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] p-4" dir="rtl">
         <div className="max-w-xl mx-auto pt-8">
-          <Link href="/" className="inline-flex items-center gap-1 text-sm text-gray-600 mb-6 hover:text-[#FA8125]">
+          <Link href="/" className="inline-flex items-center gap-1 text-sm text-gray-600 mb-6 hover:text-[#059669]">
             <ArrowRight className="w-4 h-4" /> الرئيسية
           </Link>
 
@@ -259,7 +259,7 @@ export default function SupplierRegisterPage() {
             {canAccessDashboard && existing.listings_count > 0 && (
               <Link
                 href="/supplier/marketplace"
-                className="block w-full mt-6 bg-[#FA8125] text-white py-3 rounded-xl font-semibold text-center hover:bg-[#FA8125]/90"
+                className="block w-full mt-6 bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold text-center hover:bg-[#34D399]/90"
               >
                 روح للوحة التحكم ({existing.listings_count} إعلان)
               </Link>
@@ -295,7 +295,7 @@ export default function SupplierRegisterPage() {
             <div className="flex gap-3 justify-center">
               <Link
                 href="/supplier/marketplace/new?welcome=1"
-                className="px-6 py-2.5 bg-[#FA8125] text-white rounded-lg text-sm font-semibold hover:bg-[#FA8125]/90"
+                className="px-6 py-2.5 bg-[#34D399] text-[#04352A] rounded-lg text-sm font-semibold hover:bg-[#34D399]/90"
               >
                 ضيف إعلانك الأول دلوقتي
               </Link>
@@ -312,14 +312,14 @@ export default function SupplierRegisterPage() {
   return (
     <div className="min-h-screen bg-[#FAFAF7] p-4" dir="rtl">
       <div className="max-w-xl mx-auto pt-8 pb-12">
-        <Link href="/" className="inline-flex items-center gap-1 text-sm text-gray-600 mb-6 hover:text-[#FA8125]">
+        <Link href="/" className="inline-flex items-center gap-1 text-sm text-gray-600 mb-6 hover:text-[#059669]">
           <ArrowRight className="w-4 h-4" /> الرئيسية
         </Link>
 
         <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
-            <div className="flex items-center justify-center w-10 h-10 bg-[#FA8125]/10 rounded-full">
-              <Building2 className="w-5 h-5 text-[#FA8125]" />
+            <div className="flex items-center justify-center w-10 h-10 bg-[#34D399]/10 rounded-full">
+              <Building2 className="w-5 h-5 text-[#059669]" />
             </div>
             <h1 className="text-xl font-bold text-gray-900">أجر معانا - الخطوة 1 من 2: تسجيل حساب</h1>
           </div>
@@ -351,23 +351,23 @@ export default function SupplierRegisterPage() {
                   onClick={() => setAccountType('individual')}
                   className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
                     accountType === 'individual'
-                      ? 'border-[#FA8125] bg-[#FA8125]/5 shadow-sm'
+                      ? 'border-[#059669] bg-[#34D399]/5 shadow-sm'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    accountType === 'individual' ? 'bg-[#FA8125] text-white' : 'bg-gray-100 text-gray-500'
+                    accountType === 'individual' ? 'bg-[#34D399] text-[#04352A]' : 'bg-gray-100 text-gray-500'
                   }`}>
                     <UserIcon className="w-5 h-5" />
                   </div>
                   <div className="text-center">
                     <p className={`text-sm font-bold ${
-                      accountType === 'individual' ? 'text-[#FA8125]' : 'text-gray-700'
+                      accountType === 'individual' ? 'text-[#059669]' : 'text-gray-700'
                     }`}>فرد</p>
                     <p className="text-[10px] text-gray-500 mt-0.5">بصفتك الشخصية</p>
                   </div>
                   {accountType === 'individual' && (
-                    <CheckCircle className="absolute top-2 left-2 w-4 h-4 text-[#FA8125]" />
+                    <CheckCircle className="absolute top-2 left-2 w-4 h-4 text-[#059669]" />
                   )}
                 </button>
 
@@ -376,23 +376,23 @@ export default function SupplierRegisterPage() {
                   onClick={() => setAccountType('business')}
                   className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
                     accountType === 'business'
-                      ? 'border-[#FA8125] bg-[#FA8125]/5 shadow-sm'
+                      ? 'border-[#059669] bg-[#34D399]/5 shadow-sm'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    accountType === 'business' ? 'bg-[#FA8125] text-white' : 'bg-gray-100 text-gray-500'
+                    accountType === 'business' ? 'bg-[#34D399] text-[#04352A]' : 'bg-gray-100 text-gray-500'
                   }`}>
                     <Building2 className="w-5 h-5" />
                   </div>
                   <div className="text-center">
                     <p className={`text-sm font-bold ${
-                      accountType === 'business' ? 'text-[#FA8125]' : 'text-gray-700'
+                      accountType === 'business' ? 'text-[#059669]' : 'text-gray-700'
                     }`}>شركة</p>
                     <p className="text-[10px] text-gray-500 mt-0.5">نشاط تجاري</p>
                   </div>
                   {accountType === 'business' && (
-                    <CheckCircle className="absolute top-2 left-2 w-4 h-4 text-[#FA8125]" />
+                    <CheckCircle className="absolute top-2 left-2 w-4 h-4 text-[#059669]" />
                   )}
                 </button>
               </div>
@@ -401,9 +401,9 @@ export default function SupplierRegisterPage() {
             <div>
               <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
                 {accountType === 'individual' ? (
-                  <><UserIcon className="w-4 h-4 text-[#FA8125]" /> بياناتك الشخصية</>
+                  <><UserIcon className="w-4 h-4 text-[#059669]" /> بياناتك الشخصية</>
                 ) : (
-                  <><Building2 className="w-4 h-4 text-[#FA8125]" /> بيانات النشاط</>
+                  <><Building2 className="w-4 h-4 text-[#059669]" /> بيانات النشاط</>
                 )}
               </h2>
               <div className="space-y-3">
@@ -417,7 +417,7 @@ export default function SupplierRegisterPage() {
                     onChange={(e) => setBusinessName(e.target.value)}
                     required
                     maxLength={200}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669]"
                     placeholder={accountType === 'individual' ? 'مثلاً: أحمد محمد' : 'مثلاً: شركة النيل لتأجير السيارات'}
                   />
                   <p className="text-[10px] text-gray-400 mt-1">
@@ -435,7 +435,7 @@ export default function SupplierRegisterPage() {
                     value={businessNameEn}
                     onChange={(e) => setBusinessNameEn(e.target.value)}
                     maxLength={200}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669]"
                     placeholder={accountType === 'individual' ? 'Ahmed Mohamed' : 'Nile Car Rentals'}
                     dir="ltr"
                   />
@@ -449,7 +449,7 @@ export default function SupplierRegisterPage() {
                     onChange={(e) => setDescription(e.target.value)}
                     rows={3}
                     maxLength={1000}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669]"
                     placeholder="ايه نوع الخدمة اللي بتقدمها وفين"
                   />
                 </div>
@@ -461,7 +461,7 @@ export default function SupplierRegisterPage() {
                     type="url"
                     value={logoUrl}
                     onChange={(e) => setLogoUrl(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669]"
                     placeholder="https://..."
                     dir="ltr"
                   />
@@ -472,7 +472,7 @@ export default function SupplierRegisterPage() {
             {/* KYC Section - shown differently for individual vs business */}
             <div className="pt-4 border-t border-gray-100">
               <h2 className="text-sm font-semibold text-gray-900 mb-1 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#FA8125]" />
+                <FileText className="w-4 h-4 text-[#059669]" />
                 بيانات التحقق (KYC)
               </h2>
               <p className="text-xs text-gray-500 mb-3">
@@ -488,7 +488,7 @@ export default function SupplierRegisterPage() {
                     value={nationalId}
                     onChange={(e) => setNationalId(e.target.value.replace(/\D/g, ''))}
                     maxLength={14}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669]"
                     placeholder="14 رقم"
                     dir="ltr"
                   />
@@ -502,7 +502,7 @@ export default function SupplierRegisterPage() {
                         type="text"
                         value={commercialReg}
                         onChange={(e) => setCommercialReg(e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669]"
                         placeholder="(لو عندك سجل تجاري)"
                         dir="ltr"
                       />
@@ -513,7 +513,7 @@ export default function SupplierRegisterPage() {
                         type="text"
                         value={taxId}
                         onChange={(e) => setTaxId(e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125]"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669]"
                         placeholder="(لو مسجّل ضريبياً)"
                         dir="ltr"
                       />
@@ -526,7 +526,7 @@ export default function SupplierRegisterPage() {
             <button
               type="submit"
               disabled={submitting || !businessName}
-              className="w-full bg-[#FA8125] text-white py-3 rounded-xl font-semibold hover:bg-[#FA8125]/90 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold hover:bg-[#34D399]/90 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {submitting ? (
                 <>

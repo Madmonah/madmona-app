@@ -57,12 +57,12 @@ export default function PurchaseOrdersPage({ params }: { params: { supplierId: s
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">B2B PARTNER · PURCHASE ORDERS</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">B2B PARTNER · PURCHASE ORDERS</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">طلبات الشراء · {supplier?.business_name}</h1>
               {data?.stats && (
                 <p className="text-sm text-[#6B7280] mt-1">
@@ -71,7 +71,7 @@ export default function PurchaseOrdersPage({ params }: { params: { supplierId: s
               )}
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setShowAdd(true)} className="px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold flex items-center gap-2">
+              <button onClick={() => setShowAdd(true)} className="px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold flex items-center gap-2">
                 <Plus className="w-4 h-4" /> طلب جديد
               </button>
               <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7]"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
@@ -86,7 +86,7 @@ export default function PurchaseOrdersPage({ params }: { params: { supplierId: s
             <Filter className="w-3.5 h-3.5 text-[#6B7280]" />
             {STATUSES.map(s => (
               <button key={s.value || 'all'} onClick={() => setStatusFilter(s.value)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-                statusFilter === s.value ? 'bg-[#FA8125] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
+                statusFilter === s.value ? 'bg-[#34D399] text-[#04352A]' : 'bg-[#FAFAF7] text-[#1A2E26]'
               }`}>{s.label}</button>
             ))}
           </div>
@@ -95,12 +95,12 @@ export default function PurchaseOrdersPage({ params }: { params: { supplierId: s
         <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <div className="divide-y divide-gray-100">
             {loading ? (
-              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin inline" /></div>
+              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#059669] animate-spin inline" /></div>
             ) : data?.orders?.length === 0 ? (
               <div className="py-12 text-center">
                 <ShoppingCart className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
                 <p className="text-sm font-bold text-[#1A2E26]">مفيش طلبات شراء</p>
-                <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold">أنشئ أول طلب</button>
+                <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold">أنشئ أول طلب</button>
               </div>
             ) : (data?.orders || []).map((po: any) => (
               <div key={po.id} className="px-4 py-3 grid grid-cols-12 gap-3 items-center text-sm">
@@ -116,11 +116,11 @@ export default function PurchaseOrdersPage({ params }: { params: { supplierId: s
                 <div className="col-span-2"><POStatusBadge status={po.status} /></div>
                 <div className="col-span-3 text-left">
                   {po.status === 'pending' || po.status === 'ordered' ? (
-                    <button onClick={() => receive(po.id)} className="px-3 py-1.5 rounded-lg bg-[#FA8125] text-white text-xs font-bold inline-flex items-center gap-1">
+                    <button onClick={() => receive(po.id)} className="px-3 py-1.5 rounded-lg bg-[#34D399] text-[#04352A] text-xs font-bold inline-flex items-center gap-1">
                       <Truck className="w-3 h-3" /> سجل وصول
                     </button>
                   ) : po.status === 'received' ? (
-                    <span className="text-[10px] text-[#FA8125] font-bold flex items-center justify-end gap-1">
+                    <span className="text-[10px] text-[#059669] font-bold flex items-center justify-end gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" /> وصلت {po.received_at?.slice(0, 10)}
                     </span>
                   ) : null}
@@ -206,7 +206,7 @@ function CreatePOModal({ supplierId, branches, products, onClose, onSaved }: any
           <div className="pt-2">
             <div className="flex items-center justify-between mb-2">
               <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280]">المنتجات</label>
-              <button onClick={addItem} className="text-xs font-bold text-[#FA8125] flex items-center gap-1"><Plus className="w-3 h-3" /> اضف منتج</button>
+              <button onClick={addItem} className="text-xs font-bold text-[#059669] flex items-center gap-1"><Plus className="w-3 h-3" /> اضف منتج</button>
             </div>
             <div className="space-y-2">
               {items.map((it, i) => (
@@ -227,9 +227,9 @@ function CreatePOModal({ supplierId, branches, products, onClose, onSaved }: any
           </div>
 
           {total > 0 && (
-            <div className="rounded-xl bg-[#FA8125]/5 border border-[#FA8125]/20 p-3 flex justify-between font-bold">
+            <div className="rounded-xl bg-[#34D399]/5 border border-[#059669]/20 p-3 flex justify-between font-bold">
               <span>الإجمالي:</span>
-              <span className="font-mono font-black text-[#FA8125]">{total.toLocaleString()} ج</span>
+              <span className="font-mono font-black text-[#059669]">{total.toLocaleString()} ج</span>
             </div>
           )}
 
@@ -238,7 +238,7 @@ function CreatePOModal({ supplierId, branches, products, onClose, onSaved }: any
           </Field>
         </div>
         <footer className="px-5 py-3 border-t border-gray-100">
-          <button onClick={save} disabled={saving || items.length === 0} className="w-full py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50">
+          <button onClick={save} disabled={saving || items.length === 0} className="w-full py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50">
             {saving ? 'جاري الحفظ...' : 'احفظ الطلب'}
           </button>
         </footer>
@@ -251,7 +251,7 @@ function POStatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
     pending: { label: 'معلق', cls: 'bg-amber-50 text-amber-700' },
     ordered: { label: 'مطلوب', cls: 'bg-blue-50 text-blue-700' },
-    received: { label: 'وصلت ✓', cls: 'bg-[#FA8125]/10 text-[#FA8125]' },
+    received: { label: 'وصلت ✓', cls: 'bg-[#34D399]/10 text-[#059669]' },
     cancelled: { label: 'ملغي', cls: 'bg-red-50 text-red-600' },
   }
   const s = map[status] || { label: status, cls: 'bg-gray-100 text-gray-700' }
@@ -263,5 +263,5 @@ function Field({ label, children }: any) {
 }
 
 function Loader() {
-  return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div>
+  return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div>
 }

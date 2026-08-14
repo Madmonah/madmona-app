@@ -39,7 +39,7 @@ export default async function AgentMessagesPage({
     <div dir="rtl" style={pageStyle}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <header style={{ marginBottom: 20, textAlign: 'center' }}>
-          <h1 style={{ color: '#FA8125', margin: 0, fontSize: 26 }}>💬 Agent Messages</h1>
+          <h1 style={{ color: '#059669', margin: 0, fontSize: 26 }}>💬 Agent Messages</h1>
           <p style={{ color: '#666', marginTop: 6, fontSize: 13 }}>
             {msgs.length} message · context shared بين الأجينتس
           </p>
@@ -61,7 +61,7 @@ export default async function AgentMessagesPage({
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 8 }}>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: 13, color: '#FA8125', fontWeight: 600 }}>
+                  <div style={{ fontSize: 13, color: '#059669', fontWeight: 600 }}>
                     <a href={`/admin/messages?from=${m.from_agent}`} style={linkStyle}>{m.from_agent}</a>
                     <span style={{ color: '#888', margin: '0 6px' }}>→</span>
                     <a href={`/admin/messages?to=${m.to_agent}`} style={linkStyle}>{m.to_agent}</a>
@@ -115,9 +115,9 @@ function BackBtn() {
   return (
     <div style={{ marginTop: 24, textAlign: 'center' }}>
       <a href="/admin/ai-os" style={{
-        color: '#FA8125', textDecoration: 'none', fontSize: 13,
+        color: '#059669', textDecoration: 'none', fontSize: 13,
         padding: '8px 16px', background: '#fff', borderRadius: 8,
-        border: '1px solid #FA8125', display: 'inline-block',
+        border: '1px solid #059669', display: 'inline-block',
       }}>← رجوع للداشبورد</a>
     </div>
   )
@@ -135,17 +135,17 @@ const cardStyle: React.CSSProperties = {
 const chipStyle: React.CSSProperties = {
   fontSize: 12, padding: '6px 12px', background: '#fff',
   borderRadius: 20, border: '1px solid #E5E5E0',
-  color: '#FA8125', textDecoration: 'none',
+  color: '#059669', textDecoration: 'none',
 }
 const chipActiveStyle: React.CSSProperties = {
-  ...chipStyle, background: '#FA8125', color: '#fff', borderColor: '#FA8125',
+  ...chipStyle, background: '#059669', color: '#fff', borderColor: '#059669',
 }
 const badge: React.CSSProperties = {
   fontSize: 10, padding: '3px 8px', borderRadius: 12,
   color: '#fff',
 }
 const linkStyle: React.CSSProperties = {
-  color: '#FA8125', textDecoration: 'none',
+  color: '#059669', textDecoration: 'none',
 }
 const emptyStyle: React.CSSProperties = {
   textAlign: 'center', padding: 40, color: '#888',

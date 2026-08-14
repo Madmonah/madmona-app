@@ -52,7 +52,7 @@ ${r.plan_summary}`)
 
   return (
     <div style={{
-      background: '#FA8125', color: '#FAF7F0',
+      background: '#059669', color: '#FAF7F0',
       padding: 20, borderRadius: 12, marginBottom: 24,
     }}>
       <h2 style={{ margin: '0 0 12px', fontSize: 18 }}>🚀 اطلق Collaboration جديدة</h2>

@@ -35,12 +35,12 @@ export default function ServicesPage({ params }: { params: { supplierId: string 
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">B2B PARTNER · SERVICES</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">B2B PARTNER · SERVICES</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">الخدمات · {supplier?.business_name}</h1>
               <p className="text-sm text-[#6B7280] mt-1">{services.length} خدمة · اضغط على أي خدمة لربطها بمنتجات المخزون</p>
             </div>
@@ -50,23 +50,23 @@ export default function ServicesPage({ params }: { params: { supplierId: string 
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
-        <section className="bg-[#FA8125]/5 border border-[#FA8125]/20 rounded-2xl p-4 text-xs text-[#1A2E26] mb-5">
+        <section className="bg-[#34D399]/5 border border-[#059669]/20 rounded-2xl p-4 text-xs text-[#1A2E26] mb-5">
           <p className="font-bold mb-1">💡 إيه الفايدة من ربط الخدمات بمنتجات؟</p>
           <p>لما حد يحجز خدمة وتتمارك "completed"، القطع المرتبطة بيها بتتخصم تلقائياً من المخزون.</p>
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {loading ? (
-            <div className="col-span-3 py-12 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin inline" /></div>
+            <div className="col-span-3 py-12 text-center"><Loader2 className="w-6 h-6 text-[#059669] animate-spin inline" /></div>
           ) : services.length === 0 ? (
             <div className="col-span-3 py-12 text-center bg-white rounded-2xl border border-gray-100">
               <SvcIcon className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
               <p className="text-sm font-bold text-[#1A2E26]">مفيش خدمات</p>
             </div>
           ) : services.map(s => (
-            <button key={s.id} onClick={() => setSelectedService(s)} className="bg-white rounded-2xl border border-gray-100 p-4 text-right hover:shadow-md hover:border-[#FA8125] transition-all">
+            <button key={s.id} onClick={() => setSelectedService(s)} className="bg-white rounded-2xl border border-gray-100 p-4 text-right hover:shadow-md hover:border-[#059669] transition-all">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-9 h-9 rounded-xl bg-[#FA8125]/10 text-[#FA8125] grid place-items-center"><SvcIcon className="w-4 h-4" /></div>
+                <div className="w-9 h-9 rounded-xl bg-[#34D399]/10 text-[#059669] grid place-items-center"><SvcIcon className="w-4 h-4" /></div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-black text-[#1A2E26] truncate">{s.name_ar}</h3>
                   <p className="text-[10px] text-[#6B7280]">{s.duration_minutes} دقيقة</p>
@@ -74,10 +74,10 @@ export default function ServicesPage({ params }: { params: { supplierId: string 
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-[#6B7280]">السعر</span>
-                <span className="font-mono font-black text-[#FA8125]">{Number(s.price_egp).toLocaleString()} ج</span>
+                <span className="font-mono font-black text-[#059669]">{Number(s.price_egp).toLocaleString()} ج</span>
               </div>
               {s.performer_commission_pct > 0 && (
-                <p className="text-[10px] text-[#FA8125] mt-1 font-bold">عمولة {s.performer_commission_pct}%</p>
+                <p className="text-[10px] text-[#059669] mt-1 font-bold">عمولة {s.performer_commission_pct}%</p>
               )}
               <p className="text-[10px] text-[#6B7280] mt-2 pt-2 border-t border-gray-100 text-center">اضغط لربط منتجات</p>
             </button>
@@ -142,7 +142,7 @@ function ServiceMappingModal({ supplierId, service, onClose }: any) {
       <div className="relative bg-[#FAFAF7] rounded-t-3xl md:rounded-3xl w-full md:max-w-2xl md:mx-4 max-h-[90vh] flex flex-col shadow-2xl">
         <header className="px-5 py-4 border-b border-gray-100 bg-white rounded-t-3xl flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold tracking-wider uppercase text-[#FA8125]">ربط منتجات</p>
+            <p className="text-[10px] font-bold tracking-wider uppercase text-[#059669]">ربط منتجات</p>
             <h2 className="text-lg font-black text-[#1A2E26]">{service.name_ar}</h2>
           </div>
           <button onClick={onClose}><X className="w-5 h-5 text-[#6B7280]" /></button>
@@ -150,7 +150,7 @@ function ServiceMappingModal({ supplierId, service, onClose }: any) {
 
         <div className="flex-1 overflow-y-auto p-5 space-y-3">
           {loading ? (
-            <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin inline" /></div>
+            <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#059669] animate-spin inline" /></div>
           ) : (
             <>
               <p className="text-xs text-[#6B7280] mb-2">أضف كل منتج بـ يستهلك في الخدمة دي + الكمية:</p>
@@ -179,7 +179,7 @@ function ServiceMappingModal({ supplierId, service, onClose }: any) {
                   </div>
                 ))}
               </div>
-              <button onClick={addProduct} className="w-full p-2.5 rounded-xl border-2 border-dashed border-gray-200 hover:border-[#FA8125] text-[#6B7280] hover:text-[#FA8125] text-sm font-bold transition-colors flex items-center justify-center gap-2">
+              <button onClick={addProduct} className="w-full p-2.5 rounded-xl border-2 border-dashed border-gray-200 hover:border-[#059669] text-[#6B7280] hover:text-[#059669] text-sm font-bold transition-colors flex items-center justify-center gap-2">
                 <Plus className="w-4 h-4" /> أضف منتج
               </button>
             </>
@@ -187,7 +187,7 @@ function ServiceMappingModal({ supplierId, service, onClose }: any) {
         </div>
 
         <footer className="px-5 py-3 border-t border-gray-100 bg-white">
-          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
+          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
             {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري الحفظ...</> : <><Save className="w-4 h-4" /> احفظ الربط</>}
           </button>
         </footer>
@@ -196,4 +196,4 @@ function ServiceMappingModal({ supplierId, service, onClose }: any) {
   )
 }
 
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div> }

@@ -27,7 +27,7 @@ const PAGE = 50
 
 const C = {
   bg: '#FAFAF7', card: '#ffffff', ink: '#16241f', sub: '#5b6b64',
-  green: '#FA8125', green2: '#2FA084', line: '#e7e9e5',
+  green: '#059669', green2: '#2FA084', line: '#e7e9e5',
   chip: '#eef4f1', danger: '#b3261e', warn: '#9a6b00', gold: '#d4a017',
 }
 
@@ -36,7 +36,7 @@ const STATUS_LABEL: Record<string, string> = {
   paused: 'موقوف', rejected: 'مرفوض',
 }
 const STATUS_COLOR: Record<string, string> = {
-  draft: '#5b6b64', pending_review: '#9a6b00', published: '#FA8125',
+  draft: '#5b6b64', pending_review: '#9a6b00', published: '#059669',
   paused: '#b3261e', rejected: '#8a1c16',
 }
 const STATUS_ORDER = ['published', 'draft', 'paused', 'pending_review', 'rejected']

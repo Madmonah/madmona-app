@@ -86,10 +86,10 @@ export default function InstaPayPaymentBox({
   if (hasNothing) return null;
 
   return (
-    <div className="my-6 rounded-2xl bg-white border-2 border-[#FA8125]/20 p-5 shadow-sm">
+    <div className="my-6 rounded-2xl bg-white border-2 border-[#059669]/20 p-5 shadow-sm">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-12 h-12 rounded-xl bg-[#FA8125]/10 flex items-center justify-center text-2xl">
+        <div className="w-12 h-12 rounded-xl bg-[#34D399]/10 flex items-center justify-center text-2xl">
           🏦
         </div>
         <div className="flex-1">
@@ -102,9 +102,9 @@ export default function InstaPayPaymentBox({
 
       {/* Amount badge (if provided) */}
       {amount !== undefined && amount > 0 && (
-        <div className="mb-4 p-4 rounded-xl bg-gradient-to-l from-[#FA8125]/8 to-[#FA8125]/4 border border-[#FA8125]/20">
+        <div className="mb-4 p-4 rounded-xl bg-gradient-to-l from-[#34D399]/8 to-[#34D399]/4 border border-[#059669]/20">
           <div className="text-xs text-gray-600 mb-1">المبلغ المطلوب</div>
-          <div className="text-2xl font-bold text-[#FA8125]">
+          <div className="text-2xl font-bold text-[#059669]">
             {amount.toLocaleString('ar-EG')} <span className="text-base">ج.م</span>
           </div>
           {reference && (
@@ -114,7 +114,7 @@ export default function InstaPayPaymentBox({
               <button
                 type="button"
                 onClick={() => copyToClipboard(reference, 'reference')}
-                className="ms-2 text-[#FA8125] hover:underline"
+                className="ms-2 text-[#059669] hover:underline"
               >
                 {copiedField === 'reference' ? '✓ اتنسخ' : 'انسخ'}
               </button>
@@ -132,7 +132,7 @@ export default function InstaPayPaymentBox({
           href={config.payment_link}
           target="_blank"
           rel="noopener noreferrer"
-          className="block w-full text-center py-3.5 rounded-xl bg-[#FA8125] text-white font-bold text-base hover:bg-[#FA8125]/90 transition-colors mb-3"
+          className="block w-full text-center py-3.5 rounded-xl bg-[#34D399] text-[#04352A] font-bold text-base hover:bg-[#34D399]/90 transition-colors mb-3"
         >
           افتح تطبيق InstaPay وادفع فوراً ←
         </a>
@@ -169,7 +169,7 @@ export default function InstaPayPaymentBox({
             <button
               type="button"
               onClick={() => copyToClipboard(config.account_number, 'account')}
-              className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white border border-[#FA8125]/30 text-xs font-bold text-[#FA8125] hover:bg-[#FA8125]/5"
+              className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white border border-[#059669]/30 text-xs font-bold text-[#059669] hover:bg-[#34D399]/5"
             >
               {copiedField === 'account' ? '✓ اتنسخ' : 'انسخ'}
             </button>
@@ -185,7 +185,7 @@ export default function InstaPayPaymentBox({
             <button
               type="button"
               onClick={() => copyToClipboard(config.ipa, 'ipa')}
-              className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white border border-[#FA8125]/30 text-xs font-bold text-[#FA8125] hover:bg-[#FA8125]/5"
+              className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white border border-[#059669]/30 text-xs font-bold text-[#059669] hover:bg-[#34D399]/5"
             >
               {copiedField === 'ipa' ? '✓ اتنسخ' : 'انسخ'}
             </button>
@@ -201,7 +201,7 @@ export default function InstaPayPaymentBox({
             <button
               type="button"
               onClick={() => copyToClipboard(config.iban, 'iban')}
-              className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white border border-[#FA8125]/30 text-xs font-bold text-[#FA8125] hover:bg-[#FA8125]/5"
+              className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white border border-[#059669]/30 text-xs font-bold text-[#059669] hover:bg-[#34D399]/5"
             >
               {copiedField === 'iban' ? '✓ اتنسخ' : 'انسخ'}
             </button>
@@ -239,7 +239,7 @@ export default function InstaPayPaymentBox({
               <button
                 type="button"
                 onClick={() => copyToClipboard(w.number, `wallet_${w.key}`)}
-                className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white border border-[#FA8125]/30 text-xs font-bold text-[#FA8125] hover:bg-[#FA8125]/5"
+                className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white border border-[#059669]/30 text-xs font-bold text-[#059669] hover:bg-[#34D399]/5"
               >
                 {copiedField === `wallet_${w.key}` ? '✓ اتنسخ' : 'انسخ'}
               </button>

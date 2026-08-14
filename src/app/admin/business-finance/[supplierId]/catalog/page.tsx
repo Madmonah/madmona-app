@@ -75,10 +75,10 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
-          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">CATALOG</p>
+          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">CATALOG</p>
           <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">الكتالوج · {supplier?.business_name || ''}</h1>
           <p className="text-sm text-[#6B7280] mt-1">{items.length} منتج · ضيف منتج / موتوسيكل / قطعة على المعرض</p>
         </div>
@@ -86,7 +86,7 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
-          <h2 className="text-sm font-black text-[#1A2E26] flex items-center gap-1.5"><Plus className="w-4 h-4 text-[#FA8125]" /> ضيف جديد</h2>
+          <h2 className="text-sm font-black text-[#1A2E26] flex items-center gap-1.5"><Plus className="w-4 h-4 text-[#059669]" /> ضيف جديد</h2>
           <Field label="الاسم *">
             <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="مثال: BMW S1000RR 2024" className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" />
           </Field>
@@ -97,7 +97,7 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
             </select>
           </Field>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={form.on_request} onChange={e => setForm({ ...form, on_request: e.target.checked })} className="w-4 h-4 accent-[#FA8125]" />
+            <input type="checkbox" checked={form.on_request} onChange={e => setForm({ ...form, on_request: e.target.checked })} className="w-4 h-4 accent-[#059669]" />
             <span className="text-xs font-bold text-[#1A2E26]">اتصل للسعر (من غير رقم)</span>
           </label>
           {!form.on_request && (
@@ -108,7 +108,7 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
           <Field label="رابط الصورة (اختياري — لازم عشان يتنشر)">
             <input value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" dir="ltr" />
           </Field>
-          <button onClick={addListing} disabled={saving} className="w-full py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
+          <button onClick={addListing} disabled={saving} className="w-full py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
             {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري الإضافة...</> : <><Plus className="w-4 h-4" /> ضيف للمعرض</>}
           </button>
           <p className="text-[10px] text-[#6B7280]">من غير صورة هيتسجّل كـ draft (مش هيظهر للناس لحد ما تضيف صورة).</p>
@@ -120,7 +120,7 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
             <button onClick={load} className="p-2 rounded-xl bg-white border border-gray-100"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
           </div>
           {loading ? (
-            <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin inline" /></div>
+            <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#059669] animate-spin inline" /></div>
           ) : items.length === 0 ? (
             <div className="py-12 text-center bg-white rounded-2xl border border-gray-100"><p className="text-sm text-[#6B7280]">مفيش منتجات لسه</p></div>
           ) : (
@@ -134,7 +134,7 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
                     ) : (
                       <div className="w-full h-full grid place-items-center"><ImageIcon className="w-8 h-8 text-gray-300" /></div>
                     )}
-                    <span className={`absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold ${u.status === 'published' ? 'bg-[#FA8125] text-white' : 'bg-amber-100 text-amber-700'}`}>
+                    <span className={`absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold ${u.status === 'published' ? 'bg-[#34D399] text-[#04352A]' : 'bg-amber-100 text-amber-700'}`}>
                       {u.status === 'published' ? 'منشور' : 'draft'}
                     </span>
                   </div>
@@ -142,7 +142,7 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
                     <p className="text-sm font-bold text-[#1A2E26] line-clamp-1">{u.title}</p>
                     <p className="text-[10px] text-[#6B7280] mt-0.5">{u.category_ar || ''}</p>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-sm font-mono font-black text-[#FA8125]">
+                      <span className="text-sm font-mono font-black text-[#059669]">
                         {u.price_on_request ? 'اتصل للسعر' : u.price_egp ? `${Number(u.price_egp).toLocaleString('ar-EG')} ج` : '—'}
                       </span>
                       <button onClick={() => removeListing(u.id)} className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100"><Trash2 className="w-3.5 h-3.5" /></button>
@@ -161,4 +161,4 @@ export default function CatalogPage({ params }: { params: { supplierId: string }
 function Field({ label, children }: { label: string; children: any }) {
   return <div><label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">{label}</label>{children}</div>
 }
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div> }

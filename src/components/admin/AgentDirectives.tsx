@@ -245,11 +245,11 @@ const styles = `
   box-shadow: 0 8px 24px -12px rgba(16,40,34,.15);
 }
 .ag-dir .ag-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; gap: 12px; }
-.ag-dir .ag-kicker { font-size: 10.5px; font-weight: 800; letter-spacing: .08em; color: #FA8125; margin-bottom: 4px; }
+.ag-dir .ag-kicker { font-size: 10.5px; font-weight: 800; letter-spacing: .08em; color: #059669; margin-bottom: 4px; }
 .ag-dir .ag-title { font-size: 18px; font-weight: 800; margin: 0; color: #0A0A0A; }
 .ag-dir .ag-btn-edit {
   font-size: 12.5px; font-weight: 700; padding: 8px 16px; border-radius: 10px;
-  background: #FA8125; color: #fff; border: none; cursor: pointer; transition: .15s;
+  background: #059669; color: #fff; border: none; cursor: pointer; transition: .15s;
 }
 .ag-dir .ag-btn-edit:hover { background: #175C4F; transform: translateY(-1px); }
 .ag-dir .ag-section { margin-bottom: 14px; }
@@ -281,10 +281,10 @@ const styles = `
   border: 1px solid #E5E7EB; border-radius: 10px; background: #fff; color: #0A0A0A;
   resize: vertical;
 }
-.ag-dir .ag-input:focus, .ag-dir .ag-textarea:focus { outline: 2px solid #FA8125; border-color: #FA8125; }
+.ag-dir .ag-input:focus, .ag-dir .ag-textarea:focus { outline: 2px solid #059669; border-color: #059669; }
 .ag-dir .ag-radios { display: flex; flex-wrap: wrap; gap: 12px; }
 .ag-dir .ag-radio { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
-.ag-dir .ag-radio input { accent-color: #FA8125; }
+.ag-dir .ag-radio input { accent-color: #059669; }
 .ag-dir .ag-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
 .ag-dir .ag-btn-cancel, .ag-dir .ag-btn-save {
   font-size: 13px; font-weight: 700; padding: 9px 18px; border-radius: 10px;
@@ -292,7 +292,7 @@ const styles = `
 }
 .ag-dir .ag-btn-cancel { background: #F3F4F6; color: #374151; }
 .ag-dir .ag-btn-cancel:hover { background: #E5E7EB; }
-.ag-dir .ag-btn-save { background: linear-gradient(120deg, #D4A017, #2FA084, #FA8125); color: #fff; }
+.ag-dir .ag-btn-save { background: linear-gradient(120deg, #D4A017, #2FA084, #059669); color: #fff; }
 .ag-dir .ag-btn-save:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px -8px rgba(250, 129, 37,.4); }
 .ag-dir .ag-btn-save:disabled { opacity: .5; cursor: not-allowed; }
 .ag-dir .ag-footer { font-size: 10.5px; color: #9CA3AF; margin-top: 8px; text-align: end; }

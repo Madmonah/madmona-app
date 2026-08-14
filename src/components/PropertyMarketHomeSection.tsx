@@ -119,7 +119,7 @@ export default async function PropertyMarketHomeSection() {
         {/* Section header */}
         <div className="flex items-end justify-between mb-5 flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#2FA084] to-[#FA8125] text-white flex items-center justify-center shadow-lg shadow-[#FA8125]/20">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#2FA084] to-[#34D399] text-white flex items-center justify-center shadow-lg shadow-[#059669]/20">
               <TrendingUp className="w-5 h-5" />
             </div>
             <div>
@@ -128,7 +128,7 @@ export default async function PropertyMarketHomeSection() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#6FCF97] opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2FA084]" />
                 </span>
-                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#FA8125]">LIVE MARKET</p>
+                <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[#059669]">LIVE MARKET</p>
               </div>
               <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-tight">بورصة عقارات مضمونة</h2>
             </div>
@@ -142,7 +142,7 @@ export default async function PropertyMarketHomeSection() {
         </div>
 
         {/* البطاقة الرئيسية */}
-        <div className="bg-gradient-to-br from-white to-[#F3F1EA] border border-[#EAE4D7] rounded-3xl p-5 md:p-7 shadow-xl shadow-[#FA8125]/10 overflow-hidden relative">
+        <div className="bg-gradient-to-br from-white to-[#F3F1EA] border border-[#EAE4D7] rounded-3xl p-5 md:p-7 shadow-xl shadow-[#059669]/10 overflow-hidden relative">
           {/* لمسة ذهبية خفيفة في الخلفية */}
           <div className="pointer-events-none absolute -top-16 -left-16 w-56 h-56 rounded-full bg-[#6FCF97]/10 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-20 -right-10 w-64 h-64 rounded-full bg-[#2FA084]/10 blur-3xl" />
@@ -179,10 +179,10 @@ export default async function PropertyMarketHomeSection() {
             </div>
             <div className="flex items-center justify-between flex-wrap gap-3">
               <p className="text-gray-600 text-xs md:text-sm inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-[#FA8125] shrink-0" />
+                <ShieldCheck className="w-4 h-4 text-[#059669] shrink-0" />
                 أسعار {devCount > 0 ? `${devCount} مشروع من المطورين` : 'مشروعات المطورين'} + الريسيل + الإيجارات — العاصمة والتجمع والساحل
               </p>
-              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FA8125] text-white font-bold text-sm group-hover:gap-3 transition-all shadow-lg">
+              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#34D399] text-[#04352A] font-bold text-sm group-hover:gap-3 transition-all shadow-lg">
                 شوف كل الأسعار
                 <ArrowLeft className="w-4 h-4" />
               </span>

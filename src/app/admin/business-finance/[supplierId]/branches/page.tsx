@@ -44,12 +44,12 @@ export default function BranchesPage({ params }: { params: { supplierId: string 
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">B2B PARTNER · BRANCHES</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">B2B PARTNER · BRANCHES</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">الفروع · {supplier?.business_name}</h1>
               <p className="text-sm text-[#6B7280] mt-1">{branches.length} فرع · إعدادات الحجز وساعات العمل</p>
             </div>
@@ -61,14 +61,14 @@ export default function BranchesPage({ params }: { params: { supplierId: string 
       <main className="max-w-7xl mx-auto px-4 py-6">
         <section className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {loading ? (
-            <div className="col-span-2 py-12 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin inline" /></div>
+            <div className="col-span-2 py-12 text-center"><Loader2 className="w-6 h-6 text-[#059669] animate-spin inline" /></div>
           ) : branches.map(b => {
             const empCount = b.business_employees?.[0]?.count || 0
             return (
               <div key={b.id} className="bg-white rounded-2xl border border-gray-100 p-5">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-[#FA8125]/10 text-[#FA8125] grid place-items-center"><Building2 className="w-5 h-5" /></div>
+                    <div className="w-11 h-11 rounded-xl bg-[#34D399]/10 text-[#059669] grid place-items-center"><Building2 className="w-5 h-5" /></div>
                     <div>
                       <h3 className="text-base font-black text-[#1A2E26]">{b.name}</h3>
                       <p className="text-[10px] text-[#6B7280] font-mono">{b.code}</p>
@@ -76,7 +76,7 @@ export default function BranchesPage({ params }: { params: { supplierId: string 
                   </div>
                   <div className="flex items-center gap-1">
                     {b.booking_enabled !== false ? (
-                      <span className="px-2 py-0.5 rounded bg-[#FA8125]/10 text-[#FA8125] text-[10px] font-bold flex items-center gap-1"><Power className="w-3 h-3" /> حجز مفتوح</span>
+                      <span className="px-2 py-0.5 rounded bg-[#34D399]/10 text-[#059669] text-[10px] font-bold flex items-center gap-1"><Power className="w-3 h-3" /> حجز مفتوح</span>
                     ) : (
                       <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-500 text-[10px] font-bold">حجز مقفول</span>
                     )}
@@ -99,9 +99,9 @@ export default function BranchesPage({ params }: { params: { supplierId: string 
                 </div>
 
                 <div className="flex gap-2">
-                  <button onClick={() => setEditing(b)} className="flex-1 px-3 py-2 rounded-xl bg-[#FA8125] text-white text-xs font-bold">تعديل الإعدادات</button>
+                  <button onClick={() => setEditing(b)} className="flex-1 px-3 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-xs font-bold">تعديل الإعدادات</button>
                   <button onClick={() => copyBookingLink(b.code)} className="px-3 py-2 rounded-xl bg-[#FAFAF7] text-[#1A2E26] text-xs font-bold flex items-center gap-1">
-                    {copiedCode === b.code ? <><CheckCircle2 className="w-3.5 h-3.5 text-[#FA8125]" /> اتنسخ</> : <><Copy className="w-3.5 h-3.5" /> رابط الحجز</>}
+                    {copiedCode === b.code ? <><CheckCircle2 className="w-3.5 h-3.5 text-[#059669]" /> اتنسخ</> : <><Copy className="w-3.5 h-3.5" /> رابط الحجز</>}
                   </button>
                 </div>
                 <p className="text-[10px] text-[#6B7280] mt-2 font-mono text-center">madmonacairo.com/book/{b.code}</p>
@@ -157,12 +157,12 @@ function BranchSettingsModal({ branch, onClose, onSaved }: any) {
         </header>
         <div className="p-5 space-y-3">
           {/* Booking toggle */}
-          <button onClick={() => setForm({ ...form, booking_enabled: !form.booking_enabled })} className={`w-full p-3 rounded-xl border-2 flex items-center justify-between transition-all ${form.booking_enabled ? 'border-[#FA8125] bg-[#FA8125]/5' : 'border-gray-200 bg-gray-50'}`}>
+          <button onClick={() => setForm({ ...form, booking_enabled: !form.booking_enabled })} className={`w-full p-3 rounded-xl border-2 flex items-center justify-between transition-all ${form.booking_enabled ? 'border-[#059669] bg-[#34D399]/5' : 'border-gray-200 bg-gray-50'}`}>
             <div className="flex items-center gap-2">
-              <Power className={`w-4 h-4 ${form.booking_enabled ? 'text-[#FA8125]' : 'text-gray-400'}`} />
+              <Power className={`w-4 h-4 ${form.booking_enabled ? 'text-[#059669]' : 'text-gray-400'}`} />
               <span className="text-sm font-bold text-[#1A2E26]">الحجز الأونلاين</span>
             </div>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${form.booking_enabled ? 'bg-[#FA8125] text-white' : 'bg-gray-200 text-gray-500'}`}>
+            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${form.booking_enabled ? 'bg-[#34D399] text-[#04352A]' : 'bg-gray-200 text-gray-500'}`}>
               {form.booking_enabled ? 'مفتوح' : 'مقفول'}
             </span>
           </button>
@@ -185,7 +185,7 @@ function BranchSettingsModal({ branch, onClose, onSaved }: any) {
             <Field label="اسم المدير"><input type="text" value={form.manager_name} onChange={e => setForm({ ...form, manager_name: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
             <Field label="موبايل المدير"><input type="tel" value={form.manager_phone} onChange={e => setForm({ ...form, manager_phone: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" /></Field>
           </div>
-          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
+          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
             {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري الحفظ...</> : <><Save className="w-4 h-4" /> احفظ الإعدادات</>}
           </button>
         </div>
@@ -195,4 +195,4 @@ function BranchSettingsModal({ branch, onClose, onSaved }: any) {
 }
 
 function Field({ label, children }: any) { return <div><label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">{label}</label>{children}</div> }
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div> }

@@ -82,7 +82,7 @@ export function AccountGate({
   return (
     <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-[0_10px_40px_-12px_rgba(250, 129, 37,0.25)]">
       <div className="text-center mb-6">
-        <div className="w-14 h-14 rounded-2xl bg-[#FA8125]/10 grid place-items-center mx-auto mb-3"><MessageCircle className="w-7 h-7 text-[#FA8125]" /></div>
+        <div className="w-14 h-14 rounded-2xl bg-[#34D399]/10 grid place-items-center mx-auto mb-3"><MessageCircle className="w-7 h-7 text-[#059669]" /></div>
         <h2 className="text-xl font-black text-[#1A2E26]">{titleText}</h2>
         <p className="text-[13px] text-[#6B7280] mt-1.5 leading-relaxed max-w-xs mx-auto">{subText}</p>
       </div>
@@ -90,7 +90,7 @@ export function AccountGate({
       <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">{t('gate.name_label')}</label>
       <div className="relative mb-4">
         <User className="w-4 h-4 text-[#6B7280] absolute right-3.5 top-1/2 -translate-y-1/2" />
-        <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('gate.name_ph')} className="w-full pr-10 pl-3 py-3.5 rounded-2xl bg-[#FAFAF7] border border-transparent text-sm outline-none focus:border-[#FA8125]/40 focus:bg-white transition-colors" />
+        <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('gate.name_ph')} className="w-full pr-10 pl-3 py-3.5 rounded-2xl bg-[#FAFAF7] border border-transparent text-sm outline-none focus:border-[#059669]/40 focus:bg-white transition-colors" />
       </div>
 
       <WhatsAppLogin
@@ -100,7 +100,7 @@ export function AccountGate({
       />
 
       <div className="mt-5 pt-4 border-t border-gray-100 flex items-start gap-2">
-        <ShieldCheck className="w-4 h-4 text-[#FA8125] flex-shrink-0 mt-0.5" />
+        <ShieldCheck className="w-4 h-4 text-[#059669] flex-shrink-0 mt-0.5" />
         <p className="text-[10px] text-[#6B7280] leading-relaxed">{t('gate.secure_note')}</p>
       </div>
     </div>

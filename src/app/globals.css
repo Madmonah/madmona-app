@@ -50,7 +50,7 @@
     border-radius: 100px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #FA8125;
+    background: #059669;
   }
 }
 
@@ -58,8 +58,8 @@
    Brand utilities
    ============================================================================ */
 @layer utilities {
-  .text-brand-green { color: #FA8125; }
-  .bg-brand-green { background-color: #FA8125; }
+  .text-brand-green { color: #059669; }
+  .bg-brand-green { background-color: #059669; }
   .text-brand-gold { color: #2FA084; }
   .bg-brand-gold { background-color: #2FA084; }
   .text-brand-orange { color: #6FCF97; }
@@ -81,7 +81,7 @@
 
   /* Premium gradients */
   .gradient-green {
-    background: linear-gradient(135deg, #FA8125 0%, #F98F2A 50%, #FA8125 100%);
+    background: linear-gradient(135deg, #059669 0%, #34D399 50%, #059669 100%);
   }
 
   .gradient-gold {
@@ -98,7 +98,7 @@
   }
 
   .gradient-text-green {
-    background: linear-gradient(135deg, #FA8125 0%, #F98F2A 100%);
+    background: linear-gradient(135deg, #059669 0%, #34D399 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -264,7 +264,7 @@
    ============================================================================ */
 @layer components {
   .btn-primary {
-    @apply bg-[#FA8125] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#FA8125]/90 transition-all duration-300 shadow-soft hover:shadow-elevated;
+    @apply bg-[#34D399] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#34D399]/90 transition-all duration-300 shadow-soft hover:shadow-elevated;
   }
 
   .card-hover {
@@ -273,14 +273,14 @@
 
   .btn-luxe {
     @apply relative inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold text-white overflow-hidden transition-all duration-300;
-    background: linear-gradient(135deg, #FA8125, #F98F2A);
+    background: linear-gradient(135deg, #059669, #34D399);
     box-shadow: 0 4px 12px -2px rgba(250, 129, 37, 0.4);
   }
   .btn-luxe::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, #F98F2A, #FA8125);
+    background: linear-gradient(135deg, #34D399, #059669);
     opacity: 0;
     transition: opacity 0.3s;
   }

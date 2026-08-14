@@ -121,7 +121,7 @@ export default function WhatsAppLogin({
 
   if (phase === 'done') {
     return (
-      <div className="w-full flex items-center justify-center gap-2 bg-[#FA8125]/10 text-[#FA8125] py-4 rounded-2xl font-bold">
+      <div className="w-full flex items-center justify-center gap-2 bg-[#34D399]/10 text-[#059669] py-4 rounded-2xl font-bold">
         <CheckCircle className="w-5 h-5" /> تم — بندخّلك…
       </div>
     )
@@ -158,17 +158,17 @@ export default function WhatsAppLogin({
                 هيفتحلك واتساب برسالة جاهزة فيها الكود — <b>دوس إرسال بس</b> وارجع هنا.
                 <br />لو مفتحش، ابعت الكود ده يدوي لـ«المارد» على واتساب:
               </p>
-              <div className="inline-block bg-white border border-[#2FA084]/40 rounded-xl px-5 py-2 font-black text-xl tracking-[0.3em] text-[#FA8125] mb-3 select-all">
+              <div className="inline-block bg-white border border-[#2FA084]/40 rounded-xl px-5 py-2 font-black text-xl tracking-[0.3em] text-[#059669] mb-3 select-all">
                 {code}
               </div>
-              <div className="flex items-center justify-center gap-2 text-[#FA8125] font-bold text-sm mb-1">
+              <div className="flex items-center justify-center gap-2 text-[#059669] font-bold text-sm mb-1">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 مستنيين رسالتك…
               </div>
               <button
                 type="button"
                 onClick={begin}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FA8125] hover:underline mt-1"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#059669] hover:underline mt-1"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 جرب تاني
@@ -176,7 +176,7 @@ export default function WhatsAppLogin({
             </>
           )}
           {phase === 'finishing' && (
-            <div className="flex items-center justify-center gap-2 text-[#FA8125] font-bold text-sm">
+            <div className="flex items-center justify-center gap-2 text-[#059669] font-bold text-sm">
               <Loader2 className="w-4 h-4 animate-spin" />
               ثواني — بنسجّلك…
             </div>

@@ -19,7 +19,7 @@ export async function GET() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#FA8125',
+          backgroundColor: '#059669',
         }}
       >
         <div

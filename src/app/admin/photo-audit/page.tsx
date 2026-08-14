@@ -123,21 +123,21 @@ export default function PhotoAuditPage() {
           <h1 className="text-2xl font-bold text-gray-900">🖼️ أوديت صور الإعلانات</h1>
           <p className="mt-1 text-sm text-gray-600">
             {remaining != null && (
-              <>باقي <b className="text-[#FA8125]">{remaining}</b> إعلان يحتاج مراجعة · </>
+              <>باقي <b className="text-[#059669]">{remaining}</b> إعلان يحتاج مراجعة · </>
             )}
             اختار الصورة الصح، وأخفي الصور اللي مش بتاعت المشروع، ثم اضغط تأكيد.
           </p>
         </div>
         <button
           onClick={load}
-          className="rounded-lg bg-[#FA8125] px-4 py-2 text-sm font-bold text-white hover:bg-[#2ea080]"
+          className="rounded-lg bg-[#34D399] px-4 py-2 text-sm font-bold text-[#04352A] hover:bg-[#2ea080]"
         >
           🔄 تحديث
         </button>
       </header>
 
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-50 rounded-xl px-5 py-3 shadow-lg ${toast.ok ? 'bg-[#FA8125] text-white' : 'bg-red-600 text-white'}`}>
+        <div className={`fixed bottom-6 right-6 z-50 rounded-xl px-5 py-3 shadow-lg ${toast.ok ? 'bg-[#34D399] text-[#04352A]' : 'bg-red-600 text-[#04352A]'}`}>
           {toast.msg}
         </div>
       )}
@@ -160,15 +160,15 @@ export default function PhotoAuditPage() {
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <h2 className="text-lg font-bold text-gray-900">{l.title}</h2>
                   <div className="flex items-center gap-3 text-sm text-gray-600">
-                    {l.category_name && <span className="rounded-full bg-[#FA8125]/10 px-3 py-0.5 text-[#FA8125] font-medium">{l.category_name}</span>}
+                    {l.category_name && <span className="rounded-full bg-[#34D399]/10 px-3 py-0.5 text-[#059669] font-medium">{l.category_name}</span>}
                     {l.supplier_name && <span>👤 {l.supplier_name}</span>}
-                    {l.price_egp && <span className="font-bold text-[#FA8125]">{fmtPrice(l.price_egp)} ج</span>}
+                    {l.price_egp && <span className="font-bold text-[#059669]">{fmtPrice(l.price_egp)} ج</span>}
                   </div>
                 </div>
                 <div className="mt-1 text-sm text-gray-500">
                   {[l.district, l.city].filter(Boolean).join('، ') || 'بدون منطقة'}
                   {l.slug && (
-                    <> · <a href={`/marketplace/${l.slug}`} target="_blank" className="text-[#FA8125] hover:underline">عرض الإعلان ↗</a></>
+                    <> · <a href={`/marketplace/${l.slug}`} target="_blank" className="text-[#059669] hover:underline">عرض الإعلان ↗</a></>
                   )}
                 </div>
 
@@ -182,7 +182,7 @@ export default function PhotoAuditPage() {
                         <button
                           onClick={() => setPrimary(l.id, p.id)}
                           className={`block aspect-square w-full overflow-hidden rounded-xl border-4 transition ${
-                            isPrimary ? 'border-[#FA8125] ring-2 ring-[#FA8125]/40' : isHidden ? 'border-red-400 opacity-40' : 'border-transparent hover:border-gray-300'
+                            isPrimary ? 'border-[#059669] ring-2 ring-[#059669]/40' : isHidden ? 'border-red-400 opacity-40' : 'border-transparent hover:border-gray-300'
                           }`}
                           title="اضغط لاختيار كصورة رئيسية"
                         >
@@ -190,7 +190,7 @@ export default function PhotoAuditPage() {
                           <img src={p.url} alt="" className="h-full w-full object-cover" loading="lazy" />
                         </button>
                         {isPrimary && (
-                          <span className="absolute right-2 top-2 rounded-full bg-[#FA8125] px-2 py-0.5 text-xs font-bold text-white shadow">⭐ رئيسية</span>
+                          <span className="absolute right-2 top-2 rounded-full bg-[#34D399] px-2 py-0.5 text-xs font-bold text-[#04352A] shadow">⭐ رئيسية</span>
                         )}
                         {isWaInbound && !isPrimary && !isHidden && (
                           <span className="absolute right-2 top-2 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">⚠️ wa-inbound</span>
@@ -212,12 +212,12 @@ export default function PhotoAuditPage() {
                 <div className="mt-5 flex items-center justify-between gap-3 border-t border-gray-100 pt-4">
                   <div className="text-sm text-gray-600">
                     {choice.hidden.size > 0 && <span className="mr-3">🚫 {choice.hidden.size} مخفية</span>}
-                    {hasPrimary ? <span className="text-[#FA8125] font-medium">✓ الرئيسية متحددة</span> : <span className="text-amber-600">لسه ما اخترتش الرئيسية</span>}
+                    {hasPrimary ? <span className="text-[#059669] font-medium">✓ الرئيسية متحددة</span> : <span className="text-amber-600">لسه ما اخترتش الرئيسية</span>}
                   </div>
                   <button
                     onClick={() => confirm(l.id)}
                     disabled={!hasPrimary || busy[l.id]}
-                    className="rounded-lg bg-[#FA8125] px-5 py-2 text-sm font-bold text-white shadow disabled:opacity-40 hover:bg-[#2ea080]"
+                    className="rounded-lg bg-[#34D399] px-5 py-2 text-sm font-bold text-[#04352A] shadow disabled:opacity-40 hover:bg-[#2ea080]"
                   >
                     {busy[l.id] ? '⏳' : '✓ تأكيد + رفع من قائمة المراجعة'}
                   </button>

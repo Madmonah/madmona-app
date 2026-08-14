@@ -63,14 +63,14 @@ export default function OwnerLoginPage() {
     }
   }
 
-  if (checking) return <div className="min-h-screen bg-[#FA8125] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
+  if (checking) return <div className="min-h-screen bg-[#34D399] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
 
   return (
-    <div className="min-h-screen bg-[#FA8125] flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-[#34D399] flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-white grid place-items-center mx-auto mb-4">
-            <span className="text-3xl font-black text-[#FA8125]">م</span>
+            <span className="text-3xl font-black text-[#059669]">م</span>
           </div>
           <h1 className="text-2xl font-black text-white">بوابة الشركاء</h1>
           <p className="text-sm text-white/80 mt-1">مضمونة · دخول أصحاب الأعمال</p>
@@ -83,7 +83,7 @@ export default function OwnerLoginPage() {
           </p>
 
           {sending ? (
-            <div className="flex items-center justify-center gap-2 py-4 text-[#FA8125] font-bold">
+            <div className="flex items-center justify-center gap-2 py-4 text-[#059669] font-bold">
               <Loader2 className="w-5 h-5 animate-spin" /> ثواني — بندخّلك…
             </div>
           ) : (
@@ -93,7 +93,7 @@ export default function OwnerLoginPage() {
           {error && <p className="text-xs text-red-600 mt-3 text-center">{error}</p>}
 
           <div className="mt-5 pt-4 border-t border-gray-100 flex items-start gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#FA8125] flex-shrink-0 mt-0.5" />
+            <ShieldCheck className="w-4 h-4 text-[#059669] flex-shrink-0 mt-0.5" />
             <p className="text-[10px] text-[#6B7280] leading-relaxed">دخول آمن بالواتساب من غير باسورد. محتاج رقمك يكون مفعّل من إدارة مضمونة.</p>
           </div>
         </div>

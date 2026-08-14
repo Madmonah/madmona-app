@@ -28,7 +28,7 @@ export default function BranchQR({ params }: { params: { branchCode: string } })
     })()
   }, [branchCode, url])
 
-  if (loading) return <div className="min-h-screen bg-[#FA8125] flex items-center justify-center"><Loader2 className="w-9 h-9 text-white animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#34D399] flex items-center justify-center"><Loader2 className="w-9 h-9 text-white animate-spin" /></div>
 
   if (!branch) return (
     <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
@@ -44,14 +44,14 @@ export default function BranchQR({ params }: { params: { branchCode: string } })
       <style>{`@media print { .no-print { display:none !important } @page { margin: 12mm } }`}</style>
 
       {/* Printable card */}
-      <div className="card bg-[#FA8125] rounded-[2rem] p-8 w-full max-w-sm text-center text-white shadow-xl print:shadow-none">
+      <div className="card bg-[#34D399] rounded-[2rem] p-8 w-full max-w-sm text-center text-[#04352A] shadow-xl print:shadow-none">
         <p className="text-[11px] font-bold tracking-[0.4em] uppercase text-white/60 mb-1">MADMONA</p>
         <p className="text-sm text-white/85">{branch.business_name}</p>
         <h1 className="text-2xl font-black mt-0.5 mb-1">{branch.branch_name}</h1>
         <p className="text-[13px] text-white/80 mb-5">امسحي الكود وابدئي 👇</p>
 
         <div className="bg-white rounded-2xl p-4 mx-auto w-fit">
-          {qr ? <img src={qr} alt="QR" className="w-56 h-56" /> : <div className="w-56 h-56 grid place-items-center"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div>}
+          {qr ? <img src={qr} alt="QR" className="w-56 h-56" /> : <div className="w-56 h-56 grid place-items-center"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div>}
         </div>
 
         <div className="mt-5 space-y-1.5 text-[13px] text-white/90">
@@ -66,7 +66,7 @@ export default function BranchQR({ params }: { params: { branchCode: string } })
 
       <p className="no-print text-[12px] text-[#1A2E26] mt-4 font-mono" dir="ltr">{url}</p>
       <button onClick={() => window.print()}
-        className="no-print mt-3 px-6 py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm flex items-center gap-2">
+        className="no-print mt-3 px-6 py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm flex items-center gap-2">
         <Printer className="w-4 h-4" /> اطبعي الكود
       </button>
     </div>

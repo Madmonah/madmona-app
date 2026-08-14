@@ -53,17 +53,17 @@ export default function WalletPage() {
   const refresh = () => token && load(token)
 
   if (stage === 'loading') {
-    return <div className="min-h-screen grid place-items-center bg-[#FAF7F2]"><Loader2 className="w-7 h-7 animate-spin text-[#FA8125]" /></div>
+    return <div className="min-h-screen grid place-items-center bg-[#FAF7F2]"><Loader2 className="w-7 h-7 animate-spin text-[#059669]" /></div>
   }
 
   if (stage === 'unauthenticated') {
     return (
       <div dir="rtl" className="min-h-screen grid place-items-center bg-[#FAF7F2] px-6">
         <div className="text-center max-w-sm">
-          <Wallet className="w-12 h-12 mx-auto text-[#FA8125] mb-3" />
+          <Wallet className="w-12 h-12 mx-auto text-[#059669] mb-3" />
           <h1 className="text-xl font-bold mb-2">المحفظة الإلكترونية</h1>
           <p className="text-gray-500 mb-5">لازم تسجّل الدخول الأول عشان تشوف رصيدك.</p>
-          <Link href="/login" className="inline-block bg-[#FA8125] text-white px-6 py-3 rounded-2xl font-bold no-underline">تسجيل الدخول</Link>
+          <Link href="/login" className="inline-block bg-[#34D399] text-[#04352A] px-6 py-3 rounded-2xl font-bold no-underline">تسجيل الدخول</Link>
         </div>
       </div>
     )
@@ -81,13 +81,13 @@ export default function WalletPage() {
       <div className="sticky top-0 z-30 bg-[#FAF7F2]/90 backdrop-blur border-b border-black/5">
         <div className="max-w-md mx-auto flex items-center gap-3 px-4 py-3">
           <button onClick={() => router.push('/account')} className="p-2 -mr-2 text-gray-600"><ArrowRight className="w-5 h-5" /></button>
-          <h1 className="font-bold text-lg flex items-center gap-2"><Wallet className="w-5 h-5 text-[#FA8125]" /> محفظتي</h1>
+          <h1 className="font-bold text-lg flex items-center gap-2"><Wallet className="w-5 h-5 text-[#059669]" /> محفظتي</h1>
         </div>
       </div>
 
       <div className="max-w-md mx-auto px-4 pt-4 space-y-4">
         {/* Balance card */}
-        <div className="rounded-3xl p-5 text-white shadow-lg bg-gradient-to-br from-[#FA8125] to-[#2FA084]">
+        <div className="rounded-3xl p-5 text-white shadow-lg bg-gradient-to-br from-[#34D399] to-[#2FA084]">
           <p className="text-white/80 text-sm mb-1">الرصيد المتاح</p>
           <p className="text-4xl font-black tracking-tight">{formatMoney(cash + credit, wallet?.currency)}</p>
           <div className="flex gap-4 mt-4 text-sm">
@@ -126,7 +126,7 @@ export default function WalletPage() {
         <div className="bg-white rounded-3xl shadow-soft overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
             <p className="font-bold text-sm">آخر المعاملات</p>
-            <Link href="/account/wallet/history" className="text-xs text-[#FA8125] no-underline">عرض الكل</Link>
+            <Link href="/account/wallet/history" className="text-xs text-[#059669] no-underline">عرض الكل</Link>
           </div>
           {txns.length === 0 ? (
             <p className="text-center text-gray-400 text-sm py-10">لا توجد معاملات بعد</p>
@@ -151,7 +151,7 @@ export default function WalletPage() {
 function ActionBtn({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
   return (
     <button onClick={onClick} className="bg-white rounded-2xl shadow-soft py-3 flex flex-col items-center gap-1.5 active:scale-95 transition">
-      <span className="w-10 h-10 rounded-full bg-[#FA8125]/10 text-[#FA8125] grid place-items-center">{icon}</span>
+      <span className="w-10 h-10 rounded-full bg-[#34D399]/10 text-[#059669] grid place-items-center">{icon}</span>
       <span className="text-xs font-bold text-gray-700">{label}</span>
     </button>
   )
@@ -236,13 +236,13 @@ function TopUpModal({ token, onClose, onDone }: { token: string; onClose: () => 
     <Shell title="شحن المحفظة" onClose={onClose}>
       <div className="flex gap-2 mb-3">
         {quick.map(q => (
-          <button key={q} onClick={() => setAmount(String(q))} className="flex-1 py-2 rounded-xl border border-gray-200 text-sm font-bold hover:border-[#FA8125]">{q}</button>
+          <button key={q} onClick={() => setAmount(String(q))} className="flex-1 py-2 rounded-xl border border-gray-200 text-sm font-bold hover:border-[#059669]">{q}</button>
         ))}
       </div>
       <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^\d.]/g, ''))} inputMode="decimal"
-        placeholder="المبلغ بالجنيه" className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-lg font-bold mb-2 outline-none focus:border-[#FA8125]" />
+        placeholder="المبلغ بالجنيه" className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-lg font-bold mb-2 outline-none focus:border-[#059669]" />
       <p className="text-[11px] text-gray-400 mb-4">ملاحظة: الشحن حاليًا داخلي/تجريبي. هيتربط ببوابة دفع حقيقية لاحقًا.</p>
-      <button disabled={busy} onClick={submit} className="w-full bg-[#FA8125] text-white py-3 rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-60">
+      <button disabled={busy} onClick={submit} className="w-full bg-[#34D399] text-[#04352A] py-3 rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-60">
         {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />} اشحن الآن
       </button>
     </Shell>
@@ -266,11 +266,11 @@ function TransferModal({ token, max, onClose, onDone }: { token: string; max: nu
     <Shell title="تحويل رصيد" onClose={onClose}>
       <label className="block text-xs font-bold text-gray-500 mb-1">رقم موبايل المستلم</label>
       <input value={phone} onChange={e => setPhone(e.target.value)} inputMode="tel" placeholder="01xxxxxxxxx"
-        className="w-full border border-gray-200 rounded-2xl px-4 py-3 mb-3 outline-none focus:border-[#FA8125]" />
+        className="w-full border border-gray-200 rounded-2xl px-4 py-3 mb-3 outline-none focus:border-[#059669]" />
       <label className="block text-xs font-bold text-gray-500 mb-1">المبلغ (متاح {formatMoney(max)})</label>
       <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^\d.]/g, ''))} inputMode="decimal" placeholder="المبلغ"
-        className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-lg font-bold mb-4 outline-none focus:border-[#FA8125]" />
-      <button disabled={busy} onClick={submit} className="w-full bg-[#FA8125] text-white py-3 rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-60">
+        className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-lg font-bold mb-4 outline-none focus:border-[#059669]" />
+      <button disabled={busy} onClick={submit} className="w-full bg-[#34D399] text-[#04352A] py-3 rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-60">
         {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />} حوّل الآن
       </button>
     </Shell>
@@ -296,16 +296,16 @@ function WithdrawModal({ token, max, onClose, onDone }: { token: string; max: nu
     <Shell title="سحب رصيد" onClose={onClose}>
       <label className="block text-xs font-bold text-gray-500 mb-1">المبلغ (متاح {formatMoney(max)})</label>
       <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^\d.]/g, ''))} inputMode="decimal" placeholder="المبلغ"
-        className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-lg font-bold mb-3 outline-none focus:border-[#FA8125]" />
+        className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-lg font-bold mb-3 outline-none focus:border-[#059669]" />
       <label className="block text-xs font-bold text-gray-500 mb-1">طريقة الاستلام</label>
       <select value={method} onChange={e => setMethod(e.target.value)}
-        className="w-full border border-gray-200 rounded-2xl px-4 py-3 mb-3 outline-none focus:border-[#FA8125] bg-white">
+        className="w-full border border-gray-200 rounded-2xl px-4 py-3 mb-3 outline-none focus:border-[#059669] bg-white">
         {Object.entries(WITHDRAW_METHODS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
       </select>
       <label className="block text-xs font-bold text-gray-500 mb-1">بيانات الاستلام (رقم محفظة / IBAN / حساب إنستاباي)</label>
       <input value={details} onChange={e => setDetails(e.target.value)} placeholder="مثال: 01xxxxxxxxx"
-        className="w-full border border-gray-200 rounded-2xl px-4 py-3 mb-4 outline-none focus:border-[#FA8125]" />
-      <button disabled={busy} onClick={submit} className="w-full bg-[#FA8125] text-white py-3 rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-60">
+        className="w-full border border-gray-200 rounded-2xl px-4 py-3 mb-4 outline-none focus:border-[#059669]" />
+      <button disabled={busy} onClick={submit} className="w-full bg-[#34D399] text-[#04352A] py-3 rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-60">
         {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowDownToLine className="w-5 h-5" />} اطلب السحب
       </button>
     </Shell>

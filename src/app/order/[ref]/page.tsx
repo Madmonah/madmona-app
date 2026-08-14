@@ -161,7 +161,7 @@ export default function OrderTrackingPage() {
   if (loading) {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#059669] animate-spin" />
       </div>
     )
   }
@@ -178,7 +178,7 @@ export default function OrderTrackingPage() {
           <p className="text-sm text-gray-500 mb-5">{error || 'الأوردر مش موجود'}</p>
           <Link
             href="/marketplace"
-            className="inline-flex items-center gap-2 bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
+            className="inline-flex items-center gap-2 bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
           >
             رجوع للماركت بليس
           </Link>
@@ -244,7 +244,7 @@ export default function OrderTrackingPage() {
               <h2 className="text-2xl font-black text-gray-900 tabular tracking-wider" dir="ltr">
                 {order.reference_code}
               </h2>
-              <Copy className="w-4 h-4 text-gray-400 group-hover:text-[#FA8125]" />
+              <Copy className="w-4 h-4 text-gray-400 group-hover:text-[#059669]" />
             </button>
             {copySuccess === 'reference' && (
               <p className="text-[11px] text-green-600 font-bold mt-1">✓ تم النسخ</p>
@@ -283,13 +283,13 @@ export default function OrderTrackingPage() {
                     }`}>
                       <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
                         isPast ? 'bg-green-100 text-green-700' :
-                        isCurrent ? 'bg-[#FA8125] text-white shadow-md scale-110' :
+                        isCurrent ? 'bg-[#34D399] text-[#04352A] shadow-md scale-110' :
                         'bg-gray-100 text-gray-400'
                       }`}>
                         {isPast ? <CheckCircle className="w-4 h-4" /> : <StepIcon className="w-4 h-4" />}
                       </div>
                       <div className="flex-1">
-                        <p className={`text-sm font-bold ${isCurrent ? 'text-[#FA8125]' : isPast ? 'text-gray-700' : 'text-gray-400'}`}>
+                        <p className={`text-sm font-bold ${isCurrent ? 'text-[#059669]' : isPast ? 'text-gray-700' : 'text-gray-400'}`}>
                           {stepMeta.label}
                         </p>
                         {ts && (
@@ -339,7 +339,7 @@ export default function OrderTrackingPage() {
                 </div>
                 <button
                   onClick={() => copyToClipboard(instapayHandle, 'instapay')}
-                  className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:border-[#FA8125] hover:text-[#FA8125] transition-all"
+                  className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:border-[#059669] hover:text-[#059669] transition-all"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   {copySuccess === 'instapay' ? '✓ متنسخ' : 'انسخ'}
@@ -355,7 +355,7 @@ export default function OrderTrackingPage() {
                 </div>
                 <button
                   onClick={() => copyToClipboard(vodafoneCash, 'vodafone')}
-                  className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:border-[#FA8125] hover:text-[#FA8125] transition-all"
+                  className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:border-[#059669] hover:text-[#059669] transition-all"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   {copySuccess === 'vodafone' ? '✓ متنسخ' : 'انسخ'}
@@ -365,13 +365,13 @@ export default function OrderTrackingPage() {
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
                 <div>
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">المبلغ</p>
-                  <p className="text-lg font-black text-[#FA8125] tabular">
+                  <p className="text-lg font-black text-[#059669] tabular">
                     {order.total_amount.toLocaleString('ar-EG')} <span className="text-sm">ج.م</span>
                   </p>
                 </div>
                 <button
                   onClick={() => copyToClipboard(String(order.total_amount), 'amount')}
-                  className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:border-[#FA8125] hover:text-[#FA8125] transition-all"
+                  className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:border-[#059669] hover:text-[#059669] transition-all"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   {copySuccess === 'amount' ? '✓ متنسخ' : 'انسخ'}
@@ -415,7 +415,7 @@ export default function OrderTrackingPage() {
         <section className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-200">
           <div className="p-5 border-b border-gray-100">
             <h3 className="text-sm font-black text-gray-900 flex items-center gap-2">
-              <ShoppingBag className="w-4 h-4 text-[#FA8125]" />
+              <ShoppingBag className="w-4 h-4 text-[#059669]" />
               الأصناف <span className="text-gray-400 tabular">({order.items.length})</span>
             </h3>
           </div>
@@ -442,7 +442,7 @@ export default function OrderTrackingPage() {
                   )}
                 </div>
                 <div className="text-left flex-shrink-0">
-                  <p className="font-black text-sm text-[#FA8125] tabular">
+                  <p className="font-black text-sm text-[#059669] tabular">
                     {item.line_total.toLocaleString('ar-EG')}
                     <span className="text-[10px] font-medium text-gray-500 ms-1">ج.م</span>
                   </p>
@@ -450,7 +450,7 @@ export default function OrderTrackingPage() {
               </div>
             ))}
           </div>
-          <div className="bg-gradient-to-l from-[#FA8125]/5 to-transparent border-t border-[#FA8125]/10 p-5 space-y-1.5">
+          <div className="bg-gradient-to-l from-[#34D399]/5 to-transparent border-t border-[#059669]/10 p-5 space-y-1.5">
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">المجموع الفرعي</span>
               <span className="font-bold tabular">{order.subtotal_amount.toLocaleString('ar-EG')} ج.م</span>
@@ -463,7 +463,7 @@ export default function OrderTrackingPage() {
             </div>
             <div className="flex justify-between pt-2 border-t border-gray-200">
               <span className="text-sm font-black text-gray-900">الإجمالي</span>
-              <span className="text-xl font-black text-[#FA8125] tabular">
+              <span className="text-xl font-black text-[#059669] tabular">
                 {order.total_amount.toLocaleString('ar-EG')} ج.م
               </span>
             </div>
@@ -474,7 +474,7 @@ export default function OrderTrackingPage() {
         {order.delivery_address && (
           <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-300">
             <h3 className="text-sm font-black text-gray-900 mb-3 flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#FA8125]" />
+              <MapPin className="w-4 h-4 text-[#059669]" />
               العنوان
             </h3>
             <p className="text-sm text-gray-700 leading-relaxed mb-1">{order.delivery_address}</p>
@@ -519,7 +519,7 @@ export default function OrderTrackingPage() {
         </section>
 
         {/* Save link tip for guests */}
-        <div className="bg-gradient-to-l from-[#FA8125]/5 to-transparent border border-[#FA8125]/10 rounded-2xl p-4">
+        <div className="bg-gradient-to-l from-[#34D399]/5 to-transparent border border-[#059669]/10 rounded-2xl p-4">
           <p className="text-xs font-bold text-gray-700 mb-1">💡 احفظ اللينك ده</p>
           <p className="text-[11px] text-gray-600 leading-relaxed">
             ده اللينك الوحيد اللي بيوصّلك للأوردر. احفظه أو خد screenshot عشان تتابع منه أي وقت.

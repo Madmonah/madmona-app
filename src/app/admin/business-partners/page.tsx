@@ -52,7 +52,7 @@ type Lead = {
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   negotiating: { label: 'قيد التفاوض', color: 'bg-amber-50 text-amber-700' },
   signed: { label: 'موقّع', color: 'bg-blue-50 text-blue-700' },
-  active: { label: 'نشط', color: 'bg-[#FA8125]/10 text-[#FA8125]' },
+  active: { label: 'نشط', color: 'bg-[#34D399]/10 text-[#059669]' },
   paused: { label: 'متوقف', color: 'bg-gray-100 text-gray-600' },
   terminated: { label: 'منتهي', color: 'bg-red-50 text-red-600' },
 }
@@ -189,7 +189,7 @@ export default function BusinessPartnersIndexPage() {
         <div className="max-w-7xl mx-auto px-4 py-5">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">
                 MADMONA · B2B PARTNERS
               </p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">
@@ -208,7 +208,7 @@ export default function BusinessPartnersIndexPage() {
               </Link>
               <Link
                 href="/admin/business-partners/new"
-                className="px-5 py-2.5 rounded-xl bg-[#FA8125] text-white text-sm font-bold flex items-center gap-2 hover:shadow-md transition-shadow"
+                className="px-5 py-2.5 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold flex items-center gap-2 hover:shadow-md transition-shadow"
               >
                 <Plus className="w-4 h-4" />
                 اضف يدوي
@@ -223,7 +223,7 @@ export default function BusinessPartnersIndexPage() {
             <button
               onClick={() => setView('partners')}
               className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                view === 'partners' ? 'bg-[#FA8125] text-white shadow-sm' : 'text-[#6B7280] hover:text-[#1A2E26]'
+                view === 'partners' ? 'bg-[#34D399] text-[#04352A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A2E26]'
               }`}
             >
               الشركاء ({partners.length})
@@ -231,7 +231,7 @@ export default function BusinessPartnersIndexPage() {
             <button
               onClick={() => setView('leads')}
               className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                view === 'leads' ? 'bg-[#FA8125] text-white shadow-sm' : 'text-[#6B7280] hover:text-[#1A2E26]'
+                view === 'leads' ? 'bg-[#34D399] text-[#04352A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A2E26]'
               }`}
             >
               <Sparkles className="w-3 h-3" />
@@ -250,7 +250,7 @@ export default function BusinessPartnersIndexPage() {
                 placeholder="ابحث بالاسم، الهاتف، أو الحي..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pr-10 pl-4 py-2 rounded-xl bg-white border border-gray-200 text-sm text-[#1A2E26] placeholder-[#6B7280] focus:outline-none focus:border-[#FA8125] transition-colors"
+                className="w-full pr-10 pl-4 py-2 rounded-xl bg-white border border-gray-200 text-sm text-[#1A2E26] placeholder-[#6B7280] focus:outline-none focus:border-[#059669] transition-colors"
               />
             </div>
             <div className="flex items-center gap-1 bg-white rounded-xl p-1 border border-gray-200">
@@ -259,7 +259,7 @@ export default function BusinessPartnersIndexPage() {
                   key={s}
                   onClick={() => setStatusFilter(s)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    statusFilter === s ? 'bg-[#FA8125] text-white shadow-sm' : 'text-[#6B7280] hover:text-[#1A2E26]'
+                    statusFilter === s ? 'bg-[#34D399] text-[#04352A] shadow-sm' : 'text-[#6B7280] hover:text-[#1A2E26]'
                   }`}
                 >
                   {s === 'all' ? 'الكل' : STATUS_LABELS[s]?.label || s}
@@ -291,7 +291,7 @@ export default function BusinessPartnersIndexPage() {
 
             {loading && partners.length === 0 ? (
               <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" />
+                <Loader2 className="w-8 h-8 text-[#059669] animate-spin" />
               </div>
             ) : filtered.length === 0 ? (
               <div className="bg-white rounded-3xl border border-dashed border-gray-300 p-12 text-center">
@@ -305,7 +305,7 @@ export default function BusinessPartnersIndexPage() {
                 <div className="flex items-center justify-center gap-2">
                   {leads.length > 0 && (
                     <button onClick={() => setView('leads')}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold">
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold">
                       <Sparkles className="w-4 h-4" />
                       حول من {leads.length} lead
                     </button>
@@ -353,8 +353,8 @@ function LeadsView({
 
   return (
     <div className="space-y-4">
-      <div className="bg-[#FA8125]/5 border border-[#FA8125]/20 rounded-2xl p-4 flex items-start gap-3">
-        <Sparkles className="w-5 h-5 text-[#FA8125] flex-shrink-0 mt-0.5" />
+      <div className="bg-[#34D399]/5 border border-[#059669]/20 rounded-2xl p-4 flex items-start gap-3">
+        <Sparkles className="w-5 h-5 text-[#059669] flex-shrink-0 mt-0.5" />
         <p className="text-sm text-[#1A2E26] leading-relaxed">
           <span className="font-bold">تحويل ذكي:</span> اختار lead واضغط "حول الآن" — السيستم بـ يقرا 
           العنوان والـ industry تلقائي ويعمل لك supplier + branches جاهزة. مفيش typing.
@@ -389,7 +389,7 @@ function LeadCard({
     <div className="bg-white rounded-2xl border border-gray-100 p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#FA8125]/10 text-[#FA8125] font-black text-base flex-shrink-0">
+          <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#34D399]/10 text-[#059669] font-black text-base flex-shrink-0">
             {lead.business_name.charAt(0)}
           </div>
           <div className="min-w-0">
@@ -397,7 +397,7 @@ function LeadCard({
               {lead.business_name}
             </h3>
             <p className="text-xs text-[#6B7280] mt-0.5">
-              <span className="font-bold text-[#FA8125]">{industry}</span>
+              <span className="font-bold text-[#059669]">{industry}</span>
               {lead.rating && (
                 <>
                   {' · '}
@@ -409,7 +409,7 @@ function LeadCard({
           </div>
         </div>
         <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase flex-shrink-0 ${
-          lead.status === 'replied_warm' ? 'bg-[#FA8125]/10 text-[#FA8125]' : 'bg-blue-50 text-blue-700'
+          lead.status === 'replied_warm' ? 'bg-[#34D399]/10 text-[#059669]' : 'bg-blue-50 text-blue-700'
         }`}>
           {lead.status === 'replied_warm' ? 'رد إيجابي' : 'تم التواصل'}
         </span>
@@ -434,7 +434,7 @@ function LeadCard({
         <button
           onClick={() => onConvert(lead, numBranches)}
           disabled={isConverting}
-          className="mr-auto px-4 py-2 rounded-xl bg-[#FA8125] text-white text-xs font-bold hover:shadow-md transition-shadow disabled:opacity-50 flex items-center gap-1.5"
+          className="mr-auto px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-xs font-bold hover:shadow-md transition-shadow disabled:opacity-50 flex items-center gap-1.5"
         >
           {isConverting ? (
             <>
@@ -465,10 +465,10 @@ function StatCard({
   primary?: boolean
   tone?: 'positive' | 'negative'
 }) {
-  const toneClass = tone === 'positive' ? 'text-[#FA8125]' : 'text-[#1A2E26]'
+  const toneClass = tone === 'positive' ? 'text-[#059669]' : 'text-[#1A2E26]'
   return (
     <div className={`rounded-2xl p-4 md:p-5 border ${
-      primary ? 'bg-[#FA8125] border-[#FA8125] text-white' : 'bg-white border-gray-100'
+      primary ? 'bg-[#34D399] border-[#059669] text-[#04352A]' : 'bg-white border-gray-100'
     }`}>
       <p className={`text-[10px] font-bold tracking-wider uppercase mb-1.5 ${
         primary ? 'text-white/80' : 'text-[#6B7280]'
@@ -487,11 +487,11 @@ function PartnerCard({ p }: { p: Partner }) {
   return (
     <Link
       href={`/admin/business-finance/${p.id}`}
-      className="bg-white rounded-2xl border border-gray-100 hover:border-[#FA8125] hover:shadow-md transition-all p-5 block group"
+      className="bg-white rounded-2xl border border-gray-100 hover:border-[#059669] hover:shadow-md transition-all p-5 block group"
     >
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#FA8125]/10 text-[#FA8125] font-black text-base flex-shrink-0">
+          <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#34D399]/10 text-[#059669] font-black text-base flex-shrink-0">
             {p.business_name.charAt(0)}
           </div>
           <div className="min-w-0">
@@ -521,13 +521,13 @@ function PartnerCard({ p }: { p: Partner }) {
         </div>
         {p.today_commission > 0 && (
           <div className="text-left">
-            <p className="text-[10px] font-bold tracking-wider uppercase text-[#FA8125]">عمولتنا</p>
-            <p className="text-base font-black text-[#FA8125] font-mono">
+            <p className="text-[10px] font-bold tracking-wider uppercase text-[#059669]">عمولتنا</p>
+            <p className="text-base font-black text-[#059669] font-mono">
               {p.today_commission.toLocaleString('ar-EG')} ج
             </p>
           </div>
         )}
-        <ArrowLeft className="w-5 h-5 text-[#6B7280] group-hover:text-[#FA8125] group-hover:-translate-x-1 transition-all" />
+        <ArrowLeft className="w-5 h-5 text-[#6B7280] group-hover:text-[#059669] group-hover:-translate-x-1 transition-all" />
       </div>
     </Link>
   )

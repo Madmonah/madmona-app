@@ -12,7 +12,7 @@ export default function TelegramBotFab() {
       aria-label="كلّم مضمون على تليجرام"
       title="كلّم مضمون على تليجرام"
       className="fixed z-50 right-4 bottom-24 md:bottom-6 flex items-center gap-2 ps-1.5 pe-4 py-1.5 rounded-full text-white font-bold text-sm no-underline shadow-luxe ring-2 ring-white/60 hover:-translate-y-0.5 transition-transform"
-      style={{ background: 'linear-gradient(90deg,#d4a017,#2FA084,#FA8125)' }}
+      style={{ background: 'linear-gradient(90deg,#d4a017,#2FA084,#059669)' }}
     >
       <span className="w-9 h-9 rounded-full bg-white grid place-items-center overflow-hidden shrink-0">
         {/* plain img (avoids next/image domain config) */}

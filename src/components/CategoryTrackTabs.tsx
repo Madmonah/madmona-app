@@ -68,7 +68,7 @@ type VKey = 'products' | 'rentals' | 'services' | 'restaurants' | 'daily'
 
 const VERTICALS: { key: VKey; ar: string; en: string; emoji: string; accent: string; bg: string; tracks: string[] }[] = [
   { key: 'products',    ar: 'بيع',        en: 'Buy',         emoji: '🏷️', accent: '#3D7BB6', bg: '#D9E7F4', tracks: ['products', 'sales'] },
-  { key: 'rentals',     ar: 'إيجار',      en: 'Rent',        emoji: '🔑', accent: '#FA8125', bg: '#E7F1ED', tracks: ['rentals', 'hybrid'] },
+  { key: 'rentals',     ar: 'إيجار',      en: 'Rent',        emoji: '🔑', accent: '#059669', bg: '#E7F1ED', tracks: ['rentals', 'hybrid'] },
   { key: 'services',    ar: 'خدمات',      en: 'Services',    emoji: '🛠️', accent: '#D4A017', bg: '#FAEFD1', tracks: ['services'] },
   { key: 'restaurants', ar: 'مطاعم',      en: 'Restaurants', emoji: '🍽️', accent: '#E26D5C', bg: '#FAE1CB', tracks: ['restaurants'] },
   { key: 'daily',       ar: 'سوبر ماركت', en: 'Groceries',   emoji: '🛒', accent: '#7A4FA3', bg: '#EDE3F5', tracks: ['daily'] },
@@ -88,7 +88,7 @@ const VERTICALS: { key: VKey; ar: string; en: string; emoji: string; accent: str
 
 const TILE_TONE: Record<VKey, string> = {
   products:    'from-[#2C5F8D] to-[#5B9BD5]',
-  rentals:     'from-[#FA8125] to-[#2FA084]',
+  rentals:     'from-[#34D399] to-[#2FA084]',
   services:    'from-[#8A6A0F] to-[#D4A017]',
   restaurants: 'from-[#B4453A] to-[#E26D5C]',
   daily:       'from-[#5C3A7E] to-[#9B6FC4]',

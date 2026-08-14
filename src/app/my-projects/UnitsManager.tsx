@@ -130,10 +130,10 @@ export default function UnitsManager({
         className="w-full flex items-center justify-between px-4 py-3 bg-[#FAFAF7] hover:bg-gray-50"
       >
         <span className="text-xs font-black text-[#1A2E26] flex items-center gap-1.5">
-          <Grid3X3 className="w-4 h-4 text-[#FA8125]" /> الوحدات المتاحة + الحجز ٤٨ ساعة
+          <Grid3X3 className="w-4 h-4 text-[#059669]" /> الوحدات المتاحة + الحجز ٤٨ ساعة
           {units && <span className="text-gray-400 font-normal">({units.length} وحدة)</span>}
         </span>
-        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${bookingEnabled ? 'bg-[#FA8125]/10 text-[#FA8125]' : 'bg-gray-100 text-gray-400'}`}>
+        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${bookingEnabled ? 'bg-[#34D399]/10 text-[#059669]' : 'bg-gray-100 text-gray-400'}`}>
           {bookingEnabled ? 'الحجز مفعّل' : 'الحجز متوقف'}
         </span>
       </button>
@@ -148,7 +148,7 @@ export default function UnitsManager({
               </p>
               <button type="button" disabled={busy} onClick={() => saveBooking(!bookingEnabled)}>
                 {bookingEnabled
-                  ? <ToggleRight className="w-8 h-8 text-[#FA8125]" />
+                  ? <ToggleRight className="w-8 h-8 text-[#059669]" />
                   : <ToggleLeft className="w-8 h-8 text-gray-300" />}
               </button>
             </div>
@@ -156,18 +156,18 @@ export default function UnitsManager({
               <input
                 type="number" value={fee} onChange={(e) => setFee(e.target.value)}
                 placeholder="تكلفة الحجز بالجنيه (اختياري)"
-                className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-[#FA8125]"
+                className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-[#059669]"
               />
               <input
                 type="text" value={feeNote} onChange={(e) => setFeeNote(e.target.value)}
                 placeholder="ملاحظة (بتتخصم من المقدم مثلاً)"
-                className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-[#FA8125]"
+                className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-[#059669]"
               />
             </div>
             {bookingEnabled && (
               <button
                 type="button" disabled={busy} onClick={() => saveBooking(true)}
-                className="text-[11px] font-bold text-[#FA8125] hover:underline"
+                className="text-[11px] font-bold text-[#059669] hover:underline"
               >
                 احفظ التكلفة
               </button>
@@ -177,16 +177,16 @@ export default function UnitsManager({
           {/* ➕ إضافة وحدة */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="كود الوحدة *"
-              className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-[#FA8125]" />
+              className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-[#059669]" />
             <input value={utype} onChange={(e) => setUtype(e.target.value)} placeholder="النوع (شقة/فيلا)"
-              className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-[#FA8125]" />
+              className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-[#059669]" />
             <input value={area} onChange={(e) => setArea(e.target.value)} type="number" placeholder="المساحة م²"
-              className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-[#FA8125]" />
+              className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-[#059669]" />
             <input value={price} onChange={(e) => setPrice(e.target.value)} type="number" placeholder="السعر ج"
-              className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-[#FA8125]" />
+              className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-[#059669]" />
             <button
               type="button" onClick={addUnit} disabled={busy}
-              className="flex items-center justify-center gap-1 bg-[#FA8125] text-white text-xs font-bold rounded-xl py-2 disabled:opacity-60"
+              className="flex items-center justify-center gap-1 bg-[#34D399] text-[#04352A] text-xs font-bold rounded-xl py-2 disabled:opacity-60"
             >
               {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
               ضيف
@@ -195,7 +195,7 @@ export default function UnitsManager({
 
           {/* 📋 الوحدات */}
           {units === null ? (
-            <Loader2 className="w-4 h-4 animate-spin text-[#FA8125] mx-auto" />
+            <Loader2 className="w-4 h-4 animate-spin text-[#059669] mx-auto" />
           ) : units.length === 0 ? (
             <p className="text-xs text-gray-400 text-center py-2">
               مفيش وحدات لسه — ضيف وحدات الماستر بلان المتاحة وهتظهر للعملاء فوراً
@@ -205,7 +205,7 @@ export default function UnitsManager({
               {units.map((u) => (
                 <div key={u.id} className="flex items-center justify-between gap-2 px-3 py-2.5 text-xs">
                   <div className="min-w-0">
-                    <span className="font-mono font-bold text-[#FA8125]">{u.unit_code}</span>
+                    <span className="font-mono font-bold text-[#059669]">{u.unit_code}</span>
                     <span className="text-gray-500 mr-2">
                       {[u.unit_type, u.area_m2 ? `${u.area_m2}م²` : null, u.price ? `${Number(u.price).toLocaleString('en-US')} ج` : null].filter(Boolean).join(' · ')}
                     </span>

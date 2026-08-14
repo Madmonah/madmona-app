@@ -17,7 +17,7 @@ const STATUSES = [
   { value: 'draft',     label: 'مسودة',   color: 'bg-gray-100 text-gray-600' },
   { value: 'submitted', label: 'مُقدّم',   color: 'bg-amber-50 text-amber-700' },
   { value: 'approved',  label: 'معتمد',   color: 'bg-blue-50 text-blue-700' },
-  { value: 'paid',      label: 'مدفوع',   color: 'bg-[#FA8125]/10 text-[#FA8125]' },
+  { value: 'paid',      label: 'مدفوع',   color: 'bg-[#34D399]/10 text-[#059669]' },
 ]
 const statusMeta = (s: string) => STATUSES.find((x) => x.value === s) || STATUSES[0]
 
@@ -139,7 +139,7 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
   }
 
   if (loading && !supplier) {
-    return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div>
+    return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div>
   }
 
   return (
@@ -147,14 +147,14 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
       {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">مقاولات · المستخلصات</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">مقاولات · المستخلصات</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2">
-                <ScrollText className="w-7 h-7 text-[#FA8125]" /> المستخلصات
+                <ScrollText className="w-7 h-7 text-[#059669]" /> المستخلصات
               </h1>
             </div>
             <div className="flex gap-2 flex-wrap items-center">
@@ -162,7 +162,7 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
                 {projects.length === 0 && <option value="">لا توجد مشاريع</option>}
                 {projects.map((p) => <option key={p.id} value={p.id}>{p.code} · {p.name}</option>)}
               </select>
-              <button onClick={() => { setForm({ ...emptyForm }); setShowForm(true) }} disabled={!project} className="px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold flex items-center gap-2 disabled:opacity-50 hover:shadow-md transition-shadow">
+              <button onClick={() => { setForm({ ...emptyForm }); setShowForm(true) }} disabled={!project} className="px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold flex items-center gap-2 disabled:opacity-50 hover:shadow-md transition-shadow">
                 <Plus className="w-4 h-4" /> مستخلص جديد
               </button>
               <button onClick={() => loadCerts(projectId)} className="p-2 rounded-xl bg-[#FAFAF7] text-[#1A2E26]"><RefreshCw className="w-4 h-4" /></button>
@@ -177,7 +177,7 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
             <FolderKanban className="w-12 h-12 text-[#6B7280] opacity-30 mx-auto mb-3" />
             <p className="text-sm font-bold text-[#1A2E26]">مفيش مشاريع لسه</p>
             <p className="text-xs text-[#6B7280] mt-1">اعمل مشروع الأول من تاب «المشاريع» وبعدين تقدر تعمله مستخلصات</p>
-            <Link href={`/admin/business-finance/${supplierId}/projects`} className="mt-4 px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold inline-flex items-center gap-2">
+            <Link href={`/admin/business-finance/${supplierId}/projects`} className="mt-4 px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold inline-flex items-center gap-2">
               <FolderKanban className="w-4 h-4" /> روح للمشاريع
             </Link>
           </div>
@@ -221,7 +221,7 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
                           <td className="px-3 py-2.5 text-left font-mono text-[#1A2E26]">{money0(c.gross_cumulative)}</td>
                           <td className="px-3 py-2.5 text-left font-mono text-[#1A2E26]">{money0(c.net_this_cert)}</td>
                           <td className="px-3 py-2.5 text-left font-mono text-[#6B7280]">{money0(c.vat_amount)}</td>
-                          <td className="px-3 py-2.5 text-left font-mono font-black text-[#FA8125]">{money0(c.net_payable)} ج</td>
+                          <td className="px-3 py-2.5 text-left font-mono font-black text-[#059669]">{money0(c.net_payable)} ج</td>
                           <td className="px-3 py-2.5">
                             <select value={c.status} onChange={(e) => setStatus(c, e.target.value)} className={`text-[10px] font-bold rounded-md px-2 py-1 border-0 ${sm.color}`}>
                               {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
@@ -249,7 +249,7 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
         <div className="fixed inset-0 bg-black/40 z-50 flex items-end md:items-center justify-center p-0 md:p-4" onClick={() => setShowForm(false)}>
           <div className="bg-white w-full md:max-w-2xl rounded-t-3xl md:rounded-3xl max-h-[92vh] overflow-y-auto" dir="rtl" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-black text-[#1A2E26] flex items-center gap-2"><Calculator className="w-5 h-5 text-[#FA8125]" /> مستخلص جديد · {project.name}</h2>
+              <h2 className="text-lg font-black text-[#1A2E26] flex items-center gap-2"><Calculator className="w-5 h-5 text-[#059669]" /> مستخلص جديد · {project.name}</h2>
               <button onClick={() => setShowForm(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-5 h-5 text-[#6B7280]" /></button>
             </div>
 
@@ -280,15 +280,15 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
                 <CalcRow label={`(+) ق.م ${livePreview.vat_pct}%`} value={livePreview.vat_amount} />
                 <CalcRow label={`(−) خصم وإضافة ${livePreview.withholding_pct}%`} value={-livePreview.withholding_tax} />
                 <CalcRow label="(−) دمغة" value={-livePreview.stamp_tax} />
-                <div className="mt-3 pt-3 border-t-2 border-[#FA8125]/20 flex items-center justify-between">
+                <div className="mt-3 pt-3 border-t-2 border-[#059669]/20 flex items-center justify-between">
                   <span className="text-sm font-black text-[#1A2E26]">المستحق صرفه</span>
-                  <span className="text-xl font-black text-[#FA8125] font-mono">{money(livePreview.net_payable)} <span className="text-xs">ج</span></span>
+                  <span className="text-xl font-black text-[#059669] font-mono">{money(livePreview.net_payable)} <span className="text-xs">ج</span></span>
                 </div>
               </div>
             </div>
 
             <div className="sticky bottom-0 bg-white border-t border-gray-100 px-5 py-4 flex gap-2">
-              <button onClick={save} disabled={saving} className="flex-1 py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-60">
+              <button onClick={save} disabled={saving} className="flex-1 py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm flex items-center justify-center gap-2 disabled:opacity-60">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null} اعتماد وحفظ المستخلص
               </button>
               <button onClick={() => setShowForm(false)} className="px-5 py-3 rounded-xl bg-[#FAFAF7] text-[#1A2E26] font-bold text-sm">إلغاء</button>
@@ -302,7 +302,7 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
         <div className="fixed inset-0 bg-black/40 z-50 flex items-end md:items-center justify-center p-0 md:p-4" onClick={() => setDetail(null)}>
           <div className="bg-white w-full md:max-w-md rounded-t-3xl md:rounded-3xl max-h-[92vh] overflow-y-auto" dir="rtl" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-black text-[#1A2E26] flex items-center gap-2"><FileText className="w-5 h-5 text-[#FA8125]" /> {detail.cert_no}</h2>
+              <h2 className="text-lg font-black text-[#1A2E26] flex items-center gap-2"><FileText className="w-5 h-5 text-[#059669]" /> {detail.cert_no}</h2>
               <button onClick={() => setDetail(null)} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-5 h-5 text-[#6B7280]" /></button>
             </div>
             <div className="p-5">
@@ -321,9 +321,9 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
                 <CalcRow label={`(+) ق.م ${detail.vat_pct}%`} value={num(detail.vat_amount)} />
                 <CalcRow label={`(−) خصم وإضافة ${detail.withholding_pct}%`} value={-num(detail.withholding_tax)} />
                 <CalcRow label="(−) دمغة" value={-num(detail.stamp_tax)} />
-                <div className="mt-3 pt-3 border-t-2 border-[#FA8125]/20 flex items-center justify-between">
+                <div className="mt-3 pt-3 border-t-2 border-[#059669]/20 flex items-center justify-between">
                   <span className="text-sm font-black text-[#1A2E26]">المستحق صرفه</span>
-                  <span className="text-xl font-black text-[#FA8125] font-mono">{money(detail.net_payable)} <span className="text-xs">ج</span></span>
+                  <span className="text-xl font-black text-[#059669] font-mono">{money(detail.net_payable)} <span className="text-xs">ج</span></span>
                 </div>
               </div>
               {detail.notes && <p className="text-xs text-[#6B7280] mt-3 leading-relaxed">📝 {detail.notes}</p>}
@@ -335,7 +335,7 @@ export default function PaymentCertificatesPage({ params }: { params: { supplier
   )
 }
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:outline-none focus:border-[#FA8125] bg-white'
+const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:outline-none focus:border-[#059669] bg-white'
 
 // 🐛 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) Th كانت مستخدمة في جدول
 // المستخلصات ومش معرّفة في الملف خالص (الصفحة كانت بتضرب ReferenceError
@@ -350,7 +350,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 function Stat({ label, value, primary }: { label: string; value: string; primary?: boolean }) {
   return (
-    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#FA8125] border-[#FA8125] text-white' : 'bg-white border-gray-100'}`}>
+    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#34D399] border-[#059669] text-[#04352A]' : 'bg-white border-gray-100'}`}>
       <p className={`text-[10px] font-bold tracking-wider uppercase ${primary ? 'text-white/80' : 'text-[#6B7280]'}`}>{label}</p>
       <p className={`text-xl md:text-2xl font-black mt-1 ${primary ? 'text-white' : 'text-[#1A2E26]'}`}>{value}</p>
     </div>

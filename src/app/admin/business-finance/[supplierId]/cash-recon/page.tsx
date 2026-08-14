@@ -40,17 +40,17 @@ export default function CashReconPage({ params }: { params: { supplierId: string
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">B2B PARTNER · CASH RECON</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">B2B PARTNER · CASH RECON</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">جرد الكاش اليومي · {supplier?.business_name}</h1>
               <p className="text-sm text-[#6B7280] mt-1">جرد آخر اليوم لكل فرع: كاش/فيزا/InstaPay + الفرق</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setShowAdd(true)} className="px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold flex items-center gap-2">
+              <button onClick={() => setShowAdd(true)} className="px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold flex items-center gap-2">
                 <Plus className="w-4 h-4" /> جرد اليوم
               </button>
               <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7]"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
@@ -82,12 +82,12 @@ export default function CashReconPage({ params }: { params: { supplierId: string
           </div>
           <div className="divide-y divide-gray-100">
             {loading ? (
-              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin inline" /></div>
+              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#059669] animate-spin inline" /></div>
             ) : data?.records?.length === 0 ? (
               <div className="py-12 text-center">
                 <DollarSign className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
                 <p className="text-sm font-bold text-[#1A2E26]">ابدأ بأول جرد لليوم</p>
-                <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold">جرد كاش الفرع</button>
+                <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold">جرد كاش الفرع</button>
               </div>
             ) : (data?.records || []).map((r: any) => {
               const variance = Number(r.variance || 0)
@@ -97,12 +97,12 @@ export default function CashReconPage({ params }: { params: { supplierId: string
                   <div className="col-span-2 font-bold text-[#1A2E26]">{r.branch_name || '—'}</div>
                   <div className="col-span-2 text-center font-mono">{Number(r.expected_cash).toLocaleString()}</div>
                   <div className="col-span-2 text-center font-mono font-bold">{Number(r.actual_cash).toLocaleString()}</div>
-                  <div className={`col-span-2 text-center font-mono font-black ${variance < 0 ? 'text-red-600' : variance > 0 ? 'text-[#FA8125]' : 'text-[#6B7280]'}`}>
+                  <div className={`col-span-2 text-center font-mono font-black ${variance < 0 ? 'text-red-600' : variance > 0 ? 'text-[#059669]' : 'text-[#6B7280]'}`}>
                     {variance > 0 ? '+' : ''}{variance.toLocaleString()}
                   </div>
                   <div className="col-span-2">
                     {variance === 0 ? (
-                      <span className="px-2 py-0.5 rounded bg-[#FA8125]/10 text-[#FA8125] text-[10px] font-bold">مطابق ✓</span>
+                      <span className="px-2 py-0.5 rounded bg-[#34D399]/10 text-[#059669] text-[10px] font-bold">مطابق ✓</span>
                     ) : Math.abs(variance) < 50 ? (
                       <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-[10px] font-bold">فرق بسيط</span>
                     ) : (
@@ -198,7 +198,7 @@ function AddReconModal({ supplierId, branches, onClose, onSaved }: any) {
           <div className="rounded-xl bg-[#FAFAF7] p-3 space-y-1.5">
             <div className="flex justify-between text-xs"><span className="text-[#6B7280]">إجمالي الفعلي</span><span className="font-bold font-mono">{actual.toLocaleString()} ج</span></div>
             <div className="flex justify-between text-xs"><span className="text-[#6B7280]">المتوقع</span><span className="font-mono">{expected.toLocaleString()} ج</span></div>
-            <div className={`flex justify-between text-sm font-black font-mono ${variance < 0 ? 'text-red-600' : variance > 0 ? 'text-[#FA8125]' : 'text-[#1A2E26]'}`}>
+            <div className={`flex justify-between text-sm font-black font-mono ${variance < 0 ? 'text-red-600' : variance > 0 ? 'text-[#059669]' : 'text-[#1A2E26]'}`}>
               <span>الفرق</span><span>{variance > 0 ? '+' : ''}{variance.toLocaleString()} ج</span>
             </div>
           </div>
@@ -207,7 +207,7 @@ function AddReconModal({ supplierId, branches, onClose, onSaved }: any) {
             <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} placeholder="سبب الفرق لو موجود..." className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" />
           </Field>
           
-          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50">
+          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50">
             {saving ? 'جاري الحفظ...' : 'احفظ الجرد'}
           </button>
         </div>
@@ -217,9 +217,9 @@ function AddReconModal({ supplierId, branches, onClose, onSaved }: any) {
 }
 
 function StatCard({ label, value, icon, tone, primary }: any) {
-  const toneClass = tone === 'warning' ? 'text-amber-700' : tone === 'danger' ? 'text-red-600' : tone === 'positive' ? 'text-[#FA8125]' : 'text-[#1A2E26]'
+  const toneClass = tone === 'warning' ? 'text-amber-700' : tone === 'danger' ? 'text-red-600' : tone === 'positive' ? 'text-[#059669]' : 'text-[#1A2E26]'
   return (
-    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#FA8125] border-[#FA8125] text-white' : 'bg-white border-gray-100'}`}>
+    <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#34D399] border-[#059669] text-[#04352A]' : 'bg-white border-gray-100'}`}>
       <p className={`text-[10px] font-bold tracking-wider uppercase ${primary ? 'text-white/90' : 'text-[#6B7280]'} mb-1`}>{label}</p>
       <p className={`text-xl md:text-2xl font-black ${primary ? 'text-white' : toneClass}`}>{value}</p>
     </div>
@@ -231,5 +231,5 @@ function Field({ label, children }: any) {
 }
 
 function Loader() {
-  return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div>
+  return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div>
 }

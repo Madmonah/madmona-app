@@ -33,8 +33,8 @@ type Employee = { id: string; full_name: string; role_ar: string | null }
 const STATUS_COLORS: Record<string, string> = {
   scheduled: 'bg-amber-50 border-amber-200 text-amber-900',
   confirmed: 'bg-blue-50 border-blue-200 text-blue-900',
-  in_progress: 'bg-[#FA8125]/10 border-[#FA8125]/30 text-[#FA8125]',
-  completed: 'bg-[#FA8125]/5 border-[#FA8125]/20 text-[#FA8125]/80',
+  in_progress: 'bg-[#34D399]/10 border-[#059669]/30 text-[#059669]',
+  completed: 'bg-[#34D399]/5 border-[#059669]/20 text-[#059669]/80',
   cancelled: 'bg-red-50 border-red-200 text-red-700',
   no_show: 'bg-gray-100 border-gray-300 text-gray-500',
 }
@@ -100,16 +100,16 @@ export default function AppointmentsPage({ params }: { params: { supplierId: str
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع للـ finance
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">B2B PARTNER · APPOINTMENTS</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">B2B PARTNER · APPOINTMENTS</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">مواعيد {supplier?.business_name}</h1>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={() => setShowNew(true)} className="px-4 py-2 rounded-xl bg-[#FA8125] hover:opacity-90 text-white text-sm font-bold flex items-center gap-2">
+              <button onClick={() => setShowNew(true)} className="px-4 py-2 rounded-xl bg-[#34D399] hover:opacity-90 text-[#04352A] text-sm font-bold flex items-center gap-2">
                 <Plus className="w-4 h-4" /> حجز جديد
               </button>
               <button onClick={load} className="px-4 py-2 rounded-xl bg-[#FAFAF7] hover:bg-gray-100 text-sm font-bold text-[#1A2E26] flex items-center gap-2">
@@ -141,7 +141,7 @@ export default function AppointmentsPage({ params }: { params: { supplierId: str
               <ChevronLeft className="w-4 h-4" />
             </button>
             {!isToday && (
-              <button onClick={() => setDate(new Date())} className="text-xs font-bold text-[#FA8125] hover:underline mr-2">
+              <button onClick={() => setDate(new Date())} className="text-xs font-bold text-[#059669] hover:underline mr-2">
                 ارجع لليوم
               </button>
             )}
@@ -150,14 +150,14 @@ export default function AppointmentsPage({ params }: { params: { supplierId: str
           <div className="flex gap-2 flex-wrap">
             <button onClick={() => setSelectedBranch(null)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 ${
-                selectedBranch === null ? 'bg-[#FA8125] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
+                selectedBranch === null ? 'bg-[#34D399] text-[#04352A]' : 'bg-[#FAFAF7] text-[#1A2E26]'
               }`}>
               <Building2 className="w-3.5 h-3.5" /> كل الفروع
             </button>
             {branches.map((b) => (
               <button key={b.id} onClick={() => setSelectedBranch(b.id)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-                  selectedBranch === b.id ? 'bg-[#FA8125] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'
+                  selectedBranch === b.id ? 'bg-[#34D399] text-[#04352A]' : 'bg-[#FAFAF7] text-[#1A2E26]'
                 }`}>
                 {b.code || b.name}
               </button>
@@ -178,11 +178,11 @@ export default function AppointmentsPage({ params }: { params: { supplierId: str
 
         {/* Calendar grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin" /></div>
+          <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-[#059669] animate-spin" /></div>
         ) : (
           <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[#FA8125]" />
+              <Calendar className="w-4 h-4 text-[#059669]" />
               <h3 className="text-sm font-black text-[#1A2E26]">
                 {appointments.length === 0 ? 'مفيش حجوزات في اليوم ده' : `${appointments.length} حجز`}
               </h3>
@@ -260,7 +260,7 @@ function AppointmentCard({ a, onUpdate }: { a: Appointment; onUpdate: () => void
       </div>
       {a.status === 'scheduled' && (
         <div className="mt-2 pt-2 border-t border-current/10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={() => updateStatus('completed')} className="text-[10px] font-bold px-2 py-1 rounded bg-[#FA8125] text-white">✓ تمت</button>
+          <button onClick={() => updateStatus('completed')} className="text-[10px] font-bold px-2 py-1 rounded bg-[#34D399] text-[#04352A]">✓ تمت</button>
           <button onClick={() => updateStatus('in_progress')} className="text-[10px] font-bold px-2 py-1 rounded bg-white border border-current">⏳ بدأت</button>
           <button onClick={() => updateStatus('cancelled')} className="text-[10px] font-bold px-2 py-1 rounded bg-white border border-current">إلغاء</button>
         </div>
@@ -331,13 +331,13 @@ function NewAppointmentModal({ supplierId, branches, services, employees, onClos
           <div>
             <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1">موعد الحجز</p>
             <input type="datetime-local" value={form.scheduled_at} onChange={(e) => setForm({...form, scheduled_at: e.target.value})}
-              className="w-full px-3 py-2 bg-white rounded-lg text-sm text-[#1A2E26] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#FA8125]" />
+              className="w-full px-3 py-2 bg-white rounded-lg text-sm text-[#1A2E26] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#059669]" />
           </div>
           {error && <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs">{error}</div>}
         </div>
         <footer className="px-5 py-3 border-t border-gray-100 bg-white flex gap-2">
           <button onClick={onClose} className="flex-1 px-4 py-2 rounded-xl bg-[#FAFAF7] text-[#1A2E26] text-sm font-bold">إلغاء</button>
-          <button onClick={create} disabled={saving} className="flex-1 px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold disabled:opacity-50">
+          <button onClick={create} disabled={saving} className="flex-1 px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold disabled:opacity-50">
             {saving ? 'حفظ...' : 'احفظ الحجز'}
           </button>
         </footer>
@@ -351,7 +351,7 @@ function Input({ label, value, onChange, placeholder }: { label: string; value: 
     <div>
       <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1">{label}</p>
       <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full px-3 py-2 bg-white rounded-lg text-sm text-[#1A2E26] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#FA8125]" />
+        className="w-full px-3 py-2 bg-white rounded-lg text-sm text-[#1A2E26] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#059669]" />
     </div>
   )
 }
@@ -360,7 +360,7 @@ function Select({ label, value, onChange, options }: { label: string; value: str
     <div>
       <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1">{label}</p>
       <select value={value} onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 bg-white rounded-lg text-sm text-[#1A2E26] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#FA8125]">
+        className="w-full px-3 py-2 bg-white rounded-lg text-sm text-[#1A2E26] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#059669]">
         {options.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
       </select>
     </div>
@@ -368,9 +368,9 @@ function Select({ label, value, onChange, options }: { label: string; value: str
 }
 
 function StatCard({ label, value, tone, primary }: { label: string; value: number | string; tone?: 'positive' | 'negative' | 'amber'; primary?: boolean }) {
-  const toneClass = tone === 'positive' ? 'text-[#FA8125]' : tone === 'negative' ? 'text-red-600' : tone === 'amber' ? 'text-amber-700' : 'text-[#1A2E26]'
+  const toneClass = tone === 'positive' ? 'text-[#059669]' : tone === 'negative' ? 'text-red-600' : tone === 'amber' ? 'text-amber-700' : 'text-[#1A2E26]'
   return (
-    <div className={`rounded-2xl p-3 border ${primary ? 'bg-[#FA8125] border-[#FA8125] text-white' : 'bg-white border-gray-100'}`}>
+    <div className={`rounded-2xl p-3 border ${primary ? 'bg-[#34D399] border-[#059669] text-[#04352A]' : 'bg-white border-gray-100'}`}>
       <p className={`text-[10px] font-bold tracking-wider uppercase mb-1 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>{label}</p>
       <p className={`text-xl font-black ${primary ? 'text-white' : toneClass}`}>{value}</p>
     </div>

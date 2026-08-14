@@ -59,7 +59,7 @@ export default function ManagerConsole() {
     ;(async () => { const ok = await loadEmployees(); if (ok) await loadBom(); setLoading(false); if (!ok) setTimeout(() => router.push('/me'), 1800) })()
   }, [router, loadEmployees, loadBom])
 
-  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div>
 
   if (denied) return (
     <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
@@ -72,7 +72,7 @@ export default function ManagerConsole() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <header className="bg-[#FA8125] text-white">
+      <header className="bg-[#34D399] text-[#04352A]">
         <div className="max-w-2xl mx-auto px-4 py-5 flex items-center justify-between">
           <div>
             <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/70">إدارة الموظفين</p>
@@ -132,13 +132,13 @@ function AttendanceTab() {
         <input type="date" value={date} max={todayCairo()} onChange={(e) => setDate(e.target.value)}
           className="w-full mt-1 h-11 rounded-xl border border-gray-200 px-3 text-[14px] font-bold" dir="ltr" />
         <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-xl bg-[#FA8125]/8 py-2"><p className="text-[18px] font-black text-[#FA8125]">{present}</p><p className="text-[10px] text-[#6B7280]">حضروا</p></div>
+          <div className="rounded-xl bg-[#34D399]/8 py-2"><p className="text-[18px] font-black text-[#059669]">{present}</p><p className="text-[10px] text-[#6B7280]">حضروا</p></div>
           <div className="rounded-xl bg-red-50 py-2"><p className="text-[18px] font-black text-red-600">{absent}</p><p className="text-[10px] text-[#6B7280]">غياب</p></div>
           <div className="rounded-xl bg-[#FAFAF7] py-2"><p className="text-[18px] font-black text-[#6B7280]">{none}</p><p className="text-[10px] text-[#6B7280]">مسجّلش</p></div>
         </div>
       </div>
 
-      {loading ? <div className="py-10 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin mx-auto" /></div> : (
+      {loading ? <div className="py-10 text-center"><Loader2 className="w-6 h-6 text-[#059669] animate-spin mx-auto" /></div> : (
         <div className="space-y-2">
           {rows.map((r) => (
             <AttendanceRow key={r.employee_id} r={r} date={date}
@@ -160,7 +160,7 @@ function AttendanceRow({ r, date, open, onOpen, onSaved }: any) {
 
   const chip = r.marked_absent
     ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">غياب</span>
-    : r.state === 'in' ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FA8125]/10 text-[#FA8125]">🟢 داخل</span>
+    : r.state === 'in' ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#34D399]/10 text-[#059669]">🟢 داخل</span>
     : r.state === 'out' ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#1A2E26]/8 text-[#1A2E26]">خرج · {Number(r.hours || 0)} س</span>
     : <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">مسجّلش</span>
 
@@ -175,10 +175,10 @@ function AttendanceRow({ r, date, open, onOpen, onSaved }: any) {
   }
 
   return (
-    <div className={`rounded-2xl border bg-white transition-all ${open ? 'border-[#FA8125]' : 'border-gray-100'}`}>
+    <div className={`rounded-2xl border bg-white transition-all ${open ? 'border-[#059669]' : 'border-gray-100'}`}>
       <button onClick={onOpen} className="w-full p-3.5 flex items-center justify-between text-right">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-[#FA8125]/10 grid place-items-center text-[#FA8125] font-black flex-shrink-0">{(r.full_name || '?').slice(0, 1)}</div>
+          <div className="w-9 h-9 rounded-xl bg-[#34D399]/10 grid place-items-center text-[#059669] font-black flex-shrink-0">{(r.full_name || '?').slice(0, 1)}</div>
           <div className="min-w-0">
             <p className="text-[13px] font-bold text-[#1A2E26] truncate">{r.full_name}</p>
             <p className="text-[11px] text-[#6B7280] truncate">{r.branch || '—'}{r.clock_in_at ? ` · ${hhmm(r.clock_in_at)}${r.clock_out_at ? '→' + hhmm(r.clock_out_at) : ''}` : ''}</p>
@@ -194,7 +194,7 @@ function AttendanceRow({ r, date, open, onOpen, onSaved }: any) {
             <label className="text-[11px] text-[#6B7280]">خروج<input type="time" value={cout} onChange={(e) => setCout(e.target.value)} className="w-full mt-1 h-10 rounded-xl border border-gray-200 px-2 text-[14px]" dir="ltr" /></label>
           </div>
           <div className="flex gap-2 mt-3">
-            <button onClick={() => save(false)} disabled={busy} className="flex-1 h-10 rounded-xl bg-[#FA8125] text-white font-black text-[13px] flex items-center justify-center gap-1.5 disabled:opacity-50">
+            <button onClick={() => save(false)} disabled={busy} className="flex-1 h-10 rounded-xl bg-[#34D399] text-[#04352A] font-black text-[13px] flex items-center justify-center gap-1.5 disabled:opacity-50">
               {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} حفظ
             </button>
             <button onClick={() => save(true)} disabled={busy} className="h-10 px-3 rounded-xl bg-red-50 text-red-600 font-black text-[13px] flex items-center justify-center gap-1.5 disabled:opacity-50">
@@ -225,23 +225,23 @@ function EmployeesTab({ branches, scope, employees, reload, canViewSalary, canEd
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="دوّر باسم أو تليفون"
             className="w-full h-11 rounded-xl border border-gray-200 pr-9 pl-3 text-[14px]" />
         </div>
-        <button onClick={() => setForm({})} className="h-11 px-4 rounded-xl bg-[#FA8125] text-white font-black text-[13px] flex items-center gap-1.5"><Plus className="w-4 h-4" /> ضيف</button>
+        <button onClick={() => setForm({})} className="h-11 px-4 rounded-xl bg-[#34D399] text-[#04352A] font-black text-[13px] flex items-center gap-1.5"><Plus className="w-4 h-4" /> ضيف</button>
       </div>
 
       <div className="space-y-2">
         {filtered.map((e: any) => (
           <div key={e.id} className="rounded-2xl border border-gray-100 bg-white p-3.5 flex items-center justify-between">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-[#FA8125]/10 grid place-items-center text-[#FA8125] font-black flex-shrink-0">{(e.full_name || '?').slice(0, 1)}</div>
+              <div className="w-9 h-9 rounded-xl bg-[#34D399]/10 grid place-items-center text-[#059669] font-black flex-shrink-0">{(e.full_name || '?').slice(0, 1)}</div>
               <div className="min-w-0">
                 <p className="text-[13px] font-bold text-[#1A2E26] truncate">{e.full_name}</p>
                 <p className="text-[11px] text-[#6B7280] truncate">{e.role_ar || '—'} · {e.branch || 'بدون فرع'}{e.phone ? ` · ${e.phone}` : ''}</p>
-                {canViewSalary && e.salary != null && <p className="text-[11px] font-bold text-[#FA8125] truncate flex items-center gap-1"><Wallet className="w-3 h-3" /> {Number(e.salary).toLocaleString('en-US')} ج</p>}
+                {canViewSalary && e.salary != null && <p className="text-[11px] font-bold text-[#059669] truncate flex items-center gap-1"><Wallet className="w-3 h-3" /> {Number(e.salary).toLocaleString('en-US')} ج</p>}
                 {canViewPin && e.pin && <p className="text-[11px] font-mono font-bold text-[#1A2E26] truncate flex items-center gap-1"><KeyRound className="w-3 h-3" /> PIN {e.pin}</p>}
               </div>
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              <button onClick={() => setShiftFor(e)} className="h-9 px-2.5 rounded-xl bg-[#FAFAF7] text-[#FA8125] text-[12px] font-bold flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" /> الشيفت</button>
+              <button onClick={() => setShiftFor(e)} className="h-9 px-2.5 rounded-xl bg-[#FAFAF7] text-[#059669] text-[12px] font-bold flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" /> الشيفت</button>
               <button onClick={() => setForm(e)} className="h-9 w-9 rounded-xl bg-[#FAFAF7] grid place-items-center text-[#6B7280]"><Pencil className="w-4 h-4" /></button>
             </div>
           </div>
@@ -313,7 +313,7 @@ function EmployeeModal({ employee, branches, scope, canViewSalary, canEditSalary
           )}
           {err && <p className="text-[12px] text-red-600 font-bold">{err}</p>}
           {isNew && <p className="text-[11px] text-[#6B7280]">هيتعمل للموظف كود PIN أوتوماتيك للدخول{canViewPin ? ' — هيظهر في القايمة بعد الحفظ.' : ' — تقدر تشوفه من لوحة الإدارة.'}</p>}
-          <button onClick={save} disabled={busy} className="w-full h-12 rounded-2xl bg-[#FA8125] text-white font-black text-[14px] flex items-center justify-center gap-2 disabled:opacity-50">
+          <button onClick={save} disabled={busy} className="w-full h-12 rounded-2xl bg-[#34D399] text-[#04352A] font-black text-[14px] flex items-center justify-center gap-2 disabled:opacity-50">
             {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} {isNew ? 'ضيف الموظف' : 'حفظ التعديلات'}
           </button>
         </div>
@@ -358,13 +358,13 @@ function ShiftModal({ employee, onClose }: any) {
           <div><h3 className="text-lg font-black text-[#1A2E26]">شيفت {employee.full_name}</h3><p className="text-[11px] text-[#6B7280]">المواعيد الأسبوعية</p></div>
           <button onClick={onClose} className="text-[#6B7280]"><X className="w-5 h-5" /></button>
         </div>
-        {loading ? <div className="py-8 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin mx-auto" /></div> : (
+        {loading ? <div className="py-8 text-center"><Loader2 className="w-6 h-6 text-[#059669] animate-spin mx-auto" /></div> : (
           <div className="space-y-2">
             {days.map((d) => (
               <div key={d.dow} className={`rounded-2xl border p-3 ${d.off ? 'bg-[#FAFAF7] border-gray-100' : 'border-gray-200'}`}>
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] font-black text-[#1A2E26]">{DAYS[d.dow]}</span>
-                  <button onClick={() => upd(d.dow, { off: !d.off })} className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${d.off ? 'bg-red-100 text-red-700' : 'bg-[#FA8125]/10 text-[#FA8125]'}`}>
+                  <button onClick={() => upd(d.dow, { off: !d.off })} className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${d.off ? 'bg-red-100 text-red-700' : 'bg-[#34D399]/10 text-[#059669]'}`}>
                     {d.off ? 'إجازة' : 'شغل'}
                   </button>
                 </div>
@@ -376,7 +376,7 @@ function ShiftModal({ employee, onClose }: any) {
                 )}
               </div>
             ))}
-            <button onClick={save} disabled={busy} className="w-full h-12 rounded-2xl bg-[#FA8125] text-white font-black text-[14px] flex items-center justify-center gap-2 disabled:opacity-50 sticky bottom-0">
+            <button onClick={save} disabled={busy} className="w-full h-12 rounded-2xl bg-[#34D399] text-[#04352A] font-black text-[14px] flex items-center justify-center gap-2 disabled:opacity-50 sticky bottom-0">
               {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />} {saved ? 'اتحفظ ✓' : 'حفظ الشيفت'}
             </button>
           </div>
@@ -423,10 +423,10 @@ function BomTab({ bom, reload }: any) {
           const linked = (s.products || []) as any[]
           const open = openId === s.id
           return (
-            <div key={s.id} className={`rounded-2xl border bg-white transition-all ${open ? 'border-[#FA8125]' : 'border-gray-100'}`}>
+            <div key={s.id} className={`rounded-2xl border bg-white transition-all ${open ? 'border-[#059669]' : 'border-gray-100'}`}>
               <button onClick={() => setOpenId(open ? null : s.id)} className="w-full p-3.5 flex items-center justify-between text-right">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-[#FA8125]/10 grid place-items-center text-[#FA8125] flex-shrink-0"><Boxes className="w-4 h-4" /></div>
+                  <div className="w-9 h-9 rounded-xl bg-[#34D399]/10 grid place-items-center text-[#059669] flex-shrink-0"><Boxes className="w-4 h-4" /></div>
                   <div className="min-w-0">
                     <p className="text-[13px] font-bold text-[#1A2E26] truncate">{s.name_ar}</p>
                     <p className="text-[11px] text-[#6B7280] truncate">{linked.length ? `${linked.length} منتج مربوط` : 'مفيش منتجات مربوطة'}{s.price_egp != null ? ` · ${Number(s.price_egp).toLocaleString('en-US')} ج` : ''}</p>
@@ -455,7 +455,7 @@ function BomTab({ bom, reload }: any) {
                     </div>
                   ))}
                   {canEdit && (
-                    <button onClick={() => setAddFor(s)} className="w-full h-10 rounded-xl bg-[#FA8125]/8 text-[#FA8125] font-black text-[13px] flex items-center justify-center gap-1.5">
+                    <button onClick={() => setAddFor(s)} className="w-full h-10 rounded-xl bg-[#34D399]/8 text-[#059669] font-black text-[13px] flex items-center justify-center gap-1.5">
                       <Plus className="w-4 h-4" /> أضف منتج
                     </button>
                   )}
@@ -512,7 +512,7 @@ function AddProductModal({ service, products, onClose, onSaved }: any) {
         <div className="max-h-48 overflow-y-auto space-y-1 mb-3">
           {filtered.slice(0, 80).map((p) => (
             <button key={p.id} onClick={() => setProductId(p.id)}
-              className={`w-full text-right px-3 py-2 rounded-xl border text-[13px] font-bold flex items-center justify-between ${productId === p.id ? 'border-[#FA8125] bg-[#FA8125]/5 text-[#FA8125]' : 'border-gray-200 text-[#1A2E26]'}`}>
+              className={`w-full text-right px-3 py-2 rounded-xl border text-[13px] font-bold flex items-center justify-between ${productId === p.id ? 'border-[#059669] bg-[#34D399]/5 text-[#059669]' : 'border-gray-200 text-[#1A2E26]'}`}>
               <span className="truncate">{p.name_ar}</span>
               <span className="text-[10px] text-[#6B7280] flex-shrink-0">{p.unit || ''}</span>
             </button>
@@ -532,7 +532,7 @@ function AddProductModal({ service, products, onClose, onSaved }: any) {
         </div>
 
         {err && <p className="text-[12px] text-red-600 font-bold mt-2">{err}</p>}
-        <button onClick={save} disabled={busy || !productId} className="w-full h-12 mt-3 rounded-2xl bg-[#FA8125] text-white font-black text-[14px] flex items-center justify-center gap-2 disabled:opacity-50">
+        <button onClick={save} disabled={busy || !productId} className="w-full h-12 mt-3 rounded-2xl bg-[#34D399] text-[#04352A] font-black text-[14px] flex items-center justify-center gap-2 disabled:opacity-50">
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />} اربط المنتج
         </button>
       </div>

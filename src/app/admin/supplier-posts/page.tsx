@@ -117,10 +117,10 @@ function PostCard({ post, onShareAdded }: { post: Post; onShareAdded: () => void
           <div className="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">
             {CATEGORY_LABELS[post.category] ?? post.category}
           </div>
-          <h3 className="text-base font-bold text-[#FA8125]">{post.title}</h3>
+          <h3 className="text-base font-bold text-[#059669]">{post.title}</h3>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-[10px] bg-[#FA8125]/10 text-[#FA8125] px-2.5 py-1 rounded-full font-bold">
+          <span className="text-[10px] bg-[#34D399]/10 text-[#059669] px-2.5 py-1 rounded-full font-bold">
             {post.shares.length} جروب
           </span>
           {post.external_url && (
@@ -128,7 +128,7 @@ function PostCard({ post, onShareAdded }: { post: Post; onShareAdded: () => void
               href={post.external_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] text-gray-500 hover:text-[#FA8125] underline"
+              className="text-[10px] text-gray-500 hover:text-[#059669] underline"
             >
               البوست الأصلي ↗
             </a>
@@ -151,8 +151,8 @@ function PostCard({ post, onShareAdded }: { post: Post; onShareAdded: () => void
             onClick={handleCopy}
             className={`px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all ${
               copied
-                ? 'bg-green-600 text-white'
-                : 'bg-[#FA8125] text-white hover:shadow-md'
+                ? 'bg-green-600 text-[#04352A]'
+                : 'bg-[#34D399] text-[#04352A] hover:shadow-md'
             }`}
           >
             {copied ? '✓ تم النسخ' : '📋 نسخ كامل'}
@@ -164,7 +164,7 @@ function PostCard({ post, onShareAdded }: { post: Post; onShareAdded: () => void
               href={`https://www.facebook.com/search/groups/?q=${encodeURIComponent(q)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-2.5 rounded-xl text-xs bg-white border-2 border-gray-200 hover:border-[#FA8125] hover:text-[#FA8125] text-gray-700 transition-all"
+              className="px-3 py-2.5 rounded-xl text-xs bg-white border-2 border-gray-200 hover:border-[#059669] hover:text-[#059669] text-gray-700 transition-all"
             >
               🔍 {q}
             </a>
@@ -179,7 +179,7 @@ function PostCard({ post, onShareAdded }: { post: Post; onShareAdded: () => void
             <h4 className="text-xs font-bold text-gray-700">الجروبات اللي نشرت فيها:</h4>
             <button
               onClick={() => setShowAddGroup((v) => !v)}
-              className="text-xs text-[#FA8125] font-bold hover:underline"
+              className="text-xs text-[#059669] font-bold hover:underline"
             >
               {showAddGroup ? '× إلغاء' : '+ ضيف جروب'}
             </button>
@@ -204,7 +204,7 @@ function PostCard({ post, onShareAdded }: { post: Post; onShareAdded: () => void
               <button
                 onClick={handleAddGroup}
                 disabled={saving || !groupName.trim()}
-                className="w-full px-3 py-2 bg-[#FA8125] text-white text-sm font-bold rounded-lg disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#34D399] text-[#04352A] text-sm font-bold rounded-lg disabled:opacity-50"
               >
                 {saving ? '...حفظ' : 'سجّل النشر في الجروب ده'}
               </button>
@@ -231,7 +231,7 @@ function PostCard({ post, onShareAdded }: { post: Post; onShareAdded: () => void
                           href={s.group_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#FA8125] hover:underline"
+                          className="text-[#059669] hover:underline"
                         >
                           {s.group_name} ↗
                         </a>
@@ -305,7 +305,7 @@ export default function SupplierPostsPage() {
         {/* Quick stats */}
         <div className="mb-6 grid grid-cols-3 gap-3">
           <div className="bg-white rounded-xl p-3 text-center border border-gray-100">
-            <div className="text-2xl font-bold text-[#FA8125]">{posts.length}</div>
+            <div className="text-2xl font-bold text-[#059669]">{posts.length}</div>
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">بوست</div>
           </div>
           <div className="bg-white rounded-xl p-3 text-center border border-gray-100">

@@ -162,7 +162,7 @@ export default function MadmonaHome() {
     router.push('/login')
   }
 
-  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div>
 
   const admins = me?.roles?.admin || []
   const employees = me?.roles?.employee || []
@@ -187,7 +187,7 @@ export default function MadmonaHome() {
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       {/* ===== HERO HEADER ===== */}
-      <header className="relative bg-[#FA8125] text-white overflow-hidden">
+      <header className="relative bg-[#34D399] text-[#04352A] overflow-hidden">
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, white 1.5px, transparent 1.5px)', backgroundSize: '22px 22px' }} />
         <div className="absolute -top-16 -left-12 w-44 h-44 rounded-full bg-white/5" />
         <div className="relative max-w-3xl mx-auto px-4 pt-8 pb-12 flex items-start justify-between">
@@ -206,7 +206,7 @@ export default function MadmonaHome() {
 
         {/* ===== TODAY ===== */}
         <section>
-          <div className="bg-[#FA8125] text-white rounded-2xl p-5 shadow-lg shadow-[#FA8125]/20 relative overflow-hidden">
+          <div className="bg-[#34D399] text-[#04352A] rounded-2xl p-5 shadow-lg shadow-[#059669]/20 relative overflow-hidden">
             <div className="absolute -top-10 -left-8 w-32 h-32 rounded-full bg-white/5" />
             <div className="relative">
               <div className="flex items-center justify-between mb-2.5">
@@ -242,9 +242,9 @@ export default function MadmonaHome() {
             <div className="space-y-2.5">
               {admins.map((a: any) => (
                 <div key={a.supplier_id} className="space-y-2.5">
-                  <Link href={`/owner/${a.supplier_id}`} className={`${CARD} p-4 flex items-center justify-between hover:border-[#FA8125]/40 hover:shadow-md transition-all`}>
+                  <Link href={`/owner/${a.supplier_id}`} className={`${CARD} p-4 flex items-center justify-between hover:border-[#059669]/40 hover:shadow-md transition-all`}>
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-xl bg-[#FA8125]/10 grid place-items-center"><Briefcase className="w-5 h-5 text-[#FA8125]" /></div>
+                      <div className="w-11 h-11 rounded-xl bg-[#34D399]/10 grid place-items-center"><Briefcase className="w-5 h-5 text-[#059669]" /></div>
                       <div>
                         <p className="font-black text-[#1A2E26]">{a.business_name}</p>
                         <p className="text-[11px] text-[#6B7280]">إدارة · {a.role === 'owner' ? 'مالك' : a.role === 'manager' ? 'مدير' : a.role}</p>
@@ -255,21 +255,21 @@ export default function MadmonaHome() {
 
                   {/* Pending employee join requests */}
                   {(joinReqs[a.supplier_id]?.length > 0) && (
-                    <div className="bg-white rounded-2xl border border-[#FA8125]/30 p-4 shadow-[0_10px_30px_-18px_rgba(26,46,38,0.35)]">
+                    <div className="bg-white rounded-2xl border border-[#059669]/30 p-4 shadow-[0_10px_30px_-18px_rgba(26,46,38,0.35)]">
                       <div className="flex items-center gap-1.5 mb-3">
-                        <UserPlus className="w-4 h-4 text-[#FA8125]" />
+                        <UserPlus className="w-4 h-4 text-[#059669]" />
                         <p className="text-sm font-black text-[#1A2E26]">طلبات انضمام موظفين</p>
-                        <span className="px-1.5 py-0.5 rounded-full bg-[#FA8125] text-white text-[10px] font-bold">{joinReqs[a.supplier_id].length}</span>
+                        <span className="px-1.5 py-0.5 rounded-full bg-[#34D399] text-[#04352A] text-[10px] font-bold">{joinReqs[a.supplier_id].length}</span>
                       </div>
                       <div className="space-y-2">
                         {joinReqs[a.supplier_id].map((r: any) => (
                           <div key={r.id} className="flex items-center justify-between gap-2 border-b border-gray-50 pb-2 last:border-0">
                             <div className="min-w-0">
-                              <p className="font-bold text-[#1A2E26] text-sm truncate">{r.full_name} {r.name_match && <span className="text-[10px] text-[#FA8125]">(مطابق لموظف موجود)</span>}</p>
+                              <p className="font-bold text-[#1A2E26] text-sm truncate">{r.full_name} {r.name_match && <span className="text-[10px] text-[#059669]">(مطابق لموظف موجود)</span>}</p>
                               <p className="text-[11px] text-[#6B7280] truncate">{r.job_title || 'موظف'} · {r.branch_name} · <span dir="ltr">{r.phone}</span></p>
                             </div>
                             <div className="flex items-center gap-1.5 flex-shrink-0">
-                              <button onClick={() => reviewReq(a.supplier_id, r.id, 'approve')} disabled={busyReq === r.id} className="w-9 h-9 rounded-xl bg-[#FA8125] text-white grid place-items-center disabled:opacity-50" title="موافقة">
+                              <button onClick={() => reviewReq(a.supplier_id, r.id, 'approve')} disabled={busyReq === r.id} className="w-9 h-9 rounded-xl bg-[#34D399] text-[#04352A] grid place-items-center disabled:opacity-50" title="موافقة">
                                 {busyReq === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                               </button>
                               <button onClick={() => reviewReq(a.supplier_id, r.id, 'reject')} disabled={busyReq === r.id} className="w-9 h-9 rounded-xl bg-gray-100 text-[#6B7280] grid place-items-center disabled:opacity-50" title="رفض">
@@ -293,9 +293,9 @@ export default function MadmonaHome() {
             <h2 className={SECTION_TITLE}><Briefcase className="w-3.5 h-3.5" /> شغلي</h2>
             <div className="space-y-2.5">
               {employees.map((emp: any) => (
-                <Link key={emp.employee_id} href="/me" className={`${CARD} p-4 flex items-center justify-between hover:border-[#FA8125]/40 hover:shadow-md transition-all`}>
+                <Link key={emp.employee_id} href="/me" className={`${CARD} p-4 flex items-center justify-between hover:border-[#059669]/40 hover:shadow-md transition-all`}>
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-[#FA8125]/10 grid place-items-center"><Briefcase className="w-5 h-5 text-[#FA8125]" /></div>
+                    <div className="w-11 h-11 rounded-xl bg-[#34D399]/10 grid place-items-center"><Briefcase className="w-5 h-5 text-[#059669]" /></div>
                     <div>
                       <p className="font-black text-[#1A2E26]">{emp.business_name}</p>
                       <p className="text-[11px] text-[#6B7280]">لوحة شغلي · حضور، تاسكات، اكراميات، مواعيد</p>
@@ -326,7 +326,7 @@ export default function MadmonaHome() {
                     <div className="flex gap-1 mb-3" dir="ltr">
                       {[1,2,3,4,5].map(n => (
                         <button key={n} onClick={() => setRate(p.booking_id, 'service', n)}>
-                          <Star className={`w-7 h-7 ${n <= r.service ? 'fill-[#FA8125] text-[#FA8125]' : 'text-gray-300'}`} />
+                          <Star className={`w-7 h-7 ${n <= r.service ? 'fill-[#059669] text-[#059669]' : 'text-gray-300'}`} />
                         </button>
                       ))}
                     </div>
@@ -337,16 +337,16 @@ export default function MadmonaHome() {
                         <div className="flex gap-1 mb-3" dir="ltr">
                           {[1,2,3,4,5].map(n => (
                             <button key={n} onClick={() => setRate(p.booking_id, 'stylist', n)}>
-                              <Star className={`w-6 h-6 ${n <= r.stylist ? 'fill-[#FA8125] text-[#FA8125]' : 'text-gray-300'}`} />
+                              <Star className={`w-6 h-6 ${n <= r.stylist ? 'fill-[#059669] text-[#059669]' : 'text-gray-300'}`} />
                             </button>
                           ))}
                         </div>
                       </>
                     )}
 
-                    <textarea value={r.comment} onChange={e => setRate(p.booking_id, 'comment', e.target.value)} placeholder="رأيك يهمنا (اختياري)" rows={2} className="w-full px-3 py-2.5 rounded-xl bg-[#FAFAF7] text-sm mb-3 resize-none outline-none focus:bg-white border border-transparent focus:border-[#FA8125]/30 transition-colors" />
+                    <textarea value={r.comment} onChange={e => setRate(p.booking_id, 'comment', e.target.value)} placeholder="رأيك يهمنا (اختياري)" rows={2} className="w-full px-3 py-2.5 rounded-xl bg-[#FAFAF7] text-sm mb-3 resize-none outline-none focus:bg-white border border-transparent focus:border-[#059669]/30 transition-colors" />
 
-                    <button onClick={() => submitReview(p.booking_id)} disabled={busyReview === p.booking_id || !r.service} className="w-full py-3 rounded-2xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-[#FA8125]/20 active:scale-[0.99] transition-all">
+                    <button onClick={() => submitReview(p.booking_id)} disabled={busyReview === p.booking_id || !r.service} className="w-full py-3 rounded-2xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-[#059669]/20 active:scale-[0.99] transition-all">
                       {busyReview === p.booking_id ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري الإرسال...</> : <><Star className="w-4 h-4" /> ابعت تقييمك</>}
                     </button>
                   </div>
@@ -369,7 +369,7 @@ export default function MadmonaHome() {
                         <p className="font-bold text-[#1A2E26]">{b.service}</p>
                         <p className="text-[11px] text-[#6B7280]">{b.branch} · {b.date} · <span dir="ltr">{b.time}</span></p>
                       </div>
-                      <span className="px-2 py-0.5 rounded bg-[#FA8125]/10 text-[#FA8125] text-[10px] font-bold">{STATUS_AR[b.status] || b.status}</span>
+                      <span className="px-2 py-0.5 rounded bg-[#34D399]/10 text-[#059669] text-[10px] font-bold">{STATUS_AR[b.status] || b.status}</span>
                     </div>
                   ))}
                 </div>
@@ -378,14 +378,14 @@ export default function MadmonaHome() {
                 <div className="space-y-2">
                   <p className="text-[11px] font-bold text-[#6B7280]">احجز خدمة جديدة:</p>
                   {bookBranches.map((b: any) => (
-                    <Link key={b.branch_id} href={`/book/${b.code}`} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-[#FA8125]/5 hover:bg-[#FA8125]/10 transition-colors">
-                      <span className="text-sm font-bold text-[#1A2E26] flex items-center gap-2"><Calendar className="w-4 h-4 text-[#FA8125]" /> {b.name}</span>
+                    <Link key={b.branch_id} href={`/book/${b.code}`} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-[#34D399]/5 hover:bg-[#34D399]/10 transition-colors">
+                      <span className="text-sm font-bold text-[#1A2E26] flex items-center gap-2"><Calendar className="w-4 h-4 text-[#059669]" /> {b.name}</span>
                       <ChevronLeft className="w-4 h-4 text-[#6B7280]" />
                     </Link>
                   ))}
                 </div>
               ) : (
-                <Link href="/marketplace" className="w-full py-3 rounded-2xl bg-[#FA8125] text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#FA8125]/20">
+                <Link href="/marketplace" className="w-full py-3 rounded-2xl bg-[#34D399] text-[#04352A] font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#059669]/20">
                   <Calendar className="w-4 h-4" /> احجز خدمة جديدة
                 </Link>
               )}
@@ -403,20 +403,20 @@ export default function MadmonaHome() {
               <div className={`${CARD} p-4`}>
                 {tipResult ? (
                   <div className="text-center py-2">
-                    <div className="w-14 h-14 rounded-full bg-[#FA8125]/10 grid place-items-center mx-auto mb-3"><Gift className="w-7 h-7 text-[#FA8125]" /></div>
+                    <div className="w-14 h-14 rounded-full bg-[#34D399]/10 grid place-items-center mx-auto mb-3"><Gift className="w-7 h-7 text-[#059669]" /></div>
                     <p className="font-black text-[#1A2E26] mb-1">شكراً! 🎉 اكرامية {tipResult.amount} ج لـ {tipResult.employee}</p>
                     <p className="text-sm text-[#6B7280] leading-relaxed">{tipResult.message}</p>
                     {tipResult.instapay && (
-                      <div className="mt-3 bg-[#FAFAF7] rounded-xl p-3 text-right border border-[#FA8125]/15">
+                      <div className="mt-3 bg-[#FAFAF7] rounded-xl p-3 text-right border border-[#059669]/15">
                         <p className="text-[11px] font-bold text-[#6B7280] mb-2">حوّل على حساب مضمونة:</p>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">البنك</span><span className="font-bold text-[#1A2E26]">بنك مصر</span></div>
                           <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">اسم الحساب</span><span className="font-bold text-[#1A2E26]">مضمونة</span></div>
-                          <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">رقم الحساب / إنستاباي</span><span className="font-mono font-black text-[#FA8125] select-all" dir="ltr">{tipResult.instapay}</span></div>
+                          <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">رقم الحساب / إنستاباي</span><span className="font-mono font-black text-[#059669] select-all" dir="ltr">{tipResult.instapay}</span></div>
                         </div>
                       </div>
                     )}
-                    <button onClick={() => setTipResult(null)} className="mt-4 text-xs font-bold text-[#FA8125]">اكرامية تانية</button>
+                    <button onClick={() => setTipResult(null)} className="mt-4 text-xs font-bold text-[#059669]">اكرامية تانية</button>
                   </div>
                 ) : (
                   <>
@@ -435,18 +435,18 @@ export default function MadmonaHome() {
                     <p className="text-[11px] font-bold text-[#6B7280] mb-1.5">المبلغ</p>
                     <div className="flex gap-2 mb-3">
                       {[20, 50, 100].map(a => (
-                        <button key={a} onClick={() => setTipAmount(a)} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border transition-all ${tipAmount === a ? 'bg-[#FA8125] text-white border-[#FA8125]' : 'bg-white text-[#1A2E26] border-gray-200'}`}>{a} ج</button>
+                        <button key={a} onClick={() => setTipAmount(a)} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border transition-all ${tipAmount === a ? 'bg-[#34D399] text-[#04352A] border-[#059669]' : 'bg-white text-[#1A2E26] border-gray-200'}`}>{a} ج</button>
                       ))}
                       <input type="number" value={tipAmount || ''} onChange={e => setTipAmount(Number(e.target.value))} placeholder="غير ده" className="w-20 px-2 py-2 rounded-xl bg-[#FAFAF7] text-sm text-center outline-none" dir="ltr" />
                     </div>
 
                     <p className="text-[11px] font-bold text-[#6B7280] mb-1.5">طريقة الدفع</p>
                     <div className="flex gap-2 mb-4">
-                      <button onClick={() => setTipMethod('instapay')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 ${tipMethod === 'instapay' ? 'bg-[#FA8125] text-white border-[#FA8125]' : 'bg-white text-[#1A2E26] border-gray-200'}`}><Coins className="w-4 h-4" /> إنستاباي</button>
-                      <button onClick={() => setTipMethod('cash')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 ${tipMethod === 'cash' ? 'bg-[#FA8125] text-white border-[#FA8125]' : 'bg-white text-[#1A2E26] border-gray-200'}`}><Wallet className="w-4 h-4" /> كاش في الفرع</button>
+                      <button onClick={() => setTipMethod('instapay')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 ${tipMethod === 'instapay' ? 'bg-[#34D399] text-[#04352A] border-[#059669]' : 'bg-white text-[#1A2E26] border-gray-200'}`}><Coins className="w-4 h-4" /> إنستاباي</button>
+                      <button onClick={() => setTipMethod('cash')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 ${tipMethod === 'cash' ? 'bg-[#34D399] text-[#04352A] border-[#059669]' : 'bg-white text-[#1A2E26] border-gray-200'}`}><Wallet className="w-4 h-4" /> كاش في الفرع</button>
                     </div>
 
-                    <button onClick={sendTip} disabled={tipBusy || !tipEmp || !tipAmount} className="w-full py-3 rounded-2xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-[#FA8125]/20 active:scale-[0.99] transition-all">
+                    <button onClick={sendTip} disabled={tipBusy || !tipEmp || !tipAmount} className="w-full py-3 rounded-2xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-[#059669]/20 active:scale-[0.99] transition-all">
                       {tipBusy ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري...</> : <><Gift className="w-4 h-4" /> ابعت الاكرامية</>}
                     </button>
                   </>
@@ -469,20 +469,20 @@ export default function MadmonaHome() {
               <div className={`${CARD} p-4`}>
                 {orderResult ? (
                   <div className="text-center py-2">
-                    <div className="w-14 h-14 rounded-full bg-[#FA8125]/10 grid place-items-center mx-auto mb-3"><ShoppingBag className="w-7 h-7 text-[#FA8125]" /></div>
+                    <div className="w-14 h-14 rounded-full bg-[#34D399]/10 grid place-items-center mx-auto mb-3"><ShoppingBag className="w-7 h-7 text-[#059669]" /></div>
                     <p className="font-black text-[#1A2E26] mb-1">تم استلام طلبك! 🛍️</p>
                     <p className="text-sm text-[#6B7280] leading-relaxed">{orderResult.message}</p>
                     {orderResult.instapay && (
-                      <div className="mt-3 bg-[#FAFAF7] rounded-xl p-3 text-right border border-[#FA8125]/15">
+                      <div className="mt-3 bg-[#FAFAF7] rounded-xl p-3 text-right border border-[#059669]/15">
                         <p className="text-[11px] font-bold text-[#6B7280] mb-2">حوّل على حساب مضمونة:</p>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">البنك</span><span className="font-bold text-[#1A2E26]">بنك مصر</span></div>
                           <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">اسم الحساب</span><span className="font-bold text-[#1A2E26]">مضمونة</span></div>
-                          <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">رقم الحساب / إنستاباي</span><span className="font-mono font-black text-[#FA8125] select-all" dir="ltr">{orderResult.instapay}</span></div>
+                          <div className="flex items-center justify-between"><span className="text-[12px] text-[#6B7280]">رقم الحساب / إنستاباي</span><span className="font-mono font-black text-[#059669] select-all" dir="ltr">{orderResult.instapay}</span></div>
                         </div>
                       </div>
                     )}
-                    <button onClick={() => setOrderResult(null)} className="mt-4 text-xs font-bold text-[#FA8125]">اطلب تاني</button>
+                    <button onClick={() => setOrderResult(null)} className="mt-4 text-xs font-bold text-[#059669]">اطلب تاني</button>
                   </div>
                 ) : (
                   <>
@@ -491,16 +491,16 @@ export default function MadmonaHome() {
                         <div key={p.product_id} className="flex items-center justify-between gap-2 border-b border-gray-50 pb-2 last:border-0">
                           <div className="min-w-0">
                             <p className="font-bold text-[#1A2E26] text-sm truncate">{p.name}</p>
-                            <p className="text-[11px] text-[#FA8125] font-bold">{Number(p.price).toLocaleString()} ج</p>
+                            <p className="text-[11px] text-[#059669] font-bold">{Number(p.price).toLocaleString()} ج</p>
                           </div>
                           {cart[p.product_id] ? (
                             <div className="flex items-center gap-2 flex-shrink-0">
                               <button onClick={() => changeQty(p.product_id, -1)} className="w-7 h-7 rounded-lg bg-gray-100 grid place-items-center"><Minus className="w-3.5 h-3.5" /></button>
                               <span className="font-black text-sm w-5 text-center">{cart[p.product_id]}</span>
-                              <button onClick={() => changeQty(p.product_id, 1)} className="w-7 h-7 rounded-lg bg-[#FA8125] text-white grid place-items-center"><Plus className="w-3.5 h-3.5" /></button>
+                              <button onClick={() => changeQty(p.product_id, 1)} className="w-7 h-7 rounded-lg bg-[#34D399] text-[#04352A] grid place-items-center"><Plus className="w-3.5 h-3.5" /></button>
                             </div>
                           ) : (
-                            <button onClick={() => changeQty(p.product_id, 1)} className="px-3 py-1.5 rounded-lg bg-[#FA8125]/10 text-[#FA8125] text-xs font-bold flex-shrink-0">ضيف</button>
+                            <button onClick={() => changeQty(p.product_id, 1)} className="px-3 py-1.5 rounded-lg bg-[#34D399]/10 text-[#059669] text-xs font-bold flex-shrink-0">ضيف</button>
                           )}
                         </div>
                       ))}
@@ -513,10 +513,10 @@ export default function MadmonaHome() {
                           <span className="text-lg font-black text-[#1A2E26]">{total.toLocaleString()} ج</span>
                         </div>
                         <div className="flex gap-2 mb-3">
-                          <button onClick={() => setStoreMethod('instapay')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 ${storeMethod === 'instapay' ? 'bg-[#FA8125] text-white border-[#FA8125]' : 'bg-white text-[#1A2E26] border-gray-200'}`}><Coins className="w-4 h-4" /> إنستاباي</button>
-                          <button onClick={() => setStoreMethod('cash')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 ${storeMethod === 'cash' ? 'bg-[#FA8125] text-white border-[#FA8125]' : 'bg-white text-[#1A2E26] border-gray-200'}`}><Wallet className="w-4 h-4" /> كاش في الفرع</button>
+                          <button onClick={() => setStoreMethod('instapay')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 ${storeMethod === 'instapay' ? 'bg-[#34D399] text-[#04352A] border-[#059669]' : 'bg-white text-[#1A2E26] border-gray-200'}`}><Coins className="w-4 h-4" /> إنستاباي</button>
+                          <button onClick={() => setStoreMethod('cash')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border flex items-center justify-center gap-1.5 ${storeMethod === 'cash' ? 'bg-[#34D399] text-[#04352A] border-[#059669]' : 'bg-white text-[#1A2E26] border-gray-200'}`}><Wallet className="w-4 h-4" /> كاش في الفرع</button>
                         </div>
-                        <button onClick={placeOrder} disabled={orderBusy} className="w-full py-3 rounded-2xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-[#FA8125]/20 active:scale-[0.99] transition-all">
+                        <button onClick={placeOrder} disabled={orderBusy} className="w-full py-3 rounded-2xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-[#059669]/20 active:scale-[0.99] transition-all">
                           {orderBusy ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري...</> : <><ShoppingBag className="w-4 h-4" /> اطلب ({cartItems.length})</>}
                         </button>
                       </div>
@@ -532,21 +532,21 @@ export default function MadmonaHome() {
         <section>
           <h2 className={SECTION_TITLE}><Store className="w-3.5 h-3.5" /> سوق مضمونة</h2>
           <div className="grid grid-cols-2 gap-3">
-            <Link href="/add-listing" className={`${CARD} p-5 flex flex-col items-center gap-2 hover:border-[#FA8125]/40 hover:shadow-md transition-all`}>
-              <div className="w-11 h-11 rounded-xl bg-[#FA8125]/10 grid place-items-center"><Plus className="w-5 h-5 text-[#FA8125]" /></div>
+            <Link href="/add-listing" className={`${CARD} p-5 flex flex-col items-center gap-2 hover:border-[#059669]/40 hover:shadow-md transition-all`}>
+              <div className="w-11 h-11 rounded-xl bg-[#34D399]/10 grid place-items-center"><Plus className="w-5 h-5 text-[#059669]" /></div>
               <p className="font-black text-[#1A2E26] text-sm">اعرض حاجة للإيجار</p>
               <p className="text-[11px] text-[#6B7280] text-center">شقة، عربية، كاميرا، أي حاجة</p>
             </Link>
-            <Link href="/marketplace" className={`${CARD} p-5 flex flex-col items-center gap-2 hover:border-[#FA8125]/40 hover:shadow-md transition-all`}>
-              <div className="w-11 h-11 rounded-xl bg-[#FA8125]/10 grid place-items-center"><Search className="w-5 h-5 text-[#FA8125]" /></div>
+            <Link href="/marketplace" className={`${CARD} p-5 flex flex-col items-center gap-2 hover:border-[#059669]/40 hover:shadow-md transition-all`}>
+              <div className="w-11 h-11 rounded-xl bg-[#34D399]/10 grid place-items-center"><Search className="w-5 h-5 text-[#059669]" /></div>
               <p className="font-black text-[#1A2E26] text-sm">دوّر على إيجار</p>
               <p className="text-[11px] text-[#6B7280] text-center">اتصفّح كل المعروض</p>
             </Link>
           </div>
         </section>
 
-        <section className="bg-[#FA8125]/5 border border-[#FA8125]/20 rounded-2xl p-4 flex items-start gap-2">
-          <ShieldCheck className="w-4 h-4 text-[#FA8125] flex-shrink-0 mt-0.5" />
+        <section className="bg-[#34D399]/5 border border-[#059669]/20 rounded-2xl p-4 flex items-start gap-2">
+          <ShieldCheck className="w-4 h-4 text-[#059669] flex-shrink-0 mt-0.5" />
           <p className="text-[10px] text-[#6B7280] leading-relaxed">حساب واحد على مضمونة — بتستخدمه كعميل، موظف، أو لعرض وتأجير أي حاجة. كل واحد بيشوف اللي يخصّه بس.</p>
         </section>
 

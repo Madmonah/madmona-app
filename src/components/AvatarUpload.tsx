@@ -95,7 +95,7 @@ export default function AvatarUpload({
           <img src={url} alt="صورتك" width={72} height={72} loading="lazy" decoding="async"
                style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: '3px solid #fff', boxShadow: '0 2px 12px rgba(0,0,0,.12)' }} />
         ) : (
-          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#FA8125)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 28, fontWeight: 800 }}>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#059669)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 28, fontWeight: 800 }}>
             {letter}
           </div>
         )}
@@ -109,7 +109,7 @@ export default function AvatarUpload({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button type="button" disabled={busy} onClick={() => fileRef.current?.click()}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#FA8125', color: '#fff', border: 'none', borderRadius: 999, padding: '8px 14px', fontWeight: 800, fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit' }}>
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#059669', color: '#fff', border: 'none', borderRadius: 999, padding: '8px 14px', fontWeight: 800, fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit' }}>
             <Camera className="w-3.5 h-3.5" />
             {url ? 'غيّر الصورة' : 'ضيف صورة'}
           </button>

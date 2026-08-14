@@ -118,7 +118,7 @@ export default function AIOSControls({ agentsByTeam, teams }: Props) {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                       <div>
-                        <h3 style={{ margin: 0, color: '#FA8125', fontSize: 14 }}>
+                        <h3 style={{ margin: 0, color: '#059669', fontSize: 14 }}>
                           {agent.display_name ?? agent.agent_name}
                         </h3>
                         <div style={{ fontSize: 10, color: '#999', fontFamily: 'monospace' }}>
@@ -163,7 +163,7 @@ export default function AIOSControls({ agentsByTeam, teams }: Props) {
                           borderRadius: 6,
                           border: 'none',
                           cursor: isLoading || !agent.enabled ? 'not-allowed' : 'pointer',
-                          background: agent.enabled ? '#FA8125' : '#ccc',
+                          background: agent.enabled ? '#059669' : '#ccc',
                           color: '#fff',
                           fontSize: 11,
                           fontWeight: 'bold'

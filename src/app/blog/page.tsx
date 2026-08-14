@@ -26,7 +26,7 @@ export default async function BlogIndex() {
   const list = Array.isArray(posts) ? posts : []
   return (
     <main className="min-h-screen bg-[#FAFAF7]" dir="rtl">
-      <div className="bg-gradient-to-l from-[#14231E] to-[#FA8125] text-white px-4 py-10">
+      <div className="bg-gradient-to-l from-[#14231E] to-[#34D399] text-white px-4 py-10">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-black">مدونة مضمونة ✍️</h1>
           <p className="text-white/80 text-sm mt-2">أدلة وأرقام من قلب المنصة — بيكتبها المارد من الداتا الحقيقية.</p>
@@ -35,7 +35,7 @@ export default async function BlogIndex() {
       <div className="max-w-3xl mx-auto px-4 py-8 grid gap-4">
         {list.map((p) => (
           <Link key={p.slug} href={`/blog/${p.slug}`} className="block bg-white rounded-2xl p-5 shadow-sm ring-1 ring-black/5 hover:-translate-y-0.5 transition-all no-underline">
-            {p.category && <span className="inline-block text-[11px] font-black text-[#FA8125] bg-[#FA8125]/10 rounded-full px-2.5 py-1 mb-2">{p.category}</span>}
+            {p.category && <span className="inline-block text-[11px] font-black text-[#059669] bg-[#34D399]/10 rounded-full px-2.5 py-1 mb-2">{p.category}</span>}
             <h2 className="text-base md:text-lg font-black text-[#0A0A0A] leading-snug">{p.title}</h2>
             {p.excerpt && <p className="text-sm text-gray-600 mt-2 leading-relaxed">{p.excerpt}</p>}
             <p className="text-[11px] text-gray-400 mt-3">{new Date(p.published_at).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>

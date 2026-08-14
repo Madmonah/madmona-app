@@ -161,7 +161,7 @@ function renderResetEmail(args: {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FAFAF7; padding:40px 20px;">
     <tr><td align="center">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; background:#fff; border-radius:24px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.04);">
-        <tr><td style="padding:32px 32px 16px; text-align:center; background: linear-gradient(135deg, #FA8125 0%, #F98F2A 100%); color:#fff;">
+        <tr><td style="padding:32px 32px 16px; text-align:center; background: linear-gradient(135deg, #059669 0%, #34D399 100%); color:#fff;">
           <h1 style="margin:0; font-size:28px; font-weight:900; letter-spacing:-0.5px;">مضمونة</h1>
           <p style="margin:6px 0 0; font-size:11px; letter-spacing:3px; opacity:0.7; font-weight:bold;">MADMONA</p>
         </td></tr>
@@ -177,7 +177,7 @@ function renderResetEmail(args: {
 
           <div style="margin:32px 0; text-align:center;">
             <a href="${escapeHtml(args.resetUrl)}"
-               style="display:inline-block; background:#FA8125; color:#fff; padding:14px 32px; border-radius:14px; text-decoration:none; font-weight:bold; font-size:15px;">
+               style="display:inline-block; background:#059669; color:#fff; padding:14px 32px; border-radius:14px; text-decoration:none; font-weight:bold; font-size:15px;">
               إعادة تعيين كلمة السر
             </a>
           </div>
@@ -196,14 +196,14 @@ function renderResetEmail(args: {
 
           <p style="margin: 16px 0 0; font-size:12px; color:#999; word-break: break-all; line-height:1.5;">
             مش شغّال الزرار؟ انسخ اللينك ده:<br>
-            <a href="${escapeHtml(args.resetUrl)}" style="color:#FA8125; text-decoration:none;">${escapeHtml(args.resetUrl)}</a>
+            <a href="${escapeHtml(args.resetUrl)}" style="color:#059669; text-decoration:none;">${escapeHtml(args.resetUrl)}</a>
           </p>
         </td></tr>
         <tr><td style="padding:24px 32px; background:#FAFAF7; text-align:center; font-size:11px; color:#999;">
           <p style="margin:0 0 4px;">مضمونة - منصة الحجز المصرية</p>
           <p style="margin:0;">٧ شارع سليمان عَزْمي، مصر الجديدة، القاهرة</p>
           <p style="margin:8px 0 0;">
-            <a href="https://wa.me/201002229982" style="color:#FA8125; text-decoration:none;">واتساب: +20 100 222 9982</a>
+            <a href="https://wa.me/201002229982" style="color:#059669; text-decoration:none;">واتساب: +20 100 222 9982</a>
           </p>
         </td></tr>
       </table>

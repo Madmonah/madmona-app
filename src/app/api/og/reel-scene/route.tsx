@@ -45,9 +45,9 @@ export async function GET(req: NextRequest) {
   const cairo = await loadCairoFont()
 
   const gradients: Record<string, string> = {
-    hook: 'linear-gradient(180deg, #0F3324 0%, #FA8125 100%)',
-    middle: `linear-gradient(${135 + sceneIndex * 15}deg, #FA8125 0%, #F98F2A 100%)`,
-    cta: 'linear-gradient(180deg, #FA8125 0%, #2FA084 100%)',
+    hook: 'linear-gradient(180deg, #0F3324 0%, #059669 100%)',
+    middle: `linear-gradient(${135 + sceneIndex * 15}deg, #059669 0%, #34D399 100%)`,
+    cta: 'linear-gradient(180deg, #059669 0%, #2FA084 100%)',
   }
 
   const fonts = cairo
@@ -148,7 +148,7 @@ export async function GET(req: NextRequest) {
       (
         <div style={{
           width: '100%', height: '100%',
-          background: '#FA8125', color: '#FAF7F0',
+          background: '#059669', color: '#FAF7F0',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 120, fontWeight: 900, letterSpacing: 8,
         }}>

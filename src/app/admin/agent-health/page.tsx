@@ -201,13 +201,13 @@ export default function AgentHealthPage() {
     return groups
   }, [agents])
 
-  if (stage === 'loading') return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin" /></div>
+  if (stage === 'loading') return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-6 h-6 text-[#059669] animate-spin" /></div>
   if (stage === 'unauthenticated') return (
     <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
       <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-        <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
+        <Lock className="w-8 h-8 text-[#059669] mx-auto mb-3" />
         <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
-        <Link href="/auth/login?redirect=/admin/agent-health" className="block bg-[#FA8125] text-white py-3 rounded-xl font-semibold">دخول</Link>
+        <Link href="/auth/login?redirect=/admin/agent-health" className="block bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold">دخول</Link>
       </div>
     </div>
   )
@@ -227,13 +227,13 @@ export default function AgentHealthPage() {
           <Link href="/admin/dashboard" className="w-9 h-9 bg-white shadow rounded-full flex items-center justify-center">
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
-          <Zap className="w-5 h-5 text-[#FA8125]" />
+          <Zap className="w-5 h-5 text-[#059669]" />
           <h1 className="text-lg font-black text-gray-900 flex-1">تحكم الـ Agents</h1>
           <button onClick={loadAgents} disabled={refreshing} className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200" title="تحديث">
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
           {tab === 'status' && (
-            <button onClick={wakeAllStale} disabled={wakingAll} className="bg-[#FA8125] text-white px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-[#FA8125]/90 disabled:opacity-50">
+            <button onClick={wakeAllStale} disabled={wakingAll} className="bg-[#34D399] text-[#04352A] px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-[#34D399]/90 disabled:opacity-50">
               {wakingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Power className="w-4 h-4" />}
               <span>إيقاظ الكل</span>
             </button>
@@ -243,13 +243,13 @@ export default function AgentHealthPage() {
         <div className="max-w-6xl mx-auto px-4 flex gap-1 border-t border-gray-50">
           <button
             onClick={() => setTab('status')}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold border-b-2 transition-colors ${tab === 'status' ? 'border-[#FA8125] text-[#FA8125]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold border-b-2 transition-colors ${tab === 'status' ? 'border-[#059669] text-[#059669]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             <LayoutList className="w-4 h-4" /> الحالة
           </button>
           <button
             onClick={() => setTab('settings')}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold border-b-2 transition-colors ${tab === 'settings' ? 'border-[#FA8125] text-[#FA8125]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold border-b-2 transition-colors ${tab === 'settings' ? 'border-[#059669] text-[#059669]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             <ListChecks className="w-4 h-4" /> الإعدادات
           </button>
@@ -278,7 +278,7 @@ export default function AgentHealthPage() {
                 const cfg = k === 'all' ? { label: 'الكل', color: 'text-gray-700', bg: 'bg-white' } : STATUS_CONFIG[k]
                 return (
                   <button key={k} onClick={() => setFilter(k)}
-                    className={`p-3 rounded-xl border text-right transition-all ${isActive ? 'border-[#FA8125] bg-[#FA8125]/5 ring-2 ring-[#FA8125]/20' : 'border-gray-200 bg-white'}`}>
+                    className={`p-3 rounded-xl border text-right transition-all ${isActive ? 'border-[#059669] bg-[#34D399]/5 ring-2 ring-[#059669]/20' : 'border-gray-200 bg-white'}`}>
                     <div className={`text-2xl font-black ${cfg.color}`}>{cnt}</div>
                     <div className="text-xs text-gray-600 mt-0.5">{cfg.label}</div>
                   </button>
@@ -296,7 +296,7 @@ export default function AgentHealthPage() {
                 className="flex-1 bg-transparent text-sm focus:outline-none"
               />
               <select value={teamFilter} onChange={e => setTeamFilter(e.target.value)}
-                className="text-sm bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-[#FA8125]/40">
+                className="text-sm bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-[#059669]/40">
                 <option value="all">كل الفرق</option>
                 {teams.map(t => <option key={t} value={t}>{teamLabel(t)}</option>)}
               </select>
@@ -364,7 +364,7 @@ export default function AgentHealthPage() {
                         <button
                           onClick={() => wakeOne(a.agent_name)}
                           disabled={isWaking || !a.enabled}
-                          className="bg-[#FA8125] text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-40 hover:bg-[#FA8125]/90"
+                          className="bg-[#34D399] text-[#04352A] px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-40 hover:bg-[#34D399]/90"
                           title="إيقاظ"
                         >
                           {isWaking ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
@@ -414,7 +414,7 @@ export default function AgentHealthPage() {
                         <button
                           onClick={() => toggleAgent(a.agent_name, a.enabled)}
                           disabled={isToggling}
-                          className={`relative flex-shrink-0 w-12 h-7 rounded-full transition-colors disabled:opacity-50 ${a.enabled ? 'bg-[#FA8125]' : 'bg-gray-300'}`}
+                          className={`relative flex-shrink-0 w-12 h-7 rounded-full transition-colors disabled:opacity-50 ${a.enabled ? 'bg-[#34D399]' : 'bg-gray-300'}`}
                           title={a.enabled ? 'شغّال — دوس عشان توقفه' : 'متوقف — دوس عشان تشغّله'}
                         >
                           {isToggling ? (

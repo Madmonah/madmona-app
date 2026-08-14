@@ -50,14 +50,14 @@ export default function WalletHistoryPage() {
       <div className="sticky top-0 z-30 bg-[#FAF7F2]/90 backdrop-blur border-b border-black/5">
         <div className="max-w-md mx-auto flex items-center gap-3 px-4 py-3">
           <button onClick={() => router.push('/account/wallet')} className="p-2 -mr-2 text-gray-600"><ArrowRight className="w-5 h-5" /></button>
-          <h1 className="font-bold text-lg flex items-center gap-2"><Wallet className="w-5 h-5 text-[#FA8125]" /> سجل المعاملات</h1>
+          <h1 className="font-bold text-lg flex items-center gap-2"><Wallet className="w-5 h-5 text-[#059669]" /> سجل المعاملات</h1>
         </div>
       </div>
 
       <div className="max-w-md mx-auto px-4 pt-4">
         <div className="bg-white rounded-3xl shadow-soft overflow-hidden">
           {loading && txns.length === 0 ? (
-            <div className="py-16 grid place-items-center"><Loader2 className="w-6 h-6 animate-spin text-[#FA8125]" /></div>
+            <div className="py-16 grid place-items-center"><Loader2 className="w-6 h-6 animate-spin text-[#059669]" /></div>
           ) : txns.length === 0 ? (
             <p className="text-center text-gray-400 text-sm py-16">لا توجد معاملات</p>
           ) : (
@@ -92,7 +92,7 @@ export default function WalletHistoryPage() {
 
         {hasMore && (
           <button onClick={loadMore} disabled={loading}
-            className="w-full mt-4 bg-white border border-gray-200 rounded-2xl py-3 font-bold text-[#FA8125] flex items-center justify-center gap-2 disabled:opacity-60">
+            className="w-full mt-4 bg-white border border-gray-200 rounded-2xl py-3 font-bold text-[#059669] flex items-center justify-center gap-2 disabled:opacity-60">
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null} تحميل المزيد
           </button>
         )}

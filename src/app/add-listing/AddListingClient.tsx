@@ -11,7 +11,7 @@ import SiteFooter from '@/components/SiteFooter';
 
 // ============================================================================
 // Madmona "Add Listing First" — public, no-auth multi-step form
-// Brand: deep green (#FA8125), gold (#2FA084), ivory (#FAF7F0)
+// Brand: deep green (#059669), gold (#2FA084), ivory (#FAF7F0)
 //
 // FIX (May 13 2026): Consolidated 2 racing useEffects into 1, removed the
 // step-rollback bug that was bouncing users back to step 1 after their
@@ -584,7 +584,7 @@ function AddListingPageInner({
         <div className="flex items-center justify-between max-w-2xl mx-auto">
           <div className="flex items-center gap-3">
             <div className="text-2xl font-bold tracking-tight">مضمونة</div>
-            <span className="text-xs text-[#FA8125] uppercase tracking-widest">MADMONA</span>
+            <span className="text-xs text-[#059669] uppercase tracking-widest">MADMONA</span>
           </div>
           <button
             type="button"
@@ -608,7 +608,7 @@ function AddListingPageInner({
         <div className="mt-4 max-w-2xl mx-auto">
           <div className="h-1 bg-[#F5F4F0] rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#FA8125] transition-all duration-500"
+              className="h-full bg-[#34D399] transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -655,14 +655,14 @@ function AddListingPageInner({
               <a
                 href="/chat/marid?intent=add-listing"
                 onClick={() => trackEvent({ event_type: 'add_listing_via_marid_click', metadata: { step } })}
-                className="flex-1 text-center py-2.5 px-3 rounded-xl text-[#FA8125] text-sm font-bold no-underline hover:bg-white/70 transition-colors"
+                className="flex-1 text-center py-2.5 px-3 rounded-xl text-[#059669] text-sm font-bold no-underline hover:bg-white/70 transition-colors"
               >
                 🧞 ضيّفها مع المارد
               </a>
             </div>
             <p className="text-xs text-gray-500 -mt-4 mb-6 text-center">
               مش فاضي تملا الفورم؟ ابعت التفاصيل أو صور المنيو/البروشور للمارد في{' '}
-              <a href="/chat/marid?intent=add-listing" className="text-[#FA8125] font-bold underline">
+              <a href="/chat/marid?intent=add-listing" className="text-[#059669] font-bold underline">
                 شات مضمونة
               </a>{' '}
               وهو يعملهالك.
@@ -923,7 +923,7 @@ function StepCategory({
                 onClick={() => { setActiveTrack(t); setPickGroup(null); }}
                 className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold border transition-all flex items-center gap-1.5 ${
                   activeTrack === t
-                    ? 'bg-[#FA8125] border-[#FA8125] text-white'
+                    ? 'bg-[#34D399] border-[#059669] text-[#04352A]'
                     : 'bg-white border-[#E5E5E0] text-gray-700 hover:bg-[#F5F4F0]'
                 }`}
               >
@@ -1036,7 +1036,7 @@ function StepCategory({
                     onClick={() => onSelect(c.slug)}
                     className={`p-5 rounded-2xl border text-right transition-all ${
                       value === c.slug
-                        ? 'bg-[#FA8125] border-[#FA8125] text-white'
+                        ? 'bg-[#34D399] border-[#059669] text-[#04352A]'
                         : 'bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300'
                     }`}
                   >
@@ -1059,7 +1059,7 @@ function StepCategory({
       <button
         type="button"
         onClick={() => setSelectedMain(null)}
-        className="mb-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FA8125]/8 hover:bg-[#FA8125]/12 border border-[#FA8125]/20 text-sm font-semibold text-[#FA8125] transition-colors"
+        className="mb-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#34D399]/8 hover:bg-[#34D399]/12 border border-[#059669]/20 text-sm font-semibold text-[#059669] transition-colors"
       >
         <span className="text-base">→</span>
         <span>اختار فئة تانية</span>
@@ -1083,14 +1083,14 @@ function StepCategory({
               onClick={() => onSelect(s.slug)}
               className={`p-5 rounded-2xl border text-right transition-all ${
                 value === s.slug
-                  ? 'bg-[#FA8125] border-[#FA8125] text-white'
+                  ? 'bg-[#34D399] border-[#059669] text-[#04352A]'
                   : 'bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300'
               }`}
             >
               <div className="text-3xl mb-2">{s.emoji}</div>
               <div className="font-semibold text-sm">{s.name_ar}</div>
               {isCrossListed && (
-                <div className="mt-1.5 text-[10px] text-[#FA8125] font-bold leading-tight">
+                <div className="mt-1.5 text-[10px] text-[#059669] font-bold leading-tight">
                   هيظهر في: {appearsUnderMains.join(' + ')}
                 </div>
               )}
@@ -1144,7 +1144,7 @@ function CategoryChip({
       <button
         type="button"
         onClick={onChange}
-        className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white border border-[#FA8125]/30 text-xs text-[#FA8125] hover:bg-[#FA8125]/5 font-bold whitespace-nowrap"
+        className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white border border-[#059669]/30 text-xs text-[#059669] hover:bg-[#34D399]/5 font-bold whitespace-nowrap"
       >
         تغيير الفئة
       </button>
@@ -1364,7 +1364,7 @@ function StepBasics({
             type="checkbox"
             checked={hasBranches}
             onChange={(e) => setHasBranches(e.target.checked)}
-            className="mt-1 w-4 h-4 accent-[#FA8125]"
+            className="mt-1 w-4 h-4 accent-[#059669]"
           />
           <span className="text-sm">
             <span className="font-semibold">عندك أكتر من فرع؟</span>
@@ -1404,7 +1404,7 @@ function StepBasics({
         <button
           type="button"
           onClick={() => setShowExtras(true)}
-          className="w-full mb-4 py-3 rounded-xl border border-dashed border-[#FA8125]/40 text-sm font-semibold text-[#FA8125] hover:bg-[#FA8125]/5 transition-colors"
+          className="w-full mb-4 py-3 rounded-xl border border-dashed border-[#059669]/40 text-sm font-semibold text-[#059669] hover:bg-[#34D399]/5 transition-colors"
         >
           + وصف وتفاصيل المكان (اختياري)
         </button>
@@ -1460,7 +1460,7 @@ function StepBasics({
           <h3 className="text-base font-semibold mb-1">تفاصيل إضافية</h3>
           <p className="text-xs text-gray-500 mb-5">
             البيانات دي بتساعد العميل يلاقي إعلانك بسرعة وتزود الحجوزات.{' '}
-            <span className="text-[#FA8125] font-medium">المعلّمة بنجمة مطلوبة.</span>
+            <span className="text-[#059669] font-medium">المعلّمة بنجمة مطلوبة.</span>
           </p>
           {attributes.map(attr => (
             <AttributeFieldRenderer
@@ -1488,7 +1488,7 @@ function StepBasics({
         {branches.map((b, i) => (
           <div key={i} className="mb-4 p-4 rounded-xl bg-[#F5F4F0] border border-[#E5E5E0]">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-bold text-[#FA8125]">فرع {i + 1}</span>
+              <span className="text-sm font-bold text-[#059669]">فرع {i + 1}</span>
               <button
                 type="button"
                 onClick={() => removeBranch(i)}
@@ -1536,7 +1536,7 @@ function StepBasics({
         <button
           type="button"
           onClick={addBranch}
-          className="w-full py-2.5 rounded-xl border-2 border-dashed border-[#2FA084] text-[#FA8125] text-sm font-semibold hover:bg-[#F0FAF7] transition"
+          className="w-full py-2.5 rounded-xl border-2 border-dashed border-[#2FA084] text-[#059669] text-sm font-semibold hover:bg-[#F0FAF7] transition"
         >
           + ضيف فرع
         </button>
@@ -1630,7 +1630,7 @@ function AttributeFieldRenderer({
             onClick={() => onChange(true)}
             className={`py-2.5 rounded-xl border text-sm transition-all ${
               value === true
-                ? 'bg-[#FA8125] border-[#FA8125] text-white font-semibold'
+                ? 'bg-[#34D399] border-[#059669] text-[#04352A] font-semibold'
                 : 'bg-white border-[#E5E5E0]'
             }`}
           >
@@ -1641,7 +1641,7 @@ function AttributeFieldRenderer({
             onClick={() => onChange(false)}
             className={`py-2.5 rounded-xl border text-sm transition-all ${
               value === false
-                ? 'bg-[#FA8125] border-[#FA8125] text-white font-semibold'
+                ? 'bg-[#34D399] border-[#059669] text-[#04352A] font-semibold'
                 : 'bg-white border-[#E5E5E0]'
             }`}
           >
@@ -1667,7 +1667,7 @@ function AttributeFieldRenderer({
                 onClick={() => onChange(opt.key)}
                 className={`py-2.5 rounded-xl border text-sm transition-all ${
                   value === opt.key
-                    ? 'bg-[#FA8125] border-[#FA8125] text-white font-semibold'
+                    ? 'bg-[#34D399] border-[#059669] text-[#04352A] font-semibold'
                     : 'bg-white border-[#E5E5E0]'
                 }`}
               >
@@ -1714,7 +1714,7 @@ function AttributeFieldRenderer({
                 }}
                 className={`py-2.5 rounded-xl border text-xs transition-all ${
                   isSel
-                    ? 'bg-[#FA8125] border-[#FA8125] text-white font-semibold'
+                    ? 'bg-[#34D399] border-[#059669] text-[#04352A] font-semibold'
                     : 'bg-white border-[#E5E5E0]'
                 }`}
               >
@@ -1945,15 +1945,15 @@ function MenuBuilderStep({
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
       <h2 className="text-lg font-semibold mb-1">🍽️ أضف الأصناف</h2>
       <p className="text-sm text-gray-500 mb-1">ضيف أصناف المنيو اللي بتقدمها</p>
-      <p className="text-xs text-[#FA8125] mb-4 font-medium">
+      <p className="text-xs text-[#059669] mb-4 font-medium">
         💡 ابدأ بـ 5 أصناف على الأقل عشان العميل يلاقي ليه اختيارات
       </p>
 
       {/* Jul 5 2026: Excel bulk import — the whole menu in one sheet */}
-      <div className="mb-5 rounded-2xl border-2 border-dashed border-[#FA8125]/35 bg-[#FA8125]/5 p-4">
+      <div className="mb-5 rounded-2xl border-2 border-dashed border-[#059669]/35 bg-[#34D399]/5 p-4">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xl">📊</span>
-          <p className="text-sm font-bold text-[#FA8125]">المنيو كله جاهز عندك؟ ارفعه Excel مرة واحدة</p>
+          <p className="text-sm font-bold text-[#059669]">المنيو كله جاهز عندك؟ ارفعه Excel مرة واحدة</p>
         </div>
         <p className="text-[11px] text-gray-500 mb-3 leading-relaxed">
           الأعمدة: الاسم · القسم · الوصف · السعر · الأحجام (مثال: صغير:90 | وسط:120 | كبير:150) · رابط الصورة
@@ -1962,7 +1962,7 @@ function MenuBuilderStep({
           <button
             type="button"
             onClick={downloadMenuTemplate}
-            className="flex-1 py-2.5 rounded-xl border border-[#FA8125]/40 text-[#FA8125] text-xs font-bold bg-white"
+            className="flex-1 py-2.5 rounded-xl border border-[#059669]/40 text-[#059669] text-xs font-bold bg-white"
           >
             ⬇️ نزّل القالب
           </button>
@@ -1970,7 +1970,7 @@ function MenuBuilderStep({
             type="button"
             onClick={() => excelInputRef.current?.click()}
             disabled={excelBusy}
-            className="flex-1 py-2.5 rounded-xl bg-[#FA8125] text-white text-xs font-bold disabled:opacity-60"
+            className="flex-1 py-2.5 rounded-xl bg-[#34D399] text-[#04352A] text-xs font-bold disabled:opacity-60"
           >
             {excelBusy ? '...جاري القراءة' : '⬆️ ارفع الشيت'}
           </button>
@@ -1982,7 +1982,7 @@ function MenuBuilderStep({
             onChange={handleExcelFile}
           />
         </div>
-        {excelMsg && <p className="mt-2 text-xs font-bold text-[#FA8125]">{excelMsg}</p>}
+        {excelMsg && <p className="mt-2 text-xs font-bold text-[#059669]">{excelMsg}</p>}
       </div>
 
       <div className="space-y-4">
@@ -1992,7 +1992,7 @@ function MenuBuilderStep({
             className="rounded-2xl border border-[#E5E5E0] bg-white p-4"
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-bold text-[#FA8125]">
+              <span className="text-sm font-bold text-[#059669]">
                 صنف #{idx + 1}
               </span>
               {items.length > 1 && (
@@ -2022,7 +2022,7 @@ function MenuBuilderStep({
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className="text-[10px] font-bold text-gray-400">الأحجام:</span>
                   {item.sizes.map((s, si) => (
-                    <span key={si} className="text-[10px] font-bold bg-[#FA8125]/10 text-[#FA8125] px-2 py-0.5 rounded-full">
+                    <span key={si} className="text-[10px] font-bold bg-[#34D399]/10 text-[#059669] px-2 py-0.5 rounded-full">
                       {s.name_ar} {s.price}
                     </span>
                   ))}
@@ -2057,7 +2057,7 @@ function MenuBuilderStep({
                     </button>
                   </div>
                 ) : (
-                  <label className={`w-20 h-20 rounded-xl border-2 border-dashed border-[#FA8125]/40 flex flex-col items-center justify-center cursor-pointer hover:bg-[#FA8125]/5 transition-colors flex-shrink-0 ${uploadingIdx === idx ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <label className={`w-20 h-20 rounded-xl border-2 border-dashed border-[#059669]/40 flex flex-col items-center justify-center cursor-pointer hover:bg-[#34D399]/5 transition-colors flex-shrink-0 ${uploadingIdx === idx ? 'opacity-50 pointer-events-none' : ''}`}>
                     <input
                       type="file"
                       accept="image/*"
@@ -2069,8 +2069,8 @@ function MenuBuilderStep({
                       <span className="text-[10px] text-gray-500">جاري...</span>
                     ) : (
                       <>
-                        <span className="text-2xl text-[#FA8125]">📷</span>
-                        <span className="text-[10px] text-[#FA8125] font-bold mt-0.5">صورة</span>
+                        <span className="text-2xl text-[#059669]">📷</span>
+                        <span className="text-[10px] text-[#059669] font-bold mt-0.5">صورة</span>
                       </>
                     )}
                   </label>
@@ -2112,7 +2112,7 @@ function MenuBuilderStep({
                 onChange={(e) =>
                   updateItem(idx, { is_available: e.target.checked })
                 }
-                className="w-4 h-4 accent-[#FA8125]"
+                className="w-4 h-4 accent-[#059669]"
               />
               <span>متاح حالياً</span>
             </label>
@@ -2123,7 +2123,7 @@ function MenuBuilderStep({
       <button
         type="button"
         onClick={addItem}
-        className="mt-4 w-full py-3 rounded-xl border-2 border-dashed border-[#FA8125]/40 text-[#FA8125] text-sm font-bold hover:bg-[#FA8125]/5 transition-colors"
+        className="mt-4 w-full py-3 rounded-xl border-2 border-dashed border-[#059669]/40 text-[#059669] text-sm font-bold hover:bg-[#34D399]/5 transition-colors"
       >
         + أضف صنف جديد
       </button>
@@ -2375,7 +2375,7 @@ function ProductDetailsStep({
             onClick={() => setAvailabilityType('ready')}
             className={`py-2.5 rounded-xl border text-sm transition-all ${
               availabilityType === 'ready'
-                ? 'bg-[#FA8125] border-[#FA8125] text-white font-semibold'
+                ? 'bg-[#34D399] border-[#059669] text-[#04352A] font-semibold'
                 : 'bg-white border-[#E5E5E0]'
             }`}
           >
@@ -2386,7 +2386,7 @@ function ProductDetailsStep({
             onClick={() => setAvailabilityType('made_to_order')}
             className={`py-2.5 rounded-xl border text-sm transition-all ${
               availabilityType === 'made_to_order'
-                ? 'bg-[#FA8125] border-[#FA8125] text-white font-semibold'
+                ? 'bg-[#34D399] border-[#059669] text-[#04352A] font-semibold'
                 : 'bg-white border-[#E5E5E0]'
             }`}
           >
@@ -2437,13 +2437,13 @@ function ProductDetailsStep({
               type="checkbox"
               checked={customizable}
               onChange={(e) => setCustomizable(e.target.checked)}
-              className="w-4 h-4 accent-[#FA8125]"
+              className="w-4 h-4 accent-[#059669]"
             />
             <span>✏️ بيتفصّل حسب طلب العميل (قابل للتخصيص)</span>
           </label>
 
           <div className="p-3 rounded-xl bg-white border border-[#E5E5E0] text-xs text-gray-700">
-            <div className="font-semibold text-[#FA8125] mb-1">🛡️ حماية المشتري</div>
+            <div className="font-semibold text-[#059669] mb-1">🛡️ حماية المشتري</div>
             <p>
               لو معدّتش مدة التجهيز ومسلّمتش في الميعاد المتفق عليه، العميل بياخد
               <strong> فلوسه كاملة</strong> رجوع (العربون وأي مبلغ مدفوع).
@@ -2474,7 +2474,7 @@ function ProductDetailsStep({
               onClick={() => setCondition(opt.key)}
               className={`py-2.5 rounded-xl border text-sm transition-all ${
                 condition === opt.key
-                  ? 'bg-[#FA8125] border-[#FA8125] text-white font-semibold'
+                  ? 'bg-[#34D399] border-[#059669] text-[#04352A] font-semibold'
                   : 'bg-white border-[#E5E5E0]'
               }`}
             >
@@ -2516,7 +2516,7 @@ function ProductDetailsStep({
             type="checkbox"
             checked={shippingAvailable}
             onChange={(e) => setShippingAvailable(e.target.checked)}
-            className="w-4 h-4 accent-[#FA8125]"
+            className="w-4 h-4 accent-[#059669]"
           />
           🚚 بشحن للعميل
         </label>
@@ -2549,7 +2549,7 @@ function ProductDetailsStep({
                 addTier();
               }
             }}
-            className="w-4 h-4 mt-0.5 accent-[#FA8125]"
+            className="w-4 h-4 mt-0.5 accent-[#059669]"
           />
           <div>
             📦 بتبيع جملة؟ (أسعار خاصة للكميات)
@@ -2569,7 +2569,7 @@ function ProductDetailsStep({
                   className="rounded-xl bg-white border border-[#E5E5E0] p-3"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-[#FA8125]">
+                    <span className="text-xs font-bold text-[#059669]">
                       سعر جملة #{idx + 1}
                     </span>
                     <button
@@ -2617,7 +2617,7 @@ function ProductDetailsStep({
                     </div>
                   </div>
                   {total > 0 && (
-                    <div className="text-xs text-[#FA8125] font-semibold mt-2">
+                    <div className="text-xs text-[#059669] font-semibold mt-2">
                       الإجمالي: {total.toLocaleString('ar-EG')} جنيه
                     </div>
                   )}
@@ -2627,7 +2627,7 @@ function ProductDetailsStep({
             <button
               type="button"
               onClick={addTier}
-              className="w-full py-2.5 rounded-xl border-2 border-dashed border-[#FA8125]/40 text-[#FA8125] text-sm font-bold hover:bg-[#FA8125]/5 transition-colors"
+              className="w-full py-2.5 rounded-xl border-2 border-dashed border-[#059669]/40 text-[#059669] text-sm font-bold hover:bg-[#34D399]/5 transition-colors"
             >
               + إضافة سعر جملة
             </button>
@@ -2928,7 +2928,7 @@ function CatalogBuilderStep({
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
       <h2 className='text-lg font-semibold mb-1'>🛒 أضف منتجاتك</h2>
       <p className='text-sm text-gray-500 mb-1'>قسّم منتجاتك لأقسام (مثلاً: جبن، ألبان، معلبات) وضيف تحت كل قسم اللي بتبيعه</p>
-      <p className='text-xs text-[#FA8125] mb-4 font-medium'>💡 كل ما تضيف منتجات أكتر، العميل يلاقي اللي بيدوّر عليه أسرع</p>
+      <p className='text-xs text-[#059669] mb-4 font-medium'>💡 كل ما تضيف منتجات أكتر، العميل يلاقي اللي بيدوّر عليه أسرع</p>
 
       {/* 🧹 (٢٥ يوليو ٢٠٢٦ — محمد: «فيه حاجات متكررة وحاجات مش منظمة… وتاب
           مكتوب عليه عندك أكتر من صنف ولسه محطوط عليه نزل التمبلت»)
@@ -2943,7 +2943,7 @@ function CatalogBuilderStep({
       <div className="mb-5 rounded-2xl border-2 border-[#2FA084] bg-[#F0FAF7] p-4">
         <div className="flex items-center gap-2 mb-1.5">
           <span className="text-xl">🧞</span>
-          <p className="text-sm font-bold text-[#FA8125]">عندك قائمتك جاهزة؟ سيبها للمارد</p>
+          <p className="text-sm font-bold text-[#059669]">عندك قائمتك جاهزة؟ سيبها للمارد</p>
         </div>
         <p className="text-[11px] text-gray-600 mb-3 leading-relaxed">
           اكتب أصنافك، أو ارفع صورة للمنيو، أو ملف Excel — والمارد هيطلّعهم ويرتّبهم
@@ -2958,25 +2958,25 @@ function CatalogBuilderStep({
         />
         <div className="flex gap-2">
           <button type="button" onClick={() => callExtract({ text: smartText })} disabled={smartBusy || smartText.trim().length < 3}
-            className="flex-1 py-2.5 rounded-xl bg-[#FA8125] text-white text-xs font-bold disabled:opacity-60">
+            className="flex-1 py-2.5 rounded-xl bg-[#34D399] text-[#04352A] text-xs font-bold disabled:opacity-60">
             {smartBusy ? '🧞 بيقرأ...' : '🧞 استخرج'}
           </button>
           <button type="button" onClick={() => smartFileRef.current?.click()} disabled={smartBusy}
-            className="flex-1 py-2.5 rounded-xl border border-[#FA8125]/40 text-[#FA8125] text-xs font-bold bg-white disabled:opacity-60">
+            className="flex-1 py-2.5 rounded-xl border border-[#059669]/40 text-[#059669] text-xs font-bold bg-white disabled:opacity-60">
             📷 صورة
           </button>
           <button type="button" onClick={() => excelInputRef.current?.click()} disabled={excelBusy || smartBusy}
-            className="flex-1 py-2.5 rounded-xl border border-[#FA8125]/40 text-[#FA8125] text-xs font-bold bg-white disabled:opacity-60">
+            className="flex-1 py-2.5 rounded-xl border border-[#059669]/40 text-[#059669] text-xs font-bold bg-white disabled:opacity-60">
             {excelBusy ? '...بيقرأ' : '📊 Excel'}
           </button>
           <input ref={smartFileRef} type="file" accept="image/*" className="hidden" onChange={handleSmartFile} />
           <input ref={excelInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleExcelFile} />
         </div>
         {(smartMsg || excelMsg) && (
-          <p className="mt-2 text-xs font-bold text-[#FA8125]">{smartMsg || excelMsg}</p>
+          <p className="mt-2 text-xs font-bold text-[#059669]">{smartMsg || excelMsg}</p>
         )}
         <button type="button" onClick={downloadCatalogTemplate}
-          className="mt-2 text-[11px] text-[#FA8125]/75 underline underline-offset-2 hover:text-[#FA8125]">
+          className="mt-2 text-[11px] text-[#059669]/75 underline underline-offset-2 hover:text-[#059669]">
           مش عارف تظبط الشيت؟ نزّل قالب Excel جاهز
         </button>
       </div>
@@ -3011,7 +3011,7 @@ function CatalogBuilderStep({
                 return (
                   <div key={ii} className='rounded-xl border border-[#E5E5E0] bg-white p-3'>
                     <div className='flex items-center justify-between mb-2'>
-                      <span className='text-xs font-bold text-[#FA8125]'>منتج #{ii + 1}</span>
+                      <span className='text-xs font-bold text-[#059669]'>منتج #{ii + 1}</span>
                       {section.items.length > 1 && (
                         <button type='button' onClick={() => removeItem(si, ii)} className='text-xs text-red-600 hover:text-red-700 font-semibold'>حذف ✕</button>
                       )}
@@ -3024,9 +3024,9 @@ function CatalogBuilderStep({
                           <button type='button' onClick={() => updateItem(si, ii, { photo_url: undefined })} className='absolute top-0 left-0 w-5 h-5 bg-red-600 text-white text-[10px] font-bold flex items-center justify-center rounded-br-lg' aria-label='حذف الصورة'>×</button>
                         </div>
                       ) : (
-                        <label className={`w-16 h-16 rounded-xl border-2 border-dashed border-[#FA8125]/40 flex flex-col items-center justify-center cursor-pointer hover:bg-[#FA8125]/5 flex-shrink-0 ${uploadingKey === key ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <label className={`w-16 h-16 rounded-xl border-2 border-dashed border-[#059669]/40 flex flex-col items-center justify-center cursor-pointer hover:bg-[#34D399]/5 flex-shrink-0 ${uploadingKey === key ? 'opacity-50 pointer-events-none' : ''}`}>
                           <input type='file' accept='image/*' onChange={(e) => handlePhotoUpload(si, ii, e)} className='sr-only' disabled={uploadingKey === key} />
-                          {uploadingKey === key ? (<span className='text-[9px] text-gray-500'>جاري...</span>) : (<span className='text-xl text-[#FA8125]'>📷</span>)}
+                          {uploadingKey === key ? (<span className='text-[9px] text-gray-500'>جاري...</span>) : (<span className='text-xl text-[#059669]'>📷</span>)}
                         </label>
                       )}
                       <div className='flex-1 min-w-0 space-y-2'>
@@ -3038,7 +3038,7 @@ function CatalogBuilderStep({
                           </div>
                           <input type='number' inputMode='numeric' value={item.quantity ?? ''} onChange={(e) => updateItem(si, ii, { quantity: Number(e.target.value) || undefined })} placeholder='العدد' className={inputCls + ' py-2 text-sm w-20 text-center'} />
                           <label className='flex items-center gap-1.5 text-xs cursor-pointer whitespace-nowrap px-2'>
-                            <input type='checkbox' checked={item.is_available} onChange={(e) => updateItem(si, ii, { is_available: e.target.checked })} className='w-4 h-4 accent-[#FA8125]' />
+                            <input type='checkbox' checked={item.is_available} onChange={(e) => updateItem(si, ii, { is_available: e.target.checked })} className='w-4 h-4 accent-[#059669]' />
                             متاح
                           </label>
                         </div>
@@ -3049,17 +3049,17 @@ function CatalogBuilderStep({
               })}
             </div>
 
-            <button type='button' onClick={() => addItem(si)} className='mt-3 w-full py-2 rounded-xl border-2 border-dashed border-[#FA8125]/40 text-[#FA8125] text-xs font-bold hover:bg-[#FA8125]/5 transition-colors'>+ ضيف منتج في «{section.name_ar.trim() || 'القسم ده'}»</button>
+            <button type='button' onClick={() => addItem(si)} className='mt-3 w-full py-2 rounded-xl border-2 border-dashed border-[#059669]/40 text-[#059669] text-xs font-bold hover:bg-[#34D399]/5 transition-colors'>+ ضيف منتج في «{section.name_ar.trim() || 'القسم ده'}»</button>
           </div>
         ))}
       </div>
 
-      <button type='button' onClick={addSection} className='mt-4 w-full py-3 rounded-xl border-2 border-dashed border-[#2FA084] text-[#FA8125] text-sm font-bold hover:bg-[#F0FAF7] transition-colors'>+ ضيف قسم جديد</button>
+      <button type='button' onClick={addSection} className='mt-4 w-full py-3 rounded-xl border-2 border-dashed border-[#2FA084] text-[#059669] text-sm font-bold hover:bg-[#F0FAF7] transition-colors'>+ ضيف قسم جديد</button>
 
       {showInsurance && (
         <div className='mt-6 p-4 rounded-xl bg-gradient-to-bl from-emerald-50 to-amber-50 border border-emerald-200'>
           <label className='flex items-start gap-2 text-sm font-semibold mb-2 cursor-pointer'>
-            <input type='checkbox' checked={acceptsInsurance} onChange={(e) => setAcceptsInsurance(e.target.checked)} className='w-4 h-4 mt-0.5 accent-[#FA8125]' />
+            <input type='checkbox' checked={acceptsInsurance} onChange={(e) => setAcceptsInsurance(e.target.checked)} className='w-4 h-4 mt-0.5 accent-[#059669]' />
             <div>
               🏥 بتقبل تأمين طبي؟
               <p className='text-[11px] text-gray-600 font-normal mt-0.5'>حدد شركات التأمين اللي بتتعامل معاها عشان تظهر لعملائها.</p>
@@ -3070,7 +3070,7 @@ function CatalogBuilderStep({
               {insurancePartners.length > 0 && (
                 <div className='flex flex-wrap gap-1.5'>
                   {insurancePartners.map((p) => (
-                    <span key={p} className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#FA8125]/30 text-xs font-medium'>
+                    <span key={p} className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#059669]/30 text-xs font-medium'>
                       🏥 {p}
                       <button type='button' onClick={() => removePartner(p)} className='text-red-500 font-bold hover:text-red-700' aria-label={`إزالة ${p}`}>×</button>
                     </span>
@@ -3079,7 +3079,7 @@ function CatalogBuilderStep({
               )}
               <div className='flex gap-2'>
                 <input type='text' value={newPartner} onChange={(e) => setNewPartner(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addPartner(); } }} placeholder='مثلاً: مديكير، أكسا، صحتك...' className={inputCls + ' text-sm flex-1'} />
-                <button type='button' onClick={addPartner} disabled={!newPartner.trim()} className='py-2.5 px-4 rounded-xl bg-[#FA8125] text-white text-sm font-semibold disabled:opacity-50 whitespace-nowrap'>+ إضافة</button>
+                <button type='button' onClick={addPartner} disabled={!newPartner.trim()} className='py-2.5 px-4 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-semibold disabled:opacity-50 whitespace-nowrap'>+ إضافة</button>
               </div>
             </div>
           )}
@@ -3088,7 +3088,7 @@ function CatalogBuilderStep({
 
       {error && (<div className='mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700'>{error}</div>)}
 
-      {totalProducts > 0 && (<div className='mt-4 text-xs text-center text-[#FA8125] font-semibold'>✓ {totalProducts} منتج جاهز</div>)}
+      {totalProducts > 0 && (<div className='mt-4 text-xs text-center text-[#059669] font-semibold'>✓ {totalProducts} منتج جاهز</div>)}
       <Nav onBack={onBack} onNext={handleSubmit} saving={saving} />
     </section>
   );
@@ -3368,14 +3368,14 @@ function StepPricing({
       <button
         type="button"
         onClick={() => setShowBulkModal(true)}
-        className="w-full mb-5 flex items-center gap-3 rounded-2xl border-2 border-dashed border-[#FA8125]/35 bg-[#FA8125]/5 px-4 py-3 text-right hover:bg-[#FA8125]/10 transition"
+        className="w-full mb-5 flex items-center gap-3 rounded-2xl border-2 border-dashed border-[#059669]/35 bg-[#34D399]/5 px-4 py-3 text-right hover:bg-[#34D399]/10 transition"
       >
         <span className="text-xl">📊</span>
         <span className="flex-1">
-          <span className="block text-sm font-bold text-[#FA8125]">عندك أصناف تانية كتير؟ ارفعهم كلهم Excel مرة واحدة</span>
+          <span className="block text-sm font-bold text-[#059669]">عندك أصناف تانية كتير؟ ارفعهم كلهم Excel مرة واحدة</span>
           <span className="block text-[11px] text-gray-500 mt-0.5">كمّل الصنف ده عادي — والباقي يترفع بشيت واحد (لحد ٢٠٠ صنف)</span>
         </span>
-        <span className="text-[#FA8125] font-black">←</span>
+        <span className="text-[#059669] font-black">←</span>
       </button>
 
       {showBulkModal && (
@@ -3396,7 +3396,7 @@ function StepPricing({
               onClick={() => setPeriod(p)}
               className={`py-3 rounded-xl border text-sm transition-all ${
                 period === p
-                  ? 'bg-[#FA8125] border-[#FA8125] text-white font-semibold'
+                  ? 'bg-[#34D399] border-[#059669] text-[#04352A] font-semibold'
                   : 'bg-white border-[#E5E5E0]'
               }`}
             >
@@ -3476,7 +3476,7 @@ function StepPricing({
                       onClick={() => toggleAddon(addon.slug)}
                       className={`w-6 h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all ${
                         isEnabled
-                          ? 'bg-[#FA8125] border-[#FA8125]'
+                          ? 'bg-[#34D399] border-[#059669]'
                           : 'bg-transparent border-[#E5E5E0]'
                       }`}
                       aria-pressed={isEnabled}
@@ -3502,7 +3502,7 @@ function StepPricing({
                           isEnabled
                             ? 'bg-[#F5F4F0] border border-[#E5E5E0] text-[#1A2E26]'
                             : 'bg-white border border-transparent opacity-50 text-gray-500'
-                        } focus:outline-none focus:border-[#FA8125]`}
+                        } focus:outline-none focus:border-[#059669]`}
                       />
                       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 pointer-events-none">
                         ج.م
@@ -3546,7 +3546,7 @@ function StepPricing({
                       value={addon.name_ar}
                       onChange={(e) => updateCustomAddon(idx, { name_ar: e.target.value })}
                       placeholder="اسم الخدمة الإضافية"
-                      className="flex-1 p-2 rounded-lg bg-[#F5F4F0] border border-[#E5E5E0] text-sm text-[#1A2E26] placeholder:text-gray-400 focus:outline-none focus:border-[#FA8125]"
+                      className="flex-1 p-2 rounded-lg bg-[#F5F4F0] border border-[#E5E5E0] text-sm text-[#1A2E26] placeholder:text-gray-400 focus:outline-none focus:border-[#059669]"
                     />
                     <div className="relative w-28 flex-shrink-0">
                       <input
@@ -3556,7 +3556,7 @@ function StepPricing({
                           updateCustomAddon(idx, { price_egp: Number(e.target.value) || 0 })
                         }
                         placeholder="السعر"
-                        className="w-full p-2 rounded-lg bg-[#F5F4F0] border border-[#E5E5E0] text-sm text-[#1A2E26] placeholder:text-gray-400 focus:outline-none focus:border-[#FA8125] pl-10"
+                        className="w-full p-2 rounded-lg bg-[#F5F4F0] border border-[#E5E5E0] text-sm text-[#1A2E26] placeholder:text-gray-400 focus:outline-none focus:border-[#059669] pl-10"
                       />
                       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 pointer-events-none">
                         ج.م
@@ -3579,7 +3579,7 @@ function StepPricing({
           <button
             type="button"
             onClick={addCustomAddon}
-            className="w-full py-3 rounded-xl border-2 border-dashed border-[#FA8125]/30 hover:border-[#FA8125]/60 hover:bg-[#FA8125]/5 text-sm font-semibold text-[#FA8125] transition-colors"
+            className="w-full py-3 rounded-xl border-2 border-dashed border-[#059669]/30 hover:border-[#059669]/60 hover:bg-[#34D399]/5 text-sm font-semibold text-[#059669] transition-colors"
           >
             + ضيف خدمة إضافية
           </button>
@@ -3602,7 +3602,7 @@ function StepPricing({
               type="checkbox"
               checked={acceptsInsurance}
               onChange={(e) => setAcceptsInsurance(e.target.checked)}
-              className="w-4 h-4 mt-0.5 accent-[#FA8125]"
+              className="w-4 h-4 mt-0.5 accent-[#059669]"
             />
             <div>
               🏥 بتقبل تأمين صحي؟
@@ -3619,7 +3619,7 @@ function StepPricing({
                   {insurancePartners.map((p) => (
                     <span
                       key={p}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#FA8125]/30 text-xs font-medium"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#059669]/30 text-xs font-medium"
                     >
                       🏥 {p}
                       <button
@@ -3653,14 +3653,14 @@ function StepPricing({
                   type="button"
                   onClick={addPartner}
                   disabled={!newPartner.trim()}
-                  className="py-2.5 px-4 rounded-xl bg-[#FA8125] text-white text-sm font-semibold disabled:opacity-50 whitespace-nowrap"
+                  className="py-2.5 px-4 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-semibold disabled:opacity-50 whitespace-nowrap"
                 >
                   + إضافة
                 </button>
               </div>
 
               <div className="p-3 rounded-xl bg-white border border-[#E5E5E0] text-xs text-gray-700">
-                <div className="font-semibold text-[#FA8125] mb-1">💳 رسم الحجز للتأمينيين</div>
+                <div className="font-semibold text-[#059669] mb-1">💳 رسم الحجز للتأمينيين</div>
                 <p>
                   عند حجز عميل بتأمين صحي، بنأخد <strong>5%</strong> رسم خدمة من سعر الكشف (من العميل عبر انستاباي) لتأكيد الحجز.
                 </p>
@@ -3828,14 +3828,14 @@ function StepPhotos({
                 ×
               </button>
               {i === 0 ? (
-                <span className="absolute bottom-1 inset-x-1 text-center bg-[#FA8125] text-white text-[10px] font-bold py-1 rounded-lg">
+                <span className="absolute bottom-1 inset-x-1 text-center bg-[#34D399] text-[#04352A] text-[10px] font-bold py-1 rounded-lg">
                   ⭐ الرئيسية
                 </span>
               ) : (
                 <button
                   type="button"
                   onClick={() => makePrimary(i)}
-                  className="absolute bottom-1 inset-x-1 text-center bg-black/55 hover:bg-[#FA8125] text-white text-[10px] font-bold py-1 rounded-lg transition-colors"
+                  className="absolute bottom-1 inset-x-1 text-center bg-black/55 hover:bg-[#34D399] text-[#04352A] text-[10px] font-bold py-1 rounded-lg transition-colors"
                 >
                   اجعلها الرئيسية
                 </button>
@@ -3846,7 +3846,7 @@ function StepPhotos({
       )}
 
       <label className="block">
-        <div className="border-2 border-dashed border-[#D1D5DB] rounded-2xl p-8 text-center cursor-pointer hover:border-[#FA8125] transition-colors">
+        <div className="border-2 border-dashed border-[#D1D5DB] rounded-2xl p-8 text-center cursor-pointer hover:border-[#059669] transition-colors">
           <div className="text-3xl mb-2">📸</div>
           <div className="font-semibold">{uploading ? 'جاري الرفع...' : (svcCopy ? svcCopy.box : 'اضغط هنا لإضافة صور')}</div>
           <div className="text-xs text-gray-500 mt-1">JPG/PNG، حتى 8 صور</div>
@@ -3994,10 +3994,10 @@ function validateContact(patch: Partial<DraftPayload>, setErrors: (e: Record<str
 // SHARED UI
 // =================================================
 const inputCls =
-  'w-full p-3 rounded-xl bg-white border border-[#E5E5E0] text-[#1A2E26] placeholder:text-gray-400 focus:outline-none focus:border-[#FA8125]';
+  'w-full p-3 rounded-xl bg-white border border-[#E5E5E0] text-[#1A2E26] placeholder:text-gray-400 focus:outline-none focus:border-[#059669]';
 
 const btnPrimary =
-  'py-3 px-4 rounded-xl bg-[#FA8125] text-white font-semibold hover:bg-[#FA8125]/90 disabled:opacity-50 transition-all';
+  'py-3 px-4 rounded-xl bg-[#34D399] text-[#04352A] font-semibold hover:bg-[#34D399]/90 disabled:opacity-50 transition-all';
 
 const btnSecondary =
   'py-3 px-4 rounded-xl bg-white border border-[#E5E5E0] hover:bg-[#F5F4F0] transition-all';
@@ -4012,7 +4012,7 @@ function Field({ label, error, required, children }: {
     <div className="mb-4">
       <label className="block text-sm font-medium mb-2">
         {label}
-        {required && <span className="text-[#FA8125] mr-1">*</span>}
+        {required && <span className="text-[#059669] mr-1">*</span>}
       </label>
       {children}
       {error && <div className="text-xs text-red-600 mt-1">{error}</div>}
@@ -4087,7 +4087,7 @@ function ResumeDraftBanner({
       <div className="flex items-start gap-3 mb-3">
         <div className="text-2xl leading-none flex-shrink-0">💾</div>
         <div className="min-w-0 flex-1">
-          <div className="font-semibold text-sm text-[#FA8125]">لقينالك مسودة محفوظة</div>
+          <div className="font-semibold text-sm text-[#059669]">لقينالك مسودة محفوظة</div>
           {display && (
             <div className="flex items-center gap-2 mt-1.5 text-sm">
               <span className="text-lg leading-none">{display.emoji}</span>
@@ -4103,7 +4103,7 @@ function ResumeDraftBanner({
         <button
           type="button"
           onClick={onResume}
-          className="py-2.5 px-3 rounded-xl bg-[#FA8125] text-white text-sm font-semibold hover:bg-[#FA8125]/90 transition-all"
+          className="py-2.5 px-3 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-semibold hover:bg-[#34D399]/90 transition-all"
         >
           → كمل من فين وقفت
         </button>

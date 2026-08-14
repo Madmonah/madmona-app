@@ -25,9 +25,9 @@ interface NewsItem {
 }
 
 const TABS: { id: Tab; label: string; icon: typeof Newspaper; accent: string }[] = [
-  { id: 'madmona',     label: 'مضمونة',    icon: ShieldCheck, accent: '#FA8125' },
+  { id: 'madmona',     label: 'مضمونة',    icon: ShieldCheck, accent: '#059669' },
   { id: 'economy',     label: 'اقتصاد',    icon: DollarSign,  accent: '#10b981' },
-  { id: 'real_estate', label: 'عقارات',    icon: Home,        accent: '#FA8125' },
+  { id: 'real_estate', label: 'عقارات',    icon: Home,        accent: '#059669' },
   { id: 'automotive',  label: 'سيارات',    icon: Car,         accent: '#3b82f6' },
   { id: 'business',    label: 'أعمال',     icon: Briefcase,   accent: '#2FA084' },
   { id: 'tourism',     label: 'سياحة',     icon: Plane,       accent: '#06b6d4' },
@@ -134,7 +134,7 @@ export default function NewsStories() {
           <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
         </span>
         <span className="text-sm font-black text-gray-900">أخبار مضمونة</span>
-        <span className="text-[10px] font-bold text-[#FA8125] bg-[#FA8125]/10 px-2 py-0.5 rounded-full">LIVE</span>
+        <span className="text-[10px] font-bold text-[#059669] bg-[#34D399]/10 px-2 py-0.5 rounded-full">LIVE</span>
       </div>
 
       {/* شريط ستوري بشكل فيسبوك — كروت مستطيلة طويلة */}

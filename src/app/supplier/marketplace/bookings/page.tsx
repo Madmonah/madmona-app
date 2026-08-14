@@ -218,11 +218,11 @@ export default function SupplierBookingsPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#059669] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
           <Link
             href="/auth/login?redirect=/supplier/marketplace/bookings"
-            className="block bg-[#FA8125] text-white py-3 rounded-xl font-semibold"
+            className="block bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold"
           >
             تسجيل دخول
           </Link>
@@ -242,7 +242,7 @@ export default function SupplierBookingsPage() {
           </p>
           <Link
             href="/supplier/marketplace"
-            className="inline-block bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold"
+            className="inline-block bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-semibold"
           >
             ارجع للوحة
           </Link>
@@ -257,7 +257,7 @@ export default function SupplierBookingsPage() {
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
           <h1 className="font-bold mb-2">مش مورد على Madmona</h1>
-          <Link href="/supplier/register" className="inline-block bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold mt-4">
+          <Link href="/supplier/register" className="inline-block bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-semibold mt-4">
             سجّل كمورد
           </Link>
         </div>
@@ -283,8 +283,8 @@ export default function SupplierBookingsPage() {
               <h1 className="text-lg font-bold text-gray-900">حجوزات {supplierName}</h1>
               <p className="text-xs text-gray-500 flex items-center gap-1.5">
                 {bookings.length} حجز
-                <span className="inline-flex items-center gap-1 text-[#FA8125]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FA8125] animate-pulse" />
+                <span className="inline-flex items-center gap-1 text-[#059669]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] animate-pulse" />
                   متّصل لايف
                 </span>
               </p>
@@ -307,7 +307,7 @@ export default function SupplierBookingsPage() {
                   onClick={() => setFilter(tab.key)}
                   className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                     filter === tab.key
-                      ? 'bg-[#FA8125] text-white'
+                      ? 'bg-[#34D399] text-[#04352A]'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -345,7 +345,7 @@ export default function SupplierBookingsPage() {
                   href={`/supplier/marketplace/bookings/${booking.id}`}
                   className={`block bg-white rounded-xl border overflow-hidden hover:shadow-sm transition-all ${
                     isHighlighted
-                      ? 'border-[#FA8125] ring-2 ring-[#FA8125]/30 animate-pulse'
+                      ? 'border-[#059669] ring-2 ring-[#059669]/30 animate-pulse'
                       : 'border-gray-100'
                   }`}
                 >
@@ -409,7 +409,7 @@ export default function SupplierBookingsPage() {
 
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
                         <span className="text-sm">
-                          <strong className="text-[#FA8125]">{Number(booking.total_amount).toLocaleString('ar-EG')}</strong>
+                          <strong className="text-[#059669]">{Number(booking.total_amount).toLocaleString('ar-EG')}</strong>
                           <span className="text-xs text-gray-500"> ج.م</span>
                         </span>
                         <ChevronLeft className="w-4 h-4 text-gray-400" />

@@ -129,8 +129,8 @@ export default function AdminLeadsPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-          <div className="flex items-center justify-center w-12 h-12 bg-[#FA8125]/10 rounded-full mb-4 mx-auto">
-            <Lock className="w-5 h-5 text-[#FA8125]" />
+          <div className="flex items-center justify-center w-12 h-12 bg-[#34D399]/10 rounded-full mb-4 mx-auto">
+            <Lock className="w-5 h-5 text-[#059669]" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 text-center mb-1">لوحة الإدارة</h1>
           <p className="text-sm text-gray-500 text-center mb-6">إدخال كلمة السر للوصول</p>
@@ -141,14 +141,14 @@ export default function AdminLeadsPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="كلمة السر"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125] transition-colors text-right"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669] transition-colors text-right"
               autoFocus
             />
             {authError && <p className="text-sm text-red-600 text-center">{authError}</p>}
             <button
               type="submit"
               disabled={loading || !password}
-              className="w-full bg-[#FA8125] text-white py-3 rounded-xl font-semibold hover:bg-[#FA8125]/90 disabled:opacity-50 transition-colors"
+              className="w-full bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold hover:bg-[#34D399]/90 disabled:opacity-50 transition-colors"
             >
               {loading ? 'جاري التحقق...' : 'دخول'}
             </button>
@@ -264,7 +264,7 @@ export default function AdminLeadsPage() {
                   </a>
                   <a
                     href={telUrl}
-                    className="px-3 py-1.5 bg-[#FA8125]/10 text-[#FA8125] rounded-lg text-xs font-medium hover:bg-[#FA8125]/20 transition-colors"
+                    className="px-3 py-1.5 bg-[#34D399]/10 text-[#059669] rounded-lg text-xs font-medium hover:bg-[#34D399]/20 transition-colors"
                   >
                     اتصال
                   </a>

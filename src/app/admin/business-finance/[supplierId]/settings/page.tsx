@@ -114,7 +114,7 @@ export default function SettingsPage({
   if (loading && !supplier) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#059669] animate-spin" />
       </div>
     )
   }
@@ -127,12 +127,12 @@ export default function SettingsPage({
         <div className="max-w-5xl mx-auto px-4 py-4">
           <Link
             href={`/admin/business-finance/${supplierId}`}
-            className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2 transition-colors"
+            className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2 transition-colors"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             رجوع للـ finance
           </Link>
-          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">
+          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">
             SETTINGS
           </p>
           <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">
@@ -153,7 +153,7 @@ export default function SettingsPage({
                 onClick={() => setTab(t.key as any)}
                 className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   tab === t.key
-                    ? 'bg-[#FA8125] text-white shadow-sm'
+                    ? 'bg-[#34D399] text-[#04352A] shadow-sm'
                     : 'text-[#6B7280] hover:text-[#1A2E26]'
                 }`}
               >
@@ -166,8 +166,8 @@ export default function SettingsPage({
 
       <main className="max-w-5xl mx-auto px-4 py-6">
         {toast && (
-          <div className="mb-4 bg-[#FA8125]/10 border border-[#FA8125]/30 rounded-xl px-4 py-3 text-sm text-[#1A2E26] flex items-center gap-2">
-            <Check className="w-4 h-4 text-[#FA8125]" />
+          <div className="mb-4 bg-[#34D399]/10 border border-[#059669]/30 rounded-xl px-4 py-3 text-sm text-[#1A2E26] flex items-center gap-2">
+            <Check className="w-4 h-4 text-[#059669]" />
             {toast}
           </div>
         )}
@@ -312,7 +312,7 @@ function BranchesTab({
         ) : (
           <div key={b.id} className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="inline-grid place-items-center w-10 h-10 rounded-xl bg-[#FA8125]/10 text-[#FA8125] flex-shrink-0">
+              <div className="inline-grid place-items-center w-10 h-10 rounded-xl bg-[#34D399]/10 text-[#059669] flex-shrink-0">
                 <Building2 className="w-4 h-4" />
               </div>
               <div className="min-w-0">
@@ -321,7 +321,7 @@ function BranchesTab({
                   {b.code} · {b.district || '—'} · {b.manager_name || 'بدون مدير'} · {b.phone || '—'}
                 </p>
                 {b.latitude && b.longitude ? (
-                  <p className="text-[10px] text-[#FA8125] font-mono mt-0.5 flex items-center gap-1">
+                  <p className="text-[10px] text-[#059669] font-mono mt-0.5 flex items-center gap-1">
                     <ShieldCheck className="w-2.5 h-2.5" />
                     GPS مفعّل ({b.latitude.toFixed(4)}, {b.longitude.toFixed(4)}) · ±{b.geofence_radius_meters || 100}م
                   </p>
@@ -336,7 +336,7 @@ function BranchesTab({
             <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={() => setEditingId(b.id)}
-                className="p-2 text-[#6B7280] hover:text-[#FA8125] hover:bg-[#FAFAF7] rounded-lg transition-colors"
+                className="p-2 text-[#6B7280] hover:text-[#059669] hover:bg-[#FAFAF7] rounded-lg transition-colors"
               >
                 <Edit2 className="w-4 h-4" />
               </button>
@@ -361,7 +361,7 @@ function BranchesTab({
       ) : (
         <button
           onClick={() => setAdding(true)}
-          className="w-full p-3 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#FA8125] text-[#6B7280] hover:text-[#FA8125] text-sm font-bold transition-colors flex items-center justify-center gap-2"
+          className="w-full p-3 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#059669] text-[#6B7280] hover:text-[#059669] text-sm font-bold transition-colors flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4" />
           اضف فرع
@@ -414,7 +414,7 @@ function BranchEditForm({
   }
 
   return (
-    <div className="bg-white rounded-2xl border-2 border-[#FA8125] p-4 space-y-3">
+    <div className="bg-white rounded-2xl border-2 border-[#059669] p-4 space-y-3">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اسم الفرع *" className={INPUT_SMALL} />
         <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="كود" className={`${INPUT_SMALL} font-mono`} />
@@ -428,7 +428,7 @@ function BranchEditForm({
       <div className="bg-[#FAFAF7] rounded-xl p-3 space-y-2 border border-gray-100">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <MapPin className="w-3.5 h-3.5 text-[#FA8125]" />
+            <MapPin className="w-3.5 h-3.5 text-[#059669]" />
             <p className="text-xs font-bold text-[#1A2E26]">موقع الفرع GPS</p>
           </div>
           <label className="flex items-center gap-1.5 cursor-pointer">
@@ -461,7 +461,7 @@ function BranchEditForm({
           type="button"
           onClick={useMyLocation}
           disabled={locating}
-          className="w-full mt-1 py-2 rounded-lg bg-[#FA8125]/10 hover:bg-[#FA8125]/20 text-[#FA8125] text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-50"
+          className="w-full mt-1 py-2 rounded-lg bg-[#34D399]/10 hover:bg-[#34D399]/20 text-[#059669] text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-50"
         >
           {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5" />}
           {locating ? 'جاري تحديد الموقع...' : 'حدد من موقعي الحالي (أنا في الفرع)'}
@@ -483,7 +483,7 @@ function BranchEditForm({
             geofence_enabled: geoEnabled,
           })}
           disabled={!name.trim()}
-          className="px-4 py-1.5 rounded-lg bg-[#FA8125] text-white text-xs font-bold hover:shadow-md transition-shadow disabled:opacity-50 flex items-center gap-1"
+          className="px-4 py-1.5 rounded-lg bg-[#34D399] text-[#04352A] text-xs font-bold hover:shadow-md transition-shadow disabled:opacity-50 flex items-center gap-1"
         >
           <Save className="w-3 h-3" />
           {isNew ? 'اضف' : 'احفظ'}
@@ -627,7 +627,7 @@ function EmployeesTab({
       ) : (
         <button
           onClick={() => setAdding(true)}
-          className="w-full p-3 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#FA8125] text-[#6B7280] hover:text-[#FA8125] text-sm font-bold transition-colors flex items-center justify-center gap-2"
+          className="w-full p-3 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#059669] text-[#6B7280] hover:text-[#059669] text-sm font-bold transition-colors flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4" />
           اضف موظف
@@ -648,7 +648,7 @@ function EmployeeRow({
   return (
     <div className="px-4 py-3 flex items-center justify-between gap-3 hover:bg-[#FAFAF7]/50">
       <div className="flex items-center gap-3 min-w-0">
-        <div className="inline-grid place-items-center w-8 h-8 rounded-lg bg-[#FA8125]/10 text-[#FA8125] font-black text-xs flex-shrink-0">
+        <div className="inline-grid place-items-center w-8 h-8 rounded-lg bg-[#34D399]/10 text-[#059669] font-black text-xs flex-shrink-0">
           {employee.full_name.charAt(0)}
         </div>
         <div className="min-w-0">
@@ -661,7 +661,7 @@ function EmployeeRow({
         </div>
       </div>
       <div className="flex items-center gap-1 flex-shrink-0">
-        <button onClick={onEdit} className="p-1.5 text-[#6B7280] hover:text-[#FA8125] hover:bg-white rounded transition-colors">
+        <button onClick={onEdit} className="p-1.5 text-[#6B7280] hover:text-[#059669] hover:bg-white rounded transition-colors">
           <Edit2 className="w-3.5 h-3.5" />
         </button>
         <button onClick={onDelete} className="p-1.5 text-[#6B7280] hover:text-red-600 hover:bg-white rounded transition-colors">
@@ -689,7 +689,7 @@ function EmployeeEditForm({
   const [commission, setCommission] = useState(employee.personal_commission_rate || 0)
 
   return (
-    <div className="bg-white rounded-2xl border-2 border-[#FA8125] p-4 space-y-2">
+    <div className="bg-white rounded-2xl border-2 border-[#059669] p-4 space-y-2">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="الاسم *" className={INPUT_SMALL} />
         <select value={role} onChange={(e) => setRole(e.target.value)} className={INPUT_SMALL}>
@@ -722,7 +722,7 @@ function EmployeeEditForm({
             personal_commission_rate: commission,
           })}
           disabled={!name.trim()}
-          className="px-4 py-1.5 rounded-lg bg-[#FA8125] text-white text-xs font-bold hover:shadow-md transition-shadow disabled:opacity-50 flex items-center gap-1"
+          className="px-4 py-1.5 rounded-lg bg-[#34D399] text-[#04352A] text-xs font-bold hover:shadow-md transition-shadow disabled:opacity-50 flex items-center gap-1"
         >
           <Save className="w-3 h-3" />
           {isNew ? 'اضف' : 'احفظ'}
@@ -759,8 +759,8 @@ function CommissionTab({ supplier, onSaved }: { supplier: Supplier; onSaved: () 
 
   return (
     <div className="space-y-4">
-      <div className="bg-[#FA8125]/5 rounded-2xl p-4 border border-[#FA8125]/20 flex items-start gap-3">
-        <BadgePercent className="w-5 h-5 text-[#FA8125] flex-shrink-0 mt-0.5" />
+      <div className="bg-[#34D399]/5 rounded-2xl p-4 border border-[#059669]/20 flex items-start gap-3">
+        <BadgePercent className="w-5 h-5 text-[#059669] flex-shrink-0 mt-0.5" />
         <p className="text-sm text-[#1A2E26] leading-relaxed">
           العمولة بتتحسب على <span className="font-bold">إجمالي الإيرادات (gross)</span>، 
           مش net profit. الـ trigger في الـ DB بـ يطبقها تلقائي على كل transaction جديد.
@@ -785,8 +785,8 @@ function CommissionTab({ supplier, onSaved }: { supplier: Supplier; onSaved: () 
                 onClick={() => setStatus(s)}
                 className={`p-3 rounded-xl text-sm font-bold transition-all ${
                   status === s
-                    ? 'bg-[#FA8125] text-white'
-                    : 'bg-[#FAFAF7] border border-gray-100 text-[#6B7280] hover:border-[#FA8125]'
+                    ? 'bg-[#34D399] text-[#04352A]'
+                    : 'bg-[#FAFAF7] border border-gray-100 text-[#6B7280] hover:border-[#059669]'
                 }`}
               >
                 {s === 'negotiating' ? 'قيد التفاوض' : s === 'signed' ? 'موقّع' : 'نشط'}
@@ -798,7 +798,7 @@ function CommissionTab({ supplier, onSaved }: { supplier: Supplier; onSaved: () 
         <div className="bg-[#FAFAF7] rounded-xl p-4 border border-gray-100">
           <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-2">معاينة</p>
           <p className="text-sm font-mono text-[#1A2E26]">
-            إجمالي العمولة = <span className="text-[#FA8125] font-black text-base">{(base + extra).toFixed(1)}%</span>
+            إجمالي العمولة = <span className="text-[#059669] font-black text-base">{(base + extra).toFixed(1)}%</span>
           </p>
           <p className="text-xs text-[#6B7280] mt-1">
             كل ج إيراد × {((base + extra) / 100).toFixed(3)} = Madmona commission
@@ -841,14 +841,14 @@ function ModulesTab({ supplier, supplierId }: { supplier: Supplier; supplierId: 
   }
 
   if (loading) {
-    return <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin inline" /></div>
+    return <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#059669] animate-spin inline" /></div>
   }
 
   const onCount = mods.filter((m) => isOn(m.href)).length
 
   return (
     <div className="space-y-3">
-      <div className="bg-[#FA8125]/5 rounded-2xl p-4 border border-[#FA8125]/20 text-sm text-[#1A2E26]">
+      <div className="bg-[#34D399]/5 rounded-2xl p-4 border border-[#059669]/20 text-sm text-[#1A2E26]">
         افتح أو اقفل أي تبويب لـ <b>{supplier.business_name}</b>. المقفول بيختفي من لوحته على طول.
         <span className="text-[#6B7280]"> ({onCount} من {mods.length} مفتوح)</span>
       </div>
@@ -864,7 +864,7 @@ function ModulesTab({ supplier, supplierId }: { supplier: Supplier; supplierId: 
               <button
                 onClick={() => toggle(m.href)}
                 disabled={busy === m.href}
-                className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 disabled:opacity-50 ${on ? 'bg-[#FA8125]' : 'bg-gray-300'}`}
+                className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 disabled:opacity-50 ${on ? 'bg-[#34D399]' : 'bg-gray-300'}`}
                 title={on ? 'مفتوح' : 'مقفول'}
               >
                 <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${on ? 'right-0.5' : 'left-0.5'}`} />
@@ -880,8 +880,8 @@ function ModulesTab({ supplier, supplierId }: { supplier: Supplier; supplierId: 
 /* ============================================================
    Shared helpers
    ============================================================ */
-const INPUT_CLASS = "w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#FA8125] transition-colors text-sm"
-const INPUT_SMALL = "w-full px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#FA8125]"
+const INPUT_CLASS = "w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#059669] transition-colors text-sm"
+const INPUT_SMALL = "w-full px-3 py-2 rounded-lg bg-[#FAFAF7] border border-gray-100 text-sm text-[#1A2E26] focus:outline-none focus:border-[#059669]"
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -897,7 +897,7 @@ function SaveButton({ onClick, loading }: { onClick: () => void; loading: boolea
     <button
       onClick={onClick}
       disabled={loading}
-      className="px-5 py-2.5 rounded-xl bg-[#FA8125] text-white text-sm font-bold hover:shadow-md transition-shadow disabled:opacity-50 flex items-center gap-2"
+      className="px-5 py-2.5 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold hover:shadow-md transition-shadow disabled:opacity-50 flex items-center gap-2"
     >
       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
       احفظ التغييرات

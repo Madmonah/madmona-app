@@ -23,7 +23,7 @@ function esc(s: string) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').
 function inline(s: string) {
   return esc(s)
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" class="text-[#FA8125] font-bold underline underline-offset-2">$1</a>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" class="text-[#059669] font-bold underline underline-offset-2">$1</a>')
 }
 function mdToHtml(md: string) {
   const lines = md.split(/\r?\n/)
@@ -66,7 +66,7 @@ export default async function BlogPost({ params }: P) {
       <main className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
         <div className="text-center">
           <p className="font-black text-[#14231E]">المقال مش موجود</p>
-          <Link href="/blog" className="text-[#FA8125] font-bold text-sm">← رجوع للمدونة</Link>
+          <Link href="/blog" className="text-[#059669] font-bold text-sm">← رجوع للمدونة</Link>
         </div>
       </main>
     )
@@ -86,7 +86,7 @@ export default async function BlogPost({ params }: P) {
   return (
     <main className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div className="bg-gradient-to-l from-[#14231E] to-[#FA8125] text-white px-4 py-10">
+      <div className="bg-gradient-to-l from-[#14231E] to-[#34D399] text-white px-4 py-10">
         <div className="max-w-3xl mx-auto">
           <Link href="/blog" className="text-white/70 text-xs font-bold no-underline">مدونة مضمونة ←</Link>
           {post.category && <span className="block mt-3"><span className="inline-block text-[11px] font-black text-white bg-white/15 rounded-full px-2.5 py-1">{post.category}</span></span>}
@@ -96,10 +96,10 @@ export default async function BlogPost({ params }: P) {
       </div>
       <article className="max-w-3xl mx-auto px-4 py-8">
         <div className="bg-white rounded-2xl p-5 md:p-8 shadow-sm ring-1 ring-black/5" dangerouslySetInnerHTML={{ __html: mdToHtml(post.content_md) }} />
-        <div className="mt-6 bg-gradient-to-l from-[#FA8125] to-[#2FA084] rounded-2xl p-5 text-white text-center">
+        <div className="mt-6 bg-gradient-to-l from-[#34D399] to-[#2FA084] rounded-2xl p-5 text-white text-center">
           <p className="font-black">جاهز تبيع أو تأجر بأمان؟ ✅</p>
           <p className="text-white/85 text-sm mt-1">كل معاملة على مضمونة بحماية كاملة ودفع مستحقات سريع.</p>
-          <Link href="/marketplace" className="inline-block mt-3 bg-white text-[#FA8125] font-black text-sm rounded-full px-5 py-2 no-underline">اتفرج على الإعلانات</Link>
+          <Link href="/marketplace" className="inline-block mt-3 bg-white text-[#059669] font-black text-sm rounded-full px-5 py-2 no-underline">اتفرج على الإعلانات</Link>
         </div>
       </article>
     </main>

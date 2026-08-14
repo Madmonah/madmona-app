@@ -80,7 +80,7 @@ export default function ChatInvitePage() {
               سجّل دخول برقمك وهتبقوا أصحاب على طول — بدون طلبات ولا موافقات.
             </div>
             <button onClick={goLogin}
-              style={{ background: 'linear-gradient(118deg,#FA8125,#F98F2A)', color: '#fff', border: 'none', borderRadius: 999, padding: '13px 30px', fontSize: 15, fontWeight: 900, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
+              style={{ background: 'linear-gradient(118deg,#059669,#34D399)', color: '#fff', border: 'none', borderRadius: 999, padding: '13px 30px', fontSize: 15, fontWeight: 900, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
               سجّل دخول وكمّل
             </button>
           </>
@@ -88,12 +88,12 @@ export default function ChatInvitePage() {
 
         {st.s === 'ok' && (
           <>
-            <div style={{ fontSize: 18, fontWeight: 900, color: '#FA8125', marginBottom: 8 }}>بقيتوا أصحاب!</div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: '#059669', marginBottom: 8 }}>بقيتوا أصحاب!</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: '#14231E', marginBottom: 18 }}>
               إنت و{st.name} تقدروا تتكلموا على طول.
             </div>
             <button onClick={() => router.push('/chat')}
-              style={{ background: 'linear-gradient(118deg,#FA8125,#F98F2A)', color: '#fff', border: 'none', borderRadius: 999, padding: '13px 30px', fontSize: 15, fontWeight: 900, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
+              style={{ background: 'linear-gradient(118deg,#059669,#34D399)', color: '#fff', border: 'none', borderRadius: 999, padding: '13px 30px', fontSize: 15, fontWeight: 900, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
               افتح الشات
             </button>
           </>
@@ -103,7 +103,7 @@ export default function ChatInvitePage() {
           <>
             <div style={{ fontSize: 15.5, fontWeight: 800, color: '#14231E', marginBottom: 16 }}>{st.msg}</div>
             <button onClick={() => router.push('/chat')}
-              style={{ background: '#F1EEE6', color: '#FA8125', border: 'none', borderRadius: 999, padding: '12px 26px', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ background: '#F1EEE6', color: '#059669', border: 'none', borderRadius: 999, padding: '12px 26px', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
               افتح الشات
             </button>
           </>

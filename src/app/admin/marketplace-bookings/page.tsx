@@ -157,21 +157,21 @@ export default function AdminMarketplaceBookingsPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-          <div className="flex items-center justify-center w-12 h-12 bg-[#FA8125]/10 rounded-full mb-4 mx-auto">
-            <Lock className="w-5 h-5 text-[#FA8125]" />
+          <div className="flex items-center justify-center w-12 h-12 bg-[#34D399]/10 rounded-full mb-4 mx-auto">
+            <Lock className="w-5 h-5 text-[#059669]" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 text-center mb-1">حجوزات Marketplace</h1>
           <form onSubmit={handleLogin} className="space-y-4 mt-6">
             <input
               type="password" value={password} onChange={(e) => setPassword(e.target.value)}
               placeholder="كلمة السر"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125] text-right"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669] text-right"
               autoFocus
             />
             {authError && <p className="text-sm text-red-600 text-center">{authError}</p>}
             <button
               type="submit" disabled={loading || !password}
-              className="w-full bg-[#FA8125] text-white py-3 rounded-xl font-semibold hover:bg-[#FA8125]/90 disabled:opacity-50"
+              className="w-full bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold hover:bg-[#34D399]/90 disabled:opacity-50"
             >
               {loading ? 'جاري التحقق...' : 'دخول'}
             </button>
@@ -277,7 +277,7 @@ export default function AdminMarketplaceBookingsPage() {
                     </div>
                     <div>
                       <div className="text-gray-500 mb-0.5">لأجر معانا</div>
-                      <div className="font-bold text-[#FA8125]">{formatPrice(b.supplier_payout)}</div>
+                      <div className="font-bold text-[#059669]">{formatPrice(b.supplier_payout)}</div>
                     </div>
                   </div>
 

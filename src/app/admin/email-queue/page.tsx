@@ -148,13 +148,13 @@ export default function EmailQueuePage() {
     return cnt
   }, [rows])
 
-  if (stage === 'loading') return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin" /></div>
+  if (stage === 'loading') return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-6 h-6 text-[#059669] animate-spin" /></div>
   if (stage === 'unauthenticated') return (
     <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
       <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-        <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
+        <Lock className="w-8 h-8 text-[#059669] mx-auto mb-3" />
         <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
-        <Link href="/auth/login?redirect=/admin/email-queue" className="block bg-[#FA8125] text-white py-3 rounded-xl font-semibold">دخول</Link>
+        <Link href="/auth/login?redirect=/admin/email-queue" className="block bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold">دخول</Link>
       </div>
     </div>
   )
@@ -174,12 +174,12 @@ export default function EmailQueuePage() {
           <Link href="/admin/dashboard" className="w-9 h-9 bg-white shadow rounded-full flex items-center justify-center">
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
-          <Mail className="w-5 h-5 text-[#FA8125]" />
+          <Mail className="w-5 h-5 text-[#059669]" />
           <h1 className="text-lg font-black text-gray-900 flex-1">طابور الإيميلات</h1>
           <button onClick={loadRows} disabled={refreshing} className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200">
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
-          <button onClick={fireProcessor} disabled={firing} className="bg-[#FA8125] text-white px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-[#FA8125]/90 disabled:opacity-50">
+          <button onClick={fireProcessor} disabled={firing} className="bg-[#34D399] text-[#04352A] px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-[#34D399]/90 disabled:opacity-50">
             {firing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             <span>تشغيل المعالج</span>
           </button>
@@ -205,7 +205,7 @@ export default function EmailQueuePage() {
           ] as const).map(({ k, label, icon: Icon }) => (
             <button key={k} onClick={() => setQueue(k as any)}
               className={`flex-1 py-2.5 rounded-xl border text-sm font-bold flex items-center justify-center gap-1.5 transition ${
-                queue === k ? 'bg-[#FA8125] text-white border-[#FA8125]' : 'bg-white border-gray-200 text-gray-700'
+                queue === k ? 'bg-[#34D399] text-[#04352A] border-[#059669]' : 'bg-white border-gray-200 text-gray-700'
               }`}>
               <Icon className="w-4 h-4" /> {label}
             </button>
@@ -221,7 +221,7 @@ export default function EmailQueuePage() {
             return (
               <button key={s} onClick={() => setStatus(s)}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border ${
-                  isActive ? 'bg-[#FA8125] text-white border-[#FA8125]' : `${cfg.bg} ${cfg.color}`
+                  isActive ? 'bg-[#34D399] text-[#04352A] border-[#059669]' : `${cfg.bg} ${cfg.color}`
                 }`}>
                 {cfg.label} {cnt > 0 && <span className="ms-1 opacity-75">({cnt})</span>}
               </button>
@@ -273,7 +273,7 @@ export default function EmailQueuePage() {
                   </div>
                   {canRetry && (
                     <button onClick={() => retryRow(r)} disabled={isRetrying}
-                      className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-[#FA8125] text-white text-xs font-bold flex items-center gap-1 disabled:opacity-50">
+                      className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-[#34D399] text-[#04352A] text-xs font-bold flex items-center gap-1 disabled:opacity-50">
                       {isRetrying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
                       <span>إعادة</span>
                     </button>

@@ -120,7 +120,7 @@ export default function OperationsHub({
   if (loading && !summary) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#059669] animate-spin" />
       </div>
     )
   }
@@ -132,11 +132,11 @@ export default function OperationsHub({
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <Link href={`/admin/business-finance/${supplierId}`}
-            className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2 transition-colors">
+            className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2 transition-colors">
             <ChevronLeft className="w-3.5 h-3.5" />
             رجوع للـ finance
           </Link>
-          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">
+          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">
             OPERATIONS HUB · DATA ENTRY
           </p>
           <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] tracking-tight">
@@ -150,7 +150,7 @@ export default function OperationsHub({
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {toast && (
-          <div className="fixed top-20 right-4 z-50 bg-[#FA8125] text-white rounded-xl px-4 py-3 shadow-lg flex items-center gap-2 text-sm font-bold">
+          <div className="fixed top-20 right-4 z-50 bg-[#34D399] text-[#04352A] rounded-xl px-4 py-3 shadow-lg flex items-center gap-2 text-sm font-bold">
             <Check className="w-4 h-4" />
             {toast}
           </div>
@@ -303,7 +303,7 @@ export default function OperationsHub({
 function KPI({ label, value, icon, primary, tone }: any) {
   const t = tone === 'negative' ? 'text-red-600' : tone === 'amber' ? 'text-amber-600' : 'text-[#1A2E26]'
   return (
-    <div className={`rounded-2xl p-3 md:p-4 border ${primary ? 'bg-[#FA8125] border-[#FA8125] text-white' : 'bg-white border-gray-100'}`}>
+    <div className={`rounded-2xl p-3 md:p-4 border ${primary ? 'bg-[#34D399] border-[#059669] text-[#04352A]' : 'bg-white border-gray-100'}`}>
       <div className={`flex items-center gap-1.5 mb-1 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>
         {icon}
         <p className="text-[9px] font-bold tracking-wider uppercase truncate">{label}</p>
@@ -318,12 +318,12 @@ function ActionCard({ icon, label, sub, onClick, accent, small }: any) {
     <button onClick={onClick}
       className={`group rounded-2xl border p-3 md:p-4 text-right transition-all hover:shadow-md active:scale-[0.98] ${
         accent
-          ? 'bg-[#FA8125] border-[#FA8125] text-white hover:bg-[#185547]'
-          : 'bg-white border-gray-100 text-[#1A2E26] hover:border-[#FA8125]'
+          ? 'bg-[#34D399] border-[#059669] text-[#04352A] hover:bg-[#185547]'
+          : 'bg-white border-gray-100 text-[#1A2E26] hover:border-[#059669]'
       } ${small ? 'p-2.5' : ''}`}
     >
       <div className={`inline-grid place-items-center w-9 h-9 rounded-xl mb-2 ${
-        accent ? 'bg-white/15 text-white' : 'bg-[#FAFAF7] text-[#FA8125] group-hover:bg-[#FA8125] group-hover:text-white'
+        accent ? 'bg-white/15 text-[#04352A]' : 'bg-[#FAFAF7] text-[#059669] group-hover:bg-[#34D399] group-hover:text-[#04352A]'
       }`}>
         {icon}
       </div>
@@ -341,7 +341,7 @@ function TxnRow({ t }: { t: Txn }) {
     <div className="px-5 py-3 flex items-center justify-between gap-3 hover:bg-[#FAFAF7]/50">
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className={`inline-grid place-items-center w-9 h-9 rounded-lg flex-shrink-0 ${
-          isIn ? 'bg-[#FA8125]/10 text-[#FA8125]' : 'bg-red-50 text-red-600'
+          isIn ? 'bg-[#34D399]/10 text-[#059669]' : 'bg-red-50 text-red-600'
         }`}>
           {isIn ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
         </div>
@@ -356,12 +356,12 @@ function TxnRow({ t }: { t: Txn }) {
         </div>
       </div>
       <div className="text-left flex-shrink-0">
-        <p className={`text-base font-black font-mono ${isIn ? 'text-[#FA8125]' : 'text-red-600'}`}>
+        <p className={`text-base font-black font-mono ${isIn ? 'text-[#059669]' : 'text-red-600'}`}>
           {isIn ? '+' : '−'}{t.amount_egp.toLocaleString('ar-EG')}
         </p>
         <p className="text-[10px] text-[#6B7280]">{time}</p>
         {t.madmona_commission_amount && t.madmona_commission_amount > 0 && (
-          <p className="text-[9px] text-[#FA8125]">Madmona {t.madmona_commission_amount.toLocaleString('ar-EG')}ج</p>
+          <p className="text-[9px] text-[#059669]">Madmona {t.madmona_commission_amount.toLocaleString('ar-EG')}ج</p>
         )}
       </div>
     </div>
@@ -616,8 +616,8 @@ function PurchaseModal({ supplierId, items, vendors, onClose, onSaved, onAddItem
 
   return (
     <Modal title="شراء للمخزن المركزي" onClose={onClose}>
-      <div className="bg-[#FA8125]/5 rounded-xl p-3 text-[11px] text-[#1A2E26] flex items-start gap-2">
-        <Truck className="w-4 h-4 text-[#FA8125] flex-shrink-0 mt-0.5" />
+      <div className="bg-[#34D399]/5 rounded-xl p-3 text-[11px] text-[#1A2E26] flex items-start gap-2">
+        <Truck className="w-4 h-4 text-[#059669] flex-shrink-0 mt-0.5" />
         <span>الشراء بـ يدخل <span className="font-bold">المخزن المركزي</span> الأول · بعدين تـ توزع للفروع</span>
       </div>
       <div className="flex items-center gap-1.5">
@@ -625,7 +625,7 @@ function PurchaseModal({ supplierId, items, vendors, onClose, onSaved, onAddItem
           <Select label="المنتج *" value={itemId} onChange={setItemId}
             options={[{ value: '', label: '— اختار —' }, ...items.map((i: Item) => ({ value: i.id, label: `${i.name_ar} (${i.unit})` }))]} />
         </div>
-        <button onClick={onAddItem} className="px-2.5 py-2 rounded-lg bg-[#FAFAF7] hover:bg-gray-100 text-[10px] font-bold text-[#FA8125] flex-shrink-0 mt-5">
+        <button onClick={onAddItem} className="px-2.5 py-2 rounded-lg bg-[#FAFAF7] hover:bg-gray-100 text-[10px] font-bold text-[#059669] flex-shrink-0 mt-5">
           + جديد
         </button>
       </div>
@@ -640,7 +640,7 @@ function PurchaseModal({ supplierId, items, vendors, onClose, onSaved, onAddItem
       {total > 0 && (
         <div className="bg-[#FAFAF7] rounded-xl p-3 flex items-center justify-between">
           <span className="text-xs text-[#6B7280]">الإجمالي</span>
-          <span className="text-xl font-black font-mono text-[#FA8125]">{total.toLocaleString('ar-EG')} ج</span>
+          <span className="text-xl font-black font-mono text-[#059669]">{total.toLocaleString('ar-EG')} ج</span>
         </div>
       )}
       <div className="flex items-center gap-1.5">
@@ -648,7 +648,7 @@ function PurchaseModal({ supplierId, items, vendors, onClose, onSaved, onAddItem
           <Select label="المورد (اختياري)" value={vendorId} onChange={setVendorId}
             options={[{ value: '', label: '— مفيش —' }, ...vendors.map((v: Vendor) => ({ value: v.id, label: v.name }))]} />
         </div>
-        <button onClick={onAddVendor} className="px-2.5 py-2 rounded-lg bg-[#FAFAF7] hover:bg-gray-100 text-[10px] font-bold text-[#FA8125] flex-shrink-0 mt-5">
+        <button onClick={onAddVendor} className="px-2.5 py-2 rounded-lg bg-[#FAFAF7] hover:bg-gray-100 text-[10px] font-bold text-[#059669] flex-shrink-0 mt-5">
           + جديد
         </button>
       </div>
@@ -763,14 +763,14 @@ function PaySalaryModal({ employees, isElite, onClose, onSaved }: any) {
   return (
     <Modal title="صرف مرتب شهري" onClose={onClose}>
       {result ? (
-        <div className="bg-[#FA8125]/10 rounded-xl p-4 space-y-1 text-sm">
+        <div className="bg-[#34D399]/10 rounded-xl p-4 space-y-1 text-sm">
           <p className="font-bold text-[#1A2E26] mb-2">✅ تم الصرف</p>
           <p className="flex justify-between"><span>المرتب الأساسي:</span><span className="font-mono">{baseSalary}ج</span></p>
-          <p className="flex justify-between"><span>عمولة من الخدمات:</span><span className="font-mono text-[#FA8125]">+{result.commission_calc}ج</span></p>
+          <p className="flex justify-between"><span>عمولة من الخدمات:</span><span className="font-mono text-[#059669]">+{result.commission_calc}ج</span></p>
           {isElite && <p className="flex justify-between"><span>حصة الإكراميات:</span><span className="font-mono text-amber-600">+{result.tips_share}ج</span></p>}
           <p className="flex justify-between"><span>السلف المخصومة:</span><span className="font-mono text-red-600">−{advancesDeducted}ج</span></p>
           <p className="flex justify-between font-black text-base pt-2 border-t border-current/10 mt-2">
-            <span>الصافي:</span><span className="font-mono text-[#FA8125]">{result.net_paid}ج</span>
+            <span>الصافي:</span><span className="font-mono text-[#059669]">{result.net_paid}ج</span>
           </p>
         </div>
       ) : (
@@ -981,10 +981,10 @@ function Select({ label, value, onChange, options }: {
 function SubmitButton({ onClick, loading, disabled }: { onClick: () => void; loading: boolean; disabled: boolean }) {
   return (
     <button onClick={onClick} disabled={loading || disabled}
-      className="w-full bg-[#FA8125] text-white rounded-xl px-5 py-3 font-black disabled:opacity-50 hover:shadow-md transition-shadow flex items-center justify-center gap-2 mt-2">
+      className="w-full bg-[#34D399] text-[#04352A] rounded-xl px-5 py-3 font-black disabled:opacity-50 hover:shadow-md transition-shadow flex items-center justify-center gap-2 mt-2">
       {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Check className="w-4 h-4" />تأكيد</>}
     </button>
   )
 }
 
-const INPUT = "w-full px-4 py-2.5 rounded-xl bg-[#FAFAF7] border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#FA8125] transition-colors text-sm"
+const INPUT = "w-full px-4 py-2.5 rounded-xl bg-[#FAFAF7] border border-gray-200 text-[#1A2E26] focus:outline-none focus:border-[#059669] transition-colors text-sm"

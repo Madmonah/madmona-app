@@ -221,7 +221,7 @@ export default function AdminDashboardV2() {
   if (stage === 'loading') {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#059669] animate-spin" />
       </div>
     )
   }
@@ -230,10 +230,10 @@ export default function AdminDashboardV2() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-3xl p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#059669] mx-auto mb-3" />
           <h1 className="text-lg font-black text-[#1A2E26] mb-2">سجل دخول الأول</h1>
           <Link href="/auth/login?redirect=/admin/overview"
-            className="block bg-[#FA8125] text-white py-3 rounded-xl font-bold mt-3">
+            className="block bg-[#34D399] text-[#04352A] py-3 rounded-xl font-bold mt-3">
             تسجيل دخول
           </Link>
         </div>
@@ -258,7 +258,7 @@ export default function AdminDashboardV2() {
         <div className="bg-white rounded-3xl p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
           <p className="text-sm text-[#6B7280] mb-4">{error || 'مفيش بيانات'}</p>
-          <button onClick={load} className="bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-bold">حاول تاني</button>
+          <button onClick={load} className="bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-bold">حاول تاني</button>
         </div>
       </div>
     )
@@ -270,7 +270,7 @@ export default function AdminDashboardV2() {
   return (
     <div className="min-h-screen text-[#1A2E26]" dir="rtl" style={{ background: 'radial-gradient(1100px 560px at 88% -8%, rgba(47,160,132,0.10), transparent 60%), radial-gradient(900px 480px at -5% 4%, rgba(250, 129, 37,0.09), transparent 55%), radial-gradient(800px 500px at 50% 118%, rgba(212,160,23,0.06), transparent 60%), #FAFAF7' }}>
       {/* ===== HEADER ===== */}
-      <header className="sticky top-0 z-30 border-b border-[#FA8125]/10 bg-white/70 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-[#059669]/10 bg-white/70 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link href="/account"
@@ -278,7 +278,7 @@ export default function AdminDashboardV2() {
               <ArrowRight className="w-4 h-4 text-[#6B7280]" />
             </Link>
             <div>
-              <p className="text-[10px] font-black tracking-[0.3em] uppercase mb-0.5 bg-gradient-to-r from-[#D4A017] to-[#FA8125] bg-clip-text text-transparent">
+              <p className="text-[10px] font-black tracking-[0.3em] uppercase mb-0.5 bg-gradient-to-r from-[#D4A017] to-[#34D399] bg-clip-text text-transparent">
                 MADMONA · ADMIN
               </p>
               <h1 className="text-base md:text-lg font-black text-[#1A2E26] leading-none">
@@ -291,7 +291,7 @@ export default function AdminDashboardV2() {
             {/* AI Health pill */}
             <div className="hidden md:flex items-center gap-1.5 bg-[#FAFAF7] rounded-full px-3 py-1.5">
               <div className={`w-2 h-2 rounded-full ${
-                aiHealthRatio >= 90 ? 'bg-[#FA8125]' :
+                aiHealthRatio >= 90 ? 'bg-[#34D399]' :
                 aiHealthRatio >= 70 ? 'bg-amber-500' : 'bg-red-500'
               }`} />
               <span className="text-[10px] font-bold text-[#1A2E26]">
@@ -371,7 +371,7 @@ export default function AdminDashboardV2() {
 
         {/* ============ COLLECTION ACCOUNT (InstaPay / Bank Misr) ============ */}
         <Section title="💳 حساب التحصيل" subtitle="كل المدفوعات (إنستاباي / تحويل بنكي) بتروح على حساب مضمونة">
-          <div className="bg-[#FA8125] text-white rounded-2xl p-5 md:p-6 shadow-lg shadow-[#FA8125]/20 max-w-lg">
+          <div className="bg-[#34D399] text-[#04352A] rounded-2xl p-5 md:p-6 shadow-lg shadow-[#059669]/20 max-w-lg">
             <div className="flex items-center gap-2 mb-4">
               <Wallet className="w-5 h-5" />
               <p className="text-sm font-black">مضمونة · إنستاباي / تحويل بنكي</p>
@@ -499,7 +499,7 @@ export default function AdminDashboardV2() {
           {/* 💌 WELCOME + 📬 DAILY BANNERS (side-by-side) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
             <Link href="/admin/welcome-messages"
-              className="block bg-gradient-to-l from-[#FA8125] to-[#185547] text-white rounded-2xl p-4 hover:shadow-lg transition-all group">
+              className="block bg-gradient-to-l from-[#34D399] to-[#185547] text-white rounded-2xl p-4 hover:shadow-lg transition-all group">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
@@ -516,7 +516,7 @@ export default function AdminDashboardV2() {
             </Link>
 
             <Link href="/admin/daily-messages"
-              className="block bg-gradient-to-l from-[#FA8125] to-[#185547] text-white rounded-2xl p-4 hover:shadow-lg transition-all group relative overflow-hidden">
+              className="block bg-gradient-to-l from-[#34D399] to-[#185547] text-white rounded-2xl p-4 hover:shadow-lg transition-all group relative overflow-hidden">
               <div className="absolute -top-8 -left-8 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
               <div className="flex items-center justify-between gap-3 relative">
                 <div className="flex items-center gap-3 min-w-0">
@@ -578,7 +578,7 @@ export default function AdminDashboardV2() {
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
               <div className="px-4 py-2.5 bg-[#FAFAF7] border-b border-gray-100 flex items-center justify-between">
                 <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280]">آخر محادثات WhatsApp</p>
-                <Link href="/admin/messages" className="text-[10px] font-bold text-[#FA8125] hover:underline">عرض الكل</Link>
+                <Link href="/admin/messages" className="text-[10px] font-bold text-[#059669] hover:underline">عرض الكل</Link>
               </div>
               {!messages?.recent_conversations.length ? (
                 <div className="p-8 text-center">
@@ -592,7 +592,7 @@ export default function AdminDashboardV2() {
                       className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-[#FAFAF7]/50 transition-colors">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          c.needs_reply ? 'bg-amber-50 text-amber-600' : 'bg-[#FA8125]/10 text-[#FA8125]'
+                          c.needs_reply ? 'bg-amber-50 text-amber-600' : 'bg-[#34D399]/10 text-[#059669]'
                         }`}>
                           <MessageSquare className="w-3.5 h-3.5" />
                         </div>
@@ -620,7 +620,7 @@ export default function AdminDashboardV2() {
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
               <div className="px-4 py-2.5 bg-[#FAFAF7] border-b border-gray-100 flex items-center justify-between">
                 <p className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280]">رسايل بين الـ Agents</p>
-                <Link href="/admin/agents" className="text-[10px] font-bold text-[#FA8125] hover:underline">عرض الكل</Link>
+                <Link href="/admin/agents" className="text-[10px] font-bold text-[#059669] hover:underline">عرض الكل</Link>
               </div>
               {!messages?.recent_agent_msgs.length ? (
                 <div className="p-8 text-center">
@@ -639,7 +639,7 @@ export default function AdminDashboardV2() {
                         }`}>
                           {m.priority}
                         </span>
-                        <span className="text-[10px] text-[#FA8125] font-mono">
+                        <span className="text-[10px] text-[#059669] font-mono">
                           {m.from_agent} → {m.to_agent}
                         </span>
                       </div>
@@ -863,7 +863,7 @@ export default function AdminDashboardV2() {
                   <div key={t.id} className="px-4 py-3 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                        t.direction === 'in' ? 'bg-[#FA8125]/10 text-[#FA8125]' : 'bg-red-50 text-red-600'
+                        t.direction === 'in' ? 'bg-[#34D399]/10 text-[#059669]' : 'bg-red-50 text-red-600'
                       }`}>
                         {t.direction === 'in' ? <TrendingUp className="w-4 h-4" /> : <Receipt className="w-4 h-4" />}
                       </div>
@@ -878,12 +878,12 @@ export default function AdminDashboardV2() {
                     </div>
                     <div className="text-left flex-shrink-0">
                       <p className={`text-sm font-black font-mono ${
-                        t.direction === 'in' ? 'text-[#FA8125]' : 'text-red-600'
+                        t.direction === 'in' ? 'text-[#059669]' : 'text-red-600'
                       }`}>
                         {t.direction === 'in' ? '+' : '−'}{Number(t.amount_egp).toLocaleString('ar-EG')}
                       </p>
                       {t.madmona_commission_amount && t.madmona_commission_amount > 0 && (
-                        <p className="text-[9px] text-[#FA8125]">+{t.madmona_commission_amount}ج</p>
+                        <p className="text-[9px] text-[#059669]">+{t.madmona_commission_amount}ج</p>
                       )}
                     </div>
                   </div>
@@ -976,14 +976,14 @@ function SectionNav() {
 
   if (items.length === 0) return null
   return (
-    <div className="sticky top-14 z-20 border-b border-[#FA8125]/10 bg-white/70 backdrop-blur-xl">
+    <div className="sticky top-14 z-20 border-b border-[#059669]/10 bg-white/70 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 py-2 flex items-center gap-1.5 overflow-x-auto whitespace-nowrap">
         {items.map((it) => (
           <button key={it.id} onClick={() => go(it.id)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${
               active === it.id
-                ? 'bg-gradient-to-br from-[#D4A017] to-[#FA8125] text-white shadow-sm'
-                : 'bg-white text-[#6B7280] border border-black/5 hover:text-[#1A2E26] hover:border-[#FA8125]/30'
+                ? 'bg-gradient-to-br from-[#D4A017] to-[#34D399] text-white shadow-sm'
+                : 'bg-white text-[#6B7280] border border-black/5 hover:text-[#1A2E26] hover:border-[#059669]/30'
             }`}>
             {it.label}
           </button>
@@ -997,7 +997,7 @@ function Section({ title, subtitle, children }: { title: string; subtitle?: stri
   return (
     <section>
       <div className="mb-3 flex items-start gap-2.5">
-        <span className="mt-1 w-1 h-7 rounded-full bg-gradient-to-b from-[#D4A017] to-[#FA8125] flex-shrink-0" />
+        <span className="mt-1 w-1 h-7 rounded-full bg-gradient-to-b from-[#D4A017] to-[#34D399] flex-shrink-0" />
         <div>
           <h2 className="text-base md:text-lg font-black text-[#1A2E26]">{title}</h2>
           {subtitle && <p className="text-[11px] text-[#6B7280] mt-0.5">{subtitle}</p>}
@@ -1014,10 +1014,10 @@ function KpiCard({
   icon: ReactNode; label: string; value: string | number; note?: string;
   primary?: boolean; tone?: 'positive' | 'negative' | 'neutral'
 }) {
-  const t = tone === 'positive' ? 'text-[#FA8125]' : tone === 'negative' ? 'text-red-600' : 'text-[#1A2E26]'
+  const t = tone === 'positive' ? 'text-[#059669]' : tone === 'negative' ? 'text-red-600' : 'text-[#1A2E26]'
   return (
     <div className={`rounded-2xl p-4 border transition-all ${
-      primary ? 'bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#FA8125] border-transparent text-white shadow-lg shadow-[#FA8125]/25' : 'bg-white border-black/5 shadow-sm shadow-black/[0.04] hover:shadow-md'
+      primary ? 'bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#34D399] border-transparent text-white shadow-lg shadow-[#059669]/25' : 'bg-white border-black/5 shadow-sm shadow-black/[0.04] hover:shadow-md'
     }`}>
       <div className={`flex items-center gap-2 mb-2 ${primary ? 'text-white/90' : 'text-[#6B7280]'}`}>
         <span className="w-4 h-4 inline-flex">{icon}</span>
@@ -1033,7 +1033,7 @@ function SubKpi({ label, value, note, tone }: {
   label: string; value: string | number; note?: string;
   tone?: 'positive' | 'negative' | 'amber' | 'neutral'
 }) {
-  const t = tone === 'positive' ? 'text-[#FA8125]'
+  const t = tone === 'positive' ? 'text-[#059669]'
     : tone === 'negative' ? 'text-red-600'
     : tone === 'amber' ? 'text-amber-600'
     : 'text-[#1A2E26]'
@@ -1052,8 +1052,8 @@ function QuickAction({ href, icon, title, sub, accent, badge }: {
   return (
     <Link href={href}
       className={`relative rounded-2xl border p-4 transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] ${
-        accent ? 'bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#FA8125] border-transparent text-white shadow-lg shadow-[#FA8125]/25'
-               : 'bg-white border-black/5 text-[#1A2E26] shadow-sm shadow-black/[0.04] hover:border-[#FA8125]/30'
+        accent ? 'bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#34D399] border-transparent text-white shadow-lg shadow-[#059669]/25'
+               : 'bg-white border-black/5 text-[#1A2E26] shadow-sm shadow-black/[0.04] hover:border-[#059669]/30'
       }`}>
       {badge !== undefined && badge > 0 && (
         <span className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
@@ -1061,7 +1061,7 @@ function QuickAction({ href, icon, title, sub, accent, badge }: {
         </span>
       )}
       <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-2.5 ${
-        accent ? 'bg-white/15 text-white' : 'bg-[#FAFAF7] text-[#FA8125]'
+        accent ? 'bg-white/15 text-white' : 'bg-[#FAFAF7] text-[#059669]'
       }`}>{icon}</div>
       <p className={`text-sm font-black ${accent ? 'text-white' : 'text-[#1A2E26]'}`}>{title}</p>
       <p className={`text-[11px] mt-0.5 ${accent ? 'text-white/80' : 'text-[#6B7280]'}`}>{sub}</p>
@@ -1074,13 +1074,13 @@ function ToolCard({ href, icon, title, sub, badge }: {
 }) {
   return (
     <Link href={href}
-      className="relative bg-white rounded-2xl border border-black/5 shadow-sm shadow-black/[0.04] hover:border-[#FA8125]/30 hover:shadow-md hover:-translate-y-0.5 p-3.5 transition-all active:scale-[0.98] group">
+      className="relative bg-white rounded-2xl border border-black/5 shadow-sm shadow-black/[0.04] hover:border-[#059669]/30 hover:shadow-md hover:-translate-y-0.5 p-3.5 transition-all active:scale-[0.98] group">
       {badge !== undefined && badge > 0 && (
         <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
           {badge}
         </span>
       )}
-      <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#FA8125]/10 text-[#FA8125] mb-2 group-hover:bg-gradient-to-br group-hover:from-[#2FA084] group-hover:to-[#FA8125] group-hover:text-white transition-colors">
+      <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#34D399]/10 text-[#059669] mb-2 group-hover:bg-gradient-to-br group-hover:from-[#2FA084] group-hover:to-[#34D399] group-hover:text-[#04352A] transition-colors">
         <span className="w-4 h-4 inline-flex">{icon}</span>
       </div>
       <p className="text-sm font-bold text-[#1A2E26] leading-tight">{title}</p>
@@ -1094,9 +1094,9 @@ function ExternalCard({ href, icon, title, sub }: {
 }) {
   return (
     <a href={href} target="_blank" rel="noopener noreferrer"
-      className="relative bg-white rounded-2xl border border-gray-100 hover:border-[#FA8125] hover:shadow-sm p-3.5 transition-all group">
-      <ExternalLink className="absolute top-2 left-2 w-3 h-3 text-[#6B7280] group-hover:text-[#FA8125]" />
-      <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#FAFAF7] text-[#FA8125] mb-2">
+      className="relative bg-white rounded-2xl border border-gray-100 hover:border-[#059669] hover:shadow-sm p-3.5 transition-all group">
+      <ExternalLink className="absolute top-2 left-2 w-3 h-3 text-[#6B7280] group-hover:text-[#059669]" />
+      <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#FAFAF7] text-[#059669] mb-2">
         <span className="w-4 h-4 inline-flex">{icon}</span>
       </div>
       <p className="text-sm font-bold text-[#1A2E26] leading-tight">{title}</p>
@@ -1110,7 +1110,7 @@ function SystemPulseBar({ pulse }: { pulse: PulseData }) {
   const overallBg =
     overall === 'critical' ? 'from-red-600 to-red-700' :
     overall === 'warning'  ? 'from-amber-500 to-amber-600' :
-                             'from-[#FA8125] to-[#185547]'
+                             'from-[#34D399] to-[#185547]'
   const overallLabel =
     overall === 'critical' ? 'فيه مشكلة كبيرة' :
     overall === 'warning'  ? 'فيه تنبيهات' :
@@ -1162,7 +1162,7 @@ function SystemPulseBar({ pulse }: { pulse: PulseData }) {
               <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
                 p.status === 'critical' ? 'bg-red-500' :
                 p.status === 'warning'  ? 'bg-amber-500' :
-                                          'bg-[#FA8125]'
+                                          'bg-[#34D399]'
               }`} />
             </div>
             <p className={`text-[11px] font-bold ${
@@ -1214,7 +1214,7 @@ function BufferHealthCheck() {
   return (
     <div>
       <button onClick={check} disabled={loading}
-        className="text-xs font-bold bg-[#FA8125] text-white px-3 py-1.5 rounded-lg hover:bg-[#185547] disabled:opacity-50 flex items-center gap-2">
+        className="text-xs font-bold bg-[#34D399] text-[#04352A] px-3 py-1.5 rounded-lg hover:bg-[#185547] disabled:opacity-50 flex items-center gap-2">
         {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
         🔍 افحص Buffer + Make الآن
       </button>
@@ -1222,7 +1222,7 @@ function BufferHealthCheck() {
       {result && (
         <div className="mt-3 bg-[#FAFAF7] rounded-xl p-3 text-xs">
           <p className={`font-black mb-2 ${
-            result.overall === 'healthy' ? 'text-[#FA8125]' : 'text-red-700'
+            result.overall === 'healthy' ? 'text-[#059669]' : 'text-red-700'
           }`}>
             {result.overall === 'healthy' ? '✅ كل حاجة تمام' : '⚠️ فيه مشاكل'}
           </p>
@@ -1230,7 +1230,7 @@ function BufferHealthCheck() {
             {result.checks.map((c, i) => (
               <div key={i} className="flex items-start gap-2">
                 <span className={`mt-0.5 font-bold ${
-                  c.status === 'ok' ? 'text-[#FA8125]' :
+                  c.status === 'ok' ? 'text-[#059669]' :
                   c.status === 'missing' ? 'text-amber-600' : 'text-red-600'
                 }`}>
                   {c.status === 'ok' ? '✓' : c.status === 'missing' ? '⚠' : '✕'}
@@ -1245,7 +1245,7 @@ function BufferHealthCheck() {
           <div className="mt-2 pt-2 border-t border-gray-200 grid grid-cols-3 gap-2 text-center">
             <div>
               <p className="text-[9px] text-[#6B7280]">approved</p>
-              <p className="text-sm font-black text-[#FA8125]">{result.db_queue.approved_ready}</p>
+              <p className="text-sm font-black text-[#059669]">{result.db_queue.approved_ready}</p>
             </div>
             <div>
               <p className="text-[9px] text-[#6B7280]">drafted</p>
@@ -1253,7 +1253,7 @@ function BufferHealthCheck() {
             </div>
             <div>
               <p className="text-[9px] text-[#6B7280]">stuck make</p>
-              <p className={`text-sm font-black ${result.db_queue.sent_to_make > 0 ? 'text-amber-600' : 'text-[#FA8125]'}`}>
+              <p className={`text-sm font-black ${result.db_queue.sent_to_make > 0 ? 'text-amber-600' : 'text-[#059669]'}`}>
                 {result.db_queue.sent_to_make}
               </p>
             </div>
@@ -1270,7 +1270,7 @@ function CompactLink({ href, label, muted }: { href: string; label: string; mute
       className={`flex items-center gap-1.5 text-xs font-mono py-1 px-2 rounded-md transition-colors ${
         muted
           ? 'text-[#6B7280] hover:bg-gray-50 hover:text-[#1A2E26]'
-          : 'text-[#1A2E26] hover:bg-[#FA8125]/5 hover:text-[#FA8125]'
+          : 'text-[#1A2E26] hover:bg-[#34D399]/5 hover:text-[#059669]'
       }`}>
       <ChevronLeft className="w-3 h-3 -scale-x-100 flex-shrink-0 opacity-40" />
       <span className="truncate">{label}</span>
@@ -1280,7 +1280,7 @@ function CompactLink({ href, label, muted }: { href: string; label: string; mute
 
 function PartnerCard({ p }: { p: B2BPartner }) {
   const statusColor =
-    p.contract_status === 'active' ? 'text-[#FA8125] bg-[#FA8125]/10' :
+    p.contract_status === 'active' ? 'text-[#059669] bg-[#34D399]/10' :
     p.contract_status === 'signed' ? 'text-amber-700 bg-amber-50' :
     p.contract_status === 'negotiating' ? 'text-[#6B7280] bg-[#FAFAF7]' :
     'text-gray-600 bg-gray-50'
@@ -1292,10 +1292,10 @@ function PartnerCard({ p }: { p: B2BPartner }) {
     p.contract_status
 
   return (
-    <div className="bg-white rounded-2xl border border-black/5 shadow-sm shadow-black/[0.04] p-4 hover:border-[#FA8125]/30 hover:shadow-md transition-all">
+    <div className="bg-white rounded-2xl border border-black/5 shadow-sm shadow-black/[0.04] p-4 hover:border-[#059669]/30 hover:shadow-md transition-all">
       <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-11 h-11 rounded-xl bg-[#FA8125]/10 text-[#FA8125] flex items-center justify-center flex-shrink-0">
+          <div className="w-11 h-11 rounded-xl bg-[#34D399]/10 text-[#059669] flex items-center justify-center flex-shrink-0">
             <Building2 className="w-5 h-5" />
           </div>
           <div className="min-w-0">
@@ -1319,7 +1319,7 @@ function PartnerCard({ p }: { p: B2BPartner }) {
         <div className="text-left">
           <p className="text-[10px] text-[#6B7280]">إيراد الشهر</p>
           <p className="text-base font-black font-mono text-[#1A2E26]">{Number(p.revenue_month).toLocaleString('ar-EG')}ج</p>
-          <p className="text-[10px] text-[#FA8125]">عمولة: {Number(p.commission_month).toLocaleString('ar-EG')}ج</p>
+          <p className="text-[10px] text-[#059669]">عمولة: {Number(p.commission_month).toLocaleString('ar-EG')}ج</p>
         </div>
       </div>
 
@@ -1343,7 +1343,7 @@ function PartnerLink({ href, icon, label, accent }: {
     <Link href={href}
       className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors text-center ${
         accent
-          ? 'bg-gradient-to-br from-[#2FA084] to-[#FA8125] text-white hover:shadow-md'
+          ? 'bg-gradient-to-br from-[#2FA084] to-[#34D399] text-white hover:shadow-md'
           : 'bg-[#FAFAF7] text-[#1A2E26] hover:bg-gray-100'
       }`}>
       <span className="w-4 h-4 inline-flex">{icon}</span>

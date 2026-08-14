@@ -184,7 +184,7 @@ export default function MyProjectsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FA8125]" />
+        <Loader2 className="w-6 h-6 animate-spin text-[#059669]" />
       </div>
     )
   }
@@ -198,7 +198,7 @@ export default function MyProjectsPage() {
           <h1 className="text-2xl font-black text-[#1A2E26] mb-1">مشاريعي على مضمونة 🏗️</h1>
           <p className="text-sm text-gray-500">
             {phone} · {projects.length} مشروع ·{' '}
-            <span className="text-[#FA8125] font-bold">{done} مكتمل</span>
+            <span className="text-[#059669] font-bold">{done} مكتمل</span>
           </p>
         </div>
 
@@ -231,7 +231,7 @@ export default function MyProjectsPage() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={p.cover_url} alt={p.title} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[#FA8125] to-[#2FA084] flex items-center justify-center">
+                    <div className="w-full h-full bg-gradient-to-br from-[#34D399] to-[#2FA084] flex items-center justify-center">
                       <Building2 className="w-10 h-10 text-white/70" />
                     </div>
                   )}
@@ -242,7 +242,7 @@ export default function MyProjectsPage() {
                       {p.area_label && <p className="text-white/85 text-xs">{p.area_label}</p>}
                     </div>
                     {savedId === p.id && (
-                      <span className="bg-white/95 text-[#FA8125] text-[11px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0">
+                      <span className="bg-white/95 text-[#059669] text-[11px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0">
                         <CheckCircle2 className="w-3.5 h-3.5" /> اتحفظ
                       </span>
                     )}
@@ -268,10 +268,10 @@ export default function MyProjectsPage() {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-black text-[#1A2E26] flex items-center gap-1.5">
-                        <Images className="w-4 h-4 text-[#FA8125]" /> معرض الصور
+                        <Images className="w-4 h-4 text-[#059669]" /> معرض الصور
                         <span className="text-gray-400 font-normal">({photos.length})</span>
                       </span>
-                      <label className="text-[11px] font-bold text-[#FA8125] cursor-pointer hover:underline flex items-center gap-1">
+                      <label className="text-[11px] font-bold text-[#059669] cursor-pointer hover:underline flex items-center gap-1">
                         {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <ImagePlus className="w-3 h-3" />}
                         ضيف صور
                         <input type="file" accept="image/*" multiple className="hidden" disabled={busy}
@@ -306,11 +306,11 @@ export default function MyProjectsPage() {
                     <VideoBox p={p} busy={busy} onFile={uploadVideo} onLink={setVideoLink} />
                     <div>
                       <span className="text-xs font-black text-[#1A2E26] flex items-center gap-1.5 mb-2">
-                        <FileText className="w-4 h-4 text-[#FA8125]" /> البروشور
+                        <FileText className="w-4 h-4 text-[#059669]" /> البروشور
                       </span>
                       {p.brochure_url ? (
                         <a href={p.brochure_url} target="_blank" rel="noopener"
-                          className="flex items-center gap-2 bg-[#FAFAF7] border border-gray-100 rounded-xl px-3 py-2.5 text-xs font-bold text-[#FA8125] hover:bg-[#2FA084]/10">
+                          className="flex items-center gap-2 bg-[#FAFAF7] border border-gray-100 rounded-xl px-3 py-2.5 text-xs font-bold text-[#059669] hover:bg-[#2FA084]/10">
                           <FileText className="w-4 h-4" /> مرفوع — افتحه
                         </a>
                       ) : (
@@ -341,7 +341,7 @@ export default function MyProjectsPage() {
                   />
 
                   <a href="/real-estate/market" target="_blank" rel="noopener"
-                    className="inline-flex items-center gap-1 text-xs text-[#FA8125] font-bold hover:underline">
+                    className="inline-flex items-center gap-1 text-xs text-[#059669] font-bold hover:underline">
                     شوفه في البورصة <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
@@ -375,12 +375,12 @@ function VideoBox({
   return (
     <div>
       <span className="text-xs font-black text-[#1A2E26] flex items-center gap-1.5 mb-2">
-        <Video className="w-4 h-4 text-[#FA8125]" /> الفيديو
+        <Video className="w-4 h-4 text-[#059669]" /> الفيديو
       </span>
       {p.video_url ? (
         <div className="flex items-center gap-2">
           <a href={p.video_url} target="_blank" rel="noopener"
-            className="flex-1 flex items-center gap-2 bg-[#FAFAF7] border border-gray-100 rounded-xl px-3 py-2.5 text-xs font-bold text-[#FA8125] hover:bg-[#2FA084]/10">
+            className="flex-1 flex items-center gap-2 bg-[#FAFAF7] border border-gray-100 rounded-xl px-3 py-2.5 text-xs font-bold text-[#059669] hover:bg-[#2FA084]/10">
             <Video className="w-4 h-4" /> مرفوع — شوفه
           </a>
           <button onClick={() => onLink(p, '')} disabled={busy}
@@ -391,7 +391,7 @@ function VideoBox({
       ) : (
         <div className="space-y-1.5">
           <label className="flex items-center justify-center gap-1.5 border-2 border-dashed border-gray-200 rounded-xl py-2.5 cursor-pointer hover:border-[#2FA084] hover:bg-[#2FA084]/5">
-            {busy ? <Loader2 className="w-4 h-4 animate-spin text-[#FA8125]" /> : <Video className="w-4 h-4 text-gray-400" />}
+            {busy ? <Loader2 className="w-4 h-4 animate-spin text-[#059669]" /> : <Video className="w-4 h-4 text-gray-400" />}
             <span className="text-xs font-bold text-gray-500">ارفع فيديو</span>
             <input type="file" accept="video/*" className="hidden" disabled={busy}
               onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(p, f) }} />
@@ -405,7 +405,7 @@ function VideoBox({
             />
             {link.trim() && (
               <button onClick={() => { onLink(p, link.trim()); setLink('') }} disabled={busy}
-                className="px-3 py-2 text-xs font-bold rounded-xl bg-[#FA8125] text-white hover:bg-[#185849] disabled:opacity-50">
+                className="px-3 py-2 text-xs font-bold rounded-xl bg-[#34D399] text-[#04352A] hover:bg-[#185849] disabled:opacity-50">
                 احفظ
               </button>
             )}
@@ -449,7 +449,7 @@ function PriceEditor({
         <span className="text-xs text-gray-400">جنيه</span>
         {changed && (
           <button onClick={() => onSave(p, from, to)} disabled={busy}
-            className="px-3.5 py-1.5 text-xs font-black rounded-xl bg-[#FA8125] text-white hover:bg-[#185849] disabled:opacity-50">
+            className="px-3.5 py-1.5 text-xs font-black rounded-xl bg-[#34D399] text-[#04352A] hover:bg-[#185849] disabled:opacity-50">
             {busy ? '...' : 'احفظ'}
           </button>
         )}

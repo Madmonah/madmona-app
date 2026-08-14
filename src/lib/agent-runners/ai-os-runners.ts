@@ -89,10 +89,10 @@ export async function runAdDesigner(args?: { listingId?: string }): Promise<Reco
     to: OWNER_EMAIL,
     subject: `🎨 Ad Creative — ${listing.title}`,
     html: `<div dir="rtl" style="font-family:Tahoma;padding:20px;max-width:640px;margin:0 auto">
-      <h2 style="color:#FA8125">🎨 Ad Creative</h2>
+      <h2 style="color:#059669">🎨 Ad Creative</h2>
       <p>${listing.title}</p>
-      <div style="background:#FAF7F0;padding:16px;border-radius:8px;border-right:4px solid #FA8125;margin:16px 0">
-        <h3 style="margin:0 0 8px;color:#FA8125">${ad.headline}</h3>
+      <div style="background:#FAF7F0;padding:16px;border-radius:8px;border-right:4px solid #059669;margin:16px 0">
+        <h3 style="margin:0 0 8px;color:#059669">${ad.headline}</h3>
         <p style="margin:0;line-height:1.7">${ad.primary_text}</p>
         <p style="margin:8px 0 0;color:#666;font-size:13px">${ad.description}</p>
         <p style="margin:8px 0 0;font-weight:bold;color:#2FA084">${ad.cta_text}</p>
@@ -144,8 +144,8 @@ export async function runReelScriptWriter(args?: { listingId?: string }): Promis
     to: OWNER_EMAIL,
     subject: `🎬 Reel Script — ${reel.title}`,
     html: `<div dir="rtl" style="font-family:Tahoma;padding:20px;max-width:640px;margin:0 auto">
-      <h2 style="color:#FA8125">🎬 ${reel.title}</h2>
-      <p style="background:#FA8125;color:#FAF7F0;padding:16px;border-radius:8px;font-weight:bold">💥 Hook: ${reel.hook}</p>
+      <h2 style="color:#059669">🎬 ${reel.title}</h2>
+      <p style="background:#059669;color:#FAF7F0;padding:16px;border-radius:8px;font-weight:bold">💥 Hook: ${reel.hook}</p>
       <p style="color:#666;font-size:11px">Reel ID: ${reelId} · ${reel.total_duration_sec}s</p>
     </div>`,
   })
@@ -438,7 +438,7 @@ export async function runCEOAssistant(): Promise<Record<string, unknown>> {
     to: OWNER_EMAIL,
     subject: `🌅 Brief يومي ${todayStr} — ${brief.one_liner}`,
     html: `<div dir="rtl" style="font-family:Tahoma;padding:24px;max-width:680px;margin:0 auto;background:#FAF7F0">
-      <h1 style="color:#FA8125">🌅 صباح الخير يا محمد</h1>
+      <h1 style="color:#059669">🌅 صباح الخير يا محمد</h1>
       <p style="font-size:18px">${brief.one_liner}</p>
       <p style="color:#999;font-size:11px">Brief ID: ${briefId}</p>
     </div>`,
@@ -494,12 +494,12 @@ export async function runStrategyAgent(): Promise<Record<string, unknown>> {
     to: OWNER_EMAIL,
     subject: `🧠 Strategy Plays — ${result.plays.length} مقترحات`,
     html: `<div dir="rtl" style="font-family:Tahoma;padding:24px;max-width:680px;margin:0 auto">
-      <h2 style="color:#FA8125">🧠 Strategy Plays</h2>
+      <h2 style="color:#059669">🧠 Strategy Plays</h2>
       <div style="background:#FAF7F0;padding:16px;border-radius:10px;font-size:14px;line-height:1.7">
         ${result.strategic_assessment}
       </div>
       ${result.plays.map((p, i) => `
-        <div style="background:#fff;padding:16px;border-radius:10px;border-right:4px solid #FA8125;margin-bottom:12px">
+        <div style="background:#fff;padding:16px;border-radius:10px;border-right:4px solid #059669;margin-bottom:12px">
           <h3 style="margin:0 0 8px">${i + 1}. ${p.title}</h3>
           <p style="font-size:13px"><strong>Hypothesis:</strong> ${p.hypothesis}</p>
           <p style="font-size:13px"><strong>Impact:</strong> ${p.expected_impact}</p>

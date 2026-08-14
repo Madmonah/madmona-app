@@ -162,7 +162,7 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
           onClick={() => setHidden(false)}
           className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md hover:bg-white rounded-2xl px-4 py-3 shadow-card hover:shadow-elevated transition-all flex items-center gap-2"
         >
-          <Newspaper className="w-4 h-4 text-[#FA8125]" />
+          <Newspaper className="w-4 h-4 text-[#059669]" />
           <span className="text-xs font-bold text-gray-900">عرض الأخبار</span>
         </button>
       </div>
@@ -178,7 +178,7 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
 
         {!error && items.length === 0 && (
           <div className="absolute top-4 right-4 flex items-center gap-2 bg-white/90 backdrop-blur text-gray-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-card">
-            <RefreshCw className="w-3 h-3 animate-spin text-[#FA8125]" />
+            <RefreshCw className="w-3 h-3 animate-spin text-[#059669]" />
             جاري تحميل الأخبار...
           </div>
         )}
@@ -186,7 +186,7 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
         <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md rounded-2xl px-4 py-3 shadow-card max-w-[220px]">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-3.5 h-3.5 text-[#2FA084]" />
-            <p className="text-[10px] font-black tracking-widest uppercase text-[#FA8125]">جديد</p>
+            <p className="text-[10px] font-black tracking-widest uppercase text-[#059669]">جديد</p>
           </div>
           <p className="text-xs text-gray-700 leading-relaxed">
             أكتر من <span className="font-black text-gray-900">٨ فئات</span> من الخدمات والمنتجات
@@ -301,8 +301,8 @@ export default function EconomicNewsHero({ fallbackImage }: Props) {
         <div className="absolute inset-x-0 bottom-0 p-5 md:p-6 z-10 pointer-events-none">
           <div className={`inline-flex items-center gap-1.5 text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full mb-3 shadow-card ${
             current.isEgyptian
-              ? 'bg-gradient-to-l from-[#2FA084] to-[#D4A12A] text-white'
-              : 'bg-[#FA8125] text-white'
+              ? 'bg-gradient-to-l from-[#2FA084] to-[#D4A12A] text-[#04352A]'
+              : 'bg-[#34D399] text-[#04352A]'
           }`}>
             {current.isEgyptian ? (
               <>

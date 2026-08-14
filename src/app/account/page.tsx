@@ -181,7 +181,7 @@ export default function AccountPage() {
   if (stage === 'loading') {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir={dir}>
-        <Loader2 className="w-6 h-6 text-[#FA8125] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#059669] animate-spin" />
       </div>
     )
   }
@@ -190,20 +190,20 @@ export default function AccountPage() {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center p-4" dir={dir}>
         <div className="bg-white rounded-3xl shadow-luxe p-10 text-center max-w-sm animate-scale-in">
-          <div className="w-16 h-16 bg-[#FA8125]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8 text-[#FA8125]" />
+          <div className="w-16 h-16 bg-[#34D399]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-[#059669]" />
           </div>
           <h1 className="font-black text-2xl mb-2">{t('booking.login_first')}</h1>
           <p className="text-sm text-gray-500 mb-5">{t('account.login_sub')}</p>
           <Link
             href="/auth/login?redirect=/account"
-            className="block bg-[#FA8125] text-white py-3.5 rounded-2xl font-bold shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all mb-3"
+            className="block bg-[#34D399] text-[#04352A] py-3.5 rounded-2xl font-bold shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all mb-3"
           >
             {t('auth.login.title')}
           </Link>
           <Link
             href="/auth/signup?redirect=/account"
-            className="block text-sm text-[#FA8125] font-bold hover:underline"
+            className="block text-sm text-[#059669] font-bold hover:underline"
           >
             {t('auth.no_account')}
           </Link>
@@ -219,7 +219,7 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-screen gradient-mesh pb-24 md:pb-12" dir={dir}>
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#FA8125]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#34D399]/5 rounded-full blur-3xl -z-10 pointer-events-none" />
 
       <header className="sticky top-0 z-40 glass border-b border-white/40">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
@@ -236,12 +236,12 @@ export default function AccountPage() {
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-4 relative">
         {/* Profile card */}
         <div className="bg-white rounded-3xl shadow-card p-6 relative overflow-hidden animate-slide-up">
-          <div className="absolute top-0 left-0 w-32 h-32 bg-[#FA8125]/5 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute top-0 left-0 w-32 h-32 bg-[#34D399]/5 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute bottom-0 right-0 w-24 h-24 bg-[#2FA084]/5 rounded-full blur-2xl pointer-events-none" />
 
           <div className="relative">
             <div className="flex items-start gap-4 mb-2">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FA8125] to-[#F98F2A] flex items-center justify-center flex-shrink-0 shadow-elevated">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#34D399] to-[#34D399] flex items-center justify-center flex-shrink-0 shadow-elevated">
                 <User className="w-8 h-8 text-white" />
               </div>
               <div className="flex-1 min-w-0">
@@ -253,7 +253,7 @@ export default function AccountPage() {
                       onChange={(e) => setNewName(e.target.value)}
                       maxLength={100}
                       autoFocus
-                      className="w-full px-3 py-2 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#FA8125]/40 focus:ring-4 focus:ring-[#FA8125]/10 transition-all"
+                      className="w-full px-3 py-2 bg-[#FAFAF7] border border-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#059669]/40 focus:ring-4 focus:ring-[#059669]/10 transition-all"
                       placeholder={t('auth.name_label')}
                     />
                     {nameError && <p className="text-xs text-red-600">{nameError}</p>}
@@ -261,7 +261,7 @@ export default function AccountPage() {
                       <button
                         onClick={saveName}
                         disabled={savingName}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-[#FA8125] text-white rounded-lg text-xs font-bold disabled:opacity-50"
+                        className="flex items-center gap-1 px-3 py-1.5 bg-[#34D399] text-[#04352A] rounded-lg text-xs font-bold disabled:opacity-50"
                       >
                         {savingName ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                         {t('common.save')}
@@ -288,7 +288,7 @@ export default function AccountPage() {
                     </div>
                     <button
                       onClick={startEditingName}
-                      className="p-1.5 text-gray-400 hover:text-[#FA8125] hover:bg-gray-50 rounded-lg flex-shrink-0 transition-colors"
+                      className="p-1.5 text-gray-400 hover:text-[#059669] hover:bg-gray-50 rounded-lg flex-shrink-0 transition-colors"
                       title={t('account.edit_name')}
                     >
                       <Edit2 className="w-4 h-4" />
@@ -418,7 +418,7 @@ export default function AccountPage() {
             <SectionLink
               href="/supplier/marketplace"
               icon={<Building2 className="w-5 h-5" />}
-              iconBg="bg-[#FA8125]/10 text-[#FA8125]"
+              iconBg="bg-[#34D399]/10 text-[#059669]"
               title={t('account.supplier_dashboard')}
               subtitle={t('account.supplier_dashboard_sub')}
             />
@@ -569,7 +569,7 @@ function SectionLink({
         <p className="font-bold text-gray-900">{title}</p>
         <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>
       </div>
-      <ChevronLeft className="w-4 h-4 text-gray-400 group-hover:text-[#FA8125] group-hover:-translate-x-1 transition-all" />
+      <ChevronLeft className="w-4 h-4 text-gray-400 group-hover:text-[#059669] group-hover:-translate-x-1 transition-all" />
     </Link>
   )
 }

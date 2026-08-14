@@ -110,13 +110,13 @@ export default function PermissionsPage() {
     }
   }
 
-  if (stage === 'loading') return <Center><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></Center>
+  if (stage === 'loading') return <Center><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></Center>
   if (stage === 'unauthenticated') return (
     <Center>
       <div className="bg-white rounded-3xl p-8 text-center max-w-sm shadow-sm">
-        <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
+        <Lock className="w-8 h-8 text-[#059669] mx-auto mb-3" />
         <h1 className="text-lg font-black text-[#1A2E26] mb-3">سجّل دخول الأول</h1>
-        <Link href="/auth/login?redirect=/admin/permissions" className="block bg-[#FA8125] text-white py-3 rounded-xl font-bold">تسجيل دخول</Link>
+        <Link href="/auth/login?redirect=/admin/permissions" className="block bg-[#34D399] text-[#04352A] py-3 rounded-xl font-bold">تسجيل دخول</Link>
       </div>
     </Center>
   )
@@ -133,7 +133,7 @@ export default function PermissionsPage() {
       <div className="bg-white rounded-3xl p-8 text-center max-w-sm shadow-sm">
         <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
         <p className="text-sm text-[#6B7280] mb-4">{error || 'مفيش بيانات'}</p>
-        <button onClick={load} className="bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-bold">حاول تاني</button>
+        <button onClick={load} className="bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-bold">حاول تاني</button>
       </div>
     </Center>
   )
@@ -144,15 +144,15 @@ export default function PermissionsPage() {
 
   return (
     <div className="min-h-screen text-[#1A2E26]" dir="rtl" style={{ background: 'radial-gradient(1100px 560px at 88% -8%, rgba(47,160,132,0.10), transparent 60%), radial-gradient(900px 480px at -5% 4%, rgba(250, 129, 37,0.09), transparent 55%), radial-gradient(800px 500px at 50% 118%, rgba(212,160,23,0.06), transparent 60%), #FAFAF7' }}>
-      <header className="sticky top-0 z-30 border-b border-[#FA8125]/10 bg-white/70 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-[#059669]/10 bg-white/70 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-3">
           <Link href="/admin/dashboard" className="w-9 h-9 bg-[#FAFAF7] hover:bg-gray-100 rounded-xl flex items-center justify-center"><ArrowRight className="w-4 h-4 text-[#6B7280]" /></Link>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#FA8125] flex items-center justify-center text-white shadow"><ShieldCheck className="w-5 h-5" /></div>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#34D399] flex items-center justify-center text-white shadow"><ShieldCheck className="w-5 h-5" /></div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-black tracking-[0.3em] uppercase bg-gradient-to-r from-[#D4A017] to-[#FA8125] bg-clip-text text-transparent">PERMISSIONS</p>
+            <p className="text-[10px] font-black tracking-[0.3em] uppercase bg-gradient-to-r from-[#D4A017] to-[#34D399] bg-clip-text text-transparent">PERMISSIONS</p>
             <h1 className="text-base md:text-lg font-black leading-none">صلاحيات الموظفين</h1>
           </div>
-          <button onClick={() => setAddOpen(true)} className="flex items-center gap-1.5 bg-[#FA8125] text-white text-xs font-bold px-3 py-2 rounded-xl hover:bg-[#185547]"><Plus className="w-4 h-4" /> صلاحية جديدة</button>
+          <button onClick={() => setAddOpen(true)} className="flex items-center gap-1.5 bg-[#34D399] text-[#04352A] text-xs font-bold px-3 py-2 rounded-xl hover:bg-[#185547]"><Plus className="w-4 h-4" /> صلاحية جديدة</button>
         </div>
       </header>
 
@@ -160,7 +160,7 @@ export default function PermissionsPage() {
         <div className="relative">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="دوّر باسم الموظف أو الـ PIN…"
-            className="w-full bg-white border border-black/5 rounded-2xl pr-10 pl-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30" />
+            className="w-full bg-white border border-black/5 rounded-2xl pr-10 pl-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30" />
         </div>
 
         {/* ===== مضمونة — فريق المنصة ===== */}
@@ -215,10 +215,10 @@ function SupplierGroup({ s, catalog, search, open, onToggleOpen, onToggle, onBul
     : s.employees
   if (q && emps.length === 0) return null
   return (
-    <div className={`bg-white rounded-2xl border ${platform ? 'border-[#FA8125]/30' : 'border-black/5'} shadow-sm overflow-hidden`}>
+    <div className={`bg-white rounded-2xl border ${platform ? 'border-[#059669]/30' : 'border-black/5'} shadow-sm overflow-hidden`}>
       <button onClick={onToggleOpen} className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-[#FAFAF7]/60">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white flex-shrink-0 ${platform ? 'bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#FA8125]' : 'bg-[#FA8125]/90'}`}><Building2 className="w-4 h-4" /></div>
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-[#04352A] flex-shrink-0 ${platform ? 'bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#34D399]' : 'bg-[#34D399]/90'}`}><Building2 className="w-4 h-4" /></div>
           <div className="text-right min-w-0">
             <p className="text-sm font-black truncate">{s.business_name}</p>
             <p className="text-[10px] text-[#6B7280]">{emps.length} موظف{q ? ' · نتيجة بحث' : ''}</p>
@@ -244,7 +244,7 @@ function EmployeeRow({ e, catalog, onToggle, onBulk, busy }: {
     <div className="px-4 py-3">
       <div className="flex items-center justify-between gap-3 mb-2.5 flex-wrap">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-9 h-9 rounded-full bg-[#FA8125]/10 text-[#FA8125] flex items-center justify-center font-black text-sm flex-shrink-0">{(e.full_name || '؟').trim().charAt(0)}</div>
+          <div className="w-9 h-9 rounded-full bg-[#34D399]/10 text-[#059669] flex items-center justify-center font-black text-sm flex-shrink-0">{(e.full_name || '؟').trim().charAt(0)}</div>
           <div className="min-w-0">
             <p className="text-sm font-bold truncate">{e.full_name}</p>
             <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
@@ -255,8 +255,8 @@ function EmployeeRow({ e, catalog, onToggle, onBulk, busy }: {
           </div>
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
-          <span className="text-[10px] font-bold text-[#FA8125]">{onCount}/{catalog.length}</span>
-          <button disabled={bulkBusy} onClick={() => onBulk(e, true)} className="text-[10px] font-bold px-2 py-1 rounded-lg bg-[#FA8125]/10 text-[#FA8125] hover:bg-[#FA8125]/20 disabled:opacity-40">الكل</button>
+          <span className="text-[10px] font-bold text-[#059669]">{onCount}/{catalog.length}</span>
+          <button disabled={bulkBusy} onClick={() => onBulk(e, true)} className="text-[10px] font-bold px-2 py-1 rounded-lg bg-[#34D399]/10 text-[#059669] hover:bg-[#34D399]/20 disabled:opacity-40">الكل</button>
           <button disabled={bulkBusy} onClick={() => onBulk(e, false)} className="text-[10px] font-bold px-2 py-1 rounded-lg bg-gray-100 text-[#6B7280] hover:bg-gray-200 disabled:opacity-40">مسح</button>
         </div>
       </div>
@@ -267,8 +267,8 @@ function EmployeeRow({ e, catalog, onToggle, onBulk, busy }: {
           return (
             <button key={c.key} disabled={b} onClick={() => onToggle(e, c.key)}
               className={`text-[11px] font-bold px-2.5 py-1.5 rounded-full border transition-all disabled:opacity-50 flex items-center gap-1 ${
-                on ? 'bg-gradient-to-br from-[#2FA084] to-[#FA8125] text-white border-transparent shadow-sm'
-                   : 'bg-white text-[#6B7280] border-black/10 hover:border-[#FA8125]/40'
+                on ? 'bg-gradient-to-br from-[#2FA084] to-[#34D399] text-white border-transparent shadow-sm'
+                   : 'bg-white text-[#6B7280] border-black/10 hover:border-[#059669]/40'
               }`}>
               {on && <Check className="w-3 h-3" />}
               {c.label_ar}
@@ -305,12 +305,12 @@ function AddPermModal({ onClose, onDone, onError }: { onClose: () => void; onDon
         </div>
         <label className="block text-xs font-bold text-[#6B7280] mb-1">الاسم بالعربي</label>
         <input value={labelAr} onChange={e => setLabelAr(e.target.value)} placeholder="مثلاً: يعدّل الأسعار"
-          className="w-full bg-[#FAFAF7] border border-black/5 rounded-xl px-3 py-2.5 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30" />
+          className="w-full bg-[#FAFAF7] border border-black/5 rounded-xl px-3 py-2.5 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#059669]/30" />
         <label className="block text-xs font-bold text-[#6B7280] mb-1">المفتاح (اختياري · إنجليزي)</label>
         <input value={key} onChange={e => setKey(e.target.value)} placeholder="can_edit_pricing" dir="ltr"
-          className="w-full bg-[#FAFAF7] border border-black/5 rounded-xl px-3 py-2.5 text-sm mb-4 font-mono focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30" />
+          className="w-full bg-[#FAFAF7] border border-black/5 rounded-xl px-3 py-2.5 text-sm mb-4 font-mono focus:outline-none focus:ring-2 focus:ring-[#059669]/30" />
         <button onClick={save} disabled={saving || !labelAr.trim()}
-          className="w-full bg-[#FA8125] text-white py-3 rounded-xl font-bold disabled:opacity-50 flex items-center justify-center gap-2">
+          className="w-full bg-[#34D399] text-[#04352A] py-3 rounded-xl font-bold disabled:opacity-50 flex items-center justify-center gap-2">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} أضف
         </button>
       </div>
@@ -325,7 +325,7 @@ function Center({ children }: { children: ReactNode }) {
 function SectionHead({ icon, title, note }: { icon: ReactNode; title: string; note: string }) {
   return (
     <div className="mb-3 flex items-start gap-2.5">
-      <span className="mt-0.5 w-8 h-8 rounded-xl bg-gradient-to-br from-[#D4A017] to-[#FA8125] text-white flex items-center justify-center flex-shrink-0">{icon}</span>
+      <span className="mt-0.5 w-8 h-8 rounded-xl bg-gradient-to-br from-[#D4A017] to-[#34D399] text-white flex items-center justify-center flex-shrink-0">{icon}</span>
       <div>
         <h2 className="text-base font-black text-[#1A2E26]">{title}</h2>
         <p className="text-[11px] text-[#6B7280] mt-0.5">{note}</p>

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 // التبويب السفلي الثابت لشاشات شات مضمونة — هوية 4b (29 Jul 2026):
-// أبيض نضيف، التاب النشط أخضر #FA8125 بنقطة صغيرة، والباقي رمادي #8A9690.
+// أبيض نضيف، التاب النشط أخضر #059669 بنقطة صغيرة، والباقي رمادي #8A9690.
 const TABS: { href: string; label: string; icon: string; match: (p: string) => boolean }[] = [
   { href: '/chat/marid', label: 'المارد', icon: '🧞', match: (p) => p.startsWith('/chat/marid') },
   { href: '/chat', label: 'محادثات', icon: '💬', match: (p) => p === '/chat' },
@@ -24,7 +24,7 @@ export default function ChatBottomNav() {
           <Link
             key={t.href}
             href={t.href}
-            style={{ flex: 1, textAlign: 'center', padding: '8px 0 9px', textDecoration: 'none', color: active ? '#FA8125' : '#8A9690', position: 'relative' }}
+            style={{ flex: 1, textAlign: 'center', padding: '8px 0 9px', textDecoration: 'none', color: active ? '#059669' : '#8A9690', position: 'relative' }}
           >
             <div style={{ fontSize: 20, lineHeight: 1, filter: active ? 'none' : 'grayscale(35%)', opacity: active ? 1 : .85 }}>{t.icon}</div>
             <div style={{ fontSize: 10.5, fontWeight: active ? 900 : 600, marginTop: 3 }}>{t.label}</div>

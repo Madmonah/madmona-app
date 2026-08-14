@@ -9,7 +9,7 @@
 import { useState } from 'react'
 
 const C = {
-  green: '#FA8125', greenMid: '#2FA084', gold: '#d4a017',
+  green: '#059669', greenMid: '#2FA084', gold: '#d4a017',
   cream: '#FAFAF7', ink: '#0A0A0A', gray: '#6B7280', line: '#e8e6df', white: '#FFFFFF', red: '#d9534f',
 }
 

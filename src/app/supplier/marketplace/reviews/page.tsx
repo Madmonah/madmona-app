@@ -164,11 +164,11 @@ export default function SupplierReviewsPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#059669] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
           <Link
             href="/auth/login?redirect=/supplier/marketplace/reviews"
-            className="block bg-[#FA8125] text-white py-3 rounded-xl font-semibold"
+            className="block bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold"
           >
             تسجيل دخول
           </Link>
@@ -183,7 +183,7 @@ export default function SupplierReviewsPage() {
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
           <h1 className="font-bold mb-2">مش مسجّل كأجر معانا</h1>
-          <Link href="/supplier/register" className="inline-block bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold mt-4">
+          <Link href="/supplier/register" className="inline-block bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-semibold mt-4">
             سجّل كأجر معانا
           </Link>
         </div>
@@ -240,7 +240,7 @@ export default function SupplierReviewsPage() {
               onClick={() => setFilter('all')}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                 filter === 'all'
-                  ? 'bg-[#FA8125] text-white'
+                  ? 'bg-[#34D399] text-[#04352A]'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -250,14 +250,14 @@ export default function SupplierReviewsPage() {
               onClick={() => setFilter('unanswered')}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1 ${
                 filter === 'unanswered'
-                  ? 'bg-[#FA8125] text-white'
+                  ? 'bg-[#34D399] text-[#04352A]'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               بدون رد
               {unansweredCount > 0 && (
                 <span className={`rounded-full px-1.5 text-[10px] font-bold ${
-                  filter === 'unanswered' ? 'bg-white text-[#FA8125]' : 'bg-yellow-400 text-gray-900'
+                  filter === 'unanswered' ? 'bg-white text-[#059669]' : 'bg-yellow-400 text-gray-900'
                 }`}>
                   {unansweredCount}
                 </span>
@@ -267,7 +267,7 @@ export default function SupplierReviewsPage() {
               onClick={() => setFilter('answered')}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                 filter === 'answered'
-                  ? 'bg-[#FA8125] text-white'
+                  ? 'bg-[#34D399] text-[#04352A]'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -320,7 +320,7 @@ export default function SupplierReviewsPage() {
                       <Link
                         href={`/marketplace/${review.listing.slug}`}
                         target="_blank"
-                        className="flex-1 text-xs font-medium text-gray-700 hover:text-[#FA8125] truncate"
+                        className="flex-1 text-xs font-medium text-gray-700 hover:text-[#059669] truncate"
                       >
                         {review.listing.title}
                       </Link>
@@ -361,10 +361,10 @@ export default function SupplierReviewsPage() {
                     )}
 
                     {isEditing ? (
-                      <div className="bg-[#FA8125]/5 border border-[#FA8125]/20 rounded-xl p-3 mt-3">
+                      <div className="bg-[#34D399]/5 border border-[#059669]/20 rounded-xl p-3 mt-3">
                         <div className="flex items-center gap-2 mb-2">
-                          <Building2 className="w-3.5 h-3.5 text-[#FA8125]" />
-                          <span className="text-xs font-semibold text-[#FA8125]">ردك كـ{supplierName}</span>
+                          <Building2 className="w-3.5 h-3.5 text-[#059669]" />
+                          <span className="text-xs font-semibold text-[#059669]">ردك كـ{supplierName}</span>
                         </div>
                         <textarea
                           value={responseText}
@@ -372,7 +372,7 @@ export default function SupplierReviewsPage() {
                           placeholder="اكتب ردك على التقييم ده..."
                           maxLength={1000}
                           rows={3}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125] resize-y"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669] resize-y"
                           autoFocus
                         />
                         <div className="flex items-center justify-between mt-2">
@@ -389,7 +389,7 @@ export default function SupplierReviewsPage() {
                             <button
                               onClick={() => saveResponse(review.id)}
                               disabled={saving || !responseText.trim()}
-                              className="flex items-center gap-1 px-3 py-1.5 bg-[#FA8125] text-white rounded-lg text-xs font-semibold hover:bg-[#FA8125]/90 disabled:opacity-50"
+                              className="flex items-center gap-1 px-3 py-1.5 bg-[#34D399] text-[#04352A] rounded-lg text-xs font-semibold hover:bg-[#34D399]/90 disabled:opacity-50"
                             >
                               {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                               {saving ? 'جاري الحفظ...' : 'حفظ الرد'}
@@ -398,16 +398,16 @@ export default function SupplierReviewsPage() {
                         </div>
                       </div>
                     ) : hasResponse ? (
-                      <div className="bg-[#FA8125]/5 border border-[#FA8125]/20 rounded-xl p-3 mt-3">
+                      <div className="bg-[#34D399]/5 border border-[#059669]/20 rounded-xl p-3 mt-3">
                         <div className="flex items-start justify-between mb-1">
                           <div className="flex items-center gap-2">
-                            <Building2 className="w-3.5 h-3.5 text-[#FA8125]" />
-                            <span className="text-xs font-semibold text-[#FA8125]">رد {supplierName}</span>
+                            <Building2 className="w-3.5 h-3.5 text-[#059669]" />
+                            <span className="text-xs font-semibold text-[#059669]">رد {supplierName}</span>
                           </div>
                           {canRespond && (
                             <button
                               onClick={() => startEditing(review)}
-                              className="text-[10px] text-gray-500 hover:text-[#FA8125] flex items-center gap-1"
+                              className="text-[10px] text-gray-500 hover:text-[#059669] flex items-center gap-1"
                             >
                               <Edit2 className="w-3 h-3" />
                               تعديل
@@ -426,7 +426,7 @@ export default function SupplierReviewsPage() {
                     ) : canRespond ? (
                       <button
                         onClick={() => startEditing(review)}
-                        className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[#FA8125] hover:bg-[#FA8125]/5 px-3 py-2 rounded-lg border border-[#FA8125]/20 hover:border-[#FA8125]/40"
+                        className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[#059669] hover:bg-[#34D399]/5 px-3 py-2 rounded-lg border border-[#059669]/20 hover:border-[#059669]/40"
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
                         اكتب رد

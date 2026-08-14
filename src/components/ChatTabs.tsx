@@ -9,7 +9,7 @@ export default function ChatTabs({ active }: { active: 'chat' | 'team' }) {
     { key: 'team', href: '/chat/team', label: 'فريق العمل', icon: '👥' },
   ] as const
   return (
-    <div dir="rtl" style={{ display: 'flex', background: 'linear-gradient(135deg,#14231E,#FA8125)' }}>
+    <div dir="rtl" style={{ display: 'flex', background: 'linear-gradient(135deg,#14231E,#059669)' }}>
       {tabs.map((todo) => {
         const on = todo.key === active
         return (

@@ -55,12 +55,12 @@ export default function WaitlistPage({ params }: { params: { supplierId: string 
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">B2B PARTNER · WAITLIST</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">B2B PARTNER · WAITLIST</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">قائمة الانتظار · {supplier?.business_name}</h1>
               <p className="text-sm text-[#6B7280] mt-1">{entries.length} في القائمة · حوّلهم لحجوزات لما يفضى مكان</p>
             </div>
@@ -74,14 +74,14 @@ export default function WaitlistPage({ params }: { params: { supplierId: string 
         <section className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
           <div className="flex gap-2 flex-wrap items-center">
             {STATUS_TABS.map(t => (
-              <button key={t.value} onClick={() => setStatusFilter(t.value)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${statusFilter === t.value ? 'bg-[#FA8125] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'}`}>{t.label}</button>
+              <button key={t.value} onClick={() => setStatusFilter(t.value)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${statusFilter === t.value ? 'bg-[#34D399] text-[#04352A]' : 'bg-[#FAFAF7] text-[#1A2E26]'}`}>{t.label}</button>
             ))}
           </div>
           <div className="flex gap-2 flex-wrap items-center">
             <Building2 className="w-3.5 h-3.5 text-[#6B7280]" />
-            <button onClick={() => setBranchFilter(null)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${!branchFilter ? 'bg-[#FA8125] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'}`}>كل الفروع</button>
+            <button onClick={() => setBranchFilter(null)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${!branchFilter ? 'bg-[#34D399] text-[#04352A]' : 'bg-[#FAFAF7] text-[#1A2E26]'}`}>كل الفروع</button>
             {branches.map(b => (
-              <button key={b.id} onClick={() => setBranchFilter(b.id)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${branchFilter === b.id ? 'bg-[#FA8125] text-white' : 'bg-[#FAFAF7] text-[#1A2E26]'}`}>{b.name}</button>
+              <button key={b.id} onClick={() => setBranchFilter(b.id)} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${branchFilter === b.id ? 'bg-[#34D399] text-[#04352A]' : 'bg-[#FAFAF7] text-[#1A2E26]'}`}>{b.name}</button>
             ))}
           </div>
         </section>
@@ -89,7 +89,7 @@ export default function WaitlistPage({ params }: { params: { supplierId: string 
         {/* Entries */}
         <section className="space-y-2">
           {loading ? (
-            <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin inline" /></div>
+            <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#059669] animate-spin inline" /></div>
           ) : entries.length === 0 ? (
             <div className="py-12 text-center bg-white rounded-2xl border border-gray-100">
               <Clock className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
@@ -99,7 +99,7 @@ export default function WaitlistPage({ params }: { params: { supplierId: string 
             <div key={e.waitlist_id} className="bg-white rounded-2xl border border-gray-100 p-4">
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-[#FA8125]/10 text-[#FA8125] grid place-items-center font-black text-sm">{i + 1}</div>
+                  <div className="w-8 h-8 rounded-full bg-[#34D399]/10 text-[#059669] grid place-items-center font-black text-sm">{i + 1}</div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-black text-[#1A2E26]">{e.customer_name}</p>
                     <p className="text-xs text-[#6B7280] flex items-center gap-1 mt-0.5"><Scissors className="w-3 h-3" /> {e.service_name || 'خدمة'}</p>
@@ -114,13 +114,13 @@ export default function WaitlistPage({ params }: { params: { supplierId: string 
 
                 {e.status === 'waiting' && (
                   <div className="flex gap-1.5 flex-wrap">
-                    {busyId === e.waitlist_id ? <Loader2 className="w-5 h-5 text-[#FA8125] animate-spin" /> : (
+                    {busyId === e.waitlist_id ? <Loader2 className="w-5 h-5 text-[#059669] animate-spin" /> : (
                       <>
                         <a
                           href={`https://wa.me/${(e.customer_phone || '').replace(/[^0-9]/g, '').replace(/^0/, '20')}?text=${encodeURIComponent(`مرحباً ${e.customer_name?.split(' ')[0] || ''}، فضى مكان لـ ${e.service_name} في ${supplier?.business_name}! تحبي تحجزي؟`)}`}
                           target="_blank" rel="noopener"
                           onClick={() => updateStatus(e.waitlist_id, 'notified')}
-                          className="px-2.5 py-1.5 rounded-lg bg-[#FA8125] text-white text-[10px] font-bold flex items-center gap-1"
+                          className="px-2.5 py-1.5 rounded-lg bg-[#34D399] text-[#04352A] text-[10px] font-bold flex items-center gap-1"
                         >
                           <MessageCircle className="w-3 h-3" /> كلّمها
                         </a>
@@ -142,7 +142,7 @@ export default function WaitlistPage({ params }: { params: { supplierId: string 
                 )}
                 {e.status === 'converted' && <span className="px-2 py-1 rounded-lg bg-green-50 text-green-700 text-[10px] font-bold">✓ اتحولت لحجز</span>}
               </div>
-              {e.notes && <p className="text-[10px] text-[#FA8125] mt-2 pt-2 border-t border-gray-100">💡 {e.notes}</p>}
+              {e.notes && <p className="text-[10px] text-[#059669] mt-2 pt-2 border-t border-gray-100">💡 {e.notes}</p>}
             </div>
           ))}
         </section>
@@ -194,7 +194,7 @@ function ConvertModal({ entry, branches, supplierId, onClose, onDone }: any) {
       <div className="relative bg-white rounded-t-3xl md:rounded-3xl w-full md:max-w-md md:mx-4 shadow-2xl">
         <header className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold tracking-wider uppercase text-[#FA8125]">تحويل لحجز</p>
+            <p className="text-[10px] font-bold tracking-wider uppercase text-[#059669]">تحويل لحجز</p>
             <h2 className="text-lg font-black text-[#1A2E26]">{entry.customer_name}</h2>
           </div>
           <button onClick={onClose}><X className="w-5 h-5 text-[#6B7280]" /></button>
@@ -211,7 +211,7 @@ function ConvertModal({ entry, branches, supplierId, onClose, onDone }: any) {
               {stylists.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
             </select>
           </Field>
-          <button onClick={convert} disabled={saving} className="w-full py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
+          <button onClick={convert} disabled={saving} className="w-full py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
             {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري التحويل...</> : <><CheckCircle2 className="w-4 h-4" /> أكد الحجز</>}
           </button>
         </div>
@@ -221,4 +221,4 @@ function ConvertModal({ entry, branches, supplierId, onClose, onDone }: any) {
 }
 
 function Field({ label, children }: any) { return <div><label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">{label}</label>{children}</div> }
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div> }

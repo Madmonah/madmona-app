@@ -17,7 +17,7 @@ export default function TermsContent() {
         <div className="mb-8 animate-slide-up">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-[#FA8125] font-bold hover:gap-2 transition-all no-underline mb-4"
+            className="inline-flex items-center gap-1.5 text-sm text-[#059669] font-bold hover:gap-2 transition-all no-underline mb-4"
           >
             <ArrowRight className="w-4 h-4 ltr:rotate-180" />
             {en ? 'Home' : 'الرئيسية'}

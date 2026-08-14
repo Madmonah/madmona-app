@@ -171,7 +171,7 @@ export default async function HomePage() {
 function TrustBadge({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
     <div className="flex items-center gap-1.5 text-xs text-gray-600">
-      <span className="text-[#FA8125]">{icon}</span>
+      <span className="text-[#059669]">{icon}</span>
       <span className="font-medium">{label}</span>
     </div>
   )

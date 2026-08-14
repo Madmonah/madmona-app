@@ -50,7 +50,7 @@ export default function BusinessLoungeClient() {
           <div className="min-w-0">
             <h1 className="text-[16px] font-black text-[#0A0A0A] leading-[1.2]">
               بورضة رجال الأعمال{' '}
-              <span className="align-[2px] text-[9px] font-bold text-[#FA8125] bg-[#FA8125]/10 px-[7px] py-[2px] rounded-full">
+              <span className="align-[2px] text-[9px] font-bold text-[#059669] bg-[#34D399]/10 px-[7px] py-[2px] rounded-full">
                 LIVE
               </span>
             </h1>
@@ -74,7 +74,7 @@ export default function BusinessLoungeClient() {
       {/* ─── لوحة الأسعار: عملات + ذهب ─── */}
       <section className="px-4 pt-3 max-w-5xl mx-auto">
         <div className="flex items-center gap-2 mb-2.5">
-          <TrendingUp className="w-4 h-4 text-[#FA8125]" />
+          <TrendingUp className="w-4 h-4 text-[#059669]" />
           <h2 className="text-[13px] font-black text-[#0A0A0A]">أسعار السوق الآن</h2>
           <span className="relative flex h-1.5 w-1.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />

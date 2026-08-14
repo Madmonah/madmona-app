@@ -25,7 +25,7 @@ type Charts = { monthly: Monthly[]; by_category: CatRow[]; listings_by_category:
 
 /* ---------- helpers ---------- */
 const NUM = 'var(--font-inter), system-ui, sans-serif'
-const PALETTE = ['#FA8125', '#2FA084', '#D4A017', '#6FCF97', '#F98F2A', '#B8861A', '#CBD6D0', '#175C4F', '#E9C45A']
+const PALETTE = ['#059669', '#2FA084', '#D4A017', '#6FCF97', '#34D399', '#B8861A', '#CBD6D0', '#175C4F', '#E9C45A']
 const AR_MONTHS = ['ينا', 'فبر', 'مار', 'أبر', 'ماي', 'يون', 'يول', 'أغس', 'سبت', 'أكت', 'نوف', 'ديس']
 
 function monthAr(m: string) {
@@ -292,7 +292,7 @@ export default function AdminOverview() {
                     <circle cx="24" cy="24" r="20" fill="none" stroke="#E7F1ED" strokeWidth="6" />
                     <circle cx="24" cy="24" r="20" fill="none" stroke="url(#hg)" strokeWidth="6" strokeLinecap="round"
                       strokeDasharray={2 * Math.PI * 20} strokeDashoffset={(2 * Math.PI * 20) * (1 - healthScore / 100)} transform="rotate(-90 24 24)" />
-                    <defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#D4A017" /><stop offset="1" stopColor="#FA8125" /></linearGradient></defs>
+                    <defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#D4A017" /><stop offset="1" stopColor="#059669" /></linearGradient></defs>
                   </svg>
                   <b style={{ fontFamily: NUM }}>{healthScore}</b>
                 </div>
@@ -529,7 +529,7 @@ function AreaChart({ monthly }: { monthly: Monthly[] }) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', marginTop: 6 }}>
       <defs><linearGradient id="ovarea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2FA084" stopOpacity=".28" /><stop offset="1" stopColor="#2FA084" stopOpacity="0" /></linearGradient></defs>
-      <g stroke="#FA8125" strokeOpacity=".08" strokeDasharray="3 5">{grid.map((gy, i) => <line key={i} x1={padL} y1={gy} x2={W - padR} y2={gy} />)}</g>
+      <g stroke="#059669" strokeOpacity=".08" strokeDasharray="3 5">{grid.map((gy, i) => <line key={i} x1={padL} y1={gy} x2={W - padR} y2={gy} />)}</g>
       <path d={areaD} fill="url(#ovarea)" />
       <polyline points={gmvPts} fill="none" stroke="#2FA084" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
       <polyline points={comPts} fill="none" stroke="#D4A017" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -583,14 +583,14 @@ const styles = `
 .ov{
   --cream:#FAFAF7; --cream-2:#F3F1EA; --paper:#FFFFFF;
   --ink:#0A0A0A; --ink-soft:#41504A; --ink-mute:#7C8A84;
-  --green-deep:#FA8125; --green-700:#175C4F; --green-mid:#2FA084; --green-soft:#6FCF97; --green-fog:#E7F1ED;
+  --green-deep:#059669; --green-700:#175C4F; --green-mid:#2FA084; --green-soft:#6FCF97; --green-fog:#E7F1ED;
   --gold:#D4A017; --gold-soft:#E9C45A; --gold-deep:#B8861A;
   --line-2:rgba(10,10,10,.07); --line-3:rgba(250, 129, 37,.07);
   --shadow-sm:0 1px 2px rgba(16,40,34,.05);
   --shadow:0 1px 2px rgba(16,40,34,.04), 0 10px 34px -12px rgba(16,40,34,.16);
   --shadow-lg:0 24px 60px -22px rgba(16,40,34,.30);
-  --grad-cta:linear-gradient(118deg,#D4A017 0%,#2FA084 56%,#FA8125 100%);
-  --grad-ink:linear-gradient(110deg,#0A0A0A,#FA8125);
+  --grad-cta:linear-gradient(118deg,#D4A017 0%,#2FA084 56%,#059669 100%);
+  --grad-ink:linear-gradient(110deg,#0A0A0A,#059669);
   color:var(--ink); min-height:100vh;
   background-color:var(--cream);
   background-image:
@@ -682,7 +682,7 @@ const styles = `
 .pillar .metric span{font-size:11.5px;color:var(--ink-mute);font-weight:600}
 .pillar .rank{position:absolute;top:18px;inset-inline-end:18px;font-size:12px;font-weight:700;color:var(--green-soft);background:var(--green-fog);width:24px;height:24px;border-radius:8px;display:grid;place-items:center}
 
-.b2b{margin-top:16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:18px 22px;border-radius:18px;background:linear-gradient(115deg,#175C4F,#FA8125 45%,#2FA084 115%);color:#fff;box-shadow:0 22px 50px -24px rgba(250, 129, 37,.7);position:relative;overflow:hidden}
+.b2b{margin-top:16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:18px 22px;border-radius:18px;background:linear-gradient(115deg,#175C4F,#059669 45%,#2FA084 115%);color:#fff;box-shadow:0 22px 50px -24px rgba(250, 129, 37,.7);position:relative;overflow:hidden}
 .b2b::before{content:"";position:absolute;inset-inline-end:-40px;top:-60px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(212,160,23,.34),transparent 65%)}
 .b2b .lead{display:flex;align-items:center;gap:13px}
 .b2b .lead .bdg{font-size:10px;font-weight:800;letter-spacing:.14em;background:rgba(255,255,255,.16);padding:5px 11px;border-radius:999px}

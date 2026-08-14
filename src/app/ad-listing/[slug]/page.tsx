@@ -145,7 +145,7 @@ export default async function AdListingPage({ params }: { params: Promise<{ slug
 
       <div style={{ maxWidth: 560, margin: '0 auto', padding: '20px' }}>
         {/* Title + Location */}
-        <h1 style={{ color: '#FA8125', fontSize: 26, margin: '0 0 8px', lineHeight: 1.3 }}>
+        <h1 style={{ color: '#059669', fontSize: 26, margin: '0 0 8px', lineHeight: 1.3 }}>
           {listing.title}
         </h1>
         {(listing.district || listing.city) && (
@@ -174,7 +174,7 @@ export default async function AdListingPage({ params }: { params: Promise<{ slug
         {/* Price card */}
         {lowestPrice && (
           <div style={{
-            background: '#FA8125',
+            background: '#059669',
             color: '#FAF7F0',
             padding: 20,
             borderRadius: 16,
@@ -232,7 +232,7 @@ export default async function AdListingPage({ params }: { params: Promise<{ slug
 
         {/* Trust footer */}
         <div style={{
-          background: '#FA8125',
+          background: '#059669',
           color: '#FAF7F0',
           padding: 16,
           borderRadius: 12,

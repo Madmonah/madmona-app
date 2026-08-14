@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 export default function ListingSuccessPage() {
   return (
     <Suspense fallback={
-      <div dir="rtl" lang="ar" className="min-h-screen bg-[#FA8125] text-[#FAF7F0] flex items-center justify-center">
+      <div dir="rtl" lang="ar" className="min-h-screen bg-[#34D399] text-[#FAF7F0] flex items-center justify-center">
         جاري التحميل...
       </div>
     }>
@@ -29,7 +29,7 @@ function ListingSuccessPageInner() {
   }, [token]);
 
   return (
-    <div dir="rtl" lang="ar" className="min-h-screen bg-[#FA8125] text-[#FAF7F0] flex items-center justify-center px-5">
+    <div dir="rtl" lang="ar" className="min-h-screen bg-[#34D399] text-[#FAF7F0] flex items-center justify-center px-5">
       <div className="max-w-lg w-full text-center">
         <div className="text-6xl mb-4">🎉</div>
         <h1 className="text-2xl font-bold mb-2">تم استلام المنتج!</h1>
@@ -50,13 +50,13 @@ function ListingSuccessPageInner() {
         <div className="grid gap-3">
           <a
             href={`/add-listing?another=${token}`}
-            className="block py-4 rounded-xl bg-[#FAF7F0] text-[#FA8125] font-black text-center border-2 border-[#2FA084]"
+            className="block py-4 rounded-xl bg-[#FAF7F0] text-[#059669] font-black text-center border-2 border-[#2FA084]"
           >
             ➕ ضيف صنف تاني — بياناتك محفوظة
           </a>
           <a
             href={`/signup?token=${token}&phone=${encodeURIComponent(draft?.contact_phone || '')}`}
-            className="block py-4 rounded-xl bg-[#2FA084] text-[#FA8125] font-bold text-center"
+            className="block py-4 rounded-xl bg-[#2FA084] text-[#059669] font-bold text-center"
           >
             أنشئ حسابي دلوقتي →
           </a>

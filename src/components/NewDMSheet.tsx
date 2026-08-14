@@ -92,7 +92,7 @@ export default function NewDMSheet({
             style={{ flex: 1, padding: '11px 13px', borderRadius: 12, border: '1px solid #EAE5D9', background: '#FAFAF7', fontSize: 15, fontWeight: 700, fontFamily: 'inherit', outline: 'none', textAlign: 'right' }}
           />
           <button onClick={() => start(phone)} disabled={busy || phone.replace(/\D/g, '').length < 10}
-            style={{ background: '#FA8125', color: '#fff', border: 'none', borderRadius: 12, padding: '0 18px', fontWeight: 800, fontSize: 13.5, cursor: 'pointer', fontFamily: 'inherit', opacity: (busy || phone.replace(/\D/g, '').length < 10) ? .5 : 1 }}>
+            style={{ background: '#059669', color: '#fff', border: 'none', borderRadius: 12, padding: '0 18px', fontWeight: 800, fontSize: 13.5, cursor: 'pointer', fontFamily: 'inherit', opacity: (busy || phone.replace(/\D/g, '').length < 10) ? .5 : 1 }}>
             ابدأ
           </button>
         </div>
@@ -114,14 +114,14 @@ export default function NewDMSheet({
                 <img src={f.friend_avatar} alt={f.friend_name} loading="lazy" decoding="async"
                      style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
               ) : (
-                <span style={{ width: 38, height: 38, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#FA8125)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 15, fontWeight: 800, flexShrink: 0 }}>
+                <span style={{ width: 38, height: 38, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#059669)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 15, fontWeight: 800, flexShrink: 0 }}>
                   {(f.friend_name || '؟').trim()[0]}
                 </span>
               )}
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ display: 'block', fontWeight: 800, color: '#14231E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.friend_name}</span>
               </span>
-              <span style={{ fontSize: 16, color: '#FA8125' }}>💬</span>
+              <span style={{ fontSize: 16, color: '#059669' }}>💬</span>
             </button>
           ))}
         </div>

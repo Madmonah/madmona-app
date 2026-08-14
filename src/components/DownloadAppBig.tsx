@@ -239,7 +239,7 @@ function Step({ n, text }: { n: string; text: string }) {
       <span>{text}</span>
       <style jsx>{`
         .da-step{display:flex;align-items:center;gap:12px;padding:14px;background:#FAFAF7;border-radius:14px;font-size:14px;font-weight:600;color:#0A0A0A}
-        .da-step-n{width:28px;height:28px;border-radius:50%;background:#FA8125;color:#fff;display:grid;place-items:center;font-weight:800;flex:none;font-size:13px}
+        .da-step-n{width:28px;height:28px;border-radius:50%;background:#059669;color:#fff;display:grid;place-items:center;font-weight:800;flex:none;font-size:13px}
       `}</style>
     </div>
   )
@@ -271,7 +271,7 @@ function Modal({ children, onClose, title }: { children: React.ReactNode; onClos
         .da-qr img{border-radius:16px;border:1px solid #E5DFD3}
         .da-desktop-intro{font-size:14px;color:#7C8A84;margin:0 0 12px;text-align:center;line-height:1.6}
         .da-desktop-link{font-size:12px;color:#7C8A84;margin:12px 0 0;text-align:center}
-        .da-desktop-link code{background:#FAFAF7;padding:2px 8px;border-radius:6px;font-family:monospace;color:#FA8125;font-weight:700}
+        .da-desktop-link code{background:#FAFAF7;padding:2px 8px;border-radius:6px;font-family:monospace;color:#059669;font-weight:700}
         .da-ios-steps{display:flex;flex-direction:column;gap:10px}
         .da-ios-note{font-size:12.5px;color:#7C8A84;margin:14px 0 0;text-align:center;line-height:1.6}
       `}</style>
@@ -286,7 +286,7 @@ const BIG_CSS = `
   position:relative; width:100%; cursor:pointer;
   display:grid; grid-template-columns:auto 1fr auto; gap:18px; align-items:center;
   padding:22px 26px;
-  background:linear-gradient(118deg, #FA8125 0%, #2a7a52 50%, #2FA084 100%);
+  background:linear-gradient(118deg, #059669 0%, #2a7a52 50%, #2FA084 100%);
   border:none; border-radius:24px; color:#fff;
   text-align:right; overflow:hidden;
   box-shadow:0 10px 30px -8px rgba(250, 129, 37,.45), 0 1px 0 rgba(255,255,255,.10) inset;
@@ -332,7 +332,7 @@ const BIG_CSS = `
 
 /* Right: CTA button */
 .da-right{position:relative;z-index:2;flex:none}
-.da-cta{display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:#FAFAF7;color:#FA8125;border-radius:999px;font-size:15px;font-weight:900;letter-spacing:-.01em;box-shadow:0 6px 18px rgba(0,0,0,.18);transition:.25s}
+.da-cta{display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:#FAFAF7;color:#059669;border-radius:999px;font-size:15px;font-weight:900;letter-spacing:-.01em;box-shadow:0 6px 18px rgba(0,0,0,.18);transition:.25s}
 .da-big:hover .da-cta{background:#FAD56B;color:#0A0A0A;transform:translateX(-3px)}
 .da-cta-icon{width:18px;height:18px;flex:none}
 .da-cta-arrow{width:16px;height:16px;flex:none;transition:.25s}
@@ -359,7 +359,7 @@ const INSTALLED_CSS = `
   background:#E7F1ED;border:1px solid rgba(250, 129, 37,.20);
   border-radius:20px;
 }
-.da-installed-icon{width:28px;height:28px;color:#FA8125;flex:none}
+.da-installed-icon{width:28px;height:28px;color:#059669;flex:none}
 .da-installed-title{font-size:14.5px;font-weight:800;color:#0A0A0A;line-height:1.2}
 .da-installed-sub{font-size:11.5px;color:#7C8A84;margin-top:2px;letter-spacing:.02em}
 `

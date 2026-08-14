@@ -140,7 +140,7 @@ export default function OutreachLeadsPage() {
         {/* Summary cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-            <div className="text-3xl font-bold text-[#FA8125]">{totalLeads}</div>
+            <div className="text-3xl font-bold text-[#059669]">{totalLeads}</div>
             <div className="text-sm text-gray-600 mt-1">إجمالي</div>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
@@ -179,7 +179,7 @@ export default function OutreachLeadsPage() {
                   </div>
                   <div className="flex-1 bg-gray-100 rounded-full h-2 relative overflow-hidden">
                     <div
-                      className="absolute right-0 top-0 h-full bg-gradient-to-l from-[#2FA084] to-[#FA8125]"
+                      className="absolute right-0 top-0 h-full bg-gradient-to-l from-[#2FA084] to-[#34D399]"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -222,7 +222,7 @@ export default function OutreachLeadsPage() {
           )}
           <button
             onClick={refresh}
-            className="px-4 py-2 bg-[#FA8125] text-white rounded-lg hover:bg-[#F98F2A]"
+            className="px-4 py-2 bg-[#34D399] text-[#04352A] rounded-lg hover:bg-[#34D399]"
           >
             تحديث
           </button>

@@ -148,7 +148,7 @@ function LoginContent() {
   return (
     <div className="min-h-screen gradient-mesh flex flex-col relative overflow-hidden" dir={dir}>
       {/* Decorative blobs */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#FA8125]/5 rounded-full blur-3xl animate-float pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#34D399]/5 rounded-full blur-3xl animate-float pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#2FA084]/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <header className="relative z-10">
@@ -202,7 +202,7 @@ function LoginContent() {
               <button
                 type="button"
                 onClick={() => setShowPassword(true)}
-                className="mt-4 w-full text-center text-xs font-bold text-gray-400 hover:text-[#FA8125] transition-colors"
+                className="mt-4 w-full text-center text-xs font-bold text-gray-400 hover:text-[#059669] transition-colors"
               >
                 عندك باسورد أو PIN موظفين؟ ادخل بيه من هنا
               </button>
@@ -212,7 +212,7 @@ function LoginContent() {
             <form onSubmit={handleSubmit} className="space-y-5 mt-6 pt-6 border-t border-gray-100">
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Phone className="w-3.5 h-3.5 text-[#FA8125]" />
+                  <Phone className="w-3.5 h-3.5 text-[#059669]" />
                   {t('auth.phone_label')}
                 </label>
                 <input
@@ -220,7 +220,7 @@ function LoginContent() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="01XXXXXXXXX"
-                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#FA8125]/40 focus:ring-4 focus:ring-[#FA8125]/10 transition-all"
+                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#059669]/40 focus:ring-4 focus:ring-[#059669]/10 transition-all"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   autoComplete="tel"
@@ -231,12 +231,12 @@ function LoginContent() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold text-gray-700 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Lock className="w-3.5 h-3.5 text-[#FA8125]" />
+                    <Lock className="w-3.5 h-3.5 text-[#059669]" />
                     {t('auth.password_label')}
                   </label>
                   <Link
                     href="/auth/forgot-password"
-                    className="text-[11px] font-bold text-[#FA8125] hover:underline flex items-center gap-1"
+                    className="text-[11px] font-bold text-[#059669] hover:underline flex items-center gap-1"
                   >
                     <KeyRound className="w-3 h-3" />
                     {t('auth.forgot')}
@@ -247,7 +247,7 @@ function LoginContent() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#FA8125]/40 focus:ring-4 focus:ring-[#FA8125]/10 transition-all"
+                  className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#059669]/40 focus:ring-4 focus:ring-[#059669]/10 transition-all"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
                   autoComplete="current-password"
@@ -269,7 +269,7 @@ function LoginContent() {
               <button
                 type="submit"
                 disabled={submitting || !phone || !password}
-                className="w-full bg-[#FA8125] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-elevated transition-all flex items-center justify-center gap-2"
+                className="w-full bg-[#34D399] text-[#04352A] py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-elevated transition-all flex items-center justify-center gap-2"
               >
                 {submitting ? (
                   <>
@@ -288,7 +288,7 @@ function LoginContent() {
             {/* 🆕 (8 Aug 2026) إنشاء حساب حقيقي برقم + باسورد بقى موجود */}
             <p className="mt-6 pt-5 border-t border-gray-100 text-center text-sm text-gray-500 leading-relaxed">
               أول مرة في مضمونة؟{' '}
-              <Link href="/auth/signup" className="text-[#FA8125] font-bold hover:underline">
+              <Link href="/auth/signup" className="text-[#059669] font-bold hover:underline">
                 اعمل حساب جديد
               </Link>
             </p>
@@ -296,11 +296,11 @@ function LoginContent() {
 
           <p className="text-center text-xs text-gray-500 mt-6">
             {t('auth.terms_pre')}{' '}
-            <Link href="/terms" className="text-[#FA8125] font-semibold hover:underline">
+            <Link href="/terms" className="text-[#059669] font-semibold hover:underline">
               {t('auth.terms_link')}
             </Link>
             {' '}{t('auth.terms_and')}{' '}
-            <Link href="/privacy" className="text-[#FA8125] font-semibold hover:underline">
+            <Link href="/privacy" className="text-[#059669] font-semibold hover:underline">
               {t('auth.privacy_link')}
             </Link>
           </p>
@@ -316,7 +316,7 @@ export default function LoginPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-6 h-6 text-[#FA8125] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#059669] animate-spin" />
       </div>
     }>
       <LoginContent />

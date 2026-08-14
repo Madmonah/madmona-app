@@ -10,7 +10,7 @@ type Task = { id: string; title: string; detail: string | null; assignee_name: s
 const PR: Record<string, { c: string; b: string; l: string }> = {
   high: { c: '#E26D5C', b: '#FDEBE8', l: 'عالية' },
   medium: { c: '#B78A12', b: '#FBF3DC', l: 'متوسطة' },
-  low: { c: '#FA8125', b: '#E3F4EE', l: 'منخفضة' },
+  low: { c: '#059669', b: '#E3F4EE', l: 'منخفضة' },
 }
 
 export default function TasksPage() {
@@ -38,7 +38,7 @@ export default function TasksPage() {
 
   return (
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#F1EEE6', backgroundImage: 'radial-gradient(circle at 1.5px 1.5px, rgba(250, 129, 37,.07) 1.5px, transparent 0)', backgroundSize: '26px 26px', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
-      <header style={{ background: 'linear-gradient(135deg,#14231E,#FA8125)', color: '#fff', padding: '14px 16px', boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
+      <header style={{ background: 'linear-gradient(135deg,#14231E,#059669)', color: '#fff', padding: '14px 16px', boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
         <div style={{ fontWeight: 900, fontSize: 17 }}>📋 مهامي</div>
         <div style={{ fontSize: 11.5, fontWeight: 600, color: '#6FCF97' }}>{tasks.length} مهمة مفتوحة</div>
       </header>

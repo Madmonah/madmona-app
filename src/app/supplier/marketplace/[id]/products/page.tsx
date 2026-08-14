@@ -277,7 +277,7 @@ export default function SupplierProductsPage() {
   if (stage === 'loading') {
     return (
       <div className="min-h-screen gradient-mesh flex items-center justify-center" dir="rtl">
-        <Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#059669] animate-spin" />
       </div>
     )
   }
@@ -307,7 +307,7 @@ export default function SupplierProductsPage() {
           </div>
           <button
             onClick={() => setShowImport(true)}
-            className="inline-flex items-center gap-1.5 bg-white border border-[#FA8125]/30 text-[#FA8125] px-3 py-2 rounded-xl font-bold text-xs shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
+            className="inline-flex items-center gap-1.5 bg-white border border-[#059669]/30 text-[#059669] px-3 py-2 rounded-xl font-bold text-xs shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
             title="استيراد المنتجات من ملف Excel"
           >
             <FileSpreadsheet className="w-4 h-4" />
@@ -315,7 +315,7 @@ export default function SupplierProductsPage() {
           </button>
           <button
             onClick={openNew}
-            className="inline-flex items-center gap-1.5 bg-[#FA8125] text-white px-4 py-2 rounded-xl font-bold text-xs shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
+            className="inline-flex items-center gap-1.5 bg-[#34D399] text-[#04352A] px-4 py-2 rounded-xl font-bold text-xs shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
           >
             <Plus className="w-4 h-4" />
             منتج جديد
@@ -345,14 +345,14 @@ export default function SupplierProductsPage() {
             <div className="flex items-center justify-center gap-2">
               <button
                 onClick={() => setShowImport(true)}
-                className="inline-flex items-center gap-2 bg-white border-2 border-[#FA8125] text-[#FA8125] px-5 py-3 rounded-2xl font-bold shadow-soft hover:-translate-y-0.5 transition-all"
+                className="inline-flex items-center gap-2 bg-white border-2 border-[#059669] text-[#059669] px-5 py-3 rounded-2xl font-bold shadow-soft hover:-translate-y-0.5 transition-all"
               >
                 <FileSpreadsheet className="w-4 h-4" />
                 استيراد Excel
               </button>
               <button
                 onClick={openNew}
-                className="inline-flex items-center gap-2 bg-[#FA8125] text-white px-5 py-3 rounded-2xl font-bold shadow-elevated hover:-translate-y-0.5 hover:shadow-luxe transition-all"
+                className="inline-flex items-center gap-2 bg-[#34D399] text-[#04352A] px-5 py-3 rounded-2xl font-bold shadow-elevated hover:-translate-y-0.5 hover:shadow-luxe transition-all"
               >
                 <Plus className="w-4 h-4" />
                 منتج جديد
@@ -388,7 +388,7 @@ export default function SupplierProductsPage() {
                     <p className="text-[11px] text-[#2FA084] font-bold mb-0.5">
                       {[p.category, p.brand, p.unit].filter(Boolean).join(' · ')}
                     </p>
-                    <p className="text-sm font-black text-[#FA8125] tabular mt-1">
+                    <p className="text-sm font-black text-[#059669] tabular mt-1">
                       {p.price.toLocaleString('ar-EG')} <span className="text-[10px] font-medium text-gray-500">ج.م</span>
                       {p.compare_at_price && p.compare_at_price > p.price && (
                         <span className="text-[11px] text-gray-400 line-through mr-2 tabular">{p.compare_at_price.toLocaleString('ar-EG')}</span>
@@ -489,7 +489,7 @@ export default function SupplierProductsPage() {
                     uploadingPhoto ? 'border-gray-200 bg-gray-50' : 'border-gray-200 hover:border-[#2FA084] hover:bg-[#2FA084]/5'
                   }`}>
                     {uploadingPhoto ? (
-                      <Loader2 className="w-5 h-5 text-[#FA8125] animate-spin" />
+                      <Loader2 className="w-5 h-5 text-[#059669] animate-spin" />
                     ) : (
                       <>
                         <ImageIcon className="w-5 h-5 text-gray-400" />
@@ -549,7 +549,7 @@ export default function SupplierProductsPage() {
               <button
                 onClick={save}
                 disabled={saving}
-                className="flex-1 bg-[#FA8125] text-white py-3 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe disabled:opacity-60 transition-all flex items-center justify-center gap-2"
+                className="flex-1 bg-[#34D399] text-[#04352A] py-3 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe disabled:opacity-60 transition-all flex items-center justify-center gap-2"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                 {saving ? 'جاري الحفظ...' : 'حفظ'}
@@ -616,7 +616,7 @@ function Field({ label, value, onChange, placeholder, type = 'text', multiline =
           placeholder={placeholder}
           rows={3}
           dir={dir}
-          className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#FA8125] focus:ring-2 focus:ring-[#FA8125]/20 outline-none transition-all text-sm font-medium resize-none"
+          className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#059669] focus:ring-2 focus:ring-[#059669]/20 outline-none transition-all text-sm font-medium resize-none"
         />
       ) : (
         <input
@@ -625,7 +625,7 @@ function Field({ label, value, onChange, placeholder, type = 'text', multiline =
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           dir={dir}
-          className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#FA8125] focus:ring-2 focus:ring-[#FA8125]/20 outline-none transition-all text-sm font-medium"
+          className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#059669] focus:ring-2 focus:ring-[#059669]/20 outline-none transition-all text-sm font-medium"
         />
       )}
     </div>
@@ -643,7 +643,7 @@ function ErrorBlock({ title, subtitle, href, hrefLabel }: { title: string; subti
         {subtitle && <p className="text-sm text-gray-500 mb-5">{subtitle}</p>}
         <Link
           href={href}
-          className="inline-flex items-center gap-2 bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-bold shadow-soft hover:shadow-card transition-all"
+          className="inline-flex items-center gap-2 bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-bold shadow-soft hover:shadow-card transition-all"
         >
           {hrefLabel}
         </Link>

@@ -41,33 +41,33 @@ export default function BottomNav() {
     >
       <div className="grid grid-cols-5 max-w-md mx-auto items-end px-1 pt-2.5 pb-[calc(12px+env(safe-area-inset-bottom))]">
         {/* الرئيسية */}
-        <Link href="/" className={`flex flex-col items-center gap-1 no-underline ${homeActive ? 'text-[#FA8125]' : 'text-[#6B7280]'}`}>
+        <Link href="/" className={`flex flex-col items-center gap-1 no-underline ${homeActive ? 'text-[#059669]' : 'text-[#6B7280]'}`}>
           <Home className="w-5 h-5" strokeWidth={homeActive ? 2.5 : 2} fill={homeActive ? 'rgba(250, 129, 37,.1)' : 'none'} />
           <span className={`text-[10px] ${homeActive ? 'font-extrabold' : 'font-medium'}`}>{t('nav.home')}</span>
         </Link>
 
         {/* السوق */}
-        <Link href="/marketplace" className={`flex flex-col items-center gap-1 no-underline ${marketActive ? 'text-[#FA8125]' : 'text-[#6B7280]'}`}>
+        <Link href="/marketplace" className={`flex flex-col items-center gap-1 no-underline ${marketActive ? 'text-[#059669]' : 'text-[#6B7280]'}`}>
           <Compass className="w-5 h-5" strokeWidth={marketActive ? 2.5 : 2} fill={marketActive ? 'rgba(250, 129, 37,.1)' : 'none'} />
           <span className={`text-[10px] ${marketActive ? 'font-extrabold' : 'font-medium'}`}>{t('nav.marketplace')}</span>
         </Link>
 
         {/* ضيف — FAB */}
         <Link href="/add-listing" onClick={addListing} className="flex flex-col items-center -mt-[26px] no-underline">
-          <span className="w-[52px] h-[52px] rounded-[18px] bg-gradient-to-br from-[#FA8125] to-[#2FA084] border-[3px] border-white flex items-center justify-center shadow-[0_10px_24px_-6px_rgba(250, 129, 37,.5)]">
+          <span className="w-[52px] h-[52px] rounded-[18px] bg-gradient-to-br from-[#34D399] to-[#2FA084] border-[3px] border-white flex items-center justify-center shadow-[0_10px_24px_-6px_rgba(250, 129, 37,.5)]">
             <Plus className="w-6 h-6 text-white" strokeWidth={3} />
           </span>
-          <span className="text-[10px] font-extrabold text-[#FA8125] mt-[3px]">{en ? 'List' : 'ضيف'}</span>
+          <span className="text-[10px] font-extrabold text-[#059669] mt-[3px]">{en ? 'List' : 'ضيف'}</span>
         </Link>
 
         {/* الشات */}
-        <Link href="/chat" className={`flex flex-col items-center gap-1 no-underline ${chatActive ? 'text-[#FA8125]' : 'text-[#6B7280]'}`}>
+        <Link href="/chat" className={`flex flex-col items-center gap-1 no-underline ${chatActive ? 'text-[#059669]' : 'text-[#6B7280]'}`}>
           <span className={`text-[20px] leading-none ${chatActive ? '' : 'grayscale opacity-75'}`}>🧞</span>
           <span className={`text-[10px] ${chatActive ? 'font-extrabold' : 'font-medium'}`}>{en ? 'Chat' : 'الشات'}</span>
         </Link>
 
         {/* حسابي */}
-        <Link href="/account" className={`flex flex-col items-center gap-1 no-underline ${accountActive ? 'text-[#FA8125]' : 'text-[#6B7280]'}`}>
+        <Link href="/account" className={`flex flex-col items-center gap-1 no-underline ${accountActive ? 'text-[#059669]' : 'text-[#6B7280]'}`}>
           <User className="w-5 h-5" strokeWidth={accountActive ? 2.5 : 2} />
           <span className={`text-[10px] ${accountActive ? 'font-extrabold' : 'font-medium'}`}>{t('nav.account')}</span>
         </Link>

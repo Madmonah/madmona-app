@@ -247,7 +247,7 @@ export default function SupplierOrderDetailPage() {
 
   // ---- Stage guards ----
   if (stage === 'loading') {
-    return <Center><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></Center>
+    return <Center><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></Center>
   }
   if (stage === 'unauthenticated') {
     return <ErrorBlock title="سجل دخول الأول" href="/auth/login" hrefLabel="سجل دخول" />
@@ -283,7 +283,7 @@ export default function SupplierOrderDetailPage() {
             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">تفاصيل الأوردر</p>
             <button onClick={() => copyToClipboard(order.reference_code, 'ref')} className="flex items-center gap-1 group">
               <p className="text-sm font-black text-gray-900 tabular" dir="ltr">{order.reference_code}</p>
-              <Copy className="w-3 h-3 text-gray-400 group-hover:text-[#FA8125]" />
+              <Copy className="w-3 h-3 text-gray-400 group-hover:text-[#059669]" />
             </button>
           </div>
           <span className={`flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold ${meta.bg} ${meta.fg}`}>
@@ -313,7 +313,7 @@ export default function SupplierOrderDetailPage() {
         {/* Customer info */}
         <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up">
           <h2 className="text-sm font-black text-gray-900 mb-3 flex items-center gap-2">
-            <User className="w-4 h-4 text-[#FA8125]" />
+            <User className="w-4 h-4 text-[#059669]" />
             العميل
           </h2>
           <div className="flex items-center justify-between gap-3">
@@ -346,7 +346,7 @@ export default function SupplierOrderDetailPage() {
         {order.delivery_address && (
           <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-100">
             <h2 className="text-sm font-black text-gray-900 mb-3 flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#FA8125]" />
+              <MapPin className="w-4 h-4 text-[#059669]" />
               التوصيل
             </h2>
             <p className="text-sm text-gray-700 leading-relaxed mb-2">{order.delivery_address}</p>
@@ -363,7 +363,7 @@ export default function SupplierOrderDetailPage() {
                 </span>
                 <button
                   onClick={() => copyToClipboard(order.delivery_phone || '', 'phone')}
-                  className="text-sm font-bold tabular text-gray-900 hover:text-[#FA8125]"
+                  className="text-sm font-bold tabular text-gray-900 hover:text-[#059669]"
                   dir="ltr"
                 >
                   {order.delivery_phone} {copySuccess === 'phone' && <span className="text-green-600 text-xs">✓</span>}
@@ -382,7 +382,7 @@ export default function SupplierOrderDetailPage() {
         {order.customer_notes && (
           <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-200">
             <h2 className="text-sm font-black text-gray-900 mb-2 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#FA8125]" />
+              <FileText className="w-4 h-4 text-[#059669]" />
               ملاحظات العميل
             </h2>
             <p className="text-sm text-gray-700 leading-relaxed">{order.customer_notes}</p>
@@ -393,7 +393,7 @@ export default function SupplierOrderDetailPage() {
         <section className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-200">
           <div className="p-5 border-b border-gray-100">
             <h2 className="text-sm font-black text-gray-900 flex items-center gap-2">
-              <ShoppingBag className="w-4 h-4 text-[#FA8125]" />
+              <ShoppingBag className="w-4 h-4 text-[#059669]" />
               الأصناف <span className="text-gray-400 tabular">({order.items.length})</span>
             </h2>
           </div>
@@ -419,7 +419,7 @@ export default function SupplierOrderDetailPage() {
                     </p>
                   )}
                 </div>
-                <p className="font-black text-sm text-[#FA8125] tabular flex-shrink-0">
+                <p className="font-black text-sm text-[#059669] tabular flex-shrink-0">
                   {it.line_total.toLocaleString('ar-EG')}
                   <span className="text-[10px] font-medium text-gray-500 ms-1">ج.م</span>
                 </p>
@@ -427,7 +427,7 @@ export default function SupplierOrderDetailPage() {
             ))}
           </div>
           {/* Summary */}
-          <div className="bg-gradient-to-l from-[#FA8125]/5 to-transparent border-t border-[#FA8125]/10 p-5 space-y-1.5">
+          <div className="bg-gradient-to-l from-[#34D399]/5 to-transparent border-t border-[#059669]/10 p-5 space-y-1.5">
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">المجموع الفرعي</span>
               <span className="font-bold tabular">{order.subtotal_amount.toLocaleString('ar-EG')} ج.م</span>
@@ -448,9 +448,9 @@ export default function SupplierOrderDetailPage() {
               <span className="text-gray-400">عمولة مضمونة ({Number(order.commission_rate).toFixed(1)}%)</span>
               <span className="text-gray-400 tabular">-{order.commission_amount.toLocaleString('ar-EG')} ج.م</span>
             </div>
-            <div className="flex justify-between pt-2 border-t border-[#FA8125]/20">
-              <span className="text-sm font-black text-[#FA8125]">صافي مستحقاتك</span>
-              <span className="text-xl font-black text-[#FA8125] tabular">
+            <div className="flex justify-between pt-2 border-t border-[#059669]/20">
+              <span className="text-sm font-black text-[#059669]">صافي مستحقاتك</span>
+              <span className="text-xl font-black text-[#059669] tabular">
                 {order.supplier_payout.toLocaleString('ar-EG')} ج.م
               </span>
             </div>
@@ -460,7 +460,7 @@ export default function SupplierOrderDetailPage() {
         {/* Supplier notes (editable) */}
         <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-300">
           <h2 className="text-sm font-black text-gray-900 mb-3 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-[#FA8125]" />
+            <FileText className="w-4 h-4 text-[#059669]" />
             ملاحظاتك الداخلية
           </h2>
           <textarea
@@ -468,13 +468,13 @@ export default function SupplierOrderDetailPage() {
             onChange={(e) => setSupplierNotes(e.target.value)}
             placeholder="ملاحظات للنفسك أو لفريقك (مش هتظهر للعميل)"
             rows={2}
-            className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#FA8125] focus:ring-2 focus:ring-[#FA8125]/20 outline-none transition-all text-sm font-medium resize-none mb-2"
+            className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#059669] focus:ring-2 focus:ring-[#059669]/20 outline-none transition-all text-sm font-medium resize-none mb-2"
           />
           <div className="flex justify-end">
             <button
               onClick={saveSupplierNotes}
               disabled={notesSaving}
-              className="text-xs font-bold text-[#FA8125] px-4 py-2 rounded-xl hover:bg-[#FA8125]/10 disabled:opacity-60 transition-all"
+              className="text-xs font-bold text-[#059669] px-4 py-2 rounded-xl hover:bg-[#34D399]/10 disabled:opacity-60 transition-all"
             >
               {notesSaving ? '...' : notesSaved ? '✓ متحفظ' : 'احفظ الملاحظات'}
             </button>
@@ -504,7 +504,7 @@ export default function SupplierOrderDetailPage() {
               <button
                 onClick={() => advanceStatus(action.next)}
                 disabled={updating}
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-[#FA8125] text-white px-6 py-4 rounded-2xl font-bold shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all disabled:opacity-60"
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-[#34D399] text-[#04352A] px-6 py-4 rounded-2xl font-bold shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all disabled:opacity-60"
               >
                 {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <action.icon className="w-4 h-4" />}
                 {action.label}
@@ -532,7 +532,7 @@ export default function SupplierOrderDetailPage() {
               <button
                 onClick={() => advanceStatus(action.next)}
                 disabled={updating}
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-[#FA8125] text-white py-4 rounded-2xl font-bold shadow-elevated disabled:opacity-60"
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-[#34D399] text-[#04352A] py-4 rounded-2xl font-bold shadow-elevated disabled:opacity-60"
               >
                 {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <action.icon className="w-4 h-4" />}
                 {action.label}
@@ -610,7 +610,7 @@ function ErrorBlock({ title, subtitle, href, hrefLabel }: { title: string; subti
         {subtitle && <p className="text-sm text-gray-500 mb-5">{subtitle}</p>}
         <Link
           href={href}
-          className="inline-flex items-center gap-2 bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-bold shadow-soft hover:shadow-card transition-all"
+          className="inline-flex items-center gap-2 bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-bold shadow-soft hover:shadow-card transition-all"
         >
           {hrefLabel}
         </Link>

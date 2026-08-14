@@ -115,7 +115,7 @@ export default function ProjectGallery({
               onClick={() => setActive(i)}
               className={`shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
                 i === active
-                  ? 'border-[#FA8125] ring-2 ring-[#FA8125]/20'
+                  ? 'border-[#059669] ring-2 ring-[#059669]/20'
                   : 'border-transparent opacity-65 hover:opacity-100'
               }`}
             >
@@ -204,7 +204,7 @@ function VideoBlock({
     return (
       <button
         onClick={() => setPlaying(true)}
-        className="mt-3 flex items-center justify-center gap-2 w-full bg-white border-2 border-[#FA8125]/20 text-[#FA8125] font-semibold py-3.5 rounded-2xl hover:bg-[#FA8125]/5 hover:border-[#FA8125]/40 transition-all"
+        className="mt-3 flex items-center justify-center gap-2 w-full bg-white border-2 border-[#059669]/20 text-[#059669] font-semibold py-3.5 rounded-2xl hover:bg-[#34D399]/5 hover:border-[#059669]/40 transition-all"
       >
         <PlayCircle className="w-5 h-5" />
         شوف فيديو المشروع

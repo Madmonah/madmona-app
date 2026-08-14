@@ -94,7 +94,7 @@ export default function ProjectForm({
           فريق مضمونة هيراجعه وينشره في البورصة خلال ساعات.
           <br />
           لأي استفسار كلّم <strong>المارد 🧞</strong> — مساعد مضمونة الذكي — على واتساب{' '}
-          <a href="https://wa.me/201002229982" className="text-[#FA8125] font-bold hover:underline">
+          <a href="https://wa.me/201002229982" className="text-[#059669] font-bold hover:underline">
             01002229982
           </a>
         </p>
@@ -103,7 +103,7 @@ export default function ProjectForm({
   }
 
   const inputCls =
-    'w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/25 focus:border-[#FA8125]'
+    'w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/25 focus:border-[#059669]'
   const labelCls = 'block text-xs font-semibold text-gray-700 mb-1'
 
   return (
@@ -282,7 +282,7 @@ export default function ProjectForm({
       <button
         type="submit"
         disabled={busy}
-        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#FA8125] text-white font-bold text-sm disabled:opacity-60 hover:opacity-95 transition-opacity"
+        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#34D399] text-[#04352A] font-bold text-sm disabled:opacity-60 hover:opacity-95 transition-opacity"
       >
         {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
         {busy ? 'بيحفظ…' : initial?.id ? 'احفظ التعديلات' : mode === 'public' ? 'ابعت المشروع' : 'ضيف المشروع'}

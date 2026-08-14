@@ -142,15 +142,15 @@ export default async function FunnelDashboard({
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div>
-            <h1 style={{ color: '#FA8125', margin: 0, fontSize: 26 }}>📊 Conversion Funnel</h1>
+            <h1 style={{ color: '#059669', margin: 0, fontSize: 26 }}>📊 Conversion Funnel</h1>
             <p style={{ color: '#666', margin: '4px 0 0', fontSize: 13 }}>
               من إعلان إلى Lead إلى حجز — لكل campaign
             </p>
           </div>
           <div style={{ display: 'flex', gap: 12, fontSize: 13 }}>
-            <a href="/admin/agents" style={{ color: '#FA8125' }}>← Agents</a>
-            <a href="/admin/leads-feed" style={{ color: '#FA8125' }}>← Leads</a>
-            <a href="/admin/ad-builder" style={{ color: '#FA8125' }}>← Ad Builder</a>
+            <a href="/admin/agents" style={{ color: '#059669' }}>← Agents</a>
+            <a href="/admin/leads-feed" style={{ color: '#059669' }}>← Leads</a>
+            <a href="/admin/ad-builder" style={{ color: '#059669' }}>← Ad Builder</a>
           </div>
         </div>
 
@@ -166,14 +166,14 @@ export default async function FunnelDashboard({
               key={opt.d}
               href={`?days=${opt.d}`}
               style={{
-                background: days === opt.d ? '#FA8125' : '#fff',
-                color: days === opt.d ? '#FAF7F0' : '#FA8125',
+                background: days === opt.d ? '#059669' : '#fff',
+                color: days === opt.d ? '#FAF7F0' : '#059669',
                 padding: '8px 16px',
                 borderRadius: 8,
                 textDecoration: 'none',
                 fontSize: 13,
                 fontWeight: 'bold',
-                border: '1px solid #FA8125',
+                border: '1px solid #059669',
               }}
             >
               {opt.label}
@@ -190,7 +190,7 @@ export default async function FunnelDashboard({
             marginBottom: 20,
             border: '1px solid #eee',
           }}>
-            <h3 style={{ color: '#FA8125', margin: '0 0 16px' }}>📐 Funnel الإجمالي ({days} يوم)</h3>
+            <h3 style={{ color: '#059669', margin: '0 0 16px' }}>📐 Funnel الإجمالي ({days} يوم)</h3>
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(5, 1fr)',
@@ -201,11 +201,11 @@ export default async function FunnelDashboard({
                 { label: '👁️ زيارات', val: rows[0].visits, color: '#666' },
                 { label: '🎯 Leads', val: rows[0].leads, color: '#2FA084', rate: rate(rows[0].leads, rows[0].visits) },
                 { label: '🔥 عالي النية', val: rows[0].high_priority_leads, color: '#6FCF97', rate: rate(rows[0].high_priority_leads, rows[0].leads) },
-                { label: '💰 حجوزات', val: rows[0].bookings, color: '#FA8125', rate: rate(rows[0].bookings, rows[0].leads) },
-                { label: '💵 إيرادات', val: `${rows[0].total_revenue.toLocaleString()}ج`, color: '#FA8125' },
+                { label: '💰 حجوزات', val: rows[0].bookings, color: '#059669', rate: rate(rows[0].bookings, rows[0].leads) },
+                { label: '💵 إيرادات', val: `${rows[0].total_revenue.toLocaleString()}ج`, color: '#059669' },
               ].map((stage, i) => (
                 <div key={i} style={{
-                  background: i === 0 ? '#FAF7F0' : i === 4 ? '#FA8125' : '#fff',
+                  background: i === 0 ? '#FAF7F0' : i === 4 ? '#059669' : '#fff',
                   color: i === 4 ? '#FAF7F0' : '#1a1a1a',
                   padding: 14,
                   borderRadius: 10,
@@ -234,7 +234,7 @@ export default async function FunnelDashboard({
         {/* Per-campaign breakdown */}
         <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', border: '1px solid #eee' }}>
           <div style={{ padding: '12px 16px', background: '#FAF7F0', borderBottom: '1px solid #eee' }}>
-            <h3 style={{ margin: 0, color: '#FA8125', fontSize: 16 }}>📋 تفصيل لكل Campaign</h3>
+            <h3 style={{ margin: 0, color: '#059669', fontSize: 16 }}>📋 تفصيل لكل Campaign</h3>
           </div>
 
           {rows.length === 1 ? (
@@ -259,7 +259,7 @@ export default async function FunnelDashboard({
               <tbody>
                 {rows.slice(1).map((r, i) => (
                   <tr key={i} style={{ borderTop: '1px solid #f0f0f0' }}>
-                    <td style={{ ...tdStyle, fontWeight: 'bold', color: '#FA8125' }}>{r.campaign}</td>
+                    <td style={{ ...tdStyle, fontWeight: 'bold', color: '#059669' }}>{r.campaign}</td>
                     <td style={tdStyle}>
                       <span style={{
                         background: '#FAF7F0',
@@ -295,7 +295,7 @@ export default async function FunnelDashboard({
           color: '#666',
           lineHeight: 1.7,
         }}>
-          <strong style={{ color: '#FA8125' }}>💡 نصايح:</strong>
+          <strong style={{ color: '#059669' }}>💡 نصايح:</strong>
           <ul style={{ margin: '8px 0', paddingRight: 20 }}>
             <li>CR (Conversion Rate) أعلى = الـ landing page شغّالة كويس</li>
             <li>متوسط Score أعلى = الـ targeting بتاعك دقيق</li>

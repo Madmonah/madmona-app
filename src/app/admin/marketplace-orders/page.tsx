@@ -202,8 +202,8 @@ export default function AdminMarketplaceOrdersPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-          <div className="flex items-center justify-center w-12 h-12 bg-[#FA8125]/10 rounded-full mb-4 mx-auto">
-            <Lock className="w-5 h-5 text-[#FA8125]" />
+          <div className="flex items-center justify-center w-12 h-12 bg-[#34D399]/10 rounded-full mb-4 mx-auto">
+            <Lock className="w-5 h-5 text-[#059669]" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 text-center mb-1">تأكيد دفعات Orders</h1>
           <p className="text-xs text-gray-500 text-center mb-6">marketplace_orders</p>
@@ -213,13 +213,13 @@ export default function AdminMarketplaceOrdersPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="كلمة سر الإدارة"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 focus:border-[#FA8125] text-right"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669] text-right"
               autoFocus
             />
             {authError && <p className="text-sm text-red-600 text-center">{authError}</p>}
             <button
               type="submit" disabled={loading || !password}
-              className="w-full bg-[#FA8125] text-white py-3 rounded-xl font-semibold hover:bg-[#FA8125]/90 disabled:opacity-50"
+              className="w-full bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold hover:bg-[#34D399]/90 disabled:opacity-50"
             >
               {loading ? 'جاري التحقق...' : 'دخول'}
             </button>
@@ -264,7 +264,7 @@ export default function AdminMarketplaceOrdersPage() {
               key={t}
               onClick={() => setTab(t)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                tab === t ? 'bg-[#FA8125] text-white shadow-card' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                tab === t ? 'bg-[#34D399] text-[#04352A] shadow-card' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
               }`}
             >
               {t === 'pending_payment' ? `بانتظار التأكيد ${pendingCount > 0 && tab === t ? `(${pendingCount})` : ''}` :
@@ -308,7 +308,7 @@ export default function AdminMarketplaceOrdersPage() {
                           dir="ltr"
                         >
                           {o.reference_code}
-                          <Copy className="w-3 h-3 text-gray-400 group-hover:text-[#FA8125]" />
+                          <Copy className="w-3 h-3 text-gray-400 group-hover:text-[#059669]" />
                         </button>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${meta.bg} ${meta.fg}`}>
                           {meta.label}
@@ -331,7 +331,7 @@ export default function AdminMarketplaceOrdersPage() {
                       <p className="text-xs text-gray-500">{timeAgo(o.created_at)}</p>
                     </div>
                     <div className="text-left flex-shrink-0">
-                      <p className="text-lg font-bold text-[#FA8125] tabular">
+                      <p className="text-lg font-bold text-[#059669] tabular">
                         {o.total_amount.toLocaleString('ar-EG')}
                         <span className="text-[10px] font-normal text-gray-500 ms-1">ج.م</span>
                       </p>
@@ -486,7 +486,7 @@ export default function AdminMarketplaceOrdersPage() {
               onChange={(e) => setRefInput(e.target.value)}
               placeholder="مرجع InstaPay (اختياري)"
               dir="ltr"
-              className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#FA8125] focus:ring-2 focus:ring-[#FA8125]/20 outline-none text-sm mb-4 text-right tabular"
+              className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#059669] focus:ring-2 focus:ring-[#059669]/20 outline-none text-sm mb-4 text-right tabular"
             />
             <div className="flex gap-2">
               <button

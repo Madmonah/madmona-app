@@ -31,7 +31,7 @@ type DailyMessage = {
 };
 
 const categoryStyles: Record<string, { bg: string; border: string; emoji: string }> = {
-  greeting:     { bg: 'bg-[#FAFAF7]', border: 'border-[#FA8125]/30', emoji: '👋' },
+  greeting:     { bg: 'bg-[#FAFAF7]', border: 'border-[#059669]/30', emoji: '👋' },
   announcement: { bg: 'bg-amber-50',  border: 'border-amber-300',    emoji: '📢' },
   tip:          { bg: 'bg-emerald-50', border: 'border-emerald-300', emoji: '💡' },
   deal:         { bg: 'bg-rose-50',    border: 'border-rose-300',    emoji: '🎁' },
@@ -167,7 +167,7 @@ export default function DailyMessageCard() {
             <Link
               href={message.cta_url}
               onClick={handleCtaClick}
-              className="inline-block mt-3 px-4 py-2 rounded-xl bg-[#FA8125] text-white font-semibold text-sm hover:bg-[#FA8125]/90 transition-colors"
+              className="inline-block mt-3 px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] font-semibold text-sm hover:bg-[#34D399]/90 transition-colors"
             >
               {message.cta_label} ←
             </Link>
@@ -177,7 +177,7 @@ export default function DailyMessageCard() {
           <button
             type="button"
             onClick={handleShare}
-            className={`inline-flex items-center gap-1.5 ${message.cta_label && message.cta_url ? 'ms-2 mt-3' : 'mt-3'} px-3 py-2 rounded-xl bg-white border border-[#FA8125]/30 text-[#FA8125] font-semibold text-xs hover:bg-[#FA8125]/5 transition-colors`}
+            className={`inline-flex items-center gap-1.5 ${message.cta_label && message.cta_url ? 'ms-2 mt-3' : 'mt-3'} px-3 py-2 rounded-xl bg-white border border-[#059669]/30 text-[#059669] font-semibold text-xs hover:bg-[#34D399]/5 transition-colors`}
             title="شارك على واتساب أو غيره"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

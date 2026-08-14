@@ -49,10 +49,10 @@ export default function JoinPage({ params }: { params: { code: string } }) {
 
   const canVerify = name.trim().length > 1 && !!branchId
 
-  if (loadingInfo) return <div className="min-h-screen bg-[#FA8125] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
+  if (loadingInfo) return <div className="min-h-screen bg-[#34D399] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
 
   if (!info) return (
-    <div className="min-h-screen bg-[#FA8125] flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-[#34D399] flex items-center justify-center p-4" dir="rtl">
       <div className="bg-white rounded-3xl p-8 max-w-md text-center">
         <h2 className="text-xl font-black text-[#1A2E26]">اللينك مش صحيح</h2>
         <p className="text-sm text-[#6B7280] mt-2">تأكد من اللينك أو تواصل مع إدارتك.</p>
@@ -61,11 +61,11 @@ export default function JoinPage({ params }: { params: { code: string } }) {
   )
 
   return (
-    <div className="min-h-screen bg-[#FA8125] flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-[#34D399] flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
           <div className="w-16 h-16 rounded-2xl bg-white grid place-items-center mx-auto mb-4">
-            <span className="text-3xl font-black text-[#FA8125]">م</span>
+            <span className="text-3xl font-black text-[#059669]">م</span>
           </div>
           <h1 className="text-2xl font-black text-white">تسجيل موظف</h1>
           <p className="text-sm text-white/80 mt-1 flex items-center justify-center gap-1.5"><Building2 className="w-4 h-4" /> {info.business_name}</p>
@@ -75,7 +75,7 @@ export default function JoinPage({ params }: { params: { code: string } }) {
           {step === 'form' && (
             <>
               <p className="text-sm text-[#6B7280] mb-5 flex items-center gap-1.5">
-                <BadgeCheck className="w-4 h-4 text-[#FA8125]" /> سجّل بياناتك، وبعدين أكّد رقمك على واتساب بضغطة
+                <BadgeCheck className="w-4 h-4 text-[#059669]" /> سجّل بياناتك، وبعدين أكّد رقمك على واتساب بضغطة
               </p>
 
               <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">الاسم بالكامل</label>
@@ -100,7 +100,7 @@ export default function JoinPage({ params }: { params: { code: string } }) {
                 <WhatsAppLogin label="أكّد رقمك على واتساب وسجّل 🧞" getFullName={() => name} onDone={handleVerified} />
               ) : (
                 <p className="text-center text-xs text-[#6B7280] bg-[#FAFAF7] rounded-xl py-3 flex items-center justify-center gap-1.5">
-                  <MessageCircle className="w-4 h-4 text-[#FA8125]" /> املا اسمك واختار الفرع الأول
+                  <MessageCircle className="w-4 h-4 text-[#059669]" /> املا اسمك واختار الفرع الأول
                 </p>
               )}
 
@@ -110,17 +110,17 @@ export default function JoinPage({ params }: { params: { code: string } }) {
 
           {step === 'joining' && (
             <div className="text-center py-8 flex flex-col items-center gap-3">
-              <Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" />
+              <Loader2 className="w-8 h-8 text-[#059669] animate-spin" />
               <p className="text-sm font-bold text-[#1A2E26]">ثواني — بنسجّل طلبك…</p>
             </div>
           )}
 
           {step === 'done' && (
             <div className="text-center py-4">
-              <div className="w-16 h-16 rounded-full bg-[#FA8125]/10 grid place-items-center mx-auto mb-4"><BadgeCheck className="w-8 h-8 text-[#FA8125]" /></div>
+              <div className="w-16 h-16 rounded-full bg-[#34D399]/10 grid place-items-center mx-auto mb-4"><BadgeCheck className="w-8 h-8 text-[#059669]" /></div>
               <h2 className="text-xl font-black text-[#1A2E26] mb-2">تمام! 🎉</h2>
               <p className="text-sm text-[#6B7280] leading-relaxed">{doneMsg}</p>
-              <a href="/home" className="inline-block mt-5 px-6 py-2.5 rounded-xl bg-[#FA8125] text-white text-sm font-bold">روح لحسابي على مضمونة</a>
+              <a href="/home" className="inline-block mt-5 px-6 py-2.5 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold">روح لحسابي على مضمونة</a>
             </div>
           )}
         </div>

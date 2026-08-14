@@ -99,11 +99,11 @@ export default function FavoritesPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir={dir}>
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#059669] mx-auto mb-3" />
           <h1 className="font-bold mb-4">{t('booking.login_first')}</h1>
           <Link
             href="/auth/login?redirect=/account/favorites"
-            className="block bg-[#FA8125] text-white py-3 rounded-xl font-semibold"
+            className="block bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold"
           >
             {t('auth.login.title')}
           </Link>
@@ -136,7 +136,7 @@ export default function FavoritesPage() {
             </p>
             <Link
               href="/marketplace"
-              className="inline-flex items-center gap-1 bg-[#FA8125] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#FA8125]/90"
+              className="inline-flex items-center gap-1 bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#34D399]/90"
             >
               <Search className="w-4 h-4" />
               {t('listing.browse_marketplace')}
@@ -202,7 +202,7 @@ export default function FavoritesPage() {
                         {startingPrice !== null ? (
                           <>
                             <span className="text-xs text-gray-500">{t('market.starts_from')}</span>
-                            <p className="font-bold text-[#FA8125]">
+                            <p className="font-bold text-[#059669]">
                               {startingPrice.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} <span className="text-xs font-normal">{t('common.egp')}</span>
                             </p>
                           </>

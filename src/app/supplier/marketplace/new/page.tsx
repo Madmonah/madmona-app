@@ -186,11 +186,11 @@ export default function NewListingPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#059669] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
           <Link
             href={`/auth/login?redirect=${encodeURIComponent('/supplier/marketplace/new')}`}
-            className="block bg-[#FA8125] text-white py-3 rounded-xl font-semibold"
+            className="block bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold"
           >
             تسجيل دخول
           </Link>
@@ -210,7 +210,7 @@ export default function NewListingPage() {
           </p>
           <Link
             href="/supplier/marketplace"
-            className="inline-block bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold"
+            className="inline-block bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-semibold"
           >
             ارجع للوحة
           </Link>
@@ -230,7 +230,7 @@ export default function NewListingPage() {
           </p>
           <Link
             href="/supplier/register"
-            className="inline-block bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold"
+            className="inline-block bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-semibold"
           >
             سجّل دلوقتي
           </Link>
@@ -253,7 +253,7 @@ export default function NewListingPage() {
           </p>
           <a
             href="https://wa.me/201002229982"
-            className="inline-block bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold"
+            className="inline-block bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-semibold"
           >
             تواصل
           </a>
@@ -302,7 +302,7 @@ export default function NewListingPage() {
               </p>
               <Link
                 href="/admin/marketplace-suppliers"
-                className="inline-block bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold"
+                className="inline-block bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-semibold"
               >
                 إدارة أجر معانا
               </Link>
@@ -311,7 +311,7 @@ export default function NewListingPage() {
             <div className="bg-white rounded-2xl border p-6 space-y-4">
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Building2 className="w-3.5 h-3.5 text-[#FA8125]" />
+                  <Building2 className="w-3.5 h-3.5 text-[#059669]" />
                   أجر معانا
                 </label>
                 <div className="relative">
@@ -324,7 +324,7 @@ export default function NewListingPage() {
                         setUserId(e.target.value)
                       }
                     }}
-                    className="w-full appearance-none px-4 py-3 bg-[#FAFAF7] border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#FA8125]/40 focus:ring-4 focus:ring-[#FA8125]/10"
+                    className="w-full appearance-none px-4 py-3 bg-[#FAFAF7] border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#059669]/40 focus:ring-4 focus:ring-[#059669]/10"
                   >
                     {suppliers.map(s => (
                       <option key={s.id} value={s.id}>
@@ -337,7 +337,7 @@ export default function NewListingPage() {
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
                   {suppliers.length} أجر معانا موافق · المختار:{' '}
-                  <span className="font-bold text-[#FA8125]">
+                  <span className="font-bold text-[#059669]">
                     {suppliers.find(s => s.id === selectedSupplierId)?.business_name}
                   </span>
                 </p>
@@ -347,7 +347,7 @@ export default function NewListingPage() {
                 type="button"
                 onClick={handleAdminConfirm}
                 disabled={!selectedSupplierId}
-                className="w-full bg-[#FA8125] text-white py-3.5 rounded-xl font-bold shadow-soft hover:shadow-elevated hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
+                className="w-full bg-[#34D399] text-[#04352A] py-3.5 rounded-xl font-bold shadow-soft hover:shadow-elevated hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
               >
                 ابدأ إنشاء المنتج
                 <ArrowRight className="w-4 h-4 rotate-180" />

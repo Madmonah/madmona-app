@@ -94,7 +94,7 @@ export default function MyAssetsCard() {
   if (loading) {
     return (
       <div className="bg-white rounded-3xl shadow-soft p-6 flex items-center justify-center">
-        <Loader2 className="w-5 h-5 text-[#FA8125] animate-spin" />
+        <Loader2 className="w-5 h-5 text-[#059669] animate-spin" />
       </div>
     )
   }
@@ -104,7 +104,7 @@ export default function MyAssetsCard() {
   // 🔵 داخل بجوجل ولسه محطش رقم — من غير الرقم مفيش ملكية، فده أهم زرار في الصفحة
   if (data.needs_phone) {
     return (
-      <div className="bg-gradient-to-br from-[#FA8125] to-[#2FA084] rounded-3xl shadow-soft p-6 text-white">
+      <div className="bg-gradient-to-br from-[#34D399] to-[#2FA084] rounded-3xl shadow-soft p-6 text-white">
         <div className="flex items-start gap-3">
           <div className="w-11 h-11 rounded-2xl bg-white/15 flex items-center justify-center shrink-0">
             <Phone className="w-5 h-5" />
@@ -117,7 +117,7 @@ export default function MyAssetsCard() {
             </p>
             <Link
               href="/auth/complete-phone?redirect=/account"
-              className="inline-flex items-center gap-1.5 bg-white text-[#FA8125] font-bold text-xs px-4 py-2.5 rounded-full no-underline hover:bg-white/90 transition-colors"
+              className="inline-flex items-center gap-1.5 bg-white text-[#059669] font-bold text-xs px-4 py-2.5 rounded-full no-underline hover:bg-white/90 transition-colors"
             >
               أضف رقمي دلوقتي
             </Link>
@@ -143,7 +143,7 @@ export default function MyAssetsCard() {
       <div className="px-6 py-4 space-y-3">
         {meetings.map((m) => (
           <div key={m.id} className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#2FA084]/10 text-[#FA8125] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-[#2FA084]/10 text-[#059669] flex items-center justify-center shrink-0">
               <CalendarClock className="w-4.5 h-4.5" />
             </div>
             <div className="flex-1 min-w-0">
@@ -196,7 +196,7 @@ export default function MyAssetsCard() {
                 href="/my-projects"
                 className="shrink-0 w-32 no-underline group"
               >
-                <div className="relative w-32 h-20 rounded-xl overflow-hidden bg-gradient-to-br from-[#FA8125] to-[#2FA084] mb-1.5">
+                <div className="relative w-32 h-20 rounded-xl overflow-hidden bg-gradient-to-br from-[#34D399] to-[#2FA084] mb-1.5">
                   {p.cover_url ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
@@ -241,12 +241,12 @@ export default function MyAssetsCard() {
                 href={b.href}
                 className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-gray-50 transition-colors no-underline"
               >
-                <div className="w-8 h-8 rounded-lg bg-[#FA8125]/10 flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="w-8 h-8 rounded-lg bg-[#34D399]/10 flex items-center justify-center shrink-0 overflow-hidden">
                   {b.logo_url ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img src={b.logo_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <Store className="w-4 h-4 text-[#FA8125]" />
+                    <Store className="w-4 h-4 text-[#059669]" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -287,7 +287,7 @@ export default function MyAssetsCard() {
             {data.listings.length > 5 && (
               <Link
                 href="/supplier/marketplace"
-                className="block text-center text-[10px] font-bold text-[#FA8125] py-1.5 no-underline hover:underline"
+                className="block text-center text-[10px] font-bold text-[#059669] py-1.5 no-underline hover:underline"
               >
                 شوف الـ{data.listings.length} كلهم
               </Link>
@@ -313,13 +313,13 @@ function AssetGroup({
     <div className="px-5 py-4 border-b border-gray-50 last:border-0">
       <div className="flex items-center justify-between mb-2.5">
         <p className="flex items-center gap-1.5 text-xs font-bold text-gray-700">
-          <span className="text-[#FA8125]">{icon}</span>
+          <span className="text-[#059669]">{icon}</span>
           {label}
           <span className="text-[10px] text-gray-400 font-medium">({count})</span>
         </p>
         <Link
           href={href}
-          className="text-[10px] font-bold text-[#FA8125] no-underline hover:underline"
+          className="text-[10px] font-bold text-[#059669] no-underline hover:underline"
         >
           تحكّم
         </Link>

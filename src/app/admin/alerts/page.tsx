@@ -44,7 +44,7 @@ export default async function AdminAlertsPage({
     <div dir="rtl" style={pageStyle}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <header style={{ marginBottom: 20, textAlign: 'center' }}>
-          <h1 style={{ color: '#FA8125', margin: 0, fontSize: 26 }}>🔔 Admin Alerts</h1>
+          <h1 style={{ color: '#059669', margin: 0, fontSize: 26 }}>🔔 Admin Alerts</h1>
           <p style={{ color: '#666', marginTop: 6, fontSize: 13 }}>
             {totalCount ?? 0} alert · operational notifications
           </p>
@@ -71,7 +71,7 @@ export default async function AdminAlertsPage({
               opacity: a.status === 'resolved' ? 0.6 : 1,
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 8 }}>
-                <h3 style={{ margin: 0, color: '#FA8125', fontSize: 14 }}>{a.title}</h3>
+                <h3 style={{ margin: 0, color: '#059669', fontSize: 14 }}>{a.title}</h3>
                 <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                   {a.severity && <span style={{ ...badge, background: severityColor(a.severity) }}>{a.severity}</span>}
                   {a.status && <span style={{ ...badge, background: statusBg(a.status) }}>{a.status}</span>}
@@ -88,7 +88,7 @@ export default async function AdminAlertsPage({
               {a.action_url && (
                 <div style={{ marginTop: 8 }}>
                   <a href={a.action_url} style={{
-                    color: '#FA8125', fontSize: 12, textDecoration: 'none',
+                    color: '#059669', fontSize: 12, textDecoration: 'none',
                     padding: '4px 10px', background: '#fafaf7', borderRadius: 6,
                     border: '1px solid #E5E5E0', display: 'inline-block',
                   }}>افتح ↗</a>
@@ -100,9 +100,9 @@ export default async function AdminAlertsPage({
 
         <div style={{ marginTop: 24, textAlign: 'center' }}>
           <a href="/admin/ai-os" style={{
-            color: '#FA8125', textDecoration: 'none', fontSize: 13,
+            color: '#059669', textDecoration: 'none', fontSize: 13,
             padding: '8px 16px', background: '#fff', borderRadius: 8,
-            border: '1px solid #FA8125', display: 'inline-block',
+            border: '1px solid #059669', display: 'inline-block',
           }}>← رجوع للداشبورد</a>
         </div>
       </div>
@@ -113,7 +113,7 @@ export default async function AdminAlertsPage({
 function severityColor(sev: string | null): string {
   switch (sev) {
     case 'critical': return '#DC2626'
-    case 'high': return '#EA580C'
+    case 'high': return '#059669'
     case 'warning': return '#2FA084'
     case 'info': return '#0EA5E9'
     default: return '#888'
@@ -140,10 +140,10 @@ const cardStyle: React.CSSProperties = {
 const chipStyle: React.CSSProperties = {
   fontSize: 12, padding: '6px 12px', background: '#fff',
   borderRadius: 20, border: '1px solid #E5E5E0',
-  color: '#FA8125', textDecoration: 'none',
+  color: '#059669', textDecoration: 'none',
 }
 const chipActiveStyle: React.CSSProperties = {
-  ...chipStyle, background: '#FA8125', color: '#fff', borderColor: '#FA8125',
+  ...chipStyle, background: '#059669', color: '#fff', borderColor: '#059669',
 }
 const badge: React.CSSProperties = {
   fontSize: 10, padding: '3px 8px', borderRadius: 12,

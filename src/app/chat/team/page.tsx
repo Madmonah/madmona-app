@@ -850,10 +850,10 @@ export default function TeamPage() {
     if (chanRef.current) { supabaseBrowser.removeChannel(chanRef.current); chanRef.current = null }
   }
 
-  if (!ready) return <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'linear-gradient(160deg,#14231E,#FA8125)', color: '#fff', fontFamily: 'system-ui' }}>لحظة…</div>
+  if (!ready) return <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'linear-gradient(160deg,#14231E,#059669)', color: '#fff', fontFamily: 'system-ui' }}>لحظة…</div>
 
   if (!uid) return (
-    <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'linear-gradient(160deg,#14231E,#FA8125)', color: '#fff', fontFamily: 'system-ui', textAlign: 'center', padding: 20 }}>
+    <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'linear-gradient(160deg,#14231E,#059669)', color: '#fff', fontFamily: 'system-ui', textAlign: 'center', padding: 20 }}>
       <div>
         <div style={{ fontSize: 44 }}>👥</div>
         <h2>الجروبات</h2>
@@ -865,7 +865,7 @@ export default function TeamPage() {
 
   if (!active) return (
     <div dir="rtl" style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
-      <header style={{ background: 'linear-gradient(135deg,#14231E,#FA8125)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
+      <header style={{ background: 'linear-gradient(135deg,#14231E,#059669)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)' }}>
         <div style={{ flex: 1, minWidth: 0, fontWeight: 900, fontSize: 17, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>👥 جروباتك</div>
         <button onClick={() => setShowFriends(true)} title="أصحابي ودفتري" aria-label="أصحابي ودفتري" style={{ background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.18)', color: '#fff', borderRadius: 999, width: 34, height: 34, display: 'grid', placeItems: 'center', fontSize: 16, cursor: 'pointer', flexShrink: 0, padding: 0 }}>🤝</button>
         <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -934,7 +934,7 @@ export default function TeamPage() {
             ) : starredMsgs.map((sm) => (
               <div key={sm.id} style={{ borderBottom: '1px solid #F1EEE6', padding: '10px 2px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 2 }}>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: '#FA8125' }}>{sm.sender_name || 'عضو'}</span>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: '#059669' }}>{sm.sender_name || 'عضو'}</span>
                   <span style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF' }}>{t(sm.created_at)}</span>
                 </div>
                 <div style={{ fontSize: 13.5, fontWeight: 600, color: '#14231E', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{sm.body || '📎 مرفق'}</div>
@@ -963,7 +963,7 @@ export default function TeamPage() {
 
   return (
     <div dir="rtl" style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#F1EEE6', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
-      <header style={{ background: 'linear-gradient(135deg,#14231E,#FA8125)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)', zIndex: 2 }}>
+      <header style={{ background: 'linear-gradient(135deg,#14231E,#059669)', color: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 14px rgba(20,35,30,.28)', zIndex: 2 }}>
         {/* (31 Jul 2026 - محمد: «الفردي يفتح في الشات والجماعي في جروب»)
             الرجوع بيرجّعك للتاب اللي جيت منه: المحادثة الفردية -> /chat،
             الجروب -> قايمة الجروبات. قبل كده الاتنين كانوا بيرجعوا لقايمة
@@ -995,7 +995,7 @@ export default function TeamPage() {
           {searchHits.map((h) => (
             <button key={h.id} onClick={() => jumpTo(h.id)} style={{ display: 'block', width: '100%', textAlign: 'start', background: 'none', border: 'none', borderBottom: '1px solid #F1EEE6', padding: '10px 4px', cursor: 'pointer', fontFamily: 'inherit' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 2 }}>
-                <span style={{ fontSize: 11, fontWeight: 800, color: '#FA8125' }}>{h.sender_name || 'عضو'}</span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: '#059669' }}>{h.sender_name || 'عضو'}</span>
                 <span style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF' }}>{t(h.created_at)}</span>
               </div>
               <div style={{ fontSize: 13, fontWeight: 600, color: '#14231E', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.body || '📎 مرفق'}</div>
@@ -1085,7 +1085,7 @@ export default function TeamPage() {
             ) : starredMsgs.map((sm) => (
               <div key={sm.id} style={{ borderBottom: '1px solid #F1EEE6', padding: '10px 2px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 2 }}>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: '#FA8125' }}>{sm.sender_name || 'عضو'}</span>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: '#059669' }}>{sm.sender_name || 'عضو'}</span>
                   <span style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF' }}>{t(sm.created_at)}</span>
                 </div>
                 <div style={{ fontSize: 13.5, fontWeight: 600, color: '#14231E', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{sm.body || '📎 مرفق'}</div>
@@ -1117,7 +1117,7 @@ export default function TeamPage() {
               </div>
             )}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={sendContact} style={{ flex: 1, background: 'linear-gradient(118deg,#FA8125,#F98F2A)', color: '#fff', border: 'none', borderRadius: 999, padding: '11px 0', fontSize: 14, fontWeight: 900, cursor: 'pointer', fontFamily: 'inherit' }}>ابعت</button>
+              <button onClick={sendContact} style={{ flex: 1, background: 'linear-gradient(118deg,#059669,#34D399)', color: '#fff', border: 'none', borderRadius: 999, padding: '11px 0', fontSize: 14, fontWeight: 900, cursor: 'pointer', fontFamily: 'inherit' }}>ابعت</button>
               <button onClick={() => setContactDraft(null)} style={{ background: '#F1EEE6', color: '#5A6660', border: 'none', borderRadius: 999, padding: '11px 18px', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>إلغاء</button>
             </div>
           </div>
@@ -1152,7 +1152,7 @@ export default function TeamPage() {
               سري — مايبانش مين اختار إيه
             </label>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={createPoll} disabled={busy} style={{ flex: 1, background: 'linear-gradient(118deg,#FA8125,#F98F2A)', color: '#fff', border: 'none', borderRadius: 999, padding: '11px 0', fontSize: 14, fontWeight: 900, cursor: 'pointer', opacity: busy ? 0.6 : 1, fontFamily: 'inherit' }}>انشر الاستبيان</button>
+              <button onClick={createPoll} disabled={busy} style={{ flex: 1, background: 'linear-gradient(118deg,#059669,#34D399)', color: '#fff', border: 'none', borderRadius: 999, padding: '11px 0', fontSize: 14, fontWeight: 900, cursor: 'pointer', opacity: busy ? 0.6 : 1, fontFamily: 'inherit' }}>انشر الاستبيان</button>
               <button onClick={() => setPollDraft(null)} style={{ background: '#F1EEE6', color: '#5A6660', border: 'none', borderRadius: 999, padding: '11px 18px', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>إلغاء</button>
             </div>
           </div>
@@ -1235,14 +1235,14 @@ export default function TeamPage() {
                 onTouchStart={() => startPress(m)} onTouchEnd={cancelPress} onTouchMove={cancelPress}
                 onMouseDown={() => startPress(m)} onMouseUp={cancelPress} onMouseLeave={cancelPress}
                 onContextMenu={(e) => { e.preventDefault(); setMsgMenu(m) }}
-                style={{ maxWidth: '82%', background: mine ? 'linear-gradient(118deg,#FA8125,#F98F2A)' : (marid ? '#FFF7E0' : '#fff'), color: mine ? '#fff' : '#14231E', padding: '10px 14px', borderRadius: mine ? '18px 18px 5px 18px' : '18px 18px 18px 5px', boxShadow: mine ? '0 6px 16px -8px rgba(250, 129, 37,.45)' : '0 1px 2px rgba(20,35,30,.06)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 14, fontWeight: 600, lineHeight: 1.65, position: 'relative', userSelect: 'none', WebkitUserSelect: 'none', opacity: m.deleted_at ? 0.75 : 1 }}>
+                style={{ maxWidth: '82%', background: mine ? 'linear-gradient(118deg,#059669,#34D399)' : (marid ? '#FFF7E0' : '#fff'), color: mine ? '#fff' : '#14231E', padding: '10px 14px', borderRadius: mine ? '18px 18px 5px 18px' : '18px 18px 18px 5px', boxShadow: mine ? '0 6px 16px -8px rgba(250, 129, 37,.45)' : '0 1px 2px rgba(20,35,30,.06)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 14, fontWeight: 600, lineHeight: 1.65, position: 'relative', userSelect: 'none', WebkitUserSelect: 'none', opacity: m.deleted_at ? 0.75 : 1 }}>
                 {!mine && <div style={{ fontSize: 11, fontWeight: 800, color: marid ? '#B78A12' : '#2FA084', marginBottom: 2 }}>{marid ? '🧞 المارد' : (m.sender_name || 'عضو')}</div>}
                 {m.pinned_at && <div style={{ fontSize: 10, fontWeight: 800, color: mine ? '#CDEFE2' : '#B78A12', marginBottom: 3 }}>📌 مثبّتة</div>}
                 {m.reply_to && (() => {
                   const src = messages.find((x) => x.id === m.reply_to)
                   return (
                     <div style={{ borderInlineStart: `3px solid ${mine ? '#8FE3C8' : '#2FA084'}`, background: mine ? 'rgba(255,255,255,.14)' : '#F1EEE6', borderRadius: 8, padding: '5px 8px', marginBottom: 5, fontSize: 12, fontWeight: 600, opacity: 0.95 }}>
-                      <div style={{ fontWeight: 800, fontSize: 10.5, color: mine ? '#CDEFE2' : '#FA8125', marginBottom: 1 }}>{src?.sender_name || 'رسالة'}</div>
+                      <div style={{ fontWeight: 800, fontSize: 10.5, color: mine ? '#CDEFE2' : '#059669', marginBottom: 1 }}>{src?.sender_name || 'رسالة'}</div>
                       <div style={{ maxHeight: 32, overflow: 'hidden' }}>{src ? (src.deleted_at ? 'رسالة متحذفة' : (src.body || '📎 مرفق')) : 'الرسالة الأصلية مش ظاهرة'}</div>
                     </div>
                   )
@@ -1256,7 +1256,7 @@ export default function TeamPage() {
                     <div style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${mine ? 'rgba(255,255,255,.25)' : '#EAE5D9'}`, width: 210 }}>
                       <div style={{ height: 92, background: mine ? 'rgba(255,255,255,.14)' : '#EAF3EF', display: 'grid', placeItems: 'center', fontSize: 30 }}>🗺️</div>
                       <div style={{ padding: '7px 9px', background: mine ? 'rgba(255,255,255,.1)' : '#fff' }}>
-                        <div style={{ fontSize: 12, fontWeight: 800, color: mine ? '#fff' : '#FA8125' }}>📍 موقع</div>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: mine ? '#fff' : '#059669' }}>📍 موقع</div>
                         <div style={{ fontSize: 10.5, fontWeight: 600, color: mine ? 'rgba(255,255,255,.75)' : '#8A9690' }}>{Number(m.lat).toFixed(4)}, {Number(m.lng).toFixed(4)} · افتح في الخرايط</div>
                       </div>
                     </div>
@@ -1264,7 +1264,7 @@ export default function TeamPage() {
                 )}
                 {m.kind === 'contact' && m.payload && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 9, borderRadius: 12, padding: '8px 10px', marginBottom: 4, background: mine ? 'rgba(255,255,255,.14)' : '#F1EEE6', minWidth: 190 }}>
-                    <span style={{ width: 34, height: 34, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#FA8125)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 15, fontWeight: 800, flexShrink: 0 }}>{String(m.payload.name || 'ج').trim()[0]}</span>
+                    <span style={{ width: 34, height: 34, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#059669)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 15, fontWeight: 800, flexShrink: 0 }}>{String(m.payload.name || 'ج').trim()[0]}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 800, color: mine ? '#fff' : '#14231E' }}>{String(m.payload.name || '')}</div>
                       <div style={{ fontSize: 11, fontWeight: 600, color: mine ? 'rgba(255,255,255,.8)' : '#8A9690', direction: 'ltr' }}>{String(m.payload.phone || '')}</div>
@@ -1313,14 +1313,14 @@ export default function TeamPage() {
                   <audio src={m.media_url} controls style={{ display: 'block', maxWidth: 240, width: '100%', marginBottom: m.body ? 4 : 0 }} />
                 )}
                 {m.media_url && m.kind !== 'image' && m.kind !== 'video' && m.kind !== 'audio' && (
-                  <a href={m.media_url} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginBottom: m.body ? 4 : 0, color: mine ? '#CDEFE2' : '#FA8125', textDecoration: 'underline', fontSize: 14 }}>📎 ملف مرفق</a>
+                  <a href={m.media_url} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginBottom: m.body ? 4 : 0, color: mine ? '#CDEFE2' : '#059669', textDecoration: 'underline', fontSize: 14 }}>📎 ملف مرفق</a>
                 )}
                 {m.media_url && (
                   <button onClick={() => setForwardMsg(m)} title="تحويل لمحادثة تانية" style={{ display: 'block', marginBottom: 4, background: 'none', border: 'none', color: mine ? '#CDEFE2' : '#2FA084', cursor: 'pointer', fontSize: 12, padding: 0, fontFamily: 'inherit' }}>↗️ تحويل</button>
                 )}
                 {!['location', 'poll', 'contact'].includes(m.kind) && m.body}
                 {m.body && !['location', 'poll', 'contact'].includes(m.kind) && (
-                  <button onClick={() => addTask(m)} title="حوّل الرسالة لمهمة" style={{ display: 'block', marginTop: 4, background: 'none', border: 'none', color: mine ? '#CDEFE2' : '#FA8125', cursor: 'pointer', fontSize: 11, padding: 0, fontWeight: 800, fontFamily: 'inherit' }}>➕ حوّل لمهمة</button>
+                  <button onClick={() => addTask(m)} title="حوّل الرسالة لمهمة" style={{ display: 'block', marginTop: 4, background: 'none', border: 'none', color: mine ? '#CDEFE2' : '#059669', cursor: 'pointer', fontSize: 11, padding: 0, fontWeight: 800, fontFamily: 'inherit' }}>➕ حوّل لمهمة</button>
                 )}
                 </>
                 )}
@@ -1409,7 +1409,7 @@ export default function TeamPage() {
           <div style={{ fontSize: 10.5, fontWeight: 800, color: '#8A9690', padding: '7px 16px 3px' }}>نده على</div>
           {mentionList.map((mm) => (
             <button key={mm.member_id} onClick={() => pickMention(mm)} style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 10, background: 'none', border: 'none', padding: '9px 16px', cursor: 'pointer', textAlign: 'start', fontFamily: 'inherit' }}>
-              <span style={{ width: 30, height: 30, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#FA8125)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>{(mm.member_name || 'ع').trim()[0]}</span>
+              <span style={{ width: 30, height: 30, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%,#2FA084,#059669)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>{(mm.member_name || 'ع').trim()[0]}</span>
               <span style={{ fontSize: 13.5, fontWeight: 700, color: '#14231E' }}>{mm.member_name || 'عضو'}</span>
             </button>
           ))}
@@ -1418,7 +1418,7 @@ export default function TeamPage() {
       {(replyTo || editing) && (
         <div style={{ background: '#fff', borderTop: '1px solid rgba(0,0,0,.05)', padding: '8px 14px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ flex: 1, borderInlineStart: '3px solid #2FA084', background: '#F1EEE6', borderRadius: 8, padding: '6px 9px', minWidth: 0 }}>
-            <div style={{ fontSize: 10.5, fontWeight: 800, color: '#FA8125' }}>{editing ? '✏️ بتعدّل' : `↩️ رد على ${replyTo?.sender_name || 'رسالة'}`}</div>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: '#059669' }}>{editing ? '✏️ بتعدّل' : `↩️ رد على ${replyTo?.sender_name || 'رسالة'}`}</div>
             <div style={{ fontSize: 12, fontWeight: 600, color: '#5A6660', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{(editing || replyTo)?.body || '📎 مرفق'}</div>
           </div>
           <button onClick={() => { setReplyTo(null); if (editing) { setEditing(null); setInput('') } }} style={{ background: 'none', border: 'none', fontSize: 18, color: '#8A9690', cursor: 'pointer' }}>×</button>
@@ -1474,7 +1474,7 @@ export default function TeamPage() {
 }
 
 const callBtn: React.CSSProperties = { background: 'rgba(255,255,255,.12)', color: '#fff', border: '1px solid rgba(255,255,255,.18)', borderRadius: 999, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, padding: 0 }
-const actionBtn: React.CSSProperties = { width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,#FA8125,#2FA084)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, boxShadow: '0 8px 18px -6px rgba(250, 129, 37,.5)' }
+const actionBtn: React.CSSProperties = { width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,#059669,#2FA084)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, boxShadow: '0 8px 18px -6px rgba(250, 129, 37,.5)' }
 const sheetBtn: React.CSSProperties = { border: '1px solid #EAE5D9', background: '#FAFAF7', borderRadius: 12, padding: '10px 16px', fontSize: 26, cursor: 'pointer', display: 'grid', placeItems: 'center', gap: 2, fontFamily: 'inherit', flexShrink: 0 }
 const sheetLbl: React.CSSProperties = { fontSize: 12, color: '#5A6660', fontWeight: 600 }
 

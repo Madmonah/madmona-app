@@ -319,7 +319,7 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: 'center',
   },
   logo: { fontSize: 48, marginBottom: 12 },
-  title: { margin: '0 0 8px', fontSize: 22, color: '#FA8125', fontWeight: 700 },
+  title: { margin: '0 0 8px', fontSize: 22, color: '#059669', fontWeight: 700 },
   sub: { color: '#666', margin: '0 0 20px', lineHeight: 1.6, fontSize: 14 },
   input: {
     width: '100%',
@@ -367,7 +367,7 @@ const styles: Record<string, React.CSSProperties> = {
   btnGhost: {
     width: '100%',
     background: 'transparent',
-    color: '#FA8125',
+    color: '#059669',
     border: 'none',
     padding: '12px',
     fontSize: 14,
@@ -381,7 +381,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: '#F0F7F4',
     borderRadius: 8,
     fontSize: 13,
-    color: '#FA8125',
+    color: '#059669',
     lineHeight: 1.5,
   },
 }

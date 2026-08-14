@@ -114,7 +114,7 @@ export default function CareersAdminPage() {
         <header className="mb-6">
           <h1 className="text-3xl font-bold text-[#0A0A0A]">💼 طلبات التوظيف (Careers)</h1>
           <p className="text-sm text-gray-600 mt-1">
-            كل الـ applications اللي وصلت من <a href="/careers" target="_blank" className="text-[#FA8125] underline">madmonacairo.com/careers</a>
+            كل الـ applications اللي وصلت من <a href="/careers" target="_blank" className="text-[#059669] underline">madmonacairo.com/careers</a>
           </p>
         </header>
 
@@ -132,7 +132,7 @@ export default function CareersAdminPage() {
               key={s.key}
               onClick={() => setFilterStatus(s.key)}
               className={`${s.color} rounded-xl p-3 border-2 text-right hover:shadow-md transition ${
-                filterStatus === s.key ? 'border-[#FA8125]' : 'border-transparent'
+                filterStatus === s.key ? 'border-[#059669]' : 'border-transparent'
               }`}
             >
               <div className="text-xs text-gray-600">{s.label}</div>
@@ -147,7 +147,7 @@ export default function CareersAdminPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="ابحث بالاسم، التليفون، الإيميل، الوظيفة…"
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-[#FA8125]"
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-[#059669]"
           />
         </div>
 
@@ -188,7 +188,7 @@ export default function CareersAdminPage() {
                         <td className="px-4 py-3">{a.position || '—'}</td>
                         <td className="px-4 py-3 font-mono text-xs">
                           {a.phone ? (
-                            <a href={`https://wa.me/${a.phone.replace(/\D/g, '')}`} target="_blank" className="text-[#FA8125] hover:underline">
+                            <a href={`https://wa.me/${a.phone.replace(/\D/g, '')}`} target="_blank" className="text-[#059669] hover:underline">
                               {a.phone}
                             </a>
                           ) : '—'}
@@ -198,7 +198,7 @@ export default function CareersAdminPage() {
                         <td className="px-4 py-3 text-xs">{a.expected_salary || '—'}</td>
                         <td className="px-4 py-3">
                           {a.cv_url ? (
-                            <a href={a.cv_url} target="_blank" className="text-[#FA8125] underline text-xs">
+                            <a href={a.cv_url} target="_blank" className="text-[#059669] underline text-xs">
                               📄 CV
                             </a>
                           ) : '—'}

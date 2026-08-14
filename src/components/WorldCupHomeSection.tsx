@@ -69,7 +69,7 @@ export default function WorldCupHomeSection() {
     return (
       <Link
         href="/world-cup"
-        className="flex items-center gap-3 bg-gradient-to-l from-[#FA8125] to-[#2FA084] text-white rounded-2xl px-4 py-3.5 shadow-lg hover:-translate-y-0.5 transition-all"
+        className="flex items-center gap-3 bg-gradient-to-l from-[#34D399] to-[#2FA084] text-white rounded-2xl px-4 py-3.5 shadow-lg hover:-translate-y-0.5 transition-all"
       >
         <span className="text-2xl">⚽</span>
         <span className="flex-1 text-sm font-black">نتايج كأس العالم 2026 لايف</span>
@@ -86,9 +86,9 @@ export default function WorldCupHomeSection() {
   ].slice(0, 6)
 
   return (
-    <section className="bg-white rounded-3xl shadow-lg overflow-hidden border border-[#FA8125]/10">
+    <section className="bg-white rounded-3xl shadow-lg overflow-hidden border border-[#059669]/10">
       {/* header */}
-      <div className="bg-gradient-to-l from-[#FA8125] to-[#2FA084] text-white px-4 py-3 flex items-center gap-2.5">
+      <div className="bg-gradient-to-l from-[#34D399] to-[#2FA084] text-white px-4 py-3 flex items-center gap-2.5">
         <Trophy className="w-5 h-5 text-[#FFD700]" />
         <h2 className="flex-1 text-sm font-black">كأس العالم 2026 — لايف ⚽</h2>
         {view.live.length > 0 && (
@@ -110,11 +110,11 @@ export default function WorldCupHomeSection() {
             <Link
               key={m.id}
               href="/world-cup"
-              className={`flex items-center gap-2 px-4 py-2.5 hover:bg-gray-50/70 transition ${isEgypt ? 'bg-[#FA8125]/5' : ''}`}
+              className={`flex items-center gap-2 px-4 py-2.5 hover:bg-gray-50/70 transition ${isEgypt ? 'bg-[#34D399]/5' : ''}`}
             >
               {/* label */}
               <span className={`w-14 flex-shrink-0 text-[9px] font-black text-center px-1 py-1 rounded-lg leading-tight ${
-                live ? 'bg-red-50 text-red-500' : m.status === 'finished' ? 'bg-gray-100 text-gray-400' : 'bg-[#FA8125]/8 text-[#FA8125]'
+                live ? 'bg-red-50 text-red-500' : m.status === 'finished' ? 'bg-gray-100 text-gray-400' : 'bg-[#34D399]/8 text-[#059669]'
               }`}>
                 {live ? (m.minute || 'لايف 🔴') : label}
               </span>
@@ -135,7 +135,7 @@ export default function WorldCupHomeSection() {
                     {m.home.score ?? 0}-{m.away.score ?? 0}
                   </span>
                 ) : (
-                  <span className="text-[10px] font-black text-[#FA8125] tabular">{timeStr(m.utc_date)}</span>
+                  <span className="text-[10px] font-black text-[#059669] tabular">{timeStr(m.utc_date)}</span>
                 )}
               </span>
 
@@ -155,7 +155,7 @@ export default function WorldCupHomeSection() {
       {/* food cross-sell footer */}
       <Link
         href="/marketplace?category=food-general"
-        className="flex items-center gap-2 px-4 py-2.5 bg-[#FAFAF7] hover:bg-[#FA8125]/5 transition border-t border-gray-100"
+        className="flex items-center gap-2 px-4 py-2.5 bg-[#FAFAF7] hover:bg-[#34D399]/5 transition border-t border-gray-100"
       >
         <UtensilsCrossed className="w-4 h-4 text-[#d4a017]" />
         <span className="flex-1 text-[11px] font-black text-gray-700">اطلب أكل الماتش من مطاعم مضمونة — يوصلك قبل الصافرة 🍕</span>

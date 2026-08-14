@@ -37,11 +37,11 @@ export default function WelcomePage() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-[#FA8125] font-black text-xl tracking-tight">
-            <span className="inline-block w-9 h-9 rounded-xl bg-[#FA8125] text-white grid place-items-center font-black">م</span>
+          <Link href="/" className="flex items-center gap-2 text-[#059669] font-black text-xl tracking-tight">
+            <span className="inline-block w-9 h-9 rounded-xl bg-[#34D399] text-[#04352A] grid place-items-center font-black">م</span>
             مضمونة
           </Link>
-          <Link href="/marketplace" className="text-sm font-bold text-[#6B7280] hover:text-[#FA8125] transition-colors">
+          <Link href="/marketplace" className="text-sm font-bold text-[#6B7280] hover:text-[#059669] transition-colors">
             تخطي
           </Link>
         </div>
@@ -68,7 +68,7 @@ function PathPicker({ onPick }: { onPick: (p: Path) => void }) {
     <div className="max-w-4xl mx-auto">
       {/* Hero */}
       <div className="text-center mb-10 md:mb-14">
-        <p className="text-[11px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-3">
+        <p className="text-[11px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-3">
           MADMONA · مضمونة
         </p>
         <h1 className="text-4xl md:text-6xl font-black text-[#1A2E26] leading-[1.1] tracking-tight mb-4">
@@ -139,12 +139,12 @@ function PathCard({
       onClick={onClick}
       className={`group text-right p-6 md:p-8 rounded-3xl border transition-all duration-200 ${
         accent
-          ? 'bg-[#FA8125] text-white border-[#FA8125] hover:shadow-lg hover:-translate-y-0.5'
-          : 'bg-white border-gray-200 hover:border-[#FA8125] hover:shadow-md hover:-translate-y-0.5'
+          ? 'bg-[#34D399] text-[#04352A] border-[#059669] hover:shadow-lg hover:-translate-y-0.5'
+          : 'bg-white border-gray-200 hover:border-[#059669] hover:shadow-md hover:-translate-y-0.5'
       }`}
     >
       <div className={`inline-grid place-items-center w-14 h-14 rounded-2xl mb-5 ${
-        accent ? 'bg-white/15 text-white' : 'bg-[#FAFAF7] text-[#FA8125]'
+        accent ? 'bg-white/15 text-white' : 'bg-[#FAFAF7] text-[#059669]'
       }`}>
         {icon}
       </div>
@@ -161,13 +161,13 @@ function PathCard({
           <li key={i} className={`flex items-center gap-2 text-sm ${
             accent ? 'text-white/95' : 'text-[#1A2E26]'
           }`}>
-            <Check className={`w-4 h-4 flex-shrink-0 ${accent ? 'text-white' : 'text-[#FA8125]'}`} />
+            <Check className={`w-4 h-4 flex-shrink-0 ${accent ? 'text-white' : 'text-[#059669]'}`} />
             {b}
           </li>
         ))}
       </ul>
       <div className={`inline-flex items-center gap-2 text-sm font-bold ${
-        accent ? 'text-white' : 'text-[#FA8125]'
+        accent ? 'text-white' : 'text-[#059669]'
       }`}>
         {cta}
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
@@ -237,7 +237,7 @@ function SupplierFlow({
 
       {/* Commission disclosure */}
       <div className="mt-6 p-4 rounded-2xl bg-white border border-gray-200 flex items-start gap-3">
-        <BadgePercent className="w-5 h-5 text-[#FA8125] flex-shrink-0 mt-0.5" />
+        <BadgePercent className="w-5 h-5 text-[#059669] flex-shrink-0 mt-0.5" />
         <div className="text-sm text-[#1A2E26] leading-relaxed">
           <span className="font-bold">العمولة شفافة:</span> 10% ثابتة على الكل. مفيش رسوم خفية، مفيش اشتراك شهري.
           <span className="text-[#6B7280]"> بنكسب لما تكسب أنت.</span>
@@ -249,7 +249,7 @@ function SupplierFlow({
         <button
           onClick={() => setStep(Math.max(1, step - 1))}
           disabled={step === 1}
-          className="text-sm font-bold text-[#6B7280] hover:text-[#FA8125] disabled:opacity-30 disabled:pointer-events-none transition-colors"
+          className="text-sm font-bold text-[#6B7280] hover:text-[#059669] disabled:opacity-30 disabled:pointer-events-none transition-colors"
         >
           <ArrowRight className="inline w-4 h-4 ml-1" />
           السابق
@@ -257,7 +257,7 @@ function SupplierFlow({
         {step < 3 ? (
           <button
             onClick={() => setStep(step + 1)}
-            className="px-6 py-3 rounded-xl bg-[#FA8125] text-white font-bold text-sm hover:shadow-md transition-shadow flex items-center gap-2"
+            className="px-6 py-3 rounded-xl bg-[#34D399] text-[#04352A] font-bold text-sm hover:shadow-md transition-shadow flex items-center gap-2"
           >
             التالي
             <ArrowLeft className="w-4 h-4" />
@@ -265,7 +265,7 @@ function SupplierFlow({
         ) : (
           <Link
             href="/list-your-asset"
-            className="px-6 py-3 rounded-xl bg-[#FA8125] text-white font-bold text-sm hover:shadow-md transition-shadow flex items-center gap-2"
+            className="px-6 py-3 rounded-xl bg-[#34D399] text-[#04352A] font-bold text-sm hover:shadow-md transition-shadow flex items-center gap-2"
           >
             ابدأ ضيف منتج
             <ArrowLeft className="w-4 h-4" />
@@ -336,7 +336,7 @@ function CustomerFlow({
         <button
           onClick={() => setStep(Math.max(1, step - 1))}
           disabled={step === 1}
-          className="text-sm font-bold text-[#6B7280] hover:text-[#FA8125] disabled:opacity-30 disabled:pointer-events-none transition-colors"
+          className="text-sm font-bold text-[#6B7280] hover:text-[#059669] disabled:opacity-30 disabled:pointer-events-none transition-colors"
         >
           <ArrowRight className="inline w-4 h-4 ml-1" />
           السابق
@@ -344,7 +344,7 @@ function CustomerFlow({
         {step < 3 ? (
           <button
             onClick={() => setStep(step + 1)}
-            className="px-6 py-3 rounded-xl bg-[#FA8125] text-white font-bold text-sm hover:shadow-md transition-shadow flex items-center gap-2"
+            className="px-6 py-3 rounded-xl bg-[#34D399] text-[#04352A] font-bold text-sm hover:shadow-md transition-shadow flex items-center gap-2"
           >
             التالي
             <ArrowLeft className="w-4 h-4" />
@@ -352,7 +352,7 @@ function CustomerFlow({
         ) : (
           <Link
             href="/marketplace"
-            className="px-6 py-3 rounded-xl bg-[#FA8125] text-white font-bold text-sm hover:shadow-md transition-shadow flex items-center gap-2"
+            className="px-6 py-3 rounded-xl bg-[#34D399] text-[#04352A] font-bold text-sm hover:shadow-md transition-shadow flex items-center gap-2"
           >
             تصفح المنصة
             <ArrowLeft className="w-4 h-4" />
@@ -380,11 +380,11 @@ function FlowFrame({
     <div className="max-w-3xl mx-auto">
       {/* Top: back + breadcrumb */}
       <div className="flex items-center justify-between mb-6">
-        <button onClick={onBack} className="text-sm font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1.5 transition-colors">
+        <button onClick={onBack} className="text-sm font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1.5 transition-colors">
           <ChevronLeft className="w-4 h-4" />
           غيّر المسار
         </button>
-        <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-[#FA8125] bg-[#FA8125]/10 px-3 py-1.5 rounded-md">
+        <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-[#059669] bg-[#34D399]/10 px-3 py-1.5 rounded-md">
           {accent}
         </span>
       </div>
@@ -399,7 +399,7 @@ function FlowFrame({
           <div
             key={i}
             className={`flex-1 h-1.5 rounded-full transition-colors ${
-              i + 1 <= stepIndex ? 'bg-[#FA8125]' : 'bg-gray-200'
+              i + 1 <= stepIndex ? 'bg-[#34D399]' : 'bg-gray-200'
             }`}
           />
         ))}
@@ -426,11 +426,11 @@ function StepCard({
   return (
     <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
       <div className="flex items-start gap-4 mb-5">
-        <div className="inline-grid place-items-center w-14 h-14 rounded-2xl bg-[#FA8125]/10 text-[#FA8125] flex-shrink-0">
+        <div className="inline-grid place-items-center w-14 h-14 rounded-2xl bg-[#34D399]/10 text-[#059669] flex-shrink-0">
           {icon}
         </div>
         <div className="flex-1">
-          <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-[#FA8125] mb-1">
+          <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-[#059669] mb-1">
             خطوة {index} من {total}
           </p>
           <h2 className="text-xl md:text-2xl font-black text-[#1A2E26] tracking-tight leading-tight">
@@ -444,7 +444,7 @@ function StepCard({
       <ul className="space-y-2.5">
         {bullets.map((b, i) => (
           <li key={i} className="flex items-start gap-2.5 text-sm text-[#1A2E26]">
-            <span className="inline-grid place-items-center w-5 h-5 rounded-full bg-[#FA8125]/10 text-[#FA8125] flex-shrink-0 mt-0.5">
+            <span className="inline-grid place-items-center w-5 h-5 rounded-full bg-[#34D399]/10 text-[#059669] flex-shrink-0 mt-0.5">
               <Check className="w-3 h-3" />
             </span>
             <span className="leading-relaxed">{b}</span>
@@ -460,7 +460,7 @@ function PillarBadge({
 }: { icon: ReactNode, title: string, desc: string }) {
   return (
     <div className="p-4 rounded-2xl bg-white border border-gray-100">
-      <div className="inline-grid place-items-center w-9 h-9 rounded-lg bg-[#FA8125]/10 text-[#FA8125] mb-2">
+      <div className="inline-grid place-items-center w-9 h-9 rounded-lg bg-[#34D399]/10 text-[#059669] mb-2">
         <span className="[&>svg]:w-4 [&>svg]:h-4">{icon}</span>
       </div>
       <h3 className="text-sm font-black text-[#1A2E26] tracking-tight mb-0.5">{title}</h3>

@@ -27,15 +27,15 @@ export const THEMES: Record<ThemeKey, Theme> = {
   // هوية مضمونة الافتراضية — مطابقة للقديم بالظبط (مايتغيّرش حاجة لباقي العملاء)
   default: {
     pageBg: '#FAFAF7',
-    barBg: '#FFFFFF', barBorder: 'rgba(250, 129, 37,.10)', barText: '#FA8125', barTag: '#FA8125',
-    accent: '#FA8125', accentSoft: 'rgba(250, 129, 37,.10)', accentLine: 'rgba(250, 129, 37,.20)',
-    gCta: 'linear-gradient(100deg,#d4a017 0%,#2FA084 55%,#FA8125 100%)',
+    barBg: '#FFFFFF', barBorder: 'rgba(250, 129, 37,.10)', barText: '#059669', barTag: '#059669',
+    accent: '#059669', accentSoft: 'rgba(250, 129, 37,.10)', accentLine: 'rgba(250, 129, 37,.20)',
+    gCta: 'linear-gradient(100deg,#d4a017 0%,#2FA084 55%,#059669 100%)',
     gCover: 'linear-gradient(135deg,#1d6253 0%,#2FA084 70%,#6FCF97 100%)',
     gSoft: 'linear-gradient(135deg,rgba(250, 129, 37,.10),rgba(212,160,23,.13))',
     gHero: 'linear-gradient(120deg,#1d6253 0%,#2FA084 100%)',
     heroOverlay: 'linear-gradient(180deg,rgba(8,26,21,.18) 0%,rgba(8,26,21,.10) 35%,rgba(8,26,21,.80) 100%)',
     trustBg: '#FFFFFF', trustBorder: 'rgba(250, 129, 37,.15)', trustText: '#6B7280', trustStrong: '#1A2E26',
-    trustIcoBg: 'rgba(250, 129, 37,.10)', trustIco: '#FA8125',
+    trustIcoBg: 'rgba(250, 129, 37,.10)', trustIco: '#059669',
     stepActive: '#d4a017',
   },
   // هوية سعداوي — أسود/أحمر أوتوموتيف

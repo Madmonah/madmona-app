@@ -84,7 +84,7 @@ const CATEGORY_PREVIEW = [
 function MarketplaceFallback({ listings = [] }: { listings?: SSRListing[] }) {
   return (
     <div className="min-h-screen bg-[#FAFAF7]">
-      <header className="bg-[#FA8125] text-[#FAF7F0] px-5 py-6">
+      <header className="bg-[#34D399] text-[#FAF7F0] px-5 py-6">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-black mb-1">
             <T k="common.brand" /> <span className="text-[#2FA084]">·</span> <T k="market.title_browse" />
@@ -96,17 +96,17 @@ function MarketplaceFallback({ listings = [] }: { listings?: SSRListing[] }) {
       </header>
 
       <main className="px-5 py-6 max-w-6xl mx-auto">
-        <h2 className="text-lg font-bold mb-4 text-[#FA8125]">
+        <h2 className="text-lg font-bold mb-4 text-[#059669]">
           <T k="market.categories" />
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" aria-hidden>
           {CATEGORY_PREVIEW.map((c) => (
             <div
               key={c.slug}
-              className="p-4 rounded-xl bg-white border border-gray-200 flex items-center gap-3 hover:border-[#FA8125] transition-colors"
+              className="p-4 rounded-xl bg-white border border-gray-200 flex items-center gap-3 hover:border-[#059669] transition-colors"
             >
               <span className="text-2xl">{c.emoji}</span>
-              <span className="text-[#FA8125] font-medium"><T k={c.labelKey} /></span>
+              <span className="text-[#059669] font-medium"><T k={c.labelKey} /></span>
             </div>
           ))}
         </div>
@@ -116,7 +116,7 @@ function MarketplaceFallback({ listings = [] }: { listings?: SSRListing[] }) {
             {listings.map((l) => {
               const photo = (l.photos || []).find((p) => p.is_primary)?.url || (l.photos || [])[0]?.url || '';
               return (
-                <a key={l.id} href={`/marketplace/${l.slug}`} className="block bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-[#FA8125] transition-colors no-underline">
+                <a key={l.id} href={`/marketplace/${l.slug}`} className="block bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-[#059669] transition-colors no-underline">
                   <div className="aspect-[4/3] bg-gray-100 flex items-center justify-center overflow-hidden">
                     {photo ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -149,7 +149,7 @@ function MarketplaceFallback({ listings = [] }: { listings?: SSRListing[] }) {
               لو الصفحة مش بتفتح / If the page doesn't open,{' '}
               <a
                 href="https://wa.me/201002229982?text=%D8%B9%D8%A7%D9%8A%D8%B2%20%D8%A3%D8%AA%D9%81%D8%B1%D8%AC%20%D8%B9%D9%84%D9%89%20%D8%A7%D9%84%D8%A5%D9%8A%D8%AC%D8%A7%D8%B1%D8%A7%D8%AA"
-                className="underline text-[#FA8125] font-bold"
+                className="underline text-[#059669] font-bold"
               >
                 WhatsApp
               </a>{' '}

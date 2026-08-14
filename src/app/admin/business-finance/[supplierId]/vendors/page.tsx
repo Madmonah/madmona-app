@@ -73,12 +73,12 @@ export default function VendorsPage({ params }: { params: { supplierId: string }
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">B2B PARTNER · VENDORS</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">B2B PARTNER · VENDORS</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">الموردين · {supplier?.business_name}</h1>
               {data?.stats && (
                 <p className="text-sm text-[#6B7280] mt-1">
@@ -87,7 +87,7 @@ export default function VendorsPage({ params }: { params: { supplierId: string }
               )}
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setShowAdd(true)} className="px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> مورد جديد</button>
+              <button onClick={() => setShowAdd(true)} className="px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> مورد جديد</button>
               <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7]"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
             </div>
           </div>
@@ -97,12 +97,12 @@ export default function VendorsPage({ params }: { params: { supplierId: string }
       <main className="max-w-7xl mx-auto px-4 py-6">
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {loading ? (
-            <div className="col-span-3 py-12 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin inline" /></div>
+            <div className="col-span-3 py-12 text-center"><Loader2 className="w-6 h-6 text-[#059669] animate-spin inline" /></div>
           ) : data?.vendors?.length === 0 ? (
             <div className="col-span-3 py-12 text-center bg-white rounded-2xl border border-gray-100">
               <Truck className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
               <p className="text-sm font-bold text-[#1A2E26]">مفيش موردين</p>
-              <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold">أضف أول مورد</button>
+              <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold">أضف أول مورد</button>
             </div>
           ) : (data?.vendors || []).map((v: any) => (
             <div key={v.id} className="bg-white rounded-2xl border border-gray-100 p-4">
@@ -122,7 +122,7 @@ export default function VendorsPage({ params }: { params: { supplierId: string }
               <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between text-xs">
                 <div>
                   <p className="text-[#6B7280]">المشتريات</p>
-                  <p className="font-mono font-black text-[#FA8125]">{Number(v.total_purchased_egp || 0).toLocaleString()} ج</p>
+                  <p className="font-mono font-black text-[#059669]">{Number(v.total_purchased_egp || 0).toLocaleString()} ج</p>
                 </div>
                 <div className="text-left">
                   <p className="text-[#6B7280]">آخر طلب</p>
@@ -175,7 +175,7 @@ function AddVendorModal({ supplierId, cats, onClose, onSaved }: any) {
           <Field label="موبايل"><input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" /></Field>
           <Field label="إيميل"><input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
           <Field label="ملاحظات"><textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
-          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50">{saving ? 'جاري الحفظ...' : 'احفظ'}</button>
+          <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50">{saving ? 'جاري الحفظ...' : 'احفظ'}</button>
         </div>
       </div>
     </div>
@@ -183,4 +183,4 @@ function AddVendorModal({ supplierId, cats, onClose, onSaved }: any) {
 }
 
 function Field({ label, children }: any) { return <div><label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">{label}</label>{children}</div> }
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div> }

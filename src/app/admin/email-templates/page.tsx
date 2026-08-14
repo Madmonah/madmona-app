@@ -115,13 +115,13 @@ export default function EmailTemplatesPage() {
     setTimeout(() => setFlash(null), 4500)
   }
 
-  if (stage === 'loading') return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin" /></div>
+  if (stage === 'loading') return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-6 h-6 text-[#059669] animate-spin" /></div>
   if (stage === 'unauthenticated') return (
     <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
       <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-        <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
+        <Lock className="w-8 h-8 text-[#059669] mx-auto mb-3" />
         <h1 className="font-bold mb-4">سجّل دخول الأول</h1>
-        <Link href="/auth/login?redirect=/admin/email-templates" className="block bg-[#FA8125] text-white py-3 rounded-xl font-semibold">دخول</Link>
+        <Link href="/auth/login?redirect=/admin/email-templates" className="block bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold">دخول</Link>
       </div>
     </div>
   )
@@ -143,7 +143,7 @@ export default function EmailTemplatesPage() {
           <Link href="/admin/dashboard" className="w-9 h-9 bg-white shadow rounded-full flex items-center justify-center">
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
-          <FileText className="w-5 h-5 text-[#FA8125]" />
+          <FileText className="w-5 h-5 text-[#059669]" />
           <h1 className="text-lg font-black text-gray-900 flex-1">قوالب الإيميل</h1>
         </div>
       </header>
@@ -205,7 +205,7 @@ export default function EmailTemplatesPage() {
                   <button onClick={() => setEditing(t)} className="p-1.5 rounded-lg bg-gray-100 text-gray-700">
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => sendTest(t)} disabled={sending} className="p-1.5 rounded-lg bg-[#FA8125] text-white disabled:opacity-50">
+                  <button onClick={() => sendTest(t)} disabled={sending} className="p-1.5 rounded-lg bg-[#34D399] text-[#04352A] disabled:opacity-50">
                     {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                   </button>
                 </div>
@@ -248,7 +248,7 @@ export default function EmailTemplatesPage() {
             </div>
             <div className="sticky bottom-0 bg-white border-t border-gray-100 px-5 py-4 flex gap-2">
               <button onClick={() => setEditing(null)} disabled={saving} className="flex-1 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm">إلغاء</button>
-              <button onClick={save} disabled={saving} className="flex-1 py-3 rounded-xl bg-[#FA8125] hover:bg-[#FA8125]/90 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+              <button onClick={save} disabled={saving} className="flex-1 py-3 rounded-xl bg-[#34D399] hover:bg-[#34D399]/90 text-[#04352A] font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? 'جاري الحفظ...' : 'حفظ'}
               </button>

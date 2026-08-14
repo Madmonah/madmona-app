@@ -48,12 +48,12 @@ export default function SubscriptionsPage() {
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          <Link href="/admin/business-partners" className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
+          <Link href="/admin/business-partners" className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع للشركاء
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">ADMIN · SUBSCRIPTIONS</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">ADMIN · SUBSCRIPTIONS</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">إدارة الاشتراكات</h1>
               <p className="text-sm text-[#6B7280] mt-1">{rows.length} حساب B2B · {suspended.length} موقوف</p>
             </div>
@@ -68,7 +68,7 @@ export default function SubscriptionsPage() {
 
       <main className="max-w-6xl mx-auto px-4 py-6">
         {loading ? (
-          <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin inline" /></div>
+          <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#059669] animate-spin inline" /></div>
         ) : (
           <div className="space-y-2">
             {filtered.map(r => {
@@ -85,11 +85,11 @@ export default function SubscriptionsPage() {
                     <div className="text-[11px] text-[#6B7280] mt-1 flex items-center gap-3 flex-wrap">
                       {r.paid_until && <span className="flex items-center gap-1"><CreditCard className="w-3 h-3" /> مسدّد لحد {r.paid_until}</span>}
                       {isSusp && r.suspended_reason && <span className="flex items-center gap-1 text-red-600"><AlertTriangle className="w-3 h-3" /> {r.suspended_reason}</span>}
-                      <Link href={`/admin/business-finance/${r.supplier_id}`} className="text-[#FA8125] font-bold">فتح اللوحة ↗</Link>
+                      <Link href={`/admin/business-finance/${r.supplier_id}`} className="text-[#059669] font-bold">فتح اللوحة ↗</Link>
                     </div>
                   </div>
                   {isSusp ? (
-                    <button onClick={() => reactivate(r.supplier_id, r.business_name)} disabled={busy === r.supplier_id} className="px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold flex items-center gap-2 disabled:opacity-50">
+                    <button onClick={() => reactivate(r.supplier_id, r.business_name)} disabled={busy === r.supplier_id} className="px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold flex items-center gap-2 disabled:opacity-50">
                       {busy === r.supplier_id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Unlock className="w-4 h-4" />} تفعيل
                     </button>
                   ) : (

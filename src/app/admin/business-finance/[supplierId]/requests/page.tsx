@@ -55,17 +55,17 @@ export default function RequestsPage({ params }: { params: { supplierId: string 
 
   const total = leave.length + advances.length
 
-  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div>
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2"><ChevronLeft className="w-3.5 h-3.5" /> رجوع</Link>
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2"><ChevronLeft className="w-3.5 h-3.5" /> رجوع</Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">الموارد البشرية</p>
-              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2"><ClipboardCheck className="w-7 h-7 text-[#FA8125]" /> طلبات الموظفين</h1>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">الموارد البشرية</p>
+              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2"><ClipboardCheck className="w-7 h-7 text-[#059669]" /> طلبات الموظفين</h1>
               <p className="text-sm text-[#6B7280] mt-1">{total} طلب في انتظار ردّك</p>
             </div>
             <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7] text-[#1A2E26]"><RefreshCw className="w-4 h-4" /></button>
@@ -84,7 +84,7 @@ export default function RequestsPage({ params }: { params: { supplierId: string 
         {/* Leave requests */}
         {leave.length > 0 && (
           <section>
-            <h2 className="text-sm font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1.5"><CalendarDays className="w-4 h-4 text-[#FA8125]" /> إجازات ({leave.length})</h2>
+            <h2 className="text-sm font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1.5"><CalendarDays className="w-4 h-4 text-[#059669]" /> إجازات ({leave.length})</h2>
             <div className="space-y-2">
               {leave.map((r) => (
                 <div key={r.id} className="bg-white rounded-2xl border border-gray-100 p-4">
@@ -96,7 +96,7 @@ export default function RequestsPage({ params }: { params: { supplierId: string 
                       {r.reason && <p className="text-[12px] text-[#1A2E26] mt-1">السبب: {r.reason}</p>}
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => decideLeave(r.id, true)} disabled={busyId === r.id} className="px-3 py-2 rounded-xl bg-[#FA8125] text-white text-[13px] font-bold flex items-center gap-1.5 disabled:opacity-50">{busyId === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} قبول</button>
+                      <button onClick={() => decideLeave(r.id, true)} disabled={busyId === r.id} className="px-3 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-[13px] font-bold flex items-center gap-1.5 disabled:opacity-50">{busyId === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} قبول</button>
                       <button onClick={() => decideLeave(r.id, false)} disabled={busyId === r.id} className="px-3 py-2 rounded-xl bg-red-50 text-red-600 text-[13px] font-bold flex items-center gap-1.5 disabled:opacity-50"><X className="w-4 h-4" /> رفض</button>
                     </div>
                   </div>
@@ -109,18 +109,18 @@ export default function RequestsPage({ params }: { params: { supplierId: string 
         {/* Advance requests */}
         {advances.length > 0 && (
           <section>
-            <h2 className="text-sm font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1.5"><Wallet className="w-4 h-4 text-[#FA8125]" /> سُلف ({advances.length})</h2>
+            <h2 className="text-sm font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1.5"><Wallet className="w-4 h-4 text-[#059669]" /> سُلف ({advances.length})</h2>
             <div className="space-y-2">
               {advances.map((r) => (
                 <div key={r.id} className="bg-white rounded-2xl border border-gray-100 p-4">
                   <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div className="min-w-0">
                       <p className="font-black text-[#1A2E26]">{r.employee}</p>
-                      <p className="text-[15px] font-black text-[#FA8125] mt-0.5" dir="ltr">{money0(r.amount)} ج</p>
+                      <p className="text-[15px] font-black text-[#059669] mt-0.5" dir="ltr">{money0(r.amount)} ج</p>
                       {r.reason && <p className="text-[12px] text-[#1A2E26] mt-1">السبب: {r.reason}</p>}
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => decideAdvance(r.id, true)} disabled={busyId === r.id} className="px-3 py-2 rounded-xl bg-[#FA8125] text-white text-[13px] font-bold flex items-center gap-1.5 disabled:opacity-50">{busyId === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} قبول وصرف</button>
+                      <button onClick={() => decideAdvance(r.id, true)} disabled={busyId === r.id} className="px-3 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-[13px] font-bold flex items-center gap-1.5 disabled:opacity-50">{busyId === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} قبول وصرف</button>
                       <button onClick={() => decideAdvance(r.id, false)} disabled={busyId === r.id} className="px-3 py-2 rounded-xl bg-red-50 text-red-600 text-[13px] font-bold flex items-center gap-1.5 disabled:opacity-50"><X className="w-4 h-4" /> رفض</button>
                     </div>
                   </div>

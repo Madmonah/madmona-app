@@ -225,11 +225,11 @@ export default function CustomerBookingDetailPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir={dir}>
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#059669] mx-auto mb-3" />
           <h1 className="font-bold mb-4">{t('booking.login_first')}</h1>
           <Link
             href={`/auth/login?redirect=/account/bookings/${bookingId}`}
-            className="block bg-[#FA8125] text-white py-3 rounded-xl font-semibold"
+            className="block bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold"
           >
             {t('auth.login.title')}
           </Link>
@@ -244,7 +244,7 @@ export default function CustomerBookingDetailPage() {
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-3" />
           <h1 className="font-bold mb-2">{t('bdetail.not_found')}</h1>
-          <Link href="/account/bookings" className="inline-block bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold mt-4">
+          <Link href="/account/bookings" className="inline-block bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-semibold mt-4">
             {t('bdetail.back_to_bookings')}
           </Link>
         </div>
@@ -380,7 +380,7 @@ export default function CustomerBookingDetailPage() {
           )}
           <div className="flex justify-between font-bold pt-2 border-t border-gray-100">
             <span>{t('booking.total')}</span>
-            <span className="text-[#FA8125]">{Number(booking.total_amount).toLocaleString(locale)} {t('common.egp')}</span>
+            <span className="text-[#059669]">{Number(booking.total_amount).toLocaleString(locale)} {t('common.egp')}</span>
           </div>
         </div>
 
@@ -408,7 +408,7 @@ export default function CustomerBookingDetailPage() {
         {booking.supplier_notes && (
           <div className="bg-white rounded-2xl border border-gray-100 p-4">
             <h2 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#FA8125]" /> {t('bdetail.supplier_notes')}
+              <FileText className="w-4 h-4 text-[#059669]" /> {t('bdetail.supplier_notes')}
             </h2>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">{booking.supplier_notes}</p>
           </div>
@@ -518,7 +518,7 @@ export default function CustomerBookingDetailPage() {
               rows={3}
               maxLength={500}
               placeholder={t('bdetail.review_ph')}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30"
             />
 
             {reviewError && (
@@ -531,7 +531,7 @@ export default function CustomerBookingDetailPage() {
             <button
               type="submit"
               disabled={submittingReview || rating === 0}
-              className="w-full bg-[#FA8125] text-white py-3 rounded-xl font-semibold hover:bg-[#FA8125]/90 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold hover:bg-[#34D399]/90 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {submittingReview ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> {t('booking.submitting')}</>

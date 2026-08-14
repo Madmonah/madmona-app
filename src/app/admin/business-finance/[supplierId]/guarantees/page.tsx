@@ -18,7 +18,7 @@ const TYPES = [
 ]
 const typeLabel = (t: string) => TYPES.find((x) => x.value === t)?.label || t
 const STATUSES = [
-  { value: 'active',   label: 'ساري',   color: 'bg-[#FA8125]/10 text-[#FA8125]' },
+  { value: 'active',   label: 'ساري',   color: 'bg-[#34D399]/10 text-[#059669]' },
   { value: 'released', label: 'مُفرج عنه', color: 'bg-blue-50 text-blue-700' },
   { value: 'expired',  label: 'منتهي',  color: 'bg-red-50 text-red-600' },
 ]
@@ -75,20 +75,20 @@ export default function GuaranteesPage({ params }: { params: { supplierId: strin
     load()
   }
 
-  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div>
+  if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div>
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2"><ChevronLeft className="w-3.5 h-3.5" /> رجوع</Link>
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2"><ChevronLeft className="w-3.5 h-3.5" /> رجوع</Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">مقاولات · خطابات الضمان</p>
-              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2"><ShieldCheck className="w-7 h-7 text-[#FA8125]" /> خطابات الضمان</h1>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">مقاولات · خطابات الضمان</p>
+              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26] flex items-center gap-2"><ShieldCheck className="w-7 h-7 text-[#059669]" /> خطابات الضمان</h1>
             </div>
             <div className="flex gap-2 flex-wrap items-center">
-              <button onClick={() => { setForm({ ...emptyForm }); setShowForm(true) }} className="px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> خطاب جديد</button>
+              <button onClick={() => { setForm({ ...emptyForm }); setShowForm(true) }} className="px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> خطاب جديد</button>
               <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7] text-[#1A2E26]"><RefreshCw className="w-4 h-4" /></button>
             </div>
           </div>
@@ -118,7 +118,7 @@ export default function GuaranteesPage({ params }: { params: { supplierId: strin
                       <td className="px-3 py-2.5 text-xs text-[#6B7280]">{projName(r.project_id)}</td>
                       <td className="px-3 py-2.5 text-xs text-[#1A2E26]">{r.bank_name || '—'}</td>
                       <td className="px-3 py-2.5 text-xs font-mono text-[#6B7280]">{r.lg_number || '—'}</td>
-                      <td className="px-3 py-2.5 text-left font-mono font-black text-[#FA8125]">{money0(r.amount)} ج</td>
+                      <td className="px-3 py-2.5 text-left font-mono font-black text-[#059669]">{money0(r.amount)} ج</td>
                       <td className="px-3 py-2.5 text-xs font-mono">
                         {r.expiry_date ? new Date(r.expiry_date).toLocaleDateString('ar-EG', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                         {soon && <span className="ml-1 inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-600"><AlertTriangle className="w-3 h-3" />{dl}ي</span>}
@@ -156,11 +156,11 @@ export default function GuaranteesPage({ params }: { params: { supplierId: strin
   )
 }
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:outline-none focus:border-[#FA8125] bg-white'
+const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-[#1A2E26] focus:outline-none focus:border-[#059669] bg-white'
 function Field({ label, children }: { label: string; children: ReactNode }) { return <div><label className="block text-[11px] font-bold text-[#6B7280] mb-1">{label}</label>{children}</div> }
 function Th({ children, className = '' }: { children?: ReactNode; className?: string }) { return <th className={`px-3 py-2.5 text-[10px] font-bold tracking-wider uppercase text-[#6B7280] ${className}`}>{children}</th> }
 function Stat({ label, value, primary, warn }: { label: string; value: string; primary?: boolean; warn?: boolean }) {
-  return <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#FA8125] border-[#FA8125] text-white' : warn ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-100'}`}><p className={`text-[10px] font-bold tracking-wider uppercase ${primary ? 'text-white/80' : warn ? 'text-amber-700' : 'text-[#6B7280]'}`}>{label}</p><p className={`text-xl md:text-2xl font-black mt-1 ${primary ? 'text-white' : warn ? 'text-amber-700' : 'text-[#1A2E26]'}`}>{value}</p></div>
+  return <div className={`rounded-2xl p-4 border ${primary ? 'bg-[#34D399] border-[#059669] text-[#04352A]' : warn ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-100'}`}><p className={`text-[10px] font-bold tracking-wider uppercase ${primary ? 'text-white/80' : warn ? 'text-amber-700' : 'text-[#6B7280]'}`}>{label}</p><p className={`text-xl md:text-2xl font-black mt-1 ${primary ? 'text-white' : warn ? 'text-amber-700' : 'text-[#1A2E26]'}`}>{value}</p></div>
 }
 function Modal({ title, children, onClose, onSave, saving, saveLabel }: { title: string; children: ReactNode; onClose: () => void; onSave: () => void; saving: boolean; saveLabel: string }) {
   return (
@@ -169,7 +169,7 @@ function Modal({ title, children, onClose, onSave, saving, saveLabel }: { title:
         <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between"><h2 className="text-lg font-black text-[#1A2E26]">{title}</h2><button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-5 h-5 text-[#6B7280]" /></button></div>
         <div className="p-5 space-y-4">{children}</div>
         <div className="sticky bottom-0 bg-white border-t border-gray-100 px-5 py-4 flex gap-2">
-          <button onClick={onSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-60">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null} {saveLabel}</button>
+          <button onClick={onSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm flex items-center justify-center gap-2 disabled:opacity-60">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null} {saveLabel}</button>
           <button onClick={onClose} className="px-5 py-3 rounded-xl bg-[#FAFAF7] text-[#1A2E26] font-bold text-sm">إلغاء</button>
         </div>
       </div>

@@ -198,14 +198,14 @@ export default function WaNumbersPage() {
 
   // ── حالات الدخول ──────────────────────────────────────────────────────
   if (stage === 'loading') {
-    return <div className="min-h-screen grid place-items-center"><Loader2 className="w-8 h-8 animate-spin text-[#FA8125]" /></div>
+    return <div className="min-h-screen grid place-items-center"><Loader2 className="w-8 h-8 animate-spin text-[#059669]" /></div>
   }
   if (stage === 'unauthenticated') {
     return (
       <div className="min-h-screen grid place-items-center px-6" dir="rtl">
         <div className="text-center"><Lock className="w-12 h-12 mx-auto mb-4 text-gray-400" />
           <h1 className="text-xl font-black mb-2">محتاج تسجّل دخول</h1>
-          <Link href="/auth/login" className="text-[#FA8125] font-bold">تسجيل الدخول ←</Link>
+          <Link href="/auth/login" className="text-[#059669] font-bold">تسجيل الدخول ←</Link>
         </div>
       </div>
     )
@@ -228,7 +228,7 @@ export default function WaNumbersPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2">
-              <Smartphone className="w-7 h-7 text-[#FA8125]" /> أرقام المارد
+              <Smartphone className="w-7 h-7 text-[#059669]" /> أرقام المارد
             </h1>
             <p className="text-gray-500 text-sm mt-1">الأرقام المربوطة بواتساب — كل رقم بيشتغل مستقل</p>
           </div>
@@ -268,8 +268,8 @@ export default function WaNumbersPage() {
                     +{s.id} · {s.connected ? 'متصل' : s.waiting_for_qr ? 'مستني مسح QR' : 'مفصول'}
                   </div>
                   <div className="text-xs mt-1 flex items-center gap-1.5" dir="ltr">
-                    <Globe className={`w-3.5 h-3.5 ${s.proxy ? 'text-[#FA8125]' : 'text-gray-400'}`} />
-                    <span className={s.proxy ? 'text-[#FA8125] font-bold' : 'text-gray-400'}>
+                    <Globe className={`w-3.5 h-3.5 ${s.proxy ? 'text-[#059669]' : 'text-gray-400'}`} />
+                    <span className={s.proxy ? 'text-[#059669] font-bold' : 'text-gray-400'}>
                       {s.proxy || 'IP السيرفر (مشترك)'}
                     </span>
                   </div>
@@ -282,7 +282,7 @@ export default function WaNumbersPage() {
                 </button>
                 {!s.connected && (
                   <button onClick={() => setQrFor(s.id)}
-                    className="flex items-center gap-1.5 bg-[#FA8125] text-white px-3 py-2 rounded-xl text-sm font-bold">
+                    className="flex items-center gap-1.5 bg-[#34D399] text-[#04352A] px-3 py-2 rounded-xl text-sm font-bold">
                     <QrCode className="w-4 h-4" /> اربط
                   </button>
                 )}
@@ -297,7 +297,7 @@ export default function WaNumbersPage() {
 
         {/* إضافة رقم */}
         <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <h2 className="font-black mb-4 flex items-center gap-2"><Plus className="w-5 h-5 text-[#FA8125]" /> إضافة رقم</h2>
+          <h2 className="font-black mb-4 flex items-center gap-2"><Plus className="w-5 h-5 text-[#059669]" /> إضافة رقم</h2>
           <div className="grid md:grid-cols-3 gap-3">
             <input value={newPhone} onChange={(e) => setNewPhone(e.target.value)}
               placeholder="201xxxxxxxxx" dir="ltr"
@@ -306,7 +306,7 @@ export default function WaNumbersPage() {
               placeholder="الاسم (مثلاً: المبيعات)"
               className="border border-gray-200 rounded-xl px-4 py-3 text-sm" />
             <button onClick={addNumber} disabled={adding}
-              className="bg-[#FA8125] text-white rounded-xl px-4 py-3 font-bold text-sm disabled:opacity-50">
+              className="bg-[#34D399] text-[#04352A] rounded-xl px-4 py-3 font-bold text-sm disabled:opacity-50">
               {adding ? 'بيضيف…' : 'ضيف واطلّع QR'}
             </button>
           </div>
@@ -345,7 +345,7 @@ export default function WaNumbersPage() {
           <div className="fixed inset-0 bg-black/60 grid place-items-center z-50 p-4" onClick={() => setEditFor(null)}>
             <div className="bg-white rounded-3xl overflow-hidden max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between p-4 border-b">
-                <h3 className="font-black flex items-center gap-2"><Settings2 className="w-5 h-5 text-[#FA8125]" /> إعداد +{editFor}</h3>
+                <h3 className="font-black flex items-center gap-2"><Settings2 className="w-5 h-5 text-[#059669]" /> إعداد +{editFor}</h3>
                 <button onClick={() => setEditFor(null)} className="text-gray-400 font-bold px-2">✕</button>
               </div>
               <div className="p-5 space-y-4">
@@ -370,7 +370,7 @@ export default function WaNumbersPage() {
                 {/* ── قناة الخروج ───────────────────────────────────── */}
                 <div className="border-t pt-4">
                   <label className="block text-sm font-bold mb-1 flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-[#FA8125]" /> قناة الخروج (الـIP)
+                    <Globe className="w-4 h-4 text-[#059669]" /> قناة الخروج (الـIP)
                   </label>
                   <p className="text-xs text-gray-500 mb-2 leading-relaxed">
                     الحالي: <span className="font-bold" dir="ltr">{sessions.find((s) => s.id === editFor)?.proxy || 'IP السيرفر (مشترك مع باقي الأرقام)'}</span>
@@ -383,7 +383,7 @@ export default function WaNumbersPage() {
                   <div className="flex items-center gap-2 mt-2">
                     <button onClick={() => editFor && saveProxy(editFor, draftProxy.trim())}
                       disabled={savingProxy || !draftProxy.trim()}
-                      className="bg-[#FA8125] text-white px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-40">
+                      className="bg-[#34D399] text-[#04352A] px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-40">
                       {savingProxy ? 'بيظبط…' : 'ظبّط القناة'}
                     </button>
                     {!!sessions.find((s) => s.id === editFor)?.proxy && (
@@ -404,7 +404,7 @@ export default function WaNumbersPage() {
               <div className="p-4 border-t flex justify-end gap-2">
                 <button onClick={() => setEditFor(null)} className="px-4 py-2 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-100">إلغاء</button>
                 <button onClick={saveConfig} disabled={savingCfg}
-                  className="bg-[#FA8125] text-white px-5 py-2 rounded-xl text-sm font-bold disabled:opacity-50">
+                  className="bg-[#34D399] text-[#04352A] px-5 py-2 rounded-xl text-sm font-bold disabled:opacity-50">
                   {savingCfg ? 'بيحفظ…' : 'حفظ'}
                 </button>
               </div>
@@ -413,7 +413,7 @@ export default function WaNumbersPage() {
         )}
 
         <div className="mt-8 text-center">
-          <Link href="/admin" className="text-[#FA8125] font-bold text-sm inline-flex items-center gap-1">
+          <Link href="/admin" className="text-[#059669] font-bold text-sm inline-flex items-center gap-1">
             رجوع للأدمن <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

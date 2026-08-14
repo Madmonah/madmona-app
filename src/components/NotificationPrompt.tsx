@@ -143,8 +143,8 @@ export default function NotificationPrompt() {
 
           {stage === 'success' ? (
             <div className="text-center py-4">
-              <div className="w-16 h-16 bg-[#FA8125]/10 rounded-3xl flex items-center justify-center mx-auto mb-3">
-                <CheckCircle className="w-8 h-8 text-[#FA8125]" />
+              <div className="w-16 h-16 bg-[#34D399]/10 rounded-3xl flex items-center justify-center mx-auto mb-3">
+                <CheckCircle className="w-8 h-8 text-[#059669]" />
               </div>
               <h2 className="text-xl font-black text-gray-900 mb-2">
                 تم التفعيل بنجاح! 🎉
@@ -166,7 +166,7 @@ export default function NotificationPrompt() {
 
               {/* Icon + sparkles */}
               <div className="relative inline-flex items-center justify-center mb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-[#FA8125] to-[#F98F2A] rounded-3xl flex items-center justify-center shadow-lg">
+                <div className="w-16 h-16 bg-gradient-to-br from-[#34D399] to-[#34D399] rounded-3xl flex items-center justify-center shadow-lg">
                   <Bell className="w-8 h-8 text-white" />
                 </div>
                 <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-[#2FA084] animate-pulse" />
@@ -185,7 +185,7 @@ export default function NotificationPrompt() {
               {/* Benefits list */}
               <ul className="space-y-2 mb-6">
                 <li className="flex items-start gap-2.5 text-sm text-gray-700">
-                  <div className="w-5 h-5 bg-[#FA8125]/10 text-[#FA8125] rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-5 h-5 bg-[#34D399]/10 text-[#059669] rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-xs">✓</span>
                   </div>
                   <span>تأكيد الحجوزات وتحديثاتها فوراً</span>
@@ -216,7 +216,7 @@ export default function NotificationPrompt() {
                 <button
                   onClick={handleEnable}
                   disabled={stage === 'busy'}
-                  className="w-full bg-gradient-to-l from-[#FA8125] to-[#F98F2A] text-white font-black py-3.5 rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+                  className="w-full bg-gradient-to-l from-[#34D399] to-[#34D399] text-white font-black py-3.5 rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed transition-all"
                 >
                   {stage === 'busy' ? (
                     <>

@@ -450,18 +450,18 @@ export default function BookingPage() {
       <>
         <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir={dir}>
           <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-            <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
+            <Lock className="w-8 h-8 text-[#059669] mx-auto mb-3" />
             <h1 className="font-bold mb-2">{t('booking.login_first')}</h1>
             <p className="text-sm text-gray-600 mb-6">{t('booking.login_desc')}</p>
             <Link
               href={`/auth/login?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`}
-              className="block w-full bg-[#FA8125] text-white py-3 rounded-xl font-semibold mb-2"
+              className="block w-full bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold mb-2"
             >
               {t('auth.login.title')}
             </Link>
             <Link
               href={`/auth/signup?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`}
-              className="block w-full text-sm text-gray-600 hover:text-[#FA8125]"
+              className="block w-full text-sm text-gray-600 hover:text-[#059669]"
             >
               {t('auth.no_account')}
             </Link>
@@ -485,7 +485,7 @@ export default function BookingPage() {
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
           <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-3" />
           <h1 className="font-bold mb-4">{t('listing.not_found_title')}</h1>
-          <Link href="/marketplace" className="bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold">
+          <Link href="/marketplace" className="bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-semibold">
             {t('book.browse')}
           </Link>
         </div>
@@ -530,7 +530,7 @@ export default function BookingPage() {
               </a>
               <Link
                 href="/marketplace"
-                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#FA8125] text-white rounded-xl text-sm font-semibold hover:bg-[#FA8125]/90"
+                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#34D399] text-[#04352A] rounded-xl text-sm font-semibold hover:bg-[#34D399]/90"
               >
                 {t('book.browse_other')}
               </Link>
@@ -592,7 +592,7 @@ export default function BookingPage() {
               </Link>
               <Link
                 href="/marketplace"
-                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#FA8125] text-white rounded-xl text-sm font-semibold hover:bg-[#FA8125]/90"
+                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#34D399] text-[#04352A] rounded-xl text-sm font-semibold hover:bg-[#34D399]/90"
               >
                 {t('book.browse_other')}
               </Link>
@@ -602,7 +602,7 @@ export default function BookingPage() {
                 href="https://wa.me/201002229982"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 mt-4 text-xs text-[#FA8125] hover:underline"
+                className="inline-flex items-center justify-center gap-1.5 mt-4 text-xs text-[#059669] hover:underline"
               >
                 <Clock className="w-3.5 h-3.5" />
                 {t('book.ask_about_owner')}
@@ -653,7 +653,7 @@ export default function BookingPage() {
               </a>
               <Link
                 href="/marketplace"
-                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#FA8125] text-white rounded-xl text-sm font-semibold hover:bg-[#FA8125]/90"
+                className="inline-flex items-center justify-center gap-1 px-5 py-2.5 bg-[#34D399] text-[#04352A] rounded-xl text-sm font-semibold hover:bg-[#34D399]/90"
               >
                 {t('book.browse_real')}
               </Link>
@@ -671,7 +671,7 @@ export default function BookingPage() {
           <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
           <h1 className="font-bold mb-2">{t('book.no_pricing_title')}</h1>
           <p className="text-sm text-gray-600 mb-4">{t('book.no_pricing_body')}</p>
-          <Link href={`/marketplace/${slug}`} className="bg-[#FA8125] text-white px-5 py-2.5 rounded-xl font-semibold inline-block">
+          <Link href={`/marketplace/${slug}`} className="bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-semibold inline-block">
             {t('book.back_to_listing')}
           </Link>
         </div>
@@ -732,7 +732,7 @@ export default function BookingPage() {
                 key={rule.id}
                 className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer ${
                   selectedRuleId === rule.id
-                    ? 'border-[#FA8125] bg-[#FA8125]/5'
+                    ? 'border-[#059669] bg-[#34D399]/5'
                     : 'border-gray-100 hover:border-gray-200'
                 }`}
               >
@@ -742,13 +742,13 @@ export default function BookingPage() {
                     name="rule"
                     checked={selectedRuleId === rule.id}
                     onChange={() => setSelectedRuleId(rule.id)}
-                    className="w-4 h-4 text-[#FA8125]"
+                    className="w-4 h-4 text-[#059669]"
                   />
                   <span className="text-sm font-medium text-gray-900">
                     {rule.label_ar || (PERIOD_LABELS[rule.period_type] ? t(PERIOD_LABELS[rule.period_type]) : rule.period_type)}
                   </span>
                 </div>
-                <span className="font-bold text-[#FA8125]">
+                <span className="font-bold text-[#059669]">
                   {Number(rule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}
                 </span>
               </label>
@@ -774,20 +774,20 @@ export default function BookingPage() {
                     onClick={() => toggleAddon(addon.slug)}
                     className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-start ${
                       isSel
-                        ? 'bg-[#FA8125]/5 border-[#FA8125]'
+                        ? 'bg-[#34D399]/5 border-[#059669]'
                         : 'bg-white border-gray-100 hover:border-gray-200'
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       <div className={`w-5 h-5 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all ${
-                        isSel ? 'bg-[#FA8125] border-[#FA8125]' : 'bg-transparent border-gray-300'
+                        isSel ? 'bg-[#34D399] border-[#059669]' : 'bg-transparent border-gray-300'
                       }`}>
                         {isSel && <span className="text-white text-xs font-bold">✓</span>}
                       </div>
                       {addon.emoji && <span className="text-base">{addon.emoji}</span>}
                       <span className="text-sm font-medium text-gray-900">{addon.name_ar}</span>
                     </div>
-                    <span className={`font-bold text-sm ${isSel ? 'text-[#FA8125]' : 'text-gray-700'}`}>
+                    <span className={`font-bold text-sm ${isSel ? 'text-[#059669]' : 'text-gray-700'}`}>
                       +{Number(addon.price_egp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}
                     </span>
                   </button>
@@ -795,7 +795,7 @@ export default function BookingPage() {
               })}
             </div>
             {selectedAddons.length > 0 && (
-              <p className="text-xs text-[#FA8125] font-semibold mt-3 text-center">
+              <p className="text-xs text-[#059669] font-semibold mt-3 text-center">
                 {t('book.addons_summary', { n: selectedAddons.length, amt: addonsAmount.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US') })}
               </p>
             )}
@@ -814,7 +814,7 @@ export default function BookingPage() {
               value={guestName}
               onChange={e => setGuestName(e.target.value)}
               placeholder="اكتب اسمك"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30 mb-3"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 mb-3"
             />
             <label className="block text-xs font-medium text-gray-700 mb-1">رقم الموبايل</label>
             <input
@@ -825,11 +825,11 @@ export default function BookingPage() {
               placeholder="01XXXXXXXXX"
               dir="ltr"
               style={{ textAlign: 'right' }}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30"
             />
             <p className="text-[11px] text-gray-500 mt-2">
               عندك حساب؟{' '}
-              <Link href={`/auth/login?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`} className="text-[#FA8125] font-semibold">
+              <Link href={`/auth/login?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`} className="text-[#059669] font-semibold">
                 سجّل دخول
               </Link>
             </p>
@@ -839,7 +839,7 @@ export default function BookingPage() {
         {/* Date/time picker */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
           <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-[#FA8125]" /> {isFlatRule ? 'ميعاد الحجز' : t('booking.date')}
+            <Calendar className="w-4 h-4 text-[#059669]" /> {isFlatRule ? 'ميعاد الحجز' : t('booking.date')}
           </h3>
           {isFlatRule ? (
             <div>
@@ -848,7 +848,7 @@ export default function BookingPage() {
                 type="datetime-local"
                 value={startAt}
                 onChange={e => { const v = e.target.value; setStartAt(v); setEndAt(v ? addMinutesLocal(v, 60) : '') }}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30"
                 required
               />
               <p className="text-[11px] text-gray-500 mt-2">اختار اليوم والساعة اللي يناسبك، والمكان هيأكدلك الميعاد.</p>
@@ -861,7 +861,7 @@ export default function BookingPage() {
                   type="datetime-local"
                   value={startAt}
                   onChange={e => setStartAt(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30"
                   required
                 />
               </div>
@@ -872,7 +872,7 @@ export default function BookingPage() {
                   value={endAt}
                   onChange={e => setEndAt(e.target.value)}
                   min={startAt}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30"
                   required
                 />
               </div>
@@ -889,7 +889,7 @@ export default function BookingPage() {
             rows={3}
             maxLength={500}
             placeholder={t('book.notes_placeholder')}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FA8125]/30"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30"
           />
         </div>
 
@@ -955,7 +955,7 @@ export default function BookingPage() {
               ))}
               <div className="flex justify-between font-bold pt-2 border-t border-gray-100 text-base">
                 <span>{t('booking.total')}</span>
-                <span className="text-[#FA8125]">{pricing.total.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}</span>
+                <span className="text-[#059669]">{pricing.total.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}</span>
               </div>
             </div>
           </div>
@@ -978,7 +978,7 @@ export default function BookingPage() {
         <button
           onClick={handleSubmit}
           disabled={!pricing.valid || stage === 'submitting'}
-          className="w-full py-3.5 bg-[#FA8125] text-white rounded-xl font-bold hover:bg-[#FA8125]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-3.5 bg-[#34D399] text-[#04352A] rounded-xl font-bold hover:bg-[#34D399]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {stage === 'submitting' ? (
             <>

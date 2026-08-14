@@ -29,10 +29,10 @@ export default async function StrategyPage() {
     <div dir="rtl" style={{ fontFamily: 'Tahoma', background: '#FAF7F0', minHeight: '100vh', padding: 24 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h1 style={{ color: '#FA8125', margin: 0, fontSize: 26 }}>🧠 Strategy Plays</h1>
+          <h1 style={{ color: '#059669', margin: 0, fontSize: 26 }}>🧠 Strategy Plays</h1>
           <div style={{ display: 'flex', gap: 12, fontSize: 13 }}>
-            <a href="/admin/ai-os" style={{ color: '#FA8125' }}>← AI OS</a>
-            <a href="/admin/marketing-hq" style={{ color: '#FA8125' }}>← HQ</a>
+            <a href="/admin/ai-os" style={{ color: '#059669' }}>← AI OS</a>
+            <a href="/admin/marketing-hq" style={{ color: '#059669' }}>← HQ</a>
           </div>
         </div>
 
@@ -48,10 +48,10 @@ export default async function StrategyPage() {
               <div key={play.id} style={{
                 background: '#fff', padding: 20, borderRadius: 12,
                 border: '1px solid #eee',
-                borderRight: `4px solid ${play.priority === 'urgent' ? '#6FCF97' : play.priority === 'high' ? '#2FA084' : '#FA8125'}`,
+                borderRight: `4px solid ${play.priority === 'urgent' ? '#6FCF97' : play.priority === 'high' ? '#2FA084' : '#059669'}`,
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 8 }}>
-                  <h2 style={{ margin: 0, color: '#FA8125', fontSize: 18 }}>{play.title}</h2>
+                  <h2 style={{ margin: 0, color: '#059669', fontSize: 18 }}>{play.title}</h2>
                   <div style={{ display: 'flex', gap: 6 }}>
                     <span style={{ background: '#FAF7F0', padding: '2px 8px', borderRadius: 4, fontSize: 10 }}>
                       {play.play_type ?? 'play'}
@@ -80,7 +80,7 @@ export default async function StrategyPage() {
 
                 {play.steps && play.steps.length > 0 && (
                   <details style={{ marginTop: 12 }}>
-                    <summary style={{ cursor: 'pointer', color: '#FA8125', fontSize: 13 }}>
+                    <summary style={{ cursor: 'pointer', color: '#059669', fontSize: 13 }}>
                       📋 Steps ({play.steps.length})
                     </summary>
                     <ol style={{ marginTop: 8, paddingRight: 20, fontSize: 12 }}>

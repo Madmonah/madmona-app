@@ -30,10 +30,10 @@ export default async function CEOBriefsPage() {
     <div dir="rtl" style={{ fontFamily: 'Tahoma', background: '#FAF7F0', minHeight: '100vh', padding: 24 }}>
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h1 style={{ color: '#FA8125', margin: 0, fontSize: 26 }}>🌅 CEO Daily Briefs</h1>
+          <h1 style={{ color: '#059669', margin: 0, fontSize: 26 }}>🌅 CEO Daily Briefs</h1>
           <div style={{ display: 'flex', gap: 12, fontSize: 13 }}>
-            <a href="/admin/ai-os" style={{ color: '#FA8125' }}>← AI OS</a>
-            <a href="/admin/marketing-hq" style={{ color: '#FA8125' }}>← HQ</a>
+            <a href="/admin/ai-os" style={{ color: '#059669' }}>← AI OS</a>
+            <a href="/admin/marketing-hq" style={{ color: '#059669' }}>← HQ</a>
           </div>
         </div>
 
@@ -50,7 +50,7 @@ export default async function CEOBriefsPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 12 }}>
                   <div>
                     <div style={{ fontSize: 11, color: '#999' }}>{brief.brief_date}</div>
-                    <h2 style={{ margin: '4px 0 0', color: '#FA8125', fontSize: 18, lineHeight: 1.4 }}>
+                    <h2 style={{ margin: '4px 0 0', color: '#059669', fontSize: 18, lineHeight: 1.4 }}>
                       {brief.one_liner ?? '(بدون عنوان)'}
                     </h2>
                   </div>
@@ -64,7 +64,7 @@ export default async function CEOBriefsPage() {
                     { label: 'AI Actions', val: brief.ai_actions_today ?? 0 },
                   ].map((s, i) => (
                     <div key={i} style={{ background: '#FAF7F0', padding: 8, borderRadius: 6, textAlign: 'center' }}>
-                      <div style={{ fontSize: 14, fontWeight: 'bold', color: s.color ?? '#FA8125' }}>{s.val}</div>
+                      <div style={{ fontSize: 14, fontWeight: 'bold', color: s.color ?? '#059669' }}>{s.val}</div>
                       <div style={{ fontSize: 10, color: '#666' }}>{s.label}</div>
                     </div>
                   ))}
@@ -90,12 +90,12 @@ export default async function CEOBriefsPage() {
 
                 {brief.top_3_priorities && brief.top_3_priorities.length > 0 && (
                   <div style={{ marginTop: 12 }}>
-                    <strong style={{ color: '#FA8125' }}>🎯 Top 3 أولويات</strong>
+                    <strong style={{ color: '#059669' }}>🎯 Top 3 أولويات</strong>
                     {brief.top_3_priorities.map((p: Record<string, unknown>, i) => (
                       <div key={i} style={{ background: '#FAF7F0', padding: 10, borderRadius: 6, marginTop: 6, fontSize: 13 }}>
                         <strong>{i + 1}. {String(p.priority ?? '')}</strong><br/>
                         <em style={{ color: '#666' }}>{String(p.why ?? '')}</em><br/>
-                        <span style={{ color: '#FA8125' }}>→ {String(p.action ?? '')}</span>
+                        <span style={{ color: '#059669' }}>→ {String(p.action ?? '')}</span>
                       </div>
                     ))}
                   </div>

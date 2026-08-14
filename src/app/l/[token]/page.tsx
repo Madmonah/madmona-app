@@ -68,12 +68,12 @@ export default function MagicLinkPage() {
       <div className="bg-white rounded-3xl shadow-luxe p-8 text-center max-w-sm w-full">
         {state === 'working' ? (
           <>
-            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-[#FA8125]/10 flex items-center justify-center">
-              <Sparkles className="w-7 h-7 text-[#FA8125]" />
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-[#34D399]/10 flex items-center justify-center">
+              <Sparkles className="w-7 h-7 text-[#059669]" />
             </div>
             <p className="font-black text-gray-900 mb-1.5">ثانية واحدة…</p>
             <p className="text-sm text-gray-500 mb-4">بنجهّزلك حسابك وندخّلك على طول 🧞</p>
-            <Loader2 className="w-5 h-5 text-[#FA8125] animate-spin mx-auto" />
+            <Loader2 className="w-5 h-5 text-[#059669] animate-spin mx-auto" />
           </>
         ) : (
           <>
@@ -81,7 +81,7 @@ export default function MagicLinkPage() {
             <p className="text-sm text-gray-500 mb-4">جرب تاني أو ادخل بنفسك — ثانية واحدة برضه.</p>
             <a
               href={`/auth/login?redirect=${encodeURIComponent(next)}`}
-              className="inline-block bg-[#FA8125] text-white font-bold px-6 py-3 rounded-2xl"
+              className="inline-block bg-[#34D399] text-[#04352A] font-bold px-6 py-3 rounded-2xl"
             >
               تسجيل الدخول
             </a>

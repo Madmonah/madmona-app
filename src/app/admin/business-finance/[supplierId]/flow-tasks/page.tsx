@@ -9,7 +9,7 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env
 
 const DONE = new Set(['done', 'completed', 'closed'])
 const PRIO_COLOR: Record<string, string> = {
-  high: 'text-red-600 bg-red-50', medium: 'text-amber-700 bg-amber-50', low: 'text-[#FA8125] bg-[#FA8125]/10',
+  high: 'text-red-600 bg-red-50', medium: 'text-amber-700 bg-amber-50', low: 'text-[#059669] bg-[#34D399]/10',
 }
 
 export default function FlowTasksPage({ params }: { params: { supplierId: string } }) {
@@ -64,27 +64,27 @@ export default function FlowTasksPage({ params }: { params: { supplierId: string
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">B2B PARTNER · TASKS</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">B2B PARTNER · TASKS</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">المهام · {supplier?.business_name}</h1>
               <p className="text-sm text-[#6B7280] mt-1">{open.length} مهمة مفتوحة · {done.length} تمّت</p>
             </div>
             <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7]"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
           </div>
           <div className="flex gap-2 mt-3">
-            <button onClick={() => setTab('open')} className={`px-4 py-1.5 rounded-full text-xs font-bold ${tab === 'open' ? 'bg-[#FA8125] text-white' : 'bg-[#FAFAF7] text-[#6B7280]'}`}>مفتوحة ({open.length})</button>
-            <button onClick={() => setTab('done')} className={`px-4 py-1.5 rounded-full text-xs font-bold ${tab === 'done' ? 'bg-[#FA8125] text-white' : 'bg-[#FAFAF7] text-[#6B7280]'}`}>تمّت ({done.length})</button>
+            <button onClick={() => setTab('open')} className={`px-4 py-1.5 rounded-full text-xs font-bold ${tab === 'open' ? 'bg-[#34D399] text-[#04352A]' : 'bg-[#FAFAF7] text-[#6B7280]'}`}>مفتوحة ({open.length})</button>
+            <button onClick={() => setTab('done')} className={`px-4 py-1.5 rounded-full text-xs font-bold ${tab === 'done' ? 'bg-[#34D399] text-[#04352A]' : 'bg-[#FAFAF7] text-[#6B7280]'}`}>تمّت ({done.length})</button>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
         {loading ? (
-          <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin inline" /></div>
+          <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-[#059669] animate-spin inline" /></div>
         ) : shown.length === 0 ? (
           <div className="py-12 text-center bg-white rounded-2xl border border-gray-100">
             <ClipboardList className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
@@ -97,7 +97,7 @@ export default function FlowTasksPage({ params }: { params: { supplierId: string
               return (
                 <div key={t.id} className="bg-white rounded-2xl border border-gray-100 p-4 flex items-start gap-3">
                   <button onClick={() => tab === 'open' && markDone(t.id)} className="mt-0.5 shrink-0" title="تعليم كمنجزة">
-                    {tab === 'done' ? <CheckCircle2 className="w-5 h-5 text-green-600" /> : <Circle className="w-5 h-5 text-[#6B7280] hover:text-[#FA8125]" />}
+                    {tab === 'done' ? <CheckCircle2 className="w-5 h-5 text-green-600" /> : <Circle className="w-5 h-5 text-[#6B7280] hover:text-[#059669]" />}
                   </button>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -120,4 +120,4 @@ export default function FlowTasksPage({ params }: { params: { supplierId: string
   )
 }
 
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div> }

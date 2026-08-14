@@ -123,11 +123,11 @@ export default function CustomerOrdersPage() {
     return (
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
         <div className="bg-white rounded-2xl border p-8 text-center max-w-sm">
-          <Lock className="w-8 h-8 text-[#FA8125] mx-auto mb-3" />
+          <Lock className="w-8 h-8 text-[#059669] mx-auto mb-3" />
           <h1 className="font-bold mb-4">سجّل دخولك الأول</h1>
           <Link
             href="/auth/login?redirect=/account/orders"
-            className="block bg-[#FA8125] text-white py-3 rounded-xl font-semibold"
+            className="block bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold"
           >
             تسجيل دخول
           </Link>
@@ -158,7 +158,7 @@ export default function CustomerOrdersPage() {
             <p className="text-sm text-gray-500 mb-6">جرّب تطلب من المطاعم والمنتجات في مضمونة</p>
             <Link
               href="/marketplace"
-              className="inline-flex items-center gap-1 bg-[#FA8125] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#FA8125]/90"
+              className="inline-flex items-center gap-1 bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#34D399]/90"
             >
               تصفح المنصة
             </Link>
@@ -222,7 +222,7 @@ export default function CustomerOrdersPage() {
                       {o.items_count} {o.items_count === 1 ? 'صنف' : 'أصناف'}
                     </span>
                     <span className="text-sm">
-                      <strong className="text-[#FA8125] tabular">
+                      <strong className="text-[#059669] tabular">
                         {o.total_amount.toLocaleString('ar-EG')}
                       </strong>
                       <span className="text-xs text-gray-500"> ج.م</span>

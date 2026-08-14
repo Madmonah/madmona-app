@@ -163,7 +163,7 @@ export default function AccountEmailPage() {
   }
 
   const inputCls =
-    'w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#FA8125]/40 focus:ring-4 focus:ring-[#FA8125]/10 transition-all'
+    'w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#059669]/40 focus:ring-4 focus:ring-[#059669]/10 transition-all'
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
@@ -187,7 +187,7 @@ export default function AccountEmailPage() {
       <main className="max-w-md mx-auto px-4 py-6 pb-24">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 text-[#FA8125] animate-spin" />
+            <Loader2 className="w-6 h-6 text-[#059669] animate-spin" />
           </div>
         ) : (
           <div className="space-y-4 animate-slide-up">
@@ -210,14 +210,14 @@ export default function AccountEmailPage() {
                 ) : (
                   <div className="bg-white rounded-3xl shadow-soft p-5">
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-2xl bg-[#FA8125]/10 text-[#FA8125] flex items-center justify-center flex-shrink-0">
+                      <div className="w-11 h-11 rounded-2xl bg-[#34D399]/10 text-[#059669] flex items-center justify-center flex-shrink-0">
                         <Mail className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-gray-900 truncate" dir="ltr" style={{ textAlign: 'right' }}>
                           {currentEmail}
                         </p>
-                        <p className="text-[11px] text-[#FA8125] font-bold flex items-center gap-1 mt-0.5">
+                        <p className="text-[11px] text-[#059669] font-bold flex items-center gap-1 mt-0.5">
                           <ShieldCheck className="w-3.5 h-3.5" /> إيميل مؤكَّد
                         </p>
                       </div>
@@ -227,7 +227,7 @@ export default function AccountEmailPage() {
 
                 <button
                   onClick={() => { setStep('form'); setError(null) }}
-                  className="w-full bg-[#FA8125] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-[#34D399] text-[#04352A] py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
                 >
                   <Mail className="w-4 h-4" />
                   {isSynthetic ? 'ضيف إيميلك الحقيقي' : 'غيّر الإيميل'}
@@ -240,7 +240,7 @@ export default function AccountEmailPage() {
               <form onSubmit={startChange} className="bg-white rounded-3xl shadow-soft p-6 space-y-5">
                 <div>
                   <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Mail className="w-3.5 h-3.5 text-[#FA8125]" />
+                    <Mail className="w-3.5 h-3.5 text-[#059669]" />
                     الإيميل الجديد
                   </label>
                   <input
@@ -267,7 +267,7 @@ export default function AccountEmailPage() {
                 <button
                   type="submit"
                   disabled={submitting || !newEmail}
-                  className="w-full bg-[#FA8125] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-[#34D399] text-[#04352A] py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
                 >
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   ابعتلي كود التأكيد
@@ -276,7 +276,7 @@ export default function AccountEmailPage() {
                 <button
                   type="button"
                   onClick={() => { setStep('view'); setError(null) }}
-                  className="w-full text-center text-xs font-bold text-gray-400 hover:text-[#FA8125] transition-colors"
+                  className="w-full text-center text-xs font-bold text-gray-400 hover:text-[#059669] transition-colors"
                 >
                   رجوع
                 </button>
@@ -286,7 +286,7 @@ export default function AccountEmailPage() {
             {/* كود التأكيد */}
             {step === 'code' && (
               <form onSubmit={verifyChange} className="bg-white rounded-3xl shadow-soft p-6 space-y-5">
-                <div className="flex items-center justify-center gap-2 p-3 bg-[#FA8125]/5 rounded-2xl text-sm text-[#FA8125] font-bold">
+                <div className="flex items-center justify-center gap-2 p-3 bg-[#34D399]/5 rounded-2xl text-sm text-[#059669] font-bold">
                   <Mail className="w-4 h-4" />
                   <span dir="ltr">{sentTo}</span>
                 </div>
@@ -319,7 +319,7 @@ export default function AccountEmailPage() {
                 <button
                   type="submit"
                   disabled={submitting || code.length < 4}
-                  className="w-full bg-[#FA8125] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-[#34D399] text-[#04352A] py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2"
                 >
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                   أكّد الإيميل
@@ -329,7 +329,7 @@ export default function AccountEmailPage() {
                   <button
                     type="button"
                     onClick={() => { setStep('form'); setCode(''); setError(null) }}
-                    className="font-bold text-gray-400 hover:text-[#FA8125] transition-colors flex items-center gap-1"
+                    className="font-bold text-gray-400 hover:text-[#059669] transition-colors flex items-center gap-1"
                   >
                     <PencilLine className="w-3.5 h-3.5" />
                     غيّر الإيميل
@@ -338,7 +338,7 @@ export default function AccountEmailPage() {
                     type="button"
                     onClick={resendCode}
                     disabled={resendIn > 0 || submitting}
-                    className="font-bold text-[#FA8125] disabled:text-gray-300 transition-colors flex items-center gap-1"
+                    className="font-bold text-[#059669] disabled:text-gray-300 transition-colors flex items-center gap-1"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     {resendIn > 0 ? `إعادة الإرسال بعد ${resendIn} ث` : 'ابعت الكود تاني'}
@@ -350,8 +350,8 @@ export default function AccountEmailPage() {
             {/* تم */}
             {step === 'done' && (
               <div className="bg-white rounded-3xl shadow-soft p-8 text-center">
-                <div className="w-16 h-16 bg-[#FA8125]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-8 h-8 text-[#FA8125]" />
+                <div className="w-16 h-16 bg-[#34D399]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-[#059669]" />
                 </div>
                 <p className="text-sm font-bold text-gray-900 mb-1" dir="ltr">{currentEmail}</p>
                 <p className="text-xs text-gray-500 mb-6">
@@ -359,7 +359,7 @@ export default function AccountEmailPage() {
                 </p>
                 <Link
                   href="/account"
-                  className="inline-block bg-[#FA8125] text-white px-8 py-3 rounded-2xl text-sm font-bold shadow-elevated hover:-translate-y-0.5 transition-all"
+                  className="inline-block bg-[#34D399] text-[#04352A] px-8 py-3 rounded-2xl text-sm font-bold shadow-elevated hover:-translate-y-0.5 transition-all"
                 >
                   رجوع لحسابي
                 </Link>

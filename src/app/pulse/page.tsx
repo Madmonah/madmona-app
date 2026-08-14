@@ -40,7 +40,7 @@ function PulseFallback() {
         <div className="flex items-center justify-between max-w-3xl mx-auto">
           <div className="flex items-center gap-3">
             <div className="text-2xl font-bold tracking-tight">مضمونة</div>
-            <span className="text-xs text-[#FA8125] uppercase tracking-widest">PULSE</span>
+            <span className="text-xs text-[#059669] uppercase tracking-widest">PULSE</span>
           </div>
           <a href="/" className="text-xs text-[#6B7280] hover:text-[#1A2E26]">← الرئيسية</a>
         </div>

@@ -146,16 +146,16 @@ export default function MaridAdminPage() {
 
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-[#FA8125]">🧞 غرفة تحكم المارد</h1>
+            <h1 className="text-2xl font-bold text-[#059669]">🧞 غرفة تحكم المارد</h1>
             <p className="text-sm text-gray-500">وكيل الاستقطاب — يجيب ليدز، يراسل، يتابع، ويطارد المسودات لوحده</p>
           </div>
           <div className="flex gap-2">
             <button onClick={() => act('run_now')} disabled={!!busy}
-              className="px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold hover:bg-[#2FA084] disabled:opacity-50">
+              className="px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold hover:bg-[#2FA084] disabled:opacity-50">
               {busy === 'run_now' ? '⏳ شغال...' : '▶️ شغّل المارد دلوقتي'}
             </button>
             <button onClick={() => act('send_report')} disabled={!!busy}
-              className="px-4 py-2 rounded-xl border border-[#FA8125] text-[#FA8125] text-sm font-bold hover:bg-emerald-50 disabled:opacity-50">
+              className="px-4 py-2 rounded-xl border border-[#059669] text-[#059669] text-sm font-bold hover:bg-emerald-50 disabled:opacity-50">
               {busy === 'send_report' ? '⏳...' : '📊 ابعت التقرير'}
             </button>
           </div>
@@ -180,7 +180,7 @@ export default function MaridAdminPage() {
             { label: '📨 رسايل آخر 24س', value: stats?.sent_24h ?? 0 },
           ].map(c => (
             <div key={c.label} className="rounded-2xl bg-white border border-gray-200 p-4 text-center">
-              <div className="text-2xl font-black text-[#FA8125]">{loading ? '…' : c.value}</div>
+              <div className="text-2xl font-black text-[#059669]">{loading ? '…' : c.value}</div>
               <div className="text-xs text-gray-500 mt-1">{c.label}</div>
             </div>
           ))}
@@ -218,7 +218,7 @@ export default function MaridAdminPage() {
                 className="px-4 py-2 rounded-xl bg-[#d4a017] text-white text-sm font-bold hover:opacity-90">
                 📤 ارفع Excel
               </button>
-              <button onClick={downloadTemplate} className="text-xs text-[#FA8125] underline">نموذج فاضي</button>
+              <button onClick={downloadTemplate} className="text-xs text-[#059669] underline">نموذج فاضي</button>
             </div>
           </div>
           <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" className="hidden"

@@ -122,7 +122,7 @@ export default function PulseClient() {
         {/* 0. World Cup 2026 live scores banner */}
         <Link
           href="/world-cup"
-          className="flex items-center gap-3 bg-gradient-to-l from-[#FA8125] to-[#2FA084] text-white rounded-2xl px-4 py-3.5 shadow-card hover:shadow-luxe hover:-translate-y-0.5 transition-all"
+          className="flex items-center gap-3 bg-gradient-to-l from-[#34D399] to-[#2FA084] text-white rounded-2xl px-4 py-3.5 shadow-card hover:shadow-luxe hover:-translate-y-0.5 transition-all"
         >
           <span className="text-2xl">⚽</span>
           <span className="flex-1">
@@ -176,7 +176,7 @@ function PulseHeader({ streak }: { streak: StreakState | null }) {
       <div className="flex items-center justify-between max-w-3xl mx-auto">
         <div className="flex items-center gap-3">
           <div className="text-2xl font-bold tracking-tight">مضمونة</div>
-          <span className="text-[10px] font-bold text-[#FA8125] bg-[#FA8125]/8 px-2 py-0.5 rounded-full uppercase tracking-widest">
+          <span className="text-[10px] font-bold text-[#059669] bg-[#34D399]/8 px-2 py-0.5 rounded-full uppercase tracking-widest">
             PULSE
           </span>
         </div>
@@ -235,7 +235,7 @@ function DailyDropHero({ drop }: { drop: DailyDrop }) {
     }
   };
 
-  const badgeColor = drop.badge_color || '#FA8125';
+  const badgeColor = drop.badge_color || '#059669';
 
   return (
     <section
@@ -349,7 +349,7 @@ function StreakProgress({ streak }: { streak: StreakState }) {
             </span>
           </div>
           <p className="text-xs text-[#6B7280]">
-            أطول streak ليك: <span className="font-bold text-[#FA8125]">{streak.longest_streak}</span> • إجمالي زياراتك: <span className="font-bold">{streak.total_visits}</span>
+            أطول streak ليك: <span className="font-bold text-[#059669]">{streak.longest_streak}</span> • إجمالي زياراتك: <span className="font-bold">{streak.total_visits}</span>
           </p>
         </div>
       </div>
@@ -357,7 +357,7 @@ function StreakProgress({ streak }: { streak: StreakState }) {
       {next && (
         <>
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[11px] font-bold text-[#FA8125]">
+            <span className="text-[11px] font-bold text-[#059669]">
               {daysToGo} {daysToGo === 1 ? 'يوم كمان' : 'أيام كمان'} لـ {next.emoji} {next.label}
             </span>
             <span className="text-[11px] text-[#9CA3AF]">{Math.round(progress)}%</span>
@@ -408,7 +408,7 @@ function StreakProgress({ streak }: { streak: StreakState }) {
 
 function StreakInviteSignIn() {
   return (
-    <section className="p-5 rounded-3xl bg-gradient-to-br from-[#FA8125]/5 to-[#2FA084]/5 border border-[#FA8125]/20">
+    <section className="p-5 rounded-3xl bg-gradient-to-br from-[#34D399]/5 to-[#2FA084]/5 border border-[#059669]/20">
       <div className="flex items-start gap-3">
         <span className="text-2xl flex-shrink-0">🔥</span>
         <div>
@@ -416,7 +416,7 @@ function StreakInviteSignIn() {
           <p className="text-xs text-[#6B7280] mb-3 leading-relaxed">
             سجل دخول كل يوم وحافظ على streak — كل ٧ أيام = خصم جديد، ١٠٠ يوم = كاش باك ١٠٠ج.م
           </p>
-          <Link href="/login?return=/pulse" className="inline-flex items-center gap-1.5 bg-[#FA8125] text-white text-xs font-black px-4 py-2 rounded-lg hover:bg-[#FA8125]/90 transition-colors">
+          <Link href="/login?return=/pulse" className="inline-flex items-center gap-1.5 bg-[#34D399] text-[#04352A] text-xs font-black px-4 py-2 rounded-lg hover:bg-[#34D399]/90 transition-colors">
             دخول / تسجيل
             <span>←</span>
           </Link>
@@ -539,7 +539,7 @@ function DailyPicks({ picks, isSignedIn }: { picks: Pick[]; isSignedIn: boolean 
         <h3 className="text-base font-black text-[#1A2E26]">
           {picks.length > 0 ? '✨ اختياراتك النهارده' : '🔥 الأحدث في السوق'}
         </h3>
-        <Link href="/marketplace" className="text-xs text-[#FA8125] font-bold hover:underline">
+        <Link href="/marketplace" className="text-xs text-[#059669] font-bold hover:underline">
           شوف الكل ←
         </Link>
       </div>
@@ -570,7 +570,7 @@ function PickCard({ pick }: { pick: Pick }) {
         ) : (
           <div className="w-full h-full flex items-center justify-center text-3xl">🏠</div>
         )}
-        <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-full text-[10px] font-black text-[#FA8125]">
+        <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-full text-[10px] font-black text-[#059669]">
           #{pick.rank}
         </div>
       </div>
@@ -578,7 +578,7 @@ function PickCard({ pick }: { pick: Pick }) {
         <h4 className="text-sm font-bold text-[#1A2E26] line-clamp-2 mb-1">{pick.title}</h4>
         {pick.city && <p className="text-[11px] text-[#6B7280]">📍 {pick.city}</p>}
         {pick.reason_ar && (
-          <p className="text-[10px] text-[#FA8125] mt-2 line-clamp-1">💡 {pick.reason_ar}</p>
+          <p className="text-[10px] text-[#059669] mt-2 line-clamp-1">💡 {pick.reason_ar}</p>
         )}
       </div>
     </Link>
@@ -613,7 +613,7 @@ function RewardUnlockedModal({ rewardKey, onClose }: { rewardKey: string; onClos
         </div>
         <button
           onClick={onClose}
-          className="w-full bg-[#FA8125] text-white font-black py-3 rounded-xl hover:bg-[#FA8125]/90 transition-colors"
+          className="w-full bg-[#34D399] text-[#04352A] font-black py-3 rounded-xl hover:bg-[#34D399]/90 transition-colors"
         >
           استلم وكمل 🎁
         </button>

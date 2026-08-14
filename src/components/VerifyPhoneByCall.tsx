@@ -89,7 +89,7 @@ export default function VerifyPhoneByCall({
 
   if (phase === 'done') {
     return (
-      <div className="flex items-center justify-center gap-2 bg-[#FA8125]/10 text-[#FA8125] py-4 rounded-2xl font-bold">
+      <div className="flex items-center justify-center gap-2 bg-[#34D399]/10 text-[#059669] py-4 rounded-2xl font-bold">
         <CheckCircle className="w-5 h-5" /> تم إثبات رقمك ✓
       </div>
     )
@@ -100,7 +100,7 @@ export default function VerifyPhoneByCall({
       <div className="bg-[#F0F7F4] border border-[#2FA084]/30 rounded-2xl p-4 text-center">
         <a
           href={`tel:${callNumber}`}
-          className="w-full flex items-center justify-center gap-2 bg-[#FA8125] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:-translate-y-0.5 transition-all mb-3"
+          className="w-full flex items-center justify-center gap-2 bg-[#34D399] text-[#04352A] py-4 rounded-2xl font-bold text-base shadow-elevated hover:-translate-y-0.5 transition-all mb-3"
         >
           <Phone className="w-5 h-5" />
           اضغط للاتصال
@@ -112,11 +112,11 @@ export default function VerifyPhoneByCall({
           <br />لو الشاشة مفتحتش، اتصل بالرقم ده من موبايلك:
         </p>
 
-        <div dir="ltr" className="inline-block bg-white border border-[#2FA084]/40 rounded-xl px-5 py-2 font-black text-lg tracking-wider text-[#FA8125] mb-3 select-all">
+        <div dir="ltr" className="inline-block bg-white border border-[#2FA084]/40 rounded-xl px-5 py-2 font-black text-lg tracking-wider text-[#059669] mb-3 select-all">
           {callNumber}
         </div>
 
-        <div className="flex items-center justify-center gap-2 text-[#FA8125] font-bold text-sm">
+        <div className="flex items-center justify-center gap-2 text-[#059669] font-bold text-sm">
           <Loader2 className="w-4 h-4 animate-spin" />
           مستنيين رنتك…
         </div>
@@ -130,7 +130,7 @@ export default function VerifyPhoneByCall({
           <button
             type="button"
             onClick={() => start(excluded)}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FA8125] hover:underline mt-3"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#059669] hover:underline mt-3"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             الرقم مردّش؟ جرّب رقم تاني
@@ -146,7 +146,7 @@ export default function VerifyPhoneByCall({
     <div className="space-y-3">
       <div>
         <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-          <Phone className="w-3.5 h-3.5 text-[#FA8125]" />
+          <Phone className="w-3.5 h-3.5 text-[#059669]" />
           رقم موبايلك
         </label>
         <input
@@ -157,7 +157,7 @@ export default function VerifyPhoneByCall({
           dir="ltr"
           style={{ textAlign: 'right' }}
           autoComplete="tel"
-          className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#FA8125]/40 focus:ring-4 focus:ring-[#FA8125]/10 transition-all"
+          className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#059669]/40 focus:ring-4 focus:ring-[#059669]/10 transition-all"
         />
         <p className="text-[11px] text-gray-500 mt-1.5">
           هنطلب منك ترن علينا رنة من الرقم ده — من غير أكواد ولا رسائل.
@@ -175,7 +175,7 @@ export default function VerifyPhoneByCall({
         type="button"
         onClick={() => start(null)}
         disabled={phone.replace(/\D/g, '').length < 10}
-        className="w-full bg-[#FA8125] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all"
+        className="w-full bg-[#34D399] text-[#04352A] py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 transition-all"
       >
         كمّل
       </button>

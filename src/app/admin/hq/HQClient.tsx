@@ -56,15 +56,15 @@ type TabId =
   | 'collaborations' | 'tools'
 
 const TABS: Array<{ id: TabId; label: string; icon: string; color: string }> = [
-  { id: 'dashboard', label: 'لوحة القيادة', icon: '📊', color: '#FA8125' },
-  { id: 'marketplace', label: 'السوق', icon: '🏪', color: '#FA8125' },
+  { id: 'dashboard', label: 'لوحة القيادة', icon: '📊', color: '#059669' },
+  { id: 'marketplace', label: 'السوق', icon: '🏪', color: '#059669' },
   { id: 'agents', label: 'الـ Agents', icon: '🤖', color: '#2c3e50' },
   { id: 'creative', label: 'إبداع', icon: '🎨', color: '#6FCF97' },
   { id: 'intelligence', label: 'ذكاء البيانات', icon: '🧠', color: '#0EA5E9' },
   { id: 'growth', label: 'نمو', icon: '🚀', color: '#10B981' },
   { id: 'support', label: 'دعم', icon: '🛠️', color: '#8B5CF6' },
   { id: 'self-improve', label: 'تحسين ذاتي', icon: '🔧', color: '#2FA084' },
-  { id: 'collaborations', label: 'تعاون', icon: '🎯', color: '#FA8125' },
+  { id: 'collaborations', label: 'تعاون', icon: '🎯', color: '#059669' },
   { id: 'tools', label: 'أدوات', icon: '⚙️', color: '#666' },
 ]
 
@@ -84,7 +84,7 @@ export default function HQClient({ data }: { data: HQData }) {
   return (
     <div dir="rtl" style={{ fontFamily: 'Tahoma, Arial', background: '#FAF7F0', minHeight: '100vh' }}>
       <header style={{
-        background: '#FA8125', color: '#FAF7F0',
+        background: '#059669', color: '#FAF7F0',
         padding: '14px 24px',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         position: 'sticky', top: 0, zIndex: 100,
@@ -166,7 +166,7 @@ function DashboardTab({ data, stats, setTab }: { data: HQData; stats: Record<str
     <div>
       <h3 style={sectionHeader}>💰 الأرقام الكبرى</h3>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 20 }}>
-        <BigMetric icon="💎" label="عمولة الشهر" value={`${k.monthCommission.toLocaleString('ar-EG')} ج`} subtitle={`إجمالي: ${k.totalCommission.toLocaleString('ar-EG')} ج`} color="#FA8125" />
+        <BigMetric icon="💎" label="عمولة الشهر" value={`${k.monthCommission.toLocaleString('ar-EG')} ج`} subtitle={`إجمالي: ${k.totalCommission.toLocaleString('ar-EG')} ج`} color="#059669" />
         <BigMetric icon="📈" label="GMV الشهر" value={`${k.monthGMV.toLocaleString('ar-EG')} ج`} subtitle={`إجمالي: ${k.totalGMV.toLocaleString('ar-EG')} ج`} color="#2FA084" />
         <BigMetric icon="📅" label="حجوزات الشهر" value={String(k.monthBookings)} subtitle={`إجمالي: ${k.totalBookings}`} color="#0EA5E9" />
         <BigMetric icon="👥" label="العملاء" value={String(k.totalCustomers)} subtitle={`${k.pushSubscribers} 🔔 · ${k.leadsCount} lead`} color="#8B5CF6" />
@@ -220,7 +220,7 @@ function DashboardTab({ data, stats, setTab }: { data: HQData; stats: Record<str
                         <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>{supplier?.business_name ?? '—'}</div>
                       </div>
                       <div style={{ textAlign: 'left' }}>
-                        <div style={{ fontSize: 14, fontWeight: 'bold', color: '#FA8125' }}>{Number(b.total_amount).toLocaleString('ar-EG')} ج</div>
+                        <div style={{ fontSize: 14, fontWeight: 'bold', color: '#059669' }}>{Number(b.total_amount).toLocaleString('ar-EG')} ج</div>
                         <div style={{ fontSize: 10, color: '#999' }}>{new Date(String(b.created_at)).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}</div>
                       </div>
                     </div>
@@ -236,7 +236,7 @@ function DashboardTab({ data, stats, setTab }: { data: HQData; stats: Record<str
             {data.topListings.length === 0 ? <Empty msg="مفيش إعلانات" /> :
               data.topListings.slice(0, 8).map((l, i) => (
                 <a key={String(l.id)} href={`/marketplace/${String(l.slug)}`} target="_blank" rel="noopener" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, borderBottom: i < 7 ? '1px solid #eee' : 'none', textDecoration: 'none', color: 'inherit' }}>
-                  <span style={{ width: 22, height: 22, background: '#FA8125', color: '#fff', borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 'bold' }}>{i + 1}</span>
+                  <span style={{ width: 22, height: 22, background: '#059669', color: '#fff', borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 'bold' }}>{i + 1}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{String(l.title)}</div>
                   </div>
@@ -288,7 +288,7 @@ function MarketplaceTab({ data }: { data: HQData }) {
           <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
               <thead>
-                <tr style={{ background: '#FA8125', color: '#FAF7F0' }}>
+                <tr style={{ background: '#059669', color: '#FAF7F0' }}>
                   <th style={th}>العنوان</th>
                   <th style={th}>مشاهدات</th>
                   <th style={th}>حجوزات</th>
@@ -329,7 +329,7 @@ function MarketplaceTab({ data }: { data: HQData }) {
           <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
               <thead>
-                <tr style={{ background: '#FA8125', color: '#FAF7F0' }}>
+                <tr style={{ background: '#059669', color: '#FAF7F0' }}>
                   <th style={th}>المرجع</th>
                   <th style={th}>الإعلان</th>
                   <th style={th}>المؤجر</th>
@@ -367,7 +367,7 @@ function MarketplaceTab({ data }: { data: HQData }) {
             <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                 <thead>
-                  <tr style={{ background: '#FA8125', color: '#FAF7F0' }}>
+                  <tr style={{ background: '#059669', color: '#FAF7F0' }}>
                     <th style={th}>الاسم</th>
                     <th style={th}>الموبايل</th>
                     <th style={th}>المقصود</th>
@@ -517,7 +517,7 @@ function SupplierRow({ supplier }: { supplier: Record<string, unknown> }) {
     <div style={{ background: '#fff', padding: 14, borderRadius: 10, border: '1px solid #eee', borderRight: `4px solid ${statusColor}` }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
         <div style={{ flex: 1 }}>
-          <h3 style={{ margin: 0, fontSize: 15, color: '#FA8125' }}>🏪 {String(supplier.business_name)}</h3>
+          <h3 style={{ margin: 0, fontSize: 15, color: '#059669' }}>🏪 {String(supplier.business_name)}</h3>
           {profile?.full_name && (
             <p style={{ fontSize: 11, color: '#666', margin: '2px 0' }}>👤 {profile.full_name}</p>
           )}
@@ -588,7 +588,7 @@ function SupplierRow({ supplier }: { supplier: Record<string, unknown> }) {
       </div>
 
       {msg && (
-        <div style={{ marginTop: 8, padding: 6, background: '#FAF7F0', borderRadius: 4, fontSize: 11, color: '#FA8125', textAlign: 'center', fontWeight: 'bold' }}>
+        <div style={{ marginTop: 8, padding: 6, background: '#FAF7F0', borderRadius: 4, fontSize: 11, color: '#059669', textAlign: 'center', fontWeight: 'bold' }}>
           {msg}
         </div>
       )}
@@ -622,7 +622,7 @@ function AgentsTab({ agents, recentRuns }: { agents: Array<Record<string, unknow
       <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
           <thead>
-            <tr style={{ background: '#FA8125', color: '#FAF7F0' }}>
+            <tr style={{ background: '#059669', color: '#FAF7F0' }}>
               <th style={th}>Agent</th>
               <th style={th}>Team</th>
               <th style={th}>الحالة</th>
@@ -686,7 +686,7 @@ function RunAgentButton({ agentName }: { agentName: string }) {
   }
 
   return (
-    <button onClick={run} disabled={running} style={{ padding: '4px 10px', background: '#FA8125', color: '#fff', border: 'none', borderRadius: 4, cursor: running ? 'wait' : 'pointer', fontSize: 11, fontFamily: 'inherit' }}>
+    <button onClick={run} disabled={running} style={{ padding: '4px 10px', background: '#059669', color: '#fff', border: 'none', borderRadius: 4, cursor: running ? 'wait' : 'pointer', fontSize: 11, fontFamily: 'inherit' }}>
       {running ? '⏳' : result ?? '▶'}
     </button>
   )
@@ -709,7 +709,7 @@ function CreativeTab({ ads, reels, content }: { ads: Array<Record<string, unknow
           {ads.length === 0 ? <Empty msg="مفيش إعلانات" /> :
             ads.map((a, i) => (
               <div key={i} style={card('#6FCF97')}>
-                <h3 style={{ margin: 0, color: '#FA8125', fontSize: 15 }}>{String(a.headline)}</h3>
+                <h3 style={{ margin: 0, color: '#059669', fontSize: 15 }}>{String(a.headline)}</h3>
                 <p style={{ fontSize: 12, color: '#444', margin: '6px 0', lineHeight: 1.6 }}>{String(a.primary_text ?? '').slice(0, 250)}</p>
                 <div style={{ fontSize: 10, color: '#666' }}>📂 {String(a.category)} · CTA: {String(a.cta_text ?? '')}</div>
               </div>
@@ -721,8 +721,8 @@ function CreativeTab({ ads, reels, content }: { ads: Array<Record<string, unknow
           {reels.length === 0 ? <Empty msg="مفيش reels" /> :
             reels.map((r, i) => (
               <div key={i} style={card('#6FCF97')}>
-                <h3 style={{ margin: 0, color: '#FA8125', fontSize: 14 }}>{String(r.title)}</h3>
-                <div style={{ background: '#FA8125', color: '#FAF7F0', padding: 8, borderRadius: 6, margin: '6px 0', fontSize: 12, fontWeight: 'bold' }}>💥 {String(r.hook)}</div>
+                <h3 style={{ margin: 0, color: '#059669', fontSize: 14 }}>{String(r.title)}</h3>
+                <div style={{ background: '#059669', color: '#FAF7F0', padding: 8, borderRadius: 6, margin: '6px 0', fontSize: 12, fontWeight: 'bold' }}>💥 {String(r.hook)}</div>
               </div>
             ))}
         </div>
@@ -758,13 +758,13 @@ function IntelligenceTab({ fraud, demand, pricing, qc }: { fraud: Array<Record<s
             demand.map((f, i) => {
               const gap = Number(f.supply_gap ?? 0)
               return (
-                <div key={i} style={card(gap < -5 ? '#6FCF97' : '#FA8125')}>
+                <div key={i} style={card(gap < -5 ? '#6FCF97' : '#059669')}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <h3 style={{ margin: 0, fontSize: 14 }}>{gap < -5 ? '🔥' : '📊'} {String(f.category)}</h3>
                     <span style={{ background: gap < 0 ? '#fee' : '#d4edda', color: gap < 0 ? '#6FCF97' : '#155724', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 'bold' }}>Gap: {gap > 0 ? '+' : ''}{gap}</span>
                   </div>
                   {Boolean(f.recommended_action) && (
-                    <div style={{ background: '#FA8125', color: '#FAF7F0', padding: 8, borderRadius: 6, fontSize: 11, marginTop: 6 }}>👉 {String(f.recommended_action)}</div>
+                    <div style={{ background: '#059669', color: '#FAF7F0', padding: 8, borderRadius: 6, fontSize: 11, marginTop: 6 }}>👉 {String(f.recommended_action)}</div>
                   )}
                 </div>
               )
@@ -781,7 +781,7 @@ function IntelligenceTab({ fraud, demand, pricing, qc }: { fraud: Array<Record<s
                   <span style={{ background: a.severity === 'critical' ? '#7c1d1d' : '#6FCF97', color: '#fff', padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 'bold' }}>{String(a.severity).toUpperCase()}</span>
                 </div>
                 <p style={{ fontSize: 11, color: '#444', margin: '4px 0' }}>{String(a.description)}</p>
-                <p style={{ fontSize: 10, color: '#FA8125' }}>👉 {String(a.recommended_action)}</p>
+                <p style={{ fontSize: 10, color: '#059669' }}>👉 {String(a.recommended_action)}</p>
               </div>
             ))}
         </div>
@@ -792,7 +792,7 @@ function IntelligenceTab({ fraud, demand, pricing, qc }: { fraud: Array<Record<s
             pricing.map((p, i) => (
               <div key={i} style={card('#2FA084')}>
                 <span style={{ fontSize: 18, color: '#666' }}>{String(p.current_price)}ج</span> →
-                <span style={{ fontSize: 20, color: '#FA8125', fontWeight: 'bold' }}> {String(p.suggested_price)}ج</span>
+                <span style={{ fontSize: 20, color: '#059669', fontWeight: 'bold' }}> {String(p.suggested_price)}ج</span>
                 <span style={{ fontSize: 11, color: Number(p.price_change_pct) > 0 ? '#28a745' : '#6FCF97', fontWeight: 'bold', marginRight: 8 }}> ({Number(p.price_change_pct) > 0 ? '+' : ''}{String(p.price_change_pct)}%)</span>
                 <p style={{ fontSize: 11, color: '#444', marginTop: 6 }}>{String(p.reasoning ?? '').slice(0, 200)}</p>
               </div>
@@ -828,11 +828,11 @@ function GrowthTab({ partnerships, customerSuccess, photoBriefs, leadsRecent }: 
         <div style={{ display: 'grid', gap: 12 }}>
           {partnerships.length === 0 ? <Empty msg="مفيش فرص" /> :
             partnerships.map((o, i) => (
-              <div key={i} style={card(o.priority === 'urgent' ? '#6FCF97' : '#FA8125')}>
+              <div key={i} style={card(o.priority === 'urgent' ? '#6FCF97' : '#059669')}>
                 <strong style={{ fontSize: 13 }}>{String(o.partner_name)}</strong>
                 <span style={priorityBadge(String(o.priority))}>{String(o.priority)}</span>
                 <p style={{ fontSize: 11, color: '#444', margin: '4px 0' }}>{String(o.opportunity_summary ?? '').slice(0, 200)}</p>
-                <div style={{ background: '#FAF7F0', padding: 6, borderRadius: 4, fontSize: 10, color: '#FA8125' }}>💎 {String(o.potential_value)}</div>
+                <div style={{ background: '#FAF7F0', padding: 6, borderRadius: 4, fontSize: 10, color: '#059669' }}>💎 {String(o.potential_value)}</div>
               </div>
             ))}
         </div>
@@ -894,7 +894,7 @@ function SupportTab({ complaints, emails, insights }: { complaints: Array<Record
                 <span style={priorityBadge(String(ins.priority))}>{String(ins.priority)}</span>
                 <p style={{ fontSize: 11, color: '#666', margin: '4px 0' }}>{String(ins.description ?? '').slice(0, 300)}</p>
                 {Boolean(ins.recommended_action) && (
-                  <div style={{ background: '#FAF7F0', padding: 6, borderRadius: 4, fontSize: 10, color: '#FA8125' }}>👉 {String(ins.recommended_action)}</div>
+                  <div style={{ background: '#FAF7F0', padding: 6, borderRadius: 4, fontSize: 10, color: '#059669' }}>👉 {String(ins.recommended_action)}</div>
                 )}
               </div>
             ))}
@@ -946,7 +946,7 @@ function SelfImproveTab({ promptVersions, recentRuns }: { promptVersions: Array<
       <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', maxHeight: 400, overflowY: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
           <thead style={{ position: 'sticky', top: 0 }}>
-            <tr style={{ background: '#FA8125', color: '#FAF7F0' }}>
+            <tr style={{ background: '#059669', color: '#FAF7F0' }}>
               <th style={th}>Agent</th><th style={th}>Status</th><th style={th}>Time</th><th style={th}>Error</th>
             </tr>
           </thead>
@@ -1003,7 +1003,7 @@ function CollaborationsTab({ collabs, messages }: { collabs: Array<Record<string
 
   return (
     <div>
-      <div style={{ background: 'linear-gradient(135deg, #FA8125 0%, #10B981 100%)', color: '#fff', padding: 16, borderRadius: 12, marginBottom: 20 }}>
+      <div style={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)', color: '#fff', padding: 16, borderRadius: 12, marginBottom: 20 }}>
         <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>🚀 اطلق Collaboration</h3>
         <textarea
           value={goal}
@@ -1037,7 +1037,7 @@ function CollaborationsTab({ collabs, messages }: { collabs: Array<Record<string
       <h3 style={sectionHeader}>📬 Messages</h3>
       <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', maxHeight: 350, overflowY: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
-          <thead><tr style={{ background: '#FA8125', color: '#FAF7F0' }}><th style={th}>From → To</th><th style={th}>Subject</th><th style={th}>Status</th></tr></thead>
+          <thead><tr style={{ background: '#059669', color: '#FAF7F0' }}><th style={th}>From → To</th><th style={th}>Subject</th><th style={th}>Status</th></tr></thead>
           <tbody>
             {messages.map((m, i) => (
               <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
@@ -1093,7 +1093,7 @@ function ToolsTab({ kpis, categories, payouts }: { kpis: KPIs; categories: Array
               <span style={{ position: 'absolute', top: 6, left: 6, background: '#6FCF97', color: '#fff', padding: '2px 6px', borderRadius: 8, fontSize: 9, fontWeight: 'bold' }}>{l.badge}</span>
             )}
             <div style={{ fontSize: 22, marginBottom: 4 }}>{l.icon}</div>
-            <div style={{ fontSize: 12, fontWeight: 'bold', color: '#FA8125', marginBottom: 2 }}>{l.title}</div>
+            <div style={{ fontSize: 12, fontWeight: 'bold', color: '#059669', marginBottom: 2 }}>{l.title}</div>
             <div style={{ fontSize: 10, color: '#666' }}>{l.sub}</div>
           </a>
         ))}
@@ -1118,7 +1118,7 @@ function ToolsTab({ kpis, categories, payouts }: { kpis: KPIs; categories: Array
 // ============================================================
 function FilterBtn({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
-    <button onClick={onClick} style={{ padding: '5px 12px', background: active ? '#FA8125' : '#fff', color: active ? '#FAF7F0' : '#FA8125', border: '1px solid #FA8125', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 'bold', fontFamily: 'inherit' }}>{label}</button>
+    <button onClick={onClick} style={{ padding: '5px 12px', background: active ? '#059669' : '#fff', color: active ? '#FAF7F0' : '#059669', border: '1px solid #059669', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 'bold', fontFamily: 'inherit' }}>{label}</button>
   )
 }
 
@@ -1127,7 +1127,7 @@ function Empty({ msg }: { msg: string }) {
 }
 
 function Stat({ label, val }: { label: string; val: string }) {
-  return <div style={{ textAlign: 'center' }}><div style={{ fontSize: 14, fontWeight: 'bold', color: '#FA8125' }}>{val}</div><div style={{ fontSize: 9, color: '#666' }}>{label}</div></div>
+  return <div style={{ textAlign: 'center' }}><div style={{ fontSize: 14, fontWeight: 'bold', color: '#059669' }}>{val}</div><div style={{ fontSize: 9, color: '#666' }}>{label}</div></div>
 }
 
 function StatusBox({ label, val, color, subtitle }: { label: string; val: string | number; color: string; subtitle?: string }) {
@@ -1151,11 +1151,11 @@ function BigMetric({ icon, label, value, subtitle, color }: { icon: string; labe
   )
 }
 
-const sectionHeader: React.CSSProperties = { color: '#FA8125', fontSize: 14, marginTop: 16, marginBottom: 10, fontWeight: 'bold' }
+const sectionHeader: React.CSSProperties = { color: '#059669', fontSize: 14, marginTop: 16, marginBottom: 10, fontWeight: 'bold' }
 const th: React.CSSProperties = { padding: 8, textAlign: 'right', fontSize: 11 }
 const td: React.CSSProperties = { padding: 6, fontSize: 11 }
 const linkBtn: React.CSSProperties = { color: '#0EA5E9', textDecoration: 'none', fontSize: 11 }
-const primaryBtn: React.CSSProperties = { display: 'inline-block', background: '#FA8125', color: '#fff', padding: '8px 14px', borderRadius: 6, textDecoration: 'none', fontSize: 12, fontWeight: 'bold' }
+const primaryBtn: React.CSSProperties = { display: 'inline-block', background: '#059669', color: '#fff', padding: '8px 14px', borderRadius: 6, textDecoration: 'none', fontSize: 12, fontWeight: 'bold' }
 
 function alertBox(color: string): React.CSSProperties {
   return { display: 'block', background: color, color: '#fff', padding: 10, borderRadius: 8, marginBottom: 8, fontSize: 12, textDecoration: 'none' }
@@ -1166,6 +1166,6 @@ function card(borderColor: string): React.CSSProperties {
 }
 
 function priorityBadge(priority: string): React.CSSProperties {
-  const colors: Record<string, string> = { urgent: '#6FCF97', high: '#2FA084', medium: '#FA8125', low: '#666' }
+  const colors: Record<string, string> = { urgent: '#6FCF97', high: '#2FA084', medium: '#059669', low: '#666' }
   return { background: colors[priority] ?? '#666', color: '#fff', padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 'bold' }
 }

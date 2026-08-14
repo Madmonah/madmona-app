@@ -38,8 +38,8 @@ export default async function FraudAlertsPage() {
     <div dir="rtl" style={{ fontFamily: 'Tahoma', background: '#FAF7F0', minHeight: '100vh', padding: 24 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h1 style={{ color: '#FA8125', margin: 0, fontSize: 26 }}>🚨 Fraud Alerts</h1>
-          <a href="/admin/ai-os" style={{ color: '#FA8125', fontSize: 13 }}>← AI OS</a>
+          <h1 style={{ color: '#059669', margin: 0, fontSize: 26 }}>🚨 Fraud Alerts</h1>
+          <a href="/admin/ai-os" style={{ color: '#059669', fontSize: 13 }}>← AI OS</a>
         </div>
 
         <p style={{ color: '#666', fontSize: 14, marginBottom: 16 }}>
@@ -81,7 +81,7 @@ export default async function FraudAlertsPage() {
                     </span>
                   </div>
 
-                  <h3 style={{ margin: '8px 0', color: '#FA8125', fontSize: 15 }}>
+                  <h3 style={{ margin: '8px 0', color: '#059669', fontSize: 15 }}>
                     {a.description}
                   </h3>
 
@@ -101,7 +101,7 @@ export default async function FraudAlertsPage() {
                   )}
 
                   <div style={{
-                    background: '#FA8125', color: '#FAF7F0',
+                    background: '#059669', color: '#FAF7F0',
                     padding: 10, borderRadius: 6, marginTop: 10, fontSize: 12,
                   }}>
                     <strong>👉 الإجراء:</strong> {a.recommended_action}

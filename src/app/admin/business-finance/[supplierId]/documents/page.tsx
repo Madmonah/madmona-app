@@ -55,17 +55,17 @@ export default function DocumentsPage({ params }: { params: { supplierId: string
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#FA8125] flex items-center gap-1 mb-2">
+          <Link href={`/admin/business-finance/${supplierId}`} className="text-xs font-bold text-[#6B7280] hover:text-[#059669] flex items-center gap-1 mb-2">
             <ChevronLeft className="w-3.5 h-3.5" /> رجوع
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FA8125] mb-1">B2B PARTNER · DOCUMENTS</p>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">B2B PARTNER · DOCUMENTS</p>
               <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">المستندات · {supplier?.business_name}</h1>
               <p className="text-sm text-[#6B7280] mt-1">{docs.length} مستند {expiringSoon.length > 0 && `· ${expiringSoon.length} ينتهي قريب`} {expired.length > 0 && `· ${expired.length} منتهي`}</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setShowAdd(true)} className="px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> رفع مستند</button>
+              <button onClick={() => setShowAdd(true)} className="px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> رفع مستند</button>
               <button onClick={load} className="p-2 rounded-xl bg-[#FAFAF7]"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
             </div>
           </div>
@@ -96,12 +96,12 @@ export default function DocumentsPage({ params }: { params: { supplierId: string
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {loading ? (
-            <div className="col-span-3 py-12 text-center"><Loader2 className="w-6 h-6 text-[#FA8125] animate-spin inline" /></div>
+            <div className="col-span-3 py-12 text-center"><Loader2 className="w-6 h-6 text-[#059669] animate-spin inline" /></div>
           ) : docs.length === 0 ? (
             <div className="col-span-3 py-12 text-center bg-white rounded-2xl border border-gray-100">
               <FileCheck className="w-10 h-10 text-[#6B7280] opacity-30 mx-auto mb-2" />
               <p className="text-sm font-bold text-[#1A2E26]">مفيش مستندات</p>
-              <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#FA8125] text-white text-sm font-bold">ارفع أول مستند</button>
+              <button onClick={() => setShowAdd(true)} className="mt-3 px-4 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-bold">ارفع أول مستند</button>
             </div>
           ) : docs.map(d => {
             const isExpired = d.expires_at && new Date(d.expires_at) <= today
@@ -109,7 +109,7 @@ export default function DocumentsPage({ params }: { params: { supplierId: string
             return (
               <div key={d.id} className={`bg-white rounded-2xl border p-4 ${isExpired ? 'border-red-200' : isExpiringSoon ? 'border-amber-200' : 'border-gray-100'}`}>
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#FA8125]/10 text-[#FA8125] grid place-items-center"><FileText className="w-5 h-5" /></div>
+                  <div className="w-10 h-10 rounded-xl bg-[#34D399]/10 text-[#059669] grid place-items-center"><FileText className="w-5 h-5" /></div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] font-bold uppercase text-[#6B7280]">{DOCUMENT_TYPES.find(t => t.value === d.document_type)?.label}</p>
                     <h3 className="text-sm font-black text-[#1A2E26] truncate">{d.document_name}</h3>
@@ -122,11 +122,11 @@ export default function DocumentsPage({ params }: { params: { supplierId: string
                 )}
                 {d.file_url && (
                   d.file_url.startsWith('http') ? (
-                    <a href={d.file_url} target="_blank" rel="noreferrer" className="block mt-3 px-3 py-1.5 rounded-lg bg-[#FAFAF7] text-[#FA8125] text-xs font-bold text-center">
+                    <a href={d.file_url} target="_blank" rel="noreferrer" className="block mt-3 px-3 py-1.5 rounded-lg bg-[#FAFAF7] text-[#059669] text-xs font-bold text-center">
                       <Download className="w-3 h-3 inline ml-1" /> فتح الملف
                     </a>
                   ) : (
-                    <button onClick={() => downloadDoc(d.file_url, d.document_name)} className="block w-full mt-3 px-3 py-1.5 rounded-lg bg-[#FAFAF7] text-[#FA8125] text-xs font-bold text-center">
+                    <button onClick={() => downloadDoc(d.file_url, d.document_name)} className="block w-full mt-3 px-3 py-1.5 rounded-lg bg-[#FAFAF7] text-[#059669] text-xs font-bold text-center">
                       <Download className="w-3 h-3 inline ml-1" /> تحميل
                     </button>
                   )
@@ -226,13 +226,13 @@ function UploadDocModal({ supplierId, onClose, onSaved }: any) {
             <div
               onClick={() => fileInputRef.current?.click()}
               className={`w-full p-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${
-                file ? 'border-[#FA8125] bg-[#FA8125]/5' : 'border-gray-300 bg-[#FAFAF7] hover:border-[#FA8125]'
+                file ? 'border-[#059669] bg-[#34D399]/5' : 'border-gray-300 bg-[#FAFAF7] hover:border-[#059669]'
               }`}
             >
               <input ref={fileInputRef} type="file" onChange={onFileChange} accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp" className="hidden" />
               {file ? (
                 <div className="text-center">
-                  <FileCheck className="w-8 h-8 text-[#FA8125] mx-auto mb-1" />
+                  <FileCheck className="w-8 h-8 text-[#059669] mx-auto mb-1" />
                   <p className="text-sm font-bold text-[#1A2E26] truncate">{file.name}</p>
                   <p className="text-[10px] text-[#6B7280] mt-0.5">{(file.size / 1024).toFixed(1)} KB</p>
                 </div>
@@ -255,7 +255,7 @@ function UploadDocModal({ supplierId, onClose, onSaved }: any) {
           <Field label="تاريخ الانتهاء (اختياري)"><input type="date" value={form.expires_at} onChange={e => setForm({ ...form, expires_at: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
           <Field label="ملاحظات"><textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
           
-          <button onClick={save} disabled={uploading || !file} className="w-full py-3 rounded-xl bg-[#FA8125] text-white font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
+          <button onClick={save} disabled={uploading || !file} className="w-full py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
             {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري الرفع...</> : <><Upload className="w-4 h-4" /> ارفع المستند</>}
           </button>
         </div>
@@ -265,4 +265,4 @@ function UploadDocModal({ supplierId, onClose, onSaved }: any) {
 }
 
 function Field({ label, children }: any) { return <div><label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">{label}</label>{children}</div> }
-function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#FA8125] animate-spin" /></div> }
+function Loader() { return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div> }
