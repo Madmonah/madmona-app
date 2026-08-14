@@ -143,55 +143,115 @@ export async function downloadOpenWaMedia(
 // ── جلب ميديا رسالة واردة من الرقم مباشرة من OpenWA API ─────────────────
 // السبب: webhook الـ OpenWA بيبعت إشعار الرسالة من غير الميديا (base64) عشان حجمها.
 // لكن الميديا موجودة كاملة في قايمة الرسائل (metadata.media.data). فبنجيبها بنداء API.
-// بنطابق بالـ waMessageId لو اتمرّر، وإلا بناخد آخر رسالة ميديا من نفس الرقم.
+// 🐞 (١٤ أغسطس ٢٠٢٦) **الباج اللي ضيّع شغل الموردين لأربع أيام.**
+//
+// الأعراض: مورد يبعت ١٦ صورة منتجات، النظام يسجّل الـ١٦ رسالة بالأسعار
+// صح — و**صفر صورة تتحفظ**. الأسعار عندنا والصور راحت. (ضاحي ١٠ و١١
+// أغسطس = ٢٠ صورة، وإعادة الإرسال ١٤ أغسطس = ١٦ صورة، كلهم ضاعوا.)
+//
+// السبب — أربع عيوب في الدالة دي مجتمعة:
+//
+//  ١) **`limit=15` نافذة صغيرة جدًا.** لما المورد يبعت دفعة، الويبهوكس
+//     بتتنفّذ بالتوازي وكلها بتقرا نفس القايمة. الصور الجديدة بتزقّ
+//     القديمة برّه الـ١٥ قبل ما ويبهوكها يتنفّذ → القايمة مافيهاش رسالته.
+//
+//  ٢) **مطابقة المعرّف ضيقة.** بنقارن `waMessageId`/`id` كنص خام بس.
+//     OpenWA بيرجّع المعرّف أحيانًا ككائن `{_serialized}` (زي ما بنعمل
+//     في `message.ack` بالظبط) — فالمقارنة بتفشل من غير ما نحس.
+//
+//  ٣) **الرجوع لـ«آخر ميديا من الرقم»** — ده مش fallback، ده خطر:
+//     في دفعة ٢٠ صورة كله بيطابق، فممكن نحفظ صورة المنتج الغلط على
+//     السعر الغلط. (نفس عيلة باج «الصورة الغلط على المنتج».)
+//
+//  ٤) **بترجّع `null` في صمت.** مفيش لوج يفرّق بين «مالقيناش» و«لقينا
+//     من غير بيانات» — فالباج عاش أربع أيام من غير ما يبان.
+//
+// الإصلاح: نوسّع النافذة، نطابق المعرّف بكل أشكاله، **ونطابق بالمعرّف
+// فقط** (مافيش تخمين بالرقم)، ونلوّج سبب كل فشل.
 export async function fetchInboundMediaByPhone(
   sessionName: string,
   phoneDigits: string,
   waMessageId?: string,
 ): Promise<{ base64: string; mimetype: string; is_voice_note: boolean } | null> {
-  try {
+  const MAX_ATTEMPTS = 3
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+   try {
     const id = await getSessionId(sessionName)
-    if (!id) return null
+    if (!id) {
+      console.error('[openwa-media] مالقيناش الجلسة', sessionName)
+      return null
+    }
+
+    // 🔑 (١) النافذة: ٥٠ بدل ١٥. دفعة ٢٦ صورة (حصلت فعلًا) كانت بتطفّح
+    //    الـ١٥ وهي لسه بتتعالج. ٥٠ بتغطّي أكبر دفعة شفناها بضعف الهامش.
     const r = await fetch(
-      `${OPENWA_URL}/api/sessions/${id}/messages?direction=inbound&limit=15`,
+      `${OPENWA_URL}/api/sessions/${id}/messages?direction=inbound&limit=50`,
       { headers: jsonHeaders() },
     )
-    if (!r.ok) return null
+    if (!r.ok) {
+      console.error('[openwa-media] API رفض', r.status, sessionName)
+      return null
+    }
     const j = (await r.json()) as any
     const msgs: any[] = j?.messages || j?.data || (Array.isArray(j) ? j : [])
-    const wantDigits = (phoneDigits || '').replace(/\D/g, '')
     const isMedia = (m: any) =>
       ['image', 'video', 'audio', 'voice', 'ptt', 'document', 'sticker'].includes(m?.type)
-    // 1) طابق بالـ waMessageId لو موجود
-    let hit = waMessageId
-      ? msgs.find((m) => (m?.waMessageId === waMessageId || m?.id === waMessageId) && isMedia(m))
+
+    // 🔑 (٢) المعرّف ممكن يكون نص أو `{_serialized}`. بنطبّع الاتنين.
+    const idOf = (v: unknown): string =>
+      String((v as Record<string, unknown> | null)?.['_serialized'] ?? v ?? '')
+    const want = idOf(waMessageId)
+
+    // 🔑 (٣) **بالمعرّف بس.** الرجوع لـ«آخر ميديا من الرقم» اتشال خالص:
+    //    في دفعة كبيرة كل الصور بتطابق الرقم، فالتخمين ده بيلزق الصورة
+    //    الغلط على السعر الغلط — وده أسوأ من إننا مانحفظش.
+    const hit = want
+      ? msgs.find((m) => isMedia(m) && (idOf(m?.waMessageId) === want || idOf(m?.id) === want))
       : null
-    // 2) وإلا آخر رسالة ميديا من نفس الرقم
-    // 🐛 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) المطابقة القديمة كانت:
-    //   from.includes(wantDigits) || wantDigits.includes(from)
-    // لو `from` فاضي في صف من القايمة، `wantDigits.includes('')` = true
-    // دايمًا → بناخد أحدث ميديا من **أي راسل** وتتحفظ على العميل الغلط
-    // (نفس عيلة نمط «الصورة الغلط على المنتج»). دلوقتي: لازم `from` فيه
-    // ١٠ أرقام على الأقل ويطابق فعلًا — ولو مفيش رقم مطلوب مانطابقش خالص.
-    if (!hit && wantDigits) {
-      hit = msgs.find((m) => {
-        if (!isMedia(m)) return false
-        const from = String(m?.from || '').replace(/\D/g, '')
-        if (from.length < 10) return false
-        return from.includes(wantDigits) || (wantDigits.length >= 10 && wantDigits.includes(from))
+
+    if (!hit) {
+      // 🔑 (٤) لوج صريح — ده اللي كان ناقص وخلّى الباج يعيش ٤ أيام.
+      console.error('[openwa-media] الرسالة مش في النافذة', {
+        want: want.slice(0, 40),
+        window: msgs.length,
+        mediaInWindow: msgs.filter(isMedia).length,
+        phone: (phoneDigits || '').slice(0, 15),
+        attempt,
       })
+      // 🔁 سباق حقيقي: الويبهوك بيوصل أسرع من ما OpenWA يفهرس الرسالة في
+      //    قايمته. مالقيناهاش دلوقتي ≠ مش موجودة. بنستنى ونجرّب تاني —
+      //    من غير ده أي رسالة تسبق الفهرسة بتضيع نهائي (وده بالظبط اللي
+      //    كان بيحصل في الدفعات السريعة).
+      if (attempt < MAX_ATTEMPTS) {
+        await new Promise((res) => setTimeout(res, 1500 * attempt))
+        continue
+      }
+      return null
     }
-    if (!hit) return null
+
     const media = hit?.metadata?.media || hit?.media
-    if (!media?.data) return null
+    if (!media?.data) {
+      console.error('[openwa-media] لقينا الرسالة بس من غير بيانات', {
+        want: want.slice(0, 40),
+        type: hit?.type,
+      })
+      return null
+    }
     return {
       base64: String(media.data),
       mimetype: String(media.mimetype || 'application/octet-stream'),
       is_voice_note: hit.type === 'ptt' || hit.type === 'voice' || hit.type === 'audio',
     }
-  } catch {
+   } catch (err) {
+    console.error('[openwa-media] استثناء', err instanceof Error ? err.message : err, { attempt })
+    if (attempt < MAX_ATTEMPTS) {
+      await new Promise((res) => setTimeout(res, 1500 * attempt))
+      continue
+    }
     return null
+   }
   }
+  return null
 }
 
 // ── استخراج الرقم من chatId ────────────────────────────────────────────────
