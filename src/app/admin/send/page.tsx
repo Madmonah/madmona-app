@@ -15,7 +15,7 @@
 // المعاينة إجبارية: زرار «حط في الطابور» مايفتحش غير بعد ما تشوف المعاينة.
 // ============================================================================
 
-import { useState, useCallback, type FormEvent } from 'react'
+import { useState, useEffect, useCallback, type FormEvent } from 'react'
 import { Lock, Send, Eye, AlertTriangle, Check, Clock, Users } from 'lucide-react'
 
 interface Skipped { phone: string; reason: string }
@@ -81,13 +81,17 @@ export default function SendPage() {
   const [status, setStatus] = useState<Status | null>(null)
   const [error, setError] = useState('')
 
-  const loadStatus = useCallback(async (pw: string) => {
+  const loadStatus = useCallback(async (pw: string, silent = false) => {
     const res = await fetch('/api/admin/send', { headers: { 'X-Admin-Password': pw } })
-    if (res.status === 401) { setAuthed(false); setAuthError('كلمة السر غلط'); return false }
+    if (res.status === 401) { setAuthed(false); if (!silent) setAuthError('كلمة السر غلط'); return false }
     const json = (await res.json()) as Status
     setStatus(json); setAuthed(true); setAuthError('')
     return true
   }, [])
+
+  // 🔓 (١٥ أغسطس ٢٠٢٦ — محمد: «الصفحة مش بتدخل») نجرّب من غير باسورد الأول —
+  //    كوكي جلسة الأدمن بتتبعت لوحدها والراوت بقى بيقبلها.
+  useEffect(() => { loadStatus('', true).catch(() => {}) }, [loadStatus])
 
   const submitPw = async (e: FormEvent) => {
     e.preventDefault()

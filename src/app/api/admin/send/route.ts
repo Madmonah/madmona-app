@@ -15,7 +15,8 @@
 //    «وصلت» قبل اللي بعدها، وبيعيد بعد ٣ دقايق لو مفيش إيصال، وكله بيبان
 //    في /admin/sending.
 //
-// 🔒 بوابة ADMIN_PASSWORD — نفس /api/admin/leads و/api/admin/sending.
+// 🔒 الحارس بقى `isAdminRequest` من `@/lib/adminGate` — بيقبل كوكي جلسة
+//    الأدمن زي الـmiddleware (كان `ADMIN_PASSWORD` القديم = 401 دايمًا).
 //    (راوت /api/whatsapp/queue مقفول بسر خدمة، فالمتصفح مايوصلهوش — عشان
 //     كده الشاشة كانت ناقصة من الأساس.)
 //
@@ -25,20 +26,16 @@
 import { NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { queueCampaign, SAFETY, type Recipient } from '@/lib/wa-queue'
+import { isAdminRequest } from '@/lib/adminGate'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
-function checkAuth(request: Request): boolean {
-  const expected = process.env.ADMIN_PASSWORD
-  if (!expected) return false
-  return request.headers.get('x-admin-password') === expected
-}
 
 /** حالة الطابور + آخر اللي اتبعت */
 export async function GET(request: Request) {
-  if (!checkAuth(request)) {
+  if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -67,7 +64,7 @@ export async function GET(request: Request) {
  * من غير dry_run الرسايل بتتحط في الطابور فعلًا (لسه مش بتتبعت — الكرون بيبعت).
  */
 export async function POST(request: Request) {
-  if (!checkAuth(request)) {
+  if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

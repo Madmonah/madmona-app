@@ -80,22 +80,26 @@ export default function SendingPage() {
       const res = await fetch('/api/admin/sending', { headers: { 'X-Admin-Password': pw } })
       if (res.status === 401) {
         if (!silent) setAuthError('كلمة السر غلط')
-        sessionStorage.removeItem('madmona_admin_pw')
+        if (pw) sessionStorage.removeItem('madmona_admin_pw')
         setAuthed(false); return
       }
       const j = await res.json()
       if (!res.ok) { setError(j?.detail || j?.error || 'حصل خطأ'); return }
       setData(j as Overview)
       setAuthed(true)
-      sessionStorage.setItem('madmona_admin_pw', pw)
+      if (pw) sessionStorage.setItem('madmona_admin_pw', pw)
     } catch {
       setError('مشكلة في الاتصال')
     } finally { setLoading(false) }
   }, [])
 
+  // 🔓 (١٥ أغسطس ٢٠٢٦ — محمد: «الصفحة مش بتدخل») بنجرّب نحمّل من غير باسورد
+  //    الأول: إنت أصلًا داخل على /admin بجلسة، والمتصفح بيبعت الكوكي لوحده،
+  //    والراوت بقى بيقبلها. صندوق الباسورد مابيظهرش غير لو ده فشل فعلًا.
   useEffect(() => {
     const stored = sessionStorage.getItem('madmona_admin_pw')
-    if (stored) { setPassword(stored); load(stored, true) }
+    if (stored) setPassword(stored)
+    load(stored || '', true)
   }, [load])
 
   const onLogin = (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); setAuthError(''); load(password) }

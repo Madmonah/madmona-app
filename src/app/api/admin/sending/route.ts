@@ -13,20 +13,18 @@
 //    اتشال**. عشان كده بيعرض أرقام مش موجودة. الصفحة دي بتقرا من OpenWA
 //    اللي بيبعت فعلًا.
 //
-// نفس بوابة كلمة السر بتاعة /api/admin/leads (ADMIN_PASSWORD).
+// 🔒 الحارس بقى `isAdminRequest` من `@/lib/adminGate` — بيقبل كوكي جلسة
+//    الأدمن زي الـmiddleware. قبل كده كان بيقارن بـ`ADMIN_PASSWORD` القديم
+//    اللي اتشال في مراجعة ١٢ أغسطس، فكان بيرجّع 401 دايمًا والصفحة ماكانتش تفتح.
 // ============================================================================
 
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { isAdminRequest } from '@/lib/adminGate'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-function checkAuth(request: Request): boolean {
-  const expected = process.env.ADMIN_PASSWORD
-  if (!expected) return false
-  return request.headers.get('x-admin-password') === expected
-}
 
 interface OpenWaSession {
   id?: string
@@ -93,7 +91,7 @@ async function fetchDevices(senders: ReturnType<typeof senderMap>) {
 }
 
 export async function GET(request: Request) {
-  if (!checkAuth(request)) {
+  if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
