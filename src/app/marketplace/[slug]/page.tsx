@@ -55,6 +55,15 @@ interface ListingDetail {
   model_name: string | null
   shipping_available: boolean | null
   shipping_cost: number | string | null
+  // ✨ (١٥ أغسطس ٢٠٢٦ — محمد: «اعرضهم») الخمس أعمدة دول كانوا متسحبين
+  //    في الـselect ومش مُعرَّفين هنا ولا معروضين في أي حتة من الصفحة.
+  //    الإضافات كانت بتظهر في صفحة الحجز بس — يعني العميل لازم يدوس «احجز»
+  //    الأول عشان يعرف إن فيه خدمات إضافية أصلًا.
+  available_addons: { slug?: string; name_ar?: string; emoji?: string | null; price_egp?: number }[] | null
+  wholesale_tiers: { unit?: string; qty?: number; price_per_unit?: number; total?: number }[] | null
+  accepts_insurance: boolean | null
+  insurance_partners: string[] | null
+  insurance_deposit_pct: number | string | null
   branches: { name?: string; city?: string; address?: string; phone?: string }[] | null
   category: { name_ar: string; name_en?: string | null; icon: string | null; track: string | null; order_mode?: string | null; slug?: string | null } | null
   supplier: {
@@ -766,6 +775,108 @@ export default function ListingDetailPage() {
                     </div>
                   )}
                 </div>
+              </section>
+            )}
+
+            {/* 📦 أسعار الجملة — الفورم بيسجّلها في listings.wholesale_tiers
+                (دستة/كرتونة × كمية × سعر الوحدة) وماكانتش بتتعرض خالص. */}
+            {Array.isArray(listing.wholesale_tiers) && listing.wholesale_tiers.length > 0 && (
+              <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up delay-50">
+                <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-[#2FA084]" />
+                  أسعار الجملة
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {listing.wholesale_tiers.map((tier, i) => {
+                    const qty = Number(tier.qty) || 0
+                    const perUnit = Number(tier.price_per_unit) || 0
+                    const total = Number(tier.total) || qty * perUnit
+                    return (
+                      <div key={i} className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
+                        <div className="flex items-baseline justify-between gap-2 mb-1">
+                          <span className="text-sm font-bold text-gray-900">
+                            {tier.unit || 'وحدة'}
+                            {qty > 0 && <span className="text-gray-500 font-medium"> · {qty.toLocaleString('ar-EG')} قطعة</span>}
+                          </span>
+                          {total > 0 && (
+                            <span className="text-sm font-black text-[#059669] tabular whitespace-nowrap">
+                              {total.toLocaleString('ar-EG')} {t('common.egp')}
+                            </span>
+                          )}
+                        </div>
+                        {perUnit > 0 && (
+                          <p className="text-xs text-gray-500">
+                            {perUnit.toLocaleString('ar-EG')} {t('common.egp')} للقطعة
+                          </p>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* ✨ الخدمات الإضافية — كانت بتظهر في صفحة الحجز بس، فالعميل
+                ماكانش يعرف إنها موجودة غير بعد ما يدوس «احجز». */}
+            {Array.isArray(listing.available_addons) && listing.available_addons.length > 0 && (
+              <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up delay-50">
+                <h2 className="text-sm font-black text-gray-900 mb-1 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#2FA084]" />
+                  خدمات وإضافات
+                </h2>
+                <p className="text-xs text-gray-500 mb-4">
+                  {canBook ? 'تقدر تختارها وإنت بتحجز' : 'اسأل صاحب الإعلان عليها'}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {listing.available_addons.map((addon, i) => {
+                    const p = Number(addon.price_egp) || 0
+                    return (
+                      <div
+                        key={addon.slug || i}
+                        className="flex items-center justify-between gap-3 p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]"
+                      >
+                        <span className="text-sm font-semibold text-gray-900 leading-snug">
+                          {addon.emoji ? `${addon.emoji} ` : ''}{addon.name_ar || '—'}
+                        </span>
+                        {p > 0 && (
+                          <span className="text-sm font-black text-[#059669] tabular whitespace-nowrap">
+                            {p.toLocaleString('ar-EG')} {t('common.egp')}
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* 🛡️ التأمين الصحي — للعيادات والمراكز الطبية. */}
+            {listing.accepts_insurance && (
+              <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up delay-50">
+                <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#2FA084]" />
+                  بيقبل تأمين صحي
+                </h2>
+                {Array.isArray(listing.insurance_partners) && listing.insurance_partners.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {listing.insurance_partners.map((partner, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#059669]/5 border border-[#059669]/20 rounded-full text-xs font-bold text-[#059669]"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        {partner}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-600">اسأل على شركات التأمين المتعاقد معاها.</p>
+                )}
+                {Number(listing.insurance_deposit_pct) > 0 && (
+                  <p className="text-xs text-gray-500 mt-3">
+                    مقدّم الحجز مع التأمين: {Number(listing.insurance_deposit_pct).toLocaleString('ar-EG')}٪
+                  </p>
+                )}
               </section>
             )}
 
