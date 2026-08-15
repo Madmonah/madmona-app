@@ -13,9 +13,13 @@ import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
 
 // Single-step guest flow:
 //   user fills asset details + contact + password in ONE form.
-//   on submit: create the account (Supabase auth) + save the asset draft
-//   to cold_leads, then redirect to /supplier/marketplace so they can
-//   add the rest of their assets after the team approves the first one.
+//   on submit: create the account (Supabase auth) + save the asset as a
+//   listing_draft (نفس مسار /add-listing)، then redirect to
+//   /supplier/marketplace so they can add the rest of their assets.
+//
+// 🔁 (١٥ أغسطس ٢٠٢٦) كان بيحفظ في `cold_leads` — وده كان بيترفض بالـRLS
+//    ويتبلع في catch فاضي، فكل اللي المستخدم بيكتبه كان بيضيع. شوف
+//    التعليق الطويل عند نداء `/api/listing-drafts` تحت.
 
 type Category = {
   slug: string
@@ -131,25 +135,56 @@ export default function ListYourAssetForm() {
       }
     }
 
-    // ── Step 2: Save asset draft to cold_leads ───────────────────
-    // The ops team converts these into proper listings via /admin.
-    try {
-      await supabaseBrowser.from('cold_leads').insert({
-        business_name: title.trim().slice(0, 100),
-        phone: fullPhone,
-        category,
-        location: location.trim() || null,
+    // ── Step 2: نحفظ الأصل كمسوّدة إعلان ─────────────────────────
+    //
+    // 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «الإضافة لسه الدنيا فيها مش مترتبة، لازم
+    //    شاشات الإضافة تكون مطابقة لشاشات العرض»)
+    //
+    //    الكود القديم كان بيحط الكلام في `cold_leads` من المتصفح جوه
+    //    try/catch مكتوب عليه «non-fatal». المشكلتين:
+    //
+    //    ١) `cold_leads` عليها RLS، وسياستها الوحيدة للمستخدم المسجّل هي
+    //       `cold_leads_admin_all` بشرط `is_admin()`. اليوزر اللي لسه
+    //       مسجّل حساب دلوقتي **مش أدمن**، فالإنسرت كان بيترفض:
+    //       «new row violates row-level security policy». والـcatch الفاضي
+    //       بيبلع الخطأ.
+    //       الدليل: صفر صف في `cold_leads` بـ`source='list_your_asset_form'`
+    //       رغم إن الفورم منشور — كل اللي في الجدول مصادر مسح آلي
+    //       (olx_individuals، google_places…). يعني **كل واحد ملا الفورم
+    //       ده اتعمله حساب، وكل اللي كتبه عن أصله ضاع**.
+    //
+    //    ٢) حتى لو نجح، `cold_leads` جدول ليدات مسح — مش مسار الإعلانات.
+    //       الأصل كان بيستنى حد من الفريق يحوّله بالإيد.
+    //
+    //    دلوقتي بيروح على نفس مسار `/add-listing` بالظبط:
+    //    `/api/listing-drafts` (سيرفر + service client، فمفيش RLS تبلعه)
+    //    → `listing_drafts` → نفس الكليم والنشر. والخطأ بيتعرض للمستخدم
+    //    بدل ما يتبلع.
+    const draftRes = await fetch('/api/listing-drafts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: title.trim().slice(0, 140),
+        description: description.trim() || null,
+        category_slug: category,
+        city: location.trim() || null,
+        // «سعر تقريبي» حقل نص حر — بناخد منه الأرقام بس، ولو مفيش نسيبه فاضي
+        price: (() => {
+          const n = Number(String(price).replace(/[^\d.]/g, ''))
+          return Number.isFinite(n) && n > 0 ? n : null
+        })(),
+        contact_name: name.trim(),
+        contact_phone: fullPhone,
+        account_type: 'individual',
         source: 'list_your_asset_form',
-        source_url: typeof window !== 'undefined' ? window.location.href : null,
-        status: 'new',
-        notes:
-          `الاسم: ${name.trim()} | إيميل: ${trimmedEmail}\n` +
-          `سعر تقريبي: ${price.trim() || 'لم يحدد'}\n` +
-          `الوصف: ${description.trim() || 'لا يوجد'}\n` +
-          (authData?.user?.id ? `User ID: ${authData.user.id}` : ''),
-      })
-    } catch {
-      /* non-fatal — account was created, draft can be added later */
+        status: 'submitted',
+      }),
+    }).catch(() => null)
+
+    if (!draftRes || !draftRes.ok) {
+      // الحساب اتعمل خلاص — فمانرجعوش المستخدم لورا، بس نقوله الحقيقة
+      // بدل ما نوهمه إن كل حاجة تمام وبياناته ضاعت.
+      setError('اتعمل حسابك، بس تفاصيل الأصل ماتسجلتش. كمّل من صفحة إضافة إعلان.')
     }
 
     // ── Step 3: Sign in if session not auto-created, then redirect
