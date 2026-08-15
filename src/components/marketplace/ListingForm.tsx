@@ -44,17 +44,38 @@ interface Category {
   display_order?: number | null
 }
 
-// نفس التابات وبنفس الترتيب اللي في الماركت بليس وصفحة الإضافة
-type FormTrackTab = 'all' | 'products' | 'rentals' | 'services' | 'restaurants' | 'daily'
+// 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «تصنيفات الإضافة مش زي العرض بتاع الماركت بليس»)
+//
+//    فيه ٣ فروق كانت بتخلّي شاشة الإضافة تورّي حاجة تانية خالص:
+//
+//    ① **تاب «بيع» كان بيخبّي نص السوق.** في الداتابيز فيه مجالين للبيع:
+//       `products` (١٦ تصنيف جذر) و `sales` (٦ تصنيفات جذر). الماركت بليس
+//       بيجمّع الاتنين تحت تاب «بيع» (`activeTrack === 'products' && c.track
+//       === 'sales'`)، لكن شاشة الإضافة كانت بتفلتر بـ`track === pickTrack`
+//       بالظبط — فـ«عقارات سياحية» بتاعة البيع (اللي تحتها ٣١ إعلان: ساحل
+//       ١٦، سخنة ١٠، مارينا ٣، هاسيندا ١، مراسي ١) **ماكانتش بتظهر أصلًا**
+//       في شاشة الإضافة. الوحيدة اللي كانت بتبان هي عقارات سياحية بتاعة
+//       الإيجار (٣ إعلانات). ده سبب «مش زي العرض».
+//    ② **تاب «الكل»** — شيلناه من الماركت بليس أمس بطلبه، وفضل هنا.
+//    ③ **تاب «سوبر ماركت»** — مفيش ولا تصنيف واحد `track='daily'` في
+//       الداتابيز، فالتاب ده كان بيفضل صفر على طول.
+//
+//    دلوقتي التابات الأربعة هي هي، وبنفس منطق التجميع.
+type FormTrackTab = 'products' | 'rentals' | 'services' | 'restaurants'
 
 const FORM_TRACKS: { key: FormTrackTab; ar: string; emoji: string }[] = [
-  { key: 'all',         ar: 'الكل',       emoji: '✨' },
   { key: 'products',    ar: 'بيع',        emoji: '🏷️' },
   { key: 'rentals',     ar: 'إيجار',      emoji: '🔑' },
   { key: 'services',    ar: 'خدمات',      emoji: '🛠️' },
   { key: 'restaurants', ar: 'مطاعم',      emoji: '🍽️' },
-  { key: 'daily',       ar: 'سوبر ماركت', emoji: '🛒' },
 ]
+
+/** نفس شرط الماركت بليس بالحرف: «بيع» = products + sales، «إيجار» = rentals + hybrid. */
+function catInTrack(catTrack: string | null | undefined, tab: FormTrackTab): boolean {
+  if (tab === 'products') return catTrack === 'products' || catTrack === 'sales'
+  if (tab === 'rentals') return catTrack === 'rentals' || catTrack === 'hybrid'
+  return catTrack === tab
+}
 
 interface Attribute {
   id: string
@@ -281,7 +302,8 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
   const [categories, setCategories] = useState<Category[]>([])
   const [loadingCategories, setLoadingCategories] = useState(true)
   // 🗂️ تصفّح الفئات زي الماركت بليس: تاب المجال → كارت المجموعة → الأقسام
-  const [pickTrack, setPickTrack] = useState<FormTrackTab>('all')
+  // «الكل» اتشال — بنبدأ من «بيع» زي الماركت بليس بالظبط.
+  const [pickTrack, setPickTrack] = useState<FormTrackTab>('products')
   const [pickGroup, setPickGroup] = useState<string | null>(null)
 
   const [form, setForm] = useState<ListingFormData>({
@@ -375,7 +397,8 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       cur = p
     }
     if (!cur) return
-    const t = cur.track === 'hybrid' ? 'rentals' : cur.track
+    // نفس الدمج بتاع التابات: hybrid ← إيجار، sales ← بيع.
+    const t = cur.track === 'hybrid' ? 'rentals' : cur.track === 'sales' ? 'products' : cur.track
     if (t && FORM_TRACKS.some(f => f.key === t)) setPickTrack(t as FormTrackTab)
     if (cur.group_slug) setPickGroup(cur.group_slug)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1008,9 +1031,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
   //    الجذر (٩٠+) في حيطة واحدة — نفس الزحمة اللي شيلناها من صفحة الإضافة.
   //    ولو المجال فيه مجموعة واحدة بس، بنعدّي مستوى المجموعات على طول
   //    عشان مانحطّش خطوة فاضية (زي `StepCategory` في صفحة الإضافة).
-  const trackCats = pickTrack === 'all'
-    ? rootCats
-    : rootCats.filter(c => c.track === pickTrack || (pickTrack === 'rentals' && c.track === 'hybrid'))
+  const trackCats = rootCats.filter(c => catInTrack(c.track, pickTrack))
 
   const rootGroups = (() => {
     const map = new Map<string, { key: string; name_ar: string; emoji: string; order: number; cats: Category[] }>()
@@ -1080,9 +1101,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                 {/* تابات المجالات — نفس الترتيب والأسماء اللي في الماركت بليس */}
                 <div className="flex gap-2 overflow-x-auto pb-1 -mx-6 px-6">
                   {FORM_TRACKS.map(tt => {
-                    const n = tt.key === 'all'
-                      ? rootCats.length
-                      : rootCats.filter(c => c.track === tt.key || (tt.key === 'rentals' && c.track === 'hybrid')).length
+                    const n = rootCats.filter(c => catInTrack(c.track, tt.key)).length
                     const on = pickTrack === tt.key
                     return (
                       <button

@@ -877,7 +877,8 @@ function StepCategory({
   // كل التصنيفات مرة واحدة. الديفولت = إيجار (rentals).
   // FIX (Jul 17 2026): لو جاي بـ?track= (من تاب في الماركت مثلاً) نفتح عليه.
   const [activeTrack, setActiveTrack] = useState<TrackTab>(
-    (['rentals', 'services', 'restaurants', 'products', 'daily'].includes(initialTrack || '')
+    // 'daily' اتشال — مفيش تصنيف بيستعمله. الديفولت لسه «إيجار» زي ما طلبت في يونيو.
+    (['rentals', 'services', 'restaurants', 'products'].includes(initialTrack || '')
       ? initialTrack
       : initialTrack === 'hybrid' ? 'rentals' : initialTrack === 'sales' ? 'products' : 'rentals') as TrackTab
   );
@@ -907,10 +908,27 @@ function StepCategory({
     }
   }, [resetSignal]);
 
+  // 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «تصنيفات الإضافة مش زي العرض بتاع الماركت بليس»)
+  //    تاب «الكل» اتشال من الماركت بليس أمس، و«سوبر ماركت» (`daily`) مفيش ولا
+  //    تصنيف واحد بيستعمله في الداتابيز — فالتابين كانوا زيادة هنا بس.
+  //    و«إيجار» بقى يضم `hybrid` زي الماركت بليس بالظبط.
+  const inTrack = (catTrack: string | null | undefined, tab: TrackTab) =>
+    tab === 'products'
+      ? catTrack === 'products' || catTrack === 'sales'
+      : tab === 'rentals'
+        ? catTrack === 'rentals' || catTrack === 'hybrid'
+        : catTrack === tab;
+
   // Filter mains by selected track tab — «بيع» (products) بيضم sales (بيع الأصول)
   const visibleMains = useMemo(() => {
     if (activeTrack === 'all') return categories;
-    return categories.filter((c) => c.track === activeTrack || (activeTrack === 'products' && c.track === 'sales'));
+    return categories.filter((c) =>
+      activeTrack === 'products'
+        ? c.track === 'products' || c.track === 'sales'
+        : activeTrack === 'rentals'
+          ? c.track === 'rentals' || c.track === 'hybrid'
+          : c.track === activeTrack,
+    );
   }, [activeTrack, categories]);
 
   if (!main) {
@@ -921,10 +939,8 @@ function StepCategory({
 
         {/* Track tabs */}
         <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-5 px-5">
-          {(['all', 'rentals', 'services', 'restaurants', 'products', 'daily'] as TrackTab[]).map((t) => {
-            const count = t === 'all'
-              ? categories.length
-              : categories.filter((c) => c.track === t || (t === 'products' && c.track === 'sales')).length;
+          {(['products', 'rentals', 'services', 'restaurants'] as TrackTab[]).map((t) => {
+            const count = categories.filter((c) => inTrack(c.track, t)).length;
             return (
               <button
                 key={t}
