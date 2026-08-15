@@ -12,6 +12,7 @@
 import { supabase as supabaseAdmin, supabaseUntyped } from './supabase'
 import { getNumberConfig } from './wa-number-config'
 import { sendTextViaOpenWa, isOpenWaConfigured } from './openwa'
+import { coldStartAllowed, getReplyOnly } from './wa-reply-only'
 
 // 🚨 (٢ أغسطس ٢٠٢٦) OpenWA بقى القناة الوحيدة.
 //
@@ -57,6 +58,13 @@ export interface SendTextParams {
    */
   session?: string
   aiGenerated?: boolean
+  /**
+   * 🚨 (١٥ أغسطس ٢٠٢٦) اسم الحملة (`template_vars->>'campaign_name'`).
+   * حارس «رد بس» بيستعمله في وضع `campaigns`: الحملات المكتوبة بالاسم في
+   * `whatsapp_config.reply_only_campaigns` بس هي اللي يسمحلها تبدأ محادثة
+   * جديدة — أي حاجة تانية تفضل محمية. الرد على اللي كلّمنا مالوش قيد أصلًا.
+   */
+  campaign?: string | null
 }
 
 export interface SendTemplateParams {
@@ -275,7 +283,13 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
   //
   // ⚠️ ده مش إجراء مؤقت لليومين دول — ده اللي كان المفروض يكون
   //    موجود من الأول. الرقم بيتوقف من الرسايل الباردة، مش من الردود.
-  if (process.env.MARID_REPLY_ONLY === '1') {
+  // 🔀 (١٥ أغسطس ٢٠٢٦ — محمد) الحارس اتنقل من `MARID_REPLY_ONLY` (متغيّر
+  //    بيئة على Vercel) لـ`whatsapp_config` — عشان يتقفل ويتفتح من الشاشة
+  //    من غير نشر، وعشان يبقى ممكن نفتحه **لحملة واحدة بالاسم** بدل ما
+  //    نفتح الباب لكل مسارات الإرسال مرة واحدة.
+  //    `replyOnly.mode === 'off'` معناها مفيش حارس خالص.
+  const replyOnly = await getReplyOnly()
+  if (replyOnly.mode !== 'off') {
     const contactKey = params.to || jid?.split('@')[0] || ''
     const isGroup = jid?.endsWith('@g.us')
 
@@ -317,10 +331,18 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
       }
 
       if (!heTalkedToUs) {
-        return {
-          ok: false,
-          error: `وضع «رد بس» — ${contactKey} ماكلّمناش قبل كده، فمش هنبدأ معاه [صيغ:${forms.join('|')} صفوف:${ids.length}]`,
+        // الحملة دي مسموحلها تبدأ محادثات؟ (وضع `campaigns`)
+        const allowed = await coldStartAllowed(params.campaign)
+        if (!allowed) {
+          return {
+            ok: false,
+            error:
+              `وضع «رد بس» (${replyOnly.mode}) — ${contactKey} ماكلّمناش قبل كده، فمش هنبدأ معاه` +
+              (params.campaign ? ` [حملة:${params.campaign} مش في القايمة المسموحة]` : ' [الرسالة من غير اسم حملة]') +
+              ` [صيغ:${forms.join('|')} صفوف:${ids.length}]`,
+          }
         }
+        console.log('[wa] بدء محادثة مسموح للحملة', { campaign: params.campaign, to: contactKey })
       }
     }
   }

@@ -13,6 +13,7 @@ import { useState, useEffect, useCallback, type FormEvent } from 'react'
 import { Lock, RefreshCw, Radio, Phone, Clock, AlertTriangle } from 'lucide-react'
 import { safePw } from '@/lib/adminPw'
 import WaSafetyCard from '@/components/admin/WaSafetyCard'
+import ReplyOnlyCard from '@/components/admin/ReplyOnlyCard'
 
 interface Channel {
   key: string; name: string; cron: string
@@ -203,8 +204,12 @@ export default function SendingPage() {
         {/* 🛡️ (١٥ أغسطس ٢٠٢٦ — محمد: «حد اليوم / الفاصل / ساعات الإرسال يبقوا
             ديناميك» · «الاتنين»). نفس الكارت اللي في شاشة «ابعت» بالظبط —
             مكوّن واحد وراوت واحد، فمستحيل الشاشتين يقولوا حاجتين مختلفين. */}
-        <div className="mb-6">
+        <div className="mb-6 grid gap-3 lg:grid-cols-2">
           <WaSafetyCard password={password} onSaved={() => { void load(password, true) }} />
+          {/* 🚨 (١٥ أغسطس ٢٠٢٦ — محمد: «شيل الحارس وشغّل الباقي») الحارس كان
+              متغيّر بيئة على Vercel، فتغييره كان محتاج نشر — ومكانش ينفع
+              يتفتح لحملة واحدة. دلوقتي من هنا. */}
+          <ReplyOnlyCard password={password} />
         </div>
 
         {/* 🔗 اللينك: كل مُرسِل وحالة جهازه */}

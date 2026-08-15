@@ -74,6 +74,8 @@ interface QueueRow {
   attempts: number | null
   /** 15 Aug 2026: per-message sender. null => whatsapp_config.queue_send_session */
   session: string | null
+  /** 15 Aug 2026: اسم الحملة — حارس «رد بس» بيستعمله في وضع `campaigns` */
+  template_vars: { campaign_name?: string } | null
 }
 
 export async function GET(request: NextRequest) {
@@ -246,7 +248,7 @@ export async function GET(request: NextRequest) {
   // 🥇 المعاملاتي الأول دايمًا: حجز جديد مايستناش ورا طابور دعاية.
   //    بنجيبه لوحده، ولو مفيش نرجع للطابور العادي.
   const nowIso = new Date().toISOString()
-  const COLS = 'id, recipient_phone, recipient_name, message_content, attempts, session'
+  const COLS = 'id, recipient_phone, recipient_name, message_content, attempts, session, template_vars'
 
   let { data: dueRaw, error: dueErr } = await supabaseAdmin
     .from('whatsapp_campaign_messages')
@@ -331,6 +333,8 @@ export async function GET(request: NextRequest) {
       conversationId: conversationId ?? undefined,
       agentName: 'المارد',
       aiGenerated: false,
+      // 🚨 (١٥ أغسطس) حارس «رد بس» محتاج اسم الحملة عشان وضع `campaigns`.
+      campaign: row.template_vars?.campaign_name ?? null,
       // 🔧 (5 Aug 2026) من غير session بيقع على جسر Baileys الميت ويرجع 404
       // (المصيدة المسجلة في الذاكرة) — لازم نحدد جلسة OpenWA صراحةً
       // (١٥ أغسطس) نفس الجلسة اللي البوابة قاستها — مش قراية تانية للـenv،
