@@ -100,7 +100,10 @@ const TRACK_ACCENT: Record<TrackTab, { accent: string; bg: string }> = {
 // 🛒 (٢٥ يوليو ٢٠٢٦ — محمد، طلبها مرتين): السوبر ماركت والصيدلية كانوا
 //    مجموعة جوه تاب «بيع»، والمفروض يبقوا مجال قايم بذاته. `daily` تراك
 //    مستقل دلوقتي في الداتابيز كمان (`categories_track_check`).
-const TRACK_TAB_ORDER: TrackTab[] = ['all', 'products', 'rentals', 'services', 'restaurants', 'daily']
+// 15 Aug 2026 (Mohamed): drop the 'all' and 'daily' tabs. Tabs are now exactly
+// buy / rent / services / restaurants. 'daily' had 3 categories, all
+// is_active=false with 0 published listings, so it was an always-empty tab.
+const TRACK_TAB_ORDER: TrackTab[] = ['products', 'rentals', 'services', 'restaurants']
 
 // Vertical names — identical to the homepage hero.
 const TRACK_NAME: Record<TrackTab, { ar: string; en: string }> = {
@@ -135,7 +138,8 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       ? 'rentals'
       : (['rentals', 'services', 'restaurants', 'products', 'daily', 'sales'].includes(initialTrack || '')
           ? initialTrack
-          : 'all')) as TrackTab
+          // default landing tab is now 'products' (buy) since 'all' is gone
+          : 'products')) as TrackTab
   )
   const rootCategories = activeTrack === 'all'
     ? allRootCategories
