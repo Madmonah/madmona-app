@@ -10,6 +10,7 @@ import {
   FolderTree, Info, ShieldCheck, MessageCircle, Phone, KeyRound, Building2,
 } from 'lucide-react'
 import { periodOptions, type PricingPeriod } from '@/lib/pricing-periods'
+import LocationPicker from '@/components/marketplace/LocationPicker'
 
 // ============================================================================
 // Types
@@ -128,6 +129,11 @@ export interface ListingFormData {
   shipping_available: boolean | null
   shipping_cost: number | null
   branches: Branch[]
+  // 🗺️ (١٥ أغسطس ٢٠٢٦) إحداثيات الخريطة — السباكة موجودة من زمان
+  //    (العمودين في `listings` وعليهم صلاحية كتابة) بس مفيش فورم كان
+  //    بيملاهم: ٣٧٤ من ٣٧٨ إعلان منشور من غير خريطة.
+  latitude: number | null
+  longitude: number | null
   attributeValues: Record<string, any>
   photos: Photo[]
   pricing: PricingRule[]
@@ -164,6 +170,8 @@ function applyDisplayParityFields(payload: Record<string, unknown>, form: Listin
   // الفروع الفاضية (بلا اسم ولا عنوان) مابتتحفظش — العرض بيوري كارت فاضي غير كده
   const branches = form.branches.filter(b => b.name.trim() || b.address.trim() || b.city.trim() || b.phone.trim())
   payload.branches = branches.length ? branches : []
+  payload.latitude = form.latitude
+  payload.longitude = form.longitude
 }
 
 // نفس شرط صفحة العرض بالظبط: `const isProduct = track === 'products' || track === 'sales'`
@@ -291,6 +299,8 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     shipping_available: initialData?.shipping_available ?? null,
     shipping_cost: initialData?.shipping_cost ?? null,
     branches: initialData?.branches ?? [],
+    latitude: initialData?.latitude ?? null,
+    longitude: initialData?.longitude ?? null,
     max_booking_hours: initialData?.max_booking_hours ?? null,
     status: initialData?.status || 'draft',
     requires_id_verification: initialData?.requires_id_verification || false,
@@ -1273,6 +1283,15 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                   onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669]"
                   placeholder="(اختياري)"
+                />
+              </div>
+
+              {/* 🗺️ الموقع على الخريطة — بيغذّي تبويب «الموقع» في صفحة الإعلان */}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">الموقع على الخريطة</label>
+                <LocationPicker
+                  value={{ latitude: form.latitude, longitude: form.longitude }}
+                  onChange={v => setForm(f => ({ ...f, latitude: v.latitude, longitude: v.longitude }))}
                 />
               </div>
 

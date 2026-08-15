@@ -8,6 +8,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser';
 import { trackEvent } from '@/components/AnalyticsTracker';
 import BulkExcelDrafts from '@/components/BulkExcelDrafts';
 import SiteFooter from '@/components/SiteFooter';
+import LocationPicker from '@/components/marketplace/LocationPicker';
 
 // ============================================================================
 // Madmona "Add Listing First" — public, no-auth multi-step form
@@ -243,6 +244,10 @@ interface DraftPayload {
   //    الإعلان. العمود موجود في `listing_drafts` و`/api/listing-drafts`
   //    بيمرّره من زمان — الفورم بس هو اللي ماكانش بيسأل عنه.
   address?: string;
+  // 🗺️ (١٥ أغسطس ٢٠٢٦) الإحداثيات — العمودين موجودين في `listing_drafts`
+  //    و`claim_listing_draft` بينقلهم، بس مفيش فورم كان بيملاهم.
+  latitude?: number | null;
+  longitude?: number | null;
   price?: number;
   price_period?: string;
   photos?: { url: string; caption?: string }[];
@@ -1205,6 +1210,8 @@ function StepBasics({
   //    النتيجة على الداتا الحية: **٣٥٠ من ٣٧٨ إعلان منشور (٩٣٪) مالهمش
   //    تبويب موقع** — لا عنوان ولا إحداثيات.
   const [address, setAddress] = useState(draft.address || '');
+  const [latitude, setLatitude] = useState<number | null>(draft.latitude ?? null);
+  const [longitude, setLongitude] = useState<number | null>(draft.longitude ?? null);
 
   // Jun 13 2026 "drop listing": Step 2 = essentials only (title + city).
   // Description/district/branches live behind an optional expander so the
@@ -1358,7 +1365,7 @@ function StepBasics({
       .filter((b) => b.name || b.address || b.phone);
     if (isBusiness && cleanBranches.length > 0) finalAttrs.branches = cleanBranches;
 
-    onSubmit({ title, description, city, district, address, attributes: finalAttrs });
+    onSubmit({ title, description, city, district, address, latitude, longitude, attributes: finalAttrs });
   }
 
   return (
@@ -1466,6 +1473,15 @@ function StepBasics({
               onChange={(e) => setAddress(e.target.value)}
               placeholder="اسم الشارع والعلامة المميزة — بيظهر في تبويب «الموقع»"
               className={inputCls}
+            />
+          </Field>
+
+          {/* 🗺️ الموقع على الخريطة — نفس المُلتقِط بتاع شاشة المورد */}
+          <Field label="الموقع على الخريطة">
+            <LocationPicker
+              value={{ latitude, longitude }}
+              onChange={(v) => { setLatitude(v.latitude); setLongitude(v.longitude); }}
+              compact
             />
           </Field>
         </>

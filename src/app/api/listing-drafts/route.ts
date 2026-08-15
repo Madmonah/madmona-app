@@ -55,6 +55,11 @@ async function buildUpdatePayload(body: Record<string, unknown>): Promise<Record
   //    بيرميه. يعني حتى لو الفورم سأل عن العنوان، مايوصلش. (تبويب «الموقع»
   //    في صفحة الإعلان بيعتمد عليه — ٣٥٠ من ٣٧٨ إعلان منشور من غير موقع.)
   if (body.address !== undefined)      payload.address       = body.address;
+  // 🗺️ (١٥ أغسطس ٢٠٢٦) الإحداثيات — العمودين موجودين في `listing_drafts`
+  //    و`claim_listing_draft` بينقلهم للإعلان، بس **مفيش راوت ولا فورم كان
+  //    بيلمسهم**. عشان كده ٣٧٤ من ٣٧٨ إعلان منشور من غير خريطة.
+  if (body.latitude !== undefined)     payload.latitude      = body.latitude;
+  if (body.longitude !== undefined)    payload.longitude     = body.longitude;
   if (body.price !== undefined)        payload.price         = body.price;
   if (body.price_period !== undefined) payload.price_period  = body.price_period;
   if (body.photos !== undefined)       payload.photos        = body.photos;
@@ -142,6 +147,8 @@ export async function POST(req: NextRequest) {
       city: body.city || null,
       district: body.district || null,
       address: body.address || null,
+      latitude: body.latitude ?? null,
+      longitude: body.longitude ?? null,
       price: body.price || null,
       price_period: body.price_period || 'daily',
       photos: body.photos || [],
