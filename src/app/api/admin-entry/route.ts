@@ -42,6 +42,23 @@ export async function POST(req: Request) {
     /* body فاضي أو مش JSON */
   }
 
+  // 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «الصفحة مش بتفتح»)
+  //    لو `ADMIN_PW_SHA256` مش متظبط على Vercel، البوابة بتقفل (fail closed)
+  //    و**مفيش باسورد في الدنيا هيعدّي** — وكانت بترد «الباسورد غلط»، فتفضل
+  //    تجرب وتجرب من غير ما حد يقولك إن المشكلة في الإعداد مش في اللي كتبته.
+  if (!ADMIN_PW_SHA256) {
+    return NextResponse.json(
+      { ok: false, error: 'قفل الأدمن مش متظبط على السيرفر: متغيّر ADMIN_PW_SHA256 فاضي. لازم يتحط في إعدادات Vercel.' },
+      { status: 503 },
+    )
+  }
+  if (!ADMIN_SESSION_VALUE) {
+    return NextResponse.json(
+      { ok: false, error: 'قفل الأدمن مش متظبط على السيرفر: متغيّر ADMIN_SESSION_VALUE فاضي. من غيره الجلسة عمرها ما هتتقبل.' },
+      { status: 503 },
+    )
+  }
+
   if (!passwordMatches(password)) {
     return NextResponse.json({ ok: false, error: 'الباسورد غلط' }, { status: 401 })
   }

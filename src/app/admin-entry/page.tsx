@@ -27,17 +27,25 @@ export default function AdminEntryPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: pw }),
       })
-      const j = await r.json().catch(() => ({}))
+      // 🐞 (١٥ أغسطس ٢٠٢٦) قبل كده أي فشل كان بيطلع «الباسورد غلط» حتى لو
+      //    السبب إن الراوت وقع أو الإعداد ناقص. دلوقتي بنعرض الكود والرد.
+      const raw = await r.text()
+      let j: { ok?: boolean; error?: string } = {}
+      try { j = JSON.parse(raw) } catch {
+        setErr(`السيرفر رجّع ${r.status} مش JSON — ${raw.slice(0, 160) || '(رد فاضي)'}`)
+        setLoading(false)
+        return
+      }
       if (r.ok && j?.ok) {
         try { sessionStorage.setItem('madmona_admin_pw', pw) } catch { /* ignore */ }
         const next = new URLSearchParams(window.location.search).get('next') || '/admin/dashboard'
         window.location.href = next.startsWith('/admin') ? next : '/admin/dashboard'
       } else {
-        setErr(j?.error || 'الباسورد غلط')
+        setErr(j?.error || `فشل الدخول (${r.status})`)
         setLoading(false)
       }
-    } catch {
-      setErr('في مشكلة في الاتصال، جرّب تاني')
+    } catch (e) {
+      setErr(`مامقدرناش نوصل للسيرفر: ${(e as Error)?.message || 'سبب مش معروف'}`)
       setLoading(false)
     }
   }
