@@ -239,6 +239,10 @@ interface DraftPayload {
   description?: string;
   city?: string;
   district?: string;
+  // 🗺️ (١٥ أغسطس ٢٠٢٦) العنوان التفصيلي — بيغذّي تبويب «الموقع» في صفحة
+  //    الإعلان. العمود موجود في `listing_drafts` و`/api/listing-drafts`
+  //    بيمرّره من زمان — الفورم بس هو اللي ماكانش بيسأل عنه.
+  address?: string;
   price?: number;
   price_period?: string;
   photos?: { url: string; caption?: string }[];
@@ -1194,6 +1198,13 @@ function StepBasics({
   const [description, setDescription] = useState(draft.description || '');
   const [city, setCity] = useState(draft.city || '');
   const [district, setDistrict] = useState(draft.district || '');
+  // 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «شاشات الإضافة لازم تطابق شاشات العرض»)
+  //    صفحة الإعلان فيها تبويب «الموقع» بيعرض `listing.address` وخريطة.
+  //    الفورم ده كان بياخد المحافظة والحي بس — **مفيش عنوان خالص** —
+  //    فالتبويب مابيظهرش أصلًا (شرط ظهوره `listing.address || hasMap`).
+  //    النتيجة على الداتا الحية: **٣٥٠ من ٣٧٨ إعلان منشور (٩٣٪) مالهمش
+  //    تبويب موقع** — لا عنوان ولا إحداثيات.
+  const [address, setAddress] = useState(draft.address || '');
 
   // Jun 13 2026 "drop listing": Step 2 = essentials only (title + city).
   // Description/district/branches live behind an optional expander so the
@@ -1347,7 +1358,7 @@ function StepBasics({
       .filter((b) => b.name || b.address || b.phone);
     if (isBusiness && cleanBranches.length > 0) finalAttrs.branches = cleanBranches;
 
-    onSubmit({ title, description, city, district, attributes: finalAttrs });
+    onSubmit({ title, description, city, district, address, attributes: finalAttrs });
   }
 
   return (
@@ -1443,6 +1454,19 @@ function StepBasics({
                 className={inputCls}
               />
             )}
+          </Field>
+
+          {/* 🗺️ العنوان — بيغذّي تبويب «الموقع» في صفحة الإعلان.
+              كان ناقص خالص من الفورم ده، فـ٩٣٪ من الإعلانات المنشورة
+              مالهاش تبويب موقع. (`ListingForm` بتاعة المورد بتسأله من زمان.) */}
+          <Field label="العنوان بالتفصيل" error={errors.address}>
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="اسم الشارع والعلامة المميزة — بيظهر في تبويب «الموقع»"
+              className={inputCls}
+            />
           </Field>
         </>
       )}

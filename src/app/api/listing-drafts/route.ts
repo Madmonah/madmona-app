@@ -50,6 +50,11 @@ async function buildUpdatePayload(body: Record<string, unknown>): Promise<Record
   if (body.description !== undefined)  payload.description   = body.description;
   if (body.city !== undefined)         payload.city          = body.city;
   if (body.district !== undefined)     payload.district      = body.district;
+  // 🐞 (١٥ أغسطس ٢٠٢٦) `address` كان ناقص من الـPATCH ده — الـPOST بيمرّره
+  //    و`claim_listing_draft` بينقله للإعلان، بس الحفظ خطوة-بخطوة كان
+  //    بيرميه. يعني حتى لو الفورم سأل عن العنوان، مايوصلش. (تبويب «الموقع»
+  //    في صفحة الإعلان بيعتمد عليه — ٣٥٠ من ٣٧٨ إعلان منشور من غير موقع.)
+  if (body.address !== undefined)      payload.address       = body.address;
   if (body.price !== undefined)        payload.price         = body.price;
   if (body.price_period !== undefined) payload.price_period  = body.price_period;
   if (body.photos !== undefined)       payload.photos        = body.photos;
