@@ -84,7 +84,16 @@ export default function SendPage() {
   const loadStatus = useCallback(async (pw: string, silent = false) => {
     const res = await fetch('/api/admin/send', { headers: { 'X-Admin-Password': pw } })
     if (res.status === 401) { setAuthed(false); if (!silent) setAuthError('كلمة السر غلط'); return false }
-    const json = (await res.json()) as Status
+    // 🐞 (١٥ أغسطس ٢٠٢٦) بنقرا نص الرد الأول — لو الراوت رجّع صفحة خطأ HTML
+    //    الـjson() كان بيرمي والرسالة بتطلع «فشل الاتصال» وكأن النت فاصل.
+    const raw = await res.text()
+    let json: Status
+    try { json = JSON.parse(raw) as Status } catch {
+      setAuthed(false)
+      setAuthError(`الراوت رجّع ${res.status} مش JSON — ${raw.slice(0, 200) || '(رد فاضي)'}`)
+      return false
+    }
+    if (!res.ok) { setAuthed(false); setAuthError(`${res.status} — رد غير متوقع من الراوت`); return false }
     setStatus(json); setAuthed(true); setAuthError('')
     return true
   }, [])
@@ -96,7 +105,7 @@ export default function SendPage() {
   const submitPw = async (e: FormEvent) => {
     e.preventDefault()
     setBusy(true)
-    try { await loadStatus(password) } catch { setAuthError('فشل الاتصال') } finally { setBusy(false) }
+    try { await loadStatus(password) } catch (err) { setAuthError(`مامقدرناش نوصل للراوت: ${(err as Error)?.message || 'سبب مش معروف'}`) } finally { setBusy(false) }
   }
 
   const recipients = parseLines(numbers)

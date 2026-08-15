@@ -83,13 +83,22 @@ export default function SendingPage() {
         if (pw) sessionStorage.removeItem('madmona_admin_pw')
         setAuthed(false); return
       }
-      const j = await res.json()
-      if (!res.ok) { setError(j?.detail || j?.error || 'حصل خطأ'); return }
-      setData(j as Overview)
+      // 🐞 (١٥ أغسطس ٢٠٢٦) قبل كده أي فشل كان بيتلمّ في «مشكلة في الاتصال»
+      //    من غير ما يقول إيه اللي حصل — لا كود ولا رسالة. لو الراوت رجّع
+      //    صفحة خطأ HTML (٥٠٠ أو ٤٠٤ وقت الديبلوي) الـjson() بيرمي، والرسالة
+      //    كانت بتوحي إن النت فاصل. دلوقتي بنقول الكود ونص الرد الحقيقي.
+      const raw = await res.text()
+      let j: { detail?: string; error?: string } | null = null
+      try { j = JSON.parse(raw) } catch {
+        setError(`الراوت رجّع ${res.status} مش JSON — ${raw.slice(0, 200) || '(رد فاضي)'}`)
+        return
+      }
+      if (!res.ok) { setError(`${res.status} — ${j?.detail || j?.error || 'حصل خطأ'}`); return }
+      setData(j as unknown as Overview)
       setAuthed(true)
       if (pw) sessionStorage.setItem('madmona_admin_pw', pw)
-    } catch {
-      setError('مشكلة في الاتصال')
+    } catch (e) {
+      setError(`مامقدرناش نوصل للراوت: ${(e as Error)?.message || 'سبب مش معروف'}`)
     } finally { setLoading(false) }
   }, [])
 
