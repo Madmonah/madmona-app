@@ -45,17 +45,122 @@ interface Device {
   used_by: string[]
 }
 
-// أنهي مُرسِل بيستخدم أنهي جلسة — من نفس متغيرات البيئة اللي الكرونات بتقراها
-function senderMap(): Array<{ name: string; session: string; source: string }> {
-  const campaign = process.env.WA_CAMPAIGN_SESSION || 'madmona-982'
-  return [
-    { name: 'طابور الواتساب',        session: campaign, source: 'WA_CAMPAIGN_SESSION' },
-    { name: 'إشعارات الحجز',          session: campaign, source: 'WA_CAMPAIGN_SESSION' },
-    { name: 'الإرسال المتدرّج',        session: '(من whatsapp_config.paced_send_sessions)', source: 'whatsapp_config' },
-  ]
+interface SenderRow {
+  name: string
+  session: string
+  source: string
+  /** سطر توضيحي صغير تحت الاسم — ممكن يبقى فاضي */
+  note: string | null
+  /** المُرسِل ده شغّال دلوقتي ولا مقفول */
+  active: boolean
 }
 
-async function fetchDevices(senders: ReturnType<typeof senderMap>) {
+// 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «عايز شاشات الإرسال تكون ديناميك»)
+//
+//    الليستة دي كانت **٣ سطور متكتوبة في الكود** بتقرا من `WA_CAMPAIGN_SESSION`
+//    بس. وده كان بيكدب عليك: الجدول بيقول إن «طابور الواتساب» بيبعت من
+//    `madmona-982` — في حين إن الكرون بيقرا `whatsapp_config.queue_send_session`
+//    اللي قيمته **`madmona-337`**. يعني الشاشة كانت بتوريك رقم والرسايل
+//    بتخرج من رقم تاني خالص.
+//
+//    دلوقتي الليستة بتتبني من **نفس المصادر اللي الكرونات بتقرا منها**:
+//      ① `whatsapp_config.queue_send_session`  → طابور الواتساب
+//      ② `whatsapp_campaign_messages.session`  → الرسايل اللي اتخصّصلها رقم
+//         مختلف من شاشة «ابعت» (العمود الجديد بتاع النهاردة)
+//      ③ `whatsapp_config.paced_send_sessions` → التناوب المتدرّج (كل رقم سطر)
+//      ④ `WA_CAMPAIGN_SESSION`                 → إشعارات الحجز والوكلاء
+//    فأي تغيير في الإعدادات بيبان هنا على طول من غير نشر كود.
+async function senderMap(): Promise<SenderRow[]> {
+  const envSession = process.env.WA_CAMPAIGN_SESSION || 'madmona-982'
+
+  const [{ data: cfgRows }, { data: overrides }] = await Promise.all([
+    supabase
+      .from('whatsapp_config')
+      .select('key, value')
+      .in('key', [
+        'queue_send_session',
+        'queue_send_enabled',
+        'paced_send_enabled',
+        'paced_send_session',
+        'paced_send_sessions',
+        'paced_send_rotate_idx',
+      ]),
+    supabase
+      .from('whatsapp_campaign_messages')
+      .select('session')
+      .eq('status', 'queued')
+      .not('session', 'is', null)
+      .limit(2000),
+  ])
+
+  const cfg: Record<string, string> = {}
+  for (const r of ((cfgRows ?? []) as Array<{ key: string; value: string }>)) cfg[r.key] = r.value
+
+  const rows: SenderRow[] = []
+
+  // ① الطابور العادي
+  const queueSession = (cfg.queue_send_session || '').trim()
+  rows.push({
+    name: 'طابور الواتساب',
+    session: queueSession || envSession,
+    source: queueSession ? 'whatsapp_config.queue_send_session' : 'WA_CAMPAIGN_SESSION (احتياطي)',
+    note: queueSession ? null : 'مفيش قيمة في whatsapp_config — بيقع على متغيّر البيئة',
+    active: cfg.queue_send_enabled !== '0',
+  })
+
+  // ② رسايل اتخصّصلها رقم من شاشة «ابعت»
+  // العمود `session` اتضاف النهاردة (١٥ أغسطس) وأنواع Supabase المولّدة
+  // في الريبو لسه ماتجدّدتش، فبتقول «الكولوم مش موجود». المرور بـ`unknown`
+  // هو نفس الأسلوب المستخدم في باقي الملفات لحد ما نعيد توليد الأنواع.
+  const counts = new Map<string, number>()
+  for (const r of ((overrides ?? []) as unknown as Array<{ session: string | null }>)) {
+    const s = (r.session || '').trim()
+    if (s) counts.set(s, (counts.get(s) ?? 0) + 1)
+  }
+  for (const [s, n] of Array.from(counts.entries()).sort((a, b) => b[1] - a[1])) {
+    rows.push({
+      name: 'رسايل مخصّصة في الطابور',
+      session: s,
+      source: 'whatsapp_campaign_messages.session',
+      note: `${n} رسالة مستنية اختارت الرقم ده من شاشة «ابعت»`,
+      active: true,
+    })
+  }
+
+  // ③ الإرسال المتدرّج — كل رقم في التناوب سطر لوحده
+  const rotation = (cfg.paced_send_sessions || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  const pacedOn = cfg.paced_send_enabled === '1'
+  const pacedList = rotation.length > 0 ? rotation : [cfg.paced_send_session || '201026222337']
+  const rotIdx = Number(cfg.paced_send_rotate_idx || 0)
+  pacedList.forEach((s, i) => {
+    const isNext = rotation.length > 1 && i === rotIdx % rotation.length
+    rows.push({
+      name: pacedList.length > 1 ? `الإرسال المتدرّج (${i + 1}/${pacedList.length})` : 'الإرسال المتدرّج',
+      session: s,
+      source: rotation.length > 0 ? 'whatsapp_config.paced_send_sessions' : 'paced_send_session (قديم)',
+      note: pacedOn
+        ? (isNext ? 'الدور عليه في الدفعة الجاية' : null)
+        : 'مقفول (paced_send_enabled = 0)',
+      active: pacedOn,
+    })
+  })
+
+  // ④ إشعارات الحجز والوكلاء — لسه من متغيّر البيئة
+  rows.push({
+    name: 'إشعارات الحجز والوكلاء',
+    session: envSession,
+    source: 'WA_CAMPAIGN_SESSION',
+    note: 'متغيّر بيئة على Vercel — تغييره محتاج إعادة نشر',
+    active: true,
+  })
+
+  return rows
+}
+
+async function fetchDevices(senders: SenderRow[]) {
   const base = (process.env.OPENWA_URL || '').replace(/\/$/, '')
   const key = process.env.OPENWA_API_KEY || ''
   if (!base || !key) {
@@ -126,8 +231,9 @@ async function handle(request: Request) {
         Promise<{ data: unknown; error: { message: string } | null }>
     }).rpc(fn, a)
 
-  const senders = senderMap()
-  // الاتنين على التوازي — حالة الأجهزة مالهاش لازمة تستنى الداتابيز
+  // الليستة بقت بتقرا من الداتابيز، فلازم تيجي الأول — بعدين الأجهزة بالتوازي
+  // مع الـRPC الكبير.
+  const senders = await senderMap()
   const [db, live] = await Promise.all([rpc('sending_overview'), fetchDevices(senders)])
 
   if (db.error) {

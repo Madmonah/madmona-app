@@ -32,6 +32,9 @@ interface Device {
 }
 interface Sender {
   name: string; session: string; source: string
+  // 🔀 (١٥ أغسطس ٢٠٢٦) الليستة بقت تتبني من الداتابيز، فبتيجي معاها
+  // «من فين الرقم ده» و«شغّال ولا مقفول» بدل ما تبقى ٣ سطور ثابتة.
+  note?: string | null; active?: boolean
   device_status: string; connected: boolean; device_phone: string | null
 }
 interface Overview {
@@ -200,16 +203,35 @@ export default function SendingPage() {
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-6">
           <p className="font-black text-sm text-gray-900 mb-2">كل مُرسِل بيستخدم أنهي جهاز</p>
           {(d?.senders ?? []).map((sn, i) => (
-            <div key={i} className="flex items-center justify-between gap-2 py-2 border-t border-gray-50 text-[12px]">
-              <span className="font-bold text-gray-800">{sn.name}</span>
-              <span className="font-mono text-gray-500 truncate" dir="ltr">{sn.session}</span>
-              <span className={`px-2 py-0.5 rounded-full text-[11px] font-black whitespace-nowrap ${
-                sn.connected ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'
-              }`}>{sn.connected ? 'متصل' : sn.device_status}</span>
+            <div key={i} className="py-2 border-t border-gray-50 text-[12px]">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-bold text-gray-800">
+                  {sn.name}
+                  {sn.active === false && (
+                    <span className="mr-1.5 px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-black">
+                      مقفول
+                    </span>
+                  )}
+                </span>
+                <span className="font-mono text-gray-500 truncate" dir="ltr">{sn.session}</span>
+                <span className={`px-2 py-0.5 rounded-full text-[11px] font-black whitespace-nowrap ${
+                  sn.connected ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'
+                }`}>{sn.connected ? 'متصل' : sn.device_status}</span>
+              </div>
+              <p className="mt-0.5 text-[10px] text-gray-400">
+                <span className="font-mono" dir="ltr">{sn.source}</span>
+                {sn.note && <span className="text-gray-500"> · {sn.note}</span>}
+              </p>
             </div>
           ))}
+          {(d?.senders ?? []).length === 0 && (
+            <p className="text-[12px] text-gray-400 py-2">مفيش مُرسِلين متظبطين.</p>
+          )}
           <p className="mt-2 text-[11px] text-gray-500">
             لو مكتوب «مش موجود على OpenWA» يبقى المُرسِل بيحاول يبعت من جهاز مش مربوط — وكل رسايله هتفشل.
+            <br />
+            السطر الرمادي الصغير بيقول <b>الرقم ده جاي منين</b> — أي حاجة مكتوب جنبها
+            {' '}<code className="font-mono">whatsapp_config</code> بتتغيّر من الداتابيز على طول من غير نشر.
           </p>
         </div>
 
