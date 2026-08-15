@@ -21,6 +21,18 @@ const NAV: NavGroup[] = [
     { href: '/admin/company', label: 'الشركة' },
     { href: '/admin/permissions', label: 'الصلاحيات' },
     { href: '/admin/workflows', label: 'الورك فلو' },
+    // 🔗 (١٥ أغسطس ٢٠٢٦ — محمد: «امال هنوصل لهم إزاي؟») عدّيت الـ٣٢ صفحة
+    //    أدمن اللي مكانتش موصولة بأي تنقّل: ١٠ منهم redirect لصفحات تانية
+    //    (مقصود، مش محتاجين لينك)، و١٩ صفحة حقيقية بتقرا من جداول موجودة
+    //    وكانت مستخبّية. اللي تحت دول الحقيقيين — كل واحد مكتوب جنبه
+    //    عدد الصفوف في الداتا يوم ١٥ أغسطس.
+    { href: '/admin/command-center', label: 'مركز القيادة' },   // ceo_briefs ٢٠
+    { href: '/admin/activity', label: 'النشاط الحي' },           // whatsapp_messages ١٤٧٨١ · agent_runs ١٣٧٦٢
+    { href: '/admin/traffic', label: 'الترافيك' },               // site_events ٣٣٥٨٦
+    { href: '/admin/funnel', label: 'قمع التحويل' },             // sales_leads ٦٣٨
+    { href: '/admin/strategy', label: 'الاستراتيجية' },          // strategy_plays ٣٥
+    { href: '/admin/ceo-briefs', label: 'تقارير الإدارة' },      // ceo_briefs ٢٠
+    { href: '/admin/insights', label: 'الرؤى' },                 // agent_insights ٠ — فاضية لسه
   ] },
   { title: 'إدارة مضمونة (ERP)', emoji: '💼', items: [
     { href: MADMONA_ERP, label: 'الإدارة الكاملة' },
@@ -29,6 +41,7 @@ const NAV: NavGroup[] = [
     { href: '/admin/business-partners', label: 'الشركاء' },
     { href: '/admin/leads', label: 'Leads' },
     { href: '/admin/leads-feed', label: 'Leads Feed' },
+    { href: '/admin/outreach-leads', label: 'Outreach Leads' }, // outreach_log ٥٧٩
   ] },
   { title: 'الماركت بليس', emoji: '🛍️', items: [
     { href: '/admin/listings', label: 'الإعلانات' },
@@ -41,6 +54,11 @@ const NAV: NavGroup[] = [
     { href: '/admin/payouts', label: 'المدفوعات' },
     { href: '/admin/projects', label: 'المشاريع' },
     { href: '/admin/projects-media', label: 'ميديا المشاريع' },
+    { href: '/admin/listing-performance', label: 'أداء الإعلانات' }, // listings + bookings + pricing
+    { href: '/admin/qc-reports', label: 'تقارير الجودة' },           // qc_reports ٣٢٠
+    { href: '/admin/photo-audit', label: 'فحص الصور' },              // /api/admin/photo-audit
+    { href: '/admin/demand-forecast', label: 'توقّع الطلب' },        // demand_forecasts ٣١١
+    { href: '/admin/fraud-alerts', label: 'تنبيهات الاحتيال' },      // fraud_alerts ٠ — فاضية لسه
   ] },
   { title: 'الموردين', emoji: '👥', items: [
     { href: '/admin/sup', label: 'الموردين' },
@@ -55,6 +73,14 @@ const NAV: NavGroup[] = [
     { href: '/admin/marid', label: 'المارد' },
     { href: '/admin/pipelines', label: 'Pipelines' },
     { href: '/admin/alerts', label: 'التنبيهات' },
+    { href: '/admin/agents', label: 'الوكلاء' },              // agent_registry + agent_runs
+    { href: '/admin/agent-network', label: 'شبكة الوكلاء' },  // agent_capabilities ٥٠ · agent_pipelines ١٨
+    { href: '/admin/capabilities', label: 'قدرات الوكلاء' },  // agent_capabilities ٥٠
+    { href: '/admin/performance', label: 'أداء الوكلاء' },    // agent_performance_metrics ١٨٣
+    { href: '/admin/policy-rules', label: 'قواعد السياسة' },  // policy_rules ٣٢
+    { href: '/admin/ai-assistant', label: 'المساعد الذكي' },
+    { href: '/admin/marid-monitor', label: 'مراقبة المارد' },
+    { href: '/admin/collaborations', label: 'تعاونات الوكلاء' }, // agent_collaborations ٤
   ] },
   { title: 'الرسائل', emoji: '💬', items: [
     // 🔗 (١٥ أغسطس ٢٠٢٦ — محمد: «فين الصفحة اللي عملناها؟ وليه حاسس الأدمن
@@ -80,6 +106,8 @@ const NAV: NavGroup[] = [
     { href: '/admin/ad-builder', label: 'منشئ الإعلانات' },
     { href: '/admin/ad-review', label: 'مراجعة الإعلانات' },
     { href: '/admin/sponsorships', label: 'الرعاية' },
+    { href: '/admin/ad-creatives', label: 'كرياتيف الإعلانات' }, // ad_creatives ٥٤
+    { href: '/admin/partnerships', label: 'فرص الشراكات' },      // partnership_opportunities ٦٢
   ] },
   { title: 'النظام', emoji: '⚙️', items: [
     { href: '/admin/site-settings', label: 'إعدادات الموقع' },
