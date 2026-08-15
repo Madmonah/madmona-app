@@ -20,6 +20,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
+import { isAdminRequest } from '@/lib/adminGate'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -36,11 +37,9 @@ function sb() {
   )
 }
 
-function checkAuth(request: Request): boolean {
-  const expected = process.env.ADMIN_PASSWORD
-  if (!expected) return false
-  return request.headers.get('x-admin-password') === expected
-}
+// Auth gate: isAdminRequest (see src/lib/adminGate.ts, 15 Aug 2026).
+// Was comparing to process.env.ADMIN_PASSWORD, removed in the 12 Aug
+// security migration -> `if (!expected) return false` = always 401.
 
 interface ListingRow {
   id: string
@@ -135,7 +134,7 @@ async function buildGroups(supa: ReturnType<typeof sb>): Promise<Group[]> {
 
 /** معاينة — مش بيغيّر أي حاجة */
 export async function GET(request: Request) {
-  if (!checkAuth(request)) {
+  if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
@@ -164,7 +163,7 @@ export async function GET(request: Request) {
  *    بيرفضه أصلًا، ولو نقلناه الباتش كله كان هيقع.
  */
 export async function POST(request: Request) {
-  if (!checkAuth(request)) {
+  if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

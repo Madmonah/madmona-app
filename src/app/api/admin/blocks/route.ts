@@ -1,17 +1,16 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { isAdminRequest } from '@/lib/adminGate'
 
 // Reuses the same X-Admin-Password pattern as other admin routes.
-function checkAuth(request: Request): boolean {
-  const expected = process.env.ADMIN_PASSWORD
-  if (!expected) return false
-  return request.headers.get('x-admin-password') === expected
-}
+// Auth gate: isAdminRequest (see src/lib/adminGate.ts, 15 Aug 2026).
+// Was comparing to process.env.ADMIN_PASSWORD, removed in the 12 Aug
+// security migration -> `if (!expected) return false` = always 401.
 
 // GET /api/admin/blocks?from=YYYY-MM-DD
 // Returns all blocks from that date forward, oldest first.
 export async function GET(request: Request) {
-  if (!checkAuth(request)) {
+  if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const { searchParams } = new URL(request.url)
@@ -35,7 +34,7 @@ export async function GET(request: Request) {
 // POST /api/admin/blocks
 // Body: { space_slug, block_date, start_hour, end_hour, reason? }
 export async function POST(request: Request) {
-  if (!checkAuth(request)) {
+  if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   let body: unknown
@@ -95,7 +94,7 @@ export async function POST(request: Request) {
 
 // DELETE /api/admin/blocks?id=UUID
 export async function DELETE(request: Request) {
-  if (!checkAuth(request)) {
+  if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const { searchParams } = new URL(request.url)

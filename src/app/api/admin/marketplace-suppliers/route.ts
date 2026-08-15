@@ -4,6 +4,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
+import { isAdminRequest } from '@/lib/adminGate'
 
 export const runtime = 'nodejs'
 const VALID_STATUSES = ['pending', 'approved', 'rejected', 'suspended']
@@ -38,7 +39,7 @@ export async function GET(request: Request) {
   // Allow legacy X-Admin-Password header for backward compat
   const legacyPw = request.headers.get('x-admin-password')
   const expectedLegacy = process.env.MADMONA_ADMIN_PW || process.env.ADMIN_PASSWORD
-  const legacyOk = expectedLegacy && legacyPw === expectedLegacy
+  const legacyOk = (expectedLegacy && legacyPw === expectedLegacy) || (await isAdminRequest(request))
 
   if (!legacyOk) {
     const auth = await verifyAdmin(request.headers.get('authorization'))
@@ -72,7 +73,7 @@ export async function GET(request: Request) {
 export async function PATCH(request: Request) {
   const legacyPw = request.headers.get('x-admin-password')
   const expectedLegacy = process.env.MADMONA_ADMIN_PW || process.env.ADMIN_PASSWORD
-  const legacyOk = expectedLegacy && legacyPw === expectedLegacy
+  const legacyOk = (expectedLegacy && legacyPw === expectedLegacy) || (await isAdminRequest(request))
 
   let userId: string | undefined
   if (!legacyOk) {

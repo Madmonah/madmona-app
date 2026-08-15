@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { isAdminRequest } from '@/lib/adminGate'
 
-function checkAuth(request: Request): boolean {
-  const expected = process.env.ADMIN_PASSWORD
-  if (!expected) return false
-  return request.headers.get('x-admin-password') === expected
-}
+// Auth gate: isAdminRequest (see src/lib/adminGate.ts, 15 Aug 2026).
+// Was comparing to process.env.ADMIN_PASSWORD, removed in the 12 Aug
+// security migration -> `if (!expected) return false` = always 401.
 
 // GET /api/admin/meta
 // Returns the lookup data the admin pages need to render dropdowns:
@@ -13,7 +12,7 @@ function checkAuth(request: Request): boolean {
 //   - All active categories (for category_slug picker)
 // One round-trip instead of two so the form loads faster.
 export async function GET(request: Request) {
-  if (!checkAuth(request)) {
+  if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

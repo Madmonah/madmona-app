@@ -4,12 +4,17 @@
 import { NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { verifyAdmin, type AuthedUser } from '@/lib/wallet-server'
+import { isAdminRequest } from '@/lib/adminGate'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 // يقبل المصادقة بطريقتين: Supabase Bearer (role=admin) أو X-Admin-Password القديمة.
 async function gate(request: Request): Promise<{ ok: boolean; user?: AuthedUser; status?: number; reason?: string }> {
+  // 15 Aug 2026: accept the admin session cookie / password hash too.
+  // ADMIN_PASSWORD below was removed in the 12 Aug migration (dead path).
+  if (await isAdminRequest(request)) return { ok: true, user: { id: '', role: 'admin' } }
+
   const legacyPw = request.headers.get('x-admin-password')
   const expected = process.env.MADMONA_ADMIN_PW || process.env.ADMIN_PASSWORD
   if (expected && legacyPw === expected) return { ok: true, user: { id: '', role: 'admin' } }

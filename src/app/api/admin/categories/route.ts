@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { isAdminRequest } from '@/lib/adminGate'
 
-function checkAuth(request: Request): boolean {
-  const expected = process.env.ADMIN_PASSWORD
-  if (!expected) return false
-  return request.headers.get('x-admin-password') === expected
-}
+// Auth gate: isAdminRequest (see src/lib/adminGate.ts, 15 Aug 2026).
+// Was comparing to process.env.ADMIN_PASSWORD, removed in the 12 Aug
+// security migration -> `if (!expected) return false` = always 401.
 
 // GET /api/admin/categories — returns full category tree
 export async function GET(request: Request) {
-  if (!checkAuth(request)) {
+  if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -29,7 +28,7 @@ export async function GET(request: Request) {
 // POST /api/admin/categories — create a new category
 // Body: { parent_id?, name_ar, name_en?, slug, icon?, display_order? }
 export async function POST(request: Request) {
-  if (!checkAuth(request)) {
+  if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

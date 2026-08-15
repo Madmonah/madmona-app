@@ -13,14 +13,13 @@
 
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { isAdminRequest } from '@/lib/adminGate'
 
 // كلمة السر من ADMIN_PASSWORD — عمرها ما بتتبعت للعميل.
 // الصفحة بتبعتها في هيدر X-Admin-Password.
-function checkAuth(request: Request): boolean {
-  const expected = process.env.ADMIN_PASSWORD
-  if (!expected) return false // مفيش كلمة سر متظبطة = مقفول تمامًا
-  return request.headers.get('x-admin-password') === expected
-}
+// Auth gate: isAdminRequest (see src/lib/adminGate.ts, 15 Aug 2026).
+// Was comparing to process.env.ADMIN_PASSWORD, removed in the 12 Aug
+// security migration -> `if (!expected) return false` = always 401.
 
 // نوع الليد → الجدول الأصلي وعمود الحالة (للتعديل)
 const KIND_MAP: Record<string, { table: string; statusCol: string; allowed: string[] }> = {
@@ -39,7 +38,7 @@ interface LeadQuery {
 }
 
 export async function GET(request: Request) {
-  if (!checkAuth(request)) {
+  if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -77,7 +76,7 @@ export async function GET(request: Request) {
 
 // تعديل حالة ليد — بيروح للجدول الأصلي حسب النوع
 export async function PATCH(request: Request) {
-  if (!checkAuth(request)) {
+  if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
