@@ -1,128 +1,111 @@
 // src/app/api/admin/wa-sessions/route.ts
-// بروكسي آمن بين الأدمن وخدمة المارد — عشان السر مايتسربش للمتصفح.
+// ============================================================================
+// 📱 قايمة أرقام واتساب وحالتها — من **OpenWA** مباشرة.
+//
+// 🚨 (١٥ أغسطس ٢٠٢٦) الملف ده كان بيقرا من `WA_SERVICE_URL` — جسر Baileys
+//    **اللي اتشال من رايلواي**. يعني `/admin/wa-numbers` كانت بتوريك أرقام
+//    من نظام مش موجود، أو تفشل بـ«فشل الاتصال بخدمة المارد».
+//
+//    نفس نوع العطل بتاع `/admin/leads` (جدول مش موجود) و`transport: 'baileys'`
+//    الافتراضي — صفحة شغالة على مصدر ميت. التلاتة اتكشفوا في نفس اليوم.
+//
+//    دلوقتي بيقرا من OpenWA، اللي هو **فعلًا** اللي بيبعت.
+//
+// ⚠️ إضافة/حذف رقم وتغيير البروكسي كانوا بيعدّوا على الجسر المشال — بقوا
+//    بيرجّعوا خطأ واضح بدل ما يفشلوا في صمت. الربط بيتعمل من لوحة OpenWA.
+// ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server'
+import { supabaseUntyped } from '@/lib/supabase'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
-const BASE = (process.env.WA_SERVICE_URL || '').replace(/\/$/, '')
-const SECRET = process.env.WA_SERVICE_SECRET || ''
+const OPENWA_URL = (process.env.OPENWA_URL || '').replace(/\/$/, '')
+const OPENWA_KEY = process.env.OPENWA_API_KEY || ''
 
-function guard() {
-  if (!BASE) return NextResponse.json({ ok: false, error: 'WA_SERVICE_URL ناقص' }, { status: 500 })
-  return null
+interface OpenWaSession {
+  id?: string
+  name?: string
+  phone?: string | number
+  status?: string
 }
 
-/** قايمة الأرقام وحالتها */
+/** قايمة الأرقام وحالتها الحية */
 export async function GET() {
-  const bad = guard()
-  if (bad) return bad
+  if (!OPENWA_URL || !OPENWA_KEY) {
+    return NextResponse.json(
+      { ok: false, error: 'OPENWA_URL أو OPENWA_API_KEY ناقص', sessions: [] },
+      { status: 500 },
+    )
+  }
+
   try {
-    const res = await fetch(`${BASE}/sessions`, { signal: AbortSignal.timeout(10000) })
-    const data = await res.json()
-    return NextResponse.json({
-      ...data,
-      qr_base: `/api/admin/wa-sessions/qr`,
+    const res = await fetch(`${OPENWA_URL}/api/sessions`, {
+      headers: { 'x-api-key': OPENWA_KEY },
+      signal: AbortSignal.timeout(12000),
+      cache: 'no-store',
     })
+    if (!res.ok) {
+      return NextResponse.json(
+        { ok: false, error: `OpenWA رد ${res.status}`, sessions: [] },
+        { status: 502 },
+      )
+    }
+    const list = (await res.json()) as OpenWaSession[]
+
+    // اللابل من `wa_number_configs` لو موجود — مش بيوقف العرض لو فشل
+    const labels: Record<string, string> = {}
+    try {
+      const { data } = await supabaseUntyped
+        .from('wa_number_configs')
+        .select('session_id, label')
+      for (const r of (data as Array<{ session_id: string; label: string | null }> | null) ?? []) {
+        if (r.label) labels[r.session_id] = r.label
+      }
+    } catch { /* اختياري */ }
+
+    const sessions = (Array.isArray(list) ? list : []).map((s) => {
+      const name = String(s.name ?? s.id ?? '—')
+      const phone = s.phone != null ? String(s.phone).replace(/\D/g, '') : null
+      const status = String(s.status ?? 'unknown')
+      return {
+        id: name,
+        label: labels[name] || (phone ? labels[phone] : '') || name,
+        connected: status === 'ready',
+        me: phone,
+        status,
+        // OpenWA بيعرض الـQR في لوحته — مش عندنا
+        waiting_for_qr: status === 'qr' || status === 'initializing',
+      }
+    })
+
+    return NextResponse.json({ ok: true, sessions, source: 'openwa' })
   } catch (e) {
     return NextResponse.json(
-      { ok: false, error: e instanceof Error ? e.message : 'فشل الاتصال بالخدمة' },
-      { status: 502 }
+      { ok: false, error: e instanceof Error ? e.message : 'فشل الاتصال بـOpenWA', sessions: [] },
+      { status: 502 },
     )
   }
 }
 
-/** إضافة رقم جديد → بيرجع رابط الـ QR */
-export async function POST(request: NextRequest) {
-  const bad = guard()
-  if (bad) return bad
-
-  let body: { session?: string; label?: string; proxy?: string }
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ ok: false, error: 'bad_json' }, { status: 400 })
-  }
-
-  const session = (body.session || '').replace(/[^\d]/g, '')
-  if (!session || session.length < 10) {
-    return NextResponse.json({ ok: false, error: 'رقم غير صالح — اكتبه بصيغة 201xxxxxxxxx' }, { status: 400 })
-  }
-
-  try {
-    const res = await fetch(`${BASE}/sessions`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-madmona-secret': SECRET },
-      // البروكسي بيروح مع الإضافة عشان **أول** اتصال للرقم بواتساب يطلع
-      // من الـIP الصح — أخطر لحظة على رقم جديد هي أول ربط.
-      body: JSON.stringify({ session, label: body.label || session, proxy: body.proxy || '' }),
-      signal: AbortSignal.timeout(20000),
-    })
-    const data = await res.json()
-    return NextResponse.json({ ...data, qr_url: `/api/admin/wa-sessions/qr?session=${session}` }, { status: res.status })
-  } catch (e) {
-    return NextResponse.json(
-      { ok: false, error: e instanceof Error ? e.message : 'فشل إضافة الرقم' },
-      { status: 502 }
-    )
-  }
+// ── العمليات اللي كانت على الجسر المشال ─────────────────────────────────────
+// بترجّع خطأ صريح بدل ما تضرب في خدمة مش موجودة وترجع 404 غامض.
+const GONE = {
+  ok: false,
+  error:
+    'إضافة/حذف الأرقام وتغيير البروكسي كانوا على جسر Baileys اللي اتشال. ' +
+    'الربط دلوقتي بيتعمل من لوحة OpenWA مباشرة.',
 }
 
-/**
- * تغيير قناة الخروج (البروكسي) لرقم — بيعيد تشغيل الرقم ده بس.
- * القيمة الفاضية = رجوع لـIP السيرفر.
- *
- * ⚠️ الرد بيرجّع البروكسي **مخفي منه اليوزر والباسورد** (`***@host:port`).
- *    بيانات البروكسي سر زي أي سر — ماتوصلش للمتصفح أبدًا.
- */
-export async function PUT(request: NextRequest) {
-  const bad = guard()
-  if (bad) return bad
-
-  let body: { session?: string; proxy?: string }
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ ok: false, error: 'bad_json' }, { status: 400 })
-  }
-
-  const session = (body.session || '').replace(/[^\d]/g, '')
-  if (!session) return NextResponse.json({ ok: false, error: 'session مطلوب' }, { status: 400 })
-
-  try {
-    const res = await fetch(`${BASE}/sessions/${encodeURIComponent(session)}/proxy`, {
-      method: 'PUT',
-      headers: { 'content-type': 'application/json', 'x-madmona-secret': SECRET },
-      body: JSON.stringify({ proxy: body.proxy ?? '' }),
-      signal: AbortSignal.timeout(20000),
-    })
-    return NextResponse.json(await res.json(), { status: res.status })
-  } catch (e) {
-    return NextResponse.json(
-      { ok: false, error: e instanceof Error ? e.message : 'فشل تغيير القناة' },
-      { status: 502 }
-    )
-  }
+export async function POST() {
+  return NextResponse.json(GONE, { status: 501 })
 }
 
-/** فصل رقم ومسح جلسته */
-export async function DELETE(request: NextRequest) {
-  const bad = guard()
-  if (bad) return bad
-  const session = request.nextUrl.searchParams.get('session')
-  if (!session) return NextResponse.json({ ok: false, error: 'session مطلوب' }, { status: 400 })
+export async function PUT() {
+  return NextResponse.json(GONE, { status: 501 })
+}
 
-  try {
-    const res = await fetch(`${BASE}/sessions/${encodeURIComponent(session)}`, {
-      method: 'DELETE',
-      headers: { 'x-madmona-secret': SECRET },
-      signal: AbortSignal.timeout(15000),
-    })
-    return NextResponse.json(await res.json(), { status: res.status })
-  } catch (e) {
-    return NextResponse.json(
-      { ok: false, error: e instanceof Error ? e.message : 'فشل الفصل' },
-      { status: 502 }
-    )
-  }
+export async function DELETE(_request: NextRequest) {
+  return NextResponse.json(GONE, { status: 501 })
 }
