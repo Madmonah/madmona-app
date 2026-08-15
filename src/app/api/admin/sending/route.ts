@@ -24,6 +24,9 @@ import { isAdminRequest } from '@/lib/adminGate'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+// نداء OpenWA لوحده ممكن ياخد ٨ ثواني — الحد الافتراضي ١٠ ثواني كان ممكن
+// يقطع الطلب ويرجّع ٥٠٠ فاضي من غير أي رسالة.
+export const maxDuration = 30
 
 
 interface OpenWaSession {
@@ -61,7 +64,7 @@ async function fetchDevices(senders: ReturnType<typeof senderMap>) {
   try {
     const r = await fetch(`${base}/api/sessions`, {
       headers: { 'x-api-key': key },
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(5000),
       cache: 'no-store',
     })
     if (!r.ok) {
@@ -90,7 +93,24 @@ async function fetchDevices(senders: ReturnType<typeof senderMap>) {
   }
 }
 
+// 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «الراوت رجّع 500 مش JSON — (رد فاضي)»)
+//    أي استثناء مش متمسوك هنا بيخلّي Vercel يرجّع ٥٠٠ **بجسم فاضي**، فمفيش
+//    ولا معلومة تقول إيه اللي وقع. الغلاف ده بيمسك أي حاجة ويرجّعها JSON
+//    فيها اسم الخطأ ورسالته — الشاشة بتعرضها زي ما هي.
 export async function GET(request: Request) {
+  try {
+    return await handle(request)
+  } catch (e) {
+    const err = e as Error
+    console.error('[admin/sending] unhandled:', err)
+    return NextResponse.json(
+      { error: 'Unhandled', detail: `${err?.name || 'Error'}: ${err?.message || String(e)}` },
+      { status: 500 },
+    )
+  }
+}
+
+async function handle(request: Request) {
   if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

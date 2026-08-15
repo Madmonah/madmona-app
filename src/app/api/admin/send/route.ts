@@ -34,7 +34,22 @@ export const maxDuration = 60
 
 
 /** حالة الطابور + آخر اللي اتبعت */
+// 🐞 (١٥ أغسطس ٢٠٢٦) نفس الغلاف بتاع /api/admin/sending — أي استثناء مش
+//    متمسوك كان بيرجّع ٥٠٠ بجسم فاضي من غير ما يقول إيه اللي حصل.
 export async function GET(request: Request) {
+  try {
+    return await handleGet(request)
+  } catch (e) {
+    const err = e as Error
+    console.error('[admin/send] unhandled:', err)
+    return NextResponse.json(
+      { error: 'Unhandled', detail: `${err?.name || 'Error'}: ${err?.message || String(e)}` },
+      { status: 500 },
+    )
+  }
+}
+
+async function handleGet(request: Request) {
   if (!(await isAdminRequest(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
