@@ -1028,12 +1028,29 @@ export default function ListingDetailPage() {
               </div>
             )}
 
+            {/* 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «لما العميل بيدوس على حاجة متسعّرة لسه
+                بيجيب اسأل عن السعر»)
+
+                إصلاح النهاردة الصبح خلّى **العنوان** يعرض `price_egp` لما مفيش
+                قاعدة تسعير — بس صندوق الشرا فضل بياخد `pricing[0].price` لوحدها.
+                فالنتيجة بقت أسوأ من الأول: السعر مكتوب فوق بالبنط العريض،
+                وتحته على طول «السعر عند الطلب — اسأل عن السعر». العميل بيشوف
+                رقم وبيتقاله مفيش سعر.
+
+                قِسنا الداتا الحية: **٢٦٨ إعلان منشور** ليهم `price_egp` حقيقي
+                ومفيش ولا صف في `pricing_rules` (١٧٧ بيع · ٥٢ خدمات · ٢٧ منتجات
+                · ٧ إيجار · ٥ مطاعم) — مقابل ٩٠ بس عندهم قاعدة تسعير.
+
+                دلوقتي الصندوق بياخد نفس `startingPrice` اللي العنوان بيعرضه،
+                فمستحيل الاتنين يقولوا حاجتين مختلفين. حارس الصفر لسه مكانه:
+                `startingPrice` بيرجّع `null` لو الإعلان `price_on_request` أو
+                سعره صفر، والصندوق ساعتها بيعرض «اسأل عن السعر» — وده صح. */}
             {isProduct && !isRealEstate && !isDirectory && !isListQuote && listing.supplier && (
               <div className="lg:hidden">
                 <ProductBuyBox
                   listing={{ id: listing.id, title: displayTitle }}
                   supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
-                  price={pricing[0]?.price ? Number(pricing[0].price) : 0}
+                  price={startingPrice ?? 0}
                 />
               </div>
             )}
@@ -1335,7 +1352,7 @@ export default function ListingDetailPage() {
                 <ProductBuyBox
                   listing={{ id: listing.id, title: displayTitle }}
                   supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
-                  price={pricing[0]?.price ? Number(pricing[0].price) : 0}
+                  price={startingPrice ?? 0}
                 />
               )}
 
