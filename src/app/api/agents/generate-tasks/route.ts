@@ -57,7 +57,6 @@ async function generateForSupplier(supplierId: string, force: boolean) {
   if (employees.length === 0) return { supplier_id: supplierId, skipped: 'no_employees', tasks_created: 0 }
 
   const today = new Date().toISOString().slice(0, 10)
-  const empIds = employees.map((e) => e.id)
 
   // Idempotency: if AI tasks already generated today and not forced, skip.
   //
@@ -68,16 +67,37 @@ async function generateForSupplier(supplierId: string, force: boolean) {
   //    `skipped: already_generated_today` و`tasks_created: 0`، والموظفين
   //    شايفين نفس القايمة الثابتة كل يوم من غير أي مهام ذكية.
   //    الحل: نعدّ **مهام الوكيل بس** (`task_kind='variable'`) مش أي مهمة.
+  //
+  // 🚨 (١٥ أغسطس ٢٠٢٦) الحارس بقى يبص على `daily_task_pool` مش `daily_tasks`.
+  //
+  //    من ساعة ما الكرون بقى يحضّر مخزن بس (التوزيع على البصمة)، الحارس
+  //    القديم كان بيدوّر على `task_kind='variable'` في `daily_tasks` —
+  //    وده مابيتكتبش خالص إلا لما موظف يبصم. يعني الحارس كان **عمره ما
+  //    هيشتغل**، وأي تشغيلة تانية في نفس اليوم كانت هتعيد توليد نفس
+  //    الموردين من الأول وتنده كلود عليهم تاني.
+  //
+  //    وده كان هيبوّظ خطة الكرون المتكرر بالذات: تشغيلة ٠٤:٠٠ وقفت عند
+  //    المورد ١٣ من ٥١ (ميزانية الوقت ٢٤٠ث). التشغيلة اللي بعدها المفروض
+  //    تكمّل من ١٤ — بالحارس القديم كانت هترجع تعمل الـ١٣ تاني وتقف في
+  //    نفس المكان، وتحرق رصيد الـAPI كل ساعة على نفس الشغل.
   if (!force) {
-    const { count } = await supabaseAdmin
-      .from('daily_tasks')
+    const sbCount = supabaseAdmin as unknown as {
+      from: (t: string) => {
+        select: (c: string, o: Record<string, unknown>) => {
+          eq: (c: string, v: unknown) => {
+            eq: (c: string, v: unknown) => Promise<{ count: number | null }>
+          }
+        }
+      }
+    }
+    const { count } = await sbCount
+      .from('daily_task_pool')
       .select('id', { count: 'exact', head: true })
+      .eq('supplier_id', supplierId)
       .eq('task_date', today)
-      .is('source_booking_id', null)
-      .eq('is_auto_generated', true)
-      .eq('task_kind', 'variable')
-      .in('employee_id', empIds)
-    if ((count ?? 0) > 0) return { supplier_id: supplierId, skipped: 'already_generated_today', tasks_created: 0 }
+    if ((count ?? 0) > 0) {
+      return { supplier_id: supplierId, skipped: 'already_generated_today', pool_rows: 0 }
+    }
   }
 
   // Distinct roles (by Arabic role title)
