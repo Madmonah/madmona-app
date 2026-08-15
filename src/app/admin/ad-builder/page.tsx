@@ -41,12 +41,12 @@ async function getListings(): Promise<ListingWithExtras[]> {
 
   const [photos, prices, cats] = await Promise.all([
     supabaseAdmin.from('listing_photos').select('listing_id, url, display_order').in('listing_id', ids),
-    supabaseAdmin.from('pricing_rules').select('listing_id, base_price').in('listing_id', ids),
+    supabaseAdmin.from('pricing_rules').select('listing_id, price').in('listing_id', ids),
     supabaseAdmin.from('categories').select('id, name_ar').in('id', catIds),
   ])
 
   type P = { listing_id: string; url: string; display_order: number }
-  type Pr = { listing_id: string; base_price: number | null }
+  type Pr = { listing_id: string; price: number | null }
   type C = { id: string; name_ar: string | null }
 
   const photoMap = new Map<string, string>()
@@ -57,7 +57,7 @@ async function getListings(): Promise<ListingWithExtras[]> {
   const priceMap = new Map<string, number>()
   ;((prices.data ?? []) as Pr[]).forEach(p => {
     const existing = priceMap.get(p.listing_id)
-    const price = Number(p.base_price ?? 0)
+    const price = Number(p.price ?? 0)
     if (price > 0 && (existing === undefined || price < existing)) priceMap.set(p.listing_id, price)
   })
 

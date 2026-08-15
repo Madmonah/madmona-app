@@ -45,14 +45,22 @@ async function gatherMarketContext(): Promise<Record<string, unknown>> {
     .order('created_at', { ascending: false })
     .limit(5)
 
+  // 🐞 (١٥ أغسطس ٢٠٢٦ — مسح المصادر الميتة) كان `.select('category')` —
+  //    **عمود مش موجود** في `listings` (اسمه `category_id` وبيشاور على جدول
+  //    `categories`). الاستعلام بيفشل، `counts` بتفضل فاضية، ووكيل التسويق
+  //    بالمحتوى بياخد «مفيش تصنيفات رايجة» كل مرة.
   const { data: trendingCategories } = await supabaseAdmin
     .from('listings')
-    .select('category')
+    .select('category_id, categories(name_ar)')
     .limit(100)
-  type C = { category: string }
-  const cats = (trendingCategories ?? []) as C[]
+  type C = { category_id: string | null; categories?: { name_ar: string | null } | null }
+  const cats = (trendingCategories ?? []) as unknown as C[]
   const counts: Record<string, number> = {}
-  cats.forEach((c) => { counts[c.category] = (counts[c.category] ?? 0) + 1 })
+  cats.forEach((c) => {
+    const name = c.categories?.name_ar || c.category_id
+    if (!name) return
+    counts[name] = (counts[name] ?? 0) + 1
+  })
   const sortedCats = Object.entries(counts)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5)

@@ -158,7 +158,15 @@ export async function runPerformanceTracker(): Promise<Record<string, unknown>> 
   const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
   const [bookings, leads, ads] = await Promise.all([
     supabaseAdmin.from('marketplace_bookings').select('id, total_amount').gte('created_at', oneWeekAgo),
-    supabaseAdmin.from('lead_captures').select('id').gte('created_at', oneWeekAgo),
+    // 🐞 (١٥ أغسطس ٢٠٢٦ — مسح المصادر الميتة) كان `lead_captures` — **جدول
+    //    مش موجود في الداتابيز خالص**. الاستعلام بيفشل في صمت (بنقرا
+    //    `.data ?? []`) فـ`leads_7d` كان بيطلع **صفر كل أسبوع**، ومتتبّع
+    //    الأداء بيقيّم الوكلاء على رقم غلط. الصح ٧٢ ليد في آخر ٧ أيام.
+    //    `v_all_leads` هي النظرة الموحّدة اللي `/admin/leads` بتقرا منها.
+    //    (`v_all_leads` لسه مش في الأنواع المولّدة — cast مؤقت زي باقي الملف)
+    (supabaseAdmin as unknown as {
+      from: (t: string) => { select: (c: string) => { gte: (c: string, v: string) => Promise<{ data: Array<{ id: string }> | null }> } }
+    }).from('v_all_leads').select('id').gte('created_at', oneWeekAgo),
     supabaseAdmin.from('ad_creatives').select('id').gte('created_at', oneWeekAgo),
   ])
 
@@ -330,19 +338,26 @@ export async function runCustomerSuccessAgent(args?: { customerId?: string }): P
     customer = data as Record<string, unknown> | null
   } else {
     // Pick a customer who hasn't booked in 14+ days (at_risk segment)
+    //
+    // 🐞 (١٥ أغسطس ٢٠٢٦ — مسح المصادر الميتة) كان بيطلب `customer_profile_id`
+    //    — **عمود مش موجود** في `marketplace_bookings` (اسمه `customer_id`).
+    //    الاستعلام بيفشل، `bookings` بترجع null، اللوب مابيلفش ولا مرة،
+    //    والوكيل بيرجّع «no at-risk customers» دايمًا. يعني **وكيل نجاح
+    //    العملاء عمره ما اشتغل**، رغم إن فيه ٧ حجوزات في النافذة دلوقتي.
     const { data: bookings } = await supabaseAdmin
-      .from('marketplace_bookings').select('customer_profile_id, created_at')
+      .from('marketplace_bookings').select('customer_id, created_at')
       .order('created_at', { ascending: false }).limit(30)
-    type B = { customer_profile_id: string; created_at: string }
+    type B = { customer_id: string | null; created_at: string }
     const seen = new Set<string>()
     for (const b of ((bookings ?? []) as B[])) {
-      if (seen.has(b.customer_profile_id)) continue
-      seen.add(b.customer_profile_id)
+      if (!b.customer_id) continue
+      if (seen.has(b.customer_id)) continue
+      seen.add(b.customer_id)
       const daysSince = (Date.now() - new Date(b.created_at).getTime()) / (1000 * 60 * 60 * 24)
       if (daysSince > 14 && daysSince < 60) {
         const { data: c } = await supabaseAdmin
           .from('profiles').select('id, full_name, phone, created_at')
-          .eq('id', b.customer_profile_id).maybeSingle()
+          .eq('id', b.customer_id).maybeSingle()
         if (c) { customer = c as Record<string, unknown>; break }
       }
     }
@@ -352,7 +367,7 @@ export async function runCustomerSuccessAgent(args?: { customerId?: string }): P
 
   const { data: customerBookings } = await supabaseAdmin
     .from('marketplace_bookings').select('total_amount, created_at, listing_id')
-    .eq('customer_profile_id', customer.id).order('created_at', { ascending: false }).limit(10)
+    .eq('customer_id', customer.id as string).order('created_at', { ascending: false }).limit(10)
 
   type B = { total_amount: number; created_at: string }
   const cb = (customerBookings ?? []) as B[]

@@ -32,8 +32,8 @@ interface PhotoRow {
 }
 
 interface PricingRow {
-  rate_period: string | null
-  base_price: number | null
+  period_type: string | null
+  price: number | null
 }
 
 interface CategoryRow {
@@ -66,7 +66,7 @@ async function getListing(slug: string): Promise<{
       .limit(8),
     supabaseAdmin
       .from('pricing_rules')
-      .select('rate_period, base_price')
+      .select('period_type, price')
       .eq('listing_id', listing.id)
       .limit(5),
     supabaseAdmin
@@ -85,8 +85,8 @@ async function getListing(slug: string): Promise<{
 }
 
 function formatPrice(p: PricingRow): string {
-  const period = p.rate_period === 'hourly' ? '/ساعة' : p.rate_period === 'daily' ? '/يوم' : p.rate_period === 'weekly' ? '/أسبوع' : ''
-  return `${Number(p.base_price ?? 0).toLocaleString()}ج ${period}`
+  const period = p.period_type === 'hourly' ? '/ساعة' : p.period_type === 'daily' ? '/يوم' : p.period_type === 'weekly' ? '/أسبوع' : ''
+  return `${Number(p.price ?? 0).toLocaleString()}ج ${period}`
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -106,7 +106,7 @@ export default async function AdListingPage({ params }: { params: Promise<{ slug
   if (!data || !data.listing) notFound()
 
   const { listing, photos, pricing, categoryName } = data
-  const lowestPrice = pricing.length > 0 ? pricing.reduce((a, b) => (Number(a.base_price ?? Infinity) < Number(b.base_price ?? Infinity) ? a : b)) : null
+  const lowestPrice = pricing.length > 0 ? pricing.reduce((a, b) => (Number(a.price ?? Infinity) < Number(b.price ?? Infinity) ? a : b)) : null
   const heroPhoto = photos[0]?.url ?? null
 
   return (

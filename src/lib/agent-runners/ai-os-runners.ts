@@ -184,11 +184,14 @@ export async function runCarouselDesigner(args?: { topic?: string }): Promise<Re
 export async function runBookingManager(): Promise<Record<string, unknown>> {
   const { data: bookings } = await supabaseAdmin
     .from('marketplace_bookings')
-    .select('id, customer_profile_id, listing_id, total_amount, start_date, end_date, created_at')
+        // 🐞 (١٥ أغسطس ٢٠٢٦) كان `customer_profile_id` — مش موجود في
+    //    `marketplace_bookings` (اسمه `customer_id`). الاستعلام بيفشل
+    //    فـ`bookings` بترجع null ومدير الحجوزات مابيقيّمش ولا حجز.
+    .select('id, customer_id, listing_id, total_amount, start_at, end_at, created_at')
     .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString()).limit(20)
   type B = {
-    id: string; customer_profile_id: string; listing_id: string;
-    total_amount: number; start_date: string; end_date: string; created_at: string;
+    id: string; customer_id: string | null; listing_id: string;
+    total_amount: number; start_at: string; end_at: string; created_at: string;
   }
   const rows = (bookings ?? []) as B[]
   let evaluated = 0
@@ -199,9 +202,9 @@ export async function runBookingManager(): Promise<Record<string, unknown>> {
     const { data: listing } = await supabaseAdmin.from('listings')
       .select('title, requires_id_verification').eq('id', b.listing_id).maybeSingle()
     const { data: customer } = await supabaseAdmin.from('profiles')
-      .select('full_name, phone, created_at').eq('id', b.customer_profile_id).maybeSingle()
+      .select('full_name, phone, created_at').eq('id', b.customer_id ?? '').maybeSingle()
     const { count: prevBookings } = await supabaseAdmin.from('marketplace_bookings')
-      .select('*', { count: 'exact', head: true }).eq('customer_profile_id', b.customer_profile_id)
+      .select('*', { count: 'exact', head: true }).eq('customer_id', b.customer_id ?? '')
     const text = await callClaude({
       systemPrompt: BOOKING_MANAGER_PROMPT,
       userMessage: JSON.stringify({

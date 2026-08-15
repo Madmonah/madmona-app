@@ -200,8 +200,11 @@ export async function runPricingOptimizer(args?: { listingId?: string }): Promis
 
   // Get current pricing rule
   const { data: pricingRules } = await supabaseAdmin
-    .from('pricing_rules').select('amount').eq('listing_id', listing.id).limit(1)
-  const currentPrice = ((pricingRules ?? []) as Array<{ amount: number }>)[0]?.amount ?? 250
+    .from('pricing_rules').select('price').eq('listing_id', listing.id).limit(1)
+  // 🐞 (١٥ أغسطس ٢٠٢٦) كان `amount` — عمود مش موجود في `pricing_rules` (اسمه
+  //    `price`). الاستعلام بيفشل فـ`currentPrice` كان بيقع دايمًا على الافتراضي
+  //    ٢٥٠، ومحسّن التسعير بيشتغل على سعر وهمي لكل إعلان.
+  const currentPrice = ((pricingRules ?? []) as Array<{ price: number }>)[0]?.price ?? 250
 
   const text = await callClaude({
     systemPrompt: PRICING_OPTIMIZER_PROMPT,
@@ -427,9 +430,13 @@ export async function runContentPersonalizer(args?: { customerId?: string }): Pr
   } else {
     // Pick a customer with bookings but no recent personalization
     const { data: bookings } = await supabaseAdmin
-      .from('marketplace_bookings').select('customer_profile_id').limit(20)
-    type B = { customer_profile_id: string }
-    const customerIds = Array.from(new Set(((bookings ?? []) as B[]).map(b => b.customer_profile_id)))
+      .from('marketplace_bookings').select('customer_id').limit(20)
+    // 🐞 (١٥ أغسطس ٢٠٢٦) كان `customer_profile_id` — العمود ده مش موجود في
+    //    `marketplace_bookings` (اسمه `customer_id`؛ موجود بالاسم ده في
+    //    `personalized_recommendations` بس). الاستعلام بيفشل، القايمة بتفضل
+    //    فاضية، ووكيل التوصيات المخصّصة عمره ما اشتغل.
+    type B = { customer_id: string | null }
+    const customerIds = Array.from(new Set(((bookings ?? []) as B[]).map(b => b.customer_id).filter((x): x is string => !!x)))
 
     for (const cid of customerIds) {
       const { count } = await supabaseAdmin.from('personalized_recommendations')
@@ -449,7 +456,7 @@ export async function runContentPersonalizer(args?: { customerId?: string }): Pr
   // Get customer's history
   const { data: previousBookings } = await supabaseAdmin
     .from('marketplace_bookings').select('listing_id, total_amount, created_at')
-    .eq('customer_profile_id', customer.id).limit(10)
+    .eq('customer_id', customer.id as string).limit(10)
 
   // Get available listings
   const { data: availableListings } = await supabaseAdmin

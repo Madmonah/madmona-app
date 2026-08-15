@@ -21,7 +21,7 @@ interface ListingPerf {
   conversion_rate: number  // bookings/views
   last_booking_at: string | null
   hero_photo: string | null
-  base_price: number | null
+  price: number | null
   status: string
 }
 
@@ -55,7 +55,7 @@ async function getPerformance(): Promise<ListingPerf[]> {
       .in('listing_id', ids),
     supabaseAdmin
       .from('pricing_rules')
-      .select('listing_id, base_price, period_type')
+      .select('listing_id, price, period_type')
       .in('listing_id', ids)
       .eq('is_active', true),
     supabaseAdmin
@@ -66,7 +66,7 @@ async function getPerformance(): Promise<ListingPerf[]> {
 
   type B = { listing_id: string; total_amount: number | null; created_at: string }
   type P = { listing_id: string; url: string; display_order: number }
-  type Pr = { listing_id: string; base_price: number | null; period_type: string }
+  type Pr = { listing_id: string; price: number | null; period_type: string }
   type C = { id: string; name_ar: string | null }
 
   const bookings = (bookingsRes.data ?? []) as B[]
@@ -90,7 +90,7 @@ async function getPerformance(): Promise<ListingPerf[]> {
 
   const priceMap = new Map<string, number>()
   for (const p of prices) {
-    const price = Number(p.base_price ?? 0)
+    const price = Number(p.price ?? 0)
     if (price > 0) {
       const ex = priceMap.get(p.listing_id)
       if (ex === undefined || price < ex) priceMap.set(p.listing_id, price)
@@ -117,7 +117,7 @@ async function getPerformance(): Promise<ListingPerf[]> {
       conversion_rate: r.views_count > 0 ? (rev.count / r.views_count) * 100 : 0,
       last_booking_at: rev.lastAt,
       hero_photo: photoMap.get(r.id) ?? null,
-      base_price: priceMap.get(r.id) ?? null,
+      price: priceMap.get(r.id) ?? null,
       status: r.status,
     }
   })
@@ -265,7 +265,7 @@ export default async function ListingPerformancePage({
                 <div style={{ fontSize: 11, color: '#666' }}>
                   {l.category_name && <span>📦 {l.category_name}</span>}
                   {l.city && <span style={{ marginRight: 8 }}>📍 {l.city}</span>}
-                  {l.base_price && <span style={{ marginRight: 8 }}>💰 من {l.base_price.toLocaleString()}ج</span>}
+                  {l.price && <span style={{ marginRight: 8 }}>💰 من {l.price.toLocaleString()}ج</span>}
                 </div>
               </div>
               <div style={{ textAlign: 'center', minWidth: 70 }}>
