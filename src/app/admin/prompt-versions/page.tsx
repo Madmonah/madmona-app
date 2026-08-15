@@ -17,22 +17,44 @@ interface Version {
   created_at: string
 }
 
+// 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «البرومت بتاع الوكلاء القديمة، مش عايز نسخ
+//    قديمة تلخبطني»)
+//
+//    الصفحة دي كانت بتعرض ١٧٤ نسخة برومبت وكأنها حاجة شغّالة. الحقيقة:
+//
+//    ١) **مفيش أي أجينت بيقرا من الجدول ده.** دوّرت على `prompt_text` في
+//       `src/` كلها: بتتقري في الصفحة دي بس، وبتتكتب في phase5-runners.
+//       كل الأجينتس بتشتغل من ثوابت متكتوبة في الكود (`*_PROMPT`)، فزرار
+//       «Activate» هنا مابيغيّرش سلوك أي أجينت — بيقلب عمود وخلاص.
+//    ٢) `prompt-optimizer` — الأجينت اللي بيولّد النسخ دي — `enabled=false`
+//       و `run_count=0`، **عمره ما اشتغل**. آخر نسخة في الجدول ١١ يونيو.
+//    ٣) ٥٠ نسخة من الـ١٧٤ لأجينتس **مش موجودة أصلًا** في `agent_registry`.
+//    ٤) في الجدول عمودين متناقضين: `active` و `is_active`. الصفحة والراوت
+//       بيستخدموا `is_active` بس؛ `active` مش مستخدم في أي حتة.
+//
+//    التعديل: بنعرض **آخر نسخة لكل أجينت بس** (بدل ما القديمة تلخبط)،
+//    وبنقول بالبنط العريض إن ده صندوق اقتراحات مش مصدر تشغيل، وبنعلّم
+//    الأجينتس اللي مابقتش موجودة.
 export default async function PromptVersionsPage() {
-  const { data } = await supabaseAdmin
-    .from('prompt_versions')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(50)
-  const versions = (data ?? []) as Version[]
+  const [{ data }, { data: reg }] = await Promise.all([
+    supabaseAdmin
+      .from('prompt_versions')
+      .select('*')
+      .order('created_at', { ascending: false }),
+    supabaseAdmin.from('agent_registry').select('agent_name'),
+  ])
+  const all = (data ?? []) as Version[]
+  const liveAgents = new Set(((reg ?? []) as { agent_name: string }[]).map(r => r.agent_name))
 
-  // Group by agent
+  // آخر نسخة لكل أجينت بس — الترتيب فوق created_at desc، فأول واحدة هي الأحدث.
   const byAgent = new Map<string, Version[]>()
-  for (const v of versions) {
-    if (!byAgent.has(v.agent_name)) byAgent.set(v.agent_name, [])
-    byAgent.get(v.agent_name)!.push(v)
+  for (const v of all) {
+    if (!byAgent.has(v.agent_name)) byAgent.set(v.agent_name, [v])
   }
+  const versions = Array.from(byAgent.values()).flat()
 
-  const pendingCount = versions.filter(v => !v.is_active).length
+  const hiddenOlder = all.length - versions.length
+  const deadAgents = versions.filter(v => !liveAgents.has(v.agent_name)).length
 
   return (
     <div dir="rtl" style={{ fontFamily: 'Tahoma', background: '#FAF7F0', minHeight: '100vh', padding: 24 }}>
@@ -42,8 +64,24 @@ export default async function PromptVersionsPage() {
           <a href="/admin/performance" style={{ color: '#059669', fontSize: 13 }}>← Performance</a>
         </div>
 
+        <div style={{
+          background: '#FFF4E5', border: '2px solid #F59E0B', borderRadius: 12,
+          padding: 16, marginBottom: 16, fontSize: 13, lineHeight: 1.9, color: '#7C2D12',
+        }}>
+          <strong style={{ display: 'block', fontSize: 14, marginBottom: 6 }}>
+            ⚠️ الصفحة دي صندوق اقتراحات — مش مصدر تشغيل
+          </strong>
+          كل الأجينتس بتقرا الـ prompt بتاعها من ثوابت مكتوبة في الكود، <strong>مش من الجدول ده</strong>.
+          يعني زرار «Activate» هنا مابيغيّرش سلوك أي أجينت — بيقلب عمود في الداتابيز وبس.
+          <br />
+          و<code>prompt-optimizer</code> اللي بيولّد النسخ دي <strong>عمره ما اشتغل</strong>
+          {' '}(<code>enabled=false</code> · <code>run_count=0</code>) — آخر نسخة اتكتبت ١١ يونيو ٢٠٢٦.
+        </div>
+
         <p style={{ color: '#666', fontSize: 14, marginBottom: 16 }}>
-          {versions.length} نسخة prompt من Prompt Optimizer · {pendingCount} في انتظار المراجعة
+          {versions.length} أجينت · بنعرض <strong>آخر نسخة لكل واحد بس</strong>
+          {hiddenOlder > 0 && <> · {hiddenOlder} نسخة أقدم متخبّية عشان ماتلخبطش</>}
+          {deadAgents > 0 && <> · <span style={{ color: '#B45309' }}>{deadAgents} أجينت مابقاش موجود في agent_registry</span></>}
         </p>
 
         {versions.length === 0 ? (
@@ -60,7 +98,16 @@ export default async function PromptVersionsPage() {
                 border: '1px solid #eee',
               }}>
                 <h2 style={{ margin: 0, color: '#059669', fontSize: 18, marginBottom: 12 }}>
-                  🎯 {agent} ({vs.length} versions)
+                  🎯 {agent}
+                  {!liveAgents.has(agent) && (
+                    <span style={{
+                      marginInlineStart: 8, fontSize: 11, fontWeight: 'normal',
+                      background: '#FEE2E2', color: '#991B1B',
+                      padding: '3px 8px', borderRadius: 999,
+                    }}>
+                      مش موجود في agent_registry
+                    </span>
+                  )}
                 </h2>
 
                 <div style={{ display: 'grid', gap: 10 }}>
@@ -72,7 +119,9 @@ export default async function PromptVersionsPage() {
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                         <strong style={{ color: '#059669' }}>
-                          v{v.version} {v.is_active ? '✅ Active' : '⏳ Pending'}
+                          {/* «Active» هنا معناها «معلّم عليها في الجدول» — مش
+                              «الأجينت شغّال بيها». الأجينت بيقرا من الكود. */}
+                          v{v.version} {v.is_active ? '✅ معلّم عليها' : '⏳ مش معلّم عليها'}
                         </strong>
                         <span style={{ fontSize: 11, color: '#666' }}>
                           {new Date(v.created_at).toLocaleString('ar-EG')}
