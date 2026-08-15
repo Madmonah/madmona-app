@@ -69,6 +69,8 @@ interface QueueRow {
   recipient_name: string | null
   message_content: string
   attempts: number | null
+  /** 15 Aug 2026: per-message sender. null => whatsapp_config.queue_send_session */
+  session: string | null
 }
 
 export async function GET(request: NextRequest) {
@@ -236,7 +238,7 @@ export async function GET(request: NextRequest) {
   // 🥇 المعاملاتي الأول دايمًا: حجز جديد مايستناش ورا طابور دعاية.
   //    بنجيبه لوحده، ولو مفيش نرجع للطابور العادي.
   const nowIso = new Date().toISOString()
-  const COLS = 'id, recipient_phone, recipient_name, message_content, attempts'
+  const COLS = 'id, recipient_phone, recipient_name, message_content, attempts, session'
 
   let { data: dueRaw, error: dueErr } = await supabaseAdmin
     .from('whatsapp_campaign_messages')
@@ -325,7 +327,9 @@ export async function GET(request: NextRequest) {
       // (المصيدة المسجلة في الذاكرة) — لازم نحدد جلسة OpenWA صراحةً
       // (١٥ أغسطس) نفس الجلسة اللي البوابة قاستها — مش قراية تانية للـenv،
       // عشان مايحصلش إن البوابة تقيس رقم والإرسال يطلع من رقم تاني.
-      session: QUEUE_SESSION,
+      // 📤 (١٥ أغسطس — محمد: «عايز أختار الرقم اللي هيبعت») الصف نفسه
+      //    ممكن يحدد جلسته. فاضي = الجلسة العامة زي الأول.
+      session: (row.session || '').trim() || QUEUE_SESSION,
     })
 
     await supabaseAdmin

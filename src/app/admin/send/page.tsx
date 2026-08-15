@@ -37,10 +37,14 @@ interface Upcoming {
   recipient_name: string | null
   scheduled_for: string
 }
+interface SessionOption { session: string; status: string; connected: boolean; phone: string | null }
 interface Status {
   counts?: Record<string, number>
   upcoming?: Upcoming[]
   safety?: Preview['safety']
+  /** 📤 (١٥ أغسطس ٢٠٢٦) الأرقام المتاحة — حية من OpenWA، مش متكتوبة في الكود */
+  sessions?: SessionOption[]
+  default_session?: string
 }
 
 function when(iso: string | null | undefined): string {
@@ -75,6 +79,9 @@ export default function SendPage() {
   const [message, setMessage] = useState('')
   const [campaign, setCampaign] = useState('')
   const [skipDays, setSkipDays] = useState(3)
+  // 📤 (١٥ أغسطس ٢٠٢٦ — محمد: «عايز أقدر أختار الرقم اللي هيبعت»)
+  //    فاضي = الرقم الافتراضي من whatsapp_config.queue_send_session.
+  const [session, setSession] = useState('')
 
   const [busy, setBusy] = useState(false)
   const [preview, setPreview] = useState<Preview | null>(null)
@@ -123,6 +130,7 @@ export default function SendPage() {
           recipients: recipients.map((r) => ({ phone: r.phone, name: r.name })),
           dry_run: dry,
           skip_recent_days: skipDays,
+          session: session || undefined,
         }),
       })
       const json = (await res.json()) as Preview
@@ -170,6 +178,35 @@ export default function SendPage() {
           بينتظر إيصال «وصلت» قبل اللي بعدها، وبيعيد بعد ٣ دقايق لو مفيش إيصال. تقدر تتابع كل رسالة في{' '}
           <a href="/admin/sending" className="text-[#059669] underline">شاشة الإرسال</a>.
         </p>
+
+        {/* 📤 اختيار الرقم اللي هيبعت — الليستة حية من OpenWA */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4">
+          <label className="block text-sm font-bold mb-2">الرقم اللي هيبعت</label>
+          <select
+            value={session}
+            onChange={(e) => setSession(e.target.value)}
+            className="w-full px-4 py-3 bg-[#FAFAF7] border border-gray-200 rounded-xl text-sm"
+          >
+            <option value="">
+              الافتراضي{status?.default_session ? ` — ${status.default_session}` : ''}
+            </option>
+            {(status?.sessions ?? []).map((x) => (
+              <option key={x.session} value={x.session}>
+                {x.session}{x.phone ? ` · ${x.phone}` : ''} — {x.connected ? 'متصل' : x.status}
+              </option>
+            ))}
+          </select>
+          {(status?.sessions?.length ?? 0) === 0 ? (
+            <p className="text-xs text-amber-700 mt-2">
+              ماقدرناش نجيب الأجهزة من OpenWA دلوقتي — هيتبعت من الرقم الافتراضي.
+            </p>
+          ) : (
+            <p className="text-xs text-gray-500 mt-2">
+              الرسايل بتتحط في الطابور بالرقم ده. سيبها «الافتراضي» عشان تمشي مع
+              إعداد <code>queue_send_session</code> وتتغيّر من مكان واحد.
+            </p>
+          )}
+        </div>
 
         {s && (
           <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4 text-sm grid grid-cols-2 md:grid-cols-4 gap-3">

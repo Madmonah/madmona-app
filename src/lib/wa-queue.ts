@@ -38,6 +38,12 @@ export interface QueueInput {
   recipients: Recipient[]
   dry_run?: boolean
   skip_recent_days?: number
+  /**
+   * 15 Aug 2026 (Mohamed: "I want to pick the number that sends").
+   * Which WhatsApp session sends this batch. undefined/'' keeps the old
+   * behaviour: the cron falls back to whatsapp_config.queue_send_session.
+   */
+  session?: string | null
 }
 
 export interface QueueResult {
@@ -161,6 +167,8 @@ export async function queueCampaign(input: QueueInput): Promise<QueueResult> {
       status: 'queued',
       channel: 'marid',
       scheduled_for: cursor.toISOString(),
+      // null => the cron uses whatsapp_config.queue_send_session (old behaviour)
+      session: (input.session ?? '').trim() || null,
       template_vars: { campaign_name: input.campaign_name ?? 'manual' },
     })
 

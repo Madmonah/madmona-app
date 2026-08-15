@@ -69,7 +69,62 @@ async function handleGet(request: Request) {
     .order('scheduled_for', { ascending: true })
     .limit(25)
 
-  return NextResponse.json({ ok: true, counts, safety: SAFETY, upcoming: upcoming ?? [] })
+  // 📤 (١٥ أغسطس ٢٠٢٦ — محمد: «عايز أقدر أختار الرقم اللي هيبعت»)
+  //    الشاشة محتاجة تعرف الأرقام المتاحة. بنجيبها حية من OpenWA،
+  //    والافتراضي من `whatsapp_config.queue_send_session` — مش متكتوب في الكود.
+  const [defaultSession, devices] = await Promise.all([
+    resolveDefaultSession(),
+    listSessions(),
+  ])
+
+  return NextResponse.json({
+    ok: true,
+    counts,
+    safety: SAFETY,
+    upcoming: upcoming ?? [],
+    sessions: devices,
+    default_session: defaultSession,
+  })
+}
+
+interface SessionOption { session: string; status: string; connected: boolean; phone: string | null }
+
+/** الجلسة الافتراضية — من الداتابيز مش من الكود، عشان تتغيّر من غير ديبلوي. */
+async function resolveDefaultSession(): Promise<string> {
+  try {
+    const { data } = await supabaseAdmin
+      .from('whatsapp_config').select('value').eq('key', 'queue_send_session').maybeSingle()
+    const v = (data as { value?: string } | null)?.value?.trim()
+    if (v) return v
+  } catch { /* بنكمّل بالافتراضي */ }
+  return process.env.WA_CAMPAIGN_SESSION || 'madmona-982'
+}
+
+/** الأجهزة الحية من OpenWA — لو مش متاح بنرجّع ليستة فاضية والشاشة بتقول كده. */
+async function listSessions(): Promise<SessionOption[]> {
+  const base = (process.env.OPENWA_URL || '').replace(/\/$/, '')
+  const key = process.env.OPENWA_API_KEY || ''
+  if (!base || !key) return []
+  try {
+    const r = await fetch(`${base}/api/sessions`, {
+      headers: { 'x-api-key': key },
+      signal: AbortSignal.timeout(5000),
+      cache: 'no-store',
+    })
+    if (!r.ok) return []
+    const list = (await r.json()) as Array<{ id?: string; name?: string; phone?: string | number; status?: string }>
+    return (Array.isArray(list) ? list : []).map((x) => {
+      const status = String(x.status ?? '').toLowerCase()
+      return {
+        session: String(x.name ?? x.id ?? ''),
+        status: String(x.status ?? '—'),
+        connected: status.includes('connected') || status.includes('ready') || status.includes('authenticated'),
+        phone: x.phone != null ? String(x.phone).replace(/\D/g, '') : null,
+      }
+    }).filter((x) => x.session)
+  } catch {
+    return []
+  }
 }
 
 /**
@@ -89,6 +144,8 @@ export async function POST(request: Request) {
     recipients?: Array<{ phone: string; name?: string | null; message?: string }>
     dry_run?: boolean
     skip_recent_days?: number
+    /** الرقم اللي هيبعت. فاضي = الافتراضي من whatsapp_config. */
+    session?: string
   }
   try {
     body = (await request.json()) as typeof body
@@ -130,6 +187,7 @@ export async function POST(request: Request) {
     recipients,
     dry_run: body.dry_run,
     skip_recent_days: body.skip_recent_days,
+    session: body.session,
   })
 
   return NextResponse.json(result, { status: result.ok ? 200 : 500 })
