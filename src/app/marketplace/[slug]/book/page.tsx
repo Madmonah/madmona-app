@@ -11,6 +11,7 @@ import {
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import BookingHelper from '@/components/BookingHelper'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { periodPer } from '@/lib/pricing-periods'
 
 // ============================================================================
 // /marketplace/[slug]/book
@@ -68,13 +69,8 @@ interface PricingRule {
   is_active: boolean
 }
 
-const PERIOD_LABELS: Record<string, string> = {
-  hourly: 'common.per_hour',
-  daily: 'common.per_day',
-  weekly: 'common.per_week',
-  monthly: 'common.per_month',
-  per_event: 'common.per_event',
-}
+// 🐞 (١٥ أغسطس ٢٠٢٦) نفس عطل صفحة العرض — ٥ وحدات من أصل ٢٤.
+//    بقت من `@/lib/pricing-periods`.
 
 const PERIOD_MS: Record<string, number> = {
   hourly: 60 * 60 * 1000,
@@ -745,7 +741,7 @@ export default function BookingPage() {
                     className="w-4 h-4 text-[#059669]"
                   />
                   <span className="text-sm font-medium text-gray-900">
-                    {rule.label_ar || (PERIOD_LABELS[rule.period_type] ? t(PERIOD_LABELS[rule.period_type]) : rule.period_type)}
+                    {rule.label_ar || periodPer(rule.period_type, lang)}
                   </span>
                 </div>
                 <span className="font-bold text-[#059669]">
@@ -941,8 +937,8 @@ export default function BookingPage() {
               <div className="flex justify-between">
                 <span className="text-gray-600">
                   {isFlatRule
-                    ? (selectedRule.label_ar || (PERIOD_LABELS[selectedRule.period_type] ? t(PERIOD_LABELS[selectedRule.period_type]) : ''))
-                    : `${Number(selectedRule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} ${t('common.egp')} × ${pricing.periods} ${['hourly', 'daily', 'weekly', 'monthly'].includes(selectedRule.period_type) ? t(PERIOD_LABELS[selectedRule.period_type]) : ''}`}
+                    ? (selectedRule.label_ar || periodPer(selectedRule.period_type, lang))
+                    : `${Number(selectedRule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} ${t('common.egp')} × ${pricing.periods} ${['hourly', 'daily', 'weekly', 'monthly'].includes(selectedRule.period_type) ? periodPer(selectedRule.period_type, lang) : ''}`}
                 </span>
                 <span>{pricing.baseAmount.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}</span>
               </div>

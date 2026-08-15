@@ -9,13 +9,18 @@ import {
   Loader2, AlertCircle, Tag, MapPin, DollarSign, Image as ImageIcon,
   FolderTree, Info, ShieldCheck, MessageCircle, Phone, KeyRound,
 } from 'lucide-react'
+import { periodOptions, type PricingPeriod } from '@/lib/pricing-periods'
 
 // ============================================================================
 // Types
 // ============================================================================
 
 type FieldType = 'text' | 'number' | 'boolean' | 'select' | 'multi_select' | 'date' | 'file'
-type PeriodType = 'hourly' | 'daily' | 'weekly' | 'monthly' | 'per_event'
+// 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «شاشات الإضافة لازم تطابق شاشات العرض»)
+//    الاتحاد ده كان ٥ وحدات بس، فالمورد مايقدرش يختار الوحدة اللي
+//    الموقع بيعرض بيها فعلًا (`per_unit` و`per_service`… ٢٤ في الإينَم).
+//    بقى من `@/lib/pricing-periods` — نفس المصدر بتاع صفحة العرض والحجز.
+type PeriodType = PricingPeriod
 
 interface Category {
   id: string
@@ -115,13 +120,6 @@ interface ListingFormProps {
   redirectAfterSubmit?: string
 }
 
-const PERIOD_LABELS: Record<PeriodType, string> = {
-  hourly: 'بالساعة',
-  daily: 'باليوم',
-  weekly: 'بالأسبوع',
-  monthly: 'بالشهر',
-  per_event: 'مرة واحدة',
-}
 
 // ============================================================================
 // Image compression — auto-resize/compress large images before upload
@@ -1396,8 +1394,12 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                       onChange={e => updatePricingRule(idx, { period_type: e.target.value as PeriodType })}
                       className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
                     >
-                      {Object.entries(PERIOD_LABELS).map(([k, v]) => (
-                        <option key={k} value={k}>{v}</option>
+                      {periodOptions('ar').map(g => (
+                        <optgroup key={g.group} label={g.group}>
+                          {g.options.map(o => (
+                            <option key={o.value} value={o.value}>{o.label}</option>
+                          ))}
+                        </optgroup>
                       ))}
                     </select>
                     <div className="relative">

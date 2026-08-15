@@ -15,6 +15,7 @@ import { useT } from '@/lib/i18n/LanguageProvider'
 import { RestaurantMenu, MartProductsCatalog, ProductBuyBox, CartCheckoutBar, type MenuItem, type MartProduct } from '@/components/OrderActions'
 import CartButton from '@/components/CartButton'
 import ListQuoteOrderBox from '@/components/ListQuoteOrderBox'
+import { periodLabel } from '@/lib/pricing-periods'
 
 // ============================================================================
 // /marketplace/[slug]
@@ -99,13 +100,11 @@ interface Review {
   customer: { full_name: string | null } | null
 }
 
-const PERIOD_LABELS: Record<string, string> = {
-  hourly: 'listing.period_hourly',
-  daily: 'listing.period_daily',
-  weekly: 'listing.period_weekly',
-  monthly: 'listing.period_monthly',
-  per_event: 'listing.period_per_event',
-}
+// 🐞 (١٥ أغسطس ٢٠٢٦) القايمة دي كانت عارفة ٥ وحدات بس من أصل ٢٤ في
+//    إينَم `pricing_period`. أي وحدة تانية كانت بتتعرض للعميل بمفتاحها
+//    الإنجليزي الخام — `per_unit` و`per_service` و`per_package` على
+//    ٢٥+ إعلان شغّال. بقت من `@/lib/pricing-periods`، مصدر واحد لكل
+//    الشاشات (العرض والحجز وشاشة إضافة المورد).
 
 export default function ListingDetailPage() {
   const { t, lang, dir } = useT()
@@ -897,7 +896,7 @@ export default function ListingDetailPage() {
                               className="flex items-center justify-between p-4 bg-gradient-to-l from-[#34D399]/5 to-transparent rounded-xl border border-[#059669]/10"
                             >
                               <span className="text-sm font-bold text-gray-700">
-                                {PERIOD_LABELS[rule.period_type] ? t(PERIOD_LABELS[rule.period_type]) : rule.period_type}
+                                {periodLabel(rule.period_type, lang)}
                               </span>
                               <span className="text-lg font-black text-[#059669] tabular">
                                 {Number(rule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
