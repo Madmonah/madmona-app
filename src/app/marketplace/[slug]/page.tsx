@@ -36,6 +36,13 @@ interface ListingDetail {
   longitude: number | null
   min_booking_hours: number | null
   max_booking_hours: number | null
+  // ⏱️ (١٥ أغسطس ٢٠٢٦) شروط الحجز — متسحبين في الـselect ومش مُعرَّفين هنا.
+  advance_booking_days: number | null
+  cancellation_hours: number | null
+  auto_accept_bookings: boolean | null
+  requires_security_deposit: boolean | null
+  security_deposit_amount: number | string | null
+  booking_deposit_pct: number | string | null
   rating: number | null
   reviews_count: number
   views_count: number
@@ -877,6 +884,81 @@ export default function ListingDetailPage() {
                     مقدّم الحجز مع التأمين: {Number(listing.insurance_deposit_pct).toLocaleString('ar-EG')}٪
                   </p>
                 )}
+              </section>
+            )}
+
+            {/* ⏱️ شروط الحجز — (١٥ أغسطس ٢٠٢٦)
+                `advance_booking_days` و`cancellation_hours` و`auto_accept_bookings`
+                و`requires_security_deposit`/`security_deposit_amount` و`max_booking_hours`
+                كانوا كلهم متسحبين في الـselect بتاع الصفحة و**مش معروضين ولا مستخدمين
+                في أي حتة في المشروع كله** — دوّرت على `cancellation_hours` في
+                `src/` كلها فمالقتهاش غير في سطر الـselect ده.
+                يعني العميل عمره ما عرف سياسة الإلغاء قبل ما يحجز: لا في صفحة
+                الإعلان، ولا في صفحة الحجز، ولا في التأكيد.
+                (٤١٢ إعلان منشور كلهم على الافتراضي: حجز مسبق ٩٠ يوم، إلغاء ٢٤ ساعة.) */}
+            {canBook && (
+              <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up delay-50">
+                <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-[#2FA084]" />
+                  شروط الحجز
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {(listing.min_booking_hours || listing.max_booking_hours) && (
+                    <div className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
+                      <p className="text-xs text-gray-500 mb-1">مدة الحجز</p>
+                      <p className="text-sm font-bold text-gray-900">
+                        {listing.min_booking_hours && `من ${listing.min_booking_hours.toLocaleString('ar-EG')} ساعة`}
+                        {listing.min_booking_hours && listing.max_booking_hours && ' '}
+                        {listing.max_booking_hours && `لحد ${listing.max_booking_hours.toLocaleString('ar-EG')} ساعة`}
+                      </p>
+                    </div>
+                  )}
+
+                  {Number(listing.cancellation_hours) > 0 && (
+                    <div className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
+                      <p className="text-xs text-gray-500 mb-1">الإلغاء</p>
+                      <p className="text-sm font-bold text-gray-900">
+                        مجاني قبل الميعاد بـ{Number(listing.cancellation_hours).toLocaleString('ar-EG')} ساعة
+                      </p>
+                    </div>
+                  )}
+
+                  {Number(listing.advance_booking_days) > 0 && (
+                    <div className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
+                      <p className="text-xs text-gray-500 mb-1">الحجز المسبق</p>
+                      <p className="text-sm font-bold text-gray-900">
+                        لحد {Number(listing.advance_booking_days).toLocaleString('ar-EG')} يوم مقدّمًا
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
+                    <p className="text-xs text-gray-500 mb-1">التأكيد</p>
+                    <p className="text-sm font-bold text-gray-900">
+                      {listing.auto_accept_bookings ? 'فوري — من غير انتظار' : 'بموافقة صاحب الإعلان'}
+                    </p>
+                  </div>
+
+                  {listing.requires_security_deposit && (
+                    <div className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
+                      <p className="text-xs text-gray-500 mb-1">تأمين مسترد</p>
+                      <p className="text-sm font-bold text-gray-900">
+                        {Number(listing.security_deposit_amount) > 0
+                          ? `${Number(listing.security_deposit_amount).toLocaleString('ar-EG')} ${t('common.egp')}`
+                          : 'مطلوب — اسأل صاحب الإعلان على المبلغ'}
+                      </p>
+                    </div>
+                  )}
+
+                  {Number(listing.booking_deposit_pct) > 0 && (
+                    <div className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
+                      <p className="text-xs text-gray-500 mb-1">مقدّم الحجز</p>
+                      <p className="text-sm font-bold text-gray-900">
+                        {Number(listing.booking_deposit_pct).toLocaleString('ar-EG')}٪ من الإجمالي
+                      </p>
+                    </div>
+                  )}
+                </div>
               </section>
             )}
 
