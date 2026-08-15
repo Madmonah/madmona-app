@@ -44,6 +44,10 @@ interface ListingDetail {
   is_directory: boolean | null
   directory_source: string | null
   contact_phone: string | null
+  // 💸 (١٥ أغسطس ٢٠٢٦) العمودين دول كانوا متسحبين في الـselect من زمان
+  //    ومش مُعرَّفين هنا خالص — فماحدش استخدمهم، وTypeScript ماقالش حاجة.
+  price_egp: number | string | null
+  price_on_request: boolean | null
   // Phase 4 product fields (May 29 2026)
   stock_quantity: number | null
   product_condition: string | null
@@ -464,7 +468,24 @@ export default function ListingDetailPage() {
   const claimMessage = encodeURIComponent(
     `عايز أستلم نشاطي "${displayTitle}" على Madmona.\nاللينك: https://madmonacairo.com/marketplace/${listing.slug}`
   )
-  const startingPrice = pricing.length > 0 ? Number(pricing[0].price) : null
+  // 💸 (١٥ أغسطس ٢٠٢٦) fallback على `listings.price_egp`.
+  //    الجريد (`MarketplaceClient.getMinPrice`) اتحطله نفس الـfallback ده يوم
+  //    ٧ أغسطس، وصفحة الإعلان فضلت من غيره — يعني العميل بيشوف السعر على
+  //    الكارت، يدوس، يلاقي «السعر عند الطلب». اتأكدنا من الداتا الحية:
+  //    **٢٢٨ إعلان منشور** (١٦٩ عقار للبيع + ٥٢ خدمة + ٧ إيجار) ليهم
+  //    `price_egp` حقيقي ومفيش ولا صف واحد في `pricing_rules` — فسعرهم كان
+  //    مخفي تمامًا على صفحتهم.
+  const rulePrice = pricing.length > 0 ? Number(pricing[0].price) : null
+  const basePrice = Number(listing.price_egp)
+  const fallbackPrice =
+    rulePrice === null && !listing.price_on_request && Number.isFinite(basePrice) && basePrice > 0
+      ? basePrice
+      : null
+  const startingPrice = rulePrice ?? fallbackPrice
+  // السعر الجاي من `price_egp` ثابت — مالوش مدة تتحسب عليها، فماينفعش
+  // نقول عليه «يبدأ من» ولا «السعر النهائي بيتحسب حسب المدة».
+  const priceIsFlat = rulePrice === null && fallbackPrice !== null
+  // الحجز لسه محتاج صف تسعير حقيقي — الـfallback بيعرض السعر بس.
   const canBook = pricing.length > 0 && !isDemo && !isDirectory && !isRealEstate  // DEMOs, directory & sale-property entries can NOT be booked
   const hasMap = listing.latitude !== null && listing.longitude !== null
 
@@ -1016,13 +1037,15 @@ export default function ListingDetailPage() {
               <div className="bg-white rounded-3xl shadow-card p-6">
                 {startingPrice !== null ? (
                   <>
-                    <p className="text-xs font-bold text-[#2FA084] uppercase tracking-widest mb-1">{t('market.starts_from')}</p>
+                    {!priceIsFlat && (
+                      <p className="text-xs font-bold text-[#2FA084] uppercase tracking-widest mb-1">{t('market.starts_from')}</p>
+                    )}
                     <p className="text-3xl font-black text-[#059669] tabular mb-1">
                       {startingPrice.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
                       <span className="text-base font-medium text-gray-500 ms-1">{t('common.egp')}</span>
                     </p>
                     <p className="text-xs text-gray-500 mb-5">
-                      {t('listing.price_calc_note')}
+                      {priceIsFlat ? ' ' : t('listing.price_calc_note')}
                     </p>
                   </>
                 ) : (
@@ -1156,7 +1179,9 @@ export default function ListingDetailPage() {
           <div className="flex-1">
             {startingPrice !== null ? (
               <>
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('market.starts_from')}</p>
+                {!priceIsFlat && (
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('market.starts_from')}</p>
+                )}
                 <p className="text-xl font-black text-[#059669] tabular leading-tight">
                   {startingPrice.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
                   <span className="text-xs font-medium text-gray-500 ms-1">{t('common.egp')}</span>
