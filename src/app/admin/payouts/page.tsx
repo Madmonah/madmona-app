@@ -13,6 +13,7 @@ import {
   Calendar,
   AlertCircle,
 } from 'lucide-react'
+import { safePw } from '@/lib/adminPw'
 
 // ============================================================
 // Payouts page — groups bookings by supplier and shows the total
@@ -80,7 +81,7 @@ export default function AdminPayoutsPage() {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/unit-bookings?include_payout=1', {
-        headers: { 'X-Admin-Password': pw },
+        headers: { 'X-Admin-Password': safePw(pw) },
       })
       if (res.status === 401) {
         if (!silent) setAuthError('كلمة السر غلط')
@@ -118,7 +119,7 @@ export default function AdminPayoutsPage() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'X-Admin-Password': password,
+          'X-Admin-Password': safePw(password),
         },
         body: JSON.stringify({ id: bookingId, payout_status: 'paid' }),
       })
@@ -149,7 +150,7 @@ export default function AdminPayoutsPage() {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
-              'X-Admin-Password': password,
+              'X-Admin-Password': safePw(password),
             },
             body: JSON.stringify({ id: b.id, payout_status: 'paid' }),
           })

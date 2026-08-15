@@ -115,10 +115,16 @@ async function handle(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const rpc = supabase.rpc as unknown as (
-    fn: string,
-    a?: Record<string, unknown>,
-  ) => Promise<{ data: unknown; error: { message: string } | null }>
+  // 15 Aug 2026: supabase-js does `rpc(fn){ return this.rest.rpc(...) }`, so a
+  // detached `supabase.rpc` loses `this` and throws at call time:
+  //   TypeError: Cannot read properties of undefined (reading 'rest')
+  // Call it as a method instead. (A plain cast keeps the generics shallow;
+  // .bind() here trips TS2589 on the generated types.)
+  const rpc = (fn: string, a?: Record<string, unknown>) =>
+    (supabase as unknown as {
+      rpc: (f: string, x?: Record<string, unknown>) =>
+        Promise<{ data: unknown; error: { message: string } | null }>
+    }).rpc(fn, a)
 
   const senders = senderMap()
   // الاتنين على التوازي — حالة الأجهزة مالهاش لازمة تستنى الداتابيز

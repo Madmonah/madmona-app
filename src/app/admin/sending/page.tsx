@@ -11,6 +11,7 @@
 
 import { useState, useEffect, useCallback, type FormEvent } from 'react'
 import { Lock, RefreshCw, Radio, Phone, Clock, AlertTriangle } from 'lucide-react'
+import { safePw } from '@/lib/adminPw'
 
 interface Channel {
   key: string; name: string; cron: string
@@ -77,7 +78,7 @@ export default function SendingPage() {
   const load = useCallback(async (pw: string, silent = false) => {
     setLoading(true); setError('')
     try {
-      const res = await fetch('/api/admin/sending', { headers: { 'X-Admin-Password': pw } })
+      const res = await fetch('/api/admin/sending', { headers: { 'X-Admin-Password': safePw(pw) } })
       if (res.status === 401) {
         if (!silent) setAuthError('كلمة السر غلط')
         if (pw) sessionStorage.removeItem('madmona_admin_pw')

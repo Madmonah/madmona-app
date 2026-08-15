@@ -19,6 +19,7 @@ import {
   CheckCircle,
   XCircle,
 } from 'lucide-react'
+import { safePw } from '@/lib/adminPw'
 
 interface UnitBooking {
   id: string
@@ -106,7 +107,7 @@ export default function AdminMarketplaceBookingsPage() {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/unit-bookings', {
-        headers: { 'X-Admin-Password': pw },
+        headers: { 'X-Admin-Password': safePw(pw) },
       })
       if (res.status === 401) {
         if (!silent) setAuthError('كلمة السر غلط')
@@ -143,7 +144,7 @@ export default function AdminMarketplaceBookingsPage() {
   ) => {
     const res = await fetch('/api/admin/unit-bookings', {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': safePw(password) },
       body: JSON.stringify({ id, ...update }),
     })
     if (res.ok) {

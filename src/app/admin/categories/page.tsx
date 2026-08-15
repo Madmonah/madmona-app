@@ -6,6 +6,7 @@ import {
   Lock, RefreshCw, LogOut, ArrowRight, Plus, Edit2, Trash2,
   ChevronDown, ChevronLeft, Save, X, Tag, AlertCircle, FolderPlus,
 } from 'lucide-react'
+import { safePw } from '@/lib/adminPw'
 
 // ============================================================================
 // Types
@@ -78,7 +79,7 @@ export default function AdminCategoriesPage() {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/categories', {
-        headers: { 'X-Admin-Password': pw },
+        headers: { 'X-Admin-Password': safePw(pw) },
       })
       if (res.status === 401) {
         if (!silent) setAuthError('كلمة السر غلط')
@@ -113,7 +114,7 @@ export default function AdminCategoriesPage() {
     if (attrsByCategory[categoryId]) return
     try {
       const res = await fetch(`/api/admin/categories/${categoryId}/attributes`, {
-        headers: { 'X-Admin-Password': password },
+        headers: { 'X-Admin-Password': safePw(password) },
       })
       if (!res.ok) return
       const data = await res.json()
@@ -147,7 +148,7 @@ export default function AdminCategoriesPage() {
     const method = editId ? 'PATCH' : 'POST'
     const res = await fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': safePw(password) },
       body: JSON.stringify(form),
     })
     if (!res.ok) {
@@ -175,7 +176,7 @@ export default function AdminCategoriesPage() {
     setErrorMsg('')
     const res = await fetch(`/api/admin/categories/${id}`, {
       method: 'DELETE',
-      headers: { 'X-Admin-Password': password },
+      headers: { 'X-Admin-Password': safePw(password) },
     })
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
@@ -194,7 +195,7 @@ export default function AdminCategoriesPage() {
     const method = editId ? 'PATCH' : 'POST'
     const res = await fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': safePw(password) },
       body: JSON.stringify(form),
     })
     if (!res.ok) {
@@ -217,7 +218,7 @@ export default function AdminCategoriesPage() {
     if (!confirm('مسح الخاصية دي؟')) return
     const res = await fetch(`/api/admin/attributes/${id}`, {
       method: 'DELETE',
-      headers: { 'X-Admin-Password': password },
+      headers: { 'X-Admin-Password': safePw(password) },
     })
     if (!res.ok) return
     showSuccess('تم حذف الخاصية')

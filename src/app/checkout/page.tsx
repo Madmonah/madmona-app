@@ -103,7 +103,8 @@ export default function CheckoutPage() {
     let cancelled = false
     ;(async () => {
       try {
-        const rpc = supabaseBrowser.rpc as unknown as
+        // 15 Aug 2026: .bind() required - detached rpc throws on this.rest
+        const rpc = supabaseBrowser.rpc.bind(supabaseBrowser) as unknown as
           (fn: string, a: Record<string, unknown>) => Promise<{ data: unknown }>
         const { data } = await rpc('get_delivery_fee', {
           p_supplier_id: cart.supplier_id, p_subtotal: subtotal,
@@ -256,7 +257,7 @@ export default function CheckoutPage() {
       //    الـreference_code. فشلها مايوقفش الأوردر بأي حال.
       if (geo) {
         try {
-          await (supabaseBrowser.rpc as unknown as (fn: string, a: Record<string, unknown>) => Promise<unknown>)(
+          await (supabaseBrowser.rpc.bind(supabaseBrowser) as unknown as (fn: string, a: Record<string, unknown>) => Promise<unknown>)(
             'set_order_location',
             { p_order_id: result.order_id, p_reference_code: result.reference_code, p_lat: geo.lat, p_lng: geo.lng },
           )

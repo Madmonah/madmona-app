@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent, use } from 'react'
 import Link from 'next/link'
 import { Lock, ArrowRight, Edit, Loader2 } from 'lucide-react'
 import UnitForm, { type UnitFormData } from '@/components/UnitForm'
+import { safePw } from '@/lib/adminPw'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -32,7 +33,7 @@ export default function AdminUnitEditPage({ params }: PageProps) {
     try {
       // Verify password by fetching the unit
       const res = await fetch(`/api/admin/units/${id}`, {
-        headers: { 'X-Admin-Password': pw },
+        headers: { 'X-Admin-Password': safePw(pw) },
       })
       if (res.status === 401) {
         sessionStorage.removeItem('madmona_admin_pw')

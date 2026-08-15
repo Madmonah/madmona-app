@@ -12,6 +12,7 @@
 
 import { useState, useEffect, useCallback, type FormEvent } from 'react'
 import { Lock, Phone, MapPin, RefreshCw, LogOut, Search, Users } from 'lucide-react'
+import { safePw } from '@/lib/adminPw'
 
 interface Lead {
   id: string
@@ -91,7 +92,7 @@ export default function LeadsPage() {
       params.set('limit', '500')
 
       const res = await fetch(`/api/admin/leads?${params.toString()}`, {
-        headers: { 'X-Admin-Password': pw },
+        headers: { 'X-Admin-Password': safePw(pw) },
       })
       if (res.status === 401) {
         if (!silent) setAuthError('كلمة السر غلط')
@@ -136,7 +137,7 @@ export default function LeadsPage() {
     try {
       const res = await fetch('/api/admin/leads', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': safePw(password) },
         body: JSON.stringify({ id: lead.id, kind: lead.kind, status }),
       })
       if (!res.ok) {

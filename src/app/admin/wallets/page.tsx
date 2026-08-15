@@ -11,6 +11,7 @@ import {
   CheckCircle, XCircle, BadgeDollarSign, Loader2,
 } from 'lucide-react'
 import { formatMoney, WITHDRAW_METHODS } from '@/lib/wallet'
+import { safePw } from '@/lib/adminPw'
 
 interface AdminWallet {
   id: string
@@ -53,7 +54,7 @@ export default function AdminWalletsPage() {
   const fetchData = useCallback(async (pw: string, silent = false) => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/admin/wallets?q=${encodeURIComponent(q)}`, { headers: { 'X-Admin-Password': pw } })
+      const res = await fetch(`/api/admin/wallets?q=${encodeURIComponent(q)}`, { headers: { 'X-Admin-Password': safePw(pw) } })
       if (res.status === 401 || res.status === 403) {
         if (!silent) setAuthError('كلمة السر غلط')
         sessionStorage.removeItem(PW_KEY); setAuthed(false); return
@@ -80,7 +81,7 @@ export default function AdminWalletsPage() {
     try {
       const res = await fetch('/api/admin/wallets', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': safePw(password) },
         body: JSON.stringify(body),
       })
       const json = await res.json().catch(() => ({}))

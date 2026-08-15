@@ -17,6 +17,7 @@
 
 import { useState, useEffect, useCallback, type FormEvent } from 'react'
 import { Lock, Send, Eye, AlertTriangle, Check, Clock, Users } from 'lucide-react'
+import { safePw } from '@/lib/adminPw'
 
 interface Skipped { phone: string; reason: string }
 interface Preview {
@@ -82,7 +83,7 @@ export default function SendPage() {
   const [error, setError] = useState('')
 
   const loadStatus = useCallback(async (pw: string, silent = false) => {
-    const res = await fetch('/api/admin/send', { headers: { 'X-Admin-Password': pw } })
+    const res = await fetch('/api/admin/send', { headers: { 'X-Admin-Password': safePw(pw) } })
     if (res.status === 401) { setAuthed(false); if (!silent) setAuthError('كلمة السر غلط'); return false }
     // 🐞 (١٥ أغسطس ٢٠٢٦) بنقرا نص الرد الأول — لو الراوت رجّع صفحة خطأ HTML
     //    الـjson() كان بيرمي والرسالة بتطلع «فشل الاتصال» وكأن النت فاصل.
@@ -115,7 +116,7 @@ export default function SendPage() {
     try {
       const res = await fetch('/api/admin/send', {
         method: 'POST',
-        headers: { 'X-Admin-Password': password, 'Content-Type': 'application/json' },
+        headers: { 'X-Admin-Password': safePw(password), 'Content-Type': 'application/json' },
         body: JSON.stringify({
           campaign_name: campaign || undefined,
           message,

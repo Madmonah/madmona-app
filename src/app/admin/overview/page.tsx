@@ -1021,7 +1021,8 @@ function PartnerLinks() {
     (async () => {
       // الـ RPC دي أحدث من ملف الأنواع المولّد (src/types/supabase.ts، ٩١٣KB)،
       // فبنعدّي عليها بـ cast موضعي بدل ما نعيد توليد الملف كله.
-      const rpc = supabaseBrowser.rpc as unknown as
+      // 15 Aug 2026: .bind() required - detached rpc throws on this.rest
+      const rpc = supabaseBrowser.rpc.bind(supabaseBrowser) as unknown as
         (fn: string) => Promise<{ data: unknown; error: { message: string } | null }>
       const { data, error } = await rpc('get_b2b_partner_links')
       if (error) { setErr(error.message); return }

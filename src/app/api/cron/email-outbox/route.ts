@@ -59,10 +59,14 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const rpc = supabaseAdmin.rpc as unknown as (
-      fn: string,
-      a: Record<string, unknown>,
-    ) => Promise<{ data: unknown; error: { message: string } | null }>
+    // 15 Aug 2026: call rpc as a method so `this` stays the client.
+    // A detached `supabaseAdmin.rpc` throws at call time:
+    //   TypeError: Cannot read properties of undefined (reading 'rest')
+    const rpc = (fn: string, a: Record<string, unknown>) =>
+      (supabaseAdmin as unknown as {
+        rpc: (f: string, x: Record<string, unknown>) =>
+          Promise<{ data: unknown; error: { message: string } | null }>
+      }).rpc(fn, a)
 
     const { data, error } = await rpc('process_email_outbox', { p_limit: 20 })
     if (error) {

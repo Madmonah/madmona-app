@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { Lock, ArrowRight, Plus } from 'lucide-react'
 import UnitForm from '@/components/UnitForm'
+import { safePw } from '@/lib/adminPw'
 
 export default function AdminUnitNewPage() {
   const [password, setPassword] = useState('')
@@ -22,7 +23,7 @@ export default function AdminUnitNewPage() {
     setVerifying(true)
     try {
       const res = await fetch('/api/admin/meta', {
-        headers: { 'X-Admin-Password': pw },
+        headers: { 'X-Admin-Password': safePw(pw) },
       })
       if (res.status === 401) {
         sessionStorage.removeItem('madmona_admin_pw')

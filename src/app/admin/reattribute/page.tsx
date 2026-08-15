@@ -14,6 +14,7 @@
 
 import { useState, useCallback, type FormEvent } from 'react'
 import { Lock, RefreshCw, ArrowLeftRight, AlertTriangle, Check } from 'lucide-react'
+import { safePw } from '@/lib/adminPw'
 
 interface Group {
   raw_phone: string
@@ -63,7 +64,7 @@ export default function ReattributePage() {
   const load = useCallback(async (pw: string) => {
     setLoading(true); setError('')
     try {
-      const res = await fetch('/api/admin/reattribute', { headers: { 'X-Admin-Password': pw } })
+      const res = await fetch('/api/admin/reattribute', { headers: { 'X-Admin-Password': safePw(pw) } })
       if (res.status === 401) { setAuthed(false); setAuthError('كلمة السر غلط'); return }
       const json = await res.json()
       if (!res.ok) { setError(json.detail || json.error || 'فشل التحميل'); return }
@@ -84,7 +85,7 @@ export default function ReattributePage() {
     try {
       const res = await fetch('/api/admin/reattribute', {
         method: 'POST',
-        headers: { 'X-Admin-Password': password, 'Content-Type': 'application/json' },
+        headers: { 'X-Admin-Password': safePw(password), 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: g.phone, business_name: names[g.raw_phone] || undefined }),
       })
       const json = (await res.json()) as Result
