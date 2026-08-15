@@ -73,7 +73,23 @@ export async function isMaridNumber(phone: string | null | undefined): Promise<b
 function defaults(sessionId: string): WaNumberConfig {
   return {
     session_id: sessionId, label: null, persona: null,
-    enabled: true, prefer_phone_jid: false, transport: 'baileys',
+    enabled: true, prefer_phone_jid: false,
+    // 🚨 (١٥ أغسطس ٢٠٢٦) كان `'baileys'` — وده **لغم**.
+    //
+    //    أي جلسة مالهاش صف في `wa_number_configs` كانت بتتوجّه لجسر
+    //    Baileys **اللي اتشال من رايلواي**، فكل رسايلها بترجع HTTP 404.
+    //    وde التناقض: `whatsapp.ts` مكتوب فيه بالنص «طالما OpenWA متظبط،
+    //    كل الأرقام تعدّي منه… الافتراض الآمن هو الخدمة الشغالة، مش الصف
+    //    الناقص» — والحارس هناك `transport || 'openwa'` عمره ما اشتغل
+    //    لأن الافتراضي هنا كان دايمًا نص مش فاضي.
+    //
+    //    الدليل: صف `madmona-982` في الجدول ليبل مكتوب فيه حرفيًا
+    //    «(فيكس 404 حملات)» — يعني حد اتصدم بنفس العطل قبل كده وحلّه
+    //    بإضافة صف بدل ما يصلّح الافتراضي. `madmona-337` مالهاش صف،
+    //    فوقعت في نفس الحفرة النهاردة: ٥ رسايل كلها HTTP 404.
+    //
+    //    دلوقتي أي رقم جديد يتربط من لوحة OpenWA بيشتغل على طول.
+    transport: 'openwa',
   }
 }
 
