@@ -33,6 +33,8 @@ const NAV: NavGroup[] = [
   { title: 'الماركت بليس', emoji: '🛍️', items: [
     { href: '/admin/listings', label: 'الإعلانات' },
     { href: '/admin/listing-drafts', label: 'المسودّات' },
+    // نفس الحكاية — اتبنت يوم ١٤ أغسطس وماكانتش موصولة بحاجة.
+    { href: '/admin/reattribute', label: 'نقل ملكية الإعلانات' },
     { href: '/admin/categories', label: 'الفئات' },
     { href: '/admin/marketplace-bookings', label: 'الحجوزات' },
     { href: '/admin/marketplace-orders', label: 'الطلبات' },
@@ -55,6 +57,12 @@ const NAV: NavGroup[] = [
     { href: '/admin/alerts', label: 'التنبيهات' },
   ] },
   { title: 'الرسائل', emoji: '💬', items: [
+    // 🔗 (١٥ أغسطس ٢٠٢٦ — محمد: «فين الصفحة اللي عملناها؟ وليه حاسس الأدمن
+    //    مش بيقرا من الشغل اللي عملناه؟») الشاشتين دول اتبنوا يوم ١٤ و١٥
+    //    أغسطس وماتحطّوش في أي تنقّل — لا هنا ولا في AdminNav ولا QuickHub.
+    //    يعني مكانش فيه طريقة توصلهم غير إنك تكتب اللينك بإيدك.
+    { href: '/admin/send', label: 'ابعت واتساب' },
+    { href: '/admin/sending', label: 'مين بيبعت إيه' },
     { href: '/admin/messages', label: 'المحادثات' },
     { href: '/admin/wa-review', label: 'مراجعة واتساب' },
     { href: '/admin/wa-numbers', label: 'أرقام واتساب' },

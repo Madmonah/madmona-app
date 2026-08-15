@@ -31,6 +31,7 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
   { title: 'الماركت بليس', icon: ShoppingBag, items: [
     { href: '/admin/listings', label: 'الإعلانات' },
     { href: '/admin/listing-drafts', label: 'المسودّات' },
+    { href: '/admin/reattribute', label: 'نقل ملكية الإعلانات' },
     { href: '/admin/categories', label: 'الفئات' },
     { href: '/admin/marketplace-bookings', label: 'الحجوزات' },
     { href: '/admin/marketplace-orders', label: 'الطلبات' },
@@ -53,6 +54,10 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/marid-monitor', label: 'مراقبة المارد' },
   ] },
   { title: 'واتساب والرسائل', icon: MessageSquare, items: [
+    // 🔗 (١٥ أغسطس ٢٠٢٦) الشاشتين دول كانوا مبنيين وشغّالين ومش موصولين
+    //    بأي تنقّل — الطريقة الوحيدة توصلهم كانت إنك تكتب اللينك بإيدك.
+    { href: '/admin/send', label: 'ابعت واتساب' },
+    { href: '/admin/sending', label: 'مين بيبعت إيه' },
     { href: '/admin/wa-numbers', label: 'أرقام واتساب' },
     { href: '/admin/wa-review', label: 'مراجعة واتساب' },
     { href: '/admin/daily-messages', label: 'الرسائل اليومية' },
