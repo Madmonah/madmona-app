@@ -7,7 +7,7 @@ import { jsonObj } from '@/lib/rpc'
 import {
   ChevronLeft, ChevronRight, Check, X, Plus, Upload, Trash2, Star,
   Loader2, AlertCircle, Tag, MapPin, DollarSign, Image as ImageIcon,
-  FolderTree, Info, ShieldCheck, MessageCircle, Phone, KeyRound,
+  FolderTree, Info, ShieldCheck, MessageCircle, Phone, KeyRound, Building2,
 } from 'lucide-react'
 import { periodOptions, type PricingPeriod } from '@/lib/pricing-periods'
 
@@ -92,6 +92,17 @@ interface Photo {
   compressedSize?: number
 }
 
+/**
+ * فرع — بيتعرض في قسم «فروعنا» في صفحة الإعلان.
+ * نفس الحقول اللي `marketplace/[slug]/page.tsx` بيقراها من `listings.branches`.
+ */
+export interface Branch {
+  name: string
+  city: string
+  address: string
+  phone: string
+}
+
 export interface ListingFormData {
   category_id: string | null
   title: string
@@ -103,6 +114,20 @@ export interface ListingFormData {
   max_booking_hours: number | null
   status: 'draft' | 'published'
   requires_id_verification: boolean
+  // 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «شاشات الإضافة لازم تطابق شاشات العرض»)
+  //    صفحة الإعلان فيها قسمين كاملين مالهمش أي خانة في الفورم ده، فبيفضلوا
+  //    فاضيين للأبد مهما المورد عمل إيه:
+  //      • «تفاصيل المنتج» → product_condition / brand / model_name /
+  //        stock_quantity / shipping_available / shipping_cost
+  //      • «فروعنا»        → branches
+  //    (الخانات دي موجودة في `/add-listing` العام بس — مش في شاشة المورد.)
+  product_condition: string | null
+  brand: string
+  model_name: string
+  stock_quantity: number | null
+  shipping_available: boolean | null
+  shipping_cost: number | null
+  branches: Branch[]
   attributeValues: Record<string, any>
   photos: Photo[]
   pricing: PricingRule[]
@@ -120,6 +145,38 @@ interface ListingFormProps {
   redirectAfterSubmit?: string
 }
 
+
+
+// ============================================================================
+// 🔗 الحقول اللي صفحة العرض بتوريها — لازم تتكتب زي ما هي
+// ============================================================================
+// `marketplace/[slug]/page.tsx` فيه قسمين بيعتمدوا على أعمدة `listings` دي
+// مباشرة. لو الفورم مابعتهاش، القسمين بيفضلوا مخفيين مهما المورد كتب.
+// بنبعت `null`/`[]` صراحةً وقت التعديل عشان لو المورد مسح قيمة، تتمسح فعلًا
+// من العرض — مش تفضل قديمة.
+function applyDisplayParityFields(payload: Record<string, unknown>, form: ListingFormData) {
+  payload.product_condition = form.product_condition || null
+  payload.brand = form.brand.trim() || null
+  payload.model_name = form.model_name.trim() || null
+  payload.stock_quantity = form.stock_quantity
+  payload.shipping_available = form.shipping_available
+  payload.shipping_cost = form.shipping_available ? form.shipping_cost : null
+  // الفروع الفاضية (بلا اسم ولا عنوان) مابتتحفظش — العرض بيوري كارت فاضي غير كده
+  const branches = form.branches.filter(b => b.name.trim() || b.address.trim() || b.city.trim() || b.phone.trim())
+  payload.branches = branches.length ? branches : []
+}
+
+// نفس شرط صفحة العرض بالظبط: `const isProduct = track === 'products' || track === 'sales'`
+// لو الشرط اتغيّر هناك، لازم يتغيّر هنا — وإلا الفورم يسأل عن حاجة ماتتعرضش
+// أو العكس.
+const PRODUCT_TRACKS = ['products', 'sales']
+
+const CONDITION_OPTIONS: Array<{ value: string; label: string }> = [
+  { value: 'new', label: 'جديد بالكرتونة' },
+  { value: 'used_like_new', label: 'مستعمل (مثل الجديد)' },
+  { value: 'used_good', label: 'مستعمل (حالة جيدة)' },
+  { value: 'refurbished', label: 'Refurbished' },
+]
 
 // ============================================================================
 // Image compression — auto-resize/compress large images before upload
@@ -227,6 +284,13 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     district: initialData?.district || '',
     address: initialData?.address || '',
     min_booking_hours: initialData?.min_booking_hours ?? null,
+    product_condition: initialData?.product_condition ?? null,
+    brand: initialData?.brand ?? '',
+    model_name: initialData?.model_name ?? '',
+    stock_quantity: initialData?.stock_quantity ?? null,
+    shipping_available: initialData?.shipping_available ?? null,
+    shipping_cost: initialData?.shipping_cost ?? null,
+    branches: initialData?.branches ?? [],
     max_booking_hours: initialData?.max_booking_hours ?? null,
     status: initialData?.status || 'draft',
     requires_id_verification: initialData?.requires_id_verification || false,
@@ -340,6 +404,18 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
   }, [form.category_id])
 
   const TOTAL_STEPS = 5
+
+  // نفس مشي الشجرة اللي في الإفكت فوق: التراك بيتحدد من التصنيف الجذر.
+  const isProductTrack = (() => {
+    let cur = categories.find(c => c.id === form.category_id)
+    let guard = 0
+    while (cur?.parent_id && guard++ < 5) {
+      const parent = categories.find(c => c.id === cur!.parent_id)
+      if (!parent) break
+      cur = parent
+    }
+    return !!cur?.track && PRODUCT_TRACKS.includes(cur.track)
+  })()
 
   const canGoNext = () => {
     if (step === 1) return !!form.category_id
@@ -537,6 +613,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     if (slug) listingPayload.slug = slug
     if (form.min_booking_hours !== null) listingPayload.min_booking_hours = form.min_booking_hours
     if (form.max_booking_hours !== null) listingPayload.max_booking_hours = form.max_booking_hours
+    applyDisplayParityFields(listingPayload, form)
 
     let listingId = existingId
 
@@ -773,6 +850,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       if (slug) listingPayload.slug = slug
       if (form.min_booking_hours !== null) listingPayload.min_booking_hours = form.min_booking_hours
       if (form.max_booking_hours !== null) listingPayload.max_booking_hours = form.max_booking_hours
+      applyDisplayParityFields(listingPayload, form)
       if (status === 'published') listingPayload.published_at = new Date().toISOString()
 
       let listingId = existingId
@@ -1221,6 +1299,180 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                     placeholder="(اختياري)"
                   />
                 </div>
+              </div>
+
+              {/* ── تفاصيل المنتج ────────────────────────────────────────
+                  نفس عنوان وترتيب القسم في صفحة العرض («تفاصيل المنتج»:
+                  الحالة ← الماركة ← الموديل ← المتاح ← التوصيل)، وبنفس
+                  الشرط (المسار products أو sales). */}
+              {isProductTrack && (
+                <div className="pt-3 border-t border-gray-100 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-[#2FA084]" />
+                    <span className="text-sm font-bold text-gray-900">تفاصيل المنتج</span>
+                    <span className="text-[11px] text-gray-400">— بتظهر في صفحة الإعلان</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">حالة المنتج</label>
+                    <div className="flex flex-wrap gap-2">
+                      {CONDITION_OPTIONS.map(o => (
+                        <button
+                          key={o.value}
+                          type="button"
+                          onClick={() => setForm(f => ({ ...f, product_condition: f.product_condition === o.value ? null : o.value }))}
+                          className={`px-3 py-1.5 rounded-full border text-xs font-bold transition-all ${
+                            form.product_condition === o.value
+                              ? 'border-[#2FA084] bg-[#2FA084]/10 text-[#0f6b57]'
+                              : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                          }`}
+                        >
+                          {o.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">الماركة</label>
+                      <input
+                        type="text"
+                        value={form.brand}
+                        onChange={e => setForm(f => ({ ...f, brand: e.target.value }))}
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669]"
+                        placeholder="(اختياري)"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">الموديل</label>
+                      <input
+                        type="text"
+                        value={form.model_name}
+                        onChange={e => setForm(f => ({ ...f, model_name: e.target.value }))}
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669]"
+                        placeholder="(اختياري)"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">المتاح (عدد القطع)</label>
+                      <input
+                        type="number"
+                        value={form.stock_quantity ?? ''}
+                        onChange={e => setForm(f => ({ ...f, stock_quantity: e.target.value ? parseInt(e.target.value) : null }))}
+                        min={0}
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669]"
+                        placeholder="(اختياري)"
+                      />
+                      <p className="text-[11px] text-gray-400 mt-1">صفر = «نفد المخزون» في صفحة الإعلان</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">التوصيل</label>
+                      <select
+                        value={form.shipping_available === null ? '' : form.shipping_available ? '1' : '0'}
+                        onChange={e => setForm(f => ({
+                          ...f,
+                          shipping_available: e.target.value === '' ? null : e.target.value === '1',
+                          shipping_cost: e.target.value === '1' ? f.shipping_cost : null,
+                        }))}
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669]"
+                      >
+                        <option value="">(مش محدد)</option>
+                        <option value="1">متاح</option>
+                        <option value="0">استلام من المحل فقط</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {form.shipping_available === true && (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">تكلفة التوصيل (جنيه)</label>
+                      <input
+                        type="number"
+                        value={form.shipping_cost ?? ''}
+                        onChange={e => setForm(f => ({ ...f, shipping_cost: e.target.value ? Number(e.target.value) : null }))}
+                        min={0}
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 focus:border-[#059669]"
+                        placeholder="سيبها فاضية لو التوصيل مجاني"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── فروعنا ──────────────────────────────────────────────
+                  نفس عنوان القسم في صفحة العرض ونفس حقوله (الاسم، العنوان،
+                  المدينة، التليفون). كان موجود في /add-listing العام بس. */}
+              <div className="pt-3 border-t border-gray-100 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-[#2FA084]" />
+                    <span className="text-sm font-bold text-gray-900">فروعنا</span>
+                    <span className="text-[11px] text-gray-400">— بتظهر في صفحة الإعلان</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, branches: [...f.branches, { name: '', city: '', address: '', phone: '' }] }))}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-[#059669] hover:bg-[#059669]/5 rounded-lg"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> ضيف فرع
+                  </button>
+                </div>
+
+                {form.branches.length === 0 ? (
+                  <p className="text-xs text-gray-400">مفيش فروع — سيبها فاضية لو مكان واحد بس.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {form.branches.map((b, i) => (
+                      <div key={i} className="bg-gray-50 rounded-xl p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-gray-500">فرع {i + 1}</span>
+                          <button
+                            type="button"
+                            onClick={() => setForm(f => ({ ...f, branches: f.branches.filter((_, j) => j !== i) }))}
+                            className="text-gray-400 hover:text-red-500"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={b.name}
+                            onChange={e => setForm(f => ({ ...f, branches: f.branches.map((x, j) => j === i ? { ...x, name: e.target.value } : x) }))}
+                            className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+                            placeholder="اسم الفرع"
+                          />
+                          <input
+                            type="text"
+                            value={b.city}
+                            onChange={e => setForm(f => ({ ...f, branches: f.branches.map((x, j) => j === i ? { ...x, city: e.target.value } : x) }))}
+                            className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+                            placeholder="المدينة"
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          value={b.address}
+                          onChange={e => setForm(f => ({ ...f, branches: f.branches.map((x, j) => j === i ? { ...x, address: e.target.value } : x) }))}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+                          placeholder="العنوان"
+                        />
+                        <input
+                          type="tel"
+                          value={b.phone}
+                          onChange={e => setForm(f => ({ ...f, branches: f.branches.map((x, j) => j === i ? { ...x, phone: e.target.value } : x) }))}
+                          dir="ltr"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+                          placeholder="تليفون الفرع"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="pt-3 border-t border-gray-100">
