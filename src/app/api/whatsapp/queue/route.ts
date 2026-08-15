@@ -11,7 +11,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
-import { queueCampaign, SAFETY, type Recipient } from '@/lib/wa-queue'
+import { queueCampaign, type Recipient } from '@/lib/wa-queue'
+import { getSafety } from '@/lib/wa-safety'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -64,5 +65,5 @@ export async function GET() {
     (acc, r) => ({ ...acc, [r.status]: (acc[r.status] ?? 0) + 1 }),
     {}
   )
-  return NextResponse.json({ ok: true, counts, safety: SAFETY })
+  return NextResponse.json({ ok: true, counts, safety: await getSafety() })
 }

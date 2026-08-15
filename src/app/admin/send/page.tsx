@@ -18,6 +18,7 @@
 import { useState, useEffect, useCallback, type FormEvent } from 'react'
 import { Lock, Send, Eye, AlertTriangle, Check, Clock, Users } from 'lucide-react'
 import { safePw } from '@/lib/adminPw'
+import WaSafetyCard from '@/components/admin/WaSafetyCard'
 
 interface Skipped { phone: string; reason: string }
 interface Preview {
@@ -208,12 +209,22 @@ export default function SendPage() {
           )}
         </div>
 
+        {/* 🛡️ (١٥ أغسطس ٢٠٢٦ — محمد: «حد اليوم / الفاصل / ساعات الإرسال يبقوا ديناميك»)
+            كان جدول قراءة بس، والأرقام جاية من متغيرات بيئة و**ثوابت في الكود**
+            (١٠ و٢٠). وكمان السطر القديم كان بيحسب `endHour - 12` بإيده، فلو
+            الساعة بقت ١١ كان هيكتب «١١ص – ١م» غلط. دلوقتي كارت واحد بيتعدّل
+            ويتحفظ، ونفسه بالظبط موجود في «مين بيبعت إيه». */}
+        <div className="mb-4">
+          <WaSafetyCard
+            password={password}
+            onSaved={() => { void loadStatus(password, true) }}
+          />
+        </div>
+
         {s && (
-          <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4 text-sm grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div><span className="text-gray-500 block text-xs">حد اليوم</span>{s.maxPerDay} رسالة</div>
-            <div><span className="text-gray-500 block text-xs">الفاصل</span>{s.minGapSec}–{s.maxGapSec} ثانية</div>
-            <div><span className="text-gray-500 block text-xs">ساعات الإرسال</span>{s.startHour}ص – {s.endHour - 12}م</div>
-            <div><span className="text-gray-500 block text-xs">في الطابور دلوقتي</span>{status?.counts?.queued ?? 0}</div>
+          <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4 text-sm">
+            <span className="text-gray-500 block text-xs">في الطابور دلوقتي</span>
+            <span className="font-black text-gray-900">{status?.counts?.queued ?? 0}</span>
           </div>
         )}
 

@@ -17,15 +17,14 @@
 
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { normalizePhone } from '@/lib/whatsapp'
+import { getSafety, SAFETY_DEFAULTS, type WaSafety } from '@/lib/wa-safety'
 
 // ── حدود الأمان (الرقم اتعاد تسجيله ١٩ يوليو ٢٠٢٦) ───────────────────────
-export const SAFETY = {
-  maxPerDay: Number(process.env.WA_MAX_PER_DAY || 25),
-  minGapSec: Number(process.env.WA_MIN_GAP_SEC || 60),
-  maxGapSec: Number(process.env.WA_MAX_GAP_SEC || 180),
-  startHour: 10, // بتوقيت القاهرة
-  endHour: 20,
-}
+// 🔀 (١٥ أغسطس ٢٠٢٦ — محمد: «حد اليوم / الفاصل / ساعات الإرسال يبقوا ديناميك»)
+//    الحدود بقت تتقري من `whatsapp_config` عن طريق `getSafety()`.
+//    الثابت ده فضل **للتوافق بس** — القيم القديمة نفسها — عشان أي كود قديم
+//    لسه بيستورده ماينكسرش. أي كود جديد لازم يستنى `await getSafety()`.
+export const SAFETY = SAFETY_DEFAULTS
 
 export interface Recipient {
   phone: string
@@ -59,10 +58,17 @@ export interface QueueResult {
   safety?: typeof SAFETY
 }
 
-/** أول موعد صالح داخل ساعات العمل بتوقيت القاهرة */
-export function nextBusinessSlot(from: Date): Date {
+/**
+ * أول موعد صالح داخل ساعات الإرسال بتوقيت القاهرة.
+ * `safety` اختياري عشان النداءات القديمة ماتنكسرش — لو ماتبعتش بياخد
+ * الساعات القديمة (١٠ → ٢٠). الكود الجديد بيبعت نتيجة `getSafety()`.
+ */
+export function nextBusinessSlot(from: Date, safety: WaSafety = SAFETY_DEFAULTS): Date {
   const d = new Date(from)
-  for (let guard = 0; guard < 14; guard++) {
+  // الحلقة بتتقدّم نص ساعة في المرة. أوسع فجوة ممكنة هي يوم كامل ناقص
+  // نافذة الإرسال، يعني ٤٨ خطوة تغطي أي إعداد — الـ١٤ القديمة كانت
+  // بتكفي نافذة ١٠→٢٠ بس، ولو محمد ضيّق النافذة كانت هترجع وقت بره الساعات.
+  for (let guard = 0; guard < 50; guard++) {
     const cairoHour = Number(
       new Intl.DateTimeFormat('en-GB', {
         timeZone: 'Africa/Cairo',
@@ -70,7 +76,7 @@ export function nextBusinessSlot(from: Date): Date {
         hour12: false,
       }).format(d)
     )
-    if (cairoHour >= SAFETY.startHour && cairoHour < SAFETY.endHour) return d
+    if (cairoHour >= safety.startHour && cairoHour < safety.endHour) return d
     d.setMinutes(d.getMinutes() + 30)
   }
   return d
@@ -86,6 +92,10 @@ export async function queueCampaign(input: QueueInput): Promise<QueueResult> {
   if (!Array.isArray(recipients) || recipients.length === 0) {
     return { ok: false, error: 'recipients مطلوبة', skipped_count: 0 }
   }
+
+  // 🔀 (١٥ أغسطس ٢٠٢٦) الحدود بقت تتقري من الداتابيز مرة واحدة في أول
+  //    الحملة — مش من متغيرات البيئة. نداء واحد للحملة كلها.
+  const safety = await getSafety()
 
   const skipDays = input.skip_recent_days ?? 3
   const since = new Date(Date.now() - skipDays * 86400_000).toISOString()
@@ -116,7 +126,7 @@ export async function queueCampaign(input: QueueInput): Promise<QueueResult> {
   const rows: Array<Record<string, unknown>> = []
   const skipped: Array<{ phone: string; reason: string }> = []
   const seen = new Set<string>()
-  let cursor = nextBusinessSlot(new Date(Date.now() + 60_000))
+  let cursor = nextBusinessSlot(new Date(Date.now() + 60_000), safety)
   let dayCount = 0
   let dayKey = cursor.toDateString()
 
@@ -150,11 +160,11 @@ export async function queueCampaign(input: QueueInput): Promise<QueueResult> {
       dayKey = cursor.toDateString()
       dayCount = 0
     }
-    if (dayCount >= SAFETY.maxPerDay) {
+    if (dayCount >= safety.maxPerDay) {
       cursor = new Date(cursor)
       cursor.setDate(cursor.getDate() + 1)
-      cursor.setHours(SAFETY.startHour, 0, 0, 0)
-      cursor = nextBusinessSlot(cursor)
+      cursor.setHours(safety.startHour, 0, 0, 0)
+      cursor = nextBusinessSlot(cursor, safety)
       dayKey = cursor.toDateString()
       dayCount = 0
     }
@@ -174,8 +184,8 @@ export async function queueCampaign(input: QueueInput): Promise<QueueResult> {
 
     dayCount++
     const gap =
-      SAFETY.minGapSec + Math.floor(Math.random() * (SAFETY.maxGapSec - SAFETY.minGapSec))
-    cursor = nextBusinessSlot(new Date(cursor.getTime() + gap * 1000))
+      safety.minGapSec + Math.floor(Math.random() * (safety.maxGapSec - safety.minGapSec + 1))
+    cursor = nextBusinessSlot(new Date(cursor.getTime() + gap * 1000), safety)
   }
 
   // ── ٤) عرض بدون تنفيذ ────────────────────────────────────────────────
@@ -188,7 +198,7 @@ export async function queueCampaign(input: QueueInput): Promise<QueueResult> {
       skipped: skipped.slice(0, 50),
       first_send: (rows[0]?.scheduled_for as string) ?? null,
       last_send: (rows[rows.length - 1]?.scheduled_for as string) ?? null,
-      safety: SAFETY,
+      safety,
     }
   }
 

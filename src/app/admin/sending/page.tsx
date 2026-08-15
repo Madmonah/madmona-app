@@ -12,6 +12,7 @@
 import { useState, useEffect, useCallback, type FormEvent } from 'react'
 import { Lock, RefreshCw, Radio, Phone, Clock, AlertTriangle } from 'lucide-react'
 import { safePw } from '@/lib/adminPw'
+import WaSafetyCard from '@/components/admin/WaSafetyCard'
 
 interface Channel {
   key: string; name: string; cron: string
@@ -197,6 +198,13 @@ export default function SendingPage() {
           {(d?.devices ?? []).length === 0 && d?.openwa?.reachable && (
             <p className="text-xs text-gray-400 col-span-2">مفيش أجهزة مربوطة على OpenWA خالص.</p>
           )}
+        </div>
+
+        {/* 🛡️ (١٥ أغسطس ٢٠٢٦ — محمد: «حد اليوم / الفاصل / ساعات الإرسال يبقوا
+            ديناميك» · «الاتنين»). نفس الكارت اللي في شاشة «ابعت» بالظبط —
+            مكوّن واحد وراوت واحد، فمستحيل الشاشتين يقولوا حاجتين مختلفين. */}
+        <div className="mb-6">
+          <WaSafetyCard password={password} onSaved={() => { void load(password, true) }} />
         </div>
 
         {/* 🔗 اللينك: كل مُرسِل وحالة جهازه */}

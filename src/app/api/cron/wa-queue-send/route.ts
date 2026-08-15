@@ -18,11 +18,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { sendText, upsertConversation } from '@/lib/whatsapp'
 import { ackGate } from '@/lib/wa-ack-gate'
+import { getSafety } from '@/lib/wa-safety'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
-const MAX_PER_DAY = Number(process.env.WA_MAX_PER_DAY || 25)
+// 🔀 (١٥ أغسطس ٢٠٢٦ — محمد: «حد اليوم يبقى ديناميك») السقف اليومي بقى
+//    بيتقري من `whatsapp_config.wa_max_per_day` عن طريق `getSafety()`
+//    جوّه الهاندلر. الثابت ده اتشال — كان متغيّر بيئة، تغييره محتاج نشر.
 const MAX_PER_RUN = Number(process.env.WA_MAX_PER_RUN || 1)
 // نفس مهلة wa-paced-send — ٩ دقايق قبل ما نعتبر الرسالة متأخرة
 const ACK_WAIT_MS = Number(process.env.WA_QUEUE_ACK_WAIT_MS || 9 * 60 * 1000)
@@ -98,6 +101,11 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // 🔀 (١٥ أغسطس ٢٠٢٦) حدود الأمان من `whatsapp_config` — السقف اليومي هنا،
+  //    والفواصل وساعات الإرسال بيستعملهم `wa-queue.ts` وهو بيبني الطابور.
+  //    لازم تتقري بدري: `marketingCapped` تحت بيستعملها.
+  const safety = await getSafety()
+
   // ── ١) المارد متصل؟ لو لأ منبعتش خالص ────────────────────────────────
   //
   // 🚨 (٢ أغسطس ٢٠٢٦) كان بيسأل `WA_SERVICE_URL/health` — وده جسر Baileys
@@ -148,7 +156,7 @@ export async function GET(request: NextRequest) {
 
   const sentToday = (todayRaw ?? []).length
   // لو السقف اتوصل مانوقفش خالص — بنقفل التسويق ونسيب المعاملاتي يعدّي
-  const marketingCapped = sentToday >= MAX_PER_DAY
+  const marketingCapped = sentToday >= safety.maxPerDay
 
   // ── ٣) الرسايل المستحقة ──────────────────────────────────────────────
   // ⚠️ (٦ أغسطس ٢٠٢٦) الحملات اللي ليها مُرسِل متخصص لازم تتستثنى هنا.
@@ -352,7 +360,7 @@ export async function GET(request: NextRequest) {
     ...(retried.length > 0 ? { retried } : {}),
     session: QUEUE_SESSION,
     sent_today: sentToday + results.filter((r) => r.ok).length,
-    daily_cap: MAX_PER_DAY,
+    daily_cap: safety.maxPerDay,
     results,
   })
 }

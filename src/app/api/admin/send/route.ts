@@ -25,7 +25,8 @@
 
 import { NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
-import { queueCampaign, SAFETY, type Recipient } from '@/lib/wa-queue'
+import { queueCampaign, type Recipient } from '@/lib/wa-queue'
+import { getSafety } from '@/lib/wa-safety'
 import { isAdminRequest } from '@/lib/adminGate'
 
 export const runtime = 'nodejs'
@@ -72,15 +73,17 @@ async function handleGet(request: Request) {
   // 📤 (١٥ أغسطس ٢٠٢٦ — محمد: «عايز أقدر أختار الرقم اللي هيبعت»)
   //    الشاشة محتاجة تعرف الأرقام المتاحة. بنجيبها حية من OpenWA،
   //    والافتراضي من `whatsapp_config.queue_send_session` — مش متكتوب في الكود.
-  const [defaultSession, devices] = await Promise.all([
+  const [defaultSession, devices, safety] = await Promise.all([
     resolveDefaultSession(),
     listSessions(),
+    // 🔀 (١٥ أغسطس ٢٠٢٦) الحدود بقت من الداتابيز — مش الثابت SAFETY.
+    getSafety(),
   ])
 
   return NextResponse.json({
     ok: true,
     counts,
-    safety: SAFETY,
+    safety,
     upcoming: upcoming ?? [],
     sessions: devices,
     default_session: defaultSession,
