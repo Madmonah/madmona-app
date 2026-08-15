@@ -899,12 +899,18 @@ function StepCategory({
   // مجموعة → تظهر أقسامها + زر رجوع.
   const [pickGroup, setPickGroup] = useState<string | null>(null);
 
+  // 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «دمج الشاليهات في الإضافة مش زي العرض»)
+  //    القسم الرئيسي المختار جوّه المجموعة. ده المستوى اللي كان **ناقص**
+  //    خالص — تفاصيله في التعليق الكبير تحت.
+  const [pickRoot, setPickRoot] = useState<string | null>(null);
+
   // Phase G+ (May 18 2026): when parent signals "reset", jump back to the
   // mains list so the user can pick a totally different category.
   useEffect(() => {
     if (resetSignal > 0) {
       setSelectedMain(null);
       setPickGroup(null);
+      setPickRoot(null);
     }
   }, [resetSignal]);
 
@@ -945,7 +951,7 @@ function StepCategory({
               <button
                 key={t}
                 type="button"
-                onClick={() => { setActiveTrack(t); setPickGroup(null); }}
+                onClick={() => { setActiveTrack(t); setPickGroup(null); setPickRoot(null); }}
                 className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold border transition-all flex items-center gap-1.5 ${
                   activeTrack === t
                     ? 'bg-[#34D399] border-[#059669] text-[#04352A]'
@@ -978,11 +984,31 @@ function StepCategory({
           // دلوقتي: نفس drill-down الماركت بليس — كروت المجموعات الأول، وبعدين
           // أقسام المجموعة المختارة. المجموعة نفسها بتفصل البيع عن الإيجار،
           // فالتكرار بيختفي من غير ما نمسح أي صنف حقيقي.
+          // 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «دمج الشاليهات في الإضافة مش زي العرض»)
+          //
+          //     الكود اللي فوق (٢٤ يوليو) كان بيعمل مستويين بس:
+          //       مجموعة  →  **كل** الأقسام الفرعية مسطّحة في جريد واحد
+          //     يعني `عقارات بيع` كانت بتفتح على جريد فيه شقة وفيلا ودوبلكس
+          //     و١٢ منطقة شاليهات (ساحل، سخنة، مارينا، مراسي، هاسيندا…) كلهم
+          //     **جنب بعض في مستوى واحد**. مستوى «عقارات سياحية» نفسه كان
+          //     بيتشال من النص خالص، فالمناطق بتبان مبعثرة وسط الشقق.
+          //
+          //     الماركت بليس عنده ٣ مستويات: مجموعة → قسم رئيسي → المناطق.
+          //     دلوقتي شاشة الإضافة زيه بالحرف:
+          //       ① عقارات بيع
+          //       ② عقارات سكنية · **عقارات سياحية** · تجارية · صناعية
+          //       ③ (جوّه عقارات سياحية) ساحل · سخنة · مارينا · مراسي · …
+          //
+          //     الأقسام اللي مالهاش فروع (زي أغلب المطاعم) بتتحدد من المستوى
+          //     التاني على طول — من غير خطوة فاضية.
           const groupsMap = new Map<
             string,
-            { slug: string; name_ar: string; emoji: string; order: number; leaves: { slug: string; emoji: string; name_ar: string }[] }
+            {
+              slug: string; name_ar: string; emoji: string; order: number;
+              roots: { slug: string; emoji: string; name_ar: string; subs: { slug: string; emoji: string; name_ar: string }[] }[];
+            }
           >();
-          const seen = new Set<string>();
+          const seenRoot = new Set<string>();
 
           for (const c of visibleMains) {
             const key = c.group_slug || c.slug;
@@ -992,43 +1018,47 @@ function StepCategory({
                 name_ar: c.group_name_ar || c.name_ar,
                 emoji: c.group_emoji || c.emoji || '🏷️',
                 order: c.group_display_order ?? 999,
-                leaves: [],
+                roots: [],
               });
             }
-            const bucket = groupsMap.get(key)!;
-            const push = (l: { slug: string; emoji: string; name_ar: string }) => {
-              const dedupeKey = `${key}::${l.slug}`;
-              if (seen.has(dedupeKey)) return;
-              seen.add(dedupeKey);
-              bucket.leaves.push(l);
-            };
-            if (c.subs.length === 0) push({ slug: c.slug, emoji: c.emoji, name_ar: c.name_ar });
-            else for (const s of c.subs) push({ slug: s.slug, emoji: s.emoji, name_ar: s.name_ar });
+            const dedupeKey = `${key}::${c.slug}`;
+            if (seenRoot.has(dedupeKey)) continue;
+            seenRoot.add(dedupeKey);
+
+            const subs: { slug: string; emoji: string; name_ar: string }[] = [];
+            const seenSub = new Set<string>();
+            for (const s of c.subs) {
+              if (seenSub.has(s.slug)) continue;
+              seenSub.add(s.slug);
+              subs.push({ slug: s.slug, emoji: s.emoji, name_ar: s.name_ar });
+            }
+            groupsMap.get(key)!.roots.push({ slug: c.slug, emoji: c.emoji, name_ar: c.name_ar, subs });
           }
 
           const groups = Array.from(groupsMap.values())
-            .filter((g) => g.leaves.length > 0)
+            .filter((g) => g.roots.length > 0)
             .sort((a, b) => a.order - b.order);
 
           const current = pickGroup ? groups.find((g) => g.slug === pickGroup) : null;
 
           // مجموعة واحدة بس؟ مفيش لازمة لمستوى زيادة — نعرض أقسامها على طول.
-          const showLeaves = current || (groups.length === 1 ? groups[0] : null);
+          const showGroup = current || (groups.length === 1 ? groups[0] : null);
 
-          if (!showLeaves) {
+          // ① كروت المجموعات
+          if (!showGroup) {
             return (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {groups.map((g) => (
                   <button
                     key={g.slug}
                     type="button"
-                    onClick={() => setPickGroup(g.slug)}
+                    onClick={() => { setPickGroup(g.slug); setPickRoot(null); }}
                     className="flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-white border border-gray-100 shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all text-right"
                   >
                     <span className="text-2xl">{g.emoji}</span>
                     <span className="flex-1 min-w-0">
                       <span className="block text-sm font-extrabold text-gray-800 leading-tight">{g.name_ar}</span>
-                      <span className="block text-[10px] font-bold text-gray-400 mt-0.5">{g.leaves.length} قسم</span>
+                      <span className="block text-[10px] font-bold text-gray-400 mt-0.5">{g.roots.length} قسم</span>
                     </span>
                   </button>
                 ))}
@@ -1036,37 +1066,89 @@ function StepCategory({
             );
           }
 
+          const activeRoot = pickRoot ? showGroup.roots.find((r) => r.slug === pickRoot) : null;
+
+          // ③ المناطق/الأنواع جوّه القسم الرئيسي
+          if (activeRoot) {
+            return (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setPickRoot(null)}
+                    className="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
+                  >
+                    ← {showGroup.name_ar}
+                  </button>
+                  <span className="text-xs font-extrabold text-gray-700 flex items-center gap-1">
+                    <span>{activeRoot.emoji}</span>
+                    {activeRoot.name_ar}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {activeRoot.subs.map((c) => (
+                    <button
+                      key={c.slug}
+                      type="button"
+                      onClick={() => onSelect(c.slug)}
+                      className={`p-5 rounded-2xl border text-right transition-all ${
+                        value === c.slug
+                          ? 'bg-[#34D399] border-[#059669] text-[#04352A]'
+                          : 'bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300'
+                      }`}
+                    >
+                      <div className="text-3xl mb-2">{c.emoji}</div>
+                      <div className="font-semibold text-sm">{c.name_ar}</div>
+                    </button>
+                  ))}
+                </div>
+                {/* مش لاقي نوعك بالظبط؟ خد القسم الرئيسي نفسه. */}
+                <button
+                  type="button"
+                  onClick={() => onSelect(activeRoot.slug)}
+                  className="w-full py-2.5 rounded-xl border border-dashed border-gray-300 text-[12px] font-bold text-gray-500 hover:bg-gray-50 transition-all"
+                >
+                  مش لاقي نوعك؟ اختار «{activeRoot.name_ar}» على العموم
+                </button>
+              </div>
+            );
+          }
+
+          // ② الأقسام الرئيسية جوّه المجموعة
           return (
             <div className="space-y-3">
               {groups.length > 1 && (
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setPickGroup(null)}
+                    onClick={() => { setPickGroup(null); setPickRoot(null); }}
                     className="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
                   >
                     ← كل الأقسام
                   </button>
                   <span className="text-xs font-extrabold text-gray-700 flex items-center gap-1">
-                    <span>{showLeaves.emoji}</span>
-                    {showLeaves.name_ar}
+                    <span>{showGroup.emoji}</span>
+                    {showGroup.name_ar}
                   </span>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-3">
-                {showLeaves.leaves.map((c) => (
+                {showGroup.roots.map((r) => (
                   <button
-                    key={c.slug}
+                    key={r.slug}
                     type="button"
-                    onClick={() => onSelect(c.slug)}
+                    onClick={() => { if (r.subs.length === 0) onSelect(r.slug); else setPickRoot(r.slug); }}
                     className={`p-5 rounded-2xl border text-right transition-all ${
-                      value === c.slug
+                      value === r.slug
                         ? 'bg-[#34D399] border-[#059669] text-[#04352A]'
                         : 'bg-white border-[#E5E5E0] hover:bg-[#F5F4F0] hover:border-emerald-300'
                     }`}
                   >
-                    <div className="text-3xl mb-2">{c.emoji}</div>
-                    <div className="font-semibold text-sm">{c.name_ar}</div>
+                    <div className="text-3xl mb-2">{r.emoji}</div>
+                    <div className="font-semibold text-sm">{r.name_ar}</div>
+                    {r.subs.length > 0 && (
+                      <div className="mt-1 text-[10px] font-bold text-gray-400">{r.subs.length} نوع ›</div>
+                    )}
                   </button>
                 ))}
               </div>
