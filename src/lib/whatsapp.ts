@@ -792,18 +792,54 @@ export async function getConversationHistory(
     if (ids.length) conversationIds = ids
   }
 
+  // 🐞 (١٦ أغسطس ٢٠٢٦ — محمد: «العميل بعت تفاصيل كاملة لشقة والمارد عمال
+  //    يسأله عن التفاصيل تاني»)
+  //
+  //    كل صورة بتتخزّن **صف لوحدها** («[صورة] رابط»). العميل بعت تفاصيل
+  //    شقة جناكليس الساعة ١٥:٠٨:٥٩ (المساحة والسعر والدور والغرف)، وبعدها
+  //    بتلاتين ثانية بعت **٢٢ صورة** = ٢٢ صف. النافذة كانت ٢٤ صف، فالـ٢٢
+  //    صورة أكلوها كلها ورسالة التفاصيل طلعت برّه السياق.
+  //
+  //    النتيجة: المارد سأل عن المنطقة والمساحة والسعر **تلات مرات**،
+  //    والعميل رد «بعتلك كل التفاصيل اهي». وإعلان الشقة ماتسجّلش أصلاً.
+  //
+  //    الحل: نجيب صفوف أكتر، وندمج كل سلسلة صور ورا بعض في **سطر واحد**
+  //    («[٢٢ صورة]»)، وبعدين ناخد آخر `limit` عنصر. يعني ٢٢ صورة بتاخد
+  //    خانة واحدة بدل ٢٢، والكلام الحقيقي بيفضل في السياق.
+  //
+  // ⚠️ الروابط نفسها مش بتتشال من غير داعي: المارد بيشوف الصورة الحالية
+  //    من `mediaBlocks` مش من التاريخ، والتاريخ وظيفته يفكّره **إن فيه**
+  //    صور اتبعتت وكام واحدة — مش يخزّن ٢٢ رابط في البرومبت.
+  const FETCH_MULTIPLIER = 4
   const { data } = await supabaseAdmin
     .from('whatsapp_messages')
     .select('direction, body, created_at')
     .in('conversation_id', conversationIds)
     .order('created_at', { ascending: false })
-    .limit(limit)
+    .limit(Math.min(limit * FETCH_MULTIPLIER, 200))
 
   type Row = { direction: string; body: string; created_at: string }
   const rows = ((data ?? []) as Row[]).reverse()
 
-  return rows.map((r) => ({
-    role: r.direction === 'inbound' ? ('user' as const) : ('assistant' as const),
-    content: r.body,
-  }))
+  const isPhotoRow = (b: string) => /^\s*\[(صورة|صوره|image|photo)\]/i.test(b || '')
+
+  type Turn = { role: 'user' | 'assistant'; content: string }
+  const collapsed: Turn[] = []
+  let run = 0 // كام صورة ورا بعض لسه ماتقفلتش
+
+  const flushRun = () => {
+    if (!run) return
+    collapsed.push({ role: 'user', content: run === 1 ? '[صورة]' : `[${run} صور]` })
+    run = 0
+  }
+
+  for (const r of rows) {
+    const role = r.direction === 'inbound' ? ('user' as const) : ('assistant' as const)
+    if (role === 'user' && isPhotoRow(r.body)) { run++; continue }
+    flushRun()
+    collapsed.push({ role, content: r.body })
+  }
+  flushRun()
+
+  return collapsed.slice(-limit)
 }
