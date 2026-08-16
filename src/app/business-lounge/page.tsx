@@ -3,7 +3,7 @@ import BottomNav from '@/components/BottomNav'
 import BusinessLoungeClient from './BusinessLoungeClient'
 
 export const metadata = {
-  title: 'بورضة رجال الأعمال | مضمونة',
+  title: 'بورصة رجال الأعمال | مضمونة',
   description: 'أخبار مضمونة + أسعار العملات والذهب لحظيًا — في مكان واحد',
 }
 

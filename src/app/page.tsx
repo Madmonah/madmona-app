@@ -22,7 +22,7 @@ import HomeRedesign from '@/components/redesign/HomeRedesign'
 // ============================================================
 // Home page — Single brand: "خدمات مضمونة"
 // ⚠️ (11 أغسطس 2026) الأخبار وأسعار العملات/الذهب اتنقلوا بالكامل لتاب
-// "بورضة رجال الأعمال" (/business-lounge) — FinancialTicker/CompactNewsTabs/
+// "بورصة رجال الأعمال" (/business-lounge) — FinancialTicker/CompactNewsTabs/
 // NewsStories متشالوش من هنا لأنهم أصلاً كانوا imports ميتة (مش متستخدمين
 // في الـJSX) قبل التعديل ده.
 //

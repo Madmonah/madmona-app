@@ -1,7 +1,7 @@
 'use client'
 
 // ============================================================================
-// BusinessLoungeClient — «بورضة رجال الأعمال» (١١ أغسطس ٢٠٢٦)
+// BusinessLoungeClient — «بورصة رجال الأعمال» (١١ أغسطس ٢٠٢٦)
 // طلب محمد: تاب خامسة في هيرو الهوم جنب بيع/إيجار/خدمات/بورصة عقارية، بتجمع
 // الأخبار + أسعار العملات + الذهب في مكان واحد. مش بيانات جديدة — واجهة
 // أوسع فوق نفس /api/financial-data ونفس CompactNewsTabs المستخدمين في الهوم.
@@ -49,7 +49,7 @@ export default function BusinessLoungeClient() {
           </Link>
           <div className="min-w-0">
             <h1 className="text-[16px] font-black text-[#0A0A0A] leading-[1.2]">
-              بورضة رجال الأعمال{' '}
+              بورصة رجال الأعمال{' '}
               <span className="align-[2px] text-[9px] font-bold text-[#059669] bg-[#34D399]/10 px-[7px] py-[2px] rounded-full">
                 LIVE
               </span>
@@ -67,7 +67,7 @@ export default function BusinessLoungeClient() {
 
       {/* عنوان الديسكتوب */}
       <div className="hidden md:block px-4 pt-8 pb-2 max-w-5xl mx-auto">
-        <h1 className="text-3xl font-black text-[#0A0A0A]">بورضة رجال الأعمال</h1>
+        <h1 className="text-3xl font-black text-[#0A0A0A]">بورصة رجال الأعمال</h1>
         <p className="text-sm text-[#7C8A84] mt-1">أخبار مضمونة + أسعار العملات والذهب لحظيًا — في مكان واحد</p>
       </div>
 

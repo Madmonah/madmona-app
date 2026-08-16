@@ -11,7 +11,9 @@ import SiteFooter from '@/components/SiteFooter'
 // ============================================================================
 // HomeRedesign — (٧ أغسطس ٢٠٢٦) «التصميم الجديد» من ملف Madmona Redesign
 // اللي عمله محمد في Claude Design. ديسكتوب بس — الموبايل لسه MobileHome.
-// الهوية: كريمي #F4EFE4 · أخضر غامق #0E332C · دهبي #2B4521 · خط Alexandria.
+// الهوية دلوقتي = **نفس لوحة تطبيق الموبايل** (MobileHome): كريمي #FAFAF7 ·
+// أخضر غامق #14231E · أخضر البراند #059669 · دهبي #D4A017 · خط Alexandria.
+// ⚠️ السطر ده كان مكتوب فيه «دهبي #2B4521» — و#2B4521 أخضر زيتوني مش دهبي.
 // كل الداتا حقيقية: إحصائيات + أقسام + بورصة property_market_items + مطورين.
 // ============================================================================
 
@@ -123,34 +125,13 @@ async function getShots(): Promise<Record<string, Shot>> {
   return out
 }
 
-const ACCENTS = ['#2B4521', '#2FA084', '#6D5ACF', '#0E332C']
-const TINTS = ['rgba(43, 69, 33,0.14)', 'rgba(47,160,132,0.14)', 'rgba(109,90,207,0.14)', 'rgba(14,51,44,0.1)']
-
-// (11 أغسطس 2026) الهيرو بقى 4 كروت ثابتة بس: بيع · إيجار · خدمات · بورصة
-// مضمونة العقارية — بدل الكروت الديناميكية الخمسة اللي كانت بتشمل المطاعم.
-type HeroCard = { slug: string; name: string; emoji: string; catCount: number; count: number; track: string; href: string }
-
-function buildGroups(categories: Cat[], liveCounts: Record<string, number>): HeroCard[] {
-  const countFor = (tracks: string[]) => {
-    let n = 0
-    for (const c of categories) {
-      const key = c.group_slug || c.track || 'other'
-      if (tracks.includes(c.track || '')) n += liveCounts[key] || 0
-    }
-    return n
-  }
-  const catCountFor = (tracks: string[]) => categories.filter(c => tracks.includes(c.track || '')).length
-
-  return [
-    { slug: 'sale', name: 'بيع', emoji: '🏷️', track: 'products', tracks: ['products', 'sales'], href: '/marketplace?track=products' },
-    { slug: 'rentals', name: 'إيجار', emoji: '🔑', track: 'rentals', tracks: ['rentals', 'hybrid'], href: '/marketplace?track=rentals' },
-    { slug: 'services', name: 'خدمات', emoji: '🛠️', track: 'services', tracks: ['services'], href: '/marketplace?track=services' },
-  ].map(d => ({ slug: d.slug, name: d.name, emoji: d.emoji, track: d.track, href: d.href, catCount: catCountFor(d.tracks), count: countFor(d.tracks) }))
-    .concat([
-      { slug: 'bourse', name: 'بورصة مضمونة العقارية', emoji: '🏗️', track: 'bourse', href: '/real-estate/market', catCount: 0, count: 0 },
-      { slug: 'business', name: 'بورضة رجال الأعمال', emoji: '📈', track: 'business', href: '/business-lounge', catCount: 0, count: 0 },
-    ])
-}
+// 🧹 (١٦ أغسطس ٢٠٢٦) اتشالوا من هنا: `ACCENTS` · `TINTS` · `HeroCard` ·
+//    `buildGroups`. دول كانوا بيبنوا كروت الهيرو القديمة، والهيرو بقى صورة
+//    واحدة بعرض الشاشة — فبقوا كود ميت مالوش أي منادي.
+//
+// ⚠️ شيلانهم مش مجرد ترتيب: `ACCENTS` كان لسه شايل `#2B4521` (الزيتوني)
+//    و`#6D5ACF` (البنفسجي) — نفس الألوان اللي محمد اشتكى من تداخلها. أي
+//    حد يرجّع يستعمل المصفوفة دي بيرجّع المشكلة من غير ما ياخد باله.
 
 /**
  * صور مثبّتة يدويًا لكروت الأقسام — من `site_settings`.
@@ -223,7 +204,12 @@ const SECTIONS = [
   { key: 'services',    name: 'خدمات',   desc: 'مناسبات · تجميل · صيانة',    href: '/marketplace?track=services',    accent: '#8A6A0F', shot: 'services-events',tracks: ['services'] },
   { key: 'restaurants', name: 'مطاعم',   desc: 'أكل بيتي · توصيل · عروض',    href: '/marketplace?track=restaurants', accent: '#9A3412', shot: 'food',           tracks: ['restaurants'] },
   { key: 'bourse',      name: 'بورصة مضمونة العقارية', desc: 'أسعار السوق لايف', href: '/real-estate/market',       accent: '#059669', shot: '',               tracks: [] },
-  { key: 'business',    name: 'بورضة رجال الأعمال',    desc: 'أخبار · عملات · ذهب', href: '/business-lounge',       accent: '#2B4521', shot: '',               tracks: [] },
+  // ✍️ «بورصة» كانت غلطة إملائية قديمة (الصح **بورصة**) وكانت ظاهرة للزوار
+  //    في النافبار وفي الكارت وفي الفوتر — تلات مرات في نفس الصفحة.
+  // 🎨 و`#2B4521` هنا كان آخر بقايا الزيتوني اللي `rebrand-green.js` عمله.
+  //    بقى دهبي: هو الأكسنت الوحيد في اللوحة، ومابيتلغبطش مع أخضر البورصة
+  //    اللي جنبه.
+  { key: 'business',    name: 'بورصة رجال الأعمال',    desc: 'أخبار · عملات · ذهب', href: '/business-lounge',       accent: GOLD,      shot: '',               tracks: [] },
 ]
 
 export default async function HomeRedesign({ categories, stats, liveCounts, heroImage }: Props) {

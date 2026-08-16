@@ -6,8 +6,8 @@
 // existing homepage untouched. Reuses category grouping (buildGroups /
 // VERTICALS, same identity as CategoryTrackTabs).
 // ⚠️ (11 أغسطس 2026، طلب محمد) الأخبار + أسعار العملات والذهب اتنقلوا من هنا
-// لجوّه تاب "بورضة رجال الأعمال" (/business-lounge) بالكامل — مفيش أي fetch
-// لـ/api/financial-data أو /api/news-feed في الملف ده تاني؛ كارت البورضة في
+// لجوّه تاب "بورصة رجال الأعمال" (/business-lounge) بالكامل — مفيش أي fetch
+// لـ/api/financial-data أو /api/news-feed في الملف ده تاني؛ كارت البورصة في
 // الهيرو تحت هو اللي بيودّي عليهم.
 // Handoff: "Madmona Home Improvements" → option 2a (29 Jul 2026).
 // ============================================================================
@@ -65,11 +65,11 @@ const BOURSE_CARD = {
   href: '/real-estate/market',
 }
 
-// (11 أغسطس 2026) كارت خامس ثابت — «بورضة رجال الأعمال»: أخبار + عملات +
+// (11 أغسطس 2026) كارت خامس ثابت — «بورصة رجال الأعمال»: أخبار + عملات +
 // ذهب في لوحة واحدة، جنب بيع/إيجار/خدمات/بورصة عقارية.
 const BUSINESS_CARD = {
   key: 'business' as const,
-  ar: 'بورضة رجال الأعمال',
+  ar: 'بورصة رجال الأعمال',
   en: 'Business Lounge',
   emoji: '📈',
   img: '/hero/business-lounge.jpg',
@@ -346,7 +346,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
             </span>
           </Link>
 
-          {/* بورضة رجال الأعمال — كارت خامس: أخبار + عملات + ذهب */}
+          {/* بورصة رجال الأعمال — كارت خامس: أخبار + عملات + ذهب */}
           <Link
             href={BUSINESS_CARD.href}
             className="relative block rounded-[22px] overflow-hidden w-full aspect-[16/10] no-underline"
