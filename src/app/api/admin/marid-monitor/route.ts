@@ -20,10 +20,22 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    // 🐞 (١٦ أغسطس ٢٠٢٦ — محمد: «المارد مونيتور مش بيعرض المحادثات»)
+    //
+    //    الشاشة كانت بتعرض ٤٠ صف **كلهم فاضيين**. السبب إن Postgres في
+    //    `ORDER BY ... DESC` بيحط الـNULL **الأول** (NULLS FIRST هو
+    //    الافتراضي مع DESC). عندنا ٣٢ محادثة `last_message_at = NULL`
+    //    و`message_count = 0` — قشور اتعملت ومحصلش فيها كلام — فكانوا
+    //    بياكلوا أول ٣٢ مكان من الأربعين، ويفضل ٨ محادثات حقيقية بس،
+    //    والباقي صفوف بيضا. وإحنا عندنا ٣١٠٤ محادثة فيها كلام فعلاً.
+    //
+    // ⚠️ `nullsFirst: false` مش رفاهية هنا — من غيرها الشاشة بتتملي
+    //    بالقشور تاني أول ما تزيد.
     const { data: convs, error } = await supabase
       .from('whatsapp_conversations')
       .select('id, contact_name, contact_phone, session_id, status, last_message_at, last_message_direction, message_count')
-      .order('last_message_at', { ascending: false })
+      .not('last_message_at', 'is', null)
+      .order('last_message_at', { ascending: false, nullsFirst: false })
       .limit(40)
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
 

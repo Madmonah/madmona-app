@@ -84,7 +84,9 @@ async function lookupWaName(
       .from('whatsapp_conversations')
       .select('contact_name, last_message_at')
       .in('contact_phone', uniq)
-      .order('last_message_at', { ascending: false })
+      // 🐞 (١٦ أغسطس ٢٠٢٦) نفس بق الـNULLS FIRST — كان ممكن ياخد الاسم
+      //    من محادثة فاضية بدل أحدث محادثة فيها كلام فعلي.
+      .order('last_message_at', { ascending: false, nullsFirst: false })
       .limit(5)
     const rows = (data ?? []) as Array<{ contact_name?: string | null }>
     return (

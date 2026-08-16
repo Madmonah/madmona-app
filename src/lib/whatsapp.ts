@@ -258,7 +258,12 @@ export async function sendText(params: SendTextParams): Promise<WhatsAppSendResu
       .from('whatsapp_conversations')
       .select('metadata')
       .eq('contact_phone', params.to)
-      .order('last_message_at', { ascending: false })
+      // 🐞 (١٦ أغسطس ٢٠٢٦) `DESC` في Postgres معناه NULLS FIRST. الصفوف
+      //    الفاضية (محادثة اتعملت ومحصلش فيها كلام) كانت بتيجي الأول
+      //    وتاكل الـ20، فالصف اللي فيه `wa_jid` المحفوظ ممكن يقع بره
+      //    القايمة — والرسالة تتبعت لرقم مش موجود وتضيع بصمت، وده
+      //    بالظبط اللي التعليق اللي فوق بيحذّر منه.
+      .order('last_message_at', { ascending: false, nullsFirst: false })
       .limit(20)
 
     const saved = ((convs ?? []) as Array<{ metadata?: { wa_jid?: string } | null }>)
