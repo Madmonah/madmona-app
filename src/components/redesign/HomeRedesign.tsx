@@ -1,4 +1,8 @@
 import Link from 'next/link'
+// 🖼️ (١٦ أغسطس ٢٠٢٦) `next/image` مش `<img>`: صور الإعلانات جاية من موبايلات
+//    البايعين بحجمها الأصلي (ميجات). الواجهة دي كلها صور كبيرة، فمن غير
+//    التحسين الصفحة الرئيسية تبقى تقيلة على أول زيارة.
+import Image from 'next/image'
 import { createClient } from '@supabase/supabase-js'
 import { Alexandria, IBM_Plex_Sans_Arabic } from 'next/font/google'
 import RedesignMarquee from './RedesignMarquee'
@@ -89,6 +93,39 @@ async function getMarketTiles() {
   }
 }
 
+interface Shot { title: string; slug: string; price: number | null; city: string | null; img: string; grp: string | null }
+
+/**
+ * صور حقيقية من الإعلانات المنشورة — واحدة لكل مجموعة.
+ *
+ * (١٦ أغسطس ٢٠٢٦ — محمد: «واجهة فخمة بصور كبيرة» · «حط صور»)
+ * الواجهة كانت فيها صورة واحدة حقيقية بس، والباقي إيموجي كبير (🔑 و🛠️)
+ * على خلفية لون. ده بيبان «تحت الإنشاء» لزائر أول مرة يدخل. الأقسام
+ * عندها ٤١٣ إعلان منشور بصور — مفيش سبب نعرضله إيموجي.
+ *
+ * ⚠️ بنطلب صف واحد لكل مجموعة (`limit 1` × ٧) مش الجدول كله — الصفحة دي
+ *    بتترندر على السيرفر في كل زيارة.
+ * ⚠️ لو الاستعلام وقع، بنرجّع مصفوفة فاضية والواجهة بترجع لتصميمها القديم
+ *    بدل ما تكسر. الصفحة الرئيسية ماتقعش عشان صورة.
+ */
+async function getShots(): Promise<Record<string, Shot>> {
+  const out: Record<string, Shot> = {}
+  try {
+    const sb = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { auth: { persistSession: false } },
+    )
+    const { data } = await sb.rpc('home_showcase_shots')
+    for (const r of ((data || []) as Shot[])) {
+      if (r?.img && r?.grp) out[r.grp] = r
+    }
+  } catch {
+    /* الواجهة بتشتغل من غيرها */
+  }
+  return out
+}
+
 const ACCENTS = ['#2B4521', '#2FA084', '#6D5ACF', '#0E332C']
 const TINTS = ['rgba(43, 69, 33,0.14)', 'rgba(47,160,132,0.14)', 'rgba(109,90,207,0.14)', 'rgba(14,51,44,0.1)']
 
@@ -121,6 +158,7 @@ function buildGroups(categories: Cat[], liveCounts: Record<string, number>): Her
 export default async function HomeRedesign({ categories, stats, liveCounts, heroImage }: Props) {
   const { tiles, updated } = await getMarketTiles()
   const groups = buildGroups(categories, liveCounts)
+  const shots = await getShots()
 
   return (
     <div dir="rtl" className={`${alex.variable} ${ibm.variable}`} style={{ minHeight: '100vh', background: CREAM, fontFamily: 'var(--font-ibm), sans-serif', color: '#12261F' }}>
@@ -223,9 +261,15 @@ a { text-decoration: none; }
 
           {/* Arch collage — (11 أغسطس 2026) بيع · إيجار · خدمات · بورصة مضمونة العقارية بس */}
           <div className="rz-rise-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-            <Link className="rz-lift" href="/marketplace?track=products" style={{ gridRow: 'span 2', position: 'relative', borderRadius: '160px 160px 20px 20px', overflow: 'hidden', minHeight: 380, display: 'block', border: `2px solid ${INK}` }}>
+            <Link className="rz-lift" href={shots['sale-property']?.slug ? `/marketplace/${shots['sale-property'].slug}` : "/marketplace?track=sales"} style={{ gridRow: 'span 2', position: 'relative', borderRadius: '160px 160px 20px 20px', overflow: 'hidden', minHeight: 380, display: 'block', border: `2px solid ${INK}` }}>
+              {/* 🖼️ (١٦ أغسطس ٢٠٢٦ — محمد: «حط صور») أكبر بلاطة في الصفحة كانت
+                  بتعرض **صورة استوك من Unsplash** (بيت مش بتاعنا) — لأن
+                  `site_settings.hero_image_url` لسه على القيمة الافتراضية.
+                  دلوقتي بتاخد أغلى إعلان عقاري بصورة عندنا، وبترجع لصورة
+                  الإعدادات لو مفيش. ⛔ ماترجّعش الاستوك: الزائر اللي بيشوف
+                  صورة كتالوج على الواجهة بيفترض إن باقي الإعلانات مضروبة. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={heroImage} alt="بيع" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+              <Image src={shots['sale-property']?.img || heroImage} alt={shots['sale-property']?.title || 'بيع'} fill sizes="(max-width:1400px) 45vw, 620px" priority style={{ objectFit: 'cover' }} />
               <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(14,51,44,0.9), rgba(14,51,44,0.05) 60%)' }} />
               <span style={{ position: 'absolute', bottom: 0, right: 0, left: 0, padding: 22, display: 'block' }}>
                 <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 24, color: CREAM }}>بيع</span>
@@ -233,16 +277,34 @@ a { text-decoration: none; }
               </span>
               <span style={{ position: 'absolute', top: 18, left: 18, padding: '5px 14px', borderRadius: 999, background: GOLD, color: '#fff', fontSize: 11, fontWeight: 700 }}>الأكثر طلباً</span>
             </Link>
+            {/* 🖼️ (١٦ أغسطس ٢٠٢٦) كان إيموجي 🔑 على خلفية لون — دلوقتي صورة
+                إعلان إيجار حقيقي. لو مفيش صورة بيرجع للإيموجي زي ما كان. */}
             <Link className="rz-lift" href="/marketplace?track=rentals" style={{ position: 'relative', borderRadius: '100px 100px 20px 20px', overflow: 'hidden', minHeight: 183, display: 'block', background: INK, border: `2px solid ${INK}` }}>
-              <span className="rz-float" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 54 }}>🔑</span>
+              {(shots['tourism'] || shots['properties'])?.img ? (
+                <>
+                  <Image src={(shots['tourism'] || shots['properties']).img} alt="إيجار" fill sizes="220px" style={{ objectFit: 'cover' }} />
+                  <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(14,51,44,0.92), rgba(14,51,44,0.05) 65%)' }} />
+                </>
+              ) : (
+                <span className="rz-float" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 54 }}>🔑</span>
+              )}
               <span style={{ position: 'absolute', bottom: 0, right: 0, left: 0, padding: 16, display: 'block' }}>
                 <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 18, color: CREAM }}>إيجار</span>
+                <span style={{ display: 'block', fontSize: 11, color: 'rgba(244,239,228,0.72)', marginTop: 1 }}>شاليهات · شقق · عربيات</span>
               </span>
             </Link>
             <Link className="rz-lift" href="/marketplace?track=services" style={{ position: 'relative', borderRadius: '100px 100px 20px 20px', overflow: 'hidden', minHeight: 183, display: 'block', background: GOLD, border: `2px solid ${INK}` }}>
-              <span className="rz-float-2" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 54 }}>🛠️</span>
+              {(shots['services-medical-beauty'] || shots['services-events'])?.img ? (
+                <>
+                  <Image src={(shots['services-medical-beauty'] || shots['services-events']).img} alt="خدمات" fill sizes="220px" style={{ objectFit: 'cover' }} />
+                  <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(14,51,44,0.92), rgba(14,51,44,0.05) 65%)' }} />
+                </>
+              ) : (
+                <span className="rz-float-2" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 54 }}>🛠️</span>
+              )}
               <span style={{ position: 'absolute', bottom: 0, right: 0, left: 0, padding: 16, display: 'block' }}>
                 <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 18, color: '#fff' }}>خدمات</span>
+                <span style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.75)', marginTop: 1 }}>مناسبات · تجميل · صيانة</span>
               </span>
             </Link>
           </div>
@@ -284,6 +346,83 @@ a { text-decoration: none; }
           })}
         </div>
       </section>
+
+      {/* ═══ 🖼️ المعرض — صور كبيرة من إعلانات حقيقية ═══ */}
+      {/* (١٦ أغسطس ٢٠٢٦ — محمد: «واجهة فخمة بصور كبيرة»)
+          القسم ده بيتبني من `home_showcase_shots()` — أغلى إعلان بصورة في
+          كل مجموعة. مفيش صورة استوك ولا نص وهمي: لو الإعلان اتشال، البلاطة
+          بتختفي لوحدها بدل ما تفضل صورة ميتة. */}
+      {(() => {
+        const feat = [
+          { k: 'sale-property',  label: 'عقارات للبيع',   href: '/marketplace?track=sales',            span: 2 },
+          { k: 'sale-vehicles',  label: 'مركبات للبيع',   href: '/marketplace?track=sales',            span: 1 },
+          { k: 'sale-marine',    label: 'يخوت ومراكب',    href: '/marketplace?track=sales',            span: 1 },
+          { k: 'food',           label: 'مطاعم',          href: '/marketplace?track=restaurants',      span: 1 },
+          { k: 'home-furniture', label: 'أثاث وبيت',      href: '/marketplace?track=products',         span: 1 },
+        ].filter(f => shots[f.k]?.img)
+        if (feat.length < 3) return null
+        return (
+          <section style={{ maxWidth: 1360, margin: '0 auto', padding: '8px 28px 84px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 30 }}>
+              <div>
+                <p style={{ margin: '0 0 10px', display: 'inline-flex', alignItems: 'center', gap: 10, fontSize: 12, fontWeight: 700, letterSpacing: '0.3em', color: GOLD }}>
+                  <span style={{ width: 28, height: 1.5, background: GOLD, display: 'inline-block' }} />
+                  معروض دلوقتي
+                </p>
+                <h2 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 40, color: INK, letterSpacing: '-0.01em' }}>
+                  إعلانات حقيقية من السوق
+                </h2>
+              </div>
+              <Link href="/marketplace" style={{ fontSize: 14, fontWeight: 700, color: GOLD }}>شوف الكل ←</Link>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridAutoRows: 230, gap: 16 }}>
+              {feat.map((f) => {
+                const sh = shots[f.k]
+                const price = sh.price != null ? Number(sh.price).toLocaleString('ar-EG', { maximumFractionDigits: 0 }) : null
+                const big = f.span === 2
+                return (
+                  <Link
+                    key={f.k}
+                    href={sh.slug ? `/marketplace/${sh.slug}` : f.href}
+                    className="rz-lift"
+                    style={{
+                      gridColumn: big ? 'span 2' : 'span 1',
+                      gridRow: big ? 'span 2' : 'span 1',
+                      position: 'relative', overflow: 'hidden', borderRadius: 20,
+                      border: `2px solid ${INK}`, display: 'block',
+                    }}
+                  >
+                    <Image src={sh.img} alt={f.label} fill sizes={big ? '(max-width:1400px) 50vw, 660px' : '340px'} style={{ objectFit: 'cover' }} />
+                    <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(14,51,44,0.93) 0%, rgba(14,51,44,0.25) 48%, rgba(14,51,44,0) 78%)' }} />
+                    <span style={{ position: 'absolute', top: 16, right: 16, padding: '6px 14px', borderRadius: 999, background: 'rgba(244,239,228,0.94)', color: INK, fontSize: 11.5, fontWeight: 800 }}>
+                      {f.label}
+                    </span>
+                    <span style={{ position: 'absolute', bottom: 0, right: 0, left: 0, padding: big ? 26 : 18, display: 'block' }}>
+                      <span style={{
+                        display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900,
+                        color: CREAM, fontSize: big ? 27 : 16, lineHeight: 1.35,
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        {sh.title}
+                      </span>
+                      <span style={{ display: 'flex', alignItems: 'baseline', gap: 7, marginTop: 7 }}>
+                        {price && (
+                          <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: big ? 25 : 17, color: '#7BE8C4' }}>
+                            {price}
+                          </span>
+                        )}
+                        {price && <span style={{ fontSize: 11.5, color: 'rgba(244,239,228,0.7)', fontWeight: 700 }}>جنيه</span>}
+                        {sh.city && <span style={{ fontSize: 11.5, color: 'rgba(244,239,228,0.6)', marginInlineStart: 6 }}>📍 {sh.city}</span>}
+                      </span>
+                    </span>
+                  </Link>
+                )
+              })}
+            </div>
+          </section>
+        )
+      })()}
 
       {/* ═══ Live market (dark) ═══ */}
       {tiles.length > 0 && (
