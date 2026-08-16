@@ -338,11 +338,20 @@ export async function GET(req: Request) {
         await supa.from('listing_photos').insert((d.image_urls || []).slice(0, 8).map((u, ix) => ({
           listing_id: nl.id, url: u, display_order: ix + 1, is_primary: ix === 0,
         })) as never)
+        // 💰 (١٦ أغسطس ٢٠٢٦ — محمد: «المورد يكتب السعر اللي هياخده في إيده
+        //    وإحنا هنزود العمولة») السعر اللي جاي من المورد بقى **الصافي**،
+        //    مش سعر العرض. الحسبة في `apply_net_pricing` في الداتابيز عشان
+        //    تفضل في مكان واحد — نفس السبب اللي خلّانا نجمع العمولة نفسها
+        //    في مكان واحد بعد ما كانت متكتوبة في ٣ أماكن مختلفين.
         if (d.price_egp != null) {
-          await supa.from('pricing_rules').insert({
-            listing_id: nl.id, period_type: mapPeriodType(d.period), period_count: 1,
-            price: d.price_egp, currency: 'EGP', is_active: true, display_order: 1,
-          } as never)
+          const { error: priceErr } = await supa.rpc('apply_net_pricing', {
+            p_listing_id: nl.id,
+            p_net: d.price_egp,
+            p_period: mapPeriodType(d.period),
+          })
+          // ⚠️ إعلان بلا سعر بيتنشر ومحدش بياخد باله — ٣٢١ إعلان منشور
+          //    دلوقتي من غير سعر. فلو الحسبة وقعت، لازم يبان في اللوجّ.
+          if (priceErr) console.error('[publish-drafts] فشل تسعير', nl.id, priceErr.message)
         }
         // 🐛 (١٠ أغسطس ٢٠٢٦ — محمد لاحظ إعلان قالله المارد "نزل رسمي" بس مش موجود):
         // ده الـupdate اللي فعليًا بينشر الإعلان (status: draft → published). كان بيتنفّذ

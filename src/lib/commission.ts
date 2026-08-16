@@ -24,6 +24,7 @@
 // `commission_rules` جديد ولسه مش في الأنواع المولّدة، فالعميل المطبوع
 // بيرجّع `never` عليه. نفس الحل المستعمل في جداول الواتساب.
 import { supabaseUntyped as supabaseAdmin } from '@/lib/supabase'
+import { NET_PRICING_RULE } from '@/lib/madmona-scripts'
 
 /** إزاي بنحسب الرقم. */
 export type CommissionKind =
@@ -188,66 +189,46 @@ export async function defaultCommissionPercent(): Promise<number> {
  *    تنادي الدالة دي — مش تكتب الرقم. ده بالظبط اللي وقّعنا في المركبات.
  */
 export async function commissionPromptBlock(): Promise<string> {
-  const rules = await getCommissionRules()
-  const byKey = new Map(rules.map((r) => [r.key, r]))
-  const line = (key: string, title: string) => {
-    const r = byKey.get(key)
-    if (!r) return null
-    const note = r.note_ar ? `\n  ↳ ${r.note_ar}` : ''
-    return `• **${title}** → **${r.label_ar}**${note}`
-  }
-
-  const known = [
-    line('rent-property', 'إيجار عقار'),
-    line('sale-property', 'بيع/ريسيل عقار'),
-    line('sale-vehicles', 'بيع المركبات (عربيات · موتوسيكلات)'),
-    line('sale-marine', 'بيع مركبات بحرية'),
-  ].filter(Boolean) as string[]
-
-  const def = byKey.get('default')
-  if (def) known.push(`• **أي حاجة تانية** (خدمات · مطاعم · مارت · منتجات) → **${def.label_ar}**`)
-
-  // أي قاعدة زوّدها محمد من الشاشة وإحنا مش عارفينها بالاسم
-  const extra = rules
-    .filter((r) => !['rent-property', 'sale-property', 'sale-vehicles', 'sale-marine', 'default'].includes(r.key))
-    .map((r) => `• **${r.key}** → **${r.label_ar}**${r.note_ar ? `\n  ↳ ${r.note_ar}` : ''}`)
-
-  return [
-    '💰 **العمولة — الأرقام دي بتتقري من الداتابيز وقت الرد، فهي آخر حاجة قالها محمد:**',
-    ...known,
-    ...extra,
-    '',
-    '⛔ العقارات والمركبات مش نفس الحاجة — ماتخلطهمش وماتحسبش نسبة للمركبات.',
-    // سكربت تسجيل المطاعم فوق في البرومبت مكتوب فيه «العمولة ١٠٪» بالنص
-    // في ٥ مواضع — ده مقصود لأنه سكربت بيع متظبّط. بس لو محمد غيّر
-    // القاعدة الافتراضية من الشاشة، السطر ده هو اللي بيمنع المارد يقول
-    // رقمين مختلفين في نفس الرسالة.
-    `⛔ لو لقيت في أي مكان تاني في التعليمات رقم عمولة مختلف عن اللي فوق — **اللي فوق هو الصح**، لأنه بيتقري من الداتابيز دلوقتي حالًا.${
-      def ? ` (المطاعم والخدمات والمنتجات = ${def.label_ar}.)` : ''
-    }`,
-    '⛔ الرقم اللي فوق هو نفسه اللي الحملات بتقوله للبايعين بالنص. لو حد بعتلك ردًّا على حملة،',
-    '   **ماتقولش رقم تاني ولا «بالاتفاق»** — ده بيخلّيه يشك في الرسالة كلها.',
-    '⛔ ماتبدأش الكلام بالعمولة في بيع العقارات والمركبات — الهدف إننا نسجّل الإعلان الأول.',
-    '   لو سأل، ساعتها جاوب بالرقم الصح فوق.',
-  ].join('\n')
+  // 🔇 (١٦ أغسطس ٢٠٢٦ — محمد: «مش عايزين نذكر العمولة. المورد يكتب السعر
+  //    اللي هياخده في إيده وإحنا هنزود العمولة، علشان ممكن نعمل عروض
+  //    وماناخدش عمولة خالص.»)
+  //
+  //    البلوك ده كان بيسرد أرقام العمولة قسم قسم للمارد عشان يقولها
+  //    للبايع. دلوقتي **مابنقولهاش خالص** — فالسرد اتشال بالكامل واتبدّل
+  //    بقاعدة التسعير الصافي.
+  //
+  // ⚠️ الأرقام **لسه شغّالة** في `commission_rules` وبتتحسب في التسعير
+  //    والمحاسبة زي ما هي. اللي اتغيّر إن المارد مابيتكلمش عنها — مش
+  //    إننا بطّلنا ناخدها.
+  //
+  // 💸 وده كمان بيقلّل البرومبت: البلوك القديم كان بيوصل ~١,٥٠٠ حرف
+  //    بتتبعت مع كل رسالة.
+  return NET_PRICING_RULE
 }
 
 /** العلامة اللي بتتبدّل في البرومبت الثابت. */
 export const COMMISSION_TOKEN = '{{COMMISSION_RULES}}'
 
 /**
- * بيحط بلوك العمولة الحي مكان العلامة في أي برومبت.
+ * بيحط قاعدة التسعير مكان العلامة في أي برومبت.
  * لو العلامة مش موجودة بيرجّع البرومبت زي ما هو — أسوأ حالة إننا نمشي
  * بالبرومبت القديم، مش إننا نبعت برومبت ناقص.
+ *
+ * 🚨 (١٦ أغسطس ٢٠٢٦) الفولباك القديم كان **بيسرّب أرقام العمولة**: كان
+ *    بيلزق `COMMISSION_DEFAULTS` (وفيها «١٠٪ موحدة» و«٥٪ من سعر البيع»)
+ *    في البرومبت لو الدالة وقعت. يعني أول عطل مؤقت في الداتابيز كان
+ *    هيخلّي المارد يرجع يقول أرقام العمولة للبايعين — وهي بالظبط الحاجة
+ *    اللي محمد طلب نشيلها.
+ *
+ *    دلوقتي الفولباك هو **نفس** قاعدة التسعير الصافي: نص ثابت مالوش أي
+ *    اعتماد على الداتابيز، فمفيش حالة نقول فيها رقم عمولة أبدًا.
  */
 export async function withLiveCommission(prompt: string): Promise<string> {
   if (!prompt.includes(COMMISSION_TOKEN)) return prompt
   try {
     return prompt.split(COMMISSION_TOKEN).join(await commissionPromptBlock())
   } catch {
-    return prompt.split(COMMISSION_TOKEN).join(
-      COMMISSION_DEFAULTS.map((r) => `• ${r.key} → ${r.label_ar}`).join('\n'),
-    )
+    return prompt.split(COMMISSION_TOKEN).join(NET_PRICING_RULE)
   }
 }
 

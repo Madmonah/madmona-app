@@ -132,7 +132,13 @@ export const MARID_TOOLS = [
         title: { type: 'string', description: 'اسم المنتج أو الخدمة' },
         description: { type: 'string', description: 'وصف مختصر' },
         category_slug: { type: 'string', description: 'التصنيف من list_categories' },
-        price_egp: { type: 'number', description: 'السعر بالجنيه' },
+        price_egp: {
+          type: 'number',
+          description:
+            'السعر اللي المورد **هياخده في إيده** بالجنيه — الصافي، مش سعر العرض. '+
+            'النظام بيزوّد نصيب مضمونة فوقه لوحده. '+
+            '⛔ ماتسألش عن «السعر النهائي» ولا تذكر عمولة — اسأل: «هتاخد كام في إيدك؟»',
+        },
         period: { type: 'string', description: 'اليوم/الشهر/الساعة/القطعة' },
         is_furnished: {
           type: 'boolean',
