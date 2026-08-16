@@ -18,9 +18,6 @@ import SiteFooter from '@/components/SiteFooter'
 const alex = Alexandria({ subsets: ['arabic', 'latin'], weight: ['700', '900'], variable: '--font-alex', display: 'swap' })
 const ibm = IBM_Plex_Sans_Arabic({ subsets: ['arabic', 'latin'], weight: ['400', '500', '700'], variable: '--font-ibm', display: 'swap' })
 
-const INK = '#0E332C'
-const CREAM = '#F4EFE4'
-const GOLD = '#2B4521'
 // (11 Aug 2026) أخضر البراند القياسي للهيدر — نفس #059669 بتاع TopNav/SiteFooter.
 // مش نفس INK (الأخضر الغامق الأصلي بتاع التصميم) — ده أخضر تاني مخصص للهيدر بس.
 const NAV_GREEN = '#059669'
@@ -186,213 +183,188 @@ async function getPinnedCardImages(): Promise<Record<string, string>> {
   return out
 }
 
+// ============================================================================
+// 🎨 (١٦ أغسطس ٢٠٢٦ — محمد: «تداخل الألوان مش عاجبني» · «بنفس درجات
+//     الموبايل الأبليكيشن»)
+//
+// الصفحة كانت فيها **٧ درجات أخضر + بنفسجي**: 0E332C · 059669 · 4ADE80 ·
+// 2B4521 · 12261F · 2FA084 · 6D5ACF. والمتغيّر اللي اسمه GOLD كان لونه
+// أخضر زيتوني (#2B4521) — يعني الأكسنت اللي التصميم مبني عليه مات.
+//
+// السبب: `scripts/rebrand-green.js` (١٤ أغسطس) حوّل الهوية من برتقالي
+// لأخضر، وحوّل الدهبي لأخضر كمان. فبقى أخضر فوق أخضر من غير أي تباين.
+//
+// الحل: ناخد **نفس درجات تطبيق الموبايل بالظبط** (MobileHome). دي اللوحة
+// المرجع دلوقتي — أي لون جديد يتضاف هنا مش في وسط الكود.
+// ============================================================================
+const BG = '#FAFAF7'        // خلفية الموبايل نفسها
+const DARK = '#14231E'      // الأخضر الغامق
+const BRAND = '#059669'     // أخضر البراند — نص وحدود
+const BRAND_LIGHT = '#34D399'
+const GOLD = '#D4A017'      // الدهبي الحقيقي — الأكسنت الوحيد
+const LINE = '#E5DFD3'
+const MUTED = '#7C8A84'
+const CREAM = BG
+const INK = DARK
+
+/**
+ * الأقسام الستة — **نفس مفاتيح وألوان تطبيق الموبايل بالحرف**.
+ *
+ * ⚠️ «مطاعم» كان ناقص من الديسكتوب خالص. الموبايل رجّعه في ١٤ أغسطس
+ *    (١٣ تصنيف · ٢٦ مطعم منشور · ١٥٨٤ صنف منيو) والديسكتوب فضل من غيره —
+ *    يعني زائر الكمبيوتر مكانش بيشوف المطاعم من الصفحة الرئيسية أصلاً.
+ *
+ * ⚠️ كل قسم بلونه الخاص من الموبايل. ده اللي بيدّي التنوّع من غير ما
+ *    نخترع ألوان جديدة على الديسكتوب.
+ */
+const SECTIONS = [
+  { key: 'products',    name: 'بيع',     desc: 'عقارات · عربيات · منتجات',   href: '/marketplace?track=products',    accent: '#3D7BB6', shot: 'sale-property',  tracks: ['products', 'sales'] },
+  { key: 'rentals',     name: 'إيجار',   desc: 'شاليهات · شقق · عربيات',     href: '/marketplace?track=rentals',     accent: '#059669', shot: 'properties',     tracks: ['rentals', 'hybrid'] },
+  { key: 'services',    name: 'خدمات',   desc: 'مناسبات · تجميل · صيانة',    href: '/marketplace?track=services',    accent: '#8A6A0F', shot: 'services-events',tracks: ['services'] },
+  { key: 'restaurants', name: 'مطاعم',   desc: 'أكل بيتي · توصيل · عروض',    href: '/marketplace?track=restaurants', accent: '#9A3412', shot: 'food',           tracks: ['restaurants'] },
+  { key: 'bourse',      name: 'بورصة مضمونة العقارية', desc: 'أسعار السوق لايف', href: '/real-estate/market',       accent: '#059669', shot: '',               tracks: [] },
+  { key: 'business',    name: 'بورضة رجال الأعمال',    desc: 'أخبار · عملات · ذهب', href: '/business-lounge',       accent: '#2B4521', shot: '',               tracks: [] },
+]
+
 export default async function HomeRedesign({ categories, stats, liveCounts, heroImage }: Props) {
   const { tiles, updated } = await getMarketTiles()
-  const groups = buildGroups(categories, liveCounts)
   const shots = await getShots()
   const pinned = await getPinnedCardImages()
 
+  const countFor = (tracks: readonly string[]) => {
+    if (!tracks.length) return 0
+    let n = 0
+    for (const c of categories) {
+      const key = c.group_slug || c.track || 'other'
+      if (tracks.includes(c.track || '')) n += liveCounts[key] || 0
+    }
+    return n
+  }
+  const imgFor = (s: typeof SECTIONS[number]) =>
+    pinned[s.key] || (s.shot ? shots[s.shot]?.img : undefined) ||
+    (s.key === 'bourse' ? '/hero/bourse.jpg' : s.key === 'business' ? '/hero/business-lounge.jpg' : undefined)
+
+  const heroShot = shots['sale-property']
+  const money = (n: number | null) => (n == null ? null : Number(n).toLocaleString('ar-EG', { maximumFractionDigits: 0 }))
+
+  // 🖼️ المختارات — إعلانات حقيقية. ⛔ مش نفس الأقسام اللي فوق: دي منتجات
+  //    بعينها بسعرها، فوق ده بتستبعد الأقسام اللي اتعرضت في الشبكة كصورة
+  //    عشان **مافيش حاجة تتكرر مرتين في نفس الصفحة**.
+  const usedShots = new Set(SECTIONS.map(s => s.shot).filter(Boolean))
+  const picks = ['sale-vehicles', 'sale-marine', 'home-furniture', 'shop', 'tourism', 'vehicles']
+    .filter(k => !usedShots.has(k) && shots[k]?.img)
+    .slice(0, 4)
+    .map(k => shots[k])
+
   return (
-    <div dir="rtl" className={`${alex.variable} ${ibm.variable}`} style={{ minHeight: '100vh', background: CREAM, fontFamily: 'var(--font-ibm), sans-serif', color: '#12261F' }}>
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-@keyframes rzRise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
-@keyframes rzFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-@keyframes rzMq { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.rz-mq { animation: rzMq 30s linear infinite; }
-.rz-mq-slow { animation: rzMq 35s linear infinite; }
-.rz-rise { animation: rzRise 0.7s ease both; }
-.rz-rise-2 { animation: rzRise 0.7s ease 0.15s both; }
-.rz-float { animation: rzFloat 5s ease-in-out infinite; }
-.rz-float-2 { animation: rzFloat 5s ease-in-out 0.7s infinite; }
-.rz-lift { transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; }
-.rz-lift:hover { transform: translateY(-4px); }
-.rz-cat { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-.rz-cat:hover { transform: translateY(-6px); box-shadow: 6px 6px 0 var(--acc, ${GOLD}); }
-.rz-inkbtn { transition: background 0.25s ease, color 0.25s ease; }
-.rz-inkbtn:hover { background: ${GOLD} !important; }
-.rz-goldbtn { transition: background 0.25s ease, color 0.25s ease; }
-.rz-goldbtn:hover { background: ${CREAM} !important; color: ${INK} !important; }
-.rz-ghost:hover { background: rgba(255,255,255,0.12); }
-.rz-navlink { transition: color 0.2s ease; }
-.rz-navlink:hover { color: #fff !important; }
-.rz-newsrow:hover { background: ${CREAM}; }
-a { text-decoration: none; }
-`,
-        }}
-      />
+    <div dir="rtl" className={`${alex.variable} ${ibm.variable}`} style={{ minHeight: '100vh', background: BG, fontFamily: 'var(--font-ibm), sans-serif', color: DARK }}>
+      <style dangerouslySetInnerHTML={{ __html: `
+@keyframes rzRise { from { opacity:0; transform: translateY(24px) } to { opacity:1; transform:none } }
+@keyframes rzMq { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+.rz-mq { animation: rzMq 30s linear infinite }
+.rz-mq-slow { animation: rzMq 35s linear infinite }
+.rz-rise { animation: rzRise .8s ease both }
+.rz-rise-2 { animation: rzRise .8s ease .12s both }
+.rz-lift { transition: transform .45s cubic-bezier(.2,.7,.3,1), box-shadow .45s ease }
+.rz-lift:hover { transform: translateY(-6px); box-shadow: 0 28px 56px -26px rgba(20,35,30,.42) }
+.rz-zoom img { transition: transform .8s cubic-bezier(.2,.7,.3,1) }
+.rz-zoom:hover img { transform: scale(1.06) }
+.rz-navlink { transition: color .2s ease }
+.rz-navlink:hover { color:#fff !important }
+.rz-ghost:hover { background: rgba(255,255,255,.14) }
+.rz-gold:hover { background:${DARK} !important; color:#fff !important }
+a { text-decoration:none }
+` }} />
 
-      {/* Top hairline */}
-      <div style={{ height: 4, background: `linear-gradient(90deg, ${GOLD}, ${INK} 30%, ${INK} 70%, ${GOLD})` }} />
+      {/* شعرة دهبي — الأكسنت الوحيد، بيتكرر في الصفحة كخيط رفيع بس */}
+      <div style={{ height: 3, background: `linear-gradient(90deg, ${GOLD}, ${BRAND} 40%, ${BRAND} 60%, ${GOLD})` }} />
 
-      {/* ═══ Nav ═══ */}
-      {/* (11 Aug 2026) أخضر البراند #059669 بدل الكريمي الشفاف القديم — نفس
-          التصميم/التخطيط بالظبط، بس عناصر بيضا بدل الأخضر الغامق (طلب محمد) */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 50, background: NAV_GREEN, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
-        <div style={{ maxWidth: 1360, margin: '0 auto', padding: '14px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
+      {/* ═══ الهيدر ═══ */}
+      <header style={{ position: 'sticky', top: 0, zIndex: 50, background: BRAND, borderBottom: '1px solid rgba(255,255,255,.12)' }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '14px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ width: 42, height: 48, background: '#fff', borderRadius: '21px 21px 6px 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: NAV_GREEN, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 20, paddingTop: 4 }}>م</span>
+            <span style={{ width: 42, height: 48, background: '#fff', borderRadius: '21px 21px 6px 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: BRAND, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 20, paddingTop: 4 }}>م</span>
             <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
               <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 21, color: '#fff' }}>مضمونة</span>
-              <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.42em', color: 'rgba(255,255,255,0.75)' }}>MADMONA</span>
+              <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '.42em', color: 'rgba(255,255,255,.75)' }}>MADMONA</span>
             </span>
           </Link>
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 28, fontSize: 14, fontWeight: 500 }}>
-            <Link className="rz-navlink" href="/marketplace?track=products" style={{ color: 'rgba(255,255,255,0.75)' }}>بيع</Link>
-            <Link className="rz-navlink" href="/marketplace?track=rentals" style={{ color: 'rgba(255,255,255,0.75)' }}>إيجار</Link>
-            <Link className="rz-navlink" href="/marketplace?track=services" style={{ color: 'rgba(255,255,255,0.75)' }}>خدمات</Link>
-            <Link href="/real-estate/market" style={{ color: '#fff', borderBottom: `2px solid ${GOLD}`, paddingBottom: 2 }}>بورصة مضمونة العقارية</Link>
-            <Link className="rz-navlink" href="/business-lounge" style={{ color: 'rgba(255,255,255,0.75)' }}>بورضة رجال الأعمال</Link>
-            <Link className="rz-navlink" href="/chat/marid" style={{ color: 'rgba(255,255,255,0.75)' }}>اسأل الجني ✨</Link>
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 26, fontSize: 14, fontWeight: 500 }}>
+            {SECTIONS.map(s => (
+              <Link key={s.key} className="rz-navlink" href={s.href} style={{ color: 'rgba(255,255,255,.78)', whiteSpace: 'nowrap' }}>{s.name}</Link>
+            ))}
+            <Link className="rz-navlink" href="/chat/marid" style={{ color: GOLD, fontWeight: 700, whiteSpace: 'nowrap' }}>اسأل المارد</Link>
           </nav>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Link className="rz-ghost" href="/auth/login" style={{ height: 42, padding: '0 18px', borderRadius: 999, border: '1.5px solid rgba(255,255,255,0.6)', background: 'transparent', color: '#fff', fontWeight: 700, fontSize: 13, display: 'inline-flex', alignItems: 'center' }}>دخول</Link>
-            <Link className="rz-inkbtn" href="/list-your-asset" style={{ height: 42, padding: '0 20px', borderRadius: 999, background: '#fff', color: NAV_GREEN, fontWeight: 700, fontSize: 13, display: 'inline-flex', alignItems: 'center', boxShadow: '0 8px 20px -8px rgba(0,0,0,0.35)' }}>ضيف إعلانك</Link>
+            <Link className="rz-ghost" href="/auth/login" style={{ height: 42, padding: '0 18px', borderRadius: 999, border: '1.5px solid rgba(255,255,255,.6)', color: '#fff', fontWeight: 700, fontSize: 13, display: 'inline-flex', alignItems: 'center' }}>دخول</Link>
+            <Link className="rz-gold" href="/list-your-asset" style={{ height: 42, padding: '0 22px', borderRadius: 999, background: GOLD, color: DARK, fontWeight: 900, fontSize: 13, display: 'inline-flex', alignItems: 'center' }}>ضيف إعلانك</Link>
           </div>
         </div>
       </header>
 
-      {/* ═══ Hero ═══ */}
-      <section style={{ maxWidth: 1360, margin: '0 auto', padding: '72px 28px 40px', position: 'relative' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 48, alignItems: 'center' }}>
-          <div className="rz-rise">
-            <p style={{ margin: '0 0 18px', display: 'inline-flex', alignItems: 'center', gap: 10, fontSize: 12, fontWeight: 700, letterSpacing: '0.3em', color: GOLD }}>
-              <span style={{ width: 28, height: 1.5, background: GOLD, display: 'inline-block' }} />
-              سوق مصر المضمون · القاهرة
+      {/* ═══ الهيرو — صورة بعرض الشاشة ═══ */}
+      {/* ⛔ مفيش كروت أقسام هنا. كانت الصفحة بتعرض بيع/إيجار/خدمات تلات
+          مرات: في الهيرو، وفي شبكة الأقسام، وفي المعرض. دلوقتي مرة واحدة. */}
+      <section style={{ position: 'relative', minHeight: 620, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+        <Image src={heroShot?.img || heroImage} alt={heroShot?.title || 'مضمونة'} fill priority sizes="100vw" style={{ objectFit: 'cover' }} />
+        <span style={{ position: 'absolute', inset: 0, background: `linear-gradient(275deg, ${DARK}F5 0%, ${DARK}D9 44%, ${DARK}26 100%)` }} />
+        <div className="rz-rise" style={{ position: 'relative', maxWidth: 1400, margin: '0 auto', padding: '0 32px', width: '100%' }}>
+          <div style={{ maxWidth: 660 }}>
+            <p style={{ margin: '0 0 22px', display: 'inline-flex', alignItems: 'center', gap: 10, fontSize: 12, fontWeight: 700, letterSpacing: '.28em', color: GOLD }}>
+              <span style={{ width: 30, height: 1.5, background: GOLD }} /> سوق مصر المضمون
             </p>
-            <h1 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 76, lineHeight: 1.12, letterSpacing: '-0.01em', color: INK }}>
-              كل حاجة<br />
-              <span style={{ color: 'transparent', WebkitTextStroke: `2px ${INK}` }}>تشتريها</span> أو<br />
-              تأجرها… <span style={{ position: 'relative', display: 'inline-block', color: GOLD }}>مضمونة<span style={{ position: 'absolute', right: 0, left: 0, bottom: 6, height: 10, background: 'rgba(43, 69, 33,0.18)', zIndex: -1, borderRadius: 4 }} /></span>
+            <h1 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 68, lineHeight: 1.12, letterSpacing: '-.02em', color: '#fff' }}>
+              كل حاجة تشتريها<br />أو تأجرها… <span style={{ color: GOLD }}>مضمونة</span>
             </h1>
-            <p style={{ margin: '22px 0 0', maxWidth: 460, fontSize: 16, lineHeight: 1.9, color: 'rgba(18,38,31,0.7)' }}>
-              عقارات، عربيات، خدمات، مطاعم — كل مورد متوثّق، وكل صفقة عليها ضمان مضمونة. دوّر، قارن، واحجز وانت مطمّن.
+            <p style={{ margin: '22px 0 34px', maxWidth: 520, fontSize: 17, lineHeight: 1.9, color: 'rgba(255,255,255,.8)' }}>
+              كل مورد متوثّق، وكل إعلان بيتراجع قبل ما ينزل. دوّر، قارن، واحجز وانت مطمّن.
             </p>
-            <form action="/marketplace" role="search" style={{ marginTop: 30, maxWidth: 520, display: 'flex', alignItems: 'center', background: '#fff', border: `2px solid ${INK}`, borderRadius: 999, padding: 6, boxShadow: `6px 6px 0 ${INK}` }}>
-              <input type="search" name="q" placeholder="دوّر على شقة، عربية، خبيرة ميكب…" style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 15, fontWeight: 500, color: '#12261F', padding: '10px 18px', minWidth: 0, fontFamily: 'var(--font-ibm), sans-serif' }} />
-              <button className="rz-inkbtn" type="submit" style={{ border: 'none', cursor: 'pointer', height: 48, padding: '0 30px', borderRadius: 999, background: INK, color: CREAM, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 700, fontSize: 15 }}>دوّر</button>
+            <form action="/marketplace" role="search" style={{ display: 'flex', alignItems: 'center', background: '#fff', borderRadius: 18, padding: 7, maxWidth: 560, boxShadow: '0 30px 60px -22px rgba(0,0,0,.55)' }}>
+              <input type="search" name="q" placeholder="دوّر على شقة، عربية، مطعم، خبيرة ميكب…" style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 15.5, color: DARK, padding: '12px 20px', minWidth: 0, fontFamily: 'inherit' }} />
+              <button type="submit" style={{ border: 'none', cursor: 'pointer', height: 50, padding: '0 34px', borderRadius: 13, background: BRAND, color: '#fff', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 15 }}>دوّر</button>
             </form>
-            <div style={{ marginTop: 26, display: 'flex', alignItems: 'center', gap: 26 }}>
-              <span style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 26, color: INK }}>{(stats.suppliers || 0).toLocaleString('ar-EG')}+</span>
-                <span style={{ fontSize: 12, color: 'rgba(18,38,31,0.6)' }}>مورد موثّق</span>
-              </span>
-              <span style={{ width: 1, height: 34, background: 'rgba(18,38,31,0.15)' }} />
-              <span style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 26, color: INK }}>{(stats.listings || 0).toLocaleString('ar-EG')}</span>
-                <span style={{ fontSize: 12, color: 'rgba(18,38,31,0.6)' }}>إعلان نشط</span>
-              </span>
-              <span style={{ width: 1, height: 34, background: 'rgba(18,38,31,0.15)' }} />
-              <span style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 26, color: GOLD }}>١٠٠٪</span>
-                <span style={{ fontSize: 12, color: 'rgba(18,38,31,0.6)' }}>صفقات مضمونة</span>
-              </span>
+            <div style={{ marginTop: 34, display: 'flex', alignItems: 'center', gap: 34 }}>
+              {[
+                { v: `${(stats.suppliers || 0).toLocaleString('ar-EG')}+`, l: 'مورد موثّق' },
+                { v: (stats.listings || 0).toLocaleString('ar-EG'), l: 'إعلان نشط' },
+                { v: '٤٨ ساعة', l: 'ضمان الاسترداد' },
+              ].map((s, i) => (
+                <span key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 27, color: '#fff' }}>{s.v}</span>
+                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,.62)' }}>{s.l}</span>
+                </span>
+              ))}
             </div>
-          </div>
-
-          {/* Arch collage — (11 أغسطس 2026) بيع · إيجار · خدمات · بورصة مضمونة العقارية بس */}
-          <div className="rz-rise-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-            <Link className="rz-lift" href={shots['sale-property']?.slug ? `/marketplace/${shots['sale-property'].slug}` : "/marketplace?track=sales"} style={{ gridRow: 'span 2', position: 'relative', borderRadius: '160px 160px 20px 20px', overflow: 'hidden', minHeight: 380, display: 'block', border: `2px solid ${INK}` }}>
-              {/* 🖼️ (١٦ أغسطس ٢٠٢٦ — محمد: «حط صور») أكبر بلاطة في الصفحة كانت
-                  بتعرض **صورة استوك من Unsplash** (بيت مش بتاعنا) — لأن
-                  `site_settings.hero_image_url` لسه على القيمة الافتراضية.
-                  دلوقتي بتاخد أغلى إعلان عقاري بصورة عندنا، وبترجع لصورة
-                  الإعدادات لو مفيش. ⛔ ماترجّعش الاستوك: الزائر اللي بيشوف
-                  صورة كتالوج على الواجهة بيفترض إن باقي الإعلانات مضروبة. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <Image src={shots['sale-property']?.img || heroImage} alt={shots['sale-property']?.title || 'بيع'} fill sizes="(max-width:1400px) 45vw, 620px" priority style={{ objectFit: 'cover' }} />
-              <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(14,51,44,0.9), rgba(14,51,44,0.05) 60%)' }} />
-              <span style={{ position: 'absolute', bottom: 0, right: 0, left: 0, padding: 22, display: 'block' }}>
-                <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 24, color: CREAM }}>بيع</span>
-                <span style={{ display: 'block', fontSize: 12, color: 'rgba(244,239,228,0.75)', marginTop: 2 }}>عقارات · عربيات · منتجات</span>
-              </span>
-              <span style={{ position: 'absolute', top: 18, left: 18, padding: '5px 14px', borderRadius: 999, background: GOLD, color: '#fff', fontSize: 11, fontWeight: 700 }}>الأكثر طلباً</span>
-            </Link>
-            {/* 🖼️ (١٦ أغسطس ٢٠٢٦) كان إيموجي 🔑 على خلفية لون — دلوقتي صورة
-                إعلان إيجار حقيقي. لو مفيش صورة بيرجع للإيموجي زي ما كان. */}
-            <Link className="rz-lift" href="/marketplace?track=rentals" style={{ position: 'relative', borderRadius: '100px 100px 20px 20px', overflow: 'hidden', minHeight: 183, display: 'block', background: INK, border: `2px solid ${INK}` }}>
-              {(shots['tourism'] || shots['properties'])?.img ? (
-                <>
-                  <Image src={(shots['tourism'] || shots['properties']).img} alt="إيجار" fill sizes="220px" style={{ objectFit: 'cover' }} />
-                  <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(14,51,44,0.92), rgba(14,51,44,0.05) 65%)' }} />
-                </>
-              ) : (
-                <span className="rz-float" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 54 }}>🔑</span>
-              )}
-              <span style={{ position: 'absolute', bottom: 0, right: 0, left: 0, padding: 16, display: 'block' }}>
-                <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 18, color: CREAM }}>إيجار</span>
-                <span style={{ display: 'block', fontSize: 11, color: 'rgba(244,239,228,0.72)', marginTop: 1 }}>شاليهات · شقق · عربيات</span>
-              </span>
-            </Link>
-            <Link className="rz-lift" href="/marketplace?track=services" style={{ position: 'relative', borderRadius: '100px 100px 20px 20px', overflow: 'hidden', minHeight: 183, display: 'block', background: GOLD, border: `2px solid ${INK}` }}>
-              {(shots['services-medical-beauty'] || shots['services-events'])?.img ? (
-                <>
-                  <Image src={(shots['services-medical-beauty'] || shots['services-events']).img} alt="خدمات" fill sizes="220px" style={{ objectFit: 'cover' }} />
-                  <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(14,51,44,0.92), rgba(14,51,44,0.05) 65%)' }} />
-                </>
-              ) : (
-                <span className="rz-float-2" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 54 }}>🛠️</span>
-              )}
-              <span style={{ position: 'absolute', bottom: 0, right: 0, left: 0, padding: 16, display: 'block' }}>
-                <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 18, color: '#fff' }}>خدمات</span>
-                <span style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.75)', marginTop: 1 }}>مناسبات · تجميل · صيانة</span>
-              </span>
-            </Link>
           </div>
         </div>
       </section>
 
-      {/* ═══ Marquee (لايف) ═══ */}
       <RedesignMarquee />
 
-      {/* ═══ Categories ═══ */}
-      <section style={{ maxWidth: 1360, margin: '0 auto', padding: '84px 28px 64px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 40 }}>
+      {/* ═══ الأقسام الستة — المكان الوحيد اللي بتظهر فيه ═══ */}
+      <section style={{ maxWidth: 1400, margin: '0 auto', padding: '90px 32px 70px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 38 }}>
           <div>
-            <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, letterSpacing: '0.3em', color: GOLD }}>الأقسام</p>
-            <h2 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 44, color: INK, letterSpacing: '-0.01em' }}>اختار مجالك</h2>
+            <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, letterSpacing: '.28em', color: GOLD }}>الأقسام</p>
+            <h2 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 46, color: DARK, letterSpacing: '-.02em' }}>اختار مجالك</h2>
           </div>
-          <Link href="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 14, color: INK, borderBottom: `2px solid ${GOLD}`, paddingBottom: 3 }}>كل الأقسام ←</Link>
+          <Link href="/marketplace" style={{ fontSize: 14, fontWeight: 700, color: BRAND, borderBottom: `2px solid ${GOLD}`, paddingBottom: 3 }}>كل الأقسام ←</Link>
         </div>
-        {/* 🖼️ (١٦ أغسطس ٢٠٢٦ — محمد: «التابات اللي فوق مفيهاش صور ليه؟»)
-            الكروت دي كانت إيموجي في دايرة ملوّنة (🏷️ 🔑 🛠️ 🏗️ 📈). دلوقتي
-            كل كارت صورة على طوله: التلاتة الأولانيين من إعلانات حقيقية،
-            والبورصتين من `public/hero/` (الصور دي كانت موجودة أصلًا في
-            الريبو ومحدش بيستعملها على الديسكتوب).
-            ⚠️ الإيموجي فضل موجود كملاذ أخير — لو صورة ماجتش، الكارت بيرجع
-               لشكله القديم بدل ما يبان مربع فاضي. */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
-          {groups.map((g, i) => {
-            const isDark = g.slug === 'bourse' || g.slug === 'business'
-            const img =
-              pinned[g.slug]        ? pinned[g.slug] :
-              g.slug === 'sale'     ? shots['sale-vehicles']?.img || shots['shop']?.img :
-              g.slug === 'rentals'  ? shots['properties']?.img || shots['vehicles']?.img :
-              g.slug === 'services' ? shots['services-events']?.img || shots['services-medical-beauty']?.img :
-              g.slug === 'bourse'   ? '/hero/bourse.jpg' :
-              g.slug === 'business' ? '/hero/business-lounge.jpg' : undefined
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 14 }}>
+          {SECTIONS.map((s, i) => {
+            const img = imgFor(s)
+            const n = countFor(s.tracks)
             return (
-              <Link
-                key={g.slug}
-                className="rz-cat"
-                href={g.href}
-                style={{ ['--acc' as string]: ACCENTS[i % ACCENTS.length], position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: 10, minHeight: 260, padding: '36px 18px 24px', overflow: 'hidden', background: isDark ? INK : '#fff', border: `2px solid ${INK}`, borderRadius: '110px 110px 18px 18px', textAlign: 'center' }}
-              >
-                {img ? (
-                  <>
-                    <Image src={img} alt={g.name} fill sizes="270px" style={{ objectFit: 'cover' }} />
-                    <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(14,51,44,0.94) 0%, rgba(14,51,44,0.55) 46%, rgba(14,51,44,0.12) 100%)' }} />
-                  </>
-                ) : (
-                  <span style={{ width: 64, height: 64, borderRadius: '50%', background: isDark ? 'rgba(244,239,228,0.12)' : TINTS[i % TINTS.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30 }}>{g.emoji}</span>
-                )}
-                <span style={{ display: 'block', position: 'relative' }}>
-                  <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 19, color: img || isDark ? CREAM : INK }}>{g.name}</span>
-                  {!isDark && <span style={{ display: 'block', fontSize: 11.5, color: img ? 'rgba(244,239,228,0.72)' : 'rgba(18,38,31,0.55)', marginTop: 4 }}>{g.catCount} قسم فرعي</span>}
-                </span>
-                <span style={{ position: 'relative', padding: '5px 16px', borderRadius: 999, background: isDark ? GOLD : ACCENTS[i % ACCENTS.length], color: '#fff', fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  {isDark ? (<><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ADE80', display: 'inline-block' }} /> لايف</>) : (g.count > 0 ? `${g.count.toLocaleString('ar-EG')} إعلان` : 'استكشف')}
+              <Link key={s.key} className="rz-lift rz-zoom" href={s.href} style={{ position: 'relative', minHeight: 300, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 20, borderRadius: 18, overflow: 'hidden', background: DARK, animation: `rzRise .8s ease ${i * 0.06}s both` }}>
+                {img && <Image src={img} alt={s.name} fill sizes="240px" style={{ objectFit: 'cover' }} />}
+                <span style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, ${DARK}F2 0%, ${DARK}8C 45%, ${DARK}1F 100%)` }} />
+                <span style={{ position: 'absolute', top: 0, insetInline: 0, height: 3, background: s.accent }} />
+                <span style={{ position: 'relative' }}>
+                  <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 19, color: '#fff', lineHeight: 1.3 }}>{s.name}</span>
+                  <span style={{ display: 'block', fontSize: 11.5, color: 'rgba(255,255,255,.62)', marginTop: 5 }}>{s.desc}</span>
+                  <span style={{ display: 'inline-flex', marginTop: 12, padding: '5px 14px', borderRadius: 999, background: s.accent, color: '#fff', fontSize: 11, fontWeight: 800 }}>
+                    {n > 0 ? `${n.toLocaleString('ar-EG')} إعلان` : 'لايف'}
+                  </span>
                 </span>
               </Link>
             )
@@ -400,110 +372,58 @@ a { text-decoration: none; }
         </div>
       </section>
 
-      {/* ═══ 🖼️ المعرض — صور كبيرة من إعلانات حقيقية ═══ */}
-      {/* (١٦ أغسطس ٢٠٢٦ — محمد: «واجهة فخمة بصور كبيرة»)
-          القسم ده بيتبني من `home_showcase_shots()` — أغلى إعلان بصورة في
-          كل مجموعة. مفيش صورة استوك ولا نص وهمي: لو الإعلان اتشال، البلاطة
-          بتختفي لوحدها بدل ما تفضل صورة ميتة. */}
-      {(() => {
-        const feat = [
-          { k: 'sale-property',  label: 'عقارات للبيع',   href: '/marketplace?track=sales',            span: 2 },
-          { k: 'sale-vehicles',  label: 'مركبات للبيع',   href: '/marketplace?track=sales',            span: 1 },
-          { k: 'sale-marine',    label: 'يخوت ومراكب',    href: '/marketplace?track=sales',            span: 1 },
-          { k: 'food',           label: 'مطاعم',          href: '/marketplace?track=restaurants',      span: 1 },
-          { k: 'home-furniture', label: 'أثاث وبيت',      href: '/marketplace?track=products',         span: 1 },
-        ].filter(f => shots[f.k]?.img)
-        if (feat.length < 3) return null
-        return (
-          <section style={{ maxWidth: 1360, margin: '0 auto', padding: '8px 28px 84px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 30 }}>
-              <div>
-                <p style={{ margin: '0 0 10px', display: 'inline-flex', alignItems: 'center', gap: 10, fontSize: 12, fontWeight: 700, letterSpacing: '0.3em', color: GOLD }}>
-                  <span style={{ width: 28, height: 1.5, background: GOLD, display: 'inline-block' }} />
-                  معروض دلوقتي
-                </p>
-                <h2 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 40, color: INK, letterSpacing: '-0.01em' }}>
-                  إعلانات حقيقية من السوق
-                </h2>
-              </div>
-              <Link href="/marketplace" style={{ fontSize: 14, fontWeight: 700, color: GOLD }}>شوف الكل ←</Link>
+      {/* ═══ مختارات — إعلانات بعينها، مش أقسام ═══ */}
+      {picks.length >= 3 && (
+        <section style={{ maxWidth: 1400, margin: '0 auto', padding: '0 32px 90px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 34 }}>
+            <div>
+              <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, letterSpacing: '.28em', color: GOLD }}>معروض دلوقتي</p>
+              <h2 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 46, color: DARK, letterSpacing: '-.02em' }}>إعلانات حقيقية</h2>
             </div>
+            <Link href="/marketplace" style={{ fontSize: 14, fontWeight: 700, color: BRAND, borderBottom: `2px solid ${GOLD}`, paddingBottom: 3 }}>شوف الكل ←</Link>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18 }}>
+            {picks.map(sh => (
+              <Link key={sh.slug} className="rz-lift rz-zoom" href={`/marketplace/${sh.slug}`} style={{ display: 'block', borderRadius: 20, overflow: 'hidden', background: '#fff', border: `1px solid ${LINE}` }}>
+                <span style={{ position: 'relative', display: 'block', height: 260, overflow: 'hidden' }}>
+                  <Image src={sh.img} alt={sh.title} fill sizes="330px" style={{ objectFit: 'cover' }} />
+                </span>
+                <span style={{ display: 'block', padding: '20px 20px 22px' }}>
+                  <span style={{ display: 'block', fontWeight: 800, fontSize: 15, lineHeight: 1.6, color: DARK, height: 48, overflow: 'hidden' }}>{sh.title}</span>
+                  <span style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 12, paddingTop: 14, borderTop: `1px solid ${LINE}` }}>
+                    <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 22, color: BRAND }}>{money(sh.price) ?? 'اسأل'}</span>
+                    {sh.price != null && <span style={{ fontSize: 12, color: MUTED, fontWeight: 700 }}>جنيه</span>}
+                    {sh.city && <span style={{ marginInlineStart: 'auto', fontSize: 11.5, color: MUTED }}>{sh.city}</span>}
+                  </span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridAutoRows: 230, gap: 16 }}>
-              {feat.map((f) => {
-                const sh = shots[f.k]
-                const price = sh.price != null ? Number(sh.price).toLocaleString('ar-EG', { maximumFractionDigits: 0 }) : null
-                const big = f.span === 2
-                return (
-                  <Link
-                    key={f.k}
-                    href={sh.slug ? `/marketplace/${sh.slug}` : f.href}
-                    className="rz-lift"
-                    style={{
-                      gridColumn: big ? 'span 2' : 'span 1',
-                      gridRow: big ? 'span 2' : 'span 1',
-                      position: 'relative', overflow: 'hidden', borderRadius: 20,
-                      border: `2px solid ${INK}`, display: 'block',
-                    }}
-                  >
-                    <Image src={sh.img} alt={f.label} fill sizes={big ? '(max-width:1400px) 50vw, 660px' : '340px'} style={{ objectFit: 'cover' }} />
-                    <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(14,51,44,0.93) 0%, rgba(14,51,44,0.25) 48%, rgba(14,51,44,0) 78%)' }} />
-                    <span style={{ position: 'absolute', top: 16, right: 16, padding: '6px 14px', borderRadius: 999, background: 'rgba(244,239,228,0.94)', color: INK, fontSize: 11.5, fontWeight: 800 }}>
-                      {f.label}
-                    </span>
-                    <span style={{ position: 'absolute', bottom: 0, right: 0, left: 0, padding: big ? 26 : 18, display: 'block' }}>
-                      <span style={{
-                        display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900,
-                        color: CREAM, fontSize: big ? 27 : 16, lineHeight: 1.35,
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      }}>
-                        {sh.title}
-                      </span>
-                      <span style={{ display: 'flex', alignItems: 'baseline', gap: 7, marginTop: 7 }}>
-                        {price && (
-                          <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: big ? 25 : 17, color: '#7BE8C4' }}>
-                            {price}
-                          </span>
-                        )}
-                        {price && <span style={{ fontSize: 11.5, color: 'rgba(244,239,228,0.7)', fontWeight: 700 }}>جنيه</span>}
-                        {sh.city && <span style={{ fontSize: 11.5, color: 'rgba(244,239,228,0.6)', marginInlineStart: 6 }}>📍 {sh.city}</span>}
-                      </span>
-                    </span>
-                  </Link>
-                )
-              })}
-            </div>
-          </section>
-        )
-      })()}
-
-      {/* ═══ Live market (dark) ═══ */}
+      {/* ═══ بورصة مضمونة — داتا مالهاش تكرار في أي مكان تاني ═══ */}
       {tiles.length > 0 && (
-        <section style={{ background: INK, padding: '72px 28px', position: 'relative', overflow: 'hidden' }}>
-          <span style={{ position: 'absolute', top: -120, left: -80, width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(43, 69, 33,0.22), transparent 70%)', pointerEvents: 'none' }} />
-          <div style={{ maxWidth: 1360, margin: '0 auto', position: 'relative' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 36 }}>
+        <section style={{ background: DARK, padding: '86px 32px' }}>
+          <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 38 }}>
               <div>
-                <p style={{ margin: '0 0 10px', display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, letterSpacing: '0.3em', color: GOLD }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ADE80', display: 'inline-block' }} />
-                  بورصة مضمونة · لايف
+                <p style={{ margin: '0 0 10px', display: 'inline-flex', alignItems: 'center', gap: 9, fontSize: 12, fontWeight: 700, letterSpacing: '.28em', color: GOLD }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: BRAND_LIGHT }} /> لايف
                 </p>
-                <h2 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 44, color: CREAM, letterSpacing: '-0.01em' }}>أسعار السوق دلوقتي</h2>
+                <h2 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 46, color: '#fff', letterSpacing: '-.02em' }}>أسعار السوق دلوقتي</h2>
               </div>
-              <Link className="rz-goldbtn" href="/real-estate/market" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 26px', borderRadius: 999, background: GOLD, color: '#fff', fontWeight: 700, fontSize: 14 }}>شوف كل الأسعار ←</Link>
+              <Link className="rz-gold" href="/real-estate/market" style={{ padding: '13px 28px', borderRadius: 999, background: GOLD, color: DARK, fontWeight: 900, fontSize: 14 }}>كل الأسعار ←</Link>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
               {tiles.map(t => (
-                <div key={t.area} className="rz-lift" style={{ position: 'relative', overflow: 'hidden', border: '1px solid rgba(244,239,228,0.14)', borderRadius: 18, padding: 24 }}>
+                <div key={t.area} className="rz-lift" style={{ position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,.13)', borderRadius: 18, padding: 26 }}>
                   <span style={{ position: 'absolute', inset: 0, backgroundImage: `url(${t.img})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-                  <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(10,32,27,0.95), rgba(10,32,27,0.72))' }} />
-                  <span style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(244,239,228,0.85)' }}>{t.area}</span>
-                    <span style={{ fontSize: 20 }}>{t.emoji}</span>
-                  </span>
-                  <span style={{ position: 'relative', display: 'block', marginTop: 16, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 25, color: CREAM, fontVariantNumeric: 'tabular-nums' }}>{t.value}</span>
-                  <span style={{ position: 'relative', display: 'block', marginTop: 4, fontSize: 12, color: 'rgba(244,239,228,0.7)' }}>{t.label}</span>
-                  <span style={{ position: 'relative', display: 'inline-flex', marginTop: 14, padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: 'rgba(74,222,128,0.15)', color: '#4ADE80' }}>محدث {updated}</span>
+                  <span style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, ${DARK}F7, ${DARK}C7)` }} />
+                  <span style={{ position: 'relative', display: 'block', fontSize: 12, fontWeight: 700, letterSpacing: '.06em', color: 'rgba(255,255,255,.82)' }}>{t.area}</span>
+                  <span style={{ position: 'relative', display: 'block', marginTop: 16, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 26, color: '#fff', fontVariantNumeric: 'tabular-nums' }}>{t.value}</span>
+                  <span style={{ position: 'relative', display: 'block', marginTop: 5, fontSize: 12, color: 'rgba(255,255,255,.68)' }}>{t.label}</span>
+                  <span style={{ position: 'relative', display: 'inline-flex', marginTop: 15, padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: 'rgba(52,211,153,.16)', color: BRAND_LIGHT }}>محدث {updated}</span>
                 </div>
               ))}
             </div>
@@ -511,52 +431,39 @@ a { text-decoration: none; }
         </section>
       )}
 
-      {/* ⚠️ (11 أغسطس 2026، طلب محمد) قسم «أخبار مضمونة» اتشال من هنا — الأخبار
-          + أسعار العملات والذهب اتنقلوا بالكامل لجوّه تاب "بورضة رجال الأعمال"
-          (/business-lounge). كارت البورضة في الشبكة فوق (buildGroups) هو اللي
-          بيودّي عليهم دلوقتي. */}
-
-      {/* ═══ How it works ═══ */}
-      <section style={{ maxWidth: 1360, margin: '0 auto', padding: '84px 28px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, letterSpacing: '0.3em', color: GOLD }}>ليه مضمونة؟</p>
-          <h2 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 44, color: INK }}>الضمان مش كلام</h2>
+      {/* ═══ ليه مضمونة ═══ */}
+      <section style={{ maxWidth: 1400, margin: '0 auto', padding: '90px 32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 50 }}>
+          <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, letterSpacing: '.28em', color: GOLD }}>ليه مضمونة؟</p>
+          <h2 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 46, color: DARK, letterSpacing: '-.02em' }}>الضمان مش كلام</h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0, border: `2px solid ${INK}`, borderRadius: 24, overflow: 'hidden', background: '#fff' }}>
-          <div style={{ padding: '40px 32px', borderLeft: `2px solid ${INK}` }}>
-            <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 15, color: GOLD }}>٠١</span>
-            <h3 style={{ margin: '14px 0 10px', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 21, color: INK }}>مورد متوثّق</h3>
-            <p style={{ margin: 0, fontSize: 14, lineHeight: 1.9, color: 'rgba(18,38,31,0.65)' }}>كل مورد بيعدّي على مراجعة هوية ونشاط قبل ما إعلانه ينزل السوق. مفيش حسابات وهمية.</p>
-          </div>
-          <div style={{ padding: '40px 32px', borderLeft: `2px solid ${INK}`, background: INK }}>
-            <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 15, color: GOLD }}>٠٢</span>
-            <h3 style={{ margin: '14px 0 10px', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 21, color: CREAM }}>دفع آمن</h3>
-            <p style={{ margin: 0, fontSize: 14, lineHeight: 1.9, color: 'rgba(244,239,228,0.7)' }}>فلوسك محجوزة عندنا لحد ما تستلم وتتأكد. لو في مشكلة — استرداد كامل خلال ٤٨ ساعة.</p>
-          </div>
-          <div style={{ padding: '40px 32px' }}>
-            <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 15, color: GOLD }}>٠٣</span>
-            <h3 style={{ margin: '14px 0 10px', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 21, color: INK }}>الجني معاك</h3>
-            <p style={{ margin: 0, fontSize: 14, lineHeight: 1.9, color: 'rgba(18,38,31,0.65)' }}>مساعد ذكي بيرد ٢٤ ساعة — بيقارن الأسعار، يرشّح موردين، ويتابع طلبك لحد ما يوصل.</p>
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
+          {[
+            { n: '٠١', t: 'مورد متوثّق', d: 'كل مورد بيعدّي على مراجعة هوية ونشاط قبل ما إعلانه ينزل السوق. مفيش حسابات وهمية.' },
+            { n: '٠٢', t: 'دفع آمن', d: 'فلوسك محجوزة عندنا لحد ما تستلم وتتأكد. لو في مشكلة — استرداد كامل خلال ٤٨ ساعة.' },
+            { n: '٠٣', t: 'المارد معاك', d: 'مساعد ذكي بيرد ٢٤ ساعة — بيقارن الأسعار، يرشّح موردين، ويتابع طلبك لحد ما يوصل.' },
+          ].map((c, i) => (
+            <div key={i} style={{ background: '#fff', border: `1px solid ${LINE}`, borderRadius: 22, padding: '42px 34px' }}>
+              <span style={{ fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 15, color: GOLD }}>{c.n}</span>
+              <h3 style={{ margin: '16px 0 12px', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 22, color: DARK }}>{c.t}</h3>
+              <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.95, color: MUTED }}>{c.d}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ═══ Supplier CTA ═══ */}
-      <section style={{ maxWidth: 1360, margin: '0 auto', padding: '0 28px 96px' }}>
-        <div style={{ position: 'relative', background: GOLD, borderRadius: 28, padding: '64px 56px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
-          <span style={{ position: 'absolute', top: -60, right: -60, width: 240, height: 240, borderRadius: '50%', border: '28px solid rgba(255,255,255,0.12)', pointerEvents: 'none' }} />
-          <span style={{ position: 'absolute', bottom: -80, left: '15%', width: 200, height: 200, borderRadius: '50%', border: '22px solid rgba(14,51,44,0.15)', pointerEvents: 'none' }} />
-          <div style={{ position: 'relative', maxWidth: 560 }}>
-            <h2 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 40, lineHeight: 1.3, color: '#fff' }}>عندك منتج أو خدمة؟<br />اعرضها للمصريين — مجاناً</h2>
-            <p style={{ margin: '14px 0 0', fontSize: 15, lineHeight: 1.9, color: 'rgba(255,255,255,0.85)' }}>افتح متجرك على مضمونة في دقيقتين، وإعلانك يوصل لعملاء جاهزين يشتروا.</p>
+      {/* ═══ دعوة المورّدين ═══ */}
+      <section style={{ maxWidth: 1400, margin: '0 auto', padding: '0 32px 100px' }}>
+        <div style={{ position: 'relative', background: DARK, borderRadius: 28, padding: '70px 60px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
+          <span style={{ position: 'absolute', top: -70, insetInlineStart: -70, width: 260, height: 260, borderRadius: '50%', border: `26px solid ${GOLD}22` }} />
+          <div style={{ position: 'relative', maxWidth: 600 }}>
+            <h2 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 42, lineHeight: 1.3, color: '#fff' }}>عندك منتج أو خدمة؟<br /><span style={{ color: GOLD }}>اعرضها مجاناً</span></h2>
+            <p style={{ margin: '16px 0 0', fontSize: 15.5, lineHeight: 1.9, color: 'rgba(255,255,255,.72)' }}>افتح متجرك على مضمونة في دقيقتين، وإعلانك يوصل لعملاء جاهزين يشتروا.</p>
           </div>
-          <Link className="rz-lift" href="/list-your-asset" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 10, padding: '18px 40px', borderRadius: 999, background: INK, color: CREAM, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 17, boxShadow: '0 16px 32px -12px rgba(14,51,44,0.5)' }}>ابدأ دلوقتي ←</Link>
+          <Link className="rz-lift" href="/list-your-asset" style={{ position: 'relative', padding: '19px 44px', borderRadius: 999, background: GOLD, color: DARK, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 17 }}>ابدأ دلوقتي ←</Link>
         </div>
       </section>
 
-      {/* (11 Aug 2026) الفوتر الأخضر الغامق القديم (INK #0E332C) اتبدّل بـ
-          SiteFooter الموحّد (#059669) — أول صفحة بتتجرّب عليها قبل التعميم
-          على باقي صفحات العميل (طلب محمد: الهيدر والفوتر أخضر). */}
       <SiteFooter />
     </div>
   )
