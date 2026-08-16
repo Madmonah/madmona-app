@@ -1,19 +1,20 @@
 'use client'
 
 // ============================================================================
-// 🛵 صفحة الطيار — /delivery/[token]
+// 🛵 حساب الطيار — /delivery/[token]
 //
-// (١٦ أغسطس ٢٠٢٦ — محمد: «ابنيلي سيستم دليفري من الأول — طيارين»)
+// (١٦ أغسطس ٢٠٢٦ — محمد: «عايز الطيار يكون ليه حساب ويكون باين ليه قبل
+//  ما يقبل كل تفاصيل الرحلة واللوكيشن من وإلى وكل حاجة»)
 //
-// الطيار مش هيعمل أكونت ولا هينزّل تطبيق. بياخد لينك واتساب فيه توكنه،
-// يفتحه من الموبايل، يشوف رحلاته، ويدوس زرار واحد في كل خطوة:
-//   قبلت → استلمت من المحل → وصّلت (أو: فشلت + السبب)
+// تلات حالات للحساب:
+//   pending  → «أوراقك قيد المراجعة» — مفيش رحلات لحد الموافقة
+//   rejected → السبب + لينك يرفع أوراق تانية
+//   approved → رحلاته، وكل رحلة معروضة بـ**كل** تفاصيلها قبل القبول:
+//              العنوان الكامل + زرار خريطة للاستلام والتسليم + التليفونات
+//              + أجرته + التحصيل + الملاحظات. القرار قراره وهو شايف كل حاجة.
 //
-// نفس فلسفة اللينكات الممغنطة بتاعة العملاء — صفر احتكاك.
-//
-// ⚠️ كل التحديثات بتمشي عن طريق rider_update_trip (SECURITY DEFINER)
-//    اللي بيتحقق من التوكن وبيسمح بالانتقالات الصح بس — الصفحة دي
-//    ماتقدرش تعمل حاجة التوكن مايسمحش بيها حتى لو حد عبث بيها.
+// ⚠️ التحديثات كلها عن طريق rider_update_trip (بتتحقق من التوكن ومن
+//    الموافقة ومن الانتقال المسموح) — الصفحة ماتقدرش تتخطى الحواجز دي.
 // ============================================================================
 
 import { useCallback, useEffect, useState } from 'react'
@@ -30,35 +31,41 @@ interface Trip {
   pickup_area: string
   pickup_address: string | null
   pickup_phone: string | null
+  pickup_maps_url: string | null
   dropoff_area: string
   dropoff_address: string | null
   dropoff_phone: string | null
+  dropoff_maps_url: string | null
+  notes: string | null
   rider_payout_egp: number
   cod_amount_egp: number
   status: string
 }
 
+interface Me {
+  rider_name: string
+  verification_status: 'pending' | 'approved' | 'rejected'
+  rejection_reason: string | null
+  trips: Trip[]
+}
+
 const STATUS_AR: Record<string, string> = {
-  offered: 'مستنية قبولك',
-  accepted: 'قبلتها — روح استلم',
-  picked_up: 'معاك — وصّلها',
+  offered: '🆕 رحلة جديدة — راجع التفاصيل واقبل',
+  accepted: '✅ قبلتها — روح استلم',
+  picked_up: '📦 معاك — وصّلها',
 }
 
 export default function RiderPage({ params }: { params: { token: string } }) {
   const { token } = params
-  const [trips, setTrips] = useState<Trip[]>([])
-  const [riderName, setRiderName] = useState<string>('')
+  const [me, setMe] = useState<Me | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState<string | null>(null)
   const [denied, setDenied] = useState(false)
 
   const load = useCallback(async () => {
-    // rider_trips_by_token بترجّع رحلات الطيار المفتوحة بالتوكن
     const { data, error } = await supabase.rpc('rider_trips_by_token', { p_token: token })
     if (error || !data) { setDenied(true); setLoading(false); return }
-    const d = data as { rider_name: string; trips: Trip[] }
-    setRiderName(d.rider_name || '')
-    setTrips(d.trips || [])
+    setMe(data as Me)
     setLoading(false)
   }, [token])
 
@@ -77,37 +84,84 @@ export default function RiderPage({ params }: { params: { token: string } }) {
   }
 
   if (loading) return <Center>⏳ ثواني…</Center>
-  if (denied) return <Center>❌ اللينك ده مش شغّال — كلّم مضمونة.</Center>
+  if (denied || !me) return <Center>❌ اللينك ده مش شغّال — كلّم مضمونة.</Center>
 
+  // ── قيد المراجعة ─────────────────────────────────────────────────────
+  if (me.verification_status === 'pending') {
+    return (
+      <Center>
+        <div>
+          <div style={{ fontSize: 52 }}>🕐</div>
+          <h2 style={{ color: '#14231E' }}>أهلًا يا {me.rider_name}</h2>
+          <p style={{ lineHeight: 1.8 }}>
+            أوراقك <b>قيد المراجعة</b> دلوقتي.<br />
+            أول ما نوافق عليها هيوصلك واتساب وهتبدأ تستلم رحلات من هنا.
+          </p>
+        </div>
+      </Center>
+    )
+  }
+
+  // ── مرفوض ────────────────────────────────────────────────────────────
+  if (me.verification_status === 'rejected') {
+    return (
+      <Center>
+        <div>
+          <div style={{ fontSize: 52 }}>📄</div>
+          <h2 style={{ color: '#14231E' }}>أوراقك محتاجة تتظبط</h2>
+          <p style={{ lineHeight: 1.8 }}>
+            {me.rejection_reason || 'الصور مش واضحة'}<br />
+            صوّرها تاني بوضوح وسجّل من نفس اللينك.
+          </p>
+          <a href="/delivery/register" style={{
+            display: 'inline-block', marginTop: 10, padding: '12px 24px', borderRadius: 12,
+            background: '#059669', color: '#fff', fontWeight: 900, textDecoration: 'none',
+          }}>ارفع أوراق جديدة</a>
+        </div>
+      </Center>
+    )
+  }
+
+  // ── موثّق — رحلاته ──────────────────────────────────────────────────
   return (
     <div dir="rtl" style={{ minHeight: '100vh', background: '#FAFAF7', fontFamily: 'sans-serif', padding: 16 }}>
       <header style={{ marginBottom: 18 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 900, color: '#14231E', margin: 0 }}>🛵 رحلاتك يا {riderName}</h1>
-        <p style={{ color: '#7C8A84', fontSize: 13, marginTop: 4 }}>
-          اسحب لتحت عشان تحدّث · مضمونة
-        </p>
+        <h1 style={{ fontSize: 22, fontWeight: 900, color: '#14231E', margin: 0 }}>
+          🛵 رحلاتك يا {me.rider_name}
+        </h1>
+        <p style={{ color: '#7C8A84', fontSize: 13, marginTop: 4 }}>✅ حسابك موثّق · مضمونة</p>
       </header>
 
-      {trips.length === 0 && (
+      {me.trips.length === 0 && (
         <Center>مفيش رحلات دلوقتي — هيجيلك واتساب أول ما تنزل رحلة ✌️</Center>
       )}
 
-      {trips.map((t) => (
+      {me.trips.map((t) => (
         <div key={t.id} style={{
           background: '#fff', borderRadius: 16, padding: 16, marginBottom: 14,
-          border: '1px solid #E5DFD3', boxShadow: '0 4px 14px -8px rgba(20,35,30,.25)',
+          border: t.status === 'offered' ? '2px solid #059669' : '1px solid #E5DFD3',
+          boxShadow: '0 4px 14px -8px rgba(20,35,30,.25)',
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-            <span style={{ fontWeight: 900, color: '#059669' }}>{STATUS_AR[t.status] ?? t.status}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontWeight: 900, color: '#059669', fontSize: 14 }}>{STATUS_AR[t.status] ?? t.status}</span>
             {t.order_ref && <span style={{ color: '#7C8A84', fontSize: 12 }}>#{t.order_ref}</span>}
           </div>
 
-          <Row icon="📍" label="استلام" value={`${t.pickup_area}${t.pickup_address ? ` — ${t.pickup_address}` : ''}`} phone={t.pickup_phone} />
-          <Row icon="🏁" label="تسليم" value={`${t.dropoff_area}${t.dropoff_address ? ` — ${t.dropoff_address}` : ''}`} phone={t.dropoff_phone} />
+          {/* 📍 كل التفاصيل ظاهرة قبل القبول — دي النقطة كلها */}
+          <Stop icon="📍" title="الاستلام" area={t.pickup_area} address={t.pickup_address}
+                phone={t.pickup_phone} maps={t.pickup_maps_url} />
+          <Stop icon="🏁" title="التسليم" area={t.dropoff_area} address={t.dropoff_address}
+                phone={t.dropoff_phone} maps={t.dropoff_maps_url} />
 
-          <div style={{ display: 'flex', gap: 14, margin: '10px 0', fontSize: 14 }}>
+          {t.notes && (
+            <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 10, padding: 10, fontSize: 13, margin: '10px 0' }}>
+              📝 {t.notes}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 16, margin: '12px 0', fontSize: 15, background: '#F0FDF4', borderRadius: 10, padding: '10px 12px' }}>
             <span>💰 أجرتك: <b>{t.rider_payout_egp} ج</b></span>
-            {Number(t.cod_amount_egp) > 0 && <span>💵 تحصيل: <b>{t.cod_amount_egp} ج</b></span>}
+            {Number(t.cod_amount_egp) > 0 && <span>💵 تحصّل من العميل: <b>{t.cod_amount_egp} ج</b></span>}
           </div>
 
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
@@ -128,17 +182,31 @@ export default function RiderPage({ params }: { params: { token: string } }) {
   )
 }
 
-function Row({ icon, label, value, phone }: { icon: string; label: string; value: string; phone: string | null }) {
+function Stop({ icon, title, area, address, phone, maps }: {
+  icon: string; title: string; area: string
+  address: string | null; phone: string | null; maps: string | null
+}) {
   return (
-    <div style={{ marginBottom: 6, fontSize: 14, color: '#14231E' }}>
-      {icon} <b>{label}:</b> {value}
-      {phone && (
-        <a href={`tel:${phone}`} style={{ marginRight: 8, color: '#059669', fontWeight: 700, textDecoration: 'none' }}>
-          📞 اتصل
-        </a>
-      )}
+    <div style={{ marginBottom: 10, padding: '10px 12px', background: '#FAFAF7', borderRadius: 10 }}>
+      <div style={{ fontWeight: 800, fontSize: 14, color: '#14231E', marginBottom: 3 }}>
+        {icon} {title}: {area}
+      </div>
+      {address && <div style={{ fontSize: 13, color: '#4B5563', marginBottom: 6 }}>{address}</div>}
+      <div style={{ display: 'flex', gap: 8 }}>
+        {maps && (
+          <a href={maps} target="_blank" rel="noreferrer" style={chip('#059669', '#fff')}>🗺️ افتح الخريطة</a>
+        )}
+        {phone && <a href={`tel:${phone}`} style={chip('#fff', '#059669')}>📞 اتصل</a>}
+      </div>
     </div>
   )
+}
+
+function chip(bg: string, color: string): React.CSSProperties {
+  return {
+    padding: '7px 14px', borderRadius: 999, background: bg, color,
+    border: '1px solid #05966933', fontWeight: 800, fontSize: 13, textDecoration: 'none',
+  }
 }
 
 function Btn({ children, onClick, busy, primary }: {
@@ -146,7 +214,7 @@ function Btn({ children, onClick, busy, primary }: {
 }) {
   return (
     <button onClick={onClick} disabled={busy} style={{
-      flex: primary ? 1 : undefined, padding: '12px 14px', borderRadius: 12,
+      flex: primary ? 1 : undefined, padding: '13px 14px', borderRadius: 12,
       border: primary ? 'none' : '1px solid #E5DFD3',
       background: primary ? '#059669' : '#fff',
       color: primary ? '#fff' : '#14231E',
