@@ -61,9 +61,26 @@ async function setConfig(key: string, value: string) {
   await supabaseAdmin.from('whatsapp_config').upsert({ key, value } as never, { onConflict: 'key' })
 }
 
-async function haltQueue(reason: string) {
-  await setConfig('queue_send_enabled', '0')
-  await setConfig('queue_send_halt_note', `${new Date().toISOString()} — ${reason}`)
+// 🛣️ (١٦ أغسطس ٢٠٢٦ — محمد: «عايز كل رقم بمسار») الإيقاف بقى **لكل رقم
+//    لوحده**. قبل كده رقم واحد ميّت كان بيقفل الطابور كله (`queue_send_enabled=0`)
+//    — وده كان صح لما كان فيه مسار واحد، وبقى غلط دلوقتي: رقم فاصل
+//    مايصحّش يمنع الأرقام الشغّالة.
+function haltLane(session: string) {
+  return async (reason: string) => {
+    await setConfig(`queue_halt_${session}`, `${new Date().toISOString()} — ${reason}`)
+  }
+}
+
+/** هل المسار ده متوقف يدويًا أو بعد عطل؟ */
+async function laneHalted(session: string): Promise<string | null> {
+  try {
+    const { data } = await supabaseAdmin
+      .from('whatsapp_config')
+      .select('value')
+      .eq('key', `queue_halt_${session}`)
+      .maybeSingle()
+    return ((data as { value?: string } | null)?.value ?? '').trim() || null
+  } catch { return null }
 }
 
 interface QueueRow {
@@ -105,8 +122,11 @@ export async function GET(request: NextRequest) {
 
   // 🔀 (١٥ أغسطس ٢٠٢٦) حدود الأمان من `whatsapp_config` — السقف اليومي هنا،
   //    والفواصل وساعات الإرسال بيستعملهم `wa-queue.ts` وهو بيبني الطابور.
-  //    لازم تتقري بدري: `marketingCapped` تحت بيستعملها.
+  //    لازم تتقري بدري: السقف اليومي لكل مسار بيستعملها.
   const safety = await getSafety()
+
+  // الرقم الافتراضي — أي رسالة `session` بتاعها فاضي بتمشي عليه.
+  const DEFAULT_SESSION = await resolveSession()
 
   // ── ١) المارد متصل؟ لو لأ منبعتش خالص ────────────────────────────────
   //
@@ -146,19 +166,32 @@ export async function GET(request: NextRequest) {
   //    اللي اتفتح هو السقف اليومي بس، مش الإيقاع.
   const TRANSACTIONAL_CAMPAIGNS = ['booking_alert']
 
-  // ── ٢) السقف اليومي — للتسويق بس ─────────────────────────────────────
+  // ── ٢) السقف اليومي — لكل رقم لوحده، وللتسويق بس ────────────────────
+  //
+  // 🐞 (١٦ أغسطس ٢٠٢٦) العدّاد كان بيعدّ `status='sent'` بس. والرسالة أول
+  //    ما يجيلها إيصال بتتحوّل لـ`delivered` ثم `read` — يعني بتخرج من
+  //    العدّة خلال ثواني. النتيجة: **السقف اليومي عمره ما اتفعّل**. اتأكدنا
+  //    عمليًا: ٤٣ رسالة خرجت في ليلة والعدّاد شايف واحدة.
+  //    الصح: عدّ أي صف ليه `sent_at` النهاردة، مهما كانت حالته دلوقتي.
+  //
+  // 🛣️ وكمان بقى **لكل جلسة لوحدها** — واتساب بيحظر الرقم، مش الحساب.
+  //    فسقف ٢٠٠ معناه ٢٠٠ لكل رقم، مش ٢٠٠ متقسّمين على الأرقام.
   const dayStart = new Date()
   dayStart.setHours(0, 0, 0, 0)
   const { data: todayRaw } = await supabaseAdmin
     .from('whatsapp_campaign_messages')
-    .select('id')
-    .eq('status', 'sent')
+    .select('session, template_vars')
     .gte('sent_at', dayStart.toISOString())
-    .not('template_vars->>campaign_name', 'in', `(${TRANSACTIONAL_CAMPAIGNS.join(',')})`)
+    .limit(5000)
 
-  const sentToday = (todayRaw ?? []).length
-  // لو السقف اتوصل مانوقفش خالص — بنقفل التسويق ونسيب المعاملاتي يعدّي
-  const marketingCapped = sentToday >= safety.maxPerDay
+  const sentTodayBy = new Map<string, number>()
+  for (const r of ((todayRaw ?? []) as unknown as Array<{ session: string | null; template_vars: { campaign_name?: string } | null }>)) {
+    const camp = (r.template_vars?.campaign_name ?? '').trim()
+    if (TRANSACTIONAL_CAMPAIGNS.includes(camp)) continue
+    const key = (r.session || '').trim() || DEFAULT_SESSION
+    sentTodayBy.set(key, (sentTodayBy.get(key) ?? 0) + 1)
+  }
+  const sentToday = Array.from(sentTodayBy.values()).reduce((a, b) => a + b, 0)
 
   // ── ٣) الرسايل المستحقة ──────────────────────────────────────────────
   // ⚠️ (٦ أغسطس ٢٠٢٦) الحملات اللي ليها مُرسِل متخصص لازم تتستثنى هنا.
@@ -223,67 +256,48 @@ export async function GET(request: NextRequest) {
     }
   } catch { /* إعادة الإرسال مايوقفش الطابور */ }
 
-  // ── ٣.٥) 🚦 بوابة تأكيد الوصول — البروتوكول المعتمد ──────────────────
-  //    مايتبعتش رسالة جديدة قبل ما اللي قبلها يجيلها إيصال من OpenWA.
-  //    بنقيس على نفس نطاق الكرون ده (كل الحملات ما عدا اللي ليها مُرسِل
-  //    متخصص) وعلى جلسة الإرسال بتاعته لوحدها.
-  const QUEUE_SESSION = await resolveSession()
-  const gate = await ackGate({
-    session: QUEUE_SESSION,
-    ackWaitMs: ACK_WAIT_MS,
-    excludeCampaigns: PACED_CAMPAIGNS,
-    onHalt: haltQueue,
-  })
-  if (!gate.proceed) {
-    return NextResponse.json({
-      ok: !gate.halted,
-      sent: 0,
-      halted: gate.halted || undefined,
-      skipped: gate.reason,
-      waiting: gate.waiting,
-      waited_sec: gate.waited_sec,
-    }, gate.halted ? { status: 200 } : undefined)
-  }
-
-  // 🥇 المعاملاتي الأول دايمًا: حجز جديد مايستناش ورا طابور دعاية.
-  //    بنجيبه لوحده، ولو مفيش نرجع للطابور العادي.
+  // ── ٣.٥) 🛣️ مسار لكل رقم ────────────────────────────────────────────
+  //
+  // (١٦ أغسطس ٢٠٢٦ — محمد: «عايز كل رقم بمسار»)
+  //
+  // قبل كده الكرون كان **مسار واحد**: يقيس بوابة التأكيد لرقم واحد،
+  // ياخد رسالة واحدة مستحقة أيًا كان رقمها، ويبعتها. النتيجة إن حملتين
+  // على رقمين مختلفين بيتنافسوا على نفس الدور — الاتنين بيبطّئوا للنص،
+  // ورقم واقف بيوقّف اللي شغّال.
+  //
+  // دلوقتي: بنجيب المستحق كله، نقسّمه على الأرقام، وكل رقم بياخد بوابته
+  // وسقفه ورسالته لوحده في نفس التشغيلة. رقمين = ضعف السرعة، ورقم واقف
+  // مايأثرش على غيره.
+  const FETCH = 300
   const nowIso = new Date().toISOString()
   const COLS = 'id, recipient_phone, recipient_name, message_content, attempts, session, template_vars'
 
-  let { data: dueRaw, error: dueErr } = await supabaseAdmin
+  // 🥇 المعاملاتي الأول دايمًا: حجز جديد مايستناش ورا طابور دعاية.
+  const { data: txRaw, error: txErr } = await supabaseAdmin
     .from('whatsapp_campaign_messages')
     .select(COLS)
     .eq('status', 'queued')
     .in('template_vars->>campaign_name', TRANSACTIONAL_CAMPAIGNS)
     .lte('scheduled_for', nowIso)
     .order('scheduled_for', { ascending: true })
-    .limit(MAX_PER_RUN)
+    .limit(FETCH)
 
-  if (!dueErr && (dueRaw ?? []).length === 0) {
-    if (marketingCapped) {
-      return NextResponse.json({
-        ok: true, sent: 0,
-        skipped: 'السقف اليومي للتسويق اتوصل (المعاملاتي مفتوح ومفيش منه حاجة مستحقة)',
-        sent_today: sentToday,
-      })
-    }
-    ;({ data: dueRaw, error: dueErr } = await supabaseAdmin
-      .from('whatsapp_campaign_messages')
-      .select(COLS)
-      .eq('status', 'queued')
-      .not('template_vars->>campaign_name', 'in', `(${PACED_CAMPAIGNS.join(',')})`)
-      .lte('scheduled_for', nowIso)
-      .order('scheduled_for', { ascending: true })
-      .limit(MAX_PER_RUN))
+  const { data: mkRaw, error: mkErr } = await supabaseAdmin
+    .from('whatsapp_campaign_messages')
+    .select(COLS)
+    .eq('status', 'queued')
+    .not('template_vars->>campaign_name', 'in', `(${[...PACED_CAMPAIGNS, ...TRANSACTIONAL_CAMPAIGNS].join(',')})`)
+    .lte('scheduled_for', nowIso)
+    .order('scheduled_for', { ascending: true })
+    .limit(FETCH)
+
+  // 🔎 (5 Aug 2026) ماتبلعش الخطأ — ده كان مخبي عطل الطابور المتجمد
+  const qErr = txErr || mkErr
+  if (qErr) {
+    return NextResponse.json({ ok: false, error: 'due query failed', detail: qErr.message })
   }
 
-  // 🧹 (١٢ أغسطس ٢٠٢٦ — المراجعة الشاملة) ريبر الرسايل العالقة:
-  // القفل المتفائل بيقلب الصف لـ'sending' قبل الإرسال — لو الدالة اتقطعت
-  // (timeout/crash) قبل ما تحدّث الحالة النهائية، الصف كان بيفضل 'sending'
-  // للأبد: لا بيتبعت ولا بيتعاد ولا بيبان في استعلام المستحق. أي صف
-  // 'sending' بقاله أكتر من ١٠ دقايق = تشغيلة ماتت في النص → نرجّعه
-  // 'queued' فيتعاد في التشغيلة الجاية. (attempts اتزادت وقت القفل فمش
-  // هيتكرر بلا حدود لو فيه فشل حقيقي متكرر.)
+  // 🧹 ريبر الرسايل العالقة في 'sending' من تشغيلة ماتت في النص
   try {
     const stuckCutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString()
     await supabaseAdmin
@@ -293,76 +307,118 @@ export async function GET(request: NextRequest) {
       .lt('locked_at', stuckCutoff)
   } catch { /* الريبر مايوقفش الإرسال */ }
 
-  // 🔎 (5 Aug 2026) ماتبلعش الخطأ — ده كان مخبي عطل الطابور المتجمد
-  if (dueErr) {
-    return NextResponse.json({ ok: false, error: 'due query failed', detail: dueErr.message })
+  const laneOf = (r: QueueRow) => (r.session || '').trim() || DEFAULT_SESSION
+  const lanes = new Map<string, { tx: QueueRow[]; mk: QueueRow[] }>()
+  const bucket = (k: string) => {
+    let b = lanes.get(k)
+    if (!b) { b = { tx: [], mk: [] }; lanes.set(k, b) }
+    return b
   }
+  for (const r of ((txRaw ?? []) as unknown as QueueRow[])) bucket(laneOf(r)).tx.push(r)
+  for (const r of ((mkRaw ?? []) as unknown as QueueRow[])) bucket(laneOf(r)).mk.push(r)
 
-  const due = (dueRaw ?? []) as unknown as QueueRow[]
-  if (due.length === 0) {
+  if (lanes.size === 0) {
     return NextResponse.json({ ok: true, sent: 0, note: 'مفيش رسايل مستحقة' })
   }
 
-  const results: Array<{ id: string; phone: string; ok: boolean; error?: string }> = []
+  const results: Array<{ id: string; phone: string; session: string; ok: boolean; error?: string }> = []
+  const laneReport: Array<Record<string, unknown>> = []
 
-  for (const row of due) {
-    // قفل متفائل — نحوّل الحالة قبل الإرسال عشان مانبعتش مرتين
-    const { data: locked, error: lockErr } = await supabaseAdmin
-      .from('whatsapp_campaign_messages')
-      .update({ status: 'sending', attempts: (row.attempts ?? 0) + 1, locked_at: new Date().toISOString() } as never)
-      .eq('id', row.id)
-      .eq('status', 'queued')
-      .select('id')
-
-    // 🔎 (5 Aug 2026) لو القفل فشل بخطأ فعلي — سجّله في الرد بدل البلع
-    if (lockErr) {
-      results.push({ id: row.id, phone: row.recipient_phone, ok: false, error: 'lock: ' + lockErr.message })
-      continue
+  // المسارات بتشتغل **بالتوازي** — ده هو المقصود من «كل رقم بمسار».
+  await Promise.all(Array.from(lanes.entries()).map(async ([session, b]) => {
+    // (أ) المسار موقوف؟
+    const halted = await laneHalted(session)
+    if (halted) {
+      laneReport.push({ session, skipped: `المسار موقوف: ${halted}` })
+      return
     }
-    if (!locked || locked.length === 0) continue // حد تاني خدها
 
-    const conversationId = await upsertConversation({
-      phone: row.recipient_phone,
-      name: row.recipient_name ?? undefined,
-      agentName: 'المارد',
+    // (ب) بوابة تأكيد الوصول — لكل رقم على حدة
+    const gate = await ackGate({
+      session,
+      ackWaitMs: ACK_WAIT_MS,
+      excludeCampaigns: PACED_CAMPAIGNS,
+      onHalt: haltLane(session),
     })
+    if (!gate.proceed) {
+      laneReport.push({ session, skipped: gate.reason, waiting: gate.waiting, waited_sec: gate.waited_sec, halted: gate.halted || undefined })
+      return
+    }
 
-    const sent = await sendText({
-      to: row.recipient_phone,
-      body: row.message_content,
-      conversationId: conversationId ?? undefined,
-      agentName: 'المارد',
-      aiGenerated: false,
-      // 🚨 (١٥ أغسطس) حارس «رد بس» محتاج اسم الحملة عشان وضع `campaigns`.
-      campaign: row.template_vars?.campaign_name ?? null,
-      // 🔧 (5 Aug 2026) من غير session بيقع على جسر Baileys الميت ويرجع 404
-      // (المصيدة المسجلة في الذاكرة) — لازم نحدد جلسة OpenWA صراحةً
-      // (١٥ أغسطس) نفس الجلسة اللي البوابة قاستها — مش قراية تانية للـenv،
-      // عشان مايحصلش إن البوابة تقيس رقم والإرسال يطلع من رقم تاني.
-      // 📤 (١٥ أغسطس — محمد: «عايز أختار الرقم اللي هيبعت») الصف نفسه
-      //    ممكن يحدد جلسته. فاضي = الجلسة العامة زي الأول.
-      session: (row.session || '').trim() || QUEUE_SESSION,
+    // (ج) السقف اليومي بتاع الرقم ده — المعاملاتي بيعدّي فوقه
+    const usedToday = sentTodayBy.get(session) ?? 0
+    const capped = usedToday >= safety.maxPerDay
+    const picks = b.tx.slice(0, MAX_PER_RUN)
+    if (picks.length < MAX_PER_RUN && !capped) {
+      picks.push(...b.mk.slice(0, MAX_PER_RUN - picks.length))
+    }
+    if (picks.length === 0) {
+      laneReport.push({ session, skipped: capped ? `السقف اليومي اتوصل (${usedToday}/${safety.maxPerDay})` : 'مفيش مستحق', sent_today: usedToday })
+      return
+    }
+
+    for (const row of picks) {
+      // قفل متفائل — نحوّل الحالة قبل الإرسال عشان مانبعتش مرتين
+      const { data: locked, error: lockErr } = await supabaseAdmin
+        .from('whatsapp_campaign_messages')
+        .update({ status: 'sending', attempts: (row.attempts ?? 0) + 1, locked_at: new Date().toISOString() } as never)
+        .eq('id', row.id)
+        .eq('status', 'queued')
+        .select('id')
+
+      if (lockErr) {
+        results.push({ id: row.id, phone: row.recipient_phone, session, ok: false, error: 'lock: ' + lockErr.message })
+        continue
+      }
+      if (!locked || locked.length === 0) continue // تشغيلة تانية خدتها
+
+      const conversationId = await upsertConversation({
+        phone: row.recipient_phone,
+        name: row.recipient_name ?? undefined,
+        agentName: 'المارد',
+      })
+
+      const sent = await sendText({
+        to: row.recipient_phone,
+        body: row.message_content,
+        conversationId: conversationId ?? undefined,
+        agentName: 'المارد',
+        aiGenerated: false,
+        // 🚨 حارس «رد بس» محتاج اسم الحملة عشان وضع `campaigns`
+        campaign: row.template_vars?.campaign_name ?? null,
+        // الرقم بتاع المسار — نفس اللي البوابة قاسته بالظبط
+        session,
+      })
+
+      await supabaseAdmin
+        .from('whatsapp_campaign_messages')
+        .update({
+          status: sent.ok ? 'sent' : 'failed',
+          sent_at: sent.ok ? new Date().toISOString() : null,
+          whatsapp_msg_id: sent.wa_message_id ?? null,
+          error_message: sent.ok ? null : sent.error ?? 'unknown',
+        } as never)
+        .eq('id', row.id)
+
+      results.push({ id: row.id, phone: row.recipient_phone, session, ok: sent.ok, error: sent.error })
+    }
+
+    laneReport.push({
+      session,
+      queued_due: b.tx.length + b.mk.length,
+      sent: results.filter((r) => r.session === session && r.ok).length,
+      sent_today: usedToday,
+      cap: safety.maxPerDay,
     })
-
-    await supabaseAdmin
-      .from('whatsapp_campaign_messages')
-      .update({
-        status: sent.ok ? 'sent' : 'failed',
-        sent_at: sent.ok ? new Date().toISOString() : null,
-        whatsapp_msg_id: sent.wa_message_id ?? null,
-        error_message: sent.ok ? null : sent.error ?? 'unknown',
-      } as never)
-      .eq('id', row.id)
-
-    results.push({ id: row.id, phone: row.recipient_phone, ok: sent.ok, error: sent.error })
-  }
+  }))
 
   return NextResponse.json({
     ok: true,
     sent: results.filter((r) => r.ok).length,
     failed: results.filter((r) => !r.ok).length,
     ...(retried.length > 0 ? { retried } : {}),
-    session: QUEUE_SESSION,
+    lanes: laneReport,
+    default_session: DEFAULT_SESSION,
     sent_today: sentToday + results.filter((r) => r.ok).length,
     daily_cap: safety.maxPerDay,
     results,
