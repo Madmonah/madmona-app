@@ -11,6 +11,18 @@ const nextConfig = {
   },
   images: {
     remotePatterns: [
+      // 🐞 (١٦ أغسطس ٢٠٢٦ — محمد: «إعلانات نزلت النهاردة الصور بتاعتها
+      //    محطوطة غلط»)
+      //
+      //    الدومينين دول كانوا **ناقصين** من القايمة، والـoptimizer بيرفض
+      //    أي دومين مش مكتوب هنا بـ400. يعني الإعلان بينزل ومعاه صوره
+      //    مسجّلة في الداتابيز، وعلى الموقع **مفيش صورة خالص** —
+      //    فشل صامت مالوش أي أثر في اللوجّ.
+      //
+      //    اتأكدنا: /_next/image على الاتنين رجّع 400.
+      //    التأثير دلوقتي: إعلان منشور واحد (٦ صور) + إعلانين (١٦ صورة).
+      { protocol: 'https', hostname: 'madmona-uploaded-documents.s3.eu-north-1.amazonaws.com' },
+      { protocol: 'https', hostname: 'media.madmonacairo.com' },
       { protocol: 'https', hostname: 'media.canva.com' },
       { protocol: 'https', hostname: 'mjhflxpxunwycbiquoig.supabase.co' },
       { protocol: 'https', hostname: '*.supabase.co' },
