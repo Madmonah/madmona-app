@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { defaultCommissionPercent } from '@/lib/commission'
 
 // POST /api/suppliers/signup
 //
@@ -71,7 +72,16 @@ export async function POST(request: Request) {
       address: addressClean,
       district: districtClean,
       description_ar: descriptionClean,
-      commission_rate: 10.0, // default — عمولة موحدة 10% (Jul 3 2026)
+      // 💰 (١٦ أغسطس ٢٠٢٦ — محمد: «كل قسم ليه العمولة بتاعته»)
+      //    كان مكتوب `10.0` بالنص هنا. المشكلة مش إن الرقم غلط — المشكلة
+      //    إنه رقم رابع منفصل عن الداتابيز والبرومبت والحملة، فأول ما محمد
+      //    يغيّر النسبة الافتراضية من الشاشة يفضل كل مورد جديد بياخد ١٠٪.
+      //    دلوقتي بيتقري من قاعدة `default` في `commission_rules`.
+      //
+      //    ⚠️ ده الافتراضي وقت التسجيل بس. العمولة الفعلية على كل حجز
+      //    بتتحسب من قسم الإعلان نفسه (`commission_rate_for`)، لأن المورد
+      //    الواحد ممكن يبيع في أكتر من قسم بعمولات مختلفة.
+      commission_rate: await defaultCommissionPercent(),
       status: 'pending',
     })
     .select('id')

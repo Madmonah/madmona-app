@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js'
 import { parseJsonResponse } from '@/lib/anthropic'
 import { callMaridWithTools } from '@/lib/marid-brain'
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
+// 💰 (١٦ أغسطس ٢٠٢٦) أرقام العمولة بتتحقن من الداتابيز وقت الرد — مش مكتوبة في البرومبت.
+import { withLiveCommission } from '@/lib/commission'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -45,7 +47,7 @@ export async function POST(request: NextRequest) {
     const name = (prof as { full_name?: string } | null)?.full_name || null
 
     const userMessage = `دي محادثة فريق شغل على مضمونة. سياق الثريد:\n${historyText}\n\n---\nالمطلوب منك دلوقتي:\n${text || 'ساعد الفريق باللي فوق.'}`
-    const raw = await callMaridWithTools({ systemPrompt: CUSTOMER_CONCIERGE_PROMPT, userMessage, senderPhone: phone, senderName: name })
+    const raw = await callMaridWithTools({ systemPrompt: await withLiveCommission(CUSTOMER_CONCIERGE_PROMPT), userMessage, senderPhone: phone, senderName: name })
 
     let reply = ''
     try { reply = (parseJsonResponse<{ reply?: string }>(raw).reply || '').trim() } catch { reply = (raw || '').trim() }

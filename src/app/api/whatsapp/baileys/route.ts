@@ -23,6 +23,8 @@ import {
   ADMIN_PROMPT,
 } from '@/lib/marid-admin'
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
+// 💰 (١٦ أغسطس ٢٠٢٦) أرقام العمولة بتتحقن من الداتابيز وقت الرد — مش مكتوبة في البرومبت.
+import { withLiveCommission } from '@/lib/commission'
 import { getNumberConfig, numberPromptSection, isMaridNumber } from '@/lib/wa-number-config'
 import { notifyAdminsMaridReply, notifyAdminsPausedInbound } from '@/lib/admin-notify'
 // 🧞 مخ المارد **المشترك** — كان فيه نسخة متكرّرة من الدالة دي هنا، واتشالت.
@@ -971,7 +973,7 @@ export async function POST(request: NextRequest) {
 
     const raw = await callMaridWithTools({
       // البرومبت الأساسي + سياق الرقم (لو موجود) — كل رقم بشخصيته/سياقه
-      systemPrompt: CUSTOMER_CONCIERGE_PROMPT + numberPromptSection(numberCfg),
+      systemPrompt: (await withLiveCommission(CUSTOMER_CONCIERGE_PROMPT)) + numberPromptSection(numberCfg),
       userMessage,
       mediaBlocks,
       senderPhone: phone,

@@ -7,6 +7,8 @@ import { parseJsonResponse } from '@/lib/anthropic'
 import { callMaridWithTools } from '@/lib/marid-brain'
 import { processIncomingMedia, type MediaInput } from '@/lib/marid-media'
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
+// 💰 (١٦ أغسطس ٢٠٢٦) أرقام العمولة بتتحقن من الداتابيز وقت الرد — مش مكتوبة في البرومبت.
+import { withLiveCommission } from '@/lib/commission'
 import { isAdmin } from '@/lib/marid-admin'
 import { notifyAdminsMaridReply } from '@/lib/admin-notify'
 import { createClient } from '@supabase/supabase-js'
@@ -321,7 +323,7 @@ export async function POST(request: NextRequest) {
     //    تتحط في صف واحد من غير أي نشر.
     const maridCfg = await getNumberConfig(WEB_MARID_SESSION)
     const raw = await callMaridWithTools({
-      systemPrompt: CUSTOMER_CONCIERGE_PROMPT + numberPromptSection(maridCfg),
+      systemPrompt: (await withLiveCommission(CUSTOMER_CONCIERGE_PROMPT)) + numberPromptSection(maridCfg),
       userMessage,
       mediaBlocks,
       savedMediaUrl,
