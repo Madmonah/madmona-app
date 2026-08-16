@@ -155,10 +155,42 @@ function buildGroups(categories: Cat[], liveCounts: Record<string, number>): Her
     ])
 }
 
+/**
+ * صور مثبّتة يدويًا لكروت الأقسام — من `site_settings`.
+ *
+ * (١٦ أغسطس ٢٠٢٦ — محمد: «التابات اللي فوق مفيهاش صور ليه؟»)
+ * الاختيار الأوتوماتيك بياخد **أغلى** إعلان في القسم، و«أغلى» مش معناها
+ * «أحسن صورة»: أغلى عربية طلعت واقفة جنب صندوق زبالة، وأغلى خدمة طلعت
+ * منيو مكتوب مش صورة. مفيش طريقة برمجية تحكم على جودة صورة، فالحل إن
+ * محمد يقدر يثبّت صورة لأي كارت من `/admin/site-settings`:
+ *   home_card_img_sale · home_card_img_rentals · home_card_img_services
+ * ولو مفيش مفتاح، بيرجع للاختيار الأوتوماتيك.
+ */
+async function getPinnedCardImages(): Promise<Record<string, string>> {
+  const out: Record<string, string> = {}
+  try {
+    const sb = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { auth: { persistSession: false } },
+    )
+    const { data } = await sb
+      .from('site_settings')
+      .select('key, value')
+      .like('key', 'home_card_img_%')
+    for (const r of ((data || []) as Array<{ key: string; value: string }>)) {
+      const slug = r.key.replace('home_card_img_', '')
+      if (slug && r.value?.startsWith('http')) out[slug] = r.value
+    }
+  } catch { /* الاختيار الأوتوماتيك بيكفّي */ }
+  return out
+}
+
 export default async function HomeRedesign({ categories, stats, liveCounts, heroImage }: Props) {
   const { tiles, updated } = await getMarketTiles()
   const groups = buildGroups(categories, liveCounts)
   const shots = await getShots()
+  const pinned = await getPinnedCardImages()
 
   return (
     <div dir="rtl" className={`${alex.variable} ${ibm.variable}`} style={{ minHeight: '100vh', background: CREAM, fontFamily: 'var(--font-ibm), sans-serif', color: '#12261F' }}>
@@ -323,22 +355,43 @@ a { text-decoration: none; }
           </div>
           <Link href="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 14, color: INK, borderBottom: `2px solid ${GOLD}`, paddingBottom: 3 }}>كل الأقسام ←</Link>
         </div>
+        {/* 🖼️ (١٦ أغسطس ٢٠٢٦ — محمد: «التابات اللي فوق مفيهاش صور ليه؟»)
+            الكروت دي كانت إيموجي في دايرة ملوّنة (🏷️ 🔑 🛠️ 🏗️ 📈). دلوقتي
+            كل كارت صورة على طوله: التلاتة الأولانيين من إعلانات حقيقية،
+            والبورصتين من `public/hero/` (الصور دي كانت موجودة أصلًا في
+            الريبو ومحدش بيستعملها على الديسكتوب).
+            ⚠️ الإيموجي فضل موجود كملاذ أخير — لو صورة ماجتش، الكارت بيرجع
+               لشكله القديم بدل ما يبان مربع فاضي. */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
           {groups.map((g, i) => {
             const isDark = g.slug === 'bourse' || g.slug === 'business'
+            const img =
+              pinned[g.slug]        ? pinned[g.slug] :
+              g.slug === 'sale'     ? shots['sale-vehicles']?.img || shots['shop']?.img :
+              g.slug === 'rentals'  ? shots['properties']?.img || shots['vehicles']?.img :
+              g.slug === 'services' ? shots['services-events']?.img || shots['services-medical-beauty']?.img :
+              g.slug === 'bourse'   ? '/hero/bourse.jpg' :
+              g.slug === 'business' ? '/hero/business-lounge.jpg' : undefined
             return (
               <Link
                 key={g.slug}
                 className="rz-cat"
                 href={g.href}
-                style={{ ['--acc' as string]: ACCENTS[i % ACCENTS.length], position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '36px 18px 26px', background: isDark ? INK : '#fff', border: `2px solid ${INK}`, borderRadius: '110px 110px 18px 18px', textAlign: 'center' }}
+                style={{ ['--acc' as string]: ACCENTS[i % ACCENTS.length], position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: 10, minHeight: 260, padding: '36px 18px 24px', overflow: 'hidden', background: isDark ? INK : '#fff', border: `2px solid ${INK}`, borderRadius: '110px 110px 18px 18px', textAlign: 'center' }}
               >
-                <span style={{ width: 64, height: 64, borderRadius: '50%', background: isDark ? 'rgba(244,239,228,0.12)' : TINTS[i % TINTS.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30 }}>{g.emoji}</span>
-                <span style={{ display: 'block' }}>
-                  <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 18, color: isDark ? CREAM : INK }}>{g.name}</span>
-                  {!isDark && <span style={{ display: 'block', fontSize: 11.5, color: 'rgba(18,38,31,0.55)', marginTop: 4 }}>{g.catCount} قسم فرعي</span>}
+                {img ? (
+                  <>
+                    <Image src={img} alt={g.name} fill sizes="270px" style={{ objectFit: 'cover' }} />
+                    <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(14,51,44,0.94) 0%, rgba(14,51,44,0.55) 46%, rgba(14,51,44,0.12) 100%)' }} />
+                  </>
+                ) : (
+                  <span style={{ width: 64, height: 64, borderRadius: '50%', background: isDark ? 'rgba(244,239,228,0.12)' : TINTS[i % TINTS.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30 }}>{g.emoji}</span>
+                )}
+                <span style={{ display: 'block', position: 'relative' }}>
+                  <span style={{ display: 'block', fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 19, color: img || isDark ? CREAM : INK }}>{g.name}</span>
+                  {!isDark && <span style={{ display: 'block', fontSize: 11.5, color: img ? 'rgba(244,239,228,0.72)' : 'rgba(18,38,31,0.55)', marginTop: 4 }}>{g.catCount} قسم فرعي</span>}
                 </span>
-                <span style={{ padding: '5px 16px', borderRadius: 999, background: isDark ? GOLD : ACCENTS[i % ACCENTS.length], color: '#fff', fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ position: 'relative', padding: '5px 16px', borderRadius: 999, background: isDark ? GOLD : ACCENTS[i % ACCENTS.length], color: '#fff', fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                   {isDark ? (<><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ADE80', display: 'inline-block' }} /> لايف</>) : (g.count > 0 ? `${g.count.toLocaleString('ar-EG')} إعلان` : 'استكشف')}
                 </span>
               </Link>
