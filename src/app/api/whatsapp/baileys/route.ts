@@ -924,7 +924,46 @@ export async function POST(request: NextRequest) {
         .eq('wa_message_id', body.message_id)
         .maybeSingle()
 
+      // 🐞 (١٦ أغسطس ٢٠٢٦ — محمد: «الراجل بعت ومحدش رد عليه» + «تكلفة
+      //    المارد عالية شوية»)
+      //
+      //    الانتظار كان **من غير أي فحص قبله**. يعني بايع يبعت ١٩ صورة =
+      //    ١٩ نداء ويبستهوك، كل واحد بيفضل نايم ١٢ ثانية جوّه فانكشن
+      //    سيرفرلس. ده ٢٢٨ ثانية تنفيذ عشان رد **واحد**.
+      //
+      //    البايع ده بعت ٦٠+ صورة النهاردة في تلات دفعات. في ساعة ٤ العصر
+      //    وصل ١٢ رسالة وطلع رد **واحد**، ومن ١٥:٤٢ لـ١٧:١٥ مفيش ولا نداء
+      //    واحد للموديل (اتأكدت من `ai_usage_log`) — الويبهوكس كانت بتتخنق
+      //    على بعضها والرسايل بتضيع من غير أي أثر.
+      //
+      //    الحل: **نبص قبل ما ننام**. اللي لاقى حد أحدث منه خلاص يرجع
+      //    فورًا (صفر ثانية بدل ١٢). واللي ممكن يكون آخر واحد بس هو اللي
+      //    ينام ويعيد الفحص. في دفعة ١٩ صورة ده بيوفّر ١٨ × ١٢ث = ٢١٦ ثانية.
+      //
+      // ⚠️ الفحص التاني **بعد** النوم لازم يفضل موجود: هو اللي بيحل سباق
+      //    التوازي لما رسالتين يوصلوا في نفس اللحظة. ده فحص **زيادة**
+      //    قبله، مش بديل عنه.
+      const newerThanMine = async (): Promise<boolean> => {
+        const { data: sibs } = await supabaseUntyped
+          .from('whatsapp_messages')
+          .select('id, created_at')
+          .eq('conversation_id', conversationId)
+          .eq('direction', 'inbound')
+          .gte('created_at', mine!.created_at)
+        const mineT = new Date(mine!.created_at as string).getTime()
+        const mineId = String(mine!.id)
+        return (sibs || []).some((s: { id: string; created_at: string }) => {
+          const t = new Date(s.created_at).getTime()
+          return t > mineT || (t === mineT && String(s.id) > mineId)
+        })
+      }
+
       if (mine?.created_at) {
+        // فحص رخيص قبل النوم — بيقصّ الدفعة كلها ما عدا آخر واحد
+        if (await newerThanMine()) {
+          return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'batched_early' })
+        }
+
         await new Promise((r) => setTimeout(r, BATCH_WAIT_MS))
 
         // 🔧 (٢٤ يوليو) كسر تعادل حاسم لمنع «رسالتين ورا بعض»:
@@ -933,21 +972,7 @@ export async function POST(request: NextRequest) {
         // الاتنين يردّوا. دلوقتي «أحدث مني» = وقت أكبر، أو نفس الوقت و id أكبر
         // → بالظبط واحد (الأكبر) هو اللي يرد، والباقي يسكت. المقارنة في JS
         // أأمن من فلتر توقيت في الكويري.
-        const { data: sibs } = await supabaseUntyped
-          .from('whatsapp_messages')
-          .select('id, created_at')
-          .eq('conversation_id', conversationId)
-          .eq('direction', 'inbound')
-          .gte('created_at', mine.created_at)
-
-        const mineT = new Date(mine.created_at).getTime()
-        const mineId = String(mine.id)
-        const hasNewer = (sibs || []).some((s: { id: string; created_at: string }) => {
-          const t = new Date(s.created_at).getTime()
-          return t > mineT || (t === mineT && String(s.id) > mineId)
-        })
-
-        if (hasNewer) {
+        if (await newerThanMine()) {
           return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'batched' })
         }
       }
