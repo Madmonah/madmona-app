@@ -599,8 +599,12 @@ export default function TeamPage() {
       mr.onstop = async () => {
         stream.getTracks().forEach((tr) => tr.stop())
         setRecording(false)
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
-        if (blob.size > 0) await sendMedia(new File([blob], 'voice.webm', { type: 'audio/webm' }))
+        // 🐞 (١٦ أغسطس ٢٠٢٦) نفس بق شات المارد: النوع كان مكتوب بالنص،
+        //    والآيفون بيسجّل mp4 — فالملف كان بيتحفظ باسم غلط.
+        const realMime = (mr.mimeType || chunksRef.current[0]?.type || 'audio/webm').split(';')[0]
+        const ext = realMime.includes('mp4') ? 'm4a' : realMime.includes('ogg') ? 'ogg' : realMime.includes('mpeg') ? 'mp3' : 'webm'
+        const blob = new Blob(chunksRef.current, { type: realMime })
+        if (blob.size > 0) await sendMedia(new File([blob], `voice.${ext}`, { type: realMime }))
       }
       recRef.current = mr; mr.start(); setRecording(true)
     } catch { alert('مش قادر أوصل للمايك') }

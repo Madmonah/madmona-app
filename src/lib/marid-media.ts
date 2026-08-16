@@ -10,9 +10,70 @@ export type MediaInput = {
 }
 
 // ── تفريغ الصوت (Claude مابيسمعش — Whisper عبر Groq/OpenAI) ──────────────
+//
+// 🐞 (١٦ أغسطس ٢٠٢٦ — محمد: «الڤويس اللي في شات مضمونة فيه مشكلة»)
+//
+//    الڤويس مكانش **بيفشل** — كان بيتفرّغ **غلط**، وده أخطر لأن المارد
+//    كان بيرد على كلام العميل ماقالهوش. من الداتابيز:
+//      «سمعت بذور على شعف مصرق يدي»   (١٦ أغسطس)
+//      «عائلين ماتفع مرغور فماثرق يدي» (١٥ أغسطس)
+//      «ترجمة نانسي قنقر»              (١٢ أغسطس)
+//    و٢٨ رسالة صوتية من الشات، **صفر** منهم اتسجّل كفشل — لأن الكود كان
+//    بيعتبر أي نص راجع نجاح.
+//
+//    السبب: الملف كان بيتبعت باسم `voice.ogg` **دايمًا** مهما كانت صيغته،
+//    والمتصفح بيلزق عليه `audio/webm` مهما كان اللي سجّله (الآيفون بيسجّل
+//    `audio/mp4`). تلات أسماء متضاربة لنفس الملف → Whisper بيفك تشفير
+//    ضوضاء ويطلّع عربي متماسك بس مالوش معنى.
+//
+// ⚠️ «ترجمة نانسي قنقر» مش صدفة — دي هلوسة معروفة في Whisper لما يسمع
+//    سكوت أو ضوضاء: بيطلّع نص تترات أفلام من بيانات تدريبه. لازم تتفلتر،
+//    وإلا المارد بيرد على اسم مذيعة.
+
+/** صيغ Whisper المدعومة → الامتداد الصح للملف. */
+function extFor(mime: string | undefined): string {
+  const m = (mime || '').toLowerCase().split(';')[0].trim()
+  const map: Record<string, string> = {
+    'audio/webm': 'webm', 'video/webm': 'webm',
+    'audio/mp4': 'm4a', 'audio/x-m4a': 'm4a', 'audio/aac': 'm4a', 'video/mp4': 'mp4',
+    'audio/ogg': 'ogg', 'audio/opus': 'ogg', 'audio/vorbis': 'ogg',
+    'audio/mpeg': 'mp3', 'audio/mp3': 'mp3',
+    'audio/wav': 'wav', 'audio/x-wav': 'wav', 'audio/wave': 'wav',
+    'audio/flac': 'flac', 'audio/amr': 'amr',
+  }
+  return map[m] || 'ogg'
+}
+
+/**
+ * نصوص Whisper بيطلّعها من السكوت والضوضاء (تترات من بيانات التدريب).
+ * لو النص ده رجع، يبقى مافيش كلام أصلاً — وأحسن نقول للعميل يعيد بدل
+ * ما نرد على حاجة ماقالهاش.
+ */
+const HALLUCINATIONS = [
+  'ترجمة نانسي قنقر', 'ترجمة نانسي', 'قنقر',
+  'اشتركوا في القناة', 'اشترك في القناة', 'لا تنسى الاشتراك',
+  'شكرا للمشاهدة', 'شكرًا للمشاهدة', 'شكرا على المشاهدة',
+  'أراكم في الحلقة القادمة', 'إلى اللقاء في الحلقة',
+  'amara.org', 'subscribe', 'ترجمة وتدقيق',
+]
+
+function looksLikeNoise(text: string): boolean {
+  const t = text.trim()
+  if (t.length < 2) return true
+  const low = t.toLowerCase()
+  if (HALLUCINATIONS.some((h) => low.includes(h.toLowerCase()))) return true
+  // نص من كلمة واحدة مكررة («طيب طيب طيب») = ضوضاء
+  const words = t.split(/\s+/)
+  if (words.length >= 4 && new Set(words).size === 1) return true
+  return false
+}
+
 export async function transcribeAudio(m: { data_base64: string; mimetype?: string }): Promise<string | null> {
   const key = process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY
-  if (!key) return null
+  if (!key) {
+    console.warn('[transcribeAudio] مفيش GROQ_API_KEY ولا OPENAI_API_KEY')
+    return null
+  }
   const isGroq = !!process.env.GROQ_API_KEY
   const url = isGroq
     ? 'https://api.groq.com/openai/v1/audio/transcriptions'
@@ -20,13 +81,29 @@ export async function transcribeAudio(m: { data_base64: string; mimetype?: strin
   try {
     const form = new FormData()
     const bytes = Buffer.from(m.data_base64, 'base64')
-    form.append('file', new Blob([bytes], { type: m.mimetype || 'audio/ogg' }), 'voice.ogg')
+    const mime = m.mimetype || 'audio/ogg'
+    // ⚠️ الامتداد لازم يطابق النوع الحقيقي — ده كان أصل البق كله
+    form.append('file', new Blob([bytes], { type: mime }), `voice.${extFor(mime)}`)
     form.append('model', isGroq ? 'whisper-large-v3-turbo' : 'whisper-1')
     form.append('language', 'ar')
+    // صفر عشوائية: الهلوسة بتزيد مع الحرارة العالية
+    form.append('temperature', '0')
+    form.append('prompt', 'محادثة بالعامية المصرية عن إعلانات وعقارات وعربيات وحجوزات على منصة مضمونة.')
+
     const res = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${key}` }, body: form })
-    if (!res.ok) return null
-    return ((await res.json())?.text as string) || null
-  } catch {
+    if (!res.ok) {
+      // كان `return null` صامت — فمكانش فيه أي أثر لما يفشل
+      console.error('[transcribeAudio] فشل', res.status, (await res.text()).slice(0, 300), 'mime=', mime)
+      return null
+    }
+    const text = ((await res.json())?.text as string) || ''
+    if (looksLikeNoise(text)) {
+      console.warn('[transcribeAudio] النص المرجّع ضوضاء/هلوسة — اترفض:', text.slice(0, 120), 'mime=', mime)
+      return null
+    }
+    return text.trim() || null
+  } catch (e) {
+    console.error('[transcribeAudio] استثناء', (e as Error)?.message)
     return null
   }
 }
@@ -67,7 +144,9 @@ export async function processIncomingMedia(
 
   if (m.type === 'audio') {
     const t = await transcribeAudio(m)
-    textHint = t || '[رسالة صوتية — مش قادر أفرّغها دلوقتي]'
+    // ⚠️ لما التفريغ يفشل، المارد لازم **يقول للعميل** مش يخمّن. قبل كده
+    //    كان بيوصله نص مهلوس فيرد عليه جد.
+    textHint = t || '[رسالة صوتية مش قادر أسمعها كويس — اعتذرله واطلب منه يبعتها تاني أو يكتبها]'
   } else if (m.type === 'image' && m.mimetype.startsWith('image/')) {
     blocks.push({ type: 'image', source: { type: 'base64', media_type: m.mimetype, data: m.data_base64 } })
     textHint = 'العميل بعت الصورة دي — شوفها ورد عليه.'

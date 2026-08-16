@@ -381,13 +381,20 @@ export default function ChatPage() {
     if (recording) { recRef.current?.stop(); return }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      // 🐞 (١٦ أغسطس ٢٠٢٦) كان `audio/webm` مكتوب بالنص هنا مهما كان الجهاز.
+      //    الآيفون بيسجّل `audio/mp4` مش webm — فكنا بنلزق اسم غلط على
+      //    الملف، وWhisper يفك تشفير ضوضاء ويطلّع كلام عربي مالوش معنى
+      //    («سمعت بذور على شعف مصرق يدي»). بناخد النوع الحقيقي من
+      //    المسجّل نفسه دلوقتي.
       const mr = new MediaRecorder(stream); chunksRef.current = []
       mr.ondataavailable = (ev) => chunksRef.current.push(ev.data)
       mr.onstop = async () => {
         stream.getTracks().forEach((t) => t.stop())
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+        const realMime = (mr.mimeType || chunksRef.current[0]?.type || 'audio/webm').split(';')[0]
+        const ext = realMime.includes('mp4') ? 'm4a' : realMime.includes('ogg') ? 'ogg' : realMime.includes('mpeg') ? 'mp3' : 'webm'
+        const blob = new Blob(chunksRef.current, { type: realMime })
         const b64: string = await new Promise((res) => { const r = new FileReader(); r.onload = () => res((r.result as string).split(',')[1]); r.readAsDataURL(blob) })
-        setAttach({ type: 'audio', mimetype: 'audio/webm', data_base64: b64, filename: 'voice.webm' }); setRecording(false)
+        setAttach({ type: 'audio', mimetype: realMime, data_base64: b64, filename: `voice.${ext}` }); setRecording(false)
       }
       recRef.current = mr; mr.start(); setRecording(true)
     } catch { alert('مش قادر أوصل للمايك') }
