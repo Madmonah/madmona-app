@@ -42,6 +42,30 @@ Deno.serve(async (req) => {
     if (listErr) throw listErr;
 
     const cutoff = new Date(Date.now() - minAgeMinutes * 60 * 1000);
+    // 🛡️ (18 Aug 2026) درع «الصور المكسورة»: قبل أي مسح، هات كل مسارات
+    // الملفات اللي لسه بتشاور عليها listing_photos — الملف المرجعي ماينمسحش
+    // أبدًا حتى لو درافته اتمسح. (السبب الجذري لصور الإيجارات المكسورة:
+    // TTL مسح صف الدرافت → الملف بان «يتيم» → اتمسح من التخزين وهو لسه
+    // صورة إعلان منشور.)
+    const referenced = new Set<string>();
+    {
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        const { data: refs, error: refErr } = await admin
+          .from("listing_photos")
+          .select("url")
+          .like("url", `%/object/public/${BUCKET}/%`)
+          .range(from, from + pageSize - 1);
+        if (refErr) throw refErr;
+        (refs || []).forEach((r: any) => {
+          const path = String(r.url).split(`/object/public/${BUCKET}/`)[1];
+          if (path) referenced.add(path);
+        });
+        if (!refs || refs.length < pageSize) break;
+      }
+    }
+    result.referenced_paths = referenced.size;
+
     const anonObjects = (allObjects || []).filter((o: any) => o.name.startsWith("anon/"));
     const tokenObjects = (allObjects || []).filter((o: any) => !o.name.startsWith("anon/"));
 
@@ -124,7 +148,7 @@ Deno.serve(async (req) => {
 
     // PURGE ANON
     if (mode === "purge_anon" || mode === "full_sweep") {
-      const stale = anonObjects.filter((o: any) => new Date(o.created_at) < cutoff);
+      const stale = anonObjects.filter((o: any) => new Date(o.created_at) < cutoff && !referenced.has(o.name));
       result.anon_eligible = stale.length;
       if (stale.length && !dryRun) {
         const paths = stale.map((o: any) => o.name);
@@ -147,7 +171,7 @@ Deno.serve(async (req) => {
     if (mode === "purge_unmatched" || mode === "full_sweep") {
       const stale = tokenObjects.filter((o: any) => {
         const token = o.name.split("/")[0];
-        return !tokenToDraft.has(token) && new Date(o.created_at) < cutoff;
+        return !tokenToDraft.has(token) && new Date(o.created_at) < cutoff && !referenced.has(o.name);
       });
       result.unmatched_eligible = stale.length;
       if (stale.length && !dryRun) {
