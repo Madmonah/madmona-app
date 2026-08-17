@@ -18,8 +18,7 @@
     { "path": "/api/integrations/dispatch", "schedule": "* 5-22 * * *" },
     { "path": "/api/integrations/dispatch", "schedule": "*/5 23,0-4 * * *" },
 
-    { "path": "/api/cron/wa-queue-send", "schedule": "* 5-22 * * *" },
-    { "path": "/api/cron/wa-queue-send", "schedule": "*/5 23,0-4 * * *" },
+    { "path": "/api/cron/wa-queue-send", "schedule": "*/2 * * * *" },
     { "path": "/api/cron/wa-sync", "schedule": "*/10 * * * *" },
     { "path": "/api/cron/wa-paced-send", "schedule": "*/3 * * * *" },
     { "path": "/api/cron/social-daily", "schedule": "0 8,13,17 * * *" }
