@@ -707,17 +707,36 @@ export async function POST(request: NextRequest) {
     // دوران — بيوقف المحادثة وينبّه بدل ما يفضل يبعت.
     // الرقم اللي بيبعت كتير في وقت قصير بيتقفل من واتساب.
     // الأدمن مستثنى — محمد ممكن يبعت ٢٠ أمر ورا بعض وده طبيعي
+    //
+    // 🐞 (١٧ أغسطس ٢٠٢٦ — محمد: «إيه اللي كان مخلي الإعلانات متنزلش؟»)
+    //    الحارس كان بيعد **كل** رسايل المارد في الساعة — من غير ما يفرّق
+    //    بين لوب حقيقي وعميل نشيط. البايع 201061241199 بعت ٤ شقق ورا بعض،
+    //    والمارد رد ١٢ رد طبيعي (أسئلة وتأكيدات نشر) في ٣٩ دقيقة — الحارس
+    //    حسبهم لوب ووقف المحادثة، وكل الإعلانات اللي جت بعدها (سابا باشا
+    //    وذا وان) وقعت في الصمت ليوم كامل.
+    //
+    //    الصح: اللوب الحقيقي بيبعت **أضعاف** ما بيستقبل. فالشرط بقى
+    //    اتنين مع بعض: عدّى الحد، **و**صادره ٣ أضعاف وارد العميل أو
+    //    أكتر. البايع النشيط (رسالة بترد على رسالة — النسبة ≈١) عمره
+    //    ما هيتمسك، واللوب (٢٠ رسالة على رسالتين) هيتمسك زي الأول.
     const LOOP_LIMIT = Number(process.env.MARID_LOOP_LIMIT || 12)
     if (!isAdmin(phone)) {
       const hourAgo = new Date(Date.now() - 3600_000).toISOString()
-      const { count } = await supabaseUntyped
+      const { data: recentDirs } = await supabaseUntyped
         .from('whatsapp_messages')
-        .select('id', { count: 'exact', head: true })
+        .select('direction')
         .eq('conversation_id', conversationId)
-        .eq('direction', 'outbound')
         .gte('created_at', hourAgo)
+        .limit(500)
 
-      if ((count ?? 0) >= LOOP_LIMIT) {
+      let count = 0
+      let inboundCount = 0
+      for (const r of ((recentDirs ?? []) as Array<{ direction: string }>)) {
+        if (r.direction === 'outbound') count++
+        else inboundCount++
+      }
+
+      if (count >= LOOP_LIMIT && count >= 3 * Math.max(inboundCount, 1)) {
         await supabaseUntyped
           .from('whatsapp_conversations')
           .update({ status: 'paused' })
