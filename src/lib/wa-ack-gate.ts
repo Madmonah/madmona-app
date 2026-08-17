@@ -41,6 +41,12 @@ export interface AckGateOptions {
   onlyCampaign?: string
   /** يشوف كل الحملات ما عدا دول (للمُرسِل العام) */
   excludeCampaigns?: string[]
+  /**
+   * (١٧ أغسطس ٢٠٢٦) المسار ده هو الافتراضي؟ — رسايل `session` الفاضي بتتحسب عليه.
+   * لما اتعمل «كل رقم بمسار» فضلت استعلام الانتظار **عالمي**: رسالة معلّقة
+   * على رقم كانت بتوقف كل الأرقام، وقياس مسار بيتلوث برسايل مسار تاني.
+   */
+  sessionIsDefault?: boolean
   /** بيتنادى لما البوابة تقرر توقف الإرسال — المُرسِل هو اللي بيكتب الفلاج */
   onHalt: (reason: string) => Promise<void>
 }
@@ -72,6 +78,11 @@ export async function ackGate(opts: AckGateOptions): Promise<AckGateResult> {
   } else if (excludeCampaigns?.length) {
     q = q.not('template_vars->>campaign_name', 'in', `(${excludeCampaigns.join(',')})`)
   }
+
+  // 🛣️ البوابة بتقيس **المسار بتاعها بس** — رسايل رقم تاني مش شغلتها
+  q = opts.sessionIsDefault
+    ? q.or(`session.eq.${session},session.is.null`)
+    : q.eq('session' as never, session)
 
   const { data } = await q
   const waiting = (data ?? []) as Array<{ id: string; whatsapp_msg_id: string | null; sent_at: string }>

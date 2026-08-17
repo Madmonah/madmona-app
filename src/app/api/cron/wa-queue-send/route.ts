@@ -207,12 +207,24 @@ export async function GET(request: NextRequest) {
   //
   //    السقف ٣ محاولات — بعد كده الرقم يتعلّم `failed` بدل ما نفضل
   //    نطبطب على تليفون مقفول للأبد.
+  // 🐞 (١٧ أغسطس ٢٠٢٦ — محمد: «انت ليه ملتزمتش بأنك ماتبعتش غير لما
+  //    الرسالة توصل؟! — أنا بتكلم على بروتوكول 1551»)
+  //
+  //    كان عنده حق: قاعدة الـ٣ دقايق هنا كانت **بتلغي حكم بوابة التأكيد**
+  //    من غير قصد. الرسالة اللي ماوصلتش بترجع `queued` بعد ٣ دقايق —
+  //    فعمرها ما بتكمّل الـ٩ دقايق اللي البوابة محتاجاها عشان تحكم إن
+  //    الرقم ميت وتقفل المسار. النتيجة على 1551: الرقم بيقبل من الـAPI
+  //    ويرمي في الفراغ، و٣ أرقام اتحرقوا ×٣ محاولات من غير ولا إيصال.
+  //
+  //    الصح: إعادة الإرسال للمسار **اللي بيسلّم** بس (موبايل العميل هو
+  //    المقفول). المسار اللي مامعهوش أي تسليم حديث — رسايله تتساب `sent`
+  //    زي ما هي عشان البوابة تكمّل مهلتها وتقفله رسميًا.
   const retried: Array<{ id: string; attempts: number; action: string }> = []
   try {
     const staleCutoff = new Date(Date.now() - RETRY_AFTER_MS).toISOString()
     const { data: staleRaw } = await supabaseAdmin
       .from('whatsapp_campaign_messages')
-      .select('id, attempts, recipient_phone')
+      .select('id, attempts, recipient_phone, session')
       .eq('status', 'sent')
       .not('whatsapp_msg_id', 'is', null)
       .is('delivered_at', null)
@@ -227,8 +239,27 @@ export async function GET(request: NextRequest) {
       .order('sent_at', { ascending: true })
       .limit(5)
 
-    for (const row of (staleRaw ?? []) as Array<{ id: string; attempts: number | null }>) {
+    // صحة كل مسار له رسايل متأخرة: سلّم أي حاجة في آخر ٦ ساعات؟
+    const staleRows = (staleRaw ?? []) as unknown as Array<{ id: string; attempts: number | null; session: string | null }>
+    const laneHealthy = new Map<string, boolean>()
+    for (const s of Array.from(new Set(staleRows.map((r) => (r.session || '').trim() || DEFAULT_SESSION)))) {
+      const { count } = await supabaseAdmin
+        .from('whatsapp_messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('direction', 'outbound')
+        .eq('session_id', s)
+        .in('status', ['delivered', 'read'])
+        .gte('created_at', new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString())
+      laneHealthy.set(s, (count ?? 0) > 0)
+    }
+
+    for (const row of staleRows) {
       const n = row.attempts ?? 0
+      // ⛔ المسار مش بيسلّم؟ ماتلمسش الصف — سيبه للبوابة تحكم على المسار
+      if (!laneHealthy.get((row.session || '').trim() || DEFAULT_SESSION)) {
+        retried.push({ id: row.id, attempts: n, action: 'left_for_gate' })
+        continue
+      }
       if (n >= MAX_ATTEMPTS) {
         await supabaseAdmin
           .from('whatsapp_campaign_messages')
@@ -367,6 +398,7 @@ export async function GET(request: NextRequest) {
       session,
       ackWaitMs: ACK_WAIT_MS,
       excludeCampaigns: PACED_CAMPAIGNS,
+      sessionIsDefault: session === DEFAULT_SESSION,
       onHalt: haltLane(session),
     })
     if (!gate.proceed) {
