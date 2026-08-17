@@ -210,6 +210,10 @@ const SECTIONS = [
   //    بقى دهبي: هو الأكسنت الوحيد في اللوحة، ومابيتلغبطش مع أخضر البورصة
   //    اللي جنبه.
   { key: 'business',    name: 'بورصة رجال الأعمال',    desc: 'أخبار · عملات · ذهب', href: '/business-lounge',       accent: GOLD,      shot: '',               tracks: [] },
+  // 🚗🏗️ (١٧ أغسطس ٢٠٢٦ — محمد) قسمين جداد: سوق العربيات المنسق
+  //    (معارض/أفراد × زيرو/مستعمل × الأنواع) ودليل شركات المطورين الكلاود.
+  { key: 'cars',        name: 'سوق العربيات', desc: 'معارض · أفراد · زيرو ومستعمل', href: '/cars',              accent: '#3D7BB6', shot: '',               tracks: [] },
+  { key: 'developers',  name: 'المطورين',     desc: 'شركات كلاود · كل المشاريع',    href: '/dev',               accent: '#059669', shot: '',               tracks: [] },
 ]
 
 export default async function HomeRedesign({ categories, stats, liveCounts, heroImage }: Props) {
