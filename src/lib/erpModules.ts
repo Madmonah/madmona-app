@@ -12,6 +12,8 @@ export const VERTICAL_ALIAS: Record<string, VKey> = {
   polyclinic: 'polyclinic', clinic: 'polyclinic',
   restaurant: 'restaurant',
   vehicle_agency: 'vehicle_agency', auto: 'vehicle_agency',
+  // معارض بيع السيارات — نفس موديولات المركبات (المعرض · الاستيراد · الكتالوج)
+  car_showroom: 'vehicle_agency', cars: 'vehicle_agency',
   contracting: 'contracting', construction: 'contracting',
 }
 

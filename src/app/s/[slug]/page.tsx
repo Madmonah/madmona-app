@@ -87,6 +87,8 @@ interface VerticalCfg {
   coverBadge: string
   catLabels: Record<string, string>
   catIcons: Record<string, any>
+  /** عنوان كارت المنتجات — لو فاضي بنقع على الافتراضي القديم */
+  productsHeading?: string
 }
 
 // salon-specific category maps (used only by the beauty_salon preset)
@@ -158,6 +160,25 @@ const VERTICALS: Record<string, VerticalCfg> = {
     catLabels: { 'صيانة': 'صيانة وإصلاح', 'تجهيز': 'تجهيز وتلميع', 'بيع': 'بيع مركبات', general: 'عام', 'عام': 'عام' },
     catIcons: { 'صيانة': Wrench, 'تجهيز': Sparkles, 'بيع': Car },
   },
+  // 🚗 معارض بيع السيارات — (١٧ أغسطس ٢٠٢٦ — محمد: «هو مش بتاع موتوسيكلات
+  //    وانت حطيت اسمه كمعرض موتوسيكلات».) ثيم vehicle_agency كان متفصّل على
+  //    عميل جراج الموتوسيكلات، ومعرض الديب (بيع سيارات) ورث كلامه.
+  //    ده ثيم منفصل لمعارض العربيات — industry = 'car_showroom'.
+  car_showroom: {
+    kicker: 'معرض سيارات — بيع واستيراد',
+    heroCta: 'اتفرّج على العربيات', heroCtaIcon: Car, waCta: 'اسأل عن عربية',
+    bookChip: 'معاينة بالمعرض', unitWord: 'خدمة',
+    galleryHeading: 'صور من المعرض',
+    galleryTiles: ['المعرض', 'العربيات', 'من جوه', 'التسليم'],
+    branchesHeading: 'زورنا في المعرض', branchCta: 'زور',
+    servicesHeading: 'خدماتنا', servicesIcon: Car,
+    teamHeading: 'فريق المعرض',
+    accountSub: 'تابع معايناتك وطلباتك',
+    coverBadge: 'صورة المعرض',
+    catLabels: { 'بيع': 'بيع سيارات', 'استيراد': 'استيراد', general: 'عام', 'عام': 'عام' },
+    catIcons: { 'بيع': Car },
+    productsHeading: 'العربيات المعروضة للبيع',
+  },
   // مقاولات وتشطيبات — طلب عرض سعر بدل الحجز
   contracting: {
     kicker: 'مقاولات وتشطيبات',
@@ -207,6 +228,7 @@ function getVertical(industry: string | null | undefined): VerticalCfg {
   if (industry === 'beauty_salon') return VERTICALS.beauty_salon
   if (industry === 'polyclinic' || industry === 'clinic') return VERTICALS.polyclinic
   if (industry === 'restaurant' || industry === 'restaurants') return VERTICALS.restaurant
+  if (industry === 'car_showroom' || industry === 'cars') return VERTICALS.car_showroom
   if (industry === 'vehicle_agency' || industry === 'auto') return VERTICALS.vehicle_agency
   if (industry === 'contracting' || industry === 'construction') return VERTICALS.contracting
   if (industry === 'retail' || industry === 'furniture' || industry === 'shop') return VERTICALS.retail
@@ -330,7 +352,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
           <Link id="products" href={`/marketplace?supplier=${data.supplier_id}`} className="rounded-2xl shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all" style={{ backgroundImage: t.gSoft, border: `1px solid ${t.trustBorder}` }}>
             <div className="w-11 h-11 rounded-xl grid place-items-center flex-shrink-0" style={{ background: t.accentSoft }}><ShoppingBag className="w-5 h-5" style={{ color: t.accent }} /></div>
             <div className="min-w-0 flex-1">
-              <p className="font-black text-[#1A2E26]">{data.industry === 'vehicle_agency' ? 'قطع غيار وإكسسوارات موتوسيكلات' : 'المنتجات'}</p>
+              <p className="font-black text-[#1A2E26]">{v.productsHeading || (data.industry === 'vehicle_agency' ? 'قطع غيار وإكسسوارات موتوسيكلات' : 'المنتجات')}</p>
               <p className="text-[11px] text-[#6B7280]">{fmt(data.product_count)} منتج للبيع · مضمون عن طريق مضمونة</p>
             </div>
             <span className="font-bold text-sm flex items-center gap-0.5 flex-shrink-0" style={{ color: t.accent }}>تسوّق <ChevronLeft className="w-4 h-4" /></span>
