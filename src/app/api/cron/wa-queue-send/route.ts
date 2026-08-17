@@ -17,7 +17,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { sendText, upsertConversation } from '@/lib/whatsapp'
-import { ackGate } from '@/lib/wa-ack-gate'
+import { ackGate, sessionKeys } from '@/lib/wa-ack-gate'
 import { getSafety } from '@/lib/wa-safety'
 
 export const runtime = 'nodejs'
@@ -247,7 +247,8 @@ export async function GET(request: NextRequest) {
         .from('whatsapp_messages')
         .select('id', { count: 'exact', head: true })
         .eq('direction', 'outbound')
-        .eq('session_id', s)
+        // 🐞 نفس إصلاح wa-ack-gate: السجل بيخزن رقم التليفون مش اسم المسار
+        .in('session_id', sessionKeys(s))
         .in('status', ['delivered', 'read'])
         .gte('created_at', new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString())
       laneHealthy.set(s, (count ?? 0) > 0)

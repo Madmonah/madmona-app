@@ -22,6 +22,26 @@
 
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 
+// 🐞 (١٧ أغسطس ٢٠٢٦) فحص الصحة كان بيسأل whatsapp_messages بـsession_id =
+//    اسم المسار («madmona-337») — بس السجل بيخزن **رقم التليفون**
+//    («201026222337»). النتيجة: «مفيش ولا إيصال في آخر ٦ ساعات» دايمًا،
+//    والمسار السليم بيتحكم عليه بالإعدام. حصلت فعلًا: 337 سلّم ١٥٩ رسالة
+//    النهاردة واتقفل الساعة ١٢:٤٠ كـ«ميت». الخريطة دي بتوصل الاسم بالرقم.
+export const SESSION_PHONES: Record<string, string> = {
+  'madmona-982': '201002229982',
+  'madmona-337': '201026222337',
+  'madmona-1551': '201114621551',
+  'cars': '201031721196',
+}
+
+/** كل المفاتيح اللي ممكن الجلسة تتسجل بيها في whatsapp_messages.session_id */
+export function sessionKeys(session: string): string[] {
+  const keys = [session]
+  const phone = SESSION_PHONES[session]
+  if (phone) keys.push(phone)
+  return keys
+}
+
 export type AckGateResult =
   | { proceed: true }
   | {
@@ -106,7 +126,7 @@ export async function ackGate(opts: AckGateOptions): Promise<AckGateResult> {
     .from('whatsapp_messages')
     .select('id', { count: 'exact', head: true })
     .eq('direction', 'outbound')
-    .eq('session_id', session)
+    .in('session_id', sessionKeys(session))
     .in('status', ['delivered', 'read'])
     .gte('created_at', new Date(Date.now() - HEALTH_WINDOW_MS).toISOString())
 
