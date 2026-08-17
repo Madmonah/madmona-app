@@ -282,14 +282,43 @@ export async function GET(request: NextRequest) {
     .order('scheduled_for', { ascending: true })
     .limit(FETCH)
 
-  const { data: mkRaw, error: mkErr } = await supabaseAdmin
+  // 🐞 (١٧ أغسطس ٢٠٢٦ — محمد: «بحاول أبعت من رقم 1551 بس مش بيبعت»)
+  //
+  //    الجلب هنا كان عالمي: أقدم FETCH رسالة مستحقة أيًا كان رقمها. لما
+  //    حملة كبيرة يتراكملها مستحق أكتر من FETCH على رقم واحد (cloud_reel:
+  //    ٤٩٨ مستحقة على 337)، النافذة كلها بتتملي منه وأي حملة أحدث على
+  //    رقم تاني **مابتظهرش خالص** — مسار 1551 كان جاهز و«دعوة مصانع»
+  //    مستحقة من ساعة، وولا رسالة اتبعتت.
+  //
+  //    الحل: نجيب الأول قايمة الأرقام اللي ليها مستحق، وبعدين نجيب رسايل
+  //    كل رقم **لوحده**. طول طابور رقم مابقاش بيحجب رقم تاني.
+  const MK_FILTER = `(${[...PACED_CAMPAIGNS, ...TRANSACTIONAL_CAMPAIGNS].join(',')})`
+  const { data: mkSessRaw, error: mkSessErr } = await supabaseAdmin
     .from('whatsapp_campaign_messages')
-    .select(COLS)
+    // ⚠️ التايبس المتولدة قديمة ومش عارفة عمود session — نفس قصة q.select
+    //    في شاشة الطابور. السترينج المتعدد بيعدّي، والمفرد لأ.
+    .select('session, id')
     .eq('status', 'queued')
-    .not('template_vars->>campaign_name', 'in', `(${[...PACED_CAMPAIGNS, ...TRANSACTIONAL_CAMPAIGNS].join(',')})`)
+    .not('template_vars->>campaign_name', 'in', MK_FILTER)
     .lte('scheduled_for', nowIso)
-    .order('scheduled_for', { ascending: true })
-    .limit(FETCH)
+    .limit(2000)
+  const mkSessions = Array.from(new Set(
+    ((mkSessRaw ?? []) as unknown as Array<{ session: string | null }>)
+      .map((r) => (r.session || '').trim() || DEFAULT_SESSION),
+  ))
+  const mkPerLane = await Promise.all(mkSessions.map(async (s) => {
+    let q = supabaseAdmin
+      .from('whatsapp_campaign_messages')
+      .select(COLS)
+      .eq('status', 'queued')
+      .not('template_vars->>campaign_name', 'in', MK_FILTER)
+      .lte('scheduled_for', nowIso)
+    // الرقم الافتراضي بياخد كمان الرسايل اللي session بتاعها فاضي
+    q = s === DEFAULT_SESSION ? q.or(`session.eq.${s},session.is.null`) : q.eq('session' as never, s)
+    return q.order('scheduled_for', { ascending: true }).limit(MAX_PER_RUN + 4)
+  }))
+  const mkErr = mkSessErr || mkPerLane.find((r) => r.error)?.error || null
+  const mkRaw = mkPerLane.flatMap((r) => r.data ?? [])
 
   // 🔎 (5 Aug 2026) ماتبلعش الخطأ — ده كان مخبي عطل الطابور المتجمد
   const qErr = txErr || mkErr
