@@ -363,33 +363,31 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           .maybeSingle()
 
         if (rootCat) {
+          // 🌳 (18 Aug 2026 — محمد: «فين إعلانات المركبات؟») التوسيع كان مستويين
+          // بس، وشجرة مركبات البيع بقت ٣ (مركبات ونقل → زيرو/مستعملة → سيارة…)
+          // فالعربيات المنشورة في المستوى التالت كانت مختفية. الـRPC بيرجّع
+          // الفئة وكل أحفادها مهما كان العمق.
           if (rootCat.parent_id) {
-            // 🚗 (18 Jul 2026) فئة فرعية: هي + أطفالها (لو ليها — زي عربيات زيرو → سيارة)
-            const { data: kidCats } = await supabaseBrowser
-              .from('categories')
-              .select('id')
-              .eq('parent_id', rootCat.id)
-            const kidIds = ((kidCats || []) as { id: string }[]).map(k => k.id)
-            categoryIds = [rootCat.id, ...kidIds]
+            const { data: treeIds } = await supabaseBrowser
+              .rpc('category_with_descendants' as never, { roots: [rootCat.id] } as never)
+            categoryIds = ((treeIds || []) as { id: string }[]).map(k => k.id)
+            if (!categoryIds.length) categoryIds = [rootCat.id]
           } else {
-            // Root tab clicked: show all subcategories + cross-listed categories
-            const [subsRes, crossRes] = await Promise.all([
-              supabaseBrowser
-                .from('categories')
-                .select('id')
-                .eq('parent_id', rootCat.id),
+            // Root tab clicked: full subtree + cross-listed categories
+            const [treeRes, crossRes] = await Promise.all([
+              supabaseBrowser.rpc('category_with_descendants' as never, { roots: [rootCat.id] } as never),
               supabaseBrowser
                 .from('categories')
                 .select('id')
                 .contains('also_show_in', [rootCat.id]),
             ])
-            const subs = (subsRes.data || []) as { id: string }[]
+            const tree = (treeRes.data || []) as { id: string }[]
             const cross = (crossRes.data || []) as { id: string }[]
-            categoryIds = [
+            categoryIds = Array.from(new Set([
               rootCat.id,
-              ...subs.map(s => s.id),
+              ...tree.map(s => s.id),
               ...cross.map(c => c.id),
-            ]
+            ]))
           }
         }
       } else if (activeTrack !== 'all' && selectedGroupSlug && rootCategories.some(c => (c.group_slug || c.slug) === selectedGroupSlug)) {
@@ -400,12 +398,11 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         const groupRoots = rootCategories.filter(c => (c.group_slug || c.slug) === selectedGroupSlug)
         const groupRootIds = groupRoots.map(c => c.id)
         if (groupRootIds.length > 0) {
-          const { data: childCats } = await supabaseBrowser
-            .from('categories')
-            .select('id')
-            .in('parent_id', groupRootIds)
-          const childIds = ((childCats || []) as { id: string }[]).map(c => c.id)
-          categoryIds = [...groupRootIds, ...childIds]
+          // 🌳 (18 Aug 2026) الشجرة كاملة مش أطفال المستوى الأول بس
+          const { data: treeIds } = await supabaseBrowser
+            .rpc('category_with_descendants' as never, { roots: groupRootIds } as never)
+          categoryIds = ((treeIds || []) as { id: string }[]).map(c => c.id)
+          if (!categoryIds.length) categoryIds = groupRootIds
         }
       } else if (activeTrack !== 'all') {
         // Vertical/track selected (e.g. from a homepage chip) with no specific
@@ -419,12 +416,11 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           .in('track', tracksToMatch)
         const rootIds = (trackRoots || []).map((c: { id: string }) => c.id)
         if (rootIds.length > 0) {
-          const { data: childCats } = await supabaseBrowser
-            .from('categories')
-            .select('id')
-            .in('parent_id', rootIds)
-          const childIds = (childCats || []).map((c: { id: string }) => c.id)
-          categoryIds = [...rootIds, ...childIds]
+          // 🌳 (18 Aug 2026) الشجرة كاملة — عشان المستوى التالت (سيارة زيرو/مستعملة…)
+          const { data: treeIds } = await supabaseBrowser
+            .rpc('category_with_descendants' as never, { roots: rootIds } as never)
+          categoryIds = ((treeIds || []) as { id: string }[]).map(c => c.id)
+          if (!categoryIds.length) categoryIds = rootIds
         }
       }
 
