@@ -1,4 +1,5 @@
 'use client'
+import { waPhone } from '@/lib/waPhone'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -105,7 +106,7 @@ export default function CustomerDetailPage({ params }: { params: { supplierId: s
               </div>
             </div>
             <div className="flex gap-2">
-              <a href={`https://wa.me/${c.phone?.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener"
+              <a href={`https://wa.me/${waPhone(c.phone)}`} target="_blank" rel="noopener"
                 className="px-3 py-2 rounded-xl bg-[#34D399] hover:opacity-90 text-[#04352A] text-xs font-bold flex items-center gap-1.5">
                 <MessageCircle className="w-3.5 h-3.5" /> واتساب
               </a>

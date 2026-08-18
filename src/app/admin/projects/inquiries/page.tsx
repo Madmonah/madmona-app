@@ -1,3 +1,4 @@
+import { waPhone } from '@/lib/waPhone'
 // src/app/admin/projects/inquiries/page.tsx
 // =====================================================================
 // 📩 كل استفسار عن مشروع — مين، أنهي مشروع، إمتى، ورد عليه ولا لأ.
@@ -109,7 +110,7 @@ export default async function InquiriesPage() {
 
                 {r.contact_phone && (
                   <a
-                    href={`https://wa.me/${r.contact_phone.replace(/\D/g, '')}`}
+                    href={`https://wa.me/${waPhone(r.contact_phone)}`}
                     target="_blank"
                     rel="noopener"
                     className="text-xs text-[#059669] font-semibold hover:underline"

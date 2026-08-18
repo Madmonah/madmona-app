@@ -2,6 +2,7 @@
 // Madmona Admin — Job Applications (Careers)
 
 'use client';
+import { waPhone } from '@/lib/waPhone'
 
 import { useEffect, useState, useMemo } from 'react';
 
@@ -188,7 +189,7 @@ export default function CareersAdminPage() {
                         <td className="px-4 py-3">{a.position || '—'}</td>
                         <td className="px-4 py-3 font-mono text-xs">
                           {a.phone ? (
-                            <a href={`https://wa.me/${a.phone.replace(/\D/g, '')}`} target="_blank" className="text-[#059669] hover:underline">
+                            <a href={`https://wa.me/${waPhone(a.phone)}`} target="_blank" className="text-[#059669] hover:underline">
                               {a.phone}
                             </a>
                           ) : '—'}

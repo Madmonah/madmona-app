@@ -1,4 +1,5 @@
 'use client'
+import { waPhone } from '@/lib/waPhone'
 
 import { useEffect, useState, type FormEvent } from 'react'
 import Link from 'next/link'
@@ -291,7 +292,7 @@ export default function AdminMarketplaceOrdersPage() {
               const meta = STATUS_META[o.status]
               const customerName = o.customer?.full_name || o.guest_name || 'عميل'
               const customerPhone = o.customer?.phone || o.guest_phone || ''
-              const customerPhoneClean = customerPhone.replace(/\D/g, '')
+              const customerPhoneClean = waPhone(customerPhone)
               const isInstaPay = o.payment_method === 'instapay'
               const isCOD = o.payment_method === 'cod'
               const isPending = o.status === 'pending_payment'

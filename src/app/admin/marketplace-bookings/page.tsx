@@ -1,4 +1,5 @@
 'use client'
+import { waPhone } from '@/lib/waPhone'
 
 import { useEffect, useState, type FormEvent } from 'react'
 import Link from 'next/link'
@@ -215,7 +216,7 @@ export default function AdminMarketplaceBookingsPage() {
               const status = STATUS_LABELS[b.status]
               const payment = PAYMENT_LABELS[b.payment_status]
               const isInstaPay = b.payment_method === 'instapay'
-              const phoneClean = b.customer_phone.replace(/\D/g, '')
+              const phoneClean = waPhone(b.customer_phone)
 
               return (
                 <div key={b.id} className="bg-white rounded-xl border border-gray-100 p-5">

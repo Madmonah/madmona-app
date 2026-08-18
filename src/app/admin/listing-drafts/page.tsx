@@ -1,3 +1,4 @@
+import { waPhone } from '@/lib/waPhone'
 // app/admin/listing-drafts/page.tsx
 // =====================================================================
 // Madmona Admin — Listing Drafts Dashboard
@@ -290,7 +291,7 @@ function DraftCard({ draft, onUpdate }: { draft: Draft; onUpdate: () => void }) 
         <Field label="الاسم">{draft.contact_name || '-'}</Field>
         <Field label="الموبايل">
           {draft.contact_phone ? (
-            <a href={`https://wa.me/${draft.contact_phone.replace(/[^\d]/g, '')}`} target="_blank" className="text-[#2FA084] hover:underline" dir="ltr">
+            <a href={`https://wa.me/${waPhone(draft.contact_phone)}`} target="_blank" className="text-[#2FA084] hover:underline" dir="ltr">
               {draft.contact_phone}
             </a>
           ) : (

@@ -1,3 +1,4 @@
+import { waPhone } from '@/lib/waPhone'
 // src/app/admin/leads-feed/page.tsx
 // Live feed of leads from landing page + AI scoring
 
@@ -151,7 +152,7 @@ export default async function LeadsFeed() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {lead.contact_phone && (
                     <a
-                      href={`https://wa.me/${lead.contact_phone}`}
+                      href={`https://wa.me/${waPhone(lead.contact_phone)}`}
                       target="_blank"
                       rel="noopener"
                       style={{

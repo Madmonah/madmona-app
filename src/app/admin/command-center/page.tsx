@@ -1,4 +1,5 @@
 'use client'
+import { waPhone } from '@/lib/waPhone'
 
 // ============================================================
 // /admin/command-center — Mohamed's single-screen operations hub
@@ -299,7 +300,7 @@ export default function CommandCenterPage() {
                         </td>
                         <td className="px-4 py-3">
                           <a
-                            href={`https://wa.me/${cap.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`أهلاً ${cap.user_name || ''}، أنا من فريق مضمونة. شفنا إنك سيبت رقمك علشان نساعدك تخلص الحجز${cap.metadata?.listing_title ? ` على \"${cap.metadata.listing_title}\"` : ''}.`)}`}
+                            href={`https://wa.me/${waPhone(cap.phone)}?text=${encodeURIComponent(`أهلاً ${cap.user_name || ''}، أنا من فريق مضمونة. شفنا إنك سيبت رقمك علشان نساعدك تخلص الحجز${cap.metadata?.listing_title ? ` على \"${cap.metadata.listing_title}\"` : ''}.`)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={async () => {
@@ -477,7 +478,7 @@ export default function CommandCenterPage() {
                         <td className="px-4 py-3 font-mono text-xs text-emerald-900/80">{lead.phone}</td>
                         <td className="px-4 py-3 text-xs text-emerald-900/60">{fmtTimeAgo(lead.last_inbound_at)}</td>
                         <td className="px-4 py-3">
-                          <a href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
+                          <a href={`https://wa.me/${waPhone(lead.phone)}`}
                             target="_blank" rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs text-white hover:bg-emerald-700"
                           >

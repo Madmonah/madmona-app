@@ -1,4 +1,5 @@
 'use client'
+import { waPhone } from '@/lib/waPhone'
 
 // ============================================================================
 // ActionHub — مركز كل المهام المعلّقة في مضمونة
@@ -130,7 +131,7 @@ export function ActionHub() {
                   )}
                 </div>
                 <div className="ah-item-actions">
-                  <a href={`https://wa.me/${app.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="ah-btn ah-btn-wa">
+                  <a href={`https://wa.me/${waPhone(app.phone)}`} target="_blank" rel="noreferrer" className="ah-btn ah-btn-wa">
                     واتساب
                   </a>
                   {app.metadata?.cv_url && (
@@ -185,7 +186,7 @@ export function ActionHub() {
                 </div>
                 <div className="ah-item-actions">
                   {lead.has_whatsapp && (
-                    <a href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="ah-btn ah-btn-wa">واتساب</a>
+                    <a href={`https://wa.me/${waPhone(lead.phone)}`} target="_blank" rel="noreferrer" className="ah-btn ah-btn-wa">واتساب</a>
                   )}
                   <a href={`tel:${lead.phone}`} className="ah-btn">اتصال</a>
                 </div>
