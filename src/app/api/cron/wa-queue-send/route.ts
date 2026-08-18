@@ -261,30 +261,27 @@ export async function GET(request: NextRequest) {
         retried.push({ id: row.id, attempts: n, action: 'left_for_gate' })
         continue
       }
-      if (n >= MAX_ATTEMPTS) {
-        await supabaseAdmin
-          .from('whatsapp_campaign_messages')
-          .update({
-            status: 'failed',
-            error_message: `ماوصلتش بعد ${MAX_ATTEMPTS} محاولات — الرقم غالبًا مقفول`,
-          } as never)
-          .eq('id', row.id)
-          .eq('status', 'sent')
-        retried.push({ id: row.id, attempts: n, action: 'failed' })
-      } else {
-        await supabaseAdmin
-          .from('whatsapp_campaign_messages')
-          .update({
-            status: 'queued',
-            scheduled_for: new Date().toISOString(),
-            whatsapp_msg_id: null,
-            sent_at: null,
-            error_message: 'ماوصلتش خلال ٣ دقايق — إعادة إرسال',
-          } as never)
-          .eq('id', row.id)
-          .eq('status', 'sent')
-        retried.push({ id: row.id, attempts: n, action: 'requeued' })
-      }
+      // ⛔⛔ (١٨ أغسطس ٢٠٢٦ — محمد: «إزاي المارد يبعت كل الرسايل المكررة دي
+      //     وانت واعدني إنك حاطط حارس؟») — كان عنده حق للمرة التانية.
+      //
+      //     إعادة الإرسال هنا بعتت ٢٥ رسالة ×٣ مرات على 982: إيصالات
+      //     الحملات على المسار ده مش بتتطابق مع الصفوف، فالرسالة الواصلة
+      //     فعلًا بانت «ماوصلتش» واتبعتت تاني وتالت.
+      //
+      //     القاعدة النهائية: **رسالة خدت whatsapp_msg_id اتبعتت — عمرها
+      //     ما تتبعت تاني، مهما كان.** عدم وصول الإيصال بيتسجّل كملاحظة
+      //     والصف بيفضل sent. حكم موت المسار كله بتاع بوابة التأكيد.
+      //     (وفيه تريجر block_campaign_message_resend في الداتابيز بيمنع
+      //     أي رجوع sent→queued حتى لو الكود ده اتغير بالغلط.)
+      void n
+      await supabaseAdmin
+        .from('whatsapp_campaign_messages')
+        .update({
+          error_message: 'إيصال التسليم ماوصلش — الرسالة اتبعتت مرة واحدة ومش هتتكرر',
+        } as never)
+        .eq('id', row.id)
+        .eq('status', 'sent')
+      retried.push({ id: row.id, attempts: n, action: 'noted_no_ack' })
     }
   } catch { /* إعادة الإرسال مايوقفش الطابور */ }
 
