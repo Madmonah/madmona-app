@@ -724,16 +724,56 @@ export async function POST(request: NextRequest) {
       const hourAgo = new Date(Date.now() - 3600_000).toISOString()
       const { data: recentDirs } = await supabaseUntyped
         .from('whatsapp_messages')
-        .select('direction')
+        .select('direction, created_at')
         .eq('conversation_id', conversationId)
         .gte('created_at', hourAgo)
+        .order('created_at', { ascending: false })
         .limit(500)
 
       let count = 0
       let inboundCount = 0
-      for (const r of ((recentDirs ?? []) as Array<{ direction: string }>)) {
-        if (r.direction === 'outbound') count++
-        else inboundCount++
+      let lastOutboundAt: number | null = null
+      for (const r of ((recentDirs ?? []) as Array<{ direction: string; created_at: string }>)) {
+        if (r.direction === 'outbound') {
+          count++
+          if (lastOutboundAt === null) lastOutboundAt = new Date(r.created_at).getTime()
+        } else inboundCount++
+      }
+
+      // ── ⏳ التهدئة التصاعدية (١٨ أغسطس ٢٠٢٦ — محمد: «خسرتني كتير النهاردة.
+      //    عايزك تبعّد الرد: ٢٠ ثانية أول ٣ ردود، اتنين بعد كده دقيقة،
+      //    وبعد كده دقيقتين وهكذا») — وقالها قبل كده أكتر من مرة.
+      //
+      //    القاعدة: كل ما المارد يرد أكتر على نفس المحادثة في الساعة،
+      //    المسافة الإجبارية بين الرد والرد بتكبر:
+      //      الردود ١–٣  → ٢٠ ثانية
+      //      الردود ٤–٥  → دقيقة
+      //      الردود ٦–٧  → دقيقتين
+      //      وبعدها بتتضاعف كل ردّين (٤ دقايق، ٨...) بسقف ١٥ دقيقة.
+      //
+      //    💰 الفحص هنا **قبل نداء كلود خالص** — وقت التهدئة مفيش أي صرف:
+      //    لا نداء ذكاء ولا رسالة. البوت اللي بيرد في ثانية بيلاقي سكوت،
+      //    فاللوب بيموت جعان بعد ٣ ردود بدل ٣٥٢ (اللي حصلت مع 201552111468
+      //    وكل رد فيها كان نداء كلود مدفوع). العميل البشري الطبيعي عمره
+      //    ما بيحس بيها — محدش بيكتب أسرع من رد كل ٢٠ ثانية لمدة ساعة.
+      //    (قاطع الفيضان في الداتابيز فوقها كضمانة أخيرة عند ٢٠/ساعة.)
+      if (lastOutboundAt !== null && count >= 1) {
+        const minGapMs =
+          count < 3 ? 20_000
+          : count < 5 ? 60_000
+          : Math.min(60_000 * Math.pow(2, Math.floor((count - 3) / 2)), 15 * 60_000)
+        const sinceLast = Date.now() - lastOutboundAt
+        if (sinceLast < minGapMs) {
+          console.log('[backoff] تهدئة تصاعدية — مش هنرد دلوقتي', {
+            conversationId, count, sinceLast_s: Math.round(sinceLast / 1000),
+            required_s: Math.round(minGapMs / 1000),
+          })
+          // الرسالة اتسجّلت فوق — لما العميل يبعت تاني بعد المهلة بنرد طبيعي
+          return NextResponse.json({
+            ok: true, replied: false, reason: 'backoff',
+            replies_last_hour: count, wait_s: Math.round((minGapMs - sinceLast) / 1000),
+          })
+        }
       }
 
       if (count >= LOOP_LIMIT && count >= 3 * Math.max(inboundCount, 1)) {
