@@ -59,7 +59,12 @@ function clampSafety(s: WaSafety): WaSafety {
     Number.isFinite(v) ? Math.min(hi, Math.max(lo, Math.round(v))) : fb
 
   const out: WaSafety = {
-    maxPerDay: n(s.maxPerDay, 1, 200, SAFETY_DEFAULTS.maxPerDay),
+    // (١٨ أغسطس ٢٠٢٦ — محمد: «الغي حد الارسال»، واتفاجئ إن 337 واقف
+    // على 200/يوم رغم إن الداتابيز فيها 100000): السقف الصلب هنا كان
+    // بيدوس على قيمة wa_max_per_day اللي محمد ظبطها. القيمة في الداتابيز
+    // بقت هي الحاكمة. ⚠️ التحذير مبلَّغ لمحمد: رقم بيبعت مئات الرسايل
+    // الباردة يوميًا معرّض للحظر من واتساب — القرار قراره.
+    maxPerDay: n(s.maxPerDay, 1, 100000, SAFETY_DEFAULTS.maxPerDay),
     minGapSec: n(s.minGapSec, 5, 3600, SAFETY_DEFAULTS.minGapSec),
     maxGapSec: n(s.maxGapSec, 5, 7200, SAFETY_DEFAULTS.maxGapSec),
     startHour: n(s.startHour, 0, 23, SAFETY_DEFAULTS.startHour),
