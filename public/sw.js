@@ -2,8 +2,14 @@
 // Offline caching + Push notifications + Notification clicks
 // Version: 5 (22 يوليو 2026) — يجبر مسح الكاش القديم على كل الأجهزة (كان في
 // أجهزة ماسكة نسخة قديمة فاضية من الماركت بليس). activate بيمسح أي كاش مختلف.
+// Version: 6 (19 أغسطس 2026) — notificationclick مابقاش بيخطف تاب لوحة الأدمن
+// المفتوح لصفحة تانية (محمد: «لما بكون فاتح صفحة الادمن بلاقي الصفحة لوحدها
+// راحت لصفحة تانية»). السبب: إشعارات بوش كتير بتوصله وهو شغال على /admin
+// (تقرير الساعتين كل ٢ ساعة، ردود المارد...)، ودوسة بغير قصد على واحد منها
+// كانت بتـnavigate التاب المفتوح لصفحة الإشعار من تحته. دلوقتي: لو فيه تاب
+// أدمن مفتوح، بنركّز عليه بس ونفتح المطلوب في تاب جديد بدل ما "نخطف" شغله.
 
-const CACHE_NAME = 'madmona-v5';
+const CACHE_NAME = 'madmona-v6';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -135,7 +141,27 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // If a window is already open, focus it and navigate
+      const pathOf = (u) => { try { return new URL(u).pathname; } catch { return ''; } };
+
+      // لو التاب مفتوح فعلاً بالظبط على نفس الصفحة المطلوبة، ركّز عليه بس
+      // من غير أي تنقّل (مفيش داعي).
+      const exact = clientList.find((c) => 'focus' in c && pathOf(c.url) === pathOf(targetUrl));
+      if (exact) { exact.focus(); return exact; }
+
+      // 🛡️ (١٩ أغسطس ٢٠٢٦) لو فيه تاب مفتوح على لوحة الأدمن (/admin/*) —
+      // معندناش حق نتنقّل بيه لصفحة تانية من تحته. محمد كان بيشتغل على
+      // /admin وإشعارات بتوصله كتير (زي "تقرير الساعتين" كل ٢ ساعة، أو ردود
+      // المارد)، ولو دوس على واحد منها بغير قصد كان بيلاقي صفحته اتحوّلت
+      // لصفحة تانية من غير ما يقصد. الحل: التاب الأدمن يفضل زي ما هو (بس
+      // نركّز عليه)، والهدف يتفتح في تاب جديد لو حابب فعلاً يشوفه.
+      const onAdmin = clientList.find((c) => 'focus' in c && pathOf(c.url).startsWith('/admin'));
+      if (onAdmin) {
+        onAdmin.focus();
+        if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
+        return onAdmin;
+      }
+
+      // مفيش تاب أدمن مفتوح — السلوك القديم زي ما هو: ركّز التاب الأول ونقّله.
       for (const client of clientList) {
         if ('focus' in client) {
           client.focus();
