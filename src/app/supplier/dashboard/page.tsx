@@ -300,7 +300,11 @@ function SupplierDashboardInner() {
               <div className="sd-list">
                 {employees.map(e => (
                   <div key={e.id} className="sd-row">
-                    <div className="sd-row-avatar">{e.avatar_initial}</div>
+                    <div className="sd-row-avatar" style={e.photo_url ? { padding: 0, overflow: 'hidden' } : undefined}>
+                      {e.photo_url
+                        ? <img src={e.photo_url} alt={e.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} onError={(ev) => { (ev.target as HTMLImageElement).style.display = 'none' }} />
+                        : e.avatar_initial}
+                    </div>
                     <div className="sd-row-main">
                       <h3>{e.practitioner?.title_ar || e.full_name}</h3>
                       <div className="sd-row-meta">

@@ -340,7 +340,10 @@ export const MARID_TOOLS = [
       '• الاسم مش واضح — مشروع/وحدة من غير اسم مالوش لازمة\n' +
       '• الرسالة مكتوب فيها SOLDOUT أو «تم البيع» أو «خلصت» على المشروع/الوحدة دي\n' +
       '• السعر مش مذكور صراحة — ماتخمّنش، سيبه فاضي\n\n' +
-      'الأداة بتتأكد بنفسها إن المشروع/الوحدة مش موجود قبل ما تحفظ.',
+      'الأداة بتتأكد بنفسها إن المشروع/الوحدة مش موجود قبل ما تحفظ. ' +
+      '⚠️ لو رقم المرسل مسجّل عندنا كمورد بنشاط واضح مش عقاري (زي معرض سيارات)، الأداة بترفض ' +
+      'وتقولك تستخدم create_listing_draft بدالها. لو الرقم مش موثّق كنشاط عقاري عندنا، بيتسجّل ' +
+      'كمراجعة (مش بيظهر في البورصة فورًا) لحد ما فريق مضمونة يراجعه.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -891,6 +894,52 @@ async function createProject(a: {
   const segment = a.segment === 'resale' ? 'resale' : 'developer'
   const images = (a.image_urls || []).filter((u) => typeof u === 'string' && u.trim().length > 0)
 
+  // ── فحص هوية المُرسل قبل النشر المباشر ──────────────────────────────
+  // ١٩ أغسطس ٢٠٢٦: محمد لاحظ معرض عربيات ظاهر في قسم العقارات. السبب:
+  // الأداة دي كانت بتنشر أي كلام يوصفه المارد إنه "عقار" فورًا (status:
+  // 'published') من غير أي تحقق من هوية المرسل — حتى لو رقمه مسجل عندنا
+  // كمورد في نشاط تاني خالص (زي معرض سيارات). أي واحد يبعت واتساب فيه
+  // وصف شبه عقار كان بينشر على طول في بورصة عقارات مضمونة الحقيقية.
+  //
+  // الحل الجذري: لو رقم المرسل مسجّل عندنا كمورد بنشاط واضح مش عقاري
+  // (زي معرض سيارات) نرفض تسجيله كعقار خالص ونوجّهه لأداة الإعلانات
+  // العادية. غير كده (رقم مش مسجل / تاجر عقارات / رقم مسجل فعلاً كنشاط
+  // عقاري) بيتسجل بس *مش منشور فورًا* — بيتحفظ status='draft' لحد ما
+  // يراجعه حد من الأدمن، تمامًا زي فولباك /add-project لغير الموثقين.
+  // الاستثناء الوحيد للنشر الفوري: رقم مسجل عندنا فعلاً كمورد نشاطه عقاري.
+  const senderPhoneDigits = (a.sender_phone || '').replace(/\D/g, '').slice(-10)
+  let publishImmediately = false
+  if (senderPhoneDigits) {
+    const { data: matchedSuppliers } = await db
+      .from('suppliers')
+      .select('business_name, industry, business_type, contact_phone')
+      .not('contact_phone', 'is', null)
+
+    const NON_REAL_ESTATE_INDUSTRIES = new Set([
+      'car_showroom', 'car_dealer', 'vehicles', 'auto', 'restaurant', 'salon',
+      'clinic', 'retail', 'ecommerce', 'services',
+    ])
+    const REAL_ESTATE_INDUSTRIES = new Set(['real_estate', 'real_estate_developer', 'real_estate_broker', 'property'])
+
+    const match = (matchedSuppliers ?? []).find((s: { contact_phone?: string | null }) => {
+      const digits = (s.contact_phone || '').replace(/\D/g, '').slice(-10)
+      return digits && digits === senderPhoneDigits
+    }) as { business_name?: string; industry?: string | null; business_type?: string | null } | undefined
+
+    if (match) {
+      const industry = (match.industry || '').toLowerCase()
+      if (NON_REAL_ESTATE_INDUSTRIES.has(industry)) {
+        return {
+          ok: false,
+          error: `الرقم ده مسجّل عندنا كمورد نشاطه "${match.industry}" (${match.business_name || ''}) — مش عقارات. ماينفعش يتسجّل في بورصة العقارات.`,
+          قول_للعميل: 'العرض ده مش عقاري — لو عندك حاجة تانية غير عقار (سيارة/منتج/خدمة) استخدم إعلان عادي بدل بورصة العقارات.',
+        }
+      }
+      if (REAL_ESTATE_INDUSTRIES.has(industry)) publishImmediately = true
+    }
+  }
+  const status = publishImmediately ? 'published' : 'draft'
+
   // ── فحص التكرار ────────────────────────────────────────────────────
   const norm = (s: string) =>
     s.toLowerCase().replace(/\b(mall|tower|complex|center|centre|new|the)\b/g, '').replace(/[^a-z0-9؀-ۿ]/g, '')
@@ -936,10 +985,11 @@ async function createProject(a: {
       // — أرقام الموردين ماتظهرش على الماركتبليس ولا البورصة أبدًا.
       source_lead_phone: a.sender_phone,
       source_name: 'المارد — واتساب',
-      // منشور على طول: محمد وافق يوم ٢٠ يوليو بعد ما اتفقنا على الضوابط.
-      // الضوابط فوق هي اللي بتحمي — مش مرحلة مراجعة يدوية.
-      status: 'published',
-      is_active: true,
+      // منشور على طول بس لو الرقم موثّق فعلاً كنشاط عقاري (publishImmediately
+      // فوق). غير كده بيتحفظ draft لحد ما يراجعه حد — ١٩ أغسطس ٢٠٢٦: ده
+      // بعد ما مورد نشاطه مش عقاري ظهر في بورصة العقارات من غير أي تحقق.
+      status,
+      is_active: publishImmediately,
     })
     .select('id, slug')
     .maybeSingle()
@@ -951,8 +1001,12 @@ async function createProject(a: {
     project_id: data?.id,
     url: `${SITE}/real-estate/projects/${data?.slug}`,
     ...(similar.length ? { مشاريع_شبهه_موجودة: similar } : {}),
-    قول_للعميل: `اتسجّل ونُشر في بورصة مضمونة العقارية ✅\n${SITE}/real-estate/projects/${data?.slug}`,
-    ملحوظة_داخلية: 'الماركتبليس محتاج صورة واحدة على الأقل — لو العميل بعت صور، قوله يبعتها عشان نعرضه هناك كمان',
+    قول_للعميل: publishImmediately
+      ? `اتسجّل ونُشر في بورصة مضمونة العقارية ✅\n${SITE}/real-estate/projects/${data?.slug}`
+      : 'اتسجّل عندنا ✅ وهيظهر في بورصة مضمونة العقارية بعد ما فريقنا يراجعه بسرعة.',
+    ملحوظة_داخلية: publishImmediately
+      ? 'الماركتبليس محتاج صورة واحدة على الأقل — لو العميل بعت صور، قوله يبعتها عشان نعرضه هناك كمان'
+      : 'محفوظ draft لحد المراجعة — رقم المرسل مش موثّق كنشاط عقاري عندنا، محتاج مراجعة يدوية قبل ما ينشر.',
   }
 }
 

@@ -53,6 +53,7 @@ type Employee = {
   branch_name: string | null
   branch_code: string | null
   avatar_initial?: string | null
+  photo_url?: string | null
   today_total_tasks: number
   today_completed: number
   today_pending: number
@@ -521,8 +522,10 @@ function TaskModal({
       <div className="relative bg-[#FAFAF7] rounded-t-3xl md:rounded-3xl w-full md:max-w-2xl md:mx-4 max-h-[90vh] flex flex-col shadow-2xl">
         {/* Header */}
         <header className="px-5 py-4 border-b border-gray-100 bg-white rounded-t-3xl flex items-center gap-3">
-          <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#34D399]/10 text-[#059669] font-black text-base flex-shrink-0">
-            {employee.avatar_initial || employee.full_name.charAt(0)}
+          <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#34D399]/10 text-[#059669] font-black text-base flex-shrink-0 overflow-hidden">
+            {employee.photo_url
+              ? <img src={employee.photo_url} alt={employee.full_name} className="w-full h-full object-cover" onError={(ev) => { (ev.target as HTMLImageElement).style.display = 'none' }} />
+              : (employee.avatar_initial || employee.full_name.charAt(0))}
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-base md:text-lg font-black text-[#1A2E26] truncate">{employee.full_name}</h2>
@@ -804,8 +807,10 @@ function EmployeeCard({ emp, onClick }: { emp: Employee; onClick: () => void }) 
       className="w-full text-right rounded-2xl border border-gray-100 p-4 hover:shadow-md hover:border-[#059669] transition-all"
     >
       <div className="flex items-start gap-3 mb-3">
-        <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#34D399]/10 text-[#059669] font-black text-base flex-shrink-0">
-          {initial}
+        <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#34D399]/10 text-[#059669] font-black text-base flex-shrink-0 overflow-hidden">
+          {emp.photo_url
+            ? <img src={emp.photo_url} alt={emp.full_name} className="w-full h-full object-cover" onError={(ev) => { (ev.target as HTMLImageElement).style.display = 'none' }} />
+            : initial}
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-black text-[#1A2E26] leading-tight truncate">{emp.full_name}</h4>

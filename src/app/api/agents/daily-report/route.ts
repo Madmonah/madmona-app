@@ -20,6 +20,18 @@ interface DailyMetrics {
     new_bookings: number
     bookings_value_egp: number
   }
+  // 🆕 ١٩ أغسطس ٢٠٢٦: محمد لاحظ ٧٥ إعلان اتعمل النهارده ونشر منهم ٢٥ بس،
+  // والفجوة دي مكانتش ظاهرة في التقرير خالص — new_listings كان بيعدّ كل
+  // إعلان اتعمل بغض النظر عن حالته (منشور/درافت/متوقف). دلوقتي التقرير
+  // بيفصّل الحالات صراحة عشان الفجوة تبقى ظاهرة من غير ما حد يسأل ليه.
+  listings_breakdown_today: {
+    created_total: number
+    published: number
+    draft: number
+    paused: number
+    other: number
+    publish_gap: number // created_total - published — لو كبير ده تنبيه
+  }
   past_7_days_avg: {
     daily_signups: number
     daily_listings: number
@@ -74,6 +86,20 @@ async function gatherMetrics(): Promise<DailyMetrics> {
     .from('listings')
     .select('*', { count: 'exact', head: true })
     .gte('created_at', todayStartIso)
+
+  // 🆕 ١٩ أغسطس ٢٠٢٦: تفصيل الحالة — مش بس عدد إجمالي. لازم نعرف كام
+  // منهم فعلاً وصل للماركتبليس (published) وكام عالق (draft/paused).
+  const { data: todayListingsByStatus } = await supabaseAdmin
+    .from('listings')
+    .select('status')
+    .gte('created_at', todayStartIso)
+
+  type StatusRow = { status?: string | null }
+  const statusRows = (todayListingsByStatus ?? []) as StatusRow[]
+  const publishedToday = statusRows.filter((r) => r.status === 'published').length
+  const draftToday = statusRows.filter((r) => r.status === 'draft').length
+  const pausedToday = statusRows.filter((r) => r.status === 'paused').length
+  const otherToday = statusRows.length - publishedToday - draftToday - pausedToday
 
   const { data: todayBookings } = await supabaseAdmin
     .from('marketplace_bookings')
@@ -145,6 +171,14 @@ async function gatherMetrics(): Promise<DailyMetrics> {
       new_listings: newListingsToday ?? 0,
       new_bookings: newBookingsToday,
       bookings_value_egp: Math.round(bookingsValueToday),
+    },
+    listings_breakdown_today: {
+      created_total: statusRows.length,
+      published: publishedToday,
+      draft: draftToday,
+      paused: pausedToday,
+      other: Math.max(0, otherToday),
+      publish_gap: Math.max(0, statusRows.length - publishedToday),
     },
     past_7_days_avg: {
       daily_signups: Number(((signups7d ?? 0) / 7).toFixed(1)),
@@ -273,6 +307,17 @@ function buildReportEmailHtml(report: ReportOutput, m: DailyMetrics): string {
     <tr style="background: #FAF7F0;"><td style="padding: 8px;">إعلانات جديدة</td><td style="padding: 8px; font-weight: bold;">${m.today.new_listings}</td></tr>
     <tr><td style="padding: 8px;">حجوزات جديدة</td><td style="padding: 8px; font-weight: bold;">${m.today.new_bookings}</td></tr>
     <tr style="background: #FAF7F0;"><td style="padding: 8px;">قيمة الحجوزات</td><td style="padding: 8px; font-weight: bold;">${m.today.bookings_value_egp.toLocaleString('en-US')} ج</td></tr>
+  </table>
+
+  <h3 style="color: #059669; margin-top: 24px;">📋 تفصيل الإعلانات الجديدة</h3>
+  <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+    <tr style="background: #FAF7F0;"><td style="padding: 8px;">اتعمل النهارده</td><td style="padding: 8px; font-weight: bold;">${m.listings_breakdown_today.created_total}</td></tr>
+    <tr><td style="padding: 8px;">✅ اتنشر فعلاً</td><td style="padding: 8px; font-weight: bold; color:#059669;">${m.listings_breakdown_today.published}</td></tr>
+    <tr style="background: #FAF7F0;"><td style="padding: 8px;">📝 لسه درافت</td><td style="padding: 8px; font-weight: bold;">${m.listings_breakdown_today.draft}</td></tr>
+    <tr><td style="padding: 8px;">⏸️ متوقف (paused)</td><td style="padding: 8px; font-weight: bold;">${m.listings_breakdown_today.paused}</td></tr>
+    ${m.listings_breakdown_today.publish_gap > 0
+      ? `<tr style="background:#FEF3C7;"><td style="padding: 8px; font-weight:bold;">⚠️ الفجوة (اتعمل ومانشرش)</td><td style="padding: 8px; font-weight: bold; color:#B45309;">${m.listings_breakdown_today.publish_gap}</td></tr>`
+      : ''}
   </table>
 
   <h3 style="color: #059669; margin-top: 24px;">✅ Wins</h3>
