@@ -12,7 +12,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { supabaseBrowser } from '@/lib/supabase-browser'
+import { adminRpc } from '@/lib/adminRpc'
 import { ActionHub } from '@/components/admin/ActionHub'
 import { AgentDirectives } from '@/components/admin/AgentDirectives'
 import { QuickHub } from '@/components/admin/QuickHub'
@@ -140,22 +140,21 @@ export default function AdminOverview() {
   const [live, setLive] = useState<{ d: any; c: Charts | null; m: any; p: any }>({ d: null, c: null, m: null, p: null })
 
   async function load() {
+    // 🔐 (١٩ أغسطس ٢٠٢٦) اللوحة مقفولة بكوكي الأدمن الجديد مش بـ Supabase Auth —
+    // بننادي عن طريق /api/admin/rpc اللي بيتأكد من الكوكي على السيرفر.
     try {
-      const { data: { session } } = await supabaseBrowser.auth.getSession()
-      if (!session?.user) { setStage('unauthenticated'); return }
       setRefreshing(true)
-      const sb = supabaseBrowser as any
-      const [statsRes, pulseRes, msgRes, chartsRes] = await Promise.all([
-        sb.rpc('get_admin_dashboard_v2'),
-        sb.rpc('get_system_pulse_status'),
-        sb.rpc('get_admin_messages_summary'),
-        sb.rpc('get_owner_overview_charts'),
+      const [statsRes, pulseRes, msgRes, chartsRes] = await Promise.allSettled([
+        adminRpc('get_admin_dashboard_v2'),
+        adminRpc('get_system_pulse_status'),
+        adminRpc('get_admin_messages_summary'),
+        adminRpc('get_owner_overview_charts'),
       ])
       setLive({
-        d: statsRes.data || null,
-        c: (chartsRes.data as Charts) || null,
-        m: msgRes.data || null,
-        p: pulseRes.data || null,
+        d: statsRes.status === 'fulfilled' ? statsRes.value : null,
+        c: (chartsRes.status === 'fulfilled' ? chartsRes.value as Charts : null),
+        m: msgRes.status === 'fulfilled' ? msgRes.value : null,
+        p: pulseRes.status === 'fulfilled' ? pulseRes.value : null,
       })
       setStage('ready')
     } catch {

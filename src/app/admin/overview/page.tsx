@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react'
 import Link from 'next/link'
-import { supabaseBrowser } from '@/lib/supabase-browser'
+import { adminRpc } from '@/lib/adminRpc'
 import {
   Loader2, Lock, AlertCircle, ArrowRight, ExternalLink, RefreshCw,
   // B2B
@@ -186,29 +186,30 @@ export default function AdminDashboardV2() {
   const [refreshing, setRefreshing] = useState(false)
 
   async function load() {
+    // 🔐 (١٩ أغسطس ٢٠٢٦) اللوحة مقفولة بكوكي الأدمن الجديد (madmona_admin_v2)
+    // مش بـ Supabase Auth — فبننادي الـRPCs دي عن طريق /api/admin/rpc اللي
+    // بيتأكد من الكوكي على السيرفر، بدل ما نتأكد من جلسة Supabase Auth هنا
+    // (اللي مفيش داعي لها خالص مع نظام الدخول الجديد).
     try {
-      const { data: { session } } = await supabaseBrowser.auth.getSession()
-      if (!session?.user) { setStage('unauthenticated'); return }
-
       setRefreshing(true)
-      const [statsRes, msgsRes, pulseRes, chartsRes] = await Promise.all([
-        supabaseBrowser.rpc('get_admin_dashboard_v2'),
-        supabaseBrowser.rpc('get_admin_messages_summary'),
-        supabaseBrowser.rpc('get_system_pulse_status'),
-        supabaseBrowser.rpc('get_admin_dashboard_charts'),
+      const [statsRes, msgsRes, pulseRes, chartsRes] = await Promise.allSettled([
+        adminRpc<DashboardData>('get_admin_dashboard_v2'),
+        adminRpc<MessagesData>('get_admin_messages_summary'),
+        adminRpc<PulseData>('get_system_pulse_status'),
+        adminRpc('get_admin_dashboard_charts'),
       ])
       setRefreshing(false)
 
-      if (statsRes.error) {
-        const msg = (statsRes.error.message || '').toLowerCase()
-        if (msg.includes('forbidden')) { setStage('forbidden'); return }
-        setError(statsRes.error.message)
+      if (statsRes.status === 'rejected') {
+        const msg = (statsRes.reason instanceof Error ? statsRes.reason.message : '').toLowerCase()
+        if (msg.includes('forbidden') || msg.includes('بوابة الأدمن')) { setStage('forbidden'); return }
+        setError(statsRes.reason instanceof Error ? statsRes.reason.message : 'فشل التحميل')
         setStage('ready')
         return
       }
-      setData(statsRes.data as DashboardData)
-      if (msgsRes.data) setMessages(msgsRes.data as MessagesData)
-      if (pulseRes.data) setPulse(pulseRes.data as PulseData)
+      setData(statsRes.value)
+      if (msgsRes.status === 'fulfilled') setMessages(msgsRes.value)
+      if (pulseRes.status === 'fulfilled') setPulse(pulseRes.value)
       setStage('ready')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'فشل التحميل')
@@ -1021,14 +1022,14 @@ function PartnerLinks() {
 
   useEffect(() => {
     (async () => {
-      // الـ RPC دي أحدث من ملف الأنواع المولّد (src/types/supabase.ts، ٩١٣KB)،
-      // فبنعدّي عليها بـ cast موضعي بدل ما نعيد توليد الملف كله.
-      // 15 Aug 2026: .bind() required - detached rpc throws on this.rest
-      const rpc = supabaseBrowser.rpc.bind(supabaseBrowser) as unknown as
-        (fn: string) => Promise<{ data: unknown; error: { message: string } | null }>
-      const { data, error } = await rpc('get_b2b_partner_links')
-      if (error) { setErr(error.message); return }
-      setRows((data as PartnerLink[]) || [])
+      // 🔐 (١٩ أغسطس ٢٠٢٦) نفس سبب باقي الصفحة — عن طريق /api/admin/rpc
+      // بدل نداء مباشر بيحتاج جلسة Supabase Auth مش موجودة مع الكوكي الجديد.
+      try {
+        const data = await adminRpc<PartnerLink[]>('get_b2b_partner_links')
+        setRows(data || [])
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : 'فشل التحميل')
+      }
     })()
   }, [])
 

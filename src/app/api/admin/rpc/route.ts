@@ -40,6 +40,15 @@ const ALLOWED = new Set([
   // طلبات التسعير
   'madmona_list_quote_orders',
   'madmona_quote_order',
+  // لوحة "كل الأدوات" (overview/dashboard) — كانت بتتنادى من المتصفح على طول
+  // ومحمية بـassert_platform_admin() اللي بتطلب auth.uid() (جلسة Supabase Auth
+  // منفصلة تمامًا عن نظام الدخول الجديد) — (١٩ أغسطس ٢٠٢٦)
+  'get_admin_dashboard_v2',
+  'get_admin_messages_summary',
+  'get_system_pulse_status',
+  'get_admin_dashboard_charts',
+  'get_owner_overview_charts',
+  'get_b2b_partner_links',
 ])
 
 async function isAdmin(req: NextRequest): Promise<boolean> {
