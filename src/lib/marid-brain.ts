@@ -20,6 +20,54 @@ import { supabaseUntyped as db } from '@/lib/supabase'
 import { MARID_TOOLS, runMaridTool, MADMONA_LINKS } from '@/lib/marid-tools'
 import { ADMIN_TOOLS, runAdminTool, ADMIN_PROMPT } from '@/lib/marid-admin'
 
+// 🛡️ (١٩ أغسطس ٢٠٢٦ — محمد: «فيه اعلانات اتبعتت للمارد وبرضو مش شغال»)
+//
+//    اتأكّد فعليًا (رقم ١٥٥١، ١٩ أغسطس): بايع بعت شقة كاملة بالصور، والمارد
+//    رد «سجّلت الإعلان: ...» ولينك — ومحدش من الأداتين اللي بتسجّل فعليًا
+//    (create_listing_draft → instant_listing_drafts، أو create_project →
+//    property_market_items) اتنادى خالص. اللينك نفسه مُختلَق. العميل اطمن
+//    إن إعلانه هينزل وهو أصلاً مش موجود في أي جدول.
+//
+//    ده نفس عيب «الكلام مش تسجيل» اللي محمد بلّغ عنه يوم ١٨ أغسطس (عربيات) —
+//    ده كان حله وقتها تعليمة في البرومبت بس (marid-brain وقتها)، وده أثبت
+//    إنه مش كافي: النموذج بيرجع يكسرها تاني (هنا مع عقارات، مش عربيات).
+//    تعليمة برومبت لوحدها بتتنسى تحت ضغط — لازم حارس في الكود يتأكد فعليًا.
+//
+//    الحل: نتتبّع هل نداء ناجح لـcreate_listing_draft/create_project حصل
+//    فعلًا في المحادثة دي (listingPersisted). لو الرد بيوعد بتسجيل من غير
+//    ما يحصل نداء ناجح: أول محاولة نرجّع الكلام للمارد ونجبره ينادي الأداة
+//    فعلًا قبل ما يرد (لسه فيه لفّات فاضية)؛ لو خلصت اللفّات، نبدّل الرد
+//    برسالة صادقة بدل الوعد الكاذب ونـنبّه محمد.
+const LISTING_CONFIRM_VERB_RE = /سج[ّ]?لت|اتسج[ّ]?ل|تم\s*التسجيل|نزل\s*رسمي|هينزل/
+const LISTING_CONFIRM_NOUN_RE = /الإعلان|إعلانك|إعلاني|المشروع|بورصة|الماركتبليس|الوحدة|العقار/
+function looksLikeFakeListingConfirmation(text: string): boolean {
+  return LISTING_CONFIRM_VERB_RE.test(text) && LISTING_CONFIRM_NOUN_RE.test(text)
+}
+const LISTING_GUARD_CORRECTION =
+  '⚠️ نظام (مش من العميل): في ردّك اللي فات أكّدت للعميل إنك سجّلت الإعلان/المشروع، ' +
+  'لكن مفيش نداء ناجح لـcreate_listing_draft ولا create_project حصل فعليًا في المحادثة دي. ' +
+  'اللينك اللي بعتّه غير حقيقي. ممنوع تأكيد تسجيل من غير نداء فعلي لنفس الأداة في نفس الرد. ' +
+  'لو عندك بيانات كافية من كلام العميل فوق (العنوان/الوصف/السعر/صورة واحدة على الأقل)، ' +
+  'نادِ الأداة الصح فعليًا دلوقتي واستخدم اللي هيرجعلك منها في ردّك. ' +
+  'لو لسه ناقص بيانات أساسية، قول للعميل بالظبط الناقص إيه — من غير أي وعد بتسجيل لسه ماحصلش.'
+function fireListingGuardAlert(phone: string, text: string): void {
+  console.error('[marid-guard] رد فيه تأكيد تسجيل إعلان/مشروع من غير نداء أداة ناجح', {
+    phone, text: text.slice(0, 200),
+  })
+  void db
+    .rpc('fire_admin_alert', {
+      p_title: 'المارد أكّد تسجيل إعلان من غير ما يسجّله فعليًا',
+      p_body: `الرقم: ${phone}\n\nنص الرد اللي كان هيتبعت:\n${text.slice(0, 300)}`,
+      p_url: '/admin/marid-monitor',
+      p_severity: 'warning',
+      p_source: 'marid-guard',
+    })
+    .then(
+      () => {},
+      () => {},
+    )
+}
+
 // المارد بيقدر يسأل الداتابيز قبل ما يرد: يبحث في الكتالوج، يشوف المتكلّم
 // مين، يجيب حجوزاته، يسجّل إعلان. بندوّر الحلقة لحد ما يخلص أدوات.
 export async function callMaridWithTools(opts: {
@@ -174,6 +222,9 @@ ${Object.entries(MADMONA_LINKS)
   ]
 
   let droppedMedia = false
+  // 🛡️ شوف تعليق «الكلام مش تسجيل» فوق الملف — بتتسجّل true بس لما نداء
+  // create_listing_draft أو create_project يرجع ok:true فعليًا.
+  let listingPersisted = false
 
   for (let turn = 0; turn < MAX_TURNS; turn++) {
     let res
@@ -231,7 +282,21 @@ ${Object.entries(MADMONA_LINKS)
 
     if (!toolUses.length) {
       const textPart = res.content.find((c) => c.type === 'text')
-      return textPart && textPart.type === 'text' ? textPart.text : ''
+      const finalText = textPart && textPart.type === 'text' ? textPart.text : ''
+
+      if (!listingPersisted && looksLikeFakeListingConfirmation(finalText)) {
+        // لسه فيه لفّات فاضية — نرجّعله يصحّح بنفسه وينادي الأداة فعلًا.
+        if (turn < MAX_TURNS - 1) {
+          messages.push({ role: 'assistant', content: res.content })
+          messages.push({ role: 'user', content: LISTING_GUARD_CORRECTION })
+          continue
+        }
+        // خلصت اللفّات — مانبعتش وعد كاذب. رد صادق + تنبيه لمحمد.
+        fireListingGuardAlert(opts.senderPhone, finalText)
+        return 'قربنا نخلص! بس محتاج آخر تفاصيل الإعلان (السعر والصور) عشان أسجّله فعليًا وأبعتلك تأكيد — ابعتهملي وأنا أظبطه على طول 🙏'
+      }
+
+      return finalText
     }
 
     messages.push({ role: 'assistant', content: res.content })
@@ -253,6 +318,12 @@ ${Object.entries(MADMONA_LINKS)
         ? await runAdminTool(tu.name, toolInput)
         : await runMaridTool(tu.name, toolInput)
       console.log('[marid-tool]', tu.name, JSON.stringify(out).slice(0, 160))
+      if (
+        (tu.name === 'create_listing_draft' || tu.name === 'create_project') &&
+        (out as { ok?: boolean })?.ok === true
+      ) {
+        listingPersisted = true
+      }
       results.push({
         type: 'tool_result',
         tool_use_id: tu.id,
@@ -298,5 +369,14 @@ ${Object.entries(MADMONA_LINKS)
   })
 
   const t = final.content.find((c) => c.type === 'text')
-  return t && t.type === 'text' ? t.text : ''
+  const finalText = t && t.type === 'text' ? t.text : ''
+
+  // هنا مفيش تولز أصلًا (النداء الأخير من غير tools) — مقدرش أرجّعه ينادي
+  // الأداة تاني. لو لسه بيوعد بتسجيل من غير ما حصل، رد صادق بدل الكدب.
+  if (!listingPersisted && looksLikeFakeListingConfirmation(finalText)) {
+    fireListingGuardAlert(opts.senderPhone, finalText)
+    return 'قربنا نخلص! بس محتاج آخر تفاصيل الإعلان (السعر والصور) عشان أسجّله فعليًا وأبعتلك تأكيد — ابعتهملي وأنا أظبطه على طول 🙏'
+  }
+
+  return finalText
 }

@@ -114,6 +114,10 @@ const NAV: NavGroup[] = [
     { href: '/admin/wallets', label: 'المحافظ' },
     { href: '/admin/careers', label: 'الوظائف' },
     { href: '/admin/runbook', label: 'Runbook' },
+    // 🔗 (١٩ أغسطس ٢٠٢٦) نفس حكاية الصفحات اليتيمة فوق — الصفحة دي (حسابات
+    // موظفين الأدمن: /api/admin/staff) اتبنت بطلب محمد الصريح بس ماتحطّتش
+    // في أي تنقّل، فمحدش قدر يوصلها. أول ضحية: أحمد سامي مش قادر يدخل.
+    { href: '/admin/staff', label: 'حسابات الموظفين' },
   ] },
 ]
 
