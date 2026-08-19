@@ -10,11 +10,13 @@ import {
 
 /* ============================================================
    /admin/business-finance/[supplierId]/qr-posters
-   
+
    Printable QR posters for each branch:
    - Customer QR → /at/[code]
    - Employee clock QR → /clock/[code]
-   - Employee PIN cheat-sheet (for the back wall)
+   🔐 (١٩ أغسطس ٢٠٢٦) شلنا قايمة أكواد الـPIN المطبوعة — الموظف بقى بيسجّل
+   حضوره برقم موبايله أو بإيميله+باسورده (من صفحة team/manage)، مفيش داعي
+   نطبع أكواد سرية على بوستر بيتعلّق على الحيط.
    ============================================================ */
 
 const supabase = createClient(
@@ -29,15 +31,6 @@ type Branch = {
   district: string | null
 }
 
-type EmployeePin = {
-  employee_id: string
-  full_name: string
-  role_ar: string
-  pin_code: string
-  branch_name: string | null
-  branch_code: string | null
-}
-
 export default function QRPostersPage({
   params,
 }: {
@@ -46,7 +39,6 @@ export default function QRPostersPage({
   const { supplierId } = params
   const [supplierName, setSupplierName] = useState('')
   const [branches, setBranches] = useState<Branch[]>([])
-  const [pins, setPins] = useState<EmployeePin[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -59,11 +51,6 @@ export default function QRPostersPage({
         .select('id, name, code, district')
         .eq('supplier_id', supplierId).eq('status', 'active').order('code')
       setBranches((br || []) as Branch[])
-
-      const { data: pinData } = await supabase.rpc('admin_get_employee_pins', {
-        p_supplier_id: supplierId,
-      })
-      setPins((pinData || []) as EmployeePin[])
 
       setLoading(false)
     }
@@ -129,7 +116,7 @@ export default function QRPostersPage({
               <Clock className="w-4 h-4 text-[#059669] mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-bold text-[#1A2E26] mb-1">QR الموظفين</p>
-                <p>علقه عند مدخل الموظفين. كل موظف بـ يدخل PIN بتاعه.</p>
+                <p>علقه عند مدخل الموظفين. كل موظف بـ يدخل رقم موبايله، أو بإيميله وباسورده لو معمولّه.</p>
               </div>
             </div>
           </div>
@@ -137,12 +124,7 @@ export default function QRPostersPage({
 
         {/* One poster per branch */}
         {branches.map((b) => (
-          <BranchPoster
-            key={b.id}
-            branch={b}
-            supplierName={supplierName}
-            pins={pins.filter((p) => p.branch_code === b.code || (b.code === 'HQ' && !p.branch_code))}
-          />
+          <BranchPoster key={b.id} branch={b} supplierName={supplierName} />
         ))}
       </main>
 
@@ -159,11 +141,10 @@ export default function QRPostersPage({
 }
 
 function BranchPoster({
-  branch, supplierName, pins,
+  branch, supplierName,
 }: {
   branch: Branch
   supplierName: string
-  pins: EmployeePin[]
 }) {
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://madmonacairo.com'
   const customerUrl = `${baseUrl}/at/${branch.code}`
@@ -193,35 +174,11 @@ function BranchPoster({
         />
         <QRCard
           title="للموظفين — حضور وانصراف"
-          subtitle="Scan + اكتب PIN بتاعك"
+          subtitle="Scan + رقم موبايلك أو إيميلك"
           icon={<Clock className="w-6 h-6" />}
           url={clockUrl}
         />
       </div>
-
-      {/* Employee PINs cheat sheet */}
-      {pins.length > 0 && (
-        <div className="px-6 pb-6 print:px-8 print:pb-8">
-          <div className="bg-[#FAFAF7] rounded-2xl p-4 print:bg-gray-50">
-            <h3 className="text-xs font-bold tracking-wider uppercase text-[#6B7280] mb-3">
-              🔑 الـ PINs (سري — للموظفين بس)
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {pins.map((p) => (
-                <div key={p.employee_id} className="bg-white rounded-lg p-2 flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-[#1A2E26] truncate">{p.full_name}</p>
-                    <p className="text-[10px] text-[#6B7280] truncate">{p.role_ar}</p>
-                  </div>
-                  <span className="text-base font-mono font-black text-[#059669] tracking-wider flex-shrink-0">
-                    {p.pin_code}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Footer */}
       <div className="bg-[#FAFAF7] text-center py-3 text-[10px] text-[#6B7280] border-t border-gray-100 print:bg-gray-50">

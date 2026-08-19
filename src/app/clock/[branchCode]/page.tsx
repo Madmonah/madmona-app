@@ -38,6 +38,13 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
   const [logo, setLogo] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [pin, setPin] = useState('')
+  // 🔐 (١٩ أغسطس ٢٠٢٦ — محمد: «الكلوك ان و اوت هيتم عن طريق رقم التلفون أو
+  // الإيميل والباسورد») — كود الـPIN اتشال من الواجهة (بوستر الـQR بقى من
+  // غير قايمة أكواد). لسه الـRPCs بتقبل PIN القديم لو حد لسه معاه (توافق
+  // خلفي)، بس الموظف بقى يدخل برقم موبايله أو بإيميله+باسورده.
+  const [mode, setMode] = useState<'phone' | 'email'>('phone')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [phase, setPhase] = useState<'idle' | 'locating' | 'sending'>('idle')
   const [err, setErr] = useState<any>(null)
@@ -135,6 +142,22 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
   function press(d: string) { if (pin.length < 11) setPin(pin + d); setErr(null) }
   function back() { setPin(pin.slice(0, -1)); setErr(null) }
 
+  // بترجّع "المعرّف" اللي بيتبعت لكل الـRPCs التانية (p_phone_or_pin) —
+  // في وضع الموبايل هو نفس الرقم المكتوب، في وضع الإيميل بنتأكد من الباسورد
+  // الأول عبر employee_verify_password وبعدين نستخدم اللي بيرجعه (login_key).
+  async function resolveIdentifier(): Promise<string | null> {
+    if (mode === 'phone') return pin
+    const em = email.trim()
+    if (!em || !password) { setErr({ error: 'اكتب الإيميل والباسورد' }); return null }
+    const { data } = await supabase.rpc('employee_verify_password', {
+      p_branch_code: branchCode, p_email: em, p_password: password,
+    })
+    if (!data?.ok) { setErr(data || { error: 'حصل خطأ، حاول تاني' }); return null }
+    return data.login_key as string
+  }
+
+  function clearInputs() { setPin(''); setPassword('') }
+
   function getPos(): Promise<{ lat: number; lng: number; acc: number } | null> {
     return new Promise((resolve) => {
       if (typeof navigator === 'undefined' || !navigator.geolocation) return resolve(null)
@@ -147,13 +170,18 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
   }
 
   async function submit() {
-    if (pin.length < 3 || busy) return
-    setBusy(true); setErr(null); setPhase('locating')
+    if (busy) return
+    if (mode === 'phone' && pin.length < 3) return
+    if (mode === 'email' && (!email.trim() || !password)) return
+    setBusy(true); setErr(null)
+    const identifier = await resolveIdentifier()
+    if (!identifier) { setBusy(false); return }
+    setPhase('locating')
     const pos = await getPos()
     setPhase('sending')
     const { data } = await supabase.rpc('employee_clock_via_qr', {
       p_branch_code: branchCode,
-      p_phone_or_pin: pin,
+      p_phone_or_pin: identifier,
       p_lat: pos?.lat ?? null,
       p_lng: pos?.lng ?? null,
       p_accuracy_m: pos?.acc ?? null,
@@ -164,31 +192,35 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
     if (data?.ok) {
       if (data.action === 'clock_in' || data.action === 'already_in') {
         // after clock-in (or re-scan on auto-checkout branches), open the personal page
-        const usedPin = pin
+        const usedId = identifier
         const { data: sv } = await supabase.rpc('employee_self_view_by_pin', {
-          p_branch_code: branchCode, p_phone_or_pin: usedPin,
+          p_branch_code: branchCode, p_phone_or_pin: usedId,
         })
-        if (sv?.ok) { requestNotificationPermission().catch(() => {}); setSelfPin(usedPin); setSelfView({ ...sv, justClockedIn: data.action === 'clock_in' }); setPin('') }
-        else { setResult(data); setPin(''); setTimeout(() => setResult(null), 7000) }
+        if (sv?.ok) { requestNotificationPermission().catch(() => {}); setSelfPin(usedId); setSelfView({ ...sv, justClockedIn: data.action === 'clock_in' }); clearInputs() }
+        else { setResult(data); clearInputs(); setTimeout(() => setResult(null), 7000) }
         // start the location heartbeat on auto-checkout branches
-        if (branch?.attendance_mode === 'geo_auto') setClockedPin(usedPin)
+        if (branch?.attendance_mode === 'geo_auto') setClockedPin(usedId)
       } else {
-        setResult(data); setPin('')
+        setResult(data); clearInputs()
         setTimeout(() => setResult(null), 7000)
       }
     } else {
-      setErr(data || { error: 'حصل خطأ، حاول تاني' }); setPin('')
+      setErr(data || { error: 'حصل خطأ، حاول تاني' }); clearInputs()
     }
   }
 
   async function loadSelf() {
-    if (pin.length < 3 || selfBusy) return
+    if (selfBusy) return
+    if (mode === 'phone' && pin.length < 3) return
+    if (mode === 'email' && (!email.trim() || !password)) return
     setSelfBusy(true); setErr(null)
+    const identifier = await resolveIdentifier()
+    if (!identifier) { setSelfBusy(false); return }
     const { data } = await supabase.rpc('employee_self_view_by_pin', {
-      p_branch_code: branchCode, p_phone_or_pin: pin,
+      p_branch_code: branchCode, p_phone_or_pin: identifier,
     })
     setSelfBusy(false)
-    if (data?.ok) { requestNotificationPermission().catch(() => {}); setSelfPin(pin); setSelfView(data); setPin('') }
+    if (data?.ok) { requestNotificationPermission().catch(() => {}); setSelfPin(identifier); setSelfView(data); clearInputs() }
     else { setErr(data || { error: 'حصل خطأ، حاول تاني' }) }
   }
 
@@ -262,13 +294,20 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
         ) : (
           <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-[0_10px_40px_-12px_rgba(250, 129, 37,0.25)]">
             <p className="text-center text-sm font-bold text-[#1A2E26] mb-1">سجّل دخولك أو خروجك</p>
-            <p className="text-center text-[12px] text-[#6B7280] mb-4">اكتب كود الـ PIN بتاعك أو رقم موبايلك</p>
+            <p className="text-center text-[12px] text-[#6B7280] mb-4">
+              {mode === 'phone' ? 'اكتب رقم موبايلك' : 'ادخل بإيميلك وباسوردك'}
+            </p>
 
-            {/* PIN display */}
-            <div className="flex items-center justify-center gap-2 h-14 mb-2" dir="ltr">
-              {pin.length === 0
-                ? <span className="text-[#6B7280] text-sm">— — — —</span>
-                : pin.split('').map((_, i) => <span key={i} className="w-3.5 h-3.5 rounded-full bg-[#34D399]" />)}
+            {/* mode toggle: phone vs email+password */}
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <button
+                onClick={() => { setMode('phone'); setErr(null) }}
+                className={`h-10 rounded-xl text-[12px] font-bold transition-all ${mode === 'phone' ? 'bg-[#34D399] text-[#04352A]' : 'bg-[#FAFAF7] text-[#6B7280]'}`}
+              >📱 رقم الموبايل</button>
+              <button
+                onClick={() => { setMode('email'); setErr(null) }}
+                className={`h-10 rounded-xl text-[12px] font-bold transition-all ${mode === 'email' ? 'bg-[#34D399] text-[#04352A]' : 'bg-[#FAFAF7] text-[#6B7280]'}`}
+              >✉️ إيميل + باسورد</button>
             </div>
 
             {err && (
@@ -278,19 +317,47 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
               </div>
             )}
 
-            {/* keypad */}
-            <div className="grid grid-cols-3 gap-2.5">
-              {['1','2','3','4','5','6','7','8','9'].map(d => (
-                <button key={d} onClick={() => press(d)} disabled={busy}
-                  className="h-14 rounded-2xl bg-[#FAFAF7] text-2xl font-black text-[#1A2E26] active:bg-[#34D399]/10 active:scale-95 transition-all disabled:opacity-50">{d}</button>
-              ))}
-              <button onClick={back} disabled={busy} className="h-14 rounded-2xl bg-[#FAFAF7] grid place-items-center text-[#6B7280] active:scale-95 transition-all disabled:opacity-50"><Delete className="w-6 h-6" /></button>
-              <button onClick={() => press('0')} disabled={busy} className="h-14 rounded-2xl bg-[#FAFAF7] text-2xl font-black text-[#1A2E26] active:bg-[#34D399]/10 active:scale-95 transition-all disabled:opacity-50">0</button>
-              <button onClick={submit} disabled={busy || pin.length < 3}
-                className="h-14 rounded-2xl bg-[#34D399] text-[#04352A] grid place-items-center active:scale-95 transition-all disabled:opacity-40 shadow-lg shadow-[#059669]/25">
-                {busy ? <Loader2 className="w-6 h-6 animate-spin" /> : <LogIn className="w-6 h-6" />}
-              </button>
-            </div>
+            {mode === 'phone' ? (
+              <>
+                {/* phone number display */}
+                <div className="flex items-center justify-center gap-2 h-14 mb-2" dir="ltr">
+                  {pin.length === 0
+                    ? <span className="text-[#6B7280] text-sm">— — — —</span>
+                    : pin.split('').map((_, i) => <span key={i} className="w-3.5 h-3.5 rounded-full bg-[#34D399]" />)}
+                </div>
+
+                {/* keypad */}
+                <div className="grid grid-cols-3 gap-2.5">
+                  {['1','2','3','4','5','6','7','8','9'].map(d => (
+                    <button key={d} onClick={() => press(d)} disabled={busy}
+                      className="h-14 rounded-2xl bg-[#FAFAF7] text-2xl font-black text-[#1A2E26] active:bg-[#34D399]/10 active:scale-95 transition-all disabled:opacity-50">{d}</button>
+                  ))}
+                  <button onClick={back} disabled={busy} className="h-14 rounded-2xl bg-[#FAFAF7] grid place-items-center text-[#6B7280] active:scale-95 transition-all disabled:opacity-50"><Delete className="w-6 h-6" /></button>
+                  <button onClick={() => press('0')} disabled={busy} className="h-14 rounded-2xl bg-[#FAFAF7] text-2xl font-black text-[#1A2E26] active:bg-[#34D399]/10 active:scale-95 transition-all disabled:opacity-50">0</button>
+                  <button onClick={submit} disabled={busy || pin.length < 3}
+                    className="h-14 rounded-2xl bg-[#34D399] text-[#04352A] grid place-items-center active:scale-95 transition-all disabled:opacity-40 shadow-lg shadow-[#059669]/25">
+                    {busy ? <Loader2 className="w-6 h-6 animate-spin" /> : <LogIn className="w-6 h-6" />}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-2.5">
+                <input
+                  type="email" dir="ltr" value={email} onChange={(e) => { setEmail(e.target.value); setErr(null) }}
+                  placeholder="الإيميل بتاعك" disabled={busy}
+                  className="w-full h-12 rounded-xl border border-gray-200 px-4 text-[14px] focus:outline-none focus:border-[#059669]"
+                />
+                <input
+                  type="password" dir="ltr" value={password} onChange={(e) => { setPassword(e.target.value); setErr(null) }}
+                  placeholder="الباسورد" disabled={busy}
+                  className="w-full h-12 rounded-xl border border-gray-200 px-4 text-[14px] focus:outline-none focus:border-[#059669]"
+                />
+                <button onClick={submit} disabled={busy || !email.trim() || !password}
+                  className="w-full h-12 rounded-2xl bg-[#34D399] text-[#04352A] font-black text-[13px] flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-40 shadow-lg shadow-[#059669]/25">
+                  {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />} تسجيل حضور/انصراف
+                </button>
+              </div>
+            )}
 
             <div className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-[#6B7280]">
               <MapPin className="w-3.5 h-3.5 text-[#059669]" />
@@ -298,7 +365,7 @@ export default function ClockPage({ params }: { params: { branchCode: string } }
             </div>
 
             {/* secondary: view my tasks + status (no clocking) */}
-            <button onClick={loadSelf} disabled={selfBusy || pin.length < 3}
+            <button onClick={loadSelf} disabled={selfBusy || (mode === 'phone' ? pin.length < 3 : (!email.trim() || !password))}
               className="mt-4 w-full h-12 rounded-2xl border border-[#059669]/25 bg-white text-[#059669] font-bold text-[13px] flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-40">
               {selfBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <ClipboardList className="w-4 h-4" />}
               تاسكاتي وحالتي

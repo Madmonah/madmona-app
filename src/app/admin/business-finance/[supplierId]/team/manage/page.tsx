@@ -5,12 +5,15 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import {
   ChevronLeft, Loader2, RefreshCw, Search, Save, Check,
-  Building2, Phone, KeyRound, Users, AlertCircle,
+  Building2, Phone, KeyRound, Users, AlertCircle, Mail, Lock,
 } from 'lucide-react'
 
 /* ============================================================
    /admin/business-finance/[supplierId]/team/manage
    Edit employee phone + PIN, and move employees between branches.
+   🔐 (١٩ أغسطس ٢٠٢٦ — محمد: «الكلوك ان و اوت هيتم عن طريق رقم التلفون
+   أو الإيميل والباسورد») — ضفنا إيميل + زرار "تعيين باسورد" هنا عشان
+   الموظف يقدر يدخل صفحة الحضور بإيميله وباسورده بدل الـPIN.
    ============================================================ */
 
 const supabase = createClient(
@@ -29,8 +32,10 @@ type Emp = {
   phone: string | null
   pin_code: string | null
   status: string
+  email: string | null
+  has_password: boolean
 }
-type Draft = { phone: string; pin: string; branch_id: string }
+type Draft = { phone: string; pin: string; branch_id: string; email: string }
 type RowState = { saving: boolean; msg: string; err: boolean }
 
 export default function ManageTeamPage({ params }: { params: { supplierId: string } }) {
@@ -64,6 +69,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
         phone: e.phone || '',
         pin: e.pin_code || '',
         branch_id: e.branch_id || '',
+        email: e.email || '',
       }
     }
     setDrafts(d)
@@ -86,7 +92,8 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
     return (
       d.phone !== (e.phone || '') ||
       d.pin !== (e.pin_code || '') ||
-      d.branch_id !== (e.branch_id || '')
+      d.branch_id !== (e.branch_id || '') ||
+      d.email !== (e.email || '')
     )
   }
 
@@ -95,9 +102,9 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
     if (!d) return
     setRowState((p) => ({ ...p, [e.employee_id]: { saving: true, msg: '', err: false } }))
 
-    if (d.phone !== (e.phone || '') || d.pin !== (e.pin_code || '')) {
+    if (d.phone !== (e.phone || '') || d.pin !== (e.pin_code || '') || d.email !== (e.email || '')) {
       const { data: r1 } = await supabase.rpc('admin_update_employee_contact', {
-        p_employee_id: e.employee_id, p_phone: d.phone, p_pin: d.pin,
+        p_employee_id: e.employee_id, p_phone: d.phone, p_pin: d.pin, p_email: d.email,
       })
       if (r1 && (r1 as any).ok === false) {
         setRowState((p) => ({ ...p, [e.employee_id]: { saving: false, msg: (r1 as any).error, err: true } }))
@@ -119,11 +126,29 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
       ? { ...x, phone: d.phone || null, pin_code: d.pin || null,
           branch_id: d.branch_id || null,
           branch_name: branches.find((b) => b.id === d.branch_id)?.name || null,
-          branch_code: branches.find((b) => b.id === d.branch_id)?.code || null }
+          branch_code: branches.find((b) => b.id === d.branch_id)?.code || null,
+          email: d.email || null }
       : x))
     setTimeout(() => {
       setRowState((p) => ({ ...p, [e.employee_id]: { saving: false, msg: '', err: false } }))
     }, 2500)
+  }
+
+  async function setPassword(e: Emp) {
+    if (!(drafts[e.employee_id]?.email || e.email)) {
+      window.alert('سجّل إيميل الموظف واحفظه الأول قبل ما تحدد باسورد')
+      return
+    }
+    const pw = window.prompt(`باسورد جديد لـ ${e.full_name} (٦ حروف/أرقام على الأقل):`)
+    if (!pw) return
+    const { data } = await supabase.rpc('employee_set_password', { p_employee_id: e.employee_id, p_password: pw })
+    if ((data as any)?.ok) {
+      setEmps((prev) => prev.map((x) => x.employee_id === e.employee_id ? { ...x, has_password: true } : x))
+      setRowState((p) => ({ ...p, [e.employee_id]: { saving: false, msg: 'اتحدد الباسورد ✓', err: false } }))
+      setTimeout(() => setRowState((p) => ({ ...p, [e.employee_id]: { saving: false, msg: '', err: false } })), 2500)
+    } else {
+      window.alert((data as any)?.error || 'حصل خطأ')
+    }
   }
 
   const filtered = useMemo(() => {
@@ -132,6 +157,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
     return emps.filter((e) =>
       e.full_name.toLowerCase().includes(term) ||
       (e.phone || '').includes(term) ||
+      (e.email || '').toLowerCase().includes(term) ||
       (e.pin_code || '').includes(term))
   }, [emps, q])
 
@@ -178,7 +204,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
                 أرقام وفروع — {supplierName}
               </h1>
               <p className="text-sm text-[#6B7280] mt-1">
-                {emps.length} موظف · عدّل الرقم/الـPIN أو انقل الموظف لفرع تاني
+                {emps.length} موظف · عدّل الرقم/الإيميل أو انقل الموظف لفرع تاني
               </p>
             </div>
             <button
@@ -194,7 +220,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="ابحث بالاسم أو الرقم أو الـPIN..."
+              placeholder="ابحث بالاسم أو الرقم أو الإيميل..."
               className="w-full bg-[#FAFAF7] rounded-xl pr-10 pl-4 py-2.5 text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#059669]/30 border border-gray-200 placeholder-[#6B7280]"
             />
           </div>
@@ -204,7 +230,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         <div className="bg-[#34D399]/5 border border-[#059669]/20 rounded-2xl p-3 text-xs text-[#1A2E26] flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-[#059669] flex-shrink-0" />
-          <span>عدّل أي خانة وزرار الحفظ هينوّر. النقل بين الفروع من القائمة المنسدلة. الـPIN لازم يكون فريد للشركة.</span>
+          <span>عدّل أي خانة وزرار الحفظ هينوّر. الموظف بقى يسجّل حضوره برقم موبايله أو بإيميله+باسورده (زرار "حدد باسورد") — الـPIN القديم اختياري ومش لازم.</span>
         </div>
 
         {[...grouped.entries()]
@@ -238,7 +264,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
                       </div>
                     </div>
 
-                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                       <label className="relative">
                         <Phone className="w-3.5 h-3.5 text-[#6B7280] absolute right-2.5 top-1/2 -translate-y-1/2" />
                         <input
@@ -250,11 +276,21 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
                         />
                       </label>
                       <label className="relative">
+                        <Mail className="w-3.5 h-3.5 text-[#6B7280] absolute right-2.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          value={d?.email ?? ''}
+                          onChange={(ev) => setDraft(e.employee_id, { email: ev.target.value })}
+                          placeholder="الإيميل (لتسجيل حضور بباسورد)"
+                          dir="ltr"
+                          className="w-full bg-[#FAFAF7] rounded-lg pr-8 pl-2 py-2 text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#059669]/30 border border-gray-200 placeholder-[#6B7280]"
+                        />
+                      </label>
+                      <label className="relative hidden lg:block" title="القديم — مش مطلوب دلوقتي، الحضور بقى بالتليفون أو الإيميل">
                         <KeyRound className="w-3.5 h-3.5 text-[#6B7280] absolute right-2.5 top-1/2 -translate-y-1/2" />
                         <input
                           value={d?.pin ?? ''}
                           onChange={(ev) => setDraft(e.employee_id, { pin: ev.target.value })}
-                          placeholder="PIN"
+                          placeholder="PIN (قديم/اختياري)"
                           inputMode="numeric"
                           className="w-full bg-[#FAFAF7] rounded-lg pr-8 pl-2 py-2 text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#059669]/30 border border-gray-200 placeholder-[#6B7280]"
                         />
@@ -271,12 +307,23 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
                       </select>
                     </div>
 
-                    <div className="flex items-center gap-2 md:w-32 justify-end flex-shrink-0">
+                    <div className="flex items-center gap-2 md:w-52 justify-end flex-shrink-0">
                       {st?.msg && (
                         <span className={`text-[11px] font-bold ${st.err ? 'text-red-600' : 'text-[#059669]'}`}>
                           {st.msg}
                         </span>
                       )}
+                      <button
+                        onClick={() => setPassword(e)}
+                        title="تعيين/تغيير باسورد الحضور"
+                        className={`px-2.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all border ${
+                          e.has_password
+                            ? 'bg-[#34D399]/10 text-[#059669] border-[#059669]/20'
+                            : 'bg-white text-[#6B7280] border-gray-200'
+                        }`}
+                      >
+                        <Lock className="w-3.5 h-3.5" /> {e.has_password ? 'غيّر الباسورد' : 'حدد باسورد'}
+                      </button>
                       <button
                         onClick={() => saveRow(e)}
                         disabled={!dirty || st?.saving}
