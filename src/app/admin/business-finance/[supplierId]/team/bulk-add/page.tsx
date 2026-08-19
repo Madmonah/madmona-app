@@ -35,26 +35,34 @@ type Row = {
   phone: string
 }
 
-const ROLE_PRESETS = [
-  { value: 'branch_manager', label_ar: 'مدير فرع', en: 'Branch Manager' },
-  { value: 'hair_stylist', label_ar: 'Senior Stylist', en: 'Senior Stylist' },
-  { value: 'hair_stylist', label_ar: 'Stylist', en: 'Stylist' },
-  { value: 'hair_stylist', label_ar: 'Junior Stylist', en: 'Junior Stylist' },
-  { value: 'makeup_artist', label_ar: 'MUA', en: 'Makeup Artist' },
-  { value: 'nail_tech', label_ar: 'Nails', en: 'Nail Tech' },
-  { value: 'helper', label_ar: 'Helper', en: 'Helper' },
-  { value: 'receptionist', label_ar: 'استقبال', en: 'Receptionist' },
-  { value: 'cleaner', label_ar: 'نظافة', en: 'Cleaner' },
+// ── أدوار افتراضية عامة (fallback لو النشاط مالوش قالب مخصص) ──────────
+// ١٩ أغسطس ٢٠٢٦: كانت الصفحة دي متعمولة أصلاً لصالون (Elite) وكل الأدوار
+// كانت مقفولة على hair_stylist/Stylist مهما كان نشاط المورد — يعني أي شركة
+// تانية (زي مضمونة نفسها) بتضيف موظفين وبيتحطوا "كوافيرة" افتراضيًا. دلوقتي
+// الأدوار بتتحمّل ديناميكيًا من employee_role_templates حسب صناعة المورد
+// الحقيقية (industry)، ولو مفيش قالب مخصص بيرجع لقالب 'any' العام.
+const GENERIC_ROLE_PRESETS = [
+  { value: 'manager', label_ar: 'مدير/ة', en: 'Manager' },
+  { value: 'staff', label_ar: 'موظف/ة', en: 'Staff' },
+  { value: 'receptionist', label_ar: 'ريسبشن', en: 'Receptionist' },
+  { value: 'helper', label_ar: 'مساعد/ة', en: 'Helper' },
   { value: 'trainee', label_ar: 'Trainee', en: 'Trainee' },
 ]
 
-// Auto-assign role based on salary
-function inferRole(salary: number): { role: string; role_ar: string } {
-  if (salary >= 25000) return { role: 'hair_stylist', role_ar: 'Master Stylist' }
-  if (salary >= 14000) return { role: 'hair_stylist', role_ar: 'Senior Stylist' }
-  if (salary >= 10000) return { role: 'hair_stylist', role_ar: 'Stylist' }
-  if (salary >= 7000) return { role: 'helper', role_ar: 'Helper' }
-  return { role: 'helper', role_ar: 'Junior/Helper' }
+// Auto-assign role based on salary — بيستخدم أول ٣ presets بس (الأعلى للأقل)
+// كتخمين تقريبي، مش تخصص مهني. الأدمن يقدر يغيّره يدوي من الـ dropdown.
+function inferRole(salary: number, presets: typeof GENERIC_ROLE_PRESETS): { role: string; role_ar: string } {
+  const byValue = (v: string) => presets.find(p => p.value === v)
+  if (salary >= 14000) {
+    const p = byValue('manager') || presets[0]
+    return { role: p.value, role_ar: p.label_ar }
+  }
+  if (salary >= 7000) {
+    const p = byValue('staff') || presets[Math.min(1, presets.length - 1)]
+    return { role: p.value, role_ar: p.label_ar }
+  }
+  const p = byValue('helper') || byValue('trainee') || presets[presets.length - 1]
+  return { role: p.value, role_ar: p.label_ar }
 }
 
 // Normalize Arabic digits to ASCII + clean numbers like "12,000" or "١٢/٠٠٠"
@@ -114,21 +122,35 @@ export default function BulkAddEmployeesPage({
   const [supplier, setSupplier] = useState<{ business_name: string } | null>(null)
   const [branches, setBranches] = useState<Branch[]>([])
   const [selectedBranch, setSelectedBranch] = useState<string>('')
-  
+  const [rolePresets, setRolePresets] = useState(GENERIC_ROLE_PRESETS)
+
   const [mode, setMode] = useState<'paste' | 'manual' | 'excel'>('paste')
   const [pasteText, setPasteText] = useState('')
   const [rows, setRows] = useState<Row[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<any>(null)
-  
-  // Load supplier + branches
+
+  // Load supplier + branches + أدوار مضبوطة على نشاط المورد الحقيقي
   useEffect(() => {
     (async () => {
-      const { data: sup } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
+      const { data: sup } = await supabase.from('suppliers').select('business_name, industry').eq('id', supplierId).single()
       setSupplier(sup as any)
       const { data: br } = await supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).order('code')
       setBranches((br || []) as Branch[])
       if (br && br.length > 0) setSelectedBranch(br[0].id)
+
+      // قالب الأدوار: أول لو النشاط له قالب مخصص (زي beauty_salon)، وإلا 'any' العام
+      const industry = (sup as any)?.industry as string | undefined
+      const { data: templates } = await supabase
+        .from('employee_role_templates')
+        .select('industry, role, role_ar')
+        .in('industry', industry ? [industry, 'any'] : ['any'])
+      if (templates && templates.length > 0) {
+        const specific = templates.filter((t: any) => t.industry === industry)
+        const generic = templates.filter((t: any) => t.industry === 'any')
+        const picked = specific.length > 0 ? specific : generic
+        setRolePresets(picked.map((t: any) => ({ value: t.role, label_ar: t.role_ar, en: t.role_ar })))
+      }
     })()
   }, [supplierId])
   
@@ -142,7 +164,7 @@ export default function BulkAddEmployeesPage({
     const newRows: Row[] = lines.map((line, i) => {
       const parsed = parseLine(line)
       const salary = parsed?.salary || 0
-      const roleInfo = inferRole(salary)
+      const roleInfo = inferRole(salary, rolePresets)
       return {
         id: `${Date.now()}-${i}`,
         name: parsed?.name || '',
@@ -189,9 +211,9 @@ export default function BulkAddEmployeesPage({
         .map(({ r, origIdx }, i) => {
           void i
           const salaryNum = cSalary ? (normalizeNumber(String(r[cSalary] ?? '')) || 0) : 0
-          const inferred = inferRole(salaryNum)
+          const inferred = inferRole(salaryNum, rolePresets)
           const roleTxt = cRole ? String(r[cRole] || '').trim() : ''
-          const preset = roleTxt ? ROLE_PRESETS.find(pr => normH(pr.label_ar) === normH(roleTxt) || normH(pr.en) === normH(roleTxt)) : null
+          const preset = roleTxt ? rolePresets.find(pr => normH(pr.label_ar) === normH(roleTxt) || normH(pr.en) === normH(roleTxt)) : null
           return {
             id: `${Date.now()}-x${i}`,
             name: String(r[cName]).trim(),
@@ -227,35 +249,37 @@ export default function BulkAddEmployeesPage({
 
   // Manual mode: add empty row
   function addRow() {
+    const def = rolePresets[0] || GENERIC_ROLE_PRESETS[0]
     setRows(prev => [...prev, {
       id: `${Date.now()}-new`,
       name: '',
       salary: '',
-      role: 'hair_stylist',
-      role_ar: 'Stylist',
+      role: def.value,
+      role_ar: def.label_ar,
       notes: '',
       photo: '',
       phone: '',
     }])
   }
-  
+
   function updateRow(id: string, patch: Partial<Row>) {
     setRows(prev => prev.map(r => r.id === id ? { ...r, ...patch } : r))
   }
-  
+
   function removeRow(id: string) {
     setRows(prev => prev.filter(r => r.id !== id))
   }
-  
+
   // Initialize 5 empty rows when switching to manual mode
   function startManualMode() {
     if (rows.length === 0) {
+      const def = rolePresets[0] || GENERIC_ROLE_PRESETS[0]
       setRows(Array.from({ length: 5 }, (_, i) => ({
         id: `${Date.now()}-${i}`,
         name: '',
         salary: '',
-        role: 'hair_stylist',
-        role_ar: 'Stylist',
+        role: def.value,
+        role_ar: def.label_ar,
         notes: '',
         photo: '',
         phone: '',
@@ -591,7 +615,7 @@ export default function BulkAddEmployeesPage({
                                 onChange={e => {
                                   const newSalary = e.target.value
                                   const numSalary = normalizeNumber(newSalary) || 0
-                                  const inferred = inferRole(numSalary)
+                                  const inferred = inferRole(numSalary, rolePresets)
                                   updateRow(row.id, { 
                                     salary: newSalary,
                                     role: inferred.role,
@@ -611,7 +635,7 @@ export default function BulkAddEmployeesPage({
                                 }}
                                 className="w-full px-2 py-1.5 rounded-lg bg-[#FAFAF7] border border-transparent hover:border-gray-200 focus:border-[#059669] focus:outline-none text-sm text-[#1A2E26]"
                               >
-                                {ROLE_PRESETS.map(p => (
+                                {rolePresets.map(p => (
                                   <option key={`${p.value}:${p.label_ar}`} value={`${p.value}:${p.label_ar}`}>
                                     {p.label_ar}
                                   </option>
