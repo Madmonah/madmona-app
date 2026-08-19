@@ -42,6 +42,7 @@ type Draft = {
   period: string | null
   is_furnished: boolean | null
   image_urls: string[] | null
+  status: string
 }
 
 function slugify(name: string): string {
@@ -184,7 +185,7 @@ export async function GET(req: Request) {
   // تكرار الغلطة دي لو الحالة اتلخبطت تاني، وبيلقط أي عالقين قدام.
   const { data: drafts } = await supa
     .from('instant_listing_drafts')
-    .select('id, contact_phone, contact_name, title, description, category_slug, price_egp, period, is_furnished, image_urls')
+    .select('id, contact_phone, contact_name, title, description, category_slug, price_egp, period, is_furnished, image_urls, status')
     .in('status', ['new', 'pending', 'needs_review'])
     .lt('created_at', cutoff)
     .order('created_at')
@@ -305,6 +306,14 @@ export async function GET(req: Request) {
 
       // ---------- باقي الفئات: إعلان لكل درافت ----------
       const seenTitles = new Set<string>()
+      // 🐛 (١٩ أغسطس ٢٠٢٦ — المراجعة الشاملة) لو كل درافتات الدفعة وقعت في
+      // needs_review/duplicate، links.length يفضل صفر ومحدش بيبعت للعميل ولا
+      // لمحمد أي حاجة — نفس نمط «السكوت التام» اللي اكتشفناه في محادثة
+      // الواتساب النهاردة، بس هنا في المسار المجدول. needsReviewCount بيتبع
+      // حالات "فئة مش معروفة" تحديدًا (اللي فعلاً محتاجة تدخّل بشري)، مش
+      // duplicate (ده سكوت صح — الإعلان منشور بالفعل من قبل).
+      let needsReviewCount = 0
+      let firstTimeNeedsReview = false
       for (const d of other) {
         // 🛡️ (17 Jul 2026) منع التكرار: درافتات مكررة نشرت 17 إعلان مكرر (Techwood دواليب ×3!)
         // — جوه الدفعة نفسها + ضد إعلانات موجودة بنفس العنوان لنفس المورد.
@@ -323,7 +332,22 @@ export async function GET(req: Request) {
         }
         const { data: cat } = await supa.from('categories').select('id').eq('slug', d.category_slug || '').maybeSingle()
         if (!cat?.id) { // فئة مش معروفة → سيبه للفريق يراجعه
+          needsReviewCount++
           await supa.from('instant_listing_drafts').update({ status: 'needs_review' } as never).eq('id', d.id)
+          // تنبيه لمحمد مرة واحدة بس — أول لحظة يتحول فيها الدرافت لـneeds_review،
+          // مش كل ١٠ دقايق. من غير كده الدرافت يفضل عالق للأبد وموحدش ياخد باله
+          // غير لو صادف وشاف اللوجّ (زي حالة أحمد سامي بالظبط — الظهور بصمت).
+          if (d.status !== 'needs_review') {
+            firstTimeNeedsReview = true
+            void supa.rpc('fire_admin_alert', {
+              p_title: 'مسودة إعلان عالقة — فئة مش معروفة',
+              p_body: `«${d.title}» من ${phone} — الفئة "${d.category_slug || '—'}" مش موجودة في categories. ` +
+                `ضيفها أو غيّر تصنيف المارد عشان الإعلان ينشر.`,
+              p_url: '/admin/marid-monitor',
+              p_severity: 'warning',
+              p_source: 'publish-drafts-cron',
+            }).then(() => {}, () => {})
+          }
           continue
         }
         const slug = slugify(d.title)
@@ -368,8 +392,19 @@ export async function GET(req: Request) {
           .select('id')
           .maybeSingle()
         if (pubErr || !pubRow) {
+          needsReviewCount++
           await supa.from('instant_listing_drafts').update({ status: 'needs_review' } as never).eq('id', d.id)
           results.push({ phone, draft: d.id, error: 'publish_update_failed: ' + (pubErr?.message || 'no row updated') })
+          if (d.status !== 'needs_review') {
+            firstTimeNeedsReview = true
+            void supa.rpc('fire_admin_alert', {
+              p_title: 'فشل نشر إعلان (update وقع)',
+              p_body: `«${d.title}» من ${phone} — الـupdate لـstatus=published فشل: ${pubErr?.message || 'no row updated'}`,
+              p_url: '/admin/marid-monitor',
+              p_severity: 'warning',
+              p_source: 'publish-drafts-cron',
+            }).then(() => {}, () => {})
+          }
           continue
         }
         await supa.from('instant_listing_drafts').update({ status: 'published', published_listing_id: nl.id } as never).eq('id', d.id)
@@ -381,8 +416,15 @@ export async function GET(req: Request) {
           `مبروك! 🎉 ${links.length > 1 ? 'إعلاناتك نزلت' : 'إعلانك نزل'} رسمي على مضمونة ✅\n\n` +
           links.slice(0, 3).map(l => `🔗 ${l}`).join('\n') +
           `\n\nأي حد يقدر يطلب منك أونلاين من دلوقتي والفلوس مضمونة لحد الاستلام. الطلبات بتوصلك على لوحة تحكمك:\n${SITE}/supplier/dashboard\n\nولو عايز تعدّل أي سعر أو صنف قولّي وأنا أظبطه 🧞\n*معاملاتك مضمونة* ✅`)
+      } else if (!links.length && firstTimeNeedsReview && !silent) {
+        // 🐛 (١٩ أغسطس ٢٠٢٦) من غير الرسالة دي، عميل الدرافت بتاعه وقع في
+        // needs_review بيفضل ساكت تمامًا — نفس نمط «مارد قال تسجّلت والعميل
+        // اطمن» بس هنا من غير حتى وعد كاذب، مجرّد سكوت. رسالة صادقة مرة واحدة
+        // بس (firstTimeNeedsReview) عشان ماتتكررش كل ١٠ دقايق لحد ما يتحل.
+        await waNotify(supa, phone,
+          `وصلني إعلانك وبنراجعه دلوقتي قبل ما ينزل رسمي — هيبان على مضمونة خلال شوية. لو استنيت وطال، قولّي 🙏`)
       }
-      results.push({ phone, published: links.length, menu_items: food.length })
+      results.push({ phone, published: links.length, menu_items: food.length, needs_review: needsReviewCount })
     } catch (e) {
       results.push({ phone, error: String((e as Error).message).slice(0, 120) })
     }

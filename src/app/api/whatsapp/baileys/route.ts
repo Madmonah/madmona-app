@@ -558,6 +558,17 @@ export async function POST(request: NextRequest) {
     // على إعادة بمعرّف جديد. الحل: نأكّد الاستلام لـOpenWA فورًا هنا
     // (بعد ما ملكنا حق الرد بالـclaim)، والمعالجة الحقيقية تكمل في
     // الخلفية بـwaitUntil — من غير ما تنتظر رد الـHTTP خالص.
+    // 🐛 (١٩ أغسطس ٢٠٢٦ — محمد: «شوف الاعلانات كلها... مش عايز الاخطاء دي تاني»)
+    //    اكتشفنا محادثة بعتت ٢٤ رسالة (صور+فيديوهات+نص كامل بسعر) واستدعت
+    //    المارد فعلًا (سجّل في ai_usage_log)، لكن حصل استثناء (exception) في
+    //    مكان ما بعد كده — قبل الإرسال أو أثناءه — ومفيش رد وصل للعميل
+    //    خالص، ومفيش أي أثر في whatsapp_messages، ومفيش تنبيه لمحمد.
+    //    الـcatch القديم كان بيعمل console.error بس — وده مش مرئي من غير
+    //    لوج Vercel. لو حصل استثناء تاني، العميل يفضل ساكت وماحدش يعرف.
+    //    الحل: نتتبّع هل رد فعلي اتبعت (repliedToCustomerThisRun)، ولو
+    //    وقعنا قبل ما نبعت، نجرّب رد صادق بسيط + تنبيه لمحمد — كل واحد
+    //    فيهم بمحاولة خاصة بيه عشان فشل واحد مايمنعش التاني.
+    let repliedToCustomerThisRun = false
     waitUntil((async () => {
       try {
     // ── ٠ج·٥) حفظ وتخصيب الميديا — قبل فحص الإيقاف عمدًا ─────────────────
@@ -1168,6 +1179,9 @@ export async function POST(request: NextRequest) {
       agentName: 'المارد',
       aiGenerated: true,
     })
+    // محاولة إرسال حقيقية حصلت (نجحت أو فشلت بوضوح) — الرد بقى مسجّل
+    // في الـresponse مش استثناء صامت. الـcatch تحت مايبعتش رد احتياطي تاني.
+    repliedToCustomerThisRun = true
 
     // إشعار بوش للأدمن على كل رد من المارد (best-effort) — بعد الإرسال فمايأخّرش
     // رد العميل. إلا لو المتكلّم نفسه أدمن.
@@ -1186,6 +1200,34 @@ export async function POST(request: NextRequest) {
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'unknown'
         console.error('[baileys webhook bg]', msg)
+
+        // 🛟 شبكة أمان — استثناء غير متوقع حصل قبل ما نرد على العميل خالص.
+        //    بدون كده العميل بيفضل ساكت من غير أي أثر ومحمد ماعندوش أي فكرة
+        //    (السبب اللي اكتشفناه في محادثة ٩٠٠٢٦٥٦c يوم ١٩ أغسطس). كل
+        //    محاولة هنا لوحدها في try/catch — فشل واحدة مايمنعش التانية.
+        if (!repliedToCustomerThisRun) {
+          try {
+            await sendText({
+              to: phone,
+              jid: replyJid,
+              session: body.session_id,
+              body: 'حصل خلل تقني بسيط وأنا بشوفه دلوقتي — ابعتلي تفاصيلك تاني كمان شوية لو ماردّيتش عليك 🙏',
+              conversationId,
+              agentName: 'المارد',
+              aiGenerated: false,
+            })
+          } catch { /* لو الرد الاحتياطي نفسه فشل، على الأقل التنبيه تحت هيوصل */ }
+
+          try {
+            await supabaseAdmin.rpc('fire_admin_alert', {
+              p_title: '⚠️ المارد وقع من غير ما يرد',
+              p_body: `محادثة ${conversationId} (${phone}) — استثناء: ${msg.slice(0, 300)}`,
+              p_url: '/admin/wa-review',
+              p_severity: 'warning',
+              p_source: 'baileys-webhook-guard',
+            })
+          } catch { /* التنبيه نفسه مايوقفش أي حاجة */ }
+        }
       }
     })())
 

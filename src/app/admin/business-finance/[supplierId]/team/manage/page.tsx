@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import {
   ChevronLeft, Loader2, RefreshCw, Search, Save, Check,
-  Building2, Phone, KeyRound, Users, AlertCircle, Mail, Lock,
+  Building2, Phone, Users, AlertCircle, Mail, Lock,
 } from 'lucide-react'
 
 /* ============================================================
@@ -264,7 +264,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
                       </div>
                     </div>
 
-                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                       <label className="relative">
                         <Phone className="w-3.5 h-3.5 text-[#6B7280] absolute right-2.5 top-1/2 -translate-y-1/2" />
                         <input
@@ -282,16 +282,6 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
                           onChange={(ev) => setDraft(e.employee_id, { email: ev.target.value })}
                           placeholder="الإيميل (لتسجيل حضور بباسورد)"
                           dir="ltr"
-                          className="w-full bg-[#FAFAF7] rounded-lg pr-8 pl-2 py-2 text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#059669]/30 border border-gray-200 placeholder-[#6B7280]"
-                        />
-                      </label>
-                      <label className="relative hidden lg:block" title="القديم — مش مطلوب دلوقتي، الحضور بقى بالتليفون أو الإيميل">
-                        <KeyRound className="w-3.5 h-3.5 text-[#6B7280] absolute right-2.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          value={d?.pin ?? ''}
-                          onChange={(ev) => setDraft(e.employee_id, { pin: ev.target.value })}
-                          placeholder="PIN (قديم/اختياري)"
-                          inputMode="numeric"
                           className="w-full bg-[#FAFAF7] rounded-lg pr-8 pl-2 py-2 text-sm text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#059669]/30 border border-gray-200 placeholder-[#6B7280]"
                         />
                       </label>

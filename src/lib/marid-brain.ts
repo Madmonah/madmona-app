@@ -38,25 +38,58 @@ import { ADMIN_TOOLS, runAdminTool, ADMIN_PROMPT } from '@/lib/marid-admin'
 //    ما يحصل نداء ناجح: أول محاولة نرجّع الكلام للمارد ونجبره ينادي الأداة
 //    فعلًا قبل ما يرد (لسه فيه لفّات فاضية)؛ لو خلصت اللفّات، نبدّل الرد
 //    برسالة صادقة بدل الوعد الكاذب ونـنبّه محمد.
-const LISTING_CONFIRM_VERB_RE = /سج[ّ]?لت|اتسج[ّ]?ل|تم\s*التسجيل|نزل\s*رسمي|هينزل/
-const LISTING_CONFIRM_NOUN_RE = /الإعلان|إعلانك|إعلاني|المشروع|بورصة|الماركتبليس|الوحدة|العقار/
+// ملحوظة: بيتفحص كلام مارد (مش كلام العميل)، فالتوسّع في الالتقاط (false positive
+// = محاولة إضافية بدل ما مارد يتلخبط) أرخص بكتير من تفويت وعد فعلي (false negative
+// = لينك وهمي بيوصل للعميل). لسه بيغطي الصيغ الماضية + دلوقتي بيغطي أي وعد مستقبلي
+// بجذر "سجل"/"نزل" بأي بادئة (ه/ح) وأي لاحقة ضمير (ها/ه/هم/ت).
+const LISTING_CONFIRM_VERB_RE = /سج[ّ]?لت|اتسج[ّ]?ل|تم\s*التسجيل|نزل\s*رسمي|هينزل|[هح]سج[ّ]?ل(?:ها|ه|هم|ت)?|[هح]نزل(?:ها|ه|هم)?|حانزل|حجزت|اتحجز|هحجز(?:لك|ها|له)?|حجزنالك/
+// بدون "ال" في أول الكلمة عشان يغطي أي بادئة/حرف جر ملتصق (الإعلان/اعلانك/للعقار/
+// بالعقار/...) من غير ما يبقى محتاج نسخة لكل حالة — الجذر بس هو اللي بيتلزّم.
+// (١٩ أغسطس ٢٠٢٦) ضفنا ميعاد/حجز — نفس فخ الوعد الكاذب ممكن يحصل مع
+// حجز ميعاد (manage_meeting) زي ما حصل مع الإعلانات بالظبط: مارد يقول
+// «اتحجز ✅» من غير ما book_meeting يتنادى فعلًا.
+const LISTING_CONFIRM_NOUN_RE = /علان|مشروع|بورصة|ماركت\s*بليس|وحدة|عقار|ميعاد|الحجز/
 function looksLikeFakeListingConfirmation(text: string): boolean {
   return LISTING_CONFIRM_VERB_RE.test(text) && LISTING_CONFIRM_NOUN_RE.test(text)
 }
-const LISTING_GUARD_CORRECTION =
-  '⚠️ نظام (مش من العميل): في ردّك اللي فات أكّدت للعميل إنك سجّلت الإعلان/المشروع، ' +
-  'لكن مفيش نداء ناجح لـcreate_listing_draft ولا create_project حصل فعليًا في المحادثة دي. ' +
-  'اللينك اللي بعتّه غير حقيقي. ممنوع تأكيد تسجيل من غير نداء فعلي لنفس الأداة في نفس الرد. ' +
-  'لو عندك بيانات كافية من كلام العميل فوق (العنوان/الوصف/السعر/صورة واحدة على الأقل)، ' +
-  'نادِ الأداة الصح فعليًا دلوقتي واستخدم اللي هيرجعلك منها في ردّك. ' +
-  'لو لسه ناقص بيانات أساسية، قول للعميل بالظبط الناقص إيه — من غير أي وعد بتسجيل لسه ماحصلش.'
+// (١٩ أغسطس ٢٠٢٦) الحارس بقى يغطي حجز الميعاد كمان — الرسالة/التصحيح/التنبيه
+// لازم يفرّقوا بين النوعين عشان الرد الصادق يبقى منطقي (مايتكلّمش عن «صور
+// الإعلان» لعميل بيحاول يحجز ميعاد وبالعكس).
+const MEETING_CLAIM_RE = /ميعاد|الحجز/
+function buildGuardCorrection(isMeeting: boolean): string {
+  if (isMeeting) {
+    return (
+      '⚠️ نظام (مش من العميل): في ردّك اللي فات أكّدت للعميل إنك حجزت الميعاد، ' +
+      'لكن مفيش نداء ناجح لـmanage_meeting (action: book) حصل فعليًا في المحادثة دي. ' +
+      'ممنوع تأكيد حجز من غير نداء فعلي للأداة في نفس الرد. ' +
+      'لو عندك التاريخ والوقت من كلام العميل فوق، نادِ manage_meeting فعليًا دلوقتي ' +
+      'واستخدم اللي هيرجعلك منها في ردّك. لو لسه ناقص، اسأل العميل عن الميعاد الصح.'
+    )
+  }
+  return (
+    '⚠️ نظام (مش من العميل): في ردّك اللي فات أكّدت للعميل إنك سجّلت الإعلان/المشروع، ' +
+    'لكن مفيش نداء ناجح لـcreate_listing_draft ولا create_project حصل فعليًا في المحادثة دي. ' +
+    'اللينك اللي بعتّه غير حقيقي. ممنوع تأكيد تسجيل من غير نداء فعلي لنفس الأداة في نفس الرد. ' +
+    'لو عندك بيانات كافية من كلام العميل فوق (العنوان/الوصف/السعر/صورة واحدة على الأقل)، ' +
+    'نادِ الأداة الصح فعليًا دلوقتي واستخدم اللي هيرجعلك منها في ردّك. ' +
+    'لو لسه ناقص بيانات أساسية، قول للعميل بالظبط الناقص إيه — من غير أي وعد بتسجيل لسه ماحصلش.'
+  )
+}
+function buildHonestFallback(isMeeting: boolean): string {
+  return isMeeting
+    ? 'قربنا نخلص! بس محتاج أتأكد من تاريخ ووقت الميعاد بالظبط عشان أحجزه فعليًا وأأكّدلك — قولّيلي تاني وأنا أظبطه على طول 🙏'
+    : 'قربنا نخلص! بس محتاج آخر تفاصيل الإعلان (السعر والصور) عشان أسجّله فعليًا وأبعتلك تأكيد — ابعتهملي وأنا أظبطه على طول 🙏'
+}
 function fireListingGuardAlert(phone: string, text: string): void {
-  console.error('[marid-guard] رد فيه تأكيد تسجيل إعلان/مشروع من غير نداء أداة ناجح', {
-    phone, text: text.slice(0, 200),
+  const isMeeting = MEETING_CLAIM_RE.test(text)
+  console.error('[marid-guard] رد فيه تأكيد تسجيل/حجز من غير نداء أداة ناجح', {
+    phone, isMeeting, text: text.slice(0, 200),
   })
   void db
     .rpc('fire_admin_alert', {
-      p_title: 'المارد أكّد تسجيل إعلان من غير ما يسجّله فعليًا',
+      p_title: isMeeting
+        ? 'المارد أكّد حجز ميعاد من غير ما يحجزه فعليًا'
+        : 'المارد أكّد تسجيل إعلان من غير ما يسجّله فعليًا',
       p_body: `الرقم: ${phone}\n\nنص الرد اللي كان هيتبعت:\n${text.slice(0, 300)}`,
       p_url: '/admin/marid-monitor',
       p_severity: 'warning',
@@ -285,15 +318,16 @@ ${Object.entries(MADMONA_LINKS)
       const finalText = textPart && textPart.type === 'text' ? textPart.text : ''
 
       if (!listingPersisted && looksLikeFakeListingConfirmation(finalText)) {
+        const isMeeting = MEETING_CLAIM_RE.test(finalText)
         // لسه فيه لفّات فاضية — نرجّعله يصحّح بنفسه وينادي الأداة فعلًا.
         if (turn < MAX_TURNS - 1) {
           messages.push({ role: 'assistant', content: res.content })
-          messages.push({ role: 'user', content: LISTING_GUARD_CORRECTION })
+          messages.push({ role: 'user', content: buildGuardCorrection(isMeeting) })
           continue
         }
         // خلصت اللفّات — مانبعتش وعد كاذب. رد صادق + تنبيه لمحمد.
         fireListingGuardAlert(opts.senderPhone, finalText)
-        return 'قربنا نخلص! بس محتاج آخر تفاصيل الإعلان (السعر والصور) عشان أسجّله فعليًا وأبعتلك تأكيد — ابعتهملي وأنا أظبطه على طول 🙏'
+        return buildHonestFallback(isMeeting)
       }
 
       return finalText
@@ -318,8 +352,11 @@ ${Object.entries(MADMONA_LINKS)
         ? await runAdminTool(tu.name, toolInput)
         : await runMaridTool(tu.name, toolInput)
       console.log('[marid-tool]', tu.name, JSON.stringify(out).slice(0, 160))
+      // manage_meeting اتضاف (١٩ أغسطس) — نفس حماية الإعلانات بالظبط بس
+      // لحجز الميعاد. ok:true من الأداة دي معناها book_meeting/cancel_meeting
+      // اتنادت فعلًا في الداتابيز، مش مجرّد كلام.
       if (
-        (tu.name === 'create_listing_draft' || tu.name === 'create_project') &&
+        (tu.name === 'create_listing_draft' || tu.name === 'create_project' || tu.name === 'manage_meeting') &&
         (out as { ok?: boolean })?.ok === true
       ) {
         listingPersisted = true
@@ -375,7 +412,7 @@ ${Object.entries(MADMONA_LINKS)
   // الأداة تاني. لو لسه بيوعد بتسجيل من غير ما حصل، رد صادق بدل الكدب.
   if (!listingPersisted && looksLikeFakeListingConfirmation(finalText)) {
     fireListingGuardAlert(opts.senderPhone, finalText)
-    return 'قربنا نخلص! بس محتاج آخر تفاصيل الإعلان (السعر والصور) عشان أسجّله فعليًا وأبعتلك تأكيد — ابعتهملي وأنا أظبطه على طول 🙏'
+    return buildHonestFallback(MEETING_CLAIM_RE.test(finalText))
   }
 
   return finalText
