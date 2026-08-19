@@ -1,95 +1,122 @@
 // src/app/api/admin-entry/route.ts
 // =====================================================================
-// التحقق من باسورد الأدمن + إدارة جلسة القفل.
-// POST   { password }      → يتأكد من البصمة، ويحط كوكي جلسة 30 يوم
-// GET    ?logout           → يمسح الجلسة ويرجّع لصفحة الدخول (لينك خروج)
-// DELETE                   → يمسح الجلسة (للاستخدام البرمجي)
-// الباسورد نفسها مش متخزّنة — بنقارن بصمة SHA-256 بطريقة timing-safe.
+// 🔐 (١٩ أغسطس ٢٠٢٦) الدخول للوحة الأدمن بقى: إيميل أو تليفون + باسورد،
+//    لكل موظف مضمونة حساب مستقل — بدل الباسورد المشترك الواحد القديم.
+// POST  { identifier, password }  → إيميل أو تليفون + الباسورد. جلسة جديدة.
+// GET   ?logout                   → يمسح الجلسة الحالية بس ويرجّع لصفحة الدخول.
+// DELETE                          → يمسح الجلسة الحالية (للاستخدام البرمجي).
 // =====================================================================
 
 import { NextResponse } from 'next/server'
-import crypto from 'node:crypto'
 import {
-  ADMIN_COOKIE,
-  ADMIN_SESSION_VALUE,
-  ADMIN_PW_SHA256,
-  ADMIN_MAX_AGE,
-  ADMIN_ENTRY_PATH,
-} from '@/lib/adminGate'
+  PLATFORM_ADMIN_COOKIE,
+  PLATFORM_ADMIN_SESSION_DAYS,
+  platformAdminDb,
+  verifyPassword,
+  newSessionToken,
+} from '@/lib/platformAdmin'
+import { normalizePhone } from '@/lib/auth-helpers'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const isProd = process.env.NODE_ENV === 'production'
+const MAX_AGE = 60 * 60 * 24 * PLATFORM_ADMIN_SESSION_DAYS
 
-function sha256(s: string): string {
-  return crypto.createHash('sha256').update(s, 'utf8').digest('hex')
-}
-
-function passwordMatches(password: string): boolean {
-  if (!password) return false
-  const a = Buffer.from(sha256(password), 'hex')
-  const b = Buffer.from(ADMIN_PW_SHA256, 'hex')
-  return a.length === b.length && crypto.timingSafeEqual(a, b)
+function cookieFromToken(token: string) {
+  return {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: 'lax' as const,
+    path: '/',
+    maxAge: MAX_AGE,
+  }
 }
 
 export async function POST(req: Request) {
+  let identifier = ''
   let password = ''
   try {
     const body = await req.json()
+    identifier = typeof body?.identifier === 'string' ? body.identifier.trim() : ''
     password = typeof body?.password === 'string' ? body.password : ''
   } catch {
     /* body فاضي أو مش JSON */
   }
 
-  // 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «الصفحة مش بتفتح»)
-  //    لو `ADMIN_PW_SHA256` مش متظبط على Vercel، البوابة بتقفل (fail closed)
-  //    و**مفيش باسورد في الدنيا هيعدّي** — وكانت بترد «الباسورد غلط»، فتفضل
-  //    تجرب وتجرب من غير ما حد يقولك إن المشكلة في الإعداد مش في اللي كتبته.
-  if (!ADMIN_PW_SHA256) {
-    return NextResponse.json(
-      { ok: false, error: 'قفل الأدمن مش متظبط على السيرفر: متغيّر ADMIN_PW_SHA256 فاضي. لازم يتحط في إعدادات Vercel.' },
-      { status: 503 },
-    )
-  }
-  if (!ADMIN_SESSION_VALUE) {
-    return NextResponse.json(
-      { ok: false, error: 'قفل الأدمن مش متظبط على السيرفر: متغيّر ADMIN_SESSION_VALUE فاضي. من غيره الجلسة عمرها ما هتتقبل.' },
-      { status: 503 },
-    )
+  if (!identifier || !password) {
+    return NextResponse.json({ ok: false, error: 'اكتب الإيميل أو التليفون والباسورد' }, { status: 400 })
   }
 
-  if (!passwordMatches(password)) {
+  const db = platformAdminDb()
+  const isEmail = identifier.includes('@')
+  const phone = isEmail ? null : normalizePhone(identifier)
+
+  let query = db.from('platform_admins').select('id, password_hash, status')
+  if (isEmail) {
+    query = query.eq('email', identifier.toLowerCase())
+  } else if (phone) {
+    // نقبل أي صيغة للرقم اتخزنت بيها وقت الإضافة (محلي أو دولي)
+    const local = '0' + phone.slice(3)
+    query = query.in('phone', [phone, phone.replace('+', ''), local])
+  } else {
+    return NextResponse.json({ ok: false, error: 'الإيميل أو رقم التليفون مش صحيح' }, { status: 400 })
+  }
+
+  const { data: row } = await query.limit(1).maybeSingle()
+  if (!row) {
+    return NextResponse.json({ ok: false, error: 'الحساب ده مش موجود' }, { status: 401 })
+  }
+  const admin = row as { id: string; password_hash: string; status: string }
+  if (admin.status !== 'active') {
+    return NextResponse.json({ ok: false, error: 'الحساب ده متعطّل — كلّم صاحب النظام' }, { status: 403 })
+  }
+  if (!verifyPassword(password, admin.password_hash)) {
     return NextResponse.json({ ok: false, error: 'الباسورد غلط' }, { status: 401 })
   }
 
+  const token = newSessionToken()
+  const expiresAt = new Date(Date.now() + MAX_AGE * 1000).toISOString()
+  const ua = req.headers.get('user-agent') || null
+  await db.from('platform_admin_sessions').insert({
+    token,
+    admin_id: admin.id,
+    expires_at: expiresAt,
+    user_agent: ua,
+  } as never)
+  await db.from('platform_admins').update({ last_login_at: new Date().toISOString() } as never).eq('id', admin.id)
+
   const res = NextResponse.json({ ok: true })
-  res.cookies.set(ADMIN_COOKIE, ADMIN_SESSION_VALUE, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: ADMIN_MAX_AGE,
-  })
+  res.cookies.set(PLATFORM_ADMIN_COOKIE, token, cookieFromToken(token))
   return res
 }
 
 export async function GET(req: Request) {
   const url = new URL(req.url)
   if (url.searchParams.get('logout') !== null) {
-    const res = NextResponse.redirect(new URL(ADMIN_ENTRY_PATH, req.url))
-    res.cookies.set(ADMIN_COOKIE, '', {
-      httpOnly: true, secure: isProd, sameSite: 'lax', path: '/', maxAge: 0,
-    })
+    const raw = req.headers.get('cookie') || ''
+    const hit = raw.split(';').map((c) => c.trim()).find((c) => c.startsWith(`${PLATFORM_ADMIN_COOKIE}=`))
+    const token = hit ? decodeURIComponent(hit.slice(PLATFORM_ADMIN_COOKIE.length + 1)) : ''
+    if (token) {
+      const db = platformAdminDb()
+      await db.from('platform_admin_sessions').delete().eq('token', token)
+    }
+    const res = NextResponse.redirect(new URL('/admin-entry', req.url))
+    res.cookies.set(PLATFORM_ADMIN_COOKIE, '', { httpOnly: true, secure: isProd, sameSite: 'lax', path: '/', maxAge: 0 })
     return res
   }
   return NextResponse.json({ ok: true })
 }
 
-export async function DELETE() {
+export async function DELETE(req: Request) {
+  const raw = req.headers.get('cookie') || ''
+  const hit = raw.split(';').map((c) => c.trim()).find((c) => c.startsWith(`${PLATFORM_ADMIN_COOKIE}=`))
+  const token = hit ? decodeURIComponent(hit.slice(PLATFORM_ADMIN_COOKIE.length + 1)) : ''
+  if (token) {
+    const db = platformAdminDb()
+    await db.from('platform_admin_sessions').delete().eq('token', token)
+  }
   const res = NextResponse.json({ ok: true })
-  res.cookies.set(ADMIN_COOKIE, '', {
-    httpOnly: true, secure: isProd, sameSite: 'lax', path: '/', maxAge: 0,
-  })
+  res.cookies.set(PLATFORM_ADMIN_COOKIE, '', { httpOnly: true, secure: isProd, sameSite: 'lax', path: '/', maxAge: 0 })
   return res
 }

@@ -23,6 +23,13 @@ export default function OwnerLoginPage() {
     (async () => {
       const token = safeStorage.get('madmona_owner_token')
       if (token) {
+        // 🌉 (١٩ أغسطس ٢٠٢٦) نتأكد إن الكوكي متزامنة كمان (لو اتفتحت الصفحة
+        // في متصفح تاني، أو الكوكي انتهت بس localStorage لسه موجود)
+        fetch('/api/owner/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        }).catch(() => {})
         const { data } = await supabase.rpc('owner_resolve_by_token', { p_token: token })
         const access = data?.access || []
         if (access.length === 1) { router.push(`/owner/${access[0].supplier_id}`); return }
@@ -53,6 +60,16 @@ export default function OwnerLoginPage() {
       }
       const token = (data as { token: string }).token
       safeStorage.set('madmona_owner_token', token)
+      // 🌉 (١٩ أغسطس ٢٠٢٦) كوكي HttpOnly كمان — عشان middleware.ts (بيشتغل
+      // على السيرفر قبل الصفحة) يقدر يتأكد إن صاحب الطلب أونر حقيقي ويسمحله
+      // بدخول صفحات /admin/business-finance/<supplierId>/* بتاعة بيزنسه.
+      // best-effort: لو فشل، الدخول لصفحة /owner نفسها مايتأثرش — بس أزرار
+      // الفريق/الحجوزات جوّاها ممكن تطلب دخول أدمن لحد ما يعمل ريفريش.
+      fetch('/api/owner/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      }).catch(() => {})
       const { data: acc } = await supabase.rpc('owner_resolve_by_token', { p_token: token })
       const access = acc?.access || []
       if (access.length === 1) router.push(`/owner/${access[0].supplier_id}`)

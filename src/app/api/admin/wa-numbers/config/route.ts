@@ -3,7 +3,7 @@
 // محمي بكوكي الأدمن (نفس /admin). الجدول: public.wa_number_configs.
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { ADMIN_COOKIE, ADMIN_SESSION_VALUE } from '@/lib/adminGate'
+import { isAdminRequest } from '@/lib/adminGate'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,13 +13,13 @@ const supabase = createClient(
 
 export const dynamic = 'force-dynamic'
 
-function authed(req: NextRequest): boolean {
-  return req.cookies.get(ADMIN_COOKIE)?.value === ADMIN_SESSION_VALUE
+async function authed(req: NextRequest): Promise<boolean> {
+  return await isAdminRequest(req)
 }
 
 // قايمة كل إعدادات الأرقام
 export async function GET(req: NextRequest) {
-  if (!authed(req)) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
+  if (!(await authed(req))) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
 
   const { data, error } = await supabase
     .from('wa_number_configs')
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 
 // حفظ إعداد رقم (upsert) — { session_id, label?, persona?, enabled? }
 export async function POST(req: NextRequest) {
-  if (!authed(req)) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
+  if (!(await authed(req))) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
 
   let body: { session_id?: string; label?: string; persona?: string; enabled?: boolean }
   try {

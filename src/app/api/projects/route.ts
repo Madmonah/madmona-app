@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { sbProjects as supabase } from '@/lib/supabaseProjects'
-import { ADMIN_COOKIE, ADMIN_SESSION_VALUE } from '@/lib/adminGate'
+import { isAdminRequest } from '@/lib/adminGate'
 import { PRICE_UNITS, SEGMENTS, slugify, type MediaItem } from '@/lib/projects'
 
 export const runtime = 'nodejs'
@@ -17,8 +17,8 @@ export const dynamic = 'force-dynamic'
 
 type Caller = 'admin' | 'marid' | 'public'
 
-function whoIs(req: NextRequest): Caller {
-  if (req.cookies.get(ADMIN_COOKIE)?.value === ADMIN_SESSION_VALUE) return 'admin'
+async function whoIs(req: NextRequest): Promise<Caller> {
+  if (await isAdminRequest(req)) return 'admin'
   const secret = req.headers.get('x-projects-secret') || ''
   const expected = process.env.PROJECTS_API_SECRET || ''
   if (expected && secret === expected) return 'marid'
@@ -53,7 +53,7 @@ async function uniqueSlug(base: string): Promise<string> {
 
 /** GET /api/projects?status=&q= — للأدمن بس */
 export async function GET(req: NextRequest) {
-  if (whoIs(req) === 'public') {
+  if ((await whoIs(req)) === 'public') {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
   const url = new URL(req.url)
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
 
 /** POST /api/projects — إضافة مشروع */
 export async function POST(req: NextRequest) {
-  const caller = whoIs(req)
+  const caller = await whoIs(req)
 
   let b: Record<string, unknown>
   try {

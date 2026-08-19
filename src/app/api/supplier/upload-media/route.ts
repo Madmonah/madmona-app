@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { ADMIN_COOKIE, ADMIN_SESSION_VALUE } from '@/lib/adminGate'
+import { isAdminRequest } from '@/lib/adminGate'
 
 // Server-side, service-role. The meaningful DB write is still gated by
 // supplier_self_set_media (ownership-checked) called from the client with the
@@ -24,8 +24,7 @@ export async function POST(req: NextRequest) {
     // «رسمية» على دومينا. دلوقتي: Bearer المستخدم + لازم يكون صاحب
     // السبلاير نفسه (profile_id).
     // الأدمن (كوكي جلسة اللوحة — بتتبعت تلقائيًا من صفحات /admin) يرفع لأي سبلاير
-    const adminCookie = req.cookies.get(ADMIN_COOKIE)?.value
-    const isAdminSession = !!ADMIN_SESSION_VALUE && adminCookie === ADMIN_SESSION_VALUE
+    const isAdminSession = await isAdminRequest(req)
 
     const bearer = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
     let authedUserId: string | null = null

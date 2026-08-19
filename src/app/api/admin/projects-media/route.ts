@@ -6,7 +6,7 @@
 // =====================================================================
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { ADMIN_COOKIE, ADMIN_SESSION_VALUE } from '@/lib/adminGate'
+import { isAdminRequest } from '@/lib/adminGate'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -22,15 +22,15 @@ function sb() {
 const tail10 = (p: string) => (p || '').replace(/\D/g, '').slice(-10)
 
 // نفس بوابة الأدمن المستخدمة في /api/projects
-function isAdmin(req: NextRequest): boolean {
-  if (req.cookies.get(ADMIN_COOKIE)?.value === ADMIN_SESSION_VALUE) return true
+async function isAdmin(req: NextRequest): Promise<boolean> {
+  if (await isAdminRequest(req)) return true
   const s = req.headers.get('x-projects-secret') || ''
   const expected = process.env.PROJECTS_API_SECRET || ''
   return !!expected && s === expected
 }
 
 export async function GET(req: NextRequest) {
-  if (!isAdmin(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  if (!(await isAdmin(req))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
   const db = sb()
 

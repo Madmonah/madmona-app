@@ -8,7 +8,7 @@
 //   • تسجيل الرسالة الصادرة تلقائيًا (ai_generated=false → بتبان «رد يدوي»)
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { ADMIN_COOKIE, ADMIN_SESSION_VALUE } from '@/lib/adminGate'
+import { isAdminRequest } from '@/lib/adminGate'
 import { sendText, resolveSessionForConversation } from '@/lib/whatsapp'
 
 const supabase = createClient(
@@ -35,7 +35,7 @@ function enforceBrandName(text: string): string {
 
 export async function POST(req: NextRequest) {
   // 🔒 أدمن بس — نفس كوكي حارس /admin
-  if (req.cookies.get(ADMIN_COOKIE)?.value !== ADMIN_SESSION_VALUE) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   }
 

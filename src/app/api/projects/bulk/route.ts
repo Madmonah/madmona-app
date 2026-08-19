@@ -14,14 +14,14 @@
 // =====================================================================
 import { NextRequest, NextResponse } from 'next/server'
 import { sbProjects as supabase } from '@/lib/supabaseProjects'
-import { ADMIN_COOKIE, ADMIN_SESSION_VALUE } from '@/lib/adminGate'
+import { isAdminRequest } from '@/lib/adminGate'
 import { PRICE_UNITS, SEGMENTS, slugify, type MediaItem } from '@/lib/projects'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-function isAdmin(req: NextRequest): boolean {
-  return req.cookies.get(ADMIN_COOKIE)?.value === ADMIN_SESSION_VALUE
+async function isAdmin(req: NextRequest): Promise<boolean> {
+  return await isAdminRequest(req)
 }
 
 function num(v: unknown): number | null {
@@ -70,7 +70,7 @@ async function uniqueSlug(base: string, taken: Set<string>): Promise<string> {
 
 /** POST /api/projects/bulk — إضافة عقارات ريسيل/إيجار بالجملة (أدمن بس) */
 export async function POST(req: NextRequest) {
-  if (!isAdmin(req)) {
+  if (!(await isAdmin(req))) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 

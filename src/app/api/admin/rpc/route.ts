@@ -13,7 +13,7 @@
 // =====================================================================
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { ADMIN_COOKIE, ADMIN_SESSION_VALUE } from '@/lib/adminGate'
+import { isAdminRequest } from '@/lib/adminGate'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -42,12 +42,12 @@ const ALLOWED = new Set([
   'madmona_quote_order',
 ])
 
-function isAdmin(req: NextRequest): boolean {
-  return req.cookies.get(ADMIN_COOKIE)?.value === ADMIN_SESSION_VALUE
+async function isAdmin(req: NextRequest): Promise<boolean> {
+  return await isAdminRequest(req)
 }
 
 export async function POST(req: NextRequest) {
-  if (!isAdmin(req)) {
+  if (!(await isAdmin(req))) {
     return NextResponse.json({ error: 'لازم تدخل من بوابة الأدمن الأول' }, { status: 401 })
   }
 

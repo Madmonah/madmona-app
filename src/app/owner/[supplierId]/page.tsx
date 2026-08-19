@@ -55,6 +55,9 @@ export default function OwnerDashboard({ params }: { params: { supplierId: strin
       await rpcSafe(supabase, 'owner_logout', { p_token: token })
       safeStorage.remove('madmona_owner_token')
     }
+    // 🌉 (١٩ أغسطس ٢٠٢٦) نمسح كوكي middleware.ts كمان — وإلا هتفضل شغالة
+    // على /admin/business-finance/<supplierId>/* لحد ما تنتهي لوحدها.
+    fetch('/api/owner/session', { method: 'DELETE' }).catch(() => {})
     router.push('/owner/login')
   }
 

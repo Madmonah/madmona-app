@@ -2,7 +2,7 @@
 // مراقبة حية: آخر المحادثات اللي المارد بيرد فيها (ويب + واتساب) — أدمن فقط.
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { ADMIN_COOKIE, ADMIN_SESSION_VALUE } from '@/lib/adminGate'
+import { isAdminRequest } from '@/lib/adminGate'
 import { maridLabel } from '@/lib/whatsapp'
 
 const supabase = createClient(
@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   // 🔒 أدمن بس — نفس كوكي حارس /admin
-  if (req.cookies.get(ADMIN_COOKIE)?.value !== ADMIN_SESSION_VALUE) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   }
 
@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (req.cookies.get(ADMIN_COOKIE)?.value !== ADMIN_SESSION_VALUE) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   }
   let body: { conversationId?: string; action?: string }

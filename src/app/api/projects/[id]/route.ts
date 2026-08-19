@@ -3,14 +3,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { sbProjects as supabase } from '@/lib/supabaseProjects'
-import { ADMIN_COOKIE, ADMIN_SESSION_VALUE } from '@/lib/adminGate'
+import { isAdminRequest } from '@/lib/adminGate'
 import { PRICE_UNITS } from '@/lib/projects'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-function authed(req: NextRequest): boolean {
-  if (req.cookies.get(ADMIN_COOKIE)?.value === ADMIN_SESSION_VALUE) return true
+async function authed(req: NextRequest): Promise<boolean> {
+  if (await isAdminRequest(req)) return true
   const expected = process.env.PROJECTS_API_SECRET || ''
   return !!expected && req.headers.get('x-projects-secret') === expected
 }
@@ -25,7 +25,7 @@ const EDITABLE = new Set([
 ])
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  if (!(await authed(req))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
   let b: Record<string, unknown>
   try {
@@ -63,7 +63,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  if (!(await authed(req))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
   const { error } = await supabase.from('property_market_items').delete().eq('id', params.id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

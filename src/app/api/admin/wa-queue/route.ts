@@ -10,7 +10,7 @@
 //    «ليه ماوصلتنيش رسالة؟» لازم يبقى فيه إجابة.
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { ADMIN_COOKIE, ADMIN_SESSION_VALUE } from '@/lib/adminGate'
+import { isAdminRequest } from '@/lib/adminGate'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,12 +20,12 @@ const supabase = createClient(
 
 export const dynamic = 'force-dynamic'
 
-function unauthorized(req: NextRequest) {
-  return req.cookies.get(ADMIN_COOKIE)?.value !== ADMIN_SESSION_VALUE
+async function unauthorized(req: NextRequest) {
+  return !(await isAdminRequest(req))
 }
 
 export async function GET(req: NextRequest) {
-  if (unauthorized(req)) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
+  if (await unauthorized(req)) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
 
   // الحملات متجمعة — الاسم والمسار والحالة والعدد وأول/آخر ميعاد
   const { data, error } = await supabase.rpc('wa_queue_overview')
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (unauthorized(req)) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
+  if (await unauthorized(req)) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
 
   const body = await req.json().catch(() => ({}))
   const { action, campaign, session } = body as { action?: string; campaign?: string; session?: string }

@@ -370,6 +370,7 @@ export default function AdminDashboardV2() {
             <ToolCard href="/admin/business-finance/c8b7b9d7-6178-4d0c-abdf-66f34b628e9d" icon={<Wallet />} title="إدارة مضمونة الكاملة" sub="فاينانس · فريق · حضور · مخزون · مرتبات · ٢٦ موديول" />
             <ToolCard href="/admin/company" icon={<Building2 />} title="لوحة الشركة" sub="مضمونة كشركة · مالية + منتجات" />
             <ToolCard href="/admin/permissions" icon={<ShieldCheck />} title="صلاحيات الموظفين" sub="صلاحيات كل موظف" />
+            <ToolCard href="/admin/staff" icon={<ShieldCheck />} title="إدارة حسابات الأدمن" sub="إضافة/تعطيل موظفين لدخول اللوحة" />
             <ToolCard href="/admin/hq" icon={<Compass />} title="HQ · مركز القيادة" sub="نظرة عامة عليا" />
           </div>
         </Section>
@@ -818,6 +819,7 @@ export default function AdminDashboardV2() {
               <CompactLink href="/admin/reels" label="reels" />
               <CompactLink href="/admin/runbook" label="runbook" />
               <CompactLink href="/admin/site-settings" label="site-settings" />
+              <CompactLink href="/admin/staff" label="staff ⭐ NEW — حسابات الأدمن" />
               <CompactLink href="/admin/social-groups" label="social-groups" />
               <CompactLink href="/admin/social-packs" label="social-packs" />
               <CompactLink href="/admin/sponsorships" label="sponsorships" />
