@@ -30,7 +30,19 @@ export async function callClaude(opts: {
     // Bumped to 8192 (was 4096) to prevent JSON truncation across all agents.
     max_tokens: opts.maxTokens ?? 8192,
     temperature: opts.temperature ?? 0.7,
-    system: opts.systemPrompt,
+    // 💰 (١٩ أغسطس ٢٠٢٦) نقطة العبور دي بتخدم ~١٢ وكيل خلفي (generate-tasks،
+    //    daily-report، content-marketing، phase4/5/6-runners، إلخ) وكل واحد
+    //    فيهم بينده بنفس الـsystemPrompt الثابت عشرات المرات في نفس التشغيلة
+    //    (مثلاً generate-tasks بينده على نفس TASK_GENERATOR_PROMPT لكل مورد ×
+    //    كل دفعة أدوار — ١٥٠+ نداء متطابق في نفس الكرون). كانت من غير أي
+    //    cache_control خالص، يعني كل نداء بيدفع سعر الإدخال كامل. ٥ دقايق
+    //    TTL كفاية هنا (مش ساعة زي المارد) لأن الوكلاء دول بيشتغلوا في
+    //    دفعة واحدة متلاحقة مش متباعدة على مدار اليوم. لو البرومبت أقصر من
+    //    حد الكاش الأدنى (~١٠٢٤ توكن)، أنتروبك بتتجاهل cache_control بأمان
+    //    من غير أي تكلفة إضافية أو خطأ.
+    system: [
+      { type: 'text', text: opts.systemPrompt, cache_control: { type: 'ephemeral' } },
+    ] as never,
     messages: [
       {
         role: 'user',
