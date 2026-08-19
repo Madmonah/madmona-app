@@ -412,7 +412,9 @@ export const MARID_TOOLS = [
     description:
       'سجّل مهمة/تاسك في نظام الشغل — لما حد يطلب تذكير، متابعة، أو تكليف بعمل. ' +
       'أمثلة: «افتكرني أكلم فلان بكرة»، «اعمل مهمة راجع أوردر كذا»، «كلّف أحمد يجهّز التقرير». ' +
-      'لو المكلّف موظف مسجّل، المهمة بتنزل في مهامه اليومية (النوع: من الشات) — وممكن بتاريخ مستقبلي. غير كده بتتسجّل في لوحة المهام العامة.',
+      'لو المكلّف موظف مسجّل، المهمة بتنزل في مهامه اليومية (النوع: من الشات) — وممكن بتاريخ مستقبلي. غير كده بتتسجّل في لوحة المهام العامة.\n' +
+      '⚠️ لو المتكلّم موظف/صاحب بيزنس B2B (شايف بلوك «🏢» في المتكلّم)، لازم تبعت الـsupplier_id بتاعه — ' +
+      'عشان المكلّف يترضبط داخل نفس البيزنس بس، مش أي حد بنفس الاسم في بيزنس تاني.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -422,6 +424,7 @@ export const MARID_TOOLS = [
         priority: { type: 'string', enum: ['low', 'medium', 'high'], description: 'الأولوية (افتراضي medium)' },
         task_date: { type: 'string', description: 'تاريخ المهمة YYYY-MM-DD لو اتحدد يوم («بكرة»، «الخميس») — احسبه من تاريخ النهارده. سيبه فاضي لو النهارده' },
         due_time: { type: 'string', description: 'وقت المهمة HH:MM بنظام ٢٤ ساعة لو اتحدد («الساعة ٦ مساءً» = 18:00)' },
+        supplier_id: { type: 'string', description: 'معرّف بيزنس الـB2B لو المتكلّم موظف/صاحب بيزنس — يقصر البحث عن المكلّف على نفس البيزنس بس' },
       },
       required: ['title'],
     },
@@ -456,11 +459,19 @@ export const MARID_TOOLS = [
   {
     name: 'business_snapshot',
     description:
-      'لخّصلي حالة الشغل بسرعة (Catch Me Up) — عدد المهام المفتوحة وأهمها، والمحادثات اللي مستنية رد. ' +
-      'استخدمها لما حد يقول «إيه الوضع؟» أو «لخّصلي الشغل» أو «فيه إيه جديد».',
+      'لخّصلي حالة الشغل بسرعة (Catch Me Up).\n' +
+      '• من غير supplier_id: حالة شغل مضمونة الداخلي (المهام المفتوحة والمحادثات المستنية رد).\n' +
+      '• مع supplier_id: حالة بيزنس B2B معيّن (فريقه، فروعه، مهامه المفتوحة) — استخدمها ' +
+      'لما موظف/صاحب بيزنس B2B (شايف بلوك «🏢 موظف/صاحب بيزنس» فوق في المتكلّم) يسأل ' +
+      '«إيه الوضع؟» أو «فريقي عامل إيه» أو «مهامنا فين» — مرّر الـsupplier_id من البلوك ده.',
     input_schema: {
       type: 'object' as const,
-      properties: {},
+      properties: {
+        supplier_id: {
+          type: 'string',
+          description: 'معرّف بيزنس الـB2B (من بلوك «🏢 موظف/صاحب بيزنس» في المتكلّم) — سيبه فاضي لحالة مضمونة الداخلي',
+        },
+      },
       required: [],
     },
   },
@@ -665,6 +676,30 @@ async function whoIsThis(a: { phone: string; name?: string }): Promise<ToolResul
     .maybeSingle()
 
   if (!profile) {
+    // 🏢 (19 Aug 2026) قبل ما نقول "رقم جديد" — يمكن يكون موظف/صاحب بيزنس B2B
+    // (ده مالوش profile/auth بالضرورة — business_employees.phone بيتخزّن مباشرة)
+    const { data: emp } = await db
+      .from('business_employees')
+      .select('full_name, role, role_ar, status, supplier_id, suppliers(business_name, industry)')
+      .in('phone', variants)
+      .order('status', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (emp) {
+      const e = emp as unknown as {
+        full_name: string; role: string; role_ar: string | null; status: string
+        supplier_id: string; suppliers: { business_name: string; industry: string | null } | null
+      }
+      return {
+        known: true,
+        is_b2b_employee: true,
+        name: e.full_name,
+        role: e.role_ar || e.role,
+        business_name: e.suppliers?.business_name ?? null,
+        supplier_id: e.supplier_id,
+        note: 'ده موظف/صاحب بيزنس B2B — مش عميل عادي. لو سأل عن فريقه/مهامه استخدم business_snapshot بالـsupplier_id ده.',
+      }
+    }
     return {
       known: false,
       guidance:
@@ -1782,23 +1817,27 @@ async function readLink(a: { url?: string }): Promise<ToolResult> {
   }
 }
 
-async function createTask(a: { title: string; detail?: string; assignee_name?: string; priority?: string; task_date?: string; due_time?: string }): Promise<ToolResult> {
+async function createTask(a: { title: string; detail?: string; assignee_name?: string; priority?: string; task_date?: string; due_time?: string; supplier_id?: string }): Promise<ToolResult> {
   const title = (a.title || '').trim()
   if (!title) return { ok: false, error: 'عنوان المهمة مطلوب' }
   const priority = ['low', 'medium', 'high'].includes(a.priority || '') ? a.priority : 'medium'
   const assignee = a.assignee_name?.trim() || ''
+  const supplierId = (a.supplier_id || '').trim()
 
   // (3 Aug 2026 — بأمر محمد) مهام الشات بتنزل في قايمة المهام اليومية نفسها (daily_tasks)
   // معلّمة task_kind='chat' عشان تتفرق عن المهام الثابتة المجدولة (fixed) — عبر RPC add_chat_task.
   // لو المكلّف مش موظف مسجّل → بتتسجّل في لوحة flow_tasks زي زمان (fallback).
+  // 🏢 (19 Aug 2026) لو supplier_id متبعت (متكلّم موظف B2B)، البحث بيتقصر على نفس
+  //    البيزنس بس — من غير كده اسم زي "محمد" ممكن يترضبط في بيزنس تاني تمامًا.
   if (assignee) {
-    const { data: emp } = await db
+    let empQuery = db
       .from('business_employees')
       .select('id, full_name')
       .eq('status', 'active')
       .ilike('full_name', `%${assignee}%`)
       .limit(1)
-      .maybeSingle()
+    if (supplierId) empQuery = empQuery.eq('supplier_id', supplierId)
+    const { data: emp } = await empQuery.maybeSingle()
     const empRow = emp as { id: string; full_name: string } | null
     if (empRow) {
       const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(a.task_date || '')
@@ -1959,7 +1998,52 @@ async function completeTask(a: { query: string }): Promise<ToolResult> {
   return { ok: true, message: `تمام، اتقفلت المهمة: «${task.title}» ✅` }
 }
 
-async function businessSnapshot(): Promise<ToolResult> {
+async function businessSnapshot(a?: { supplier_id?: string }): Promise<ToolResult> {
+  const supplierId = (a?.supplier_id || '').trim()
+
+  // 🏢 (19 Aug 2026) بيزنس B2B معيّن — فريقه وفروعه ومهامه، مش شغل مضمونة الداخلي
+  if (supplierId) {
+    const { data: supplier, error: se } = await db
+      .from('suppliers')
+      .select('id, business_name, industry')
+      .eq('id', supplierId)
+      .maybeSingle()
+    if (se || !supplier) return { ok: false, error: 'مالقيتش البيزنس ده' }
+    const biz = supplier as { id: string; business_name: string; industry: string | null }
+
+    const [teamRes, branchesRes, tasksRes] = await Promise.all([
+      db
+        .from('business_employees')
+        .select('full_name, role_ar, role, status')
+        .eq('supplier_id', supplierId)
+        .eq('status', 'active')
+        .limit(20),
+      db.from('supplier_branches').select('name, status').eq('supplier_id', supplierId).limit(20),
+      db
+        .from('daily_tasks')
+        .select('title_ar, priority, branch_id, supplier_branches!inner(supplier_id)')
+        .eq('supplier_branches.supplier_id', supplierId)
+        .neq('status', 'done')
+        .order('created_at', { ascending: false })
+        .limit(10),
+    ])
+
+    const team = (teamRes.data ?? []) as Array<{ full_name: string; role_ar: string | null; role: string; status: string }>
+    const branches = (branchesRes.data ?? []) as Array<{ name: string; status: string }>
+    const tasks = (tasksRes.data ?? []) as Array<{ title_ar: string; priority: string }>
+
+    return {
+      ok: true,
+      البيزنس: biz.business_name,
+      النشاط: biz.industry || '—',
+      عدد_الفريق_النشط: team.length,
+      الفريق: team.map((t) => `${t.full_name} — ${t.role_ar || t.role}`),
+      الفروع: branches.map((b) => `${b.name} (${b.status})`),
+      مهام_مفتوحة: tasks.length,
+      أهم_المهام: tasks.map((t) => `${t.title_ar} (${t.priority})`),
+    }
+  }
+
   const tasksRes = await db
     .from('flow_tasks')
     .select('title, priority', { count: 'exact' })
@@ -2174,7 +2258,7 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
       case 'complete_task':
         return await completeTask(input as never)
       case 'business_snapshot':
-        return await businessSnapshot()
+        return await businessSnapshot(input as never)
       case 'recent_orders':
         return await recentOrders()
       case 'recent_demand':
