@@ -39,9 +39,8 @@ const NAV: NavGroup[] = [
   ] },
   { title: 'شركاء B2B', emoji: '🤝', items: [
     { href: '/admin/business-partners', label: 'الشركاء' },
-    { href: '/admin/leads', label: 'Leads' },
-    { href: '/admin/leads-feed', label: 'Leads Feed' },
-    { href: '/admin/outreach-leads', label: 'Outreach Leads' }, // outreach_log ٥٧٩
+    { href: '/admin/leads', label: 'الليدز (كل المصادر)' }, // ١٩ أغسطس ٢٠٢٦: leads-feed بقت redirect لهنا
+    { href: '/admin/outreach-leads', label: 'Outreach Leads' }, // outreach_log ٥٧٩ — متابعة رحلة التواصل، مش نفس الحاجة
   ] },
   { title: 'الماركت بليس', emoji: '🛍️', items: [
     { href: '/admin/listings', label: 'الإعلانات' },
