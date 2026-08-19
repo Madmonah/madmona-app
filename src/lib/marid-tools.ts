@@ -123,7 +123,10 @@ export const MARID_TOOLS = [
       'لو العميل بعت صورة، مرّر رابطها في image_urls (استخدم الرابط المحفوظ اللي في سياق الرسالة) — ' +
       'وقتها الإعلان بينزل على مضمونة أوتوماتيك خلال دقايق. ' +
       'لو مفيش صورة، سجّل الإعلان واطلب منه صورة فورًا — الماركتبليس بيرفض إعلان من غير صورة. ' +
-      'لو ناقص السعر أو التصنيف اسأله.',
+      'لو ناقص السعر أو التصنيف اسأله.\n\n' +
+      '⚠️ لو العميل مطعم وبعتلك المنيو كامل (أصناف بأسعارها): سجّل الإعلان هنا بوصف عام ومختصر ' +
+      'بس (اسم المطعم + عنوانه + نوع الأكل)، وماتحطش الأصناف والأسعار في الوصف — نادي أداة ' +
+      'add_menu_items بعد كده وحط كل صنف بسعره فيها. الوصف مكانه مش مكان المنيو.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -154,6 +157,36 @@ export const MARID_TOOLS = [
         },
       },
       required: ['phone', 'title'],
+    },
+  },
+  {
+    name: 'add_menu_items',
+    description:
+      'ضيف أصناف منيو مطعم بأسعارها — استخدمها **بدل** ما تحط الأصناف والأسعار في وصف ' +
+      'create_listing_draft. لازم يكون عندك listing_id للمطعم الأول (نادي create_listing_draft ' +
+      'الأول لو الإعلان لسه مش موجود، وارجع بعدين نادي الأداة دي بالـ id اللي رجعلك).\n' +
+      '⚠️ كل صنف لازم يكون معاه سعر رقم واضح (مش «حسب الحجم» أو مجال) — لو الصنف بيتقسّم ' +
+      'أحجام بأسعار مختلفة، سجّله بأقل سعر واذكر باقي الأحجام في description_ar بتاعه.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        listing_id: { type: 'string', description: 'معرّف إعلان المطعم (من create_listing_draft)' },
+        items: {
+          type: 'array',
+          description: 'قائمة الأصناف',
+          items: {
+            type: 'object',
+            properties: {
+              name_ar: { type: 'string', description: 'اسم الصنف' },
+              price: { type: 'number', description: 'السعر بالجنيه' },
+              category: { type: 'string', description: 'قسم المنيو زي "ساندوتشات" أو "مشروبات" لو مذكور' },
+              description_ar: { type: 'string', description: 'تفاصيل إضافية عن الصنف لو موجودة' },
+            },
+            required: ['name_ar', 'price'],
+          },
+        },
+      },
+      required: ['listing_id', 'items'],
     },
   },
   {
@@ -858,6 +891,66 @@ async function createListingDraft(a: {
         (missing.length ? ` — بس كمّلّي ${missing.join(' و')} عشان يظهر كامل.` : '')
       : `سجّلت إعلانك ✅ بس عشان ينزل على مضمونة محتاج ${missing.join(' و')}. ` +
         'ابعتلي صورة للمنتج/الخدمة وأنا أنشره على طول 📸',
+  }
+}
+
+/**
+ * إضافة أصناف منيو مطعم — restaurant_menu_items.
+ *
+ * ١٩ أغسطس ٢٠٢٦: محمد لاحظ إن مطاعم بعتت المنيو كامل بالواتساب، والمارد
+ * كان بيسجّلها كنص خام جوه وصف الإعلان (description) بدل ما يفرّغها في
+ * جدول المنيو الحقيقي — فالمنيو كان بيفضل فاضي على الموقع رغم إن العميل
+ * بعت كل التفاصيل. السبب: مفيش أداة كانت أصلًا بتسمح للمارد يضيف أصناف
+ * منيو — create_listing_draft بس بتاخد وصف عام، مش أصناف مُقسّمة بسعر.
+ * الأداة دي بتقفل الفجوة: تاخد الأصناف (اسم + سعر + تصنيف) وتحفظهم في
+ * الجدول الصح عشان يظهروا في صفحة المطعم كمنيو حقيقي قابل للطلب.
+ */
+async function addMenuItems(a: {
+  listing_id: string
+  items: Array<{ name_ar: string; price: number; category?: string; description_ar?: string }>
+}): Promise<ToolResult> {
+  const listingId = (a.listing_id || '').trim()
+  if (!listingId) return { ok: false, error: 'محتاج listing_id بتاع المطعم' }
+  const items = Array.isArray(a.items) ? a.items : []
+  if (!items.length) return { ok: false, error: 'مفيش أصناف للإضافة' }
+
+  const { data: listing } = await db
+    .from('listings')
+    .select('id, title')
+    .eq('id', listingId)
+    .maybeSingle()
+  if (!listing) return { ok: false, error: 'مفيش إعلان بالـ id ده' }
+
+  const { data: existing } = await db
+    .from('restaurant_menu_items')
+    .select('display_order')
+    .eq('listing_id', listingId)
+    .order('display_order', { ascending: false })
+    .limit(1)
+  let nextOrder = ((existing?.[0] as { display_order?: number } | undefined)?.display_order ?? 0) + 1
+
+  const rows = items
+    .filter((it) => it && typeof it.name_ar === 'string' && it.name_ar.trim() && typeof it.price === 'number')
+    .map((it) => ({
+      listing_id: listingId,
+      name_ar: it.name_ar.trim().slice(0, 200),
+      description_ar: it.description_ar?.trim().slice(0, 500) || null,
+      price: it.price,
+      currency: 'EGP',
+      category: it.category?.trim().slice(0, 100) || null,
+      is_available: true,
+      display_order: nextOrder++,
+    }))
+
+  if (!rows.length) return { ok: false, error: 'كل الأصناف ناقصها اسم أو سعر صحيح' }
+
+  const { data, error } = await db.from('restaurant_menu_items').insert(rows).select('id')
+  if (error) return { ok: false, error: 'مش قادر أحفظ المنيو', detail: error.message }
+
+  return {
+    ok: true,
+    added_count: data?.length ?? rows.length,
+    قول_للعميل: `تمام، ضفت ${data?.length ?? rows.length} صنف على منيو "${listing.title}" ✅`,
   }
 }
 
@@ -2052,6 +2145,8 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await getMyOrders(input as never)
       case 'create_listing_draft':
         return await createListingDraft(input as never)
+      case 'add_menu_items':
+        return await addMenuItems(input as never)
       case 'create_project':
         return await createProject(input as never)
       case 'forward_to_supplier':
