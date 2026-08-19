@@ -54,6 +54,13 @@ export default function ProjectsAdmin({ initial }: { initial: Project[] }) {
               <MessageSquare className="w-4 h-4" />
               الاستفسارات
             </Link>
+            <Link
+              href="/admin/projects/bulk"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-[#059669]/40"
+            >
+              <FileText className="w-4 h-4" />
+              إضافة بالجملة (ريسيل/إيجار)
+            </Link>
             <button
               onClick={() => { setAdding(true); setEditing(null) }}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#34D399] text-[#04352A] text-sm font-bold"

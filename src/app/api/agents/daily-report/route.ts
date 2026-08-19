@@ -48,6 +48,14 @@ interface DailyMetrics {
     created_at: string
     has_listing: boolean
   }>
+  // 🆕 ١٩ أغسطس ٢٠٢٦: مراجعة بعدية للموردين الجداد — نشر فوري بس محمد
+  // شايف مين اتضاف وحالته وعدد إعلاناته من غير ما يفوّت حد.
+  new_suppliers_today: Array<{
+    id: string
+    business_name: string
+    kyc_status: string
+    listings_count: number
+  }>
 }
 
 interface ReportOutput {
@@ -81,6 +89,18 @@ async function gatherMetrics(): Promise<DailyMetrics> {
     .from('marketplace_suppliers')
     .select('*', { count: 'exact', head: true })
     .gte('created_at', todayStartIso)
+
+  // 🆕 ١٩ أغسطس ٢٠٢٦: محمد لاحظ إن أي بيزنس كلاود بيتضاف للماركت بليس من
+  // غير مراجعة (migration ٤ مايو "Relax KYC gate to booking time" —
+  // النشر بقى فوري، الموافقة بس بتتطلب عند الحجز). القرار: نسيب النشر
+  // الفوري زي ما هو، بس نضيف مراجعة بعدية — كل مورد جديد اليوم يظهر هنا
+  // بالاسم وحالته وعدد إعلاناته، عشان محمد يراجع اللي محتاج نظرة.
+  const { data: newSuppliersDetail } = await supabaseAdmin
+    .from('marketplace_suppliers')
+    .select('id, business_name, kyc_status, listings_count, created_at')
+    .gte('created_at', todayStartIso)
+    .order('created_at', { ascending: false })
+    .limit(30)
 
   const { count: newListingsToday } = await supabaseAdmin
     .from('listings')
@@ -195,6 +215,17 @@ async function gatherMetrics(): Promise<DailyMetrics> {
       role: s.role,
       created_at: s.created_at,
       has_listing: false,
+    })),
+    new_suppliers_today: ((newSuppliersDetail ?? []) as Array<{
+      id: string
+      business_name: string | null
+      kyc_status: string | null
+      listings_count: number | null
+    }>).map((s) => ({
+      id: s.id,
+      business_name: s.business_name || '—',
+      kyc_status: s.kyc_status || 'pending',
+      listings_count: s.listings_count ?? 0,
     })),
   }
 }
@@ -319,6 +350,19 @@ function buildReportEmailHtml(report: ReportOutput, m: DailyMetrics): string {
       ? `<tr style="background:#FEF3C7;"><td style="padding: 8px; font-weight:bold;">⚠️ الفجوة (اتعمل ومانشرش)</td><td style="padding: 8px; font-weight: bold; color:#B45309;">${m.listings_breakdown_today.publish_gap}</td></tr>`
       : ''}
   </table>
+
+  ${m.new_suppliers_today.length ? `
+  <h3 style="color: #059669; margin-top: 24px;">🆕 موردين جداد النهارده (${m.new_suppliers_today.length}) — مراجعة سريعة</h3>
+  <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+    <tr style="background:#FAF7F0; font-weight:bold;"><td style="padding:8px;">الاسم</td><td style="padding:8px;">الحالة</td><td style="padding:8px;">عدد الإعلانات</td></tr>
+    ${m.new_suppliers_today.map((s, i) => {
+      const statusLabel: Record<string, string> = { pending: '⏳ مستني مراجعة', approved: '✅ معتمد', rejected: '❌ مرفوض', suspended: '⛔ موقوف' }
+      const rowBg = i % 2 === 0 ? '' : 'background:#FAF7F0;'
+      return `<tr style="${rowBg}"><td style="padding:8px;">${escapeHtml(s.business_name)}</td><td style="padding:8px;">${statusLabel[s.kyc_status] || s.kyc_status}</td><td style="padding:8px;">${s.listings_count}</td></tr>`
+    }).join('')}
+  </table>
+  <p style="font-size:12px; color:#999; margin-top:6px;">النشر فوري لكل مورد جديد — القائمة دي للمراجعة البعدية بس، مش بلوك.</p>
+  ` : ''}
 
   <h3 style="color: #059669; margin-top: 24px;">✅ Wins</h3>
   <ul style="padding-right: 20px;">${wins}</ul>

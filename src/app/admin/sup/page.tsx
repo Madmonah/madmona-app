@@ -137,16 +137,22 @@ export default function SuppliersAdminPage() {
     say(`✅ ${KYC[kyc_status].label} — ${rows.find((r) => r.id === id)?.business_name ?? ''}`)
   }
 
-  const stats = useMemo(() => ({
-    all: rows.length,
-    approved: rows.filter((r) => r.kyc_status === 'approved').length,
-    pending: rows.filter((r) => r.kyc_status === 'pending').length,
-    rejected: rows.filter((r) => r.kyc_status === 'rejected').length,
-    suspended: rows.filter((r) => r.kyc_status === 'suspended').length,
-    listings: rows.reduce((s, r) => s + num(r.listings_count), 0),
-    revenue: rows.reduce((s, r) => s + num(r.total_revenue), 0),
-    silent: rows.filter((r) => r.kyc_status === 'approved' && num(r.listings_count) === 0).length,
-  }), [rows])
+  const stats = useMemo(() => {
+    // 🆕 ١٩ أغسطس ٢٠٢٦: النشر فوري لأي مورد جديد (قرار محمد) — بس لازم
+    // يبقى واضح هنا مين دخل النهارده عشان المراجعة البعدية تبقى سهلة.
+    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+    return {
+      all: rows.length,
+      approved: rows.filter((r) => r.kyc_status === 'approved').length,
+      pending: rows.filter((r) => r.kyc_status === 'pending').length,
+      rejected: rows.filter((r) => r.kyc_status === 'rejected').length,
+      suspended: rows.filter((r) => r.kyc_status === 'suspended').length,
+      listings: rows.reduce((s, r) => s + num(r.listings_count), 0),
+      revenue: rows.reduce((s, r) => s + num(r.total_revenue), 0),
+      silent: rows.filter((r) => r.kyc_status === 'approved' && num(r.listings_count) === 0).length,
+      newToday: rows.filter((r) => new Date(r.created_at) >= todayStart).length,
+    }
+  }, [rows])
 
   const filtered = useMemo(() => {
     let r = rows
@@ -229,8 +235,10 @@ export default function SuppliersAdminPage() {
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-5">
         {/* KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <Kpi label="إجمالي الموردين" value={fmt(stats.all)} />
+          <Kpi label="جداد النهارده" value={fmt(stats.newToday)} tone={stats.newToday > 0 ? 'warn' : undefined}
+            note="نشر فوري — دي للمراجعة بس" />
           <Kpi label="معتمدين" value={fmt(stats.approved)} tone="good" />
           <Kpi label="مستنيين مراجعة" value={fmt(stats.pending)} tone={stats.pending > 0 ? 'warn' : undefined} />
           <Kpi label="إعلانات" value={fmt(stats.listings)}
