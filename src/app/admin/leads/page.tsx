@@ -26,6 +26,8 @@ interface Lead {
   notes: string | null
   source: string | null
   created_at: string | null
+  is_registered_supplier: boolean | null
+  registered_supplier_id: string | null
 }
 
 const KINDS: Array<{ key: string; ar: string }> = [
@@ -81,14 +83,16 @@ export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [kind, setKind] = useState('')
   const [q, setQ] = useState('')
+  const [registered, setRegistered] = useState<'' | '1' | '0'>('') // ١٩ أغسطس ٢٠٢٦: فلتر "مين سجل ومين لا"
 
-  const fetchLeads = useCallback(async (pw: string, k: string, search: string, silent = false) => {
+  const fetchLeads = useCallback(async (pw: string, k: string, search: string, reg: '' | '1' | '0', silent = false) => {
     setLoading(true)
     setError('')
     try {
       const params = new URLSearchParams()
       if (k) params.set('kind', k)
       if (search.trim()) params.set('q', search.trim())
+      if (reg) params.set('registered', reg)
       params.set('limit', '500')
 
       const res = await fetch(`/api/admin/leads?${params.toString()}`, {
@@ -121,14 +125,14 @@ export default function LeadsPage() {
     const stored = sessionStorage.getItem('madmona_admin_pw')
     if (stored) {
       setPassword(stored)
-      fetchLeads(stored, '', '', true)
+      fetchLeads(stored, '', '', '', true)
     }
   }, [fetchLeads])
 
   const handleLogin = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setAuthError('')
-    fetchLeads(password, kind, q)
+    fetchLeads(password, kind, q, registered)
   }
 
   const updateStatus = async (lead: Lead, status: string) => {
@@ -203,7 +207,7 @@ export default function LeadsPage() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => fetchLeads(password, kind, q)}
+              onClick={() => fetchLeads(password, kind, q, registered)}
               disabled={loading}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 disabled:opacity-50"
             >
@@ -218,11 +222,11 @@ export default function LeadsPage() {
           </div>
         </header>
 
-        <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="flex flex-wrap items-center gap-2 mb-3">
           {KINDS.map((k) => (
             <button
               key={k.key || 'all'}
-              onClick={() => { setKind(k.key); fetchLeads(password, k.key, q) }}
+              onClick={() => { setKind(k.key); fetchLeads(password, k.key, q, registered) }}
               className={`px-3 py-1.5 rounded-full text-xs font-bold border ${
                 kind === k.key
                   ? 'bg-[#059669] text-white border-[#059669]'
@@ -232,8 +236,29 @@ export default function LeadsPage() {
               {k.ar}{counts[k.ar] ? ` · ${counts[k.ar]}` : ''}
             </button>
           ))}
+        </div>
+
+        {/* ١٩ أغسطس ٢٠٢٦ — فلتر "مين سجل معانا ومين لا" بمقارنة حقيقية مع جدول suppliers */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          {([
+            { key: '' as const, ar: 'الكل' },
+            { key: '1' as const, ar: '✅ سجّل فعلا' },
+            { key: '0' as const, ar: '⏳ لسه ما سجّلش' },
+          ]).map((r) => (
+            <button
+              key={r.key || 'all-reg'}
+              onClick={() => { setRegistered(r.key); fetchLeads(password, kind, q, r.key) }}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold border ${
+                registered === r.key
+                  ? 'bg-gray-900 text-white border-gray-900'
+                  : 'bg-white text-gray-600 border-gray-200'
+              }`}
+            >
+              {r.ar}
+            </button>
+          ))}
           <form
-            onSubmit={(e) => { e.preventDefault(); fetchLeads(password, kind, q) }}
+            onSubmit={(e) => { e.preventDefault(); fetchLeads(password, kind, q, registered) }}
             className="flex items-center gap-1.5 mr-auto"
           >
             <div className="relative">
@@ -265,12 +290,13 @@ export default function LeadsPage() {
                   <th className="px-4 py-3">المدينة</th>
                   <th className="px-4 py-3">التصنيف</th>
                   <th className="px-4 py-3">الحالة</th>
+                  <th className="px-4 py-3">سجّل؟</th>
                   <th className="px-4 py-3">التاريخ</th>
                 </tr>
               </thead>
               <tbody>
                 {leads.length === 0 && !loading && (
-                  <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-400">مفيش ليدز</td></tr>
+                  <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-400">مفيش ليدز</td></tr>
                 )}
                 {leads.map((l) => (
                   <tr key={`${l.kind}-${l.id}`} className="border-t border-gray-50 text-[13px]">
@@ -299,6 +325,13 @@ export default function LeadsPage() {
                           <option key={s} value={s}>{STATUS_AR[s] ?? s}</option>
                         ))}
                       </select>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {l.is_registered_supplier ? (
+                        <span className="px-2 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">✅ سجّل</span>
+                      ) : (
+                        <span className="px-2 py-1 rounded-full text-[11px] font-bold bg-gray-100 text-gray-500">لسه لأ</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-gray-400 text-[11px]">{fmt(l.created_at)}</td>
                   </tr>

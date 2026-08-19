@@ -65,17 +65,16 @@ const NAV: NavGroup[] = [
     { href: '/admin/supplier-posts', label: 'منشورات الموردين' },
   ] },
   { title: 'AI / المارد', emoji: '🤖', items: [
+    // ١٩ أغسطس ٢٠٢٦ — محمد طلب نضف كل "الاجينتس": جدول agent_registry اتمسح
+    // نهائي (كان ٥١ صف وهمي، مفيش cron حي بيعتمد عليه أصلا). الصفحات اللي
+    // كانت بتقرا منه (الوكلاء / شبكة الوكلاء / قدرات الوكلاء / AI OS / صحة
+    // الوكلاء / Prompts) اتشالت من هنا لحد ما تتحذف الصفحات نفسها. الباقي
+    // تحت شغّال فعليًا وبيقرا من جداول حقيقية.
     { href: '/admin/orchestrator', label: 'تحكم الكرونات 🧞' },
-    { href: '/admin/ai-os', label: 'AI OS' },
-    { href: '/admin/agent-health', label: 'صحة الوكلاء' },
     { href: '/admin/agent-runs', label: 'Runs Logs' },
-    { href: '/admin/prompt-versions', label: 'Prompts' },
     { href: '/admin/marid', label: 'المارد' },
     { href: '/admin/pipelines', label: 'Pipelines' },
     { href: '/admin/alerts', label: 'التنبيهات' },
-    { href: '/admin/agents', label: 'الوكلاء' },              // agent_registry + agent_runs
-    { href: '/admin/agent-network', label: 'شبكة الوكلاء' },  // agent_capabilities ٥٠ · agent_pipelines ١٨
-    { href: '/admin/capabilities', label: 'قدرات الوكلاء' },  // agent_capabilities ٥٠
     { href: '/admin/performance', label: 'أداء الوكلاء' },    // agent_performance_metrics ١٨٣
     { href: '/admin/policy-rules', label: 'قواعد السياسة' },  // policy_rules ٣٢
     { href: '/admin/ai-assistant', label: 'المساعد الذكي' },

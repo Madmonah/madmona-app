@@ -46,6 +46,8 @@ export async function GET(request: Request) {
   const kind = url.searchParams.get('kind') || ''
   const q = (url.searchParams.get('q') || '').trim()
   const limit = Math.min(Number(url.searchParams.get('limit') || 200), 1000)
+  // registered=1 → سجّل فعلا كمورد · registered=0 → لسه ما سجّلش (١٩ أغسطس ٢٠٢٦)
+  const registeredParam = url.searchParams.get('registered')
 
   const sb = supabase as unknown as {
     from: (t: string) => { select: (c: string) => LeadQuery }
@@ -53,9 +55,11 @@ export async function GET(request: Request) {
 
   let query = sb
     .from('v_all_leads')
-    .select('id, kind, kind_ar, name, phone, city, category, status, notes, source, created_at')
+    .select('id, kind, kind_ar, name, phone, city, category, status, notes, source, created_at, is_registered_supplier, registered_supplier_id')
 
   if (kind && KIND_MAP[kind]) query = query.eq('kind', kind)
+  if (registeredParam === '1') query = query.eq('is_registered_supplier', true)
+  if (registeredParam === '0') query = query.eq('is_registered_supplier', false)
   // بنهرب % و_ عشان مايتحوّلوش لـwildcards في ilike
   if (q) {
     const safe = q.replace(/[%_,]/g, ' ')
