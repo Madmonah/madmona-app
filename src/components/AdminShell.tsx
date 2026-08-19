@@ -20,7 +20,8 @@ const NAV: NavGroup[] = [
     { href: '/admin/hq', label: 'HQ · مركز القيادة' },
     { href: '/admin/company', label: 'الشركة' },
     { href: '/admin/permissions', label: 'الصلاحيات' },
-    { href: '/admin/workflows', label: 'الورك فلو' },
+    // ١٩ أغسطس ٢٠٢٦: "الورك فلو" (agent_workflows) اتشال — نفس نظام الاجينتس
+    // الوهمي، صفر تشغيل حقيقي. شوف تعليق مجموعة "AI / المارد" تحت لتفاصيل أشمل.
     // 🔗 (١٥ أغسطس ٢٠٢٦ — محمد: «امال هنوصل لهم إزاي؟») عدّيت الـ٣٢ صفحة
     //    أدمن اللي مكانتش موصولة بأي تنقّل: ١٠ منهم redirect لصفحات تانية
     //    (مقصود، مش محتاجين لينك)، و١٩ صفحة حقيقية بتقرا من جداول موجودة
@@ -64,21 +65,20 @@ const NAV: NavGroup[] = [
     { href: '/admin/supplier-posts', label: 'منشورات الموردين' },
   ] },
   { title: 'AI / المارد', emoji: '🤖', items: [
-    // ١٩ أغسطس ٢٠٢٦ — محمد طلب نضف كل "الاجينتس": جدول agent_registry اتمسح
-    // نهائي (كان ٥١ صف وهمي، مفيش cron حي بيعتمد عليه أصلا). الصفحات اللي
-    // كانت بتقرا منه (الوكلاء / شبكة الوكلاء / قدرات الوكلاء / AI OS / صحة
-    // الوكلاء / Prompts) اتشالت من هنا لحد ما تتحذف الصفحات نفسها. الباقي
-    // تحت شغّال فعليًا وبيقرا من جداول حقيقية.
+    // ١٩ أغسطس ٢٠٢٦ — محمد طلب نوحّد الموديل ونشيل كل "الاجينتس" والورك-فلو
+    // اللي بينهم. اتمسح نهائي: agent_registry, agent_pipelines, pipeline_runs,
+    // pipeline_step_runs, agent_workflows, agent_collaborations,
+    // agent_capabilities, agent_messages, agent_performance_metrics — كله
+    // كان نظام محاكاة "موظفين AI" وهمي من مايو، صفر تشغيل حقيقي وقتها.
+    // الموديل أصلا موحّد (CLAUDE_MODEL واحد بيستخدمه المارد في كل مكان).
+    // اللي فاضل تحت شغّال فعليًا على جداول حقيقية ومربوط بالمارد الحقيقي
+    // (marid-brain.ts + orchestrator_jobs).
     { href: '/admin/orchestrator', label: 'تحكم الكرونات 🧞' },
     { href: '/admin/agent-runs', label: 'Runs Logs' },
     { href: '/admin/marid', label: 'المارد' },
-    { href: '/admin/pipelines', label: 'Pipelines' },
     { href: '/admin/alerts', label: 'التنبيهات' },
-    { href: '/admin/performance', label: 'أداء الوكلاء' },    // agent_performance_metrics ١٨٣
     { href: '/admin/policy-rules', label: 'قواعد السياسة' },  // policy_rules ٣٢
-    { href: '/admin/ai-assistant', label: 'المساعد الذكي' },
     { href: '/admin/marid-monitor', label: 'مراقبة المارد' },
-    { href: '/admin/collaborations', label: 'تعاونات الوكلاء' }, // agent_collaborations ٤
   ] },
   { title: 'الرسائل', emoji: '💬', items: [
     // 🔗 (١٥ أغسطس ٢٠٢٦ — محمد: «فين الصفحة اللي عملناها؟ وليه حاسس الأدمن

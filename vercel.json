@@ -6,7 +6,6 @@
   "outputDirectory": ".next",
   "regions": ["fra1"],
   "crons": [
-    { "path": "/api/agents/scheduler", "schedule": "0 9 * * *" },
     { "path": "/api/agents/generate-tasks", "schedule": "0 4-9 * * *" },
     { "path": "/api/cron/render-reels", "schedule": "30 5 * * *" },
     { "path": "/api/cron/publish-drafts", "schedule": "*/10 * * * *" },

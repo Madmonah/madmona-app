@@ -13,10 +13,10 @@ export default async function HQPage() {
   const monthAgoIso = monthAgo.toISOString()
 
   const [
-    agentsRes, runsTodayRes, runs24hRes,
+    runsTodayRes, runs24hRes,
     adsRes, reelsRes, qcRes, briefsRes, playsRes,
     insightsRes, fraudRes, demandRes, partnershipsRes, pricingRes,
-    promptVersionsRes, collabsRes, msgsRes,
+    promptVersionsRes,
     customerSuccessRes, emailResponsesRes, photoBriefsRes,
     contentRes, complaintsRes, recentRunsRes,
     bookingsAllRes, bookingsRecentRes, suppliersAllRes,
@@ -25,7 +25,6 @@ export default async function HQPage() {
     leadsRes, leadsRecentRes, payoutsRes,
     notificationsRes, categoriesRes,
   ] = await Promise.all([
-    supabaseAdmin.from('agent_registry').select('*').order('team').order('agent_name'),
     supabaseAdmin.from('agent_runs').select('*', { count: 'exact', head: true })
       .gte('started_at', new Date(Date.now() - 24*60*60*1000).toISOString()),
     supabaseAdmin.from('agent_runs').select('agent_name, status, duration_ms, started_at')
@@ -42,8 +41,6 @@ export default async function HQPage() {
     supabaseAdmin.from('partnership_opportunities').select('*').order('created_at', { ascending: false }).limit(20),
     supabaseAdmin.from('pricing_suggestions').select('*').order('created_at', { ascending: false }).limit(15),
     supabaseAdmin.from('prompt_versions').select('*').order('created_at', { ascending: false }).limit(10),
-    supabaseAdmin.from('agent_collaborations').select('*').order('created_at', { ascending: false }).limit(15),
-    supabaseAdmin.from('agent_messages').select('id, from_agent, to_agent, message_type, subject, status, created_at').order('created_at', { ascending: false }).limit(20),
     supabaseAdmin.from('customer_success_actions').select('*').order('created_at', { ascending: false }).limit(15),
     supabaseAdmin.from('email_responses').select('*').order('created_at', { ascending: false }).limit(15),
     supabaseAdmin.from('photo_briefs').select('*').order('created_at', { ascending: false }).limit(15),
@@ -111,7 +108,6 @@ export default async function HQPage() {
   return (
     <HQClient
       data={{
-        agents: agentsRes.data ?? [],
         runs24hCount: runsTodayRes.count ?? 0,
         recentRuns: recentRunsRes.data ?? [],
         runs24hList: runs24hRes.data ?? [],
@@ -126,8 +122,6 @@ export default async function HQPage() {
         partnerships: partnershipsRes.data ?? [],
         pricing: pricingRes.data ?? [],
         promptVersions: promptVersionsRes.data ?? [],
-        collabs: collabsRes.data ?? [],
-        messages: msgsRes.data ?? [],
         customerSuccess: customerSuccessRes.data ?? [],
         emailResponses: emailResponsesRes.data ?? [],
         photoBriefs: photoBriefsRes.data ?? [],

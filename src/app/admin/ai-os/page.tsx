@@ -1,50 +1,18 @@
 // src/app/admin/ai-os/page.tsx
 // AI Operating System Dashboard — Madmona AI OS
 // Redesigned May 16 2026: attention hierarchy → categorized cards → teams.
-// Adds: failed-runs alarm, admin news banner, 5-domain categorized grid,
-// and links to previously-orphaned data (agent_runs, runbook, policy_rules,
-// pipelines, workflows, capabilities, messages, alerts).
+// Adds: failed-runs alarm, admin news banner, categorized grid,
+// and links to previously-orphaned data (agent_runs, runbook, policy_rules, alerts).
+// Aug 19 2026: removed dead agent-system tables (agent_collaborations, pipeline_runs,
+// agent_workflows, agent_pipelines, agent_capabilities, agent_messages,
+// agent_performance_metrics, agent_improvements) after permanent DB cleanup.
 
 import { supabase as supabaseAdmin } from '@/lib/supabase'
-import AIOSControls from './AIOSControls'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-// Canonical team list (matches agent_registry.team values; 8 teams as of May 2026)
-const TEAMS = {
-  sales: { label: '💰 Sales', color: '#059669' },
-  marketing: { label: '📣 Marketing', color: '#2FA084' },
-  creative: { label: '🎨 Creative', color: '#6FCF97' },
-  intelligence: { label: '📊 Intelligence', color: '#0EA5E9' },
-  growth: { label: '🤝 Growth', color: '#10B981' },
-  operations: { label: '💼 Operations', color: '#059669' },
-  strategic: { label: '🧠 Strategic', color: '#2c3e50' },
-  support: { label: '🛠️ Support', color: '#8B5CF6' },
-}
-
-type Agent = {
-  agent_name: string
-  team: string
-  display_name: string | null
-  description: string | null
-  enabled: boolean
-  schedule_cron: string | null
-  last_run_at: string | null
-  run_count: number
-  success_count: number
-  error_count: number
-}
-
 export default async function AIOSPage() {
-  const { data: agentsRaw } = await supabaseAdmin
-    .from('agent_registry')
-    .select('*')
-    .order('team', { ascending: true })
-    .order('agent_name', { ascending: true })
-
-  const agents = (agentsRaw ?? []) as Agent[]
-
   // Owner-as-brain command snapshot (cold-start model, May 26 2026)
   const { data: snap } = await (supabaseAdmin as any).rpc('get_ai_os_snapshot')
   const sm = (snap ?? {}) as any
@@ -60,15 +28,13 @@ export default async function AIOSPage() {
     adsCount, reelsCount, qcCount, briefsCount, playsCount,
     pendingCount, insightsCount,
     fraudCount, demandCount, partnershipsCount,
-    promptVersionsCount, collabsCount,
+    promptVersionsCount,
     // New — operations
-    agentRunsCount, pipelineRunsCount, adminAlertsCount, policyRulesCount,
+    agentRunsCount, adminAlertsCount, policyRulesCount,
     // New — strategy
     runbookCount,
-    // New — AI meta
-    workflowsCount, pipelinesCount, capabilitiesCount, messagesCount, improvementsCount,
     // New — intelligence
-    performanceCount, revenueCount,
+    revenueCount,
     // New — creative
     photoBriefsCount,
     // New — banners
@@ -85,33 +51,17 @@ export default async function AIOSPage() {
     supabaseAdmin.from('demand_forecasts').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('partnership_opportunities').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('prompt_versions').select('*', { count: 'exact', head: true }).eq('is_active', false),
-    supabaseAdmin.from('agent_collaborations').select('*', { count: 'exact', head: true }).eq('status', 'active'),
     // New
     supabaseAdmin.from('agent_runs').select('*', { count: 'exact', head: true }),
-    supabaseAdmin.from('pipeline_runs').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('admin_alerts').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('policy_rules').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('system_runbook').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-    supabaseAdmin.from('agent_workflows').select('*', { count: 'exact', head: true }),
-    supabaseAdmin.from('agent_pipelines').select('*', { count: 'exact', head: true }),
-    supabaseAdmin.from('agent_capabilities').select('*', { count: 'exact', head: true }),
-    supabaseAdmin.from('agent_messages').select('*', { count: 'exact', head: true }),
-    supabaseAdmin.from('agent_improvements').select('*', { count: 'exact', head: true }),
-    supabaseAdmin.from('agent_performance_metrics').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('revenue_attribution_reports').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('photoshoot_briefs').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('admin_news').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('agent_runs').select('*', { count: 'exact', head: true })
       .eq('status', 'error').gte('started_at', oneHourAgo),
   ])
-
-  const byTeam = new Map<string, Agent[]>()
-  for (const a of agents) {
-    if (!byTeam.has(a.team)) byTeam.set(a.team, [])
-    byTeam.get(a.team)!.push(a)
-  }
-  const teamCount = byTeam.size
-  const activeAgents = agents.filter(a => a.enabled).length
 
   return (
     <div dir="rtl" style={{
@@ -127,7 +77,7 @@ export default async function AIOSPage() {
             🤖 Madmona AI Operating System
           </h1>
           <p style={{ color: '#666', marginTop: 6, fontSize: 13, textAlign: 'center' }}>
-            🧠 انت العقل · {activeAgents} نشط · {agents.length - activeAgents} في إجازة · مرحلة جمع العرض
+            🧠 انت العقل · {cmdCounts.agents_active ?? 0} نشط · {cmdCounts.agents_paused ?? 0} في إجازة · مرحلة جمع العرض
           </p>
 
           {/* Quick actions */}
@@ -232,12 +182,6 @@ export default async function AIOSPage() {
             </a>
           )}
 
-          {(collabsCount.count ?? 0) > 0 && (
-            <a href="/admin/collaborations" style={bannerStyle('linear-gradient(135deg, #059669 0%, #10B981 100%)')}>
-              🎯 {collabsCount.count} Agent Collaborations نشطة — Orchestrator بيخطط ويوزّع التاسكات
-            </a>
-          )}
-
           {(newsCount.count ?? 0) > 0 && (
             <a href="/admin/news" style={bannerStyle('#8B5CF6')}>
               📰 {newsCount.count} admin news — اطلع على آخر التحديثات
@@ -248,7 +192,6 @@ export default async function AIOSPage() {
         {/* CATEGORIZED CARD GRID — 5 domains */}
         <CategorySection title="🏗️ العمليات" cards={[
           { label: '🔁 Agent Runs', val: agentRunsCount.count ?? 0, href: '/admin/agent-runs' },
-          { label: '⚙️ Pipeline Runs', val: pipelineRunsCount.count ?? 0, href: '/admin/pipeline-runs' },
           { label: '🔔 Admin Alerts', val: adminAlertsCount.count ?? 0, href: '/admin/alerts' },
           { label: '📋 Policy Rules', val: policyRulesCount.count ?? 0, href: '/admin/policy-rules' },
           { label: '⏳ Pending Runs', val: pendingCount.count ?? 0, href: '/admin/agent-runs?status=pending' },
@@ -258,7 +201,6 @@ export default async function AIOSPage() {
           { label: '💡 Insights', val: insightsCount.count ?? 0, href: '/admin/insights' },
           { label: '📈 Demand Forecasts', val: demandCount.count ?? 0, href: '/admin/demand-forecast' },
           { label: '🚨 Fraud Alerts', val: fraudCount.count ?? 0, href: '/admin/fraud-alerts' },
-          { label: '📊 Performance Metrics', val: performanceCount.count ?? 0, href: '/admin/performance' },
           { label: '💰 Revenue Attribution', val: revenueCount.count ?? 0, href: '/admin/revenue' },
         ]} />
 
@@ -278,22 +220,7 @@ export default async function AIOSPage() {
 
         <CategorySection title="🤖 الـ AI Meta" cards={[
           { label: '🧠 Prompt Versions', val: promptVersionsCount.count ?? 0, href: '/admin/prompt-versions' },
-          { label: '🎯 Collaborations', val: collabsCount.count ?? 0, href: '/admin/collaborations' },
-          { label: '🌊 Workflows', val: workflowsCount.count ?? 0, href: '/admin/workflows' },
-          { label: '🔗 Pipelines', val: pipelinesCount.count ?? 0, href: '/admin/pipelines' },
-          { label: '🛠️ Capabilities', val: capabilitiesCount.count ?? 0, href: '/admin/capabilities' },
-          { label: '💬 Messages', val: messagesCount.count ?? 0, href: '/admin/messages' },
-          { label: '🌱 Improvements', val: improvementsCount.count ?? 0, href: '/admin/improvements' },
         ]} />
-
-        {/* TEAMS & AGENTS (existing component, unchanged) */}
-        <h2 style={{ color: '#059669', marginTop: 32, marginBottom: 12, fontSize: 18 }}>
-          الفرق والأجينتس
-        </h2>
-        <AIOSControls
-          agentsByTeam={Object.fromEntries(byTeam)}
-          teams={TEAMS}
-        />
 
         {/* FOOTER STATUS */}
         <div style={{
@@ -302,7 +229,7 @@ export default async function AIOSPage() {
         }}>
           <h3 style={{ margin: '0 0 8px' }}>🧠 انت العقل — النظام بينفّذ ويرفعلك</h3>
           <p style={{ margin: 0, opacity: 0.9, fontSize: 14 }}>
-            {activeAgents} نشط · {agents.length - activeAgents} في إجازة · تقرير كل ساعتين
+            {cmdCounts.agents_active ?? 0} نشط · {cmdCounts.agents_paused ?? 0} في إجازة · تقرير كل ساعتين
           </p>
         </div>
 

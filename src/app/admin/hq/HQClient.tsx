@@ -19,7 +19,6 @@ interface KPIs {
 }
 
 interface HQData {
-  agents: Array<Record<string, unknown>>
   runs24hCount: number
   recentRuns: Array<Record<string, unknown>>
   runs24hList: Array<Record<string, unknown>>
@@ -34,8 +33,6 @@ interface HQData {
   partnerships: Array<Record<string, unknown>>
   pricing: Array<Record<string, unknown>>
   promptVersions: Array<Record<string, unknown>>
-  collabs: Array<Record<string, unknown>>
-  messages: Array<Record<string, unknown>>
   customerSuccess: Array<Record<string, unknown>>
   emailResponses: Array<Record<string, unknown>>
   photoBriefs: Array<Record<string, unknown>>
@@ -51,34 +48,30 @@ interface HQData {
 }
 
 type TabId =
-  | 'dashboard' | 'marketplace' | 'agents' | 'creative'
+  | 'dashboard' | 'marketplace' | 'creative'
   | 'intelligence' | 'growth' | 'support' | 'self-improve'
-  | 'collaborations' | 'tools'
+  | 'tools'
 
 const TABS: Array<{ id: TabId; label: string; icon: string; color: string }> = [
   { id: 'dashboard', label: 'لوحة القيادة', icon: '📊', color: '#059669' },
   { id: 'marketplace', label: 'السوق', icon: '🏪', color: '#059669' },
-  { id: 'agents', label: 'الـ Agents', icon: '🤖', color: '#2c3e50' },
   { id: 'creative', label: 'إبداع', icon: '🎨', color: '#6FCF97' },
   { id: 'intelligence', label: 'ذكاء البيانات', icon: '🧠', color: '#0EA5E9' },
   { id: 'growth', label: 'نمو', icon: '🚀', color: '#10B981' },
   { id: 'support', label: 'دعم', icon: '🛠️', color: '#8B5CF6' },
   { id: 'self-improve', label: 'تحسين ذاتي', icon: '🔧', color: '#2FA084' },
-  { id: 'collaborations', label: 'تعاون', icon: '🎯', color: '#059669' },
   { id: 'tools', label: 'أدوات', icon: '⚙️', color: '#666' },
 ]
 
 export default function HQClient({ data }: { data: HQData }) {
   const [tab, setTab] = useState<TabId>('dashboard')
 
-  const enabledAgents = data.agents.filter(a => a.enabled).length
   const successRate = data.runs24hList.length > 0
     ? Math.round((data.runs24hList.filter(r => r.status === 'success').length / data.runs24hList.length) * 100)
     : 0
   const newInsights = data.insights.filter(i => i.status === 'new').length
   const highPriority = data.insights.filter(i => i.status === 'new' && i.priority === 'high').length
   const pendingPrompts = data.promptVersions.filter(p => !p.is_active).length
-  const activeCollabs = data.collabs.filter(c => c.status === 'active').length
   const criticalFraud = data.fraud.filter(f => f.severity === 'critical' || f.severity === 'high').length
 
   return (
@@ -92,7 +85,7 @@ export default function HQClient({ data }: { data: HQData }) {
         <div>
           <h1 style={{ margin: 0, fontSize: 18, fontWeight: 'bold' }}>👑 مضمونة HQ</h1>
           <p style={{ margin: '2px 0 0', fontSize: 10, opacity: 0.85 }}>
-            {data.kpis.publishedListings} إعلان · {data.kpis.approvedSuppliers} مؤجر · {enabledAgents}/{data.agents.length} agent · {successRate}% نجاح
+            {data.kpis.publishedListings} إعلان · {data.kpis.approvedSuppliers} مؤجر · {successRate}% نجاح
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -141,15 +134,13 @@ export default function HQClient({ data }: { data: HQData }) {
       </nav>
 
       <main style={{ padding: 20, maxWidth: 1280, margin: '0 auto' }}>
-        {tab === 'dashboard' && <DashboardTab data={data} stats={{ enabledAgents, successRate, newInsights, highPriority }} setTab={setTab} />}
+        {tab === 'dashboard' && <DashboardTab data={data} stats={{ successRate, newInsights, highPriority }} setTab={setTab} />}
         {tab === 'marketplace' && <MarketplaceTab data={data} />}
-        {tab === 'agents' && <AgentsTab agents={data.agents} recentRuns={data.recentRuns} />}
         {tab === 'creative' && <CreativeTab ads={data.ads} reels={data.reels} content={data.content} />}
         {tab === 'intelligence' && <IntelligenceTab fraud={data.fraud} demand={data.demand} pricing={data.pricing} qc={data.qc} />}
         {tab === 'growth' && <GrowthTab partnerships={data.partnerships} customerSuccess={data.customerSuccess} photoBriefs={data.photoBriefs} leadsRecent={data.leadsRecent} />}
         {tab === 'support' && <SupportTab complaints={data.complaints} emails={data.emailResponses} insights={data.insights} />}
         {tab === 'self-improve' && <SelfImproveTab promptVersions={data.promptVersions} recentRuns={data.recentRuns} />}
-        {tab === 'collaborations' && <CollaborationsTab collabs={data.collabs} messages={data.messages} activeCollabs={activeCollabs} />}
         {tab === 'tools' && <ToolsTab kpis={data.kpis} categories={data.categories} payouts={data.payouts} />}
       </main>
     </div>
@@ -597,103 +588,7 @@ function SupplierRow({ supplier }: { supplier: Record<string, unknown> }) {
 }
 
 // ============================================================
-// AGENTS TAB
-// ============================================================
-function AgentsTab({ agents, recentRuns }: { agents: Array<Record<string, unknown>>; recentRuns: Array<Record<string, unknown>> }) {
-  const [filter, setFilter] = useState<string>('all')
-  const teams = Array.from(new Set(agents.map(a => String(a.team)))).sort()
-  const filtered = filter === 'all' ? agents : agents.filter(a => a.team === filter)
-
-  const runsByAgent = new Map<string, number>()
-  recentRuns.forEach(r => {
-    const n = String(r.agent_name)
-    runsByAgent.set(n, (runsByAgent.get(n) ?? 0) + 1)
-  })
-
-  return (
-    <div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
-        <FilterBtn label={`الكل (${agents.length})`} active={filter === 'all'} onClick={() => setFilter('all')} />
-        {teams.map(t => (
-          <FilterBtn key={t} label={`${t} (${agents.filter(a => a.team === t).length})`} active={filter === t} onClick={() => setFilter(t)} />
-        ))}
-      </div>
-
-      <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-          <thead>
-            <tr style={{ background: '#059669', color: '#FAF7F0' }}>
-              <th style={th}>Agent</th>
-              <th style={th}>Team</th>
-              <th style={th}>الحالة</th>
-              <th style={th}>Runs</th>
-              <th style={th}>Success</th>
-              <th style={th}>الإجراء</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((a, i) => {
-              const runsRecent = runsByAgent.get(String(a.agent_name)) ?? 0
-              const successRate = Number(a.run_count) > 0
-                ? Math.round((Number(a.success_count) / Number(a.run_count)) * 100)
-                : 0
-              return (
-                <tr key={String(a.agent_name)} style={{ borderBottom: '1px solid #eee', background: i % 2 === 0 ? '#fff' : '#FAF7F0' }}>
-                  <td style={td}><strong>{String(a.display_name ?? a.agent_name)}</strong><br/><span style={{ fontSize: 10, color: '#999' }}>{String(a.agent_name)}</span></td>
-                  <td style={td}>{String(a.team)}</td>
-                  <td style={td}>
-                    <span style={{ background: a.enabled ? '#d4edda' : '#f8d7da', color: a.enabled ? '#155724' : '#721c24', padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 'bold' }}>
-                      {a.enabled ? 'ON' : 'OFF'}
-                    </span>
-                  </td>
-                  <td style={td}>{runsRecent}</td>
-                  <td style={td}>
-                    <span style={{ background: successRate >= 90 ? '#d4edda' : successRate >= 70 ? '#fff3cd' : '#f8d7da', padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 'bold' }}>
-                      {successRate}%
-                    </span>
-                  </td>
-                  <td style={td}><RunAgentButton agentName={String(a.agent_name)} /></td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}
-
-function RunAgentButton({ agentName }: { agentName: string }) {
-  const [running, setRunning] = useState(false)
-  const [result, setResult] = useState<string | null>(null)
-
-  const run = async () => {
-    setRunning(true)
-    try {
-      const res = await fetch('/api/agents/scheduler', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer c9aade438b57204664c496dcd43ab8a640af5061273abc6591522bf96065d0c7' },
-        body: JSON.stringify({ agent: agentName }),
-      })
-      const data = await res.json()
-      setResult(data.result?.success ? '✅' : '❌')
-      setTimeout(() => setResult(null), 3000)
-    } catch {
-      setResult('❌')
-    } finally {
-      setRunning(false)
-    }
-  }
-
-  return (
-    <button onClick={run} disabled={running} style={{ padding: '4px 10px', background: '#059669', color: '#fff', border: 'none', borderRadius: 4, cursor: running ? 'wait' : 'pointer', fontSize: 11, fontFamily: 'inherit' }}>
-      {running ? '⏳' : result ?? '▶'}
-    </button>
-  )
-}
-
-// ============================================================
-// CREATIVE / INTELLIGENCE / GROWTH / SUPPORT / SELF-IMPROVE / COLLABORATIONS / TOOLS
+// CREATIVE / INTELLIGENCE / GROWTH / SUPPORT / SELF-IMPROVE / TOOLS
 // ============================================================
 function CreativeTab({ ads, reels, content }: { ads: Array<Record<string, unknown>>; reels: Array<Record<string, unknown>>; content: Array<Record<string, unknown>> }) {
   const [sub, setSub] = useState<'ads' | 'reels' | 'posts'>('ads')
@@ -957,93 +852,6 @@ function SelfImproveTab({ promptVersions, recentRuns }: { promptVersions: Array<
                 <td style={td}><span style={{ background: r.status === 'success' ? '#d4edda' : '#f8d7da', padding: '2px 6px', borderRadius: 4, fontSize: 10 }}>{String(r.status)}</span></td>
                 <td style={td}>{Math.round(Number(r.duration_ms ?? 0) / 1000)}s</td>
                 <td style={{ ...td, color: '#6FCF97', fontSize: 10 }}>{r.error_message ? String(r.error_message).slice(0, 60) : '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}
-
-function CollaborationsTab({ collabs, messages }: { collabs: Array<Record<string, unknown>>; messages: Array<Record<string, unknown>>; activeCollabs: number }) {
-  const [goal, setGoal] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [feedback, setFeedback] = useState<string | null>(null)
-
-  const PRESETS = [
-    '🎨 اطلق ad campaign للكاميرات بميزانية 1000 جنيه',
-    '🚀 افتح فئة جديدة - من supplier hunting لحد ad creatives',
-    '📊 تحليل شامل لأداء آخر شهر مع توصيات للنمو',
-  ]
-
-  const launch = async (g: string) => {
-    if (!g.trim()) return
-    setLoading(true); setFeedback(null)
-    try {
-      const res = await fetch('/api/agents/scheduler', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer c9aade438b57204664c496dcd43ab8a640af5061273abc6591522bf96065d0c7' },
-        body: JSON.stringify({ agent: 'orchestrator', args: { goal: g } }),
-      })
-      const data = await res.json()
-      const r = data.result?.output_summary
-      if (r) {
-        setFeedback(`✅ تم!\nAgents: ${(r.participating_agents ?? []).join(' · ')}\nTasks: ${r.tasks_dispatched}`)
-        setTimeout(() => location.reload(), 4000)
-      } else {
-        setFeedback('❌ فشل')
-      }
-    } catch {
-      setFeedback('❌ خطأ')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div>
-      <div style={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)', color: '#fff', padding: 16, borderRadius: 12, marginBottom: 20 }}>
-        <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>🚀 اطلق Collaboration</h3>
-        <textarea
-          value={goal}
-          onChange={(e) => setGoal(e.target.value)}
-          placeholder="اكتب الـ goal..."
-          style={{ width: '100%', padding: 10, borderRadius: 8, border: 'none', fontSize: 12, fontFamily: 'Tahoma', minHeight: 50, marginBottom: 8, resize: 'vertical' }}
-          dir="rtl"
-        />
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-          {PRESETS.map((p, i) => (
-            <button key={i} onClick={() => setGoal(p)} style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontFamily: 'inherit' }}>{p}</button>
-          ))}
-        </div>
-        <button onClick={() => launch(goal)} disabled={loading || !goal.trim()} style={{ background: loading ? '#666' : '#2FA084', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 6, fontSize: 12, fontWeight: 'bold', cursor: loading ? 'wait' : 'pointer', fontFamily: 'inherit' }}>
-          {loading ? '⏳ بيخطط...' : '🚀 اطلق'}
-        </button>
-        {feedback && <div style={{ marginTop: 10, padding: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 6, fontSize: 11, whiteSpace: 'pre-wrap' }}>{feedback}</div>}
-      </div>
-
-      <h3 style={sectionHeader}>🤝 Collaborations</h3>
-      <div style={{ display: 'grid', gap: 10, marginBottom: 20 }}>
-        {collabs.length === 0 ? <Empty msg="مفيش collaborations" /> :
-          collabs.map((c, i) => (
-            <div key={i} style={card(c.status === 'active' ? '#0EA5E9' : '#28a745')}>
-              <strong style={{ fontSize: 12 }}>🎯 {String(c.collaboration_name).slice(0, 80)}</strong>
-              <p style={{ fontSize: 11, color: '#666', margin: '4px 0' }}>{String(c.goal).slice(0, 200)}</p>
-            </div>
-          ))}
-      </div>
-
-      <h3 style={sectionHeader}>📬 Messages</h3>
-      <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', maxHeight: 350, overflowY: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
-          <thead><tr style={{ background: '#059669', color: '#FAF7F0' }}><th style={th}>From → To</th><th style={th}>Subject</th><th style={th}>Status</th></tr></thead>
-          <tbody>
-            {messages.map((m, i) => (
-              <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={td}><strong>{String(m.from_agent)}</strong> → {String(m.to_agent)}</td>
-                <td style={td}>{String(m.subject).slice(0, 50)}</td>
-                <td style={td}>{String(m.status)}</td>
               </tr>
             ))}
           </tbody>
