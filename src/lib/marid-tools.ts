@@ -792,36 +792,92 @@ async function resolveCategorySlug(
 ): Promise<string> {
   const hint = hintSlug?.trim()
 
-  // ١) لو المارد بعت slug فعلي وموجود بالجدول — نستخدمه زي ما هو.
-  if (hint) {
-    const { data: exact } = await db.from('categories').select('slug').eq('slug', hint).eq('is_active', true).maybeSingle()
-    if (exact?.slug) return exact.slug as string
-  }
-
-  // ٢) مطابقة بالمعنى: كل التصنيفات الفعّالة، نسكّر كل واحدة حسب تشابه
-  //    كلماتها (name_ar + كلمات الـslug) مع كلمات العنوان/الوصف + الـhint
-  //    اللي بعته المارد (حتى لو مش slug حقيقي، غالبًا فيه كلمات مفيدة زي
-  //    "properties" أو "furniture").
   const { data: all } = await db
     .from('categories')
     .select('slug, name_ar, group_name_ar')
     .eq('is_active', true)
     .limit(500)
+  const categories = (all ?? []) as Array<{ slug: string; name_ar: string; group_name_ar: string | null }>
 
-  const target = new Set([...wordsOf(contextText), ...wordsOf((hint || '').replace(/-/g, ' '))])
+  // كلمات العنوان/الوصف الحقيقية بس (من غير كلمات الـhint) — أساس مطابقة
+  // المحتوى الفعلي. أول 1-2 كلمة في العنوان بتتوزن أعلى لأن إعلاناتنا
+  // بتبدأ بنوع النشاط تقريبًا دايمًا ("شقة للبيع..."، "فيلا في..."، "محل
+  // تجاري...")، فمطابقة هناك أوثق بكتير من كلمة اتصادف موجودة وسط
+  // العنوان (زي اسم مكان).
+  const contentWords = wordsOf(contextText)
+  const leadWords = new Set(contentWords.slice(0, 2))
 
-  let best: { slug: string; score: number } | null = null
-  for (const c of (all ?? []) as Array<{ slug: string; name_ar: string; group_name_ar: string | null }>) {
+  function scoreAgainstContent(c: { name_ar: string; group_name_ar: string | null; slug: string }) {
     const catWords = new Set([
       ...wordsOf(c.name_ar),
       ...wordsOf(c.group_name_ar || ''),
       ...wordsOf(c.slug.replace(/-/g, ' ')),
     ])
     let score = 0
-    for (const w of target) if (catWords.has(w)) score += 1
-    if (score > 0 && (!best || score > best.score)) best = { slug: c.slug, score }
+    for (const w of contentWords) if (catWords.has(w)) score += leadWords.has(w) ? 5 : 1
+    return { score, size: catWords.size }
   }
-  if (best) return best.slug
+
+  let bestContent: { slug: string; score: number; size: number } | null = null
+  for (const c of categories) {
+    const { score, size } = scoreAgainstContent(c)
+    if (score <= 0) continue
+    if (
+      !bestContent ||
+      score > bestContent.score ||
+      (score === bestContent.score && size < bestContent.size) // عند التعادل، الاسم الأدق (أقل كلمات) أولى
+    ) {
+      bestContent = { slug: c.slug, score, size }
+    }
+  }
+
+  // ١) لو المارد بعت slug فعلي وموجود بالجدول — نستخدمه، إلا لو فيه
+  //    تصنيف تاني بيطابق محتوى العنوان/الوصف نفسه بقوة أوضح. ده بيحصل
+  //    لما المارد يتلخبط باسم مكان فيه كلمة تشبه تصنيف (مثلاً "أرض
+  //    الجولف" في مصر الجديدة اتفهمت "أرض زراعية" بدل "شقة" — ١٩ أغسطس
+  //    ٢٠٢٦، محمد لاحظ إعلانات بتوصل بتصنيف غلط تمامًا رغم إن الـslug
+  //    نفسه صحيح وموجود فعليًا بالجدول، فمكانش بيتصلّح قبل كده لأن أي
+  //    slug حقيقي كان بيتصدّق على طول من غير ما نقارنه بمحتوى الإعلان).
+  if (hint) {
+    const exactCat = categories.find((c) => c.slug === hint)
+    if (exactCat) {
+      const { score: hintScore, size: hintSize } = scoreAgainstContent(exactCat)
+      // عند تعادل النقاط، الأدق (أقل كلمات في اسم التصنيف) هو الأولى —
+      // مش المارد افتراضيًا. من غيرها تعادل بسيط زي "شقة" (تصنيف اسمه
+      // كلمة واحدة) مقابل "غرفة في شقة مشتركة" (تصنيف بعيد بس بيحتوي
+      // نفس الكلمة) كان بيسيب المارد يكسب التعادل غلط.
+      if (
+        !bestContent ||
+        bestContent.slug === hint ||
+        bestContent.score < hintScore ||
+        (bestContent.score === hintScore && hintSize <= bestContent.size)
+      ) {
+        return hint
+      }
+      return bestContent.slug
+    }
+  }
+
+  // ٢) الـhint مش slug حقيقي (أو مفيش hint) — جرّب أفضل تطابق بالمحتوى +
+  //    كلمات الـhint نفسه (غالبًا فيها كلمات مفيدة زي "properties" أو
+  //    "furniture" حتى لو مش slug حقيقي حرفيًا).
+  if (hint) {
+    const target = new Set([...contentWords, ...wordsOf(hint.replace(/-/g, ' '))])
+    let best: { slug: string; score: number } | null = null
+    for (const c of categories) {
+      const catWords = new Set([
+        ...wordsOf(c.name_ar),
+        ...wordsOf(c.group_name_ar || ''),
+        ...wordsOf(c.slug.replace(/-/g, ' ')),
+      ])
+      let score = 0
+      for (const w of target) if (catWords.has(w)) score += 1
+      if (score > 0 && (!best || score > best.score)) best = { slug: c.slug, score }
+    }
+    if (best) return best.slug
+  } else if (bestContent) {
+    return bestContent.slug
+  }
 
   // ٣) مفيش أي تطابق — بدل ما نسيب الإعلان بلا تصنيف أو نحطه في تصنيف
   //    عشوائي غلط: نعمل تصنيف جديد باسم مشتق من العنوان نفسه. بيتحط
