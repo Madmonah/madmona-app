@@ -9,6 +9,9 @@ const TABS: { href: string; label: string; icon: string; match: (p: string) => b
   { href: '/chat/marid', label: 'المارد', icon: '🧞', match: (p) => p.startsWith('/chat/marid') },
   { href: '/chat', label: 'محادثات', icon: '💬', match: (p) => p === '/chat' },
   { href: '/chat/team', label: 'جروبات', icon: '👥', match: (p) => p.startsWith('/chat/team') },
+  // 🏢 (٢٠ أغسطس ٢٠٢٦) محمد: «يتضاف تاب محادثة في شات المارد تحت تاب جروب
+  //    يكون مكتوب فيه جروب شركة ..... وفيه كل موظفين الشركة الواحدة».
+  { href: '/chat/company', label: 'جروب', icon: '🏢', match: (p) => p.startsWith('/chat/company') },
   { href: '/chat/tasks', label: 'مهامي', icon: '📋', match: (p) => p.startsWith('/chat/tasks') },
   { href: '/chat/offers', label: 'عروض', icon: '🏷️', match: (p) => p.startsWith('/chat/offers') },
   { href: '/chat/settings', label: 'إعدادات', icon: '⚙️', match: (p) => p.startsWith('/chat/settings') },
@@ -24,10 +27,12 @@ export default function ChatBottomNav() {
           <Link
             key={t.href}
             href={t.href}
-            style={{ flex: 1, textAlign: 'center', padding: '8px 0 9px', textDecoration: 'none', color: active ? '#059669' : '#8A9690', position: 'relative' }}
+            style={{ flex: 1, minWidth: 0, textAlign: 'center', padding: '8px 0 9px', textDecoration: 'none', color: active ? '#059669' : '#8A9690', position: 'relative' }}
           >
-            <div style={{ fontSize: 20, lineHeight: 1, filter: active ? 'none' : 'grayscale(35%)', opacity: active ? 1 : .85 }}>{t.icon}</div>
-            <div style={{ fontSize: 10.5, fontWeight: active ? 900 : 600, marginTop: 3 }}>{t.label}</div>
+            {/* ٧ تابات بقت ضيّقة على الشاشات الصغيرة — صغّرنا الخط شوية
+                وقفلنا الالتفاف عشان الكلمة ماتتقطعش على سطرين. */}
+            <div style={{ fontSize: 19, lineHeight: 1, filter: active ? 'none' : 'grayscale(35%)', opacity: active ? 1 : .85 }}>{t.icon}</div>
+            <div style={{ fontSize: 9.5, fontWeight: active ? 900 : 600, marginTop: 3, whiteSpace: 'nowrap' }}>{t.label}</div>
             {active && <span style={{ position: 'absolute', top: 3, insetInlineStart: '50%', transform: 'translateX(50%)', width: 4, height: 4, borderRadius: '50%', background: '#2FA084', display: 'block' }} />}
           </Link>
         )

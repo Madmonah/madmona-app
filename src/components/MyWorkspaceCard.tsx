@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
-  Loader2, ShieldCheck, Building2, Crown, ChevronLeft, Check, Minus, Inbox,
+  Loader2, ShieldCheck, Building2, Crown, ChevronLeft, Check, Minus, ClipboardList,
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 
@@ -142,19 +142,22 @@ export default function MyWorkspaceCard() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
+                  {/* 🗂️ (٢٠ أغسطس ٢٠٢٦) «شغلي» — الحضور والطلبات والمصاريف
+                      جوّه الأبليكيشن نفسه. محمد: «عايز تاب حسابي يعرض كل
+                      حاجة ليها علاقة بالإداريات … عن طريق الأبليكيشن نفسه». */}
+                  <Link
+                    href="/account/work"
+                    className="inline-flex items-center justify-center gap-1.5 bg-[#34D399] text-[#04352A] text-xs font-bold px-3 py-2.5 rounded-xl no-underline hover:bg-[#34D399]/90"
+                  >
+                    <ClipboardList className="w-3.5 h-3.5" />
+                    شغلي
+                  </Link>
                   <Link
                     href={`/admin/business-finance/${m.supplier_id}`}
-                    className="inline-flex items-center justify-center gap-1.5 bg-[#34D399] text-[#04352A] text-xs font-bold px-3 py-2.5 rounded-xl no-underline hover:bg-[#34D399]/90"
+                    className="inline-flex items-center justify-center gap-1.5 bg-[#FAFAF7] border border-gray-200 text-gray-700 text-xs font-bold px-3 py-2.5 rounded-xl no-underline hover:bg-white"
                   >
                     <Building2 className="w-3.5 h-3.5" />
                     لوحة الإدارة
-                  </Link>
-                  <Link
-                    href={`/admin/business-finance/${m.supplier_id}/requests`}
-                    className="inline-flex items-center justify-center gap-1.5 bg-[#FAFAF7] border border-gray-200 text-gray-700 text-xs font-bold px-3 py-2.5 rounded-xl no-underline hover:bg-white"
-                  >
-                    <Inbox className="w-3.5 h-3.5" />
-                    الطلبات
                   </Link>
                 </div>
 
