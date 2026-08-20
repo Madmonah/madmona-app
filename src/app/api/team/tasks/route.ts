@@ -1,12 +1,21 @@
-// app/api/team/tasks/route.ts — قايمة المهام المفتوحة + إقفال مهمة (لأي مستخدم مسجّل)
+// app/api/team/tasks/route.ts — مهامي + إقفال مهمة
+// ⚠️ (٢٠ أغسطس ٢٠٢٦) كان بيرجّع **كل** المهام المفتوحة على المنصة لأي حد
+//    مسجّل دخول، وبيقفل أي مهمة بالـid من غير أي فحص — و`flow_tasks` مكانش
+//    فيها عمود شركة أصلًا. دلوقتي الفلترة والصلاحية في الداتابيز
+//    (`get_my_tasks` / `complete_my_task`).
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-function admin() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } })
+// عميل بجلسة اليوزر نفسه — عشان `auth.uid()` توصل للداتابيز وتفلتر صح.
+// (عميل الـservice_role كان بيتخطى كل فحص.)
+function userClient(token: string) {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false },
+  })
 }
 async function userFromToken(token: string) {
   const c = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } })
@@ -17,13 +26,10 @@ async function userFromToken(token: string) {
 export async function GET(req: NextRequest) {
   const token = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim()
   if (!token || !(await userFromToken(token))) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
-  const { data } = await admin()
-    .from('flow_tasks')
-    .select('id, title, detail, assignee_name, priority, status, created_at')
-    .neq('status', 'done')
-    .order('created_at', { ascending: false })
-    .limit(60)
-  return NextResponse.json({ ok: true, tasks: data || [] })
+  const { data, error } = await userClient(token).rpc('get_my_tasks' as never, { p_limit: 60 } as never)
+  if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+  const res = (data || {}) as { tasks?: unknown[] }
+  return NextResponse.json({ ok: true, tasks: res.tasks || [] })
 }
 
 export async function POST(req: NextRequest) {
@@ -33,8 +39,9 @@ export async function POST(req: NextRequest) {
   if (!token || !(await userFromToken(token))) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   const taskId = (body.taskId || '').trim()
   if (!taskId) return NextResponse.json({ ok: false, error: 'taskId مطلوب' }, { status: 400 })
-  const now = new Date().toISOString()
-  const { error } = await admin().from('flow_tasks').update({ status: 'done', completed_at: now, updated_at: now } as never).eq('id', taskId)
+  const { data, error } = await userClient(token).rpc('complete_my_task' as never, { p_task_id: taskId } as never)
   if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+  const res = (data || {}) as { ok?: boolean; error?: string }
+  if (!res.ok) return NextResponse.json({ ok: false, error: res.error || 'مالكش صلاحية' }, { status: 403 })
   return NextResponse.json({ ok: true })
 }

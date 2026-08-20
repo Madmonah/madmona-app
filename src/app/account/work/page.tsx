@@ -64,27 +64,85 @@ function fmtTime(iso: string | null) {
   try { return new Date(iso).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) } catch { return '—' }
 }
 
+type AutoEvent = { branch: string; action: string; distance_m?: number; reason?: string }
+
+// 📍 موقع واحد بدقة عالية — نفس إعدادات صفحة البصم بالظبط
+function getPos(): Promise<{ lat: number; lng: number; acc: number } | null> {
+  return new Promise((resolve) => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) { resolve(null); return }
+    navigator.geolocation.getCurrentPosition(
+      (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy }),
+      () => resolve(null),
+      { enableHighAccuracy: true, timeout: 9000, maximumAge: 0 },
+    )
+  })
+}
+
 export default function MyWorkPage() {
   const [home, setHome] = useState<Home | null>(null)
   const [loading, setLoading] = useState(true)
+  const [autoMsg, setAutoMsg] = useState<string | null>(null)
+
+  async function load(): Promise<boolean> {
+    try {
+      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      if (!session?.user) return false
+      const { data } = await (supabaseBrowser.rpc as unknown as (
+        fn: string,
+      ) => Promise<{ data: Home | null }>)('get_my_work_home')
+      setHome(data)
+      return true
+    } catch (e) {
+      console.error('[account/work] load failed:', e)
+      return false
+    }
+  }
+
+  // ⏱️ (٢٠ أغسطس ٢٠٢٦) الحضور والانصراف **أوتوماتيك**.
+  //    محمد: «تسجيل الحضور المفروض يكون أوتوماتيك والانصراف كمان».
+  //    الأبليكيشن بيبعت موقعه، والداتابيز هي اللي بتقرر:
+  //      • جوّه الفرع ومش مسجّل → حضور
+  //      • جوّه الفرع ومسجّل    → نبضة بس
+  //      • بره الفرع ومسجّل     → انصراف
+  //    ولو التطبيق اتقفل خالص، وظيفة `auto_clockout_offline_sessions`
+  //    في `orchestrator_jobs` بتقفل الجلسة بعد ١٠ دقايق من آخر نبضة.
+  async function pulse() {
+    try {
+      if (typeof document !== 'undefined' && document.hidden) return
+      const pos = await getPos()
+      if (!pos) return
+      const { data } = await (supabaseBrowser.rpc as unknown as (
+        fn: string, args: Record<string, unknown>,
+      ) => Promise<{ data: { ok?: boolean; events?: AutoEvent[] } | null }>)(
+        'employee_auto_attendance',
+        { p_lat: pos.lat, p_lng: pos.lng, p_accuracy_m: pos.acc },
+      )
+      const ev = (data?.events || []).find(e => e.action === 'clock_in' || e.action === 'clock_out')
+      if (ev) {
+        setAutoMsg(ev.action === 'clock_in'
+          ? `اتسجّل حضورك أوتوماتيك في ${ev.branch} ✅`
+          : `اتسجّل انصرافك أوتوماتيك من ${ev.branch} 👋`)
+        setTimeout(() => setAutoMsg(null), 6000)
+        await load()
+      }
+    } catch (e) {
+      console.error('[account/work] auto attendance failed:', e)
+    }
+  }
 
   useEffect(() => {
     let cancelled = false
+    let iv: ReturnType<typeof setInterval> | null = null
     ;(async () => {
-      try {
-        const { data: { session } } = await supabaseBrowser.auth.getSession()
-        if (!session?.user) { if (!cancelled) setLoading(false); return }
-        const { data } = await (supabaseBrowser.rpc as unknown as (
-          fn: string,
-        ) => Promise<{ data: Home | null }>)('get_my_work_home')
-        if (!cancelled) setHome(data)
-      } catch (e) {
-        console.error('[account/work] load failed:', e)
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
+      const ok = await load()
+      if (cancelled) return
+      setLoading(false)
+      if (!ok) return
+      pulse()
+      iv = setInterval(() => { pulse() }, 60000)
     })()
-    return () => { cancelled = true }
+    return () => { cancelled = true; if (iv) clearInterval(iv) }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [])
 
   if (loading) {
@@ -117,6 +175,14 @@ export default function MyWorkPage() {
           )}
         </div>
       </header>
+
+      {autoMsg && (
+        <div className="max-w-2xl mx-auto px-4 pt-3">
+          <div className="bg-[#34D399]/12 border border-[#059669]/25 text-[#04352A] rounded-2xl px-4 py-2.5 text-[12.5px] font-bold text-center">
+            {autoMsg}
+          </div>
+        </div>
+      )}
 
       <main className="max-w-2xl mx-auto px-4 py-5 space-y-5">
         {!home?.authenticated ? (
@@ -171,13 +237,17 @@ function BizCard({ b }: { b: Biz }) {
             <Stat label="انصراف" value={fmtTime(outAt)} tone={outAt ? 'ok' : 'idle'} />
             <Stat label="ساعات" value={att?.hours_worked != null ? String(att.hours_worked) : '—'} tone="idle" />
           </div>
+          <p className="text-[11px] text-[#059669] bg-[#34D399]/8 rounded-xl px-3 py-2 mb-2 leading-relaxed text-center">
+            الحضور والانصراف بيتسجّلوا <b>أوتوماتيك</b> — افتح الأبليكيشن وانت في
+            الفرع يتسجّل حضورك، وأول ما تمشي يتسجّل انصرافك.
+          </p>
           {b.branch_code ? (
             <Link
               href={`/clock/${b.branch_code}`}
-              className="w-full inline-flex items-center justify-center gap-2 bg-[#34D399] text-[#04352A] py-3 rounded-2xl text-sm font-bold no-underline hover:bg-[#34D399]/90"
+              className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF7] border border-gray-200 text-[#1A2E26] py-2.5 rounded-2xl text-[13px] font-bold no-underline hover:bg-white"
             >
               <Clock className="w-4 h-4" />
-              {inAt && !outAt ? 'سجّل انصرافك' : 'سجّل حضورك'}
+              {inAt && !outAt ? 'سجّل انصرافك يدوي' : 'سجّل حضورك يدوي'}
             </Link>
           ) : (
             <p className="text-[11px] text-[#9CA3AF] text-center">

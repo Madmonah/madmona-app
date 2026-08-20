@@ -29,8 +29,30 @@ export async function POST(req: NextRequest) {
 
   const { data: prof } = await admin.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
   const assignee = (body.assignee || '').trim() || (prof as { full_name?: string } | null)?.full_name || null
+
+  // 🏢 (٢٠ أغسطس ٢٠٢٦) المهمة لازم تتولد وهي **مربوطة بشركتها** — من غير كده
+  //    بتفضل معلّقة في الهوا وأي حد يشوفها. لو الغرفة جروب شركة بناخد شركتها،
+  //    وإلا بناخد شركة اللي عملها.
+  let supplierId: string | null = null
+  if (roomId) {
+    const { data: room } = await admin.from('chat_rooms').select('supplier_id').eq('id', roomId).maybeSingle()
+    supplierId = (room as { supplier_id?: string | null } | null)?.supplier_id ?? null
+  }
+  if (!supplierId) {
+    const { data: emp } = await admin.from('business_employees')
+      .select('supplier_id').eq('auth_user_id', user.id).eq('status', 'active')
+      .limit(1).maybeSingle()
+    supplierId = (emp as { supplier_id?: string | null } | null)?.supplier_id ?? null
+  }
+  if (!supplierId) {
+    const { data: ms } = await admin.from('marketplace_suppliers')
+      .select('id').eq('profile_id', user.id).limit(1).maybeSingle()
+    supplierId = (ms as { id?: string } | null)?.id ?? null
+  }
+
   const now = new Date().toISOString()
   const { data: ins, error } = await admin.from('flow_tasks').insert({
+    supplier_id: supplierId,
     title: text.slice(0, 180),
     detail: text.length > 180 ? text : null,
     assignee_name: assignee,
