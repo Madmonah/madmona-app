@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
-  Loader2, ArrowRight, Clock, Inbox, Wallet, MessageCircle, ShieldCheck,
-  Building2, Crown, Check, Minus, ClipboardList, Users, LogIn, CalendarDays,
+  Loader2, ArrowRight, Clock, Inbox, Wallet, MessageCircle,
+  Building2, Crown, Check, ClipboardList, LogIn, Plus, AlertCircle,
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import BottomNav from '@/components/BottomNav'
@@ -31,9 +31,19 @@ type Attendance = {
   date: string; clock_in_at: string | null; clock_out_at: string | null
   hours_worked: number | null; status: string | null
 } | null
+// 📝 (٢٠ أغسطس ٢٠٢٦) موديل الطلبات الموحّد — إجازة · إذن · سلفة · عهدة.
+//    محمد: «عايز التاب بتاع شغلي يعرض طلبات الموظفين من سلفة أو عهدة أو إذن
+//    أو إجازة أو أي حاجة — وده الموديل الوحيد اللي هنشتغل عليه كإدارة».
 type Req = {
-  id: string; leave_type: string | null; start_date: string | null
-  end_date: string | null; days: number | null; status: string; reason: string | null
+  id: string; source: 'leave' | 'advance' | 'custody'
+  kind: string; label: string; status: string; reason: string | null
+  start_date: string | null; end_date: string | null; amount: number | null
+  created_at: string | null
+}
+type Task = {
+  id: string; source: string; title: string
+  priority: string | null; due_time: string | null
+  task_date: string | null; overdue: boolean
 }
 type Biz = {
   supplier_id: string; business_name: string; is_platform_owner: boolean
@@ -43,6 +53,8 @@ type Biz = {
   permissions: Perm
   attendance: Attendance
   my_requests: Req[]
+  my_tasks: Task[]
+  tasks_done_today: number
   pending_for_me: number
   expenses: { month_count: number; month_total: number } | null
   chat_room_id: string | null
@@ -54,10 +66,29 @@ const KIND_LABEL: Record<string, string> = {
 }
 
 const REQ_STATUS: Record<string, { label: string; cls: string }> = {
+  // إجازة / إذن
   pending: { label: 'مستنية الرد', cls: 'bg-amber-50 text-amber-700' },
   approved: { label: 'اتوافق عليها', cls: 'bg-[#34D399]/10 text-[#059669]' },
   rejected: { label: 'اترفضت', cls: 'bg-red-50 text-red-600' },
+  // سلفة
+  requested: { label: 'مستنية الرد', cls: 'bg-amber-50 text-amber-700' },
+  partial: { label: 'بتتسدّد', cls: 'bg-blue-50 text-blue-700' },
+  repaid: { label: 'اتسدّدت', cls: 'bg-[#34D399]/10 text-[#059669]' },
+  written_off: { label: 'اتشالت', cls: 'bg-gray-100 text-gray-600' },
+  // عهدة
+  held: { label: 'معاك دلوقتي', cls: 'bg-[#34D399]/10 text-[#059669]' },
+  returned: { label: 'اترجّعت', cls: 'bg-gray-100 text-gray-600' },
+  lost: { label: 'ضاعت', cls: 'bg-red-50 text-red-600' },
+  damaged: { label: 'اتخربت', cls: 'bg-red-50 text-red-600' },
+  settled: { label: 'اتسوّت', cls: 'bg-gray-100 text-gray-600' },
 }
+
+const REQ_KINDS: { key: string; label: string; needs: ('date' | 'dates' | 'amount' | 'title')[] }[] = [
+  { key: 'leave',      label: 'إجازة', needs: ['dates'] },
+  { key: 'permission', label: 'إذن',   needs: ['date'] },
+  { key: 'advance',    label: 'سلفة',  needs: ['amount'] },
+  { key: 'custody',    label: 'عهدة',  needs: ['title'] },
+]
 
 function fmtTime(iso: string | null) {
   if (!iso) return '—'
@@ -192,7 +223,7 @@ export default function MyWorkPage() {
           <Empty icon={<Building2 className="w-8 h-8" />} title="مالكش شغل مسجّل"
                  sub="لسه ماتضفتش كموظف ولا كصاحب بيزنس على مضمونة." />
         ) : (
-          list.map(b => <BizCard key={b.supplier_id} b={b} />)
+          list.map(b => <BizCard key={b.supplier_id} b={b} onRefresh={load} />)
         )}
       </main>
 
@@ -201,7 +232,7 @@ export default function MyWorkPage() {
   )
 }
 
-function BizCard({ b }: { b: Biz }) {
+function BizCard({ b, onRefresh }: { b: Biz; onRefresh: () => void }) {
   const isOwner = b.relation === 'owner'
   const can = (k: string) => isOwner || b.permissions?.[k] === true
   const att = b.attendance
@@ -257,39 +288,46 @@ function BizCard({ b }: { b: Biz }) {
         </div>
       )}
 
-      {/* 📝 الطلبات */}
+      {/* 📝 الطلبات — الموديل الموحّد: إجازة · إذن · سلفة · عهدة */}
       <div className="px-5 py-4 border-b border-gray-100">
         <SectionTitle
           icon={<Inbox className="w-3.5 h-3.5" />}
           title="الطلبات"
           extra={b.pending_for_me > 0 ? `${b.pending_for_me} مستنية منك` : undefined}
         />
+
+        {b.employee_id && <RequestForm supplierId={b.supplier_id} onDone={onRefresh} />}
+
         {b.my_requests.length === 0 ? (
-          <p className="text-[12px] text-[#6B7280] mb-3">مفيش طلبات ليك.</p>
+          <p className="text-[12px] text-[#6B7280] mb-3">مفيش طلبات ليك لسه.</p>
         ) : (
           <div className="space-y-1.5 mb-3">
             {b.my_requests.map(r => {
               const st = REQ_STATUS[r.status] || { label: r.status, cls: 'bg-gray-100 text-gray-600' }
               return (
-                <div key={r.id} className="flex items-center gap-2 bg-[#FAFAF7] rounded-xl px-3 py-2">
-                  <CalendarDays className="w-3.5 h-3.5 text-[#6B7280] flex-shrink-0" />
-                  <span className="text-[12px] font-bold text-[#1A2E26] truncate flex-1">
-                    {r.leave_type || 'إجازة'}
-                    {r.days ? ` · ${r.days} يوم` : ''}
+                <div key={`${r.source}-${r.id}`} className="flex items-center gap-2 bg-[#FAFAF7] rounded-xl px-3 py-2">
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-white border border-gray-200 text-[#6B7280] flex-shrink-0">
+                    {r.kind}
                   </span>
-                  <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${st.cls}`}>{st.label}</span>
+                  <span className="text-[12px] font-bold text-[#1A2E26] truncate flex-1">
+                    {r.label}
+                  </span>
+                  <span className={`text-[9px] font-black px-1.5 py-0.5 rounded flex-shrink-0 ${st.cls}`}>{st.label}</span>
                 </div>
               )
             })}
           </div>
         )}
-        <Link
-          href={`/admin/business-finance/${b.supplier_id}/requests`}
-          className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF7] border border-gray-200 text-[#1A2E26] py-2.5 rounded-2xl text-[13px] font-bold no-underline hover:bg-white"
-        >
-          <ClipboardList className="w-4 h-4" />
-          {can('can_manage_team') ? 'إدارة الطلبات' : 'اطلب إجازة'}
-        </Link>
+
+        {can('can_manage_team') && (
+          <Link
+            href={`/admin/business-finance/${b.supplier_id}/requests`}
+            className="w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF7] border border-gray-200 text-[#1A2E26] py-2.5 rounded-2xl text-[13px] font-bold no-underline hover:bg-white"
+          >
+            <ClipboardList className="w-4 h-4" />
+            إدارة طلبات الفريق
+          </Link>
+        )}
       </div>
 
       {/* 💰 المصاريف — بصلاحية «يشوف الفلوس والفاينانس» */}
@@ -324,70 +362,39 @@ function BizCard({ b }: { b: Biz }) {
         </div>
       )}
 
-      {/* 🔐 صلاحياتي */}
-      <div className="px-5 py-4">
-        <SectionTitle
-          icon={<ShieldCheck className="w-3.5 h-3.5" />}
-          title="صلاحياتي"
-          extra={isOwner ? 'كل الصلاحيات' : undefined}
-        />
-        {isOwner ? (
-          <p className="text-[12px] text-[#6B7280]">
-            انت صاحب البيزنس — كل حاجة مفتوحة ليك.
-          </p>
-        ) : (
-          <div className="flex flex-wrap gap-1.5">
-            {Object.keys(b.permissions || {}).length === 0 ? (
-              <p className="text-[12px] text-[#6B7280]">لسه مفيش صلاحيات مفتوحة — كلّم الإدارة.</p>
-            ) : (
-              Object.entries(b.permissions).map(([k, v]) => (
-                <span
-                  key={k}
-                  className={`text-[10.5px] font-bold px-2 py-1 rounded-full border flex items-center gap-1 ${
-                    v ? 'bg-[#34D399]/10 text-[#059669] border-[#059669]/25'
-                      : 'bg-gray-50 text-gray-400 border-gray-200'
-                  }`}
-                >
-                  {v ? <Check className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-                  {PERM_AR[k] || k}
-                </span>
-              ))
-            )}
-          </div>
-        )}
-        {can('can_manage_team') && (
+      {/* 📋 مهامي — نفس التاسكات اللي في تاب Task بالشات.
+          محمد: «شيل تابة الصلاحيات اللي في شاشة شغلي وحط مكانها التاسكات،
+          مع العلم إن التاسكات برضو تظهر في الشات في تاب مهامي».
+          الصلاحيات اتشالت من هنا — مكانها الطبيعي لوحة الإدارة، والموظف
+          مش محتاج يبصّ على قايمة صلاحياته كل يوم، هو محتاج شغله. */}
+      {b.employee_id && (
+        <div className="px-5 py-4">
+          <SectionTitle
+            icon={<ClipboardList className="w-3.5 h-3.5" />}
+            title="مهامي"
+            extra={b.tasks_done_today > 0 ? `${b.tasks_done_today} خلصت النهاردة` : undefined}
+          />
+          {(b.my_tasks || []).length === 0 ? (
+            <p className="text-[12px] text-[#6B7280]">مفيش مهام مفتوحة — تمام 👌</p>
+          ) : (
+            <div className="space-y-1.5">
+              {b.my_tasks.map(t => (
+                <TaskRow key={t.id} t={t} onDone={onRefresh} />
+              ))}
+            </div>
+          )}
           <Link
-            href={`/admin/business-finance/${b.supplier_id}/permissions`}
+            href="/chat/tasks"
             className="mt-3 w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF7] border border-gray-200 text-[#1A2E26] py-2.5 rounded-2xl text-[13px] font-bold no-underline hover:bg-white"
           >
-            <Users className="w-4 h-4" />
-            صلاحيات الفريق
+            <ClipboardList className="w-4 h-4" />
+            كل المهام في الشات
           </Link>
-        )}
-      </div>
+        </div>
+      )}
+
     </section>
   )
-}
-
-// أسماء الصلاحيات بالعربي — نفس اللي في `permission_catalog`
-const PERM_AR: Record<string, string> = {
-  can_view: 'يدخل الحساب',
-  can_view_finance: 'يشوف الفلوس',
-  can_add_expense: 'يضيف مصروف',
-  can_manage_bookings: 'يدير الحجوزات',
-  can_complete_bookings: 'يقفل الحجوزات',
-  can_manage_customers: 'يدير العملاء',
-  can_manage_inventory: 'يدير المخزون',
-  can_manage_team: 'يدير الفريق',
-  can_manage_services: 'يدير الخدمات',
-  can_view_reports: 'التقارير',
-  can_view_analytics: 'التحليلات',
-  can_manage_branches: 'يدير الفروع',
-  can_manage_pricing: 'الأسعار',
-  can_manage_listings: 'يعدّل الإعلانات',
-  can_publish_listings: 'ينشر إعلانات',
-  can_delete_listings: 'يمسح إعلانات',
-  can_respond_reviews: 'يرد على التقييمات',
 }
 
 function SectionTitle({ icon, title, extra }: { icon: React.ReactNode; title: string; extra?: string }) {
@@ -423,6 +430,196 @@ function Empty({ icon, title, sub, href, cta }: {
         <Link href={href} className="mt-4 inline-flex items-center justify-center gap-2 bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-2xl text-sm font-bold no-underline">
           {cta}
         </Link>
+      )}
+    </div>
+  )
+}
+
+/* ---------------------------------------------------------------------------
+   RequestForm — تقديم أي طلب من الأبليكيشن: إجازة · إذن · سلفة · عهدة
+   بينادي `submit_my_request` — نفس الباب لكل الأنواع.
+   --------------------------------------------------------------------------- */
+function RequestForm({ supplierId, onDone }: { supplierId: string; onDone: () => void }) {
+  const [open, setOpen] = useState(false)
+  const [kind, setKind] = useState('leave')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const [amount, setAmount] = useState('')
+  const [title, setTitle] = useState('')
+  const [reason, setReason] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+
+  const spec = REQ_KINDS.find(k => k.key === kind)!
+  const needs = (n: string) => spec.needs.includes(n as never)
+
+  const reset = () => {
+    setFrom(''); setTo(''); setAmount(''); setTitle(''); setReason(''); setErr(null)
+  }
+
+  const submit = async () => {
+    setBusy(true); setErr(null)
+    try {
+      const { data } = await (supabaseBrowser.rpc as unknown as (
+        fn: string, args: Record<string, unknown>,
+      ) => Promise<{ data: { ok?: boolean; error?: string } | null }>)('submit_my_request', {
+        p_supplier_id: supplierId,
+        p_kind: kind,
+        p_reason: reason || null,
+        p_start_date: from || null,
+        p_end_date: to || null,
+        p_amount: amount ? Number(amount) : null,
+        p_title: title || null,
+      })
+      if (!data?.ok) { setErr(data?.error || 'الطلب ماتبعتش'); return }
+      reset(); setOpen(false); onDone()
+    } catch (e) {
+      console.error('[work] submit_my_request failed:', e)
+      setErr('حصلت مشكلة — جرّب تاني')
+    } finally { setBusy(false) }
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="w-full inline-flex items-center justify-center gap-2 bg-[#34D399] text-[#04352A] py-2.5 rounded-2xl text-[13px] font-bold mb-3 hover:bg-[#34D399]/90"
+      >
+        <Plus className="w-4 h-4" />
+        اطلب حاجة
+      </button>
+    )
+  }
+
+  return (
+    <div className="bg-[#FAFAF7] border border-gray-200 rounded-2xl p-3 mb-3 space-y-2.5">
+      <div className="flex flex-wrap gap-1.5">
+        {REQ_KINDS.map(k => (
+          <button
+            key={k.key}
+            type="button"
+            onClick={() => { setKind(k.key); setErr(null) }}
+            className={`text-[12px] font-black px-3 py-1.5 rounded-full border transition-colors ${
+              kind === k.key
+                ? 'bg-[#059669] text-white border-[#059669]'
+                : 'bg-white text-[#6B7280] border-gray-200 hover:border-[#059669]/40'
+            }`}
+          >
+            {k.label}
+          </button>
+        ))}
+      </div>
+
+      {(needs('date') || needs('dates')) && (
+        <div className={needs('dates') ? 'grid grid-cols-2 gap-2' : ''}>
+          <label className="block">
+            <span className="text-[10px] font-bold text-[#6B7280]">
+              {needs('dates') ? 'من' : 'التاريخ'}
+            </span>
+            <input type="date" value={from} onChange={e => setFrom(e.target.value)}
+              className="w-full mt-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-[13px]" />
+          </label>
+          {needs('dates') && (
+            <label className="block">
+              <span className="text-[10px] font-bold text-[#6B7280]">لـ</span>
+              <input type="date" value={to} onChange={e => setTo(e.target.value)}
+                className="w-full mt-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-[13px]" />
+            </label>
+          )}
+        </div>
+      )}
+
+      {needs('title') && (
+        <label className="block">
+          <span className="text-[10px] font-bold text-[#6B7280]">العهدة المطلوبة</span>
+          <input value={title} onChange={e => setTitle(e.target.value)}
+            placeholder="لابتوب · موبايل · مفاتيح · عربية…"
+            className="w-full mt-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-[13px]" />
+        </label>
+      )}
+
+      {(needs('amount') || needs('title')) && (
+        <label className="block">
+          <span className="text-[10px] font-bold text-[#6B7280]">
+            {needs('amount') ? 'المبلغ بالجنيه' : 'القيمة التقديرية (اختياري)'}
+          </span>
+          <input type="number" inputMode="numeric" value={amount} onChange={e => setAmount(e.target.value)}
+            className="w-full mt-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-[13px]" />
+        </label>
+      )}
+
+      <label className="block">
+        <span className="text-[10px] font-bold text-[#6B7280]">السبب</span>
+        <textarea value={reason} onChange={e => setReason(e.target.value)} rows={2}
+          placeholder="اكتب السبب باختصار"
+          className="w-full mt-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-[13px] resize-none" />
+      </label>
+
+      {err && (
+        <p className="text-[11.5px] text-red-600 flex items-center gap-1.5">
+          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />{err}
+        </p>
+      )}
+
+      <div className="grid grid-cols-2 gap-2">
+        <button type="button" onClick={submit} disabled={busy}
+          className="inline-flex items-center justify-center gap-2 bg-[#34D399] text-[#04352A] py-2.5 rounded-xl text-[13px] font-bold disabled:opacity-50">
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+          ابعت الطلب
+        </button>
+        <button type="button" onClick={() => { reset(); setOpen(false) }} disabled={busy}
+          className="bg-white border border-gray-200 text-[#6B7280] py-2.5 rounded-xl text-[13px] font-bold disabled:opacity-50">
+          إلغاء
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ---------------------------------------------------------------------------
+   TaskRow — مهمة واحدة، تتقفل من هنا على طول
+   --------------------------------------------------------------------------- */
+function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
+  const [busy, setBusy] = useState(false)
+
+  const complete = async () => {
+    setBusy(true)
+    try {
+      await (supabaseBrowser.rpc as unknown as (
+        fn: string, args: Record<string, unknown>,
+      ) => Promise<unknown>)('complete_my_task', { p_task_id: t.id, p_source: t.source })
+      onDone()
+    } catch (e) {
+      console.error('[work] complete_my_task failed:', e)
+    } finally { setBusy(false) }
+  }
+
+  return (
+    <div className={`flex items-center gap-2 rounded-xl px-3 py-2 ${
+      t.overdue ? 'bg-red-50/60 border border-red-100' : 'bg-[#FAFAF7]'
+    }`}>
+      <button
+        type="button"
+        onClick={complete}
+        disabled={busy}
+        className="w-6 h-6 rounded-lg border-2 border-gray-300 hover:border-[#059669] hover:bg-[#34D399]/10 flex items-center justify-center flex-shrink-0 disabled:opacity-50 transition-colors"
+        aria-label="خلّصت المهمة"
+      >
+        {busy ? <Loader2 className="w-3 h-3 animate-spin text-[#059669]" /> : null}
+      </button>
+      <span className="text-[12.5px] font-bold text-[#1A2E26] flex-1 leading-snug">
+        {t.title}
+      </span>
+      {t.overdue && (
+        <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-red-100 text-red-700 flex-shrink-0">
+          متأخرة
+        </span>
+      )}
+      {t.due_time && (
+        <span className="text-[10px] text-[#6B7280] flex-shrink-0" dir="ltr">
+          {String(t.due_time).slice(0, 5)}
+        </span>
       )}
     </div>
   )

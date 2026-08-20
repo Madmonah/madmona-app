@@ -12,7 +12,7 @@ const TABS: { href: string; label: string; icon: string; match: (p: string) => b
   // 🏢 (٢٠ أغسطس ٢٠٢٦) محمد: «يتضاف تاب محادثة في شات المارد تحت تاب جروب
   //    يكون مكتوب فيه جروب شركة ..... وفيه كل موظفين الشركة الواحدة».
   { href: '/chat/company', label: 'جروب', icon: '🏢', match: (p) => p.startsWith('/chat/company') },
-  { href: '/chat/tasks', label: 'مهامي', icon: '📋', match: (p) => p.startsWith('/chat/tasks') },
+  { href: '/chat/tasks', label: 'Task', icon: '📋', match: (p) => p.startsWith('/chat/tasks') },
   { href: '/chat/offers', label: 'عروض', icon: '🏷️', match: (p) => p.startsWith('/chat/offers') },
   { href: '/chat/settings', label: 'إعدادات', icon: '⚙️', match: (p) => p.startsWith('/chat/settings') },
 ]

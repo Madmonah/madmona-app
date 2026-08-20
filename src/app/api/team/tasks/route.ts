@@ -34,12 +34,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const token = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim()
-  let body: { taskId?: string }
+  let body: { taskId?: string; source?: string }
   try { body = await req.json() } catch { return NextResponse.json({ ok: false, error: 'bad json' }, { status: 400 }) }
   if (!token || !(await userFromToken(token))) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   const taskId = (body.taskId || '').trim()
   if (!taskId) return NextResponse.json({ ok: false, error: 'taskId مطلوب' }, { status: 400 })
-  const { data, error } = await userClient(token).rpc('complete_my_task' as never, { p_task_id: taskId } as never)
+  const { data, error } = await userClient(token).rpc('complete_my_task' as never, { p_task_id: taskId, p_source: body.source || 'daily' } as never)
   if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
   const res = (data || {}) as { ok?: boolean; error?: string }
   if (!res.ok) return NextResponse.json({ ok: false, error: res.error || 'مالكش صلاحية' }, { status: 403 })
