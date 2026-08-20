@@ -115,10 +115,16 @@ function guessCity(text: string | null, draftId?: string): string {
 async function ensureProfile(supa: ReturnType<typeof sb>, rawPhone: string) {
   const normalized = normalizePhone(rawPhone)
   if (!normalized) return null
-  // slice(2) مش slice(3): normalizePhone بترجّع "20"+عشر أرقام (مثلاً 201101745789)،
-  // فكود الدولة حرفين. slice(3) كان بيوقع أول رقم من الموبايل (011→010) ويدّي رقم
-  // بروفايل غلط. شات الموقع (chat/route.ts) بيستخدم slice(2) الصح.
-  const local = '0' + normalized.slice(2)
+  // ⚠️ (١٩ أغسطس ٢٠٢٦ — تصحيح) التعليق القديم هنا كان غلط وبيوصف
+  // normalizePhone بتاعة @/lib/whatsapp (بترجّع "20"+عشر أرقام من غير +).
+  // الاستيراد فوق ده من @/lib/auth-helpers، وده بيرجّع "+20"+عشر أرقام
+  // (مع علامة +) — يعني slice(2) كان بيسيب "0"+الرقم المحلي وبعدين
+  // بيضيف صفر تاني فوقه = رقم مبتدئ بصفرين ("001208181544" بدل
+  // "01208181544"). ده كان بيكسر تسجيل الدخول لاحقًا بالواتساب لأي
+  // مورد اتعمله حساب من هنا (publish-drafts) — رقمه المحفوظ في profiles
+  // ماكانش بيتطابق مع رقمه الحقيقي وقت الدخول. اتلقطت من ١٧ حساب فعلي
+  // متأثر (منهم مكتب ضاحي بـ٢٤ إعلان). slice(3) هو الصح لصيغة "+20...".
+  const local = '0' + normalized.slice(3)
   const { data: existing } = await supa
     .from('profiles').select('id')
     .or(`phone.eq.${local},phone.eq.${normalized}`)
