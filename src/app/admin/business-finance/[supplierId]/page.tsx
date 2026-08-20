@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   TrendingUp, TrendingDown, Wallet, Building2, Users, Calendar,
   ArrowDownCircle, ArrowUpCircle, Loader2, RefreshCw, Eye,
@@ -58,7 +59,7 @@ const supabase = createClient(
    (Phase 2: move this to a `supplier_modules` table = per-client toggles.)
    ============================================================ */
 // ⬇️ مصدر واحد لقائمة الموديولات — من src/lib/erpModules.ts (نفس اللي يستخدمه تبويب الإعدادات)
-import { MODULE_DEFS, VERTICAL_ALIAS, type VKey } from '@/lib/erpModules'
+import { MODULE_DEFS, VERTICAL_ALIAS, canOpenModule, type VKey } from '@/lib/erpModules'
 // الأيقونات تفضل هنا (بيانات الموديولات نفسها في src/lib/erpModules.ts)
 const ICON_MAP: Record<string, any> = {
   confirmations: CheckCircle2, links: Link2, dashboard: BarChart3, team: Users,
@@ -139,6 +140,8 @@ export default function BusinessFinancePage({
   params: { supplierId: string }
 }) {
   const { supplierId } = params
+  // 🔐 صلاحيات اليوزر الحالي جوّه البيزنس ده (null = مالك/أدمن → مفيش قفل)
+  const [memberPerms, setMemberPerms] = useState<Record<string, boolean> | null>(null)
   const isMadmona = supplierId === MADMONA_ID
   const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [branches, setBranches] = useState<Branch[]>([])
@@ -206,6 +209,27 @@ export default function BusinessFinancePage({
     const id = setInterval(loadAll, 30000)
     return () => clearInterval(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supplierId])
+
+  // 🔐 صلاحيات اليوزر الحالي جوّه البيزنس ده — نفس المصدر اللي بيستخدمه الحارس
+  //    في الـlayout، عشان اللي بيظهر في الكروت يبقى هو نفسه اللي بيفتح فعلًا.
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const { data: { session } } = await supabaseBrowser.auth.getSession()
+        if (!session?.user) return
+        const { data } = await (supabaseBrowser.rpc as unknown as (
+          fn: string, args: Record<string, unknown>,
+        ) => Promise<{ data: { full?: boolean; is_staff?: boolean; permissions?: Record<string, boolean> } | null }>)(
+          'my_supplier_access', { p_supplier_id: supplierId },
+        )
+        if (cancelled) return
+        if (data?.is_staff === true && data.full !== true) setMemberPerms(data.permissions ?? {})
+        else setMemberPerms(null)
+      } catch { /* مالك/أدمن أو توكن — مفيش قفل */ }
+    })()
+    return () => { cancelled = true }
   }, [supplierId])
 
   // Filter transactions by branch + period
@@ -287,8 +311,12 @@ export default function BusinessFinancePage({
         }
       })
       .filter((m) => m.shown)
+      // 🔐 (٢٠ أغسطس ٢٠٢٦) الموظف يشوف الكروت اللي صلاحياته بتسمح بيها بس —
+      //    محمد: «عايز التاب بتاع الفاينانس يفتح لأي موظف طبقًا لصلاحيته».
+      //    `memberPerms === null` = مالك أو أدمن أو داخل بتوكن → يشوف الكل.
+      .filter((m) => memberPerms === null || canOpenModule(m.href, false, memberPerms))
       .sort((a, b) => a.order - b.order)
-  }, [supplier, modOverrides])
+  }, [supplier, modOverrides, memberPerms])
 
   // لون البراند بتاع الـbusiness (من suppliers.theme) + اسم النشاط للتجميع.
   const accent = supplier?.theme?.accent || PALETTE.green

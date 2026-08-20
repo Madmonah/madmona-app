@@ -365,6 +365,9 @@ const ar: Dict = {
   'account.login_sub': 'ادخل عشان تشوف حسابك',
   'account.edit_name': 'تعديل الاسم',
   'account.admin_badge': 'أدمن',
+  'account.kind_madmona_admin': 'أدمن',
+  'account.kind_business_owner': 'إدارة',
+  'account.kind_b2b_employee': 'موظف',
   'account.supplier_verified': 'مورّد موثّق',
   'account.supplier_pending': 'قيد المراجعة',
   'account.supplier_suspended': 'موقوف',
@@ -501,10 +504,14 @@ const ar: Dict = {
   'comp.as.role_admin': 'إدارة',
   'comp.as.role_supplier': 'مورد',
   'comp.as.role_customer': 'عميل',
-  // 👥 (٢٠ أغسطس ٢٠٢٦) موظفو شركة مضمونة — محمد: «عايز سامية وأي حد ليه
-  //    حساب في شركة مضمونة يتصنّف في الأبليكيشن تحت مسمّى الإدارة».
-  //    قبل كده كانوا بيظهروا «عميل» لأن دورهم مكانش متعرّف في الواجهة أصلًا.
-  'comp.as.role_business_ops': 'الإدارة',
+  // 🏷️ (٢٠ أغسطس ٢٠٢٦) تصنيف الحساب — كلام محمد بالحرف:
+  //    «أي حد متضاف كموظف في شركة مضمونة حسابه **أدمن** — وطبعًا كل واحد بصلاحياته»
+  //    «أي حد صاحب بيزنس حسابه **إدارة**»
+  //    «أي حد موظف تحت بيزنس B2B حسابه **موظف**»
+  'comp.as.role_business_ops': 'أدمن',
+  'comp.as.role_madmona_admin': 'أدمن',
+  'comp.as.role_business_owner': 'إدارة',
+  'comp.as.role_b2b_employee': 'موظف',
   'comp.as.title': 'تبديل الحساب',
   'comp.as.sub': 'انتقل بين حساباتك بدون الخروج من الموقع',
   'comp.as.current_account': 'الحساب الحالي',
@@ -1099,6 +1106,9 @@ const en: Dict = {
   'account.login_sub': 'Log in to see your account',
   'account.edit_name': 'Edit name',
   'account.admin_badge': 'Admin',
+  'account.kind_madmona_admin': 'Admin',
+  'account.kind_business_owner': 'Management',
+  'account.kind_b2b_employee': 'Employee',
   'account.supplier_verified': 'Verified partner',
   'account.supplier_pending': 'Under review',
   'account.supplier_suspended': 'Suspended',
@@ -1235,7 +1245,10 @@ const en: Dict = {
   'comp.as.role_admin': 'Admin',
   'comp.as.role_supplier': 'Supplier',
   'comp.as.role_customer': 'Customer',
-  'comp.as.role_business_ops': 'Management',
+  'comp.as.role_business_ops': 'Admin',
+  'comp.as.role_madmona_admin': 'Admin',
+  'comp.as.role_business_owner': 'Management',
+  'comp.as.role_b2b_employee': 'Employee',
   'comp.as.title': 'Switch account',
   'comp.as.sub': 'Move between your accounts without leaving the site',
   'comp.as.current_account': 'Current account',

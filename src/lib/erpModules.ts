@@ -17,44 +17,50 @@ export const VERTICAL_ALIAS: Record<string, VKey> = {
   contracting: 'contracting', construction: 'contracting',
 }
 
-export type ModuleDef = { href: string; label: string; primary?: boolean; v: VKey[] }
+// 🔐 (٢٠ أغسطس ٢٠٢٦) `perm` = مفتاح الصلاحية المطلوبة عشان الموديول ده يفتح.
+//    محمد: «عايز التاب بتاع الفاينانس يفتح لأي موظف طبقًا لصلاحيته».
+//    • صاحب البيزنس وأدمن المنصة بيعدّوا من غير أي فحص.
+//    • الموظف بيشوف الموديول بس لو المفتاح ده مفتوح له في صلاحياته.
+//    • موديول من غير `perm` = مفتوح لأي عضو في البيزنس.
+//    المفاتيح دي هي نفسها اللي في `permission_catalog` — مفيش أسماء مخترعة.
+export type ModuleDef = { href: string; label: string; primary?: boolean; v: VKey[]; perm?: string }
 
 export const MODULE_DEFS: ModuleDef[] = [
   { href: 'confirmations',      label: 'التأكيدات',        primary: true, v: ['core'] },
   { href: 'links',              label: 'كل اللينكات',                     v: ['core'] },
   { href: 'dashboard',          label: 'Dashboard',        primary: true, v: ['core'] },
-  { href: 'team',               label: 'الفريق',                          v: ['core'] },
+  { href: 'team',               label: 'الفريق',                          v: ['core'], perm: 'can_manage_team' },
   // 🔐 (٢٠ أغسطس ٢٠٢٦) صلاحيات موظفي البيزنس — جوّه لوحة البيزنس نفسه.
   //    محمد: «صلاحيات موظفين الـB2B أو أي بيزنس B2B يكون داخل تاب الـB2B».
   //    قبل كده كانت في صفحة واحدة عامة لكل شركات المنصة مع بعض.
-  { href: 'permissions',        label: 'الصلاحيات',        primary: true, v: ['core'] },
+  { href: 'permissions',        label: 'الصلاحيات',        primary: true, v: ['core'], perm: 'can_manage_team' },
   { href: 'requests',           label: 'طلبات الموظفين',   primary: true, v: ['core'] },
   { href: 'custody',            label: 'العهدة',                          v: ['core'] },
   { href: 'flow-tasks',         label: 'المهام',                          v: ['core'] },
-  { href: 'branches',           label: 'الفروع',                          v: ['core'] },
-  { href: 'customers',          label: 'العملاء',                         v: ['core'] },
-  { href: 'expenses',           label: 'المصاريف',                        v: ['core'] },
-  { href: 'accounting',         label: 'الحسابات والقيود', primary: true, v: ['core'] },
+  { href: 'branches',           label: 'الفروع',                          v: ['core'], perm: 'can_manage_branches' },
+  { href: 'customers',          label: 'العملاء',                         v: ['core'], perm: 'can_manage_customers' },
+  { href: 'expenses',           label: 'المصاريف',                        v: ['core'], perm: 'can_view_finance' },
+  { href: 'accounting',         label: 'الحسابات والقيود', primary: true, v: ['core'], perm: 'can_view_finance' },
   { href: 'attendance',         label: 'الحضور',                          v: ['core'] },
   { href: 'attendance-devices', label: 'أجهزة البصم',                     v: ['core'] },
-  { href: 'cash-recon',         label: 'جرد الكاش',                       v: ['core'] },
-  { href: 'payroll',            label: 'المرتبات',                        v: ['core'] },
+  { href: 'cash-recon',         label: 'جرد الكاش',                       v: ['core'], perm: 'can_view_finance' },
+  { href: 'payroll',            label: 'المرتبات',                        v: ['core'], perm: 'can_view_finance' },
   { href: 'documents',          label: 'المستندات',                       v: ['core'] },
   { href: 'audit-log',          label: 'سجل التعديلات',                   v: ['core'] },
-  { href: 'at-risk',            label: 'عملاء في خطر',                    v: ['core'] },
-  { href: 'reports',            label: 'تصدير تقارير',                    v: ['core'] },
-  { href: 'vat-report',         label: 'VAT Report',                      v: ['core'] },
+  { href: 'at-risk',            label: 'عملاء في خطر',                    v: ['core'], perm: 'can_manage_customers' },
+  { href: 'reports',            label: 'تصدير تقارير',                    v: ['core'], perm: 'can_view_reports' },
+  { href: 'vat-report',         label: 'VAT Report',                      v: ['core'], perm: 'can_view_finance' },
   { href: 'whatsapp-campaigns', label: 'WhatsApp',                        v: ['core'] },
   { href: 'promotions',         label: 'العروض',                          v: ['core'] },
-  { href: 'inventory',          label: 'المخزون',                         v: ['core'] },
+  { href: 'inventory',          label: 'المخزون',                         v: ['core'], perm: 'can_manage_inventory' },
   { href: 'vendors',            label: 'الموردين',                        v: ['core'] },
   { href: 'purchase-orders',    label: 'طلبات شراء',                      v: ['core'] },
-  { href: 'bookings',           label: 'إدارة الحجوزات',                  v: ['beauty_salon', 'vehicle_agency'] },
-  { href: 'services-catalog',   label: 'قائمة الخدمات / المنيو',          v: ['beauty_salon', 'vehicle_agency', 'restaurant'] },
-  { href: 'services',           label: 'ربط خدمة-منتج',                   v: ['beauty_salon', 'vehicle_agency'] },
+  { href: 'bookings',           label: 'إدارة الحجوزات',                  v: ['beauty_salon', 'vehicle_agency'], perm: 'can_manage_bookings' },
+  { href: 'services-catalog',   label: 'قائمة الخدمات / المنيو',          v: ['beauty_salon', 'vehicle_agency', 'restaurant'], perm: 'can_manage_services' },
+  { href: 'services',           label: 'ربط خدمة-منتج',                   v: ['beauty_salon', 'vehicle_agency'], perm: 'can_manage_services' },
   { href: 'shifts',             label: 'مواعيد العمل',                    v: ['beauty_salon', 'polyclinic'] },
-  { href: 'waitlist',           label: 'قائمة الانتظار',                  v: ['beauty_salon', 'polyclinic'] },
-  { href: 'appointments',       label: 'المواعيد',                        v: ['polyclinic'] },
+  { href: 'waitlist',           label: 'قائمة الانتظار',                  v: ['beauty_salon', 'polyclinic'], perm: 'can_manage_bookings' },
+  { href: 'appointments',       label: 'المواعيد',                        v: ['polyclinic'], perm: 'can_manage_bookings' },
   { href: 'quote-orders',       label: 'طلبات التسعير',    primary: true, v: ['restaurant'] },
   { href: 'showroom',           label: 'المعرض',           primary: true, v: ['vehicle_agency'] },
   { href: 'import',             label: 'الاستيراد',        primary: true, v: ['vehicle_agency'] },
@@ -69,11 +75,11 @@ export const MODULE_DEFS: ModuleDef[] = [
   { href: 'subcontractors',     label: 'مقاولي الباطن',                   v: ['contracting'] },
   { href: 'assignments',        label: 'المأموريات',                      v: ['contracting'] },
   { href: 'custody-projects',   label: 'العُهد',                          v: ['contracting'] },
-  { href: 'advances',           label: 'السُّلف',                         v: ['contracting'] },
+  { href: 'advances',           label: 'السُّلف',                         v: ['contracting'], perm: 'can_view_finance' },
   { href: 'equipment',          label: 'المعدات',                         v: ['contracting'] },
-  { href: 'pnl',                label: 'ربحية المشاريع',   primary: true, v: ['contracting'] },
-  { href: 'expenses-projects',  label: 'مصروفات المشاريع',                v: ['contracting'] },
-  { href: 'collections',        label: 'التحصيل',          primary: true, v: ['contracting'] },
+  { href: 'pnl',                label: 'ربحية المشاريع',   primary: true, v: ['contracting'], perm: 'can_view_finance' },
+  { href: 'expenses-projects',  label: 'مصروفات المشاريع',                v: ['contracting'], perm: 'can_view_finance' },
+  { href: 'collections',        label: 'التحصيل',          primary: true, v: ['contracting'], perm: 'can_view_finance' },
   { href: 'tenders',            label: 'المناقصات',                       v: ['contracting'] },
   { href: 'milestones',         label: 'الجدول الزمني',                   v: ['contracting'] },
   { href: 'daily-reports',      label: 'يومية الموقع',                    v: ['contracting'] },
@@ -82,6 +88,28 @@ export const MODULE_DEFS: ModuleDef[] = [
   { href: 'equipment-logs',     label: 'صيانة المعدات',                   v: ['contracting'] },
   { href: 'company-docs',       label: 'سجلات الشركة',                    v: ['contracting'] },
 ]
+
+// 🔐 مفتاح الصلاحية المطلوب لموديول معيّن (null = مفتوح لأي عضو في البيزنس)
+export function modulePermission(href: string): string | null {
+  return MODULE_DEFS.find(m => m.href === href)?.perm ?? null
+}
+
+/**
+ * هل اليوزر ده يقدر يفتح الموديول ده؟
+ * @param href   اسم الموديول في الرابط (مثلاً 'accounting')
+ * @param full   صاحب البيزنس أو أدمن المنصة — بيعدّي من غير فحص
+ * @param perms  صلاحيات الموظف زي ما هي متخزّنة (من `my_supplier_access`)
+ */
+export function canOpenModule(
+  href: string,
+  full: boolean,
+  perms: Record<string, boolean> | null | undefined,
+): boolean {
+  if (full) return true
+  const need = modulePermission(href)
+  if (!need) return true
+  return perms?.[need] === true
+}
 
 // الموديولات اللي تخص بيزنس حسب نشاطه (core + الـvertical بتاعه)
 export function modulesForIndustry(industry: string | null | undefined): ModuleDef[] {

@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { Loader2, ShieldAlert, LogIn, Lock, Eye } from 'lucide-react'
 import { safeStorage } from '@/lib/safe-storage'
+import { canOpenModule, modulePermission } from '@/lib/erpModules'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,17 +29,20 @@ async function isPlatformAdmin(): Promise<boolean> {
 //    قبل كده الحارس كان بيعرف بابين بس: توكن واتساب لصاحب البيزنس، أو
 //    أدمن منصة. فموظف مسجّل دخول عادي (زي موظفين مضمونة) كان بيتقفل في
 //    وشّه رغم إن صلاحياته متسجّلة. `my_supplier_access` بترد بمصدر واحد.
-async function isBusinessMember(supplierId: string): Promise<boolean> {
+type MemberAccess = { full?: boolean; is_staff?: boolean; permissions?: Record<string, boolean> }
+
+async function getBusinessMemberAccess(supplierId: string): Promise<MemberAccess | null> {
   try {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
-    if (!session?.user) return false
+    if (!session?.user) return null
     const { data } = await (supabaseBrowser.rpc as unknown as (
       fn: string, args: Record<string, unknown>,
-    ) => Promise<{ data: { full?: boolean; is_staff?: boolean } | null }>)(
+    ) => Promise<{ data: MemberAccess | null }>)(
       'my_supplier_access', { p_supplier_id: supplierId },
     )
-    return data?.full === true || data?.is_staff === true
-  } catch { return false }
+    if (data?.full === true || data?.is_staff === true) return data
+    return null
+  } catch { return null }
 }
 
 // Trial-open access: a business still under negotiation (contract_status='negotiating')
@@ -65,9 +70,20 @@ export default function BusinessFinanceLayout({
   params: { supplierId: string }
 }) {
   const { supplierId } = params
+  const pathname = usePathname() || ''
   const [state, setState] = useState<'checking' | 'allowed' | 'no_session' | 'denied' | 'suspended'>('checking')
   const [readonly, setReadonly] = useState(false)
   const [blockedToast, setBlockedToast] = useState(false)
+  // 🔐 صلاحيات الموظف جوّه البيزنس ده — بتتستخدم لقفل موديولات الفلوس وغيرها.
+  //    `null` = مش موظف (يعني مالك/أدمن/توكن) فمفيش قفل على مستوى الموديول.
+  const [memberPerms, setMemberPerms] = useState<Record<string, boolean> | null>(null)
+
+  // اسم الموديول من الرابط: /admin/business-finance/<id>/<module>/...
+  const moduleHref = (() => {
+    const parts = pathname.split('/').filter(Boolean)
+    const i = parts.indexOf(supplierId)
+    return i >= 0 ? (parts[i + 1] || '') : ''
+  })()
 
   useEffect(() => {
     (async () => {
@@ -81,7 +97,8 @@ export default function BusinessFinanceLayout({
         // 2) Madmona platform-admin bypass (came from the dashboard)
         if (await isPlatformAdmin()) { setState('allowed'); return }
         // 3) عضو في البيزنس (مالك أو موظف بصلاحيات) — من جلسة الأبليكيشن العادية
-        if (await isBusinessMember(supplierId)) { setState('allowed'); return }
+        const m1 = await getBusinessMemberAccess(supplierId)
+        if (m1) { setMemberPerms(m1.full ? null : (m1.permissions ?? {})); setState('allowed'); return }
         // 4) Trial-open business (negotiating + ERP) — open to anyone with the link
         if (await isTrialOpenSupplier(supplierId)) { setState('allowed'); return }
         setState(data?.reason === 'suspended' ? 'suspended' : data?.reason === 'no_session' ? 'no_session' : 'denied')
@@ -90,7 +107,8 @@ export default function BusinessFinanceLayout({
       // No owner token — still let a logged-in Madmona admin straight through
       if (await isPlatformAdmin()) { setState('allowed'); return }
       // عضو في البيزنس ده (مالك أو موظف) بجلسة الأبليكيشن العادية
-      if (await isBusinessMember(supplierId)) { setState('allowed'); return }
+      const m2 = await getBusinessMemberAccess(supplierId)
+      if (m2) { setMemberPerms(m2.full ? null : (m2.permissions ?? {})); setState('allowed'); return }
       // Trial-open business — open to anyone with the link, no login needed
       if (await isTrialOpenSupplier(supplierId)) { setState('allowed'); return }
       setState('no_session')
@@ -148,6 +166,34 @@ export default function BusinessFinanceLayout({
   }
 
   if (state === 'allowed') {
+    // ── 🔐 قفل على مستوى الموديول: الموظف يفتح اللي صلاحياته بتسمح بيه بس.
+    //    محمد: «عايز التاب بتاع الفاينانس يفتح لأي موظف طبقًا لصلاحيته».
+    //    `memberPerms === null` = مالك أو أدمن أو داخل بتوكن → مفيش قفل.
+    if (memberPerms !== null && moduleHref && !canOpenModule(moduleHref, false, memberPerms)) {
+      const need = modulePermission(moduleHref)
+      return (
+        <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-4" dir="rtl">
+          <div className="w-full max-w-sm bg-white rounded-3xl p-8 shadow-sm text-center">
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 grid place-items-center mx-auto mb-4">
+              <Lock className="w-6 h-6 text-amber-600" />
+            </div>
+            <h1 className="text-lg font-black text-[#1A2E26] mb-2">التاب ده مقفول عليك</h1>
+            <p className="text-sm text-[#6B7280] leading-relaxed mb-1">
+              محتاج صلاحية{need === 'can_view_finance' ? ' «يشوف الفلوس والفاينانس»' : ''} عشان تفتحه.
+            </p>
+            <p className="text-[11px] text-[#9CA3AF] mb-6">
+              كلّم صاحب البيزنس يفتحهالك من تاب «الصلاحيات».
+            </p>
+            <Link
+              href={`/admin/business-finance/${supplierId}`}
+              className="inline-flex items-center justify-center w-full py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm no-underline"
+            >
+              ارجع للوحة
+            </Link>
+          </div>
+        </div>
+      )
+    }
     if (!readonly) return <>{children}</>
     return (
       <div>

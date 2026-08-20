@@ -43,6 +43,8 @@ export default function AccountPage() {
   const [bookingsCount, setBookingsCount] = useState(0)
   const [ordersCount, setOrdersCount] = useState(0)
   const [favoritesCount, setFavoritesCount] = useState(0)
+  // 🏷️ تصنيف الحساب من الداتابيز: madmona_admin | business_owner | b2b_employee | customer
+  const [accountKind, setAccountKind] = useState<string | null>(null)
   const [signingOut, setSigningOut] = useState(false)
   const [restaurantListingId, setRestaurantListingId] = useState<string | null>(null)
 
@@ -81,6 +83,16 @@ export default function AccountPage() {
         .maybeSingle()
 
       setSupplier(sup as Supplier | null)
+
+      // 🏷️ تصنيف الحساب — بيتحسب من علاقتك الحقيقية بالبيزنس مش من عمود دور
+      try {
+        const { data: kind } = await (supabaseBrowser.rpc as unknown as (
+          fn: string,
+        ) => Promise<{ data: string | null }>)('my_account_kind')
+        setAccountKind(kind ?? null)
+      } catch (e) {
+        console.error('[account] my_account_kind failed:', e)
+      }
 
       // 🍽️ صاحب مطعم؟ ندوّر على إعلان ليه فيه أصناف منيو.
       // لو لقينا، بنفتحله لينك مباشر على إدارة المنيو من «حسابي» —
@@ -214,11 +226,33 @@ export default function AccountPage() {
   }
 
   const isAdmin = profile?.role === 'admin'
-  // 👥 (٢٠ أغسطس ٢٠٢٦) موظف شركة مضمونة — محمد: «عايز سامية وأي حد ليه حساب
-  //    في شركة مضمونة يتصنّف في الأبليكيشن تحت مسمّى الإدارة». كان بيظهر
-  //    «عميل» لأن الدور ده مكانش متعرّف في الواجهة أصلًا.
-  const isMadmonaStaff = profile?.role === 'business_ops'
-  const isManagement = isAdmin || isMadmonaStaff
+
+  // 🏷️ (٢٠ أغسطس ٢٠٢٦) تصنيف الحساب — كلام محمد بالحرف:
+  //    «أي حد متضاف كموظف في شركة مضمونة حسابه **أدمن** — وطبعًا كل واحد بصلاحياته»
+  //    «أي حد صاحب بيزنس حسابه **إدارة**»
+  //    «أي حد موظف تحت بيزنس B2B حسابه **موظف**»
+  //
+  //    التصنيف بيتحسب في الداتابيز (`my_account_kind`) من علاقتك الحقيقية
+  //    بالبيزنس — مش من `profiles.role`، لأن الدور ده كان بيقول «عميل» لناس
+  //    شغالة جوّه الشركة فعلًا. وهو **عرض بس**: القوة الفعلية من الصلاحيات.
+  const isMadmonaStaff = accountKind === 'madmona_admin'
+  const isBusinessOwner = accountKind === 'business_owner'
+  const isB2bEmployee = accountKind === 'b2b_employee'
+  const isManagement = isAdmin || isMadmonaStaff || isBusinessOwner || isB2bEmployee
+
+  const kindLabel =
+    isMadmonaStaff ? t('account.kind_madmona_admin')
+    : isBusinessOwner ? t('account.kind_business_owner')
+    : isB2bEmployee ? t('account.kind_b2b_employee')
+    : isAdmin ? t('account.admin_badge')
+    : null
+
+  // الدور اللي بيتبعت لمبدّل الحسابات — نفس التصنيف عشان الشارة تبقى واحدة
+  const switcherRole =
+    isMadmonaStaff ? 'madmona_admin'
+    : isBusinessOwner ? 'business_owner'
+    : isB2bEmployee ? 'b2b_employee'
+    : (profile?.role ?? null)
   const isApprovedSupplier = supplier?.kyc_status === 'approved'
   const isPendingSupplier = supplier?.kyc_status === 'pending'
   const isRejectedSupplier = supplier && ['rejected', 'suspended'].includes(supplier.kyc_status)
@@ -302,10 +336,14 @@ export default function AccountPage() {
                   </div>
                 )}
               </div>
-              {isManagement && !editingName && (
-                <span className="bg-gradient-to-r from-[#2FA084] to-[#d4a017] text-white text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 flex-shrink-0 shadow-soft">
-                  <Crown className="w-3 h-3" />
-                  {isAdmin ? t('account.admin_badge') : 'الإدارة'}
+              {isManagement && kindLabel && !editingName && (
+                <span className={`text-white text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 flex-shrink-0 shadow-soft ${
+                  isB2bEmployee
+                    ? 'bg-gradient-to-r from-[#2FA084] to-[#34D399]'
+                    : 'bg-gradient-to-r from-[#2FA084] to-[#d4a017]'
+                }`}>
+                  {isB2bEmployee ? <Users className="w-3 h-3" /> : <Crown className="w-3 h-3" />}
+                  {kindLabel}
                 </span>
               )}
             </div>
@@ -345,7 +383,7 @@ export default function AccountPage() {
           <AccountSwitcher
             currentPhone={profile?.phone}
             currentLabel={profile?.full_name}
-            currentRole={profile?.role}
+            currentRole={switcherRole}
           />
         </div>
 

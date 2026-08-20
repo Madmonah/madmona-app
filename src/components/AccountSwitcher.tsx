@@ -31,25 +31,37 @@ interface Props {
   currentRole?: string | null
 }
 
-// 👥 (٢٠ أغسطس ٢٠٢٦) `business_ops` = موظف شركة مضمونة. محمد: «عايز سامية
-//    وأي حد ليه حساب في شركة مضمونة يتصنّف في الأبليكيشن تحت مسمّى الإدارة».
-//    الدور ده كان **ناقص** من القوايم دي، فكان بيقع على الافتراضي ويظهر
-//    «عميل» — رغم إنه موظف في الشركة اللي بتدير المنصة.
+// 🏷️ (٢٠ أغسطس ٢٠٢٦) تصنيف الحساب — كلام محمد بالحرف:
+//    «أي حد متضاف كموظف في شركة مضمونة حسابه **أدمن** — وطبعًا كل واحد بصلاحياته»
+//    «أي حد صاحب بيزنس حسابه **إدارة**»
+//    «أي حد موظف تحت بيزنس B2B حسابه **موظف**»
+//    التصنيف جاي من `my_account_kind()` في الداتابيز. القيم القديمة
+//    (`business_ops` / `supplier`) سايبينها هنا عشان الحسابات المتخزّنة
+//    في المتصفح من قبل التغيير ماتقعش على «عميل».
 const ROLE_LABELS: Record<string, string> = {
+  madmona_admin: 'comp.as.role_madmona_admin',
+  business_owner: 'comp.as.role_business_owner',
+  b2b_employee: 'comp.as.role_b2b_employee',
   admin: 'comp.as.role_admin',
-  business_ops: 'comp.as.role_business_ops',
-  supplier: 'comp.as.role_supplier',
+  business_ops: 'comp.as.role_madmona_admin',
+  supplier: 'comp.as.role_business_owner',
   customer: 'comp.as.role_customer',
 }
 
 const ROLE_COLORS: Record<string, string> = {
+  madmona_admin: 'bg-purple-100 text-purple-700',
+  business_owner: 'bg-[#D4A017]/15 text-[#8A6A0B]',
+  b2b_employee: 'bg-[#2FA084]/15 text-[#2FA084]',
   admin: 'bg-purple-100 text-purple-700',
   business_ops: 'bg-purple-100 text-purple-700',
-  supplier: 'bg-[#2FA084]/15 text-[#2FA084]',
+  supplier: 'bg-[#D4A017]/15 text-[#8A6A0B]',
   customer: 'bg-[#34D399]/10 text-[#059669]',
 }
 
 const ROLE_ICONS: Record<string, React.ReactNode> = {
+  madmona_admin: <ShieldCheck className="w-3.5 h-3.5" />,
+  business_owner: <Building2 className="w-3.5 h-3.5" />,
+  b2b_employee: <User className="w-3.5 h-3.5" />,
   admin: <ShieldCheck className="w-3.5 h-3.5" />,
   business_ops: <ShieldCheck className="w-3.5 h-3.5" />,
   supplier: <Building2 className="w-3.5 h-3.5" />,
