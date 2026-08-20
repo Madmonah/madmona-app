@@ -75,6 +75,8 @@ export default function MyWorkspaceCard() {
   const list = ws?.memberships ?? []
   if (list.length === 0) return null
 
+  const totalPending = list.reduce((a, m) => a + (m.pending_requests || 0), 0)
+
   return (
     <div className="bg-white rounded-3xl shadow-soft overflow-hidden">
       <div className="px-6 py-3 border-b border-gray-100 flex items-center gap-2">
@@ -83,6 +85,32 @@ export default function MyWorkspaceCard() {
           شغلي وصلاحياتي
         </p>
       </div>
+
+      {/* 🚪 (٢٠ أغسطس ٢٠٢٦) الباب الرئيسي — **ظاهر من غير ما تفتح أي حاجة**.
+          محمد: «مش شايف التابات في حسابي». كان لازم تدوس على اسم الشركة
+          الأول عشان الأكورديون يفتح وتبان أزرار «شغلي» و«لوحة الإدارة» —
+          يعني تابين مدفونين ورا دوسة محدش يعرف إنها موجودة. دلوقتي «شغلي»
+          صف كامل ثابت فوق، وتفاصيل كل شركة تحته لو حبيت تفتحها. */}
+      <Link
+        href="/account/work"
+        className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 hover:bg-[#FAFAF7] transition-colors no-underline"
+      >
+        <div className="w-10 h-10 rounded-2xl bg-[#34D399]/12 text-[#059669] flex items-center justify-center flex-shrink-0">
+          <ClipboardList className="w-5 h-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-sm text-gray-900">شغلي</p>
+          <p className="text-[11px] text-gray-500 mt-0.5">
+            الحضور والانصراف · الطلبات · المصاريف
+          </p>
+        </div>
+        {totalPending > 0 && (
+          <span className="text-[10px] font-black px-2 py-1 rounded-full bg-amber-50 text-amber-700 flex-shrink-0">
+            {totalPending} طلب
+          </span>
+        )}
+        <ChevronLeft className="w-4 h-4 text-gray-400 flex-shrink-0" />
+      </Link>
 
       {list.map((m, i) => {
         const open = openId === m.supplier_id
