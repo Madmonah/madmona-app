@@ -34,6 +34,9 @@ const ALLOWED = new Set([
   'admin_import_inventory',
   // الصلاحيات
   'get_employee_permissions_overview',
+  // 🔐 (٢٠ أغسطس ٢٠٢٦) صلاحيات بيزنس **واحد** — بتتنادى من تاب الصلاحيات
+  //    اللي جوّه لوحة البيزنس نفسه (business-finance/[supplierId]/permissions).
+  'get_business_permissions',
   'set_employee_permission',
   'set_employee_permissions_bulk',
   'add_permission_to_catalog',

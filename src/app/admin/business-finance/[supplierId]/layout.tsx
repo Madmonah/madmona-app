@@ -23,6 +23,23 @@ async function isPlatformAdmin(): Promise<boolean> {
   } catch { return false }
 }
 
+// 👷 (٢٠ أغسطس ٢٠٢٦) عضو في البيزنس ده — مالك أو موظف بصلاحيات.
+//    قبل كده الحارس كان بيعرف بابين بس: توكن واتساب لصاحب البيزنس، أو
+//    أدمن منصة. فموظف مسجّل دخول عادي (زي موظفين مضمونة) كان بيتقفل في
+//    وشّه رغم إن صلاحياته متسجّلة. `my_supplier_access` بترد بمصدر واحد.
+async function isBusinessMember(supplierId: string): Promise<boolean> {
+  try {
+    const { data: { session } } = await supabaseBrowser.auth.getSession()
+    if (!session?.user) return false
+    const { data } = await (supabaseBrowser.rpc as unknown as (
+      fn: string, args: Record<string, unknown>,
+    ) => Promise<{ data: { full?: boolean; is_staff?: boolean } | null }>)(
+      'my_supplier_access', { p_supplier_id: supplierId },
+    )
+    return data?.full === true || data?.is_staff === true
+  } catch { return false }
+}
+
 // Trial-open access: a business still under negotiation (contract_status='negotiating')
 // with ERP enabled is openable by ANYONE who has the link — no login required.
 // This lets sales share a live trial link. Contracted/real suppliers stay gated.
@@ -63,13 +80,17 @@ export default function BusinessFinanceLayout({
         if (data?.allowed) { setReadonly(data.readonly === true); setState('allowed'); return }
         // 2) Madmona platform-admin bypass (came from the dashboard)
         if (await isPlatformAdmin()) { setState('allowed'); return }
-        // 3) Trial-open business (negotiating + ERP) — open to anyone with the link
+        // 3) عضو في البيزنس (مالك أو موظف بصلاحيات) — من جلسة الأبليكيشن العادية
+        if (await isBusinessMember(supplierId)) { setState('allowed'); return }
+        // 4) Trial-open business (negotiating + ERP) — open to anyone with the link
         if (await isTrialOpenSupplier(supplierId)) { setState('allowed'); return }
         setState(data?.reason === 'suspended' ? 'suspended' : data?.reason === 'no_session' ? 'no_session' : 'denied')
         return
       }
       // No owner token — still let a logged-in Madmona admin straight through
       if (await isPlatformAdmin()) { setState('allowed'); return }
+      // عضو في البيزنس ده (مالك أو موظف) بجلسة الأبليكيشن العادية
+      if (await isBusinessMember(supplierId)) { setState('allowed'); return }
       // Trial-open business — open to anyone with the link, no login needed
       if (await isTrialOpenSupplier(supplierId)) { setState('allowed'); return }
       setState('no_session')

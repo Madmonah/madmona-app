@@ -1,61 +1,67 @@
 'use client'
 
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 // 🔐 كل الـRPCs هنا محميّة بصلاحية أدمن — لازم تعدّي من بوابة الأدمن على السيرفر
 import { adminRpc } from '@/lib/adminRpc'
 import {
   Loader2, Lock, AlertCircle, ArrowRight, ShieldCheck, Search,
-  Plus, Check, ChevronDown, X, Building2, Crown, Users,
+  Plus, X, Building2, Crown, Users, ChevronLeft,
 } from 'lucide-react'
 
-/* ============================================================
-   /admin/permissions — صلاحيات الموظفين (dynamic, per-employee)
-   فصل تام: مضمونة (فريق المنصة) ≠ عملاء B2B (Elite وغيره).
-   DB RPCs:
-     get_employee_permissions_overview()
-     set_employee_permission(p_employee_id,p_key,p_value)
-     set_employee_permissions_bulk(p_employee_id,p_permissions)
-     add_permission_to_catalog(p_key,p_label_ar,p_label_en)
-   ============================================================ */
+/* ============================================================================
+   /admin/permissions — **دليل** الصلاحيات (مش صفحة تعديل)
+   ============================================================================
+   🎯 (٢٠ أغسطس ٢٠٢٦) محمد:
+      «خلي ربط صلاحيات مضمونة في مضمونة الشركة»
+      «صلاحيات موظفين الـB2B أو أي بيزنس B2B يكون داخل تاب الـB2B — كل بيزنس
+       سواء معرض أو شركة عقارات أو شركة، كله يتضاف في الـB2B وكل موظف
+       بصلاحياته»
+      «في مكانين للحسابات الـB2B … محتاج أوحّدهم»
 
-const MADMONA_ID = 'c8b7b9d7-6178-4d0c-abdf-66f34b628e9d'
+   اللي كان بيحصل قبل كده:
+     الصفحة دي كانت **شاشة واحدة فيها كل شركات المنصة مع بعض**، والفصل بين
+     مضمونة وعملاء B2B مبني على ID متحطوط في الكود (`MADMONA_ID`). فكانت:
+       • صلاحيات مضمونة بعيدة عن لوحة إدارة مضمونة
+       • صلاحيات كل عميل بعيدة عن لوحة العميل نفسه
+       • والفصل يتكسر أول ما الـID يتغيّر (وده حصل فعلًا)
+
+   اللي بقى دلوقتي:
+     التعديل الفعلي بقى جوّه لوحة كل بيزنس:
+       /admin/business-finance/<id>/permissions
+     والصفحة دي بقت **دليل** بيوصّلك للمكان الصح — والفصل بين الشركة الأم
+     وعملاء الـB2B جاي من `suppliers.is_platform_owner` (داتا) مش من الكود.
+
+   الكتالوج (قائمة الصلاحيات نفسها) عام للمنصة كلها، فزراره فضل هنا.
+   ============================================================================ */
 
 type Stage = 'loading' | 'unauthenticated' | 'forbidden' | 'ready'
 type Catalog = { key: string; label_ar: string; label_en: string | null }
-type Emp = {
-  id: string; full_name: string; role: string | null; role_ar: string | null;
-  branch: string | null; branch_code: string | null; pin: string | null;
-  status: string | null; permissions: Record<string, boolean>
+type Supplier = {
+  supplier_id: string
+  business_name: string
+  is_platform_owner: boolean
+  employee_seats: number
+  industry: string | null
+  has_erp_crm: boolean
+  employee_count: number
 }
-type Supplier = { supplier_id: string; business_name: string; employee_count: number; employees: Emp[] }
 type Overview = { catalog: Catalog[]; suppliers: Supplier[] }
 
-export default function PermissionsPage() {
+export default function PermissionsDirectoryPage() {
   const [stage, setStage] = useState<Stage>('loading')
   const [ov, setOv] = useState<Overview | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
-  const [open, setOpen] = useState<Set<string>>(new Set())
-  const [busy, setBusy] = useState<Record<string, boolean>>({})
   const [toast, setToast] = useState<string | null>(null)
   const [addOpen, setAddOpen] = useState(false)
 
   function flash(m: string) { setToast(m); setTimeout(() => setToast(null), 2500) }
 
-  function toggleGroup(id: string) {
-    setOpen(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n })
-  }
-
-  // 🔐 (13 Jul 2026) قبل كده كانت بتطلب جلسة Supabase وتنادي الـRPC من المتصفح
-  // — والصفحة تحت /admin اللي مقفولة بكوكي مش بـ Supabase Auth، فـ auth.uid() = NULL
-  // و is_admin() = false → forbidden، وصفحة الصلاحيات كلها مكانتش بتشتغل.
-  // دلوقتي بتعدّي من /api/admin/rpc اللي بيتأكد من الكوكي على السيرفر.
   async function load() {
     try {
       const data = await adminRpc<Overview>('get_employee_permissions_overview')
       setOv(data)
-      setOpen(new Set([MADMONA_ID]))
       setStage('ready')
     } catch (e) {
       const m = (e instanceof Error ? e.message : '').toLowerCase()
@@ -66,49 +72,16 @@ export default function PermissionsPage() {
 
   useEffect(() => { load() }, [])
 
-  function applyPerms(o: Overview, empId: string, perms: Record<string, boolean>): Overview {
-    return {
-      ...o,
-      suppliers: o.suppliers.map(s => ({
-        ...s,
-        employees: s.employees.map(e => e.id === empId ? { ...e, permissions: perms } : e),
-      })),
-    }
-  }
+  const q = search.trim().toLowerCase()
+  const all = useMemo(() => {
+    const list = ov?.suppliers ?? []
+    if (!q) return list
+    return list.filter(s => (s.business_name || '').toLowerCase().includes(q))
+  }, [ov, q])
 
-  async function toggle(emp: Emp, key: string) {
-    const prev = emp.permissions || {}
-    const value = !prev[key]
-    const next = { ...prev, [key]: value }
-    const lock = `${emp.id}:${key}`
-    setBusy(b => ({ ...b, [lock]: true }))
-    setOv(o => o ? applyPerms(o, emp.id, next) : o)
-    try {
-      await adminRpc('set_employee_permission', { p_employee_id: emp.id, p_key: key, p_value: value })
-    } catch (e: any) {
-      setOv(o => o ? applyPerms(o, emp.id, prev) : o)
-      flash(e?.message || 'فشل الحفظ، حاول تاني')
-    } finally {
-      setBusy(b => { const n = { ...b }; delete n[lock]; return n })
-    }
-  }
-
-  async function bulk(emp: Emp, allOn: boolean) {
-    if (!ov) return
-    const prev = emp.permissions || {}
-    const perms = allOn ? Object.fromEntries(ov.catalog.map(c => [c.key, true])) : {}
-    const lock = `${emp.id}:__bulk__`
-    setBusy(b => ({ ...b, [lock]: true }))
-    setOv(o => o ? applyPerms(o, emp.id, perms) : o)
-    try {
-      await adminRpc('set_employee_permissions_bulk', { p_employee_id: emp.id, p_permissions: perms })
-    } catch (e: any) {
-      setOv(o => o ? applyPerms(o, emp.id, prev) : o)
-      flash(e?.message || 'فشل الحفظ، حاول تاني')
-    } finally {
-      setBusy(b => { const n = { ...b }; delete n[lock]; return n })
-    }
-  }
+  // 👑 الفصل من الداتا (`is_platform_owner`) — مش من ID متحطوط في الكود
+  const owners = all.filter(s => s.is_platform_owner)
+  const clients = all.filter(s => !s.is_platform_owner)
 
   if (stage === 'loading') return <Center><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></Center>
   if (stage === 'unauthenticated') return (
@@ -138,10 +111,6 @@ export default function PermissionsPage() {
     </Center>
   )
 
-  const madmona = ov.suppliers.find(s => s.supplier_id === MADMONA_ID)
-  const clients = ov.suppliers.filter(s => s.supplier_id !== MADMONA_ID)
-  const searching = search.trim().length > 0
-
   return (
     <div className="min-h-screen text-[#1A2E26]" dir="rtl" style={{ background: 'radial-gradient(1100px 560px at 88% -8%, rgba(47,160,132,0.10), transparent 60%), radial-gradient(900px 480px at -5% 4%, rgba(250, 129, 37,0.09), transparent 55%), radial-gradient(800px 500px at 50% 118%, rgba(212,160,23,0.06), transparent 60%), #FAFAF7' }}>
       <header className="sticky top-0 z-30 border-b border-[#059669]/10 bg-white/70 backdrop-blur-xl">
@@ -157,34 +126,39 @@ export default function PermissionsPage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-5 space-y-6 pb-24">
+        <div className="bg-white/70 border border-[#059669]/15 rounded-2xl px-4 py-3 text-[11px] text-[#4B5563] leading-relaxed">
+          صلاحيات كل بيزنس بقت <b>جوّه لوحته هو</b> — اختار البيزنس من هنا وهيوديك على
+          تاب «الصلاحيات» بتاعه. الصفحة دي بقت دليل بس، عشان مايبقاش في مكانين لنفس البيزنس.
+        </div>
+
         <div className="relative">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="دوّر باسم الموظف أو الـ PIN…"
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="دوّر باسم البيزنس…"
             className="w-full bg-white border border-black/5 rounded-2xl pr-10 pl-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30" />
         </div>
 
-        {/* ===== مضمونة — فريق المنصة ===== */}
+        {/* ===== الشركة الأم ===== */}
         <section>
-          <SectionHead icon={<Crown className="w-4 h-4" />} title="فريق مضمونة · المنصة" note="دول موظفين الشركة نفسها — مش عملاء" />
-          {madmona ? (
-            <SupplierGroup s={madmona} catalog={ov.catalog} search={search}
-              open={searching || open.has(madmona.supplier_id)} onToggleOpen={() => toggleGroup(madmona.supplier_id)}
-              onToggle={toggle} onBulk={bulk} busy={busy} platform />
-          ) : <Empty text="مفيش موظفين لمضمونة" />}
+          <SectionHead icon={<Crown className="w-4 h-4" />} title="مضمونة · الشركة الأم" note="الشركة اللي بتملك المنصة وبتديرها — صلاحياتها على مستوى المنصة كلها" />
+          {owners.length ? (
+            <div className="space-y-2">
+              {owners.map(s => <BizRow key={s.supplier_id} s={s} owner />)}
+            </div>
+          ) : <Empty text="مفيش شركة متعلّمة كـ«الشركة الأم»" />}
         </section>
 
-        {/* ===== عملاء B2B ===== */}
+        {/* ===== بيزنس B2B ===== */}
         <section>
-          <SectionHead icon={<Building2 className="w-4 h-4" />} title="عملاء B2B" note="كل عميل بيدير فريقه (Elite وغيره) — منفصل تماماً عن مضمونة" />
+          <SectionHead
+            icon={<Building2 className="w-4 h-4" />}
+            title={`بيزنس B2B · ${clients.length}`}
+            note="أي بيزنس على المنصة — معرض، شركة عقارات، مطعم، مورد فرد — كل واحد بموظفينه وصلاحياته لوحده"
+          />
           {clients.length ? (
-            <div className="space-y-3">
-              {clients.map(s => (
-                <SupplierGroup key={s.supplier_id} s={s} catalog={ov.catalog} search={search}
-                  open={searching || open.has(s.supplier_id)} onToggleOpen={() => toggleGroup(s.supplier_id)}
-                  onToggle={toggle} onBulk={bulk} busy={busy} />
-              ))}
+            <div className="space-y-2">
+              {clients.map(s => <BizRow key={s.supplier_id} s={s} />)}
             </div>
-          ) : <Empty text="مفيش عملاء بموظفين" />}
+          ) : <Empty text={q ? 'مفيش نتيجة للبحث' : 'مفيش بيزنس'} />}
         </section>
       </main>
 
@@ -204,79 +178,38 @@ export default function PermissionsPage() {
 
 /* ============================================================ */
 
-function SupplierGroup({ s, catalog, search, open, onToggleOpen, onToggle, onBulk, busy, platform }: {
-  s: Supplier; catalog: Catalog[]; search: string; open: boolean;
-  onToggleOpen: () => void; onToggle: (e: Emp, k: string) => void; onBulk: (e: Emp, on: boolean) => void;
-  busy: Record<string, boolean>; platform?: boolean
-}) {
-  const q = search.trim().toLowerCase()
-  const emps = q
-    ? s.employees.filter(e => (e.full_name || '').toLowerCase().includes(q) || (e.pin || '').includes(q))
-    : s.employees
-  if (q && emps.length === 0) return null
+function BizRow({ s, owner }: { s: Supplier; owner?: boolean }) {
+  const over = !owner && s.employee_count > s.employee_seats
   return (
-    <div className={`bg-white rounded-2xl border ${platform ? 'border-[#059669]/30' : 'border-black/5'} shadow-sm overflow-hidden`}>
-      <button onClick={onToggleOpen} className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-[#FAFAF7]/60">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-[#04352A] flex-shrink-0 ${platform ? 'bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#34D399]' : 'bg-[#34D399]/90'}`}><Building2 className="w-4 h-4" /></div>
-          <div className="text-right min-w-0">
-            <p className="text-sm font-black truncate">{s.business_name}</p>
-            <p className="text-[10px] text-[#6B7280]">{emps.length} موظف{q ? ' · نتيجة بحث' : ''}</p>
-          </div>
-        </div>
-        <ChevronDown className={`w-5 h-5 text-[#6B7280] transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open && (
-        <div className="divide-y divide-gray-50 border-t border-gray-50">
-          {emps.map(e => <EmployeeRow key={e.id} e={e} catalog={catalog} onToggle={onToggle} onBulk={onBulk} busy={busy} />)}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function EmployeeRow({ e, catalog, onToggle, onBulk, busy }: {
-  e: Emp; catalog: Catalog[]; onToggle: (e: Emp, k: string) => void; onBulk: (e: Emp, on: boolean) => void; busy: Record<string, boolean>
-}) {
-  const onCount = catalog.reduce((n, c) => n + (e.permissions?.[c.key] ? 1 : 0), 0)
-  const bulkBusy = !!busy[`${e.id}:__bulk__`]
-  return (
-    <div className="px-4 py-3">
-      <div className="flex items-center justify-between gap-3 mb-2.5 flex-wrap">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-9 h-9 rounded-full bg-[#34D399]/10 text-[#059669] flex items-center justify-center font-black text-sm flex-shrink-0">{(e.full_name || '؟').trim().charAt(0)}</div>
-          <div className="min-w-0">
-            <p className="text-sm font-bold truncate">{e.full_name}</p>
-            <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-              {e.role_ar && <span className="text-[9px] font-bold bg-[#FAFAF7] text-[#6B7280] px-1.5 py-0.5 rounded">{e.role_ar}</span>}
-              {e.branch_code && <span className="text-[9px] font-mono text-[#6B7280]">{e.branch_code}</span>}
-              {e.pin && <span className="text-[9px] font-mono text-[#6B7280]">PIN {e.pin}</span>}
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          <span className="text-[10px] font-bold text-[#059669]">{onCount}/{catalog.length}</span>
-          <button disabled={bulkBusy} onClick={() => onBulk(e, true)} className="text-[10px] font-bold px-2 py-1 rounded-lg bg-[#34D399]/10 text-[#059669] hover:bg-[#34D399]/20 disabled:opacity-40">الكل</button>
-          <button disabled={bulkBusy} onClick={() => onBulk(e, false)} className="text-[10px] font-bold px-2 py-1 rounded-lg bg-gray-100 text-[#6B7280] hover:bg-gray-200 disabled:opacity-40">مسح</button>
+    <Link
+      href={`/admin/business-finance/${s.supplier_id}/permissions`}
+      className={`flex items-center gap-3 bg-white rounded-2xl border px-4 py-3 shadow-sm hover:shadow-md transition-all no-underline text-inherit ${
+        owner ? 'border-[#059669]/30' : 'border-black/5 hover:border-[#059669]/30'
+      }`}
+    >
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-[#04352A] flex-shrink-0 ${
+        owner ? 'bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#34D399]' : 'bg-[#34D399]/90'
+      }`}>
+        {owner ? <Crown className="w-4 h-4" /> : <Building2 className="w-4 h-4" />}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-black truncate">{s.business_name}</p>
+        <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+          <span className="text-[10px] text-[#6B7280]">{s.employee_count} موظف</span>
+          {!owner && (
+            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+              over ? 'bg-amber-50 text-amber-700' : 'bg-[#FAFAF7] text-[#6B7280]'
+            }`}>
+              {s.employee_count}/{s.employee_seats} مقعد
+            </span>
+          )}
+          {s.has_erp_crm && (
+            <span className="text-[9px] font-bold bg-[#34D399]/10 text-[#059669] px-1.5 py-0.5 rounded">ERP</span>
+          )}
         </div>
       </div>
-      <div className="flex flex-wrap gap-1.5">
-        {catalog.map(c => {
-          const on = !!e.permissions?.[c.key]
-          const b = !!busy[`${e.id}:${c.key}`]
-          return (
-            <button key={c.key} disabled={b} onClick={() => onToggle(e, c.key)}
-              className={`text-[11px] font-bold px-2.5 py-1.5 rounded-full border transition-all disabled:opacity-50 flex items-center gap-1 ${
-                on ? 'bg-gradient-to-br from-[#2FA084] to-[#34D399] text-white border-transparent shadow-sm'
-                   : 'bg-white text-[#6B7280] border-black/10 hover:border-[#059669]/40'
-              }`}>
-              {on && <Check className="w-3 h-3" />}
-              {c.label_ar}
-            </button>
-          )
-        })}
-      </div>
-    </div>
+      <ChevronLeft className="w-4 h-4 text-[#9CA3AF] flex-shrink-0" />
+    </Link>
   )
 }
 
@@ -303,6 +236,10 @@ function AddPermModal({ onClose, onDone, onError }: { onClose: () => void; onDon
           <h2 className="text-base font-black text-[#1A2E26]">صلاحية جديدة</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-lg bg-[#FAFAF7] flex items-center justify-center"><X className="w-4 h-4 text-[#6B7280]" /></button>
         </div>
+        <p className="text-[11px] text-[#6B7280] mb-3 leading-relaxed">
+          الصلاحية دي بتتضاف للكتالوج العام — يعني هتظهر لكل البيزنس، وبعد كده
+          بتفتحها لكل موظف من تاب الصلاحيات بتاع البيزنس بتاعه.
+        </p>
         <label className="block text-xs font-bold text-[#6B7280] mb-1">الاسم بالعربي</label>
         <input value={labelAr} onChange={e => setLabelAr(e.target.value)} placeholder="مثلاً: يعدّل الأسعار"
           className="w-full bg-[#FAFAF7] border border-black/5 rounded-xl px-3 py-2.5 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#059669]/30" />

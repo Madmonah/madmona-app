@@ -62,6 +62,7 @@ import { MODULE_DEFS, VERTICAL_ALIAS, type VKey } from '@/lib/erpModules'
 // الأيقونات تفضل هنا (بيانات الموديولات نفسها في src/lib/erpModules.ts)
 const ICON_MAP: Record<string, any> = {
   confirmations: CheckCircle2, links: Link2, dashboard: BarChart3, team: Users,
+  permissions: ShieldCheck,
   requests: ClipboardCheck, custody: ShieldCheck, 'flow-tasks': ClipboardList,
   branches: Building2, customers: Heart, expenses: DollarSign, accounting: Calculator,
   attendance: Clock, 'attendance-devices': Smartphone, 'cash-recon': Wallet, payroll: Calculator,

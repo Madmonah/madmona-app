@@ -24,6 +24,10 @@ export const MODULE_DEFS: ModuleDef[] = [
   { href: 'links',              label: 'كل اللينكات',                     v: ['core'] },
   { href: 'dashboard',          label: 'Dashboard',        primary: true, v: ['core'] },
   { href: 'team',               label: 'الفريق',                          v: ['core'] },
+  // 🔐 (٢٠ أغسطس ٢٠٢٦) صلاحيات موظفي البيزنس — جوّه لوحة البيزنس نفسه.
+  //    محمد: «صلاحيات موظفين الـB2B أو أي بيزنس B2B يكون داخل تاب الـB2B».
+  //    قبل كده كانت في صفحة واحدة عامة لكل شركات المنصة مع بعض.
+  { href: 'permissions',        label: 'الصلاحيات',        primary: true, v: ['core'] },
   { href: 'requests',           label: 'طلبات الموظفين',   primary: true, v: ['core'] },
   { href: 'custody',            label: 'العهدة',                          v: ['core'] },
   { href: 'flow-tasks',         label: 'المهام',                          v: ['core'] },

@@ -80,6 +80,22 @@ export function useSupplierAccess(explicitSupplierId?: string): SupplierAccess {
   useEffect(() => {
     let cancelled = false
 
+    // ========================================================================
+    // 🔐 (٢٠ أغسطس ٢٠٢٦) نداء **واحد** بيحسم الصلاحية — `my_supplier_access`.
+    //
+    // قبل كده الهوك ده كان بيسأل الجداول بنفسه واحد واحد:
+    //   marketplace_suppliers (مالك؟) → supplier_staff (موظف؟)
+    // والنتيجة غلط في حالتين حقيقيتين حصلوا:
+    //   • موظف **مضمونة** مالوش صف في supplier_staff أصلًا (مضمونة شركة
+    //     مش بايع في الماركتبليس) → كان بيتقفل في وشّه رغم إن صلاحياته
+    //     متسجّلة في business_employees.
+    //   • **أي** صف في platform_admins كان بياخد صلاحية كاملة على كل
+    //     بيزنس — حتى بدور 'staff'. ده بيلغي معنى الصلاحيات.
+    //     محمد: «كل واحد بصلاحياته زي ما هي متحدّدة بالضبط».
+    //
+    // دلوقتي المنطق كله في الداتابيز في مكان واحد: owner/admin بس هما اللي
+    // بياخدوا التخطّي الكامل، وأي حد تاني بياخد صلاحياته المتخزّنة زي ما هي.
+    // ========================================================================
     const check = async () => {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
       if (!session?.user) {
@@ -87,124 +103,71 @@ export function useSupplierAccess(explicitSupplierId?: string): SupplierAccess {
         return
       }
 
-      const userId = session.user.id
+      type Rpc = {
+        authenticated?: boolean
+        supplier_id?: string | null
+        supplier_name?: string | null
+        source?: string
+        is_owner?: boolean
+        is_staff?: boolean
+        full?: boolean
+        access?: Record<string, boolean>
+      }
 
-      // ======================================================================
-      // 👑 (٢٠ أغسطس ٢٠٢٦) أدمن المنصة له صلاحية على **أي** حساب.
-      //
-      // محمد: «ازاي انا اكون كشركة مضمونة صاحب المنصة وتيجي تقولي ملكش
-      // صلاحية لإعلان جوه المنصة!!؟» — وكان محق. الفحص كان بيسأل حاجتين
-      // بس: هل هو مالك الحساب ده بالذات؟ ولا موظف مسجّل فيه؟ ومفيش أي
-      // اعتبار لكونه **أدمن المنصة نفسها**. فصاحب المنصة كان بيتقفل في وشه
-      // على أي إعلان تحت أي مورد — وده يناقض النموذج: مضمونة بتدير المنصة
-      // بالكامل وهي المسؤولة عن كل حاجة فيها.
-      //
-      // الفحص بيتم في الداتابيز (`current_user_is_platform_admin`) على
-      // `platform_admins` — مش على عمود دور في البروفايل يسهل تزويره.
-      // ======================================================================
+      let res: Rpc | null = null
       try {
-        const { data: isPlatformAdmin } = await (supabaseBrowser.rpc as unknown as (
-          fn: string,
-        ) => Promise<{ data: boolean | null }>)('current_user_is_platform_admin')
-
-        if (isPlatformAdmin === true) {
-          let name = 'مضمونة'
-          if (explicitSupplierId) {
-            const { data } = await supabaseBrowser
-              .from('marketplace_suppliers')
-              .select('business_name')
-              .eq('id', explicitSupplierId)
-              .maybeSingle()
-            if (data?.business_name) name = data.business_name
-          }
-          if (!cancelled) {
-            setAccess(buildOwnerAccess(explicitSupplierId || '', name))
-          }
-          return
-        }
+        const { data } = await (supabaseBrowser.rpc as unknown as (
+          fn: string, args: Record<string, unknown>,
+        ) => Promise<{ data: Rpc | null }>)('my_supplier_access', {
+          p_supplier_id: explicitSupplierId ?? null,
+        })
+        res = data
       } catch (e) {
-        // مش أدمن منصة (أو الفحص فشل) — نكمّل بالفحص العادي تحت
-        console.warn('[access] platform-admin check skipped:', e)
+        console.error('[access] my_supplier_access failed:', e)
       }
 
-      // Try owner path first
-      let supplierData: { id: string; business_name: string } | null = null
-      if (explicitSupplierId) {
-        const { data } = await supabaseBrowser
-          .from('marketplace_suppliers')
-          .select('id, business_name, profile_id')
-          .eq('id', explicitSupplierId)
-          .maybeSingle()
-        if (data) {
-          supplierData = { id: data.id, business_name: data.business_name }
-          if (data.profile_id === userId) {
-            // owner of this specific supplier
-            if (!cancelled) {
-              setAccess(buildOwnerAccess(data.id, data.business_name))
-            }
-            return
-          }
-        }
-      } else {
-        const { data } = await supabaseBrowser
-          .from('marketplace_suppliers')
-          .select('id, business_name')
-          .eq('profile_id', userId)
-          .maybeSingle()
-        if (data) {
-          if (!cancelled) {
-            setAccess(buildOwnerAccess(data.id, data.business_name))
-          }
-          return
-        }
-      }
+      if (cancelled) return
 
-      // Not the owner — check staff status
-      const { data: staffRow } = await supabaseBrowser
-        .from('supplier_staff')
-        .select(`
-          *,
-          supplier:marketplace_suppliers(id, business_name)
-        `)
-        .eq('profile_id', userId)
-        .eq('is_active', true)
-        .maybeSingle()
-
-      if (staffRow && staffRow.supplier) {
-        // Staff with permissions
-        if (!cancelled) {
-          setAccess({
-            loading: false,
-            authenticated: true,
-            supplierId: staffRow.supplier.id,
-            supplierName: staffRow.supplier.business_name,
-            isOwner: false,
-            isStaff: true,
-            canView: !!staffRow.can_view,
-            canManageListings: !!staffRow.can_manage_listings,
-            canPublishListings: !!staffRow.can_publish_listings,
-            canDeleteListings: !!staffRow.can_delete_listings,
-            canManageBookings: !!staffRow.can_manage_bookings,
-            canCompleteBookings: !!staffRow.can_complete_bookings,
-            canRespondReviews: !!staffRow.can_respond_reviews,
-            canViewAnalytics: !!staffRow.can_view_analytics,
-            canManagePricing: !!staffRow.can_manage_pricing,
-            canManageTeam: !!staffRow.can_manage_team,
-            hasPermission: (perm) => !!(staffRow as Record<string, unknown>)[perm],
-          })
-        }
+      if (!res || res.authenticated !== true) {
+        setAccess({ ...FALSE_ACCESS, authenticated: true })
         return
       }
 
-      // No access at all — but authenticated
-      if (!cancelled) {
+      if (res.full === true) {
+        setAccess(buildOwnerAccess(res.supplier_id || '', res.supplier_name || 'مضمونة'))
+        return
+      }
+
+      if (res.is_staff !== true || !res.access) {
         setAccess({
           ...FALSE_ACCESS,
           authenticated: true,
-          supplierId: supplierData?.id || null,
-          supplierName: supplierData?.business_name || null,
+          supplierId: res.supplier_id || null,
+          supplierName: res.supplier_name || null,
         })
+        return
       }
+
+      const a = res.access
+      setAccess({
+        loading: false,
+        authenticated: true,
+        supplierId: res.supplier_id || null,
+        supplierName: res.supplier_name || null,
+        isOwner: false,
+        isStaff: true,
+        canView: !!a.can_view,
+        canManageListings: !!a.can_manage_listings,
+        canPublishListings: !!a.can_publish_listings,
+        canDeleteListings: !!a.can_delete_listings,
+        canManageBookings: !!a.can_manage_bookings,
+        canCompleteBookings: !!a.can_complete_bookings,
+        canRespondReviews: !!a.can_respond_reviews,
+        canViewAnalytics: !!a.can_view_analytics,
+        canManagePricing: !!a.can_manage_pricing,
+        canManageTeam: !!a.can_manage_team,
+        hasPermission: (perm) => !!a[perm],
+      })
     }
 
     check()

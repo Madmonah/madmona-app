@@ -15,6 +15,7 @@ import BottomNav from '@/components/BottomNav'
 import PushNotificationCard from '@/components/PushNotificationCard'
 import AccountSwitcher from '@/components/AccountSwitcher'
 import MyAssetsCard from '@/components/MyAssetsCard'
+import MyWorkspaceCard from '@/components/MyWorkspaceCard'
 import { useT } from '@/lib/i18n/LanguageProvider'
 
 type Stage = 'loading' | 'unauthenticated' | 'ready'
@@ -413,6 +414,14 @@ export default function AccountPage() {
         {/* Push notifications card */}
         <div className="animate-slide-up delay-150">
           <PushNotificationCard />
+        </div>
+
+        {/* 🔐 (٢٠ أغسطس ٢٠٢٦) شغلي وصلاحياتي — أي بيزنس ليك علاقة بيه
+            (مالك أو موظف)، بصلاحياتك فيه بالظبط + باب على لوحة الإدارة
+            والطلبات. محمد: «عايز أي حساب … بصلاحيته يكون مربوط بالأبليكيشن
+            من شاشة حسابي». الكارت بيخفي نفسه لو مالكش أي بيزنس. */}
+        <div className="animate-slide-up delay-150">
+          <MyWorkspaceCard />
         </div>
 
         {/* Supplier section — shown only if user IS a supplier */}
