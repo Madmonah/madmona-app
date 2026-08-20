@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { resolveListingAccess } from '@/lib/listing-edit-access'
 import { playNotificationSound, showBrowserNotification, requestNotificationPermission } from '@/lib/notification-sound'
 import BookingToast from '@/components/marketplace/BookingToast'
 import {
@@ -220,6 +221,34 @@ function SupplierMarketplaceContent() {
             canManageBookings: !!staff.can_manage_bookings,
             canViewAnalytics: !!staff.can_view_analytics,
             canManageTeam: !!staff.can_manage_team,
+          }
+        }
+      }
+
+      // 🏢 (٢٠ أغسطس ٢٠٢٦) موظف الشركة (`business_employees`) — الحالة
+      //    اللي كانت ضايعة خالص. الفحص فوق بيسأل `supplier_staff` بس،
+      //    وموظف مضمونة صلاحياته متسجّلة في `business_employees`، فكان
+      //    بيوصل هنا بـ`sup = null` ويشوف «مالكش بيزنس» — رغم إنه موظف
+      //    في الشركة اللي بتدير المنصة كلها.
+      //    محمد: «الموظفين لازم يدخلوا على شاشة المنتجات … ويقدروا يعدّلوا».
+      if (!sup) {
+        const fallback = await resolveListingAccess(null)
+        if (fallback.allowed && fallback.supplierId) {
+          const { data: fsup } = await supabaseBrowser
+            .from('marketplace_suppliers')
+            .select('id, business_name, logo_url, kyc_status, kyc_rejection_reason')
+            .eq('id', fallback.supplierId).maybeSingle()
+          if (fsup) {
+            sup = fsup as unknown as typeof sup
+            isOwner = fallback.mode === 'owner'
+            if (!isOwner) {
+              staffPerms = {
+                isOwner: false, isStaff: true, roleLabel: fallback.roleLabel,
+                canManageListings: true, canPublishListings: true,
+                canDeleteListings: false, canManageBookings: true,
+                canViewAnalytics: true, canManageTeam: false,
+              }
+            }
           }
         }
       }

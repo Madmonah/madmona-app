@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { resolveListingAccess } from '@/lib/listing-edit-access'
 import ListingForm from '@/components/marketplace/ListingForm'
 import { ArrowRight, Loader2, AlertCircle, Lock, Users, ShieldCheck } from 'lucide-react'
 
@@ -136,54 +137,41 @@ export default function EditListingPage() {
       }
       setUserId(session.user.id)
 
-      // Check ownership first
-      // النوع مسمّى صراحةً: جوه الـelse بيبقى TS ضيّق `sup` لـ`null`،
-      // فـ`as typeof sup` كان بيتحول لـ`as null` ويفشل.
-      type SupRef = { id: string; kyc_status: 'rejected' | 'pending' | 'approved' | 'suspended' } | null
-      let { data: sup } = await supabaseBrowser
-        .from('marketplace_suppliers')
-        .select('id, kyc_status')
-        .eq('profile_id', session.user.id)
-        .maybeSingle()
+      // 🛠️ (٢٠ أغسطس ٢٠٢٦) الصلاحية بتتسأل مرة واحدة من الداتابيز.
+      //    محمد: «أحمد سامي والموظفين لازم يدخلوا على شاشة المنتجات
+      //    والبورصة وأي خدمة ويقدروا يعدّلوا فيها».
+      //
+      //    اللي كان هنا كان بيقفل الموظف بأربع طرق مختلفة:
+      //      ① بيسأل `supplier_staff` بس — وموظف مضمونة صلاحياته في
+      //         `business_employees`، فمكانش بيلاقي له صف أصلًا
+      //      ② `.eq('can_view', true)` — شرط زيادة مش مكتوب في أي مكان،
+      //         ولو مش متظبّط بيوديه لشاشة «مش مصرحلك» الغلط
+      //      ③ `.maybeSingle()` من غير فلتر على البيزنس — اللي شغّال في
+      //         أكتر من بيزنس كان بيترمي له خطأ ويتقفل في **كلهم**
+      //      ④ `kyc_status !== 'approved'` — أصرم من الداتابيز نفسها،
+      //         اللي بتقفل `rejected`/`suspended` بس
+      //
+      //    وحتى لو عدّى ده كله، الـRLS كانت هترفض الحفظ في صمت.
+      //    دلوقتي نفس الدالة بالظبط اللي الـRLS بتستخدمها.
+      const first = await supabaseBrowser
+        .from('listings').select('supplier_id').eq('id', listingId).maybeSingle()
+      const listingSupplierId = (first.data as { supplier_id?: string } | null)?.supplier_id ?? null
 
-      if (sup) {
-        setMode('owner')
-      } else {
-        // 3. Check STAFF MODE
-        const { data: staff } = await supabaseBrowser
-          .from('supplier_staff')
-          .select(`
-            role_label, can_manage_listings,
-            supplier:marketplace_suppliers(id, kyc_status)
-          `)
-          .eq('profile_id', session.user.id)
-          .eq('is_active', true)
-          .eq('can_view', true)
-          .maybeSingle()
-
-        if (staff && staff.supplier) {
-          if (!staff.can_manage_listings) {
-            setStage('no-permission')
-            return
-          }
-          sup = staff.supplier as unknown as SupRef
-          setMode('staff')
-          setRoleLabel(staff.role_label)
-        }
-      }
-
-      if (!sup || sup.kyc_status !== 'approved') {
-        setStage('unauthorized')
+      const access = await resolveListingAccess(listingSupplierId)
+      if (!access.allowed || !access.supplierId) {
+        setStage(listingSupplierId ? 'no-permission' : 'unauthorized')
         return
       }
-      setSupplierId(sup.id)
+      setMode(access.mode === 'owner' ? 'owner' : 'staff')
+      setRoleLabel(access.roleLabel)
+      setSupplierId(access.supplierId)
 
       // Fetch listing — restricted to supplier's own listings
       const { data: listing, error: listingErr } = await supabaseBrowser
         .from('listings')
         .select('*')
         .eq('id', listingId)
-        .eq('supplier_id', sup.id)
+        .eq('supplier_id', access.supplierId)
         .maybeSingle()
 
       if (listingErr || !listing) {
