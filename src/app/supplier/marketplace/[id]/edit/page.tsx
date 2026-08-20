@@ -54,6 +54,20 @@ interface InitialData {
   // القيم دي بتيجي من الداتابيز وهي فعلًا محصورة في الاتحادات دي — النوع
   // كان واسع (string) فما كانش بيطابق `ListingFormData` اللي الفورم بيطلبه.
   status: 'draft' | 'published'
+  /* 🩹 (٢٠ أغسطس ٢٠٢٦) التسع أعمدة دي **مكانتش بتتحمّل** هنا خالص.
+     والفورم بيكتبهم على طول في كل حفظ (`applyDisplayParityFields`) من
+     قيمة الفورم — واللي بتبقى فاضية لأنها ماتحمّلتش. يعني كل تعديل، حتى
+     لو تغيير صورة واحدة، كان **بيمسح** الفروع والإحداثيات وحالة المنتج
+     والماركة والموديل والكمية والشحن من الإعلان. من غير أي تحذير. */
+  product_condition: string | null
+  brand: string
+  model_name: string
+  stock_quantity: number | null
+  shipping_available: boolean | null
+  shipping_cost: number | null
+  branches: Array<{ name: string; address: string; city: string; phone: string }>
+  latitude: number | null
+  longitude: number | null
   existingPhotos: Array<{
     id: string
     url: string
@@ -215,6 +229,15 @@ export default function EditListingPage() {
         min_booking_hours: listing.min_booking_hours,
         max_booking_hours: listing.max_booking_hours,
         status: listing.status as 'draft' | 'published',
+        product_condition: listing.product_condition ?? null,
+        brand: listing.brand ?? '',
+        model_name: listing.model_name ?? '',
+        stock_quantity: listing.stock_quantity ?? null,
+        shipping_available: listing.shipping_available ?? null,
+        shipping_cost: listing.shipping_cost ?? null,
+        branches: Array.isArray(listing.branches) ? listing.branches : [],
+        latitude: listing.latitude ?? null,
+        longitude: listing.longitude ?? null,
         existingPhotos: ((photos || []) as ListingPhotoRow[]).map((p) => ({
           id: p.id,
           url: p.url,

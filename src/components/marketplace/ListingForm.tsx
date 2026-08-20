@@ -294,7 +294,21 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
   const router = useRouter()
   const isEditing = !!existingId
 
-  const [step, setStep] = useState(1)
+  /* ✏️ (٢٠ أغسطس ٢٠٢٦) محمد: «عايز أقدر أعدّل الصور، بس مش لازم لما أدوس
+     تعديل أبدأ الإعلان من الأول».
+
+     الفورم ده ٥ خطوات، وكان بيبدأ من خطوة ١ **حتى في التعديل**، وشِيبْس
+     الخطوات فوق كانت `<div>` من غير `onClick` — يعني مش قابلة للدوس. وزرار
+     الحفظ **موجود في الخطوة ٥ بس**. فعشان تغيّر صورة واحدة كنت مضطر:
+     تأكّد الفئة (١) → تعدّي التحقق من العنوان والحي (٢) → تملا كل خاصية
+     مطلوبة (٣) → توصل للصور (٤) → تكمّل للخطوة ٥ عشان تلاقي زرار الحفظ.
+
+     وأوحش حاجة: لو خاصية بقت **مطلوبة** بعد ما الإعلان اتعمل، الخطوة ٣
+     بتبقى حيطة — الإعلان مايتحفظش تاني من الواجهة دي **أبدًا**.
+
+     دلوقتي في التعديل: بنبدأ من **خطوة الصور**، والخطوات كلها قابلة للدوس،
+     وزرار الحفظ ظاهر في أي خطوة. */
+  const [step, setStep] = useState(existingId ? 4 : 1)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [processingImages, setProcessingImages] = useState(false)
@@ -884,7 +898,12 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       if (form.min_booking_hours !== null) listingPayload.min_booking_hours = form.min_booking_hours
       if (form.max_booking_hours !== null) listingPayload.max_booking_hours = form.max_booking_hours
       applyDisplayParityFields(listingPayload, form)
-      if (status === 'published') listingPayload.published_at = new Date().toISOString()
+      // 📅 (٢٠ أغسطس ٢٠٢٦) تاريخ النشر يتحط **مرة واحدة** وقت النشر الأول بس.
+      //    كان بيتحدّث في كل حفظ — يعني تعديل صورة كان بيرجّع الإعلان لأول
+      //    الماركتبليس كإنه جديد، وبيضيّع تاريخ نشره الحقيقي.
+      if (status === 'published' && !isEditing) {
+        listingPayload.published_at = new Date().toISOString()
+      }
 
       let listingId = existingId
 
@@ -1061,8 +1080,14 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       <div className="flex items-center justify-between mb-6 px-2">
         {[1, 2, 3, 4, 5].map((s) => (
           <div key={s} className="flex items-center flex-1">
-            <div
+            <button
+              type="button"
+              onClick={() => { if (isEditing) setStep(s) }}
+              disabled={!isEditing}
+              title={isEditing ? `الخطوة ${s}` : undefined}
               className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-colors ${
+                isEditing ? 'cursor-pointer hover:ring-2 hover:ring-[#059669]/40' : 'cursor-default'
+              } ${
                 s < step
                   ? 'bg-[#34D399] text-[#04352A]'
                   : s === step
@@ -1071,7 +1096,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
               }`}
             >
               {s < step ? <Check className="w-4 h-4" /> : s}
-            </div>
+            </button>
             {s < 5 && <div className={`flex-1 h-0.5 mx-1 ${s < step ? 'bg-[#34D399]' : 'bg-gray-200'}`} />}
           </div>
         ))}
@@ -1740,14 +1765,32 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
           </button>
 
           {step < TOTAL_STEPS ? (
-            <button
-              type="button"
-              onClick={() => setStep(s => s + 1)}
-              disabled={!canGoNext() || processingImages}
-              className="px-5 py-2 bg-[#34D399] text-[#04352A] rounded-lg text-sm font-semibold hover:bg-[#34D399]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-            >
-              التالي <ChevronLeft className="w-4 h-4" />
-            </button>
+            <div className="flex gap-2">
+              {/* 💾 في التعديل الحفظ متاح من أي خطوة — مش مستني الخطوة ٥ */}
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={() => handleSubmit(false)}
+                  disabled={submitting || processingImages}
+                  className="px-5 py-2 bg-[#34D399] text-[#04352A] rounded-lg text-sm font-semibold hover:bg-[#34D399]/90 disabled:opacity-50 flex items-center gap-1"
+                >
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  {submitting ? 'جاري الحفظ...' : 'حفظ التعديلات'}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setStep(s => s + 1)}
+                disabled={!canGoNext() || processingImages}
+                className={`px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 ${
+                  isEditing
+                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-[#34D399] text-[#04352A] hover:bg-[#34D399]/90'
+                }`}
+              >
+                التالي <ChevronLeft className="w-4 h-4" />
+              </button>
+            </div>
           ) : (
             <div className="flex gap-2">
               <button
