@@ -4,17 +4,15 @@ import { Suspense, useState, useEffect, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
-import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
+import { normalizePhone } from '@/lib/auth-helpers'
 import { saveAccount } from '@/lib/saved-accounts'
 import { syncModuleSession } from '@/lib/madmonaSession'
-import { safeStorage } from '@/lib/safe-storage'
 import {
   ArrowRight, Phone, Lock, AlertCircle, Loader2, LogIn, Sparkles, KeyRound,
 } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { GoogleSignInButton } from '@/components/GoogleSignInButton'
 import WhatsAppLogin from '@/components/WhatsAppLogin'
-import { jsonObj } from '@/lib/rpc'
 
 // ⛔ دخول فيسبوك اتشال نهائياً (٢ أغسطس ٢٠٢٦) — كان متقفل بفلاج من زمان
 //    ومحدش استخدمه ولا مرة (صفر هوية facebook في auth.identities)، وقرار
@@ -27,7 +25,9 @@ function LoginContent() {
   const redirectTo = searchParams.get('redirect') || '/account'
   const prefilledPhone = searchParams.get('phone') || ''
 
-  const [phone, setPhone] = useState(prefilledPhone)
+  // 🔑 (٢٠ أغسطس ٢٠٢٦) خانة واحدة تقبل **إيميل أو رقم** — بدل ما كانت رقم بس
+  //    والنظام يخمّن الإيميل منه (وده كان بيكسر الدخول لأي حساب بإيميل حقيقي).
+  const [identifier, setIdentifier] = useState(prefilledPhone)
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -36,10 +36,10 @@ function LoginContent() {
   //    جوجل والواتساب فضلوا موجودين فوقه لمن يفضّلهم.
   const [showPassword, setShowPassword] = useState(true)
 
-  // Auto-fill phone from query param when account switcher redirects here
+  // Auto-fill from query param when account switcher redirects here
   useEffect(() => {
     if (prefilledPhone) {
-      setPhone(prefilledPhone)
+      setIdentifier(prefilledPhone)
     }
   }, [prefilledPhone])
 
@@ -47,9 +47,9 @@ function LoginContent() {
     e.preventDefault()
     setError(null)
 
-    const normalized = normalizePhone(phone)
-    if (!normalized) {
-      setError(t('auth.err_phone'))
+    const raw = identifier.trim()
+    if (!raw) {
+      setError('اكتب إيميلك أو رقم تليفونك')
       return
     }
     if (!password) {
@@ -59,62 +59,61 @@ function LoginContent() {
 
     setSubmitting(true)
 
-    // 1) Employee login first: phone + PIN (e.g. the 4-digit clock-in PIN) -> /me.
-    //    Employees have NO minimum-length rule — any PIN works.
+    // ========================================================================
+    // 🔑 (٢٠ أغسطس ٢٠٢٦) الحل الجذري لمشكلة الدخول — محمد: «نحل المشكلة من الجذر»
+    //
+    // الكود القديم كان **بيخمّن** إيميل الحساب من الرقم
+    // (`phoneToEmail` → '<الرقم>@madmonacairo.com') ويحاول يدخل بيه. فأي حساب
+    // إيميله الحقيقي مختلف (جيميل، أو إيميل مصطنع باسم مش الرقم) كان الدخول
+    // بيفشل مهما كانت الباسورد صح — من غير أي رسالة مفيدة. ده اللي كان مانع
+    // أدمن مضمونة نفسه (أحمد سامي، إيميله جيميل) من الدخول.
+    //
+    // دلوقتي: RPC `resolve_login_email` بيدوّر على الحساب **فعليًا** بالإيميل
+    // أو الرقم (المقارنة بآخر ١٠ أرقام فبتتخطى كل فروق الصيغ: 0/+2/2/مسافات)
+    // ويرجّع الإيميل المسجّل في auth.users. بيشتغل مع أي حساب مهما كانت
+    // صيغة إيميله — مفيش تخمين خالص.
+    //
+    // ⛔ مسار الـPIN اتشال نهائيًا بقرار محمد (٢٠ أغسطس ٢٠٢٦):
+    //    «اقفلنا قصة الدخول بالـPIN دي خالص — أي دخول يا بالإيميل يا برقم
+    //     التليفون والباسورد أو برقم التليفون والتحقق بالـOTP، ده على مستوى
+    //     أي حاجة». (الـPIN لسه شغال في شاشة الحضور /clock — دي حاجة تانية
+    //     خالص، بصمة حضور مش دخول حساب.)
+    // ========================================================================
+    let loginEmail: string | null = null
     try {
-      const { data: emp } = await supabaseBrowser.rpc('employee_login_phone_pin', {
-        p_phone: normalized, p_pin: password,
-      })
-      // employee_login_phone_pin بترجّع jsonb: { success, token? }
-      const empR = jsonObj<{ success: boolean; token: string }>(emp)
-      if (empR.success && empR.token) {
-        safeStorage.set('madmona_token', empR.token)
-        router.push('/me')
-        return
-      }
-    } catch {
-      /* not an employee — fall through to customer login */
+      // الأنواع المولّدة (src/types/supabase.ts) لسه ماتجدّدتش بعد الهجرة،
+      // فالـRPC الجديدة مش معروفة لـTS. نفس نمط الـcast المستخدم في
+      // marid-brain.ts و anthropic.ts — بيتشال لوحده أول ما الأنواع تتولّد.
+      const { data } = await (supabaseBrowser.rpc as unknown as (
+        fn: string, args: Record<string, unknown>,
+      ) => Promise<{ data: string | null }>)('resolve_login_email', { p_identifier: raw })
+      loginEmail = data ?? null
+    } catch (err) {
+      console.error('[auth/login] resolve_login_email failed:', err)
     }
 
-    // A short credential that wasn't a valid employee PIN can't be a customer password.
-    if (password.length < 6) {
-      setError('رقم التليفون أو الـ PIN غلط')
+    if (!loginEmail) {
+      setError('مالقيناش حساب بالبيانات دي — اتأكد من الإيميل أو الرقم')
       setSubmitting(false)
       return
     }
 
-    // 2) Customer login — native phone accounts first (created via the
-    //    phone-auth edge function, Aug 2026), then the legacy phone->email
-    //    trick for accounts created before that. Both use the same password.
-    let signInData: { user?: { id: string } | null } | null = null
-
-    const { data: phoneData, error: phoneErr } = await supabaseBrowser.auth.signInWithPassword({
-      phone: normalized.slice(1), // '+2010...' -> '2010...'
+    const { data: signInData, error: signInErr } = await supabaseBrowser.auth.signInWithPassword({
+      email: loginEmail,
       password,
     })
 
-    if (!phoneErr && phoneData?.user) {
-      signInData = phoneData
-    } else {
-      const email = phoneToEmail(normalized)
-      const { error: signInErr, data: emailData } = await supabaseBrowser.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (signInErr) {
-        console.error('[auth/login] sign in error:', signInErr)
-        if (signInErr.message.includes('Invalid login credentials')) {
-          setError(t('auth.err_invalid_creds'))
-        } else if (signInErr.message.includes('Email not confirmed')) {
-          setError(t('auth.err_not_confirmed'))
-        } else {
-          setError(signInErr.message || t('auth.err_generic'))
-        }
-        setSubmitting(false)
-        return
+    if (signInErr) {
+      console.error('[auth/login] sign in error:', signInErr)
+      if (signInErr.message.includes('Invalid login credentials')) {
+        setError(t('auth.err_invalid_creds'))
+      } else if (signInErr.message.includes('Email not confirmed')) {
+        setError(t('auth.err_not_confirmed'))
+      } else {
+        setError(signInErr.message || t('auth.err_generic'))
       }
-      signInData = emailData
+      setSubmitting(false)
+      return
     }
 
     // Save account to localStorage for fast switching later
@@ -122,15 +121,16 @@ function LoginContent() {
       if (signInData?.user?.id) {
         const { data: profile } = await supabaseBrowser
           .from('profiles')
-          .select('full_name, role')
+          .select('full_name, phone, role')
           .eq('id', signInData.user.id)
           .maybeSingle()
 
-        const label = profile?.full_name || normalized
+        const key = profile?.phone || normalizePhone(raw) || raw
+        const label = profile?.full_name || key
         const role = profile?.role || 'customer'
-        saveAccount(normalized, label, role)
+        saveAccount(key, label, role)
       } else {
-        saveAccount(normalized, normalized)
+        saveAccount(raw, raw)
       }
     } catch (e) {
       // Silent fail — saving is nice-to-have
@@ -197,14 +197,14 @@ function LoginContent() {
 
             <WhatsAppLogin redirect={redirectTo} onDone={() => { router.push(redirectTo); router.refresh() }} />
 
-            {/* الباسورد/الـPIN — للحسابات القديمة والموظفين */}
+            {/* الدخول بالباسورد — بالإيميل أو الرقم */}
             {!showPassword && (
               <button
                 type="button"
                 onClick={() => setShowPassword(true)}
                 className="mt-4 w-full text-center text-xs font-bold text-gray-400 hover:text-[#059669] transition-colors"
               >
-                عندك باسورد أو PIN موظفين؟ ادخل بيه من هنا
+                عندك باسورد؟ ادخل بيه من هنا
               </button>
             )}
 
@@ -213,17 +213,17 @@ function LoginContent() {
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                   <Phone className="w-3.5 h-3.5 text-[#059669]" />
-                  {t('auth.phone_label')}
+                  الإيميل أو رقم التليفون
                 </label>
                 <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="01XXXXXXXXX"
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="name@example.com أو 01XXXXXXXXX"
                   className="w-full px-4 py-3.5 bg-[#FAFAF7] border border-gray-100 rounded-2xl text-base font-medium focus:outline-none focus:bg-white focus:border-[#059669]/40 focus:ring-4 focus:ring-[#059669]/10 transition-all"
                   dir="ltr"
                   style={{ textAlign: 'right' }}
-                  autoComplete="tel"
+                  autoComplete="username"
                   required
                 />
               </div>
@@ -255,7 +255,7 @@ function LoginContent() {
                   required
                 />
                 <p className="text-[11px] text-gray-500 mt-1.5">
-                  موظف؟ اكتب رقمك والـ PIN بتاع البصمة في خانة الباسورد وهتدخل على حسابك على طول.
+                  تقدر تدخل بإيميلك أو برقم تليفونك — الاتنين شغالين.
                 </p>
               </div>
 
@@ -268,7 +268,7 @@ function LoginContent() {
 
               <button
                 type="submit"
-                disabled={submitting || !phone || !password}
+                disabled={submitting || !identifier || !password}
                 className="w-full bg-[#34D399] text-[#04352A] py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-elevated transition-all flex items-center justify-center gap-2"
               >
                 {submitting ? (
