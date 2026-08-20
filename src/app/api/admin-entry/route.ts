@@ -71,7 +71,25 @@ export async function POST(req: Request) {
   if (admin.status !== 'active') {
     return NextResponse.json({ ok: false, error: 'الحساب ده متعطّل — كلّم صاحب النظام' }, { status: 403 })
   }
-  if (!verifyPassword(password, admin.password_hash)) {
+  // 🔑 (٢٠ أغسطس ٢٠٢٦ — محمد: «وحّد الباسورد وده يبقى نظام») الباسورد اللي
+  //    بتتكتب في **جدول الموظفين** بقت هي المصدر الوحيد، وبتتزامن هنا
+  //    تلقائيًا بتريجر. بس هي bcrypt والنظام القديم هنا scrypt — فبندعم
+  //    الاتنين عشان مايتكسرش أي حساب قديم:
+  //      • '$2…'       → bcrypt، بيتحقق منه في الداتابيز (مفيش bcrypt في Node)
+  //      • 'salt:hash' → scrypt، بيتحقق منه هنا زي ما هو
+  let passwordOk = false
+  if (typeof admin.password_hash === 'string' && admin.password_hash.startsWith('$2')) {
+    const { data: bcryptOk } = await (db.rpc as unknown as (
+      fn: string, args: Record<string, unknown>,
+    ) => Promise<{ data: boolean | null }>)(
+      'platform_admin_verify_bcrypt', { p_admin_id: admin.id, p_password: password },
+    )
+    passwordOk = bcryptOk === true
+  } else {
+    passwordOk = verifyPassword(password, admin.password_hash)
+  }
+
+  if (!passwordOk) {
     return NextResponse.json({ ok: false, error: 'الباسورد غلط' }, { status: 401 })
   }
 
