@@ -33,8 +33,31 @@ const ALLOWED_HOSTS = [
   'ugc.production.linktr.ee',
 ]
 
+/* 🛡️ (٢٠ أغسطس ٢٠٢٦) SVG **عمره ما يعدّي على optimizer الصور**.
+   next/image بيرفض SVG افتراضيًا (`dangerouslyAllowSVG` مقفول عن قصد —
+   فتحه بيسمح بـSVG من **أي** دومين مسموح، ومنهم storage اللي المستخدمين
+   بيرفعوا عليه، وده باب سكريبت). النتيجة: `/_next/image` بيرجّع **400**
+   والصورة **متختفي من غير أي رسالة خطأ** — نفس الفشل الصامت اللي حصل
+   يوم ١٦ أغسطس («إعلانات نزلت الصور بتاعتها محطوطة غلط»).
+
+   اتأكدت لايف: كارت المشروع مباشرةً = 200، ومن خلال الـoptimizer = 400.
+
+   الكروت اللي بنولّدها (`/api/project-card/…` و`/api/logo/…`) كلها SVG،
+   فبتروح على `<img>` عادي — بتشتغل، والـSVG جوّه `<img>` مابينفّذش سكريبت.
+   ⚠️ الفحص ده مبني على **الامتداد والمسار**، مش على الدومين — عشان
+   يفضل صح حتى لو حد ضاف دومينّا في `remotePatterns` بعدين. */
+function isSvgLike(src: string): boolean {
+  if (!src) return false
+  const clean = src.split('?')[0].split('#')[0].toLowerCase()
+  return clean.endsWith('.svg')
+    || clean.includes('/api/project-card/')
+    || clean.includes('/api/logo/')
+    || src.startsWith('data:image/svg')
+}
+
 function isAllowedHost(src: string): boolean {
   if (!src) return false
+  if (isSvgLike(src)) return false          // 👈 SVG مايعدّيش على الـoptimizer
   // Local images (start with /)
   if (src.startsWith('/')) return true
   if (src.startsWith('data:') || src.startsWith('blob:')) return false
