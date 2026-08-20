@@ -28,7 +28,12 @@ export type ModuleDef = { href: string; label: string; primary?: boolean; v: VKe
 export const MODULE_DEFS: ModuleDef[] = [
   { href: 'confirmations',      label: 'التأكيدات',        primary: true, v: ['core'] },
   { href: 'links',              label: 'كل اللينكات',                     v: ['core'] },
-  { href: 'dashboard',          label: 'Dashboard',        primary: true, v: ['core'] },
+  // 📊 (٢٠ أغسطس ٢٠٢٦) كان اسمه «Dashboard» بالإنجليزي، وبيظهر جنب زرار
+  //    اسمه «لوحة الإدارة» — اسمين مختلفين لنفس المكان، ومحمد سأل عن الفرق
+  //    بينهم: «إيه الفرق بين الداشبورد ولوحة الإدارة اللي موجودة في حسابي؟».
+  //    مفيش فرق — ده تاب **جوّه** لوحة الإدارة. فبقى «نظرة عامة»، واللوحة
+  //    نفسها هي «لوحة الإدارة». اسم واحد لكل حاجة.
+  { href: 'dashboard',          label: 'نظرة عامة',        primary: true, v: ['core'] },
   { href: 'team',               label: 'الفريق',                          v: ['core'], perm: 'can_manage_team' },
   // 🔐 (٢٠ أغسطس ٢٠٢٦) صلاحيات موظفي البيزنس — جوّه لوحة البيزنس نفسه.
   //    محمد: «صلاحيات موظفين الـB2B أو أي بيزنس B2B يكون داخل تاب الـB2B».

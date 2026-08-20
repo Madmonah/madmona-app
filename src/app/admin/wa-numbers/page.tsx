@@ -8,6 +8,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { isPlatformStaff } from '@/lib/platform-staff'
 import {
   ArrowRight, Loader2, Lock, ShieldAlert, RefreshCw,
   CheckCircle, AlertCircle, Plus, Trash2, QrCode, Smartphone,
@@ -65,9 +66,7 @@ export default function WaNumbersPage() {
   async function init() {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
     if (!session?.user) { setStage('unauthenticated'); return }
-    const { data: profRaw } = await supabaseBrowser.from('profiles').select('role').eq('id', session.user.id).maybeSingle()
-    const prof = profRaw as { role?: string } | null
-    if (prof?.role !== 'admin') { setStage('forbidden'); return }
+    if (!(await isPlatformStaff())) { setStage('forbidden'); return }
     await load()
     setStage('ready')
   }

@@ -194,9 +194,11 @@ export default function MyWorkPage() {
             <ArrowRight className="w-4 h-4 text-[#6B7280]" />
           </Link>
           <div className="flex-1 min-w-0">
-            <h1 className="text-base font-black text-[#1A2E26] leading-none">شغلي</h1>
+            <h1 className="text-base font-black text-[#1A2E26] leading-none">شغلي أنا</h1>
+            {/* 🧭 (٢٠ أغسطس ٢٠٢٦) محمد سأل عن الفرق بين ده وبين لوحة الإدارة.
+                السطر ده بيقوله من غير ما يسأل تاني. */}
             <p className="text-[11px] text-[#6B7280] mt-1">
-              الحضور والطلبات والمصاريف — كل واحد بصلاحياته
+              حضورك وطلباتك ومصاريفك إنت — مش إدارة البيزنس
             </p>
           </div>
           {home?.account_kind && KIND_LABEL[home.account_kind] && (

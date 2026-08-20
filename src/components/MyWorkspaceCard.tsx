@@ -100,9 +100,9 @@ export default function MyWorkspaceCard() {
           <ClipboardList className="w-5 h-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-sm text-gray-900">شغلي</p>
+          <p className="font-bold text-sm text-gray-900">شغلي أنا</p>
           <p className="text-[11px] text-gray-500 mt-0.5">
-            الحضور والانصراف · الطلبات · المصاريف
+            حضورك وانصرافك · طلباتك · مصاريفك
           </p>
         </div>
         {totalPending > 0 && (
@@ -172,6 +172,14 @@ export default function MyWorkspaceCard() {
                     .slice(0, 8)
                   if (tabs.length === 0) return null
                   return (
+                    <>
+                    {/* 🏷️ (٢٠ أغسطس ٢٠٢٦) عنوان صريح إن دي اختصارات **جوّه**
+                        لوحة الإدارة — مش مكان تاني. محمد سأل: «إيه الفرق بين
+                        الداشبورد ولوحة الإدارة؟» ومكانش فيه فرق أصلًا، بس
+                        الشكل كان بيوحي بكده. */}
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">
+                      اختصارات لوحة الإدارة
+                    </p>
                     <div className="grid grid-cols-2 gap-1.5 mb-2">
                       {tabs.map(mod => (
                         <Link
@@ -184,6 +192,7 @@ export default function MyWorkspaceCard() {
                         </Link>
                       ))}
                     </div>
+                    </>
                   )
                 })()}
 
@@ -196,7 +205,7 @@ export default function MyWorkspaceCard() {
                     className="inline-flex items-center justify-center gap-1.5 bg-[#34D399] text-[#04352A] text-xs font-bold px-3 py-2.5 rounded-xl no-underline hover:bg-[#34D399]/90"
                   >
                     <ClipboardList className="w-3.5 h-3.5" />
-                    شغلي
+                    شغلي أنا
                   </Link>
                   <Link
                     href={`/admin/business-finance/${m.supplier_id}`}
@@ -206,6 +215,11 @@ export default function MyWorkspaceCard() {
                     لوحة الإدارة
                   </Link>
                 </div>
+
+                {/* 🧭 سطر واحد يفرّق بين الاتنين — دي كانت أكتر حاجة مربكة */}
+                <p className="text-[10px] text-gray-400 mt-2 leading-relaxed text-center">
+                  «شغلي أنا» = حضورك وطلباتك إنت · «لوحة الإدارة» = إدارة البيزنس كله
+                </p>
 
                 {m.relation === 'employee' && (
                   <p className="text-[10px] text-gray-400 mt-2 leading-relaxed">

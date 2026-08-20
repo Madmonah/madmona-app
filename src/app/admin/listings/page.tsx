@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { isPlatformStaff } from '@/lib/platform-staff'
 // 🔐 الـRPCs دي محميّة بصلاحية — لازم تعدّي من بوابة الأدمن على السيرفر
 import { adminRpc } from '@/lib/adminRpc'
 import {
@@ -86,9 +87,7 @@ export default function AdminListingsPage() {
     (async () => {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
       if (!session?.user) { setStage('unauthenticated'); return }
-      const { data: prof } = await supabaseBrowser
-        .from('profiles').select('role').eq('id', session.user.id).maybeSingle()
-      if ((prof as any)?.role !== 'admin') { setStage('forbidden'); return }
+      if (!(await isPlatformStaff())) { setStage('forbidden'); return }
       setStage('ready')
     })()
   }, [])

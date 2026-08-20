@@ -60,7 +60,7 @@ export default function DashboardPage({ params }: { params: { supplierId: string
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-1">B2B PARTNER · ANALYTICS</p>
-              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">Dashboard · {supplier?.business_name}</h1>
+              <h1 className="text-2xl md:text-3xl font-black text-[#1A2E26]">نظرة عامة · {supplier?.business_name}</h1>
             </div>
             <div className="flex gap-2 flex-wrap items-center">
               {PERIODS.map(p => (

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { isPlatformStaff } from '@/lib/platform-staff'
 import {
   ArrowRight, Loader2, Lock, AlertCircle, Newspaper, Pin, PinOff,
   Eye, EyeOff, Trash2, Edit3, Save, CheckCircle, X, ShieldAlert,
@@ -72,13 +73,7 @@ export default function AdminNewsPage() {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
     if (!session?.user) { setStage('unauthenticated'); return }
 
-    const { data: prof } = await supabaseBrowser
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .maybeSingle()
-
-    if (prof?.role !== 'admin') { setStage('forbidden'); return }
+    if (!(await isPlatformStaff())) { setStage('forbidden'); return }
 
     await loadItems()
     setStage('ready')

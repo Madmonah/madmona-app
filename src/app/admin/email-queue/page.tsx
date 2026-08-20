@@ -8,6 +8,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { isPlatformStaff } from '@/lib/platform-staff'
 import {
   ArrowRight, Loader2, Lock, ShieldAlert, Mail, RefreshCw, Zap,
   CheckCircle, AlertCircle, Clock, Send, Inbox, Users,
@@ -68,8 +69,7 @@ export default function EmailQueuePage() {
   async function init() {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
     if (!session?.user) { setStage('unauthenticated'); return }
-    const { data: prof } = await supabaseBrowser.from('profiles').select('role').eq('id', session.user.id).maybeSingle()
-    if (prof?.role !== 'admin') { setStage('forbidden'); return }
+    if (!(await isPlatformStaff())) { setStage('forbidden'); return }
     await loadRows()
     setStage('ready')
   }
