@@ -89,6 +89,44 @@ export function useSupplierAccess(explicitSupplierId?: string): SupplierAccess {
 
       const userId = session.user.id
 
+      // ======================================================================
+      // 👑 (٢٠ أغسطس ٢٠٢٦) أدمن المنصة له صلاحية على **أي** حساب.
+      //
+      // محمد: «ازاي انا اكون كشركة مضمونة صاحب المنصة وتيجي تقولي ملكش
+      // صلاحية لإعلان جوه المنصة!!؟» — وكان محق. الفحص كان بيسأل حاجتين
+      // بس: هل هو مالك الحساب ده بالذات؟ ولا موظف مسجّل فيه؟ ومفيش أي
+      // اعتبار لكونه **أدمن المنصة نفسها**. فصاحب المنصة كان بيتقفل في وشه
+      // على أي إعلان تحت أي مورد — وده يناقض النموذج: مضمونة بتدير المنصة
+      // بالكامل وهي المسؤولة عن كل حاجة فيها.
+      //
+      // الفحص بيتم في الداتابيز (`current_user_is_platform_admin`) على
+      // `platform_admins` — مش على عمود دور في البروفايل يسهل تزويره.
+      // ======================================================================
+      try {
+        const { data: isPlatformAdmin } = await (supabaseBrowser.rpc as unknown as (
+          fn: string,
+        ) => Promise<{ data: boolean | null }>)('current_user_is_platform_admin')
+
+        if (isPlatformAdmin === true) {
+          let name = 'مضمونة'
+          if (explicitSupplierId) {
+            const { data } = await supabaseBrowser
+              .from('marketplace_suppliers')
+              .select('business_name')
+              .eq('id', explicitSupplierId)
+              .maybeSingle()
+            if (data?.business_name) name = data.business_name
+          }
+          if (!cancelled) {
+            setAccess(buildOwnerAccess(explicitSupplierId || '', name))
+          }
+          return
+        }
+      } catch (e) {
+        // مش أدمن منصة (أو الفحص فشل) — نكمّل بالفحص العادي تحت
+        console.warn('[access] platform-admin check skipped:', e)
+      }
+
       // Try owner path first
       let supplierData: { id: string; business_name: string } | null = null
       if (explicitSupplierId) {
