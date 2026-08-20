@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
-  Loader2, ShieldCheck, Building2, Crown, ChevronLeft, Check, Minus, ClipboardList,
+  Loader2, ShieldCheck, Building2, Crown, ChevronLeft, ClipboardList,
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { modulesForIndustry, canOpenModule } from '@/lib/erpModules'
 
 /* ============================================================================
    MyWorkspaceCard — «شغلي وصلاحياتي» في شاشة حسابي
@@ -152,22 +153,39 @@ export default function MyWorkspaceCard() {
 
             {open && (
               <div className="px-6 pb-4 -mt-1">
-                {/* الصلاحيات بالظبط زي ما هي متحدّدة */}
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {m.permissions.map(p => (
-                    <span
-                      key={p.key}
-                      className={`text-[11px] font-bold px-2.5 py-1.5 rounded-full border flex items-center gap-1 ${
-                        p.on
-                          ? 'bg-[#34D399]/10 text-[#059669] border-[#059669]/25'
-                          : 'bg-gray-50 text-gray-400 border-gray-200 line-through'
-                      }`}
-                    >
-                      {p.on ? <Check className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-                      {p.label_ar}
-                    </span>
-                  ))}
-                </div>
+                {/* 🎛️ (٢٠ أغسطس ٢٠٢٦) تابات الداشبورد على طول من حسابي.
+                    محمد: «تاب مضمونة اللي فيها الصلاحيات جوّه تاب حسابي
+                    عايزها تفتح الداشبورد بتاباتها بحيث تسهّل على الناس
+                    إدارة البيزنس».
+
+                    قبل كده الكارت كان بيعرض **قايمة صلاحيات** — معلومة
+                    ساكنة الموظف مايعملش بيها حاجة — وزرار واحد على اللوحة
+                    وبعدين يلف جوّاها يدوّر على التاب. دلوقتي التابات نفسها
+                    هنا، وكل تاب بيتعرض بس لو صلاحيته مفتوحة (`canOpenModule`)
+                    ومناسب لنشاط البيزنس (`modulesForIndustry`). */}
+                {(() => {
+                  const permMap: Record<string, boolean> = {}
+                  m.permissions.forEach(p => { permMap[p.key] = p.on })
+                  const full = m.relation === 'owner'
+                  const tabs = modulesForIndustry(m.industry)
+                    .filter(mod => mod.primary && canOpenModule(mod.href, full, permMap))
+                    .slice(0, 8)
+                  if (tabs.length === 0) return null
+                  return (
+                    <div className="grid grid-cols-2 gap-1.5 mb-2">
+                      {tabs.map(mod => (
+                        <Link
+                          key={mod.href}
+                          href={`/admin/business-finance/${m.supplier_id}/${mod.href}`}
+                          className="flex items-center gap-1.5 bg-[#FAFAF7] hover:bg-white border border-gray-200 hover:border-[#059669]/30 rounded-xl px-2.5 py-2 text-[11.5px] font-bold text-gray-700 no-underline transition-colors"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] flex-shrink-0" />
+                          <span className="truncate">{mod.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )
+                })()}
 
                 <div className="grid grid-cols-2 gap-2">
                   {/* 🗂️ (٢٠ أغسطس ٢٠٢٦) «شغلي» — الحضور والطلبات والمصاريف
