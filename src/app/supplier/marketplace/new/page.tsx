@@ -40,7 +40,12 @@ interface SupplierOption {
   kyc_status: string
 }
 
-const MADMONA_SUPPLIER_ID = '7310f6ef-e474-4ef8-8b8a-388b5e1f5694'
+// 🚫 (٢٠ أغسطس ٢٠٢٦) حساب «وكيل الليستنجات» — **مش اختيار افتراضي بعد كده**.
+//    محمد: «مفيش حاجة اسمها إعلان من غير مالك معروف — المالك هو اللي بعت».
+//    كان الافتراضي هنا، فأي إعلان يتعمل من لوحة الأدمن من غير ما حد يغيّر
+//    القايمة كان بيتسجّل باسم الوكيل بدل صاحبه الحقيقي. (ده اللي حصل فعلًا
+//    مع إعلان ٢٠ أغسطس.) دلوقتي لازم تختار البيزنس بإيدك.
+const TRUSTEE_SUPPLIER_ID = '7310f6ef-e474-4ef8-8b8a-388b5e1f5694'
 
 export default function NewListingPage() {
   const [stage, setStage] = useState<Stage>('loading')
@@ -52,7 +57,7 @@ export default function NewListingPage() {
 
   // Admin-specific state
   const [suppliers, setSuppliers] = useState<SupplierOption[]>([])
-  const [selectedSupplierId, setSelectedSupplierId] = useState<string>(MADMONA_SUPPLIER_ID)
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>('')
 
   useEffect(() => {
     const init = async () => {
@@ -80,18 +85,13 @@ export default function NewListingPage() {
           .eq('kyc_status', 'approved')
           .order('business_name', { ascending: true })
 
-        const list: SupplierOption[] = (sups as SupplierOption[]) || []
+        // حساب الوصاية مش بيزنس حقيقي — بنشيله من القايمة خالص
+        const list: SupplierOption[] = ((sups as SupplierOption[]) || [])
+          .filter(s => s.id !== TRUSTEE_SUPPLIER_ID)
         setSuppliers(list)
 
-        // Default to Madmona if available, otherwise first supplier
-        const madmonaInList = list.find(s => s.id === MADMONA_SUPPLIER_ID)
-        const defaultId = madmonaInList?.id || list[0]?.id || ''
-        setSelectedSupplierId(defaultId)
-
-        // For admin without user session, use supplier_id as userId proxy for photo paths
-        if (!session?.user && defaultId) {
-          setUserId(defaultId)
-        }
+        // ⚠️ مفيش اختيار افتراضي — لازم تختار صاحب الإعلان بإيدك.
+        setSelectedSupplierId('')
 
         setStage('admin-pick-supplier')
         return
@@ -320,17 +320,15 @@ export default function NewListingPage() {
                     onChange={(e) => {
                       setSelectedSupplierId(e.target.value)
                       // Update userId proxy if no real session
-                      if (!userId || userId === MADMONA_SUPPLIER_ID || suppliers.find(s => s.id === userId)) {
+                      if (!userId || userId === TRUSTEE_SUPPLIER_ID || suppliers.find(s => s.id === userId)) {
                         setUserId(e.target.value)
                       }
                     }}
                     className="w-full appearance-none px-4 py-3 bg-[#FAFAF7] border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:bg-white focus:border-[#059669]/40 focus:ring-4 focus:ring-[#059669]/10"
                   >
+                    <option value="">— اختار صاحب الإعلان —</option>
                     {suppliers.map(s => (
-                      <option key={s.id} value={s.id}>
-                        {s.business_name}
-                        {s.id === MADMONA_SUPPLIER_ID ? ' (Madmona)' : ''}
-                      </option>
+                      <option key={s.id} value={s.id}>{s.business_name}</option>
                     ))}
                   </select>
                   <ChevronDown className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -338,7 +336,7 @@ export default function NewListingPage() {
                 <p className="text-xs text-gray-500 mt-2">
                   {suppliers.length} أجر معانا موافق · المختار:{' '}
                   <span className="font-bold text-[#059669]">
-                    {suppliers.find(s => s.id === selectedSupplierId)?.business_name}
+                    {suppliers.find(s => s.id === selectedSupplierId)?.business_name || 'لسه ماخترتش'}
                   </span>
                 </p>
               </div>
