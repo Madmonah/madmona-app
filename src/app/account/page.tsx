@@ -23,7 +23,7 @@ interface Profile {
   id: string
   phone: string
   full_name: string | null
-  role: 'customer' | 'supplier' | 'admin'
+  role: 'customer' | 'supplier' | 'admin' | 'business_ops'
 }
 
 interface Supplier {
@@ -213,6 +213,11 @@ export default function AccountPage() {
   }
 
   const isAdmin = profile?.role === 'admin'
+  // 👥 (٢٠ أغسطس ٢٠٢٦) موظف شركة مضمونة — محمد: «عايز سامية وأي حد ليه حساب
+  //    في شركة مضمونة يتصنّف في الأبليكيشن تحت مسمّى الإدارة». كان بيظهر
+  //    «عميل» لأن الدور ده مكانش متعرّف في الواجهة أصلًا.
+  const isMadmonaStaff = profile?.role === 'business_ops'
+  const isManagement = isAdmin || isMadmonaStaff
   const isApprovedSupplier = supplier?.kyc_status === 'approved'
   const isPendingSupplier = supplier?.kyc_status === 'pending'
   const isRejectedSupplier = supplier && ['rejected', 'suspended'].includes(supplier.kyc_status)
@@ -296,9 +301,10 @@ export default function AccountPage() {
                   </div>
                 )}
               </div>
-              {isAdmin && !editingName && (
+              {isManagement && !editingName && (
                 <span className="bg-gradient-to-r from-[#2FA084] to-[#d4a017] text-white text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 flex-shrink-0 shadow-soft">
-                  <Crown className="w-3 h-3" /> {t('account.admin_badge')}
+                  <Crown className="w-3 h-3" />
+                  {isAdmin ? t('account.admin_badge') : 'الإدارة'}
                 </span>
               )}
             </div>

@@ -31,20 +31,27 @@ interface Props {
   currentRole?: string | null
 }
 
+// 👥 (٢٠ أغسطس ٢٠٢٦) `business_ops` = موظف شركة مضمونة. محمد: «عايز سامية
+//    وأي حد ليه حساب في شركة مضمونة يتصنّف في الأبليكيشن تحت مسمّى الإدارة».
+//    الدور ده كان **ناقص** من القوايم دي، فكان بيقع على الافتراضي ويظهر
+//    «عميل» — رغم إنه موظف في الشركة اللي بتدير المنصة.
 const ROLE_LABELS: Record<string, string> = {
   admin: 'comp.as.role_admin',
+  business_ops: 'comp.as.role_business_ops',
   supplier: 'comp.as.role_supplier',
   customer: 'comp.as.role_customer',
 }
 
 const ROLE_COLORS: Record<string, string> = {
   admin: 'bg-purple-100 text-purple-700',
+  business_ops: 'bg-purple-100 text-purple-700',
   supplier: 'bg-[#2FA084]/15 text-[#2FA084]',
   customer: 'bg-[#34D399]/10 text-[#059669]',
 }
 
 const ROLE_ICONS: Record<string, React.ReactNode> = {
   admin: <ShieldCheck className="w-3.5 h-3.5" />,
+  business_ops: <ShieldCheck className="w-3.5 h-3.5" />,
   supplier: <Building2 className="w-3.5 h-3.5" />,
   customer: <User className="w-3.5 h-3.5" />,
 }

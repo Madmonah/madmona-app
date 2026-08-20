@@ -501,6 +501,10 @@ const ar: Dict = {
   'comp.as.role_admin': 'إدارة',
   'comp.as.role_supplier': 'مورد',
   'comp.as.role_customer': 'عميل',
+  // 👥 (٢٠ أغسطس ٢٠٢٦) موظفو شركة مضمونة — محمد: «عايز سامية وأي حد ليه
+  //    حساب في شركة مضمونة يتصنّف في الأبليكيشن تحت مسمّى الإدارة».
+  //    قبل كده كانوا بيظهروا «عميل» لأن دورهم مكانش متعرّف في الواجهة أصلًا.
+  'comp.as.role_business_ops': 'الإدارة',
   'comp.as.title': 'تبديل الحساب',
   'comp.as.sub': 'انتقل بين حساباتك بدون الخروج من الموقع',
   'comp.as.current_account': 'الحساب الحالي',
@@ -1231,6 +1235,7 @@ const en: Dict = {
   'comp.as.role_admin': 'Admin',
   'comp.as.role_supplier': 'Supplier',
   'comp.as.role_customer': 'Customer',
+  'comp.as.role_business_ops': 'Management',
   'comp.as.title': 'Switch account',
   'comp.as.sub': 'Move between your accounts without leaving the site',
   'comp.as.current_account': 'Current account',
