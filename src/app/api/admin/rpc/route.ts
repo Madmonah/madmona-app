@@ -52,6 +52,9 @@ const ALLOWED = new Set([
   'get_admin_dashboard_charts',
   'get_owner_overview_charts',
   'get_b2b_partner_links',
+  // 🏢 (٢٠ أغسطس ٢٠٢٦) كل البيزنس على المنصة في نداء واحد — تاب الشركاء
+  //    كان بيعرض multi_branch بس (٤ من ١٦٢). محمد: «وسّع التاب خليه يعرض الكل».
+  'admin_list_all_businesses',
 ])
 
 async function isAdmin(req: NextRequest): Promise<boolean> {

@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser as supabase } from '@/lib/supabase-browser'
+import { adminRpc } from '@/lib/adminRpc'
 import {
   Building2, Users, Plus, ArrowLeft, Loader2,
   Search, BadgePercent, Sparkles, Star,
@@ -29,6 +30,10 @@ type Partner = {
   district: string | null
   branches_count: number
   employees_count: number
+  listings_count: number
+  is_platform_owner: boolean
+  has_erp_crm: boolean
+  employee_seats: number
   today_revenue: number
   today_commission: number
   active_tasks: number
@@ -74,53 +79,33 @@ export default function BusinessPartnersIndexPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  // نطاق العرض: الكل · اللي معاه ERP · اللي معاه فريق · اللي معاه إعلانات
+  const [scope, setScope] = useState<'all' | 'erp' | 'staffed' | 'listings'>('all')
   const [view, setView] = useState<'partners' | 'leads'>('partners')
   const [convertingLeadId, setConvertingLeadId] = useState<string | null>(null)
   const [toast, setToast] = useState('')
 
+  // 🏢 (٢٠ أغسطس ٢٠٢٦) محمد: «وسّع التاب خليه يعرض الكل».
+  //    قبل كده كان بيفلتر على business_type='multi_branch' — يعني ٤ بيزنس
+  //    من ١٦٢، والمعارض وشركات العقارات والمطاعم والموردين الأفراد مش
+  //    ظاهرين خالص. وكمان كان بيعمل ٣ نداءات **لكل مورد** (٤٨٦ نداء لو
+  //    عرضنا الكل). دلوقتي نداء واحد بيرجّع الكل محسوب من الداتابيز.
   async function loadPartners() {
     setLoading(true)
-    const { data: suppliers } = await supabase
-      .from('suppliers')
-      .select('id, business_name, industry, business_type, contract_status, commission_rate, commission_extra_rate, contact_phone, city, district')
-      .eq('business_type', 'multi_branch')
-      .order('created_at', { ascending: false })
-
-    if (!suppliers || suppliers.length === 0) {
-      setPartners([])
-      setLoading(false)
-      return
+    // ⚠️ لوحة /admin مقفولة بكوكي البوابة مش بجلسة Supabase، فـauth.uid() = NULL
+    //    و`is_admin()` بترجّع false. فبنعدّي على /api/admin/rpc اللي بيتأكد من
+    //    الكوكي على السيرفر. ولو داخل بجلسة Supabase (صاحب المنصة) بنجرّب المباشر.
+    let rows: Partner[] = []
+    try {
+      const d = await adminRpc<Partner[]>('admin_list_all_businesses')
+      if (Array.isArray(d)) rows = d
+    } catch {
+      const { data } = await (supabase.rpc as unknown as (
+        fn: string,
+      ) => Promise<{ data: Partner[] | null }>)('admin_list_all_businesses')
+      if (Array.isArray(data)) rows = data
     }
-
-    const enriched = await Promise.all(
-      suppliers.map(async (s: any) => {
-        const today = new Date().toISOString().slice(0, 10)
-        const [branchesRes, empsRes, txnsRes] = await Promise.all([
-          supabase.from('supplier_branches').select('id', { count: 'exact', head: true })
-            .eq('supplier_id', s.id).eq('status', 'active'),
-          supabase.from('business_employees').select('id', { count: 'exact', head: true })
-            .eq('supplier_id', s.id).eq('status', 'active'),
-          supabase.from('financial_transactions').select('amount_egp, madmona_commission_amount')
-            .eq('supplier_id', s.id).eq('direction', 'in').eq('is_void', false)
-            .gte('occurred_at', `${today}T00:00:00`),
-        ])
-
-        const txns = (txnsRes.data || []) as Array<{ amount_egp: number; madmona_commission_amount: number }>
-        const todayRevenue = txns.reduce((sum, t) => sum + Number(t.amount_egp || 0), 0)
-        const todayCommission = txns.reduce((sum, t) => sum + Number(t.madmona_commission_amount || 0), 0)
-
-        return {
-          ...s,
-          branches_count: branchesRes.count || 0,
-          employees_count: empsRes.count || 0,
-          today_revenue: todayRevenue,
-          today_commission: todayCommission,
-          active_tasks: 0,
-        } as Partner
-      }),
-    )
-
-    setPartners(enriched)
+    setPartners(rows)
     setLoading(false)
   }
 
@@ -159,6 +144,10 @@ export default function BusinessPartnersIndexPage() {
 
   const filtered = useMemo(() => {
     let r = partners
+    // فلتر النطاق — عشان القايمة الكاملة (١٦٢) تفضل قابلة للاستخدام
+    if (scope === 'erp') r = r.filter((p) => p.has_erp_crm || p.business_type === 'multi_branch')
+    else if (scope === 'staffed') r = r.filter((p) => p.employees_count > 1)
+    else if (scope === 'listings') r = r.filter((p) => p.listings_count > 0)
     if (statusFilter !== 'all') r = r.filter((p) => p.contract_status === statusFilter)
     if (search) {
       const s = search.toLowerCase()
@@ -169,7 +158,7 @@ export default function BusinessPartnersIndexPage() {
       )
     }
     return r
-  }, [partners, statusFilter, search])
+  }, [partners, statusFilter, search, scope])
 
   const totals = useMemo(() => ({
     partners: partners.length,
@@ -195,7 +184,7 @@ export default function BusinessPartnersIndexPage() {
                 شركاء الـ B2B
               </h1>
               <p className="text-sm text-[#6B7280] mt-1">
-                {totals.partners} شريك · {totals.branches} فرع · {totals.employees} موظف
+                {totals.partners} بيزنس · {totals.branches} فرع · {totals.employees} موظف
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -252,6 +241,25 @@ export default function BusinessPartnersIndexPage() {
                 className="w-full pr-10 pl-4 py-2 rounded-xl bg-white border border-gray-200 text-sm text-[#1A2E26] placeholder-[#6B7280] focus:outline-none focus:border-[#059669] transition-colors"
               />
             </div>
+            {/* نطاق العرض — القايمة بقت ١٦٢ بيزنس، فالفلتر ده بيخليها قابلة للاستخدام */}
+            <div className="flex items-center gap-1 bg-white rounded-xl p-1 border border-gray-200">
+              {([
+                ['all', 'كل البيزنس'],
+                ['erp', 'معاه ERP'],
+                ['staffed', 'معاه فريق'],
+                ['listings', 'معاه إعلانات'],
+              ] as const).map(([k, label]) => (
+                <button
+                  key={k}
+                  onClick={() => setScope(k)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    scope === k ? 'bg-[#059669] text-white shadow-sm' : 'text-[#6B7280] hover:text-[#1A2E26]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
             <div className="flex items-center gap-1 bg-white rounded-xl p-1 border border-gray-200">
               {['all', 'negotiating', 'signed', 'active', 'paused'].map((s) => (
                 <button
@@ -282,7 +290,7 @@ export default function BusinessPartnersIndexPage() {
         ) : (
           <>
             <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <StatCard label="شركاء نشطين" value={totals.activePartners} sublabel={`من إجمالي ${totals.partners}`} />
+              <StatCard label="بيزنس نشط" value={totals.activePartners} sublabel={`من إجمالي ${totals.partners} بيزنس`} />
               <StatCard label="قيد التفاوض" value={totals.negotiating} sublabel="فرصة جديدة" />
               <StatCard label="إيراد اليوم" value={`${totals.revenue.toLocaleString('ar-EG')} ج`} primary />
               <StatCard label="عمولة مضمونة" value={`${totals.commission.toLocaleString('ar-EG')} ج`} tone="positive" sublabel="على gross bookings" />
@@ -490,7 +498,11 @@ function PartnerCard({ p }: { p: Partner }) {
     >
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="inline-grid place-items-center w-11 h-11 rounded-xl bg-[#34D399]/10 text-[#059669] font-black text-base flex-shrink-0">
+          <div className={`inline-grid place-items-center w-11 h-11 rounded-xl font-black text-base flex-shrink-0 ${
+            p.is_platform_owner
+              ? 'bg-gradient-to-br from-[#D4A017] via-[#2FA084] to-[#34D399] text-white'
+              : 'bg-[#34D399]/10 text-[#059669]'
+          }`}>
             {p.business_name.charAt(0)}
           </div>
           <div className="min-w-0">
@@ -498,6 +510,17 @@ function PartnerCard({ p }: { p: Partner }) {
               {p.business_name}
             </h3>
             <p className="text-xs text-[#6B7280] truncate">{industry} · {p.district || p.city || '—'}</p>
+            <div className="flex items-center gap-1 mt-1 flex-wrap">
+              {p.is_platform_owner && (
+                <span className="text-[9px] font-black bg-[#D4A017]/15 text-[#8A6A0B] px-1.5 py-0.5 rounded">الشركة الأم</span>
+              )}
+              {p.has_erp_crm && (
+                <span className="text-[9px] font-black bg-[#34D399]/10 text-[#059669] px-1.5 py-0.5 rounded">ERP</span>
+              )}
+              {p.listings_count > 0 && (
+                <span className="text-[9px] font-bold bg-[#FAFAF7] text-[#6B7280] px-1.5 py-0.5 rounded">{p.listings_count} إعلان</span>
+              )}
+            </div>
           </div>
         </div>
         <span className={`px-2 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase flex-shrink-0 ${status.color}`}>
