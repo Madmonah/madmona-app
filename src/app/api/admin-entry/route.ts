@@ -15,7 +15,6 @@ import {
   verifyPassword,
   newSessionToken,
 } from '@/lib/platformAdmin'
-import { normalizePhone } from '@/lib/auth-helpers'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -49,21 +48,19 @@ export async function POST(req: Request) {
   }
 
   const db = platformAdminDb()
-  const isEmail = identifier.includes('@')
-  const phone = isEmail ? null : normalizePhone(identifier)
 
-  let query = db.from('platform_admins').select('id, password_hash, status')
-  if (isEmail) {
-    query = query.eq('email', identifier.toLowerCase())
-  } else if (phone) {
-    // نقبل أي صيغة للرقم اتخزنت بيها وقت الإضافة (محلي أو دولي)
-    const local = '0' + phone.slice(3)
-    query = query.in('phone', [phone, phone.replace('+', ''), local])
-  } else {
-    return NextResponse.json({ ok: false, error: 'الإيميل أو رقم التليفون مش صحيح' }, { status: 400 })
-  }
+  // 📞 (٢٠ أغسطس ٢٠٢٦ — محمد: «اتأكد إننا بنقبل الرقم زي ما هو علشان موضوع
+  //     +2 بيلخبط») الكود القديم كان بيجرّب ٣ صيغ ثابتة بس
+  //     (+20… / 20… / 0…) — فأي رقم متخزّن بشكل تاني (مسافات، شرطة، من غير
+  //     صفر) مكانش بيتلاقى. دلوقتي `platform_admin_lookup` بيطابق بـ**آخر
+  //     ١٠ أرقام**، فأي صيغة يكتبها المستخدم أو أي صيغة متخزّنة بيشتغلوا.
+  const { data: rows } = await (db.rpc as unknown as (
+    fn: string, args: Record<string, unknown>,
+  ) => Promise<{ data: Array<{ id: string; password_hash: string; status: string }> | null }>)(
+    'platform_admin_lookup', { p_identifier: identifier },
+  )
 
-  const { data: row } = await query.limit(1).maybeSingle()
+  const row = Array.isArray(rows) ? rows[0] : null
   if (!row) {
     return NextResponse.json({ ok: false, error: 'الحساب ده مش موجود' }, { status: 401 })
   }
