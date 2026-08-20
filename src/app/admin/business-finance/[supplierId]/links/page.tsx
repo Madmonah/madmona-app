@@ -69,7 +69,7 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
         { label: 'طلبات شراء', path: `${baseAdmin}/purchase-orders` },
         { label: 'الموردين', path: `${baseAdmin}/vendors` },
         { label: 'العروض', path: `${baseAdmin}/promotions` },
-        { label: 'حملات WhatsApp', path: `${baseAdmin}/whatsapp-campaigns` },
+        { label: 'متابعة العملاء · CRM', path: `${baseAdmin}/crm` },
         { label: 'المستندات', path: `${baseAdmin}/documents` },
         { label: 'سجل التعديلات', path: `${baseAdmin}/audit-log` },
         { label: 'عملاء في خطر', path: `${baseAdmin}/at-risk` },
@@ -108,7 +108,11 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
     {
       title: 'حجز العملاء (لكل فرع)', icon: <CalendarCheck className="w-4 h-4" />,
       desc: 'لينكات للعملاء يحجزوا أونلاين — تبعتها أو تحطها في البايو',
-      items: branches.map((b: any) => ({ label: `حجز · ${b.name}`, path: `/book/${b.code}`, share: true })),
+      // 🔗 (٢٠ أغسطس ٢٠٢٦) كان `/book/${b.code}` — والمسار ده **مش موجود**.
+      //    اتأكدت لايف: بيرجّع 404. يعني كل زرار «حجز» صاحب البيزنس بيشيره
+      //    من هنا كان بيودّي العميل لصفحة مش لاقية. `/at/<code>` هو
+      //    الصفحة الشغّالة للفرع (بتفتح 200).
+      items: branches.map((b: any) => ({ label: `حجز · ${b.name}`, path: `/at/${b.code}`, share: true })),
     },
     {
       title: 'عام', icon: <Store className="w-4 h-4" />,

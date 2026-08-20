@@ -50,7 +50,11 @@ export const MODULE_DEFS: ModuleDef[] = [
   { href: 'at-risk',            label: 'عملاء في خطر',                    v: ['core'], perm: 'can_manage_customers' },
   { href: 'reports',            label: 'تصدير تقارير',                    v: ['core'], perm: 'can_view_reports' },
   { href: 'vat-report',         label: 'VAT Report',                      v: ['core'], perm: 'can_view_finance' },
-  { href: 'whatsapp-campaigns', label: 'WhatsApp',                        v: ['core'] },
+  // 🤝 (٢٠ أغسطس ٢٠٢٦) تاب الواتساب اتشال وبقى CRM.
+  //    محمد: «شيل تاب الواتساب اللي في إدارة البيزنس وخليه نظام CRM بيتابع
+  //    منه صاحب البيزنس العميل بتاعه». القديم كان بيعرض إحصائيات حملات
+  //    ومكتوب فيه «الصفحة دي للمتابعة وإلا» — شاشة قراءة مالهاش فعل.
+  { href: 'crm',                label: 'متابعة العملاء',   primary: true, v: ['core'], perm: 'can_manage_customers' },
   { href: 'promotions',         label: 'العروض',                          v: ['core'] },
   { href: 'inventory',          label: 'المخزون',                         v: ['core'], perm: 'can_manage_inventory' },
   { href: 'vendors',            label: 'الموردين',                        v: ['core'] },

@@ -68,7 +68,7 @@ const ICON_MAP: Record<string, any> = {
   branches: Building2, customers: Heart, expenses: DollarSign, accounting: Calculator,
   attendance: Clock, 'attendance-devices': Smartphone, 'cash-recon': Wallet, payroll: Calculator,
   documents: FileCheck, 'audit-log': FileText, 'at-risk': UserX, reports: Download,
-  'vat-report': Receipt, 'whatsapp-campaigns': MessageCircle, promotions: Gift,
+  'vat-report': Receipt, crm: MessageCircle, promotions: Gift,
   inventory: Package, vendors: Truck, 'purchase-orders': ShoppingCart,
   bookings: CalendarClock, 'services-catalog': Tag, services: Workflow,
   shifts: CalendarClock, waitlist: ListChecks, appointments: Calendar,
