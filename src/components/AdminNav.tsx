@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Menu, X, LayoutDashboard, Wallet, Building2, ShoppingBag, Users,
-  Bot, MessageSquare, Megaphone, Settings, ChevronLeft,
+  Bot, MessageSquare, Megaphone, Settings, ChevronLeft, Headphones,
 } from 'lucide-react'
 
 const MADMONA_ERP = '/admin/business-finance/c8b7b9d7-6178-4d0c-abdf-66f34b628e9d'
@@ -28,8 +28,18 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/business-partners', label: 'الشركاء' },
     { href: '/admin/leads', label: 'Leads' },
   ] },
+  // 📇 (٢١ أغسطس ٢٠٢٦) تتبّع شغل الفريق — محمد: «عايزين نعمل نظام يعمل تراك
+  //    لموظفين مضمونة … الليد يتوزّع عليهم … وكله يكون ظاهر».
+  { title: 'فريق مضمونة (CRM)', icon: Headphones, items: [
+    { href: '/admin/crm', label: 'الأرقام والتوزيع' },
+    { href: '/admin/staff', label: 'الموظفين' },
+    { href: '/admin/flow-tasks', label: 'كل التاسكات' },
+  ] },
   { title: 'الماركت بليس', icon: ShoppingBag, items: [
     { href: '/admin/listings', label: 'الإعلانات' },
+    // ⏸️ (٢١ أغسطس ٢٠٢٦) شاشة «الإعلانات الواقفة» — مسودة · موقوف · مرفوض
+    //    وليه واقف. كانت مبنية ومش موصولة بأي تنقّل.
+    { href: '/admin/drafts', label: 'الإعلانات الواقفة' },
     { href: '/admin/listing-drafts', label: 'المسودّات' },
     { href: '/admin/reattribute', label: 'نقل ملكية الإعلانات' },
     { href: '/admin/categories', label: 'الفئات' },

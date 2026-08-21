@@ -63,6 +63,20 @@ const ALLOWED = new Set([
   // 🏢 (٢٠ أغسطس ٢٠٢٦) كل البيزنس على المنصة في نداء واحد — تاب الشركاء
   //    كان بيعرض multi_branch بس (٤ من ١٦٢). محمد: «وسّع التاب خليه يعرض الكل».
   'admin_list_all_businesses',
+  // 📇 (٢١ أغسطس ٢٠٢٦) CRM مضمونة — /admin/crm.
+  //    توزيع الليدات بالتخصص · تفريغ المكالمات · التاسكات اللي بتتحوّل لوحدها.
+  'crm_overview',
+  'crm_contacts_list',
+  'crm_contact_detail',
+  'crm_tasks_list',
+  'crm_task_update',
+  'crm_set_contact',
+  'crm_set_staff_specialties',
+  'crm_save_specialty',
+  'crm_assign_round_robin',
+  'crm_classify_contacts',
+  'crm_ingest_contacts',
+  'crm_log_call',
 ])
 
 async function isAdmin(req: NextRequest): Promise<boolean> {
