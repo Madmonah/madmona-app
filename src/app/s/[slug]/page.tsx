@@ -209,6 +209,22 @@ const VERTICALS: Record<string, VerticalCfg> = {
     catLabels: { general: 'عام', 'عام': 'عام' }, catIcons: {},
   },
   // أي مجال تاني (تكنولوجيا / غير محدد) — محايد عام
+  // 🛥️ (٢١ أغسطس ٢٠٢٦) تأجير يخوت ورحلات بحرية — كان بيقع على
+  // `default` فيطلع بكلام عام («المكان» · «من جوه» · «احجز في أقرب فرع ليك»)
+  // على نشاط بيتأجّر بالساعة وبينطلق من مرسى مش «فرع».
+  marine_rentals: {
+    kicker: 'تأجير يخوت ورحلات بحرية',
+    heroCta: 'احجز رحلتك', heroCtaIcon: Calendar, waCta: 'اسأل عن يخت',
+    bookChip: 'حجز بالساعة', unitWord: 'يخت',
+    galleryHeading: 'من على المركب',
+    galleryTiles: ['اليخت', 'على البحر', 'من جوّه', 'الرحلة'],
+    branchesHeading: 'مكان الانطلاق', branchCta: 'احجز',
+    servicesHeading: 'اليخوت والأسعار', servicesIcon: Calendar,
+    teamHeading: 'الطاقم',
+    accountSub: 'شوف حجوزاتك وقيّم رحلتك',
+    coverBadge: 'صورة اليخت',
+    catLabels: { general: 'عام', 'عام': 'عام' }, catIcons: {},
+  },
   default: {
     kicker: 'احجز أونلاين',
     heroCta: 'احجز الآن', heroCtaIcon: Calendar, waCta: 'تواصل معنا',
@@ -232,6 +248,7 @@ function getVertical(industry: string | null | undefined): VerticalCfg {
   if (industry === 'vehicle_agency' || industry === 'auto') return VERTICALS.vehicle_agency
   if (industry === 'contracting' || industry === 'construction') return VERTICALS.contracting
   if (industry === 'retail' || industry === 'furniture' || industry === 'shop') return VERTICALS.retail
+  if (industry === 'marine_rentals' || industry === 'yachts') return VERTICALS.marine_rentals
   return VERTICALS.default
 }
 
@@ -321,6 +338,16 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
           <p className="text-[11px] font-bold tracking-[0.22em] text-white/80 mb-1">{v.kicker}</p>
           <h1 className="text-3xl md:text-4xl font-black leading-tight mb-2">{data.business_name}</h1>
           <p className="text-sm text-white/90 flex items-center gap-1.5"><MapPin className="w-4 h-4" /> {loc}</p>
+
+          {/* ✍️ (٢١ أغسطس ٢٠٢٦) وصف النشاط — كان **بيتجاب من الداتابيز
+              ويترمي**. الـRPC بترجّع `description_ar`، والاسكريبت اللي بنبعته
+              للتاجر بيطلبه، والصفحة عمرها ما عرضته. عشان كده كل الصفحات كانت
+              بتبان «قايمة منتجات» مش «شركة». */}
+          {data.description_ar && (
+            <p className="text-[12.5px] leading-relaxed text-white/75 mt-2 max-w-[46ch]">
+              {data.description_ar}
+            </p>
+          )}
 
           <div className="flex flex-wrap gap-2 mt-3.5">
             {[branches.length > 0 ? `${fmt(branches.length)} فروع` : null, `${fmt(data.industry === 'retail' ? data.product_count : data.service_count)} ${v.unitWord}`, v.bookChip].filter(Boolean).map((s: any) => (
