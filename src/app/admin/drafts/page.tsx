@@ -1,32 +1,29 @@
 'use client'
 
 /* ============================================================================
-   /admin/drafts — الإعلانات الواقفة، وناقصها إيه بالظبط
+   /admin/drafts — كل إعلان واقف: مسودة · موقوف · مرفوض — وليه واقف
    ============================================================================
-   🎯 (٢١ أغسطس ٢٠٢٦) محمد: «عندك ٢٢ إعلان درافت بياناتهم كاملة مش عارف
-      منزلوش ليه؟»
+   🎯 محمد:
+     (٢١ أغسطس) «عندك ٢٢ إعلان درافت بياناتهم كاملة مش عارف منزلوش ليه؟»
+     (٢١ أغسطس) «الإعلانات اللي في المسودة عايز أعرف مشكلتها إيه،
+                 والإعلانات الموقوفة برضو عايز أعرف اتوقفت ليه»
 
-   السبب الجذري اللي طلع من التحقيق:
-     الإعلانات الدرافت **مالهاش ناشر**. الشغلانة الوحيدة اللي بتنشر
-     أوتوماتيك بتشتغل على إعلانات البورصة بس (`directory_source='bourse-sync'`).
-     أي إعلان جاي من وكيل أو استيراد أو إدخال يدوي بيقعد درافت **للأبد** —
-     مش عشان فيه مشكلة، لكن عشان **محدش كان عارف إنه موجود**.
-     أقدم واحد فيهم قاعد من ٧٧ يوم.
+   الشاشة بترد على السؤالين بتلات حاجات جنب كل إعلان:
 
-   الشاشة دي بتحل ده بحاجتين:
-     ١) بتخلّيهم ظاهرين — قايمة واحدة، مفيش دفن.
-     ٢) بتقول لكل واحد **الناقص إيه** (صور حقيقية / سعر / تصنيف) بدل ما
-        تفتحه وتدوّر. واللي مش ناقصه حاجة → زرار «انشر» على طول.
+     ١) **السبب المسجّل** — لو حد أوقفه أو رفضه وكتب سبب.
+     ٢) **ناقصه إيه دلوقتي** — حقيقة محسوبة من الداتا (صور حقيقية / سعر /
+        تصنيف). لو الليستة فاضية يبقى الإعلان **مالوش عيب ظاهر**،
+        والوقفة كانت قرار مش نقص بيانات — وده فرق مهم.
+     ٣) **الوقفة الجماعية** — «اتوقف مع ١٢٤ إعلان في نفس الدقيقة». ده اللي
+        كشف إن ١٢٥ إعلان اتوقفوا مرة واحدة يوم ١٨/٠٨ ١٢:٤١ص، كلهم أصناف
+        منيو لـ١١ مطعم، وكل مطعم فضل ليه إعلان واحد منشور.
 
    ⚠️ «صور حقيقية» ≠ «صور». إعلان ممكن يكون عنده صورة وهي صورة تصنيف عامة
       من `/ads/categories/` — دي مش صورة المنتج، فالعدّاد بيستبعدها.
-      ده اللي بيخلّي إعلان مكتوب جنبه «١ صورة» ولسه ناقصه صور.
 
-   🔐 الدالتين محميّين بـ`is_madmona_staff() OR is_admin_or_service()` —
-      يعني أدمن المنصة **وموظفين مضمونة** يقدروا يفتحوها (محمد: «الأدمن
-      وموظفين مضمونة يعدّلوا أي إعلان — دول أدمن»).
-      وعشان اللوحة ممكن تتفتح بجلسة الأبليكيشن أو بكوكي الأدمن، بننادي
-      بالجلسة الأول وبنرجع لبوابة /api/admin/rpc لو مفيش جلسة.
+   🔐 محميّة بـ`is_madmona_staff() OR is_admin_or_service()` — الأدمن
+      وموظفين مضمونة. بننادي بجلسة الأبليكيشن الأول وبنرجع لبوابة
+      /api/admin/rpc لو اللوحة مفتوحة بكوكي الأدمن.
    ============================================================================ */
 
 import { useCallback, useEffect, useState } from 'react'
@@ -36,7 +33,7 @@ import { adminRpc } from '@/lib/adminRpc'
 import { fmtDateTime, sinceLabel } from '@/lib/arDateTime'
 import {
   ArrowRight, Loader2, ShieldAlert, Eye, Edit2, ImageOff, Tag,
-  CircleDollarSign, CheckCircle2, Clock, RefreshCw, AlertTriangle,
+  CircleDollarSign, CheckCircle2, Clock, RefreshCw, AlertTriangle, Layers,
 } from 'lucide-react'
 
 const C = {
@@ -45,16 +42,26 @@ const C = {
   danger: '#b3261e', warn: '#9a6b00', gold: '#d4a017',
 }
 
-type Draft = {
+type Kind = 'draft' | 'paused' | 'rejected'
+
+type Row = {
   id: string; title: string; slug: string
   business: string | null; supplier_id: string
   category: string | null; city: string | null
-  created_at: string; updated_at: string | null; days_stuck: number
+  status: Kind
+  created_at: string; stopped_at: string | null; days_stuck: number
+  reason: string | null; batch_size: number
   source: string; photo: string | null
   photos_real: number; photos_all: number
   price: number | null; price_on_request: boolean
   missing: string[]
 }
+
+const TABS: { key: Kind; label: string; hint: string }[] = [
+  { key: 'draft',    label: 'مسودة',  hint: 'اتعملت ومانزلتش — مفيش حاجة بتنشرها لوحدها' },
+  { key: 'paused',   label: 'موقوف',  hint: 'كانت منشورة واتوقفت' },
+  { key: 'rejected', label: 'مرفوض',  hint: 'اترفضت — والسبب مكتوب' },
+]
 
 const MISSING_ICON: Record<string, React.ReactNode> = {
   'صور حقيقية': <ImageOff style={{ width: 13, height: 13 }} />,
@@ -62,8 +69,6 @@ const MISSING_ICON: Record<string, React.ReactNode> = {
   'تصنيف': <Tag style={{ width: 13, height: 13 }} />,
 }
 
-/* بننادي بجلسة الأبليكيشن الأول (ده اللي بيخلّي موظفين مضمونة يشتغلوا)،
-   ولو مفيش جلسة بنرجع لبوابة الأدمن بالكوكي. */
 async function callRpc<T>(fn: string, args: Record<string, unknown> = {}): Promise<T> {
   try {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
@@ -72,66 +77,93 @@ async function callRpc<T>(fn: string, args: Record<string, unknown> = {}): Promi
         f: string, a: Record<string, unknown>,
       ) => Promise<{ data: T | null; error: { message: string } | null }>)(fn, args)
       if (!error && data != null) {
-        const asObj = data as unknown as { ok?: boolean; error?: string }
-        if (asObj?.ok !== false || asObj?.error !== 'forbidden') return data
+        const o = data as unknown as { ok?: boolean; error?: string }
+        if (o?.ok !== false || o?.error !== 'forbidden') return data
       }
     }
-  } catch {
-    /* بنكمل على البوابة */
-  }
+  } catch { /* بنكمل على البوابة */ }
   return await adminRpc<T>(fn, args)
 }
 
-export default function AdminDraftsPage() {
-  const [rows, setRows] = useState<Draft[]>([])
+export default function AdminStalledPage() {
+  const [tab, setTab] = useState<Kind>('draft')
+  const [rows, setRows] = useState<Row[]>([])
+  const [counts, setCounts] = useState<Record<Kind, number>>({ draft: 0, paused: 0, rejected: 0 })
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [flash, setFlash] = useState<{ id: string; msg: string; ok: boolean } | null>(null)
-  const [filter, setFilter] = useState<'all' | 'ready' | 'blocked'>('all')
+  const [onlyBlocked, setOnlyBlocked] = useState(false)
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (k: Kind) => {
     setLoading(true); setErr(null)
     try {
-      const res = await callRpc<{ ok: boolean; error?: string; rows: Draft[] }>('admin_draft_listings')
-      if (!res?.ok) { setErr(res?.error === 'forbidden' ? 'forbidden' : (res?.error || 'مقدرناش نحمّل الدرافتس')); setRows([]) }
-      else setRows(res.rows || [])
+      const res = await callRpc<{ ok: boolean; error?: string; rows: Row[] }>(
+        'admin_stalled_listings', { p_status: k },
+      )
+      if (!res?.ok) { setErr(res?.error === 'forbidden' ? 'forbidden' : (res?.error || 'مقدرناش نحمّل')); setRows([]) }
+      else {
+        setRows(res.rows || [])
+        setCounts(c => ({ ...c, [k]: (res.rows || []).length }))
+      }
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'مقدرناش نحمّل الدرافتس'); setRows([])
+      setErr(e instanceof Error ? e.message : 'مقدرناش نحمّل'); setRows([])
     }
     setLoading(false)
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => { load(tab) }, [tab, load])
 
-  async function publish(d: Draft) {
+  // العدّادات للتابات التانية — نداء واحد لكل واحد أول ما الصفحة تفتح
+  useEffect(() => {
+    ;(async () => {
+      for (const t of TABS) {
+        if (t.key === tab) continue
+        try {
+          const r = await callRpc<{ ok: boolean; rows: Row[] }>('admin_stalled_listings', { p_status: t.key })
+          if (r?.ok) setCounts(c => ({ ...c, [t.key]: (r.rows || []).length }))
+        } catch { /* العدّاد مش حرج */ }
+      }
+    })()
+    // مرة واحدة بس
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function publish(d: Row) {
     setBusyId(d.id); setFlash(null)
     try {
-      const res = await callRpc<{ ok: boolean; error?: string; title?: string }>(
+      const res = await callRpc<{ ok: boolean; error?: string }>(
         'admin_publish_listing', { p_listing_id: d.id },
       )
       if (res?.ok) {
         setFlash({ id: d.id, msg: 'اتنشر ✅', ok: true })
         setRows(prev => prev.filter(r => r.id !== d.id))
-      } else {
-        setFlash({ id: d.id, msg: res?.error || 'مقدرناش ننشره', ok: false })
-      }
+        setCounts(c => ({ ...c, [tab]: Math.max(0, c[tab] - 1) }))
+      } else setFlash({ id: d.id, msg: res?.error || 'مقدرناش ننشره', ok: false })
     } catch (e) {
       setFlash({ id: d.id, msg: e instanceof Error ? e.message : 'خطأ', ok: false })
     }
     setBusyId(null)
   }
 
+  const shown = onlyBlocked ? rows.filter(r => r.missing.length > 0) : rows
   const ready = rows.filter(r => r.missing.length === 0)
-  const blocked = rows.filter(r => r.missing.length > 0)
-  const shown = filter === 'ready' ? ready : filter === 'blocked' ? blocked : rows
-
   const needPhotos = rows.filter(r => r.missing.includes('صور حقيقية')).length
   const needPrice = rows.filter(r => r.missing.includes('سعر')).length
-  const oldest = rows.reduce((a, r) => Math.max(a, r.days_stuck), 0)
+
+  // 🧨 الوقفات الجماعية — أكبر ٣ دقايق اتوقف فيها إعلانات كتير مرة واحدة
+  const batches = Object.values(
+    rows.reduce((acc: Record<string, { at: string; n: number; reason: string | null }>, r) => {
+      if (r.batch_size < 3 || !r.stopped_at) return acc
+      const k = r.stopped_at.slice(0, 16)
+      acc[k] = acc[k] || { at: r.stopped_at, n: 0, reason: r.reason }
+      acc[k].n += 1
+      return acc
+    }, {}),
+  ).sort((a, b) => b.n - a.n).slice(0, 3)
 
   const chip = (active: boolean): React.CSSProperties => ({
-    padding: '6px 14px', borderRadius: 999, cursor: 'pointer',
+    padding: '7px 16px', borderRadius: 999, cursor: 'pointer',
     border: `1px solid ${active ? C.green : C.line}`,
     background: active ? C.green : C.card, color: active ? '#fff' : C.ink,
     fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap',
@@ -150,6 +182,8 @@ export default function AdminDraftsPage() {
     )
   }
 
+  const activeTab = TABS.find(t => t.key === tab)!
+
   return (
     <div dir="rtl" style={{ minHeight: '100vh', background: C.bg, color: C.ink, fontFamily: 'Cairo, Inter, system-ui, sans-serif' }}>
       <header style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.line}` }}>
@@ -159,39 +193,65 @@ export default function AdminDraftsPage() {
           </Link>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h1 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>الإعلانات الواقفة</h1>
-            <p style={{ fontSize: 12, color: C.sub, margin: '2px 0 0' }}>إعلانات اتعملت ومانزلتش — وكل واحد ناقصه إيه</p>
+            <p style={{ fontSize: 12, color: C.sub, margin: '2px 0 0' }}>كل إعلان مش شغّال — وليه</p>
           </div>
-          <button onClick={load} disabled={loading} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff', border: `1px solid ${C.line}`, color: C.ink, padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+          <button onClick={() => load(tab)} disabled={loading} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff', border: `1px solid ${C.line}`, color: C.ink, padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
             <RefreshCw style={{ width: 15, height: 15 }} className={loading ? 'animate-spin' : ''} /> تحديث
           </button>
         </div>
       </header>
 
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 16 }}>
-        {/* 🧭 السبب — مكتوب صريح عشان السؤال مايتكررش */}
-        <div style={{ background: '#fff8e6', border: '1px solid #f0e0b8', borderRadius: 16, padding: '12px 14px', marginBottom: 14, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-          <AlertTriangle style={{ width: 17, height: 17, color: C.warn, flexShrink: 0, marginTop: 2 }} />
-          <p style={{ fontSize: 12.5, color: C.warn, margin: 0, lineHeight: 1.8 }}>
-            الإعلانات دي واقفة مش عشان فيها غلط — عشان <b>مفيش حاجة بتنشرها لوحدها</b>.
-            النشر الأوتوماتيك بيشتغل على إعلانات البورصة بس. أي إعلان جاي من وكيل أو
-            استيراد أو إدخال يدوي محتاج حد ينشره من هنا.
-          </p>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+          {TABS.map(t => (
+            <button key={t.key} style={chip(tab === t.key)} onClick={() => setTab(t.key)}>
+              {t.label} ({counts[t.key]})
+            </button>
+          ))}
         </div>
+        <p style={{ fontSize: 12, color: C.sub, margin: '0 0 14px' }}>{activeTab.hint}</p>
 
-        {/* أرقام سريعة */}
+        {/* 🧭 السبب الجذري لكل تاب — مكتوب صريح عشان السؤال مايتكررش */}
+        {tab === 'draft' && (
+          <Note>
+            الدرافتس واقفة مش عشان فيها غلط — عشان <b>مفيش حاجة بتنشرها لوحدها</b>.
+            النشر الأوتوماتيك بيشتغل على إعلانات البورصة بس؛ أي إعلان جاي من وكيل
+            أو استيراد أو إدخال يدوي محتاج حد ينشره من هنا.
+          </Note>
+        )}
+        {tab === 'paused' && (
+          <Note>
+            <b>١٩٣ إعلان موقوف — وولا واحد كان عليه سبب مكتوب</b>، لأن الجدول مكانش
+            فيه خانة سبب أصلًا. اتضافت النهاردة، والإيقاف بقى <b>لازم معاه سبب</b>.
+            والسطر «اتوقف مع … في نفس الدقيقة» تحت هو اللي بيكشف الوقفات الجماعية.
+          </Note>
+        )}
+
+        {/* 🧨 الوقفات الجماعية */}
+        {tab !== 'draft' && batches.length > 0 && (
+          <div style={{ background: C.card, border: `1px solid ${C.line}`, borderRadius: 16, padding: 14, marginBottom: 14 }}>
+            <p style={{ fontSize: 12, fontWeight: 800, color: C.ink, margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Layers style={{ width: 14, height: 14, color: C.warn }} /> وقفات جماعية
+            </p>
+            {batches.map((b, i) => (
+              <div key={i} style={{ fontSize: 12, color: C.sub, padding: '5px 0', borderTop: i ? `1px solid ${C.line}` : 'none' }}>
+                <b style={{ color: C.ink }}>{b.n} إعلان</b> اتوقفوا مرة واحدة · {fmtDateTime(b.at)}
+              </div>
+            ))}
+          </div>
+        )}
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 14 }}>
-          <Stat n={rows.length} l="إعلان واقف" color={C.ink} />
-          <Stat n={ready.length} l="جاهز للنشر دلوقتي" color={C.green} />
+          <Stat n={rows.length} l="إجمالي" color={C.ink} />
+          <Stat n={ready.length} l="مالوش عيب ظاهر" color={C.green} />
           <Stat n={needPhotos} l="ناقصه صور حقيقية" color={C.danger} />
           <Stat n={needPrice} l="ناقصه سعر" color={C.warn} />
-          <Stat n={oldest} l="أقدم واحد (يوم)" color={C.gold} />
         </div>
 
-        <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
-          <button style={chip(filter === 'all')} onClick={() => setFilter('all')}>الكل ({rows.length})</button>
-          <button style={chip(filter === 'ready')} onClick={() => setFilter('ready')}>جاهز ينزل ({ready.length})</button>
-          <button style={chip(filter === 'blocked')} onClick={() => setFilter('blocked')}>ناقص حاجة ({blocked.length})</button>
-        </div>
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, marginBottom: 14, cursor: 'pointer' }}>
+          <input type="checkbox" checked={onlyBlocked} onChange={e => setOnlyBlocked(e.target.checked)} />
+          ورّيني اللي ناقصه حاجة بس
+        </label>
 
         {err && err !== 'forbidden' && (
           <div style={{ background: '#fdecea', color: C.danger, padding: 12, borderRadius: 12, marginBottom: 12, fontSize: 13 }}>خطأ: {err}</div>
@@ -206,17 +266,17 @@ export default function AdminDraftsPage() {
         {!loading && shown.length === 0 && (
           <div style={{ background: C.card, border: `1px solid ${C.line}`, borderRadius: 18, padding: 40, textAlign: 'center' }}>
             <CheckCircle2 style={{ width: 34, height: 34, color: C.green, margin: '0 auto 10px' }} />
-            <p style={{ fontWeight: 800, margin: 0 }}>مفيش إعلانات واقفة هنا</p>
+            <p style={{ fontWeight: 800, margin: 0 }}>مفيش حاجة هنا</p>
           </div>
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {shown.map(d => {
-            const canPublish = d.missing.length === 0
+            const clean = d.missing.length === 0
+            const canPublish = clean && d.status !== 'rejected'
             const f = flash?.id === d.id ? flash : null
             return (
               <article key={d.id} style={{ background: C.card, border: `1px solid ${canPublish ? C.green + '55' : C.line}`, borderRadius: 18, padding: 14, display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                {/* صورة */}
                 <div style={{ width: 74, height: 74, borderRadius: 14, overflow: 'hidden', background: '#f1f5f3', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {d.photo
                     // eslint-disable-next-line @next/next/no-img-element
@@ -224,7 +284,7 @@ export default function AdminDraftsPage() {
                     : <ImageOff style={{ width: 20, height: 20, color: '#b9c4bf' }} />}
                 </div>
 
-                <div style={{ flex: 1, minWidth: 200 }}>
+                <div style={{ flex: 1, minWidth: 210 }}>
                   <h3 style={{ fontSize: 14.5, fontWeight: 800, margin: '0 0 4px', lineHeight: 1.5 }}>{d.title}</h3>
                   <p style={{ fontSize: 12, color: C.sub, margin: '0 0 6px' }}>
                     {d.business || '—'}
@@ -234,20 +294,44 @@ export default function AdminDraftsPage() {
                     {' · '}{d.photos_real} صورة حقيقية{d.photos_all > d.photos_real ? ` (من ${d.photos_all})` : ''}
                   </p>
 
-                  {/* 🕒 محمد: «عايز وقت وتاريخ كل إعلان» */}
                   <p style={{ fontSize: 11.5, color: C.sub, margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                     <Clock style={{ width: 12, height: 12 }} />
                     <span>اتعمل: <b style={{ color: C.ink }}>{fmtDateTime(d.created_at)}</b> ({sinceLabel(d.created_at)})</span>
-                    {d.updated_at && d.updated_at !== d.created_at && (
-                      <span style={{ opacity: 0.85 }}>· آخر تعديل: {fmtDateTime(d.updated_at)}</span>
+                    {d.status !== 'draft' && d.stopped_at && (
+                      <span style={{ opacity: 0.85 }}>
+                        · {d.status === 'paused' ? 'اتوقف' : 'اترفض'}: {fmtDateTime(d.stopped_at)}
+                      </span>
                     )}
                     <span style={{ opacity: 0.85 }}>· المصدر: {d.source}</span>
                   </p>
 
+                  {/* 🧨 دليل الوقفة الجماعية على الإعلان نفسه */}
+                  {d.status !== 'draft' && d.batch_size > 2 && (
+                    <p style={{ fontSize: 11.5, color: C.warn, margin: '0 0 8px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <Layers style={{ width: 12, height: 12 }} />
+                      اتوقف مع {d.batch_size - 1} إعلان تاني في نفس الدقيقة — وقفة جماعية
+                    </p>
+                  )}
+
+                  {/* السبب المسجّل */}
+                  {d.reason && (
+                    <div style={{ background: d.status === 'rejected' ? '#fdecea' : '#fff8e6',
+                      border: `1px solid ${d.status === 'rejected' ? '#f5c6c0' : '#f0e0b8'}`,
+                      borderRadius: 12, padding: '8px 11px', marginBottom: 8 }}>
+                      <p style={{ fontSize: 10.5, fontWeight: 800, margin: '0 0 3px',
+                        color: d.status === 'rejected' ? C.danger : C.warn }}>
+                        {d.status === 'rejected' ? 'سبب الرفض' : 'سبب الإيقاف'}
+                      </p>
+                      <p style={{ fontSize: 12, margin: 0, lineHeight: 1.8,
+                        color: d.status === 'rejected' ? '#7a1a15' : '#6b4a00' }}>{d.reason}</p>
+                    </div>
+                  )}
+
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    {canPublish ? (
+                    {clean ? (
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 800, padding: '3px 10px', borderRadius: 999, background: C.green + '18', color: C.green }}>
-                        <CheckCircle2 style={{ width: 13, height: 13 }} /> مفيش ناقص — جاهز ينزل
+                        <CheckCircle2 style={{ width: 13, height: 13 }} />
+                        {d.status === 'draft' ? 'مفيش ناقص — جاهز ينزل' : 'مالوش عيب ظاهر — الوقفة كانت قرار'}
                       </span>
                     ) : d.missing.map(m => (
                       <span key={m} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 800, padding: '3px 10px', borderRadius: 999, background: '#fdecea', color: C.danger }}>
@@ -256,9 +340,7 @@ export default function AdminDraftsPage() {
                     ))}
                   </div>
 
-                  {f && (
-                    <p style={{ fontSize: 12, fontWeight: 700, margin: '8px 0 0', color: f.ok ? C.green : C.danger }}>{f.msg}</p>
-                  )}
+                  {f && <p style={{ fontSize: 12, fontWeight: 700, margin: '8px 0 0', color: f.ok ? C.green : C.danger }}>{f.msg}</p>}
                 </div>
 
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -273,7 +355,9 @@ export default function AdminDraftsPage() {
                   <button
                     onClick={() => publish(d)}
                     disabled={!canPublish || busyId === d.id}
-                    title={canPublish ? 'انشر الإعلان' : `ناقصه: ${d.missing.join(' · ')}`}
+                    title={d.status === 'rejected'
+                      ? 'المرفوض بيترجع من شاشة إدارة المنتجات'
+                      : canPublish ? 'انشر الإعلان' : `ناقصه: ${d.missing.join(' · ')}`}
                     style={{
                       padding: '8px 16px', borderRadius: 12, border: 'none', fontSize: 13, fontWeight: 800,
                       cursor: canPublish ? 'pointer' : 'not-allowed',
@@ -281,7 +365,7 @@ export default function AdminDraftsPage() {
                       color: canPublish ? '#fff' : '#9aa7a1',
                       opacity: busyId === d.id ? 0.6 : 1,
                     }}>
-                    {busyId === d.id ? '…بنشر' : 'انشر'}
+                    {busyId === d.id ? '…بنشر' : d.status === 'paused' ? 'رجّعه' : 'انشر'}
                   </button>
                 </div>
               </article>
@@ -289,6 +373,15 @@ export default function AdminDraftsPage() {
           })}
         </div>
       </div>
+    </div>
+  )
+}
+
+function Note({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ background: '#fff8e6', border: '1px solid #f0e0b8', borderRadius: 16, padding: '12px 14px', marginBottom: 14, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+      <AlertTriangle style={{ width: 17, height: 17, color: C.warn, flexShrink: 0, marginTop: 2 }} />
+      <p style={{ fontSize: 12.5, color: C.warn, margin: 0, lineHeight: 1.8 }}>{children}</p>
     </div>
   )
 }

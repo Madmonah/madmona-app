@@ -75,6 +75,7 @@ interface ListingSummary {
   created_at: string
   published_at: string | null
   rejection_reason: string | null
+  pause_reason: string | null
   category: { name_ar: string; icon: string | null; track: string | null } | null
   photos: { url: string; is_primary: boolean }[] | null
   pricing: { price: number | string; period_type: string; is_active: boolean }[] | null
@@ -325,7 +326,7 @@ function SupplierMarketplaceContent() {
     const { data } = await supabaseBrowser
       .from('listings')
       .select(`
-        id, title, slug, city, district, status, bookings_count, views_count, created_at, published_at, rejection_reason,
+        id, title, slug, city, district, status, bookings_count, views_count, created_at, published_at, rejection_reason, pause_reason,
         category:categories(name_ar, icon, track),
         photos:listing_photos(url, is_primary),
         pricing:pricing_rules(price, period_type, is_active)
@@ -333,7 +334,13 @@ function SupplierMarketplaceContent() {
       .eq('supplier_id', supId)
       .order('created_at', { ascending: false })
 
-    setListings((data || []) as ListingSummary[])
+    // ⚠️ (٢١ أغسطس ٢٠٢٦) `as unknown as` مش ترفيه: الأنواع المولّدة في
+    //    src/types/supabase.ts لسه مافيهاش `pause_reason`، فالـselect
+    //    بيرجّع SelectQueryError. جرّبت أزوّد العمود للأنواع بإيدي
+    //    وطلع خطأ تاني في MarketplaceClient (نسختين من postgrest-js
+    //    في node_modules) — يعني الحل الصح إن الأنواع تتولّد من
+    //    الداتابيز تاني (supabase gen types) مش تتكتب بالإيد.
+    setListings((data || []) as unknown as ListingSummary[])
     setLoadingListings(false)
   }
 
@@ -842,6 +849,18 @@ function SupplierMarketplaceContent() {
                         {/* 🚫 (٢١ أغسطس ٢٠٢٦) محمد: «وعايزين سبب للإعلانات
                             المرفوضة». صاحب البيزنس كان بيلاقي إعلانه «مرفوض»
                             من غير أي كلمة — ولا يعرف يصلّح إيه ولا يسأل مين. */}
+                        {/* ⏸️ (٢١ أغسطس ٢٠٢٦) وسبب الإيقاف كمان — محمد:
+                            «الإعلانات الموقوفة برضو عايز أعرف اتوقفت ليه».
+                            صاحب البيزنس كان بيلاقي إعلانه واقف من غير كلمة. */}
+                        {listing.status === 'paused' && listing.pause_reason && (
+                          <div className="mt-2 flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
+                            <AlertCircle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
+                            <div className="min-w-0">
+                              <p className="text-[11px] font-bold text-amber-700 leading-none mb-1">سبب الإيقاف</p>
+                              <p className="text-[11.5px] text-amber-900 leading-relaxed">{listing.pause_reason}</p>
+                            </div>
+                          </div>
+                        )}
                         {listing.status === 'rejected' && listing.rejection_reason && (
                           <div className="mt-2 flex items-start gap-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
                             <AlertCircle className="w-3.5 h-3.5 text-red-600 flex-shrink-0 mt-0.5" />

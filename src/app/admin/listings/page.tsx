@@ -52,6 +52,7 @@ type Row = {
   phone: string | null; phone_verified: boolean; unclaimed: boolean
   created_at: string; published_at: string | null
   rejection_reason: string | null; rejected_at: string | null
+  pause_reason: string | null; paused_at: string | null
 }
 type Facets = {
   total: number
@@ -88,7 +89,7 @@ export default function AdminListingsPage() {
   // 🚫 (٢١ أغسطس ٢٠٢٦) محمد: «وعايزين سبب للإعلانات المرفوضة».
   //    الرفض مابقاش دوسة واحدة — لازم سبب مكتوب، والداتابيز نفسها بترفض
   //    الرفض من غير سبب (admin_bulk_set_status).
-  const [rejecting, setRejecting] = useState<{ ids: string[]; label: string } | null>(null)
+  const [stopping, setStopping] = useState<{ ids: string[]; label: string; kind: 'rejected' | 'paused' } | null>(null)
   const [reason, setReason] = useState('')
 
   // ---- guard ----
@@ -150,9 +151,11 @@ export default function AdminListingsPage() {
 
   async function setStatusBulk(ids: string[], newStatus: string, confirmMsg?: string, rejectReason?: string) {
     if (ids.length === 0) return
-    // 🚫 الرفض بيعدّي على مودال السبب الأول — مفيش رفض صامت
-    if (newStatus === 'rejected' && !rejectReason) {
-      setRejecting({ ids, label: ids.length === 1
+    // 🚫⏸️ الرفض **والإيقاف** بيعدّوا على مودال السبب الأول — مفيش وقفة صامتة.
+    //    ١٩٣ إعلان اتوقفوا قبل كده من غير أي سبب مكتوب، و١٢٥ منهم في نفس
+    //    الدقيقة — ومحدش عرف يرجّعهم بثقة بعد كده.
+    if ((newStatus === 'rejected' || newStatus === 'paused') && !rejectReason) {
+      setStopping({ ids, kind: newStatus, label: ids.length === 1
         ? (rows.find(r => r.id === ids[0])?.title || '') : `${ids.length} نشاط` })
       setReason('')
       return
@@ -172,7 +175,7 @@ export default function AdminListingsPage() {
     const u = data?.updated || 0
     const f = (data?.failed || []).length
     setFlash(`تم تحديث ${u}${f ? ` · فشل ${f} (غالباً نشاط حقيقي محتاج صورة/توثيق رقم)` : ''}`)
-    setStatusChanging(null); setRejecting(null); setReason('')
+    setStatusChanging(null); setStopping(null); setReason('')
     await load(); await loadFacets()
   }
 
@@ -396,6 +399,19 @@ export default function AdminListingsPage() {
                           )}
                         </div>
                       )}
+                      {/* ⏸️ (٢١ أغسطس ٢٠٢٦) وسبب الإيقاف كمان.
+                          محمد: «الإعلانات الموقوفة برضو عايز أعرف اتوقفت ليه».
+                          كان ١٩٣ موقوف وولا واحد عليه سبب. */}
+                      {r.status === 'paused' && r.pause_reason && (
+                        <div style={{ fontSize: 11, color: C.warn, marginTop: 4, lineHeight: 1.6 }}>
+                          {r.pause_reason}
+                          {r.paused_at && (
+                            <span style={{ color: C.sub, display: 'block', fontSize: 10 }}>
+                              {fmtDateTime(r.paused_at)}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </td>
                     <td style={{ padding: 10, color: C.sub }}>{r.category || '—'}</td>
                     <td style={{ padding: 10, color: C.sub }}>{r.city || '—'}</td>
@@ -460,47 +476,57 @@ export default function AdminListingsPage() {
         </Modal>
       )}
 
-      {/* 🚫 reject modal — الرفض لازم معاه سبب */}
-      {rejecting && (
-        <Modal onClose={() => !busy && (setRejecting(null), setReason(''))}>
-          <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 4px' }}>سبب الرفض</h2>
-          <p style={{ fontSize: 13, color: C.sub, margin: '0 0 4px' }}>«{rejecting.label}»</p>
-          <p style={{ fontSize: 12, color: C.warn, margin: '0 0 12px', lineHeight: 1.7 }}>
-            السبب ده بيتسجّل على الإعلان وبيبان لصاحبه — اكتبه بلغة يفهمها ويعرف
-            يصلّح منها، مش «مرفوض» وخلاص.
-          </p>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-            {['صور مش واضحة أو مش للمنتج', 'السعر ناقص أو مش صحيح',
-              'بيانات التواصل غلط', 'إعلان مكرر', 'محتوى مخالف'].map((q) => (
-              <button key={q} type="button" onClick={() => setReason(q)}
-                style={{ padding: '5px 10px', borderRadius: 999, border: `1px solid ${C.line}`,
-                  background: reason === q ? C.green : '#fff', color: reason === q ? '#fff' : C.ink,
-                  fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>{q}</button>
-            ))}
-          </div>
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="اكتب السبب بالتفصيل…"
-            rows={3}
-            style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`,
-              fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }}
-          />
-          <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-            <button onClick={() => { setRejecting(null); setReason('') }} disabled={busy}
-              style={{ flex: 1, padding: 12, background: '#f1f1f1', color: C.ink, fontWeight: 700,
-                borderRadius: 12, border: 'none', cursor: 'pointer' }}>إلغاء</button>
-            <button
-              onClick={() => setStatusBulk(rejecting.ids, 'rejected', undefined, reason.trim())}
-              disabled={busy || reason.trim().length < 3}
-              style={{ flex: 1, padding: 12, background: reason.trim().length < 3 ? '#eee' : C.danger,
-                color: reason.trim().length < 3 ? '#999' : '#fff', fontWeight: 700, borderRadius: 12,
-                border: 'none', cursor: reason.trim().length < 3 ? 'not-allowed' : 'pointer' }}>
-              {busy ? 'بنفّذ…' : 'ارفض بالسبب ده'}
-            </button>
-          </div>
-        </Modal>
-      )}
+      {/* 🚫⏸️ stop modal — الرفض والإيقاف كل واحد لازم معاه سبب */}
+      {stopping && (() => {
+        const isReject = stopping.kind === 'rejected'
+        const quick = isReject
+          ? ['صور مش واضحة أو مش للمنتج', 'السعر ناقص أو مش صحيح',
+             'بيانات التواصل غلط', 'إعلان مكرر', 'محتوى مخالف']
+          : ['المنيو اتجمّع في إعلان المطعم', 'الصنف خلص أو الخدمة وقفت مؤقتًا',
+             'السعر اتغيّر ومحتاج تحديث', 'الرقم مش موثّق', 'طلب صاحب البيزنس']
+        return (
+          <Modal onClose={() => !busy && (setStopping(null), setReason(''))}>
+            <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 4px' }}>
+              {isReject ? 'سبب الرفض' : 'سبب الإيقاف'}
+            </h2>
+            <p style={{ fontSize: 13, color: C.sub, margin: '0 0 4px' }}>«{stopping.label}»</p>
+            <p style={{ fontSize: 12, color: C.warn, margin: '0 0 12px', lineHeight: 1.7 }}>
+              السبب ده بيتسجّل على الإعلان وبيبان لصاحبه. من غيره محدش هيعرف
+              بعد شهر ليه الإعلان واقف — ولا حتى إحنا.
+            </p>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+              {quick.map((q) => (
+                <button key={q} type="button" onClick={() => setReason(q)}
+                  style={{ padding: '5px 10px', borderRadius: 999, border: `1px solid ${C.line}`,
+                    background: reason === q ? C.green : '#fff', color: reason === q ? '#fff' : C.ink,
+                    fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>{q}</button>
+              ))}
+            </div>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="اكتب السبب بالتفصيل…"
+              rows={3}
+              style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`,
+                fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }}
+            />
+            <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+              <button onClick={() => { setStopping(null); setReason('') }} disabled={busy}
+                style={{ flex: 1, padding: 12, background: '#f1f1f1', color: C.ink, fontWeight: 700,
+                  borderRadius: 12, border: 'none', cursor: 'pointer' }}>إلغاء</button>
+              <button
+                onClick={() => setStatusBulk(stopping.ids, stopping.kind, undefined, reason.trim())}
+                disabled={busy || reason.trim().length < 3}
+                style={{ flex: 1, padding: 12,
+                  background: reason.trim().length < 3 ? '#eee' : (isReject ? C.danger : C.warn),
+                  color: reason.trim().length < 3 ? '#999' : '#fff', fontWeight: 700, borderRadius: 12,
+                  border: 'none', cursor: reason.trim().length < 3 ? 'not-allowed' : 'pointer' }}>
+                {busy ? 'بنفّذ…' : (isReject ? 'ارفض بالسبب ده' : 'أوقف بالسبب ده')}
+              </button>
+            </div>
+          </Modal>
+        )
+      })()}
 
       {/* delete modal */}
       {deleting && (
