@@ -11,6 +11,10 @@ import {
 import { modulesForIndustry } from '@/lib/erpModules'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
 import { rpcSafe } from '@/lib/rpc'
+// 🎨 (٢١ أغسطس ٢٠٢٦) محمد: «خليني أقدر أعدّل الكلام ده ديناميك».
+//    اللوجو والغلاف والوصف ومعرض الصور والألوان — كانوا بيتعدّلوا بالإيد
+//    في SQL لكل بيزنس. بقوا تاب هنا.
+import IdentityTab from '@/components/business/IdentityTab'
 
 /* ============================================================
    /admin/business-finance/[supplierId]/settings
@@ -76,7 +80,7 @@ export default function SettingsPage({
   const [employees, setEmployees] = useState<Employee[]>([])
   const [roles, setRoles] = useState<RoleTemplate[]>([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'general' | 'branches' | 'employees' | 'commission' | 'modules'>('general')
+  const [tab, setTab] = useState<'general' | 'identity' | 'branches' | 'employees' | 'commission' | 'modules'>('general')
   const [toast, setToast] = useState('')
 
   async function loadAll() {
@@ -143,6 +147,7 @@ export default function SettingsPage({
           <div className="flex items-center gap-1 mt-5 bg-[#FAFAF7] rounded-xl p-1 w-fit border border-gray-100">
             {[
               { key: 'general', label: 'الأساسية' },
+              { key: 'identity', label: 'الهوية' },
               { key: 'branches', label: `الفروع (${branches.length})` },
               { key: 'employees', label: `الموظفين (${employees.length})` },
               { key: 'commission', label: 'العمولة' },
@@ -174,6 +179,9 @@ export default function SettingsPage({
 
         {tab === 'general' && (
           <GeneralTab supplier={supplier} onSaved={() => { loadAll(); showToast('تم الحفظ') }} />
+        )}
+        {tab === 'identity' && (
+          <IdentityTab supplierId={supplierId} />
         )}
         {tab === 'branches' && (
           <BranchesTab
