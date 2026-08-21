@@ -5,6 +5,9 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { resolveListingAccess } from '@/lib/listing-edit-access'
+// 🕒 (٢١ أغسطس ٢٠٢٦) محمد: «عايز وقت وتاريخ كل إعلان سواء منشور أو درافت
+//    أو أي إعلان عمومًا» — صاحب البيزنس كمان لازم يشوفهم على إعلاناته.
+import { fmtDateTime, sinceLabel } from '@/lib/arDateTime'
 import { playNotificationSound, showBrowserNotification, requestNotificationPermission } from '@/lib/notification-sound'
 import BookingToast from '@/components/marketplace/BookingToast'
 import {
@@ -70,6 +73,7 @@ interface ListingSummary {
   bookings_count: number
   views_count: number
   created_at: string
+  published_at: string | null
   category: { name_ar: string; icon: string | null; track: string | null } | null
   photos: { url: string; is_primary: boolean }[] | null
   pricing: { price: number | string; period_type: string; is_active: boolean }[] | null
@@ -320,7 +324,7 @@ function SupplierMarketplaceContent() {
     const { data } = await supabaseBrowser
       .from('listings')
       .select(`
-        id, title, slug, city, district, status, bookings_count, views_count, created_at,
+        id, title, slug, city, district, status, bookings_count, views_count, created_at, published_at,
         category:categories(name_ar, icon, track),
         photos:listing_photos(url, is_primary),
         pricing:pricing_rules(price, period_type, is_active)
@@ -445,6 +449,10 @@ function SupplierMarketplaceContent() {
     delete newListing.id
     delete newListing.created_at
     delete newListing.updated_at
+    // 🕒 (٢١ أغسطس ٢٠٢٦) النسخة درافت لسه ماتنشرتش — لازم تاريخ النشر يترمي.
+    //    كان بيتنسخ من الأصل، فالنسخة تطلع «مسودة» ومكتوب جنبها إنها اتنشرت
+    //    من شهر. ماكانش باين قبل كده عشان التاريخ مكانش معروض أصلًا.
+    delete newListing.published_at
 
     const { data: dup, error } = await supabaseBrowser
       .from('listings')
@@ -825,6 +833,21 @@ function SupplierMarketplaceContent() {
                             <Calendar className="w-3 h-3" />
                             {listing.bookings_count}
                           </span>
+                        </div>
+                        {/* 🕒 (٢١ أغسطس ٢٠٢٦) محمد: «عايز وقت وتاريخ كل إعلان
+                            سواء منشور أو درافت أو أي إعلان عمومًا».
+                            كان مفيش أي تاريخ على الكارت — صاحب البيزنس ماكانش
+                            يعرف الإعلان ده بقاله قد إيه ولا نزل إمتى. */}
+                        <div className="flex items-center gap-3 mt-1 text-[11px] text-gray-400 flex-wrap">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            اتعمل {fmtDateTime(listing.created_at)} ({sinceLabel(listing.created_at)})
+                          </span>
+                          {listing.published_at && (
+                            <span className="text-emerald-600">
+                              · اتنشر {fmtDateTime(listing.published_at)}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

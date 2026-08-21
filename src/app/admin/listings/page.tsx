@@ -16,9 +16,12 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import { isPlatformStaff } from '@/lib/platform-staff'
 // 🔐 الـRPCs دي محميّة بصلاحية — لازم تعدّي من بوابة الأدمن على السيرفر
 import { adminRpc } from '@/lib/adminRpc'
+// 🕒 (٢١ أغسطس ٢٠٢٦) محمد: «عايز وقت وتاريخ كل إعلان سواء منشور أو درافت
+//    أو أي إعلان عمومًا». التنسيق مركزي في lib/arDateTime.
+import { fmtDateTime, sinceLabel } from '@/lib/arDateTime'
 import {
   ArrowRight, Loader2, Lock, ShieldAlert, Plus, Eye, Edit2, Trash2,
-  SlidersHorizontal, Archive, Building2,
+  SlidersHorizontal, Archive, Building2, Clock,
 } from 'lucide-react'
 
 const supabase = supabaseBrowser as any
@@ -246,6 +249,11 @@ export default function AdminListingsPage() {
             <Building2 style={{ width: 20, height: 20, color: C.green }} />
             <h1 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>إدارة المنتجات</h1>
           </div>
+          {/* 📋 (٢١ أغسطس ٢٠٢٦) باب على الإعلانات الواقفة. من غيره الدرافتس
+              بتفضل مدفونة جوّه فلتر «الحالة» اللي محدش بيدوس عليه. */}
+          <Link href="/admin/drafts" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff', border: `1px solid ${C.line}`, color: C.ink, padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
+            <Clock style={{ width: 16, height: 16, color: C.warn }} /> الواقفة
+          </Link>
           <Link href="/supplier/marketplace/new" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.green, color: '#fff', padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
             <Plus style={{ width: 16, height: 16 }} /> أضف خدمة
           </Link>
@@ -337,12 +345,17 @@ export default function AdminListingsPage() {
                   <th style={{ padding: 10 }}>المدينة</th>
                   <th style={{ padding: 10 }}>الرقم</th>
                   <th style={{ padding: 10 }}>الاستلام</th>
+                  {/* 🕒 (٢١ أغسطس ٢٠٢٦) العمودين دول كانوا **بيتجابوا من الداتابيز
+                      ويترموا** — `created_at`/`published_at` موجودين في الـtype
+                      ومكانوش معروضين، فمحدش يعرف الإعلان بقاله قد إيه. */}
+                  <th style={{ padding: 10 }}>اتعمل</th>
+                  <th style={{ padding: 10 }}>اتنشر</th>
                   <th style={{ padding: 10 }}>إجراءات</th>
                 </tr>
               </thead>
               <tbody>
-                {loading && <tr><td colSpan={9} style={{ padding: 24, textAlign: 'center', color: C.sub }}>…بحمّل</td></tr>}
-                {!loading && rows.length === 0 && <tr><td colSpan={9} style={{ padding: 24, textAlign: 'center', color: C.sub }}>مفيش نتايج بالفلاتر دي</td></tr>}
+                {loading && <tr><td colSpan={11} style={{ padding: 24, textAlign: 'center', color: C.sub }}>…بحمّل</td></tr>}
+                {!loading && rows.length === 0 && <tr><td colSpan={11} style={{ padding: 24, textAlign: 'center', color: C.sub }}>مفيش نتايج بالفلاتر دي</td></tr>}
                 {!loading && rows.map((r) => (
                   <tr key={r.id} style={{ borderTop: `1px solid ${C.line}` }}>
                     <td style={{ padding: 10 }}>
@@ -357,6 +370,18 @@ export default function AdminListingsPage() {
                     <td style={{ padding: 10, color: C.sub }}>{r.city || '—'}</td>
                     <td style={{ padding: 10, color: C.sub, direction: 'ltr', textAlign: 'right' }}>{r.phone || '—'}{r.phone && r.phone_verified ? ' ✓' : ''}</td>
                     <td style={{ padding: 10 }}><span style={badge(r.unclaimed ? C.warn : C.green)}>{r.unclaimed ? 'متستلمش' : 'متستلم'}</span></td>
+                    <td style={{ padding: 10, color: C.sub, whiteSpace: 'nowrap' }}>
+                      <div style={{ fontWeight: 700, color: C.ink, fontSize: 12 }}>{fmtDateTime(r.created_at)}</div>
+                      <div style={{ fontSize: 11, opacity: 0.8 }}>{sinceLabel(r.created_at)}</div>
+                    </td>
+                    <td style={{ padding: 10, color: C.sub, whiteSpace: 'nowrap' }}>
+                      {r.published_at
+                        ? <>
+                            <div style={{ fontWeight: 700, color: C.green, fontSize: 12 }}>{fmtDateTime(r.published_at)}</div>
+                            <div style={{ fontSize: 11, opacity: 0.8 }}>{sinceLabel(r.published_at)}</div>
+                          </>
+                        : <span style={{ fontSize: 12 }}>— لسه</span>}
+                    </td>
                     <td style={{ padding: 10 }}>
                       <div style={{ display: 'flex', gap: 6 }}>
                         <a href={`/marketplace/${r.slug}`} target="_blank" rel="noreferrer" title="معاينة" style={iconBtn('#f1f5f3', C.sub)}><Eye style={{ width: 15, height: 15 }} /></a>

@@ -30,6 +30,11 @@ const ALLOWED = new Set([
   'admin_listings_search',
   'admin_listings_facets',
   'admin_bulk_set_status',
+  // 📋 (٢١ أغسطس ٢٠٢٦) شاشة الإعلانات الواقفة — /admin/drafts.
+  //    الصفحة بتنادي بجلسة الأبليكيشن الأول (عشان موظفين مضمونة يشتغلوا)،
+  //    وبترجع للبوابة دي لو اللوحة مفتوحة بكوكي الأدمن من غير جلسة Supabase.
+  'admin_draft_listings',
+  'admin_publish_listing',
   // المخزون
   'admin_import_inventory',
   // الصلاحيات
