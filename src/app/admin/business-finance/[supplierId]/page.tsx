@@ -16,6 +16,7 @@ import {
   Banknote, Gavel, CalendarRange, PackageOpen, ClipboardCheck, Fuel, FileBadge,
   Smartphone,
   Car, Ship, BadgeCheck, Store, UtensilsCrossed,
+  Sparkles,
 } from 'lucide-react'
 
 /* ============================================================
@@ -63,6 +64,7 @@ import { MODULE_DEFS, VERTICAL_ALIAS, canOpenModule, type VKey } from '@/lib/erp
 // الأيقونات تفضل هنا (بيانات الموديولات نفسها في src/lib/erpModules.ts)
 const ICON_MAP: Record<string, any> = {
   confirmations: CheckCircle2, links: Link2, dashboard: BarChart3, team: Users,
+  identity: Sparkles,
   permissions: ShieldCheck,
   requests: ClipboardCheck, custody: ShieldCheck, 'flow-tasks': ClipboardList,
   branches: Building2, customers: Heart, expenses: DollarSign, accounting: Calculator,

@@ -283,8 +283,30 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
     </div>
   )
 
-  // اختيار صيغة المجال حسب نوع المورّد
-  const v = getVertical(data.industry)
+  /* 🎭 (٢١ أغسطس ٢٠٢٦) نصوص النشاط من الداتابيز الأول، والكود fallback.
+     محمد: «اللي تقدر تخليه ديناميك خليه ديناميك».
+     `storefront_verticals` صف لكل نشاط — إضافة نشاط جديد بمسمياته بقت
+     صف في جدول، مش تعديل كود ونشر. الجدول تحت (`VERTICALS`) فضل موجود
+     كشبكة أمان لو الصف اتمسح أو الـRPC رجّعت null. */
+  const dbV = data.vertical as Record<string, unknown> | null | undefined
+  const base = getVertical(data.industry)
+  const v: VerticalCfg = dbV ? {
+    ...base,
+    kicker:           (dbV.kicker as string)           ?? base.kicker,
+    heroCta:          (dbV.hero_cta as string)         ?? base.heroCta,
+    waCta:            (dbV.wa_cta as string)           ?? base.waCta,
+    bookChip:         (dbV.book_chip as string)        ?? base.bookChip,
+    unitWord:         (dbV.unit_word as string)        ?? base.unitWord,
+    galleryHeading:   (dbV.gallery_heading as string)  ?? base.galleryHeading,
+    galleryTiles:     (dbV.gallery_tiles as string[])?.length
+                        ? (dbV.gallery_tiles as string[]) : base.galleryTiles,
+    branchesHeading:  (dbV.branches_heading as string) ?? base.branchesHeading,
+    branchCta:        (dbV.branch_cta as string)       ?? base.branchCta,
+    servicesHeading:  (dbV.services_heading as string) ?? base.servicesHeading,
+    teamHeading:      (dbV.team_heading as string)     ?? base.teamHeading,
+    accountSub:       (dbV.account_sub as string)      ?? base.accountSub,
+    coverBadge:       (dbV.cover_badge as string)      ?? base.coverBadge,
+  } : base
   const HeroCtaIcon = v.heroCtaIcon
   const ServicesIcon = v.servicesIcon
 
