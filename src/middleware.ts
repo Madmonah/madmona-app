@@ -38,7 +38,6 @@ const MERCHANT_SUBDOMAINS: Record<string, string> = {
   sa3dawy: 'sa3dawy',
 }
 
-const OWNER_TOKEN_COOKIE = 'madmona_owner_token'
 
 // هل توكن الجلسة ده صالح؟ — نداء REST خفيف على جدول الجلسات (edge-safe)
 async function isValidAdminSession(token: string): Promise<boolean> {
@@ -55,51 +54,6 @@ async function isValidAdminSession(token: string): Promise<boolean> {
     if (!res.ok) return false
     const rows = await res.json()
     return Array.isArray(rows) && rows.length > 0
-  } catch {
-    return false
-  }
-}
-
-// هل البيزنس ده "تجربة مفتوحة" (negotiating + ERP)؟ — يُستدعى على الـedge فقط
-// لمسارات business-finance، وبيرجّع false عند أي خطأ (يرجع للحارس العادي).
-async function isTrialOpenSupplier(supplierId: string): Promise<boolean> {
-  try {
-    const base = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (!base || !anon) return false
-    const res = await fetch(`${base}/rest/v1/rpc/is_trial_open_supplier`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: anon,
-        Authorization: `Bearer ${anon}`,
-      },
-      body: JSON.stringify({ p_supplier_id: supplierId }),
-      // edge: لا نخزّن، ونحدد مهلة قصيرة عبر AbortController
-    })
-    if (!res.ok) return false
-    const data = await res.json()
-    return data === true
-  } catch {
-    return false
-  }
-}
-
-// هل صاحب الكوكي ده أونر/مدير فعّال لنفس البيزنس ده؟ — edge-safe REST call
-async function isOwnerOfSupplier(token: string, supplierId: string): Promise<boolean> {
-  if (!token || !supplierId) return false
-  try {
-    const base = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (!base || !anon) return false
-    const res = await fetch(`${base}/rest/v1/rpc/owner_check_by_token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', apikey: anon, Authorization: `Bearer ${anon}` },
-      body: JSON.stringify({ p_token: token, p_supplier_id: supplierId }),
-    })
-    if (!res.ok) return false
-    const data = await res.json()
-    return data?.allowed === true
   } catch {
     return false
   }
@@ -149,9 +103,26 @@ export async function middleware(req: NextRequest) {
     //   (ب) أونر/مدير حقيقي لنفس البيزنس ده — بوابة الشركاء /owner/*
     const m = path.match(/^\/admin\/business-finance\/([0-9a-fA-F-]{36})(?:\/|$)/)
     if (m) {
-      if (await isTrialOpenSupplier(m[1])) return NextResponse.next()
-      const ownerToken = req.cookies.get(OWNER_TOKEN_COOKIE)?.value
-      if (ownerToken && (await isOwnerOfSupplier(ownerToken, m[1]))) return NextResponse.next()
+      /* 🚪 (٢١ أغسطس ٢٠٢٦) لوحة البيزنس بتعدّي من الحارس ده، والصفحة نفسها
+         هي اللي بتقرر.
+
+         محمد: «الداشبورد أو لوحة الإدارة اللي في تاب حسابي مبقتش تفتح».
+
+         السبب: جلسة الأبليكيشن متخزّنة في **localStorage** مش في كوكي
+         (`supabase-browser.ts` بيستخدم `safeStorage`) — والـmiddleware
+         بيشتغل على الـedge ومابيشوف غير الكوكيز. يعني الموظف أو صاحب
+         البيزنس اللي مسجّل دخول عادي، الحارس **مايقدرش يشوف جلسته أصلًا**
+         فبيرميه على `/admin-entry`. وده بيحصل **قبل** ما حارس الصفحة
+         نفسها يشتغل — وهو اللي بيعرف يتعامل مع كل الحالات.
+
+         أنا اللي كشفت المشكلة دي لما حطيت تابات اللوحة في «حسابي»
+         (كوميت 00d252ab) — اللينكات بقت بتوصل لمكان الحارس بيقفله.
+
+         مش خطر: `layout.tsx` بتاع اللوحة بيفحص أربع حالات (كوكي الأدمن ·
+         توكن المالك · عضوية البيزنس عن طريق `my_supplier_access` ·
+         التجربة المفتوحة) وبيوقف العرض لو مفيش حق. والداتا كلها محميّة
+         بالـRLS على مستوى الداتابيز مهما حصل. */
+      return NextResponse.next()
     }
 
     const url = req.nextUrl.clone()
