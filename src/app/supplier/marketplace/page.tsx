@@ -74,6 +74,7 @@ interface ListingSummary {
   views_count: number
   created_at: string
   published_at: string | null
+  rejection_reason: string | null
   category: { name_ar: string; icon: string | null; track: string | null } | null
   photos: { url: string; is_primary: boolean }[] | null
   pricing: { price: number | string; period_type: string; is_active: boolean }[] | null
@@ -324,7 +325,7 @@ function SupplierMarketplaceContent() {
     const { data } = await supabaseBrowser
       .from('listings')
       .select(`
-        id, title, slug, city, district, status, bookings_count, views_count, created_at, published_at,
+        id, title, slug, city, district, status, bookings_count, views_count, created_at, published_at, rejection_reason,
         category:categories(name_ar, icon, track),
         photos:listing_photos(url, is_primary),
         pricing:pricing_rules(price, period_type, is_active)
@@ -838,6 +839,18 @@ function SupplierMarketplaceContent() {
                             سواء منشور أو درافت أو أي إعلان عمومًا».
                             كان مفيش أي تاريخ على الكارت — صاحب البيزنس ماكانش
                             يعرف الإعلان ده بقاله قد إيه ولا نزل إمتى. */}
+                        {/* 🚫 (٢١ أغسطس ٢٠٢٦) محمد: «وعايزين سبب للإعلانات
+                            المرفوضة». صاحب البيزنس كان بيلاقي إعلانه «مرفوض»
+                            من غير أي كلمة — ولا يعرف يصلّح إيه ولا يسأل مين. */}
+                        {listing.status === 'rejected' && listing.rejection_reason && (
+                          <div className="mt-2 flex items-start gap-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                            <AlertCircle className="w-3.5 h-3.5 text-red-600 flex-shrink-0 mt-0.5" />
+                            <div className="min-w-0">
+                              <p className="text-[11px] font-bold text-red-700 leading-none mb-1">سبب الرفض</p>
+                              <p className="text-[11.5px] text-red-800 leading-relaxed">{listing.rejection_reason}</p>
+                            </div>
+                          </div>
+                        )}
                         <div className="flex items-center gap-3 mt-1 text-[11px] text-gray-400 flex-wrap">
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />

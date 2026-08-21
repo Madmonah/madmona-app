@@ -51,6 +51,7 @@ type Row = {
   category: string | null; city: string | null; district: string | null
   phone: string | null; phone_verified: boolean; unclaimed: boolean
   created_at: string; published_at: string | null
+  rejection_reason: string | null; rejected_at: string | null
 }
 type Facets = {
   total: number
@@ -84,6 +85,11 @@ export default function AdminListingsPage() {
 
   const [statusChanging, setStatusChanging] = useState<Row | null>(null)
   const [deleting, setDeleting] = useState<Row | null>(null)
+  // 🚫 (٢١ أغسطس ٢٠٢٦) محمد: «وعايزين سبب للإعلانات المرفوضة».
+  //    الرفض مابقاش دوسة واحدة — لازم سبب مكتوب، والداتابيز نفسها بترفض
+  //    الرفض من غير سبب (admin_bulk_set_status).
+  const [rejecting, setRejecting] = useState<{ ids: string[]; label: string } | null>(null)
+  const [reason, setReason] = useState('')
 
   // ---- guard ----
   useEffect(() => {
@@ -142,13 +148,23 @@ export default function AdminListingsPage() {
     setSel(m)
   }
 
-  async function setStatusBulk(ids: string[], newStatus: string, confirmMsg?: string) {
+  async function setStatusBulk(ids: string[], newStatus: string, confirmMsg?: string, rejectReason?: string) {
     if (ids.length === 0) return
+    // 🚫 الرفض بيعدّي على مودال السبب الأول — مفيش رفض صامت
+    if (newStatus === 'rejected' && !rejectReason) {
+      setRejecting({ ids, label: ids.length === 1
+        ? (rows.find(r => r.id === ids[0])?.title || '') : `${ids.length} نشاط` })
+      setReason('')
+      return
+    }
     if (confirmMsg && !confirm(confirmMsg)) return
     setBusy(true); setFlash(null)
     let data: any
     try {
-      data = await adminRpc('admin_bulk_set_status', { p_ids: ids, p_status: newStatus })
+      data = await adminRpc('admin_bulk_set_status',
+        rejectReason
+          ? { p_ids: ids, p_status: newStatus, p_reason: rejectReason }
+          : { p_ids: ids, p_status: newStatus })
     } catch (e: any) {
       setBusy(false); setFlash('خطأ: ' + (e?.message || 'الحفظ فشل')); return
     }
@@ -156,7 +172,7 @@ export default function AdminListingsPage() {
     const u = data?.updated || 0
     const f = (data?.failed || []).length
     setFlash(`تم تحديث ${u}${f ? ` · فشل ${f} (غالباً نشاط حقيقي محتاج صورة/توثيق رقم)` : ''}`)
-    setStatusChanging(null)
+    setStatusChanging(null); setRejecting(null); setReason('')
     await load(); await loadFacets()
   }
 
@@ -365,7 +381,22 @@ export default function AdminListingsPage() {
                       <a href={`/marketplace/${r.slug}`} target="_blank" rel="noreferrer" style={{ color: C.green, fontWeight: 700, textDecoration: 'none' }}>{r.title}</a>
                     </td>
                     <td style={{ padding: 10 }}><span style={badge(r.is_directory ? C.gold : C.green2)}>{r.is_directory ? 'دليل' : 'حقيقي'}</span></td>
-                    <td style={{ padding: 10 }}><span style={badge(STATUS_COLOR[r.status] || C.sub)}>{STATUS_LABEL[r.status] || r.status}</span></td>
+                    <td style={{ padding: 10, maxWidth: 220 }}>
+                      <span style={badge(STATUS_COLOR[r.status] || C.sub)}>{STATUS_LABEL[r.status] || r.status}</span>
+                      {/* 🚫 (٢١ أغسطس ٢٠٢٦) سبب الرفض جنب الحالة على طول.
+                          محمد: «وعايزين سبب للإعلانات المرفوضة». قبل كده
+                          الإعلان كان بيترفض ومحدش يعرف ليه — لا صاحبه ولا احنا. */}
+                      {r.status === 'rejected' && r.rejection_reason && (
+                        <div style={{ fontSize: 11, color: C.danger, marginTop: 4, lineHeight: 1.6 }}>
+                          {r.rejection_reason}
+                          {r.rejected_at && (
+                            <span style={{ color: C.sub, display: 'block', fontSize: 10 }}>
+                              {fmtDateTime(r.rejected_at)}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </td>
                     <td style={{ padding: 10, color: C.sub }}>{r.category || '—'}</td>
                     <td style={{ padding: 10, color: C.sub }}>{r.city || '—'}</td>
                     <td style={{ padding: 10, color: C.sub, direction: 'ltr', textAlign: 'right' }}>{r.phone || '—'}{r.phone && r.phone_verified ? ' ✓' : ''}</td>
@@ -426,6 +457,48 @@ export default function AdminListingsPage() {
             })}
           </div>
           <button onClick={() => setStatusChanging(null)} disabled={busy} style={{ width: '100%', marginTop: 14, padding: 10, fontSize: 13, color: C.sub, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}>إلغاء</button>
+        </Modal>
+      )}
+
+      {/* 🚫 reject modal — الرفض لازم معاه سبب */}
+      {rejecting && (
+        <Modal onClose={() => !busy && (setRejecting(null), setReason(''))}>
+          <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 4px' }}>سبب الرفض</h2>
+          <p style={{ fontSize: 13, color: C.sub, margin: '0 0 4px' }}>«{rejecting.label}»</p>
+          <p style={{ fontSize: 12, color: C.warn, margin: '0 0 12px', lineHeight: 1.7 }}>
+            السبب ده بيتسجّل على الإعلان وبيبان لصاحبه — اكتبه بلغة يفهمها ويعرف
+            يصلّح منها، مش «مرفوض» وخلاص.
+          </p>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+            {['صور مش واضحة أو مش للمنتج', 'السعر ناقص أو مش صحيح',
+              'بيانات التواصل غلط', 'إعلان مكرر', 'محتوى مخالف'].map((q) => (
+              <button key={q} type="button" onClick={() => setReason(q)}
+                style={{ padding: '5px 10px', borderRadius: 999, border: `1px solid ${C.line}`,
+                  background: reason === q ? C.green : '#fff', color: reason === q ? '#fff' : C.ink,
+                  fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>{q}</button>
+            ))}
+          </div>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="اكتب السبب بالتفصيل…"
+            rows={3}
+            style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`,
+              fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }}
+          />
+          <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+            <button onClick={() => { setRejecting(null); setReason('') }} disabled={busy}
+              style={{ flex: 1, padding: 12, background: '#f1f1f1', color: C.ink, fontWeight: 700,
+                borderRadius: 12, border: 'none', cursor: 'pointer' }}>إلغاء</button>
+            <button
+              onClick={() => setStatusBulk(rejecting.ids, 'rejected', undefined, reason.trim())}
+              disabled={busy || reason.trim().length < 3}
+              style={{ flex: 1, padding: 12, background: reason.trim().length < 3 ? '#eee' : C.danger,
+                color: reason.trim().length < 3 ? '#999' : '#fff', fontWeight: 700, borderRadius: 12,
+                border: 'none', cursor: reason.trim().length < 3 ? 'not-allowed' : 'pointer' }}>
+              {busy ? 'بنفّذ…' : 'ارفض بالسبب ده'}
+            </button>
+          </div>
         </Modal>
       )}
 
