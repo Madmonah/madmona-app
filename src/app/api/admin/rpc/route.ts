@@ -77,6 +77,11 @@ const ALLOWED = new Set([
   'crm_classify_contacts',
   'crm_ingest_contacts',
   'crm_log_call',
+  // 🧩 (٢١ أغسطس ٢٠٢٦) الموديل نفسه بقى بيتظبط من الشاشة — أقسام وقواعد
+  //    واستيراد من الدرايف. محمد: «خلي الموديل نفسه نقدر نتحكم فيه ديناميك».
+  'crm_delete_specialty',
+  'crm_test_rules',
+  'crm_import_contacts',
 ])
 
 async function isAdmin(req: NextRequest): Promise<boolean> {

@@ -12,11 +12,21 @@
       ويحطّ التاسكات، ولو فيه حاجة ظهرت تخصّ شخص تاني التاسك ينزل على الشخص
       التاني أوتوماتيك»
 
+     (٢١ أغسطس، بعد كده) «خلي الموضوع ده ديناميك بتاع مين مسؤول عن قسم إيه،
+      وخلي الموديل نفسه نقدر نتحكّم فيه ديناميك»
+
    الشاشة أربع تابات:
      ١) نظرة عامة — كل تخصص، كام رقم فيه، ومين مسؤول عنه (وبتتعدّل من هنا)
      ٢) الأرقام   — فلترة بالتخصص/الموظف/الحالة + بحث + **تصدير CSV**
      ٣) التاسكات  — والتاسك المحوّل بيبان عليه **مين حوّله وليه**
      ٤) ملف العميل (مودال) — مكالماته المفرّغة + تاسكاته + آخر رسايله
+
+   🧩 **الموديل نفسه بيتظبط من الشاشة** — مش بس مين مسؤول عن إيه:
+        • زوّد تخصص جديد · غيّر اسمه · اقفله · رتّبه
+        • عدّل كلمات المطابقة وسلَجات التصنيف اللي بيتبنى عليها التصنيف
+        • **امسح تخصص** وقول أرقامه تروح فين (مفيش أرقام بتضيع)
+        • **جرّب القاعدة قبل ما تحفظها**: اكتب جملة وشوف هتروح لمين وليه
+      يعني لو بكرة ظهر نشاط جديد، بيتضاف من هنا — من غير ما حد يفتح الكود.
 
    ⚠️ **مفيش حاجة متكتّبة في الكود**: التخصصات وقواعد المطابقة والمسؤولين
       كلهم في `crm_specialties` / `crm_staff_specialties` وبيتعدّلوا من هنا.
@@ -36,7 +46,7 @@ import { fmtDateTime, sinceLabel } from '@/lib/arDateTime'
 import {
   ArrowRight, Loader2, ShieldAlert, RefreshCw, Users, Phone, ListChecks,
   Download, Search, X, Shuffle, Sparkles, AlertTriangle, CheckCircle2,
-  CornerDownLeft, Tag, UserCog, Save,
+  CornerDownLeft, Tag, UserCog, Save, Plus, Trash2, FlaskConical, MapPin,
 } from 'lucide-react'
 
 const C = {
@@ -48,6 +58,7 @@ const C = {
 type Owner = { profile_id: string; name: string; primary: boolean }
 type Specialty = {
   key: string; name_ar: string; active: boolean; contacts: number
+  sort: string            // بيرجع مبطّن بأصفار ('0010') عشان الترتيب في jsonb يفضل صح
   match_cats: string[]; match_words: string[]; owners: Owner[]
 }
 type Staff = {
@@ -69,6 +80,7 @@ type Overview = {
 type Contact = {
   id: string; phone: string; name: string | null
   specialty: string | null; specialty_ar: string | null; specialty_src: string | null
+  raw_category: string | null; city: string | null; source: string | null
   owner_id: string | null; owner: string | null
   status: string; kind: string; supplier_id: string | null; business: string | null
   last_contact_at: string | null; next_action_at: string | null; notes: string | null
@@ -100,6 +112,7 @@ const SRC_LABEL: Record<string, string> = {
   listing: 'من إعلان بنفس الرقم',
   words: 'من كلام رسايله',
   manual: 'اتحدّد بالإيد',
+  import: 'من ملف مستورد',
   none: 'مفيش دليل',
 }
 const STATUS_LABEL: Record<string, string> = {
@@ -170,6 +183,28 @@ export default function AdminCrmPage() {
   const [editStaff, setEditStaff] = useState<Staff | null>(null)
   const [editSpecs, setEditSpecs] = useState<string[]>([])
 
+  // 🧩 محرّر الموديل: تخصص جديد / تعديل / مسح + تجربة القواعد
+  type SpecDraft = {
+    key: string; name_ar: string; words: string; cats: string
+    sort: number; active: boolean; isNew: boolean; contacts: number
+  }
+  const [editSpec, setEditSpec] = useState<SpecDraft | null>(null)
+  const [moveTo, setMoveTo] = useState<string>('')
+  const [confirmDel, setConfirmDel] = useState(false)
+  const [testOpen, setTestOpen] = useState(false)
+  const [testText, setTestText] = useState('')
+  const [testRes, setTestRes] = useState<{ winner: string | null; matches: { key: string; name_ar: string; hits: number; words: string[] }[] } | null>(null)
+
+  const toDraft = (s?: Specialty): SpecDraft => ({
+    key: s?.key ?? '', name_ar: s?.name_ar ?? '',
+    words: (s?.match_words || []).join('، '),
+    cats: (s?.match_cats || []).join('، '),
+    sort: s ? Number(s.sort) : 500, active: s?.active ?? true,
+    isNew: !s, contacts: s?.contacts ?? 0,
+  })
+  const splitList = (v: string) =>
+    v.split(/[،,\n]/).map(x => x.trim()).filter(Boolean)
+
   const loadOverview = useCallback(async () => {
     setLoading(true); setErr(null)
     try {
@@ -220,6 +255,17 @@ export default function AdminCrmPage() {
     setBusy(null)
   }
 
+  async function runTest() {
+    setBusy('test'); setTestRes(null)
+    try {
+      const r = await callRpc<{ ok: boolean; error?: string; winner: string | null; matches: { key: string; name_ar: string; hits: number; words: string[] }[] }>(
+        'crm_test_rules', { p_text: testText })
+      if (r?.ok) setTestRes({ winner: r.winner, matches: r.matches || [] })
+      else setFlash({ msg: r?.error || 'مقدرناش نجرّب', ok: false })
+    } catch (e) { setFlash({ msg: e instanceof Error ? e.message : 'خطأ', ok: false }) }
+    setBusy(null)
+  }
+
   async function openDetail(id: string) {
     setDetailBusy(true)
     try {
@@ -243,7 +289,9 @@ export default function AdminCrmPage() {
         downloadCsv(`مضمونة-أرقام-${label}.csv`, r.rows as unknown as Record<string, unknown>[], [
           ['phone', 'الرقم'], ['name', 'الاسم'], ['business', 'البيزنس'],
           ['specialty_ar', 'التخصص'], ['specialty_src', 'مصدر التصنيف'],
+          ['raw_category', 'التصنيف الأصلي'], ['city', 'المنطقة'], ['source', 'مصدر الرقم'],
           ['owner', 'المسؤول'], ['status', 'الحالة'], ['kind', 'النوع'],
+          ['notes', 'ملاحظات'],
           ['last_contact_at', 'آخر تواصل'], ['calls', 'مكالمات'], ['open_tasks', 'تاسكات مفتوحة'],
         ])
         setFlash({ msg: `اتصدّر ${r.rows.length} رقم${r.total > r.rows.length ? ` من ${r.total} (السقف ٥٠٠٠)` : ''}`, ok: true })
@@ -375,16 +423,27 @@ export default function AdminCrmPage() {
                 <RefreshCw style={{ width: 15, height: 15 }} /> اسحب أرقام جديدة
               </button>
               <span style={{ fontSize: 11.5, color: C.sub, marginRight: 'auto' }}>
-                التوزيع مابيلمسش حد ليه مسؤول بالفعل · التصنيف اليدوي مابيتدهسش
+                التوزيع مابيلمسش حد ليه مسؤول بالفعل · التصنيف اليدوي مابيتدهسش ·
+                «اسحب أرقام جديدة» بتجيب من الواتساب والموردين والإعلانات (مش من الدرايف)
               </span>
             </div>
 
             {/* التخصصات */}
             <div style={{ ...card, marginBottom: 14, padding: 0, overflow: 'hidden' }}>
-              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <Tag style={{ width: 16, height: 16, color: C.green }} />
                 <b style={{ fontSize: 14 }}>التخصصات</b>
-                <span style={{ fontSize: 11.5, color: C.sub }}>القواعد داتا مش كود — تتعدّل من الداتابيز أو من هنا</span>
+                <span style={{ fontSize: 11.5, color: C.sub }}>الأقسام وقواعدها داتا مش كود — كلها بتتظبط من هنا</span>
+                <div style={{ marginRight: 'auto', display: 'flex', gap: 6 }}>
+                  <button style={{ ...btn(), padding: '6px 12px', fontSize: 12 }}
+                    onClick={() => { setTestText(''); setTestRes(null); setEditSpec(null); setTab('overview'); setTestOpen(true) }}>
+                    <FlaskConical style={{ width: 14, height: 14 }} /> جرّب القواعد
+                  </button>
+                  <button style={{ ...btn('primary'), padding: '6px 12px', fontSize: 12 }}
+                    onClick={() => { setConfirmDel(false); setMoveTo(''); setEditSpec(toDraft()) }}>
+                    <Plus style={{ width: 14, height: 14 }} /> قسم جديد
+                  </button>
+                </div>
               </div>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
@@ -413,10 +472,14 @@ export default function AdminCrmPage() {
                           {(s.match_words || []).slice(0, 8).join('، ')}
                           {(s.match_words || []).length > 8 ? ` … +${s.match_words.length - 8}` : ''}
                         </td>
-                        <td style={{ padding: '10px 12px', textAlign: 'left' }}>
-                          <button style={{ ...btn(), padding: '5px 10px', fontSize: 12 }}
+                        <td style={{ padding: '10px 12px', textAlign: 'left', whiteSpace: 'nowrap' }}>
+                          <button style={{ ...btn(), padding: '5px 10px', fontSize: 12, marginLeft: 6 }}
                             onClick={() => { setFSpec(s.key); setTab('contacts'); setPage(0) }}>
                             شوف الأرقام
+                          </button>
+                          <button title="عدّل القسم" style={{ ...btn(), padding: 5 }}
+                            onClick={() => { setConfirmDel(false); setMoveTo(''); setEditSpec(toDraft(s)) }}>
+                            <UserCog style={{ width: 14, height: 14 }} />
                           </button>
                         </td>
                       </tr>
@@ -513,6 +576,7 @@ export default function AdminCrmPage() {
                     <tr style={{ background: '#f7f8f6', color: C.sub, fontSize: 11.5 }}>
                       <th style={{ textAlign: 'right', padding: '8px 12px' }}>الرقم</th>
                       <th style={{ textAlign: 'right', padding: '8px 12px' }}>الاسم / البيزنس</th>
+                      <th style={{ textAlign: 'right', padding: '8px 12px' }}>المنطقة</th>
                       <th style={{ textAlign: 'right', padding: '8px 12px' }}>التخصص</th>
                       <th style={{ textAlign: 'right', padding: '8px 12px' }}>المسؤول</th>
                       <th style={{ textAlign: 'right', padding: '8px 12px' }}>الحالة</th>
@@ -527,6 +591,14 @@ export default function AdminCrmPage() {
                         <td style={{ padding: '10px 12px' }}>
                           {r.name || <span style={{ color: C.sub }}>—</span>}
                           {r.business && <div style={{ fontSize: 11, color: C.sub }}>{r.business}</div>}
+                          {r.source && <div style={{ fontSize: 10, color: C.sub }}>{r.source.split(' | ')[0]}</div>}
+                        </td>
+                        <td style={{ padding: '10px 12px', fontSize: 12, color: C.sub, maxWidth: 150 }}>
+                          {r.city
+                            ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                                <MapPin style={{ width: 11, height: 11 }} />{r.city}
+                              </span>
+                            : '—'}
                         </td>
                         <td style={{ padding: '10px 12px' }}>
                           {r.specialty_ar || <span style={{ color: C.warn, fontWeight: 700 }}>مش متصنّف</span>}
@@ -546,7 +618,7 @@ export default function AdminCrmPage() {
                       </tr>
                     ))}
                     {rows.length === 0 && !loading && (
-                      <tr><td colSpan={7} style={{ padding: 24, textAlign: 'center', color: C.sub }}>مفيش نتايج</td></tr>
+                      <tr><td colSpan={8} style={{ padding: 24, textAlign: 'center', color: C.sub }}>مفيش نتايج</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -616,6 +688,159 @@ export default function AdminCrmPage() {
           </div>
         )}
       </main>
+
+      {/* ══════════ مودال: محرّر القسم (الموديل نفسه) ══════════ */}
+      {editSpec && ov && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,.45)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, overflowY: 'auto' }}
+          onClick={() => setEditSpec(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 20, padding: 20, maxWidth: 560, width: '100%', margin: '24px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, flex: 1 }}>
+                {editSpec.isNew ? 'قسم جديد' : `تعديل: ${editSpec.name_ar}`}
+              </h3>
+              <button style={{ ...btn(), padding: 6 }} onClick={() => setEditSpec(null)}><X style={{ width: 15, height: 15 }} /></button>
+            </div>
+            <p style={{ fontSize: 12, color: C.sub, margin: '0 0 14px', lineHeight: 1.7 }}>
+              الأقسام دي هي الموديل نفسه: منها بيتحدّد مين مسؤول عن إيه، وعليها بيتقسّم التصدير،
+              وبيها المارد بيوجّه التاسكات. أي تعديل هنا بيسري على النظام كله على طول.
+            </p>
+
+            {[
+              { k: 'name_ar', label: 'الاسم بالعربي', ph: 'مثلًا: مصانع وتوريدات' },
+              { k: 'key', label: 'المفتاح (إنجليزي صغير بدون مسافات)', ph: 'factories', dis: !editSpec.isNew },
+            ].map(f => (
+              <div key={f.k} style={{ marginBottom: 10 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, display: 'block', marginBottom: 4 }}>{f.label}</label>
+                <input
+                  value={(editSpec as unknown as Record<string, string>)[f.k]}
+                  disabled={f.dis}
+                  onChange={e => setEditSpec(v => v ? { ...v, [f.k]: e.target.value } : v)}
+                  placeholder={f.ph}
+                  style={{ width: '100%', border: `1px solid ${C.line}`, borderRadius: 10, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', background: f.dis ? '#f7f8f6' : '#fff' }} />
+                {f.dis && <div style={{ fontSize: 10.5, color: C.sub, marginTop: 3 }}>المفتاح مش بيتغيّر بعد الإنشاء — الأرقام والتاسكات متربطة بيه.</div>}
+              </div>
+            ))}
+
+            <div style={{ marginBottom: 10 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, display: 'block', marginBottom: 4 }}>
+                كلمات المطابقة <span style={{ fontWeight: 400, color: C.sub }}>— بتتدوّر في رسايل العميل والتصنيف الخام</span>
+              </label>
+              <textarea rows={3} value={editSpec.words}
+                onChange={e => setEditSpec(v => v ? { ...v, words: e.target.value } : v)}
+                placeholder="مصنع، توريد، خامات، factory"
+                style={{ width: '100%', border: `1px solid ${C.line}`, borderRadius: 10, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }} />
+              <div style={{ fontSize: 10.5, color: C.sub, marginTop: 3 }}>افصل بفاصلة. الهمزات والتاء المربوطة بتتظبط لوحدها.</div>
+            </div>
+
+            <div style={{ marginBottom: 10 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, display: 'block', marginBottom: 4 }}>
+                سلَجات التصنيف <span style={{ fontWeight: 400, color: C.sub }}>— من شجرة أقسام الماركتبليس</span>
+              </label>
+              <input value={editSpec.cats}
+                onChange={e => setEditSpec(v => v ? { ...v, cats: e.target.value } : v)}
+                placeholder="factor، industrial"
+                style={{ width: '100%', border: `1px solid ${C.line}`, borderRadius: 10, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit' }} />
+              <div style={{ fontSize: 10.5, color: C.sub, marginTop: 3 }}>المطابقة بالاحتواء: «propert» بتمسك sale-properties-residential كمان.</div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, marginBottom: 14, alignItems: 'flex-end' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, display: 'block', marginBottom: 4 }}>الترتيب</label>
+                <input type="number" value={editSpec.sort}
+                  onChange={e => setEditSpec(v => v ? { ...v, sort: Number(e.target.value) } : v)}
+                  style={{ width: '100%', border: `1px solid ${C.line}`, borderRadius: 10, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit' }} />
+                <div style={{ fontSize: 10.5, color: C.sub, marginTop: 3 }}>الأقل بيكسب لو اتنين طابقوا بالتساوي.</div>
+              </div>
+              <button style={chip(editSpec.active)} onClick={() => setEditSpec(v => v ? { ...v, active: !v.active } : v)}>
+                {editSpec.active ? 'شغّال' : 'مقفول'}
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button style={{ ...btn('primary'), flex: 1, justifyContent: 'center' }} disabled={!!busy}
+                onClick={async () => {
+                  await run('crm_save_specialty', {
+                    p_key: editSpec.key.trim().toLowerCase(), p_name_ar: editSpec.name_ar.trim(),
+                    p_match_words: splitList(editSpec.words), p_match_cats: splitList(editSpec.cats),
+                    p_sort: editSpec.sort, p_active: editSpec.active,
+                  }, 'القسم اتحفظ')
+                  setEditSpec(null)
+                }}>
+                <Save style={{ width: 15, height: 15 }} /> احفظ
+              </button>
+              {!editSpec.isNew && (
+                <button style={{ ...btn(), borderColor: C.danger, color: C.danger }}
+                  onClick={() => setConfirmDel(v => !v)}>
+                  <Trash2 style={{ width: 15, height: 15 }} /> امسح
+                </button>
+              )}
+            </div>
+
+            {confirmDel && !editSpec.isNew && (
+              <div style={{ marginTop: 12, border: `1px solid ${C.danger}`, background: '#fdf3f2', borderRadius: 12, padding: 12 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.danger, marginBottom: 6 }}>
+                  فيه {editSpec.contacts.toLocaleString('ar-EG')} رقم في القسم ده — يروحوا فين؟
+                </div>
+                <select value={moveTo} onChange={e => setMoveTo(e.target.value)}
+                  style={{ width: '100%', border: `1px solid ${C.line}`, borderRadius: 10, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', marginBottom: 8 }}>
+                  <option value="">يرجعوا «مش متصنّفين»</option>
+                  {ov.specialties.filter(x => x.key !== editSpec.key).map(x => (
+                    <option key={x.key} value={x.key}>ينتقلوا لـ{x.name_ar}</option>
+                  ))}
+                </select>
+                <button style={{ ...btn(), background: C.danger, color: '#fff', borderColor: C.danger, width: '100%', justifyContent: 'center' }}
+                  disabled={!!busy}
+                  onClick={async () => {
+                    await run('crm_delete_specialty', { p_key: editSpec.key, p_move_to: moveTo || null }, 'القسم اتمسح والأرقام اتنقلت')
+                    setEditSpec(null); setConfirmDel(false)
+                  }}>
+                  أكيد امسح «{editSpec.name_ar}»
+                </button>
+                <div style={{ fontSize: 10.5, color: C.sub, marginTop: 6 }}>مفيش رقم بيتمسح — بينتقل بس.</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ══════════ مودال: جرّب القواعد ══════════ */}
+      {testOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={() => setTestOpen(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 20, padding: 20, maxWidth: 520, width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <FlaskConical style={{ width: 16, height: 16, color: C.green }} />
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, flex: 1 }}>جرّب القواعد</h3>
+              <button style={{ ...btn(), padding: 6 }} onClick={() => setTestOpen(false)}><X style={{ width: 15, height: 15 }} /></button>
+            </div>
+            <p style={{ fontSize: 12, color: C.sub, margin: '0 0 12px' }}>
+              اكتب جملة زي اللي العميل بيبعتها، وشوف هتروح لأنهي قسم — وليه بالظبط.
+            </p>
+            <textarea rows={3} value={testText} onChange={e => setTestText(e.target.value)}
+              placeholder="عايز أستأجر مركب في الغردقة"
+              style={{ width: '100%', border: `1px solid ${C.line}`, borderRadius: 10, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }} />
+            <button style={{ ...btn('primary'), width: '100%', justifyContent: 'center', marginTop: 10 }}
+              disabled={!!busy || !testText.trim()} onClick={runTest}>
+              {busy === 'test' ? <Loader2 style={{ width: 15, height: 15 }} className="animate-spin" /> : <FlaskConical style={{ width: 15, height: 15 }} />}
+              جرّب
+            </button>
+            {testRes && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 8 }}>
+                  {testRes.winner
+                    ? <>النتيجة: <span style={{ color: C.green }}>{ov?.specialties.find(x => x.key === testRes.winner)?.name_ar || testRes.winner}</span></>
+                    : <span style={{ color: C.warn }}>مفيش قسم طابق — الرقم ده هيفضل «مش متصنّف»</span>}
+                </div>
+                {testRes.matches.map(m => (
+                  <div key={m.key} style={{ border: `1px solid ${m.key === testRes.winner ? C.green2 : C.line}`, borderRadius: 10, padding: '7px 10px', marginBottom: 6, fontSize: 12 }}>
+                    <b>{m.name_ar}</b> — طابق {m.hits} كلمة: <span style={{ color: C.sub }}>{(m.words || []).join('، ')}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ══════════ مودال: تخصصات موظف ══════════ */}
       {editStaff && ov && (
