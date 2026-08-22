@@ -68,6 +68,9 @@ export function QuickHub() {
     { emoji: '💰', label: 'المالية والعهدة', sub: 'مستحقات · مدفوعات · شركاء', href: '/admin/payouts', accent: 'gold', count: c.pending_payouts_count, countLabel: 'بانتظار الدفع' },
     { emoji: '👥', label: 'الموردين والشركاء', sub: 'KYC · شراكات · B2B', href: '/admin/marketplace-suppliers', accent: 'teal', count: c.suppliers_active, countLabel: 'نشط' },
     { emoji: '📲', label: 'الليدز والتواصل', sub: 'Outreach · WhatsApp · funnel', href: '/admin/outreach-leads', accent: 'blue', count: c.new_leads_today, countLabel: 'lead جديد' },
+    // 📇 (٢٢ أغسطس ٢٠٢٦) CRM مضمونة — الأرقام متقسّمة بالتخصص، التوزيع بالدور،
+    //    المكالمات المفرّغة، والتاسكات اللي بتتحوّل لوحدها.
+    { emoji: '📇', label: 'CRM · فريق مضمونة', sub: 'الأرقام · التوزيع · المكالمات', href: '/admin/crm', accent: 'teal' },
     { emoji: '🎨', label: 'المحتوى والإعلانات', sub: 'سوشيال · إيميل · إعلانات', href: '/admin/marketing-hq', accent: 'rose', count: c.posts_this_week, countLabel: 'بوست' },
     { emoji: '🤖', label: 'الـ AI OS', sub: 'Agents · workflows · pipelines', href: '/admin/ai-os', accent: 'purple', count: c.agents_active, countLabel: 'agent' },
     { emoji: '📊', label: 'المراقبة والتنبيهات', sub: 'insights · alerts · activity', href: '/admin/alerts', accent: 'orange', count: c.open_alerts, countLabel: 'مفتوح' },
