@@ -44,6 +44,7 @@ import { sinceLabel, fmtDateTime } from '@/lib/arDateTime'
 import {
   Phone, MessageCircle, Loader2, RefreshCw, ListChecks, CheckCircle2,
   Mic, Sparkles, X, ChevronLeft, MapPin, CornerDownLeft, LogIn, AlertTriangle, Home,
+  FileText, Tag, Package, Clock, Info,
 } from 'lucide-react'
 
 const C = {
@@ -62,7 +63,30 @@ type Task = {
   id: string; title: string; detail: string | null; priority: string; status: string
   due_at: string | null; specialty_ar: string | null
   route_reason: string | null; routed_from: string | null
+  owner?: string | null
   contact_id: string | null; contact_phone: string | null; contact_name: string | null
+}
+type ListingRow = {
+  id: string; title: string; slug: string; status: string; status_ar: string
+  price: number | null; price_on_request: boolean
+  city: string | null; district: string | null; category: string | null
+  created_at: string; reason: string | null
+}
+type CallRow = {
+  id: string; started_at: string; summary: string | null; transcript: string | null
+  outcome: string | null; staff: string | null; channel: string
+}
+type Detail = {
+  ok: boolean; error?: string
+  contact: Lead & {
+    business: string | null; raw_category: string | null; specialty_src: string | null
+    owner: string | null; business_city: string | null
+  }
+  listings: ListingRow[]
+  calls: CallRow[]
+  tasks: Task[]
+  messages: { at: string; dir: string; body: string }[]
+  activity: { bookings: number; orders: number; inquiries: number }
 }
 type Queue = {
   ok: boolean; error?: string
@@ -96,6 +120,11 @@ export default function CrmMobilePage() {
   const [needLogin, setNeedLogin] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [tab, setTab] = useState<'calls' | 'tasks'>('calls')
+
+  // 📇 كارت المكالمة — بيفتح مع دوسة «اتصال» عشان الموظف يقرا وهو بيرن
+  const [detail, setDetail] = useState<Detail | null>(null)
+  const [detailFor, setDetailFor] = useState<Lead | null>(null)
+  const [detailBusy, setDetailBusy] = useState(false)
 
   // شيت تسجيل المكالمة
   const [sheet, setSheet] = useState<Lead | null>(null)
@@ -149,6 +178,20 @@ export default function CrmMobilePage() {
     }
     r.onend = () => setRec(false)
     r.start(); recRef.current = r; setRec(true)
+  }
+
+  /* بيتنادى مع «اتصال» و«التفاصيل» — التليفون بيرن والكارت بيفتح ورا،
+     فلما الموظف يرجع من المكالمة يلاقي كل حاجة قدامه وزرار «سجّل». */
+  async function openDetail(l: Lead) {
+    setDetailFor(l); setDetail(null); setDetailBusy(true)
+    try {
+      const { data } = await (supabaseBrowser.rpc as unknown as (
+        f: string, a: Record<string, unknown>,
+      ) => Promise<{ data: Detail | null; error: unknown }>)('crm_contact_detail', { p_contact: l.id })
+      if (data?.ok) setDetail(data)
+      else setErr(data?.error || 'مقدرناش نفتح الملف')
+    } catch (e) { setErr(e instanceof Error ? e.message : 'خطأ') }
+    setDetailBusy(false)
   }
 
   function openSheet(l: Lead) {
@@ -297,6 +340,12 @@ export default function CrmMobilePage() {
                       {l.calls > 0 && ` · ${l.calls} مكالمة`}
                       {l.last_contact_at && ` · آخر تواصل ${sinceLabel(l.last_contact_at)}`}
                     </div>
+                    {l.notes && (
+                      <div style={{ fontSize: 11.5, color: C.sub, marginTop: 5, lineHeight: 1.6,
+                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {l.notes}
+                      </div>
+                    )}
                     {l.next_action_at && (
                       <div style={{ fontSize: 11.5, color: C.warn, marginTop: 4, fontWeight: 700 }}>
                         معاد المتابعة: {fmtDateTime(l.next_action_at)}
@@ -305,16 +354,21 @@ export default function CrmMobilePage() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                  <a href={`tel:${l.phone}`} onClick={() => { startedAt.current = Date.now() }} style={btn('primary')}>
+                  {/* 📇 دوسة «اتصال» بتفتح كارت التفاصيل ورا الاتصال —
+                      فالموظف بيقرا وهو بيرن، ولما يرجع يلاقي «سجّل» قدامه */}
+                  <a href={`tel:${l.phone}`}
+                     onClick={() => { startedAt.current = Date.now(); openDetail(l) }}
+                     style={btn('primary')}>
                     <Phone style={{ width: 16, height: 16 }} /> اتصال
                   </a>
                   {l.phone_kind !== 'landline' && (
-                    <a href={waLink(l.phone)} target="_blank" rel="noreferrer" style={btn('wa')}>
+                    <a href={waLink(l.phone)} target="_blank" rel="noreferrer"
+                       onClick={() => openDetail(l)} style={btn('wa')}>
                       <MessageCircle style={{ width: 16, height: 16 }} /> واتساب
                     </a>
                   )}
-                  <button onClick={() => openSheet(l)} style={{ ...btn(), flex: '0 0 auto', paddingInline: 14 }}>
-                    سجّل
+                  <button onClick={() => openDetail(l)} style={{ ...btn(), flex: '0 0 auto', paddingInline: 12 }}>
+                    <FileText style={{ width: 15, height: 15 }} /> الملف
                   </button>
                 </div>
               </div>
@@ -359,6 +413,157 @@ export default function CrmMobilePage() {
           </>
         )}
       </main>
+
+      {/* ــــــ 📇 كارت المكالمة: مين ده، وعنده إيه ــــــ
+           محمد: «هل تفاصيل الإعلان أو الشخص بيظهر للموظف لما بيدوس اتصال؟» */}
+      {detailFor && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 55, background: 'rgba(0,0,0,.45)', display: 'flex', alignItems: 'flex-end' }}
+          onClick={() => { setDetailFor(null); setDetail(null) }}>
+          <div onClick={e => e.stopPropagation()}
+            style={{ background: '#fff', width: '100%', borderRadius: '22px 22px 0 0', maxHeight: '92dvh', display: 'flex', flexDirection: 'column' }}>
+
+            {/* هيدر ثابت */}
+            <div style={{ padding: '14px 16px 10px', borderBottom: `1px solid ${C.line}`, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 16, fontWeight: 900, lineHeight: 1.4 }}>
+                  {detail?.contact?.name || detailFor.name || detailFor.phone}
+                </div>
+                <div style={{ fontSize: 12, color: C.sub, marginTop: 3, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{ direction: 'ltr' }}>{detailFor.phone}</span>
+                  {detailFor.phone_kind === 'landline' && <span style={{ color: C.warn, fontWeight: 700 }}>أرضي</span>}
+                  {(detail?.contact?.city || detailFor.city) &&
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                      <MapPin style={{ width: 11, height: 11 }} />{detail?.contact?.city || detailFor.city}
+                    </span>}
+                  {detailFor.specialty_ar && <span style={{ background: '#eef7f3', color: C.green, padding: '1px 8px', borderRadius: 999, fontWeight: 700 }}>{detailFor.specialty_ar}</span>}
+                </div>
+              </div>
+              <button onClick={() => { setDetailFor(null); setDetail(null) }} style={{ ...btn(), flex: '0 0 auto', padding: 9, minHeight: 38 }}>
+                <X style={{ width: 16, height: 16 }} />
+              </button>
+            </div>
+
+            {/* المحتوى */}
+            <div style={{ overflowY: 'auto', padding: 16, flex: 1 }}>
+              {detailBusy && !detail && (
+                <div style={{ textAlign: 'center', padding: 30 }}>
+                  <Loader2 style={{ width: 22, height: 22, color: C.green }} className="animate-spin" />
+                </div>
+              )}
+
+              {detail && (
+                <>
+                  {/* إعلاناته عندنا */}
+                  {detail.listings.length > 0 && (
+                    <Section icon={<Package style={{ width: 15, height: 15 }} />} title={`إعلاناته عندنا (${detail.listings.length})`}>
+                      {detail.listings.map(l => (
+                        <a key={l.id} href={`/marketplace/${l.slug}`} target="_blank" rel="noreferrer"
+                          style={{ display: 'block', border: `1px solid ${C.line}`, borderRadius: 12, padding: 10, marginBottom: 7, textDecoration: 'none', color: C.ink }}>
+                          <div style={{ fontSize: 13.5, fontWeight: 700, lineHeight: 1.5 }}>{l.title}</div>
+                          <div style={{ fontSize: 11.5, color: C.sub, marginTop: 4, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <span style={{
+                              fontWeight: 700,
+                              color: l.status === 'published' ? C.green : l.status === 'rejected' ? C.danger : C.warn,
+                            }}>{l.status_ar}</span>
+                            {l.category && <span><Tag style={{ width: 10, height: 10, display: 'inline' }} /> {l.category}</span>}
+                            {l.price != null && <span>{Number(l.price).toLocaleString('ar-EG')} ج</span>}
+                            {l.price_on_request && <span>السعر عند الطلب</span>}
+                            {(l.district || l.city) && <span>{[l.district, l.city].filter(Boolean).join(' · ')}</span>}
+                          </div>
+                          {l.reason && <div style={{ fontSize: 11.5, color: C.warn, marginTop: 4 }}>السبب: {l.reason}</div>}
+                        </a>
+                      ))}
+                    </Section>
+                  )}
+
+                  {/* آخر رسالة منه — أهم سطر قبل ما يتكلّم */}
+                  {(() => {
+                    const inb = detail.messages.find(m => m.dir === 'inbound')
+                    if (!inb) return null
+                    return (
+                      <Section icon={<MessageCircle style={{ width: 15, height: 15 }} />} title="آخر رسالة منه">
+                        <div style={{ background: '#f4f6f4', border: `1px solid ${C.line}`, borderRadius: 12, padding: 10, fontSize: 13, lineHeight: 1.8 }}>
+                          {inb.body}
+                          <div style={{ fontSize: 10.5, color: C.sub, marginTop: 5 }}>{fmtDateTime(inb.at)}</div>
+                        </div>
+                      </Section>
+                    )
+                  })()}
+
+                  {/* آخر مكالمة */}
+                  {detail.calls.length > 0 && (
+                    <Section icon={<Phone style={{ width: 15, height: 15 }} />} title={`آخر مكالمة (من ${detail.calls.length})`}>
+                      <div style={{ border: `1px solid ${C.line}`, borderRadius: 12, padding: 10 }}>
+                        <div style={{ fontSize: 11.5, color: C.sub, marginBottom: 4 }}>
+                          {fmtDateTime(detail.calls[0].started_at)} · {detail.calls[0].staff || '—'}
+                        </div>
+                        <div style={{ fontSize: 13, fontWeight: 700 }}>{detail.calls[0].summary || '—'}</div>
+                      </div>
+                    </Section>
+                  )}
+
+                  {/* التاسكات المفتوحة */}
+                  {detail.tasks.filter(t => t.status !== 'done').length > 0 && (
+                    <Section icon={<ListChecks style={{ width: 15, height: 15 }} />} title="مطلوب معاه">
+                      {detail.tasks.filter(t => t.status !== 'done').map(t => (
+                        <div key={t.id} style={{ border: `1px solid ${C.line}`, borderRadius: 12, padding: 9, marginBottom: 6, fontSize: 13 }}>
+                          <b>{t.title}</b>
+                          {t.owner && <span style={{ fontSize: 11, color: C.sub, marginRight: 6 }}>({t.owner})</span>}
+                        </div>
+                      ))}
+                    </Section>
+                  )}
+
+                  {/* الملاحظة اللي جت مع الرقم */}
+                  {detail.contact.notes && (
+                    <Section icon={<Info style={{ width: 15, height: 15 }} />} title="ملاحظات على الرقم">
+                      <div style={{ fontSize: 13, color: C.sub, lineHeight: 1.8 }}>{detail.contact.notes}</div>
+                    </Section>
+                  )}
+
+                  {/* من فين جه الرقم + نشاطه */}
+                  <Section icon={<Clock style={{ width: 15, height: 15 }} />} title="خلفية">
+                    <div style={{ fontSize: 12, color: C.sub, lineHeight: 2 }}>
+                      <div>الحالة: <b style={{ color: C.ink }}>{STATUS_AR[detail.contact.status] || detail.contact.status}</b></div>
+                      {detail.contact.business && <div>البيزنس: <b style={{ color: C.ink }}>{detail.contact.business}</b></div>}
+                      {detail.contact.raw_category && <div>تصنيفه الأصلي: {detail.contact.raw_category}</div>}
+                      {detail.contact.source && <div>مصدر الرقم: {detail.contact.source}</div>}
+                      {detail.contact.last_contact_at && <div>آخر تواصل: {sinceLabel(detail.contact.last_contact_at)}</div>}
+                      {(detail.activity.bookings + detail.activity.orders + detail.activity.inquiries) > 0 && (
+                        <div>
+                          نشاطه: {detail.activity.bookings} حجز · {detail.activity.orders} طلب · {detail.activity.inquiries} استفسار
+                        </div>
+                      )}
+                      {detail.listings.length === 0 && detail.messages.length === 0 && (
+                        <div style={{ color: C.warn, fontWeight: 700 }}>
+                          مفيش عندنا عنه غير الرقم — المكالمة دي هي اللي هتعرّفنا هو مين.
+                        </div>
+                      )}
+                    </div>
+                  </Section>
+                </>
+              )}
+            </div>
+
+            {/* أزرار ثابتة تحت */}
+            <div style={{ borderTop: `1px solid ${C.line}`, padding: 12, display: 'flex', gap: 8,
+              paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }}>
+              <a href={`tel:${detailFor.phone}`} onClick={() => { startedAt.current = Date.now() }} style={btn('primary')}>
+                <Phone style={{ width: 16, height: 16 }} /> اتصال
+              </a>
+              {detailFor.phone_kind !== 'landline' && (
+                <a href={waLink(detailFor.phone)} target="_blank" rel="noreferrer" style={btn('wa')}>
+                  <MessageCircle style={{ width: 16, height: 16 }} /> واتساب
+                </a>
+              )}
+              <button onClick={() => { const l = detailFor; setDetailFor(null); setDetail(null); if (l) openSheet(l) }}
+                style={{ ...btn(), flex: '0 0 auto', paddingInline: 16 }}>
+                سجّل
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ــــــ شيت تسجيل المكالمة ــــــ */}
       {sheet && (
@@ -439,6 +644,19 @@ export default function CrmMobilePage() {
 
       {/* الشريط السفلي بتاع مضمونة — الرجوع للموقع بلمسة، و«شغلي» بيبان منوّر */}
       <BottomNav />
+    </div>
+  )
+}
+
+/* عنوان قسم صغير جوّه كارت المكالمة */
+function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7, color: '#059669' }}>
+        {icon}
+        <b style={{ fontSize: 13, color: '#16241f' }}>{title}</b>
+      </div>
+      {children}
     </div>
   )
 }
