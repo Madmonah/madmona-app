@@ -52,7 +52,7 @@ import BottomNav from '@/components/BottomNav'
 import { sinceLabel, fmtDateTime } from '@/lib/arDateTime'
 import {
   Phone, MessageCircle, Loader2, RefreshCw, ListChecks, CheckCircle2,
-  Mic, Sparkles, X, ChevronLeft, MapPin, CornerDownLeft, LogIn, AlertTriangle, Home,
+  Mic, Sparkles, X, ChevronLeft, MapPin, CornerDownLeft, LogIn, AlertTriangle, Home, Users,
   FileText, Tag, Package, Clock, Info, ClipboardCheck, Square, Trash2, PlayCircle,
 } from 'lucide-react'
 
@@ -98,11 +98,22 @@ type Detail = {
   messages: { at: string; dir: string; body: string }[]
   activity: { bookings: number; orders: number; inquiries: number }
 }
+type TeamRow = {
+  profile_id: string; name: string; receives: boolean
+  mine: number; due: number; done: number
+  calls: number; calls_today: number; open_tasks: number
+}
 type Queue = {
   ok: boolean; error?: string
-  me: { id: string; name: string; specialties: { key: string; name_ar: string }[] } | null
+  me: {
+    id: string; name: string; is_dispatcher: boolean
+    viewing: string; viewing_name: string | null
+    specialties: { key: string; name_ar: string }[]
+  } | null
+  team: TeamRow[] | null
   counts: { mine: number; todo: number; due: number; never: number }
   open_tasks: number
+  unassigned: number
   queue: Lead[]
   tasks: Task[]
 }
@@ -129,7 +140,9 @@ export default function CrmMobilePage() {
   const [loading, setLoading] = useState(true)
   const [needLogin, setNeedLogin] = useState(false)
   const [err, setErr] = useState<string | null>(null)
-  const [tab, setTab] = useState<'calls' | 'tasks'>('calls')
+  const [tab, setTab] = useState<'calls' | 'tasks' | 'team'>('calls')
+  /* 👥 الموزّع بيقدر يفتح قايمة أي حد في الفريق — للمتابعة وسماع مكالماته */
+  const [viewAs, setViewAs] = useState<string | null>(null)
 
   // 📇 كارت المكالمة — بيفتح مع دوسة «اتصال» عشان الموظف يقرا وهو بيرن
   const [detail, setDetail] = useState<Detail | null>(null)
@@ -160,13 +173,13 @@ export default function CrmMobilePage() {
       if (!session?.user) { setNeedLogin(true); setLoading(false); return }
       const { data, error } = await (supabaseBrowser.rpc as unknown as (
         f: string, a: Record<string, unknown>,
-      ) => Promise<{ data: Queue | null; error: { message: string } | null }>)('crm_my_queue', { p_limit: 60 })
+      ) => Promise<{ data: Queue | null; error: { message: string } | null }>)('crm_my_queue', { p_limit: 60, p_as: viewAs })
       if (error) setErr(error.message)
       else if (data?.ok === false) setErr(data.error || 'مش مسموح')
       else setQ(data)
     } catch (e) { setErr(e instanceof Error ? e.message : 'مقدرناش نحمّل') }
     setLoading(false)
-  }, [])
+  }, [viewAs])
 
   useEffect(() => { load() }, [load])
 
@@ -357,20 +370,32 @@ export default function CrmMobilePage() {
             <Home style={{ width: 16, height: 16 }} />
           </Link>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 16, fontWeight: 900 }}>مكالماتي</div>
+            <div style={{ fontSize: 16, fontWeight: 900 }}>
+              {viewAs && q?.me?.viewing_name ? `مكالمات ${q.me.viewing_name}` : 'مكالماتي'}
+            </div>
             <div style={{ fontSize: 11.5, color: C.sub }}>
-              {q?.me?.name ? `${q.me.name} · ` : ''}
-              {q?.me?.specialties?.length
-                ? q.me.specialties.map(s => s.name_ar).join(' · ')
-                : 'لسه مفيش تخصص متحدّدلك'}
+              {q?.me?.is_dispatcher && !viewAs
+                ? 'إنت موزّع — الأرقام بتتوزّع على الفريق مش عليك'
+                : (q?.me?.specialties?.length
+                    ? q.me.specialties.map(s => s.name_ar).join(' · ')
+                    : 'لسه مفيش تخصص متحدّد')}
             </div>
           </div>
+          {viewAs && (
+            <button onClick={() => setViewAs(null)} style={{ ...btn(), flex: '0 0 auto', padding: 10, minHeight: 40 }}>
+              <X style={{ width: 16, height: 16 }} />
+            </button>
+          )}
           <button onClick={load} disabled={loading} style={{ ...btn(), flex: '0 0 auto', padding: 10, minHeight: 40 }}>
             <RefreshCw style={{ width: 16, height: 16 }} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
         <div style={{ display: 'flex', borderTop: `1px solid ${C.line}` }}>
-          {([['calls', `مكالمات (${q?.counts?.todo ?? 0})`], ['tasks', `تاسكاتي (${q?.open_tasks ?? 0})`]] as const).map(([k, label]) => (
+          {([
+            ['calls', `مكالمات (${q?.counts?.todo ?? 0})`],
+            ['tasks', `تاسكات (${q?.open_tasks ?? 0})`],
+            ...(q?.me?.is_dispatcher ? [['team', 'الفريق'] as const] : []),
+          ] as const).map(([k, label]) => (
             <button key={k} onClick={() => setTab(k)}
               style={{
                 flex: 1, padding: '11px 0', border: 0, background: 'transparent', cursor: 'pointer',
@@ -404,9 +429,34 @@ export default function CrmMobilePage() {
               </div>
             )}
             {q.queue.length === 0 && (
-              <div style={{ ...card, textAlign: 'center', color: C.sub, padding: 30, fontSize: 13.5 }}>
-                مفيش أرقام متوزّعة عليك لسه.<br />
-                <span style={{ fontSize: 12 }}>التوزيع بيتعمل من شاشة الأدمن: «وزّع بالدور».</span>
+              /* 🐞 (٢٢ أغسطس ٢٠٢٦) الرسالة القديمة كانت بتقول «التوزيع لسه ماتعملش»
+                 حتى لو كان اتعمل — ودي كانت بتخلّي الموزّع يفتكر إن الشاشة مش
+                 مربوطة. دلوقتي بتقول السبب الحقيقي. */
+              <div style={{ ...card, padding: 20, fontSize: 13.5, lineHeight: 1.9 }}>
+                {q.me?.is_dispatcher && !viewAs ? (
+                  <>
+                    <b style={{ fontSize: 15, display: 'block', marginBottom: 6 }}>إنت موزّع — مش مستقبِل</b>
+                    <span style={{ color: C.sub }}>
+                      الأرقام بتتوزّع على الفريق مش عليك، فطبيعي التاب ده يبقى فاضي.
+                      {q.team && ` الفريق ماسك دلوقتي ${q.team.reduce((a, t) => a + t.mine, 0).toLocaleString('ar-EG')} رقم.`}
+                    </span>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+                      <button onClick={() => setTab('team')} style={{ ...btn('primary'), flex: '1 1 140px' }}>
+                        <Users style={{ width: 15, height: 15 }} /> شوف شغل الفريق
+                      </button>
+                      <Link href="/admin/crm" style={{ ...btn(), flex: '1 1 140px' }}>شاشة التوزيع</Link>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <b style={{ fontSize: 15, display: 'block', marginBottom: 6 }}>مفيش أرقام متوزّعة عليك</b>
+                    <span style={{ color: C.sub }}>
+                      {q.unassigned > 0
+                        ? `فيه ${q.unassigned.toLocaleString('ar-EG')} رقم لسه ملهمش صاحب — كلّم أحمد سامي يوزّعهم.`
+                        : 'كل الأرقام متوزّعة على زمايلك. لو المفروض ياخد نصيب، كلّم أحمد سامي.'}
+                    </span>
+                  </>
+                )}
               </div>
             )}
             {q.queue.map(l => (
@@ -459,6 +509,44 @@ export default function CrmMobilePage() {
                   </button>
                 </div>
               </div>
+            ))}
+          </>
+        )}
+
+        {/* ــــــ 👥 الفريق (للموزّع) ــــــ
+             محمد: «أحمد سامي هو اللي هيوزّع» — فالموزّع لازم يشوف شغل الكل
+             من موبايله، ويقدر يفتح قايمة أي حد ويسمع مكالماته. */}
+        {tab === 'team' && q?.team && (
+          <>
+            <div style={{ ...card, padding: '10px 12px', fontSize: 12.5, color: C.sub, lineHeight: 1.8 }}>
+              دوس على أي حد تشوف أرقامه ومكالماته.
+              {q.unassigned > 0 && (
+                <b style={{ color: C.warn, display: 'block', marginTop: 4 }}>
+                  فيه {q.unassigned.toLocaleString('ar-EG')} رقم لسه ملهمش صاحب
+                </b>
+              )}
+            </div>
+            {q.team.map(t => (
+              <button key={t.profile_id} onClick={() => { setViewAs(t.profile_id); setTab('calls') }}
+                style={{ ...card, width: '100%', textAlign: 'right', cursor: 'pointer', fontFamily: 'inherit',
+                  display: 'block', border: `1px solid ${C.line}`, opacity: t.receives ? 1 : 0.7 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <b style={{ fontSize: 14.5, flex: 1 }}>{t.name}</b>
+                  {!t.receives && (
+                    <span style={{ fontSize: 10, background: '#eef2ff', color: '#1d4ed8', padding: '2px 8px', borderRadius: 999, fontWeight: 800 }}>
+                      موزّع
+                    </span>
+                  )}
+                  <ChevronLeft style={{ width: 16, height: 16, color: C.sub }} />
+                </div>
+                <div style={{ display: 'flex', gap: 14, marginTop: 8, fontSize: 12, color: C.sub, flexWrap: 'wrap' }}>
+                  <span><b style={{ color: C.ink, fontSize: 14 }}>{t.mine.toLocaleString('ar-EG')}</b> رقم</span>
+                  <span><b style={{ color: t.due > 0 ? C.warn : C.ink, fontSize: 14 }}>{t.due.toLocaleString('ar-EG')}</b> مستنّي</span>
+                  <span><b style={{ color: C.green, fontSize: 14 }}>{t.calls_today}</b> مكالمة النهاردة</span>
+                  <span><b style={{ color: C.ink, fontSize: 14 }}>{t.calls}</b> إجمالي</span>
+                  {t.open_tasks > 0 && <span><b style={{ color: C.ink, fontSize: 14 }}>{t.open_tasks}</b> تاسك</span>}
+                </div>
+              </button>
             ))}
           </>
         )}
