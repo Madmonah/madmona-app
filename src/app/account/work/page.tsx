@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   Loader2, ArrowRight, Clock, Inbox, Wallet, MessageCircle,
@@ -9,6 +9,7 @@ import {
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import BottomNav from '@/components/BottomNav'
 import { useMadmonaStaff } from '@/lib/useMadmonaStaff'
+import { useTasksLive, pingTasksChanged } from '@/lib/useTasksLive'
 
 /* ============================================================================
    /account/work — «شغلي» — كل الإداريات جوّه الأبليكيشن
@@ -123,7 +124,7 @@ export default function MyWorkPage() {
   const [loading, setLoading] = useState(true)
   const [autoMsg, setAutoMsg] = useState<string | null>(null)
 
-  async function load(): Promise<boolean> {
+  const load = useCallback(async (): Promise<boolean> => {
     try {
       const { data: { session } } = await supabaseBrowser.auth.getSession()
       if (!session?.user) return false
@@ -136,7 +137,11 @@ export default function MyWorkPage() {
       console.error('[account/work] load failed:', e)
       return false
     }
-  }
+  }, [])
+
+  /* 🔔 بيسمع لتاب Task في الشات (وأي تاب تاني) — مهمة اتقفلت من هناك
+     بتختفي من هنا على طول، من غير ما المستخدم يعمل refresh. */
+  useTasksLive(() => { load() }, true)
 
   // ⏱️ (٢٠ أغسطس ٢٠٢٦) الحضور والانصراف **أوتوماتيك**.
   //    محمد: «تسجيل الحضور المفروض يكون أوتوماتيك والانصراف كمان».
@@ -651,6 +656,7 @@ function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
       )
       if (error) { setErr('مقدرناش نقفل المهمة — جرّب تاني'); return }
       if (data && data.ok === false) { setErr(data.error || 'مقدرناش نقفل المهمة'); return }
+      pingTasksChanged()          // 🔔 قول لتاب Task في الشات
       onDone()
     } catch (e) {
       console.error('[work] complete_my_task failed:', e)

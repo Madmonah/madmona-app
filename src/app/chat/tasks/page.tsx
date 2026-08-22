@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ChatBottomNav from '@/components/ChatBottomNav'
+import { useTasksLive, pingTasksChanged } from '@/lib/useTasksLive'
 
 /* 📋 (٢٠ أغسطس ٢٠٢٦) موديل تاسك واحد للأبليكيشن والشات.
    محمد: «التاسكات برضو تظهر في الشات في تاب مهامي، وغيّر اسم تاب مهامي
@@ -43,9 +44,30 @@ export default function TasksPage() {
     })()
   }, [load])
 
+  /* 🔔 بيسمع لشاشة «مهامي» في الأبليكيشن (وأي تاب تاني) — لو مهمة اتقفلت
+     من هناك، دي بتتحدّث لوحدها من غير ما المستخدم يعمل حاجة. */
+  const refresh = useCallback(() => { if (token) load(token) }, [token, load])
+  useTasksLive(refresh, authed && !!token)
+
   async function done(id: string, source: string) {
-    setTasks((t) => t.filter((x) => x.id !== id))
-    try { await fetch('/api/team/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ taskId: id, source }) }) } catch {}
+    const before = tasks
+    setTasks((t) => t.filter((x) => x.id !== id))   // نشيلها فورًا
+    try {
+      const r = await fetch('/api/team/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ taskId: id, source }),
+      })
+      const d = await r.json().catch(() => null)
+      if (!r.ok || d?.ok === false) {
+        // ↩️ رجّعها مكانها — أحسن من إنها تختفي وهي لسه مفتوحة في الداتابيز
+        setTasks(before)
+        return
+      }
+      pingTasksChanged()                            // قول للشاشات التانية
+    } catch {
+      setTasks(before)
+    }
   }
 
   return (
