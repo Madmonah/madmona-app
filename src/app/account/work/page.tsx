@@ -633,20 +633,33 @@ function RequestForm({ supplierId, onDone }: { supplierId: string; onDone: () =>
    --------------------------------------------------------------------------- */
 function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
   const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
 
+  /* 🐞 (٢٢ أغسطس ٢٠٢٦ — محمد: «مهامي لما بدوس عليه مش بتختفي»)
+     الكود القديم كان بينادي الـRPC وبيعمل onDone() على طول من غير ما
+     يبصّ لا على `error` ولا على `data.ok`. فلما الداتابيز كانت بترفض
+     التحديث (كانت بتكتب status='done' وdaily_tasks مابتقبلش الكلمة دي)،
+     الشاشة كانت بتعمل refresh والمهمة بتفضل مكانها — والمستخدم شايف إن
+     الدوسة مش بتعمل حاجة. دلوقتي: بنقرا الخطأ وبنوريه للمستخدم. */
   const complete = async () => {
-    setBusy(true)
+    setBusy(true); setErr(null)
     try {
-      await (supabaseBrowser.rpc as unknown as (
+      const { data, error } = await (supabaseBrowser.rpc as unknown as (
         fn: string, args: Record<string, unknown>,
-      ) => Promise<unknown>)('complete_my_task', { p_task_id: t.id, p_source: t.source })
+      ) => Promise<{ data: { ok?: boolean; error?: string } | null; error: { message: string } | null }>)(
+        'complete_my_task', { p_task_id: t.id, p_source: t.source },
+      )
+      if (error) { setErr('مقدرناش نقفل المهمة — جرّب تاني'); return }
+      if (data && data.ok === false) { setErr(data.error || 'مقدرناش نقفل المهمة'); return }
       onDone()
     } catch (e) {
       console.error('[work] complete_my_task failed:', e)
+      setErr('مقدرناش نقفل المهمة — جرّب تاني')
     } finally { setBusy(false) }
   }
 
   return (
+    <div>
     <div className={`flex items-center gap-2 rounded-xl px-3 py-2 ${
       t.overdue ? 'bg-red-50/60 border border-red-100' : 'bg-[#FAFAF7]'
     }`}>
@@ -672,6 +685,10 @@ function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
           {String(t.due_time).slice(0, 5)}
         </span>
       )}
+    </div>
+    {err && (
+      <p className="text-[11px] font-bold text-red-600 px-3 pt-1">{err}</p>
+    )}
     </div>
   )
 }
