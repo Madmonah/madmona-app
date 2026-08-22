@@ -44,7 +44,7 @@ import { sinceLabel, fmtDateTime } from '@/lib/arDateTime'
 import {
   Phone, MessageCircle, Loader2, RefreshCw, ListChecks, CheckCircle2,
   Mic, Sparkles, X, ChevronLeft, MapPin, CornerDownLeft, LogIn, AlertTriangle, Home,
-  FileText, Tag, Package, Clock, Info,
+  FileText, Tag, Package, Clock, Info, ClipboardCheck,
 } from 'lucide-react'
 
 const C = {
@@ -556,9 +556,12 @@ export default function CrmMobilePage() {
                   <MessageCircle style={{ width: 16, height: 16 }} /> واتساب
                 </a>
               )}
+              {/* 🗒️ (٢٢ أغسطس ٢٠٢٦ — محمد: «طيب إيه موضوع سجّل ده؟»)
+                  «سجّل» لوحدها ماكانتش بتقول إيه اللي هيتسجّل. الاسم بقى
+                  بيقول الشغلانة نفسها: «خلّصت؟ سجّل». */}
               <button onClick={() => { const l = detailFor; setDetailFor(null); setDetail(null); if (l) openSheet(l) }}
-                style={{ ...btn(), flex: '0 0 auto', paddingInline: 16 }}>
-                سجّل
+                style={{ ...btn(), flex: '0 0 auto', paddingInline: 14, whiteSpace: 'nowrap' }}>
+                <ClipboardCheck style={{ width: 15, height: 15 }} /> خلّصت؟ سجّل
               </button>
             </div>
           </div>
@@ -583,10 +586,18 @@ export default function CrmMobilePage() {
 
             {!result ? (
               <>
-                <p style={{ fontSize: 12.5, color: C.sub, margin: '0 0 8px', lineHeight: 1.7 }}>
-                  قول أو اكتب اللي حصل في المكالمة بلغتك العادية — المارد هو اللي هيطلّع منها
-                  الملخّص والتاسكات، وأي حاجة تخصّ زميل تاني هتنزل عنده لوحدها.
-                </p>
+                <div style={{ background: '#eef7f3', border: `1px solid ${C.green2}`, borderRadius: 12, padding: 10, marginBottom: 10 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 800, color: C.green, marginBottom: 4 }}>
+                    ده مش تسجيل صوت — ده «قول اللي حصل»
+                  </div>
+                  <p style={{ fontSize: 12, color: C.sub, margin: 0, lineHeight: 1.8 }}>
+                    بعد ما تقفل المكالمة، قول أو اكتب اللي حصل بلغتك العادية.
+                    المارد بيطلّع منها <b>ملخّص المكالمة</b> و<b>نتيجتها</b> و<b>معاد المتابعة</b>
+                    و<b>التاسكات</b> — وأي حاجة ظهرت وبتخصّ زميل تاني، التاسك بينزل عنده هو.
+                    <br />
+                    من غير الخطوة دي، المكالمة مش موجودة عندنا: مفيش سجل، ومفيش متابعة.
+                  </p>
+                </div>
                 <textarea rows={5} value={text} onChange={e => setText(e.target.value)}
                   placeholder="مثال: العميل عايز شقة ١٢٠ متر في سموحة بحدود ٢.٥ مليون، وقال إن عنده عربية مستعملة عايز يعرضها. قال نكلّمه الأسبوع الجاي."
                   style={{ width: '100%', border: `1px solid ${C.line}`, borderRadius: 14, padding: 12, fontSize: 14, fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.7 }} />
