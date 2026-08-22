@@ -418,7 +418,10 @@ export default function AdminCrmPage() {
                 { k: 'تاسكات اتحوّلت تلقائيًا', v: ov.totals.routed_tasks, c: C.green2 },
               ].map(x => (
                 <div key={x.k} style={card}>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: x.c }}>{x.v.toLocaleString('ar-EG')}</div>
+                  {/* 🛡️ (٢٢ أغسطس ٢٠٢٦) `?? 0` مقصود: لو الداتابيز رجّعت رقم
+                      ناقص (زي ما حصل مع landline/recordings) الشاشة تفضل
+                      شغالة بصفر بدل ما الصفحة كلها تقع على «حصل خطأ». */}
+                  <div style={{ fontSize: 24, fontWeight: 900, color: x.c }}>{(x.v ?? 0).toLocaleString('ar-EG')}</div>
                   <div style={{ fontSize: 11.5, color: C.sub, marginTop: 2 }}>{x.k}</div>
                 </div>
               ))}
@@ -479,7 +482,7 @@ export default function AdminCrmPage() {
                         <td style={{ padding: '10px 12px', fontWeight: 700 }}>{s.name_ar}
                           <div style={{ fontSize: 10.5, color: C.sub, fontWeight: 400 }}>{s.key}</div>
                         </td>
-                        <td style={{ padding: '10px 12px', fontWeight: 800 }}>{s.contacts.toLocaleString('ar-EG')}</td>
+                        <td style={{ padding: '10px 12px', fontWeight: 800 }}>{(s.contacts ?? 0).toLocaleString('ar-EG')}</td>
                         <td style={{ padding: '10px 12px' }}>
                           {s.owners.length === 0
                             ? <span style={{ color: C.warn, fontWeight: 700 }}>مفيش مسؤول</span>
@@ -612,7 +615,7 @@ export default function AdminCrmPage() {
             </div>
 
             <div style={{ fontSize: 12.5, color: C.sub, marginBottom: 8 }}>
-              {total.toLocaleString('ar-EG')} رقم · صفحة {page + 1} من {Math.max(1, Math.ceil(total / PAGE))}
+              {(total ?? 0).toLocaleString('ar-EG')} رقم · صفحة {page + 1} من {Math.max(1, Math.ceil(total / PAGE))}
             </div>
 
             {/* ✋ شريط التوزيع اليدوي — بيبان لما تختار أرقام */}
@@ -863,7 +866,7 @@ export default function AdminCrmPage() {
             {confirmDel && !editSpec.isNew && (
               <div style={{ marginTop: 12, border: `1px solid ${C.danger}`, background: '#fdf3f2', borderRadius: 12, padding: 12 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: C.danger, marginBottom: 6 }}>
-                  فيه {editSpec.contacts.toLocaleString('ar-EG')} رقم في القسم ده — يروحوا فين؟
+                  فيه {(editSpec.contacts ?? 0).toLocaleString('ar-EG')} رقم في القسم ده — يروحوا فين؟
                 </div>
                 <select value={moveTo} onChange={e => setMoveTo(e.target.value)}
                   style={{ width: '100%', border: `1px solid ${C.line}`, borderRadius: 10, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit', marginBottom: 8 }}>
