@@ -86,6 +86,16 @@ const nextConfig = {
     }
     return redirects;
   },
+  async rewrites() {
+    return [
+      // حملة «اكتب اسم محلك» — الأداة صفحة ستاتيك مستقلة في public/ عشان
+      // تفضل خفيفة وتتحمّل في ثانية على موبايل ٣G (ده لينك بيتبعت في
+      // جروبات واتساب، فأي ميلي ثانية بتفرق). الـrewrite بيدي لينك نضيف
+      // /mahalak بدل /mahalak.html — واللينك ده هو اللي في كل الإعلانات
+      // والبوستر والـQR، فمتغيّروش.
+      { source: '/mahalak', destination: '/mahalak.html' },
+    ]
+  },
   async headers() {
     return [
       {
