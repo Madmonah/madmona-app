@@ -34,10 +34,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import BottomNav from '@/components/BottomNav'
 import { sinceLabel, fmtDateTime } from '@/lib/arDateTime'
 import {
   Phone, MessageCircle, Loader2, RefreshCw, ListChecks, CheckCircle2,
-  Mic, Sparkles, X, ChevronLeft, MapPin, CornerDownLeft, LogIn, AlertTriangle,
+  Mic, Sparkles, X, ChevronLeft, MapPin, CornerDownLeft, LogIn, AlertTriangle, Home,
 } from 'lucide-react'
 
 const C = {
@@ -216,6 +217,9 @@ export default function CrmMobilePage() {
       {/* هيدر */}
       <header style={{ position: 'sticky', top: 0, zIndex: 30, background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(10px)', borderBottom: `1px solid ${C.line}` }}>
         <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Link href="/" aria-label="مضمونة" style={{ ...btn(), flex: '0 0 auto', padding: 10, minHeight: 40 }}>
+            <Home style={{ width: 16, height: 16 }} />
+          </Link>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 16, fontWeight: 900 }}>{q?.me?.name || 'شغلي'}</div>
             <div style={{ fontSize: 11.5, color: C.sub }}>
@@ -425,6 +429,9 @@ export default function CrmMobilePage() {
           </div>
         </div>
       )}
+
+      {/* الشريط السفلي بتاع مضمونة — الرجوع للموقع بلمسة، و«شغلي» بيبان منوّر */}
+      <BottomNav />
     </div>
   )
 }

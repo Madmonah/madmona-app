@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Compass, Plus, User } from 'lucide-react'
+import { Home, Compass, Plus, User, Briefcase } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { useMadmonaStaff } from '@/lib/useMadmonaStaff'
 import type { MouseEvent } from 'react'
 
 // ============================================================
@@ -11,12 +12,27 @@ import type { MouseEvent } from 'react'
 // 5 columns + raised center "ضيف" FAB:
 //   الرئيسية · السوق · [ضيف FAB] · الشات · حسابي
 // FAB → /add-listing (passes ?track= if the user is standing on a vertical).
+//
+// 💼 (٢٢ أغسطس ٢٠٢٦) محمد: «عايز تاب تفتح من مضمونة دوت كوم من تاب شغلي»
+//   لموظفين مضمونة **بس**، الخانة الخامسة بتبقى «شغلي» (/crm) بدل «حسابي»،
+//   وعليها عدّاد بالمستنيهم (مكالمات + تاسكات).
+//
+//   ⚠️ ليه بدل «حسابي» مش خانة سادسة؟ الشريط ٥ أعمدة وزرار «ضيف» مرفوع في
+//      نص العمود التالت — أي عمود سادس بيوقّع الزرار عن النص وبيبوّظ الشكل
+//      على كل الأجهزة. و«حسابي» موجود أصلًا في قايمة الهيدر وعلى /account،
+//      فمحدش بيفقد حاجة. الزوار العاديين شايفين الشريط زي ما هو بالظبط.
+//
+//   ⚠️ الفلاج ده **عرض بس**. `/crm` نفسها والـRPCs بتاعتها بيتأكدوا من
+//      `is_madmona_staff()` في الداتابيز، فتزوير الفلاج في المتصفح مابيدّيش
+//      أي صلاحية.
 // ============================================================
 
 export default function BottomNav() {
   const { t, lang, dir } = useT()
   const pathname = usePathname() || '/'
   const en = lang === 'en'
+  const staff = useMadmonaStaff()
+  const waiting = (staff.tasks ?? 0) + (staff.due ?? 0)
 
   const addListing = (e: MouseEvent) => {
     try {
@@ -33,6 +49,7 @@ export default function BottomNav() {
   const marketActive = pathname.startsWith('/marketplace') || pathname.startsWith('/real-estate')
   const chatActive = pathname.startsWith('/chat')
   const accountActive = pathname === '/account' || (pathname.startsWith('/account') && !pathname.startsWith('/account/favorites'))
+  const workActive = pathname.startsWith('/crm')
 
   return (
     // 🐞 (١٦ أغسطس ٢٠٢٦ — محمد: «زرار ضيف مرحّل شوية، لازم تضغط تحت منه»)
@@ -89,11 +106,25 @@ export default function BottomNav() {
           <span className={`text-[10px] ${chatActive ? 'font-extrabold' : 'font-medium'}`}>{en ? 'Chat' : 'الشات'}</span>
         </Link>
 
-        {/* حسابي */}
-        <Link href="/account" className={`pointer-events-auto flex flex-col items-center gap-1 no-underline ${accountActive ? 'text-[#059669]' : 'text-[#6B7280]'}`}>
-          <User className="w-5 h-5" strokeWidth={accountActive ? 2.5 : 2} />
-          <span className={`text-[10px] ${accountActive ? 'font-extrabold' : 'font-medium'}`}>{t('nav.account')}</span>
-        </Link>
+        {/* شغلي (لفريق مضمونة) — أو حسابي لأي حد تاني */}
+        {staff.staff ? (
+          <Link href="/crm" className={`pointer-events-auto flex flex-col items-center gap-1 no-underline ${workActive ? 'text-[#059669]' : 'text-[#6B7280]'}`}>
+            <span className="relative">
+              <Briefcase className="w-5 h-5" strokeWidth={workActive ? 2.5 : 2} />
+              {waiting > 0 && (
+                <span className="absolute -top-1.5 -left-2 min-w-[16px] h-[16px] px-1 rounded-full bg-[#b3261e] text-white text-[9px] font-black flex items-center justify-center">
+                  {waiting > 99 ? '99+' : waiting}
+                </span>
+              )}
+            </span>
+            <span className={`text-[10px] ${workActive ? 'font-extrabold' : 'font-medium'}`}>{en ? 'My work' : 'شغلي'}</span>
+          </Link>
+        ) : (
+          <Link href="/account" className={`pointer-events-auto flex flex-col items-center gap-1 no-underline ${accountActive ? 'text-[#059669]' : 'text-[#6B7280]'}`}>
+            <User className="w-5 h-5" strokeWidth={accountActive ? 2.5 : 2} />
+            <span className={`text-[10px] ${accountActive ? 'font-extrabold' : 'font-medium'}`}>{t('nav.account')}</span>
+          </Link>
+        )}
       </div>
     </nav>
   )

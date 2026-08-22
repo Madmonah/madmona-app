@@ -14,9 +14,13 @@ import NotificationButton from './NotificationButton'
 import LanguageToggle from './LanguageToggle'
 import CartButton from './CartButton'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { useMadmonaStaff } from '@/lib/useMadmonaStaff'
 
 export default function TopNav() {
   const { t, dir } = useT()
+  // 💼 (٢٢ أغسطس ٢٠٢٦) «شغلي» في القايمة كمان — عشان يبان على الديسكتوب،
+  //    وعشان موظفين مضمونة يفضل قدامهم «حسابي» بعد ما التاب السفلي بقى شغلي.
+  const staff = useMadmonaStaff()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [loggedIn, setLoggedIn] = useState(false)
@@ -167,6 +171,31 @@ export default function TopNav() {
             </div>
 
             <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+              {staff.staff && (
+                <Link
+                  href="/crm"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-2xl bg-[#059669]/[0.06] hover:bg-[#059669]/10 no-underline group transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-[#059669]/10 flex items-center justify-center flex-shrink-0 relative">
+                    <Briefcase className="w-5 h-5 text-[#059669]" />
+                    {((staff.tasks ?? 0) + (staff.due ?? 0)) > 0 && (
+                      <span className="absolute -top-1.5 -left-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#b3261e] text-white text-[10px] font-black flex items-center justify-center">
+                        {(staff.tasks ?? 0) + (staff.due ?? 0)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-900">شغلي</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {((staff.due ?? 0) > 0 || (staff.tasks ?? 0) > 0)
+                        ? `${staff.due ?? 0} مكالمة · ${staff.tasks ?? 0} تاسك مستنيينك`
+                        : 'مكالماتك وتاسكاتك'}
+                    </p>
+                  </div>
+                </Link>
+              )}
+
               <Link
                 href="/account"
                 onClick={() => setMobileOpen(false)}
