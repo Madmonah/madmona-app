@@ -85,6 +85,10 @@ const ALLOWED = new Set([
   // 👥 (٢٢ أغسطس ٢٠٢٦) فريق مضمونة كله + ناقص كل واحد — شاشة إدارة الموظفين
   //    كانت بتعرض حسابات الأدمن بس (٣ من ٨).
   'madmona_team_accounts',
+  // 🎚️ (٢٢ أغسطس ٢٠٢٦) أدوار الفريق في الـCRM + التوزيع اليدوي.
+  //    محمد: «أحمد سامي هو اللي هيوزّع».
+  'crm_set_staff_role',
+  'crm_assign_contacts',
 ])
 
 async function isAdmin(req: NextRequest): Promise<boolean> {

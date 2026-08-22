@@ -21,6 +21,14 @@
      ٣) التاسكات  — والتاسك المحوّل بيبان عليه **مين حوّله وليه**
      ٤) ملف العميل (مودال) — مكالماته المفرّغة + تاسكاته + آخر رسايله
 
+   🎚️ (٢٢ أغسطس ٢٠٢٦) محمد: «أحمد سامي هو اللي هيوزّع».
+      فبقى لكل موظف دورين مستقلين:
+        • **موزّع** — بيوزّع ويحوّل الأرقام بين الفريق
+        • **بياخد ليدات** — بيدخل في التوزيع بالدور وبيستقبل تاسكات محوّلة
+      أحمد اتحطّ موزّع **ومش بياخد ليدات** — لأنه كان واخد ١٢ تخصص، وده
+      كان هيخلّيه ياخد نصيب في كل قسم وهو أصلًا شغلته يوزّع.
+      وفيه توزيع يدوي كمان: تختار أرقام من التاب وتبعتها لموظف بعينه.
+
    🧩 **الموديل نفسه بيتظبط من الشاشة** — مش بس مين مسؤول عن إيه:
         • زوّد تخصص جديد · غيّر اسمه · اقفله · رتّبه
         • عدّل كلمات المطابقة وسلَجات التصنيف اللي بيتبنى عليها التصنيف
@@ -47,6 +55,7 @@ import {
   ArrowRight, Loader2, ShieldAlert, RefreshCw, Users, Phone, ListChecks,
   Download, Search, X, Shuffle, Sparkles, AlertTriangle, CheckCircle2,
   CornerDownLeft, Tag, UserCog, Save, Plus, Trash2, FlaskConical, MapPin,
+  Send, UserCheck, Inbox,
 } from 'lucide-react'
 
 const C = {
@@ -63,14 +72,16 @@ type Specialty = {
 }
 type Staff = {
   profile_id: string; name: string; role: string
+  is_dispatcher: boolean; receives_leads: boolean
   contacts: number; open_tasks: number; calls: number; specialties: string[]
 }
 type Overview = {
   ok: boolean; error?: string
   totals: {
     contacts: number; assigned: number; unclassified: number; manual: number
-    calls: number; open_tasks: number; routed_tasks: number
+    landline: number; calls: number; recordings: number; open_tasks: number; routed_tasks: number
   }
+  receivers: number
   specialties: Specialty[]
   staff: Staff[]
   staff_no_account: string[]
@@ -172,6 +183,10 @@ export default function AdminCrmPage() {
   const [page, setPage] = useState(0)
   const PAGE = 50
 
+  // ✋ التوزيع اليدوي — الموزّع بيختار أرقام ويبعتها لموظف
+  const [sel, setSel] = useState<Set<string>>(new Set())
+  const [assignTo, setAssignTo] = useState('')
+
   // التاسكات
   const [tasks, setTasks] = useState<Task[]>([])
 
@@ -223,7 +238,7 @@ export default function AdminCrmPage() {
         p_specialty: fSpec || null, p_owner: fOwner || null, p_status: fStatus || null,
         p_q: q || null, p_limit: PAGE, p_offset: off,
       })
-      if (r?.ok) { setRows(r.rows || []); setTotal(r.total || 0); if (reset) setPage(0) }
+      if (r?.ok) { setRows(r.rows || []); setTotal(r.total || 0); setSel(new Set()); if (reset) setPage(0) }
     } catch { /* الفلتر مش حرج */ }
     setLoading(false)
   }, [fSpec, fOwner, fStatus, q, page])
@@ -396,7 +411,9 @@ export default function AdminCrmPage() {
                 { k: 'كل الأرقام', v: ov.totals.contacts, c: C.ink },
                 { k: 'متوزّع على الفريق', v: ov.totals.assigned, c: C.green },
                 { k: 'لسه مش متصنّف', v: ov.totals.unclassified, c: C.warn },
+                { k: 'أرضي (مفيش واتساب)', v: ov.totals.landline, c: C.sub },
                 { k: 'مكالمات مفرّغة', v: ov.totals.calls, c: C.blue },
+                { k: 'تسجيلات صوتية', v: ov.totals.recordings, c: C.blue },
                 { k: 'تاسكات مفتوحة', v: ov.totals.open_tasks, c: C.ink },
                 { k: 'تاسكات اتحوّلت تلقائيًا', v: ov.totals.routed_tasks, c: C.green2 },
               ].map(x => (
@@ -500,9 +517,29 @@ export default function AdminCrmPage() {
                   <div key={st.profile_id} style={{ border: `1px solid ${C.line}`, borderRadius: 14, padding: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <b style={{ fontSize: 13.5, flex: 1 }}>{st.name}</b>
+                      {st.is_dispatcher && (
+                        <span title="بيوزّع الأرقام على الفريق"
+                          style={{ fontSize: 10, background: '#eef2ff', color: C.blue, padding: '2px 8px', borderRadius: 999, fontWeight: 800 }}>
+                          موزّع
+                        </span>
+                      )}
                       <button title="تخصصاته" style={{ ...btn(), padding: 5 }}
                         onClick={() => { setEditStaff(st); setEditSpecs(st.specialties || []) }}>
                         <UserCog style={{ width: 14, height: 14 }} />
+                      </button>
+                    </div>
+
+                    {/* 🎚️ الدورين — مستقلين عن بعض */}
+                    <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                      <button disabled={!!busy}
+                        onClick={() => run('crm_set_staff_role', { p_profile: st.profile_id, p_is_dispatcher: !st.is_dispatcher }, 'اتظبط')}
+                        style={{ ...chip(st.is_dispatcher), flex: 1, padding: '5px 8px', fontSize: 11, justifyContent: 'center' }}>
+                        <Send style={{ width: 11, height: 11, display: 'inline', marginLeft: 3 }} /> يوزّع
+                      </button>
+                      <button disabled={!!busy}
+                        onClick={() => run('crm_set_staff_role', { p_profile: st.profile_id, p_receives_leads: !st.receives_leads }, 'اتظبط')}
+                        style={{ ...chip(st.receives_leads), flex: 1, padding: '5px 8px', fontSize: 11, justifyContent: 'center' }}>
+                        <Inbox style={{ width: 11, height: 11, display: 'inline', marginLeft: 3 }} /> بياخد ليدات
                       </button>
                     </div>
                     <div style={{ fontSize: 11.5, color: C.sub, margin: '6px 0' }}>
@@ -521,6 +558,15 @@ export default function AdminCrmPage() {
                     </button>
                   </div>
                 ))}
+              </div>
+              <div style={{ padding: '0 14px 10px', fontSize: 11.5, color: C.sub, lineHeight: 1.7 }}>
+                <b>«يوزّع»</b> = يقدر يقسّم الأرقام على الفريق · <b>«بياخد ليدات»</b> = يدخل في
+                التوزيع بالدور ويستقبل تاسكات محوّلة. الاتنين مستقلين — الموزّع ممكن ياخد ليدات وممكن لأ.
+                {ov.receivers === 0 && (
+                  <div style={{ color: C.danger, fontWeight: 800, marginTop: 6 }}>
+                    ⚠️ مفيش حد بياخد ليدات دلوقتي — التوزيع مش هيشتغل.
+                  </div>
+                )}
               </div>
               {ov.staff_no_account.length > 0 && (
                 <div style={{ padding: '0 14px 14px', fontSize: 12, color: C.warn }}>
@@ -569,11 +615,41 @@ export default function AdminCrmPage() {
               {total.toLocaleString('ar-EG')} رقم · صفحة {page + 1} من {Math.max(1, Math.ceil(total / PAGE))}
             </div>
 
+            {/* ✋ شريط التوزيع اليدوي — بيبان لما تختار أرقام */}
+            {sel.size > 0 && (
+              <div style={{ ...card, marginBottom: 10, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', borderColor: C.green2, background: '#f6fbf9' }}>
+                <UserCheck style={{ width: 16, height: 16, color: C.green }} />
+                <b style={{ fontSize: 13 }}>{sel.size} رقم مختار</b>
+                <select value={assignTo} onChange={e => setAssignTo(e.target.value)}
+                  style={{ border: `1px solid ${C.line}`, borderRadius: 12, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit' }}>
+                  <option value="">وزّعهم على…</option>
+                  {(ov?.staff || []).map(st => (
+                    <option key={st.profile_id} value={st.profile_id}>
+                      {st.name}{st.receives_leads ? '' : ' (موزّع)'} — {st.contacts} رقم
+                    </option>
+                  ))}
+                </select>
+                <button style={btn('primary')} disabled={!assignTo || !!busy}
+                  onClick={async () => {
+                    await run('crm_assign_contacts', { p_ids: Array.from(sel), p_owner: assignTo }, 'اتوزّعوا')
+                    setSel(new Set()); setAssignTo('')
+                  }}>
+                  <Send style={{ width: 15, height: 15 }} /> وزّع
+                </button>
+                <button style={btn()} onClick={() => setSel(new Set())}>إلغاء الاختيار</button>
+              </div>
+            )}
+
             <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                   <thead>
                     <tr style={{ background: '#f7f8f6', color: C.sub, fontSize: 11.5 }}>
+                      <th style={{ padding: '8px 10px', width: 34 }}>
+                        <input type="checkbox" aria-label="اختار الكل"
+                          checked={rows.length > 0 && sel.size === rows.length}
+                          onChange={e => setSel(e.target.checked ? new Set(rows.map(r => r.id)) : new Set())} />
+                      </th>
                       <th style={{ textAlign: 'right', padding: '8px 12px' }}>الرقم</th>
                       <th style={{ textAlign: 'right', padding: '8px 12px' }}>الاسم / البيزنس</th>
                       <th style={{ textAlign: 'right', padding: '8px 12px' }}>المنطقة</th>
@@ -586,7 +662,15 @@ export default function AdminCrmPage() {
                   </thead>
                   <tbody>
                     {rows.map(r => (
-                      <tr key={r.id} style={{ borderTop: `1px solid ${C.line}` }}>
+                      <tr key={r.id} style={{ borderTop: `1px solid ${C.line}`, background: sel.has(r.id) ? '#f6fbf9' : undefined }}>
+                        <td style={{ padding: '10px 10px' }}>
+                          <input type="checkbox" aria-label={`اختار ${r.phone}`} checked={sel.has(r.id)}
+                            onChange={e => setSel(v => {
+                              const n = new Set(v)
+                              if (e.target.checked) n.add(r.id); else n.delete(r.id)
+                              return n
+                            })} />
+                        </td>
                         <td style={{ padding: '10px 12px', fontWeight: 700, direction: 'ltr', textAlign: 'right' }}>{r.phone}</td>
                         <td style={{ padding: '10px 12px' }}>
                           {r.name || <span style={{ color: C.sub }}>—</span>}
@@ -618,7 +702,7 @@ export default function AdminCrmPage() {
                       </tr>
                     ))}
                     {rows.length === 0 && !loading && (
-                      <tr><td colSpan={8} style={{ padding: 24, textAlign: 'center', color: C.sub }}>مفيش نتايج</td></tr>
+                      <tr><td colSpan={9} style={{ padding: 24, textAlign: 'center', color: C.sub }}>مفيش نتايج</td></tr>
                     )}
                   </tbody>
                 </table>
