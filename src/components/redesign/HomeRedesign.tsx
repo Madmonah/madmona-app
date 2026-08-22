@@ -216,6 +216,21 @@ const SECTIONS = [
   { key: 'developers',  name: 'المطورين',     desc: 'شركات كلاود · كل المشاريع',    href: '/dev',               accent: '#059669', shot: '',               tracks: [] },
 ]
 
+/**
+ * 🧭 مجموعات النافبار — منفصلة عن `SECTIONS` بالقصد.
+ *
+ * `SECTIONS` = الكروت اللي في شبكة الصفحة. النافبار **مش** لازم يعرضهم
+ * كلهم — قبل كده كان `SECTIONS.map()` فأي قسم جديد كان بيتحشر في الشريط
+ * تلقائيًا، ولما بقوا تمانية بقى الشريط مزنوق ومخلوط.
+ *
+ * ⚠️ لو ضفت قسم جديد في `SECTIONS`، حطّه في المجموعة اللي بتوصفه هنا.
+ *    مش هيبان في النافبار غير كده — وده مقصود، عشان الشريط ما يكبرش لوحده.
+ */
+const NAV_GROUPS: { label: string; href: string; keys: string[] }[] = [
+  { label: 'تسوّق',  href: '/marketplace',        keys: ['products', 'rentals', 'services', 'restaurants'] },
+  { label: 'الأسواق', href: '/real-estate/market', keys: ['bourse', 'business', 'cars', 'developers'] },
+]
+
 export default async function HomeRedesign({ categories, stats, liveCounts, heroImage }: Props) {
   const { tiles, updated } = await getMarketTiles()
   const shots = await getShots()
@@ -261,6 +276,41 @@ export default async function HomeRedesign({ categories, stats, liveCounts, hero
 .rz-zoom:hover img { transform: scale(1.06) }
 .rz-navlink { transition: color .2s ease }
 .rz-navlink:hover { color:#fff !important }
+
+/* 🧭 (٢٢ أغسطس ٢٠٢٦ — محمد: «تابات اتضافت غلط في نسخة الديسكتوب»)
+   النافبار كان بيعمل SECTIONS.map() — يعني أي قسم جديد بيتضاف للشبكة
+   كان بيتحشر تلقائيًا كلينك في الشريط. لما اتضافوا «سوق العربيات»
+   و«المطورين» في ١٧ أغسطس بقى الشريط ٩ لينكات في سطر واحد، ومخلوط فيه
+   تلات أنواع مختلفة: أفعال (بيع/إيجار)، أقسام (خدمات/مطاعم)، وأسواق
+   (البورصات/العربيات/المطورين). دلوقتي بقوا مجموعتين + المارد.
+   القايمة CSS بالكامل (hover + focus-within) عشان الكومبوننت يفضل سيرفر. */
+.rz-navgroup { position: relative; display: flex; align-items: center }
+.rz-navtop {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  color: rgba(255,255,255,.78); white-space: nowrap;
+}
+.rz-navgroup:hover > .rz-navtop, .rz-navgroup:focus-within > .rz-navtop { color:#fff }
+.rz-caret { font-size: 9px; opacity: .7; transition: transform .2s ease }
+.rz-navgroup:hover .rz-caret { transform: rotate(180deg) }
+.rz-dropdown {
+  position: absolute; top: 100%; right: 0; margin-top: 10px; min-width: 268px;
+  background: #fff; border-radius: 16px; padding: 8px;
+  box-shadow: 0 24px 56px -20px rgba(6,26,20,.45); border: 1px solid rgba(6,26,20,.08);
+  opacity: 0; visibility: hidden; transform: translateY(-6px);
+  transition: opacity .18s ease, transform .18s ease, visibility .18s;
+}
+.rz-navgroup:hover .rz-dropdown, .rz-navgroup:focus-within .rz-dropdown {
+  opacity: 1; visibility: visible; transform: none;
+}
+/* الجسر ده بيمنع القايمة تقفل وإنت نازل بالماوس عليها */
+.rz-dropdown::before { content:''; position:absolute; top:-12px; left:0; right:0; height:12px }
+.rz-dropitem {
+  display: flex; flex-direction: column; gap: 2px; padding: 9px 12px; border-radius: 11px;
+  transition: background .15s ease;
+}
+.rz-dropitem:hover { background: rgba(5,150,105,.09) }
+.rz-dropitem b { font-size: 14px; font-weight: 800; color: #0C2B22 }
+.rz-dropitem span { font-size: 11.5px; color: #6B7B74 }
 .rz-ghost:hover { background: rgba(255,255,255,.14) }
 .rz-gold:hover { background:${DARK} !important; color:#fff !important }
 a { text-decoration:none }
@@ -279,9 +329,24 @@ a { text-decoration:none }
               <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '.42em', color: 'rgba(255,255,255,.75)' }}>MADMONA</span>
             </span>
           </Link>
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 26, fontSize: 14, fontWeight: 500 }}>
-            {SECTIONS.map(s => (
-              <Link key={s.key} className="rz-navlink" href={s.href} style={{ color: 'rgba(255,255,255,.78)', whiteSpace: 'nowrap' }}>{s.name}</Link>
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 30, fontSize: 14, fontWeight: 500 }}>
+            {NAV_GROUPS.map(g => (
+              <div key={g.label} className="rz-navgroup">
+                <Link href={g.href} className="rz-navtop">
+                  {g.label}<span className="rz-caret">▼</span>
+                </Link>
+                <div className="rz-dropdown">
+                  {g.keys.map(k => {
+                    const s = SECTIONS.find(x => x.key === k)
+                    if (!s) return null
+                    return (
+                      <Link key={k} href={s.href} className="rz-dropitem">
+                        <b>{s.name}</b><span>{s.desc}</span>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </div>
             ))}
             <Link className="rz-navlink" href="/chat/marid" style={{ color: GOLD, fontWeight: 700, whiteSpace: 'nowrap' }}>اسأل المارد</Link>
           </nav>

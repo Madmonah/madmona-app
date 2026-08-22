@@ -7,7 +7,7 @@ import {
   Loader2, MapPin, Calendar, ChevronLeft, Scissors, Clock, Sparkles, User,
   ChevronDown, MessageCircle, ShieldCheck, Image as ImageIcon, Crown, Wind,
   Brush, Hand, Flower2, Building2, Stethoscope, Utensils, Briefcase,
-  Wrench, Car, ShoppingBag,
+  Wrench, Car, ShoppingBag, Home, Factory, Plane,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -225,6 +225,82 @@ const VERTICALS: Record<string, VerticalCfg> = {
     coverBadge: 'صورة اليخت',
     catLabels: { general: 'عام', 'عام': 'عام' }, catIcons: {},
   },
+  // 🏠 (٢٢ أغسطس ٢٠٢٦ — محمد: «عايز الموديل الكلاود يكون متوافق مع أي نوع
+  //    بيزنس عندنا») — راجعنا أقسام الـCRM الـ١٢ ولقينا ٤ منهم مالهمش ثيم،
+  //    وبيقعوا على `default` فيطلعوا بكلام عام. أكبرهم **العقارات**:
+  //    ٢٢٩٥ رقم في الداتابيز — أكبر قسم عندنا، وكان بيتعرض بـ«احجز الآن».
+  //    الأربعة دول هما اللي تحت. دلوقتي كل قسم في الـCRM ليه ثيم حقيقي.
+  real_estate: {
+    kicker: 'عقارات — بيع وإيجار',
+    heroCta: 'اتفرّج على الوحدات', heroCtaIcon: Home, waCta: 'اسأل عن وحدة',
+    bookChip: 'معاينة بموعد', unitWord: 'وحدة',
+    galleryHeading: 'صور من المشروع',
+    galleryTiles: ['الوحدة', 'من جوه', 'الموقع', 'التشطيب'],
+    branchesHeading: 'مكاتبنا', branchCta: 'زور',
+    servicesHeading: 'الوحدات والأسعار', servicesIcon: Home,
+    teamHeading: 'فريق المبيعات',
+    accountSub: 'تابع معايناتك والوحدات اللي عجبتك',
+    coverBadge: 'صورة المشروع',
+    catLabels: {
+      'بيع': 'للبيع', 'إيجار': 'للإيجار', 'تمليك': 'تمليك',
+      'إداري': 'إداري', 'تجاري': 'تجاري', general: 'عام', 'عام': 'عام',
+    },
+    catIcons: { 'بيع': Home, 'إيجار': Home, 'إداري': Building2, 'تجاري': Building2 },
+    productsHeading: 'الوحدات المعروضة',
+  },
+  // 🔧 خدمات ومهنيين — سباك، كهربائي، نجار، صيانة، تنظيف، محامي، محاسب.
+  //    دي أكتر فئة «شغل من غير محل» — وهي بالظبط اللي الحملة بتكلّمها.
+  home_services: {
+    kicker: 'خدمات وصيانة — بنيجي لك',
+    heroCta: 'اطلب فني', heroCtaIcon: Wrench, waCta: 'كلّمنا دلوقتي',
+    bookChip: 'بنيجي لحد عندك', unitWord: 'خدمة',
+    galleryHeading: 'من شغلنا',
+    galleryTiles: ['قبل', 'بعد', 'التنفيذ', 'التسليم'],
+    branchesHeading: 'المناطق اللي بنغطيها', branchCta: 'اطلب',
+    servicesHeading: 'الخدمات والأسعار', servicesIcon: Wrench,
+    teamHeading: 'الفنيين',
+    accountSub: 'تابع طلباتك وقيّم الفني',
+    coverBadge: 'صورة من شغلنا',
+    catLabels: {
+      'صيانة': 'صيانة وإصلاح', 'تركيب': 'تركيب', 'تنظيف': 'تنظيف',
+      'استشارة': 'استشارة', general: 'عام', 'عام': 'عام',
+    },
+    catIcons: { 'صيانة': Wrench, 'تركيب': Wrench, 'تنظيف': Sparkles, 'استشارة': Briefcase },
+  },
+  // 🏭 مصانع وتوريدات — البيع بالجملة: المشتري بيطلب عرض سعر مش بيحجز.
+  factory: {
+    kicker: 'مصنع وتوريدات',
+    heroCta: 'اطلب عرض سعر', heroCtaIcon: Factory, waCta: 'اطلب كتالوج',
+    bookChip: 'توريد بالجملة', unitWord: 'منتج',
+    galleryHeading: 'من المصنع',
+    galleryTiles: ['خط الإنتاج', 'المنتجات', 'الجودة', 'الشحن'],
+    branchesHeading: 'مقر المصنع والمخازن', branchCta: 'تواصل',
+    servicesHeading: 'المنتجات وأسعار الجملة', servicesIcon: Factory,
+    teamHeading: 'فريق المبيعات والتوريد',
+    accountSub: 'تابع عروض الأسعار وأوردراتك',
+    coverBadge: 'صورة المصنع',
+    catLabels: { 'جملة': 'بالجملة', 'تصنيع': 'تصنيع حسب الطلب', general: 'عام', 'عام': 'عام' },
+    catIcons: { 'جملة': ShoppingBag, 'تصنيع': Factory },
+    productsHeading: 'المنتجات المتاحة للتوريد',
+  },
+  // ✈️ سياحة ورحلات وقاعات ومناسبات.
+  tourism: {
+    kicker: 'سياحة ورحلات ومناسبات',
+    heroCta: 'احجز رحلتك', heroCtaIcon: Plane, waCta: 'اسأل عن برنامج',
+    bookChip: 'حجز بمقدّم', unitWord: 'برنامج',
+    galleryHeading: 'صور من الرحلات',
+    galleryTiles: ['الوجهة', 'الإقامة', 'البرنامج', 'اللحظات'],
+    branchesHeading: 'مكاتبنا', branchCta: 'احجز',
+    servicesHeading: 'البرامج والأسعار', servicesIcon: Plane,
+    teamHeading: 'فريق الحجوزات',
+    accountSub: 'شوف حجوزاتك وقيّم رحلتك',
+    coverBadge: 'صورة الوجهة',
+    catLabels: {
+      'داخلي': 'رحلات داخلية', 'خارجي': 'رحلات خارجية',
+      'مناسبات': 'قاعات ومناسبات', general: 'عام', 'عام': 'عام',
+    },
+    catIcons: { 'داخلي': MapPin, 'خارجي': Plane, 'مناسبات': Crown },
+  },
   default: {
     kicker: 'احجز أونلاين',
     heroCta: 'احجز الآن', heroCtaIcon: Calendar, waCta: 'تواصل معنا',
@@ -249,6 +325,13 @@ function getVertical(industry: string | null | undefined): VerticalCfg {
   if (industry === 'contracting' || industry === 'construction') return VERTICALS.contracting
   if (industry === 'retail' || industry === 'furniture' || industry === 'shop') return VERTICALS.retail
   if (industry === 'marine_rentals' || industry === 'yachts') return VERTICALS.marine_rentals
+  // (٢٢ أغسطس ٢٠٢٦) الأربعة الجداد — بنقبل مفاتيح الستورفرنت **و**مفاتيح
+  // أقسام الـCRM (properties/services/factories/tourism) عشان التاجر اللي
+  // جاي من الـCRM يلاقي ثيمه جاهز من غير ما حد يترجم الاسم بالإيد.
+  if (industry === 'real_estate' || industry === 'properties' || industry === 'property') return VERTICALS.real_estate
+  if (industry === 'home_services' || industry === 'services' || industry === 'maintenance') return VERTICALS.home_services
+  if (industry === 'factory' || industry === 'factories' || industry === 'industrial') return VERTICALS.factory
+  if (industry === 'tourism' || industry === 'travel' || industry === 'events') return VERTICALS.tourism
   return VERTICALS.default
 }
 
