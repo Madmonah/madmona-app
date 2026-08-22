@@ -173,7 +173,7 @@ export default function TopNav() {
             <nav className="flex-1 overflow-y-auto p-4 space-y-1">
               {staff.staff && (
                 <Link
-                  href="/crm"
+                  href="/account/work"
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-3 p-3 rounded-2xl bg-[#059669]/[0.06] hover:bg-[#059669]/10 no-underline group transition-colors"
                 >
@@ -190,7 +190,7 @@ export default function TopNav() {
                     <p className="text-xs text-gray-500 mt-0.5">
                       {((staff.due ?? 0) > 0 || (staff.tasks ?? 0) > 0)
                         ? `${staff.due ?? 0} مكالمة · ${staff.tasks ?? 0} تاسك مستنيينك`
-                        : 'مكالماتك وتاسكاتك'}
+                        : 'حضورك · طلباتك · مكالماتك · تاسكاتك'}
                     </p>
                   </div>
                 </Link>

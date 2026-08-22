@@ -51,7 +51,7 @@ const NAV: NavGroup[] = [
   //       الحقيقي هو الملف ده. نفس الغلطة اللي مكتوبة فوق في تعليق «الرسائل».
   { title: 'فريق مضمونة (CRM)', emoji: '📇', items: [
     { href: '/admin/crm', label: 'الأرقام والتوزيع' },
-    { href: '/crm', label: 'شغلي (شاشة الموظف)' },
+    { href: '/crm', label: 'مكالماتي (شاشة الموظف)' },
     { href: '/admin/flow-tasks', label: 'كل التاسكات' },
     { href: '/admin/staff', label: 'حسابات الموظفين' },
   ] },

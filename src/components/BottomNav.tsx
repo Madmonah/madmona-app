@@ -14,8 +14,13 @@ import type { MouseEvent } from 'react'
 // FAB → /add-listing (passes ?track= if the user is standing on a vertical).
 //
 // 💼 (٢٢ أغسطس ٢٠٢٦) محمد: «عايز تاب تفتح من مضمونة دوت كوم من تاب شغلي»
-//   لموظفين مضمونة **بس**، الخانة الخامسة بتبقى «شغلي» (/crm) بدل «حسابي»،
+//   لموظفين مضمونة **بس**، الخانة الخامسة بتبقى «شغلي» بدل «حسابي»،
 //   وعليها عدّاد بالمستنيهم (مكالمات + تاسكات).
+//
+//   ⚠️ (تصحيح نفس اليوم) التاب دي بتودّي على **`/account/work`** — «شغلي»
+//      الموجود من ٢٠ أغسطس (حضور · طلبات · تاسكات · مصاريف). أول نسخة كانت
+//      بتودّي على `/crm` وده كان **تصادم في الاسم**: بقى فيه «شغلي»
+//      اتنين. الـCRM دلوقتي قسم جوّه «شغلي» اسمه «مكالماتي».
 //
 //   ⚠️ ليه بدل «حسابي» مش خانة سادسة؟ الشريط ٥ أعمدة وزرار «ضيف» مرفوع في
 //      نص العمود التالت — أي عمود سادس بيوقّع الزرار عن النص وبيبوّظ الشكل
@@ -49,7 +54,7 @@ export default function BottomNav() {
   const marketActive = pathname.startsWith('/marketplace') || pathname.startsWith('/real-estate')
   const chatActive = pathname.startsWith('/chat')
   const accountActive = pathname === '/account' || (pathname.startsWith('/account') && !pathname.startsWith('/account/favorites'))
-  const workActive = pathname.startsWith('/crm')
+  const workActive = pathname.startsWith('/account/work') || pathname.startsWith('/crm')
 
   return (
     // 🐞 (١٦ أغسطس ٢٠٢٦ — محمد: «زرار ضيف مرحّل شوية، لازم تضغط تحت منه»)
@@ -108,7 +113,7 @@ export default function BottomNav() {
 
         {/* شغلي (لفريق مضمونة) — أو حسابي لأي حد تاني */}
         {staff.staff ? (
-          <Link href="/crm" className={`pointer-events-auto flex flex-col items-center gap-1 no-underline ${workActive ? 'text-[#059669]' : 'text-[#6B7280]'}`}>
+          <Link href="/account/work" className={`pointer-events-auto flex flex-col items-center gap-1 no-underline ${workActive ? 'text-[#059669]' : 'text-[#6B7280]'}`}>
             <span className="relative">
               <Briefcase className="w-5 h-5" strokeWidth={workActive ? 2.5 : 2} />
               {waiting > 0 && (

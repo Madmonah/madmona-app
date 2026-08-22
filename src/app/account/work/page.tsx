@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   Loader2, ArrowRight, Clock, Inbox, Wallet, MessageCircle,
-  Building2, Crown, Check, ClipboardList, LogIn, Plus, AlertCircle,
+  Building2, Crown, Check, ClipboardList, LogIn, Plus, AlertCircle, Phone, ChevronLeft,
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import BottomNav from '@/components/BottomNav'
+import { useMadmonaStaff } from '@/lib/useMadmonaStaff'
 
 /* ============================================================================
    /account/work — «شغلي» — كل الإداريات جوّه الأبليكيشن
@@ -24,6 +25,14 @@ import BottomNav from '@/components/BottomNav'
    كل قسم هنا بيظهر **بالصلاحية بتاعته** — نفس المفاتيح اللي في تاب
    «الصلاحيات» (`permission_catalog`)، مفيش أسماء مخترعة.
    الداتا كلها من نداء واحد: `get_my_work_home()`.
+
+   ☎️ (٢٢ أغسطس ٢٠٢٦) **«مكالماتي» اندمجت هنا، مش شاشة منافسة.**
+      محمد: «كان في تاب شغلي بيعرض الحضور والانصراف والطلبات وحاجات تانية،
+      هل اندمجت ولا اتنقلت؟»
+      اندمجت. أنا يوم ٢١ عملت شاشة CRM للموظف وسمّيتها «شغلي» كمان —
+      وده كان تصادم في الاسم على نفس الحاجة. الصح: **«شغلي» فضل هو ده**
+      (حضور · طلبات · تاسكات · مصاريف)، والـCRM بقى **قسم جوّاه** اسمه
+      «مكالماتي» بيودّي على `/crm`. مفيش حاجة اتشالت ولا اتنقلت.
    ============================================================================ */
 
 type Perm = Record<string, boolean>
@@ -218,6 +227,9 @@ export default function MyWorkPage() {
       )}
 
       <main className="max-w-2xl mx-auto px-4 py-5 space-y-5">
+        {/* ☎️ مكالماتي — بيبان لموظفين مضمونة بس */}
+        {home?.authenticated && <MyCallsCard />}
+
         {!home?.authenticated ? (
           <Empty icon={<LogIn className="w-8 h-8" />} title="سجّل دخولك الأول"
                  sub="ادخل بحسابك عشان تشوف شغلك وصلاحياتك." href="/auth/login" cta="تسجيل دخول" />
@@ -231,6 +243,43 @@ export default function MyWorkPage() {
 
       <BottomNav />
     </div>
+  )
+}
+
+/* ☎️ كارت «مكالماتي» — بوابة الـCRM جوّه «شغلي».
+   بيختفي تمامًا لأي حد مش من فريق مضمونة (الهوك بيرجّع staff:false،
+   ومن غير جلسة أصلًا مفيش أي نداء شبكة). */
+function MyCallsCard() {
+  const staff = useMadmonaStaff()
+  if (!staff.staff) return null
+  const due = staff.due ?? 0
+  const tasks = staff.tasks ?? 0
+  const idle = due === 0 && tasks === 0
+
+  return (
+    <Link href="/crm" className="block no-underline">
+      <div className="bg-white rounded-3xl border border-black/5 shadow-sm p-4 hover:shadow-md transition-shadow">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-[#34D399]/12 flex items-center justify-center flex-shrink-0">
+            <Phone className="w-5 h-5 text-[#059669]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-black text-[#1A2E26] text-[15px] leading-none">مكالماتي</p>
+            <p className="text-[11.5px] text-[#6B7280] mt-1.5">
+              {idle
+                ? 'أرقامك المتوزّعة عليك — كلّم، فرّغ، والتاسكات تتوزّع لوحدها'
+                : `${due} رقم مستنّي مكالمة · ${tasks} تاسك مفتوح`}
+            </p>
+          </div>
+          {!idle && (
+            <span className="min-w-[26px] h-[26px] px-2 rounded-full bg-[#b3261e] text-white text-[12px] font-black flex items-center justify-center flex-shrink-0">
+              {due + tasks}
+            </span>
+          )}
+          <ChevronLeft className="w-4 h-4 text-[#9CA3AF] flex-shrink-0" />
+        </div>
+      </div>
+    </Link>
   )
 }
 

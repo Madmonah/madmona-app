@@ -82,6 +82,9 @@ const ALLOWED = new Set([
   'crm_delete_specialty',
   'crm_test_rules',
   'crm_import_contacts',
+  // 👥 (٢٢ أغسطس ٢٠٢٦) فريق مضمونة كله + ناقص كل واحد — شاشة إدارة الموظفين
+  //    كانت بتعرض حسابات الأدمن بس (٣ من ٨).
+  'madmona_team_accounts',
 ])
 
 async function isAdmin(req: NextRequest): Promise<boolean> {

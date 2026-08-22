@@ -4,11 +4,25 @@
 // 🔐 (١٩ أغسطس ٢٠٢٦ — محمد: «هعمل صفحة إدارة الموظفين وانتا تضيفهم بنفسك»)
 // إدارة حسابات دخول الأدمن — كل موظف مضمونة بحسابه الشخصي (إيميل/تليفون/باسورد)
 // بدل الباسورد المشترك القديم.
+//
+// 👥 (٢٢ أغسطس ٢٠٢٦ — محمد: «ليه في إدارة الموظفين الموظفين مش باينين؟»)
+//    لأن الشاشة دي كانت بتعرض `platform_admins` بس (٣ حسابات دخول أدمن)،
+//    والفريق الحقيقي في `business_employees` (٨ أفراد). **تلات قوايم
+//    منفصلة ومحدش رابطها:**
+//      1) `business_employees` — الفريق الحقيقي              ٨
+//      2) `auth/profiles`      — حساب على أبليكيشن مضمونة    ٥
+//      3) `platform_admins`    — دخول لوحة الأدمن            ٣
+//    فخمس أفراد كانوا مختفيين تمامًا من الشاشة اللي اسمها «إدارة الموظفين».
+//
+//    الحل: قسم «فريق مضمونة كله» فوق، بيعرض الـ٨ وجنب كل واحد **ناقصه إيه
+//    بالظبط** (حساب أبليكيشن؟ دخول أدمن؟ رقم؟ تخصص في الـCRM؟).
+//    مابندمجش الجداول ولا بنخترع حسابات — بنوريك الحقيقة وانت تقرّر.
 // =====================================================================
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Loader2, AlertCircle, ArrowRight, UserPlus, Shield, ShieldOff, KeyRound, Trash2, Crown, User } from 'lucide-react'
+import { Loader2, AlertCircle, ArrowRight, UserPlus, Shield, ShieldOff, KeyRound, Trash2, Crown, User, Users, Smartphone, Headphones } from 'lucide-react'
+import { adminRpc } from '@/lib/adminRpc'
 
 type Staff = {
   id: string
@@ -33,7 +47,17 @@ async function api<T>(url: string, opts?: RequestInit): Promise<T> {
   return j as T
 }
 
+type TeamMember = {
+  employee_id: string; full_name: string; role_ar: string; phone: string | null
+  has_app: boolean; has_admin: boolean; admin_role: string | null
+  admin_status: string | null; last_admin_login: string | null
+  specialties: string[]; crm_contacts: number; open_tasks: number
+  missing: string[]
+}
+
 export default function StaffPage() {
+  const [team, setTeam] = useState<TeamMember[] | null>(null)
+  const [teamCounts, setTeamCounts] = useState<{ team: number; with_app: number; with_admin: number } | null>(null)
   const [staff, setStaff] = useState<Staff[] | null>(null)
   const [myRole, setMyRole] = useState<'owner' | 'admin' | null>(null)
   const [loading, setLoading] = useState(true)
@@ -60,6 +84,11 @@ export default function StaffPage() {
       const data = await api<{ staff: Staff[]; me: { role: 'owner' | 'admin' } }>('/api/admin/staff')
       setStaff(data.staff)
       setMyRole(data.me?.role ?? null)
+      // 👥 الفريق كله — نداء منفصل عشان لو وقع مايوقّعش الشاشة كلها
+      try {
+        const t = await adminRpc<{ ok: boolean; team: TeamMember[]; counts: { team: number; with_app: number; with_admin: number } }>('madmona_team_accounts')
+        if (t?.ok) { setTeam(t.team || []); setTeamCounts(t.counts) }
+      } catch { /* القسم ده إضافي — مايمنعش عرض حسابات الأدمن */ }
     } catch (e) {
       setError((e as Error).message)
     } finally {
@@ -191,6 +220,64 @@ export default function StaffPage() {
 
         {toast && (
           <div style={{ background: '#05966915', color: '#059669', padding: '10px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, marginBottom: 14 }}>{toast}</div>
+        )}
+
+        {team && team.length > 0 && (
+          <section style={{ marginBottom: 22 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+              <Users size={16} color="#059669" />
+              <h2 style={{ fontSize: 15, fontWeight: 800, margin: 0 }}>فريق مضمونة كله</h2>
+              {teamCounts && (
+                <span style={{ fontSize: 12, color: '#6B7280' }}>
+                  {teamCounts.team} فرد · {teamCounts.with_app} معاهم الأبليكيشن · {teamCounts.with_admin} معاهم دخول الأدمن
+                </span>
+              )}
+            </div>
+            <p style={{ fontSize: 11.5, color: '#9CA3AF', margin: '0 0 10px', lineHeight: 1.7 }}>
+              دي القايمة الحقيقية من ملف الموظفين. تحتها «حسابات دخول لوحة الأدمن» — واللي مش
+              في التانية معناها إنه لسه مالوش حساب دخول، مش إنه مش موجود.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {team.map((m) => (
+                <div key={m.employee_id} style={{ background: '#fff', border: '1px solid #e8e6df', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 10, background: m.has_app ? '#05966915' : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <User size={16} color={m.has_app ? '#059669' : '#9CA3AF'} />
+                  </div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontWeight: 800, fontSize: 13.5 }}>
+                      {m.full_name} <span style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 600 }}>· {m.role_ar}</span>
+                    </div>
+                    <div style={{ fontSize: 11.5, color: '#6B7280', marginTop: 3, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: m.has_app ? '#059669' : '#9CA3AF' }}>
+                        <Smartphone size={12} /> {m.has_app ? 'الأبليكيشن ✓' : 'مفيش حساب أبليكيشن'}
+                      </span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: m.has_admin ? '#059669' : '#9CA3AF' }}>
+                        <Shield size={12} /> {m.has_admin ? 'لوحة الأدمن ✓' : 'مفيش دخول أدمن'}
+                      </span>
+                      {m.has_app && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                          <Headphones size={12} /> {m.specialties.length ? m.specialties.join(' · ') : 'مفيش تخصص'}
+                          {m.crm_contacts > 0 && ` · ${m.crm_contacts} رقم`}
+                        </span>
+                      )}
+                    </div>
+                    {m.missing.length > 0 && (
+                      <div style={{ fontSize: 11, color: '#9a6b00', marginTop: 5, fontWeight: 700 }}>
+                        ناقصه: {m.missing.join(' · ')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {team && team.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <Shield size={16} color="#059669" />
+            <h2 style={{ fontSize: 15, fontWeight: 800, margin: 0 }}>حسابات دخول لوحة الأدمن</h2>
+          </div>
         )}
 
         {loading ? (

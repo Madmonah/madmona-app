@@ -28,6 +28,11 @@
    ⚠️ **الأرضي مالوش واتساب.** الأرقام اللي `phone_kind='landline'`
       (٢٦٤ رقم، أغلبهم مصانع) بيبان عليها زرار الاتصال بس.
 
+   🧭 (٢٢ أغسطس ٢٠٢٦) الشاشة دي **جزء من «شغلي»**، مش بديل ليه.
+      «شغلي» = `/account/work` (حضور · طلبات · مصاريف · تاسكات) — موجود من
+      ٢٠ أغسطس. الصفحة دي هي قسم «مكالماتي» جوّاه، وبيتفتح من كارت هناك.
+      أول نسخة سمّيتها «شغلي» كمان وده كان تصادم في الاسم — اتصلح.
+
    🔐 لازم تسجيل دخول بحساب مضمونة — الـRPC نفسها بترفض أي حد تاني.
    ============================================================================ */
 
@@ -217,12 +222,14 @@ export default function CrmMobilePage() {
       {/* هيدر */}
       <header style={{ position: 'sticky', top: 0, zIndex: 30, background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(10px)', borderBottom: `1px solid ${C.line}` }}>
         <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Link href="/" aria-label="مضمونة" style={{ ...btn(), flex: '0 0 auto', padding: 10, minHeight: 40 }}>
+          {/* الرجوع لـ«شغلي» — دي القسم بتاعه مش شاشة لوحدها */}
+          <Link href="/account/work" aria-label="شغلي" style={{ ...btn(), flex: '0 0 auto', padding: 10, minHeight: 40 }}>
             <Home style={{ width: 16, height: 16 }} />
           </Link>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 16, fontWeight: 900 }}>{q?.me?.name || 'شغلي'}</div>
+            <div style={{ fontSize: 16, fontWeight: 900 }}>مكالماتي</div>
             <div style={{ fontSize: 11.5, color: C.sub }}>
+              {q?.me?.name ? `${q.me.name} · ` : ''}
               {q?.me?.specialties?.length
                 ? q.me.specialties.map(s => s.name_ar).join(' · ')
                 : 'لسه مفيش تخصص متحدّدلك'}
