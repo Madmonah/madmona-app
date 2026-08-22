@@ -89,6 +89,9 @@ const ALLOWED = new Set([
   //    محمد: «أحمد سامي هو اللي هيوزّع».
   'crm_set_staff_role',
   'crm_assign_contacts',
+  // 🩺 (٢٢ أغسطس ٢٠٢٦) فحص صحة النظام — بيقارن اللي الكود محتاجه باللي موجود
+  //    في الداتابيز. محمد: «بلاقي حاجات بتقع بعد ما بنقفل الجلسة».
+  'crm_health',
 ])
 
 async function isAdmin(req: NextRequest): Promise<boolean> {

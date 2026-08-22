@@ -1,46 +1,42 @@
 -- ============================================================================
--- 🧱 نظام الـCRM كامل — ملف إعادة بناء (مش توثيق)
+-- 🧱 نظام الـCRM كامل — ملف إعادة بناء (متولّد آليًا — متعدّلوش بالإيد)
 -- ============================================================================
--- محمد (٢٢ أغسطس ٢٠٢٦): «اتأكد من الديبلوي والكوميت والبوش، علشان بلاقي
---                        حاجات بتقع بعد ما بنقفل الجلسة»
+-- اتولّد بـ: node scripts/dump-crm-sql.mjs
 --
--- ============================== ليه الملف ده موجود =========================
--- ده **السبب الحقيقي** للحاجات اللي بتقع بين الجلسات:
+-- ليه موجود؟ لأن دوال الداتابيز كانت بتتعمل لايف بس ومش موجودة في الريبو،
+-- فأي جلسة تعمل نسخة تانية بتوقيع مختلف → النداء يقع على النسخة الغلط،
+-- ولو الداتابيز اترجّعت من باك أب الشاشات كلها بتقع.
 --
---   الكود بتاع الواجهة بيتحفظ في جيت ✅
---   بس **دوال الداتابيز كانت بتتعمل لايف بس** — موجودة في السيرفر ومش
---   موجودة في الريبو. يعني:
---     • أي جلسة تانية تعمل نسخة تانية من نفس الدالة بتوقيع مختلف → النداء
---       بيقع على النسخة الغلط. (حصل مرتين فعلًا: `crm_log_call` و
---       `crm_my_queue` — كل مرة النسخة القديمة كانت لسه موجودة جنب الجديدة)
---     • ولو الداتابيز اترجّعت من باك أب، الشاشات كلها بتقع ومحدش عارف ليه.
+-- 🐞 والغلطة اللي كانت بتضيّع الدوال: إنشاء الدالة وبعده في **نفس النداء**
+--    `begin; … rollback;` للتجربة. الـDDL في بوستجرس جوّه ترانزاكشن،
+--    فالرollback بيلغي الإنشاء — والتجربة تطلع ناجحة والدالة مش موجودة.
+--    ✅ القاعدة: الإنشاء في نداء لوحده، والتجربة في نداء تاني.
 --
--- الملف ده بيتولّد **من الداتابيز نفسها** (`pg_get_functiondef`)، فهو نسخة
--- طبق الأصل من اللي شغّال دلوقتي. لو أي حاجة وقعت، شغّله من أوله لآخره
--- والنظام بيرجع زي ما هو.
---
--- ⚠️ **قبل ما تشغّله**: امسح أي نسخ قديمة بتوقيعات مختلفة، وإلا هتفضل
---    موجودة جنب الجديدة وترجع نفس المشكلة. الاستعلام ده بيوريك أي دالة
---    ليها أكتر من نسخة:
---
---      select proname, count(*), string_agg(pronargs::text,' / ')
---        from pg_proc p join pg_namespace n on n.oid=p.pronamespace
---       where n.nspname='public' and proname like 'crm\_%'
---       group by proname having count(*) > 1;
---
---    المفروض يرجّع **صفر صفوف**. لو رجّع حاجة، امسح القديم بـ
---    `drop function public.<name>(<الأنواع القديمة>);`
---
--- ============================== الجداول اللي لازم تكون موجودة ==============
---   crm_specialties · crm_staff_specialties · crm_staff_settings
---   crm_contacts · crm_calls
---   flow_tasks (+ الأعمدة: owner_id · contact_id · call_id · specialty ·
---               due_at · routed_from · route_reason)
---   storage bucket: `crm-calls` (خاص) + بوليسي رفع/قراءة لموظفين مضمونة
---
---   الشرح والقرارات كلها في `2026-08-21_crm_madmona.sql` — الملف ده كود بس.
+-- بعد ما تشغّله كله:  select jsonb_pretty(crm_health());   → "ok": true
 -- ============================================================================
 
+-- 🛡️ حارس: بيمنع وجود نسختين من نفس الدالة
+CREATE OR REPLACE FUNCTION public.tg_block_crm_overloads() RETURNS event_trigger
+LANGUAGE plpgsql AS $f$
+DECLARE r record;
+BEGIN
+  FOR r IN SELECT proname, count(*) n FROM pg_proc p JOIN pg_namespace ns ON ns.oid=p.pronamespace
+            WHERE ns.nspname='public' AND p.proname LIKE 'crm\_%' GROUP BY proname HAVING count(*)>1
+  LOOP RAISE EXCEPTION 'ممنوع نسختين من نفس الدالة: % (% نسخ)', r.proname, r.n; END LOOP;
+END $f$;
+DROP EVENT TRIGGER IF EXISTS trg_block_crm_overloads;
+CREATE EVENT TRIGGER trg_block_crm_overloads ON ddl_command_end
+  WHEN TAG IN ('CREATE FUNCTION') EXECUTE FUNCTION public.tg_block_crm_overloads();
+
+-- 📜 العقد بين الكود والداتابيز
+CREATE TABLE IF NOT EXISTS crm_contract (kind text NOT NULL, name text NOT NULL,
+  detail text NOT NULL DEFAULT '', note text, PRIMARY KEY (kind,name,detail));
+ALTER TABLE crm_contract ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS crm_contract_read ON crm_contract;
+CREATE POLICY crm_contract_read ON crm_contract FOR SELECT TO authenticated
+  USING (public.is_madmona_staff() OR public.is_admin());
+
+-- ⚙️ الدوال
 CREATE OR REPLACE FUNCTION public.crm_assign_contacts(p_ids uuid[], p_owner uuid)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -415,6 +411,101 @@ BEGIN
   DELETE FROM crm_specialties WHERE key = p_key;
   RETURN jsonb_build_object('ok', true, 'moved_contacts', v_c, 'moved_tasks', v_t, 'unlinked_staff', v_s,
     'moved_to', coalesce(p_move_to, 'مش متصنّف'));
+END $function$
+;
+
+CREATE OR REPLACE FUNCTION public.crm_health()
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+/* 🩺 (٢٢ أغسطس ٢٠٢٦) فحص صحة نظام الـCRM — الحل الجذري لـ«حاجات بتقع بعد
+   ما بنقفل الجلسة».
+
+   بيقارن `crm_contract` (اللي الكود محتاجه) باللي موجود فعلًا، وبيمسك:
+     1) دالة/جدول/عمود/بوليسي/بَكِت **ناقص** → الشاشة اللي بتستخدمه هتقع
+     2) دالة ليها **أكتر من نسخة** → النداء ممكن يقع على النسخة الغلط
+     3) الحارس `trg_block_crm_overloads` متشال
+     4) إعدادات بتوقّف الشغل (مفيش حد بياخد ليدات · مفيش أقسام)
+
+   ⚠️ بتقول بس، مابتصلّحش. الإصلاح من
+      `sql/2026-08-22_crm_functions_rebuild.sql`. */
+DECLARE v_err jsonb := '[]'::jsonb; v_warn jsonb := '[]'::jsonb; r record;
+BEGIN
+  IF NOT (public.is_madmona_staff() OR public.is_admin_or_service()) THEN
+    RETURN jsonb_build_object('ok', false, 'error', 'forbidden'); END IF;
+
+  FOR r IN
+    SELECT c.kind, c.name, c.detail, c.note FROM crm_contract c
+     WHERE (c.kind='function' AND NOT EXISTS (
+              SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+               WHERE n.nspname='public' AND p.proname=c.name))
+        OR (c.kind='table' AND NOT EXISTS (
+              SELECT 1 FROM information_schema.tables t
+               WHERE t.table_schema='public' AND t.table_name=c.name))
+        OR (c.kind='column' AND NOT EXISTS (
+              SELECT 1 FROM information_schema.columns col
+               WHERE col.table_schema='public' AND col.table_name=c.detail AND col.column_name=c.name))
+        OR (c.kind='policy' AND NOT EXISTS (
+              SELECT 1 FROM pg_policies pp
+               WHERE pp.schemaname='public' AND pp.tablename=c.detail AND pp.policyname=c.name))
+        OR (c.kind='bucket' AND NOT EXISTS (
+              SELECT 1 FROM storage.buckets b WHERE b.id=c.name))
+  LOOP
+    v_err := v_err || jsonb_build_object('type','missing','kind',r.kind,'name',r.name,
+      'in', nullif(r.detail,''),
+      'msg', 'ناقص: ' || r.kind || ' «' || r.name || '»' ||
+             CASE WHEN nullif(r.detail,'') IS NOT NULL THEN ' في ' || r.detail ELSE '' END ||
+             CASE WHEN nullif(r.note,'') IS NOT NULL THEN ' — ' || r.note ELSE '' END);
+  END LOOP;
+
+  FOR r IN
+    SELECT p.proname, count(*) n, string_agg(pg_get_function_identity_arguments(p.oid), '  |  ') args
+      FROM pg_proc p JOIN pg_namespace ns ON ns.oid=p.pronamespace
+     WHERE ns.nspname='public' AND (p.proname LIKE 'crm\_%' OR p.proname LIKE 'madmona\_team%')
+     GROUP BY p.proname HAVING count(*) > 1
+  LOOP
+    v_err := v_err || jsonb_build_object('type','duplicate','name',r.proname,'args',r.args,
+      'msg','فيه ' || r.n || ' نسخ من «' || r.proname || '» — النداء ممكن يقع على الغلط.');
+  END LOOP;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_event_trigger WHERE evtname='trg_block_crm_overloads') THEN
+    v_err := v_err || jsonb_build_object('type','guard_missing',
+      'msg','الحارس اللي بيمنع النسخ المكررة متشال — الغلطة ممكن تتكرر.');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM crm_receivers()) THEN
+    v_err := v_err || jsonb_build_object('type','no_receivers',
+      'msg','مفيش ولا موظف بياخد ليدات — التوزيع مش هيشتغل.');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM crm_specialties WHERE active) THEN
+    v_err := v_err || jsonb_build_object('type','no_specialties','msg','مفيش أقسام مفعّلة.');
+  END IF;
+
+  IF (SELECT count(*) FROM crm_contacts WHERE owner_id IS NULL) > 0 THEN
+    v_warn := v_warn || jsonb_build_object('type','unassigned',
+      'msg', (SELECT count(*) FROM crm_contacts WHERE owner_id IS NULL)::text || ' رقم لسه ملوش صاحب.');
+  END IF;
+  FOR r IN
+    SELECT s.key, s.name_ar, (SELECT count(*) FROM crm_contacts c WHERE c.specialty=s.key) n
+      FROM crm_specialties s
+     WHERE s.active AND NOT EXISTS (
+       SELECT 1 FROM crm_staff_specialties ss JOIN crm_receivers() st ON st.profile_id=ss.profile_id
+        WHERE ss.specialty=s.key AND ss.active)
+       AND (SELECT count(*) FROM crm_contacts c WHERE c.specialty=s.key) > 0
+  LOOP
+    v_warn := v_warn || jsonb_build_object('type','specialty_no_owner','key',r.key,
+      'msg','قسم «' || r.name_ar || '» فيه ' || r.n || ' رقم ومالوش مسؤول.');
+  END LOOP;
+
+  RETURN jsonb_build_object('ok', jsonb_array_length(v_err) = 0,
+    'checked_at', now(), 'contract_items', (SELECT count(*) FROM crm_contract),
+    'errors', v_err, 'warnings', v_warn,
+    'stats', jsonb_build_object(
+      'contacts', (SELECT count(*) FROM crm_contacts),
+      'assigned', (SELECT count(*) FROM crm_contacts WHERE owner_id IS NOT NULL),
+      'calls', (SELECT count(*) FROM crm_calls),
+      'receivers', (SELECT count(*) FROM crm_receivers())));
 END $function$
 ;
 
@@ -1103,6 +1194,35 @@ AS $function$
 $function$
 ;
 
+CREATE OR REPLACE FUNCTION public.crm_sql_dump()
+ RETURNS text
+ LANGUAGE sql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+/* 🧱 (٢٢ أغسطس ٢٠٢٦) بيرجّع كل نظام الـCRM كـSQL جاهز يتشغّل.
+   بيستخدمه `scripts/dump-crm-sql.mjs` عشان الريبو يفضل مطابق للسيرفر.
+   محمد: «بلاقي حاجات بتقع بعد ما بنقفل الجلسة». */
+  select
+    -- الحارس
+    E'-- 🛡️ حارس: بيمنع وجود نسختين من نفس الدالة\n' ||
+    E'CREATE OR REPLACE FUNCTION public.tg_block_crm_overloads() RETURNS event_trigger\nLANGUAGE plpgsql AS $f$\nDECLARE r record;\nBEGIN\n  FOR r IN SELECT proname, count(*) n FROM pg_proc p JOIN pg_namespace ns ON ns.oid=p.pronamespace\n            WHERE ns.nspname=''public'' AND p.proname LIKE ''crm\\_%'' GROUP BY proname HAVING count(*)>1\n  LOOP RAISE EXCEPTION ''ممنوع نسختين من نفس الدالة: % (% نسخ)'', r.proname, r.n; END LOOP;\nEND $f$;\n' ||
+    E'DROP EVENT TRIGGER IF EXISTS trg_block_crm_overloads;\nCREATE EVENT TRIGGER trg_block_crm_overloads ON ddl_command_end\n  WHEN TAG IN (''CREATE FUNCTION'') EXECUTE FUNCTION public.tg_block_crm_overloads();\n\n' ||
+    -- جدول العقد
+    E'-- 📜 العقد بين الكود والداتابيز\nCREATE TABLE IF NOT EXISTS crm_contract (kind text NOT NULL, name text NOT NULL,\n  detail text NOT NULL DEFAULT '''', note text, PRIMARY KEY (kind,name,detail));\nALTER TABLE crm_contract ENABLE ROW LEVEL SECURITY;\nDROP POLICY IF EXISTS crm_contract_read ON crm_contract;\nCREATE POLICY crm_contract_read ON crm_contract FOR SELECT TO authenticated\n  USING (public.is_madmona_staff() OR public.is_admin());\n\n' ||
+    -- الدوال
+    E'-- ⚙️ الدوال\n' ||
+    (select string_agg(pg_get_functiondef(p.oid) || E';\n', E'\n' order by p.proname)
+       from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public'
+        and (p.proname like 'crm\_%' or p.proname = 'madmona_team_accounts')) ||
+    -- بذور العقد
+    E'\n-- 📜 بذور العقد\nDELETE FROM crm_contract;\nINSERT INTO crm_contract (kind,name,detail,note) VALUES\n' ||
+    (select string_agg(format('(%L,%L,%L,%L)', kind, name, detail, coalesce(note,'')), E',\n' order by kind, name)
+       from crm_contract) || E';\n';
+$function$
+;
+
 CREATE OR REPLACE FUNCTION public.crm_staff()
  RETURNS TABLE(profile_id uuid, full_name text, role text)
  LANGUAGE sql
@@ -1223,3 +1343,119 @@ BEGIN
   RETURN v;
 END $function$
 ;
+
+CREATE OR REPLACE FUNCTION public.madmona_team_accounts()
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+/* 👥 (٢٢ أغسطس ٢٠٢٦) فريق مضمونة كله + حالة حساباته.
+   تلات قوايم منفصلة: business_employees · auth/profiles · platform_admins.
+   ⚠️ الدالة دي اتمسحت مرتين من غير ما حد ياخد باله — السبب إن الإنشاء كان
+      بيتبعته `begin; … rollback;` في نفس النداء، والـDDL في بوستجرس
+      **جوّه ترانزاكشن**، فالرollback كان بيلغي الإنشاء نفسه. */
+DECLARE v jsonb;
+BEGIN
+  IF NOT (public.is_madmona_staff() OR public.is_admin_or_service()) THEN
+    RETURN jsonb_build_object('ok', false, 'error', 'forbidden'); END IF;
+  SELECT jsonb_build_object('ok', true,
+    'team', coalesce(jsonb_agg(x ORDER BY x->>'full_name'), '[]'::jsonb),
+    'counts', jsonb_build_object('team', count(*),
+      'with_app', count(*) FILTER (WHERE (x->>'has_app')::boolean),
+      'with_admin', count(*) FILTER (WHERE (x->>'has_admin')::boolean))
+  ) INTO v FROM (
+    SELECT jsonb_build_object(
+      'employee_id', e.id, 'full_name', e.full_name,
+      'role_ar', CASE e.role WHEN 'owner' THEN 'مالك' WHEN 'manager' THEN 'مدير' ELSE 'موظف' END,
+      'phone', e.phone,
+      'has_app', e.auth_user_id IS NOT NULL,
+      'has_admin', pa.id IS NOT NULL,
+      'admin_role', pa.role, 'admin_status', pa.status, 'last_admin_login', pa.last_login_at,
+      'specialties', (SELECT coalesce(jsonb_agg(s.name_ar), '[]'::jsonb)
+                        FROM crm_staff_specialties ss JOIN crm_specialties s ON s.key = ss.specialty
+                       WHERE ss.profile_id = e.auth_user_id AND ss.active),
+      'crm_contacts', (SELECT count(*) FROM crm_contacts c WHERE c.owner_id = e.auth_user_id),
+      'open_tasks', (SELECT count(*) FROM flow_tasks t WHERE t.owner_id = e.auth_user_id AND t.status <> 'done'),
+      'missing', (SELECT coalesce(jsonb_agg(m), '[]'::jsonb) FROM (
+          SELECT 'حساب على الأبليكيشن' m WHERE e.auth_user_id IS NULL
+          UNION ALL SELECT 'دخول لوحة الأدمن' WHERE pa.id IS NULL
+          UNION ALL SELECT 'رقم تليفون' WHERE coalesce(e.phone,'') = ''
+          UNION ALL SELECT 'تخصص في الـCRM'
+            WHERE e.auth_user_id IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM crm_staff_specialties ss
+                               WHERE ss.profile_id = e.auth_user_id AND ss.active)
+        ) q)) x
+    FROM business_employees e
+    JOIN suppliers s ON s.id = e.supplier_id
+    LEFT JOIN platform_admins pa
+      ON regexp_replace(coalesce(pa.phone,''), '\D', '', 'g') = regexp_replace(coalesce(e.phone,''), '\D', '', 'g')
+     AND coalesce(e.phone,'') <> ''
+   WHERE coalesce(s.is_platform_owner, false)
+     AND e.employee_type = 'human' AND e.status = 'active') z;
+  RETURN v;
+END $function$
+;
+
+-- 📜 بذور العقد
+DELETE FROM crm_contract;
+INSERT INTO crm_contract (kind,name,detail,note) VALUES
+('bucket','crm-calls','','تسجيلات المكالمات — خاص'),
+('column','audio_path','crm_calls','التسجيل الصوتي'),
+('column','audio_seconds','crm_calls',''),
+('column','call_id','flow_tasks','المكالمة'),
+('column','city','crm_contacts','المنطقة'),
+('column','contact_id','flow_tasks','العميل'),
+('column','due_at','flow_tasks',''),
+('column','owner_id','flow_tasks','صاحب التاسك'),
+('column','phone_kind','crm_contacts','موبايل/أرضي — زرار الواتساب بيعتمد عليه'),
+('column','raw_category','crm_contacts','التصنيف الأصلي'),
+('column','route_reason','flow_tasks','ليه اتحوّل'),
+('column','routed_from','flow_tasks','مين حوّله'),
+('column','source_label','crm_contacts','مصدر الرقم'),
+('column','specialty','flow_tasks','تخصص التاسك — عليه التوجيه'),
+('column','transcript_source','crm_calls',''),
+('function','crm_assign_contacts','','التوزيع اليدوي'),
+('function','crm_assign_round_robin','','التوزيع بالدور'),
+('function','crm_classify_contacts','','التصنيف'),
+('function','crm_contact_activity','','حجوزات/طلبات العميل'),
+('function','crm_contact_detail','','ملف العميل'),
+('function','crm_contacts_list','','قايمة الأرقام + تاب المدير'),
+('function','crm_delete_specialty','','مسح قسم'),
+('function','crm_health','','فحص الصحة نفسه'),
+('function','crm_import_contacts','','استيراد ملف'),
+('function','crm_ingest_contacts','','سحب أرقام جديدة'),
+('function','crm_log_call','','تسجيل المكالمة + التاسكات'),
+('function','crm_my_badge','','عدّاد تاب شغلي'),
+('function','crm_my_queue','','شاشة الموبايل'),
+('function','crm_norm_ar','','تطبيع عربي للمطابقة'),
+('function','crm_norm_phone','','تطبيع موبايل'),
+('function','crm_norm_phone_any','','تطبيع موبايل + أرضي'),
+('function','crm_overview','','شاشة الأدمن'),
+('function','crm_phone_kind','','موبايل ولا أرضي'),
+('function','crm_pick_owner','','مسؤول التخصص — توجيه التاسكات'),
+('function','crm_receivers','','اللي بياخدوا ليدات'),
+('function','crm_save_specialty','','إضافة/تعديل قسم'),
+('function','crm_set_contact','','تعديل يدوي لعميل'),
+('function','crm_set_staff_role','','دور موظف'),
+('function','crm_set_staff_specialties','','تخصصات موظف'),
+('function','crm_specialty_for_any','','أي نص → تخصص'),
+('function','crm_specialty_for_cat','','سلَج تصنيف → تخصص'),
+('function','crm_specialty_for_text','','نص → تخصص'),
+('function','crm_sql_dump','','مولّد ملف إعادة البناء'),
+('function','crm_staff','','موظفين مضمونة اللي عندهم حساب'),
+('function','crm_task_update','','تعديل تاسك'),
+('function','crm_tasks_list','','قايمة التاسكات'),
+('function','crm_test_rules','','تجربة القواعد'),
+('function','madmona_team_accounts','','شاشة إدارة الموظفين'),
+('policy','crm_calls_read_staff','crm_calls',''),
+('policy','crm_contacts_read_staff','crm_contacts','قراءة لموظفين مضمونة'),
+('policy','crm_specialties_read_staff','crm_specialties',''),
+('policy','crm_staff_specialties_read_staff','crm_staff_specialties',''),
+('table','crm_calls','','المكالمات'),
+('table','crm_contacts','','الأرقام'),
+('table','crm_contract','','العقد ده نفسه'),
+('table','crm_specialties','','الأقسام وقواعدها'),
+('table','crm_staff_settings','','موزّع؟ بياخد ليدات؟'),
+('table','crm_staff_specialties','','مين مسؤول عن إيه');
+

@@ -75,6 +75,11 @@ type Staff = {
   is_dispatcher: boolean; receives_leads: boolean
   contacts: number; open_tasks: number; calls: number; specialties: string[]
 }
+type Health = {
+  ok: boolean; checked_at: string; contract_items: number
+  errors: { type: string; msg: string }[]
+  warnings: { type: string; msg: string }[]
+}
 type Overview = {
   ok: boolean; error?: string
   totals: {
@@ -168,6 +173,10 @@ function downloadCsv(name: string, rows: Record<string, unknown>[], headers: [st
 export default function AdminCrmPage() {
   const [tab, setTab] = useState<'overview' | 'contacts' | 'tasks'>('overview')
   const [ov, setOv] = useState<Overview | null>(null)
+  /* 🩺 (٢٢ أغسطس ٢٠٢٦) فحص الصحة — محمد: «بلاقي حاجات بتقع بعد ما بنقفل
+     الجلسة». بيقارن اللي الكود محتاجه باللي موجود في الداتابيز، وبيبان فوق
+     قبل ما حد يكتشف الكسر بنفسه. */
+  const [health, setHealth] = useState<Health | null>(null)
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
@@ -226,6 +235,7 @@ export default function AdminCrmPage() {
       const r = await callRpc<Overview>('crm_overview')
       if (!r?.ok) setErr(r?.error === 'forbidden' ? 'forbidden' : (r?.error || 'مقدرناش نحمّل'))
       else setOv(r)
+      try { setHealth(await callRpc<Health>('crm_health')) } catch { /* الفحص مايوقّفش الشاشة */ }
     } catch (e) { setErr(e instanceof Error ? e.message : 'مقدرناش نحمّل') }
     setLoading(false)
   }, [])
@@ -386,6 +396,44 @@ export default function AdminCrmPage() {
         {/* ══════════ نظرة عامة ══════════ */}
         {tab === 'overview' && ov && (
           <>
+            {health && !health.ok && (
+              <div style={{ ...card, marginBottom: 14, borderColor: C.danger, background: '#fdf3f2' }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <AlertTriangle style={{ width: 18, height: 18, color: C.danger, flexShrink: 0, marginTop: 2 }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 900, fontSize: 14, color: C.danger }}>
+                      فيه حاجة ناقصة في الداتابيز — جزء من النظام مش هيشتغل
+                    </div>
+                    <ul style={{ margin: '8px 0 0', paddingRight: 18, fontSize: 12.5, lineHeight: 1.9 }}>
+                      {health.errors.map((e, i) => <li key={i}>{e.msg}</li>)}
+                    </ul>
+                    <div style={{ fontSize: 11.5, color: C.sub, marginTop: 8 }}>
+                      الإصلاح: شغّل <code>sql/2026-08-22_crm_functions_rebuild.sql</code> على الداتابيز.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {health?.ok && (
+              <div style={{ ...card, marginBottom: 14, padding: '9px 14px', display: 'flex', gap: 8,
+                alignItems: 'center', flexWrap: 'wrap', fontSize: 12.5, borderColor: C.green2, background: '#f6fbf9' }}>
+                <CheckCircle2 style={{ width: 15, height: 15, color: C.green, flexShrink: 0 }} />
+                <span style={{ color: C.green, fontWeight: 700 }}>النظام سليم</span>
+                <span style={{ color: C.sub }}>
+                  {health.contract_items} حاجة اتفحصت
+                  {health.warnings.length > 0 && ` · ${health.warnings.length} تنبيه`}
+                </span>
+                {health.warnings.length > 0 && (
+                  <details style={{ width: '100%' }}>
+                    <summary style={{ cursor: 'pointer', fontSize: 12, color: C.warn, fontWeight: 700 }}>شوف التنبيهات</summary>
+                    <ul style={{ margin: '6px 0 0', paddingRight: 18, fontSize: 12, color: C.sub, lineHeight: 1.9 }}>
+                      {health.warnings.map((w, i) => <li key={i}>{w.msg}</li>)}
+                    </ul>
+                  </details>
+                )}
+              </div>
+            )}
+
             {/* بانر: التخصصات اللي ملهاش مسؤول */}
             {noOwnerSpecs.length > 0 && (
               <div style={{ ...card, marginBottom: 14, borderColor: C.gold, background: '#fffbf0' }}>
