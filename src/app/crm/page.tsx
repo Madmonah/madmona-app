@@ -46,13 +46,14 @@
    ============================================================================ */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { MutableRefObject } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import BottomNav from '@/components/BottomNav'
 import { sinceLabel, fmtDateTime } from '@/lib/arDateTime'
 import {
   Phone, MessageCircle, Loader2, RefreshCw, ListChecks, CheckCircle2,
-  Mic, Sparkles, X, ChevronLeft, MapPin, CornerDownLeft, LogIn, AlertTriangle, Home, Users,
+  Mic, Sparkles, X, ChevronLeft, MapPin, CornerDownLeft, LogIn, AlertTriangle, Home, Users, Search,
   FileText, Tag, Package, Clock, Info, ClipboardCheck, Square, Trash2, PlayCircle,
 } from 'lucide-react'
 
@@ -67,6 +68,7 @@ type Lead = {
   specialty: string | null; specialty_ar: string | null; status: string
   notes: string | null; source: string | null
   last_contact_at: string | null; next_action_at: string | null; calls: number
+  owner?: string | null
 }
 type Task = {
   id: string; title: string; detail: string | null; priority: string; status: string
@@ -118,6 +120,19 @@ type Queue = {
   tasks: Task[]
 }
 
+/* شرايح فلترة سريعة في تاب المدير — المفاتيح من `crm_specialties`.
+   ⚠️ دي عرض بس؛ الفلترة الحقيقية بتتعمل في الداتابيز باللي إنت باعته. */
+const SPEC_CHIPS: { k: string; label: string }[] = [
+  { k: 'properties', label: 'عقارات' },
+  { k: 'vehicles', label: 'عربيات' },
+  { k: 'food', label: 'مطاعم' },
+  { k: 'medical', label: 'طبي' },
+  { k: 'beauty', label: 'تجميل' },
+  { k: 'factories', label: 'مصانع' },
+  { k: 'marine', label: 'يخوت' },
+  { k: '__none__', label: 'مش متصنّف' },
+]
+
 const STATUS_AR: Record<string, string> = {
   new: 'لسه جديد', contacted: 'اتكلّمنا', interested: 'مهتم',
   offer_sent: 'اتبعتله عرض', won: 'اتقفل', lost: 'ضاع', spam: 'سبام',
@@ -140,7 +155,15 @@ export default function CrmMobilePage() {
   const [loading, setLoading] = useState(true)
   const [needLogin, setNeedLogin] = useState(false)
   const [err, setErr] = useState<string | null>(null)
-  const [tab, setTab] = useState<'calls' | 'tasks' | 'team'>('calls')
+  const [tab, setTab] = useState<'calls' | 'tasks' | 'team' | 'all'>('calls')
+  /* 🧑‍💼 (٢٢ أغسطس) تاب «كل الأرقام» للمدير — محمد: «افتح لينا إحنا كمان
+     الجدول، ممكن الأمور تكون محتاجة مدير يتواصل معاهم».
+     المدير بيدوّر ويكلّم أي رقم حتى لو مش بتاعه، **والملكية مابتتغيّرش**. */
+  const [allRows, setAllRows] = useState<Lead[]>([])
+  const [allTotal, setAllTotal] = useState(0)
+  const [allQ, setAllQ] = useState('')
+  const [allSpec, setAllSpec] = useState('')
+  const [allBusy, setAllBusy] = useState(false)
   /* 👥 الموزّع بيقدر يفتح قايمة أي حد في الفريق — للمتابعة وسماع مكالماته */
   const [viewAs, setViewAs] = useState<string | null>(null)
 
@@ -182,6 +205,21 @@ export default function CrmMobilePage() {
   }, [viewAs])
 
   useEffect(() => { load() }, [load])
+
+  const searchAll = useCallback(async () => {
+    setAllBusy(true)
+    try {
+      const { data } = await (supabaseBrowser.rpc as unknown as (
+        f: string, a: Record<string, unknown>,
+      ) => Promise<{ data: { ok: boolean; total: number; rows: Lead[] } | null; error: unknown }>)(
+        'crm_contacts_list',
+        { p_q: allQ || null, p_specialty: allSpec || null, p_limit: 40, p_offset: 0 })
+      if (data?.ok) { setAllRows(data.rows || []); setAllTotal(data.total || 0) }
+    } catch (e) { setErr(e instanceof Error ? e.message : 'خطأ') }
+    setAllBusy(false)
+  }, [allQ, allSpec])
+
+  useEffect(() => { if (tab === 'all' && allRows.length === 0 && !allBusy) searchAll() }, [tab])
 
   /* 🎙️ تفريغ الصوت المدمج في المتصفح — كروم أندرويد وسفاري.
      مش موجود في كل المتصفحات، فالزرار بيختفي لو مش مدعوم. */
@@ -394,7 +432,9 @@ export default function CrmMobilePage() {
           {([
             ['calls', `مكالمات (${q?.counts?.todo ?? 0})`],
             ['tasks', `تاسكات (${q?.open_tasks ?? 0})`],
-            ...(q?.me?.is_dispatcher ? [['team', 'الفريق'] as const] : []),
+            ...(q?.me?.is_dispatcher
+              ? [['team', 'الفريق'] as const, ['all', 'كل الأرقام'] as const]
+              : []),
           ] as const).map(([k, label]) => (
             <button key={k} onClick={() => setTab(k)}
               style={{
@@ -460,56 +500,58 @@ export default function CrmMobilePage() {
               </div>
             )}
             {q.queue.map(l => (
-              <div key={l.id} style={card}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 15, fontWeight: 800, lineHeight: 1.4 }}>
-                      {l.name || l.phone}
-                    </div>
-                    <div style={{ fontSize: 12, color: C.sub, marginTop: 3, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      <span style={{ direction: 'ltr' }}>{l.phone}</span>
-                      {l.phone_kind === 'landline' && <span style={{ color: C.warn, fontWeight: 700 }}>أرضي</span>}
-                      {l.city && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}><MapPin style={{ width: 11, height: 11 }} />{l.city}</span>}
-                    </div>
-                    <div style={{ fontSize: 11.5, color: C.sub, marginTop: 4 }}>
-                      {l.specialty_ar && <span style={{ background: '#eef7f3', color: C.green, padding: '2px 8px', borderRadius: 999, fontWeight: 700, marginLeft: 6 }}>{l.specialty_ar}</span>}
-                      {STATUS_AR[l.status] || l.status}
-                      {l.calls > 0 && ` · ${l.calls} مكالمة`}
-                      {l.last_contact_at && ` · آخر تواصل ${sinceLabel(l.last_contact_at)}`}
-                    </div>
-                    {l.notes && (
-                      <div style={{ fontSize: 11.5, color: C.sub, marginTop: 5, lineHeight: 1.6,
-                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                        {l.notes}
-                      </div>
-                    )}
-                    {l.next_action_at && (
-                      <div style={{ fontSize: 11.5, color: C.warn, marginTop: 4, fontWeight: 700 }}>
-                        معاد المتابعة: {fmtDateTime(l.next_action_at)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                  {/* 📇 دوسة «اتصال» بتفتح كارت التفاصيل ورا الاتصال —
-                      فالموظف بيقرا وهو بيرن، ولما يرجع يلاقي «سجّل» قدامه */}
-                  <a href={`tel:${l.phone}`}
-                     onClick={() => { startedAt.current = Date.now(); openDetail(l) }}
-                     style={btn('primary')}>
-                    <Phone style={{ width: 16, height: 16 }} /> اتصال
-                  </a>
-                  {l.phone_kind !== 'landline' && (
-                    <a href={waLink(l.phone)} target="_blank" rel="noreferrer"
-                       onClick={() => openDetail(l)} style={btn('wa')}>
-                      <MessageCircle style={{ width: 16, height: 16 }} /> واتساب
-                    </a>
-                  )}
-                  <button onClick={() => openDetail(l)} style={{ ...btn(), flex: '0 0 auto', paddingInline: 12 }}>
-                    <FileText style={{ width: 15, height: 15 }} /> الملف
-                  </button>
-                </div>
-              </div>
+              <LeadCard key={l.id} l={l} onOpen={openDetail} onLog={openSheet}
+                card={card} btn={btn} C={C} startedAt={startedAt} />
             ))}
+          </>
+        )}
+
+        {/* ــــــ 🧑‍💼 كل الأرقام (للمدير) ــــــ
+             محمد: «افتح لينا إحنا كمان الجدول — ممكن الأمور تكون محتاجة مدير
+             يتواصل معاهم». المدير بيوصل لأي رقم، بيكلّم، وبيسجّل —
+             **والرقم يفضل مع صاحبه**، المكالمة بس بتتوسم «من المدير». */}
+        {tab === 'all' && q?.me?.is_dispatcher && (
+          <>
+            <div style={{ ...card, padding: 12 }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${C.line}`,
+                  borderRadius: 12, padding: '8px 10px', flex: 1 }}>
+                  <Search style={{ width: 15, height: 15, color: C.sub }} />
+                  <input value={allQ} onChange={e => setAllQ(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') searchAll() }}
+                    placeholder="رقم · اسم · منطقة"
+                    style={{ border: 0, outline: 0, flex: 1, fontSize: 14, background: 'transparent', fontFamily: 'inherit', minWidth: 0 }} />
+                </div>
+                <button onClick={searchAll} disabled={allBusy} style={{ ...btn('primary'), flex: '0 0 auto', paddingInline: 16 }}>
+                  {allBusy ? <Loader2 style={{ width: 16, height: 16 }} className="animate-spin" /> : 'دوّر'}
+                </button>
+              </div>
+              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
+                <button onClick={() => { setAllSpec(''); setTimeout(searchAll, 0) }}
+                  style={{ ...btn(), flex: '0 0 auto', padding: '6px 12px', fontSize: 12, minHeight: 34,
+                    background: allSpec === '' ? C.green : '#fff', color: allSpec === '' ? '#fff' : C.ink,
+                    borderColor: allSpec === '' ? C.green : C.line }}>الكل</button>
+                {(q.me?.specialties || []).length === 0 && null}
+                {SPEC_CHIPS.map(sc => (
+                  <button key={sc.k} onClick={() => { setAllSpec(sc.k); setTimeout(searchAll, 0) }}
+                    style={{ ...btn(), flex: '0 0 auto', padding: '6px 12px', fontSize: 12, minHeight: 34,
+                      background: allSpec === sc.k ? C.green : '#fff', color: allSpec === sc.k ? '#fff' : C.ink,
+                      borderColor: allSpec === sc.k ? C.green : C.line }}>{sc.label}</button>
+                ))}
+              </div>
+              <div style={{ fontSize: 11.5, color: C.sub, marginTop: 8 }}>
+                {allTotal > 0 ? `${allTotal.toLocaleString('ar-EG')} رقم · بيبان أول ٤٠` : 'اكتب واضغط دوّر'}
+              </div>
+            </div>
+
+            {allRows.map(l => <LeadCard key={l.id} l={l} showOwner onOpen={openDetail} onLog={openSheet}
+              card={card} btn={btn} C={C} startedAt={startedAt} />)}
+
+            {allRows.length === 0 && !allBusy && (
+              <div style={{ ...card, textAlign: 'center', color: C.sub, padding: 26, fontSize: 13.5 }}>
+                مفيش نتايج — جرّب رقم أو اسم تاني.
+              </div>
+            )}
           </>
         )}
 
@@ -919,5 +961,74 @@ function AudioPlayer({ path }: { path: string }) {
       {busy ? <Loader2 style={{ width: 14, height: 14 }} className="animate-spin" /> : <PlayCircle style={{ width: 15, height: 15 }} />}
       اسمع التسجيل
     </button>
+  )
+}
+
+/* 🧾 كارت الرقم — بيتستخدم في «مكالماتي» وفي «كل الأرقام» بتاع المدير.
+   `showOwner` بيبان في تاب المدير بس: مين ماسك الرقم ده. */
+function LeadCard({
+  l, onOpen, onLog, card, btn, C, startedAt, showOwner = false,
+}: {
+  l: Lead
+  onOpen: (l: Lead) => void
+  onLog: (l: Lead) => void
+  card: React.CSSProperties
+  btn: (k?: 'primary' | 'wa' | 'ghost') => React.CSSProperties
+  C: Record<string, string>
+  startedAt: MutableRefObject<number | null>
+  showOwner?: boolean
+}) {
+  void onLog
+  return (
+              <div style={card}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, lineHeight: 1.4 }}>
+                      {l.name || l.phone}
+                    </div>
+                    <div style={{ fontSize: 12, color: C.sub, marginTop: 3, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ direction: 'ltr' }}>{l.phone}</span>
+                      {l.phone_kind === 'landline' && <span style={{ color: C.warn, fontWeight: 700 }}>أرضي</span>}
+                      {l.city && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}><MapPin style={{ width: 11, height: 11 }} />{l.city}</span>}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: C.sub, marginTop: 4 }}>
+                      {l.specialty_ar && <span style={{ background: '#eef7f3', color: C.green, padding: '2px 8px', borderRadius: 999, fontWeight: 700, marginLeft: 6 }}>{l.specialty_ar}</span>}
+                      {STATUS_AR[l.status] || l.status}
+                      {showOwner && (l.owner ? ` · مع ${l.owner}` : ' · ملوش صاحب')}
+                      {l.calls > 0 && ` · ${l.calls} مكالمة`}
+                      {l.last_contact_at && ` · آخر تواصل ${sinceLabel(l.last_contact_at)}`}
+                    </div>
+                    {l.notes && (
+                      <div style={{ fontSize: 11.5, color: C.sub, marginTop: 5, lineHeight: 1.6,
+                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {l.notes}
+                      </div>
+                    )}
+                    {l.next_action_at && (
+                      <div style={{ fontSize: 11.5, color: C.warn, marginTop: 4, fontWeight: 700 }}>
+                        معاد المتابعة: {fmtDateTime(l.next_action_at)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                  {/* 📇 دوسة «اتصال» بتفتح كارت التفاصيل ورا الاتصال —
+                      فالموظف بيقرا وهو بيرن، ولما يرجع يلاقي «سجّل» قدامه */}
+                  <a href={`tel:${l.phone}`}
+                     onClick={() => { startedAt.current = Date.now(); onOpen(l) }}
+                     style={btn('primary')}>
+                    <Phone style={{ width: 16, height: 16 }} /> اتصال
+                  </a>
+                  {l.phone_kind !== 'landline' && (
+                    <a href={waLink(l.phone)} target="_blank" rel="noreferrer"
+                       onClick={() => onOpen(l)} style={btn('wa')}>
+                      <MessageCircle style={{ width: 16, height: 16 }} /> واتساب
+                    </a>
+                  )}
+                  <button onClick={() => onOpen(l)} style={{ ...btn(), flex: '0 0 auto', paddingInline: 12 }}>
+                    <FileText style={{ width: 15, height: 15 }} /> الملف
+                  </button>
+                </div>
+              </div>
   )
 }
