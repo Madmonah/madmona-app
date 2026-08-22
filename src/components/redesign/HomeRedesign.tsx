@@ -210,10 +210,13 @@ const SECTIONS = [
   //    بقى دهبي: هو الأكسنت الوحيد في اللوحة، ومابيتلغبطش مع أخضر البورصة
   //    اللي جنبه.
   { key: 'business',    name: 'بورصة رجال الأعمال',    desc: 'أخبار · عملات · ذهب', href: '/business-lounge',       accent: GOLD,      shot: '',               tracks: [] },
-  // 🚗🏗️ (١٧ أغسطس ٢٠٢٦ — محمد) قسمين جداد: سوق العربيات المنسق
-  //    (معارض/أفراد × زيرو/مستعمل × الأنواع) ودليل شركات المطورين الكلاود.
-  { key: 'cars',        name: 'سوق العربيات', desc: 'معارض · أفراد · زيرو ومستعمل', href: '/cars',              accent: '#3D7BB6', shot: '',               tracks: [] },
-  { key: 'developers',  name: 'المطورين',     desc: 'شركات كلاود · كل المشاريع',    href: '/dev',               accent: '#059669', shot: '',               tracks: [] },
+  // 🚗🏗️ (٢٢ أغسطس ٢٠٢٦ — محمد: «مش عايز المطورين وسوق العربيات دي أصلاً
+  //    تظهر في أي مكان») — القسمين دول اتضافوا هنا في ١٧ أغسطس وكانوا غلط:
+  //      · **سوق العربيات** — العربيات بتتعرض في الماركت بليس وبس. قسم منفصل
+  //        ليها معناه إن نفس الإعلان ليه مكانين، والزائر مش عارف يدوّر فين.
+  //      · **المطورين** — دول جزء من العقارات، مكانهم جوّه بورصة مضمونة
+  //        العقارية مش قسم مستقل على نفس المستوى مع «بيع» و«إيجار».
+  //    الصفحتين (/cars و /dev) لسه موجودين بس مش متلينكين من الصفحة الرئيسية.
 ]
 
 /**
@@ -228,7 +231,7 @@ const SECTIONS = [
  */
 const NAV_GROUPS: { label: string; href: string; keys: string[] }[] = [
   { label: 'تسوّق',  href: '/marketplace',        keys: ['products', 'rentals', 'services', 'restaurants'] },
-  { label: 'الأسواق', href: '/real-estate/market', keys: ['bourse', 'business', 'cars', 'developers'] },
+  { label: 'الأسواق', href: '/real-estate/market', keys: ['bourse', 'business'] },
 ]
 
 export default async function HomeRedesign({ categories, stats, liveCounts, heroImage }: Props) {

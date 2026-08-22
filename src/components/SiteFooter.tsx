@@ -49,6 +49,26 @@ export default function SiteFooter() {
             <p style={{ margin: '14px 0 0', fontSize: 13, lineHeight: 1.9, color: 'rgba(250,250,247,0.75)' }}>
               سوقك المصري المضمون — أجّر، اشتري، واحجز خدمات ومطاعم وبيوتي. معاملاتك مضمونة.
             </p>
+            {/* 📍 (٢٢ أغسطس ٢٠٢٦) عنوان المقر — كان ناقص من الفوتر خالص.
+                عنوان حقيقي ظاهر بيفرق في ثقة الزائر وفي البحث المحلي كمان. */}
+            <address
+              style={{
+                margin: '16px 0 0', fontSize: 13, lineHeight: 1.9,
+                fontStyle: 'normal', color: 'rgba(250,250,247,0.9)',
+              }}
+            >
+              ٧ ش سليمان عزمي — بجوار الكلية الحربية
+              <br />
+              مصر الجديدة، القاهرة
+              <a
+                href="https://wa.me/201002229982"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'block', marginTop: 8, color: '#FFE9A8', textDecoration: 'none', fontWeight: 700 }}
+              >
+                واتساب <span dir="ltr">010 022 29982</span>
+              </a>
+            </address>
           </div>
 
           <div style={{ display: 'flex', gap: 56, flexWrap: 'wrap' }}>

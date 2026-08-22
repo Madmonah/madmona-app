@@ -9,6 +9,7 @@
 // الديسكتوب بس.
 // =====================================================================
 import { Metadata } from 'next'
+import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
@@ -90,6 +91,30 @@ export default async function PropertyMarketPage() {
         <TopNav />
       </div>
       <MarketExplorer items={items} opportunities={opportunities} />
+
+      {/* 🏗️ (٢٢ أغسطس ٢٠٢٦ — محمد: «المطورين مكانها جوّه بورصة عقارات مضمونة»)
+          كان قسم مستقل على الصفحة الرئيسية على نفس مستوى «بيع» و«إيجار».
+          المطوّر جزء من سوق العقارات، فمدخله من هنا — من جوّه البورصة. */}
+      <section className="mx-auto max-w-6xl px-4 pb-10">
+        <Link
+          href="/dev"
+          className="flex items-center justify-between gap-4 rounded-2xl border border-[#E4DECE] bg-white p-5 transition hover:border-[#059669] hover:shadow-md"
+        >
+          <span className="flex items-center gap-4">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#059669]/10 text-2xl">
+              🏗️
+            </span>
+            <span>
+              <span className="block text-lg font-black text-[#0C2B22]">شركات التطوير العقاري</span>
+              <span className="block text-sm text-[#6B7B74]">
+                كل مطوّر ومشاريعه — الأسعار وأنظمة السداد ومواعيد التسليم
+              </span>
+            </span>
+          </span>
+          <span className="shrink-0 text-sm font-bold text-[#059669]">اتفرّج ←</span>
+        </Link>
+      </section>
+
       <BottomNav />
     </div>
   )
