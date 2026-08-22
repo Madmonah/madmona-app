@@ -13,11 +13,15 @@
 //   ٤) بينادي `crm_log_call` **بتوكن الموظف** — فالمكالمة بتتسجّل باسمه،
 //      والتاسك اللي تخصصه مختلف بينزل عند مسؤول التخصص التاني لوحده.
 //
-// ⚠️ **إحنا مابنسجّلش المكالمة نفسها.** أندرويد وiOS مابيسمحوش لصفحة ويب
-//    تسجّل مكالمة تليفون — ده قفل من نظام التشغيل مش نقص عندنا. اللي بيحصل:
-//    الموظف بيقفل المكالمة، ويقول اللي حصل بصوته (الميكروفون في المتصفح)،
-//    والمارد بيفرّغ الكلام ده. لو حبينا تسجيل حقيقي هيبقى لازم رقم
-//    مركزي (VoIP/كول سنتر) — قرار منفصل.
+// 🎙️ (٢٢ أغسطس ٢٠٢٦) محمد: «عايز التطبيق بتاعنا هو اللي يسجّل حتى لو
+//    هيسجّل كلام الموظفين بتوعنا احنا بس» — اتعمل. الأبليكيشن بيسجّل صوت
+//    حقيقي بالمايك، بيرفعه على bucket خاص `crm-calls`، والمسار بيتسجّل هنا
+//    مع المكالمة (`p_audio_path`). التسجيل بيتسمع من ملف العميل بلينك موقّع.
+//
+// ⚠️ **حدّ تقني مينفعش نلفّ حواليه**: أندرويد وiOS بيقفلوا المايك على
+//    المتصفح طول ما فيه مكالمة تليفون شغّالة. يعني التسجيل بيشتغل **بعد ما
+//    يقفل**. التسجيل التلقائي للمكالمة بالصوتين محتاج **رقم مركزي
+//    (VoIP/كول سنتر)** والمكالمات كلها تعدّي منه — قرار منفصل.
 //
 // ⚠️ لو المارد وقع لأي سبب، بنسجّل المكالمة **من غير تاسكات** بدل ما نضيّعها.
 // =====================================================================
@@ -45,13 +49,19 @@ export async function POST(req: NextRequest) {
     contactId?: string; transcript?: string; durationSec?: number
     channel?: string; direction?: string; skipMarid?: boolean
     outcome?: string; summary?: string
+    // 🎙️ (٢٢ أغسطس ٢٠٢٦) التسجيل الصوتي الحقيقي — الملف نفسه بيترفع من
+    //    المتصفح على bucket `crm-calls` بجلسة الموظف، وإحنا بنسجّل مساره.
+    audioPath?: string; audioSeconds?: number; transcriptSource?: string
   }
   try { body = await req.json() } catch { return NextResponse.json({ ok: false, error: 'bad json' }, { status: 400 }) }
 
   const contactId = (body.contactId || '').trim()
   const transcript = (body.transcript || '').trim()
   if (!contactId) return NextResponse.json({ ok: false, error: 'مفيش عميل' }, { status: 400 })
-  if (!transcript && !body.summary) return NextResponse.json({ ok: false, error: 'اكتب أو قول اللي حصل في المكالمة' }, { status: 400 })
+  // ⚠️ التسجيل الصوتي لوحده كفاية — المكالمة اتسجّلت حتى لو مفيش نص
+  if (!transcript && !body.summary && !body.audioPath) {
+    return NextResponse.json({ ok: false, error: 'سجّل صوتك أو اكتب اللي حصل في المكالمة' }, { status: 400 })
+  }
 
   const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -127,7 +137,12 @@ export async function POST(req: NextRequest) {
       out = { summary_ar: transcript.slice(0, 300), outcome: 'contacted', tasks: [] }
     }
   } else {
-    out = { summary_ar: body.summary || transcript.slice(0, 300), outcome: body.outcome, tasks: [] }
+    out = {
+      summary_ar: body.summary
+        || (transcript ? transcript.slice(0, 300) : undefined)
+        || (body.audioPath ? 'مكالمة متسجّلة صوت — من غير تفريغ' : undefined),
+      outcome: body.outcome, tasks: [],
+    }
   }
 
   const outcome = OUTCOMES.includes(String(out.outcome)) ? out.outcome : (body.outcome || 'contacted')
@@ -153,13 +168,16 @@ export async function POST(req: NextRequest) {
     p_channel: body.channel || 'phone',
     p_duration_sec: body.durationSec ?? null,
     p_next_action_at: out.next_action_at || null,
+    p_audio_path: body.audioPath || null,
+    p_audio_seconds: body.audioSeconds ?? null,
+    p_transcript_source: body.transcriptSource || null,
   } as never)
 
   if (error) {
     console.error('[crm/call] log failed', error.message)
     return NextResponse.json({ ok: false, error: error.message }, { status: 400 })
   }
-  const res = logged as unknown as { ok?: boolean; error?: string; tasks_created?: number; tasks_routed?: number }
+  const res = logged as unknown as { ok?: boolean; error?: string; tasks_created?: number; tasks_routed?: number; audio_saved?: boolean }
   if (res?.ok === false) return NextResponse.json({ ok: false, error: res.error }, { status: 400 })
 
   return NextResponse.json({
@@ -170,5 +188,6 @@ export async function POST(req: NextRequest) {
     tasks,
     tasks_created: res?.tasks_created ?? 0,
     tasks_routed: res?.tasks_routed ?? 0,
+    audio_saved: res?.audio_saved ?? false,
   })
 }

@@ -19,11 +19,20 @@
      ٤) «المارد يفرّغ» → بيطلّع الملخّص والنتيجة والتاسكات، وأي تاسك تخصّه
         شخص تاني **بينزل عنده هو** أوتوماتيك.
 
-   ⚠️ **مابنسجّلش المكالمة نفسها.** أندرويد وiOS مابيسمحوش لصفحة ويب تسجّل
-      مكالمة تليفون — ده قفل من نظام التشغيل. اللي بنسجّله هو كلام الموظف
-      **بعد** المكالمة (زرار المايك بيستخدم تفريغ الصوت المدمج في المتصفح،
-      شغّال على كروم أندرويد وسفاري). لو عايزين تسجيل حقيقي للمكالمة
-      نفسها، ده محتاج رقم مركزي (كول سنتر/VoIP) — قرار لوحده.
+   🎙️ (٢٢ أغسطس ٢٠٢٦) محمد: «عايز التطبيق بتاعنا هو اللي يسجّل حتى لو
+      هيسجّل كلام الموظفين بتوعنا احنا بس» — اتعمل.
+      الأبليكيشن دلوقتي **بيسجّل صوت حقيقي** بالمايك (MediaRecorder)،
+      بيرفعه على bucket خاص `crm-calls`، وبيربطه بالمكالمة. التسجيل بيتسمع
+      من ملف العميل في أي وقت.
+      وفي نفس الوقت تفريغ الصوت المدمج في المتصفح بيمشي على التوازي فبنطلع
+      **نص كمان** من غير أي تكلفة، والمارد بيشتغل على النص ده.
+
+   ⚠️ **حدّ التقنية اللي مينفعش نلفّ حواليه**: أندرويد وiOS **بيقفلوا
+      المايك على المتصفح طول ما فيه مكالمة تليفون شغّالة** — ده قفل من نظام
+      التشغيل مش نقص عندنا. يعني التسجيل بيشتغل **بعد ما تقفل** (أو لو
+      حطيت السماعة على مكبّر الصوت وسجّلت من جهاز تاني).
+      التسجيل التلقائي للمكالمة نفسها بالصوتين محتاج **رقم مركزي
+      (كول سنتر/VoIP)** والمكالمات كلها تعدّي منه — قرار لوحده.
 
    ⚠️ **الأرضي مالوش واتساب.** الأرقام اللي `phone_kind='landline'`
       (٢٦٤ رقم، أغلبهم مصانع) بيبان عليها زرار الاتصال بس.
@@ -44,7 +53,7 @@ import { sinceLabel, fmtDateTime } from '@/lib/arDateTime'
 import {
   Phone, MessageCircle, Loader2, RefreshCw, ListChecks, CheckCircle2,
   Mic, Sparkles, X, ChevronLeft, MapPin, CornerDownLeft, LogIn, AlertTriangle, Home,
-  FileText, Tag, Package, Clock, Info, ClipboardCheck,
+  FileText, Tag, Package, Clock, Info, ClipboardCheck, Square, Trash2, PlayCircle,
 } from 'lucide-react'
 
 const C = {
@@ -75,6 +84,7 @@ type ListingRow = {
 type CallRow = {
   id: string; started_at: string; summary: string | null; transcript: string | null
   outcome: string | null; staff: string | null; channel: string
+  audio_path: string | null; audio_seconds: number | null; transcript_source: string | null
 }
 type Detail = {
   ok: boolean; error?: string
@@ -130,6 +140,14 @@ export default function CrmMobilePage() {
   const [sheet, setSheet] = useState<Lead | null>(null)
   const [text, setText] = useState('')
   const [rec, setRec] = useState(false)
+  // 🎙️ التسجيل الصوتي الحقيقي
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
+  const [audioUrl, setAudioUrl] = useState<string | null>(null)
+  const [recSec, setRecSec] = useState(0)
+  const [micErr, setMicErr] = useState<string | null>(null)
+  const mediaRef = useRef<MediaRecorder | null>(null)
+  const chunksRef = useRef<Blob[]>([])
+  const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [sending, setSending] = useState(false)
   const [result, setResult] = useState<{ summary: string | null; tasks: { title: string; specialty: string | null }[]; routed: number } | null>(null)
   const recRef = useRef<{ stop: () => void } | null>(null)
@@ -158,8 +176,50 @@ export default function CrmMobilePage() {
     !!((window as unknown as Record<string, unknown>).SpeechRecognition ||
        (window as unknown as Record<string, unknown>).webkitSpeechRecognition)
 
-  function toggleMic() {
-    if (rec) { recRef.current?.stop(); setRec(false); return }
+  /* 🎙️ تسجيل حقيقي بالمايك + تفريغ المتصفح في نفس الوقت.
+     الاتنين مع بعض عن قصد: الصوت هو الدليل، والنص هو اللي المارد بيشتغل عليه. */
+  async function toggleMic() {
+    if (rec) {
+      try { recRef.current?.stop() } catch { /* — */ }
+      try { mediaRef.current?.stop() } catch { /* — */ }
+      if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null }
+      setRec(false)
+      return
+    }
+    setMicErr(null)
+    // ١) الصوت
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true },
+      })
+      const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg']
+        .find(m => typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(m))
+      const mr = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined)
+      chunksRef.current = []
+      mr.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data) }
+      mr.onstop = () => {
+        stream.getTracks().forEach(t => t.stop())
+        const blob = new Blob(chunksRef.current, { type: mr.mimeType || 'audio/webm' })
+        if (blob.size > 0) {
+          setAudioBlob(blob)
+          setAudioUrl(u => { if (u) URL.revokeObjectURL(u); return URL.createObjectURL(blob) })
+        }
+      }
+      mr.start()
+      mediaRef.current = mr
+      setRecSec(0)
+      tickRef.current = setInterval(() => setRecSec(v => v + 1), 1000)
+    } catch {
+      // ⚠️ ده اللي بيحصل لو المكالمة لسه شغّالة: نظام التشغيل ماسك المايك.
+      setMicErr('مقدرناش نفتح المايك. لو المكالمة لسه شغّالة اقفلها الأول — الموبايل بيقفل المايك على المتصفح وقت المكالمة. أو اسمح للموقع بالمايك من إعدادات المتصفح.')
+      return
+    }
+    // ٢) التفريغ (لو المتصفح بيدعمه) — مش شرط ينجح عشان الصوت يتسجّل
+    startSpeech()
+    setRec(true)
+  }
+
+  function startSpeech() {
     const W = window as unknown as Record<string, unknown>
     const Ctor = (W.SpeechRecognition || W.webkitSpeechRecognition) as (new () => {
       lang: string; continuous: boolean; interimResults: boolean
@@ -176,8 +236,17 @@ export default function CrmMobilePage() {
       }
       if (add) setText(t => (t ? t + ' ' : '') + add.trim())
     }
-    r.onend = () => setRec(false)
-    r.start(); recRef.current = r; setRec(true)
+    // ⚠️ مابنطفّيش التسجيل لو التفريغ وقف — الصوت أهم
+    r.onend = () => { /* الصوت لسه بيتسجّل */ }
+    try { r.start(); recRef.current = r } catch { /* التفريغ اختياري — الصوت هو الأساس */ }
+  }
+
+  const mmss = (n: number) => `${String(Math.floor(n / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`
+
+  function clearAudio() {
+    setAudioBlob(null)
+    setAudioUrl(u => { if (u) URL.revokeObjectURL(u); return null })
+    setRecSec(0)
   }
 
   /* بيتنادى مع «اتصال» و«التفاصيل» — التليفون بيرن والكارت بيفتح ورا،
@@ -195,7 +264,21 @@ export default function CrmMobilePage() {
   }
 
   function openSheet(l: Lead) {
-    setSheet(l); setText(''); setResult(null); startedAt.current = null
+    setSheet(l); setText(''); setResult(null); setMicErr(null); clearAudio()
+  }
+
+  /* ⬆️ رفع التسجيل على bucket `crm-calls` (خاص، موظفين مضمونة بس).
+     المسار: <contact-id>/<timestamp>.<ext> — عشان يفضل مربوط بالعميل حتى
+     لو المكالمة نفسها اتمسحت. */
+  async function uploadAudio(contactId: string): Promise<string | null> {
+    if (!audioBlob) return null
+    const type = audioBlob.type || 'audio/webm'
+    const ext = type.includes('mp4') ? 'm4a' : type.includes('ogg') ? 'ogg' : 'webm'
+    const path = `${contactId}/${Date.now()}.${ext}`
+    const { error } = await supabaseBrowser.storage.from('crm-calls')
+      .upload(path, audioBlob, { contentType: type, upsert: false })
+    if (error) { setErr(`التسجيل ماترفعش: ${error.message}`); return null }
+    return path
   }
 
   async function submit(outcomeFallback?: string) {
@@ -206,6 +289,8 @@ export default function CrmMobilePage() {
       const token = session?.access_token
       if (!token) { setNeedLogin(true); return }
       const dur = startedAt.current ? Math.round((Date.now() - startedAt.current) / 1000) : null
+      // الصوت الأول — لو الرفع وقع بنكمّل التسجيل من غيره بدل ما نضيّع المكالمة
+      const audioPath = await uploadAudio(sheet.id)
       const res = await fetch('/api/crm/call', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -214,6 +299,8 @@ export default function CrmMobilePage() {
           durationSec: dur, channel: 'phone', direction: 'outbound',
           skipMarid: !text.trim(), outcome: outcomeFallback,
           summary: !text.trim() ? (OUTCOMES.find(o => o.k === outcomeFallback)?.label || null) : undefined,
+          audioPath, audioSeconds: audioBlob ? recSec : null,
+          transcriptSource: text.trim() ? (audioBlob ? 'speech' : 'typed') : null,
         }),
       })
       const j = await res.json()
@@ -490,15 +577,19 @@ export default function CrmMobilePage() {
                     )
                   })()}
 
-                  {/* آخر مكالمة */}
+                  {/* المكالمات السابقة + تسجيلاتها */}
                   {detail.calls.length > 0 && (
-                    <Section icon={<Phone style={{ width: 15, height: 15 }} />} title={`آخر مكالمة (من ${detail.calls.length})`}>
-                      <div style={{ border: `1px solid ${C.line}`, borderRadius: 12, padding: 10 }}>
-                        <div style={{ fontSize: 11.5, color: C.sub, marginBottom: 4 }}>
-                          {fmtDateTime(detail.calls[0].started_at)} · {detail.calls[0].staff || '—'}
+                    <Section icon={<Phone style={{ width: 15, height: 15 }} />} title={`المكالمات (${detail.calls.length})`}>
+                      {detail.calls.slice(0, 5).map(k => (
+                        <div key={k.id} style={{ border: `1px solid ${C.line}`, borderRadius: 12, padding: 10, marginBottom: 7 }}>
+                          <div style={{ fontSize: 11.5, color: C.sub, marginBottom: 4 }}>
+                            {fmtDateTime(k.started_at)} · {k.staff || '—'}
+                            {k.audio_seconds ? ` · ${Math.floor(k.audio_seconds / 60)}:${String(k.audio_seconds % 60).padStart(2, '0')}` : ''}
+                          </div>
+                          <div style={{ fontSize: 13, fontWeight: 700 }}>{k.summary || '—'}</div>
+                          {k.audio_path && <AudioPlayer path={k.audio_path} />}
                         </div>
-                        <div style={{ fontSize: 13, fontWeight: 700 }}>{detail.calls[0].summary || '—'}</div>
-                      </div>
+                      ))}
                     </Section>
                   )}
 
@@ -602,18 +693,57 @@ export default function CrmMobilePage() {
                   placeholder="مثال: العميل عايز شقة ١٢٠ متر في سموحة بحدود ٢.٥ مليون، وقال إن عنده عربية مستعملة عايز يعرضها. قال نكلّمه الأسبوع الجاي."
                   style={{ width: '100%', border: `1px solid ${C.line}`, borderRadius: 14, padding: 12, fontSize: 14, fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.7 }} />
 
-                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                  {speechOk && (
+                {/* 🎙️ التسجيل الحقيقي */}
+                <div style={{ marginTop: 10, border: `1px solid ${rec ? C.danger : C.line}`, borderRadius: 14, padding: 12, background: rec ? '#fdf3f2' : '#fafbfa' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <button onClick={toggleMic}
-                      style={{ ...btn(rec ? 'primary' : 'ghost'), flex: '0 0 auto', paddingInline: 16, borderColor: rec ? C.danger : C.line, background: rec ? C.danger : '#fff', color: rec ? '#fff' : C.ink }}>
-                      <Mic style={{ width: 16, height: 16 }} /> {rec ? 'بيسمعك…' : 'قول بصوتك'}
+                      style={{ ...btn(), flex: '0 0 auto', width: 52, height: 52, borderRadius: 999, padding: 0,
+                        background: rec ? C.danger : C.green, borderColor: rec ? C.danger : C.green, color: '#fff' }}>
+                      {rec ? <Square style={{ width: 18, height: 18 }} /> : <Mic style={{ width: 20, height: 20 }} />}
                     </button>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 800 }}>
+                        {rec ? `بيسجّل… ${mmss(recSec)}` : audioBlob ? `التسجيل جاهز · ${mmss(recSec)}` : 'سجّل صوتك'}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: C.sub, marginTop: 2, lineHeight: 1.6 }}>
+                        {rec
+                          ? 'اتكلّم عادي — الصوت بيتحفظ والكلام بيتكتب تحت لوحده'
+                          : audioBlob
+                            ? 'التسجيل هيتحفظ مع المكالمة وتقدر تسمعه في أي وقت'
+                            : 'الأبليكيشن بيسجّل صوتك ويحفظه مع المكالمة'}
+                      </div>
+                    </div>
+                    {audioBlob && !rec && (
+                      <button onClick={clearAudio} title="امسح التسجيل"
+                        style={{ ...btn(), flex: '0 0 auto', padding: 9, minHeight: 38, color: C.danger, borderColor: C.line }}>
+                        <Trash2 style={{ width: 15, height: 15 }} />
+                      </button>
+                    )}
+                  </div>
+
+                  {audioUrl && !rec && (
+                    /* eslint-disable-next-line jsx-a11y/media-has-caption */
+                    <audio src={audioUrl} controls style={{ width: '100%', marginTop: 10, height: 38 }} />
                   )}
-                  <button onClick={() => submit()} disabled={sending || !text.trim()} style={{ ...btn('primary'), opacity: (!text.trim() || sending) ? .55 : 1 }}>
-                    {sending ? <Loader2 style={{ width: 16, height: 16 }} className="animate-spin" /> : <Sparkles style={{ width: 16, height: 16 }} />}
-                    المارد يفرّغ ويعمل التاسكات
-                  </button>
+
+                  {micErr && (
+                    <div style={{ marginTop: 10, fontSize: 12, color: C.danger, lineHeight: 1.7, display: 'flex', gap: 6 }}>
+                      <AlertTriangle style={{ width: 14, height: 14, flexShrink: 0, marginTop: 2 }} />
+                      <span>{micErr}</span>
+                    </div>
+                  )}
+                  {!speechOk && !micErr && (
+                    <div style={{ marginTop: 8, fontSize: 11, color: C.sub }}>
+                      المتصفح ده مابيحوّلش الصوت لنص — التسجيل هيتحفظ، واكتب سطر يوضّح اللي حصل.
+                    </div>
+                  )}
                 </div>
+
+                <button onClick={() => submit()} disabled={sending || (!text.trim() && !audioBlob)}
+                  style={{ ...btn('primary'), width: '100%', marginTop: 10, opacity: ((!text.trim() && !audioBlob) || sending) ? .55 : 1 }}>
+                  {sending ? <Loader2 style={{ width: 16, height: 16 }} className="animate-spin" /> : <Sparkles style={{ width: 16, height: 16 }} />}
+                  احفظ المكالمة {text.trim() ? '— والمارد يعمل التاسكات' : ''}
+                </button>
 
                 <div style={{ marginTop: 16, borderTop: `1px solid ${C.line}`, paddingTop: 12 }}>
                   <div style={{ fontSize: 12, color: C.sub, marginBottom: 8 }}>أو سجّل النتيجة بسرعة من غير تفريغ:</div>
@@ -669,5 +799,37 @@ function Section({ icon, title, children }: { icon: React.ReactNode; title: stri
       </div>
       {children}
     </div>
+  )
+}
+
+/* 🎧 مشغّل تسجيل المكالمة.
+   الـbucket خاص، فبنطلب **لينك موقّع** ساعة بجلسة الموظف نفسه.
+   بيتطلب بالدوس بس — عشان مانجيبش عشر لينكات مع كل فتحة ملف. */
+function AudioPlayer({ path }: { path: string }) {
+  const [url, setUrl] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [failed, setFailed] = useState(false)
+
+  async function load() {
+    setBusy(true); setFailed(false)
+    const { data, error } = await supabaseBrowser.storage.from('crm-calls').createSignedUrl(path, 3600)
+    if (error || !data?.signedUrl) setFailed(true)
+    else setUrl(data.signedUrl)
+    setBusy(false)
+  }
+
+  if (failed) return <div style={{ fontSize: 11.5, color: '#b3261e', marginTop: 6 }}>مقدرناش نفتح التسجيل</div>
+  if (url) {
+    // eslint-disable-next-line jsx-a11y/media-has-caption
+    return <audio src={url} controls autoPlay style={{ width: '100%', marginTop: 8, height: 36 }} />
+  }
+  return (
+    <button onClick={load} disabled={busy}
+      style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff',
+        border: '1px solid #e7e9e5', borderRadius: 10, padding: '6px 12px', fontSize: 12.5,
+        fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', color: '#059669' }}>
+      {busy ? <Loader2 style={{ width: 14, height: 14 }} className="animate-spin" /> : <PlayCircle style={{ width: 15, height: 15 }} />}
+      اسمع التسجيل
+    </button>
   )
 }
