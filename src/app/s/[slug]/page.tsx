@@ -167,11 +167,14 @@ const VERTICALS: Record<string, VerticalCfg> = {
   car_showroom: {
     kicker: 'معرض سيارات — بيع واستيراد',
     heroCta: 'اتفرّج على العربيات', heroCtaIcon: Car, waCta: 'اسأل عن عربية',
-    bookChip: 'معاينة بالمعرض', unitWord: 'خدمة',
+    // ⚠️ (٢٢ أغسطس ٢٠٢٦ — محمد: «انت عامل معرض وكاتب خدمة!») معرض السيارات
+    //    كان بيرث كلام الورشة: الشريط بيقول «١٠ خدمة» والعنوان «خدماتنا».
+    //    المعرض بيبيع **عربيات** مش بيقدّم خدمات.
+    bookChip: 'معاينة بالمعرض', unitWord: 'عربية',
     galleryHeading: 'صور من المعرض',
     galleryTiles: ['المعرض', 'العربيات', 'من جوه', 'التسليم'],
     branchesHeading: 'زورنا في المعرض', branchCta: 'زور',
-    servicesHeading: 'خدماتنا', servicesIcon: Car,
+    servicesHeading: 'العربيات والأسعار', servicesIcon: Car,
     teamHeading: 'فريق المعرض',
     accountSub: 'تابع معايناتك وطلباتك',
     coverBadge: 'صورة المعرض',
