@@ -6,7 +6,7 @@
 
 export type VKey =
   | 'core' | 'beauty_salon' | 'polyclinic' | 'restaurant' | 'contracting' | 'vehicle_agency'
-  | 'real_estate'
+  | 'real_estate' | 'retail' | 'factory' | 'tourism' | 'marine' | 'home_services' | 'gym'
 
 export const VERTICAL_ALIAS: Record<string, VKey> = {
   beauty_salon: 'beauty_salon', spa: 'beauty_salon',
@@ -20,6 +20,16 @@ export const VERTICAL_ALIAS: Record<string, VKey> = {
   //    أكبر نشاط على المنصة (٢٢٩٥ رقم CRM) ومكانش ليه اسطمبة أصلاً.
   real_estate: 'real_estate', realestate: 'real_estate',
   properties: 'real_estate', brokerage: 'real_estate', developer: 'real_estate',
+  /* 🧩 (٢٤ أغسطس ٢٦) محمد: «قلنا هنعمل موديل لكل نوع بيزنس — هل ده حصل؟»
+     الجرد كشف ٦ أنشطة كانت واقعة على الأساس المشترك بس من غير موديولات
+     نشاطها (حجوزات/كتالوج/مواعيد). اتسدّت بإعادة استخدام الموديولات
+     الموجودة — صفر صفحات جديدة، صفر نسخ موازية. */
+  retail: 'retail', retail_shop: 'retail', shop: 'retail', store: 'retail',
+  factory: 'factory', manufacturing: 'factory', factories: 'factory',
+  tourism: 'tourism', hotel: 'tourism', travel: 'tourism',
+  marine: 'marine', marine_rentals: 'marine', boats: 'marine', yachts: 'marine',
+  home_services: 'home_services', services: 'home_services', maintenance: 'home_services',
+  gym: 'gym', fitness: 'gym',
 }
 
 // 🔐 (٢٠ أغسطس ٢٠٢٦) `perm` = مفتاح الصلاحية المطلوبة عشان الموديول ده يفتح.
@@ -73,13 +83,13 @@ export const MODULE_DEFS: ModuleDef[] = [
   { href: 'inventory',          label: 'المخزون',                         v: ['core'], perm: 'can_manage_inventory' },
   { href: 'vendors',            label: 'الموردين',                        v: ['core'] },
   { href: 'purchase-orders',    label: 'طلبات شراء',                      v: ['core'] },
-  { href: 'bookings',           label: 'إدارة الحجوزات',                  v: ['beauty_salon', 'vehicle_agency', 'real_estate'], perm: 'can_manage_bookings' },
-  { href: 'services-catalog',   label: 'قائمة الخدمات / المنيو',          v: ['beauty_salon', 'vehicle_agency', 'restaurant'], perm: 'can_manage_services' },
+  { href: 'bookings',           label: 'إدارة الحجوزات',                  v: ['beauty_salon', 'vehicle_agency', 'real_estate', 'tourism', 'marine', 'home_services', 'gym'], perm: 'can_manage_bookings' },
+  { href: 'services-catalog',   label: 'قائمة الخدمات / المنيو',          v: ['beauty_salon', 'vehicle_agency', 'restaurant', 'retail', 'factory', 'tourism', 'marine', 'home_services', 'gym'], perm: 'can_manage_services' },
   { href: 'services',           label: 'ربط خدمة-منتج',                   v: ['beauty_salon', 'vehicle_agency'], perm: 'can_manage_services' },
-  { href: 'shifts',             label: 'مواعيد العمل',                    v: ['beauty_salon', 'polyclinic'] },
+  { href: 'shifts',             label: 'مواعيد العمل',                    v: ['beauty_salon', 'polyclinic', 'gym', 'home_services'] },
   { href: 'waitlist',           label: 'قائمة الانتظار',                  v: ['beauty_salon', 'polyclinic'], perm: 'can_manage_bookings' },
   { href: 'appointments',       label: 'المواعيد',                        v: ['polyclinic'], perm: 'can_manage_bookings' },
-  { href: 'quote-orders',       label: 'طلبات التسعير',    primary: true, v: ['restaurant'] },
+  { href: 'quote-orders',       label: 'طلبات التسعير',    primary: true, v: ['restaurant', 'factory'] },
   { href: 'showroom',           label: 'المعرض',           primary: true, v: ['vehicle_agency'] },
   { href: 'import',             label: 'الاستيراد',        primary: true, v: ['vehicle_agency'] },
   { href: 'workshop',           label: 'الورشة',                          v: ['vehicle_agency'] },

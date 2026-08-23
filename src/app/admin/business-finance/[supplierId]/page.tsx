@@ -322,7 +322,7 @@ export default function BusinessFinancePage({
 
   // لون البراند بتاع الـbusiness (من suppliers.theme) + اسم النشاط للتجميع.
   const accent = supplier?.theme?.accent || PALETTE.green
-  const vertLabel = ({ beauty_salon: 'الصالون', spa: 'السبا', vehicle_agency: 'المعرض', contracting: 'المقاولات', restaurant: 'المطعم', clinic: 'العيادة', polyclinic: 'العيادة', gym: 'الجيم', retail_shop: 'المحل', real_estate: 'العقارات' } as Record<string, string>)[supplier?.industry || ''] || 'النشاط'
+  const vertLabel = ({ beauty_salon: 'الصالون', spa: 'السبا', vehicle_agency: 'المعرض', contracting: 'المقاولات', restaurant: 'المطعم', clinic: 'العيادة', polyclinic: 'العيادة', gym: 'الجيم', retail_shop: 'المحل', retail: 'المتجر', real_estate: 'العقارات', factory: 'المصنع', tourism: 'السياحة', marine: 'المراكب', home_services: 'الخدمات', hotel: 'الفندق' } as Record<string, string>)[supplier?.industry || ''] || 'النشاط'
   const vertModules = useMemo(() => visibleModules.filter((m) => !m.isCore), [visibleModules])
   const coreModules = useMemo(() => visibleModules.filter((m) => m.isCore), [visibleModules])
 
