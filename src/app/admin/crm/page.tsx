@@ -482,6 +482,22 @@ export default function AdminCrmPage() {
                 {busy === 'crm_assign_round_robin' ? <Loader2 style={{ width: 15, height: 15 }} className="animate-spin" /> : <Shuffle style={{ width: 15, height: 15 }} />}
                 وزّع بالدور على الفريق
               </button>
+              {/* 🔁 (٢٣ أغسطس ٢٠٢٦ — محمد: «بيظهر لشهد مصانع مش عقارات»)
+                  الزرار ده كان **ناقص خالص**، وده كان الجذر.
+                  «وزّع بالدور» بينده الدالة من غير p_reassign، والافتراضي
+                  false — يعني بتتخطّى أي رقم ليه صاحب. فأول توزيع اتعمل
+                  (٢٢ أغسطس ١٥:٢٣) قبل ما التخصصات تتسجّل بتمن دقايق، وبعد
+                  كده مكانش فيه **أي** طريقة من الشاشة تصلّح التوزيع الغلط:
+                  محمد ممكن يدوس «وزّع بالدور» ألف مرة ومايتغيرش حاجة.
+                  دلوقتي فيه زرار بيعيد التوزيع فعلاً، بتأكيد قبلها. */}
+              <button style={btn()} disabled={!!busy}
+                onClick={() => {
+                  if (!confirm('ده هيعيد توزيع كل الأرقام من أول وجديد حسب التخصصات الحالية — حتى اللي ليها صاحب دلوقتي.\n\nاستخدمه لما التخصصات تتغيّر والتوزيع القديم يبقى غلط. متأكد؟')) return
+                  run('crm_assign_round_robin', { p_reassign: true }, 'التوزيع اتعمل من أول وجديد')
+                }}>
+                {busy === 'crm_assign_round_robin' ? <Loader2 style={{ width: 15, height: 15 }} className="animate-spin" /> : <Shuffle style={{ width: 15, height: 15 }} />}
+                أعد التوزيع من أول وجديد
+              </button>
               <button style={btn()} disabled={!!busy}
                 onClick={() => run('crm_classify_contacts', {}, 'التصنيف اتحدّث')}>
                 <Sparkles style={{ width: 15, height: 15 }} /> صنّف اللي لسه مش متصنّف
@@ -491,7 +507,8 @@ export default function AdminCrmPage() {
                 <RefreshCw style={{ width: 15, height: 15 }} /> اسحب أرقام جديدة
               </button>
               <span style={{ fontSize: 11.5, color: C.sub, marginRight: 'auto' }}>
-                التوزيع مابيلمسش حد ليه مسؤول بالفعل · التصنيف اليدوي مابيتدهسش ·
+                «وزّع بالدور» مابيلمسش حد ليه مسؤول بالفعل — لو التخصصات اتغيّرت
+                استخدم «أعد التوزيع» · التصنيف اليدوي مابيتدهسش ·
                 «اسحب أرقام جديدة» بتجيب من الواتساب والموردين والإعلانات (مش من الدرايف)
               </span>
             </div>
