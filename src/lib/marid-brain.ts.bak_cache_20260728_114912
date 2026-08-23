@@ -1,0 +1,177 @@
+// 🧞 مخ المارد — **المصدر الوحيد** لتعليمات وأدوات المارد في كل القنوات.
+//
+// ⚠️ (٢٥ يوليو ٢٠٢٦ — محمد: «راجع المسارات وراجع التعليمات بتاعة المارد
+//    وطبّقها على الكل، ومش عايز تداخل يوقف النظام بأي شكل»)
+//
+//    كان فيه **نسختين** من الدالة دي: واحدة هنا للشات، وواحدة متكرّرة جوه
+//    `api/whatsapp/baileys/route.ts` للواتساب. والنسختين اتفرّقوا فعلاً —
+//    نسخة الشات كانت **أضعف**: ناقصة `get_referral_code` و
+//    `record_job_application`، وناقصة أهم سطر («اقرا التاريخ وكمّل من حيث
+//    انتهيتوا») وتفاصيل `manage_order`/`manage_meeting`/`record_unmet_demand`.
+//    يعني «المارد الرسمي» على الموقع كان بيرد أقل كفاءة من مارد الواتساب،
+//    ومحدش واخد باله.
+//
+//    دلوقتي **نسخة واحدة**: أي مارد — قديم أو جديد أو مارد المنصة نفسها —
+//    بينادي من هنا وياخد نفس التعليمات ونفس الأدوات بالظبط. أي تعليمة
+//    جديدة تتكتب هنا **مرة واحدة** وتسري على الكل فورًا.
+import { anthropic, CLAUDE_MODEL } from '@/lib/anthropic'
+import { MARID_TOOLS, runMaridTool, MADMONA_LINKS } from '@/lib/marid-tools'
+import { ADMIN_TOOLS, runAdminTool, ADMIN_PROMPT } from '@/lib/marid-admin'
+
+// المارد بيقدر يسأل الداتابيز قبل ما يرد: يبحث في الكتالوج، يشوف المتكلّم
+// مين، يجيب حجوزاته، يسجّل إعلان. بندوّر الحلقة لحد ما يخلص أدوات.
+export async function callMaridWithTools(opts: {
+  systemPrompt: string
+  userMessage: string
+  mediaBlocks?: Array<Record<string, unknown>>
+  senderPhone: string
+  senderName: string | null
+  savedMediaUrl?: string | null
+  admin?: boolean
+}): Promise<string> {
+  const mediaBlocks = opts.mediaBlocks ?? []
+  const MAX_TURNS = opts.admin ? 6 : 4
+  const tools = opts.admin ? [...MARID_TOOLS, ...ADMIN_TOOLS] : MARID_TOOLS
+
+  const system = `${opts.systemPrompt}${opts.admin ? ADMIN_PROMPT : ''}
+
+═══════════════════════════════════════════════════════════
+النهاردة
+═══════════════════════════════════════════════════════════
+${new Date().toLocaleString('ar-EG', {
+  timeZone: 'Africa/Cairo',
+  dateStyle: 'full',
+  timeStyle: 'short',
+})}
+(بتوقيت القاهرة · ISO: ${new Date().toISOString()})
+
+⛔ ماتسألش العميل عن التاريخ أو الساعة — إنت عارفهم.
+«بكرة» و«بعد بكرة» و«الأسبوع الجاي» احسبهم بنفسك من التاريخ ده.
+
+═══════════════════════════════════════════════════════════
+معلومات المتكلّم دلوقتي
+═══════════════════════════════════════════════════════════
+رقمه: ${opts.senderPhone}${opts.senderName ? `\nاسمه: ${opts.senderName}` : ''}
+
+استخدم الرقم ده مباشرة في الأدوات — ماتسألهوش عليه.
+${opts.savedMediaUrl ? `\n📎 الملف اللي بعته اتحفظ هنا:\n${opts.savedMediaUrl}\nلو هتسجّل إعلان أو مشروع، مرّر الرابط ده في image_urls كصورة.\n\n🧾 لو الصورة فيها منيو أو قائمة أسعار: اقرا كل صنف وسعره من الصورة نفسها (إنت شايفها)، وسجّلهم بـ create_listing_draft صنف صنف — كل صنف باسمه وسعره اللي في الصورة، مش صورة واحدة بلا تفاصيل. الأسعار اللي في الصورة هي المصدر، متخترعش.\n` : ''}
+
+═══════════════════════════════════════════════════════════
+عندك أدوات — استخدمها
+═══════════════════════════════════════════════════════════
+• أي سؤال عن حاجة معينة → search_catalog قبل ما ترد
+• «عندكم إيه؟» → list_categories
+• **أول حاجة دايمًا: who_is_this** — ابعتله الرقم *والاسم*.
+  لو رجّعلك تاريخ سابق، اقراه كويس وكمّل من حيث انتهيتوا.
+  الناس بتزعل جدًا لما تسأل عن حاجة شرحوها قبل كده.
+• «فين حجزي؟» → get_my_orders
+• عايز يضيف منتج/خدمة → اجمع البيانات ثم create_listing_draft
+• «كودي» أو «شير واكسب» أو عايز يرشّح صحابه → get_referral_code
+• أي سؤال عن **سعر الذهب** (عيار 24/21/18) أو **الدولار/اليورو/الاسترليني/الريال** → get_financial_prices
+  الأسعار لحظية على الموقع — ماتقولش «مش متاح» وماتخترعش سعر، نادِ الأداة.
+• عايز يشتغل معانا أو بعت سيرة ذاتية → record_job_application
+• أي كلام عن **أوردر** (قبول/رفض/إلغاء/استفسار) → manage_order
+  الأداة بتتأكد من الصلاحية بنفسها. ماتأكّدش على حاجة قبل ما ترجّع ok.
+• أي كلام عن **ميعاد** (حجز/إلغاء/استفسار) → manage_meeting
+  ⛔ ممنوع تقول ميعاد من دماغك ولا توعد بحاجة مش مسجّلة
+• **search_catalog مارجّعش حاجة مناسبة** → نادِ record_unmet_demand
+  **فورًا وقبل ما ترد**. ماتستأذنش وماتقولش «تحب أسجّلهولك؟» —
+  سجّله وبعدين قول للعميل إنك سجّلته وهترجعله.
+  الطلب اللي مايتسجّلش بيضيع للأبد.
+• أي سؤال عن **سعر الذهب** (عيار 24/21/18) أو **الدولار/اليورو/الاسترليني/الريال** → get_financial_prices
+  الأسعار لحظية. ماتخترعش سعر من دماغك — الأداة بترجّع نفس اللي ظاهر فوق في الموقع.
+• أي سؤال عن **سعر عقار/شقة/فيلا/محل** في منطقة (العاصمة/التجمع/الساحل/أكتوبر...) → get_property_prices
+  ابعت اسم المنطقة لو حدّدها. ماتخترعش سعر عقار — الأداة بترجّع أسعار بورصة مضمونة الحقيقية.
+
+⚠️ ممنوع تخترع إعلان أو سعر أو لينك. لو الأداة مارجعتش حاجة،
+قول للعميل بصراحة إن ده مش متاح — ده أحسن ألف مرة من معلومة غلط.
+
+الروابط الرسمية:
+${Object.entries(MADMONA_LINKS)
+  .map(([k, v]) => `  ${k.replace(/_/g, ' ')}: ${v}`)
+  .join('\n')}`
+
+  const messages: Array<{ role: 'user' | 'assistant'; content: unknown }> = [
+    {
+      role: 'user',
+      content:
+        mediaBlocks.length > 0
+          ? [...mediaBlocks, { type: 'text', text: opts.userMessage }]
+          : opts.userMessage,
+    },
+  ]
+
+  let droppedMedia = false
+
+  for (let turn = 0; turn < MAX_TURNS; turn++) {
+    let res
+    try {
+      res = await anthropic.messages.create({
+        model: CLAUDE_MODEL,
+        max_tokens: 2048,
+        system,
+        tools: tools as never,
+        messages: messages as never,
+      })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      const isMediaIssue = /image|document|media|Could not process/i.test(msg)
+      if (isMediaIssue && !droppedMedia && mediaBlocks.length > 0) {
+        console.warn('[marid] الميديا مش مقروءة — بنكمّل من غيرها:', msg.slice(0, 120))
+        droppedMedia = true
+        messages[0] = {
+          role: 'user',
+          content:
+            `${opts.userMessage}\n\n(العميل بعت ملف مش قادر أفتحه — ` +
+            `قوله كده بصراحة واطلب منه يبعت التفاصيل مكتوبة.)`,
+        }
+        continue
+      }
+      throw err
+    }
+
+    const toolUses = res.content.filter((c) => c.type === 'tool_use')
+
+    if (!toolUses.length) {
+      const textPart = res.content.find((c) => c.type === 'text')
+      return textPart && textPart.type === 'text' ? textPart.text : ''
+    }
+
+    messages.push({ role: 'assistant', content: res.content })
+
+    const results = []
+    for (const tu of toolUses) {
+      if (tu.type !== 'tool_use') continue
+      const isAdminTool = ADMIN_TOOLS.some((t) => t.name === tu.name)
+
+      // 📸 ضمان حفظ صورة العميل في مسودة الإعلان (حتى لو المارد نسي يمرّرها)
+      //    عشان الإعلان ينزل الماركتبليس مش يعلق بلا صورة.
+      let toolInput = tu.input as Record<string, unknown>
+      if (tu.name === 'create_listing_draft' && opts.savedMediaUrl) {
+        const existing = Array.isArray(toolInput.image_urls) ? (toolInput.image_urls as string[]) : []
+        if (!existing.length) toolInput = { ...toolInput, image_urls: [opts.savedMediaUrl] }
+      }
+
+      const out = isAdminTool
+        ? await runAdminTool(tu.name, toolInput)
+        : await runMaridTool(tu.name, toolInput)
+      console.log('[marid-tool]', tu.name, JSON.stringify(out).slice(0, 160))
+      results.push({
+        type: 'tool_result',
+        tool_use_id: tu.id,
+        content: JSON.stringify(out),
+      })
+    }
+    messages.push({ role: 'user', content: results })
+  }
+
+  // خلصت اللفّات ولسه بيطلب أدوات — نطلب رد نهائي من غير أدوات
+  const final = await anthropic.messages.create({
+    model: CLAUDE_MODEL,
+    max_tokens: 1024,
+    system: `${system}\n\nخلاص كفاية أدوات — رد على العميل دلوقتي باللي عندك.`,
+    messages: messages as never,
+  })
+  const t = final.content.find((c) => c.type === 'text')
+  return t && t.type === 'text' ? t.text : ''
+}

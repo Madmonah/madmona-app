@@ -21,7 +21,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Loader2, AlertCircle, ArrowRight, UserPlus, Shield, ShieldOff, KeyRound, Trash2, Crown, User, Users, Smartphone, Headphones } from 'lucide-react'
+import { Loader2, AlertCircle, ArrowRight, UserPlus, Shield, ShieldOff, KeyRound, Trash2, Crown, User, Users, Smartphone, Headphones, RefreshCw, Check, X } from 'lucide-react'
 import { adminRpc } from '@/lib/adminRpc'
 
 type Staff = {
@@ -49,15 +49,26 @@ async function api<T>(url: string, opts?: RequestInit): Promise<T> {
 
 type TeamMember = {
   employee_id: string; full_name: string; role_ar: string; phone: string | null
-  has_app: boolean; has_admin: boolean; admin_role: string | null
+  email: string | null
+  has_app: boolean; has_password: boolean; login_email: string | null
+  has_admin: boolean; admin_role: string | null
   admin_status: string | null; last_admin_login: string | null
   specialties: string[]; crm_contacts: number; open_tasks: number
   missing: string[]
 }
 
+type TeamCounts = { team: number; with_app: number; with_admin: number; can_login: number; no_phone: number }
+
+type SyncRow = {
+  employee_id: string; full_name: string; ok: boolean; created: boolean
+  reason: string | null; detail: string | null; login_email: string | null; has_password: boolean
+}
+
 export default function StaffPage() {
   const [team, setTeam] = useState<TeamMember[] | null>(null)
-  const [teamCounts, setTeamCounts] = useState<{ team: number; with_app: number; with_admin: number } | null>(null)
+  const [teamCounts, setTeamCounts] = useState<TeamCounts | null>(null)
+  const [syncing, setSyncing] = useState(false)
+  const [syncRows, setSyncRows] = useState<SyncRow[] | null>(null)
   const [staff, setStaff] = useState<Staff[] | null>(null)
   const [myRole, setMyRole] = useState<'owner' | 'admin' | null>(null)
   const [loading, setLoading] = useState(true)
@@ -86,7 +97,7 @@ export default function StaffPage() {
       setMyRole(data.me?.role ?? null)
       // 👥 الفريق كله — نداء منفصل عشان لو وقع مايوقّعش الشاشة كلها
       try {
-        const t = await adminRpc<{ ok: boolean; team: TeamMember[]; counts: { team: number; with_app: number; with_admin: number } }>('madmona_team_accounts')
+        const t = await adminRpc<{ ok: boolean; team: TeamMember[]; counts: TeamCounts }>('madmona_team_accounts')
         if (t?.ok) { setTeam(t.team || []); setTeamCounts(t.counts) }
       } catch { /* القسم ده إضافي — مايمنعش عرض حسابات الأدمن */ }
     } catch (e) {
@@ -97,6 +108,49 @@ export default function StaffPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  // 🧑‍💼 (٢٣ أغسطس ٢٠٢٦ — محمد: «لوحة الاستف خليها تاخد البيانات من الموظفين
+  //    وتعمل الحسابات») بتمشي على كل موظفي مضمونة وتعمل اللي ناقص.
+  //    ⚠️ بنعرض نتيجة **كل موظف** — مش «تمام ✅» وبس. اللي فشل بنقول ليه.
+  async function syncAccounts() {
+    if (syncing) return
+    setSyncing(true); setSyncRows(null)
+    try {
+      const r = await adminRpc<{ ok: boolean; rows: SyncRow[]; counts: { created: number; existed: number; failed: number }; error?: string }>('madmona_sync_staff_accounts')
+      if (!r?.ok) { alert(r?.error || 'مقدرناش نعمل الحسابات'); return }
+      setSyncRows(r.rows || [])
+      flash(`اتعمل ${r.counts.created} حساب جديد · ${r.counts.existed} كانوا موجودين${r.counts.failed ? ` · ${r.counts.failed} مش قادرين` : ''}`)
+      load()
+    } catch (e) {
+      alert((e as Error).message)
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  // 📵 حطّ رقم/إيميل من نفس الشاشة → الحساب بيتعمل على طول
+  async function saveContact(m: TeamMember, phone: string, email: string) {
+    const r = await adminRpc<{ ok: boolean; error?: string; provision?: { ok: boolean; reason?: string; created?: boolean } }>(
+      'madmona_staff_set_contact',
+      { p_employee_id: m.employee_id, p_phone: phone || null, p_email: email || null },
+    )
+    if (!r?.ok) return r?.error || 'مقدرناش نحفظ'
+    flash(r.provision?.created ? `اتعمل حساب لـ${m.full_name} ✅` : `اتحفظ — ${m.full_name} عنده حساب`)
+    load()
+    return ''
+  }
+
+  // 🔑 الباسورد بتتخزّن bcrypt في جدول الموظفين (المصدر الوحيد) وبتتنسخ للحساب
+  async function savePassword(m: TeamMember, pw: string) {
+    const r = await adminRpc<{ ok: boolean; error?: string }>(
+      'madmona_staff_set_password',
+      { p_employee_id: m.employee_id, p_password: pw },
+    )
+    if (!r?.ok) return r?.error || 'مقدرناش نحفظ الباسورد'
+    flash(`${m.full_name} بقى يقدر يدخل ✅`)
+    load()
+    return ''
+  }
 
   async function addStaff() {
     if (submitting) return
@@ -229,62 +283,55 @@ export default function StaffPage() {
               <h2 style={{ fontSize: 15, fontWeight: 800, margin: 0 }}>فريق مضمونة كله</h2>
               {teamCounts && (
                 <span style={{ fontSize: 12, color: '#6B7280' }}>
-                  {teamCounts.team} فرد · {teamCounts.with_app} معاهم الأبليكيشن · {teamCounts.with_admin} معاهم دخول الأدمن
+                  {teamCounts.team} فرد · <b style={{ color: teamCounts.can_login === teamCounts.team ? '#059669' : '#B45309' }}>{teamCounts.can_login} يقدروا يدخلوا</b> · {teamCounts.with_admin} معاهم دخول الأدمن
                 </span>
               )}
+              {isOwner && (
+                <button
+                  onClick={syncAccounts}
+                  disabled={syncing}
+                  style={{ marginInlineStart: 'auto', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 10, border: '1px solid #059669', background: syncing ? '#f3f4f6' : '#05966912', color: '#059669', fontWeight: 800, fontSize: 12.5, cursor: syncing ? 'default' : 'pointer', fontFamily: 'inherit' }}
+                >
+                  {syncing ? <Loader2 className="animate-spin" size={14} /> : <RefreshCw size={14} />}
+                  {syncing ? 'بيعمل الحسابات...' : 'اعمل الحسابات من الموظفين'}
+                </button>
+              )}
             </div>
+            {/* 🧑‍💼 (٢٣ أغسطس ٢٠٢٦ — محمد: «لوحة الاستف خليها تاخد البيانات من
+                الموظفين وتعمل الحسابات») الشاشة دي كانت **بتتفرّج** بس. وأول ما
+                عملناها اكتشفنا حاجة أهم: ٧ من ٩ عندهم حساب فعلاً بس **من غير
+                باسورد** — يعني الشاشة كانت بتقول «الأبليكيشن ✓» وهو مش قادر
+                يدخل. فبقى في تلات حالات مفصولة مش حالتين. */}
             <p style={{ fontSize: 11.5, color: '#9CA3AF', margin: '0 0 10px', lineHeight: 1.7 }}>
-              دي القايمة الحقيقية من ملف الموظفين. تحتها «حسابات دخول لوحة الأدمن» — واللي مش
-              في التانية معناها إنه لسه مالوش حساب دخول، مش إنه مش موجود.
+              دي القايمة الحقيقية من ملف الموظفين — أي حد تضيفه في «الإدارة الكاملة» بيظهر هنا.
               <br />
-              <b style={{ color: '#B45309' }}>مهم:</b> حساب الأبليكيشن بيتعمل <b>أوتوماتيك</b> من رقم
-              الموظف. الموظف اللي متضاف من غير رقم مفيش منه حساب — أول ما تحطّ رقمه، الحساب بيتعمل لوحده.
+              <b style={{ color: '#B45309' }}>الحساب لوحده مش كفاية:</b> عشان الموظف يدخل لازم
+              يكون عنده <b>رقم</b> (منه بيتعمل الحساب) و<b>باسورد</b>. الاتنين بيتحطّوا من هنا،
+              والباسورد بتتخزّن مشفّرة في ملف الموظف — مش بنولّدها ومش بنعرضها لحد.
             </p>
+            {syncRows && (
+              <div style={{ background: '#fff', border: '1px solid #e8e6df', borderRadius: 12, padding: '10px 12px', marginBottom: 10 }}>
+                <div style={{ fontSize: 12, fontWeight: 800, marginBottom: 6 }}>نتيجة آخر تشغيل</div>
+                {syncRows.map((r) => (
+                  <div key={r.employee_id} style={{ fontSize: 11.5, color: r.ok ? '#059669' : '#B45309', padding: '2px 0', fontWeight: r.ok ? 400 : 700 }}>
+                    {r.ok ? (r.created ? '✅ اتعمل حساب' : '✓ كان موجود') : '⚠️'} — {r.full_name}
+                    {!r.ok && (r.reason === 'no_phone_or_email'
+                      ? ' — مفيش رقم ولا إيميل، مستحيل يتعمل حساب'
+                      : ` — ${r.detail || r.reason || 'مش عارفين السبب'}`)}
+                    {r.ok && !r.has_password && <span style={{ color: '#B45309', fontWeight: 700 }}> — بس من غير باسورد، مش هيعرف يدخل</span>}
+                  </div>
+                ))}
+              </div>
+            )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {team.map((m) => (
-                <div key={m.employee_id} style={{ background: '#fff', border: '1px solid #e8e6df', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <div style={{ width: 34, height: 34, borderRadius: 10, background: m.has_app ? '#05966915' : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <User size={16} color={m.has_app ? '#059669' : '#9CA3AF'} />
-                  </div>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ fontWeight: 800, fontSize: 13.5 }}>
-                      {m.full_name} <span style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 600 }}>· {m.role_ar}</span>
-                    </div>
-                    <div style={{ fontSize: 11.5, color: '#6B7280', marginTop: 3, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-                      {/* 📵 (٢٢ أغسطس ٢٠٢٦ — محمد: «الموظفين الجداد مش عارف ليه
-                          متضافوش أوتوماتيك») الحساب بيتعمل أوتوماتيك من الرقم
-                          (أو الإيميل). الموظف اللي مالوش رقم مفيش منه حساب —
-                          وده كان بيتقال «مفيش حساب أبليكيشن» من غير ما يقول
-                          **ليه**، فالسبب كان مخفي. دلوقتي بيتقال بالنص. */}
-                      <span style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 3,
-                        color: m.has_app ? '#059669' : (m.phone ? '#9CA3AF' : '#B45309'),
-                        fontWeight: !m.has_app && !m.phone ? 700 : 400,
-                      }}>
-                        <Smartphone size={12} />
-                        {m.has_app
-                          ? 'الأبليكيشن ✓'
-                          : m.phone
-                            ? 'مفيش حساب أبليكيشن'
-                            : 'مفيش رقم — عشان كده مالوش حساب'}
-                      </span>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: m.has_admin ? '#059669' : '#9CA3AF' }}>
-                        <Shield size={12} /> {m.has_admin ? 'لوحة الأدمن ✓' : 'مفيش دخول أدمن'}
-                      </span>
-                      {m.has_app && (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                          <Headphones size={12} /> {m.specialties.length ? m.specialties.join(' · ') : 'مفيش تخصص'}
-                          {m.crm_contacts > 0 && ` · ${m.crm_contacts} رقم`}
-                        </span>
-                      )}
-                    </div>
-                    {m.missing.length > 0 && (
-                      <div style={{ fontSize: 11, color: '#9a6b00', marginTop: 5, fontWeight: 700 }}>
-                        ناقصه: {m.missing.join(' · ')}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <TeamRow
+                  key={m.employee_id}
+                  m={m}
+                  isOwner={isOwner}
+                  onSaveContact={saveContact}
+                  onSavePassword={savePassword}
+                />
               ))}
             </div>
           </section>
@@ -336,6 +383,140 @@ export default function StaffPage() {
       </main>
     </div>
   )
+}
+
+// =====================================================================
+// 🧑‍💼 صف الموظف — بيقول الحقيقة كاملة وبيخلّيك تصلّحها من نفس المكان
+//    تلات حالات مفصولة عن بعض عن قصد:
+//      • مفيش رقم           → مستحيل يتعمل حساب أصلاً (بنطلب الرقم)
+//      • حساب من غير باسورد → موجود بس الدخول مقفول (بنطلب باسورد)
+//      • جاهز                → يقدر يدخل فعلاً
+//    قبل كده الاتنين الأولانيين كانوا بيتلموا تحت «الأبليكيشن ✓» أو
+//    «مفيش حساب» — يعني الشاشة كانت بتقول حاجة مش دقيقة.
+// =====================================================================
+function TeamRow({ m, isOwner, onSaveContact, onSavePassword }: {
+  m: TeamMember
+  isOwner: boolean
+  onSaveContact: (m: TeamMember, phone: string, email: string) => Promise<string>
+  onSavePassword: (m: TeamMember, pw: string) => Promise<string>
+}) {
+  const [mode, setMode] = useState<null | 'phone' | 'pw'>(null)
+  const [phone, setPhone] = useState('')
+  const [pw, setPw] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [err, setErr] = useState('')
+
+  const ready = m.has_app && m.has_password
+  const digits = phone.replace(/\D/g, '')
+  const phoneOk = /^01\d{9}$/.test(digits) || /^201\d{9}$/.test(digits)
+
+  async function submit() {
+    if (saving) return
+    setSaving(true); setErr('')
+    const msg = mode === 'phone' ? await onSaveContact(m, phone, '') : await onSavePassword(m, pw)
+    setSaving(false)
+    if (msg) { setErr(msg); return }
+    setMode(null); setPhone(''); setPw('')
+  }
+
+  return (
+    <div style={{ background: '#fff', border: '1px solid #e8e6df', borderRadius: 14, padding: '12px 14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <div style={{ width: 34, height: 34, borderRadius: 10, background: ready ? '#05966915' : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <User size={16} color={ready ? '#059669' : '#9CA3AF'} />
+        </div>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ fontWeight: 800, fontSize: 13.5 }}>
+            {m.full_name} <span style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 600 }}>· {m.role_ar}</span>
+          </div>
+          <div style={{ fontSize: 11.5, color: '#6B7280', marginTop: 3, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 3,
+              color: ready ? '#059669' : '#B45309',
+              fontWeight: ready ? 400 : 700,
+            }}>
+              <Smartphone size={12} />
+              {!m.phone && !m.email
+                ? 'مفيش رقم — عشان كده مالوش حساب'
+                : !m.has_app
+                  ? 'لسه مالوش حساب — دوس «اعمل الحسابات»'
+                  : !m.has_password
+                    ? 'الحساب موجود بس من غير باسورد — مش هيعرف يدخل'
+                    : 'جاهز يدخل ✓'}
+            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: m.has_admin ? '#059669' : '#9CA3AF' }}>
+              <Shield size={12} /> {m.has_admin ? 'لوحة الأدمن ✓' : 'مفيش دخول أدمن'}
+            </span>
+            {m.has_app && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                <Headphones size={12} /> {m.specialties.length ? m.specialties.join(' · ') : 'مفيش تخصص'}
+                {m.crm_contacts > 0 && ` · ${m.crm_contacts} رقم`}
+              </span>
+            )}
+          </div>
+          {m.login_email && (
+            <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4, direction: 'ltr', textAlign: 'right' }}>
+              {m.login_email}
+            </div>
+          )}
+        </div>
+        {isOwner && mode === null && (
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap' }}>
+            {!m.phone && !m.email && (
+              <button onClick={() => setMode('phone')} style={smallBtn}>ضيف رقمه</button>
+            )}
+            {(m.phone || m.email) && (
+              <button onClick={() => setMode('pw')} style={smallBtn}>
+                {m.has_password ? 'غيّر الباسورد' : 'حطّ باسورد'}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {mode !== null && (
+        <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px dashed #e8e6df' }}>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+            {mode === 'phone' ? (
+              <input
+                autoFocus dir="ltr" placeholder="01xxxxxxxxx" value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && phoneOk) submit() }}
+                style={{ ...inputStyle, flex: 1, minWidth: 180, padding: '8px 10px', fontSize: 13 }}
+              />
+            ) : (
+              <input
+                autoFocus dir="ltr" type="text" placeholder="باسورد جديدة (٨ حروف على الأقل)" value={pw}
+                onChange={(e) => setPw(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && pw.length >= 8) submit() }}
+                style={{ ...inputStyle, flex: 1, minWidth: 180, padding: '8px 10px', fontSize: 13 }}
+              />
+            )}
+            <button
+              onClick={submit}
+              disabled={saving || (mode === 'phone' ? !phoneOk : pw.length < 8)}
+              style={{ ...smallBtn, background: '#059669', color: '#fff', border: 'none', opacity: saving || (mode === 'phone' ? !phoneOk : pw.length < 8) ? 0.5 : 1 }}
+            >
+              {saving ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}
+            </button>
+            <button onClick={() => { setMode(null); setErr(''); setPhone(''); setPw('') }} style={smallBtn}><X size={14} /></button>
+          </div>
+          <p style={{ fontSize: 10.5, color: '#9CA3AF', margin: '6px 0 0' }}>
+            {mode === 'phone'
+              ? 'أول ما تحفظ الرقم، الحساب بيتعمل على طول — بعدها حطّ له باسورد.'
+              : 'الباسورد بتتخزّن مشفّرة في ملف الموظف. قولهاله بنفسك — مفيش مكان بيعرضها تاني.'}
+          </p>
+          {err && <p style={{ fontSize: 11.5, color: '#d9534f', fontWeight: 700, margin: '6px 0 0' }}>{err}</p>}
+        </div>
+      )}
+    </div>
+  )
+}
+
+const smallBtn: React.CSSProperties = {
+  padding: '7px 12px', borderRadius: 9, border: '1px solid #e8e6df', background: '#fff',
+  color: '#374151', fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
+  display: 'flex', alignItems: 'center', gap: 5,
 }
 
 const inputStyle: React.CSSProperties = {

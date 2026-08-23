@@ -1,0 +1,155 @@
+// src/app/api/whatsapp/openwa/route.ts
+// ============================================================================
+// نقطة استقبال OpenWA — بتاخد webhook الرسائل الواردة من جسر OpenWA،
+// بتترجمها لنفس صيغة حمولة Baileys اللي المخ (route baileys) بيفهمها،
+// وبتحوّلها له. كده المخ بحراسه كله (منع تكرار، claim، إيقاف، loop، تفريغ
+// الصوت، رؤية الصور، تخزين الميديا) بيتعاد استخدامه ١٠٠٪ من غير تكرار.
+//
+// الرد بيخرج عن طريق sendText → فرع openwa (لأن session_id هيكون رقم عليه
+// transport='openwa')، فبيروح لنفس الـ chatId اللي جت منه الرسالة.
+//
+// 🔒 أمان: النقطة دي مكشوفة على النت. بنتحقق من توكن في الـURL (?token=)
+//    عشان محدش يقدر يزوّر رسائل واردة ويشغّل المارد. التوكن = WA_SERVICE_SECRET.
+// ============================================================================
+
+import { NextRequest, NextResponse } from 'next/server'
+import { downloadOpenWaMedia } from '@/lib/openwa'
+
+export const runtime = 'nodejs'
+export const maxDuration = 60
+
+const SECRET = process.env.WA_SERVICE_SECRET ?? ''
+
+// نوع الحمولة اللي بتيجي من OpenWA (data جوّاها فيها بيانات الرسالة).
+interface OpenWaWebhook {
+  event?: string
+  timestamp?: number
+  data?: Record<string, unknown>
+}
+
+// رقمنا المستقبِل (session_id في wa_number_configs) من data.to.
+function receivingNumber(data: Record<string, unknown>): string | null {
+  for (const key of ['to', 'sessionPhone', 'me']) {
+    const digits = String(data[key] ?? '').replace(/\D/g, '')
+    if (/^20\d{10}$/.test(digits)) return digits
+  }
+  return null
+}
+
+export async function POST(req: NextRequest) {
+  // 🔒 توقيع
+  if (SECRET) {
+    const token = req.nextUrl.searchParams.get('token')
+    if (token !== SECRET) {
+      return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
+    }
+  }
+
+  let payload: OpenWaWebhook
+  try {
+    payload = (await req.json()) as OpenWaWebhook
+  } catch {
+    return NextResponse.json({ ok: false, error: 'bad json' }, { status: 400 })
+  }
+
+  const event = payload.event
+  const data = payload.data ?? {}
+
+  // 🪵 أول تشخيص: نطبع شكل الحمولة كاملة عشان نتأكد من أسماء الحقول
+  //    (الميديا/الرقم المستقبِل) على أول رسايل حقيقية. نشيله بعد التثبيت.
+  console.log('[openwa-relay] وارد', JSON.stringify({ event, keys: Object.keys(data), data }).slice(0, 2000))
+
+  // الوارد بس
+  if (event && event !== 'message.received') {
+    return NextResponse.json({ ok: true, skipped: 'not_received', event })
+  }
+  const direction = String(data.direction ?? '')
+  if (direction && direction !== 'incoming') {
+    return NextResponse.json({ ok: true, skipped: 'not_incoming', direction })
+  }
+
+  const chatId = String(data.chatId ?? data.from ?? '')
+  const fromRaw = String(data.from ?? data.author ?? chatId)
+  const isLid = chatId.endsWith('@lid') || fromRaw.endsWith('@lid')
+  const rawType = String(data.type ?? 'text')
+  // ptt = رسالة صوتية؛ نوحّدها audio زي ما المخ بيفهم.
+  const type = rawType === 'ptt' ? 'audio' : rawType === 'chat' ? 'text' : rawType
+  const body = typeof data.body === 'string' ? (data.body as string) : ''
+  const waMessageId = String(data.waMessageId ?? data.id ?? '')
+  const name = (data.chatName as string) || (data.author as string) || undefined
+
+  const sessionId = receivingNumber(data)
+  if (!sessionId) {
+    console.error('[openwa-relay] مش عارف الرقم المستقبِل', { to: data.to, sessionId: data.sessionId })
+    return NextResponse.json({ ok: false, error: 'unknown receiving number', to: data.to ?? null })
+  }
+
+  const fromDigits = fromRaw.replace(/@.*/, '').replace(/\D/g, '')
+
+  // ── ميديا → base64 (لو ميديا) ────────────────────────────────────────
+  // OpenWA بيدّي رابط للميديا في الحمولة. أسماء الحقول المحتملة بنجرّبها،
+  // والتشخيص فوق بيوري الاسم الحقيقي على أول رسالة ميديا فنظبّطه لو لزم.
+  let media:
+    | { mimetype: string; is_voice_note: boolean; data_base64: string; seconds?: number }
+    | undefined
+  const isMediaType = ['image', 'video', 'audio', 'document', 'sticker'].includes(type)
+  if (isMediaType) {
+    const meta = (data.metadata as Record<string, unknown>) ?? {}
+    const mediaUrl =
+      (data.mediaUrl as string) ||
+      ((data.media as Record<string, unknown>)?.url as string) ||
+      (meta.mediaUrl as string) ||
+      (meta.url as string) ||
+      ''
+    if (mediaUrl) {
+      const dl = await downloadOpenWaMedia(String(mediaUrl))
+      if (dl) {
+        const seconds = Number(data.duration ?? meta.duration ?? 0) || undefined
+        media = {
+          mimetype: dl.mimetype,
+          is_voice_note: rawType === 'ptt' || type === 'audio',
+          data_base64: dl.base64,
+          seconds,
+        }
+      } else {
+        console.error('[openwa-relay] فشل تحميل الميديا', { mediaUrl: String(mediaUrl).slice(0, 120) })
+      }
+    } else {
+      console.error('[openwa-relay] نوع ميديا بس مفيش رابط', { type, metaKeys: Object.keys(meta) })
+    }
+  }
+
+  // ── صيغة baileys ─────────────────────────────────────────────────────
+  const brainPayload = {
+    from: fromDigits || chatId,
+    type,
+    text: body,
+    reply_jid: chatId, // ← OpenWA chatId؛ فرع openwa في sendText بيستخدمه للرد
+    session_id: sessionId, // ← رقمنا المستقبِل (عليه transport='openwa')
+    name,
+    message_id: waMessageId,
+    is_lid: isLid,
+    ...(media ? { media } : {}),
+  }
+
+  // ── تحويل للمخ (نفس الديبلوي) ────────────────────────────────────────
+  const brainUrl = `${req.nextUrl.origin}/api/whatsapp/baileys`
+  try {
+    const r = await fetch(brainUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-madmona-secret': SECRET },
+      body: JSON.stringify(brainPayload),
+    })
+    const d = (await r.json().catch(() => ({}))) as Record<string, unknown>
+    console.log('[openwa-relay] المخ رد', { status: r.status, ...d })
+    return NextResponse.json({ ok: r.ok, forwarded: true, brain: d })
+  } catch (e) {
+    console.error('[openwa-relay] فشل التحويل للمخ', (e as Error).message)
+    return NextResponse.json({ ok: false, error: (e as Error).message })
+  }
+}
+
+// فحص صحة بسيط (GET) — يسهّل التأكد إن النقطة منشورة.
+export async function GET() {
+  return NextResponse.json({ ok: true, service: 'openwa-relay', configured: !!SECRET })
+}
