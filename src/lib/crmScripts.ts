@@ -354,9 +354,35 @@ export function scriptFor(specialty: string | null | undefined): CrmScript {
   return CRM_SCRIPTS[specialty || ''] || CRM_SCRIPTS.other
 }
 
-/** لينك واتساب جاهز بالرسالة — بيفتح المحادثة والرسالة مكتوبة. */
+/** نص الرسالة نفسه — بيتنسخ للكليبورد كمان، مش بس بيتحط في اللينك. */
+export function scriptText(specialty: string | null, customer: string | null, sender: string | null) {
+  return scriptFor(specialty).wa(customer, sender)
+}
+
+/** الرقم بالصيغة الدولية اللي واتساب بيفهمها (201XXXXXXXXX). */
+export function waIntl(phone: string) {
+  const d = (phone || '').replace(/\D/g, '')
+  if (!d) return ''
+  if (d.startsWith('20')) return d
+  if (d.startsWith('0')) return `2${d}`
+  if (d.startsWith('1') && d.length === 10) return `20${d}`
+  return d
+}
+
+/** لينك واتساب جاهز بالرسالة — بيفتح المحادثة والرسالة مكتوبة.
+ *
+ *  🐞 (٢٣ أغسطس ٢٠٢٦ — محمد: «لسة زرار واتساب بيفتح الرسالة فاضية»)
+ *     كنا بنستخدم `wa.me/<رقم>?text=…`. اتأكدنا إن اللينك بيتولّد صح وإن
+ *     النص موجود في النسخة المرفوعة فعلاً — يعني المشكلة مش عندنا في
+ *     التوليد، دي في اللي بيفتح اللينك: `wa.me` بيرمي الـ`text` في حالات
+ *     كتير (خصوصًا لما ويندوز/أندرويد يسلّم اللينك لتطبيق واتساب المثبّت
+ *     بدل المتصفح).
+ *
+ *     `api.whatsapp.com/send` هو الشكل الرسمي المكتوب في دوكس واتساب
+ *     للـclick-to-chat وبيحافظ على النص أحسن. وفوق ده بننسخ الرسالة
+ *     للكليبورد في نفس الضغطة (شوف الزرار في src/app/crm/page.tsx) —
+ *     فحتى لو التطبيق رماها، الموظف بيلزق بضغطة واحدة.
+ */
 export function waLink(phone: string, specialty: string | null, customer: string | null, sender: string | null) {
-  const digits = (phone || '').replace(/\D/g, '')
-  const intl = digits.startsWith('20') ? digits : `20${digits.replace(/^0/, '')}`
-  return `https://wa.me/${intl}?text=${encodeURIComponent(scriptFor(specialty).wa(customer, sender))}`
+  return `https://api.whatsapp.com/send?phone=${waIntl(phone)}&text=${encodeURIComponent(scriptText(specialty, customer, sender))}`
 }

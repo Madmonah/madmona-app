@@ -52,7 +52,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import BottomNav from '@/components/BottomNav'
 import { sinceLabel, fmtDateTime } from '@/lib/arDateTime'
 // 🗣️ اسكريبت البيع بتاع كل نشاط — بيغذّي زرار «واتساب» وورق الفريق المطبوع
-import { waLink as waScriptLink, scriptFor } from '@/lib/crmScripts'
+import { waLink as waScriptLink, scriptFor, scriptText } from '@/lib/crmScripts'
 import {
   Phone, MessageCircle, Loader2, RefreshCw, ListChecks, CheckCircle2,
   Mic, Sparkles, X, ChevronLeft, MapPin, CornerDownLeft, LogIn, AlertTriangle, Home, Users, Search,
@@ -163,11 +163,43 @@ const OUTCOMES: { k: string; label: string }[] = [
 const waLink = (l: { phone: string; specialty: string | null; name: string | null }, me: string | null) =>
   waScriptLink(l.phone, l.specialty, l.name, me)
 
+/* 📋 (٢٣ أغسطس ٢٠٢٦ — محمد: «لسة زرار واتساب بيفتح الرسالة فاضية»)
+   بننسخ الاسكريبت للكليبورد في نفس ضغطة الزرار. السبب: واتساب بيرمي
+   الـtext في حالات كتير لما ويندوز/أندرويد يسلّم اللينك للتطبيق المثبّت
+   بدل المتصفح — وساعتها الشات بيفتح فاضي والموظف واقف. النسخ بيضمن إنه
+   بيلزق بضغطة مهما حصل.
+   ⚠️ لازم يتنده جوّه الـonClick نفسه — الكليبورد مابيشتغلش من غير
+      ضغطة مستخدم مباشرة. */
+async function copyScript(l: { phone: string; specialty: string | null; name: string | null }, me: string | null) {
+  const txt = scriptText(l.specialty, l.name, me)
+  try {
+    await navigator.clipboard.writeText(txt)
+    return true
+  } catch {
+    // متصفحات قديمة / سياق مش آمن
+    try {
+      const ta = document.createElement('textarea')
+      ta.value = txt
+      ta.style.position = 'fixed'; ta.style.opacity = '0'
+      document.body.appendChild(ta); ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      return true
+    } catch { return false }
+  }
+}
+
 export default function CrmMobilePage() {
   const [q, setQ] = useState<Queue | null>(null)
   const [loading, setLoading] = useState(true)
   const [needLogin, setNeedLogin] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+  /* 📋 رسالة «الاسكريبت اتنسخ» — بتبان تحت لما يدوس واتساب */
+  const [copied, setCopied] = useState<null | boolean>(null)
+  const onCopied = useCallback((ok: boolean) => {
+    setCopied(ok)
+    setTimeout(() => setCopied(null), 5000)
+  }, [])
   const [tab, setTab] = useState<'calls' | 'tasks' | 'team' | 'all'>('calls')
   /* 🧑‍💼 (٢٢ أغسطس) تاب «كل الأرقام» للمدير — محمد: «افتح لينا إحنا كمان
      الجدول، ممكن الأمور تكون محتاجة مدير يتواصل معاهم».
@@ -514,7 +546,7 @@ export default function CrmMobilePage() {
             )}
             {q.queue.map(l => (
               <LeadCard key={l.id} l={l} onOpen={openDetail} onLog={openSheet}
-                card={card} btn={btn} C={C} startedAt={startedAt} me={q.me?.name ?? null} />
+                card={card} btn={btn} C={C} startedAt={startedAt} me={q.me?.name ?? null} onCopied={onCopied} />
             ))}
           </>
         )}
@@ -558,7 +590,7 @@ export default function CrmMobilePage() {
             </div>
 
             {allRows.map(l => <LeadCard key={l.id} l={l} showOwner onOpen={openDetail} onLog={openSheet}
-              card={card} btn={btn} C={C} startedAt={startedAt} me={q?.me?.name ?? null} />)}
+              card={card} btn={btn} C={C} startedAt={startedAt} me={q?.me?.name ?? null} onCopied={onCopied} />)}
 
             {allRows.length === 0 && !allBusy && (
               <div style={{ ...card, textAlign: 'center', color: C.sub, padding: 26, fontSize: 13.5 }}>
@@ -787,7 +819,8 @@ export default function CrmMobilePage() {
               </a>
               {detailFor.phone_kind !== 'landline' && (
                 <a href={waLink(detailFor, q?.me?.name ?? null)} target="_blank" rel="noreferrer" style={btn('wa')}
-                   title={`اسكريبت ${scriptFor(detailFor.specialty).label} — جاهز في الشات`}>
+                   onClick={() => { copyScript(detailFor, q?.me?.name ?? null).then(onCopied) }}
+                   title={`اسكريبت ${scriptFor(detailFor.specialty).label} — جاهز في الشات ومتنسخ كمان`}>
                   <MessageCircle style={{ width: 16, height: 16 }} /> واتساب
                 </a>
               )}
@@ -927,6 +960,23 @@ export default function CrmMobilePage() {
         </div>
       )}
 
+      {/* 📋 (٢٣ أغسطس ٢٠٢٦ — محمد: «لسة زرار واتساب بيفتح الرسالة فاضية»)
+          واتساب بيرمي النص المجهّز في حالات كتير (خصوصًا لما ويندوز أو
+          أندرويد يسلّم اللينك للتطبيق المثبّت). فبننسخ الاسكريبت في نفس
+          الضغطة ونقول للموظف — لو الشات فتح فاضي، لزقة واحدة وخلاص. */}
+      {copied !== null && (
+        <div style={{
+          position: 'fixed', insetInline: 12, bottom: 'calc(72px + env(safe-area-inset-bottom))',
+          zIndex: 60, background: copied ? '#14231E' : '#b3261e', color: '#fff',
+          borderRadius: 12, padding: '11px 14px', fontSize: 13, fontWeight: 700,
+          boxShadow: '0 8px 24px rgba(0,0,0,.22)', textAlign: 'center', lineHeight: 1.7,
+        }}>
+          {copied
+            ? 'الاسكريبت اتنسخ ✅ — لو الشات فتح فاضي، الزق بس (ضغطة طويلة → لصق)'
+            : 'مقدرناش ننسخ الاسكريبت — افتح «الملف» واقراه منه'}
+        </div>
+      )}
+
       {/* الشريط السفلي بتاع مضمونة — الرجوع للموقع بلمسة، و«شغلي» بيبان منوّر */}
       <BottomNav />
     </div>
@@ -981,7 +1031,7 @@ function AudioPlayer({ path }: { path: string }) {
 /* 🧾 كارت الرقم — بيتستخدم في «مكالماتي» وفي «كل الأرقام» بتاع المدير.
    `showOwner` بيبان في تاب المدير بس: مين ماسك الرقم ده. */
 function LeadCard({
-  l, onOpen, onLog, card, btn, C, startedAt, showOwner = false, me = null,
+  l, onOpen, onLog, card, btn, C, startedAt, showOwner = false, me = null, onCopied,
 }: {
   l: Lead
   onOpen: (l: Lead) => void
@@ -993,6 +1043,8 @@ function LeadCard({
   showOwner?: boolean
   /** اسم الموظف اللي فاتح الشاشة — بيتوقّع بيه آخر رسالة الواتساب */
   me?: string | null
+  /** بيتنده بعد نسخ الاسكريبت عشان نوريه رسالة «اتنسخ» */
+  onCopied?: (ok: boolean) => void
 }) {
   void onLog
   return (
@@ -1037,8 +1089,9 @@ function LeadCard({
                   </a>
                   {l.phone_kind !== 'landline' && (
                     <a href={waLink(l, me)} target="_blank" rel="noreferrer"
-                       onClick={() => onOpen(l)} style={btn('wa')}
-                       title={`اسكريبت ${scriptFor(l.specialty).label} — جاهز في الشات`}>
+                       onClick={() => { copyScript(l, me).then(ok => onCopied?.(ok)); onOpen(l) }}
+                       style={btn('wa')}
+                       title={`اسكريبت ${scriptFor(l.specialty).label} — جاهز في الشات ومتنسخ كمان`}>
                       <MessageCircle style={{ width: 16, height: 16 }} /> واتساب
                     </a>
                   )}

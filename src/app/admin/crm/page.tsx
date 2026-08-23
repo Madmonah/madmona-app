@@ -52,7 +52,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import { adminRpc } from '@/lib/adminRpc'
 import { fmtDateTime, sinceLabel } from '@/lib/arDateTime'
 // 🗣️ اسكريبت البيع بتاع كل نشاط — نفس الملف بيغذّي زرار «أرسل» وصفحة الطباعة
-import { waLink, scriptFor } from '@/lib/crmScripts'
+import { waLink, scriptFor, scriptText } from '@/lib/crmScripts'
 import {
   ArrowRight, Loader2, ShieldAlert, RefreshCw, Users, Phone, ListChecks,
   Download, Search, X, Shuffle, Sparkles, AlertTriangle, CheckCircle2,
@@ -780,6 +780,12 @@ export default function AdminCrmPage() {
                             href={waLink(r.phone, r.specialty, r.name, r.owner)}
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={() => {
+                              // 📋 واتساب بيرمي النص المجهّز أحيانًا — بننسخه كمان
+                              navigator.clipboard?.writeText(scriptText(r.specialty, r.name, r.owner))
+                                .then(() => setFlash({ msg: 'الاسكريبت اتنسخ — لو الشات فتح فاضي الزقه', ok: true }))
+                                .catch(() => {})
+                            }}
                             title={`اسكريبت ${scriptFor(r.specialty).label} — جاهز على واتساب`}
                             style={{ ...btn('primary'), padding: '5px 10px', fontSize: 12, marginLeft: 6, textDecoration: 'none', display: 'inline-flex' }}
                           >
