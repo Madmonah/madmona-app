@@ -122,6 +122,22 @@ export default function AdminListingsPage() {
     })()
   }, [])
 
+  /* ➕ (٢٤ أغسطس ٢٦) لو دخلنا الصفحة بـ?add=1 (من تاب «ضيف إعلان» في السايدبار)،
+     نفتح المودال أوتوماتيك — بس بعد ما التصنيفات تحمّل عشان يكون فيه اختيار. */
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (stage !== 'ready' || !facets?.categories?.length) return
+    const sp = new URLSearchParams(window.location.search)
+    if (sp.get('add') === '1' && !adder) {
+      setAdderErr(null)
+      setAdder({
+        title: '', category_id: facets.categories[0]?.id || '',
+        city: '', owner_name: '', owner_phone: '', contact_phone: '',
+      })
+      window.history.replaceState({}, '', '/admin/listings')
+    }
+  }, [stage, facets, adder])
+
   async function saveNewListing() {
     if (!adder) return
     setBusy(true); setAdderErr(null)
