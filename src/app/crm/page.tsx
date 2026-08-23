@@ -51,6 +51,8 @@ import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import BottomNav from '@/components/BottomNav'
 import { sinceLabel, fmtDateTime } from '@/lib/arDateTime'
+// 🗣️ اسكريبت البيع بتاع كل نشاط — بيغذّي زرار «واتساب» وورق الفريق المطبوع
+import { waLink as waScriptLink, scriptFor } from '@/lib/crmScripts'
 import {
   Phone, MessageCircle, Loader2, RefreshCw, ListChecks, CheckCircle2,
   Mic, Sparkles, X, ChevronLeft, MapPin, CornerDownLeft, LogIn, AlertTriangle, Home, Users, Search,
@@ -146,9 +148,20 @@ const OUTCOMES: { k: string; label: string }[] = [
   { k: 'not_interested', label: 'مش مهتم' },
 ]
 
-/* واتساب عايز الرقم بالصيغة الدولية من غير + —
-   الرقم عندنا مخزّن 01XXXXXXXXX، فـ'2' + الرقم = 201XXXXXXXXX. */
-const waLink = (p: string) => `https://wa.me/2${p}`
+/* 🗣️ (٢٣ أغسطس ٢٠٢٦ — محمد: «في زرار مكتوب عليه واتساب، هو ده اللي أنا
+   عايز الاسكريبت يسمع فيه»)
+
+   زرار «واتساب» كان بيفتح الشات **فاضي** — الموظف يبص للشاشة ويفكّر
+   يكتب إيه، وكل واحد بيكتب حاجة مختلفة. دلوقتي بيفتح والرسالة مكتوبة
+   حسب **نشاط الرقم ده بالذات** (عقارات غير عربيات غير مصانع)، بتنادي
+   العميل باسمه وتوقّع باسم الموظف اللي فاتح الشاشة.
+
+   الموظف يقدر يعدّل قبل ما يبعت — الرسالة بتفتح في خانة الكتابة مش
+   بتتبعت لوحدها. ولو الرقم اتكلّمنا معاه قبل كده، يمسحها ويكتب متابعته.
+
+   المحتوى في src/lib/crmScripts.ts — نفس المصدر اللي بيطبع ورق الفريق. */
+const waLink = (l: { phone: string; specialty: string | null; name: string | null }, me: string | null) =>
+  waScriptLink(l.phone, l.specialty, l.name, me)
 
 export default function CrmMobilePage() {
   const [q, setQ] = useState<Queue | null>(null)
@@ -501,7 +514,7 @@ export default function CrmMobilePage() {
             )}
             {q.queue.map(l => (
               <LeadCard key={l.id} l={l} onOpen={openDetail} onLog={openSheet}
-                card={card} btn={btn} C={C} startedAt={startedAt} />
+                card={card} btn={btn} C={C} startedAt={startedAt} me={q.me?.name ?? null} />
             ))}
           </>
         )}
@@ -545,7 +558,7 @@ export default function CrmMobilePage() {
             </div>
 
             {allRows.map(l => <LeadCard key={l.id} l={l} showOwner onOpen={openDetail} onLog={openSheet}
-              card={card} btn={btn} C={C} startedAt={startedAt} />)}
+              card={card} btn={btn} C={C} startedAt={startedAt} me={q?.me?.name ?? null} />)}
 
             {allRows.length === 0 && !allBusy && (
               <div style={{ ...card, textAlign: 'center', color: C.sub, padding: 26, fontSize: 13.5 }}>
@@ -773,7 +786,8 @@ export default function CrmMobilePage() {
                 <Phone style={{ width: 16, height: 16 }} /> اتصال
               </a>
               {detailFor.phone_kind !== 'landline' && (
-                <a href={waLink(detailFor.phone)} target="_blank" rel="noreferrer" style={btn('wa')}>
+                <a href={waLink(detailFor, q?.me?.name ?? null)} target="_blank" rel="noreferrer" style={btn('wa')}
+                   title={`اسكريبت ${scriptFor(detailFor.specialty).label} — جاهز في الشات`}>
                   <MessageCircle style={{ width: 16, height: 16 }} /> واتساب
                 </a>
               )}
@@ -967,7 +981,7 @@ function AudioPlayer({ path }: { path: string }) {
 /* 🧾 كارت الرقم — بيتستخدم في «مكالماتي» وفي «كل الأرقام» بتاع المدير.
    `showOwner` بيبان في تاب المدير بس: مين ماسك الرقم ده. */
 function LeadCard({
-  l, onOpen, onLog, card, btn, C, startedAt, showOwner = false,
+  l, onOpen, onLog, card, btn, C, startedAt, showOwner = false, me = null,
 }: {
   l: Lead
   onOpen: (l: Lead) => void
@@ -977,6 +991,8 @@ function LeadCard({
   C: Record<string, string>
   startedAt: MutableRefObject<number | null>
   showOwner?: boolean
+  /** اسم الموظف اللي فاتح الشاشة — بيتوقّع بيه آخر رسالة الواتساب */
+  me?: string | null
 }) {
   void onLog
   return (
@@ -1020,8 +1036,9 @@ function LeadCard({
                     <Phone style={{ width: 16, height: 16 }} /> اتصال
                   </a>
                   {l.phone_kind !== 'landline' && (
-                    <a href={waLink(l.phone)} target="_blank" rel="noreferrer"
-                       onClick={() => onOpen(l)} style={btn('wa')}>
+                    <a href={waLink(l, me)} target="_blank" rel="noreferrer"
+                       onClick={() => onOpen(l)} style={btn('wa')}
+                       title={`اسكريبت ${scriptFor(l.specialty).label} — جاهز في الشات`}>
                       <MessageCircle style={{ width: 16, height: 16 }} /> واتساب
                     </a>
                   )}
