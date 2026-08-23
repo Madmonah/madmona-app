@@ -1370,6 +1370,28 @@ function StepBasics({
       ? 'business' : 'individual'
   );
   const isBusiness = sellerType === 'business';
+  /* 🏥 (٢٤ أغسطس ٢٦) محمد: «حاطط في إضافة العيادة كلمة معرض / نشاط تجاري!»
+     — تسمية الطرفين لازم تتبع نوع القسم. «معرض» للعربيات، «عيادة» للطب،
+     «صالون» للبيوتي… مش كلمة واحدة ثابتة للكل. بيتحدد من group_slug
+     بتاع القسم + كلمات في الـslug نفسه. */
+  const sellerLabels = (() => {
+    const s = draft.category_slug || '';
+    const parentCat = categories.find((c) => c.slug === s || c.subs?.some((x) => x.slug === s));
+    const g = parentCat?.group_slug || '';
+    const hit = (...ks: string[]) => ks.some((k) => g.includes(k) || s.includes(k));
+    if (hit('vehicle')) return { biz: '🏢 معرض / تاجر', bizD: 'بعرض مركبات للبيع أو للإيجار بشكل مستمر', ind: '👤 فرد', indD: 'ببيع/بأجّر مركبتي الشخصية' };
+    if (hit('marine')) return { biz: '⚓ مرسى / تاجر مراكب', bizD: 'بأجّر أو ببيع مراكب بشكل مستمر', ind: '👤 فرد', indD: 'ببيع/بأجّر مركبي الشخصي' };
+    if (hit('propert')) return { biz: '🏢 شركة عقارات / مطور / مكتب', bizD: 'بسوّق أو بطوّر عقارات بشكل مستمر', ind: '👤 مالك', indD: 'ببيع/بأجّر عقاري الشخصي' };
+    if (hit('medical', 'clinic', 'doctor')) return { biz: '🏥 عيادة / مركز طبي', bizD: 'منشأة طبية بتستقبل حالات', ind: '👤 ممارس مستقل', indD: 'بقدم الخدمة بنفسي من غير منشأة' };
+    if (hit('services-care', 'beauty', 'salon')) return { biz: '💇 صالون / سنتر', bizD: 'منشأة بتقدم خدمات عناية', ind: '👤 بشتغل لحسابي', indD: 'بقدم الخدمة بنفسي' };
+    if (hit('food', 'restaurant')) return { biz: '🍽️ مطعم / كافيه', bizD: 'مكان بيقدم أكل ومشروبات', ind: '👤 بشتغل من البيت', indD: 'بطبخ وببيع لحسابي' };
+    if (hit('equipment')) return { biz: '🏗️ شركة تأجير معدات', bizD: 'بأجّر معدات بشكل مستمر', ind: '👤 فرد', indD: 'بأجّر معدة مملوكة ليا' };
+    if (hit('tourism')) return { biz: '🏢 شركة سياحة', bizD: 'بنظم رحلات وتجارب بشكل مستمر', ind: '👤 منظم مستقل', indD: 'بنظم لحسابي' };
+    if (hit('event')) return { biz: '🎉 شركة تنظيم مناسبات', bizD: 'بنظم مناسبات بفريق شغّال', ind: '👤 بشتغل لحسابي', indD: 'بنظم بنفسي' };
+    if (hit('services')) return { biz: '🏢 شركة / مكتب خدمات', bizD: 'بقدم الخدمة بفريق أو منشأة', ind: '👤 بشتغل لحسابي', indD: 'بقدم الخدمة بنفسي (فريلانسر)' };
+    if (hit('shop', 'furniture', 'home-')) return { biz: '🏪 محل / متجر', bizD: 'عندي بضاعة بتتجدد باستمرار', ind: '👤 فرد', indD: 'ببيع حاجتي الشخصية' };
+    return { biz: '🏢 نشاط تجاري', bizD: 'عندي بضاعة أو خدمات شغّالة', ind: '👤 فرد', indD: 'ببيع/بأجّر حاجتي الشخصية' };
+  })();
   const [hasBranches, setHasBranches] = useState<boolean>(
     draft.account_type === 'business' || !!(slugTrack && SURE_COMPANY_TRACKS.includes(slugTrack))
   );
@@ -1515,8 +1537,8 @@ function StepBasics({
       <div className="mb-5">
         <p className="text-sm font-semibold mb-2">إنت مين؟ *</p>
         <div className="flex gap-2">
-          {([['individual', '👤 فرد', 'ببيع/بأجّر حاجتي الشخصية'],
-             ['business', '🏢 معرض / نشاط تجاري', 'عندي بضاعة أو خدمات شغّالة']] as const).map(([v, l, d]) => (
+          {([['individual', sellerLabels.ind, sellerLabels.indD],
+             ['business', sellerLabels.biz, sellerLabels.bizD]] as const).map(([v, l, d]) => (
             <button key={v} type="button" onClick={() => setSellerType(v)}
               className={`flex-1 p-3 rounded-xl border-2 text-right transition-all ${
                 sellerType === v ? 'border-[#059669] bg-emerald-50' : 'border-[#E5E5E0] bg-white'}`}>
