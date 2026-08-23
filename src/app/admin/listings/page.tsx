@@ -51,6 +51,7 @@ type Row = {
   category: string | null; city: string | null; district: string | null
   phone: string | null; phone_verified: boolean; unclaimed: boolean
   owner_name: string | null
+  seller_kind: 'individual' | 'business' | null
   created_at: string; published_at: string | null
   rejection_reason: string | null; rejected_at: string | null
   pause_reason: string | null; paused_at: string | null
@@ -73,6 +74,8 @@ export default function AdminListingsPage() {
   const [city, setCity] = useState('')
   const [hasPhone, setHasPhone] = useState('all')
   const [claimed, setClaimed] = useState('all')
+  // 🏷️ (٢٤ أغسطس ٢٦) معرض ولا فرد — «لو معرض هنتعامل معاه B2B»
+  const [seller, setSeller] = useState('all')
   const [search, setSearch] = useState('')
   const [debounced, setDebounced] = useState('')
   const [offset, setOffset] = useState(0)
@@ -135,7 +138,7 @@ export default function AdminListingsPage() {
       setAdder({
         title: '', category_id: facets.categories[0]?.id || '',
         city: '', owner_name: '', owner_phone: '', contact_phone: '',
-        photos: [], publish: true,
+        photos: [], publish: true, seller_kind: 'individual',
       })
       window.history.replaceState({}, '', '/admin/listings')
     }
@@ -154,6 +157,7 @@ export default function AdminListingsPage() {
         p_owner_name: adder.owner_name.trim() || null,
         p_owner_phone: adder.owner_phone.trim() || null,
         p_contact_phone: adder.contact_phone.trim() || null,
+        p_seller_kind: adder.seller_kind,
       })
       const listingId = String(res?.id || '')
       if (!listingId) throw new Error('الإعلان اتخلق بس مافيش رقم')
@@ -224,7 +228,7 @@ export default function AdminListingsPage() {
     const t = setTimeout(() => { setDebounced(search); setOffset(0) }, 350)
     return () => clearTimeout(t)
   }, [search])
-  useEffect(() => { setOffset(0) }, [tier, status, category, city, hasPhone, claimed])
+  useEffect(() => { setOffset(0) }, [tier, status, category, city, hasPhone, claimed, seller])
 
   // 🔐 الدوال دي محميّة بصلاحية أدمن — لازم تعدّي من /api/admin/rpc.
   // النداء المباشر من المتصفح بيرجع forbidden (اللوحة بكوكي مش Supabase Auth).
@@ -241,7 +245,7 @@ export default function AdminListingsPage() {
       const data: any = await adminRpc('admin_listings_search', {
         p_tier: tier, p_status: status,
         p_category: category || null, p_city: city || null,
-        p_has_phone: hasPhone, p_claimed: claimed,
+        p_has_phone: hasPhone, p_claimed: claimed, p_seller: seller,
         p_search: debounced || null, p_limit: PAGE, p_offset: offset,
       })
       setRows((data?.rows || []) as Row[])
@@ -251,7 +255,7 @@ export default function AdminListingsPage() {
       setErr(e?.message || 'مقدرناش نحمّل الليستنجات'); setRows([]); setTotal(0)
     }
     setLoading(false)
-  }, [tier, status, category, city, hasPhone, claimed, debounced, offset])
+  }, [tier, status, category, city, hasPhone, claimed, seller, debounced, offset])
 
   useEffect(() => { if (stage === 'ready') { loadFacets() } }, [stage, loadFacets])
   useEffect(() => { if (stage === 'ready') { load() } }, [stage, load])
@@ -426,6 +430,11 @@ export default function AdminListingsPage() {
             {[['all', 'الكل'], ['real', 'حقيقي'], ['directory', 'دليل']].map(([v, l]) => (
               <button key={v} style={sChip(tier === v)} onClick={() => setTier(v)}>{l}</button>
             ))}
+            <span style={{ width: 1, height: 18, background: C.line, margin: '0 6px' }} />
+            <span style={{ fontSize: 12, color: C.sub, marginInlineEnd: 4 }}>البائع:</span>
+            {[['all', 'الكل'], ['business', '🏢 معرض/نشاط'], ['individual', '👤 فرد']].map(([v, l]) => (
+              <button key={v} style={sChip(seller === v)} onClick={() => setSeller(v)}>{l}</button>
+            ))}
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
             <span style={{ fontSize: 12, color: C.sub, marginInlineEnd: 4 }}>الحالة:</span>
@@ -550,6 +559,12 @@ export default function AdminListingsPage() {
                           textDecoration: 'underline', textUnderlineOffset: 3 }}>
                         {r.owner_name || 'مش متسجّل'}
                       </button>
+                      {r.seller_kind && (
+                        <span style={{ display: 'block', fontSize: 10.5, marginTop: 3,
+                          color: r.seller_kind === 'business' ? C.green : C.sub, fontWeight: 700 }}>
+                          {r.seller_kind === 'business' ? '🏢 معرض/نشاط — B2B' : '👤 فرد'}
+                        </span>
+                      )}
                     </td>
                     <td style={{ padding: 10 }}><span style={badge(r.unclaimed ? C.warn : C.green)}>{r.unclaimed ? 'متستلمش' : 'متستلم'}</span></td>
                     <td style={{ padding: 10, color: C.sub, whiteSpace: 'nowrap' }}>
@@ -736,6 +751,21 @@ export default function AdminListingsPage() {
           <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>المدينة</label>
           <input value={adder.city} onChange={(e) => setAdder({ ...adder, city: e.target.value })} placeholder="القاهرة / الجيزة / …"
             style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', marginBottom: 16 }} />
+
+          {/* 🏷️ معرض ولا فرد — «لو معرض هنتعامل معاه B2B ولو إعلان يكون واضح» */}
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>نوع البائع *</label>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+            {([['individual', '👤 فرد — إعلان عادي'], ['business', '🏢 معرض/نشاط — B2B']] as const).map(([v, l]) => (
+              <button key={v} type="button"
+                onClick={() => setAdder({ ...adder, seller_kind: v })}
+                style={{ flex: 1, padding: 10, borderRadius: 12, fontSize: 13, fontWeight: 700,
+                  border: `2px solid ${adder.seller_kind === v ? C.green : C.line}`,
+                  background: adder.seller_kind === v ? '#E3F4EE' : '#fff',
+                  color: adder.seller_kind === v ? C.green : C.ink, cursor: 'pointer' }}>
+                {l}
+              </button>
+            ))}
+          </div>
 
           <div style={{ background: C.chip, borderRadius: 12, padding: 12, marginBottom: 4 }}>
             <p style={{ fontSize: 12, fontWeight: 800, margin: '0 0 8px', color: C.ink }}>👤 صاحب الإعلان</p>
