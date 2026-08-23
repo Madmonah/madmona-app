@@ -973,7 +973,7 @@ function StepCategory({
             دروب ليست واحدة بتوصل لأي تصنيف في ثانية — والكروت تحتها فضلت
             زي ما هي للي يحب يتصفح (الاتنين بينادوا نفس onSelect — مفيش
             مسار موازي). */}
-        {visibleMains.length > 0 && (
+        {categories.length > 0 && (
           <div className="mb-4">
             <select
               defaultValue=""
@@ -981,15 +981,22 @@ function StepCategory({
               className="w-full p-3.5 rounded-xl border border-[#E5E5E0] bg-white text-sm font-semibold text-gray-800"
             >
               <option value="" disabled>⚡ اختار نشاطك بسرعة من القايمة…</option>
-              {visibleMains.map((c) => (
-                <optgroup key={c.slug} label={`${c.emoji || '🏷️'} ${c.name_ar}`}>
+              {/* ⚡ (٢٤ أغسطس ٢٦) محمد: «كنت قولتلك حط دروب ليست في العربيات ومحصلش»
+                  — القايمة كانت بتعرض تصنيفات التاب المفتوح بس، فاللي واقف
+                  على «إيجار» مش هيلاقي عربيات البيع فيها. بقت بتعرض **كل**
+                  التصنيفات، وكل مجموعة معنون عليها نوعها (بيع/إيجار/خدمات/مطاعم). */}
+              {categories.map((c) => {
+                const tk = (c.track === 'hybrid' ? 'rentals' : c.track === 'sales' ? 'products' : (c.track || 'rentals')) as TrackTab;
+                return (
+              <optgroup key={c.slug} label={`${c.emoji || '🏷️'} ${c.name_ar} — ${TRACK_LABELS[tk] || ''}`}>
                   {c.subs.length === 0 && <option value={c.slug}>{c.name_ar}</option>}
                   {c.subs.length > 0 && <option value={c.slug}>{c.name_ar} (عام)</option>}
                   {c.subs.map((s) => (
                     <option key={s.slug} value={s.slug}>{s.emoji ? s.emoji + ' ' : ''}{s.name_ar}</option>
                   ))}
                 </optgroup>
-              ))}
+                );
+              })}
             </select>
           </div>
         )}
