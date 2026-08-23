@@ -2,8 +2,20 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
-import { Loader2, MessageCircle, CheckCircle, RefreshCw, Send } from 'lucide-react'
+import { Loader2, MessageCircle, CheckCircle, RefreshCw, Send, Briefcase } from 'lucide-react'
 import { safeStorage } from '@/lib/safe-storage'
+
+// 📱 (٢٣ أغسطس ٢٠٢٦) لينك بيفتح **تطبيق واتساب بعينه** على أندرويد.
+//    العادي = com.whatsapp · البيزنس = com.whatsapp.w4b — التطبيقين
+//    بيتسجّلوا على نفس الـscheme (whatsapp://) فلينك wa.me العادي بيفتح
+//    أي واحد فيهم. صيغة intent:// بـpackage صريح هي الوحيدة اللي بتحدد.
+//    S.browser_fallback_url: لو التطبيق ده مش متسطّب، كروم بيرجع لـwa.me
+//    بدل ما يقف على صفحة خطأ.
+function appIntent(number: string, code: string, pkg: string, fallback: string) {
+  return `intent://send?phone=${encodeURIComponent(number)}&text=${encodeURIComponent(code)}`
+    + `#Intent;scheme=whatsapp;package=${pkg}`
+    + `;S.browser_fallback_url=${encodeURIComponent(fallback)};end`
+}
 
 // =====================================================================
 // 🧞 الدخول بالواتساب — «ابعت الكود للمارد» (المسار الأساسي للدخول)
@@ -32,7 +44,17 @@ export default function WhatsAppLogin({
   const [phase, setPhase] = useState<'idle' | 'waiting' | 'finishing' | 'done' | 'error'>('idle')
   const [err, setErr] = useState('')
   const [waUrl, setWaUrl] = useState('')
+  const [waNumber, setWaNumber] = useState('')
   const [code, setCode] = useState('')
+  // 📱 (٢٣ أغسطس ٢٠٢٦ — محمد: «خلي الواتساب في تسجيل الدخول يخيرني بين
+  //    الواتساب البيزنس والعادي») على أندرويد التطبيقين متسطّبين مع بعض
+  //    وبياخدوا نفس الـscheme، فلينك wa.me بيفتح واحد فيهم على كيفه — ولو
+  //    فتح الغلط، الكود بيتبعت من رقم تاني والدخول بيوديك لحساب تاني.
+  //    نستخدم intent:// بـpackage صريح — ده الشكل الوحيد اللي بيحدد تطبيق
+  //    بعينه على أندرويد. على iOS مفيش scheme منفصل لواتساب بيزنس، فبنعرض
+  //    الزرار العادي هناك بدل ما نحط زرارين بيعملوا نفس الحاجة.
+  const [isAndroid, setIsAndroid] = useState(false)
+  useEffect(() => { setIsAndroid(/Android/i.test(navigator.userAgent)) }, [])
   const codeRef = useRef<string>('')
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   // 🔒 (٢٣ أغسطس ٢٠٢٦) قفل: تيك واحد بس شغال في أي لحظة — تحت.
@@ -156,6 +178,7 @@ export default function WhatsAppLogin({
       codeRef.current = j.code
       setCode(j.code)
       setWaUrl(j.wa_url)
+      setWaNumber(String(j.wa_number || ''))
       setPhase('waiting')
       startPolling()
     } catch {
@@ -189,19 +212,50 @@ export default function WhatsAppLogin({
           {phase === 'waiting' && (
             <>
               {/* 🟢 الزرار المباشر — بيفتح واتساب بضغطة جديدة (مبتتبلوكش زي window.open) */}
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-3.5 rounded-2xl font-bold text-base shadow-elevated hover:-translate-y-0.5 transition-all mb-3"
-              >
-                <Send className="w-5 h-5" />
-                افتح واتساب وابعت الكود
-              </a>
-              <p className="text-xs text-gray-600 leading-relaxed mb-2">
-                هيفتحلك واتساب برسالة جاهزة فيها الكود — <b>دوس إرسال بس</b> وارجع هنا.
-                <br />لو مفتحش، ابعت الكود ده يدوي لـ«المارد» على واتساب:
-              </p>
+              {isAndroid && waNumber ? (
+                <>
+                  <p className="text-xs font-bold text-gray-700 mb-2">تبعت الكود من أنهي واتساب؟</p>
+                  <div className="flex gap-2 mb-3">
+                    <a
+                      href={appIntent(waNumber, code, 'com.whatsapp', waUrl)}
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-[#25D366] text-white py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:-translate-y-0.5 transition-all"
+                    >
+                      <Send className="w-4 h-4" />
+                      العادي
+                    </a>
+                    <a
+                      href={appIntent(waNumber, code, 'com.whatsapp.w4b', waUrl)}
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-[#0B7A5C] text-white py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:-translate-y-0.5 transition-all"
+                    >
+                      <Briefcase className="w-4 h-4" />
+                      بيزنس
+                    </a>
+                  </div>
+                  <p className="text-[11px] text-gray-600 leading-relaxed mb-2">
+                    هيفتح التطبيق اللي اخترته برسالة جاهزة — <b>دوس إرسال بس</b> وارجع هنا.
+                    <br />
+                    <b className="text-[#B45309]">مهم:</b> هتدخل على الحساب بتاع <b>الرقم اللي بعت الكود</b>،
+                    فاختار التطبيق اللي فيه رقمك الصح.
+                    <br />لو مفتحش، ابعت الكود ده يدوي لـ«المارد» على واتساب:
+                  </p>
+                </>
+              ) : (
+                <>
+                  <a
+                    href={waUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-3.5 rounded-2xl font-bold text-base shadow-elevated hover:-translate-y-0.5 transition-all mb-3"
+                  >
+                    <Send className="w-5 h-5" />
+                    افتح واتساب وابعت الكود
+                  </a>
+                  <p className="text-xs text-gray-600 leading-relaxed mb-2">
+                    هيفتحلك واتساب برسالة جاهزة فيها الكود — <b>دوس إرسال بس</b> وارجع هنا.
+                    <br />لو مفتحش، ابعت الكود ده يدوي لـ«المارد» على واتساب:
+                  </p>
+                </>
+              )}
               <div className="inline-block bg-white border border-[#2FA084]/40 rounded-xl px-5 py-2 font-black text-xl tracking-[0.3em] text-[#059669] mb-3 select-all">
                 {code}
               </div>

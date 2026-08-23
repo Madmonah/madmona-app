@@ -271,9 +271,14 @@ export async function POST(req: NextRequest) {
     } as never)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     const text = encodeURIComponent(code)
+    // 📱 (٢٣ أغسطس ٢٠٢٦ — محمد: «خلي الواتساب في تسجيل الدخول يخيرني بين
+    //    الواتساب البيزنس والعادي») بنرجّع الرقم لوحده كمان عشان الواجهة
+    //    تقدر تبني لينك يفتح تطبيق بعينه (whatsapp/w4b) مش wa.me بس.
+    const waNumber = await pickLoginWa(sb)
     return NextResponse.json({
       code,
-      wa_url: `https://wa.me/${await pickLoginWa(sb)}?text=${text}`,
+      wa_number: waNumber,
+      wa_url: `https://wa.me/${waNumber}?text=${text}`,
     })
   }
 
