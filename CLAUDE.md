@@ -133,6 +133,7 @@ B2B) أو `individual` (فرد). تريجر `trg_listings_seller_kind` بيمل�
   صغير بيكتب الوصف جوّه سجل الرسالة (`enrichMediaTranscript`).
 - **سامية**: أدمن ماعدا الإداري والحسابات (فلوس/تقارير/تسعير/فريق/
   فروع = false صراحةً في business_employees.permissions).
+- **إشعارات الحضور/الانصراف**: تريجر trg_attendance_notify على attendance_logs — أي مسار تسجيل بيبعت push. المستلمين في whatsapp_config: attendance_notify_profile_ids (مفصولين بفاصلة).
 - **زوم iOS مقفول** (maximumScale:1 + خانات الموبايل 16px) — أي
   input جديد ماينزلش تحت 16px على الموبايل.
 
