@@ -1091,8 +1091,11 @@ export async function POST(request: NextRequest) {
     // ── ٤) الرد الذكي ───────────────────────────────────────────────────
     // getConversationHistory بترجع {role, content} جاهزة — بنحوّلها نص
     // لأن callClaude بتاخد رسالة واحدة بس.
-    // ٢٤ رسالة زي النظام القديم — ١٢ كانت بتقطع سياق المحادثات الطويلة
-    const history = await getConversationHistory(conversationId, 24)
+    /* 💰 (٢٤ أغسطس ٢٦) نزلنا من ٢٤ → ١٠ عشان السياق كان بيعدّ ٢٤ رسالة كل
+       مرة في الـinput حتى لو المحادثة أطول من كده. ١٠ كافية للمارد إنه
+       يفتكر إيه اللي بيحصل، وبتقصّ الـinput tokens تقريبًا للنص —
+       ده مباشرة بيقلّل التكلفة. */
+    const history = await getConversationHistory(conversationId, 10)
     const historyText = history
       .slice(0, -1) // آخر واحدة هي الرسالة الحالية
       .map((h) => `${h.role === 'user' ? 'العميل' : 'المارد'}: ${h.content}`)

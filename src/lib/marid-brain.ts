@@ -17,6 +17,35 @@
 import { anthropic, CLAUDE_MODEL } from '@/lib/anthropic'
 import { logAiUsage } from '@/lib/ai-usage'
 import { supabaseUntyped as db } from '@/lib/supabase'
+
+/* 💰 (٢٤ أغسطس ٢٦) محمد: «عايز ردود من المارد بس مش عايز الرسالة تكلفني كل ده».
+
+   الردود على واتساب هايكو كفاية عليها — رد قصير على سؤال العميل مش
+   تحليل معقّد. الفرق مع سونيت:
+     • الإدخال: $1  vs $3   لكل مليون توكن  (٣× أرخص)
+     • الإخراج: $5  vs $15   لكل مليون توكن  (٣× أرخص)
+   متوسط تكلفة الرد بتنزل ~٦٥٪ من غير ما نلغي الفهم.
+
+   الموديل بيتحدد من `whatsapp_config.marid_model`. مش موجود = يرجع
+   لـSonnet زي ما كان. بيتقرا مرة كل ٥ دقايق (كاش) عشان مانحمّلش
+   الداتابيز على كل رد.
+
+   من /admin/site-settings ← marid_model:
+     • 'claude-haiku-4-5'  → الأرخص (المفروض دلوقتي)
+     • 'claude-sonnet-4-5' → أذكى بس ٣× أغلى
+     • فاضي/غير موجود      → سونيت (السلوك القديم) */
+let _cachedModel: { value: string; at: number } | null = null
+async function getMaridModel(): Promise<string> {
+  if (_cachedModel && Date.now() - _cachedModel.at < 5 * 60_000) return _cachedModel.value
+  try {
+    const { data } = await db
+      .from('whatsapp_config').select('value').eq('key', 'marid_model').maybeSingle()
+    const v = ((data as { value?: string } | null)?.value || '').trim()
+    const chosen = v || CLAUDE_MODEL
+    _cachedModel = { value: chosen, at: Date.now() }
+    return chosen
+  } catch { return CLAUDE_MODEL }
+}
 import { MARID_TOOLS, runMaridTool, MADMONA_LINKS } from '@/lib/marid-tools'
 import { ADMIN_TOOLS, runAdminTool, ADMIN_PROMPT } from '@/lib/marid-admin'
 
@@ -264,7 +293,7 @@ ${Object.entries(MADMONA_LINKS)
     const _t0 = Date.now()
     try {
       res = await anthropic.messages.create({
-        model: CLAUDE_MODEL,
+        model: await getMaridModel(),
         // 💸 (١٦ أغسطس ٢٠٢٦ — محمد: «تكلفة المارد عالية شوية»)
         //
         //    الإخراج أغلى توكن عندنا ($15/مليون مقابل $3 للإدخال و$0.30
@@ -304,7 +333,7 @@ ${Object.entries(MADMONA_LINKS)
       agentName: 'المارد',
       channel: opts.channel ?? null,
       conversationId: opts.conversationId ?? null,
-      model: CLAUDE_MODEL,
+      model: await getMaridModel(),
       turn,
       cacheTtl: '1h',
       latencyMs: Date.now() - _t0,
@@ -387,7 +416,7 @@ ${Object.entries(MADMONA_LINKS)
 
   const _tf = Date.now()
   const final = await anthropic.messages.create({
-    model: CLAUDE_MODEL,
+    model: await getMaridModel(),
     max_tokens: 1024,
     system: finalSystem as never,
     messages: messages as never,
@@ -397,7 +426,7 @@ ${Object.entries(MADMONA_LINKS)
     agentName: 'المارد',
     channel: opts.channel ?? null,
     conversationId: opts.conversationId ?? null,
-    model: CLAUDE_MODEL,
+    model: await getMaridModel(),
     turn: MAX_TURNS,
     isFinal: true,
     cacheTtl: '1h',
