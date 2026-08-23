@@ -1091,14 +1091,24 @@ export async function POST(request: NextRequest) {
     // ── ٤) الرد الذكي ───────────────────────────────────────────────────
     // getConversationHistory بترجع {role, content} جاهزة — بنحوّلها نص
     // لأن callClaude بتاخد رسالة واحدة بس.
-    /* 💰 (٢٤ أغسطس ٢٦) نزلنا من ٢٤ → ١٠ عشان السياق كان بيعدّ ٢٤ رسالة كل
-       مرة في الـinput حتى لو المحادثة أطول من كده. ١٠ كافية للمارد إنه
-       يفتكر إيه اللي بيحصل، وبتقصّ الـinput tokens تقريبًا للنص —
-       ده مباشرة بيقلّل التكلفة. */
-    const history = await getConversationHistory(conversationId, 10)
+    /* 💰 (٢٤ أغسطس ٢٦) محمد: «عايزه يقرا آخر ٣ محادثات فقط لا غير — سواء
+       مبعوتين من عندنا أو من عنده، وبريف الرسالة لو مبعوت من عنده هيبيّن
+       سياق المحادثة».
+
+       - ٣ رسايل بس بدل ١٠. لسه كافية إن المارد يفتكر آخر تبادل.
+       - كل رسالة بتترجّع للسياق بريف قصير (١٨٠ حرف) بدل النص الكامل —
+         عشان لو العميل بعت مقال، مانبعتش المقال كله في كل رد بعده. */
+    const HIST_TURNS = 3
+    const PREVIEW_LEN = 180
+    const history = await getConversationHistory(conversationId, HIST_TURNS + 1)
+    const preview = (t: string) => {
+      const one = (t || '').replace(/\s+/g, ' ').trim()
+      return one.length > PREVIEW_LEN ? one.slice(0, PREVIEW_LEN) + '…' : one
+    }
     const historyText = history
       .slice(0, -1) // آخر واحدة هي الرسالة الحالية
-      .map((h) => `${h.role === 'user' ? 'العميل' : 'المارد'}: ${h.content}`)
+      .slice(-HIST_TURNS)
+      .map((h) => `${h.role === 'user' ? 'العميل' : 'المارد'}: ${preview(h.content)}`)
       .join('\n')
 
     const userMessage = historyText
