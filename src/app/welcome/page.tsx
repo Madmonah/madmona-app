@@ -239,7 +239,7 @@ function SupplierFlow({
       <div className="mt-6 p-4 rounded-2xl bg-white border border-gray-200 flex items-start gap-3">
         <BadgePercent className="w-5 h-5 text-[#059669] flex-shrink-0 mt-0.5" />
         <div className="text-sm text-[#1A2E26] leading-relaxed">
-          <span className="font-bold">العمولة شفافة:</span> 10% ثابتة على الكل. مفيش رسوم خفية، مفيش اشتراك شهري.
+          <span className="font-bold">فلوسك واضحة:</span> السعر اللي بتحدده هو اللي بيوصلك. مفيش رسوم خفية، مفيش اشتراك شهري.
           <span className="text-[#6B7280]"> بنكسب لما تكسب أنت.</span>
         </div>
       </div>

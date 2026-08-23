@@ -45,6 +45,7 @@
    🔐 لازم تسجيل دخول بحساب مضمونة — الـRPC نفسها بترفض أي حد تاني.
    ============================================================================ */
 
+import NotificationPrompt from '@/components/NotificationPrompt'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { MutableRefObject } from 'react'
 import Link from 'next/link'
@@ -1173,7 +1174,9 @@ function LeadCard({
                   <button onClick={() => onOpen(l)} style={{ ...btn(), flex: '0 0 auto', paddingInline: 12 }}>
                     <FileText style={{ width: 15, height: 15 }} /> الملف
                   </button>
-                </div>
+                  {/* 🔔 (24 اغسطس 26) الفريق لازم يشترك في الاشعارات - الاشعارات بتوصل بس لمن عنده اشتراك */}
+      <NotificationPrompt />
+      </div>
               </div>
   )
 }

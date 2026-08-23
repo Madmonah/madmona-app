@@ -222,7 +222,7 @@ export default function ListYourAssetForm() {
           <div className="grid grid-cols-3 gap-3 max-w-xl mx-auto text-xs sm:text-sm">
             <div className="bg-white/10 rounded-xl py-3 px-2">
               <ShieldCheck className="w-5 h-5 mx-auto mb-1.5 text-[#2FA084]" />
-              <div className="font-semibold">10% عمولة بس</div>
+              <div className="font-semibold">السعر اللي بتحدده هو اللي بيوصلك</div>
               <div className="text-white/70 text-[11px]">ثابتة على الكل</div>
             </div>
             <div className="bg-white/10 rounded-xl py-3 px-2">

@@ -5,7 +5,7 @@ import { ImageResponse } from 'next/og'
 // 1200×630 is the standard og:image size — fits all major social platforms.
 
 export const runtime = 'edge'
-export const alt = 'أجر معانا على مضمونة - 10% عمولة بس'
+export const alt = 'أجر معانا على مضمونة - سعرك هو اللي بيوصلك'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -98,7 +98,7 @@ export default async function Image() {
             }}
           >
             <div style={{ fontSize: 40, fontWeight: 700, color: '#2FA084' }}>10%</div>
-            <div style={{ fontSize: 20 }}>عمولة بس</div>
+            <div style={{ fontSize: 20 }}>سعرك بيوصلك</div>
           </div>
           <div
             style={{
