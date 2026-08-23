@@ -346,10 +346,21 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
   const [openCat, setOpenCat] = useState<string | null>(null)
   const [logoOk, setLogoOk] = useState(true)
 
+  /* 🏠 (٢٤ أغسطس ٢٦) محمد: «عايز أشوف صفحة البيزنس الكلاود اللي العميل
+     بيشوفها» لنشاط عقاري. ثيم العقارات كان موجود من زمان بس مصدر
+     البيانات الوحيد كان services_catalog — والمكتب العقاري وحداته في
+     listings. `units` بتجيب الوحدات المنشورة وكروتها بتودّي على صفحة
+     الوحدة في الماركتبليس نفسها — مفيش صفحة عرض موازية. */
+  const [units, setUnits] = useState<any[]>([])
+
   useEffect(() => {
     (async () => {
-      const { data: d } = await supabase.rpc('public_salon_landing', { p_slug: slug })
+      const [{ data: d }, { data: u }] = await Promise.all([
+        supabase.rpc('public_salon_landing', { p_slug: slug }),
+        supabase.rpc('public_storefront_listings', { p_slug: slug }),
+      ])
       setData(d)
+      setUnits(Array.isArray(u) ? u : [])
       setLoading(false)
     })()
   }, [slug])
@@ -559,6 +570,35 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
           </div>
         </section>
 
+        )}
+
+        {/* 🏠 الوحدات/المعروض من الماركتبليس — للعقارات والمعارض وأي بيزنس
+            بضاعته إعلانات مش كتالوج خدمات. الكارت بيودّي على صفحة الوحدة
+            الحقيقية في الماركتبليس. */}
+        {units.length > 0 && (
+          <section>
+            <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5">
+              <ServicesIcon className="w-4 h-4" style={{ color: t.accent }} /> {v.productsHeading || v.servicesHeading}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {units.map((u: any) => (
+                <Link key={u.id} href={`/marketplace/${u.slug}`}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all">
+                  <div className="h-36 bg-gray-100" style={u.photo
+                    ? { backgroundImage: `url(${u.photo})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                    : { backgroundImage: t.gCover }} />
+                  <div className="p-3.5">
+                    {u.category && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: t.accentSoft, color: t.accent }}>{u.category}</span>}
+                    <p className="font-black text-[#1A2E26] text-sm mt-1.5 leading-snug">{u.title}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-[11px] text-[#6B7280] flex items-center gap-1"><MapPin className="w-3 h-3" />{u.district || u.city || '—'}</span>
+                      {u.price_egp && <span className="font-black font-mono text-sm" style={{ color: t.accent }}>{fmt(Number(u.price_egp))} ج</span>}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
         )}
 
         {/* services / menu */}
