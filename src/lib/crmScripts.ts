@@ -55,7 +55,7 @@ export const INTAKE_WA = '01002229982'
  *  ⚠️ مابنحطش لينك إلا لصفحة اتأكدنا إنها بترد وفيها أقسام. الصفحة
  *     الفاضية بتضرّ العرض أكتر ما تفيده — فالنشاط اللي لسه مالوش نموذج
  *     الرسالة بتاعته بتقول «أبعتلك نموذج» والمندوب يبعته بإيده.
- *     (اللي ناقص دلوقتي: عقارات · عربيات · مصانع · طبي · متاجر · توظيف)
+ *     (اللي ناقص دلوقتي: توظيف · تعليم · رياضة — الباقي كله بقى ليه نموذج)
  */
 const DEMOS: Record<string, { slug: string; label: string }> = {
   beauty:   { slug: 'elite',            label: 'صالون Elite — ٦ أقسام و٤ فروع' },
@@ -63,6 +63,11 @@ const DEMOS: Record<string, { slug: string; label: string }> = {
   marine:   { slug: 'star-alex-yachts', label: 'Star Alex Yachts' },
   tourism:  { slug: 'nile-breeze',      label: 'فندق نايل بريز' },
   services: { slug: 'sa3dawy',          label: 'سعداوي جراج — فرعين' },
+  properties:{ slug: 'demo-realestate', label: 'نموذج مكتب عقارات — شقق وفيلات وإداري' },
+  vehicles:  { slug: 'demo-cars',       label: 'نموذج معرض عربيات — مستعمل وزيرو' },
+  factories: { slug: 'demo-factory',    label: 'نموذج مصنع وتوريدات — كتالوج وأسعار الجملة' },
+  medical:   { slug: 'demo-clinic',     label: 'نموذج عيادة ومركز طبي — حجز مواعيد' },
+  retail:    { slug: 'demo-store',      label: 'نموذج متجر — منتجات وشحن' },
 }
 
 /** 📋 اللي بنطلبه من العميل يجهّزه — مختلف حسب النشاط. */
