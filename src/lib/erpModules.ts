@@ -6,6 +6,7 @@
 
 export type VKey =
   | 'core' | 'beauty_salon' | 'polyclinic' | 'restaurant' | 'contracting' | 'vehicle_agency'
+  | 'real_estate'
 
 export const VERTICAL_ALIAS: Record<string, VKey> = {
   beauty_salon: 'beauty_salon', spa: 'beauty_salon',
@@ -15,6 +16,10 @@ export const VERTICAL_ALIAS: Record<string, VKey> = {
   // معارض بيع السيارات — نفس موديولات المركبات (المعرض · الاستيراد · الكتالوج)
   car_showroom: 'vehicle_agency', cars: 'vehicle_agency',
   contracting: 'contracting', construction: 'contracting',
+  // 🏠 (٢٤ أغسطس ٢٦) محمد: «وريني أحلى موديل لإدارة بيزنس عقاري في مصر».
+  //    أكبر نشاط على المنصة (٢٢٩٥ رقم CRM) ومكانش ليه اسطمبة أصلاً.
+  real_estate: 'real_estate', realestate: 'real_estate',
+  properties: 'real_estate', brokerage: 'real_estate', developer: 'real_estate',
 }
 
 // 🔐 (٢٠ أغسطس ٢٠٢٦) `perm` = مفتاح الصلاحية المطلوبة عشان الموديول ده يفتح.
@@ -68,7 +73,7 @@ export const MODULE_DEFS: ModuleDef[] = [
   { href: 'inventory',          label: 'المخزون',                         v: ['core'], perm: 'can_manage_inventory' },
   { href: 'vendors',            label: 'الموردين',                        v: ['core'] },
   { href: 'purchase-orders',    label: 'طلبات شراء',                      v: ['core'] },
-  { href: 'bookings',           label: 'إدارة الحجوزات',                  v: ['beauty_salon', 'vehicle_agency'], perm: 'can_manage_bookings' },
+  { href: 'bookings',           label: 'إدارة الحجوزات',                  v: ['beauty_salon', 'vehicle_agency', 'real_estate'], perm: 'can_manage_bookings' },
   { href: 'services-catalog',   label: 'قائمة الخدمات / المنيو',          v: ['beauty_salon', 'vehicle_agency', 'restaurant'], perm: 'can_manage_services' },
   { href: 'services',           label: 'ربط خدمة-منتج',                   v: ['beauty_salon', 'vehicle_agency'], perm: 'can_manage_services' },
   { href: 'shifts',             label: 'مواعيد العمل',                    v: ['beauty_salon', 'polyclinic'] },
@@ -80,7 +85,13 @@ export const MODULE_DEFS: ModuleDef[] = [
   { href: 'workshop',           label: 'الورشة',                          v: ['vehicle_agency'] },
   { href: 'brands',             label: 'التوكيلات',                       v: ['vehicle_agency'] },
   { href: 'catalog',            label: 'الكتالوج',         primary: true, v: ['vehicle_agency'] },
-  { href: 'projects',           label: 'المشاريع',         primary: true, v: ['contracting'] },
+  /* 🏠 اسطمبة العقارات — إعادة استخدام صفحات موجودة فعلاً (مفيش نسخ
+     موازية): المشاريع = الكمبوندات والمشاريع اللي المكتب شغال عليها،
+     التحصيل = أقساط وعمولات مستحقة، الجدول الزمني = مواعيد التسليمات،
+     الحجوزات = المعاينات المحجوزة من المنصة. الجديد الوحيد: «الوحدات»
+     — لأنه فعلاً محتاج شاشة خاصة (وحدات المكتب = إعلاناته). */
+  { href: 'units',              label: 'الوحدات',          primary: true, v: ['real_estate'] },
+  { href: 'projects',           label: 'المشاريع',         primary: true, v: ['contracting', 'real_estate'] },
   { href: 'payment-certificates', label: 'المستخلصات',     primary: true, v: ['contracting'] },
   { href: 'boq',                label: 'جدول الكميات',                    v: ['contracting'] },
   { href: 'variation-orders',   label: 'أوامر التغيير',                   v: ['contracting'] },
@@ -90,16 +101,16 @@ export const MODULE_DEFS: ModuleDef[] = [
   { href: 'custody-projects',   label: 'العُهد',                          v: ['contracting'] },
   { href: 'advances',           label: 'السُّلف',                         v: ['contracting'], perm: 'can_view_finance' },
   { href: 'equipment',          label: 'المعدات',                         v: ['contracting'] },
-  { href: 'pnl',                label: 'ربحية المشاريع',   primary: true, v: ['contracting'], perm: 'can_view_finance' },
+  { href: 'pnl',                label: 'ربحية المشاريع',   primary: true, v: ['contracting', 'real_estate'], perm: 'can_view_finance' },
   { href: 'expenses-projects',  label: 'مصروفات المشاريع',                v: ['contracting'], perm: 'can_view_finance' },
-  { href: 'collections',        label: 'التحصيل',          primary: true, v: ['contracting'], perm: 'can_view_finance' },
+  { href: 'collections',        label: 'التحصيل',          primary: true, v: ['contracting', 'real_estate'], perm: 'can_view_finance' },
   { href: 'tenders',            label: 'المناقصات',                       v: ['contracting'] },
-  { href: 'milestones',         label: 'الجدول الزمني',                   v: ['contracting'] },
+  { href: 'milestones',         label: 'الجدول الزمني',                   v: ['contracting', 'real_estate'] },
   { href: 'daily-reports',      label: 'يومية الموقع',                    v: ['contracting'] },
   { href: 'material-requests',  label: 'طلبات المواد',                    v: ['contracting'] },
   { href: 'inspections',        label: 'الفحص والاستلام',                 v: ['contracting'] },
   { href: 'equipment-logs',     label: 'صيانة المعدات',                   v: ['contracting'] },
-  { href: 'company-docs',       label: 'سجلات الشركة',                    v: ['contracting'] },
+  { href: 'company-docs',       label: 'سجلات الشركة',                    v: ['contracting', 'real_estate'] },
 ]
 
 // 🔐 مفتاح الصلاحية المطلوب لموديول معيّن (null = مفتوح لأي عضو في البيزنس)
