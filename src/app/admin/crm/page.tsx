@@ -51,6 +51,8 @@ import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { adminRpc } from '@/lib/adminRpc'
 import { fmtDateTime, sinceLabel } from '@/lib/arDateTime'
+// 🗣️ اسكريبت البيع بتاع كل نشاط — نفس الملف بيغذّي زرار «أرسل» وصفحة الطباعة
+import { waLink, scriptFor } from '@/lib/crmScripts'
 import {
   ArrowRight, Loader2, ShieldAlert, RefreshCw, Users, Phone, ListChecks,
   Download, Search, X, Shuffle, Sparkles, AlertTriangle, CheckCircle2,
@@ -506,6 +508,10 @@ export default function AdminCrmPage() {
                 onClick={() => run('crm_ingest_contacts', {}, 'الأرقام اتجمّعت')}>
                 <RefreshCw style={{ width: 15, height: 15 }} /> اسحب أرقام جديدة
               </button>
+              {/* 🖨️ (٢٣ أغسطس ٢٠٢٦) نسخة الورق لفريق مضمونة — نفس كلام زرار «أرسل» */}
+              <Link href="/admin/crm/scripts" style={{ ...btn(), textDecoration: 'none' }}>
+                <ListChecks style={{ width: 15, height: 15 }} /> اسكريبتات البيع (للطباعة)
+              </Link>
               <span style={{ fontSize: 11.5, color: C.sub, marginRight: 'auto' }}>
                 «وزّع بالدور» مابيلمسش حد ليه مسؤول بالفعل — لو التخصصات اتغيّرت
                 استخدم «أعد التوزيع» · التصنيف اليدوي مابيتدهسش ·
@@ -763,6 +769,22 @@ export default function AdminCrmPage() {
                         </td>
                         <td style={{ padding: '10px 12px', textAlign: 'left', whiteSpace: 'nowrap' }}>
                           {r.calls > 0 && <span style={{ fontSize: 11, color: C.sub, marginLeft: 6 }}>{r.calls} مكالمة</span>}
+                          {/* 📤 (٢٣ أغسطس ٢٠٢٦ — محمد: «عايز لما تدوس زرار أرسل
+                              اسكريبت كل نشاط يكون متحضر») الرسالة بتتكتب لوحدها
+                              حسب **تخصص الرقم ده** — عقارات غير عربيات غير مصانع.
+                              ⚠️ بيفتح واتساب برسالة جاهزة والمندوب هو اللي بيدوس
+                                 إرسال. مابنبعتش من السيرفر بالجملة عن قصد: ده
+                                 بالظبط اللي وقّف أرقامنا قبل كده (شوف حارس «رد بس»
+                                 في src/lib/wa-reply-only.ts). */}
+                          <a
+                            href={waLink(r.phone, r.specialty, r.name, r.owner)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={`اسكريبت ${scriptFor(r.specialty).label} — جاهز على واتساب`}
+                            style={{ ...btn('primary'), padding: '5px 10px', fontSize: 12, marginLeft: 6, textDecoration: 'none', display: 'inline-flex' }}
+                          >
+                            <Send style={{ width: 13, height: 13 }} /> أرسل
+                          </a>
                           <button style={{ ...btn(), padding: '5px 10px', fontSize: 12 }} onClick={() => openDetail(r.id)}>
                             الملف
                           </button>
