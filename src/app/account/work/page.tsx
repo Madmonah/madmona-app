@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import BottomNav from '@/components/BottomNav'
+import AttendancePulse from '@/components/AttendancePulse'
 import { useMadmonaStaff } from '@/lib/useMadmonaStaff'
 import { useTasksLive, pingTasksChanged } from '@/lib/useTasksLive'
 
@@ -106,18 +107,7 @@ function fmtTime(iso: string | null) {
 }
 
 type AutoEvent = { branch: string; action: string; distance_m?: number; reason?: string }
-
-// 📍 موقع واحد بدقة عالية — نفس إعدادات صفحة البصم بالظبط
-function getPos(): Promise<{ lat: number; lng: number; acc: number } | null> {
-  return new Promise((resolve) => {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) { resolve(null); return }
-    navigator.geolocation.getCurrentPosition(
-      (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy }),
-      () => resolve(null),
-      { enableHighAccuracy: true, timeout: 9000, maximumAge: 0 },
-    )
-  })
-}
+// 📍 قراءة الموقع اتنقلت لـ<AttendancePulse/> — بقت مشتركة بين كل الصفحات.
 
 export default function MyWorkPage() {
   const [home, setHome] = useState<Home | null>(null)
@@ -150,43 +140,30 @@ export default function MyWorkPage() {
   //      • جوّه الفرع ومسجّل    → نبضة بس
   //      • بره الفرع ومسجّل     → انصراف
   //    ولو التطبيق اتقفل خالص، وظيفة `auto_clockout_offline_sessions`
-  //    في `orchestrator_jobs` بتقفل الجلسة بعد ١٠ دقايق من آخر نبضة.
-  async function pulse() {
-    try {
-      if (typeof document !== 'undefined' && document.hidden) return
-      const pos = await getPos()
-      if (!pos) return
-      const { data } = await (supabaseBrowser.rpc as unknown as (
-        fn: string, args: Record<string, unknown>,
-      ) => Promise<{ data: { ok?: boolean; events?: AutoEvent[] } | null }>)(
-        'employee_auto_attendance',
-        { p_lat: pos.lat, p_lng: pos.lng, p_accuracy_m: pos.acc },
-      )
-      const ev = (data?.events || []).find(e => e.action === 'clock_in' || e.action === 'clock_out')
-      if (ev) {
-        setAutoMsg(ev.action === 'clock_in'
-          ? `اتسجّل حضورك أوتوماتيك في ${ev.branch} ✅`
-          : `اتسجّل انصرافك أوتوماتيك من ${ev.branch} 👋`)
-        setTimeout(() => setAutoMsg(null), 6000)
-        await load()
-      }
-    } catch (e) {
-      console.error('[account/work] auto attendance failed:', e)
-    }
-  }
+  //    في `orchestrator_jobs` بتقفل الجلسة بعد آخر نبضة.
+  //
+  // 🐞 (٢٣ أغسطس ٢٠٢٦ — محمد: «بيسجل انصراف والابليكيشن مفتوح») النبضة
+  //    كانت متكتوبة هنا **جوّه الصفحة دي بس**، وكانت بتقف على
+  //    `document.hidden` و على فشل الـGPS. يعني أول ما الموظف يسيب
+  //    الصفحة دي ويروح يشتغل، النبض يقف والنظام يقفله بعد ١٠ دقايق.
+  //    اتنقلت لـ<AttendancePulse/> اللي في لاي-أوت الشات كمان عشان
+  //    تفضل شغالة في كل صفحات الأبليكيشن. تفاصيل الجذر في الكومبوننت.
+  const handleAutoEvent = useCallback((ev: AutoEvent) => {
+    setAutoMsg(ev.action === 'clock_in'
+      ? `اتسجّل حضورك أوتوماتيك في ${ev.branch} ✅`
+      : `اتسجّل انصرافك أوتوماتيك من ${ev.branch} 👋`)
+    setTimeout(() => setAutoMsg(null), 6000)
+    load()
+  }, [load])
 
   useEffect(() => {
     let cancelled = false
-    let iv: ReturnType<typeof setInterval> | null = null
     ;(async () => {
-      const ok = await load()
+      await load()
       if (cancelled) return
       setLoading(false)
-      if (!ok) return
-      pulse()
-      iv = setInterval(() => { pulse() }, 60000)
     })()
-    return () => { cancelled = true; if (iv) clearInterval(iv) }
+    return () => { cancelled = true }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [])
 
@@ -202,6 +179,7 @@ export default function MyWorkPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7] pb-28" dir="rtl">
+      <AttendancePulse onEvent={handleAutoEvent} />
       <header className="sticky top-0 z-30 bg-white/85 backdrop-blur-xl border-b border-black/5">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
           <Link href="/account" className="w-9 h-9 bg-[#FAFAF7] rounded-full flex items-center justify-center hover:bg-gray-100">

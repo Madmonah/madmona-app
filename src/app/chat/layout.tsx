@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import ChatNotificationGate from '@/components/ChatNotificationGate'
 import InstallChatPWA from '@/components/InstallChatPWA'
+import AttendancePulse from '@/components/AttendancePulse'
 
 // أيقونة الشات لوحدها على التليفون: مانيفست خاص بالشات (id مستقل، بيفتح على /chat)
 // بيتحمّل كتطبيق منفصل اسمه "شات مضمونة" غير تطبيق المنصة الرئيسي.
@@ -22,6 +23,11 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
       {children}
       <ChatNotificationGate />
       <InstallChatPWA />
+      {/* ⏱️ (٢٣ أغسطس ٢٠٢٦ — محمد: «بيسجل انصراف والابليكيشن مفتوح»)
+          النبضة كانت في /account/work بس، فأول ما الموظف يفتح الشات أو
+          التاسكات كانت بتقف والنظام يحسبه خرج بعد ١٠ دقايق. الشات هو
+          المكان اللي الفريق قاعد فيه طول اليوم، فالنبضة لازم تعيش هنا. */}
+      <AttendancePulse />
     </>
   )
 }
