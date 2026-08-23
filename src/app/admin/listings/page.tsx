@@ -105,9 +105,11 @@ export default function AdminListingsPage() {
      أي إعلان من الأدمن». نموذج مختصر: العنوان والتصنيف + اسم صاحبه ورقمه. */
   const [adder, setAdder] = useState<null | {
     title: string; category_id: string; city: string;
-    owner_name: string; owner_phone: string; contact_phone: string
+    owner_name: string; owner_phone: string; contact_phone: string;
+    photos: File[]; publish: boolean;
   }>(null)
   const [adderErr, setAdderErr] = useState<string | null>(null)
+  const [adderProgress, setAdderProgress] = useState<string | null>(null)
   const [ownerErr, setOwnerErr] = useState<string | null>(null)
 
   // ---- guard ----
@@ -133,6 +135,7 @@ export default function AdminListingsPage() {
       setAdder({
         title: '', category_id: facets.categories[0]?.id || '',
         city: '', owner_name: '', owner_phone: '', contact_phone: '',
+        photos: [], publish: true,
       })
       window.history.replaceState({}, '', '/admin/listings')
     }
@@ -140,8 +143,10 @@ export default function AdminListingsPage() {
 
   async function saveNewListing() {
     if (!adder) return
-    setBusy(true); setAdderErr(null)
+    setBusy(true); setAdderErr(null); setAdderProgress(null)
     try {
+      // ١) اخلق الإعلان draft
+      setAdderProgress('بنعمل الإعلان…')
       const res: any = await adminRpc('admin_add_listing', {
         p_title: adder.title.trim(),
         p_category: adder.category_id,
@@ -150,11 +155,49 @@ export default function AdminListingsPage() {
         p_owner_phone: adder.owner_phone.trim() || null,
         p_contact_phone: adder.contact_phone.trim() || null,
       })
+      const listingId = String(res?.id || '')
+      if (!listingId) throw new Error('الإعلان اتخلق بس مافيش رقم')
+
+      // ٢) ارفع الصور واحدة واحدة (multipart POST)
+      let uploaded = 0
+      for (let i = 0; i < adder.photos.length; i++) {
+        const file = adder.photos[i]
+        setAdderProgress(`بنرفع الصور… ${i + 1}/${adder.photos.length}`)
+        const fd = new FormData()
+        fd.append('listing_id', listingId)
+        fd.append('file', file)
+        fd.append('display_order', String(i))
+        fd.append('is_primary', i === 0 ? 'true' : 'false')
+        const up = await fetch('/api/admin/listing-photo', { method: 'POST', body: fd })
+        const upJ = await up.json().catch(() => null)
+        if (!up.ok || upJ?.ok === false) {
+          throw new Error(`صورة ${i + 1}: ${upJ?.error || 'فشل الرفع'}`)
+        }
+        uploaded++
+      }
+
+      // ٣) لو محمد عايز ينشر ولسه فيه صور، اعمل النشر
+      if (adder.publish) {
+        if (uploaded === 0) {
+          setAdderProgress(null)
+          setAdderErr('النشر بيحتاج صورة على الأقل — الإعلان اتحفظ كـdraft.')
+          setBusy(false)
+          setAdder(null)
+          setFlash(`اتحفظ كـdraft (${listingId.slice(0, 8)}) — محتاج صور عشان يتنشر`)
+          await load()
+          return
+        }
+        setAdderProgress('بننشر…')
+        await adminRpc('admin_publish_listing_now', { p_id: listingId })
+        setFlash(`اتنشر (${listingId.slice(0, 8)}) ✓`)
+      } else {
+        setFlash(`اتحفظ كـdraft (${listingId.slice(0, 8)}) ✓`)
+      }
+
       setAdder(null)
-      setFlash(`اتضاف الإعلان (${(res?.id || '').slice(0, 8)}) ✓`)
       await load()
     } catch (e: any) { setAdderErr(e?.message || 'مقدرناش نضيف') }
-    finally { setBusy(false) }
+    finally { setBusy(false); setAdderProgress(null) }
   }
 
   async function saveOwner() {
@@ -711,8 +754,35 @@ export default function AdminListingsPage() {
           <input value={adder.contact_phone} onChange={(e) => setAdder({ ...adder, contact_phone: e.target.value })}
             placeholder="لو مختلف عن موبايل صاحب الإعلان" inputMode="tel"
             style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', direction: 'ltr', textAlign: 'right' }} />
-          <p style={{ fontSize: 11, color: C.sub, margin: '6px 0 0' }}>سيبه فاضي = هيتحط رقم صاحب الإعلان.</p>
+          <p style={{ fontSize: 11, color: C.sub, margin: '6px 0 0 0' }}>سيبه فاضي = هيتحط رقم صاحب الإعلان.</p>
 
+          {/* 📸 الصور — لازم واحدة على الأقل عشان الإعلان يتنشر */}
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, margin: '18px 0 6px' }}>
+            📸 صور الإعلان
+            {adder.photos.length > 0 && (
+              <span style={{ color: C.green, marginInlineStart: 6 }}>· اختار {adder.photos.length}</span>
+            )}
+          </label>
+          <input
+            type="file" accept="image/*" multiple
+            onChange={(e) => setAdder({ ...adder, photos: Array.from(e.target.files || []) })}
+            style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px dashed ${C.line}`, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}
+          />
+          <p style={{ fontSize: 11, color: C.sub, margin: '6px 0 0', lineHeight: 1.7 }}>
+            أول صورة بتبقى صورة الغلاف. النشر بيتوقف من غير صور — الإعلان بيتحفظ كـdraft.
+          </p>
+
+          {/* 📢 النشر */}
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, cursor: 'pointer', userSelect: 'none' }}>
+            <input type="checkbox" checked={adder.publish}
+              onChange={(e) => setAdder({ ...adder, publish: e.target.checked })}
+              style={{ width: 18, height: 18, cursor: 'pointer' }} />
+            <span style={{ fontSize: 13, fontWeight: 700 }}>انشر فورًا بعد الرفع</span>
+          </label>
+
+          {adderProgress && (
+            <p style={{ fontSize: 12, color: C.green2, margin: '10px 0 0', lineHeight: 1.7 }}>{adderProgress}</p>
+          )}
           {adderErr && <p style={{ fontSize: 12, color: C.danger, margin: '10px 0 0', lineHeight: 1.7 }}>{adderErr}</p>}
 
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
@@ -724,7 +794,7 @@ export default function AdminListingsPage() {
                 color: (!adder.title.trim() || !adder.category_id) ? '#999' : '#fff',
                 fontWeight: 700, borderRadius: 12, border: 'none',
                 cursor: (!adder.title.trim() || !adder.category_id) ? 'not-allowed' : 'pointer' }}>
-              {busy ? 'بنضيف…' : 'أضف'}
+              {busy ? (adderProgress || 'بنضيف…') : (adder.publish ? '➕ ضيف وانشر' : '➕ ضيف كـdraft')}
             </button>
           </div>
         </Modal>
