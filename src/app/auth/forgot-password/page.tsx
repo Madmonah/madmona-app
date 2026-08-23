@@ -37,6 +37,22 @@ async function phoneAuth(body: Record<string, unknown>) {
   return res.json() as Promise<{ success: boolean; error?: string; sent_to?: string }>
 }
 
+// 🐞 (٢٣ أغسطس ٢٠٢٦ — محمد: «اكونت عبير مش بيرضى يبعت أوتي بي»)
+//    كود الواتساب بقى بيتبعت من التطبيق نفسه مش من الـedge function.
+//    السبب: الـedge function بتبعت على جسر رايلواي اللي **اتمسح** —
+//    جرّبناها على البرودكشن ورجّعت wa_send_failed_404، فالكود كان
+//    بيتولّد والرسالة عمرها ما بتتبعت. التطبيق بيستخدم القناة الحية
+//    (OpenWA) اللي كل الإرسال التاني ماشي عليها.
+//    كود الإيميل وتغيير الباسورد لسه على الـedge function — دول شغالين.
+async function waOtp(phone: string) {
+  const res = await fetch('/api/auth/forgot-otp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone }),
+  })
+  return res.json() as Promise<{ success: boolean; error?: string; sent_to?: string }>
+}
+
 function friendlyError(code?: string): string {
   switch (code) {
     case 'no_account_with_phone':
@@ -91,7 +107,9 @@ function ForgotContent() {
     setChannel(via)
     setSubmitting(true)
     try {
-      const out = await phoneAuth({ action: 'forgot_start', phone: normalized, channel: via })
+      const out = via === 'whatsapp'
+        ? await waOtp(normalized)
+        : await phoneAuth({ action: 'forgot_start', phone: normalized, channel: via })
       if (!out.success) {
         setError(friendlyError(out.error))
         return
@@ -111,11 +129,9 @@ function ForgotContent() {
     setError(null)
     setSubmitting(true)
     try {
-      const out = await phoneAuth({
-        action: 'forgot_start',
-        phone: normalizedRef.current,
-        channel,
-      })
+      const out = channel === 'whatsapp'
+        ? await waOtp(normalizedRef.current)
+        : await phoneAuth({ action: 'forgot_start', phone: normalizedRef.current, channel })
       if (!out.success) setError(friendlyError(out.error))
       else setResendIn(60)
     } catch {
