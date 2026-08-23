@@ -1336,10 +1336,17 @@ function StepBasics({
      البيع الفردي (sale-*) مايشوفش الزرار خالص. */
   const _csBr = draft.category_slug || '';
   const showBranchesOption = !_csBr.startsWith('sale-');
+  /* 🏷️ (٢٤ أغسطس ٢٦) محمد: «لازم نفرّق في كل قسم: هل ده معرض ولا إعلان
+     وخلاص. لو معرض هنتعامل معاه B2B». سؤال صريح بدل التخمين، وبيتسجّل
+     في account_type → بيوصل listings.seller_kind. */
+  const [sellerType, setSellerType] = useState<'individual' | 'business'>(
+    draft.account_type === 'business' || !!(slugTrack && SURE_COMPANY_TRACKS.includes(slugTrack))
+      ? 'business' : 'individual'
+  );
+  const isBusiness = sellerType === 'business';
   const [hasBranches, setHasBranches] = useState<boolean>(
     draft.account_type === 'business' || !!(slugTrack && SURE_COMPANY_TRACKS.includes(slugTrack))
   );
-  const isBusiness = hasBranches;
 
   // Mohamed May 31 2026: multi-branch — one listing can cover several branches
   type Branch = { name?: string; city?: string; address?: string; phone?: string };
@@ -1468,7 +1475,7 @@ function StepBasics({
       .filter((b) => b.name || b.address || b.phone);
     if (isBusiness && cleanBranches.length > 0) finalAttrs.branches = cleanBranches;
 
-    onSubmit({ title, description, city, district, address, latitude, longitude, attributes: finalAttrs });
+    onSubmit({ title, description, city, district, address, latitude, longitude, attributes: finalAttrs, account_type: sellerType });
   }
 
   return (
@@ -1478,10 +1485,24 @@ function StepBasics({
 
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
 
-      {/* «شركة/فرد» اتشالت — زرار محايد لإضافة الفروع بس.
-          🚗 (٢٤ أغسطس ٢٦) مش بيظهر في البيع الفردي (sale-*) — واحد بيبيع
-          عربيته مالوش فروع. */}
-      {showBranchesOption && (
+      {/* 🏷️ (٢٤ أغسطس ٢٦) السؤال الصريح — معرض/نشاط ولا فرد */}
+      <div className="mb-5">
+        <p className="text-sm font-semibold mb-2">إنت مين؟ *</p>
+        <div className="flex gap-2">
+          {([['individual', '👤 فرد', 'ببيع/بأجّر حاجتي الشخصية'],
+             ['business', '🏢 معرض / نشاط تجاري', 'عندي بضاعة أو خدمات شغّالة']] as const).map(([v, l, d]) => (
+            <button key={v} type="button" onClick={() => setSellerType(v)}
+              className={`flex-1 p-3 rounded-xl border-2 text-right transition-all ${
+                sellerType === v ? 'border-[#059669] bg-emerald-50' : 'border-[#E5E5E0] bg-white'}`}>
+              <span className="block text-sm font-bold">{l}</span>
+              <span className="block text-[11px] text-gray-500 mt-0.5">{d}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* الفروع — للنشاط التجاري بس، ومش في البيع الفردي */}
+      {isBusiness && showBranchesOption && (
         <div className="mb-5 p-3 rounded-xl bg-white border border-[#E5E5E0]">
           <label className="flex items-start gap-3 cursor-pointer">
             <input
@@ -3596,44 +3617,14 @@ function StepPricing({
         </div>
       </Field>
 
-      {/* 💸 (٢٤ أغسطس ٢٦) معاينة العمولة الصح — مش ١٠٪ للكل.
-          سيارات = بالاتفاق (مانعرضش نسبة). عقار بيع = ٥٪. بحرية بيع = ٥٪.
-          الباقي (خدمات/إيجارات/تجزئة) = ١٠٪. */}
-      {isVehicleSale ? (
-        price !== '' && Number(price) > 0 && (
-          <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
-            💰 عمولة السيارات <strong>بالاتفاق</strong> — البايع هو اللي بيحددها.
-            <br />
-            نصيبك يعتمد على الاتفاق ده وقت البيع.
-          </div>
-        )
-      ) : isPropertySale || isMarineSale ? (
-        price !== '' && Number(price) > 0 && (
-          <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
-            💰 السعر: <strong>{Number(price).toLocaleString('ar-EG')} جنيه</strong>
-            <br />
-            • نصيب حضرتك (بعد عمولة 5%): <strong>{Math.round(Number(price) * 0.95).toLocaleString('ar-EG')} جنيه</strong>
-          </div>
-        )
-      ) : (
-        <>
-          {/* Phase E (May 18 2026): weekly projection for daily rentals */}
-          {isRentalCopy && price !== '' && period === 'daily' && Number(price) > 0 && (
-            <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
-              💰 لو حد أجره أسبوع كامل = <strong>{Number(price) * 7} جنيه</strong>
-              <br />
-              • نصيب حضرتك (بعد عمولة 10%): <strong>{Math.round(Number(price) * 7 * 0.9)} جنيه</strong>
-            </div>
-          )}
-          {/* Phase E: per-unit commission preview */}
-          {price !== '' && Number(price) > 0 && (!isRentalCopy || period !== 'daily') && (
-            <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
-              💰 من كل {periodLabel[period] || period}:
-              <br />
-              • نصيب حضرتك (بعد عمولة 10%): <strong>{Math.round(Number(price) * 0.9)} جنيه</strong>
-            </div>
-          )}
-        </>
+      {/* 💰 (٢٤ أغسطس ٢٦) محمد: «اشيل خانة العمولة من أي إضافة أو أي
+          مكان على مستوى الأبليكيشن — العمولة في الباكاند فقط. المبدأ:
+          السعر اللي بتقول عليه هو اللي بتاخده».
+          كل حسابات «بعد عمولة X%» اتشالت من هنا نهائيًا. */}
+      {price !== '' && Number(price) > 0 && (
+        <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
+          💰 السعر اللي كتبته هو اللي بيوصلك <strong>بالكامل</strong> — من غير أي خصومات.
+        </div>
       )}
 
       {/* Beauty: add-ons section */}
