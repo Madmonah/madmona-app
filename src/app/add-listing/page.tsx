@@ -221,6 +221,21 @@ async function getDBExtraCategories(): Promise<MainCategory[]> {
     };
     const subs = (allSubs || []) as SubRow[];
 
+    // 🚗 (٢٤ أغسطس ٢٦) محمد: «حط دروب ليست في العربيات ومحصلش» — شجرة
+    // العربيات ٣ مستويات (مركبات بيع → زيرو/مستعملة → سيارة)، والفetch كان
+    // مستويين بس، فـ«سيارة زيرو» و«سيارة مستعملة» ماكانوش بيوصلوا للويزارد
+    // خالص. بنجيب الأحفاد ونحطهم ورا أبوهم في نفس القايمة.
+    let grandSubs: SubRow[] = [];
+    if (subs.length > 0) {
+      const { data: allGrand } = await supabase
+        .from('categories')
+        .select(WIZARD_META_COLS + ', parent_id, also_show_in')
+        .in('parent_id', subs.map((s) => s.id))
+        .eq('is_active', true)
+        .order('display_order');
+      grandSubs = ((allGrand || []) as unknown) as SubRow[];
+    }
+
     return tops.map((top) => {
       const topMeta = top as unknown as WizardMetaRow;
       // Subs whose primary parent IS this main, OR who list this main in also_show_in.
@@ -229,6 +244,12 @@ async function getDBExtraCategories(): Promise<MainCategory[]> {
           s.parent_id === top.id ||
           (Array.isArray(s.also_show_in) && s.also_show_in.includes(top.id)),
       );
+      // ضم الأحفاد ورا أبوهم مباشرة
+      const expandedSubs: SubRow[] = [];
+      for (const s of matchingSubs) {
+        expandedSubs.push(s);
+        for (const g of grandSubs) if (g.parent_id === s.id) expandedSubs.push(g);
+      }
       return {
         slug: top.slug,
         name_ar: top.name_ar,
@@ -244,7 +265,7 @@ async function getDBExtraCategories(): Promise<MainCategory[]> {
         group_name_ar: (top as { group_name_ar?: string | null }).group_name_ar ?? null,
         group_emoji: (top as { group_emoji?: string | null }).group_emoji ?? null,
         group_display_order: (top as { group_display_order?: number | null }).group_display_order ?? null,
-        subs: matchingSubs.map((s) => ({
+        subs: expandedSubs.map((s) => ({
           slug: s.slug,
           name_ar: s.name_ar,
           emoji: s.icon || '📁',
