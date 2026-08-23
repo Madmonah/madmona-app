@@ -696,6 +696,17 @@ function EmployeeEditForm({
   const [branchId, setBranchId] = useState(employee.branch_id || '')
   const [commission, setCommission] = useState(employee.personal_commission_rate || 0)
 
+  /* 📱 (٢٢ أغسطس ٢٠٢٦ — محمد: «ضيفتهم من الإدارة الكاملة… عايز أي حد أضيفه
+     يسمع في أدمن ستاف») الرقم كان اختياري هنا، والاسم لوحده هو اللي كان
+     مطلوب. بس حساب الموظف على المنصة بيتعمل **من الرقم** — التريجر
+     `trg_provision_madmona_employee` بيقرا `phone` (أو `email`) ويعمل منه
+     الحساب. فالموظف اللي بيتضاف من غير رقم بيدخل الجدول وخلاص: مالوش
+     حساب، ومابيظهرش في التوزيع ولا في الـCRM — من غير أي رسالة تقول ليه.
+     دلوقتي الرقم مطلوب، والزرار مقفول لحد ما يتكتب صح. */
+  const digits = phone.replace(/\D/g, '')
+  const phoneOk = /^01\d{9}$/.test(digits) || /^201\d{9}$/.test(digits)
+  const canSave = !!name.trim() && phoneOk
+
   return (
     <div className="bg-white rounded-2xl border-2 border-[#059669] p-4 space-y-2">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -709,7 +720,20 @@ function EmployeeEditForm({
           <option value="">بدون فرع (إدارة عليا)</option>
           {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
-        <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="الهاتف" className={INPUT_SMALL} />
+        <div>
+          <input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="الموبايل * (01xxxxxxxxx)"
+            inputMode="tel"
+            className={`${INPUT_SMALL} ${phone && !phoneOk ? 'border-red-400' : ''}`}
+          />
+          <p className={`text-[10.5px] mt-1 leading-relaxed ${phone && !phoneOk ? 'text-red-600 font-bold' : 'text-[#6B7280]'}`}>
+            {phone && !phoneOk
+              ? 'الرقم مش مظبوط — لازم ١١ رقم يبدأوا بـ01'
+              : 'حساب الموظف بيتعمل من الرقم ده أوتوماتيك. من غيره مش هيقدر يدخل ولا يتوزّع عليه شغل.'}
+          </p>
+        </div>
         <div className="md:col-span-2">
           <label className="text-[11px] text-[#6B7280]">عمولته الشخصية (%)</label>
           <input
@@ -729,7 +753,8 @@ function EmployeeEditForm({
             full_name: name, role, phone, branch_id: branchId || null,
             personal_commission_rate: commission,
           })}
-          disabled={!name.trim()}
+          disabled={!canSave}
+          title={!canSave ? 'محتاج الاسم والموبايل' : undefined}
           className="px-4 py-1.5 rounded-lg bg-[#34D399] text-[#04352A] text-xs font-bold hover:shadow-md transition-shadow disabled:opacity-50 flex items-center gap-1"
         >
           <Save className="w-3 h-3" />
