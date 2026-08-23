@@ -35,21 +35,46 @@ export default function WhatsAppLogin({
   const [code, setCode] = useState('')
   const codeRef = useRef<string>('')
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  // 🔒 (٢٣ أغسطس ٢٠٢٦) قفل: تيك واحد بس شغال في أي لحظة — تحت.
+  const busyRef = useRef(false)
 
   useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current) }, [])
 
   // polling: بنسأل كل ثانيتين لحد ما الرسالة توصل وتتأكد، وبعدين نكمّل الدخول
   function startPolling() {
     if (timerRef.current) clearInterval(timerRef.current)
+    busyRef.current = false
     const startedAt = Date.now()
     timerRef.current = setInterval(async () => {
+      // 🐞 (٢٣ أغسطس ٢٠٢٦ — الجذر بتاع «نورا وعبير مش عارفين يدخلوا»)
+      //
+      //    التايمر بيضرب كل ثانيتين. لو نداء الـpoll خد أكتر من ثانيتين (نت
+      //    موبايل — وده الحال في المكتب)، التيك التاني بيبدأ **قبل** ما الأول
+      //    يوصل لـclearInterval، فالاتنين بيشوفوا verified وبينده finish مرتين.
+      //    والسيرفر ساعتها بيعمل generateLink تاني، واللي بيبطّل التوكن الأول
+      //    (اتأكدنا منها بالتجربة على البرودكشن: 403 Email link is invalid).
+      //    النتيجة: الدخول بينجح على السيرفر وبيتضيّع في المتصفح.
+      //
+      //    القفل ده بيمنع أي تداخل. وصلّحنا السيرفر كمان (إعادة صك التوكن)
+      //    عشان الاتنين يبقوا محصّنين مش واحد.
+      if (busyRef.current) return
+      busyRef.current = true
+      try {
       if (Date.now() - startedAt > 5 * 60 * 1000) {
         clearInterval(timerRef.current!)
         setPhase('idle'); setErr('الوقت خلص — جرب تاني')
         return
       }
       try {
-        const s = await fetch(`/api/auth/wa?code=${codeRef.current}`).then((r) => r.json())
+        const r = await fetch(`/api/auth/wa?code=${codeRef.current}`)
+        if (r.status === 429) {
+          // 🔊 مانبلعش الـ429 — المستخدم كان بيشوف «حصلت مشكلة» من غير ما يعرف
+          //    إن المطلوب منه يستنى بس.
+          clearInterval(timerRef.current!)
+          setPhase('idle'); setErr('الضغط عالي دلوقتي — استنى دقيقة وجرب تاني')
+          return
+        }
+        const s = await r.json()
         if (s.verified) {
           clearInterval(timerRef.current!)
           setPhase('finishing')
@@ -60,19 +85,29 @@ export default function WhatsAppLogin({
           })
           const fj = await f.json()
           if (!f.ok || !fj.token_hash) {
+            setPhase('idle')
             // رقم واتساب مخفي (LID) مش قادرين نتأكد منه → نوجّه لجوجل بدل فشل صامت
             if (fj?.error === 'lid_no_phone') {
-              setPhase('idle')
               setErr('رقم واتسابك مخفي فمقدرناش نتأكد منه — سجّل دخول بـ Google من تحت 👇')
+            } else if (f.status === 429 || fj?.error === 'rate_limited') {
+              setErr('الضغط عالي دلوقتي — استنى دقيقة وجرب تاني')
+            } else if (fj?.error === 'expired') {
+              setErr('الكود خلصت مدته — دوس «جرب تاني»')
             } else {
-              setPhase('idle'); setErr('حصلت مشكلة — جرب تاني')
+              // 🔊 بنطبع السبب الحقيقي في الكونسول. «حصلت مشكلة» لوحدها
+              //    خلّتنا نلف يومين ورا سبب دخول نورا من غير أي دليل.
+              console.error('[wa-login] finish failed:', f.status, fj)
+              setErr('حصلت مشكلة — جرب تاني')
             }
             return
           }
           const { error } = await supabaseBrowser.auth.verifyOtp({
             type: 'email', token_hash: fj.token_hash,
           })
-          if (error) { setPhase('idle'); setErr('حصلت مشكلة في الدخول — جرب تاني'); return }
+          if (error) {
+            console.error('[wa-login] verifyOtp failed:', error.status, error.message)
+            setPhase('idle'); setErr('حصلت مشكلة في الدخول — جرب تاني'); return
+          }
           // 🔗 حساب واحد (8 Aug 2026): بعد ما جلسة Supabase اتثبتت، جدّد توكن
           //    أقسام مضمونة (المارد/الإدارة) في الخلفية عشان كله يعرفك فورًا
           import('@/lib/madmonaSession').then((m) => m.syncModuleSession()).catch(() => {})
@@ -82,6 +117,7 @@ export default function WhatsAppLogin({
           onDone({ phone: fj.phone || null, full_name: fj.full_name || null, madmona_token: fj.madmona_token || null })
         }
       } catch { /* poll بيكمل */ }
+      } finally { busyRef.current = false }
     }, 2000)
   }
 
@@ -108,7 +144,15 @@ export default function WhatsAppLogin({
         body: JSON.stringify({ action: 'start' }),
       })
       const j = await res.json()
-      if (!res.ok || !j.code) { setErr('حصلت مشكلة — جرب تاني'); return }
+      if (!res.ok || !j.code) {
+        if (res.status === 429 || j?.error === 'rate_limited') {
+          setErr('الضغط عالي دلوقتي — استنى دقيقة وجرب تاني')
+        } else {
+          console.error('[wa-login] start failed:', res.status, j)
+          setErr('حصلت مشكلة — جرب تاني')
+        }
+        return
+      }
       codeRef.current = j.code
       setCode(j.code)
       setWaUrl(j.wa_url)

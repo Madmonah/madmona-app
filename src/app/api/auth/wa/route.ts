@@ -195,7 +195,9 @@ export async function GET(req: NextRequest) {
   const sb = admin()
   // 🔒 (١٢ أغسطس ٢٠٢٦) حد معدل: الـpoll الشرعي = كود واحد كل ~ثانيتين
   // (~450 نداء في الـ15 دقيقة). 900/15د بيسمح بده ويقطع مسح الأكواد الجماعي.
-  if (!(await rateLimitOk(sb, `wa-poll:${clientIp(req)}`, 900, 900))) {
+  // 🏢 (٢٣ أغسطس ٢٠٢٦) مرفوع عشان المكتب المشترك — ١٠ موظفين بيعملوا poll كل
+  //    ثانيتين لمدة ٥ دقايق = ~١٥٠٠ نداء من نفس الـIP، والحد القديم ٩٠٠.
+  if (!(await rateLimitOk(sb, `wa-poll:${clientIp(req)}`, 5000, 900))) {
     return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
   }
   const { data } = await sb
@@ -237,10 +239,11 @@ export async function GET(req: NextRequest) {
     } catch { /* نرجع لحالة الويبهوك العادية */ }
   }
 
-  return NextResponse.json({
-    verified: !!data.verified && !data.session_minted_at,
-    expired,
-  })
+  // 🐞 (٢٣ أغسطس ٢٠٢٦) كان `&& !data.session_minted_at` — يعني أول ما السيرفر
+  //    يصك توكن، الكود بيموت. فلو المتصفح فشل بعد كده (اللي حصل مع نورا)
+  //    الـpolling بيفضل يرجّع verified:false للأبد والمستخدم قافل عليه.
+  //    دلوقتي finish بقى بيعيد الصك، فالـpoll لازم يفضل يقول verified.
+  return NextResponse.json({ verified: !!data.verified, expired })
 }
 
 // ---------------------------------------------------------------- POST
@@ -251,8 +254,14 @@ export async function POST(req: NextRequest) {
 
   // ---- start: ولّد كود يبعته العميل للمارد
   if (body.action === 'start') {
-    // 🔒 حد معدل: مستخدم شرعي بيبدأ مرة-تلاتة. الإغراق بيملى الجدول.
-    if (!(await rateLimitOk(sb, `wa-start:${clientIp(req)}`, 15, 3600))) {
+    // 🔒 حد معدل: الإغراق بيملى الجدول.
+    // 🏢 (٢٣ أغسطس ٢٠٢٦ — محمد: «نورا وعبير لسه مش عارفين يدخلوا») الحد كان
+    //    ١٥/ساعة **لكل IP**، ومكتب مضمونة كله ورا راوتر واحد (197.37.176.158).
+    //    يعني أول ٤-٥ موظفين بيدخلوا بيخلّصوا حصة المكتب كله، واللي بعدهم
+    //    بياخد 429 وبيشوف «حصلت مشكلة — جرب تاني» ويفضل في اللوب ده للأبد.
+    //    شفناها بالأرقام: wa-start عدّاد ١٤/١٥ و wa-finish ٩/١٠ ساعة ما سألنا.
+    //    الكود نفسه عشوائي ومرة واحدة، فالحماية الحقيقية منه مش من الـIP.
+    if (!(await rateLimitOk(sb, `wa-start:${clientIp(req)}`, 120, 3600))) {
       return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
     }
     const code = genCode()
@@ -272,10 +281,15 @@ export async function POST(req: NextRequest) {
   if (body.action === 'finish') {
     // 🔒 حد معدل: finish هو اللي بيصك سيشن — ده الهدف الحقيقي لأي brute
     // force على الأكواد. مستخدم شرعي بيندهها مرة (أو مرتين لو الشبكة قطعت).
-    if (!(await rateLimitOk(sb, `wa-finish:${clientIp(req)}`, 10, 600))) {
+    // 🏢 (٢٣ أغسطس ٢٠٢٦) الحد بقى **على الكود** مش على الـIP. الـbrute force
+    //    بيجرّب أكواد كتير مختلفة، فالحد على الكود هو اللي بيوقّفه فعلاً —
+    //    أما الحد على الـIP فكان بيعاقب مكتب مضمونة كله (كل الموظفين ورا
+    //    راوتر واحد) وبيمنع اللي بيدخل خامس. سايبين حد IP واسع كشبكة أمان.
+    const code = (body.code || '').toUpperCase()
+    if (!(await rateLimitOk(sb, `wa-finish-code:${code}`, 6, 600))
+      || !(await rateLimitOk(sb, `wa-finish:${clientIp(req)}`, 120, 600))) {
       return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
     }
-    const code = (body.code || '').toUpperCase()
     const { data: row } = await sb
       .from('wa_inbound_verifications')
       .select('id, verified, verified_phone, expires_at, session_minted_at')
@@ -286,12 +300,29 @@ export async function POST(req: NextRequest) {
     if (!row?.verified || !row.verified_phone) {
       return NextResponse.json({ error: 'not_verified' }, { status: 400 })
     }
-    if (row.session_minted_at) {
-      return NextResponse.json({ error: 'already_used' }, { status: 400 })
-    }
     if (new Date(row.expires_at) < new Date()) {
       return NextResponse.json({ error: 'expired' }, { status: 400 })
     }
+    // 🐞 (٢٣ أغسطس ٢٠٢٦ — الجذر بتاع «نورا وعبير مش عارفين يدخلوا»)
+    //
+    //    الـpolling في WhatsAppLogin.tsx ممكن ينده finish **مرتين** لو نداء
+    //    الـpoll خد أكتر من ثانيتين (نت موبايل بطيء) — التيك التاني بيبدأ قبل
+    //    ما الأول يعمل clearInterval.
+    //    اتأكدنا بالتجربة على البرودكشن إن نداء generateLink تاني لنفس
+    //    الإيميل **بيبطّل التوكن الأول**:
+    //        التوكن الأول بعد نداء تاني → 403 Email link is invalid or has expired
+    //    فكانت النتيجة واحدة من اتنين، والاتنين بيرموا دخول صح في الزبالة:
+    //      • التاني ياخد `already_used` → الواجهة تقول «حصلت مشكلة» وترمي
+    //        التوكن الأول اللي كان **شغال**.
+    //      • الاتنين يعدّوا → التوكن الأول يتبطّل → verifyOtp يفشل.
+    //    بصمة نورا في الداتابيز مطابقة بالظبط: session_minted_at اتسجّل
+    //    ٠٨:٤٤:٠٧ ومحصلش دخول، وبعدها بـ١٩ ثانية كود جديد (هي دايسة «جرب تاني»).
+    //
+    //    الحل: مانرفضش النداء التاني. طول ما الكود لسه مأكّد وماخلصش،
+    //    بنصك توكن جديد ونرجّعه. الكود نفسه عمره ١٥ دقيقة ومربوط برقم
+    //    اتأكد من مصدر رسالة الواتساب، فإعادة الصك مش بتفتح أي ثغرة —
+    //    وحد الـ٦ نداءات على الكود فوق بيقفل الإغراق.
+    const reMint = !!row.session_minted_at
     try {
       const minted = await mintSession(row.verified_phone, (body.full_name || '').trim() || null)
       await sb.from('wa_inbound_verifications')
@@ -303,12 +334,15 @@ export async function POST(req: NextRequest) {
       //    نبعت اللينك اللي كان رايحه + لينك شات المارد. بنبعت لنفس الـ JID اللي
       //    جت منه رسالة الكود (يوصل حتى للرقم المخفي). best-effort بالكامل — لو
       //    فشل الدخول بيكمّل عادي والمتصفح بيوديه لوجهته.
-      await sendLoginWelcome(sb, {
-        code: (body.code || '').toUpperCase(),
-        verifiedPhone: row.verified_phone,
-        fullName: minted.full_name,
-        next: body.next,
-      })
+      // مابنبعتش الترحيب تاني لو دي إعادة صك — العميل واخده خلاص
+      if (!reMint) {
+        await sendLoginWelcome(sb, {
+          code,
+          verifiedPhone: row.verified_phone,
+          fullName: minted.full_name,
+          next: body.next,
+        })
+      }
 
       return NextResponse.json(minted)
     } catch (e) {
