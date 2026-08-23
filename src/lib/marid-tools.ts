@@ -807,6 +807,14 @@ async function resolveCategorySlug(
   const contentWords = wordsOf(contextText)
   const leadWords = new Set(contentWords.slice(0, 2))
 
+  /* ⚖️ (٢٤ أغسطس ٢٦ — سؤال محمد الاختباري: «شقة في مدينتي للبيع تقع فين؟»)
+     «شقة» موجودة مرتين في الشجرة: بيع (sale-properties-apartment) وإيجار
+     (properties-apartment) — والاتنين بياخدوا نفس نقط المطابقة تقريبًا،
+     فالحسم كان بيقع للصدفة. دلوقتي نيّة البيع/الإيجار من نص الإعلان نفسه
+     بترجّح الفرع الصح: «للبيع/بيع/تمليك» ← sale-*، «للإيجار/إيجار» ← غيره. */
+  const saleIntent = /(للبيع|لبيع|بيع|تمليك|resale)/i.test(contextText)
+  const rentIntent = /(للإيجار|للايجار|إيجار|ايجار|أجر|rent)/i.test(contextText)
+
   function scoreAgainstContent(c: { name_ar: string; group_name_ar: string | null; slug: string }) {
     const catWords = new Set([
       ...wordsOf(c.name_ar),
@@ -815,6 +823,11 @@ async function resolveCategorySlug(
     ])
     let score = 0
     for (const w of contentWords) if (catWords.has(w)) score += leadWords.has(w) ? 5 : 1
+    if (score > 0) {
+      const isSaleCat = c.slug.startsWith('sale-')
+      if (saleIntent && !rentIntent && isSaleCat) score += 3
+      if (rentIntent && !saleIntent && !isSaleCat) score += 3
+    }
     return { score, size: catWords.size }
   }
 
