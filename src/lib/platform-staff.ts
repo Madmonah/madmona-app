@@ -24,6 +24,42 @@ import { supabaseBrowser } from './supabase-browser'
    التفصيلية بتفضل شغّالة زي ما هي جوّه كل تاب.
    ============================================================================ */
 
+/* ----------------------------------------------------------------------------
+   🚪 (٢٣ أغسطس ٢٠٢٦) محمد: «تاب الإعلانات مش عايز يفتح عند أحمد».
+
+   لوحة /admin ليها **بابها الخاص**: كوكي جلسة موظف مضمونة (/admin-entry
+   بإيميل وباسورد). بس ٩ صفحات جوّه اللوحة كانت لسه بتسأل سؤال تاني:
+   «فيه جلسة Supabase Auth؟» — سؤال مالوش لازمة جوّه لوحة مقفولة بكوكي.
+
+   النتيجة: أحمد يدخل اللوحة صح، ويفتح كل التابات، وأول ما يدوس
+   «الإعلانات» تتقفل في وشه رغم إنه أدمن فعلاً.
+
+   `adminPanelStage` بتسأل الباب الصح الأول (الكوكي)، وبترجع لسؤال
+   Supabase بعده — عشان اللي بيفتح الصفحات دي من جوّه التطبيق نفسه
+   (مش من اللوحة) يفضل شغّال زي ما هو.
+
+   ⚠️ مافيش صلاحية اتفتحت هنا: الـmiddleware أصلاً مش بيسيب حد يوصل
+   لـ/admin من غير نفس الكوكي ده.
+   -------------------------------------------------------------------------- */
+export type AdminPanelStage = 'ready' | 'forbidden' | 'unauthenticated'
+
+async function hasAdminPanelSession(): Promise<boolean> {
+  try {
+    const r = await fetch('/api/admin/whoami', { cache: 'no-store', credentials: 'same-origin' })
+    if (!r.ok) return false
+    const j = (await r.json()) as { ok?: boolean }
+    return j?.ok === true
+  } catch {
+    return false
+  }
+}
+
+export async function adminPanelStage(hasSupabaseSession: boolean): Promise<AdminPanelStage> {
+  if (await hasAdminPanelSession()) return 'ready'
+  if (!hasSupabaseSession) return 'unauthenticated'
+  return (await isPlatformStaff()) ? 'ready' : 'forbidden'
+}
+
 export async function isPlatformStaff(): Promise<boolean> {
   try {
     const { data: { session } } = await supabaseBrowser.auth.getSession()

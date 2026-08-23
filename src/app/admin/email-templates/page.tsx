@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
-import { isPlatformStaff } from '@/lib/platform-staff'
+import { adminPanelStage } from '@/lib/platform-staff'
 import {
   ArrowRight, Loader2, Lock, ShieldAlert, FileText, Eye, EyeOff,
   Save, X, AlertCircle, CheckCircle, Edit2, Send,
@@ -52,8 +52,10 @@ export default function EmailTemplatesPage() {
 
   async function init() {
     const { data: { session } } = await supabaseBrowser.auth.getSession()
-    if (!session?.user) { setStage('unauthenticated'); return }
-    if (!(await isPlatformStaff())) { setStage('forbidden'); return }
+    // 🚪 (٢٣ أغسطس ٢٠٢٦) الصفحة دي جوّه لوحة مقفولة بكوكي — فبنسأل عن
+    // جلسة اللوحة الأول، وجلسة Supabase تبقى الطريق التاني مش الوحيد.
+    const gate = await adminPanelStage(!!session?.user)
+    if (gate !== 'ready') { setStage(gate); return }
     await loadTemplates()
     setStage('ready')
   }
