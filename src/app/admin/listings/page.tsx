@@ -50,6 +50,7 @@ type Row = {
   is_directory: boolean; directory_source: string | null
   category: string | null; city: string | null; district: string | null
   phone: string | null; phone_verified: boolean; unclaimed: boolean
+  owner_name: string | null
   created_at: string; published_at: string | null
   rejection_reason: string | null; rejected_at: string | null
   pause_reason: string | null; paused_at: string | null
@@ -92,6 +93,15 @@ export default function AdminListingsPage() {
   const [stopping, setStopping] = useState<{ ids: string[]; label: string; kind: 'rejected' | 'paused' } | null>(null)
   const [reason, setReason] = useState('')
 
+  /* 👤 (٢٣ أغسطس ٢٠٢٦) محمد: «عايز خانة باسم صاحب الإعلان بحيث لو الإعلان
+     اتضاف من الأدمن بانيل أو من أي رقم مش رقم صاحب الإعلان أو البيزنس
+     نقدر نغيره».
+
+     الإعلان اللي مندوب ضايفه كان بيفضل شايل رقم المندوب ومحدش يعرف
+     صاحبه مين. الخانة دي بتفصل الاتنين: مين صاحبه فعلاً، وإيه رقمه. */
+  const [owner, setOwner] = useState<{ id: string; title: string; name: string; phone: string } | null>(null)
+  const [ownerErr, setOwnerErr] = useState<string | null>(null)
+
   // ---- guard ----
   useEffect(() => {
     (async () => {
@@ -103,6 +113,25 @@ export default function AdminListingsPage() {
       setStage('ready')
     })()
   }, [])
+
+  async function saveOwner() {
+    if (!owner) return
+    setBusy(true); setOwnerErr(null)
+    try {
+      await adminRpc('admin_set_listing_owner', {
+        p_id: owner.id,
+        p_owner_name: owner.name.trim() || null,
+        p_phone: owner.phone.trim() || null,
+      })
+      setOwner(null)
+      setFlash('اتظبط صاحب الإعلان ✓')
+      await load()
+    } catch (e: any) {
+      setOwnerErr(e?.message || 'مقدرناش نحفظ')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   // debounce search
   useEffect(() => {
@@ -365,6 +394,7 @@ export default function AdminListingsPage() {
                   <th style={{ padding: 10 }}>التصنيف</th>
                   <th style={{ padding: 10 }}>المدينة</th>
                   <th style={{ padding: 10 }}>الرقم</th>
+                  <th style={{ padding: 10 }}>صاحب الإعلان</th>
                   <th style={{ padding: 10 }}>الاستلام</th>
                   {/* 🕒 (٢١ أغسطس ٢٠٢٦) العمودين دول كانوا **بيتجابوا من الداتابيز
                       ويترموا** — `created_at`/`published_at` موجودين في الـtype
@@ -418,6 +448,17 @@ export default function AdminListingsPage() {
                     <td style={{ padding: 10, color: C.sub }}>{r.category || '—'}</td>
                     <td style={{ padding: 10, color: C.sub }}>{r.city || '—'}</td>
                     <td style={{ padding: 10, color: C.sub, direction: 'ltr', textAlign: 'right' }}>{r.phone || '—'}{r.phone && r.phone_verified ? ' ✓' : ''}</td>
+                    <td style={{ padding: 10, color: C.sub, whiteSpace: 'nowrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => { setOwnerErr(null); setOwner({ id: r.id, title: r.title, name: r.owner_name || '', phone: r.phone || '' }) }}
+                        title="ظبّط اسم صاحب الإعلان ورقمه"
+                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                          font: 'inherit', color: r.owner_name ? C.ink : C.sub,
+                          textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                        {r.owner_name || 'مش متسجّل'}
+                      </button>
+                    </td>
                     <td style={{ padding: 10 }}><span style={badge(r.unclaimed ? C.warn : C.green)}>{r.unclaimed ? 'متستلمش' : 'متستلم'}</span></td>
                     <td style={{ padding: 10, color: C.sub, whiteSpace: 'nowrap' }}>
                       <div style={{ fontWeight: 700, color: C.ink, fontSize: 12 }}>{fmtDateTime(r.created_at)}</div>
@@ -529,6 +570,57 @@ export default function AdminListingsPage() {
           </Modal>
         )
       })()}
+
+      {/* 👤 مودال صاحب الإعلان */}
+      {owner && (
+        <Modal onClose={() => !busy && setOwner(null)}>
+          <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 4px' }}>صاحب الإعلان</h2>
+          <p style={{ fontSize: 13, color: C.sub, margin: '0 0 4px' }}>«{owner.title}»</p>
+          <p style={{ fontSize: 12, color: C.sub, margin: '0 0 14px', lineHeight: 1.7 }}>
+            لو الإعلان اتضاف من اللوحة أو من رقم مندوب، اكتب هنا اسم صاحبه
+            الحقيقي ورقمه. لو غيّرت الرقم، التوثيق القديم بيتشال — عشان
+            مانقولش على رقم لسه ما اتأكدش منه إنه موثّق.
+          </p>
+
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>الاسم</label>
+          <input
+            value={owner.name}
+            onChange={(e) => setOwner({ ...owner, name: e.target.value })}
+            placeholder="اسم صاحب الإعلان"
+            style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`,
+              fontSize: 13, fontFamily: 'inherit', marginBottom: 12 }}
+          />
+
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>الموبايل</label>
+          <input
+            value={owner.phone}
+            onChange={(e) => setOwner({ ...owner, phone: e.target.value })}
+            placeholder="01xxxxxxxxx"
+            inputMode="tel"
+            style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`,
+              fontSize: 13, fontFamily: 'inherit', direction: 'ltr', textAlign: 'right' }}
+          />
+
+          {ownerErr && (
+            <p style={{ fontSize: 12, color: C.danger, margin: '10px 0 0', lineHeight: 1.7 }}>{ownerErr}</p>
+          )}
+
+          <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+            <button onClick={() => setOwner(null)} disabled={busy}
+              style={{ flex: 1, padding: 12, background: '#f1f1f1', color: C.ink, fontWeight: 700,
+                borderRadius: 12, border: 'none', cursor: 'pointer' }}>إلغاء</button>
+            <button onClick={saveOwner}
+              disabled={busy || (!owner.name.trim() && !owner.phone.trim())}
+              style={{ flex: 1, padding: 12,
+                background: (!owner.name.trim() && !owner.phone.trim()) ? '#eee' : C.green,
+                color: (!owner.name.trim() && !owner.phone.trim()) ? '#999' : '#fff',
+                fontWeight: 700, borderRadius: 12, border: 'none',
+                cursor: (!owner.name.trim() && !owner.phone.trim()) ? 'not-allowed' : 'pointer' }}>
+              {busy ? 'بنحفظ…' : 'احفظ'}
+            </button>
+          </div>
+        </Modal>
+      )}
 
       {/* delete modal */}
       {deleting && (

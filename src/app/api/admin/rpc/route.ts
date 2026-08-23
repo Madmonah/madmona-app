@@ -40,6 +40,9 @@ const ALLOWED = new Set([
   'admin_publish_listing',
   // المخزون
   'admin_import_inventory',
+  // 👤 (٢٣ أغسطس ٢٠٢٦) اسم صاحب الإعلان ورقمه — للإعلانات اللي اتضافت
+  //    من اللوحة أو من رقم مندوب مش رقم صاحبها.
+  'admin_set_listing_owner',
   // الصلاحيات
   'get_employee_permissions_overview',
   // 🔐 (٢٠ أغسطس ٢٠٢٦) صلاحيات بيزنس **واحد** — بتتنادى من تاب الصلاحيات
