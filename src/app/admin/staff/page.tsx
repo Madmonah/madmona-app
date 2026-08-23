@@ -236,6 +236,9 @@ export default function StaffPage() {
             <p style={{ fontSize: 11.5, color: '#9CA3AF', margin: '0 0 10px', lineHeight: 1.7 }}>
               دي القايمة الحقيقية من ملف الموظفين. تحتها «حسابات دخول لوحة الأدمن» — واللي مش
               في التانية معناها إنه لسه مالوش حساب دخول، مش إنه مش موجود.
+              <br />
+              <b style={{ color: '#B45309' }}>مهم:</b> حساب الأبليكيشن بيتعمل <b>أوتوماتيك</b> من رقم
+              الموظف. الموظف اللي متضاف من غير رقم مفيش منه حساب — أول ما تحطّ رقمه، الحساب بيتعمل لوحده.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {team.map((m) => (
@@ -248,8 +251,22 @@ export default function StaffPage() {
                       {m.full_name} <span style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 600 }}>· {m.role_ar}</span>
                     </div>
                     <div style={{ fontSize: 11.5, color: '#6B7280', marginTop: 3, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: m.has_app ? '#059669' : '#9CA3AF' }}>
-                        <Smartphone size={12} /> {m.has_app ? 'الأبليكيشن ✓' : 'مفيش حساب أبليكيشن'}
+                      {/* 📵 (٢٢ أغسطس ٢٠٢٦ — محمد: «الموظفين الجداد مش عارف ليه
+                          متضافوش أوتوماتيك») الحساب بيتعمل أوتوماتيك من الرقم
+                          (أو الإيميل). الموظف اللي مالوش رقم مفيش منه حساب —
+                          وده كان بيتقال «مفيش حساب أبليكيشن» من غير ما يقول
+                          **ليه**، فالسبب كان مخفي. دلوقتي بيتقال بالنص. */}
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 3,
+                        color: m.has_app ? '#059669' : (m.phone ? '#9CA3AF' : '#B45309'),
+                        fontWeight: !m.has_app && !m.phone ? 700 : 400,
+                      }}>
+                        <Smartphone size={12} />
+                        {m.has_app
+                          ? 'الأبليكيشن ✓'
+                          : m.phone
+                            ? 'مفيش حساب أبليكيشن'
+                            : 'مفيش رقم — عشان كده مالوش حساب'}
                       </span>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: m.has_admin ? '#059669' : '#9CA3AF' }}>
                         <Shield size={12} /> {m.has_admin ? 'لوحة الأدمن ✓' : 'مفيش دخول أدمن'}
