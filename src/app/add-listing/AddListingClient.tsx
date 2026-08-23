@@ -1370,28 +1370,43 @@ function StepBasics({
       ? 'business' : 'individual'
   );
   const isBusiness = sellerType === 'business';
-  /* 🏥 (٢٤ أغسطس ٢٦) محمد: «حاطط في إضافة العيادة كلمة معرض / نشاط تجاري!»
-     — تسمية الطرفين لازم تتبع نوع القسم. «معرض» للعربيات، «عيادة» للطب،
-     «صالون» للبيوتي… مش كلمة واحدة ثابتة للكل. بيتحدد من group_slug
-     بتاع القسم + كلمات في الـslug نفسه. */
-  const sellerLabels = (() => {
+  /* 🏥 (٢٤ أغسطس ٢٦) محمد: «حاطط في إضافة العيادة كلمة معرض!» وبعدها:
+     «ممكن نخليها دكتور حر بدون عيادة / عيادة / مجمع عيادات، ونفس القصة
+     في التعليم: شخص أو سنتر تعليمي — محتاجين نراجع المسميات».
+     كل قسم ليه اختياراته بلغته. المتسجّل في الداتا زي ما هو
+     (individual/business → seller_kind)، ومجمع العيادات = business + فروع. */
+  type SellerOpt = { id: string; v: 'individual' | 'business'; label: string; desc: string; multi?: boolean };
+  const sellerOptions: SellerOpt[] = (() => {
     const s = draft.category_slug || '';
     const parentCat = categories.find((c) => c.slug === s || c.subs?.some((x) => x.slug === s));
     const g = parentCat?.group_slug || '';
     const hit = (...ks: string[]) => ks.some((k) => g.includes(k) || s.includes(k));
-    if (hit('vehicle')) return { biz: '🏢 معرض / تاجر', bizD: 'بعرض مركبات للبيع أو للإيجار بشكل مستمر', ind: '👤 فرد', indD: 'ببيع/بأجّر مركبتي الشخصية' };
-    if (hit('marine')) return { biz: '⚓ مرسى / تاجر مراكب', bizD: 'بأجّر أو ببيع مراكب بشكل مستمر', ind: '👤 فرد', indD: 'ببيع/بأجّر مركبي الشخصي' };
-    if (hit('propert')) return { biz: '🏢 شركة عقارات / مطور / مكتب', bizD: 'بسوّق أو بطوّر عقارات بشكل مستمر', ind: '👤 مالك', indD: 'ببيع/بأجّر عقاري الشخصي' };
-    if (hit('medical', 'clinic', 'doctor')) return { biz: '🏥 عيادة / مركز طبي', bizD: 'منشأة طبية بتستقبل حالات', ind: '👤 ممارس مستقل', indD: 'بقدم الخدمة بنفسي من غير منشأة' };
-    if (hit('services-care', 'beauty', 'salon')) return { biz: '💇 صالون / سنتر', bizD: 'منشأة بتقدم خدمات عناية', ind: '👤 بشتغل لحسابي', indD: 'بقدم الخدمة بنفسي' };
-    if (hit('food', 'restaurant')) return { biz: '🍽️ مطعم / كافيه', bizD: 'مكان بيقدم أكل ومشروبات', ind: '👤 بشتغل من البيت', indD: 'بطبخ وببيع لحسابي' };
-    if (hit('equipment')) return { biz: '🏗️ شركة تأجير معدات', bizD: 'بأجّر معدات بشكل مستمر', ind: '👤 فرد', indD: 'بأجّر معدة مملوكة ليا' };
-    if (hit('tourism')) return { biz: '🏢 شركة سياحة', bizD: 'بنظم رحلات وتجارب بشكل مستمر', ind: '👤 منظم مستقل', indD: 'بنظم لحسابي' };
-    if (hit('event')) return { biz: '🎉 شركة تنظيم مناسبات', bizD: 'بنظم مناسبات بفريق شغّال', ind: '👤 بشتغل لحسابي', indD: 'بنظم بنفسي' };
-    if (hit('services')) return { biz: '🏢 شركة / مكتب خدمات', bizD: 'بقدم الخدمة بفريق أو منشأة', ind: '👤 بشتغل لحسابي', indD: 'بقدم الخدمة بنفسي (فريلانسر)' };
-    if (hit('shop', 'furniture', 'home-')) return { biz: '🏪 محل / متجر', bizD: 'عندي بضاعة بتتجدد باستمرار', ind: '👤 فرد', indD: 'ببيع حاجتي الشخصية' };
-    return { biz: '🏢 نشاط تجاري', bizD: 'عندي بضاعة أو خدمات شغّالة', ind: '👤 فرد', indD: 'ببيع/بأجّر حاجتي الشخصية' };
+    const two = (indL: string, indD: string, bizL: string, bizD: string): SellerOpt[] => ([
+      { id: 'ind', v: 'individual', label: indL, desc: indD },
+      { id: 'biz', v: 'business', label: bizL, desc: bizD },
+    ]);
+    if (hit('vehicle', 'tuktuk')) return two('👤 فرد', 'ببيع/بأجّر مركبتي الشخصية', '🏢 معرض / تاجر', 'بعرض مركبات بشكل مستمر');
+    if (hit('marine')) return two('👤 فرد', 'ببيع/بأجّر مركبي الشخصي', '⚓ مرسى / تاجر مراكب', 'بأجّر أو ببيع مراكب بشكل مستمر');
+    if (hit('propert')) return two('👤 مالك', 'ببيع/بأجّر عقاري الشخصي', '🏢 شركة عقارات / مطور / مكتب', 'بسوّق أو بطوّر عقارات بشكل مستمر');
+    if (hit('medical', 'clinic', 'doctor', 'dental')) return [
+      { id: 'ind', v: 'individual', label: '🩺 دكتور حر', desc: 'من غير عيادة — كشف منزلي أو أونلاين' },
+      { id: 'biz', v: 'business', label: '🏥 عيادة', desc: 'عيادة بتستقبل حالات' },
+      { id: 'multi', v: 'business', label: '🏥 مجمع عيادات', desc: 'أكتر من عيادة أو فرع', multi: true },
+    ];
+    if (hit('education', 'course', 'school', 'teacher', 'lesson', 'nursery')) return two('👤 مدرس / شخص', 'بدرّس أو بدرّب بنفسي', '🏫 سنتر تعليمي', 'منشأة تعليمية بفريق');
+    if (hit('services-care', 'beauty', 'salon')) return two('👤 بشتغل لحسابي', 'بقدم الخدمة بنفسي', '💇 صالون / سنتر', 'منشأة بتقدم خدمات عناية');
+    if (hit('food', 'restaurant')) return two('👤 بشتغل من البيت', 'بطبخ وببيع لحسابي', '🍽️ مطعم / كافيه', 'مكان بيقدم أكل ومشروبات');
+    if (hit('equipment')) return two('👤 فرد', 'بأجّر معدة مملوكة ليا', '🏗️ شركة تأجير معدات', 'بأجّر معدات بشكل مستمر');
+    if (hit('tourism')) return two('👤 منظم مستقل', 'بنظم لحسابي', '🏢 شركة سياحة', 'بنظم رحلات وتجارب بشكل مستمر');
+    if (hit('event')) return two('👤 بشتغل لحسابي', 'بنظم بنفسي', '🎉 شركة تنظيم مناسبات', 'بنظم مناسبات بفريق شغّال');
+    if (hit('services')) return two('👤 بشتغل لحسابي', 'بقدم الخدمة بنفسي (فريلانسر)', '🏢 شركة / مكتب خدمات', 'بقدم الخدمة بفريق أو منشأة');
+    if (hit('shop', 'furniture', 'home-')) return two('👤 فرد', 'ببيع حاجتي الشخصية', '🏪 محل / متجر', 'عندي بضاعة بتتجدد باستمرار');
+    return two('👤 فرد', 'ببيع/بأجّر حاجتي الشخصية', '🏢 نشاط تجاري', 'عندي بضاعة أو خدمات شغّالة');
   })();
+  const [sellerChoice, setSellerChoice] = useState<string>(() =>
+    (sellerOptions.find((o) => o.v === (draft.account_type === 'business' ? 'business' : 'individual')) || sellerOptions[0]).id
+  );
+  const sellerSelectedId = (sellerOptions.find((o) => o.id === sellerChoice) || sellerOptions.find((o) => o.v === sellerType) || sellerOptions[0]).id;
   const [hasBranches, setHasBranches] = useState<boolean>(
     draft.account_type === 'business' || !!(slugTrack && SURE_COMPANY_TRACKS.includes(slugTrack))
   );
@@ -1537,13 +1552,13 @@ function StepBasics({
       <div className="mb-5">
         <p className="text-sm font-semibold mb-2">إنت مين؟ *</p>
         <div className="flex gap-2">
-          {([['individual', sellerLabels.ind, sellerLabels.indD],
-             ['business', sellerLabels.biz, sellerLabels.bizD]] as const).map(([v, l, d]) => (
-            <button key={v} type="button" onClick={() => setSellerType(v)}
+          {sellerOptions.map((o) => (
+            <button key={o.id} type="button"
+              onClick={() => { setSellerChoice(o.id); setSellerType(o.v); if (o.multi) setHasBranches(true); }}
               className={`flex-1 p-3 rounded-xl border-2 text-right transition-all ${
-                sellerType === v ? 'border-[#059669] bg-emerald-50' : 'border-[#E5E5E0] bg-white'}`}>
-              <span className="block text-sm font-bold">{l}</span>
-              <span className="block text-[11px] text-gray-500 mt-0.5">{d}</span>
+                sellerSelectedId === o.id ? 'border-[#059669] bg-emerald-50' : 'border-[#E5E5E0] bg-white'}`}>
+              <span className="block text-sm font-bold">{o.label}</span>
+              <span className="block text-[11px] text-gray-500 mt-0.5">{o.desc}</span>
             </button>
           ))}
         </div>
@@ -2413,6 +2428,12 @@ function getProductFieldProfile(slug: string | null | undefined): ProductFieldPr
   return PROFILE_RETAIL;
 }
 
+// 🚗 (٢٤ أغسطس ٢٦) محمد: «حط دروب ليست في العربيات» — ماركات وسنين
+// جاهزة بدل الكتابة الحرة، و«أخرى…» بتفتح خانة نص.
+const CAR_BRANDS = ['تويوتا', 'هيونداي', 'كيا', 'نيسان', 'شيفروليه', 'ميتسوبيشي', 'مرسيدس', 'بي إم دبليو', 'أودي', 'فولكس فاجن', 'سكودا', 'سيات', 'كوبرا', 'رينو', 'بيجو', 'سيتروين', 'أوبل', 'فيات', 'هوندا', 'سوزوكي', 'مازدا', 'جيلي', 'شيري', 'بي واي دي', 'إم جي', 'جاك', 'هافال', 'جيتور', 'لادا', 'جيب', 'لاند روفر', 'لكزس', 'سانج يونج', 'دي إف إس كي', 'بروتون', 'إيسوزو', 'هينو'];
+const MOTO_BRANDS = ['هوندا', 'ياماها', 'سوزوكي', 'كاواساكي', 'بيناللي', 'باجاج', 'تي في إس', 'كيه تي إم', 'سيم', 'هوجن', 'دايون', 'رويال إنفيلد', 'هارلي ديفيدسون', 'فيسبا', 'ليفان', 'زونجشن'];
+const VEHICLE_YEARS = Array.from({ length: 2027 - 1989 }, (_, i) => String(2027 - i));
+
 function ProductDetailsStep({
   draft,
   categories,
@@ -2439,6 +2460,17 @@ function ProductDetailsStep({
   );
   const [brand, setBrand] = useState<string>(existingDetails?.brand || '');
   const [model, setModel] = useState<string>(existingDetails?.model || '');
+  // 🚗 دروب ليست العربيات — الماركة من قايمة والسنة من قايمة
+  const isVehicle = profile === PROFILE_VEHICLE;
+  const vehicleBrands = /motorcycle|tuktuk/.test(draft.category_slug || '') ? MOTO_BRANDS : CAR_BRANDS;
+  const [brandIsOther, setBrandIsOther] = useState<boolean>(() => {
+    const eb = existingDetails?.brand || '';
+    return !!eb && !CAR_BRANDS.includes(eb) && !MOTO_BRANDS.includes(eb);
+  });
+  const [vehicleYear, setVehicleYear] = useState<string>(() => {
+    const m = (existingDetails?.model || '').match(/(19|20)\d{2}/);
+    return m ? m[0] : '';
+  });
   const [shippingAvailable, setShippingAvailable] = useState<boolean>(
     profile.showShipping ? (existingDetails?.shipping_available ?? true) : false,
   );
@@ -2534,7 +2566,9 @@ function ProductDetailsStep({
       stock_quantity: availabilityType === 'made_to_order' ? 0 : Number(stockQty),
       condition,
       brand: brand.trim() || undefined,
-      model: model.trim() || undefined,
+      model: (isVehicle && vehicleYear && !model.includes(vehicleYear)
+        ? (model.trim() + ' ' + vehicleYear).trim()
+        : model.trim()) || undefined,
       shipping_available: shippingAvailable,
       shipping_cost:
         shippingAvailable && shippingCost !== ''
@@ -2701,25 +2735,55 @@ function ProductDetailsStep({
       </Field>
       )}
 
-      {profile.showBrand && (
+      {profile.showBrand && isVehicle && (
+      <Field label="الماركة">
+        <select
+          value={brandIsOther ? '__other' : brand}
+          onChange={(e) => {
+            if (e.target.value === '__other') { setBrandIsOther(true); setBrand(''); }
+            else { setBrandIsOther(false); setBrand(e.target.value); }
+          }}
+          className={inputCls}
+        >
+          <option value="">اختار الماركة…</option>
+          {vehicleBrands.map((b) => (<option key={b} value={b}>{b}</option>))}
+          <option value="__other">أخرى…</option>
+        </select>
+        {brandIsOther && (
+          <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)}
+            placeholder="اكتب الماركة" className={`${inputCls} mt-2`} />
+        )}
+      </Field>
+      )}
+
+      {profile.showBrand && !isVehicle && (
       <Field label="الماركة (اختياري)">
         <input
           type="text"
           value={brand}
           onChange={(e) => setBrand(e.target.value)}
-          placeholder={profile === PROFILE_VEHICLE ? 'مثلاً: تويوتا، هيونداي، مرسيدس' : 'مثلاً: Samsung, Apple, Toshiba'}
+          placeholder="مثلاً: Samsung, Apple, Toshiba"
           className={inputCls}
         />
       </Field>
       )}
 
+      {isVehicle && (
+      <Field label="سنة الصنع">
+        <select value={vehicleYear} onChange={(e) => setVehicleYear(e.target.value)} className={inputCls}>
+          <option value="">اختار السنة…</option>
+          {VEHICLE_YEARS.map((y) => (<option key={y} value={y}>{y}</option>))}
+        </select>
+      </Field>
+      )}
+
       {profile.showModel && (
-      <Field label={profile === PROFILE_VEHICLE ? 'الموديل / سنة الصنع (اختياري)' : 'الموديل (اختياري)'}>
+      <Field label="الموديل (اختياري)">
         <input
           type="text"
           value={model}
           onChange={(e) => setModel(e.target.value)}
-          placeholder={profile === PROFILE_VEHICLE ? 'مثلاً: كورولا 2021' : 'مثلاً: Galaxy S23, iPhone 15'}
+          placeholder={isVehicle ? 'مثلاً: كورولا' : 'مثلاً: Galaxy S23, iPhone 15'}
           className={inputCls}
         />
       </Field>
