@@ -123,7 +123,16 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 5,
+  /* 📱 (٢٤ أغسطس ٢٦) محمد: «لما باجي أكتب رسالة في الشات اسكيل الشاشة
+     بيتغير وبعمل زوم إن — عايز الأبليكيشن يبان نيتيف».
+     iOS بيعمل زوم أوتوماتيك على أي input خطه أقل من 16px.
+     الحل من طرفين (ع مستوى الأبليكيشن كله):
+       ١) maximumScale: 1 — بيقفل الزوم الأوتوماتيكي ده نهائيًا (iOS
+          بيحترمها عند الفوكس)، وده اللي بيدّي إحساس النيتيف.
+       ٢) قاعدة CSS في globals بتخلي أي input/textarea على الموبايل
+          16px على الأقل — عشان أندرويد والمتصفحات اللي بتتجاهل (١). */
+  maximumScale: 1,
+  userScalable: false,
   themeColor: '#059669',
   viewportFit: 'cover',
 }

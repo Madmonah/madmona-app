@@ -218,6 +218,40 @@ async function magnetizeLinks(text: string, phone: string): Promise<string> {
 }
 
 
+/* 📸→📝 (٢٤ أغسطس ٢٦) محمد: «يتم تفريغ الميديا أول بأول».
+   الصوت متفرّغ فعلاً (Groq فوق). ده بيكمّل الصورة والـPDF: نداء هايكو
+   صغير (سطر واحد، ~٩٠ توكن إخراج ≈ أجزاء من القرش) بيوصّف الميديا
+   ويتكتب الوصف جوّه سجل الرسالة نفسه: «[صورة] لينك» ← «[صورة: شقة
+   ١٢٠م بالمنيو والأسعار] لينك». getConversationHistory مش بتضغط
+   الصف اللي فيه وصف — فسياق آخر ٣ رسايل بيبقى ليه معنى حتى لو كله
+   ميديا. fire-and-forget: مايأخّرش الرد ولا يكسره لو فشل. */
+async function enrichMediaTranscript(waMessageId: string, blocks: Array<Record<string, unknown>>) {
+  try {
+    const res = await anthropic.messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 90,
+      system:
+        'وصّف محتوى الميديا في سطر واحد قصير بالعربي — اللي يفيد البيع: ' +
+        'نوع الحاجة، مواصفات ظاهرة، أسعار أو أرقام مكتوبة. من غير مقدمات خالص.',
+      messages: [{ role: 'user', content: [...blocks, { type: 'text', text: 'الوصف:' }] as never }],
+    })
+    const t = res.content.find((c) => c.type === 'text')
+    const desc = (t && t.type === 'text' ? t.text : '').replace(/\s+/g, ' ').trim().slice(0, 160)
+    if (!desc) return
+    const { data: row } = await supabaseUntyped
+      .from('whatsapp_messages').select('id, body')
+      .eq('wa_message_id', waMessageId).maybeSingle()
+    if (!row) return
+    const oldBody = String((row as { body?: string }).body || '')
+    const newBody = oldBody.replace(/^\[(صورة|فيديو|ملف[^\]]*)\]/, (m) => m.slice(0, -1) + ': ' + desc + ']')
+    if (newBody !== oldBody) {
+      await supabaseUntyped.from('whatsapp_messages')
+        .update({ body: newBody } as never)
+        .eq('id', (row as { id: string }).id)
+    }
+  } catch { /* best-effort — التفريغ مايوقفش حاجة */ }
+}
+
 export async function POST(request: NextRequest) {
   // بنقبل السرّين الداخليين — نفس حدود الثقة (الاتنين على السيرفر بس).
   // WA_SERVICE_SECRET هو اللي Railway بيبعت بيه.
@@ -639,6 +673,11 @@ export async function POST(request: NextRequest) {
         messageType: body.type,
         session: body.session_id,
       })
+
+      // 📸→📝 تفريغ فوري للصورة/الملف — fire-and-forget
+      if (mediaBlocks.length > 0 && body.message_id) {
+        void enrichMediaTranscript(body.message_id, mediaBlocks)
+      }
     }
 
     // ── ٠ج) المحادثة موقوفة؟ ────────────────────────────────────────────
