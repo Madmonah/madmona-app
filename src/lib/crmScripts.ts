@@ -63,11 +63,14 @@ const DEMOS: Record<string, { slug: string; label: string }> = {
   marine:   { slug: 'star-alex-yachts', label: 'Star Alex Yachts' },
   tourism:  { slug: 'nile-breeze',      label: 'فندق نايل بريز' },
   services: { slug: 'sa3dawy',          label: 'سعداوي جراج — فرعين' },
-  properties:{ slug: 'demo-realestate', label: 'نموذج مكتب عقارات — شقق وفيلات وإداري' },
-  vehicles:  { slug: 'demo-cars',       label: 'نموذج معرض عربيات — مستعمل وزيرو' },
-  factories: { slug: 'demo-factory',    label: 'نموذج مصنع وتوريدات — كتالوج وأسعار الجملة' },
   medical:   { slug: 'demo-clinic',     label: 'نموذج عيادة ومركز طبي — حجز مواعيد' },
-  retail:    { slug: 'demo-store',      label: 'نموذج متجر — منتجات وشحن' },
+  /* ⚠️ (٢٤ أغسطس ٢٦) شيلنا demo-cars و demo-factory و demo-store و
+     demo-realestate: صفحة النموذج (public_salon_landing) هي شاشة
+     خدمات/أقسام — تنفع للسبا والعيادة والفنادق والمطاعم. مش تنفع
+     تعرض «سيارة ٢٠٢١ بـ١٫٢٥ مليون بمدة ٦٠ دقيقة» كأنها خدمة سبا.
+     محمد: «بيانات لا تصلح لموديل السيارات».
+     الأنواع دي تعرض في الماركتبليس نفسه (كل عربية إعلان بمواصفاتها،
+     كل منتج إعلان بمخزونه). النموذج مش لازم يبقى صفحة موحّدة. */
 }
 
 /** 📋 اللي بنطلبه من العميل يجهّزه — مختلف حسب النشاط. */

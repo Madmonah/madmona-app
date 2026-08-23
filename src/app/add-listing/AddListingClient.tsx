@@ -1331,6 +1331,11 @@ function StepBasics({
     return parent?.track ?? null;
   })();
   // «شركة/فرد» اتشالت — بدلها زرار محايد «عندك أكتر من فرع؟». العمولة ١٠٪ للكل.
+  /* 🚗 (٢٤ أغسطس ٢٦) محمد: «حاطط لواحد بيبيع عربية عندك أكتر من فرع».
+     زرار الفروع منطقي للمحل والصالون — مش لفرد بيبيع عربيته أو شقته.
+     البيع الفردي (sale-*) مايشوفش الزرار خالص. */
+  const _csBr = draft.category_slug || '';
+  const showBranchesOption = !_csBr.startsWith('sale-');
   const [hasBranches, setHasBranches] = useState<boolean>(
     draft.account_type === 'business' || !!(slugTrack && SURE_COMPANY_TRACKS.includes(slugTrack))
   );
@@ -1473,23 +1478,27 @@ function StepBasics({
 
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
 
-      {/* «شركة/فرد» اتشالت — زرار محايد لإضافة الفروع بس (العمولة ١٠٪ للكل) */}
-      <div className="mb-5 p-3 rounded-xl bg-white border border-[#E5E5E0]">
-        <label className="flex items-start gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={hasBranches}
-            onChange={(e) => setHasBranches(e.target.checked)}
-            className="mt-1 w-4 h-4 accent-[#059669]"
-          />
-          <span className="text-sm">
-            <span className="font-semibold">عندك أكتر من فرع؟</span>
-            <span className="block text-xs text-gray-500 mt-0.5">
-              لو نشاطك ليه أكتر من فرع، فعّل ده وأضفهم في نفس الإعلان.
+      {/* «شركة/فرد» اتشالت — زرار محايد لإضافة الفروع بس.
+          🚗 (٢٤ أغسطس ٢٦) مش بيظهر في البيع الفردي (sale-*) — واحد بيبيع
+          عربيته مالوش فروع. */}
+      {showBranchesOption && (
+        <div className="mb-5 p-3 rounded-xl bg-white border border-[#E5E5E0]">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={hasBranches}
+              onChange={(e) => setHasBranches(e.target.checked)}
+              className="mt-1 w-4 h-4 accent-[#059669]"
+            />
+            <span className="text-sm">
+              <span className="font-semibold">عندك أكتر من فرع؟</span>
+              <span className="block text-xs text-gray-500 mt-0.5">
+                لو نشاطك ليه أكتر من فرع، فعّل ده وأضفهم في نفس الإعلان.
+              </span>
             </span>
-          </span>
-        </label>
-      </div>
+          </label>
+        </div>
+      )}
 
       <Field label="عنوان الإعلان" error={errors.title} required>
         <input
@@ -3318,6 +3327,20 @@ function StepPricing({
   const track = getCategoryTrack(draft.category_slug, categories);
   const isRentalCopy = track === 'rentals';
   const isHybrid = track === 'hybrid';
+
+  /* 💸 (٢٤ أغسطس ٢٦) محمد: «كاتب عمولة ١٠٪ في الاضافة وشغل عك في عك».
+     العمولة مش ١٠٪ للكل. حسب قاعدة ١ أغسطس:
+       • بيع سيارات ← بالاتفاق (مش نسبة أصلاً)
+       • بيع عقار (resale) ← ٥٪
+       • إيجار عقار طويل ← شهر عمولة (مش نسبة)
+       • بيع مركبات بحرية ← ٥٪ (٢.٥ + ٢.٥)
+       • غير كده ← ١٠٪
+     الفلاجز دي بتقول لكارت المعاينة يخفي «بعد عمولة ١٠٪» في الحالات
+     اللي فيها نسبة مختلفة أو مفيش نسبة أصلاً. */
+  const cs = draft.category_slug || '';
+  const isVehicleSale = cs.startsWith('sale-vehicles');
+  const isPropertySale = cs.startsWith('sale-properties');
+  const isMarineSale = cs.startsWith('sale-marine') || cs.startsWith('sale-boats') || cs.startsWith('sale-yachts');
   // Task 6 (May 30 2026): medical-clinics + related categories show an extra
   // insurance-acceptance section in the pricing step.
   const isMedical = isMedicalCategory(draft.category_slug, categories);
@@ -3560,7 +3583,7 @@ function StepPricing({
             type="number"
             value={price}
             onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder="مثلاً: 1500"
+            placeholder={isVehicleSale ? 'مثلاً: 950000' : isPropertySale ? 'مثلاً: 3500000' : 'مثلاً: 1500'}
             className={inputCls + ' pl-16'}
           />
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
@@ -3569,24 +3592,44 @@ function StepPricing({
         </div>
       </Field>
 
-      {/* Phase E (May 18 2026): weekly projection for daily rentals (existing UX) */}
-      {isRentalCopy && price !== '' && period === 'daily' && Number(price) > 0 && (
-        <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
-          💰 لو حد أجره أسبوع كامل = <strong>{Number(price) * 7} جنيه</strong>
-          <br />
-          • نصيب حضرتك (بعد عمولة 10%): <strong>{Math.round(Number(price) * 7 * 0.9)} جنيه</strong>
-        </div>
-      )}
-
-      {/* Phase E: per-unit commission preview — shown for beauty AND for any
-          non-daily non-beauty period (lawyers per_session, photographers
-          per_event, etc). Previously only beauty had this preview. */}
-      {price !== '' && Number(price) > 0 && (!isRentalCopy || period !== 'daily') && (
-        <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
-          💰 من كل {periodLabel[period] || period}:
-          <br />
-          • نصيب حضرتك (بعد عمولة 10%): <strong>{Math.round(Number(price) * 0.9)} جنيه</strong>
-        </div>
+      {/* 💸 (٢٤ أغسطس ٢٦) معاينة العمولة الصح — مش ١٠٪ للكل.
+          سيارات = بالاتفاق (مانعرضش نسبة). عقار بيع = ٥٪. بحرية بيع = ٥٪.
+          الباقي (خدمات/إيجارات/تجزئة) = ١٠٪. */}
+      {isVehicleSale ? (
+        price !== '' && Number(price) > 0 && (
+          <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
+            💰 عمولة السيارات <strong>بالاتفاق</strong> — البايع هو اللي بيحددها.
+            <br />
+            نصيبك يعتمد على الاتفاق ده وقت البيع.
+          </div>
+        )
+      ) : isPropertySale || isMarineSale ? (
+        price !== '' && Number(price) > 0 && (
+          <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
+            💰 السعر: <strong>{Number(price).toLocaleString('ar-EG')} جنيه</strong>
+            <br />
+            • نصيب حضرتك (بعد عمولة 5%): <strong>{Math.round(Number(price) * 0.95).toLocaleString('ar-EG')} جنيه</strong>
+          </div>
+        )
+      ) : (
+        <>
+          {/* Phase E (May 18 2026): weekly projection for daily rentals */}
+          {isRentalCopy && price !== '' && period === 'daily' && Number(price) > 0 && (
+            <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
+              💰 لو حد أجره أسبوع كامل = <strong>{Number(price) * 7} جنيه</strong>
+              <br />
+              • نصيب حضرتك (بعد عمولة 10%): <strong>{Math.round(Number(price) * 7 * 0.9)} جنيه</strong>
+            </div>
+          )}
+          {/* Phase E: per-unit commission preview */}
+          {price !== '' && Number(price) > 0 && (!isRentalCopy || period !== 'daily') && (
+            <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
+              💰 من كل {periodLabel[period] || period}:
+              <br />
+              • نصيب حضرتك (بعد عمولة 10%): <strong>{Math.round(Number(price) * 0.9)} جنيه</strong>
+            </div>
+          )}
+        </>
       )}
 
       {/* Beauty: add-ons section */}
