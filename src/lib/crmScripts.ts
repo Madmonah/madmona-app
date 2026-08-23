@@ -386,3 +386,38 @@ export function waIntl(phone: string) {
 export function waLink(phone: string, specialty: string | null, customer: string | null, sender: string | null) {
   return `https://api.whatsapp.com/send?phone=${waIntl(phone)}&text=${encodeURIComponent(scriptText(specialty, customer, sender))}`
 }
+
+/** 📱 (٢٣ أغسطس ٢٠٢٦ — محمد: «عايز تاب إرسال الواتساب تخيّرهم بين واتساب
+ *  بيزنس أو واتساب عادي»)
+ *
+ *  التطبيقين على أندرويد بيتسجّلوا على **نفس الـscheme** (whatsapp://)،
+ *  فأي لينك عادي بيفتح أي واحد فيهم على كيف النظام. صيغة intent:// بـ
+ *  package صريح هي الوحيدة اللي بتحدّد تطبيق بعينه:
+ *      العادي = com.whatsapp · البيزنس = com.whatsapp.w4b
+ *
+ *  S.browser_fallback_url: لو التطبيق ده مش متسطّب، كروم بيرجع للينك
+ *  العادي بدل ما يقف على صفحة خطأ.
+ *
+ *  ⚠️ على iOS والديسكتوب مفيش scheme منفصل لواتساب بيزنس — فالواجهة
+ *     بتعرض زرار واحد هناك بدل زرارين بيعملوا نفس الحاجة بالظبط.
+ */
+export type WaApp = 'normal' | 'business'
+
+export function waAppLink(
+  app: WaApp,
+  phone: string,
+  specialty: string | null,
+  customer: string | null,
+  sender: string | null,
+) {
+  const pkg = app === 'business' ? 'com.whatsapp.w4b' : 'com.whatsapp'
+  const text = encodeURIComponent(scriptText(specialty, customer, sender))
+  const fallback = encodeURIComponent(waLink(phone, specialty, customer, sender))
+  return `intent://send?phone=${waIntl(phone)}&text=${text}`
+    + `#Intent;scheme=whatsapp;package=${pkg};S.browser_fallback_url=${fallback};end`
+}
+
+/** أندرويد بس هو اللي بيقدر يحدّد تطبيق بعينه. */
+export function canPickWaApp() {
+  return typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
+}
