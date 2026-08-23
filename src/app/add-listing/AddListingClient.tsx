@@ -3344,7 +3344,11 @@ function StepPricing({
   // Task 6 (May 30 2026): medical-clinics + related categories show an extra
   // insurance-acceptance section in the pricing step.
   const isMedical = isMedicalCategory(draft.category_slug, categories);
-  const showAddons = !isRentalCopy;          // services + hybrid + beauty
+  /* 🚗 (٢٤ أغسطس ٢٦) محمد: «إيه الخدمة الإضافية اللي انت حاططها في بيع
+     المركبات دي؟» — الـadd-ons للخدمات (صالون بيضيف باديكير مع المانيكير).
+     اللي بيبيع عربية أو منتج (sale-*) مالوش دعوة بيها خالص. */
+  const isSaleCategory = (draft.category_slug || '').startsWith('sale-');
+  const showAddons = !isRentalCopy && !isSaleCategory;  // services + hybrid + beauty
   const showCustomAddonBuilder = showAddons && !isBeauty;
 
   // Phase E (May 18 2026): expanded period labels — added per_event, per_visit
